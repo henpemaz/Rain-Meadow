@@ -1,6 +1,14 @@
-﻿namespace RainMeadow
+﻿using Steamworks;
+
+namespace RainMeadow
 {
-    class OnlinePlayer {
-        Steamworks.CSteamID id;
+    public class OnlinePlayer
+    {
+        public Steamworks.CSteamID id;
+
+        public OnlinePlayer(CSteamID id)
+        {
+            this.id = id;
+        }
     }
 }

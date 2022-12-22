@@ -8,7 +8,7 @@ namespace RainMeadow
         public void OnEnable()
         {
             LobbyMenu.Apply();
-            OnlineSession.Apply();
+            SessionHooks.Apply();
         }
     }
 

@@ -1,34 +1,36 @@
 ﻿using Steamworks;
-using System;
 
 namespace RainMeadow
 {
-    class Lobby {
-        public static string CLIENT_KEY = "client";
-        public static string CLIENT_VAL = "Meadow";
-        public static string NAME_KEY = "name";
+    public class Lobby
+    {
+        public CSteamID id;
 
-        public Steamworks.CSteamID id;
-        public Steamworks.CSteamID owner;
-
-        public OnlinePlayer[] players;
-
-        public Lobby(CSteamID cSteamID)
+        public Lobby(CSteamID id)
         {
-            this.id = cSteamID;
-
-            UpdateOwner();
+            this.id = id;
+            UpdateInfoShort();
         }
 
-        public void UpdateOwner()
+        public void UpdateInfoShort()
         {
-            owner = SteamMatchmaking.GetLobbyOwner(id);
+            owner = new OnlinePlayer(SteamMatchmaking.GetLobbyOwner(id));
+            name = SteamMatchmaking.GetLobbyData(id, LobbyManager.NAME_KEY);
         }
 
-        internal void SetupNew()
+
+        public void UpdateInfoFull()
         {
-            SteamMatchmaking.SetLobbyData(id, CLIENT_KEY, CLIENT_VAL);
-            SteamMatchmaking.SetLobbyData(id, NAME_KEY, SteamFriends.GetPersonaName());
+            
         }
+
+        public void SetupNew()
+        {
+            SteamMatchmaking.SetLobbyData(id, LobbyManager.CLIENT_KEY, LobbyManager.CLIENT_VAL);
+            SteamMatchmaking.SetLobbyData(id, LobbyManager.NAME_KEY, SteamFriends.GetPersonaName());
+        }
+
+        public OnlinePlayer owner;
+        public string name;
     }
 }

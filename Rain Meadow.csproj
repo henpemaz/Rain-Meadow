@@ -110,11 +110,13 @@
   <ItemGroup>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Lobby.cs" />
+    <Compile Include="LobbyManager.cs" />
     <Compile Include="LobbyMenu.cs" />
     <Compile Include="OnlinePlayer.cs" />
     <Compile Include="OnlineSession.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RainMeadow.cs" />
+    <Compile Include="SessionHooks.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

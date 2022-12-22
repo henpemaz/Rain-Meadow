@@ -1,5 +1,10 @@
-﻿using System;
+﻿using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using MonoMod.RuntimeDetour.HookGen;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -16,7 +21,7 @@ namespace RainMeadow
     }
 
     // OnlineSession is tightly coupled to a lobby, and the highest ownership level
-    class OnlineSession : GameSession
+    public class OnlineSession : GameSession
     {
         public OnlineSession(RainWorldGame game) : base(game){ }
 
@@ -25,9 +30,17 @@ namespace RainMeadow
             public static ProcessManager.MenuSetup.StoryGameInitCondition Online;
         }
 
-        public static void Apply()
+        public enum OnlineSessionJoinType
         {
+            None = 0,
+            Host,
+            Sync,
+            Late
+        }
 
+        public void Update()
+        {
+            
         }
 
         public Lobby lobby;
@@ -39,34 +52,34 @@ namespace RainMeadow
 
     // SubSessions are transferible sessions, limited to a resource that others can consume (world, room)
     // The owner of the resource coordinates states, distributes subresources and solves conflicts
-    abstract class SubSession
+    public abstract class SubSession
     {
-        OnlinePlayer owner;
-        bool loaded;
+        public OnlinePlayer owner;
+        public bool loaded;
     }
 
-    class WorldSession : SubSession
+    public class WorldSession : SubSession
     {
-        Region region;
+        public Region region;
 
-        World world;
+        public World world;
 
-        List<RoomSession> rooms;
+        public List<RoomSession> rooms;
     }
 
-    class RoomSession : SubSession
+    public class RoomSession : SubSession
     {
-        AbstractRoom absroom;
+        public AbstractRoom absroom;
 
-        Room room;
+        public Room room;
 
-        List<NwEntity> entities;
+        public List<NwEntity> entities;
     }
 
 
-    class NwEntity // :SubSession but renamed?
+    public class NwEntity // :SubSession but renamed?
     {
-        OnlinePlayer owner;
-        bool loaded;
+        public OnlinePlayer owner;
+        public bool loaded;
     }
 }
