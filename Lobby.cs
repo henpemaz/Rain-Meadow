@@ -18,7 +18,6 @@ namespace RainMeadow
             name = SteamMatchmaking.GetLobbyData(id, LobbyManager.NAME_KEY);
         }
 
-
         public void UpdateInfoFull()
         {
             

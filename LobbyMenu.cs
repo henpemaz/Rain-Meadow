@@ -17,6 +17,7 @@ namespace RainMeadow
             public static ProcessManager.ProcessID LobbyMenu;
         }
 
+        #region HOOKS
         public static void Apply()
         {
             On.Menu.MainMenu.ctor += MainMenu_ctor;
@@ -57,13 +58,13 @@ namespace RainMeadow
                 var l2 = c.MarkLabel();
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldarg_0);
-                c.Emit(OpCodes.Newobj, typeof(LobbyMenu).GetConstructor(new Type[]{ typeof(ProcessManager) }));
+                c.Emit(OpCodes.Newobj, typeof(LobbyMenu).GetConstructor(new Type[] { typeof(ProcessManager) }));
                 c.Emit<ProcessManager>(OpCodes.Stfld, "currentMainLoop");
                 c.Emit(OpCodes.Br, l);
 
                 c.GotoPrev(i => i.MatchSwitch(out _));
                 ILLabel to = null;
-                c.GotoNext(MoveType.Before,o=>o.MatchBr(out to));
+                c.GotoNext(MoveType.Before, o => o.MatchBr(out to));
                 c.MoveBeforeLabels();
                 c.Emit(OpCodes.Ldarg_1);
                 c.EmitDelegate((ProcessManager.ProcessID id) => { return id == EnumExt_LobbyMenu.LobbyMenu; });
@@ -86,6 +87,7 @@ namespace RainMeadow
             btn.buttonBehav.greyedOut = !SteamManager.Initialized;
             btn.OnClick += (SimplerButton obj) => { self.manager.RequestMainProcessSwitch(EnumExt_LobbyMenu.LobbyMenu); };
         }
+        #endregion HOOKS
 
         class SimplerButton : SimpleButton
         {
@@ -95,7 +97,7 @@ namespace RainMeadow
         }
 
         private MenuLabel debugLabel;
-        private LobbyManager lobbyManager;
+        private LobbyManager lobbyManager => LobbyManager.instance;
 
         Vector2 btns = new Vector2(350,100);
         Vector2 btnsize = new Vector2(100, 20);
@@ -117,8 +119,6 @@ namespace RainMeadow
             this.pages[0].subObjects.Add(startbtn);
             startbtn.OnClick += (SimplerButton obj) => { StartGame(); };
             startbtn.buttonBehav.greyedOut = true;
-
-            lobbyManager = new LobbyManager();
 
             lobbyManager.OnLobbyListReceived += LobbyManager_OnLobbyListReceived;
             lobbyManager.OnLobbyJoined += LobbyManager_OnLobbyJoined;
@@ -156,10 +156,17 @@ namespace RainMeadow
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
 
-        public override void CommunicateWithUpcomingProcess(MainLoopProcess nextProcess)
+        //public override void CommunicateWithUpcomingProcess(MainLoopProcess nextProcess)
+        //{
+        //    base.CommunicateWithUpcomingProcess(nextProcess);
+        //    if (nextProcess is RainWorldGame game && game.isOnlineSession()) game.getOnlineSession().lobby = lobbyManager.currentLobby;
+        //}
+
+        public override void ShutDownProcess()
         {
-            base.CommunicateWithUpcomingProcess(nextProcess);
-            if (nextProcess is RainWorldGame game && game.isOnlineSession()) game.getOnlineSession().lobby = lobbyManager.currentLobby;
+            base.ShutDownProcess();
+            lobbyManager.OnLobbyListReceived -= LobbyManager_OnLobbyListReceived;
+            lobbyManager.OnLobbyJoined -= LobbyManager_OnLobbyJoined;
         }
     }
 }

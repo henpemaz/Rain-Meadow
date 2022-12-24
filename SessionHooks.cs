@@ -2,6 +2,7 @@
 using System.Linq;
 using System;
 using Mono.Cecil.Cil;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -14,15 +15,107 @@ namespace RainMeadow
 
         private static void RainWorld_Start(On.RainWorld.orig_Start orig, RainWorld self)
         {
-            orig(self);
-            //On.RainWorld.Start -= RainWorld_Start;
+            On.WorldLoader.ctor += WorldLoader_ctor;
+            On.WorldLoader.Update += WorldLoader_Update;
+            On.WorldLoader.CreatingWorld += WorldLoader_CreatingWorld;
+            On.World.LoadWorld += World_LoadWorld;
 
             IL.RainWorldGame.ctor += RainWorldGame_ctor;
             IL.OverWorld.LoadFirstWorld += OverWorld_LoadFirstWorld;
             IL.World.ctor += World_ctor;
             IL.RainWorldGame.Update += RainWorldGame_Update;
+            IL.WorldLoader.GeneratePopulation += WorldLoader_GeneratePopulation;
+
+            orig(self);
 
             UnityEngine.Debug.LogError("OnlineSession registered");
+        }
+
+        private static void World_LoadWorld(On.World.orig_LoadWorld orig, World self, int slugcatNumber, System.Collections.Generic.List<AbstractRoom> abstractRoomsList, int[] swarmRooms, int[] shelters, int[] gates)
+        {
+            orig(self, slugcatNumber, abstractRoomsList, swarmRooms, shelters, gates);
+            if(self.game?.session is OnlineSession os)
+            {
+                os.saveState.regionStates[self.region.regionNumber] = new RegionState(os.saveState, self);
+            }
+        }
+
+        private static void WorldLoader_Update(On.WorldLoader.orig_Update orig, object self)
+        {
+            if (self is WorldLoader wl && wl.game.session is OnlineSession os && os.worldSessions[wl.world.region].pendingOwnership)
+            {
+                os.Waiting();
+                return;
+            }
+            orig(self);
+        }
+
+        private static void WorldLoader_ctor(On.WorldLoader.orig_ctor orig, object self, RainWorldGame game, int playerCharacter, bool singleRoomWorld, string worldName, Region region, RainWorldGame.SetupValues setupValues)
+        {
+            WorldLoader wl = self as WorldLoader;
+            if (game != null && game.session is OnlineSession os0)
+            {
+                playerCharacter = os0.playerCharacter;
+            }
+            orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
+            if (wl.game != null && wl.game.session is OnlineSession os)
+            {
+                lock(os.worldSessions)
+                {
+                    if (!os.worldSessions.ContainsKey(wl.world.region))
+                    {
+                        var ws = new WorldSession(os, os.me, region);
+                        os.worldSessions[wl.world.region] = ws;
+                        ws.RequestOwnership();
+                    }
+                }
+            }
+        }
+
+        private static void WorldLoader_CreatingWorld(On.WorldLoader.orig_CreatingWorld orig, object self)
+        {
+            orig(self);
+            WorldLoader wl = self as WorldLoader;
+            if(wl.game != null && wl.game.session is OnlineSession os)
+            {
+                if (os.worldSessions[wl.world.region].owner == os.me)
+                {
+                    wl.GeneratePopulation(true);
+                }
+            }
+        }
+
+        private static void WorldLoader_GeneratePopulation(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+
+                while(c.TryGotoNext(MoveType.Before,
+                    i=>i.MatchLdfld<WorldLoader>("game"),
+                    i=>i.MatchLdfld<RainWorldGame>("session"),
+                    i=>i.MatchIsinst<StoryGameSession>(),
+                    i=>i.MatchLdfld<StoryGameSession>("saveState")
+                    ))
+                {
+                    var notstory = il.DefineLabel();
+                    var skip = il.DefineLabel();
+                    c.Index += 2;
+                    c.Emit(OpCodes.Dup);
+                    c.Emit(OpCodes.Isinst, typeof(StoryGameSession));
+                    c.Emit(OpCodes.Brfalse, notstory);
+                    c.Index += 2;
+                    c.Emit(OpCodes.Br, skip);
+                    c.MarkLabel(notstory);
+                    c.Emit(OpCodes.Isinst, typeof(OnlineSession));
+                    c.Emit<OnlineSession>(OpCodes.Ldfld, "saveState");
+                    c.MarkLabel(skip);
+                }
+            }
+            catch (Exception e)
+            {
+                UnityEngine.Debug.LogException(e);
+            }
         }
 
         private static void RainWorldGame_Update(ILContext il)
@@ -164,19 +257,21 @@ namespace RainMeadow
                 c.MarkLabel(story);
 
                 // part 2 - player create
-                ILLabel notstory = null;
-                ILLabel create = il.DefineLabel();
-                c.GotoNext(moveType: MoveType.Before,
-                    i => i.MatchLdarg(0),
-                    i => i.MatchCallOrCallvirt<RainWorldGame>("get_IsStorySession"),
-                    i => i.MatchBrfalse(out notstory),
-                    i => i.MatchLdarg(0),
-                    i => i.MatchCallOrCallvirt(out _),
-                    i => i.MatchLdstr("Slugcat")
-                    );
+                //ILLabel notstory = null;
+                //ILLabel create = il.DefineLabel();
+                //c.GotoNext(moveType: MoveType.Before,
+                //    i => i.MatchLdarg(0),
+                //    i => i.MatchCallOrCallvirt<RainWorldGame>("get_IsStorySession"),
+                //    i => i.MatchBrfalse(out notstory),
+                //    i => i.MatchLdarg(0),
+                //    i => i.MatchCallOrCallvirt(out _),
+                //    i => i.MatchLdstr("Slugcat")
+                //    );
                 // not sure what do
                 // if story, or session host, create player
                 // session join does not ?
+                
+
 
                 // part 3 - no breakie if no player/creatures
                 c.GotoNext(moveType: MoveType.After,

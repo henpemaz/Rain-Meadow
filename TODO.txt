@@ -1,0 +1,24 @@
+﻿Rain Meadow
+
+Multiplayer menu
+	done-ish
+	will need more func
+
+Lobby join
+	done
+
+Trigger start from host start
+
+Go in game with right join type
+
+
+New game session type
+	created
+	control spawning of things depending on whether you're the host or not
+
+
+WorldLoader.GeneratePopulation fucks up
+	needs SaveState for lineages or at least it thinks it does.
+
+	savestates could be useful for sending around??
+

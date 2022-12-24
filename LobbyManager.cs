@@ -12,11 +12,18 @@ namespace RainMeadow
         private CallResult<LobbyMatchList_t> m_RequestLobbyListCall;
         private CallResult<LobbyCreated_t> m_CreateLobbyCall;
         private CallResult<LobbyEnter_t> m_JoinLobbyCall;
-        
-        public CSteamID me;
+
+        public OnlinePlayer me;
         public Lobby currentLobby;
 
-        
+        static LobbyManager _instance;
+        public static LobbyManager instance 
+        { get
+            {
+                _instance ??= new LobbyManager();
+                return _instance;
+            }
+        }
 
         public LobbyManager()
         {
@@ -24,7 +31,7 @@ namespace RainMeadow
             m_CreateLobbyCall = CallResult<LobbyCreated_t>.Create(LobbyCreated);
             m_JoinLobbyCall = CallResult<LobbyEnter_t>.Create(LobbyJoined);
 
-            me = SteamUser.GetSteamID();
+            me = new OnlinePlayer(SteamUser.GetSteamID());
 
             RequestLobbyList();
         }
@@ -69,6 +76,7 @@ namespace RainMeadow
             {
                 this.currentLobby = new Lobby(new CSteamID(param.m_ulSteamIDLobby));
                 currentLobby.SetupNew();
+                currentLobby.UpdateInfoFull();
                 OnLobbyJoined?.Invoke(true, currentLobby);
             }
             else
@@ -91,10 +99,11 @@ namespace RainMeadow
             {
                 currentLobby = new Lobby(new CSteamID(param.m_ulSteamIDLobby));
 
-                if (currentLobby.owner.id == me)
+                if (currentLobby.owner == me)
                 {
                     currentLobby.SetupNew();
                 }
+                currentLobby.UpdateInfoFull();
                 OnLobbyJoined?.Invoke(true, currentLobby);
             }
             else
