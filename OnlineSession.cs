@@ -24,7 +24,7 @@ namespace RainMeadow
     // OnlineSession is tightly coupled to a lobby, and the highest ownership level
     public class OnlineSession : GameSession
     {
-        public LobbyManager manager;
+        public OnlineManager manager;
         public Lobby lobby;
         public OnlinePlayer me;
         public OnlineSessionJoinType joinType;
@@ -33,8 +33,8 @@ namespace RainMeadow
         public int playerCharacter;
 
         public OnlineSession(RainWorldGame game) : base(game){
-            manager = LobbyManager.instance;
-            lobby = manager.currentLobby;
+            manager = OnlineManager.instance;
+            lobby = manager.lobby;
             me = manager.me;
             if(lobby.owner == me)
             {
@@ -77,18 +77,18 @@ namespace RainMeadow
     public abstract class SubSession
     {
         public OnlinePlayer owner;
-        public OnlineSession os;
+        public OnlineSession session;
         public bool pendingOwnership;
 
-        protected SubSession(OnlineSession os, OnlinePlayer owner)
+        protected SubSession(OnlineSession session, OnlinePlayer owner)
         {
-            this.os = os;
+            this.session = session;
             this.owner = owner;
         }
 
         public void RequestOwnership()
         {
-            if (owner == os.me) return;
+            if (owner == session.me) return;
             pendingOwnership = true;
         }
     }
@@ -99,7 +99,7 @@ namespace RainMeadow
         public World world;
         public List<RoomSession> rooms;
 
-        public WorldSession(OnlineSession os, OnlinePlayer owner, Region region) : base(os,owner)
+        public WorldSession(OnlineSession session, OnlinePlayer owner, Region region) : base(session,owner)
         {
             this.region = region;
         }
@@ -113,12 +113,11 @@ namespace RainMeadow
 
         public List<NwEntity> entities;
 
-        public RoomSession(OnlineSession os, OnlinePlayer owner, AbstractRoom absroom) : base(os, owner)
+        public RoomSession(OnlineSession session, OnlinePlayer owner, AbstractRoom absroom) : base(session, owner)
         {
             this.absroom = absroom;
         }
     }
-
 
     public class NwEntity // :SubSession but renamed?
     {

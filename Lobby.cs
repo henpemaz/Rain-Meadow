@@ -15,7 +15,7 @@ namespace RainMeadow
         public void UpdateInfoShort()
         {
             owner = new OnlinePlayer(SteamMatchmaking.GetLobbyOwner(id));
-            name = SteamMatchmaking.GetLobbyData(id, LobbyManager.NAME_KEY);
+            name = SteamMatchmaking.GetLobbyData(id, OnlineManager.NAME_KEY);
         }
 
         public void UpdateInfoFull()
@@ -25,8 +25,8 @@ namespace RainMeadow
 
         public void SetupNew()
         {
-            SteamMatchmaking.SetLobbyData(id, LobbyManager.CLIENT_KEY, LobbyManager.CLIENT_VAL);
-            SteamMatchmaking.SetLobbyData(id, LobbyManager.NAME_KEY, SteamFriends.GetPersonaName());
+            SteamMatchmaking.SetLobbyData(id, OnlineManager.CLIENT_KEY, OnlineManager.CLIENT_VAL);
+            SteamMatchmaking.SetLobbyData(id, OnlineManager.NAME_KEY, SteamFriends.GetPersonaName());
         }
 
         public OnlinePlayer owner;

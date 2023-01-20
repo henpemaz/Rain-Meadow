@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Rain Meadow")]
-[assembly: AssemblyDescription("The cool multiplayer mod for Rain World")]
+[assembly: AssemblyDescription("The cool online multiplayer mod for Rain World")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Henpemaz")]
 [assembly: AssemblyProduct("Rain Meadow")]
-[assembly: AssemblyCopyright("Copyright ©  2022")]
+[assembly: AssemblyCopyright("Copyright © 2022")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

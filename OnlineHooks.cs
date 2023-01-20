@@ -3,32 +3,47 @@ using System.Linq;
 using System;
 using Mono.Cecil.Cil;
 using UnityEngine;
+using Menu;
 
 namespace RainMeadow
 {
-    public static class SessionHooks
+    public static class OnlineHooks
     {
+        private static event Action OnSteamConnected;
+        
         public static void Apply()
         {
             On.RainWorld.Start += RainWorld_Start;
+            On.SteamManager.Awake += SteamManager_Awake;
         }
 
         private static void RainWorld_Start(On.RainWorld.orig_Start orig, RainWorld self)
         {
+            On.Menu.MainMenu.ctor += MainMenu_ctor;
+            On.ProcessManager.SwitchMainProcess += ProcessManager_SwitchMainProcess1;
+            On.RainWorldSteamManager.ctor += RainWorldSteamManager_ctor;
+
             On.WorldLoader.ctor += WorldLoader_ctor;
             On.WorldLoader.Update += WorldLoader_Update;
             On.WorldLoader.CreatingWorld += WorldLoader_CreatingWorld;
             On.World.LoadWorld += World_LoadWorld;
 
+            IL.ProcessManager.SwitchMainProcess += ProcessManager_SwitchMainProcess;
+            
             IL.RainWorldGame.ctor += RainWorldGame_ctor;
             IL.OverWorld.LoadFirstWorld += OverWorld_LoadFirstWorld;
             IL.World.ctor += World_ctor;
             IL.RainWorldGame.Update += RainWorldGame_Update;
             IL.WorldLoader.GeneratePopulation += WorldLoader_GeneratePopulation;
 
+            UnityEngine.Debug.LogError("OnlineHooks registered");
             orig(self);
+        }
 
-            UnityEngine.Debug.LogError("OnlineSession registered");
+        private static void RainWorldSteamManager_ctor(On.RainWorldSteamManager.orig_ctor orig, RainWorldSteamManager self, ProcessManager manager)
+        {
+            orig(self, manager);
+            manager.sideProcesses.Add(new OnlineManager(manager));
         }
 
         private static void World_LoadWorld(On.World.orig_LoadWorld orig, World self, int slugcatNumber, System.Collections.Generic.List<AbstractRoom> abstractRoomsList, int[] swarmRooms, int[] shelters, int[] gates)
@@ -45,6 +60,7 @@ namespace RainMeadow
             if (self is WorldLoader wl && wl.game.session is OnlineSession os && os.worldSessions[wl.world.region].pendingOwnership)
             {
                 os.Waiting();
+                // abort somehow?
                 return;
             }
             orig(self);
@@ -290,6 +306,68 @@ namespace RainMeadow
             {
                 UnityEngine.Debug.LogException(e);
             }
+        }
+
+        private static void ProcessManager_SwitchMainProcess1(On.ProcessManager.orig_SwitchMainProcess orig, ProcessManager self, ProcessManager.ProcessID ID)
+        {
+            if((self.currentMainLoop?.ID ?? ProcessManager.ProcessID.MainMenu) == ProcessManager.ProcessID.MainMenu)
+            {
+                OnSteamConnected = null;
+            }
+            orig(self, ID);
+        }
+
+        private static void SteamManager_Awake(On.SteamManager.orig_Awake orig, MonoBehaviour self)
+        {
+            orig(self);
+            if (self is SteamManager sm && sm.m_bInitialized) OnlineHooks.OnSteamConnected?.Invoke();
+        }
+
+        private static void ProcessManager_SwitchMainProcess(MonoMod.Cil.ILContext il)
+        {
+            try
+            {
+                var c = new MonoMod.Cil.ILCursor(il);
+                c.GotoNext(moveType: MoveType.Before,
+                    i => i.MatchLdloc(0),
+                    i => i.MatchBrfalse(out _),
+                    i => i.MatchLdloc(0),
+                    i => i.MatchLdarg(0)
+                    );
+
+                var l = c.MarkLabel();
+                c.MoveBeforeLabels();
+                var l2 = c.MarkLabel();
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Newobj, typeof(LobbyMenu).GetConstructor(new Type[] { typeof(ProcessManager) }));
+                c.Emit<ProcessManager>(OpCodes.Stfld, "currentMainLoop");
+                c.Emit(OpCodes.Br, l);
+
+                c.GotoPrev(i => i.MatchSwitch(out _));
+                ILLabel to = null;
+                c.GotoNext(MoveType.Before, o => o.MatchBr(out to));
+                c.MoveBeforeLabels();
+                c.Emit(OpCodes.Ldarg_1);
+                c.EmitDelegate((ProcessManager.ProcessID id) => { return id == LobbyMenu.EnumExt_LobbyMenu.LobbyMenu; });
+                c.Emit(OpCodes.Brtrue, l2);
+            }
+            catch (Exception e)
+            {
+                UnityEngine.Debug.LogException(e);
+            }
+        }
+
+        private static void MainMenu_ctor(On.Menu.MainMenu.orig_ctor orig, MainMenu self, ProcessManager manager, bool showRegionSpecificBkg)
+        {
+            orig(self, manager, showRegionSpecificBkg);
+
+            float num3 = (self.CurrLang != InGameTranslator.LanguageID.Italian) ? 110f : 150f;
+            var btn = new SimplerButton(self, self.pages[0], "Meadow", new Vector2(883f - num3 / 2f, 170f), new Vector2(num3, 30f));
+            self.pages[0].subObjects.Add(btn);
+            OnSteamConnected += () => { btn.buttonBehav.greyedOut = false; };
+            btn.buttonBehav.greyedOut = !SteamManager.Initialized;
+            btn.OnClick += (SimplerButton obj) => { self.manager.RequestMainProcessSwitch(LobbyMenu.EnumExt_LobbyMenu.LobbyMenu); };
         }
     }
 }

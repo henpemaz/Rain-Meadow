@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>RainMeadow</RootNamespace>
     <AssemblyName>Rain Meadow</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <LangVersion>latest</LangVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,95 +32,83 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp - publicitystuntd, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Rw-References\Assembly-CSharp - publicitystuntd.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>..\RemixReferences\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
-    <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Rw-References\Assembly-CSharp-firstpass.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="BepInEx">
+      <HintPath>..\RemixReferences\BepInEx.dll</HintPath>
     </Reference>
-    <Reference Include="BepInEx, Version=5.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Rw-References\BepInEx.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="com.rlabrecque.steamworks.net">
+      <HintPath>..\RemixReferences\com.rlabrecque.steamworks.net.dll</HintPath>
     </Reference>
-    <Reference Include="HOOKS-Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Rw-References\HOOKS-Assembly-CSharp.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="HOOKS-Assembly-CSharp">
+      <HintPath>..\RemixReferences\HOOKS-Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Cecil, Version=0.10.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Rw-References\Mono.Cecil.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Mono.Cecil">
+      <HintPath>..\RemixReferences\Mono.Cecil.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Cecil.Mdb, Version=0.10.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Rw-References\Mono.Cecil.Mdb.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="Mono.Cecil.Rocks">
+      <HintPath>..\RemixReferences\Mono.Cecil.Rocks.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Cecil.Pdb, Version=0.10.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Rw-References\Mono.Cecil.Pdb.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="MonoMod">
+      <HintPath>..\RemixReferences\MonoMod.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Cecil.Rocks, Version=0.10.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Rw-References\Mono.Cecil.Rocks.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="MonoMod.RuntimeDetour">
+      <HintPath>..\RemixReferences\MonoMod.RuntimeDetour.dll</HintPath>
     </Reference>
-    <Reference Include="MonoMod, Version=20.5.21.5, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Rw-References\MonoMod.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="MonoMod.Utils">
+      <HintPath>..\RemixReferences\MonoMod.Utils.dll</HintPath>
     </Reference>
-    <Reference Include="MonoMod.RuntimeDetour, Version=19.11.5.1, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Rw-References\MonoMod.RuntimeDetour.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="MonoMod.Utils, Version=19.11.5.1, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Rw-References\MonoMod.Utils.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="PUBLIC-Assembly-CSharp">
+      <HintPath>..\RemixReferences\PUBLIC-Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Rw-References\UnityEngine.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="UnityEngine">
+      <HintPath>..\RemixReferences\UnityEngine.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Rw-References\UnityEngine.UI.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>..\RemixReferences\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>..\RemixReferences\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>..\RemixReferences\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Lobby.cs" />
-    <Compile Include="LobbyManager.cs" />
+    <Compile Include="LobbyEvent.cs" />
+    <Compile Include="OnlineManager.cs" />
     <Compile Include="LobbyMenu.cs" />
     <Compile Include="OnlinePlayer.cs" />
     <Compile Include="OnlineSession.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RainMeadow.cs" />
-    <Compile Include="SessionHooks.cs" />
+    <Compile Include="OnlineHooks.cs" />
+    <Compile Include="SimplerButton.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="RainMeadow\thumbnail.png" />
     <Content Include="TODO.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="RainMeadow\modinfo.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="RainMeadow\plugins\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy $(TargetPath) $(ProjectDir)RainMeadow\plugins\</PostBuildEvent>
+  </PropertyGroup>
 </Project>
