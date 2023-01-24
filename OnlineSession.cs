@@ -15,7 +15,6 @@ namespace RainMeadow
         public OnlineManager manager;
         public Lobby lobby;
         public OnlinePlayer me;
-        public OnlineSessionJoinType joinType;
         public Dictionary<Region, WorldSession> worldSessions = new();
 
         public OnlineSession(RainWorldGame game) : base(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer, game)
@@ -24,22 +23,6 @@ namespace RainMeadow
             manager = OnlineManager.instance;
             lobby = manager.lobby;
             me = manager.me;
-            if(lobby.owner == me)
-            {
-                joinType = OnlineSessionJoinType.Host;
-            }
-            else
-            {
-                joinType = OnlineSessionJoinType.Sync;
-            }
-        }
-
-        public enum OnlineSessionJoinType
-        {
-            None = 0,
-            Host,
-            Sync,
-            Late
         }
 
         internal bool ShouldWorldLoadCreatures(RainWorldGame game)

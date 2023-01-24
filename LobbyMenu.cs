@@ -17,7 +17,7 @@ namespace RainMeadow
         {
             message = callerName + ": " + message;
             if (debugLabel != null) debugLabel.text = message;
-            RainMeadow.sLogger.LogInfo(message);
+            RainMeadow.sLogger.LogInfo("LobbyMenu." + message);
         }
 
         public LobbyMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbyMenu)

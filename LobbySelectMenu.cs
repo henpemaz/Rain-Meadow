@@ -18,7 +18,7 @@ namespace RainMeadow
         {
             message = callerName + ": " + message;
             if (debugLabel != null) debugLabel.text = message;
-            RainMeadow.sLogger.LogInfo(message);
+            RainMeadow.sLogger.LogInfo("LobbySelectMenu." + message);
         }
 
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
@@ -32,7 +32,7 @@ namespace RainMeadow
             pages[0].subObjects.Add(this.backObject = new SimplerButton(this, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f)));
             (backObject as SimplerButton).OnClick += Back;
 
-            pages[0].subObjects.Add(debugLabel = new MenuLabel(this, pages[0], "Start", this.infoLabel.GetPosition() + new Vector2(0, -30), new Vector2(200, 30), false));
+            pages[0].subObjects.Add(debugLabel = new MenuLabel(this, pages[0], "Debug", this.infoLabel.GetPosition() + new Vector2(0, -30), new Vector2(200, 30), false));
 
             pages[0].subObjects.Add(createbtn = new SimplerButton(this, pages[0], "new lobby", btns, btnsize));
             createbtn.OnClick += (SimplerButton obj) => { RequestLobbyCreate(); };

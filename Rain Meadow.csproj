@@ -92,10 +92,13 @@
     <Compile Include="LobbyMenu.cs" />
     <Compile Include="OnlineManager.cs" />
     <Compile Include="LobbySelectMenu.cs" />
+    <Compile Include="OnlineManager.LobbyManager.cs" />
     <Compile Include="OnlinePlayer.cs" />
     <Compile Include="OnlineSession.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RainMeadow.cs" />
+    <Compile Include="RainMeadow.GameHooks.cs" />
+    <Compile Include="RainMeadow.MenuHooks.cs" />
     <Compile Include="SimplerButton.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,16 +1,10 @@
 ﻿Rain Meadow
 
 Multiplayer menu
-	done-ish
-	will need more func
+	have a look at new mixed-mode so can use scrollbox for lobbies?
 
 Lobby join
 	done
-
-Trigger start from host start
-
-Go in game with right join type
-
 
 New game session type
 	created
@@ -18,12 +12,31 @@ New game session type
 		creatures done
 		todo items
 		todo room objects
-		what objects do we let spawn?
-	
+			what objects do we let spawn?
+
 basic netcode
+	on load resource, request resource
+		wont this hiccup every time?
+		should it store a list of owners, or query super-owner every time?
+	request ownership vs subscribe
 
 
-Menus
-	looks like multipage idea is dead
-	needs several processes
-	have a look at new mixed-mode so can use scrollbox for lobbies?
+if lobby owner
+	every X ticks update other players on world-owners
+
+if world owner
+	every x ticks update other players on room-owners
+	every x ticks update other players on abstract-states
+
+if room owner
+	every x ticks update other players on item-owners
+	every x ticks update other players on room state
+else
+	every x ticks update room owner on owned items state
+
+
+
+
+
+
+Mod auto installing / auto disabling
