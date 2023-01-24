@@ -7,11 +7,6 @@ namespace RainMeadow
 {
     public class OnlineManager : MainLoopProcess {
 
-        public class EnumExt_OnlineManager
-        {
-            public static ProcessManager.ProcessID OnlineManager;
-        }
-
         public static string CLIENT_KEY = "client";
         public static string CLIENT_VAL = "Meadow";
         public static string NAME_KEY = "name";
@@ -27,8 +22,9 @@ namespace RainMeadow
         public Lobby lobby;
         public OnlineSession session;
 
+        public bool isOnlineSession;
 
-        public OnlineManager(ProcessManager manager) : base(manager, EnumExt_OnlineManager.OnlineManager)
+        public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
             instance = this;
 
@@ -38,10 +34,12 @@ namespace RainMeadow
             m_LobbyDataUpdate = Callback<LobbyDataUpdate_t>.Create(LobbyUpdated);
 
             me = new OnlinePlayer(SteamUser.GetSteamID());
+            RainMeadow.sLogger.LogInfo("OnlineManager Created");
         }
 
         public void RequestLobbyList()
         {
+            RainMeadow.sLogger.LogInfo("OnlineManager RequestLobbyList");
             SteamMatchmaking.AddRequestLobbyListDistanceFilter(ELobbyDistanceFilter.k_ELobbyDistanceFilterWorldwide);
             SteamMatchmaking.AddRequestLobbyListStringFilter(OnlineManager.CLIENT_KEY, OnlineManager.CLIENT_VAL, ELobbyComparison.k_ELobbyComparisonEqual);
             m_RequestLobbyListCall.Set(SteamMatchmaking.RequestLobbyList());
@@ -80,7 +78,6 @@ namespace RainMeadow
             {
                 this.lobby = new Lobby(new CSteamID(param.m_ulSteamIDLobby));
                 lobby.SetupNew();
-                lobby.UpdateInfoFull();
                 OnLobbyJoined?.Invoke(true, lobby);
             }
             else
@@ -107,7 +104,6 @@ namespace RainMeadow
                 {
                     lobby.SetupNew();
                 }
-                lobby.UpdateInfoFull();
                 OnLobbyJoined?.Invoke(true, lobby);
             }
             else
@@ -129,15 +125,22 @@ namespace RainMeadow
                         // owner changed
                     }
 
-                    lobby.UpdateInfoShort();
-                    lobby.UpdateInfoFull();
+                    lobby.UpdateInfo();
                 }
             }
         }
 
         internal void BroadcastEvent(LobbyEvent lobbyEvent)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+        }
+
+        internal void LeaveLobby()
+        {
+            if(lobby != null)
+            {
+                SteamMatchmaking.LeaveLobby(lobby.id);
+            }
         }
     }
 }

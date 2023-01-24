@@ -85,16 +85,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Ext_.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Lobby.cs" />
     <Compile Include="LobbyEvent.cs" />
-    <Compile Include="OnlineManager.cs" />
     <Compile Include="LobbyMenu.cs" />
+    <Compile Include="OnlineManager.cs" />
+    <Compile Include="LobbySelectMenu.cs" />
     <Compile Include="OnlinePlayer.cs" />
     <Compile Include="OnlineSession.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RainMeadow.cs" />
-    <Compile Include="OnlineHooks.cs" />
     <Compile Include="SimplerButton.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -109,6 +110,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(TargetPath) $(ProjectDir)RainMeadow\plugins\</PostBuildEvent>
+    <PostBuildEvent>copy "$(TargetPath)" "$(ProjectDir)RainMeadow\plugins\"</PostBuildEvent>
   </PropertyGroup>
 </Project>

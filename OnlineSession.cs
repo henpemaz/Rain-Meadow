@@ -9,30 +9,18 @@ using System.Linq;
 
 namespace RainMeadow
 {
-    static class OnlineExtensions
-    {
-        public static OnlineSession getOnlineSession(this RainWorldGame self)
-        {
-            return self.session as OnlineSession;
-        }
-        public static bool isOnlineSession(this RainWorldGame self)
-        {
-            return self.session is OnlineSession;
-        }
-    }
-
     // OnlineSession is tightly coupled to a lobby, and the highest ownership level
-    public class OnlineSession : GameSession
+    public class OnlineSession : StoryGameSession
     {
         public OnlineManager manager;
         public Lobby lobby;
         public OnlinePlayer me;
         public OnlineSessionJoinType joinType;
         public Dictionary<Region, WorldSession> worldSessions = new();
-        public SaveState saveState;
-        public int playerCharacter;
 
-        public OnlineSession(RainWorldGame game) : base(game){
+        public OnlineSession(RainWorldGame game) : base(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer, game)
+        {
+            RainMeadow.sLogger.LogInfo("OnlineSession created");
             manager = OnlineManager.instance;
             lobby = manager.lobby;
             me = manager.me;
@@ -44,13 +32,6 @@ namespace RainMeadow
             {
                 joinType = OnlineSessionJoinType.Sync;
             }
-            playerCharacter = 0;
-            saveState = new SaveState(-1, game.rainWorld.progression);
-        }
-
-        public class EnumExt_OnlineSession
-        {
-            public static ProcessManager.MenuSetup.StoryGameInitCondition Online;
         }
 
         public enum OnlineSessionJoinType
@@ -61,14 +42,9 @@ namespace RainMeadow
             Late
         }
 
-        public void Update()
+        internal bool ShouldWorldLoadCreatures(RainWorldGame game)
         {
-            
-        }
-
-        internal void Waiting()
-        {
-            throw new NotImplementedException();
+            return false;
         }
     }
 

@@ -1,93 +1,73 @@
 ﻿using Menu;
-using Mono.Cecil.Cil;
-using MonoMod.Cil;
-using Steamworks;
-using System.Collections.Generic;
-using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace RainMeadow
 {
     public class LobbyMenu : Menu.Menu
     {
-        public class EnumExt_LobbyMenu
-        {
-            public static ProcessManager.ProcessID LobbyMenu;
-        }
-
         private MenuLabel debugLabel;
-        private OnlineManager onlineManager => OnlineManager.instance;
 
-        Vector2 btns = new Vector2(350,100);
+        Vector2 btns = new Vector2(350, 100);
         Vector2 btnsize = new Vector2(100, 20);
-        private SimplerButton createbtn;
         private SimplerButton startbtn;
 
-        public LobbyMenu(ProcessManager manager) : base(manager, EnumExt_LobbyMenu.LobbyMenu)
+        //using System.Runtime.CompilerServices;
+        void DebugLog(string message, [CallerMemberName] string callerName = "")
         {
+            message = callerName + ": " + message;
+            if (debugLabel != null) debugLabel.text = message;
+            RainMeadow.sLogger.LogInfo(message);
+        }
+
+        public LobbyMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbyMenu)
+        {
+            DebugLog("LobbySelectMenu created");
             this.pages.Add(new Page(this, null, "main", 0));
 
-            debugLabel = new Menu.MenuLabel(this, this.pages[0], "Start", new Vector2(400, 200), new Vector2(200, 30), false);
-            pages[0].subObjects.Add(debugLabel);
+            this.scene = new InteractiveMenuScene(this, pages[0], MenuScene.SceneID.Landscape_CC);
+            pages[0].subObjects.Add(this.scene);
 
-            createbtn = new SimplerButton(this, this.pages[0], "new lobby", btns, btnsize);
-            this.pages[0].subObjects.Add(createbtn);
-            createbtn.OnClick += (SimplerButton obj) => { onlineManager.CreateLobby(); };
+            pages[0].subObjects.Add(this.backObject = new SimplerButton(this, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f)));
+            (backObject as SimplerButton).OnClick += Back;
 
-            startbtn = new SimplerButton(this, this.pages[0], "start", btns + new Vector2(200,0), btnsize);
-            this.pages[0].subObjects.Add(startbtn);
+            pages[0].subObjects.Add(debugLabel = new MenuLabel(this, pages[0], "Start", this.infoLabel.GetPosition() + new Vector2(0, -30), new Vector2(200, 30), false));
+
+            pages[0].subObjects.Add(startbtn = new SimplerButton(this, pages[0], "START", btns, btnsize));
             startbtn.OnClick += (SimplerButton obj) => { StartGame(); };
-            startbtn.buttonBehav.greyedOut = true;
-
-            onlineManager.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
-            onlineManager.OnLobbyJoined += OnlineManager_OnLobbyJoined;
-
-            onlineManager.RequestLobbyList();
         }
 
-        private void OnlineManager_OnLobbyJoined(bool ok, Lobby lobby)
+        private void Back(SimplerButton obj)
         {
-            if(ok) startbtn.buttonBehav.greyedOut = false;
+            DebugLog("back");
+            OnlineManager.instance.LeaveLobby();
+            manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
         }
 
-        private void OnlineManager_OnLobbyListReceived(bool ok, Lobby[] lobbies)
+        public override string UpdateInfoText()
         {
-            if (ok)
+            if (this.selectedObject is SimplerButton sb)
             {
-                debugLabel.text = "LobbyListReceived success";
-
-                for (int i = 0; i < lobbies.Length; i++)
-                {
-                    var lobby = lobbies[i];
-                    var btn = new SimplerButton(this, this.pages[0], "join " + lobby.name + " - meadow", new UnityEngine.Vector2(0, 40 + 40 * i) + btns, btnsize);
-                    btn.OnClick += (SimplerButton obj) => { onlineManager.JoinLobby(lobby); };
-                    this.pages[0].subObjects.Add(btn);
-                }
+                return sb.description;
             }
-            else 
-            { 
-                debugLabel.text = "LobbyListReceived failure";
-
-            }
+            return base.UpdateInfoText();
         }
 
         private void StartGame()
         {
-            if (onlineManager.lobby == null) return;
+            if (OnlineManager.instance.lobby == null) return;
 
-            manager.menuSetup.startGameCondition = OnlineSession.EnumExt_OnlineSession.Online;
+            manager.menuSetup.startGameCondition = RainMeadow.Ext_StoryGameInitCondition.Online;
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
-            if(onlineManager.lobby.owner == onlineManager.me)
+            if (OnlineManager.instance.lobby.owner == OnlineManager.instance.me)
             {
-                onlineManager.BroadcastEvent(new LobbyEvent(LobbyEvent.LobbyEventType.SessionStarted));
+                OnlineManager.instance.BroadcastEvent(new LobbyEvent(LobbyEvent.LobbyEventType.SessionStarted));
             }
         }
 
         public override void ShutDownProcess()
         {
             base.ShutDownProcess();
-            onlineManager.OnLobbyListReceived -= OnlineManager_OnLobbyListReceived;
-            onlineManager.OnLobbyJoined -= OnlineManager_OnLobbyJoined;
         }
     }
 }

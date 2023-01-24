@@ -9,18 +9,13 @@ namespace RainMeadow
         public Lobby(CSteamID id)
         {
             this.id = id;
-            UpdateInfoShort();
+            UpdateInfo();
         }
 
-        public void UpdateInfoShort()
+        public void UpdateInfo()
         {
             owner = new OnlinePlayer(SteamMatchmaking.GetLobbyOwner(id));
             name = SteamMatchmaking.GetLobbyData(id, OnlineManager.NAME_KEY);
-        }
-
-        public void UpdateInfoFull()
-        {
-            
         }
 
         public void SetupNew()

@@ -15,10 +15,15 @@ Go in game with right join type
 New game session type
 	created
 	control spawning of things depending on whether you're the host or not
+		creatures done
+		todo items
+		todo room objects
+		what objects do we let spawn?
+	
+basic netcode
 
 
-WorldLoader.GeneratePopulation fucks up
-	needs SaveState for lineages or at least it thinks it does.
-
-	savestates could be useful for sending around??
-
+Menus
+	looks like multipage idea is dead
+	needs several processes
+	have a look at new mixed-mode so can use scrollbox for lobbies?
