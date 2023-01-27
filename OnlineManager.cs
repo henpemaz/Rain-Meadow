@@ -5,25 +5,26 @@ using UnityEngine;
 
 namespace RainMeadow
 {
+    // Static/singleton class for online features and callbacks
+    // is a mainloopprocess so update bound to game update? worth it? idk
     public partial class OnlineManager : MainLoopProcess {
 
         public static string CLIENT_KEY = "client";
-        public static string CLIENT_VAL = "Meadow";
+        public static string CLIENT_VAL = "Meadow_" + RainMeadow.MeadowVersionStr;
         public static string NAME_KEY = "name";
 
-        public static OnlineManager instance;
-        public OnlinePlayer me;
-        public Lobby lobby;
-        public OnlineSession session;
+        public static CSteamID me;
+        public static OnlinePlayer mePlayer;
+        public static Lobby lobby;
 
-        public bool isOnlineSession;
+        public static LobbyManager lobbyManager;
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
-            instance = this;
-            SetupLobbyCallbacks();
+            me = SteamUser.GetSteamID();
+            mePlayer = new OnlinePlayer(me);
+            lobbyManager = new LobbyManager();
 
-            me = new OnlinePlayer(SteamUser.GetSteamID());
             RainMeadow.Debug("OnlineManager Created");
         }
 
@@ -32,10 +33,11 @@ namespace RainMeadow
         {
             base.Update();
 
+            if (lobby != null && lobby.onlineSession != null) lobby.onlineSession.UpKeep();
         }
 
 
-        internal void BroadcastEvent(LobbyEvent lobbyEvent)
+        internal static void BroadcastEvent(LobbyEvent lobbyEvent)
         {
             //throw new NotImplementedException();
         }

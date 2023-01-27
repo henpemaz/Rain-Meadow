@@ -1,29 +1,24 @@
 ﻿using Steamworks;
+using System;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
-    public class OnlinePlayer : System.IEquatable<OnlinePlayer>
+    public partial class OnlinePlayer : System.IEquatable<OnlinePlayer>
     {
         public CSteamID id;
+        private List<PlayerEvent> OutgoingEvents;
 
         public OnlinePlayer(CSteamID id)
         {
             this.id = id;
         }
-        public override bool Equals(object obj) => this.Equals(obj as OnlinePlayer);
 
-        public bool Equals(OnlinePlayer other)
+        internal ResourceRequest RequestResource(OnlineResource onlineResource)
         {
-            return other!= null && id == other.id;
+            var req = new ResourceRequest(OnlineManager.mePlayer, this, onlineResource);
+            this.OutgoingEvents.Add(req);
+            return req;
         }
-
-        public override int GetHashCode() => id.GetHashCode();
-
-        public static bool operator ==(OnlinePlayer lhs, OnlinePlayer rhs)
-        {
-            return lhs is null ? rhs is null : lhs.Equals(rhs);
-        }
-
-        public static bool operator !=(OnlinePlayer lhs, OnlinePlayer rhs) => !(lhs == rhs);
     }
 }

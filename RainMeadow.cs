@@ -7,27 +7,18 @@ using UnityEngine;
 using System.Security.Permissions;
 using BepInEx.Logging;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 
+[assembly: AssemblyVersion(RainMeadow.RainMeadow.MeadowVersionStr)]
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
 namespace RainMeadow
 {
-    [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", "0.0.1")]
+    [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     partial class RainMeadow : BaseUnityPlugin
     {
+        public const string MeadowVersionStr = "0.0.1";
         static RainMeadow instance;
-        public static ManualLogSource sLogger => instance.Logger;
-        public static void Debug(object data, [CallerFilePath] string callerFile = "", [CallerMemberName] string callerName = "")
-        {
-            callerFile = callerFile.Substring(callerFile.LastIndexOf('\\') + 1);
-            callerFile = callerFile.Substring(0, callerFile.LastIndexOf('.'));
-            instance.Logger.LogInfo($"{callerFile}.{callerName}:{data}");
-        }
-        public static void DebugMethodName([CallerFilePath] string callerFile = "", [CallerMemberName] string callerName = "")
-        {
-            callerFile = callerFile.Substring(callerFile.LastIndexOf('\\') + 1);
-            callerFile = callerFile.Substring(0, callerFile.LastIndexOf('.'));
-            instance.Logger.LogInfo($"{callerFile}.{callerName}");
-        }
+        private bool init;
 
         public void OnEnable()
         {
@@ -51,6 +42,10 @@ namespace RainMeadow
 
         private void RainWorld_OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
         {
+            orig(self);
+            if (init) return;
+            init = true;
+
             //pm already initialized lol
             self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
 
@@ -60,8 +55,10 @@ namespace RainMeadow
             On.Menu.MainMenu.ctor += MainMenu_ctor;
             On.ProcessManager.PostSwitchMainProcess += ProcessManager_PostSwitchMainProcess;
 
+            On.Room.ctor += Room_ctor;
             IL.RainWorldGame.ctor += RainWorldGame_ctor;
-            orig(self);
+            IL.Room.LoadFromDataString += Room_LoadFromDataString;
+            IL.Room.Loaded += Room_Loaded;
         }
     }
 }

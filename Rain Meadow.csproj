@@ -89,16 +89,24 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Lobby.cs" />
     <Compile Include="LobbyEvent.cs" />
+    <Compile Include="LobbyManager.cs" />
     <Compile Include="LobbyMenu.cs" />
     <Compile Include="OnlineManager.cs" />
     <Compile Include="LobbySelectMenu.cs" />
-    <Compile Include="OnlineManager.LobbyManager.cs" />
     <Compile Include="OnlinePlayer.cs" />
-    <Compile Include="OnlineSession.cs" />
+    <Compile Include="OnlinePlayer.Extensions.cs" />
+    <Compile Include="OnlineResource.cs" />
+    <Compile Include="OnlineGameSession.cs" />
+    <Compile Include="OnlineGameSession.Rules.cs" />
+    <Compile Include="PlayerEvent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RainMeadow.cs" />
     <Compile Include="RainMeadow.GameHooks.cs" />
+    <Compile Include="RainMeadow.Logging.cs" />
     <Compile Include="RainMeadow.MenuHooks.cs" />
+    <Compile Include="RequestResult.cs" />
+    <Compile Include="ResourceRequest.cs" />
+    <Compile Include="SendingTask.cs" />
     <Compile Include="SimplerButton.cs" />
   </ItemGroup>
   <ItemGroup>
