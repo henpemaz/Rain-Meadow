@@ -6,21 +6,51 @@ namespace RainMeadow
 {
     public class LobbyManager
     {
+#pragma warning disable IDE0052 // Remove unread private members
         private CallResult<LobbyMatchList_t> m_RequestLobbyListCall;
         private CallResult<LobbyCreated_t> m_CreateLobbyCall;
         private CallResult<LobbyEnter_t> m_JoinLobbyCall;
         private Callback<LobbyDataUpdate_t> m_LobbyDataUpdate;
         private Callback<LobbyChatUpdate_t> m_LobbyChatUpdate;
+#pragma warning restore IDE0052 // Remove unread private members
 
         public LobbyManager()
         {
-            SetupLobbyCallbacks();
+            m_RequestLobbyListCall = CallResult<LobbyMatchList_t>.Create(LobbyListReceived);
+            m_CreateLobbyCall = CallResult<LobbyCreated_t>.Create(LobbyCreated);
+            m_JoinLobbyCall = CallResult<LobbyEnter_t>.Create(LobbyJoined);
+            m_LobbyDataUpdate = Callback<LobbyDataUpdate_t>.Create(LobbyUpdated);
+            m_LobbyChatUpdate = Callback<LobbyChatUpdate_t>.Create(LobbyChatUpdated);
         }
 
         public event LobbyListReceived_t OnLobbyListReceived;
         public event LobbyJoined_t OnLobbyJoined;
         public delegate void LobbyListReceived_t(bool ok, LobbyInfo[] lobbies);
         public delegate void LobbyJoined_t(bool ok);
+
+        public void RequestLobbyList()
+        {
+            RainMeadow.DebugMethodName();
+            SteamMatchmaking.AddRequestLobbyListDistanceFilter(ELobbyDistanceFilter.k_ELobbyDistanceFilterWorldwide);
+            SteamMatchmaking.AddRequestLobbyListStringFilter(OnlineManager.CLIENT_KEY, OnlineManager.CLIENT_VAL, ELobbyComparison.k_ELobbyComparisonEqual);
+            m_RequestLobbyListCall.Set(SteamMatchmaking.RequestLobbyList());
+        }
+
+        private void LobbyListReceived(LobbyMatchList_t pCallback, bool bIOFailure)
+        {
+            RainMeadow.DebugMethodName();
+            LobbyInfo[] lobbies = new LobbyInfo[pCallback.m_nLobbiesMatching];
+            if (!bIOFailure)
+            {
+                for (int i = 0; i < pCallback.m_nLobbiesMatching; i++)
+                {
+                    CSteamID id = SteamMatchmaking.GetLobbyByIndex(i);
+                    lobbies[i] = new LobbyInfo(id);
+                }
+            }
+
+            OnLobbyListReceived?.Invoke(!bIOFailure, lobbies);
+        }
 
         public void CreateLobby()
         {
@@ -34,24 +64,7 @@ namespace RainMeadow
             m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(lobby.id));
         }
 
-        public void LeaveLobby()
-        {
-            RainMeadow.DebugMethodName();
-            if (OnlineManager.lobby != null)
-            {
-                SteamMatchmaking.LeaveLobby(OnlineManager.lobby.id);
-                OnlineManager.lobby = null;
-            }
-        }
-
-        public void RequestLobbyList()
-        {
-            RainMeadow.DebugMethodName();
-            SteamMatchmaking.AddRequestLobbyListDistanceFilter(ELobbyDistanceFilter.k_ELobbyDistanceFilterWorldwide);
-            SteamMatchmaking.AddRequestLobbyListStringFilter(OnlineManager.CLIENT_KEY, OnlineManager.CLIENT_VAL, ELobbyComparison.k_ELobbyComparisonEqual);
-            m_RequestLobbyListCall.Set(SteamMatchmaking.RequestLobbyList());
-        }
-        void LobbyCreated(LobbyCreated_t param, bool bIOFailure)
+        private void LobbyCreated(LobbyCreated_t param, bool bIOFailure)
         {
             RainMeadow.DebugMethodName();
             if (!bIOFailure && param.m_eResult == EResult.k_EResultOK)
@@ -81,23 +94,17 @@ namespace RainMeadow
             }
         }
 
-        void LobbyListReceived(LobbyMatchList_t pCallback, bool bIOFailure)
+        public void LeaveLobby()
         {
             RainMeadow.DebugMethodName();
-            LobbyInfo[] lobbies = new LobbyInfo[pCallback.m_nLobbiesMatching];
-            if (!bIOFailure)
+            if (OnlineManager.lobby != null)
             {
-                for (int i = 0; i < pCallback.m_nLobbiesMatching; i++)
-                {
-                    CSteamID id = SteamMatchmaking.GetLobbyByIndex(i);
-                    lobbies[i] = new LobbyInfo(id);
-                }
+                SteamMatchmaking.LeaveLobby(OnlineManager.lobby.id);
+                OnlineManager.lobby = null;
             }
-
-            OnLobbyListReceived?.Invoke(!bIOFailure, lobbies);
         }
 
-        void LobbyUpdated(LobbyDataUpdate_t e)
+        private void LobbyUpdated(LobbyDataUpdate_t e)
         {
             RainMeadow.DebugMethodName();
             if (OnlineManager.lobby == null) {
@@ -136,15 +143,6 @@ namespace RainMeadow
                 RainMeadow.Error("got lobby event for wrong lobby!");
                 return;
             }
-        }
-
-        private void SetupLobbyCallbacks()
-        {
-            m_RequestLobbyListCall = CallResult<LobbyMatchList_t>.Create(LobbyListReceived);
-            m_CreateLobbyCall = CallResult<LobbyCreated_t>.Create(LobbyCreated);
-            m_JoinLobbyCall = CallResult<LobbyEnter_t>.Create(LobbyJoined);
-            m_LobbyDataUpdate = Callback<LobbyDataUpdate_t>.Create(LobbyUpdated);
-            m_LobbyChatUpdate = Callback<LobbyChatUpdate_t>.Create(LobbyChatUpdated);
         }
     }
 }

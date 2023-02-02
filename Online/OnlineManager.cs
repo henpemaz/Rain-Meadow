@@ -7,7 +7,7 @@ namespace RainMeadow
 {
     // Static/singleton class for online features and callbacks
     // is a mainloopprocess so update bound to game update? worth it? idk
-    public partial class OnlineManager : MainLoopProcess {
+    public class OnlineManager : MainLoopProcess {
 
         public static string CLIENT_KEY = "client";
         public static string CLIENT_VAL = "Meadow_" + RainMeadow.MeadowVersionStr;
@@ -28,18 +28,11 @@ namespace RainMeadow
             RainMeadow.Debug("OnlineManager Created");
         }
 
-
         public override void Update()
         {
             base.Update();
 
-            if (lobby != null && lobby.onlineSession != null) lobby.onlineSession.UpKeep();
-        }
-
-
-        internal static void BroadcastEvent(LobbyEvent lobbyEvent)
-        {
-            //throw new NotImplementedException();
+            lobby?.Update();
         }
     }
 }

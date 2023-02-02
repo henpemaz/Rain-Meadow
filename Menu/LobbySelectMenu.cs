@@ -1,5 +1,4 @@
 ﻿using Menu;
-using System;
 using UnityEngine;
 
 namespace RainMeadow
@@ -17,6 +16,8 @@ namespace RainMeadow
 
             this.scene = new InteractiveMenuScene(this, pages[0], MenuScene.SceneID.Landscape_CC);
             pages[0].subObjects.Add(this.scene);
+
+            pages[0].subObjects.Add(new MenuDarkSprite(this, pages[0]));
 
             pages[0].subObjects.Add(this.backObject = new SimplerButton(this, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f)));
             (backObject as SimplerButton).OnClick += Back;

@@ -1,4 +1,5 @@
 ﻿using Steamworks;
+using System;
 
 namespace RainMeadow
 {
@@ -10,6 +11,7 @@ namespace RainMeadow
             return other != null && id == other.id;
         }
         public override int GetHashCode() => id.GetHashCode();
+
         public static bool operator ==(OnlinePlayer lhs, OnlinePlayer rhs)
         {
             return lhs is null ? rhs is null : lhs.Equals(rhs);

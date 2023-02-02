@@ -5,51 +5,32 @@ using System.Linq;
 
 namespace RainMeadow
 {
-    // trimmed down version for listing lobbies in menus
-    public class LobbyInfo
-    {
-        public CSteamID id;
-        public string name;
-
-        public LobbyInfo(CSteamID id)
-        {
-            this.id = id;
-            this.name = SteamMatchmaking.GetLobbyData(id, OnlineManager.NAME_KEY);
-        }
-    }
     // Lobby is tightly bound to a SteamMatchmaking Lobby
-    // Steam mediates lobby ownership
-    // Should this be merged with OnlineSession from onlineresources?
-    public class Lobby
+    public class Lobby : OnlineResource
     {
         public CSteamID id;
-        public OnlinePlayer owner;
-        public string name;
-        public OnlineSession onlineSession;
         public List<OnlinePlayer> players;
-
-        internal bool isOwner => owner.id == OnlineManager.me;
+        public Dictionary<Region, WorldSession> worldSessions;
 
         public Lobby(CSteamID id)
         {
             this.id = id;
-            owner = new OnlinePlayer(SteamMatchmaking.GetLobbyOwner(id));
-            name = SteamMatchmaking.GetLobbyData(id, OnlineManager.NAME_KEY);
-
-            players = new List<OnlinePlayer>() { OnlineManager.mePlayer};
-            onlineSession = new OnlineSession(this, owner);
+            _owner = new OnlinePlayer(SteamMatchmaking.GetLobbyOwner(id));
             if (isOwner)
             {
                 SteamMatchmaking.SetLobbyData(id, OnlineManager.CLIENT_KEY, OnlineManager.CLIENT_VAL);
                 SteamMatchmaking.SetLobbyData(id, OnlineManager.NAME_KEY, SteamFriends.GetPersonaName());
             }
+
+            players = new List<OnlinePlayer>() { OnlineManager.mePlayer};
             UpdatePlayers();
+            Request(); // Everyone auto-subscribes this resource
         }
 
         public void UpdatePlayers()
         {
             var n = SteamMatchmaking.GetNumLobbyMembers(OnlineManager.lobby.id);
-            var oldplayers = players.Cast<CSteamID>();
+            var oldplayers = players.Cast<CSteamID>().ToArray();
             var newplayers = new CSteamID[n];
             for (int i = 0; i < n; i++)
             {

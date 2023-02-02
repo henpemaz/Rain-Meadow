@@ -87,40 +87,47 @@
   <ItemGroup>
     <Compile Include="Ext_.cs" />
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="Lobby.cs" />
-    <Compile Include="LobbyEvent.cs" />
-    <Compile Include="LobbyManager.cs" />
-    <Compile Include="LobbyMenu.cs" />
-    <Compile Include="OnlineManager.cs" />
-    <Compile Include="LobbySelectMenu.cs" />
-    <Compile Include="OnlinePlayer.cs" />
-    <Compile Include="OnlinePlayer.Extensions.cs" />
-    <Compile Include="OnlineResource.cs" />
-    <Compile Include="OnlineGameSession.cs" />
-    <Compile Include="OnlineGameSession.Rules.cs" />
-    <Compile Include="PlayerEvent.cs" />
+    <Compile Include="Menu\MenuDarkSprite.cs" />
+    <Compile Include="Online\Lobby.cs" />
+    <Compile Include="Online\Events\LobbyEvent.cs" />
+    <Compile Include="Online\LobbyInfo.cs" />
+    <Compile Include="Online\LobbyManager.cs" />
+    <Compile Include="Menu\LobbyMenu.cs" />
+    <Compile Include="Online\OnlineManager.cs" />
+    <Compile Include="Menu\LobbySelectMenu.cs" />
+    <Compile Include="Online\OnlinePlayer.cs" />
+    <Compile Include="Online\OnlinePlayer.Extensions.cs" />
+    <Compile Include="Online\OnlineResource.cs" />
+    <Compile Include="Game\OnlineGameSession.cs" />
+    <Compile Include="Game\OnlineGameSession.Rules.cs" />
+    <Compile Include="Online\Events\PlayerEvent.cs" />
+    <Compile Include="Online\Events\ReleaseRequest.cs" />
+    <Compile Include="Online\ResourceState.cs" />
+    <Compile Include="Online\RoomSession.cs" />
+    <Compile Include="Online\Events\TransferRequest.cs" />
+    <Compile Include="Online\WorldSession.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RainMeadow.cs" />
-    <Compile Include="RainMeadow.GameHooks.cs" />
+    <Compile Include="Game\RainMeadow.GameHooks.cs" />
     <Compile Include="RainMeadow.Logging.cs" />
-    <Compile Include="RainMeadow.MenuHooks.cs" />
-    <Compile Include="RequestResult.cs" />
-    <Compile Include="ResourceRequest.cs" />
-    <Compile Include="SendingTask.cs" />
-    <Compile Include="SimplerButton.cs" />
+    <Compile Include="Menu\RainMeadow.MenuHooks.cs" />
+    <Compile Include="Online\Events\RequestResult.cs" />
+    <Compile Include="Online\Events\ResourceRequest.cs" />
+    <Compile Include="Online\SendingTask.cs" />
+    <Compile Include="Menu\SimplerButton.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="RainMeadow\thumbnail.png" />
+    <Content Include="Mod\thumbnail.png" />
     <Content Include="TODO.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="RainMeadow\modinfo.json" />
+    <None Include="Mod\modinfo.json" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="RainMeadow\plugins\" />
+    <Folder Include="Mod\plugins\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "$(TargetPath)" "$(ProjectDir)RainMeadow\plugins\"</PostBuildEvent>
+    <PostBuildEvent>copy "$(TargetPath)" "$(ProjectDir)Mod\plugins\"</PostBuildEvent>
   </PropertyGroup>
 </Project>

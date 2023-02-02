@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Reflection;
 
 [assembly: AssemblyVersion(RainMeadow.RainMeadow.MeadowVersionStr)]
+#pragma warning disable CS0618
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
 namespace RainMeadow
 {
@@ -27,6 +28,7 @@ namespace RainMeadow
             On.RainWorld.Update += RainWorld_Update;
         }
 
+        // Debug
         private void RainWorld_Update(On.RainWorld.orig_Update orig, RainWorld self)
         {
             try
@@ -47,18 +49,25 @@ namespace RainMeadow
             init = true;
 
             //pm already initialized lol
-            self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
+            if(SteamManager.Initialized)
+            {
+                self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
 
-            On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues += WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues;
-            On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues_LoadingContext += WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues_LoadingContext;
+                On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues += WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues;
+                On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues_LoadingContext += WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues_LoadingContext;
 
-            On.Menu.MainMenu.ctor += MainMenu_ctor;
-            On.ProcessManager.PostSwitchMainProcess += ProcessManager_PostSwitchMainProcess;
+                On.Menu.MainMenu.ctor += MainMenu_ctor;
+                On.ProcessManager.PostSwitchMainProcess += ProcessManager_PostSwitchMainProcess;
 
-            On.Room.ctor += Room_ctor;
-            IL.RainWorldGame.ctor += RainWorldGame_ctor;
-            IL.Room.LoadFromDataString += Room_LoadFromDataString;
-            IL.Room.Loaded += Room_Loaded;
+                On.Room.ctor += Room_ctor;
+                IL.RainWorldGame.ctor += RainWorldGame_ctor;
+                IL.Room.LoadFromDataString += Room_LoadFromDataString;
+                IL.Room.Loaded += Room_Loaded;
+            }
+            else
+            {
+                Error("Steam is required to play this mod");
+            }
         }
     }
 }

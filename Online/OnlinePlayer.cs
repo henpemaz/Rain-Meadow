@@ -20,5 +20,19 @@ namespace RainMeadow
             this.OutgoingEvents.Add(req);
             return req;
         }
+
+        internal TransferRequest TransferResource(OnlineResource onlineResource)
+        {
+            var req = new TransferRequest(OnlineManager.mePlayer, this, onlineResource);
+            this.OutgoingEvents.Add(req);
+            return req;
+        }
+
+        internal void ReleaseResource(OnlineResource onlineResource)
+        {
+            var req = new ReleaseRequest(OnlineManager.mePlayer, this, onlineResource);
+            this.OutgoingEvents.Add(req);
+            return req;
+        }
     }
 }

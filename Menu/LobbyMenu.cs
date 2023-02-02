@@ -17,9 +17,10 @@ namespace RainMeadow
             this.scene = new InteractiveMenuScene(this, pages[0], MenuScene.SceneID.Landscape_CC);
             pages[0].subObjects.Add(this.scene);
 
+            pages[0].subObjects.Add(new MenuDarkSprite(this, pages[0]));
+
             pages[0].subObjects.Add(this.backObject = new SimplerButton(this, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f)));
             (backObject as SimplerButton).OnClick += Back;
-
 
             pages[0].subObjects.Add(startbtn = new SimplerButton(this, pages[0], "START", btns, btnsize));
             startbtn.buttonBehav.greyedOut = !OnlineManager.lobby.isOwner;
@@ -29,7 +30,6 @@ namespace RainMeadow
         private void Back(SimplerButton obj)
         {
             RainMeadow.DebugMethodName();
-            OnlineManager.lobbyManager.LeaveLobby();
             manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
         }
 
@@ -46,13 +46,13 @@ namespace RainMeadow
         {
             RainMeadow.DebugMethodName();
             if (OnlineManager.lobby == null) return;
-            if (OnlineManager.lobby.onlineSession == null) return;
             manager.menuSetup.startGameCondition = RainMeadow.Ext_StoryGameInitCondition.Online;
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
 
         public override void ShutDownProcess()
         {
+            OnlineManager.lobbyManager.LeaveLobby();
             base.ShutDownProcess();
         }
     }
