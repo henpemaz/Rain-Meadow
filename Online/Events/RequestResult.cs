@@ -2,19 +2,16 @@
 {
     public class RequestResult : PlayerEvent
     {
+        public class Subscribed : RequestResult
+        {
+        }
 
-    }
+        public class Leased : RequestResult
+        {
+        }
 
-    public class RequestResultLeased : RequestResult
-    {
-
-    }
-    public class RequestResultSubscribed : RequestResult
-    {
-
-    }
-    public class RequestResultError: RequestResult
-    {
-
+        public class Error : RequestResult
+        {
+        }
     }
 }

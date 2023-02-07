@@ -29,7 +29,7 @@ namespace RainMeadow
 
         private void Back(SimplerButton obj)
         {
-            RainMeadow.DebugMethodName();
+            RainMeadow.DebugMethod();
             manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
         }
 
@@ -44,7 +44,7 @@ namespace RainMeadow
 
         private void StartGame()
         {
-            RainMeadow.DebugMethodName();
+            RainMeadow.DebugMethod();
             if (OnlineManager.lobby == null) return;
             manager.menuSetup.startGameCondition = RainMeadow.Ext_StoryGameInitCondition.Online;
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);

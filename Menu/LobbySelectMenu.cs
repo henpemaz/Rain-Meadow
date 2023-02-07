@@ -31,7 +31,7 @@ namespace RainMeadow
 
         private void Back(SimplerButton obj)
         {
-            RainMeadow.DebugMethodName();
+            RainMeadow.DebugMethod();
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
         }
 
@@ -46,13 +46,13 @@ namespace RainMeadow
 
         void RequestLobbyCreate()
         {
-            RainMeadow.DebugMethodName();
+            RainMeadow.DebugMethod();
             OnlineManager.lobbyManager.CreateLobby();
         }
 
         void RequestLobbyJoin(LobbyInfo lobby)
         {
-            RainMeadow.DebugMethodName();
+            RainMeadow.DebugMethod();
             OnlineManager.lobbyManager.JoinLobby(lobby);
         }
 

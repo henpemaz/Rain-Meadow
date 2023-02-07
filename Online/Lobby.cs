@@ -15,7 +15,7 @@ namespace RainMeadow
         public Lobby(CSteamID id)
         {
             this.id = id;
-            _owner = new OnlinePlayer(SteamMatchmaking.GetLobbyOwner(id));
+            owner = new OnlinePlayer(SteamMatchmaking.GetLobbyOwner(id));
             if (isOwner)
             {
                 SteamMatchmaking.SetLobbyData(id, OnlineManager.CLIENT_KEY, OnlineManager.CLIENT_VAL);
@@ -23,11 +23,11 @@ namespace RainMeadow
             }
 
             players = new List<OnlinePlayer>() { OnlineManager.mePlayer};
-            UpdatePlayers();
+            UpdatePlayersList();
             Request(); // Everyone auto-subscribes this resource
         }
 
-        public void UpdatePlayers()
+        public void UpdatePlayersList()
         {
             var n = SteamMatchmaking.GetNumLobbyMembers(OnlineManager.lobby.id);
             var oldplayers = players.Cast<CSteamID>().ToArray();

@@ -1,16 +1,19 @@
-﻿namespace RainMeadow
+﻿using System.Collections.Generic;
+
+namespace RainMeadow
 {
     public class TransferRequest : PlayerEvent
     {
-        private OnlinePlayer mePlayer;
-        private OnlinePlayer onlinePlayer;
-        private OnlineResource onlineResource;
+        public OnlinePlayer from;
+        public OnlinePlayer to;
+        public OnlineResource resource;
+        public List<OnlinePlayer> subscribers;
 
-        public TransferRequest(OnlinePlayer mePlayer, OnlinePlayer onlinePlayer, OnlineResource onlineResource)
+        public TransferRequest(OnlinePlayer from, OnlinePlayer to, OnlineResource resource)
         {
-            this.mePlayer = mePlayer;
-            this.onlinePlayer = onlinePlayer;
-            this.onlineResource = onlineResource;
+            this.from = from;
+            this.to = to;
+            this.resource = resource;
         }
     }
 }

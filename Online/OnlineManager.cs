@@ -16,8 +16,10 @@ namespace RainMeadow
         public static CSteamID me;
         public static OnlinePlayer mePlayer;
         public static Lobby lobby;
+        internal static Serializer serializer = new Serializer(16000);
 
         public static LobbyManager lobbyManager;
+        internal static List<Subscription> subscriptions;
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
@@ -25,14 +27,37 @@ namespace RainMeadow
             mePlayer = new OnlinePlayer(me);
             lobbyManager = new LobbyManager();
 
+            framesPerSecond = 20;
+
             RainMeadow.Debug("OnlineManager Created");
         }
 
         public override void Update()
         {
             base.Update();
+            if(lobby != null)
+            {
 
-            lobby?.Update();
+
+                /// if lobby owner
+                ///     if lobby tickrate ticks this turn
+                ///         send lobby state to subscribers
+                ///
+
+                foreach (var subscription in subscriptions)
+                {
+                    subscription.Update();
+                }
+
+                ///
+                /// for each player in the lobby
+                ///     fire outgoing playerevents
+                ///     do actually send things to players
+                foreach (var player in lobby.players)
+                {
+                    player.SendFrame();
+                }
+            }
         }
     }
 }

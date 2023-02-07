@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using static Expedition.ExpeditionProgression;
 
 namespace RainMeadow
@@ -9,90 +10,120 @@ namespace RainMeadow
     public abstract class OnlineResource
     {
         public OnlineResource super;
-        public OnlinePlayer _owner;
-        public OnlinePlayer owner => _owner ?? super?.owner;
-        public PlayerEvent pendingRequest;
-        public List<SendingTask> sendingTasks;
+        public OnlinePlayer owner;
 
-        public bool isOwner => owner.id == OnlineManager.me;
-        public bool isClaimed => _owner != null;
+        public PlayerEvent pendingRequest; // should this maybe be a list/queue?
+        private List<OnlinePlayer> subscribers; // this could be a dict of tasks
 
-        public virtual void Update()
+        public bool isFree => owner == null;
+        public bool isOwner => owner != null && owner.id == OnlineManager.me;
+        public bool isSuper => super != null && super.isOwner;
+
+        private void Claimed(OnlinePlayer player)
         {
-            foreach (var task in sendingTasks)
-            {
-                task.Update();
-            }
+            owner = player;
+        }
+
+        private void Unclaimed()
+        {
+            owner = null;
+        }
+
+        private void Subscribed(OnlinePlayer player)
+        {
+            OnlineManager.subscriptions.Add(new Subscription(this, player));
+            this.subscribers.Add(player);
+        }
+
+        private void Unsubscribed(OnlinePlayer player)
+        {
+            this.subscribers.Remove(player);
         }
 
         public virtual void Request()
         {
-            if (isOwner)
+            if (isOwner) return;
+            if (isFree && isSuper)
             {
-                _owner = OnlineManager.mePlayer;
+                Claimed(OnlineManager.mePlayer);
                 return;
             }
             if (pendingRequest != null) return;
-            
+
             pendingRequest = owner.RequestResource(this);
         }
 
-        public virtual RequestResult Requested(ResourceRequest request)
+        public void Release()
         {
-            if (isOwner)
+            if (isFree) return;
+            if (pendingRequest != null) return;
+            if (isOwner) // let go
             {
-                if(_owner == null)
+                if (subscribers.Count > 0) // transfer to active
                 {
-                    // Leased to player
-                    _owner = request.from;
-                    return new RequestResultLeased();
+                    pendingRequest = subscribers[0].TransferResource(this); // todo select based on ping
                 }
+                else // release
+                {
+                    if (!isSuper) // return to super
+                    {
+                        pendingRequest = super.owner.ReleaseResource(this);
+                    }
+                    Unclaimed();
+                }
+            }
+            else // unsubscribe
+            {
+                pendingRequest = owner.ReleaseResource(this);
+            }
+        }
+
+        public RequestResult Requested(ResourceRequest request)
+        {
+            if (isOwner) // I decide
+            {
                 // Player subscribed to resource
-                sendingTasks.Add(new SendingTask(this, request.from));
-                return new RequestResultSubscribed();
+                Subscribed(request.from);
+                return new RequestResult.Subscribed();
+            }
+            if (isFree && isSuper)
+            {
+                // Leased to player
+                Claimed(request.from);
+                return new RequestResult.Leased();
             }
             // Not mine, can't lease
-            return new RequestResultError();
+            return new RequestResult.Error();
         }
 
-        public virtual void Release()
+        public ReleaseResult Released(ReleaseRequest request)
         {
-            if (!isClaimed) return;
-            if (pendingRequest != null) return;
-            if (_owner.id == OnlineManager.me)
+            if(isOwner)
             {
-                if (this.sendingTasks.Count > 0)
-                {
-                    pendingRequest = this.sendingTasks[0].subscriber.TransferResource(this);
-                }
-                _owner = OnlineManager.mePlayer;
-                return;
+                Unsubscribed(request.from);
+                return new ReleaseResult.Unsubscribed();
             }
-
-            owner.ReleaseResource(this);
-        }
-
-        // todo handle situations of race?
-        // this might be missing some chekcs, I was tired when I wrote it
-        public virtual void Released(ReleaseRequest request)
-        {
-            if (isOwner)
+            if(isSuper && owner == request.from)
             {
-                // Player unsubscribed from resource
-                sendingTasks.RemoveAll(t => t.subscriber == request.from);
-                return new ReleaseResultUnsubscribed();
+                Unclaimed();
+                return new ReleaseResult.Released();
             }
-            // Not mine, can't release
-            return new ReleaseResultError();
+            return new ReleaseResult.Error();
         }
 
-        public virtual void Transfered(TransferRequest request)
+        public TransferResult Transfered(TransferRequest request)
         {
-
+            if (owner == request.from)
+            {
+                Claimed(OnlineManager.mePlayer);
+                subscribers.AddRange(request.subscribers.Where(x => x != OnlineManager.mePlayer));
+                return new TransferResult.Ok();
+            }
+            return new TransferResult.Error();
         }
 
-        public abstract ResourceState SendState(ResourceState lastAckState, long ts);
+        public abstract ResourceState GetState(long ts);
 
-        public abstract void ReceiveState(ResourceState newState, long ts);
+        public abstract void SetState(ResourceState newState, long ts);
     }
 }

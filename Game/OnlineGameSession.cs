@@ -14,7 +14,7 @@ namespace RainMeadow
     {
         public OnlineGameSession(RainWorldGame game) : base(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer, game)
         {
-            RainMeadow.sLogger.LogInfo("OnlineGameSession created");
+            RainMeadow.Debug("OnlineGameSession created");
         }
 
         internal void FilterItems(Room room)

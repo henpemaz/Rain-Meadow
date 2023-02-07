@@ -30,7 +30,7 @@ namespace RainMeadow
 
         public void RequestLobbyList()
         {
-            RainMeadow.DebugMethodName();
+            RainMeadow.DebugMethod();
             SteamMatchmaking.AddRequestLobbyListDistanceFilter(ELobbyDistanceFilter.k_ELobbyDistanceFilterWorldwide);
             SteamMatchmaking.AddRequestLobbyListStringFilter(OnlineManager.CLIENT_KEY, OnlineManager.CLIENT_VAL, ELobbyComparison.k_ELobbyComparisonEqual);
             m_RequestLobbyListCall.Set(SteamMatchmaking.RequestLobbyList());
@@ -38,7 +38,7 @@ namespace RainMeadow
 
         private void LobbyListReceived(LobbyMatchList_t pCallback, bool bIOFailure)
         {
-            RainMeadow.DebugMethodName();
+            RainMeadow.DebugMethod();
             LobbyInfo[] lobbies = new LobbyInfo[pCallback.m_nLobbiesMatching];
             if (!bIOFailure)
             {
@@ -54,19 +54,19 @@ namespace RainMeadow
 
         public void CreateLobby()
         {
-            RainMeadow.DebugMethodName();
+            RainMeadow.DebugMethod();
             m_CreateLobbyCall.Set(SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypePublic, 10));
         }
 
         public void JoinLobby(LobbyInfo lobby)
         {
-            RainMeadow.DebugMethodName();
+            RainMeadow.DebugMethod();
             m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(lobby.id));
         }
 
         private void LobbyCreated(LobbyCreated_t param, bool bIOFailure)
         {
-            RainMeadow.DebugMethodName();
+            RainMeadow.DebugMethod();
             if (!bIOFailure && param.m_eResult == EResult.k_EResultOK)
             {
                 OnlineManager.lobby = new Lobby(new CSteamID(param.m_ulSteamIDLobby));
@@ -81,7 +81,7 @@ namespace RainMeadow
 
         private void LobbyJoined(LobbyEnter_t param, bool bIOFailure)
         {
-            RainMeadow.DebugMethodName();
+            RainMeadow.DebugMethod();
             if (!bIOFailure)
             {
                 OnlineManager.lobby = new Lobby(new CSteamID(param.m_ulSteamIDLobby));
@@ -96,7 +96,7 @@ namespace RainMeadow
 
         public void LeaveLobby()
         {
-            RainMeadow.DebugMethodName();
+            RainMeadow.DebugMethod();
             if (OnlineManager.lobby != null)
             {
                 SteamMatchmaking.LeaveLobby(OnlineManager.lobby.id);
@@ -106,7 +106,7 @@ namespace RainMeadow
 
         private void LobbyUpdated(LobbyDataUpdate_t e)
         {
-            RainMeadow.DebugMethodName();
+            RainMeadow.DebugMethod();
             if (OnlineManager.lobby == null) {
                 RainMeadow.Error("got lobby event with no lobby!");
                 return;
@@ -131,7 +131,7 @@ namespace RainMeadow
 
         private void LobbyChatUpdated(LobbyChatUpdate_t param)
         {
-            RainMeadow.DebugMethodName();
+            RainMeadow.DebugMethod();
             if (OnlineManager.lobby == null)
             {
                 RainMeadow.Error("got lobby event with no lobby!");
