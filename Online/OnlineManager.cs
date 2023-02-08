@@ -1,6 +1,7 @@
 ﻿using Steamworks;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -37,27 +38,22 @@ namespace RainMeadow
             base.Update();
             if(lobby != null)
             {
-
-
-                /// if lobby owner
-                ///     if lobby tickrate ticks this turn
-                ///         send lobby state to subscribers
-                ///
-
                 foreach (var subscription in subscriptions)
                 {
-                    subscription.Update();
+                    subscription.Update(0);
                 }
 
-                ///
-                /// for each player in the lobby
-                ///     fire outgoing playerevents
-                ///     do actually send things to players
                 foreach (var player in lobby.players)
                 {
-                    player.SendFrame();
+                    player.SendData();
                 }
             }
+        }
+
+        internal static OnlinePlayer PlayerFromId(ulong v)
+        {
+            var id = new CSteamID(v);
+            return lobby?.players.FirstOrDefault(p => p.id == id);
         }
     }
 }

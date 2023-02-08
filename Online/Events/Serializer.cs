@@ -8,7 +8,7 @@ namespace RainMeadow
     public class Serializer
     {
         public readonly byte[] buffer;
-        public readonly int capacity;
+        public readonly long capacity;
         private long margin;
         public long Position => stream.Position;
 
@@ -20,7 +20,7 @@ namespace RainMeadow
         BinaryReader reader;
         private Dictionary<Type, PlayerEvent.EventTypeId> eventTypeIdsByType;
 
-        public Serializer(int bufferCapacity) 
+        public Serializer(long bufferCapacity) 
         {
             this.capacity = bufferCapacity;
             margin = (long)(bufferCapacity * 0.25f);
@@ -41,6 +41,19 @@ namespace RainMeadow
         {
             return playerEvent.EstimatedSize + margin < capacity;
         }
+        internal bool CanFit(ResourceState resourceState)
+        {
+            return resourceState.EstimatedSize + margin < capacity;
+        }
+
+        internal void WriteEvent(PlayerEvent playerEvent)
+        {
+            playerEvent.CustomSerialize(this);
+        }
+        internal void WriteState(ResourceState resourceState)
+        {
+            resourceState.CustomSerialize(this);
+        }
 
         internal void EndWrite()
         {
@@ -60,27 +73,21 @@ namespace RainMeadow
             if (isReading) uLong = reader.ReadUInt64();
         }
 
-        internal void WriteEvent(PlayerEvent e)
-        {
-            writer.Write(GetEventTypeId(e));
-        }
-
-        private byte GetEventTypeId(PlayerEvent e)
-        {
-            return eventTypeIdsByType[e.GetType()];
-        }
-
-        internal void Serialize(ref PlayerEvent e)
+        internal void Serialize(ref OnlinePlayer player)
         {
             if (isWriting)
             {
-
+                writer.Write((ulong)player.id);
             }
             if (isReading)
             {
-                
+                player = OnlineManager.PlayerFromId(reader.ReadUInt64());
             }
-            e.CustomSerialize(this);
+        }
+
+        internal void Serialize(ref OnlineResource onlineResource)
+        {
+            throw new NotImplementedException();
         }
     }
 }

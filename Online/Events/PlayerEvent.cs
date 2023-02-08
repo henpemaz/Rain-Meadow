@@ -5,7 +5,7 @@ namespace RainMeadow
 {
     public abstract class PlayerEvent
     {
-        
+        public abstract EventTypeId eventType { get; }
         public ulong eventId;
 
         public virtual long EstimatedSize { get => sizeof(ulong); }
@@ -17,9 +17,20 @@ namespace RainMeadow
 
         // enum and virtual property
         // or enum and type->enum dictionary?
-        internal enum EventTypeId : byte
+        public enum EventTypeId : byte
         {
-            None
+            None,
+            ResourceRequest,
+            ReleaseRequest,
+            TransferRequest,
+            ReleaseResultReleased,
+            ReleaseResultUnsubscribed,
+            ReleaseResultError,
+            RequestResultLeased,
+            RequestResultSubscribed,
+            RequestResultError,
+            TransferResultError,
+            TransferResultOk,
         }
     }
 }

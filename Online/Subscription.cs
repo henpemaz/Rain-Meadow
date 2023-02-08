@@ -6,7 +6,6 @@ namespace RainMeadow
     {
         private OnlineResource onlineResource;
         private OnlinePlayer player;
-        private int tick;
 
         public Subscription(OnlineResource onlineResource, OnlinePlayer player)
         {
@@ -16,7 +15,7 @@ namespace RainMeadow
 
         internal void Update(int ts)
         {
-            player.outgoingStates.Add(onlineResource.GetState(ts));
+            player.OutgoingStates.Add(onlineResource.GetState(ts));
         }
     }
 }

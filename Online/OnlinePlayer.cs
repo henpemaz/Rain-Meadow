@@ -9,10 +9,11 @@ namespace RainMeadow
     public partial class OnlinePlayer : System.IEquatable<OnlinePlayer>
     {
         public CSteamID id;
-        private SteamNetworkingIdentity oid;
-        private Queue<PlayerEvent> OutgoingEvents;
-        private List<ResourceState> outgoingStates;
-        private ulong nextEvent;
+        public SteamNetworkingIdentity oid;
+        public Queue<PlayerEvent> OutgoingEvents;
+        public Queue<ResourceState> OutgoingStates;
+        public ulong nextEvent;
+        public ResourceState[] oldStates;
 
         public OnlinePlayer(CSteamID id)
         {
@@ -37,7 +38,7 @@ namespace RainMeadow
 
         internal TransferRequest TransferResource(OnlineResource onlineResource)
         {
-            var req = new TransferRequest(OnlineManager.mePlayer, this, onlineResource);
+            var req = new TransferRequest(OnlineManager.mePlayer, this, onlineResource, onlineResource.subscribers);
             QueueEvent(req);
             return req;
         }
@@ -49,18 +50,24 @@ namespace RainMeadow
             return req;
         }
 
-        
-
         internal void SendData()
         {
             lock (OnlineManager.serializer)
             {
                 OnlineManager.serializer.BeginWrite();
-                while (OutgoingEvents.Count > 1 && OnlineManager.serializer.CanFit(OutgoingEvents.Peek()))
+                foreach (var e in OutgoingEvents)
                 {
-                    var e = OutgoingEvents.Dequeue();
-                    OnlineManager.serializer.Serialize(ref e);
+                    if (!OnlineManager.serializer.CanFit(e)) throw new IOException("no buffer space for events");
+                    OnlineManager.serializer.WriteEvent(e);
                 }
+
+                while (OutgoingStates.Count > 1 && OnlineManager.serializer.CanFit(OutgoingStates.Peek()))
+                {
+                    var e = OutgoingStates.Dequeue();
+                    OnlineManager.serializer.WriteState(e);
+                }
+                // todo handle states overflow, planing a packet for maximum size and least stale states
+
                 OnlineManager.serializer.EndWrite();
 
                 unsafe

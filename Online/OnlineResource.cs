@@ -13,7 +13,7 @@ namespace RainMeadow
         public OnlinePlayer owner;
 
         public PlayerEvent pendingRequest; // should this maybe be a list/queue?
-        private List<OnlinePlayer> subscribers; // this could be a dict of tasks
+        public List<OnlinePlayer> subscribers; // this could be a dict of tasks
 
         public bool isFree => owner == null;
         public bool isOwner => owner != null && owner.id == OnlineManager.me;
@@ -78,7 +78,7 @@ namespace RainMeadow
             }
         }
 
-        public RequestResult Requested(ResourceRequest request)
+        public RequestResult Requested(ResourceEvent request)
         {
             if (isOwner) // I decide
             {
@@ -125,5 +125,10 @@ namespace RainMeadow
         public abstract ResourceState GetState(long ts);
 
         public abstract void SetState(ResourceState newState, long ts);
+
+        internal virtual long SizeOfIdentifier()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

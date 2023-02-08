@@ -90,6 +90,7 @@
     <Compile Include="Ext_.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Menu\MenuDarkSprite.cs" />
+    <Compile Include="Online\Events\ResultEvent.cs" />
     <Compile Include="Online\Events\Serializer.cs" />
     <Compile Include="Online\Lobby.cs" />
     <Compile Include="Online\LobbyInfo.cs" />
@@ -105,7 +106,8 @@
     <Compile Include="Online\Events\PlayerEvent.cs" />
     <Compile Include="Online\Events\ReleaseRequest.cs" />
     <Compile Include="Online\Events\ReleaseResult.cs" />
-    <Compile Include="Online\ResourceState.cs" />
+    <Compile Include="Online\Events\ResourceRequest.cs" />
+    <Compile Include="Online\State\ResourceState.cs" />
     <Compile Include="Online\RoomSession.cs" />
     <Compile Include="Online\Events\TransferRequest.cs" />
     <Compile Include="Online\Events\TransferResult.cs" />
@@ -117,7 +119,7 @@
     <Compile Include="RainMeadow.Logging.cs" />
     <Compile Include="Menu\RainMeadow.MenuHooks.cs" />
     <Compile Include="Online\Events\RequestResult.cs" />
-    <Compile Include="Online\Events\ResourceRequest.cs" />
+    <Compile Include="Online\Events\ResourceEvent.cs" />
     <Compile Include="Menu\SimplerButton.cs" />
   </ItemGroup>
   <ItemGroup>
