@@ -12,13 +12,11 @@ namespace RainMeadow
         }
         public override int GetHashCode() => id.GetHashCode();
 
-       
         public static bool operator ==(OnlinePlayer lhs, OnlinePlayer rhs)
         {
             return lhs is null ? rhs is null : lhs.Equals(rhs);
         }
         public static bool operator !=(OnlinePlayer lhs, OnlinePlayer rhs) => !(lhs == rhs);
         public static explicit operator CSteamID(OnlinePlayer other) { return other.id; }
-
     }
 }

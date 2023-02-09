@@ -1,4 +1,5 @@
 ﻿using MoreSlugcats;
+using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,6 +20,8 @@ namespace RainMeadow
         BinaryWriter writer;
         BinaryReader reader;
         private Dictionary<Type, PlayerEvent.EventTypeId> eventTypeIdsByType;
+        private int eventCount;
+        private long eventHeader;
 
         public Serializer(long bufferCapacity) 
         {
@@ -41,15 +44,32 @@ namespace RainMeadow
         {
             return playerEvent.EstimatedSize + margin < capacity;
         }
+
         internal bool CanFit(ResourceState resourceState)
         {
             return resourceState.EstimatedSize + margin < capacity;
+        }
+
+        internal void BeginWriteEvents()
+        {
+            eventCount = 0;
+            eventHeader = stream.Position;
+            writer.Write(eventCount);
         }
 
         internal void WriteEvent(PlayerEvent playerEvent)
         {
             playerEvent.CustomSerialize(this);
         }
+
+        internal void EndWriteEvents()
+        {
+            var temp = stream.Position;
+            stream.Position = eventHeader;
+            writer.Write(eventCount);
+            stream.Position = temp;
+        }
+       
         internal void WriteState(ResourceState resourceState)
         {
             resourceState.CustomSerialize(this);
@@ -86,6 +106,56 @@ namespace RainMeadow
         }
 
         internal void Serialize(ref OnlineResource onlineResource)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void BeginWriteStates()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void EndWriteStates()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void BeginRead()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void EndRead()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void WriteHeaders(OnlinePlayer toPlayer)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void ReadHeaders(CSteamID fromPlayer)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal int BeginReadEvents()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal PlayerEvent ReadEvent()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal int BeginReadStates()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal ResourceState ReadState()
         {
             throw new NotImplementedException();
         }

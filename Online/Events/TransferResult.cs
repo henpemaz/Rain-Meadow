@@ -18,16 +18,8 @@ namespace RainMeadow
         {
             public List<OnlinePlayer> subscribers;
 
-            public Ok(ulong referencedEventId, List<OnlinePlayer> subscribers) : base(referencedEventId)
-            {
-                this.subscribers = subscribers;
-            }
+            public Ok(ulong referencedEventId) : base(referencedEventId) { }
 
-            public override void CustomSerialize(Serializer serializer)
-            {
-                base.CustomSerialize(serializer);
-                throw new NotImplementedException();
-            }
 
             public override EventTypeId eventType => EventTypeId.TransferResultOk;
         }

@@ -15,7 +15,7 @@ namespace RainMeadow
 
         internal void Update(int ts)
         {
-            player.OutgoingStates.Add(onlineResource.GetState(ts));
+            player.OutgoingStates.Enqueue(onlineResource.GetState(ts));
         }
     }
 }

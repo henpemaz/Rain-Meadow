@@ -84,16 +84,16 @@ namespace RainMeadow
             {
                 // Player subscribed to resource
                 Subscribed(request.from);
-                return new RequestResult.Subscribed();
+                return new RequestResult.Subscribed(request.eventId);
             }
             if (isFree && isSuper)
             {
                 // Leased to player
                 Claimed(request.from);
-                return new RequestResult.Leased();
+                return new RequestResult.Leased(request.eventId);
             }
             // Not mine, can't lease
-            return new RequestResult.Error();
+            return new RequestResult.Error(request.eventId);
         }
 
         public ReleaseResult Released(ReleaseRequest request)
@@ -101,14 +101,14 @@ namespace RainMeadow
             if(isOwner)
             {
                 Unsubscribed(request.from);
-                return new ReleaseResult.Unsubscribed();
+                return new ReleaseResult.Unsubscribed(request.eventId);
             }
             if(isSuper && owner == request.from)
             {
                 Unclaimed();
-                return new ReleaseResult.Released();
+                return new ReleaseResult.Released(request.eventId);
             }
-            return new ReleaseResult.Error();
+            return new ReleaseResult.Error(request.eventId);
         }
 
         public TransferResult Transfered(TransferRequest request)
@@ -117,9 +117,9 @@ namespace RainMeadow
             {
                 Claimed(OnlineManager.mePlayer);
                 subscribers.AddRange(request.subscribers.Where(x => x != OnlineManager.mePlayer));
-                return new TransferResult.Ok();
+                return new TransferResult.Ok(request.eventId);
             }
-            return new TransferResult.Error();
+            return new TransferResult.Error(request.eventId);
         }
 
         public abstract ResourceState GetState(long ts);

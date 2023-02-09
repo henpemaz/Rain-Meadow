@@ -13,7 +13,6 @@ namespace RainMeadow
         public Queue<PlayerEvent> OutgoingEvents;
         public Queue<ResourceState> OutgoingStates;
         public ulong nextEvent;
-        public ResourceState[] oldStates;
 
         public OnlinePlayer(CSteamID id)
         {
@@ -48,38 +47,6 @@ namespace RainMeadow
             var req = new ReleaseRequest(OnlineManager.mePlayer, this, onlineResource);
             QueueEvent(req);
             return req;
-        }
-
-        internal void SendData()
-        {
-            lock (OnlineManager.serializer)
-            {
-                OnlineManager.serializer.BeginWrite();
-                foreach (var e in OutgoingEvents)
-                {
-                    if (!OnlineManager.serializer.CanFit(e)) throw new IOException("no buffer space for events");
-                    OnlineManager.serializer.WriteEvent(e);
-                }
-
-                while (OutgoingStates.Count > 1 && OnlineManager.serializer.CanFit(OutgoingStates.Peek()))
-                {
-                    var e = OutgoingStates.Dequeue();
-                    OnlineManager.serializer.WriteState(e);
-                }
-                // todo handle states overflow, planing a packet for maximum size and least stale states
-
-                OnlineManager.serializer.EndWrite();
-
-                unsafe
-                {
-                    fixed (byte* ptr = OnlineManager.serializer.buffer)
-                    {
-                        SteamNetworkingMessages.SendMessageToUser(ref oid, (IntPtr)ptr, (uint)OnlineManager.serializer.Position, 0, 0);
-                    }
-                }
-
-                OnlineManager.serializer.Free();
-            }
         }
     }
 }

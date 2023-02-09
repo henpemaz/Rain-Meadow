@@ -4,6 +4,6 @@
     {
         public long EstimatedSize { get; internal set; }
 
-        public virtual void CustomSerialize() { }
+        public virtual void CustomSerialize(Serializer serializer) { }
     }
 }
