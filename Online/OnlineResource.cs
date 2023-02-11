@@ -1,19 +1,21 @@
-﻿using System;
+﻿using BepInEx.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using static Expedition.ExpeditionProgression;
 
 namespace RainMeadow
 {
     // OnlineResources are transferible, subscriptable resources, limited to a resource that others can consume (lobby, world, room)
     // The owner of the resource coordinates states, distributes subresources and solves conflicts
+    // Distributed Hyerarchical Ownership Management
+    // Distributed transaction management
     public abstract class OnlineResource
     {
         public OnlineResource super;
         public OnlinePlayer owner;
-
-        public PlayerEvent pendingRequest; // should this maybe be a list/queue?
-        public List<OnlinePlayer> subscribers; // this could be a dict of tasks
+        private bool subscribedToOther;
+        public RequestEvent pendingRequest; // should this maybe be a list/queue?
+        public List<OnlinePlayer> subscribers; // this could be a dict of subscriptions, but how relevant is to access them through here anyways
 
         public bool isFree => owner == null;
         public bool isOwner => owner != null && owner.id == OnlineManager.me;
@@ -31,15 +33,17 @@ namespace RainMeadow
 
         private void Subscribed(OnlinePlayer player)
         {
-            OnlineManager.subscriptions.Add(new Subscription(this, player));
+            OnlineManager.AddSubscription(this, player);
             this.subscribers.Add(player);
         }
 
         private void Unsubscribed(OnlinePlayer player)
         {
+            OnlineManager.RemoveSubscription(this, player);
             this.subscribers.Remove(player);
         }
 
+        // I request, possibly to someone else
         public virtual void Request()
         {
             if (isOwner) return;
@@ -53,6 +57,7 @@ namespace RainMeadow
             pendingRequest = owner.RequestResource(this);
         }
 
+        // I release, possibly to someone else
         public void Release()
         {
             if (isFree) return;
@@ -69,7 +74,10 @@ namespace RainMeadow
                     {
                         pendingRequest = super.owner.ReleaseResource(this);
                     }
-                    Unclaimed();
+                    else
+                    {
+                        Unclaimed();
+                    }
                 }
             }
             else // unsubscribe
@@ -78,48 +86,103 @@ namespace RainMeadow
             }
         }
 
-        public RequestResult Requested(ResourceEvent request)
+        // Someone else requested me
+        public RequestResult Requested(ResourceRequest request)
         {
             if (isOwner) // I decide
             {
                 // Player subscribed to resource
                 Subscribed(request.from);
-                return new RequestResult.Subscribed(request.eventId);
+                return new RequestResult.Subscribed(request);
             }
             if (isFree && isSuper)
             {
                 // Leased to player
                 Claimed(request.from);
-                return new RequestResult.Leased(request.eventId);
+                return new RequestResult.Leased(request);
             }
             // Not mine, can't lease
-            return new RequestResult.Error(request.eventId);
+            return new RequestResult.Error(request);
         }
 
+        // Someone else released from me
         public ReleaseResult Released(ReleaseRequest request)
         {
             if(isOwner)
             {
                 Unsubscribed(request.from);
-                return new ReleaseResult.Unsubscribed(request.eventId);
+                return new ReleaseResult.Unsubscribed(request);
             }
             if(isSuper && owner == request.from)
             {
                 Unclaimed();
-                return new ReleaseResult.Released(request.eventId);
+                return new ReleaseResult.Released(request);
             }
-            return new ReleaseResult.Error(request.eventId);
+            return new ReleaseResult.Error(request);
         }
 
+        // Someone else transfered an active resource to me
         public TransferResult Transfered(TransferRequest request)
         {
             if (owner == request.from)
             {
                 Claimed(OnlineManager.mePlayer);
-                subscribers.AddRange(request.subscribers.Where(x => x != OnlineManager.mePlayer));
-                return new TransferResult.Ok(request.eventId);
+                foreach (var x in request.subscribers.Where(x => x != OnlineManager.mePlayer))
+                {
+                    Subscribed(x);
+                }
+                return new TransferResult.Ok(request);
             }
-            return new TransferResult.Error(request.eventId);
+            return new TransferResult.Error(request);
+        }
+
+        // A pending request was answered to
+        public void ResolveRequest(RequestResult requestResult)
+        {
+            if (requestResult is RequestResult.Leased)
+            {
+                Claimed(OnlineManager.mePlayer);
+                pendingRequest = null;
+            }
+            else if (requestResult is RequestResult.Subscribed)
+            {
+                subscribedToOther = true;
+                pendingRequest = null;
+            }
+            else if (requestResult is RequestResult.Error)
+            {
+                RainMeadow.Error("request failed for " + this);
+            }
+        }
+        internal void ResolveRelease(ReleaseResult releaseResult)
+        {
+            if(releaseResult is ReleaseResult.Released)
+            {
+                Unclaimed();
+            }
+            else if (releaseResult is ReleaseResult.Unsubscribed)
+            {
+                subscribedToOther = false;
+            } 
+            else if (releaseResult is ReleaseResult.Error)
+            {
+                RainMeadow.Error("released failed for " + this);
+            }
+        }
+
+        internal void ResolveTransfer(TransferResult transferResult)
+        {
+            if (transferResult is TransferResult.Ok)
+            {
+                // clear subscribers
+                var transfer = (transferResult.referencedRequest as TransferRequest);
+                transfer.subscribers.ForEach(s=>Unsubscribed(s));
+                Claimed(transfer.to);
+            }
+            else if (transferResult is TransferResult.Error)
+            {
+                RainMeadow.Error("transfer failed for " + this);
+            }
         }
 
         public abstract ResourceState GetState(long ts);

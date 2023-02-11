@@ -91,7 +91,7 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Menu\MenuDarkSprite.cs" />
     <Compile Include="Online\Events\ResultEvent.cs" />
-    <Compile Include="Online\Events\Serializer.cs" />
+    <Compile Include="Online\Serializer.cs" />
     <Compile Include="Online\Lobby.cs" />
     <Compile Include="Online\LobbyInfo.cs" />
     <Compile Include="Online\LobbyManager.cs" />
@@ -119,7 +119,7 @@
     <Compile Include="RainMeadow.Logging.cs" />
     <Compile Include="Menu\RainMeadow.MenuHooks.cs" />
     <Compile Include="Online\Events\RequestResult.cs" />
-    <Compile Include="Online\Events\ResourceEvent.cs" />
+    <Compile Include="Online\Events\RequestEvent.cs" />
     <Compile Include="Menu\SimplerButton.cs" />
   </ItemGroup>
   <ItemGroup>

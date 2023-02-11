@@ -2,23 +2,23 @@
 {
     public abstract class RequestResult : ResultEvent
     {
-        protected RequestResult(ulong referencedEventId) : base(referencedEventId) { }
+        protected RequestResult(ResourceRequest referencedRequest) : base(referencedRequest) { }
 
         public class Subscribed : RequestResult
         {
-            public Subscribed(ulong referencedEventId) : base(referencedEventId) { }
+            public Subscribed(ResourceRequest referencedRequest) : base(referencedRequest) { }
             public override EventTypeId eventType => EventTypeId.RequestResultSubscribed;
         }
 
         public class Leased : RequestResult
         {
-            public Leased(ulong referencedEventId) : base(referencedEventId) { }
+            public Leased(ResourceRequest referencedRequest) : base(referencedRequest) { }
             public override EventTypeId eventType => EventTypeId.RequestResultLeased;
         }
 
         public class Error : RequestResult
         {
-            public Error(ulong referencedEventId) : base(referencedEventId) { }
+            public Error(ResourceRequest referencedRequest) : base(referencedRequest) { }
             public override EventTypeId eventType => EventTypeId.RequestResultError;
         }
     }

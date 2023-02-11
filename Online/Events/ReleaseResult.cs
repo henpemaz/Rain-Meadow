@@ -2,23 +2,23 @@
 {
     public abstract class ReleaseResult : ResultEvent
     {
-        protected ReleaseResult(ulong referencedEventId) : base(referencedEventId) { }
+        protected ReleaseResult(ReleaseRequest referencedRequest) : base(referencedRequest) { }
 
         public class Unsubscribed : ReleaseResult
         {
-            public Unsubscribed(ulong referencedEventId) : base(referencedEventId) { }
+            public Unsubscribed(ReleaseRequest referencedRequest) : base(referencedRequest) { }
             public override EventTypeId eventType => EventTypeId.ReleaseResultUnsubscribed;
         }
 
         public class Error : ReleaseResult
         {
-            public Error(ulong referencedEventId) : base(referencedEventId) { }
+            public Error(ReleaseRequest referencedRequest) : base(referencedRequest) { }
             public override EventTypeId eventType => EventTypeId.ReleaseResultError;
         }
 
         internal class Released : ReleaseResult
         {
-            public Released(ulong referencedEventId) : base(referencedEventId) { }
+            public Released(ReleaseRequest referencedRequest) : base(referencedRequest) { }
             public override EventTypeId eventType => EventTypeId.ReleaseResultReleased;
         }
     }

@@ -44,7 +44,7 @@ namespace RainMeadow
                 ReceiveData();
                 foreach (var subscription in subscriptions)
                 {
-                    subscription.Update(lobby.ts);
+                    subscription.Update(ts);
                 }
 
                 foreach (var player in lobby.players)
@@ -68,45 +68,54 @@ namespace RainMeadow
         {
             lock (serializer)
             {
-                // todo loop while messages
+                int n = 1;
                 IntPtr[] messages = new IntPtr[32];
-                int n = SteamNetworkingMessages.ReceiveMessagesOnChannel(0, messages, messages.Length);
 
-                for (int i = 0; i < n; i++)
+                while (n > 0)
                 {
-                    var message = SteamNetworkingMessage_t.FromIntPtr(messages[i]);
-                    var fromPlayer = message.m_identityPeer.GetSteamID();
-                    serializer.BeginRead();
-
-                    serializer.ReadHeaders(fromPlayer);
-
-                    int ne = serializer.BeginReadEvents();
-                    for (int ie = 0; ie < ne; ie++)
+                    n = SteamNetworkingMessages.ReceiveMessagesOnChannel(0, messages, messages.Length);
+                    for (int i = 0; i < n; i++)
                     {
-                        ProcessIncomingEvent(serializer.ReadEvent(), fromPlayer);
-                    }
+                        var message = SteamNetworkingMessage_t.FromIntPtr(messages[i]);
+                        var fromPlayer = PlayerFromId(message.m_identityPeer.GetSteamID());
+                        if (fromPlayer == null)
+                        {
+                            SteamNetworkingMessage_t.Release(messages[i]);
+                            continue;
+                        }
+                        serializer.BeginRead();
 
-                    int ns = serializer.BeginReadStates();
-                    for (int ist = 0; ist < ns; ist++)
-                    {
-                        ProcessIncomingState(serializer.ReadState(), fromPlayer);
-                    }
+                        serializer.ReadHeaders(fromPlayer);
 
-                    serializer.EndRead();
-                    SteamNetworkingMessage_t.Release(messages[i]);
+                        int ne = serializer.BeginReadEvents();
+                        for (int ie = 0; ie < ne; ie++)
+                        {
+                            ProcessIncomingEvent(serializer.ReadEvent(), fromPlayer);
+                        }
+
+                        int ns = serializer.BeginReadStates();
+                        for (int ist = 0; ist < ns; ist++)
+                        {
+                            ProcessIncomingState(serializer.ReadState(), fromPlayer);
+                        }
+
+                        serializer.EndRead();
+                        SteamNetworkingMessage_t.Release(messages[i]);
+                    }
                 }
+                
                 serializer.Free();
             }
         }
 
-        private void ProcessIncomingState(ResourceState resourceState, CSteamID fromPlayer)
+        private void ProcessIncomingEvent(PlayerEvent playerEvent, OnlinePlayer fromPlayer)
         {
-            throw new NotImplementedException();
+            playerEvent.Process();
         }
 
-        private void ProcessIncomingEvent(PlayerEvent playerEvent, CSteamID fromPlayer)
+        private void ProcessIncomingState(ResourceState resourceState, OnlinePlayer fromPlayer)
         {
-            throw new NotImplementedException();
+            
         }
 
         internal void SendData(OnlinePlayer toPlayer)

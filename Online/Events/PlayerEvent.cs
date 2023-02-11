@@ -7,6 +7,8 @@ namespace RainMeadow
     {
         public abstract EventTypeId eventType { get; }
         public ulong eventId;
+        public OnlinePlayer from;// not serialized
+        public OnlinePlayer to;// not serialized
 
         public virtual long EstimatedSize { get => sizeof(ulong); }
 
@@ -14,6 +16,8 @@ namespace RainMeadow
         {
             serializer.Serialize(ref eventId);
         }
+
+        internal abstract void Process();
 
         // enum and virtual property
         // or enum and type->enum dictionary?

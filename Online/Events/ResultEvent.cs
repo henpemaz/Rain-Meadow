@@ -2,11 +2,16 @@
 {
     public abstract class ResultEvent : PlayerEvent
     {
-        public ulong referencedEventId;
+        public RequestEvent referencedRequest;
 
-        protected ResultEvent(ulong referencedEventId)
+        protected ResultEvent(RequestEvent referencedRequest)
         {
-            this.referencedEventId = referencedEventId;
+            this.referencedRequest = referencedRequest;
+        }
+
+        internal override void Process()
+        {
+            referencedRequest.Resolve(this);
         }
     }
 }

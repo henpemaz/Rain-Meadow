@@ -159,5 +159,10 @@ namespace RainMeadow
         {
             throw new NotImplementedException();
         }
+
+        internal void ReadHeaders(OnlinePlayer fromPlayer)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
