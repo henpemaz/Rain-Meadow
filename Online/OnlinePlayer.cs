@@ -12,7 +12,10 @@ namespace RainMeadow
         public SteamNetworkingIdentity oid;
         public Queue<PlayerEvent> OutgoingEvents;
         public Queue<ResourceState> OutgoingStates;
-        public ulong nextEvent;
+        public ulong nextOutgoingEvent = 1;
+        public ulong lastAckdEvent;
+        public ulong lastIncomingEvent;
+        public bool needsAck;
 
         public OnlinePlayer(CSteamID id)
         {
@@ -23,28 +26,30 @@ namespace RainMeadow
 
         internal void QueueEvent(PlayerEvent e)
         {
-            e.eventId = this.nextEvent;
-            nextEvent++;
+            e.eventId = this.nextOutgoingEvent;
+            e.to = this;
+            e.from = OnlineManager.mePlayer;
+            nextOutgoingEvent++;
             OutgoingEvents.Enqueue(e);
         }
 
         internal ResourceRequest RequestResource(OnlineResource onlineResource)
         {
-            var req = new ResourceRequest(OnlineManager.mePlayer, this, onlineResource);
+            var req = new ResourceRequest(onlineResource);
             QueueEvent(req);
             return req;
         }
 
         internal TransferRequest TransferResource(OnlineResource onlineResource)
         {
-            var req = new TransferRequest(OnlineManager.mePlayer, this, onlineResource, onlineResource.subscribers);
+            var req = new TransferRequest(onlineResource, onlineResource.subscribers);
             QueueEvent(req);
             return req;
         }
 
         internal ReleaseRequest ReleaseResource(OnlineResource onlineResource)
         {
-            var req = new ReleaseRequest(OnlineManager.mePlayer, this, onlineResource);
+            var req = new ReleaseRequest(onlineResource);
             QueueEvent(req);
             return req;
         }

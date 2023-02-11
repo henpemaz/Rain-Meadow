@@ -14,7 +14,7 @@ namespace RainMeadow
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);
-            throw new NotImplementedException();
+            serializer.Serialize(ref subscribers);
         }
 
         internal override void Process()

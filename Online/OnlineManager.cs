@@ -3,8 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using UnityEngine;
 
 namespace RainMeadow
@@ -59,6 +57,7 @@ namespace RainMeadow
             var id = new CSteamID(v);
             return lobby?.players.FirstOrDefault(p => p.id == id);
         }
+
         internal static OnlinePlayer PlayerFromId(CSteamID id)
         {
             return lobby?.players.FirstOrDefault(p => p.id == id);
@@ -80,6 +79,7 @@ namespace RainMeadow
                         var fromPlayer = PlayerFromId(message.m_identityPeer.GetSteamID());
                         if (fromPlayer == null)
                         {
+                            RainMeadow.Error("player not found: " + message.m_identityPeer + " " + message.m_identityPeer.GetSteamID());
                             SteamNetworkingMessage_t.Release(messages[i]);
                             continue;
                         }
@@ -110,7 +110,18 @@ namespace RainMeadow
 
         private void ProcessIncomingEvent(PlayerEvent playerEvent, OnlinePlayer fromPlayer)
         {
-            playerEvent.Process();
+            if(IsNewer(playerEvent.eventId, fromPlayer.lastIncomingEvent))
+            {
+                fromPlayer.lastIncomingEvent = playerEvent.eventId;
+                fromPlayer.needsAck = true;
+                playerEvent.Process();
+            }
+        }
+
+        private bool IsNewer(ulong eventId, ulong lastIncomingEvent)
+        {
+            var delta = eventId - lastIncomingEvent;
+            return delta != 0 && delta < ulong.MaxValue / 2; // closer through one side than the other
         }
 
         private void ProcessIncomingState(ResourceState resourceState, OnlinePlayer fromPlayer)

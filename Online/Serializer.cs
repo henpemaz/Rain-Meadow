@@ -22,6 +22,7 @@ namespace RainMeadow
         private Dictionary<Type, PlayerEvent.EventTypeId> eventTypeIdsByType;
         private int eventCount;
         private long eventHeader;
+        private OnlinePlayer currPlayer;
 
         public Serializer(long bufferCapacity) 
         {
@@ -33,8 +34,9 @@ namespace RainMeadow
             reader = new(stream);
         }
 
-        internal void BeginWrite()
+        internal void BeginWrite(OnlinePlayer toPlayer)
         {
+            currPlayer = toPlayer;
             if (isWriting || isReading) throw new InvalidOperationException("not done with previous operation");
             isWriting = true;
             stream.Seek(0, SeekOrigin.Begin);
@@ -77,6 +79,7 @@ namespace RainMeadow
 
         internal void EndWrite()
         {
+            currPlayer = null;
             if (!isWriting) throw new InvalidOperationException("not writing");
             isWriting = false;
             writer.Flush();
@@ -120,22 +123,24 @@ namespace RainMeadow
             throw new NotImplementedException();
         }
 
-        internal void BeginRead()
+        internal void BeginRead(OnlinePlayer fromPlayer)
         {
+            currPlayer = fromPlayer;
             throw new NotImplementedException();
         }
 
         internal void EndRead()
         {
+            currPlayer = null;
             throw new NotImplementedException();
         }
 
-        internal void WriteHeaders(OnlinePlayer toPlayer)
+        internal void WriteHeaders()
         {
             throw new NotImplementedException();
         }
 
-        internal void ReadHeaders(CSteamID fromPlayer)
+        internal void ReadHeaders()
         {
             throw new NotImplementedException();
         }
@@ -147,6 +152,9 @@ namespace RainMeadow
 
         internal PlayerEvent ReadEvent()
         {
+            PlayerEvent playerEvent = new PlayerEvent();
+            playerEvent.from = currPlayer;
+            playerEvent.to = OnlineManager.mePlayer;
             throw new NotImplementedException();
         }
 
@@ -160,7 +168,12 @@ namespace RainMeadow
             throw new NotImplementedException();
         }
 
-        internal void ReadHeaders(OnlinePlayer fromPlayer)
+        internal void ReadHeaders()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void Serialize(ref List<OnlinePlayer> players)
         {
             throw new NotImplementedException();
         }

@@ -7,13 +7,15 @@ namespace RainMeadow
 {
     // OnlineResources are transferible, subscriptable resources, limited to a resource that others can consume (lobby, world, room)
     // The owner of the resource coordinates states, distributes subresources and solves conflicts
-    // Distributed Hyerarchical Ownership Management
-    // Distributed transaction management
+    // Distributed Hyerarchical Ownership Management System?
+    // Distributed transaction management system?
     public abstract class OnlineResource
     {
         public OnlineResource super;
         public OnlinePlayer owner;
+
         private bool subscribedToOther;
+
         public RequestEvent pendingRequest; // should this maybe be a list/queue?
         public List<OnlinePlayer> subscribers; // this could be a dict of subscriptions, but how relevant is to access them through here anyways
 
@@ -108,6 +110,13 @@ namespace RainMeadow
         // Someone else released from me
         public ReleaseResult Released(ReleaseRequest request)
         {
+            if (pendingRequest is TransferRequest tr && tr.to == request.from)
+            {
+                // uh oh
+                // retry transfer to someone else?
+                // prioritize releasing over transfering
+                throw new NotImplementedException();
+            }
             if(isOwner)
             {
                 Unsubscribed(request.from);
@@ -142,18 +151,19 @@ namespace RainMeadow
             if (requestResult is RequestResult.Leased)
             {
                 Claimed(OnlineManager.mePlayer);
-                pendingRequest = null;
             }
             else if (requestResult is RequestResult.Subscribed)
             {
                 subscribedToOther = true;
-                pendingRequest = null;
             }
             else if (requestResult is RequestResult.Error)
             {
                 RainMeadow.Error("request failed for " + this);
             }
+            pendingRequest = null;
         }
+
+        // A pending release was answered to
         internal void ResolveRelease(ReleaseResult releaseResult)
         {
             if(releaseResult is ReleaseResult.Released)
@@ -168,13 +178,14 @@ namespace RainMeadow
             {
                 RainMeadow.Error("released failed for " + this);
             }
+            pendingRequest = null;
         }
 
+        // A pending transfer was asnwered to
         internal void ResolveTransfer(TransferResult transferResult)
         {
             if (transferResult is TransferResult.Ok)
             {
-                // clear subscribers
                 var transfer = (transferResult.referencedRequest as TransferRequest);
                 transfer.subscribers.ForEach(s=>Unsubscribed(s));
                 Claimed(transfer.to);
@@ -183,6 +194,7 @@ namespace RainMeadow
             {
                 RainMeadow.Error("transfer failed for " + this);
             }
+            pendingRequest = null;
         }
 
         public abstract ResourceState GetState(long ts);

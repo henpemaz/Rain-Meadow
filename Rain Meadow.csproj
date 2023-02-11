@@ -124,6 +124,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Mod\thumbnail.png" />
+    <None Include="Readme.md" />
+    <Content Include="Thoughts.txt" />
     <Content Include="TODO.txt" />
   </ItemGroup>
   <ItemGroup>
