@@ -22,6 +22,9 @@ namespace RainMeadow
 
         public static LobbyManager lobbyManager;
         internal static List<Subscription> subscriptions;
+        private static Dictionary<string, WorldSession> worldSessions;
+        private static Dictionary<string, RoomSession> roomSessions;
+        private long ts;
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
@@ -29,7 +32,7 @@ namespace RainMeadow
             mePlayer = new OnlinePlayer(me);
             lobbyManager = new LobbyManager();
 
-            framesPerSecond = 20;
+            framesPerSecond = 20; // alternatively, run as fast as we can for the receiving stuff, but send on a lower tickrate?
 
             RainMeadow.Debug("OnlineManager Created");
         }
@@ -40,6 +43,9 @@ namespace RainMeadow
             if(lobby != null)
             {
                 ReceiveData();
+
+                ts++;
+
                 foreach (var subscription in subscriptions)
                 {
                     subscription.Update(ts);
@@ -50,12 +56,6 @@ namespace RainMeadow
                     SendData(player);
                 }
             }
-        }
-
-        internal static OnlinePlayer PlayerFromId(ulong v)
-        {
-            var id = new CSteamID(v);
-            return lobby?.players.FirstOrDefault(p => p.id == id);
         }
 
         internal static OnlinePlayer PlayerFromId(CSteamID id)
@@ -83,9 +83,9 @@ namespace RainMeadow
                             SteamNetworkingMessage_t.Release(messages[i]);
                             continue;
                         }
-                        serializer.BeginRead();
+                        serializer.BeginRead(fromPlayer);
 
-                        serializer.ReadHeaders(fromPlayer);
+                        serializer.ReadHeaders();
 
                         int ne = serializer.BeginReadEvents();
                         for (int ie = 0; ie < ne; ie++)
@@ -110,62 +110,88 @@ namespace RainMeadow
 
         private void ProcessIncomingEvent(PlayerEvent playerEvent, OnlinePlayer fromPlayer)
         {
-            if(IsNewer(playerEvent.eventId, fromPlayer.lastIncomingEvent))
+            fromPlayer.needsAck = true;
+            if (IsNewer(playerEvent.eventId, fromPlayer.lastIncomingEvent))
             {
                 fromPlayer.lastIncomingEvent = playerEvent.eventId;
-                fromPlayer.needsAck = true;
                 playerEvent.Process();
             }
         }
 
-        private bool IsNewer(ulong eventId, ulong lastIncomingEvent)
+        public static bool IsNewer(ulong eventId, ulong lastIncomingEvent)
         {
             var delta = eventId - lastIncomingEvent;
-            return delta != 0 && delta < ulong.MaxValue / 2; // closer through one side than the other
+            return delta != 0 && delta < ulong.MaxValue / 2;
+        }
+        public static bool IsNewerOrEqual(ulong eventId, ulong lastIncomingEvent)
+        {
+            var delta = eventId - lastIncomingEvent;
+            return delta < ulong.MaxValue / 2;
         }
 
         private void ProcessIncomingState(ResourceState resourceState, OnlinePlayer fromPlayer)
         {
-            
+            throw new NotImplementedException();   
         }
 
         internal void SendData(OnlinePlayer toPlayer)
         {
-            lock (serializer)
+            if(toPlayer.needsAck || toPlayer.OutgoingEvents.Any() || toPlayer.OutgoingStates.Any())
             {
-                serializer.BeginWrite();
-
-                serializer.WriteHeaders(toPlayer);
-
-                serializer.BeginWriteEvents();
-                foreach (var e in toPlayer.OutgoingEvents)
+                lock (serializer)
                 {
-                    if (!serializer.CanFit(e)) throw new IOException("no buffer space for events");
-                    serializer.WriteEvent(e);
-                }
-                serializer.EndWriteEvents();
+                    serializer.BeginWrite(toPlayer);
 
-                serializer.BeginWriteStates();
-                while (toPlayer.OutgoingStates.Count > 1 && serializer.CanFit(toPlayer.OutgoingStates.Peek()))
-                {
-                    var s = toPlayer.OutgoingStates.Dequeue();
-                    serializer.WriteState(s);
-                }
-                // todo handle states overflow, planing a packet for maximum size and least stale states
-                serializer.EndWriteStates();
+                    serializer.WriteHeaders();
 
-                serializer.EndWrite();
-
-                unsafe
-                {
-                    fixed (byte* ptr = serializer.buffer)
+                    serializer.BeginWriteEvents();
+                    foreach (var e in toPlayer.OutgoingEvents)
                     {
-                        SteamNetworkingMessages.SendMessageToUser(ref toPlayer.oid, (IntPtr)ptr, (uint)serializer.Position, 0, 0);
+                        if (!serializer.CanFit(e)) throw new IOException("no buffer space for events");
+                        serializer.WriteEvent(e);
                     }
-                }
+                    serializer.EndWriteEvents();
 
-                serializer.Free();
+                    serializer.BeginWriteStates();
+                    while (toPlayer.OutgoingStates.Count > 1 && serializer.CanFit(toPlayer.OutgoingStates.Peek()))
+                    {
+                        var s = toPlayer.OutgoingStates.Dequeue();
+                        serializer.WriteState(s);
+                    }
+                    // todo handle states overflow, planing a packet for maximum size and least stale states
+                    serializer.EndWriteStates();
+
+                    serializer.EndWrite();
+
+                    unsafe
+                    {
+                        fixed (byte* ptr = serializer.buffer)
+                        {
+                            SteamNetworkingMessages.SendMessageToUser(ref toPlayer.oid, (IntPtr)ptr, (uint)serializer.Position, 0, 0);
+                        }
+                    }
+
+                    serializer.Free();
+                }
             }
+        }
+
+        internal static void AddSubscription(OnlineResource onlineResource, OnlinePlayer player)
+        {
+            subscriptions.Add(new Subscription(onlineResource, player));
+        }
+
+        internal static void RemoveSubscription(OnlineResource onlineResource, OnlinePlayer player)
+        {
+            subscriptions.RemoveAll(s => s.onlineResource == onlineResource && s.player == player);
+        }
+
+        internal static OnlineResource ResourceFromIdentifier(string rid)
+        {
+            if (rid == ".") return lobby;
+            if (rid.Length == 2 && worldSessions.TryGetValue(rid, out var r2)) return r2;
+            if (roomSessions.TryGetValue(rid, out var r3)) return r3;
+            return null;
         }
     }
 }

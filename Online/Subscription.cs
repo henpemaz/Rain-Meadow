@@ -4,8 +4,8 @@ namespace RainMeadow
 {
     internal class Subscription
     {
-        private OnlineResource onlineResource;
-        private OnlinePlayer player;
+        internal OnlineResource onlineResource;
+        internal OnlinePlayer player;
 
         public Subscription(OnlineResource onlineResource, OnlinePlayer player)
         {

@@ -22,6 +22,17 @@ namespace RainMeadow
         public bool isFree => owner == null;
         public bool isOwner => owner != null && owner.id == OnlineManager.me;
         public bool isSuper => super != null && super.isOwner;
+        public bool isActive { get; protected set; }
+
+        public void Activate()
+        {
+
+        }
+
+        public void Deactivate()
+        {
+
+        }
 
         private void Claimed(OnlinePlayer player)
         {
@@ -188,6 +199,7 @@ namespace RainMeadow
             {
                 var transfer = (transferResult.referencedRequest as TransferRequest);
                 transfer.subscribers.ForEach(s=>Unsubscribed(s));
+                // TODO send subs a notification? when to they get to know that onwership changed?
                 Claimed(transfer.to);
             }
             else if (transferResult is TransferResult.Error)
@@ -197,13 +209,25 @@ namespace RainMeadow
             pendingRequest = null;
         }
 
-        public abstract ResourceState GetState(long ts);
-
-        public abstract void SetState(ResourceState newState, long ts);
-
-        internal virtual long SizeOfIdentifier()
+        private ResourceState lastState;
+        public virtual ResourceState GetState(long ts)
         {
-            throw new NotImplementedException();
+            if (lastState == null || lastState.ts != ts)
+            {
+                lastState = MakeState(ts);
+            }
+
+            return lastState;
         }
+
+        protected abstract ResourceState MakeState(long ts);
+        public abstract void ReadState(ResourceState newState, long ts);
+
+        internal virtual byte SizeOfIdentifier()
+        {
+            return (byte)Identifier().Length;
+        }
+
+        internal abstract string Identifier();
     }
 }

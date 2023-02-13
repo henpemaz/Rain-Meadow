@@ -5,10 +5,10 @@ namespace RainMeadow
 {
     public abstract class PlayerEvent
     {
-        public abstract EventTypeId eventType { get; }
-        public ulong eventId;
+        public abstract EventTypeId eventType { get; } // serialized externally
         public OnlinePlayer from;// not serialized
         public OnlinePlayer to;// not serialized
+        public ulong eventId;
 
         public virtual long EstimatedSize { get => sizeof(ulong); }
 

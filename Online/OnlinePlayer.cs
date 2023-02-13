@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -31,6 +32,12 @@ namespace RainMeadow
             e.from = OnlineManager.mePlayer;
             nextOutgoingEvent++;
             OutgoingEvents.Enqueue(e);
+        }
+
+        internal void SetAck(ulong lastAck)
+        {
+            this.lastAckdEvent = lastAck;
+            while (OutgoingEvents.Count > 0 && OnlineManager.IsNewerOrEqual(lastAck, OutgoingEvents.Peek().eventId)) OutgoingEvents.Dequeue();
         }
 
         internal ResourceRequest RequestResource(OnlineResource onlineResource)

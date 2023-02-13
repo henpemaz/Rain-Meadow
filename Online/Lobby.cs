@@ -10,6 +10,7 @@ namespace RainMeadow
     {
         public CSteamID id;
         public List<OnlinePlayer> players;
+        public OnlineGameSession session;
         public Dictionary<Region, WorldSession> worldSessions;
 
         public Lobby(CSteamID id)
@@ -44,6 +45,11 @@ namespace RainMeadow
             {
                 if (!oldplayers.Contains(p)) PlayerJoined(p);
             }
+        }
+
+        internal override string Identifier()
+        {
+            return ".";
         }
 
         private void PlayerJoined(CSteamID p)
