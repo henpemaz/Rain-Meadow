@@ -3,9 +3,14 @@ using System.Collections.Generic;
 
 namespace RainMeadow
 {
-    public abstract class TransferResult : ResultEvent
+    public abstract class TransferResult : ResourceResultEvent
     {
         public TransferResult(TransferRequest referencedRequest) : base(referencedRequest) { }
+
+        internal override void Process()
+        {
+            referencedEvent.onlineResource.ResolveTransfer(this);
+        }
 
         public class Error : TransferResult
         {

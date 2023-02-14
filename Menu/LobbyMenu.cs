@@ -52,7 +52,10 @@ namespace RainMeadow
 
         public override void ShutDownProcess()
         {
-            OnlineManager.lobbyManager.LeaveLobby();
+            if(manager.upcomingProcess != ProcessManager.ProcessID.Game)
+            {
+                OnlineManager.lobbyManager.LeaveLobby();
+            }
             base.ShutDownProcess();
         }
     }

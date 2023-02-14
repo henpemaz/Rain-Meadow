@@ -14,9 +14,7 @@ namespace RainMeadow
         public OnlineResource super;
         public OnlinePlayer owner;
 
-        private bool subscribedToOther;
-
-        public RequestEvent pendingRequest; // should this maybe be a list/queue?
+        public ResourceEvent pendingRequest; // should this maybe be a list/queue?
         public List<OnlinePlayer> subscribers; // this could be a dict of subscriptions, but how relevant is to access them through here anyways
 
         public bool isFree => owner == null;
@@ -24,34 +22,51 @@ namespace RainMeadow
         public bool isSuper => super != null && super.isOwner;
         public bool isActive { get; protected set; }
 
+        public bool isPending => pendingRequest != null;
+
+        public override string ToString()
+        {
+            return $"<Resource {Identifier()} - o:{owner?.name}>";
+        }
+
         public void Activate()
         {
-
+            RainMeadow.Debug(this);
+            isActive = true;
         }
 
         public void Deactivate()
         {
-
+            RainMeadow.Debug(this);
+            isActive = false;
+            subscribers.Clear();
+            OnlineManager.RemoveSubscriptions(this);
         }
 
         private void Claimed(OnlinePlayer player)
         {
+            RainMeadow.Debug(this);
             owner = player;
+            Activate();
         }
 
         private void Unclaimed()
         {
+            RainMeadow.Debug(this);
             owner = null;
+            Deactivate();
         }
 
         private void Subscribed(OnlinePlayer player)
         {
+            RainMeadow.Debug(this.ToString() + " - " + player.name);
             OnlineManager.AddSubscription(this, player);
             this.subscribers.Add(player);
         }
 
         private void Unsubscribed(OnlinePlayer player)
         {
+            RainMeadow.Debug(this.ToString() + " - " + player.name);
             OnlineManager.RemoveSubscription(this, player);
             this.subscribers.Remove(player);
         }
@@ -59,51 +74,69 @@ namespace RainMeadow
         // I request, possibly to someone else
         public virtual void Request()
         {
-            if (isOwner) return;
-            if (isFree && isSuper)
-            {
-                Claimed(OnlineManager.mePlayer);
-                return;
-            }
-            if (pendingRequest != null) return;
+            RainMeadow.Debug(this);
+            if (isPending) throw new InvalidOperationException("pending");
+            if (isActive) throw new InvalidOperationException("active");
 
-            pendingRequest = owner.RequestResource(this);
+            if (owner != null)
+            {
+                pendingRequest = owner.RequestResource(this);
+            }
+            else if (super?.owner != null)
+            {
+                pendingRequest = super.owner.RequestResource(this);
+            }
+            else
+            {
+                throw new InvalidOperationException("cant be requested");
+            }
         }
 
         // I release, possibly to someone else
         public void Release()
         {
-            if (isFree) return;
-            if (pendingRequest != null) return;
+            RainMeadow.Debug(this);
+            if (isPending) throw new InvalidOperationException("pending");
+            if (!isActive) throw new InvalidOperationException("inactive");
             if (isOwner) // let go
             {
-                if (subscribers.Count > 0) // transfer to active
+                if (subscribers.Count > 0 && super?.owner != null) // transfer
                 {
-                    pendingRequest = subscribers[0].TransferResource(this); // todo select based on ping
+                    pendingRequest = super.owner.TransferResource(this);
                 }
-                else // release
+                else if (super?.owner != null) // return to super
                 {
-                    if (!isSuper) // return to super
-                    {
-                        pendingRequest = super.owner.ReleaseResource(this);
-                    }
-                    else
-                    {
-                        Unclaimed();
-                    }
+                    pendingRequest = super.owner.ReleaseResource(this);
+                }
+                else
+                {
+                    throw new InvalidOperationException("cant be released");
                 }
             }
-            else // unsubscribe
+            else if (owner != null) // unsubscribe
             {
                 pendingRequest = owner.ReleaseResource(this);
             }
+            else
+            {
+                throw new InvalidOperationException("cant be released");
+            }
         }
 
-        // Someone else requested me
+        private OnlinePlayer BestTransferCandidate(List<OnlinePlayer> subscribers)
+        {
+            return subscribers[0];
+        }
+
+        // Someone requested me, maybe myself
         public RequestResult Requested(ResourceRequest request)
         {
+            RainMeadow.Debug(this);
+            RainMeadow.Debug("Requested by : " + request.from.name);
+
             if (isOwner) // I decide
             {
+                if (request.from.isMe) throw new InvalidOperationException("requested, but already own");
                 // Player subscribed to resource
                 Subscribed(request.from);
                 return new RequestResult.Subscribed(request);
@@ -118,9 +151,12 @@ namespace RainMeadow
             return new RequestResult.Error(request);
         }
 
-        // Someone else released from me
+        // Someone released from me, maybe myself
         public ReleaseResult Released(ReleaseRequest request)
         {
+            RainMeadow.Debug(this);
+            RainMeadow.Debug("Released by : " + request.from.name);
+
             if (pendingRequest is TransferRequest tr && tr.to == request.from)
             {
                 // uh oh
@@ -128,28 +164,32 @@ namespace RainMeadow
                 // prioritize releasing over transfering
                 throw new NotImplementedException();
             }
-            if(isOwner)
-            {
-                Unsubscribed(request.from);
-                return new ReleaseResult.Unsubscribed(request);
-            }
             if(isSuper && owner == request.from)
             {
                 Unclaimed();
                 return new ReleaseResult.Released(request);
             }
+            if (isOwner)
+            {
+                Unsubscribed(request.from);
+                return new ReleaseResult.Unsubscribed(request);
+            }
             return new ReleaseResult.Error(request);
         }
 
-        // Someone else transfered an active resource to me
+        // Someone I manage needs a resource transfered
         public TransferResult Transfered(TransferRequest request)
         {
+            RainMeadow.Debug(this);
+            RainMeadow.Debug("Transfered by : " + request.from.name);
+
             if (owner == request.from)
             {
-                Claimed(OnlineManager.mePlayer);
-                foreach (var x in request.subscribers.Where(x => x != OnlineManager.mePlayer))
+                owner = BestTransferCandidate(request.subscribers);
+                Claimed(owner);
+                foreach (var x in request.subscribers)
                 {
-                    Subscribed(x);
+                    x.NewOwnerEvent(this, owner);
                 }
                 return new TransferResult.Ok(request);
             }
@@ -159,13 +199,14 @@ namespace RainMeadow
         // A pending request was answered to
         public void ResolveRequest(RequestResult requestResult)
         {
+            RainMeadow.Debug(this);
             if (requestResult is RequestResult.Leased)
             {
                 Claimed(OnlineManager.mePlayer);
             }
             else if (requestResult is RequestResult.Subscribed)
             {
-                subscribedToOther = true;
+                Activate();
             }
             else if (requestResult is RequestResult.Error)
             {
@@ -177,13 +218,14 @@ namespace RainMeadow
         // A pending release was answered to
         internal void ResolveRelease(ReleaseResult releaseResult)
         {
-            if(releaseResult is ReleaseResult.Released)
+            RainMeadow.Debug(this);
+            if (releaseResult is ReleaseResult.Released)
             {
                 Unclaimed();
             }
             else if (releaseResult is ReleaseResult.Unsubscribed)
             {
-                subscribedToOther = false;
+                Deactivate();
             } 
             else if (releaseResult is ReleaseResult.Error)
             {
@@ -195,12 +237,10 @@ namespace RainMeadow
         // A pending transfer was asnwered to
         internal void ResolveTransfer(TransferResult transferResult)
         {
+            RainMeadow.Debug(this);
             if (transferResult is TransferResult.Ok)
             {
-                var transfer = (transferResult.referencedRequest as TransferRequest);
-                transfer.subscribers.ForEach(s=>Unsubscribed(s));
-                // TODO send subs a notification? when to they get to know that onwership changed?
-                Claimed(transfer.to);
+                Deactivate();
             }
             else if (transferResult is TransferResult.Error)
             {
@@ -208,6 +248,25 @@ namespace RainMeadow
             }
             pendingRequest = null;
         }
+
+        internal void NewOwner(NewOwnerEvent newOwnerEvent)
+        {
+            RainMeadow.Debug(this);
+            if (isActive)
+            {
+                Claimed(newOwnerEvent.newOwner);
+            }
+            if(isPending)
+            {
+                if (pendingRequest is ReleaseRequest) return;
+                if (pendingRequest is TransferRequest) return;
+            }
+            else
+            {
+                pendingRequest = owner.RequestResource(this);
+            }
+        }
+
 
         private ResourceState lastState;
         public virtual ResourceState GetState(long ts)
@@ -228,6 +287,6 @@ namespace RainMeadow
             return (byte)Identifier().Length;
         }
 
-        internal abstract string Identifier();
+        internal abstract string Identifier();        
     }
 }

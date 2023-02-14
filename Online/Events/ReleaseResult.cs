@@ -1,24 +1,28 @@
 ﻿namespace RainMeadow
 {
-    public abstract class ReleaseResult : ResultEvent
+    public abstract class ReleaseResult : ResourceResultEvent
     {
-        protected ReleaseResult(ReleaseRequest referencedRequest) : base(referencedRequest) { }
+        protected ReleaseResult(ReleaseRequest referencedEvent) : base(referencedEvent) { }
 
+        internal override void Process()
+        {
+            referencedEvent.onlineResource.ResolveRelease(this);
+        }
         public class Unsubscribed : ReleaseResult
         {
-            public Unsubscribed(ReleaseRequest referencedRequest) : base(referencedRequest) { }
+            public Unsubscribed(ReleaseRequest referencedEvent) : base(referencedEvent) { }
             public override EventTypeId eventType => EventTypeId.ReleaseResultUnsubscribed;
         }
 
         public class Error : ReleaseResult
         {
-            public Error(ReleaseRequest referencedRequest) : base(referencedRequest) { }
+            public Error(ReleaseRequest referencedEvent) : base(referencedEvent) { }
             public override EventTypeId eventType => EventTypeId.ReleaseResultError;
         }
 
         internal class Released : ReleaseResult
         {
-            public Released(ReleaseRequest referencedRequest) : base(referencedRequest) { }
+            public Released(ReleaseRequest referencedEvent) : base(referencedEvent) { }
             public override EventTypeId eventType => EventTypeId.ReleaseResultReleased;
         }
     }

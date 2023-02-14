@@ -1,6 +1,6 @@
 ﻿namespace RainMeadow
 {
-    public class RoomSession : OnlineResource
+    public class RoomSession// : OnlineResource
     {
         public AbstractRoom absroom;
 

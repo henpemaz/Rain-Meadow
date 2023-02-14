@@ -21,15 +21,15 @@ namespace RainMeadow
         internal static Serializer serializer = new Serializer(16000);
 
         public static LobbyManager lobbyManager;
-        internal static List<Subscription> subscriptions;
-        private static Dictionary<string, WorldSession> worldSessions;
-        private static Dictionary<string, RoomSession> roomSessions;
+        internal static List<Subscription> subscriptions = new();
+        //private static Dictionary<string, WorldSession> worldSessions;
+        //private static Dictionary<string, RoomSession> roomSessions;
         private long ts;
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
             me = SteamUser.GetSteamID();
-            mePlayer = new OnlinePlayer(me);
+            mePlayer = new OnlinePlayer(me) { isMe = true, name = SteamFriends.GetPersonaName() };
             lobbyManager = new LobbyManager();
 
             framesPerSecond = 20; // alternatively, run as fast as we can for the receiving stuff, but send on a lower tickrate?
@@ -42,9 +42,18 @@ namespace RainMeadow
             base.Update();
             if(lobby != null)
             {
-                ReceiveData();
-
                 ts++;
+
+                // Stuff mePlayer set to itself, events from the distributed lease system
+                mePlayer.recentlyAckedEvents.Clear();
+                while(mePlayer.OutgoingEvents.Count > 0)
+                {
+                    var e = mePlayer.OutgoingEvents.Dequeue();
+                    mePlayer.recentlyAckedEvents.Add(e);
+                    e.Process();
+                }
+
+                ReceiveData();
 
                 foreach (var subscription in subscriptions)
                 {
@@ -186,11 +195,16 @@ namespace RainMeadow
             subscriptions.RemoveAll(s => s.onlineResource == onlineResource && s.player == player);
         }
 
+        internal static void RemoveSubscriptions(OnlineResource onlineResource)
+        {
+            subscriptions.RemoveAll(s => s.onlineResource == onlineResource);
+        }
+
         internal static OnlineResource ResourceFromIdentifier(string rid)
         {
             if (rid == ".") return lobby;
-            if (rid.Length == 2 && worldSessions.TryGetValue(rid, out var r2)) return r2;
-            if (roomSessions.TryGetValue(rid, out var r3)) return r3;
+            //if (rid.Length == 2 && worldSessions.TryGetValue(rid, out var r2)) return r2;
+            //if (roomSessions.TryGetValue(rid, out var r3)) return r3;
             return null;
         }
     }

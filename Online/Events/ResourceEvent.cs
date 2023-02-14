@@ -3,12 +3,12 @@ using System;
 
 namespace RainMeadow
 {
-    public abstract class RequestEvent : PlayerEvent
+    public abstract class ResourceEvent : PlayerEvent
     {
         public override long EstimatedSize => base.EstimatedSize + onlineResource.SizeOfIdentifier();
         public OnlineResource onlineResource;
 
-        public RequestEvent(OnlineResource onlineResource)
+        public ResourceEvent(OnlineResource onlineResource)
         {
             this.onlineResource = onlineResource;
         }
@@ -18,7 +18,5 @@ namespace RainMeadow
             base.CustomSerialize(serializer);
             serializer.Serialize(ref onlineResource);
         }
-
-        internal abstract void Resolve(ResultEvent resultEvent);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace RainMeadow
 {
-    public class WorldSession : OnlineResource
+    public class WorldSession// : OnlineResource
     {
         public Region region;
         public List<RoomSession> rooms;

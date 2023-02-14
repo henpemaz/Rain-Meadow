@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace RainMeadow
 {
-    public class TransferRequest : RequestEvent
+    public class TransferRequest : ResourceEvent
     {
         public List<OnlinePlayer> subscribers;
 
@@ -20,11 +20,6 @@ namespace RainMeadow
         internal override void Process()
         {
             onlineResource.Transfered(this);
-        }
-
-        internal override void Resolve(ResultEvent resultEvent)
-        {
-            onlineResource.ResolveTransfer(resultEvent as TransferResult);
         }
 
         public override EventTypeId eventType => EventTypeId.TransferRequest;

@@ -1,6 +1,6 @@
 ﻿namespace RainMeadow
 {
-    public class ResourceRequest : RequestEvent
+    public class ResourceRequest : ResourceEvent
     {
         public ResourceRequest(OnlineResource onlineResource) : base(onlineResource) { }
 
@@ -9,11 +9,6 @@
         internal override void Process()
         {
             onlineResource.Requested(this);
-        }
-
-        internal override void Resolve(ResultEvent resultEvent)
-        {
-            onlineResource.ResolveRequest(resultEvent as RequestResult);
         }
     }
 }

@@ -35,6 +35,7 @@ namespace RainMeadow
             RequestResultError,
             TransferResultError,
             TransferResultOk,
+            NewOwnerEvent,
         }
     }
 }

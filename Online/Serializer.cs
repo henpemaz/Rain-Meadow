@@ -3,6 +3,7 @@ using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -19,7 +20,6 @@ namespace RainMeadow
         MemoryStream stream;
         BinaryWriter writer;
         BinaryReader reader;
-        private Dictionary<Type, PlayerEvent.EventTypeId> eventTypeIdsByType;
         private int eventCount;
         private long eventHeader;
         private OnlinePlayer currPlayer;
@@ -232,6 +232,18 @@ namespace RainMeadow
         internal void Serialize(ref List<OnlinePlayer> players)
         {
             throw new NotImplementedException();
+        }
+
+        internal void SerializeReferencedEvent(ref ResourceEvent referencedEvent)
+        {
+            if(isWriting)
+            {
+                writer.Write(referencedEvent.eventId);
+            }
+            if (isReading)
+            {
+                referencedEvent = (ResourceEvent)currPlayer.GetRecentEvent(reader.ReadUInt64());
+            }
         }
     }
 }
