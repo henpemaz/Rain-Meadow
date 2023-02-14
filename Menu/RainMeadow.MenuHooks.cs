@@ -5,6 +5,12 @@ namespace RainMeadow
 {
     partial class RainMeadow
     {
+        private void MenuHooks()
+        {
+            On.Menu.MainMenu.ctor += MainMenu_ctor;
+            On.ProcessManager.PostSwitchMainProcess += ProcessManager_PostSwitchMainProcess;
+        }
+
         private void ProcessManager_PostSwitchMainProcess(On.ProcessManager.orig_PostSwitchMainProcess orig, ProcessManager self, ProcessManager.ProcessID ID)
         {
             if (ID == Ext_ProcessID.LobbySelectMenu)

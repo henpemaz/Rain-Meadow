@@ -14,7 +14,7 @@ namespace RainMeadow
         public static string CLIENT_KEY = "client";
         public static string CLIENT_VAL = "Meadow_" + RainMeadow.MeadowVersionStr;
         public static string NAME_KEY = "name";
-
+        public static OnlineManager instance;
         public static CSteamID me;
         public static OnlinePlayer mePlayer;
         public static Lobby lobby;
@@ -22,12 +22,13 @@ namespace RainMeadow
 
         public static LobbyManager lobbyManager;
         internal static List<Subscription> subscriptions = new();
-        //private static Dictionary<string, WorldSession> worldSessions;
+        private static Dictionary<string, WorldSession> worldSessions;
         //private static Dictionary<string, RoomSession> roomSessions;
         private long ts;
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
+            instance = this;
             me = SteamUser.GetSteamID();
             mePlayer = new OnlinePlayer(me) { isMe = true, name = SteamFriends.GetPersonaName() };
             lobbyManager = new LobbyManager();
@@ -203,7 +204,7 @@ namespace RainMeadow
         internal static OnlineResource ResourceFromIdentifier(string rid)
         {
             if (rid == ".") return lobby;
-            //if (rid.Length == 2 && worldSessions.TryGetValue(rid, out var r2)) return r2;
+            if (rid.Length == 2 && worldSessions.TryGetValue(rid, out var r2)) return r2;
             //if (roomSessions.TryGetValue(rid, out var r3)) return r3;
             return null;
         }

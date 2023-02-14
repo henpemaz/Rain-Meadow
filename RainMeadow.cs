@@ -53,17 +53,8 @@ namespace RainMeadow
             if(SteamManager.Initialized)
             {
                 self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
-
-                On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues += WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues;
-                On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues_LoadingContext += WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues_LoadingContext;
-
-                On.Menu.MainMenu.ctor += MainMenu_ctor;
-                On.ProcessManager.PostSwitchMainProcess += ProcessManager_PostSwitchMainProcess;
-
-                On.Room.ctor += Room_ctor;
-                IL.RainWorldGame.ctor += RainWorldGame_ctor;
-                IL.Room.LoadFromDataString += Room_LoadFromDataString;
-                IL.Room.Loaded += Room_Loaded;
+                MenuHooks();
+                GameHooks();
             }
             else
             {

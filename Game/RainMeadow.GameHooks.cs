@@ -2,11 +2,38 @@
 using System.Linq;
 using System;
 using Mono.Cecil.Cil;
+using Steamworks;
 
 namespace RainMeadow
 {
     partial class RainMeadow
     {
+        private void GameHooks()
+        {
+            On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues += WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues;
+            On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues_LoadingContext += WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues_LoadingContext;
+            On.WorldLoader.Update += WorldLoader_Update;
+
+            On.Room.ctor += Room_ctor;
+            IL.RainWorldGame.ctor += RainWorldGame_ctor;
+            IL.Room.LoadFromDataString += Room_LoadFromDataString;
+            IL.Room.Loaded += Room_Loaded;
+        }
+
+        private void WorldLoader_Update(On.WorldLoader.orig_Update orig, WorldLoader self)
+        {
+            if(self.game?.session is OnlineGameSession os)
+            {
+                if(self.game.overWorld?.worldLoader == null) // force-load scenario
+                {
+                    SteamAPI.RunCallbacks();
+                    OnlineManager.instance.RawUpdate(0.001f);
+                }
+
+                if(self.Finished && !OnlineManager.lobby.worldSessions[self.world.region.name].isActive) self.Finished = false;
+            }
+            orig(self);
+        }
 
         private void Room_ctor(On.Room.orig_ctor orig, Room self, RainWorldGame game, World world, AbstractRoom abstractRoom)
         {
@@ -84,18 +111,22 @@ namespace RainMeadow
 
         private void WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues_LoadingContext(On.WorldLoader.orig_ctor_RainWorldGame_Name_bool_string_Region_SetupValues_LoadingContext orig, WorldLoader self, RainWorldGame game, SlugcatStats.Name playerCharacter, bool singleRoomWorld, string worldName, Region region, RainWorldGame.SetupValues setupValues, WorldLoader.LoadingContext context)
         {
-            if (game.session is OnlineGameSession os && !os.ShouldLoadCreatures(game))
+            if (game?.session is OnlineGameSession os)
             {
-                setupValues.worldCreaturesSpawn = false;
+                setupValues.worldCreaturesSpawn = os.ShouldLoadCreatures(game);
+
+                OnlineManager.lobby.worldSessions[region.name].Request();
             }
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues, context);
         }
 
         private void WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues(On.WorldLoader.orig_ctor_RainWorldGame_Name_bool_string_Region_SetupValues orig, WorldLoader self, RainWorldGame game, SlugcatStats.Name playerCharacter, bool singleRoomWorld, string worldName, Region region, RainWorldGame.SetupValues setupValues)
         {
-            if (game.session is OnlineGameSession os && !os.ShouldLoadCreatures(game))
+            if (game?.session is OnlineGameSession os)
             {
-                setupValues.worldCreaturesSpawn = false;
+                setupValues.worldCreaturesSpawn = os.ShouldLoadCreatures(game);
+
+                OnlineManager.lobby.worldSessions[region.name].Request();
             }
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
         }

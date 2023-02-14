@@ -11,7 +11,9 @@ namespace RainMeadow
         public CSteamID id;
         public List<OnlinePlayer> players;
         public OnlineGameSession session;
-        //public Dictionary<Region, WorldSession> worldSessions;
+        private Region[] loadedRegions;
+
+        public Dictionary<string, WorldSession> worldSessions = new();
 
         public Lobby(CSteamID id)
         {
@@ -26,6 +28,7 @@ namespace RainMeadow
 
             players = new List<OnlinePlayer>() { OnlineManager.mePlayer };
             UpdatePlayersList();
+
             if (isOwner)
             {
                 Activate();
@@ -35,6 +38,17 @@ namespace RainMeadow
                 Request(); // Everyone auto-subscribes this resource
             }
         }
+
+        public override void Activate()
+        {
+            base.Activate();
+            this.loadedRegions = Region.LoadAllRegions(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer);
+            foreach (var r in loadedRegions)
+            {
+                worldSessions[r.name] = new WorldSession(r, this);
+            }
+        }
+
 
         public override void ReadState(ResourceState newState, long ts)
         {

@@ -29,13 +29,13 @@ namespace RainMeadow
             return $"<Resource {Identifier()} - o:{owner?.name}>";
         }
 
-        public void Activate()
+        public virtual void Activate()
         {
             RainMeadow.Debug(this);
             isActive = true;
         }
 
-        public void Deactivate()
+        public virtual void Deactivate()
         {
             RainMeadow.Debug(this);
             isActive = false;
