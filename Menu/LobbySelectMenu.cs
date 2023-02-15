@@ -1,4 +1,5 @@
 ﻿using Menu;
+using Steamworks;
 using UnityEngine;
 
 namespace RainMeadow
@@ -27,6 +28,8 @@ namespace RainMeadow
             LobbyManager.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
             LobbyManager.OnLobbyJoined += OnlineManager_OnLobbyJoined;
             LobbyManager.RequestLobbyList();
+
+            SteamNetworkingUtils.InitRelayNetworkAccess();
         }
 
         private void Back(SimplerButton obj)

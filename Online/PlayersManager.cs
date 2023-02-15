@@ -54,6 +54,10 @@ namespace RainMeadow
 
         private static void PlayerLeft(CSteamID p)
         {
+            // todo if lobby owner leaves, update lobby resources accordingly
+
+            // todo if resource owner leaves and I'm super, do what I can
+
             RainMeadow.Debug($"PlayerLeft:{p} - {SteamFriends.GetFriendPersonaName(p)}");
             OnlineManager.players.RemoveAll(op => op.id == p);
         }
@@ -68,7 +72,7 @@ namespace RainMeadow
                     var id = new CSteamID(param.m_ulSteamID);
                     foreach (var p in OnlineManager.players)
                     {
-                        if (id == p.id)
+                        if (id == p.id && p.name == "")
                         {
                             p.name = SteamFriends.GetFriendPersonaName(id);
                             RainMeadow.Debug("updated name for " + p);

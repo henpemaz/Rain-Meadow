@@ -25,8 +25,6 @@ namespace RainMeadow
         internal static List<Subscription> subscriptions = new();
         private static Dictionary<string, WorldSession> worldSessions;
         //private static Dictionary<string, RoomSession> roomSessions;
-        private long ts;
-        
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
@@ -46,7 +44,7 @@ namespace RainMeadow
             base.Update();
             if(lobby != null)
             {
-                ts++;
+                mePlayer.tick++;
 
                 // Stuff mePlayer set to itself, events from the distributed lease system
                 mePlayer.recentlyAckedEvents.Clear();
@@ -61,7 +59,7 @@ namespace RainMeadow
 
                 foreach (var subscription in subscriptions)
                 {
-                    subscription.Update(ts);
+                    subscription.Update(mePlayer.tick);
                 }
 
                 foreach (var player in players)
@@ -100,7 +98,7 @@ namespace RainMeadow
                         Marshal.Copy(message.m_pData, serializer.buffer, 0, message.m_cbSize);
                         serializer.BeginRead(fromPlayer);
 
-                        serializer.ReadHeaders();
+                        serializer.PlayerHeaders();
 
                         int ne = serializer.BeginReadEvents();
                         RainMeadow.Debug($"Receiving {ne} events");
@@ -127,12 +125,12 @@ namespace RainMeadow
 
         private void ProcessIncomingEvent(PlayerEvent playerEvent, OnlinePlayer fromPlayer)
         {
-            RainMeadow.Debug($"Got event {playerEvent.eventType} from {fromPlayer}");
+            RainMeadow.Debug($"Got event {playerEvent.eventId}:{playerEvent.eventType} from {fromPlayer}");
             fromPlayer.needsAck = true;
-            if (IsNewer(playerEvent.eventId, fromPlayer.lastIncomingEvent))
+            if (IsNewer(playerEvent.eventId, fromPlayer.lastEventFromRemote))
             {
                 RainMeadow.Debug($"New event, processing...");
-                fromPlayer.lastIncomingEvent = playerEvent.eventId;
+                fromPlayer.lastEventFromRemote = playerEvent.eventId;
                 playerEvent.Process();
             }
         }
@@ -150,7 +148,7 @@ namespace RainMeadow
 
         private void ProcessIncomingState(ResourceState resourceState, OnlinePlayer fromPlayer)
         {
-            throw new NotImplementedException();   
+            resourceState.resource.ReadState(resourceState, fromPlayer.tick);
         }
 
         internal void SendData(OnlinePlayer toPlayer)
@@ -162,7 +160,7 @@ namespace RainMeadow
                 {
                     serializer.BeginWrite(toPlayer);
 
-                    serializer.WriteHeaders();
+                    serializer.PlayerHeaders();
 
                     serializer.BeginWriteEvents();
                     RainMeadow.Debug($"Writing {toPlayer.OutgoingEvents.Count} events");

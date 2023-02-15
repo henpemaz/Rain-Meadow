@@ -14,9 +14,10 @@ namespace RainMeadow
         public Queue<PlayerEvent> OutgoingEvents = new(16);
         public List<PlayerEvent> recentlyAckedEvents = new(16);
         public Queue<ResourceState> OutgoingStates = new(128);
-        public ulong nextOutgoingEvent = 1;
-        public ulong lastAckdEvent;
-        public ulong lastIncomingEvent;
+        private ulong nextOutgoingEvent = 1;
+        public ulong lastEventFromRemote;
+        public ulong lastAckFromRemote;
+        internal ulong tick;
         public bool needsAck;
         public bool isMe;
         public string name;
@@ -45,17 +46,11 @@ namespace RainMeadow
             return recentlyAckedEvents.First(e => e.eventId == id);
         }
 
-        internal void SetAck(ulong lastAck)
+        internal void AckFromRemote(ulong lastAck)
         {
-            RainMeadow.Debug($"Acknoledged event {lastAck} from player {this}");
             this.recentlyAckedEvents.Clear();
-            this.lastAckdEvent = lastAck;
+            this.lastAckFromRemote = lastAck;
             while (OutgoingEvents.Count > 0 && OnlineManager.IsNewerOrEqual(lastAck, OutgoingEvents.Peek().eventId)) recentlyAckedEvents.Add(OutgoingEvents.Dequeue());
-        }
-
-        internal ulong GetAck()
-        {
-            return lastIncomingEvent;
         }
 
         internal ResourceRequest RequestResource(OnlineResource onlineResource)

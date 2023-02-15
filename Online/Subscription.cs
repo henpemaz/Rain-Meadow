@@ -13,7 +13,7 @@ namespace RainMeadow
             this.player = player;
         }
 
-        internal void Update(long ts)
+        internal void Update(ulong ts)
         {
             player.OutgoingStates.Enqueue(onlineResource.GetState(ts));
         }

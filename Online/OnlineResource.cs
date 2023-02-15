@@ -270,7 +270,7 @@ namespace RainMeadow
 
 
         private ResourceState lastState;
-        public virtual ResourceState GetState(long ts)
+        public virtual ResourceState GetState(ulong ts)
         {
             if (lastState == null || lastState.ts != ts)
             {
@@ -280,8 +280,8 @@ namespace RainMeadow
             return lastState;
         }
 
-        protected abstract ResourceState MakeState(long ts);
-        public abstract void ReadState(ResourceState newState, long ts);
+        protected abstract ResourceState MakeState(ulong ts);
+        public abstract void ReadState(ResourceState newState, ulong ts);
 
         internal virtual byte SizeOfIdentifier()
         {

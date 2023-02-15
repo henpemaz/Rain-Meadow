@@ -13,12 +13,12 @@ namespace RainMeadow
             this.super = lobby;
         }
 
-        public override void ReadState(ResourceState newState, long ts)
+        public override void ReadState(ResourceState newState, ulong ts)
         {
             throw new System.NotImplementedException();
         }
 
-        protected override ResourceState MakeState(long ts)
+        protected override ResourceState MakeState(ulong ts)
         {
             throw new System.NotImplementedException();
         }

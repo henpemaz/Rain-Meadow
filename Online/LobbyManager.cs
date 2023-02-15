@@ -136,7 +136,7 @@ namespace RainMeadow
         {
             try
             {
-                RainMeadow.DebugMethod();
+                RainMeadow.Debug($"{param.m_ulSteamIDLobby} : {param.m_ulSteamIDMember} : {param.m_bSuccess}");
                 if (OnlineManager.lobby == null) {
                     RainMeadow.Error("got lobby event with no lobby!");
                     return;
@@ -165,7 +165,7 @@ namespace RainMeadow
         {
             try
             {
-                RainMeadow.DebugMethod();
+                RainMeadow.Debug($"{param.m_ulSteamIDLobby} : {param.m_ulSteamIDUserChanged} : {param.m_ulSteamIDMakingChange} : {param.m_rgfChatMemberStateChange}");
                 if (OnlineManager.lobby == null)
                 {
                     RainMeadow.Error("got lobby event with no lobby!");

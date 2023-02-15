@@ -20,9 +20,9 @@ namespace RainMeadow
         MemoryStream stream;
         BinaryWriter writer;
         BinaryReader reader;
+        private OnlinePlayer currPlayer;
         private int eventCount;
         private long eventHeader;
-        private OnlinePlayer currPlayer;
         private int stateCount;
         private long stateHeader;
 
@@ -34,6 +34,20 @@ namespace RainMeadow
             stream = new(buffer);
             writer = new(stream);
             reader = new(stream);
+        }
+
+        internal void PlayerHeaders()
+        {
+            if (isWriting)
+            {
+                writer.Write(currPlayer.lastEventFromRemote);
+                writer.Write(OnlineManager.mePlayer.tick);
+            }
+            if (isReading)
+            {
+                currPlayer.AckFromRemote(reader.ReadUInt64());
+                currPlayer.tick = reader.ReadUInt64();
+            }
         }
 
         internal void BeginWrite(OnlinePlayer toPlayer)
@@ -73,7 +87,6 @@ namespace RainMeadow
             var temp = stream.Position;
             stream.Position = eventHeader;
             writer.Write(eventCount);
-            RainMeadow.Debug($"serialized wrote {eventCount}");
             stream.Position = temp;
         }
 
@@ -101,10 +114,53 @@ namespace RainMeadow
 
         internal void EndWrite()
         {
+            RainMeadow.Debug($"serializer wrote: {eventCount} events; {stateCount} states;");
             currPlayer = null;
             if (!isWriting) throw new InvalidOperationException("not writing");
             isWriting = false;
             writer.Flush();
+        }
+
+        internal void BeginRead(OnlinePlayer fromPlayer)
+        {
+            currPlayer = fromPlayer;
+            if (isWriting || isReading) throw new InvalidOperationException("not done with previous operation");
+            isReading = true;
+            stream.Seek(0, SeekOrigin.Begin);
+        }
+
+        internal int BeginReadEvents()
+        {
+            return reader.ReadInt32();
+        }
+
+        internal PlayerEvent ReadEvent()
+        {
+            PlayerEvent e = PlayerEvent.NewFromType((PlayerEvent.EventTypeId)reader.ReadByte());
+            e.from = currPlayer;
+            e.to = OnlineManager.mePlayer;
+            e.CustomSerialize(this);
+            return e;
+        }
+
+        internal int BeginReadStates()
+        {
+            return reader.ReadInt32();
+        }
+
+        internal ResourceState ReadState()
+        {
+            ResourceState s = ResourceState.NewFromType((ResourceState.ResourceStateType)reader.ReadByte());
+            s.fromPlayer = currPlayer;
+            s.ts = currPlayer.tick;
+            s.CustomSerialize(this);
+            return s;
+        }
+
+        internal void EndRead()
+        {
+            currPlayer = null;
+            isReading = false;
         }
 
         internal void Free()
@@ -142,53 +198,6 @@ namespace RainMeadow
                 string r = reader.ReadString();
                 onlineResource = OnlineManager.ResourceFromIdentifier(r);
             }
-        }
-
-        internal void BeginRead(OnlinePlayer fromPlayer)
-        {
-            currPlayer = fromPlayer;
-            isReading = true;
-            stream.Seek(0, SeekOrigin.Begin);
-        }
-
-        internal void EndRead()
-        {
-            currPlayer = null;
-            isReading = false;
-        }
-
-        internal void WriteHeaders()
-        {
-            writer.Write(currPlayer.GetAck());
-        }
-
-        internal void ReadHeaders()
-        {
-            currPlayer.SetAck(reader.ReadUInt64());
-        }
-
-        internal int BeginReadEvents()
-        {
-            return reader.ReadInt32();
-        }
-
-        internal PlayerEvent ReadEvent()
-        {
-            PlayerEvent e = PlayerEvent.NewFromType((PlayerEvent.EventTypeId)reader.ReadByte());
-            e.from = currPlayer;
-            e.to = OnlineManager.mePlayer;
-            e.CustomSerialize(this);
-            return e;
-        }
-
-        internal int BeginReadStates()
-        {
-            return reader.ReadInt32();
-        }
-
-        internal ResourceState ReadState()
-        {
-            throw new NotImplementedException();
         }
 
         internal void Serialize(ref List<OnlinePlayer> players)

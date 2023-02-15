@@ -46,14 +46,14 @@ namespace RainMeadow
             }
         }
 
-        protected override ResourceState MakeState(long ts)
+        protected override ResourceState MakeState(ulong ts)
         {
-            return new LobbyState(ts);
+            return new LobbyState(this, ts);
         }
 
-        public override void ReadState(ResourceState newState, long ts)
+        public override void ReadState(ResourceState newState, ulong ts)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         internal override string Identifier()
@@ -61,13 +61,11 @@ namespace RainMeadow
             return ".";
         }
 
-        
-        private class LobbyState : ResourceState
+        public class LobbyState : ResourceState
         {
-            public LobbyState(long ts)
-            {
-                this.ts = ts;
-            }
+            public LobbyState(OnlineResource resource, ulong ts) : base(resource, ts) { }
+
+            public override ResourceStateType stateType => ResourceStateType.LobbyState;
         }
     }
 }
