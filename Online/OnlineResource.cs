@@ -33,6 +33,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             isActive = true;
+            subscribers = new List<OnlinePlayer>();
         }
 
         public virtual void Deactivate()
@@ -59,7 +60,7 @@ namespace RainMeadow
 
         private void Subscribed(OnlinePlayer player)
         {
-            RainMeadow.Debug(this.ToString() + " - " + player.name);
+            RainMeadow.Debug(this.ToString() + " - " + player);
             OnlineManager.AddSubscription(this, player);
             this.subscribers.Add(player);
         }

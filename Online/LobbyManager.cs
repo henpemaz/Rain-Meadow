@@ -1,20 +1,21 @@
 ﻿using Steamworks;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RainMeadow
 {
-    public class LobbyManager
+    public static class LobbyManager
     {
 #pragma warning disable IDE0052 // Remove unread private members
-        private CallResult<LobbyMatchList_t> m_RequestLobbyListCall;
-        private CallResult<LobbyCreated_t> m_CreateLobbyCall;
-        private CallResult<LobbyEnter_t> m_JoinLobbyCall;
-        private Callback<LobbyDataUpdate_t> m_LobbyDataUpdate;
-        private Callback<LobbyChatUpdate_t> m_LobbyChatUpdate;
+        private static CallResult<LobbyMatchList_t> m_RequestLobbyListCall;
+        private static CallResult<LobbyCreated_t> m_CreateLobbyCall;
+        private static CallResult<LobbyEnter_t> m_JoinLobbyCall;
+        private static Callback<LobbyDataUpdate_t> m_LobbyDataUpdate;
+        private static Callback<LobbyChatUpdate_t> m_LobbyChatUpdate;
 #pragma warning restore IDE0052 // Remove unread private members
 
-        public LobbyManager()
+        public static void InitLobbyManager()
         {
             m_RequestLobbyListCall = CallResult<LobbyMatchList_t>.Create(LobbyListReceived);
             m_CreateLobbyCall = CallResult<LobbyCreated_t>.Create(LobbyCreated);
@@ -23,12 +24,12 @@ namespace RainMeadow
             m_LobbyChatUpdate = Callback<LobbyChatUpdate_t>.Create(LobbyChatUpdated);
         }
 
-        public event LobbyListReceived_t OnLobbyListReceived;
-        public event LobbyJoined_t OnLobbyJoined;
+        public static event LobbyListReceived_t OnLobbyListReceived;
+        public static event LobbyJoined_t OnLobbyJoined;
         public delegate void LobbyListReceived_t(bool ok, LobbyInfo[] lobbies);
         public delegate void LobbyJoined_t(bool ok);
 
-        public void RequestLobbyList()
+        public static void RequestLobbyList()
         {
             RainMeadow.DebugMethod();
             SteamMatchmaking.AddRequestLobbyListDistanceFilter(ELobbyDistanceFilter.k_ELobbyDistanceFilterWorldwide);
@@ -36,65 +37,92 @@ namespace RainMeadow
             m_RequestLobbyListCall.Set(SteamMatchmaking.RequestLobbyList());
         }
 
-        private void LobbyListReceived(LobbyMatchList_t pCallback, bool bIOFailure)
+        private static void LobbyListReceived(LobbyMatchList_t pCallback, bool bIOFailure)
         {
-            RainMeadow.DebugMethod();
-            LobbyInfo[] lobbies = new LobbyInfo[pCallback.m_nLobbiesMatching];
-            if (!bIOFailure)
+            try
             {
-                for (int i = 0; i < pCallback.m_nLobbiesMatching; i++)
+                RainMeadow.DebugMethod();
+                LobbyInfo[] lobbies = new LobbyInfo[pCallback.m_nLobbiesMatching];
+                if (!bIOFailure)
                 {
-                    CSteamID id = SteamMatchmaking.GetLobbyByIndex(i);
-                    lobbies[i] = new LobbyInfo(id);
+                    for (int i = 0; i < pCallback.m_nLobbiesMatching; i++)
+                    {
+                        CSteamID id = SteamMatchmaking.GetLobbyByIndex(i);
+                        lobbies[i] = new LobbyInfo(id);
+                    }
                 }
-            }
 
-            OnLobbyListReceived?.Invoke(!bIOFailure, lobbies);
+                OnLobbyListReceived?.Invoke(!bIOFailure, lobbies);
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                throw;
+            }
         }
 
-        public void CreateLobby()
+        public static void CreateLobby()
         {
             RainMeadow.DebugMethod();
             m_CreateLobbyCall.Set(SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypePublic, 10));
         }
 
-        public void JoinLobby(LobbyInfo lobby)
+        public static void JoinLobby(LobbyInfo lobby)
         {
             RainMeadow.DebugMethod();
             m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(lobby.id));
         }
 
-        private void LobbyCreated(LobbyCreated_t param, bool bIOFailure)
+        private static void LobbyCreated(LobbyCreated_t param, bool bIOFailure)
         {
-            RainMeadow.DebugMethod();
-            if (!bIOFailure && param.m_eResult == EResult.k_EResultOK)
+            try
             {
-                OnlineManager.lobby = new Lobby(new CSteamID(param.m_ulSteamIDLobby));
-                OnLobbyJoined?.Invoke(true);
+                RainMeadow.DebugMethod();
+                if (!bIOFailure && param.m_eResult == EResult.k_EResultOK)
+                {
+                    RainMeadow.Debug("success");
+                    OnlineManager.lobby = new Lobby(new CSteamID(param.m_ulSteamIDLobby));
+                    OnLobbyJoined?.Invoke(true);
+                }
+                else
+                {
+                    RainMeadow.Debug("failure, error code is " + param.m_eResult);
+                    OnlineManager.lobby = null;
+                    OnLobbyJoined?.Invoke(false);
+                }
             }
-            else
+            catch (Exception e)
             {
-                OnlineManager.lobby = null;
-                OnLobbyJoined?.Invoke(false);
+                RainMeadow.Error(e);
+                throw;
             }
         }
 
-        private void LobbyJoined(LobbyEnter_t param, bool bIOFailure)
+        private static void LobbyJoined(LobbyEnter_t param, bool bIOFailure)
         {
-            RainMeadow.DebugMethod();
-            if (!bIOFailure)
+            try
             {
-                OnlineManager.lobby = new Lobby(new CSteamID(param.m_ulSteamIDLobby));
-                OnLobbyJoined?.Invoke(true);
+                if (!bIOFailure)
+                {
+                    RainMeadow.Debug("success");
+                    OnlineManager.lobby = new Lobby(new CSteamID(param.m_ulSteamIDLobby));
+                    OnLobbyJoined?.Invoke(true);
+                }
+                else
+                {
+                    RainMeadow.Debug("failure");
+                    OnlineManager.lobby = null;
+                    OnLobbyJoined?.Invoke(false);
+                }
             }
-            else
+            catch (Exception e)
             {
-                OnlineManager.lobby = null;
-                OnLobbyJoined?.Invoke(false);
+                RainMeadow.Error(e);
+                throw;
             }
         }
 
-        public void LeaveLobby()
+        public static void LeaveLobby()
         {
             RainMeadow.DebugMethod();
             if (OnlineManager.lobby != null)
@@ -104,44 +132,58 @@ namespace RainMeadow
             }
         }
 
-        private void LobbyUpdated(LobbyDataUpdate_t e)
+        private static void LobbyUpdated(LobbyDataUpdate_t param)
         {
-            RainMeadow.DebugMethod();
-            if (OnlineManager.lobby == null) {
-                RainMeadow.Error("got lobby event with no lobby!");
-                return;
-            }
-            if ((CSteamID)e.m_ulSteamIDLobby != OnlineManager.lobby.id) {
-                RainMeadow.Error("got lobby event for wrong lobby!");
-                return;
-            }
-            if (e.m_bSuccess > 0)
+            try
             {
-                if (OnlineManager.lobby != null && OnlineManager.lobby.id == new CSteamID(e.m_ulSteamIDLobby) && e.m_ulSteamIDLobby == e.m_ulSteamIDMember)
+                RainMeadow.DebugMethod();
+                if (OnlineManager.lobby == null) {
+                    RainMeadow.Error("got lobby event with no lobby!");
+                    return;
+                }
+                if ((CSteamID)param.m_ulSteamIDLobby != OnlineManager.lobby.id) {
+                    RainMeadow.Error("got lobby event for wrong lobby!");
+                    return;
+                }
+                if (param.m_bSuccess > 0)
                 {
-                    // lobby event, check for possible changes
-                    if (OnlineManager.lobby.owner.id != SteamMatchmaking.GetLobbyOwner(OnlineManager.lobby.id))
+                    if (OnlineManager.lobby != null && OnlineManager.lobby.id == new CSteamID(param.m_ulSteamIDLobby))
                     {
-                        // owner changed
-                        // panik?
+                        // lobby event, check for possible changes
+                        PlayersManager.UpdatePlayersList(OnlineManager.lobby.id);
                     }
                 }
             }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                throw;
+            }
         }
 
-        private void LobbyChatUpdated(LobbyChatUpdate_t param)
+        private static void LobbyChatUpdated(LobbyChatUpdate_t param)
         {
-            RainMeadow.DebugMethod();
-            if (OnlineManager.lobby == null)
+            try
             {
-                RainMeadow.Error("got lobby event with no lobby!");
-                return;
-            }
+                RainMeadow.DebugMethod();
+                if (OnlineManager.lobby == null)
+                {
+                    RainMeadow.Error("got lobby event with no lobby!");
+                    return;
+                }
 
-            if ((CSteamID)param.m_ulSteamIDLobby != OnlineManager.lobby.id)
+                if ((CSteamID)param.m_ulSteamIDLobby != OnlineManager.lobby.id)
+                {
+                    RainMeadow.Error("got lobby event for wrong lobby!");
+                    return;
+                }
+
+                PlayersManager.UpdatePlayersList(OnlineManager.lobby.id);
+            }
+            catch (Exception e)
             {
-                RainMeadow.Error("got lobby event for wrong lobby!");
-                return;
+                RainMeadow.Error(e);
+                throw;
             }
         }
     }

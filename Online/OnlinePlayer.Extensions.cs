@@ -5,12 +5,17 @@ namespace RainMeadow
 {
     public partial class OnlinePlayer
     {
+        public override string ToString()
+        {
+            return $"{id} - {name}";
+        }
         public override bool Equals(object obj) => this.Equals(obj as OnlinePlayer);
         public bool Equals(OnlinePlayer other)
         {
             return other != null && id == other.id;
         }
         public override int GetHashCode() => id.GetHashCode();
+
 
         public static bool operator ==(OnlinePlayer lhs, OnlinePlayer rhs)
         {

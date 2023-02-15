@@ -73,6 +73,7 @@ namespace RainMeadow
             var temp = stream.Position;
             stream.Position = eventHeader;
             writer.Write(eventCount);
+            RainMeadow.Debug($"serialized wrote {eventCount}");
             stream.Position = temp;
         }
 
@@ -86,6 +87,7 @@ namespace RainMeadow
         internal void WriteState(ResourceState resourceState)
         {
             stateCount++;
+            writer.Write((byte)resourceState.stateType);
             resourceState.CustomSerialize(this);
         }
 
@@ -157,13 +159,12 @@ namespace RainMeadow
 
         internal void WriteHeaders()
         {
-            writer.Write(currPlayer.lastIncomingEvent);
+            writer.Write(currPlayer.GetAck());
         }
 
         internal void ReadHeaders()
         {
-            ulong lastAck = reader.ReadUInt64();
-            currPlayer.SetAck(lastAck);
+            currPlayer.SetAck(reader.ReadUInt64());
         }
 
         internal int BeginReadEvents()
@@ -173,46 +174,7 @@ namespace RainMeadow
 
         internal PlayerEvent ReadEvent()
         {
-            PlayerEvent e = null;
-            switch ((PlayerEvent.EventTypeId)reader.ReadByte())
-            {
-                case PlayerEvent.EventTypeId.None:
-                    break;
-                case PlayerEvent.EventTypeId.ResourceRequest:
-                    e = new ResourceRequest(null);
-                    break;
-                case PlayerEvent.EventTypeId.ReleaseRequest:
-                    e = new ReleaseRequest(null);
-                    break;
-                case PlayerEvent.EventTypeId.TransferRequest:
-                    e = new TransferRequest(null, null);
-                    break;
-                case PlayerEvent.EventTypeId.ReleaseResultReleased:
-                    e = new ReleaseResult.Released(null);
-                    break;
-                case PlayerEvent.EventTypeId.ReleaseResultUnsubscribed:
-                    e = new ReleaseResult.Unsubscribed(null);
-                    break;
-                case PlayerEvent.EventTypeId.ReleaseResultError:
-                    e = new ReleaseResult.Error(null);
-                    break;
-                case PlayerEvent.EventTypeId.RequestResultLeased:
-                    e = new RequestResult.Leased(null);
-                    break;
-                case PlayerEvent.EventTypeId.RequestResultSubscribed:
-                    e = new RequestResult.Subscribed(null);
-                    break;
-                case PlayerEvent.EventTypeId.RequestResultError:
-                    e = new RequestResult.Error(null);
-                    break;
-                case PlayerEvent.EventTypeId.TransferResultError:
-                    e = new TransferResult.Error(null);
-                    break;
-                case PlayerEvent.EventTypeId.TransferResultOk:
-                    e = new TransferResult.Ok(null);
-                    break;
-            }
-
+            PlayerEvent e = PlayerEvent.NewFromType((PlayerEvent.EventTypeId)reader.ReadByte());
             e.from = currPlayer;
             e.to = OnlineManager.mePlayer;
             e.CustomSerialize(this);

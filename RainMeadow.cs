@@ -49,17 +49,28 @@ namespace RainMeadow
             if (init) return;
             init = true;
 
-            //pm already initialized lol
-            if(SteamManager.Initialized)
+            try
             {
-                self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
-                MenuHooks();
-                GameHooks();
+                //pm already initialized lol
+                if (SteamManager.Initialized)
+                {
+                    PlayersManager.InitPlayersManager();
+                    LobbyManager.InitLobbyManager();
+                    self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
+                    MenuHooks();
+                    GameHooks();
+                }
+                else
+                {
+                    Error("Steam is required to play this mod");
+                }
             }
-            else
+            catch (Exception e)
             {
-                Error("Steam is required to play this mod");
+                Logger.LogError(e);
+                throw;
             }
+            
         }
     }
 }

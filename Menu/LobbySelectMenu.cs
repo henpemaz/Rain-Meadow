@@ -24,9 +24,9 @@ namespace RainMeadow
 
             pages[0].subObjects.Add(createbtn = new SimplerButton(this, pages[0], "new lobby", btns, btnsize));
             createbtn.OnClick += (SimplerButton obj) => { RequestLobbyCreate(); };
-            OnlineManager.lobbyManager.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
-            OnlineManager.lobbyManager.OnLobbyJoined += OnlineManager_OnLobbyJoined;
-            OnlineManager.lobbyManager.RequestLobbyList();
+            LobbyManager.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
+            LobbyManager.OnLobbyJoined += OnlineManager_OnLobbyJoined;
+            LobbyManager.RequestLobbyList();
         }
 
         private void Back(SimplerButton obj)
@@ -47,13 +47,13 @@ namespace RainMeadow
         void RequestLobbyCreate()
         {
             RainMeadow.DebugMethod();
-            OnlineManager.lobbyManager.CreateLobby();
+            LobbyManager.CreateLobby();
         }
 
         void RequestLobbyJoin(LobbyInfo lobby)
         {
             RainMeadow.DebugMethod();
-            OnlineManager.lobbyManager.JoinLobby(lobby);
+            LobbyManager.JoinLobby(lobby);
         }
 
         private void OnlineManager_OnLobbyJoined(bool ok)
@@ -82,8 +82,8 @@ namespace RainMeadow
 
         public override void ShutDownProcess()
         {
-            OnlineManager.lobbyManager.OnLobbyListReceived -= OnlineManager_OnLobbyListReceived;
-            OnlineManager.lobbyManager.OnLobbyJoined -= OnlineManager_OnLobbyJoined;
+            LobbyManager.OnLobbyListReceived -= OnlineManager_OnLobbyListReceived;
+            LobbyManager.OnLobbyJoined -= OnlineManager_OnLobbyJoined;
             base.ShutDownProcess();
         }
     }

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace RainMeadow
@@ -15,25 +16,27 @@ namespace RainMeadow
         public static string CLIENT_VAL = "Meadow_" + RainMeadow.MeadowVersionStr;
         public static string NAME_KEY = "name";
         public static OnlineManager instance;
-        public static CSteamID me;
-        public static OnlinePlayer mePlayer;
-        public static Lobby lobby;
         internal static Serializer serializer = new Serializer(16000);
 
-        public static LobbyManager lobbyManager;
+        public static Lobby lobby;
+        public static CSteamID me;
+        public static OnlinePlayer mePlayer;
+        public static List<OnlinePlayer> players;
         internal static List<Subscription> subscriptions = new();
         private static Dictionary<string, WorldSession> worldSessions;
         //private static Dictionary<string, RoomSession> roomSessions;
         private long ts;
+        
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
             instance = this;
             me = SteamUser.GetSteamID();
             mePlayer = new OnlinePlayer(me) { isMe = true, name = SteamFriends.GetPersonaName() };
-            lobbyManager = new LobbyManager();
 
             framesPerSecond = 20; // alternatively, run as fast as we can for the receiving stuff, but send on a lower tickrate?
+
+            players = new List<OnlinePlayer>() { mePlayer };
 
             RainMeadow.Debug("OnlineManager Created");
         }
@@ -61,7 +64,7 @@ namespace RainMeadow
                     subscription.Update(ts);
                 }
 
-                foreach (var player in lobby.players)
+                foreach (var player in players)
                 {
                     SendData(player);
                 }
@@ -70,7 +73,7 @@ namespace RainMeadow
 
         internal static OnlinePlayer PlayerFromId(CSteamID id)
         {
-            return lobby?.players.FirstOrDefault(p => p.id == id);
+            return players.FirstOrDefault(p => p.id == id);
         }
 
         internal void ReceiveData()
@@ -93,17 +96,21 @@ namespace RainMeadow
                             SteamNetworkingMessage_t.Release(messages[i]);
                             continue;
                         }
+                        RainMeadow.Debug($"Receiving message from {fromPlayer}");
+                        Marshal.Copy(message.m_pData, serializer.buffer, 0, message.m_cbSize);
                         serializer.BeginRead(fromPlayer);
 
                         serializer.ReadHeaders();
 
                         int ne = serializer.BeginReadEvents();
+                        RainMeadow.Debug($"Receiving {ne} events");
                         for (int ie = 0; ie < ne; ie++)
                         {
                             ProcessIncomingEvent(serializer.ReadEvent(), fromPlayer);
                         }
 
                         int ns = serializer.BeginReadStates();
+                        RainMeadow.Debug($"Receiving {ns} states");
                         for (int ist = 0; ist < ns; ist++)
                         {
                             ProcessIncomingState(serializer.ReadState(), fromPlayer);
@@ -120,9 +127,11 @@ namespace RainMeadow
 
         private void ProcessIncomingEvent(PlayerEvent playerEvent, OnlinePlayer fromPlayer)
         {
+            RainMeadow.Debug($"Got event {playerEvent.eventType} from {fromPlayer}");
             fromPlayer.needsAck = true;
             if (IsNewer(playerEvent.eventId, fromPlayer.lastIncomingEvent))
             {
+                RainMeadow.Debug($"New event, processing...");
                 fromPlayer.lastIncomingEvent = playerEvent.eventId;
                 playerEvent.Process();
             }
@@ -148,6 +157,7 @@ namespace RainMeadow
         {
             if(toPlayer.needsAck || toPlayer.OutgoingEvents.Any() || toPlayer.OutgoingStates.Any())
             {
+                RainMeadow.Debug($"Sending message to {toPlayer}");
                 lock (serializer)
                 {
                     serializer.BeginWrite(toPlayer);
@@ -155,6 +165,7 @@ namespace RainMeadow
                     serializer.WriteHeaders();
 
                     serializer.BeginWriteEvents();
+                    RainMeadow.Debug($"Writing {toPlayer.OutgoingEvents.Count} events");
                     foreach (var e in toPlayer.OutgoingEvents)
                     {
                         if (!serializer.CanFit(e)) throw new IOException("no buffer space for events");
@@ -163,7 +174,8 @@ namespace RainMeadow
                     serializer.EndWriteEvents();
 
                     serializer.BeginWriteStates();
-                    while (toPlayer.OutgoingStates.Count > 1 && serializer.CanFit(toPlayer.OutgoingStates.Peek()))
+                    RainMeadow.Debug($"Writing {toPlayer.OutgoingStates.Count} states");
+                    while (toPlayer.OutgoingStates.Count > 0 && serializer.CanFit(toPlayer.OutgoingStates.Peek()))
                     {
                         var s = toPlayer.OutgoingStates.Dequeue();
                         serializer.WriteState(s);
@@ -177,7 +189,7 @@ namespace RainMeadow
                     {
                         fixed (byte* ptr = serializer.buffer)
                         {
-                            SteamNetworkingMessages.SendMessageToUser(ref toPlayer.oid, (IntPtr)ptr, (uint)serializer.Position, 0, 0);
+                            SteamNetworkingMessages.SendMessageToUser(ref toPlayer.oid, (IntPtr)ptr, (uint)serializer.Position, Constants.k_nSteamNetworkingSend_UnreliableNoDelay, 0);
                         }
                     }
 

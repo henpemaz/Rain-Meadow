@@ -92,6 +92,7 @@
     <Compile Include="Menu\MenuDarkSprite.cs" />
     <Compile Include="Online\Events\ResourceResultEvent.cs" />
     <Compile Include="Online\Events\NewOwnerEvent.cs" />
+    <Compile Include="Online\PlayersManager.cs" />
     <Compile Include="Online\Serializer.cs" />
     <Compile Include="Online\Lobby.cs" />
     <Compile Include="Online\LobbyInfo.cs" />
