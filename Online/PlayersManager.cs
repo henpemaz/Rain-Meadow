@@ -56,7 +56,7 @@ namespace RainMeadow
         {
             // todo if lobby owner leaves, update lobby resources accordingly
 
-            // todo if resource owner leaves and I'm super, do what I can
+            // todo if resource owner leaves and I'm super, coordinate transfer
 
             RainMeadow.Debug($"PlayerLeft:{p} - {SteamFriends.GetFriendPersonaName(p)}");
             OnlineManager.players.RemoveAll(op => op.id == p);

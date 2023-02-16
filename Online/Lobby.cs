@@ -53,7 +53,7 @@ namespace RainMeadow
 
         public override void ReadState(ResourceState newState, ulong ts)
         {
-            //throw new NotImplementedException();
+            throw new NotImplementedException();
         }
 
         internal override string Identifier()

@@ -46,6 +46,7 @@ namespace RainMeadow
             if (isReading)
             {
                 currPlayer.AckFromRemote(reader.ReadUInt64());
+                // todo check for unordered packets, drop accordingly
                 currPlayer.tick = reader.ReadUInt64();
             }
         }

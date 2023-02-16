@@ -48,6 +48,10 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             owner = player;
+
+            // todo this should only activate if mePlayer claimed it
+            // active -> locally active
+            // or do we need a second flag?
             Activate();
         }
 
@@ -211,6 +215,7 @@ namespace RainMeadow
             }
             else if (requestResult is RequestResult.Error)
             {
+                // todo retry logic
                 RainMeadow.Error("request failed for " + this);
             }
             pendingRequest = null;
