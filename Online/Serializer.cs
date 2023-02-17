@@ -16,6 +16,7 @@ namespace RainMeadow
 
         public bool isWriting { get; private set; }
         public bool isReading { get; private set; }
+        public bool Aborted { get; private set; }
 
         MemoryStream stream;
         BinaryWriter writer;
@@ -46,9 +47,22 @@ namespace RainMeadow
             if (isReading)
             {
                 currPlayer.AckFromRemote(reader.ReadUInt64());
-                // todo check for unordered packets, drop accordingly
-                currPlayer.tick = reader.ReadUInt64();
+                var newTick = reader.ReadUInt64();
+                if(!OnlineManager.IsNewer(newTick, currPlayer.tick))
+                {
+                    // abort reading
+                    AbortRead();
+                }
+                currPlayer.tick = newTick;
             }
+        }
+
+        private void AbortRead()
+        {
+            RainMeadow.Debug("aborted read");
+            currPlayer = null;
+            isReading = false;
+            Aborted = true;
         }
 
         internal void BeginWrite(OnlinePlayer toPlayer)
@@ -56,6 +70,7 @@ namespace RainMeadow
             currPlayer = toPlayer;
             if (isWriting || isReading) throw new InvalidOperationException("not done with previous operation");
             isWriting = true;
+            Aborted = false;
             stream.Seek(0, SeekOrigin.Begin);
         }
 
@@ -127,6 +142,7 @@ namespace RainMeadow
             currPlayer = fromPlayer;
             if (isWriting || isReading) throw new InvalidOperationException("not done with previous operation");
             isReading = true;
+            Aborted = false;
             stream.Seek(0, SeekOrigin.Begin);
         }
 

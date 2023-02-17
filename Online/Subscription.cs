@@ -2,10 +2,10 @@
 
 namespace RainMeadow
 {
-    internal class Subscription
+    public class Subscription
     {
-        internal OnlineResource onlineResource;
-        internal OnlinePlayer player;
+        public OnlineResource onlineResource;
+        public OnlinePlayer player;
 
         public Subscription(OnlineResource onlineResource, OnlinePlayer player)
         {
@@ -13,7 +13,7 @@ namespace RainMeadow
             this.player = player;
         }
 
-        internal void Update(ulong ts)
+        public void Update(ulong ts)
         {
             player.OutgoingStates.Enqueue(onlineResource.GetState(ts));
         }

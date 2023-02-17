@@ -61,11 +61,22 @@ namespace RainMeadow
             return ".";
         }
 
+        // State has the current lease state of worldsessions
         public class LobbyState : ResourceState
         {
-            public LobbyState(OnlineResource resource, ulong ts) : base(resource, ts) { }
+            public LobbyState(Lobby lobby, ulong ts) : base(lobby, ts)
+            {
+
+            }
 
             public override ResourceStateType stateType => ResourceStateType.LobbyState;
+
+            public override void CustomSerialize(Serializer serializer)
+            {
+                base.CustomSerialize(serializer);
+
+
+            }
         }
     }
 }

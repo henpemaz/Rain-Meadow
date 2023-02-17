@@ -70,7 +70,6 @@ namespace RainMeadow
                 Logger.LogError(e);
                 throw;
             }
-            
         }
     }
 }

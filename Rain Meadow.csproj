@@ -95,13 +95,12 @@
     <Compile Include="Online\PlayersManager.cs" />
     <Compile Include="Online\Serializer.cs" />
     <Compile Include="Online\Lobby.cs" />
-    <Compile Include="Online\LobbyInfo.cs" />
+    <Compile Include="Menu\LobbyInfo.cs" />
     <Compile Include="Online\LobbyManager.cs" />
     <Compile Include="Menu\LobbyMenu.cs" />
     <Compile Include="Online\OnlineManager.cs" />
     <Compile Include="Menu\LobbySelectMenu.cs" />
     <Compile Include="Online\OnlinePlayer.cs" />
-    <Compile Include="Online\OnlinePlayer.Extensions.cs" />
     <Compile Include="Online\OnlineResource.cs" />
     <Compile Include="Game\OnlineGameSession.cs" />
     <Compile Include="Game\OnlineGameSession.Rules.cs" />

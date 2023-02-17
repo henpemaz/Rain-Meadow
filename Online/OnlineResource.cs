@@ -21,7 +21,6 @@ namespace RainMeadow
         public bool isOwner => owner != null && owner.id == OnlineManager.me;
         public bool isSuper => super != null && super.isOwner;
         public bool isActive { get; protected set; }
-
         public bool isPending => pendingRequest != null;
 
         public override string ToString()
@@ -46,7 +45,7 @@ namespace RainMeadow
 
         private void Claimed(OnlinePlayer player)
         {
-            RainMeadow.Debug(this);
+            RainMeadow.Debug(this.ToString() + " - " + player);
             owner = player;
 
             // todo this should only activate if mePlayer claimed it
