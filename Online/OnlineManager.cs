@@ -23,7 +23,7 @@ namespace RainMeadow
         public static OnlinePlayer mePlayer;
         public static List<OnlinePlayer> players;
         public static List<Subscription> subscriptions = new();
-        public static Dictionary<string, WorldSession> worldSessions;
+        //public static Dictionary<string, WorldSession> worldSessions;
         //private static Dictionary<string, RoomSession> roomSessions;
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
@@ -93,7 +93,7 @@ namespace RainMeadow
                                 RainMeadow.Error("player not found: " + message.m_identityPeer + " " + message.m_identityPeer.GetSteamID());
                                 continue;
                             }
-                            RainMeadow.Debug($"Receiving message from {fromPlayer}");
+                            //RainMeadow.Debug($"Receiving message from {fromPlayer}");
                             Marshal.Copy(message.m_pData, serializer.buffer, 0, message.m_cbSize);
                             serializer.BeginRead(fromPlayer);
 
@@ -105,14 +105,14 @@ namespace RainMeadow
                             }
 
                             int ne = serializer.BeginReadEvents();
-                            RainMeadow.Debug($"Receiving {ne} events");
+                            //RainMeadow.Debug($"Receiving {ne} events");
                             for (int ie = 0; ie < ne; ie++)
                             {
                                 ProcessIncomingEvent(serializer.ReadEvent(), fromPlayer);
                             }
 
                             int ns = serializer.BeginReadStates();
-                            RainMeadow.Debug($"Receiving {ns} states");
+                            //RainMeadow.Debug($"Receiving {ns} states");
                             for (int ist = 0; ist < ns; ist++)
                             {
                                 ProcessIncomingState(serializer.ReadState(), fromPlayer);
@@ -139,11 +139,11 @@ namespace RainMeadow
 
         private void ProcessIncomingEvent(PlayerEvent playerEvent, OnlinePlayer fromPlayer)
         {
-            RainMeadow.Debug($"Got event {playerEvent.eventId}:{playerEvent.eventType} from {fromPlayer}");
+            //RainMeadow.Debug($"Got event {playerEvent.eventId}:{playerEvent.eventType} from {fromPlayer}");
             fromPlayer.needsAck = true;
             if (IsNewer(playerEvent.eventId, fromPlayer.lastEventFromRemote))
             {
-                RainMeadow.Debug($"New event, processing...");
+                RainMeadow.Debug($"New event {playerEvent.eventId} - {playerEvent.eventType} from {fromPlayer}, processing...");
                 fromPlayer.lastEventFromRemote = playerEvent.eventId;
                 playerEvent.Process();
             }
@@ -169,7 +169,7 @@ namespace RainMeadow
         {
             if(toPlayer.needsAck || toPlayer.OutgoingEvents.Any() || toPlayer.OutgoingStates.Any())
             {
-                RainMeadow.Debug($"Sending message to {toPlayer}");
+                //RainMeadow.Debug($"Sending message to {toPlayer}");
                 lock (serializer)
                 {
                     serializer.BeginWrite(toPlayer);
@@ -177,7 +177,7 @@ namespace RainMeadow
                     serializer.PlayerHeaders();
 
                     serializer.BeginWriteEvents();
-                    RainMeadow.Debug($"Writing {toPlayer.OutgoingEvents.Count} events");
+                    //RainMeadow.Debug($"Writing {toPlayer.OutgoingEvents.Count} events");
                     foreach (var e in toPlayer.OutgoingEvents)
                     {
                         if (!serializer.CanFit(e)) throw new IOException("no buffer space for events");
@@ -186,7 +186,7 @@ namespace RainMeadow
                     serializer.EndWriteEvents();
 
                     serializer.BeginWriteStates();
-                    RainMeadow.Debug($"Writing {toPlayer.OutgoingStates.Count} states");
+                    //RainMeadow.Debug($"Writing {toPlayer.OutgoingStates.Count} states");
                     while (toPlayer.OutgoingStates.Count > 0 && serializer.CanFit(toPlayer.OutgoingStates.Peek()))
                     {
                         var s = toPlayer.OutgoingStates.Dequeue();
@@ -228,8 +228,9 @@ namespace RainMeadow
         internal static OnlineResource ResourceFromIdentifier(string rid)
         {
             if (rid == ".") return lobby;
-            if (rid.Length == 2 && worldSessions.TryGetValue(rid, out var r2)) return r2;
+            if (rid.Length == 2 && lobby.worldSessions.TryGetValue(rid, out var r2)) return r2;
             //if (roomSessions.TryGetValue(rid, out var r3)) return r3;
+            RainMeadow.Error("resource not found : " + rid);
             return null;
         }
 

@@ -48,7 +48,7 @@ namespace RainMeadow
                     e = new ResourceRequest(null);
                     break;
                 case EventTypeId.ReleaseRequest:
-                    e = new ReleaseRequest(null);
+                    e = new ReleaseRequest(null, null);
                     break;
                 case EventTypeId.TransferRequest:
                     e = new TransferRequest(null, null);

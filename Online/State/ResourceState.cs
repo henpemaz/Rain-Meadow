@@ -20,6 +20,7 @@ namespace RainMeadow
         {
             Unknown = 0,
             LobbyState,
+            WorldState,
         }
 
         public virtual void CustomSerialize(Serializer serializer)
@@ -36,6 +37,9 @@ namespace RainMeadow
                     break;
                 case ResourceStateType.LobbyState:
                     s = new Lobby.LobbyState(null, 0);
+                    break;
+                case ResourceStateType.WorldState:
+                    s = new WorldSession.WorldState(null, 0);
                     break;
                 default:
                     break;

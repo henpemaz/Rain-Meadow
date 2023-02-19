@@ -23,7 +23,7 @@ namespace RainMeadow
             (backObject as SimplerButton).OnClick += Back;
 
             pages[0].subObjects.Add(startbtn = new SimplerButton(this, pages[0], "START", btns, btnsize));
-            startbtn.buttonBehav.greyedOut = !OnlineManager.lobby.isOwner;
+            //startbtn.buttonBehav.greyedOut = !OnlineManager.lobby.isOwner;
             startbtn.OnClick += (SimplerButton obj) => { StartGame(); };
         }
 

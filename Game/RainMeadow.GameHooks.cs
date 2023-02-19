@@ -13,11 +13,31 @@ namespace RainMeadow
             On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues += WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues;
             On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues_LoadingContext += WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues_LoadingContext;
             On.WorldLoader.Update += WorldLoader_Update;
+            On.OverWorld.LoadWorld += OverWorld_LoadWorld;
+            On.OverWorld.WorldLoaded += OverWorld_WorldLoaded;
 
             On.Room.ctor += Room_ctor;
             IL.RainWorldGame.ctor += RainWorldGame_ctor;
             IL.Room.LoadFromDataString += Room_LoadFromDataString;
             IL.Room.Loaded += Room_Loaded;
+        }
+
+        private void OverWorld_WorldLoaded(On.OverWorld.orig_WorldLoaded orig, OverWorld self)
+        {
+            if (self.game?.session is OnlineGameSession && self.activeWorld is World aw)
+            {
+                OnlineManager.lobby.worldSessions[aw.region.name].Release();
+            }
+            orig(self);
+        }
+
+        private void OverWorld_LoadWorld(On.OverWorld.orig_LoadWorld orig, OverWorld self, string worldName, SlugcatStats.Name playerCharacterNumber, bool singleRoomWorld)
+        {
+            if(self.game?.session is OnlineGameSession && self.activeWorld is World aw)
+            {
+                OnlineManager.lobby.worldSessions[aw.region.name].Release();
+            }
+            orig(self, worldName, playerCharacterNumber, singleRoomWorld);
         }
 
         private void WorldLoader_Update(On.WorldLoader.orig_Update orig, WorldLoader self)

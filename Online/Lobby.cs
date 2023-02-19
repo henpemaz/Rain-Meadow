@@ -42,7 +42,9 @@ namespace RainMeadow
             this.loadedRegions = Region.LoadAllRegions(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer);
             foreach (var r in loadedRegions)
             {
-                worldSessions[r.name] = new WorldSession(r, this);
+                var ws = new WorldSession(r, this);
+                subresources.Add(ws);
+                worldSessions[r.name] = ws;
             }
         }
 
@@ -53,7 +55,7 @@ namespace RainMeadow
 
         public override void ReadState(ResourceState newState, ulong ts)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         internal override string Identifier()
@@ -70,13 +72,6 @@ namespace RainMeadow
             }
 
             public override ResourceStateType stateType => ResourceStateType.LobbyState;
-
-            public override void CustomSerialize(Serializer serializer)
-            {
-                base.CustomSerialize(serializer);
-
-
-            }
         }
     }
 }

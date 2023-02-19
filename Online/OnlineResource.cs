@@ -1,6 +1,7 @@
 ﻿using BepInEx.Logging;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 namespace RainMeadow
@@ -13,6 +14,7 @@ namespace RainMeadow
     {
         public OnlineResource super;
         public OnlinePlayer owner;
+        public List<OnlineResource> subresources;
 
         public ResourceEvent pendingRequest; // should this maybe be a list/queue?
         public List<OnlinePlayer> subscribers; // this could be a dict of subscriptions, but how relevant is to access them through here anyways
@@ -31,46 +33,74 @@ namespace RainMeadow
         public virtual void Activate()
         {
             RainMeadow.Debug(this);
+            if(isActive) { throw new InvalidOperationException("Resource is already active"); }
             isActive = true;
             subscribers = new List<OnlinePlayer>();
+            subresources = new List<OnlineResource>();
         }
 
         public virtual void Deactivate()
         {
             RainMeadow.Debug(this);
+            if (!isActive) { throw new InvalidOperationException("Resource is already inactive"); }
+            if (subscribers.Count > 0) throw new InvalidOperationException("has subscribers");
+            if (subresources.Any(s=>s.isActive)) throw new InvalidOperationException("has active subresources");
             isActive = false;
-            subscribers.Clear();
-            OnlineManager.RemoveSubscriptions(this);
         }
 
         private void Claimed(OnlinePlayer player)
         {
             RainMeadow.Debug(this.ToString() + " - " + player);
+            if (player == owner && player != null) throw new InvalidOperationException("Re-assigned to the same owner");
+            var oldOwner = owner;
             owner = player;
-
-            // todo this should only activate if mePlayer claimed it
-            // active -> locally active
-            // or do we need a second flag?
-            Activate();
+            if (isSuper && oldOwner != owner) // I am responsible for notifying lease changes to this
+            {
+                super.SubresourceNewOwner(this);
+            }
         }
 
-        private void Unclaimed()
+        private void Unclaimed() // could get rid of this and embrace player null
         {
             RainMeadow.Debug(this);
+            if(owner == null) { throw new InvalidOperationException("Resource was already unassigned"); }
+            var oldOwner = owner;
             owner = null;
-            Deactivate();
+            if (isSuper && oldOwner != null) // I am responsible for notifying lease changes to this
+            {
+                super.SubresourceNewOwner(this);
+            }
+        }
+
+        private void SubresourceNewOwner(OnlineResource onlineResource)
+        {
+            foreach (var s in subscribers)
+            {
+                if (s == onlineResource.owner) continue;
+                s.NewOwnerEvent(onlineResource, onlineResource.owner);
+            }
         }
 
         private void Subscribed(OnlinePlayer player)
         {
-            RainMeadow.Debug(this.ToString() + " - " + player);
+            RainMeadow.Debug(this.ToString() + " - " + player.name);
+            if (!isActive) throw new InvalidOperationException("inactive");
+            if (subscribers == null) throw new InvalidOperationException("nill");
+            if (player.isMe) throw new InvalidOperationException("Can't subscribe to self");
             OnlineManager.AddSubscription(this, player);
             this.subscribers.Add(player);
+
+            // initial lease state
+            foreach (var onlineResource in subresources)
+            {
+                player.NewOwnerEvent(onlineResource, onlineResource.owner);
+            }
         }
 
         private void Unsubscribed(OnlinePlayer player)
         {
             RainMeadow.Debug(this.ToString() + " - " + player.name);
+            if (player.isMe) throw new InvalidOperationException("Can't unsubscribe from self");
             OnlineManager.RemoveSubscription(this, player);
             this.subscribers.Remove(player);
         }
@@ -104,11 +134,7 @@ namespace RainMeadow
             if (!isActive) throw new InvalidOperationException("inactive");
             if (isOwner) // let go
             {
-                if (subscribers.Count > 0 && super?.owner != null) // transfer
-                {
-                    pendingRequest = super.owner.TransferResource(this);
-                }
-                else if (super?.owner != null) // return to super
+                if (super?.owner != null) // return to super
                 {
                     pendingRequest = super.owner.ReleaseResource(this);
                 }
@@ -127,92 +153,100 @@ namespace RainMeadow
             }
         }
 
-        private OnlinePlayer BestTransferCandidate(List<OnlinePlayer> subscribers)
-        {
-            return subscribers[0];
-        }
-
         // Someone requested me, maybe myself
-        public RequestResult Requested(ResourceRequest request)
+        public void Requested(ResourceRequest request)
         {
             RainMeadow.Debug(this);
             RainMeadow.Debug("Requested by : " + request.from.name);
 
-            if (isOwner) // I decide
-            {
-                if (request.from.isMe) throw new InvalidOperationException("requested, but already own");
-                // Player subscribed to resource
-                Subscribed(request.from);
-                return new RequestResult.Subscribed(request);
-            }
-            if (isFree && isSuper)
+            if (isFree && isSuper) // I can lease
             {
                 // Leased to player
+                request.from.QueueEvent(new RequestResult.Leased(request));
                 Claimed(request.from);
-                return new RequestResult.Leased(request);
             }
-            // Not mine, can't lease
-            return new RequestResult.Error(request);
+            else if (isOwner) // I am the current owner and others can subscribe
+            {
+                if (request.from.isMe) throw new InvalidOperationException("requested, but already own");
+                request.from.QueueEvent(new RequestResult.Subscribed(request)); // result first, so they Activate before getting new state
+                // Player subscribed to resource
+                Subscribed(request.from);
+            }
+            else // Not mine, can't lease
+            {
+                request.from.QueueEvent(new RequestResult.Error(request));
+            }
         }
 
         // Someone released from me, maybe myself
-        public ReleaseResult Released(ReleaseRequest request)
+        public void Released(ReleaseRequest request)
         {
             RainMeadow.Debug(this);
             RainMeadow.Debug("Released by : " + request.from.name);
+            RainMeadow.Debug("Has subscribers : " + (request.subscribers.Count > 0));
 
-            if (pendingRequest is TransferRequest tr && tr.to == request.from)
+            if (isSuper && owner == request.from)
             {
-                // uh oh
-                // retry transfer to someone else?
-                // prioritize releasing over transfering
-                throw new NotImplementedException();
-            }
-            if(isSuper && owner == request.from)
-            {
-                Unclaimed();
-                return new ReleaseResult.Released(request);
+                if (request.subscribers.Count > 0)
+                {
+                    var newOwner = PlayersManager.BestTransferCandidate(this, request.subscribers);
+                    newOwner.TransferResource(this, request.subscribers.Where(s => s != newOwner).ToList()); // This notifies the new owner
+                    Claimed(newOwner); // This notifies all users
+                }
+                else
+                {
+                    Unclaimed();
+                }
+                request.from.QueueEvent(new ReleaseResult.Released(request));
+                return;
             }
             if (isOwner)
             {
                 Unsubscribed(request.from);
-                return new ReleaseResult.Unsubscribed(request);
+                request.from.QueueEvent(new ReleaseResult.Unsubscribed(request));
+                return;
             }
-            return new ReleaseResult.Error(request);
+            request.from.QueueEvent(new ReleaseResult.Error(request));
+            return;
         }
 
-        // Someone I manage needs a resource transfered
-        public TransferResult Transfered(TransferRequest request)
+        // The previous owner has left and I've been assigned as the new owner
+        public void Transfered(TransferRequest request)
         {
             RainMeadow.Debug(this);
             RainMeadow.Debug("Transfered by : " + request.from.name);
-
-            if (owner == request.from)
+            if (isActive && !isOwner && request.from == super?.owner) // I am a subscriber who now owns this resource
             {
-                owner = BestTransferCandidate(request.subscribers);
-                Claimed(owner);
-                foreach (var x in request.subscribers)
+                Claimed(OnlineManager.mePlayer);
+                foreach(var subscriber in request.subscribers)
                 {
-                    x.NewOwnerEvent(this, owner);
+                    if (subscriber.isMe) continue;
+                    Subscribed(subscriber);
                 }
-                return new TransferResult.Ok(request);
+                request.from.QueueEvent(new TransferResult.Ok(request));
+                return;
             }
-            return new TransferResult.Error(request);
+            request.from.QueueEvent(new TransferResult.Error(request));
+            return;
         }
 
         // A pending request was answered to
         public void ResolveRequest(RequestResult requestResult)
         {
             RainMeadow.Debug(this);
-            if (requestResult is RequestResult.Leased)
+            if (requestResult is RequestResult.Leased) // I'm the new owner of a previously-free resource
             {
-                Claimed(OnlineManager.mePlayer);
+                if (!requestResult.from.isMe) // don't claim twice
+                {
+                    Claimed(OnlineManager.mePlayer);
+                }
+                Activate();
             }
-            else if (requestResult is RequestResult.Subscribed)
+            else if (requestResult is RequestResult.Subscribed) // I'm subscribed to a resource's state and events
             {
                 Activate();
             }
-            else if (requestResult is RequestResult.Error)
+            else if (requestResult is RequestResult.Error) // I should retry
             {
                 // todo retry logic
                 RainMeadow.Error("request failed for " + this);
@@ -224,15 +258,22 @@ namespace RainMeadow
         internal void ResolveRelease(ReleaseResult releaseResult)
         {
             RainMeadow.Debug(this);
-            if (releaseResult is ReleaseResult.Released)
+            
+            if (releaseResult is ReleaseResult.Released) // I've let go
             {
-                Unclaimed();
+                if (!releaseResult.from.isMe) // dont unclaim twice
+                {
+                    Unclaimed();
+                }
+                OnlineManager.RemoveSubscriptions(this);
+                subscribers.Clear();
+                Deactivate();
             }
-            else if (releaseResult is ReleaseResult.Unsubscribed)
+            else if (releaseResult is ReleaseResult.Unsubscribed) // I'm clear
             {
                 Deactivate();
             } 
-            else if (releaseResult is ReleaseResult.Error)
+            else if (releaseResult is ReleaseResult.Error) // I should retry
             {
                 RainMeadow.Error("released failed for " + this);
             }
@@ -243,33 +284,23 @@ namespace RainMeadow
         internal void ResolveTransfer(TransferResult transferResult)
         {
             RainMeadow.Debug(this);
-            if (transferResult is TransferResult.Ok)
+            
+            if (transferResult is TransferResult.Ok) // New owner accepted it
             {
-                Deactivate();
+                // no op
             }
-            else if (transferResult is TransferResult.Error)
+            else if (transferResult is TransferResult.Error) // I should retry
             {
                 RainMeadow.Error("transfer failed for " + this);
             }
             pendingRequest = null;
         }
 
-        internal void NewOwner(NewOwnerEvent newOwnerEvent)
+        // Super says there is a new owner for this resource
+        internal void OnNewOwner(NewOwnerEvent newOwnerEvent)
         {
             RainMeadow.Debug(this);
-            if (isActive)
-            {
-                Claimed(newOwnerEvent.newOwner);
-            }
-            if(isPending)
-            {
-                if (pendingRequest is ReleaseRequest) return;
-                if (pendingRequest is TransferRequest) return;
-            }
-            else
-            {
-                pendingRequest = owner.RequestResource(this);
-            }
+            Claimed(newOwnerEvent.newOwner);
         }
 
 

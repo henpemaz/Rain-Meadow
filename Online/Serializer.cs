@@ -3,6 +3,7 @@ using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -130,7 +131,7 @@ namespace RainMeadow
 
         internal void EndWrite()
         {
-            RainMeadow.Debug($"serializer wrote: {eventCount} events; {stateCount} states;");
+            //RainMeadow.Debug($"serializer wrote: {eventCount} events; {stateCount} states; total {stream.Position} bytes");
             currPlayer = null;
             if (!isWriting) throw new InvalidOperationException("not writing");
             isWriting = false;
@@ -195,7 +196,7 @@ namespace RainMeadow
         {
             if (isWriting)
             {
-                writer.Write((ulong)player.id);
+                writer.Write(player is { } ? (ulong)player.id : 0ul);
             }
             if (isReading)
             {
@@ -219,7 +220,23 @@ namespace RainMeadow
 
         internal void Serialize(ref List<OnlinePlayer> players)
         {
-            throw new NotImplementedException();
+            if (isWriting)
+            {
+                writer.Write((byte)players.Count);
+                foreach (var player in players)
+                {
+                    writer.Write(player is { } ? (ulong)player.id : 0ul);
+                }
+            }
+            if (isReading)
+            {
+                byte count = reader.ReadByte();
+                players = new List<OnlinePlayer>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    players.Add(OnlineManager.PlayerFromId(new CSteamID(reader.ReadUInt64())));
+                }
+            }
         }
 
         internal void SerializeReferencedEvent(ref ResourceEvent referencedEvent)

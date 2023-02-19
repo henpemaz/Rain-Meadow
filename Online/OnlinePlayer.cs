@@ -33,7 +33,7 @@ namespace RainMeadow
 
         internal void QueueEvent(PlayerEvent e)
         {
-            RainMeadow.Debug($"Queued event {nextOutgoingEvent} to player {this}");
+            RainMeadow.Debug($"Queued event {nextOutgoingEvent} {e.eventType} to player {this}");
             e.eventId = this.nextOutgoingEvent;
             e.to = this;
             e.from = OnlineManager.mePlayer;
@@ -43,14 +43,20 @@ namespace RainMeadow
 
         internal PlayerEvent GetRecentEvent(ulong id)
         {
-            return recentlyAckedEvents.First(e => e.eventId == id);
+            return recentlyAckedEvents.FirstOrDefault(e => e.eventId == id);
         }
 
         internal void AckFromRemote(ulong lastAck)
         {
+            //RainMeadow.Debug(this);
             this.recentlyAckedEvents.Clear();
             this.lastAckFromRemote = lastAck;
-            while (OutgoingEvents.Count > 0 && OnlineManager.IsNewerOrEqual(lastAck, OutgoingEvents.Peek().eventId)) recentlyAckedEvents.Add(OutgoingEvents.Dequeue());
+            while (OutgoingEvents.Count > 0 && OnlineManager.IsNewerOrEqual(lastAck, OutgoingEvents.Peek().eventId))
+            {
+                var e = OutgoingEvents.Dequeue();
+                RainMeadow.Debug(this.ToString() + e.ToString());
+                recentlyAckedEvents.Add(e);
+            }
         }
 
         internal ResourceRequest RequestResource(OnlineResource onlineResource)
@@ -61,10 +67,10 @@ namespace RainMeadow
             return req;
         }
 
-        internal TransferRequest TransferResource(OnlineResource onlineResource)
+        internal TransferRequest TransferResource(OnlineResource onlineResource, List<OnlinePlayer> subscribers)
         {
             RainMeadow.Debug($"Requesting player {this.name} for transfer of {onlineResource.Identifier()}");
-            var req = new TransferRequest(onlineResource, onlineResource.subscribers);
+            var req = new TransferRequest(onlineResource, subscribers);
             QueueEvent(req);
             return req;
         }
@@ -72,14 +78,14 @@ namespace RainMeadow
         internal ReleaseRequest ReleaseResource(OnlineResource onlineResource)
         {
             RainMeadow.Debug($"Requesting player {this.name} for release of resource {onlineResource.Identifier()}");
-            var req = new ReleaseRequest(onlineResource);
+            var req = new ReleaseRequest(onlineResource, onlineResource.subscribers);
             QueueEvent(req);
             return req;
         }
 
         internal NewOwnerEvent NewOwnerEvent(OnlineResource onlineResource, OnlinePlayer owner)
         {
-            RainMeadow.Debug($"Signaline player {this.name} of new owner for resource {onlineResource.Identifier()}");
+            RainMeadow.Debug($"Signaling player {this.name} of new owner for resource {onlineResource.Identifier()}");
             var req = new NewOwnerEvent(onlineResource, owner);
             QueueEvent(req);
             return req;

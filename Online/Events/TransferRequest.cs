@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -11,6 +10,7 @@ namespace RainMeadow
         {
             this.subscribers = subscribers;
         }
+
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);

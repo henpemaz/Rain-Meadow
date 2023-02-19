@@ -40,3 +40,8 @@ else
 
 
 Mod auto installing / auto disabling
+
+
+
+Manage missing regions:
+	right now nullrefs because missing referenced resource

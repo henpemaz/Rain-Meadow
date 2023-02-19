@@ -13,7 +13,13 @@
 
         internal override void Process()
         {
-            onlineResource.NewOwner(this);
+            onlineResource.OnNewOwner(this);
+        }
+
+        public override void CustomSerialize(Serializer serializer)
+        {
+            base.CustomSerialize(serializer);
+            serializer.Serialize(ref newOwner);
         }
     }
 }

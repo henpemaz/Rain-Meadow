@@ -113,5 +113,11 @@ namespace RainMeadow
                 throw;
             }
         }
+
+        internal static OnlinePlayer BestTransferCandidate(OnlineResource onlineResource, List<OnlinePlayer> subscribers)
+        {
+            if (subscribers.Contains(OnlineManager.mePlayer)) return OnlineManager.mePlayer;
+            return subscribers[0];
+        }
     }
 }

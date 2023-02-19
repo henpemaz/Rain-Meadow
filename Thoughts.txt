@@ -13,3 +13,14 @@ https://www.youtube.com/watch?v=ha1-ZfeIbfQ&list=PLzVi6Kh_HMIWKS1aXOV4XobuymoF0P
 		This can be applied to more vulnerable mechanisms, so that players use them consciously
 			interactions can be locked behind time investment, or resource investment
 
+
+State vs Events
+	Lobby state:
+		onwership of WorldSessions
+			it is small and doesnt change very often
+			is very critical that it is received asap when changes occur
+				if the change is so rare and so important wouldnt it be easier to work with events?
+
+	Are states that send every tick just worse events? because they also cause the "unchanged" sends
+
+	I'm starting to think ownership-state is special
