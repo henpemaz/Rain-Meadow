@@ -43,9 +43,14 @@ namespace RainMeadow
             foreach (var r in loadedRegions)
             {
                 var ws = new WorldSession(r, this);
+                worldSessions.Add(r.name, ws);
                 subresources.Add(ws);
-                worldSessions[r.name] = ws;
             }
+        }
+
+        public override void Deactivate()
+        {
+            throw new InvalidOperationException("cant deactivate");
         }
 
         protected override ResourceState MakeState(ulong ts)

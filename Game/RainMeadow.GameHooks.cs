@@ -15,11 +15,45 @@ namespace RainMeadow
             On.WorldLoader.Update += WorldLoader_Update;
             On.OverWorld.LoadWorld += OverWorld_LoadWorld;
             On.OverWorld.WorldLoaded += OverWorld_WorldLoaded;
+            On.RoomPreparer.ctor += RoomPreparer_ctor;
+            On.RoomPreparer.Update += RoomPreparer_Update;
+            On.AbstractRoom.Abstractize += AbstractRoom_Abstractize;
 
             On.Room.ctor += Room_ctor;
             IL.RainWorldGame.ctor += RainWorldGame_ctor;
             IL.Room.LoadFromDataString += Room_LoadFromDataString;
             IL.Room.Loaded += Room_Loaded;
+        }
+
+        private void AbstractRoom_Abstractize(On.AbstractRoom.orig_Abstractize orig, AbstractRoom self)
+        {
+            if (self.world?.game?.session is OnlineGameSession os)
+            {
+                if (OnlineManager.lobby.worldSessions[self.world.region.name].roomSessions[self.name] is RoomSession rs && rs.isActive)
+                {
+                    rs.Release();
+                    return;
+                }
+            }
+            orig(self);
+        }
+
+        private void RoomPreparer_Update(On.RoomPreparer.orig_Update orig, RoomPreparer self)
+        {
+            if (!self.shortcutsOnly && self.room?.game?.session is OnlineGameSession os)
+            {
+                if (self.done && !OnlineManager.lobby.worldSessions[self.room.world.region.name].roomSessions[self.room.abstractRoom.name].isActive) self.done = false;
+            }
+            orig(self);
+        }
+
+        private void RoomPreparer_ctor(On.RoomPreparer.orig_ctor orig, RoomPreparer self, Room room, bool loadAiHeatMaps, bool falseBake, bool shortcutsOnly)
+        {
+            if (!shortcutsOnly && room?.game?.session is OnlineGameSession os)
+            {
+                OnlineManager.lobby.worldSessions[room.world.region.name].roomSessions[room.abstractRoom.name].Request();
+            }
+            orig(self, room, loadAiHeatMaps, falseBake, shortcutsOnly);
         }
 
         private void OverWorld_WorldLoaded(On.OverWorld.orig_WorldLoaded orig, OverWorld self)
@@ -134,10 +168,13 @@ namespace RainMeadow
             if (game?.session is OnlineGameSession os)
             {
                 setupValues.worldCreaturesSpawn = os.ShouldLoadCreatures(game);
-
-                OnlineManager.lobby.worldSessions[region.name].Request();
             }
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues, context);
+            if (game?.session is OnlineGameSession )
+            {
+                OnlineManager.lobby.worldSessions[region.name].Request();
+                OnlineManager.lobby.worldSessions[region.name].BindWorld(self.world);
+            }
         }
 
         private void WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues(On.WorldLoader.orig_ctor_RainWorldGame_Name_bool_string_Region_SetupValues orig, WorldLoader self, RainWorldGame game, SlugcatStats.Name playerCharacter, bool singleRoomWorld, string worldName, Region region, RainWorldGame.SetupValues setupValues)
@@ -145,10 +182,13 @@ namespace RainMeadow
             if (game?.session is OnlineGameSession os)
             {
                 setupValues.worldCreaturesSpawn = os.ShouldLoadCreatures(game);
-
-                OnlineManager.lobby.worldSessions[region.name].Request();
             }
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
+            if (game?.session is OnlineGameSession)
+            {
+                OnlineManager.lobby.worldSessions[region.name].Request();
+                OnlineManager.lobby.worldSessions[region.name].BindWorld(self.world);
+            }
         }
 
         private void Room_LoadFromDataString(ILContext il)

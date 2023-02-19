@@ -45,3 +45,6 @@ Mod auto installing / auto disabling
 
 Manage missing regions:
 	right now nullrefs because missing referenced resource
+
+World loader takes longer than lease to load, tries to initiate worldsession on not-yet-ready world
+	maybe actual resource calls activate/deactivate, lease-independent? will it always be in a consistent state?

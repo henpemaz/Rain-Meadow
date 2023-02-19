@@ -228,8 +228,9 @@ namespace RainMeadow
         internal static OnlineResource ResourceFromIdentifier(string rid)
         {
             if (rid == ".") return lobby;
-            if (rid.Length == 2 && lobby.worldSessions.TryGetValue(rid, out var r2)) return r2;
-            //if (roomSessions.TryGetValue(rid, out var r3)) return r3;
+            if (rid.Length == 2 && lobby.worldSessions.TryGetValue(rid, out var r)) return r;
+            if (rid.Length > 2 && lobby.worldSessions.TryGetValue(rid.Substring(0, 2), out var r2) && r2.roomSessions.TryGetValue(rid.Substring(2), out var room)) return room;
+
             RainMeadow.Error("resource not found : " + rid);
             return null;
         }

@@ -10,6 +10,7 @@ namespace RainMeadow
     // The owner of the resource coordinates states, distributes subresources and solves conflicts
     // Distributed Hyerarchical Ownership Management System?
     // Distributed transaction management system?
+    // Todo improve initial-state on subscribe for event-driven data
     public abstract class OnlineResource
     {
         public OnlineResource super;
@@ -46,6 +47,7 @@ namespace RainMeadow
             if (subscribers.Count > 0) throw new InvalidOperationException("has subscribers");
             if (subresources.Any(s=>s.isActive)) throw new InvalidOperationException("has active subresources");
             isActive = false;
+            subresources.Clear();
         }
 
         private void Claimed(OnlinePlayer player)
@@ -76,7 +78,7 @@ namespace RainMeadow
         {
             foreach (var s in subscribers)
             {
-                if (s == onlineResource.owner) continue;
+                if (s == onlineResource.owner) continue; // they already know
                 s.NewOwnerEvent(onlineResource, onlineResource.owner);
             }
         }
@@ -91,6 +93,7 @@ namespace RainMeadow
             this.subscribers.Add(player);
 
             // initial lease state
+            // TODO initial state?
             foreach (var onlineResource in subresources)
             {
                 player.NewOwnerEvent(onlineResource, onlineResource.owner);

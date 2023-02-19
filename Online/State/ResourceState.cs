@@ -21,6 +21,7 @@ namespace RainMeadow
             Unknown = 0,
             LobbyState,
             WorldState,
+            RoomState,
         }
 
         public virtual void CustomSerialize(Serializer serializer)
