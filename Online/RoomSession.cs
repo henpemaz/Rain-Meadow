@@ -3,27 +3,31 @@
     public class RoomSession : OnlineResource
     {
         public AbstractRoom absroom;
+        public bool abstractOnDeactivate;
 
         public RoomSession(WorldSession ws, AbstractRoom absroom)
         {
             super = ws;
             this.absroom = absroom;
+            deactivateOnRelease = true;
         }
 
-        public override void Activate()
+        protected override void ActivateImpl()
         {
-            base.Activate();
+            //throw new System.NotImplementedException();
         }
 
-        public override void Deactivate()
+        protected override void DeactivateImpl()
         {
-            base.Deactivate();
-            absroom.Abstractize();
+            if (abstractOnDeactivate)
+            {
+                absroom.Abstractize();
+            }
         }
 
         internal override string Identifier()
         {
-            return absroom.name;
+            return super.Identifier() + absroom.name;
         }
 
         public override void ReadState(ResourceState newState, ulong ts)
@@ -36,7 +40,7 @@
             return new RoomState(this, ts);
         }
 
-        private class RoomState : ResourceState
+        public class RoomState : ResourceState
         {
             public RoomState(OnlineResource resource, ulong ts) : base(resource, ts)
             {

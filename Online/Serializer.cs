@@ -250,5 +250,27 @@ namespace RainMeadow
                 referencedEvent = (ResourceEvent)currPlayer.GetRecentEvent(reader.ReadUInt64());
             }
         }
+
+        internal void Serialize(ref OnlineResource.LeaseState leaseState)
+        {
+            if (isWriting)
+            {
+                writer.Write((byte)leaseState.ownership.Count);
+                foreach (var item in leaseState.ownership)
+                {
+                    writer.Write(item.Key); writer.Write(item.Value);
+                }
+            }
+            if (isReading)
+            {
+                leaseState = new();
+                var count = reader.ReadByte();
+                leaseState.ownership = new(count);
+                for (int i = 0; i < count; i++)
+                {
+                    leaseState.ownership[reader.ReadString()] = reader.ReadUInt64();
+                }
+            }
+        }
     }
 }

@@ -34,7 +34,7 @@ namespace RainMeadow
             RequestResultError,
             TransferResultError,
             TransferResultOk,
-            NewOwnerEvent,
+            LeaseChange,
         }
 
         internal static PlayerEvent NewFromType(EventTypeId eventTypeId)
@@ -77,8 +77,8 @@ namespace RainMeadow
                 case EventTypeId.TransferResultOk:
                     e = new TransferResult.Ok(null);
                     break;
-                case EventTypeId.NewOwnerEvent:
-                    e = new NewOwnerEvent(null, null);
+                case EventTypeId.LeaseChange:
+                    e = new LeaseChangeEvent(null, null);
                     break;
             }
             return e;

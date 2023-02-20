@@ -42,6 +42,9 @@ namespace RainMeadow
                 case ResourceStateType.WorldState:
                     s = new WorldSession.WorldState(null, 0);
                     break;
+                case ResourceStateType.RoomState:
+                    s = new RoomSession.RoomState(null, 0);
+                    break;
                 default:
                     break;
             }

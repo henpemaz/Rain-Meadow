@@ -13,8 +13,6 @@ namespace RainMeadow
             On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues += WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues;
             On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues_LoadingContext += WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues_LoadingContext;
             On.WorldLoader.Update += WorldLoader_Update;
-            On.OverWorld.LoadWorld += OverWorld_LoadWorld;
-            On.OverWorld.WorldLoaded += OverWorld_WorldLoaded;
             On.RoomPreparer.ctor += RoomPreparer_ctor;
             On.RoomPreparer.Update += RoomPreparer_Update;
             On.AbstractRoom.Abstractize += AbstractRoom_Abstractize;
@@ -32,14 +30,11 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby.worldSessions[self.world.region.name] is WorldSession ws && ws.roomSessions[self.name] is RoomSession rs)
                 {
-                    if (rs.isActive)
+                    if (rs.isAvailable)
                     {
-                        rs.Release();
-                        rs.Deactivate();
-                    }
-                    else
-                    {
-                        RainMeadow.Error("unloaded room that was not active!! " + rs);
+                        rs.abstractOnDeactivate = true;
+                        rs.ReleaseResource();
+                        return;
                     }
                 }
             }
@@ -53,6 +48,11 @@ namespace RainMeadow
             {
                 if(OnlineManager.lobby.worldSessions[self.room.world.region.name].roomSessions[self.room.abstractRoom.name] is RoomSession rs)
                 {
+                    if (true) // force load scenario ????
+                    {
+                        SteamAPI.RunCallbacks();
+                        OnlineManager.instance.RawUpdate(0.001f);
+                    }
                     if (!rs.isAvailable)return;
                 }
             }
@@ -76,39 +76,25 @@ namespace RainMeadow
             orig(self, room, loadAiHeatMaps, falseBake, shortcutsOnly);
         }
 
-        // world release
-        private void OverWorld_WorldLoaded(On.OverWorld.orig_WorldLoaded orig, OverWorld self)
-        {
-            if (self.game?.session is OnlineGameSession && self.activeWorld is World aw)
-            {
-                OnlineManager.lobby.worldSessions[aw.region.name].Release();
-            }
-            orig(self);
-        }
-
-        // world release
-        private void OverWorld_LoadWorld(On.OverWorld.orig_LoadWorld orig, OverWorld self, string worldName, SlugcatStats.Name playerCharacterNumber, bool singleRoomWorld)
-        {
-            if(self.game?.session is OnlineGameSession && self.activeWorld is World aw)
-            {
-                OnlineManager.lobby.worldSessions[aw.region.name].Release();
-            }
-            orig(self, worldName, playerCharacterNumber, singleRoomWorld);
-        }
-
-        // world wait fix
+        // world wait
         private void WorldLoader_Update(On.WorldLoader.orig_Update orig, WorldLoader self)
         {
             if(self.game?.session is OnlineGameSession os)
             {
-                if(self.game.overWorld?.worldLoader == null) // force-load scenario
+                if(self.game.overWorld?.worldLoader != self) // force-load scenario
                 {
                     SteamAPI.RunCallbacks();
                     OnlineManager.instance.RawUpdate(0.001f);
                 }
-                if(OnlineManager.lobby.worldSessions[self.world.region.name] is WorldSession ws)
+                if(!OnlineManager.lobby.worldSessions[self.world.region.name].isAvailable)
                 {
-                    if (!ws.isAvailable) return;
+                    if (UnityEngine.Input.anyKey) RainMeadow.Debug("skip 1");
+                    return;
+                }
+                if(self.game.overWorld?.activeWorld is World aw && OnlineManager.lobby.worldSessions[aw.region.name].isAvailable)
+                {
+                    if (UnityEngine.Input.anyKey) RainMeadow.Debug("skip 1");
+                    return;
                 }
             }
             orig(self);
@@ -204,6 +190,13 @@ namespace RainMeadow
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues, context);
             if (game?.session is OnlineGameSession )
             {
+                if (game.overWorld?.activeWorld is World aw && OnlineManager.lobby.worldSessions[aw.region.name] is WorldSession ws)
+                {
+                    RainMeadow.Debug("Releasing previous region: " + aw.region.name);
+                    ws.deactivateOnRelease = true;
+                    ws.ReleaseResource();
+                }
+                RainMeadow.Debug("Requesting new region: " + region.name);
                 OnlineManager.lobby.worldSessions[region.name].Request();
                 OnlineManager.lobby.worldSessions[region.name].BindWorld(self.world);
             }
@@ -218,6 +211,13 @@ namespace RainMeadow
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
             if (game?.session is OnlineGameSession)
             {
+                if (game.overWorld?.activeWorld is World aw && OnlineManager.lobby.worldSessions[aw.region.name] is WorldSession ws)
+                {
+                    RainMeadow.Debug("Releasing previous region: " + aw.region.name);
+                    ws.deactivateOnRelease = true;
+                    ws.ReleaseResource();
+                }
+                RainMeadow.Debug("Requesting new region: " + region.name);
                 OnlineManager.lobby.worldSessions[region.name].Request();
                 OnlineManager.lobby.worldSessions[region.name].BindWorld(self.world);
             }

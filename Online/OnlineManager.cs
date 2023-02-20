@@ -44,16 +44,18 @@ namespace RainMeadow
             base.Update();
             if(lobby != null)
             {
+                if (lobby.isAvailable && !lobby.isActive) lobby.Activate();
+
                 mePlayer.tick++;
 
                 // Stuff mePlayer set to itself, events from the distributed lease system
-                mePlayer.recentlyAckedEvents.Clear();
-                while(mePlayer.OutgoingEvents.Count > 0)
-                {
-                    var e = mePlayer.OutgoingEvents.Dequeue();
-                    mePlayer.recentlyAckedEvents.Add(e);
-                    e.Process();
-                }
+                //mePlayer.recentlyAckedEvents.Clear();
+                //while(mePlayer.OutgoingEvents.Count > 0)
+                //{
+                //    var e = mePlayer.OutgoingEvents.Dequeue();
+                //    mePlayer.recentlyAckedEvents.Add(e);
+                //    e.Process();
+                //}
 
                 // Incoming messages
                 ReceiveData();
@@ -210,14 +212,16 @@ namespace RainMeadow
             }
         }
 
-        internal static void AddSubscription(OnlineResource onlineResource, OnlinePlayer player)
+        internal static Subscription AddSubscription(OnlineResource onlineResource, OnlinePlayer player)
         {
-            subscriptions.Add(new Subscription(onlineResource, player));
+            var sub = new Subscription(onlineResource, player);
+            subscriptions.Add(sub);
+            return sub;
         }
 
-        internal static void RemoveSubscription(OnlineResource onlineResource, OnlinePlayer player)
+        internal static void RemoveSubscription(Subscription sub)
         {
-            subscriptions.RemoveAll(s => s.onlineResource == onlineResource && s.player == player);
+            subscriptions.Remove(sub);
         }
 
         internal static void RemoveSubscriptions(OnlineResource onlineResource)

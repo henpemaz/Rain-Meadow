@@ -91,7 +91,8 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Menu\MenuDarkSprite.cs" />
     <Compile Include="Online\Events\ResourceResultEvent.cs" />
-    <Compile Include="Online\Events\NewOwnerEvent.cs" />
+    <Compile Include="Online\LeaseChangeEvent.cs" />
+    <Compile Include="Online\OnlineResource.LeaseState.cs" />
     <Compile Include="Online\PlayersManager.cs" />
     <Compile Include="Online\Serializer.cs" />
     <Compile Include="Online\Lobby.cs" />

@@ -17,9 +17,8 @@ namespace RainMeadow
             this.super = lobby;
         }
 
-        public override void Activate()
+        protected override void ActivateImpl()
         {
-            base.Activate();
             if(world == null) throw new InvalidOperationException("world not set");
             foreach (var room in world.abstractRooms)
             {
@@ -29,9 +28,8 @@ namespace RainMeadow
             }
         }
 
-        public override void Deactivate()
+        protected override void DeactivateImpl()
         {
-            base.Deactivate();
             this.roomSessions.Clear();
             world = null;
         }

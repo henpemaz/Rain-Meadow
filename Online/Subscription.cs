@@ -6,6 +6,7 @@ namespace RainMeadow
     {
         public OnlineResource onlineResource;
         public OnlinePlayer player;
+        private OnlineResource.LeaseState previousLeaseState;
 
         public Subscription(OnlineResource onlineResource, OnlinePlayer player)
         {
@@ -15,7 +16,15 @@ namespace RainMeadow
 
         public void Update(ulong ts)
         {
+            // Todo delta
             player.OutgoingStates.Enqueue(onlineResource.GetState(ts));
+        }
+
+        internal void NewLeaseState(OnlineResource onlineResource)
+        {
+            var newLeaseState = onlineResource.GetLeaseState();
+            player.QueueEvent(new LeaseChangeEvent(onlineResource, newLeaseState.Delta(previousLeaseState))); // send the delta
+            previousLeaseState = newLeaseState; // store in full
         }
     }
 }

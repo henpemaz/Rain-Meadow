@@ -37,9 +37,8 @@ namespace RainMeadow
             }
         }
 
-        public override void Activate()
+        protected override void ActivateImpl()
         {
-            base.Activate();
             this.loadedRegions = Region.LoadAllRegions(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer);
             foreach (var r in loadedRegions)
             {
@@ -49,13 +48,7 @@ namespace RainMeadow
             }
         }
 
-        protected override void Available()
-        {
-            base.Available();
-            Activate();
-        }
-
-        public override void Deactivate()
+        protected override void DeactivateImpl()
         {
             throw new InvalidOperationException("cant deactivate");
         }
