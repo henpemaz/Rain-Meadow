@@ -6,6 +6,15 @@ namespace RainMeadow
 {
     public abstract partial class OnlineResource
     {
+        private void SubresourceNewOwner(OnlineResource onlineResource)
+        {
+            RainMeadow.Debug(this);
+            foreach (var s in subscriptions)
+            {
+                s.NewLeaseState(this);
+            }
+        }
+
         internal LeaseState GetLeaseState()
         {
             return new LeaseState(this);
@@ -15,7 +24,8 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (!isAvailable) { throw new InvalidOperationException("not available"); }
-            if (!isActive)
+            if (isOwner) { throw new InvalidOperationException("owner"); }
+            if (!isActive) // store it for later
             {
                 if (incomingLease != null) { incomingLease.AddDelta(leaseState); }
                 else incomingLease = leaseState;

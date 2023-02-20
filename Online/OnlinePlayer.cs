@@ -13,11 +13,11 @@ namespace RainMeadow
         public SteamNetworkingIdentity oid;
         public Queue<PlayerEvent> OutgoingEvents = new(16);
         public List<PlayerEvent> recentlyAckedEvents = new(16);
-        public Queue<ResourceState> OutgoingStates = new(128);
+        public Queue<OnlineResource.ResourceState> OutgoingStates = new(128);
         private ulong nextOutgoingEvent = 1;
         public ulong lastEventFromRemote;
-        public ulong lastAckFromRemote;
-        internal ulong tick;
+        private ulong lastAckFromRemote;
+        public ulong tick;
         public bool needsAck;
         public bool isMe;
         public string name;
@@ -27,7 +27,7 @@ namespace RainMeadow
             this.id = id;
             this.oid = new SteamNetworkingIdentity();
             oid.SetSteamID(id);
-            isMe = this == OnlineManager.mePlayer;
+            isMe = id == OnlineManager.me;
             name = SteamFriends.GetFriendPersonaName(id);
         }
 
@@ -38,14 +38,7 @@ namespace RainMeadow
             e.to = this;
             e.from = OnlineManager.mePlayer;
             nextOutgoingEvent++;
-            if (isMe)
-            {
-                e.Process();
-            }
-            else
-            {
-                OutgoingEvents.Enqueue(e);
-            }
+            OutgoingEvents.Enqueue(e);
         }
 
         internal PlayerEvent GetRecentEvent(ulong id)

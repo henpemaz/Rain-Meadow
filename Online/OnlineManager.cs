@@ -47,15 +47,11 @@ namespace RainMeadow
                 if (lobby.isAvailable && !lobby.isActive) lobby.Activate();
 
                 mePlayer.tick++;
-
                 // Stuff mePlayer set to itself, events from the distributed lease system
-                //mePlayer.recentlyAckedEvents.Clear();
-                //while(mePlayer.OutgoingEvents.Count > 0)
-                //{
-                //    var e = mePlayer.OutgoingEvents.Dequeue();
-                //    mePlayer.recentlyAckedEvents.Add(e);
-                //    e.Process();
-                //}
+                while(mePlayer.OutgoingEvents.Count > 0)
+                {
+                    mePlayer.OutgoingEvents.Dequeue().Process();
+                }
 
                 // Incoming messages
                 ReceiveData();
@@ -162,7 +158,7 @@ namespace RainMeadow
             return delta < ulong.MaxValue / 2;
         }
 
-        private void ProcessIncomingState(ResourceState resourceState, OnlinePlayer fromPlayer)
+        private void ProcessIncomingState(OnlineResource.ResourceState resourceState, OnlinePlayer fromPlayer)
         {
             resourceState.resource.ReadState(resourceState, fromPlayer.tick);
         }

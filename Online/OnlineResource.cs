@@ -17,37 +17,32 @@ namespace RainMeadow
         public OnlinePlayer owner;
         public List<OnlineResource> subresources;
 
-        public ResourceEvent pendingRequest; // should this maybe be a list/queue?
+        public ResourceEvent pendingRequest; // should this maybe be a list/queue? Will it be any more manageable if multiple events can cohexist?
         public List<Subscription> subscriptions; // this could be a dict of subscriptions, but how relevant is to access them through here anyways
 
         public bool isFree => owner == null;
         public bool isOwner => owner != null && owner.id == OnlineManager.me;
         public bool isSuper => super != null && super.isOwner;
-        public bool isActive { get; protected set; }
-        public bool isAvailable { get; protected set; }
+        public bool isActive { get; protected set; } // The respective in-game resource is loaded
+        public bool isAvailable { get; protected set; } // The resource was leased or subscribed to
         public bool isPending => pendingRequest != null;
         public bool canRelease => !subresources.Any(s => s.isAvailable);
 
-        public void ReleaseResource()
+        public void FullyReleaseResource()
         {
             RainMeadow.Debug(this);
             foreach(var sub in subresources)
             {
-                if(sub.isAvailable && !sub.isPending) sub.ReleaseResource();
+                if(sub.isAvailable && !sub.isPending) sub.FullyReleaseResource();
             }
 
             if(canRelease ) { Release(); }
             else { releaseWhenPossible = true; }
         }
 
-        public override string ToString()
-        {
-            return $"<Resource {Identifier()} - o:{owner?.name} - av:{isAvailable} - ac:{isActive}>";
-        }
-
         protected abstract void ActivateImpl();
 
-        // The game resource this corresponds to has loaded
+        // The game resource this corresponds to has loaded, and subresources can be enumerated
         public void Activate()
         {
             RainMeadow.Debug(this);
@@ -58,16 +53,20 @@ namespace RainMeadow
 
             ActivateImpl();
 
-            if(incomingLease != null)
-            {
-                ProcessLease(incomingLease);
-                incomingLease = null;
-            }
+            
             if(isOwner)
             {
                 foreach (var s in subscriptions)
                 {
                     s.NewLeaseState(this);
+                }
+            }
+            else
+            {
+                if (incomingLease != null)
+                {
+                    ProcessLease(incomingLease);
+                    incomingLease = null;
                 }
             }
         }
@@ -124,21 +123,12 @@ namespace RainMeadow
         private void NewOwner(OnlinePlayer player)
         {
             RainMeadow.Debug(this.ToString() + " - " + (player != null ? player : "null"));
-            if (player == owner && player != null) throw new InvalidOperationException("Re-assigned to the same owner");
+            //if (player == owner && player != null) throw new InvalidOperationException("Re-assigned to the same owner"); // this breaks in transfers, as the transferee doesnt have the delta
             var oldOwner = owner;
             owner = player;
             if (isSuper && oldOwner != owner) // I am responsible for notifying lease changes to this
             {
                 super.SubresourceNewOwner(this);
-            }
-        }
-
-        private void SubresourceNewOwner(OnlineResource onlineResource)
-        {
-            RainMeadow.Debug(this);
-            foreach (var s in subscriptions)
-            {
-                s.NewLeaseState(this);
             }
         }
 
@@ -349,21 +339,10 @@ namespace RainMeadow
             pendingRequest = null;
         }
 
-        private ResourceState lastState;
-        private LeaseState incomingLease;
-
-        public virtual ResourceState GetState(ulong ts)
+        public override string ToString()
         {
-            if (lastState == null || lastState.ts != ts)
-            {
-                lastState = MakeState(ts);
-            }
-
-            return lastState;
+            return $"<Resource {Identifier()} - o:{owner?.name} - av:{isAvailable} - ac:{isActive}>";
         }
-
-        protected abstract ResourceState MakeState(ulong ts);
-        public abstract void ReadState(ResourceState newState, ulong ts);
 
         internal virtual byte SizeOfIdentifier()
         {

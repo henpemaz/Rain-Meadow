@@ -93,6 +93,7 @@
     <Compile Include="Online\Events\ResourceResultEvent.cs" />
     <Compile Include="Online\LeaseChangeEvent.cs" />
     <Compile Include="Online\OnlineResource.LeaseState.cs" />
+    <Compile Include="Online\OnlineResource.State.cs" />
     <Compile Include="Online\PlayersManager.cs" />
     <Compile Include="Online\Serializer.cs" />
     <Compile Include="Online\Lobby.cs" />
@@ -109,7 +110,6 @@
     <Compile Include="Online\Events\ReleaseRequest.cs" />
     <Compile Include="Online\Events\ReleaseResult.cs" />
     <Compile Include="Online\Events\ResourceRequest.cs" />
-    <Compile Include="Online\State\ResourceState.cs" />
     <Compile Include="Online\RoomSession.cs" />
     <Compile Include="Online\Events\TransferRequest.cs" />
     <Compile Include="Online\Events\TransferResult.cs" />

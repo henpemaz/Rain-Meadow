@@ -80,7 +80,7 @@ namespace RainMeadow
             return playerEvent.EstimatedSize + margin < capacity;
         }
 
-        internal bool CanFit(ResourceState resourceState)
+        internal bool CanFit(OnlineResource.ResourceState resourceState)
         {
             return resourceState.EstimatedSize + margin < capacity;
         }
@@ -114,7 +114,7 @@ namespace RainMeadow
             writer.Write(stateCount);
         }
 
-        internal void WriteState(ResourceState resourceState)
+        internal void WriteState(OnlineResource.ResourceState resourceState)
         {
             stateCount++;
             writer.Write((byte)resourceState.stateType);
@@ -166,9 +166,9 @@ namespace RainMeadow
             return reader.ReadInt32();
         }
 
-        internal ResourceState ReadState()
+        internal OnlineResource.ResourceState ReadState()
         {
-            ResourceState s = ResourceState.NewFromType((ResourceState.ResourceStateType)reader.ReadByte());
+            OnlineResource.ResourceState s = OnlineResource.ResourceState.NewFromType((OnlineResource.ResourceState.ResourceStateType)reader.ReadByte());
             s.fromPlayer = currPlayer;
             s.ts = currPlayer.tick;
             s.CustomSerialize(this);

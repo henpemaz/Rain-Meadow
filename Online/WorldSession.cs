@@ -15,6 +15,7 @@ namespace RainMeadow
         {
             this.region = region;
             this.super = lobby;
+            deactivateOnRelease = true;
         }
 
         protected override void ActivateImpl()

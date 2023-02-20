@@ -11,7 +11,6 @@ namespace RainMeadow
         private void GameHooks()
         {
             On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues += WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues;
-            On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues_LoadingContext += WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues_LoadingContext;
             On.WorldLoader.Update += WorldLoader_Update;
             On.RoomPreparer.ctor += RoomPreparer_ctor;
             On.RoomPreparer.Update += RoomPreparer_Update;
@@ -33,7 +32,7 @@ namespace RainMeadow
                     if (rs.isAvailable)
                     {
                         rs.abstractOnDeactivate = true;
-                        rs.ReleaseResource();
+                        rs.FullyReleaseResource();
                         return;
                     }
                 }
@@ -76,36 +75,60 @@ namespace RainMeadow
             orig(self, room, loadAiHeatMaps, falseBake, shortcutsOnly);
         }
 
-        // world wait
+        // world wait, activate
         private void WorldLoader_Update(On.WorldLoader.orig_Update orig, WorldLoader self)
         {
             if(self.game?.session is OnlineGameSession os)
             {
-                if(self.game.overWorld?.worldLoader != self) // force-load scenario
-                {
-                    SteamAPI.RunCallbacks();
-                    OnlineManager.instance.RawUpdate(0.001f);
-                }
-                if(!OnlineManager.lobby.worldSessions[self.world.region.name].isAvailable)
-                {
-                    if (UnityEngine.Input.anyKey) RainMeadow.Debug("skip 1");
-                    return;
-                }
-                if(self.game.overWorld?.activeWorld is World aw && OnlineManager.lobby.worldSessions[aw.region.name].isAvailable)
-                {
-                    if (UnityEngine.Input.anyKey) RainMeadow.Debug("skip 1");
-                    return;
-                }
+                
             }
             orig(self);
             if (self.game?.session is OnlineGameSession)
             {
+                if (self.game.overWorld?.worldLoader != self) // force-load scenario
+                {
+                    SteamAPI.RunCallbacks();
+                    OnlineManager.instance.RawUpdate(0.001f);
+                }
+                if (!OnlineManager.lobby.worldSessions[self.world.region.name].isAvailable)
+                {
+                    self.Finished = false;
+                    return;
+                }
+                if (self.game.overWorld?.activeWorld is World aw && OnlineManager.lobby.worldSessions[aw.region.name].isAvailable)
+                {
+                    self.Finished = false;
+                    return;
+                }
                 if (OnlineManager.lobby.worldSessions[self.world.region.name] is WorldSession ws)
                 {
                     if (self.Finished) ws.Activate();
                 }
             }
         }
+
+        // world request/release
+        private void WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues(On.WorldLoader.orig_ctor_RainWorldGame_Name_bool_string_Region_SetupValues orig, WorldLoader self, RainWorldGame game, SlugcatStats.Name playerCharacter, bool singleRoomWorld, string worldName, Region region, RainWorldGame.SetupValues setupValues)
+        {
+            if (game?.session is OnlineGameSession os)
+            {
+                setupValues.worldCreaturesSpawn = os.ShouldLoadCreatures(game);
+            }
+            orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
+            if (game?.session is OnlineGameSession)
+            {
+                if (game.overWorld?.activeWorld is World aw && OnlineManager.lobby.worldSessions[aw.region.name] is WorldSession ws)
+                {
+                    RainMeadow.Debug("Releasing previous region: " + aw.region.name);
+                    ws.deactivateOnRelease = true;
+                    ws.FullyReleaseResource();
+                }
+                RainMeadow.Debug("Requesting new region: " + region.name);
+                OnlineManager.lobby.worldSessions[region.name].Request();
+                OnlineManager.lobby.worldSessions[region.name].BindWorld(self.world);
+            }
+        }
+
 
         private void Room_ctor(On.Room.orig_ctor orig, Room self, RainWorldGame game, World world, AbstractRoom abstractRoom)
         {
@@ -178,48 +201,6 @@ namespace RainMeadow
             catch (Exception e)
             {
                 UnityEngine.Debug.LogException(e);
-            }
-        }
-
-        private void WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues_LoadingContext(On.WorldLoader.orig_ctor_RainWorldGame_Name_bool_string_Region_SetupValues_LoadingContext orig, WorldLoader self, RainWorldGame game, SlugcatStats.Name playerCharacter, bool singleRoomWorld, string worldName, Region region, RainWorldGame.SetupValues setupValues, WorldLoader.LoadingContext context)
-        {
-            if (game?.session is OnlineGameSession os)
-            {
-                setupValues.worldCreaturesSpawn = os.ShouldLoadCreatures(game);
-            }
-            orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues, context);
-            if (game?.session is OnlineGameSession )
-            {
-                if (game.overWorld?.activeWorld is World aw && OnlineManager.lobby.worldSessions[aw.region.name] is WorldSession ws)
-                {
-                    RainMeadow.Debug("Releasing previous region: " + aw.region.name);
-                    ws.deactivateOnRelease = true;
-                    ws.ReleaseResource();
-                }
-                RainMeadow.Debug("Requesting new region: " + region.name);
-                OnlineManager.lobby.worldSessions[region.name].Request();
-                OnlineManager.lobby.worldSessions[region.name].BindWorld(self.world);
-            }
-        }
-
-        private void WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues(On.WorldLoader.orig_ctor_RainWorldGame_Name_bool_string_Region_SetupValues orig, WorldLoader self, RainWorldGame game, SlugcatStats.Name playerCharacter, bool singleRoomWorld, string worldName, Region region, RainWorldGame.SetupValues setupValues)
-        {
-            if (game?.session is OnlineGameSession os)
-            {
-                setupValues.worldCreaturesSpawn = os.ShouldLoadCreatures(game);
-            }
-            orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
-            if (game?.session is OnlineGameSession)
-            {
-                if (game.overWorld?.activeWorld is World aw && OnlineManager.lobby.worldSessions[aw.region.name] is WorldSession ws)
-                {
-                    RainMeadow.Debug("Releasing previous region: " + aw.region.name);
-                    ws.deactivateOnRelease = true;
-                    ws.ReleaseResource();
-                }
-                RainMeadow.Debug("Requesting new region: " + region.name);
-                OnlineManager.lobby.worldSessions[region.name].Request();
-                OnlineManager.lobby.worldSessions[region.name].BindWorld(self.world);
             }
         }
 
