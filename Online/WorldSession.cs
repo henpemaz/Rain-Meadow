@@ -9,7 +9,7 @@ namespace RainMeadow
         public Region region;
         private World world;
 
-        public Dictionary<string, RoomSession> roomSessions;
+        public Dictionary<string, RoomSession> roomSessions = new();
 
         public WorldSession(Region region, Lobby lobby)
         {
@@ -23,7 +23,7 @@ namespace RainMeadow
             if(world == null) throw new InvalidOperationException("world not set");
             foreach (var room in world.abstractRooms)
             {
-                var rs = new RoomSession(room);
+                var rs = new RoomSession(this, room);
                 roomSessions.Add(room.name, rs);
                 subresources.Add(rs);
             }

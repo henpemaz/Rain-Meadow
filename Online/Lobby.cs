@@ -20,6 +20,7 @@ namespace RainMeadow
             PlayersManager.UpdatePlayersList(id);
             var ownerId = SteamMatchmaking.GetLobbyOwner(id); // Steam decides
             owner = OnlineManager.PlayerFromId(ownerId);
+            if (owner == null) throw new Exception("Couldnt find lobby owner in player list");
             if (isOwner)
             {
                 SteamMatchmaking.SetLobbyData(id, OnlineManager.CLIENT_KEY, OnlineManager.CLIENT_VAL);
@@ -28,7 +29,7 @@ namespace RainMeadow
 
             if (isOwner)
             {
-                Activate();
+                Available();
             }
             else
             {
@@ -46,6 +47,12 @@ namespace RainMeadow
                 worldSessions.Add(r.name, ws);
                 subresources.Add(ws);
             }
+        }
+
+        protected override void Available()
+        {
+            base.Available();
+            Activate();
         }
 
         public override void Deactivate()

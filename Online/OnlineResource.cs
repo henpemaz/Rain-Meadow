@@ -24,6 +24,7 @@ namespace RainMeadow
         public bool isOwner => owner != null && owner.id == OnlineManager.me;
         public bool isSuper => super != null && super.isOwner;
         public bool isActive { get; protected set; }
+        public bool isAvailable { get; protected set; }
         public bool isPending => pendingRequest != null;
 
         public override string ToString()
@@ -31,23 +32,43 @@ namespace RainMeadow
             return $"<Resource {Identifier()} - o:{owner?.name}>";
         }
 
+        // The game resource this corresponds to has loaded
         public virtual void Activate()
         {
             RainMeadow.Debug(this);
             if(isActive) { throw new InvalidOperationException("Resource is already active"); }
+            if(!isAvailable) { throw new InvalidOperationException("Resource is not available"); }
             isActive = true;
-            subscribers = new List<OnlinePlayer>();
             subresources = new List<OnlineResource>();
         }
 
+        // The online resource has been leased and is available for use
+        protected virtual void Available()
+        {
+            RainMeadow.Debug(this);
+            if (isActive) { throw new InvalidOperationException("Resource is already active"); }
+            isAvailable = true;
+            subscribers = new List<OnlinePlayer>();
+        }
+
+        // The game resource has been unloaded
         public virtual void Deactivate()
         {
             RainMeadow.Debug(this);
             if (!isActive) { throw new InvalidOperationException("Resource is already inactive"); }
-            if (subscribers.Count > 0) throw new InvalidOperationException("has subscribers");
             if (subresources.Any(s=>s.isActive)) throw new InvalidOperationException("has active subresources");
             isActive = false;
             subresources.Clear();
+        }
+
+        // The online resource has been unleased
+        protected virtual void Unavailable()
+        {
+            RainMeadow.Debug(this);
+            if (!isActive) { throw new InvalidOperationException("resource is inactive, should be unleased first"); }
+            OnlineManager.RemoveSubscriptions(this);
+            subscribers.Clear();
+            isAvailable = false;
         }
 
         private void Claimed(OnlinePlayer player)
@@ -94,6 +115,7 @@ namespace RainMeadow
 
             // initial lease state
             // TODO initial state?
+            // This will break if a user subscribes between Available and Activate
             foreach (var onlineResource in subresources)
             {
                 player.NewOwnerEvent(onlineResource, onlineResource.owner);
@@ -229,6 +251,7 @@ namespace RainMeadow
                 request.from.QueueEvent(new TransferResult.Ok(request));
                 return;
             }
+            RainMeadow.Debug($"Transfer error : {isActive} {!isOwner} {request.from == super?.owner}");
             request.from.QueueEvent(new TransferResult.Error(request));
             return;
         }
@@ -243,11 +266,11 @@ namespace RainMeadow
                 {
                     Claimed(OnlineManager.mePlayer);
                 }
-                Activate();
+                Available();
             }
             else if (requestResult is RequestResult.Subscribed) // I'm subscribed to a resource's state and events
             {
-                Activate();
+                Available();
             }
             else if (requestResult is RequestResult.Error) // I should retry
             {
@@ -268,13 +291,11 @@ namespace RainMeadow
                 {
                     Unclaimed();
                 }
-                OnlineManager.RemoveSubscriptions(this);
-                subscribers.Clear();
-                Deactivate();
+                Unavailable();
             }
             else if (releaseResult is ReleaseResult.Unsubscribed) // I'm clear
             {
-                Deactivate();
+                Unavailable();
             } 
             else if (releaseResult is ReleaseResult.Error) // I should retry
             {

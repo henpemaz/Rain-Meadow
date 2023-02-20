@@ -25,28 +25,48 @@ namespace RainMeadow
             IL.Room.Loaded += Room_Loaded;
         }
 
+        // Room unload
         private void AbstractRoom_Abstractize(On.AbstractRoom.orig_Abstractize orig, AbstractRoom self)
         {
             if (self.world?.game?.session is OnlineGameSession os)
             {
-                if (OnlineManager.lobby.worldSessions[self.world.region.name].roomSessions[self.name] is RoomSession rs && rs.isActive)
+                if (OnlineManager.lobby.worldSessions[self.world.region.name] is WorldSession ws && ws.roomSessions[self.name] is RoomSession rs)
                 {
-                    rs.Release();
-                    return;
+                    if (rs.isActive)
+                    {
+                        rs.Release();
+                        rs.Deactivate();
+                    }
+                    else
+                    {
+                        RainMeadow.Error("unloaded room that was not active!! " + rs);
+                    }
                 }
             }
             orig(self);
         }
 
+        // Room wait and activate
         private void RoomPreparer_Update(On.RoomPreparer.orig_Update orig, RoomPreparer self)
         {
             if (!self.shortcutsOnly && self.room?.game?.session is OnlineGameSession os)
             {
-                if (self.done && !OnlineManager.lobby.worldSessions[self.room.world.region.name].roomSessions[self.room.abstractRoom.name].isActive) self.done = false;
+                if(OnlineManager.lobby.worldSessions[self.room.world.region.name].roomSessions[self.room.abstractRoom.name] is RoomSession rs)
+                {
+                    if (!rs.isAvailable)return;
+                }
             }
             orig(self);
+            if (!self.shortcutsOnly && self.room?.game?.session is OnlineGameSession)
+            {
+                if (OnlineManager.lobby.worldSessions[self.room.world.region.name].roomSessions[self.room.abstractRoom.name] is RoomSession rs)
+                {
+                    if (self.done) rs.Activate();
+                }
+            }
         }
 
+        // room request
         private void RoomPreparer_ctor(On.RoomPreparer.orig_ctor orig, RoomPreparer self, Room room, bool loadAiHeatMaps, bool falseBake, bool shortcutsOnly)
         {
             if (!shortcutsOnly && room?.game?.session is OnlineGameSession os)
@@ -56,6 +76,7 @@ namespace RainMeadow
             orig(self, room, loadAiHeatMaps, falseBake, shortcutsOnly);
         }
 
+        // world release
         private void OverWorld_WorldLoaded(On.OverWorld.orig_WorldLoaded orig, OverWorld self)
         {
             if (self.game?.session is OnlineGameSession && self.activeWorld is World aw)
@@ -65,6 +86,7 @@ namespace RainMeadow
             orig(self);
         }
 
+        // world release
         private void OverWorld_LoadWorld(On.OverWorld.orig_LoadWorld orig, OverWorld self, string worldName, SlugcatStats.Name playerCharacterNumber, bool singleRoomWorld)
         {
             if(self.game?.session is OnlineGameSession && self.activeWorld is World aw)
@@ -74,6 +96,7 @@ namespace RainMeadow
             orig(self, worldName, playerCharacterNumber, singleRoomWorld);
         }
 
+        // world wait fix
         private void WorldLoader_Update(On.WorldLoader.orig_Update orig, WorldLoader self)
         {
             if(self.game?.session is OnlineGameSession os)
@@ -83,10 +106,19 @@ namespace RainMeadow
                     SteamAPI.RunCallbacks();
                     OnlineManager.instance.RawUpdate(0.001f);
                 }
-
-                if(self.Finished && !OnlineManager.lobby.worldSessions[self.world.region.name].isActive) self.Finished = false;
+                if(OnlineManager.lobby.worldSessions[self.world.region.name] is WorldSession ws)
+                {
+                    if (!ws.isAvailable) return;
+                }
             }
             orig(self);
+            if (self.game?.session is OnlineGameSession)
+            {
+                if (OnlineManager.lobby.worldSessions[self.world.region.name] is WorldSession ws)
+                {
+                    if (self.Finished) ws.Activate();
+                }
+            }
         }
 
         private void Room_ctor(On.Room.orig_ctor orig, Room self, RainWorldGame game, World world, AbstractRoom abstractRoom)

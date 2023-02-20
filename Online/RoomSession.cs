@@ -4,8 +4,9 @@
     {
         public AbstractRoom absroom;
 
-        public RoomSession(AbstractRoom absroom)
+        public RoomSession(WorldSession ws, AbstractRoom absroom)
         {
+            super = ws;
             this.absroom = absroom;
         }
 
@@ -18,7 +19,6 @@
         {
             base.Deactivate();
             absroom.Abstractize();
-            absroom = null;
         }
 
         internal override string Identifier()
