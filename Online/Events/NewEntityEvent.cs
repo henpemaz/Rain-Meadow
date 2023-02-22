@@ -4,21 +4,19 @@
     {
         public OnlinePlayer owner;
         public int entityId;
+        public WorldCoordinate pos;
         public bool isCreature;
         public string template = "";
-        public WorldCoordinate pos;
 
-        public NewEntityEvent() : base(null) // serialization friendly I guess
-        {
-        }
+        public NewEntityEvent() : base(null) { } // serialization friendly I guess
 
-        public NewEntityEvent(RoomSession roomSession, RoomSession.OnlineEntity oe, WorldCoordinate pos) : base(roomSession)
+        public NewEntityEvent(RoomSession roomSession, OnlineEntity oe) : base(roomSession)
         {
             owner = oe.owner;
             entityId = oe.id;
+            pos = oe.pos;
             isCreature = oe.entity is AbstractCreature;
             template = (oe.entity as AbstractCreature)?.creatureTemplate.type.ToString() ?? "";
-            this.pos = pos;
         }
 
         public override EventTypeId eventType => EventTypeId.NewEntityEvent;
@@ -28,12 +26,12 @@
             base.CustomSerialize(serializer);
             serializer.Serialize(ref owner);
             serializer.Serialize(ref entityId);
+            serializer.SerializeNoStrings(ref pos);
             serializer.Serialize(ref isCreature);
             if (isCreature)
             {
                 serializer.Serialize(ref template);
             }
-            serializer.SerializeNoStrings(ref pos);
         }
 
         internal override void Process()

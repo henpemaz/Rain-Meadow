@@ -19,7 +19,7 @@ namespace RainMeadow
             this.id = id;
             PlayersManager.UpdatePlayersList(id);
             var ownerId = SteamMatchmaking.GetLobbyOwner(id); // Steam decides
-            owner = OnlineManager.PlayerFromId(ownerId);
+            NewOwner(OnlineManager.PlayerFromId(ownerId));
             if (owner == null) throw new Exception("Couldnt find lobby owner in player list");
             if (isOwner)
             {

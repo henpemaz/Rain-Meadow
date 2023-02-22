@@ -20,7 +20,7 @@ namespace RainMeadow
             player.OutgoingStates.Enqueue(onlineResource.GetState(ts));
         }
 
-        internal void NewLeaseState(OnlineResource onlineResource)
+        internal void NewLeaseState(OnlineResource onlineResource) // Lease changes are critical and thus sent as events
         {
             var newLeaseState = onlineResource.GetLeaseState();
             player.QueueEvent(new LeaseChangeEvent(onlineResource, newLeaseState.Delta(previousLeaseState))); // send the delta

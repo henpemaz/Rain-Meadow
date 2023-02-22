@@ -13,6 +13,7 @@ New game session type
 		todo items
 		todo room objects
 			what objects do we let spawn?
+		remove quantified creatures
 
 basic netcode
 	on load resource, request resource

@@ -128,18 +128,18 @@ namespace RainMeadow
             }
         }
 
-        private void NewOwner(OnlinePlayer player)
+        protected void NewOwner(OnlinePlayer player)
         {
             RainMeadow.Debug(this.ToString() + " - " + (player != null ? player : "null"));
             //if (player == owner && player != null) throw new InvalidOperationException("Re-assigned to the same owner"); // this breaks in transfers, as the transferee doesnt have the delta
             var oldOwner = owner;
             owner = player;
+            
             if (isSuper && oldOwner != owner) // I am responsible for notifying lease changes to this
             {
                 super.SubresourceNewOwner(this);
             }
         }
-
 
         protected virtual void SubscribedImpl(OnlinePlayer player) { }
         private void Subscribed(OnlinePlayer player)

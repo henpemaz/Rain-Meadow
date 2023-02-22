@@ -36,6 +36,7 @@ namespace RainMeadow
             TransferResultError,
             LeaseChange,
             NewEntityEvent,
+            EntityLeftEvent,
         }
 
         internal static PlayerEvent NewFromType(EventTypeId eventTypeId)
@@ -83,6 +84,9 @@ namespace RainMeadow
                     break;
                 case EventTypeId.NewEntityEvent:
                     e = new NewEntityEvent();
+                    break;
+                case EventTypeId.EntityLeftEvent:
+                    e = new EntityLeftEvent();
                     break;
             }
             if (e is null) throw new InvalidOperationException("invalid event type");

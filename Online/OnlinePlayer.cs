@@ -21,6 +21,8 @@ namespace RainMeadow
         public bool needsAck;
         public bool isMe;
         public string name;
+        public Dictionary<int, OnlineEntity> recentEntities = new();
+        //public List<OnlineResource> resourcesOwned = new();
 
         public OnlinePlayer(CSteamID id)
         {

@@ -90,9 +90,13 @@
     <Compile Include="Ext_.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Menu\MenuDarkSprite.cs" />
+    <Compile Include="Online\EntityFeed.cs" />
+    <Compile Include="Online\Events\EntityLeftEvent.cs" />
     <Compile Include="Online\Events\ResourceResultEvent.cs" />
-    <Compile Include="Online\LeaseChangeEvent.cs" />
-    <Compile Include="Online\NewEntityEvent.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="Online\Events\LeaseChangeEvent.cs" />
+    <Compile Include="Online\Events\NewEntityEvent.cs" />
+    <Compile Include="Online\OnlineEntity.cs" />
     <Compile Include="Online\OnlineResource.LeaseState.cs" />
     <Compile Include="Online\OnlineResource.State.cs" />
     <Compile Include="Online\PlayersManager.cs" />

@@ -23,6 +23,8 @@ namespace RainMeadow
         public static OnlinePlayer mePlayer;
         public static List<OnlinePlayer> players;
         public static List<Subscription> subscriptions = new();
+        public static List<EntityFeed> feeds = new();
+
         //public static Dictionary<string, WorldSession> worldSessions;
         //private static Dictionary<string, RoomSession> roomSessions;
 
@@ -238,6 +240,16 @@ namespace RainMeadow
         internal static OnlinePlayer PlayerFromId(CSteamID id)
         {
             return players.FirstOrDefault(p => p.id == id);
+        }
+
+        internal static void AddFeed(RoomSession roomSession, OnlineEntity oe)
+        {
+            feeds.Add(new EntityFeed(roomSession, oe));
+        }
+
+        internal static void RemoveFeed(RoomSession roomSession, OnlineEntity oe)
+        {
+            feeds.RemoveAll(f => f.roomSession == roomSession && f.entity == oe);
         }
     }
 }
