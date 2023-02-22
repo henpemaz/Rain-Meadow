@@ -17,6 +17,7 @@
         public class Ext_SlugcatStatsName
         {
             public static SlugcatStats.Name OnlineSessionPlayer = new("MeadowOnline", true);
+            public static SlugcatStats.Name OnlineSessionRemotePlayer = new("MeadowOnlineRemote", true);
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace RainMeadow
 {
-    public class WorldSession : OnlineResource
+    public partial class WorldSession : OnlineResource
     {
         public Region region;
         private World world;
@@ -54,6 +54,7 @@ namespace RainMeadow
         {
             this.world = world;
         }
+        
 
         public class WorldState : ResourceState
         {

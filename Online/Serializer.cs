@@ -272,5 +272,44 @@ namespace RainMeadow
                 }
             }
         }
+
+        internal void Serialize(ref int data)
+        {
+            if (isWriting) writer.Write(data);
+            if (isReading) data = reader.ReadInt32();
+        }
+
+        internal void Serialize(ref bool data)
+        {
+            if (isWriting) writer.Write(data);
+            if (isReading) data = reader.ReadBoolean();
+        }
+
+        internal void Serialize(ref string data)
+        {
+            if (isWriting) writer.Write(data);
+            if (isReading) data = reader.ReadString();
+        }
+
+        internal void SerializeNoStrings(ref WorldCoordinate pos)
+        {
+            if (isWriting)
+            {
+                writer.Write((short)pos.room);
+                writer.Write((short)pos.x);
+                writer.Write((short)pos.y);
+                writer.Write((short)pos.abstractNode);
+            }
+            if(isReading)
+            {
+                pos = new WorldCoordinate()
+                {
+                    room = reader.ReadInt16(),
+                    x = reader.ReadInt16(),
+                    y = reader.ReadInt16(),
+                    abstractNode = reader.ReadInt16(),
+                };
+            }
+        }
     }
 }

@@ -8,9 +8,10 @@ namespace RainMeadow
 {
     partial class RainMeadow
     {
+        // World/room load unload wait
         private void GameHooks()
         {
-            On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues += WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues;
+            On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues += WorldLoader_ctor;
             On.WorldLoader.Update += WorldLoader_Update;
             On.RoomPreparer.ctor += RoomPreparer_ctor;
             On.RoomPreparer.Update += RoomPreparer_Update;
@@ -65,7 +66,7 @@ namespace RainMeadow
             }
         }
 
-        // room request
+        // Room request
         private void RoomPreparer_ctor(On.RoomPreparer.orig_ctor orig, RoomPreparer self, Room room, bool loadAiHeatMaps, bool falseBake, bool shortcutsOnly)
         {
             if (!shortcutsOnly && room?.game?.session is OnlineGameSession os)
@@ -75,7 +76,7 @@ namespace RainMeadow
             orig(self, room, loadAiHeatMaps, falseBake, shortcutsOnly);
         }
 
-        // world wait, activate
+        // World wait, activate
         private void WorldLoader_Update(On.WorldLoader.orig_Update orig, WorldLoader self)
         {
             if(self.game?.session is OnlineGameSession os)
@@ -107,8 +108,8 @@ namespace RainMeadow
             }
         }
 
-        // world request/release
-        private void WorldLoader_ctor_RainWorldGame_Name_bool_string_Region_SetupValues(On.WorldLoader.orig_ctor_RainWorldGame_Name_bool_string_Region_SetupValues orig, WorldLoader self, RainWorldGame game, SlugcatStats.Name playerCharacter, bool singleRoomWorld, string worldName, Region region, RainWorldGame.SetupValues setupValues)
+        // World request/release
+        private void WorldLoader_ctor(On.WorldLoader.orig_ctor_RainWorldGame_Name_bool_string_Region_SetupValues orig, WorldLoader self, RainWorldGame game, SlugcatStats.Name playerCharacter, bool singleRoomWorld, string worldName, Region region, RainWorldGame.SetupValues setupValues)
         {
             if (game?.session is OnlineGameSession os)
             {
@@ -129,7 +130,7 @@ namespace RainMeadow
             }
         }
 
-
+        // Prevent gameplay items
         private void Room_ctor(On.Room.orig_ctor orig, Room self, RainWorldGame game, World world, AbstractRoom abstractRoom)
         {
             orig(self, game, world, abstractRoom);
@@ -139,6 +140,7 @@ namespace RainMeadow
             }
         }
 
+        // OnlineGameSession
         private void RainWorldGame_ctor(ILContext il)
         {
             try
@@ -204,6 +206,7 @@ namespace RainMeadow
             }
         }
 
+        // Prevent geo item spawn
         private void Room_LoadFromDataString(ILContext il)
         {
             try
@@ -230,6 +233,7 @@ namespace RainMeadow
             }
         }
 
+        // Prevent random item spawn
         private void Room_Loaded(ILContext il)
         {
             try

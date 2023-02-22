@@ -71,6 +71,8 @@ namespace RainMeadow
             }
         }
 
+        protected virtual void AvailableImpl() { }
+
         // The online resource has been leased and its state is available
         protected void Available()
         {
@@ -79,6 +81,8 @@ namespace RainMeadow
             if (isActive) { throw new InvalidOperationException("Resource is already active"); }
             isAvailable = true;
             subscriptions = new();
+
+            AvailableImpl();
         }
 
         public bool deactivateOnRelease;
@@ -97,6 +101,8 @@ namespace RainMeadow
             isActive = false;
         }
 
+        protected virtual void UnavailableImpl() { }
+
         // The online resource has been unleased
         protected void Unavailable()
         {
@@ -107,6 +113,8 @@ namespace RainMeadow
             OnlineManager.RemoveSubscriptions(this);
             subscriptions.Clear();
             isAvailable = false;
+
+            UnavailableImpl();
 
             if (deactivateOnRelease)
             {
@@ -132,10 +140,13 @@ namespace RainMeadow
             }
         }
 
+
+        protected virtual void SubscribedImpl(OnlinePlayer player) { }
         private void Subscribed(OnlinePlayer player)
         {
             RainMeadow.Debug(this.ToString() + " - " + player.name);
             if (!isAvailable) throw new InvalidOperationException("not available");
+            if (!isOwner) throw new InvalidOperationException("not owner");
             if (subscriptions == null) throw new InvalidOperationException("nill");
             if (player.isMe) throw new InvalidOperationException("Can't subscribe to self");
 
@@ -146,6 +157,8 @@ namespace RainMeadow
             {
                 sub.NewLeaseState(this);
             }
+
+            SubscribedImpl(player);
         }
 
         private void Unsubscribed(OnlinePlayer player)

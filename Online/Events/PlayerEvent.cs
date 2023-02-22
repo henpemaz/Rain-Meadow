@@ -26,15 +26,16 @@ namespace RainMeadow
             ResourceRequest,
             ReleaseRequest,
             TransferRequest,
-            ReleaseResultReleased,
-            ReleaseResultUnsubscribed,
-            ReleaseResultError,
             RequestResultLeased,
             RequestResultSubscribed,
             RequestResultError,
-            TransferResultError,
+            ReleaseResultReleased,
+            ReleaseResultUnsubscribed,
+            ReleaseResultError,
             TransferResultOk,
+            TransferResultError,
             LeaseChange,
+            NewEntityEvent,
         }
 
         internal static PlayerEvent NewFromType(EventTypeId eventTypeId)
@@ -80,7 +81,11 @@ namespace RainMeadow
                 case EventTypeId.LeaseChange:
                     e = new LeaseChangeEvent(null, null);
                     break;
+                case EventTypeId.NewEntityEvent:
+                    e = new NewEntityEvent();
+                    break;
             }
+            if (e is null) throw new InvalidOperationException("invalid event type");
             return e;
         }
     }

@@ -59,6 +59,7 @@ namespace RainMeadow
                     self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
                     MenuHooks();
                     GameHooks();
+                    EntityHooks();
                 }
                 else
                 {
