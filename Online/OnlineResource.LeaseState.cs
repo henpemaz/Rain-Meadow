@@ -6,6 +6,7 @@ namespace RainMeadow
 {
     public abstract partial class OnlineResource
     {
+        private LeaseState incomingLease; // lease to be processed on activate
         private void SubresourceNewOwner(OnlineResource onlineResource)
         {
             RainMeadow.Debug(this);
@@ -45,7 +46,8 @@ namespace RainMeadow
             }
         }
 
-        public class LeaseState
+        public class LeaseState // its it's own weird thing, sent around as events because critical yet too big to send fully every frame
+            // if the state delta-from-last-acknowledged mechanism works properly, this could then be sent as a 1-tick
         {
             public Dictionary<string,ulong> ownership;
 
@@ -73,7 +75,7 @@ namespace RainMeadow
             {
                 if(previousLeaseState == null) { return this; }
                 var delta = new LeaseState();
-                delta.ownership = ownership.Except(previousLeaseState.ownership).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                delta.ownership = ownership.Except(previousLeaseState.ownership).ToDictionary(kvp => kvp.Key, kvp => kvp.Value); // linq why no dict from kvp
                 return delta;
             }
         }

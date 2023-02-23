@@ -36,7 +36,9 @@ else
 	every x ticks update room owner on owned items state
 
 
-
+	feed on region cross crashed because resource gone
+	entity leaving room that was deactivated = bad
+	on join, takes a while to get lobby data, grey out button
 
 
 

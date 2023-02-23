@@ -71,12 +71,13 @@ namespace RainMeadow
         // State has the current lease state of worldsessions
         public class LobbyState : ResourceState
         {
+            public LobbyState() : base() { }
             public LobbyState(Lobby lobby, ulong ts) : base(lobby, ts)
             {
 
             }
 
-            public override ResourceStateType stateType => ResourceStateType.LobbyState;
+            public override StateType stateType => StateType.LobbyState;
         }
     }
 }

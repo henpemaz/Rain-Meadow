@@ -58,11 +58,13 @@ namespace RainMeadow
 
         public class WorldState : ResourceState
         {
+            public WorldState() : base() { }
             public WorldState(OnlineResource resource, ulong ts) : base(resource, ts)
             {
+
             }
 
-            public override ResourceStateType stateType => ResourceStateType.WorldState;
+            public override StateType stateType => StateType.WorldState;
         }
     }
 }

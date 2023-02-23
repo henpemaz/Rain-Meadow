@@ -49,12 +49,15 @@ namespace RainMeadow
             {
                 currPlayer.AckFromRemote(reader.ReadUInt64());
                 var newTick = reader.ReadUInt64();
-                if(!OnlineManager.IsNewer(newTick, currPlayer.tick))
+                if (!OnlineManager.IsNewer(newTick, currPlayer.tick))
                 {
                     // abort reading
                     AbortRead();
                 }
-                currPlayer.tick = newTick;
+                else
+                {
+                    currPlayer.tick = newTick;
+                }
             }
         }
 
@@ -77,12 +80,12 @@ namespace RainMeadow
 
         internal bool CanFit(PlayerEvent playerEvent)
         {
-            return playerEvent.EstimatedSize + margin < capacity;
+            return Position + playerEvent.EstimatedSize + margin < capacity;
         }
 
-        internal bool CanFit(OnlineResource.ResourceState resourceState)
+        internal bool CanFit(OnlineState state)
         {
-            return resourceState.EstimatedSize + margin < capacity;
+            return Position + state.EstimatedSize + margin < capacity;
         }
 
         internal void BeginWriteEvents()
@@ -114,11 +117,11 @@ namespace RainMeadow
             writer.Write(stateCount);
         }
 
-        internal void WriteState(OnlineResource.ResourceState resourceState)
+        internal void WriteState(OnlineState state)
         {
             stateCount++;
-            writer.Write((byte)resourceState.stateType);
-            resourceState.CustomSerialize(this);
+            writer.Write((byte)state.stateType);
+            state.CustomSerialize(this);
         }
 
         internal void EndWriteStates()
@@ -166,9 +169,9 @@ namespace RainMeadow
             return reader.ReadInt32();
         }
 
-        internal OnlineResource.ResourceState ReadState()
+        internal OnlineState ReadState()
         {
-            OnlineResource.ResourceState s = OnlineResource.ResourceState.NewFromType((OnlineResource.ResourceState.ResourceStateType)reader.ReadByte());
+            OnlineState s = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
             s.fromPlayer = currPlayer;
             s.ts = currPlayer.tick;
             s.CustomSerialize(this);
@@ -239,6 +242,7 @@ namespace RainMeadow
             }
         }
 
+        // a referenced event is something that must have been ack'd that frame
         internal void SerializeReferencedEvent(ref ResourceEvent referencedEvent)
         {
             if(isWriting)
@@ -309,6 +313,124 @@ namespace RainMeadow
                     y = reader.ReadInt16(),
                     abstractNode = reader.ReadInt16(),
                 };
+            }
+        }
+
+        internal void Serialize(ref OnlineState[] states)
+        {
+            if (isWriting)
+            {
+                // TODO dynamic length
+                writer.Write((byte)states.Length);
+                foreach (var state in states)
+                {
+                    writer.Write((byte)state.stateType);
+                    state.CustomSerialize(this);
+                }
+            }
+            if (isReading)
+            {
+                byte count = reader.ReadByte();
+                states = new OnlineState[count];
+                for (int i = 0; i < count; i++)
+                {
+                    var s = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
+                    s.fromPlayer = currPlayer;
+                    s.ts = currPlayer.tick;
+                    s.CustomSerialize(this);
+                    states[i] = s;
+                }
+            }
+        }
+
+        // watch this throw lots!
+        // ideally newentities are delivered through events, so they should already exist when states come
+        internal void Serialize(ref OnlineEntity onlineEntity)
+        {
+            if (isWriting)
+            {
+                writer.Write((ulong)onlineEntity.owner.id);
+                writer.Write(onlineEntity.id);
+            }
+            if (isReading)
+            {
+                var player = OnlineManager.PlayerFromId(new CSteamID(reader.ReadUInt64()));
+                var id = reader.ReadInt32();
+                onlineEntity = player.recentEntities[id];
+            }
+        }
+
+        internal void SerializeNullable(ref OnlineState nullableState)
+        {
+            if (isWriting)
+            {
+                writer.Write(nullableState != null);
+                if(nullableState != null)
+                {
+                    Serialize(ref nullableState);
+                }
+            }
+            if (isReading)
+            {
+                if (reader.ReadBoolean())
+                {
+                    Serialize(ref nullableState);
+                }
+            }
+        }
+
+        private void Serialize(ref OnlineState state)
+        {
+            if (isWriting)
+            {
+                writer.Write((byte)state.stateType);
+                state.CustomSerialize(this);
+            }
+            if (isReading)
+            {
+                state = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
+                state.fromPlayer = currPlayer;
+                state.ts = currPlayer.tick;
+                state.CustomSerialize(this);
+            }
+        }
+
+        internal void Serialize(ref Vector2 data)
+        {
+            if (isWriting)
+            {
+                writer.Write(data.x);
+                writer.Write(data.y);
+            }
+            if (isReading)
+            {
+                data.x = reader.ReadSingle();
+                data.y = reader.ReadSingle();
+            }
+        }
+
+        // todo generics for crap like this
+        internal void Serialize(ref OnlineEntity.ChunkState[] chunkStates)
+        {
+            if (isWriting)
+            {
+                // TODO dynamic length
+                writer.Write((byte)chunkStates.Length);
+                foreach (var state in chunkStates)
+                {
+                    state.CustomSerialize(this);
+                }
+            }
+            if (isReading)
+            {
+                byte count = reader.ReadByte();
+                chunkStates = new OnlineEntity.ChunkState[count];
+                for (int i = 0; i < count; i++)
+                {
+                    var s = new OnlineEntity.ChunkState(null);
+                    s.CustomSerialize(this);
+                    chunkStates[i] = s;
+                }
             }
         }
     }

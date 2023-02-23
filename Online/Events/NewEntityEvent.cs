@@ -1,20 +1,16 @@
 ﻿namespace RainMeadow
 {
-    public class NewEntityEvent : ResourceEvent
+    public class NewEntityEvent : EntityEvent
     {
-        public OnlinePlayer owner;
-        public int entityId;
-        public WorldCoordinate pos;
+        public WorldCoordinate initialPos;
         public bool isCreature;
         public string template = "";
 
-        public NewEntityEvent() : base(null) { } // serialization friendly I guess
+        public NewEntityEvent() : base() { }
 
-        public NewEntityEvent(RoomSession roomSession, OnlineEntity oe) : base(roomSession)
+        public NewEntityEvent(RoomSession roomSession, OnlineEntity oe) : base(roomSession, oe)
         {
-            owner = oe.owner;
-            entityId = oe.id;
-            pos = oe.pos;
+            this.initialPos = oe.initialPos;
             isCreature = oe.entity is AbstractCreature;
             template = (oe.entity as AbstractCreature)?.creatureTemplate.type.ToString() ?? "";
         }
@@ -24,9 +20,7 @@
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);
-            serializer.Serialize(ref owner);
-            serializer.Serialize(ref entityId);
-            serializer.SerializeNoStrings(ref pos);
+            serializer.SerializeNoStrings(ref initialPos);
             serializer.Serialize(ref isCreature);
             if (isCreature)
             {

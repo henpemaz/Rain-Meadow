@@ -1,4 +1,6 @@
-﻿namespace RainMeadow
+﻿using System;
+
+namespace RainMeadow
 {
     public class EntityFeed
     {
@@ -9,6 +11,12 @@
         {
             this.roomSession = roomSession;
             this.entity = oe;
+        }
+
+        internal void Update(ulong tick)
+        {
+            // todo deltas
+            roomSession.owner.OutgoingStates.Enqueue(entity.GetState(tick));
         }
     }
 }

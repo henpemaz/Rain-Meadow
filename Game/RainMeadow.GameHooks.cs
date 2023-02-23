@@ -9,6 +9,7 @@ namespace RainMeadow
     partial class RainMeadow
     {
         // World/room load unload wait
+        // prevent creature spawns as well
         private void GameHooks()
         {
             On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues += WorldLoader_ctor;
@@ -21,6 +22,8 @@ namespace RainMeadow
             IL.RainWorldGame.ctor += RainWorldGame_ctor;
             IL.Room.LoadFromDataString += Room_LoadFromDataString;
             IL.Room.Loaded += Room_Loaded;
+
+            On.FliesWorldAI.AddFlyToSwarmRoom += FliesWorldAI_AddFlyToSwarmRoom;
         }
 
         // Room unload
@@ -259,6 +262,17 @@ namespace RainMeadow
             {
                 UnityEngine.Debug.LogException(e);
             }
+        }
+
+        // please dont spawn flies
+        private void FliesWorldAI_AddFlyToSwarmRoom(On.FliesWorldAI.orig_AddFlyToSwarmRoom orig, FliesWorldAI self, int spawnRoom)
+        {
+            // todo configurable
+            if (self.world.game.session is OnlineGameSession os)
+            {
+                return;
+            }
+            orig(self, spawnRoom);
         }
     }
 }

@@ -46,7 +46,7 @@ namespace RainMeadow
             base.Update();
             if(lobby != null)
             {
-                if (lobby.isAvailable && !lobby.isActive) lobby.Activate();
+                if (lobby.isAvailable && !lobby.isActive) lobby.Activate(); //why was this here again instead of in the activate flow?
 
                 mePlayer.tick++;
                 // Stuff mePlayer set to itself, events from the distributed lease system
@@ -62,6 +62,11 @@ namespace RainMeadow
                 foreach (var subscription in subscriptions)
                 {
                     subscription.Update(mePlayer.tick);
+                }
+
+                foreach (var feed in feeds)
+                {
+                    feed.Update(mePlayer.tick);
                 }
 
                 // Outgoing messages
@@ -160,9 +165,16 @@ namespace RainMeadow
             return delta < ulong.MaxValue / 2;
         }
 
-        private void ProcessIncomingState(OnlineResource.ResourceState resourceState, OnlinePlayer fromPlayer)
+        private void ProcessIncomingState(OnlineState state, OnlinePlayer fromPlayer)
         {
-            resourceState.resource.ReadState(resourceState, fromPlayer.tick);
+            if(state is OnlineResource.ResourceState resourceState)
+            {
+                resourceState.resource.ReadState(resourceState, fromPlayer.tick);
+            }
+            if(state is OnlineEntity.EntityState entityState) 
+            {
+                entityState.onlineEntity.ReadState(entityState, fromPlayer.tick);
+            }
         }
 
         internal void SendData(OnlinePlayer toPlayer)
@@ -227,6 +239,16 @@ namespace RainMeadow
             subscriptions.RemoveAll(s => s.onlineResource == onlineResource);
         }
 
+        internal static void AddFeed(RoomSession roomSession, OnlineEntity oe)
+        {
+            feeds.Add(new EntityFeed(roomSession, oe));
+        }
+
+        internal static void RemoveFeed(RoomSession roomSession, OnlineEntity oe)
+        {
+            feeds.RemoveAll(f => f.roomSession == roomSession && f.entity == oe);
+        }
+
         internal static OnlineResource ResourceFromIdentifier(string rid)
         {
             if (rid == ".") return lobby;
@@ -240,16 +262,6 @@ namespace RainMeadow
         internal static OnlinePlayer PlayerFromId(CSteamID id)
         {
             return players.FirstOrDefault(p => p.id == id);
-        }
-
-        internal static void AddFeed(RoomSession roomSession, OnlineEntity oe)
-        {
-            feeds.Add(new EntityFeed(roomSession, oe));
-        }
-
-        internal static void RemoveFeed(RoomSession roomSession, OnlineEntity oe)
-        {
-            feeds.RemoveAll(f => f.roomSession == roomSession && f.entity == oe);
         }
     }
 }

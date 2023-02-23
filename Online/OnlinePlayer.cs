@@ -13,7 +13,7 @@ namespace RainMeadow
         public SteamNetworkingIdentity oid;
         public Queue<PlayerEvent> OutgoingEvents = new(16);
         public List<PlayerEvent> recentlyAckedEvents = new(16);
-        public Queue<OnlineResource.ResourceState> OutgoingStates = new(128);
+        public Queue<OnlineState> OutgoingStates = new(128);
         private ulong nextOutgoingEvent = 1;
         public ulong lastEventFromRemote;
         private ulong lastAckFromRemote;
