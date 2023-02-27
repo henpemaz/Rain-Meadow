@@ -7,20 +7,18 @@ namespace RainMeadow
     // Welcome to polymorphism hell
     public class OnlineEntity
     {
+        // todo abstract this into "entity" and "game entity"
         public AbstractPhysicalObject entity;
         public OnlinePlayer owner;
         public int id;
         public WorldCoordinate initialPos;
-        internal RoomSession lastInRoom;
-        internal int ticksSinceSeen;
 
-        public OnlineEntity(AbstractPhysicalObject entity, OnlinePlayer owner, int id, WorldCoordinate pos, RoomSession lastInRoom)
+        public OnlineEntity(AbstractPhysicalObject entity, OnlinePlayer owner, int id, WorldCoordinate pos)
         {
             this.entity = entity;
             this.owner = owner;
             this.id = id;
             this.initialPos = pos;
-            this.lastInRoom = lastInRoom;
         }
 
         public override string ToString()
@@ -28,19 +26,20 @@ namespace RainMeadow
             return $"{entity}:{id} from {owner}";
         }
 
-        internal EntityState GetState(ulong ts)
-        {
-            if(entity is AbstractCreature)
-            {
-                return new CreatureEntityState(this, ts);
-            }
-            return new PhysicalObjectEntityState(this, ts);
-        }
-
         internal void ReadState(EntityState entityState, ulong tick)
         {
             // todo easing??
             entityState.ReadTo(this);
+        }
+
+        internal OnlineState GetState(ulong tick, OnlineResource resource)
+        {
+            // todo return different data based on resource being fed (world vs room)
+            if (entity is AbstractCreature)
+            {
+                return new CreatureEntityState(this, tick);
+            }
+            return new PhysicalObjectEntityState(this, tick);
         }
 
         public abstract class EntityState : OnlineState

@@ -4,13 +4,13 @@
     {
         public EntityLeftEvent() : base() { }
 
-        public EntityLeftEvent(RoomSession roomSession, OnlineEntity oe) : base(roomSession, oe) { }
+        public EntityLeftEvent(OnlineResource resource, OnlineEntity oe) : base(resource, oe) { }
 
         public override EventTypeId eventType => EventTypeId.EntityLeftEvent;
 
         internal override void Process()
         {
-            (onlineResource as RoomSession).OnEntityLeft(this);
+            onlineResource.OnEntityLeft(this);
         }
 
         public override string ToString()

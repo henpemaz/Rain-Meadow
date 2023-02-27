@@ -7,7 +7,7 @@
 
         protected EntityEvent() : base(null) { }
 
-        protected EntityEvent(RoomSession roomSession, OnlineEntity oe) : base(roomSession)
+        protected EntityEvent(OnlineResource resource, OnlineEntity oe) : base(resource)
         {
             this.entityId = oe.id;
             this.owner = oe.owner;

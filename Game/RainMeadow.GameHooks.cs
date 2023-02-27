@@ -64,7 +64,7 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby.worldSessions[self.room.world.region.name].roomSessions[self.room.abstractRoom.name] is RoomSession rs)
                 {
-                    if (self.done) rs.Activate();
+                    if (!rs.isActive && self.room.shortCutsReady) rs.Activate();
                 }
             }
         }
@@ -205,7 +205,7 @@ namespace RainMeadow
             }
             catch (Exception e)
             {
-                UnityEngine.Debug.LogException(e);
+                Logger.LogError(e);
             }
         }
 
@@ -232,7 +232,7 @@ namespace RainMeadow
             }
             catch (Exception e)
             {
-                UnityEngine.Debug.LogException(e);
+                Logger.LogError(e);
             }
         }
 
@@ -260,7 +260,7 @@ namespace RainMeadow
             }
             catch (Exception e)
             {
-                UnityEngine.Debug.LogException(e);
+                Logger.LogError(e);
             }
         }
 

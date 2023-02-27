@@ -1,5 +1,6 @@
 ﻿using Steamworks;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,13 +16,15 @@ namespace RainMeadow
         public List<PlayerEvent> recentlyAckedEvents = new(16);
         public Queue<OnlineState> OutgoingStates = new(128);
         private ulong nextOutgoingEvent = 1;
-        public ulong lastEventFromRemote;
-        private ulong lastAckFromRemote;
-        public ulong tick;
+        public ulong lastEventFromRemote; // the last event I've received from them, I'll write it back on headers as an ack
+        private ulong lastAckFromRemote; // the last event they've ack'd to me
+        public ulong tick; // the last tick I've received from them, I'll write it back on headers as an ack
+        public ulong lastAckdTick; // the last tick they've ack'd to me
         public bool needsAck;
         public bool isMe;
         public string name;
         public Dictionary<int, OnlineEntity> recentEntities = new();
+
         //public List<OnlineResource> resourcesOwned = new();
 
         public OnlinePlayer(CSteamID id)
@@ -59,6 +62,11 @@ namespace RainMeadow
                 RainMeadow.Debug(this.ToString() + e.ToString());
                 recentlyAckedEvents.Add(e);
             }
+        }
+
+        internal void TickAckFromRemote(ulong lastTick)
+        {
+            this.lastAckdTick = lastTick;
         }
 
         internal void RequestResource(OnlineResource onlineResource)

@@ -43,11 +43,13 @@ namespace RainMeadow
             if (isWriting)
             {
                 writer.Write(currPlayer.lastEventFromRemote);
+                writer.Write(currPlayer.tick);
                 writer.Write(OnlineManager.mePlayer.tick);
             }
             if (isReading)
             {
                 currPlayer.AckFromRemote(reader.ReadUInt64());
+                currPlayer.TickAckFromRemote(reader.ReadUInt64());
                 var newTick = reader.ReadUInt64();
                 if (!OnlineManager.IsNewer(newTick, currPlayer.tick))
                 {

@@ -54,7 +54,11 @@ namespace RainMeadow
         {
             this.world = world;
         }
-        
+
+        protected override OnlineEntity CreateOrReuseEntity(NewEntityEvent newEntityEvent)
+        {
+            throw new NotImplementedException();
+        }
 
         public class WorldState : ResourceState
         {

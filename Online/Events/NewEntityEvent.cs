@@ -8,7 +8,7 @@
 
         public NewEntityEvent() : base() { }
 
-        public NewEntityEvent(RoomSession roomSession, OnlineEntity oe) : base(roomSession, oe)
+        public NewEntityEvent(OnlineResource resource, OnlineEntity oe) : base(resource, oe)
         {
             this.initialPos = oe.initialPos;
             isCreature = oe.entity is AbstractCreature;

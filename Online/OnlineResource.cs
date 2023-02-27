@@ -8,9 +8,6 @@ namespace RainMeadow
 {
     // OnlineResources are transferible, subscriptable resources, limited to a resource that others can consume (lobby, world, room)
     // The owner of the resource coordinates states, distributes subresources and solves conflicts
-    // Distributed Hyerarchical Ownership Management System?
-    // Distributed transaction management system?
-    // Todo improve initial-state on subscribe for event-driven data
     public abstract partial class OnlineResource
     {
         public OnlineResource super;
@@ -26,18 +23,21 @@ namespace RainMeadow
         public bool isActive { get; protected set; } // The respective in-game resource is loaded
         public bool isAvailable { get; protected set; } // The resource was leased or subscribed to
         public bool isPending => pendingRequest != null;
-        public bool canRelease => !subresources.Any(s => s.isAvailable);
+        public bool canRelease => !isActive || !subresources.Any(s => s.isAvailable);
 
         public void FullyReleaseResource()
         {
             RainMeadow.Debug(this);
-            foreach(var sub in subresources)
+            if (isActive)
             {
-                if(sub.isAvailable && !sub.isPending) sub.FullyReleaseResource();
+                foreach (var sub in subresources)
+                {
+                    if (sub.isAvailable && !sub.isPending) sub.FullyReleaseResource();
+                }
             }
 
-            if(canRelease ) { Release(); }
-            else { releaseWhenPossible = true; }
+            if(!isPending && canRelease) { Release(); releaseWhenPossible = false; }
+            else if (pendingRequest is not ReleaseRequest) { releaseWhenPossible = true; }
         }
 
         protected abstract void ActivateImpl();
@@ -53,22 +53,19 @@ namespace RainMeadow
 
             ActivateImpl();
 
-            
-            if(isOwner)
+            if (incomingLease != null)
+            {
+                ProcessLease(incomingLease);
+                incomingLease = null;
+            }
+            if (isOwner)
             {
                 foreach (var s in subscriptions)
                 {
                     s.NewLeaseState(this);
                 }
             }
-            else
-            {
-                if (incomingLease != null)
-                {
-                    ProcessLease(incomingLease);
-                    incomingLease = null;
-                }
-            }
+            if (releaseWhenPossible) FullyReleaseResource(); // my bad I don't want it anymore
         }
 
         protected virtual void AvailableImpl() { }
@@ -81,6 +78,7 @@ namespace RainMeadow
             if (isActive) { throw new InvalidOperationException("Resource is already active"); }
             isAvailable = true;
             subscriptions = new();
+            entities = new();
 
             AvailableImpl();
         }
@@ -94,11 +92,13 @@ namespace RainMeadow
         public void Deactivate()
         {
             RainMeadow.Debug(this);
-            if (!isActive) { throw new InvalidOperationException("Resource is already inactive"); }
+            if (!isActive) { throw new InvalidOperationException("resource is already inactive"); }
+            if (isAvailable) { throw new InvalidOperationException("resource is still available"); }
             if (subresources.Any(s=>s.isActive)) throw new InvalidOperationException("has active subresources");
+            isActive = false;
             DeactivateImpl();
             subresources.Clear();
-            isActive = false;
+            subresources = null;
         }
 
         protected virtual void UnavailableImpl() { }
@@ -107,21 +107,32 @@ namespace RainMeadow
         protected void Unavailable()
         {
             RainMeadow.Debug(this);
+            if (!isActive) { throw new InvalidOperationException("resource is inactive, should have been unleased first"); }
             if (!isAvailable) { throw new InvalidOperationException("resource is already not available"); }
             if (subresources.Any(s => s.isAvailable)) throw new InvalidOperationException("has available subresources");
-            if (!isActive) { throw new InvalidOperationException("resource is inactive, should be unleased first"); }
+            
+            UnavailableImpl();
+            
             OnlineManager.RemoveSubscriptions(this);
             subscriptions.Clear();
-            isAvailable = false;
+            subscriptions = null;
+            
+            for (int i = 0; i < entities.Count; i++)
+            {
+                EntityLeft(entities[i]);
+            }
+            OnlineManager.RemoveFeeds(this); // there shouldn't be any leftovers but might as well
+            entities.Clear();
+            entities = null;
 
-            UnavailableImpl();
+            isAvailable = false;
 
             if (deactivateOnRelease)
             {
                 Deactivate();
             }
 
-            if (super != null && super.releaseWhenPossible && super.canRelease)
+            if (super != null && super.releaseWhenPossible && super.canRelease) // I've released, notify super if super is waiting
             {
                 super.Release();
                 super.releaseWhenPossible = false;
@@ -144,7 +155,7 @@ namespace RainMeadow
         protected virtual void SubscribedImpl(OnlinePlayer player) { }
         private void Subscribed(OnlinePlayer player)
         {
-            RainMeadow.Debug(this.ToString() + " - " + player.name);
+            RainMeadow.Debug(this.ToString() + " - " + player.ToString());
             if (!isAvailable) throw new InvalidOperationException("not available");
             if (!isOwner) throw new InvalidOperationException("not owner");
             if (subscriptions == null) throw new InvalidOperationException("nill");
@@ -253,23 +264,23 @@ namespace RainMeadow
 
             if (isSuper && owner == request.from)
             {
+                request.from.QueueEvent(new ReleaseResult.Released(request));
                 if (request.subscribers.Count > 0)
                 {
                     var newOwner = PlayersManager.BestTransferCandidate(this, request.subscribers);
                     NewOwner(newOwner); // This notifies all users
-                    newOwner.TransferResource(this, request.subscribers.Where(s => s != newOwner).ToList()); // This notifies the new owner
+                    newOwner.TransferResource(this, request.subscribers.Where(s => s != newOwner).ToList()); // This notifies the new owner to apply subscriptions
                 }
                 else
                 {
                     NewOwner(null);
                 }
-                request.from.QueueEvent(new ReleaseResult.Released(request));
                 return;
             }
             if (isOwner)
             {
-                Unsubscribed(request.from);
                 request.from.QueueEvent(new ReleaseResult.Unsubscribed(request));
+                Unsubscribed(request.from);
                 return;
             }
             request.from.QueueEvent(new ReleaseResult.Error(request));
@@ -288,6 +299,7 @@ namespace RainMeadow
                     if (subscriber.isMe) continue;
                     Subscribed(subscriber);
                 }
+                OnlineManager.RemoveFeeds(this);
                 request.from.QueueEvent(new TransferResult.Ok(request));
                 return;
             }
@@ -331,6 +343,7 @@ namespace RainMeadow
             } 
             else if (releaseResult is ReleaseResult.Error) // I should retry
             {
+                // todo retry logic
                 RainMeadow.Error("released failed for " + this);
             }
             pendingRequest = null;
@@ -347,6 +360,7 @@ namespace RainMeadow
             }
             else if (transferResult is TransferResult.Error) // I should retry
             {
+                // todo retry logic
                 RainMeadow.Error("transfer failed for " + this);
             }
             pendingRequest = null;

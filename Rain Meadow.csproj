@@ -164,6 +164,7 @@
     <Compile Include="Online\Events\LeaseChangeEvent.cs" />
     <Compile Include="Online\Events\NewEntityEvent.cs" />
     <Compile Include="Online\OnlineEntity.cs" />
+    <Compile Include="Online\OnlineResource.Entities.cs" />
     <Compile Include="Online\OnlineResource.LeaseState.cs" />
     <Compile Include="Online\OnlineResource.State.cs" />
     <Compile Include="Online\OnlineState.cs" />

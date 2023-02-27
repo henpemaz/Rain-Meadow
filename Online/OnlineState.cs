@@ -5,7 +5,7 @@ namespace RainMeadow
     public abstract class OnlineState
     {
         public OnlinePlayer fromPlayer; // not serialized, message source
-        public ulong ts; // not serialized, always latest from player
+        public ulong ts; // not serialized, latest from player when read
 
         protected OnlineState() { }
 
@@ -72,6 +72,16 @@ namespace RainMeadow
         public virtual void CustomSerialize(Serializer serializer)
         {
             // no op
+        }
+
+        internal virtual OnlineState Delta(OnlineState lastAcknoledgedState)
+        {
+            return this;
+        }
+
+        internal virtual OnlineState ApplyDelta(OnlineState newState)
+        {
+            return newState;
         }
     }
 }

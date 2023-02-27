@@ -68,6 +68,11 @@ namespace RainMeadow
             return ".";
         }
 
+        protected override OnlineEntity CreateOrReuseEntity(NewEntityEvent newEntityEvent)
+        {
+            throw new NotImplementedException();
+        }
+
         // State has the current lease state of worldsessions
         public class LobbyState : ResourceState
         {

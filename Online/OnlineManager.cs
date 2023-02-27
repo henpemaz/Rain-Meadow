@@ -239,14 +239,18 @@ namespace RainMeadow
             subscriptions.RemoveAll(s => s.onlineResource == onlineResource);
         }
 
-        internal static void AddFeed(RoomSession roomSession, OnlineEntity oe)
+        internal static void AddFeed(OnlineResource resource, OnlineEntity oe)
         {
-            feeds.Add(new EntityFeed(roomSession, oe));
+            feeds.Add(new EntityFeed(resource, oe));
         }
 
-        internal static void RemoveFeed(RoomSession roomSession, OnlineEntity oe)
+        internal static void RemoveFeed(OnlineResource resource, OnlineEntity oe)
         {
-            feeds.RemoveAll(f => f.roomSession == roomSession && f.entity == oe);
+            feeds.RemoveAll(f => f.resource == resource && f.entity == oe);
+        }
+        internal static void RemoveFeeds(OnlineResource resource)
+        {
+            feeds.RemoveAll(f => f.resource == resource);
         }
 
         internal static OnlineResource ResourceFromIdentifier(string rid)

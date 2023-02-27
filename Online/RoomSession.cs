@@ -8,8 +8,8 @@ namespace RainMeadow
     {
         public AbstractRoom absroom;
         public bool abstractOnDeactivate;
-        private Dictionary<AbstractWorldEntity, OnlineEntity> entities = new();
 
+        public WorldSession worldSession => super as WorldSession;
         public RoomSession(WorldSession ws, AbstractRoom absroom)
         {
             super = ws;
@@ -19,7 +19,7 @@ namespace RainMeadow
 
         protected override void ActivateImpl()
         {
-            
+
         }
 
         protected override void DeactivateImpl()
@@ -33,7 +33,7 @@ namespace RainMeadow
         protected override void AvailableImpl()
         {
             base.AvailableImpl();
-
+            // Loaded: register entities, and from there on new entities are added automatically
             // asap, active = fullyloaded = too late
             // maybe I should just change what Active means instead?
             foreach (var ent in absroom.entities)
@@ -48,7 +48,7 @@ namespace RainMeadow
         protected override void SubscribedImpl(OnlinePlayer player)
         {
             base.SubscribedImpl(player);
-            foreach (var ent in entities.Values)
+            foreach (var ent in entities)
             {
                 if (player == ent.owner) continue;
                 player.QueueEvent(new NewEntityEvent(this, ent));
@@ -95,7 +95,7 @@ namespace RainMeadow
             public RoomState() : base() { }
             public RoomState(RoomSession resource, ulong ts) : base(resource, ts)
             {
-                entityStates = resource.entities.Values.Select(e => e.GetState(ts)).ToArray();
+                entityStates = resource.entities.Select(e => e.GetState(ts, resource)).ToArray();
             }
 
             public override void CustomSerialize(Serializer serializer)
