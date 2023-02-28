@@ -7,9 +7,8 @@ namespace RainMeadow
 {
     public abstract partial class OnlineResource
     {
+        protected abstract World World { get; }
         protected List<OnlineEntity> entities = new();
-
-        protected abstract OnlineEntity CreateOrReuseEntity(NewEntityEvent newEntityEvent);
 
         // I've been notified that a new creature has entered the room, and I must recreate the equivalent in my world
         internal void OnNewEntity(NewEntityEvent newEntityEvent)
@@ -17,8 +16,8 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             if (newEntityEvent.owner.isMe) { throw new InvalidOperationException("notified of my own creation"); }
             // todo more than just creatures
-            OnlineEntity oe = CreateOrReuseEntity(newEntityEvent);
-            EntityEntered(oe);
+            OnlineEntity oe = OnlineEntity.CreateOrReuseEntity(newEntityEvent, this.World);
+            EntityEnteredResource(oe);
         }
 
         // I've been notified that an entity has left
@@ -27,16 +26,16 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             if (entityLeftEvent.owner.isMe) { throw new InvalidOperationException("notified of my own creation"); }
             OnlineEntity oe = entities.FirstOrDefault(e => e.owner == entityLeftEvent.owner && e.id == entityLeftEvent.entityId);
-            EntityLeft(oe);
+            EntityLeftResource(oe);
         }
 
         // A new OnlineEntity was added, notify accordingly
-        protected virtual void EntityEntered(OnlineEntity oe)
+        protected virtual void EntityEnteredResource(OnlineEntity oe)
         {
             RainMeadow.Debug(this);
             RainMeadow.Debug(oe);
             if (!isAvailable) throw new InvalidOperationException("not available");
-            if(entities.Contains(oe)) { throw new InvalidOperationException("already in entities"); };
+            if (entities.Contains(oe)) throw new InvalidOperationException("already in entities");
             entities.Add(oe);
             RainMeadow.Debug("ADDED " + oe);
             if (isOwner) // I am responsible for notifying other players about it
@@ -60,12 +59,12 @@ namespace RainMeadow
             }
         }
 
-        protected virtual void EntityLeft(OnlineEntity oe)
+        protected virtual void EntityLeftResource(OnlineEntity oe)
         {
             RainMeadow.Debug(this);
             RainMeadow.Debug(oe);
             if (!isAvailable) throw new InvalidOperationException("not available");
-            if (!entities.Contains(oe)) { throw new InvalidOperationException("not in entities"); };
+            if (!entities.Contains(oe)) throw new InvalidOperationException("not in entities");
             entities.Remove(oe);
             RainMeadow.Debug("REMOVED " + oe);
             if (isOwner) // I am responsible for notifying other players about it

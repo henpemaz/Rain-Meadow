@@ -44,5 +44,15 @@ namespace RainMeadow
         {
             return false;
         }
+
+        internal bool ShouldSyncObjectInWorld(WorldSession ws, AbstractPhysicalObject apo)
+        {
+            return apo is AbstractCreature;
+        }
+
+        internal bool ShouldSyncObjectInRoom(RoomSession rs, AbstractPhysicalObject apo)
+        {
+            return true;
+        }
     }
 }

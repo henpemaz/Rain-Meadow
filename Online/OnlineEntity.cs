@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace RainMeadow
@@ -7,11 +8,14 @@ namespace RainMeadow
     // Welcome to polymorphism hell
     public class OnlineEntity
     {
+        internal static ConditionalWeakTable<AbstractPhysicalObject, OnlineEntity> map = new();
+
         // todo abstract this into "entity" and "game entity"
         public AbstractPhysicalObject entity;
         public OnlinePlayer owner;
         public int id;
         public WorldCoordinate initialPos;
+        internal RoomSession inRoom;
 
         public OnlineEntity(AbstractPhysicalObject entity, OnlinePlayer owner, int id, WorldCoordinate pos)
         {
@@ -40,6 +44,59 @@ namespace RainMeadow
                 return new CreatureEntityState(this, tick);
             }
             return new PhysicalObjectEntityState(this, tick);
+        }
+
+        // I do not like this
+        // How do I abstract this away without having this be like 4 different steps
+        // this sucks
+        // I need to be able to abstract an "entity" from an event
+        // but actually instantiating the entity could be a separate step
+        // so maybe "get a potentially empty entity, then maybe realize it"
+        // maybe entity.HandleAddedToResource(resource)? this smells like a responsibility swap
+        // maybe 
+        public static OnlineEntity CreateOrReuseEntity(NewEntityEvent newEntityEvent, World world)
+        {
+            OnlineEntity oe = null;
+            WorldSession.registeringRemoteEntity = true;
+            if (newEntityEvent.owner.recentEntities.TryGetValue(newEntityEvent.entityId, out oe))
+            {
+                RainMeadow.Debug("reusing existing entity " + oe);
+                var creature = oe.entity as AbstractCreature;
+                creature.slatedForDeletion = false;
+                if (creature.realizedObject is PhysicalObject po) po.slatedForDeletetion = false;
+
+                oe.initialPos = newEntityEvent.initialPos;
+                oe.entity.pos = oe.initialPos;
+            }
+            else
+            {
+                RainMeadow.Debug("spawning new entity");
+                // it is very tempting to switch to the generic tostring/fromstring from the savesystem, BUT
+                // it would be almost impossible to sanitize input and who knows what someone could do through that
+                if (!newEntityEvent.isCreature) throw new NotImplementedException("cant do non-creatures yet");
+                CreatureTemplate.Type type = new CreatureTemplate.Type(newEntityEvent.template, false);
+                if (type.Index == -1)
+                {
+                    RainMeadow.Debug(type);
+                    RainMeadow.Debug(newEntityEvent.template);
+                    throw new InvalidOperationException("invalid template");
+                }
+                EntityID id = world.game.GetNewID();
+                id.altSeed = newEntityEvent.entityId;
+                RainMeadow.Debug(id);
+                RainMeadow.Debug(newEntityEvent.initialPos);
+                var creature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, newEntityEvent.initialPos, id);
+                RainMeadow.Debug(creature);
+                if (creature.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat) // for some dumb reason it doesn't get a default
+                {
+                    creature.state = new PlayerState(creature, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionRemotePlayer, false);
+                }
+                oe = new OnlineEntity(creature, newEntityEvent.owner, newEntityEvent.entityId, newEntityEvent.initialPos);
+                OnlineEntity.map.Add(creature, oe);
+                newEntityEvent.owner.recentEntities.Add(newEntityEvent.entityId, oe);
+            }
+            WorldSession.registeringRemoteEntity = false;
+            return oe;
         }
 
         public abstract class EntityState : OnlineState

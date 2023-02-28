@@ -10,27 +10,51 @@ namespace RainMeadow
         internal void EntityEnteringRoom(AbstractPhysicalObject entity, WorldCoordinate pos)
         {
             RainMeadow.Debug(this);
-            if (!isAvailable) { return; } // throw new InvalidOperationException("not available"); }
-            if (!entities.Any(e=>e.entity == entity)) // A new entity, presumably mine
+            if (!isActive) { RainMeadow.Error("Not registering because not isActive"); return; } // throw new InvalidOperationException("not isActive"); }
+            if (OnlineEntity.map.TryGetValue(entity, out var oe)) // A new entity, presumably mine
             {
-                // todo stronger checks if my entity or a leftover
-                RainMeadow.Debug("Registering new entity as owned by myself");
-                var oe = new OnlineEntity(entity, OnlineManager.mePlayer, entity.ID.number, pos);
-                RainMeadow.Debug(oe);
-                OnlineManager.mePlayer.recentEntities[oe.id] = oe; // funny how [] is safe on write, unsafe on read. Dumb as fuck
-                EntityEntered(oe);
+                if (oe.owner.isMe)
+                {
+                    EntityEnteredResource(oe);
+                }
+                else
+                {
+                    RainMeadow.Debug("externally controlled entity joining : " + oe);
+                }
             }
             else
             {
-                RainMeadow.Debug("skipping already registered entity");
+                throw new InvalidOperationException("Unregistered entity has entered the room! " + entity);
             }
         }
 
-        // how to place a creature in the room in 19 simple steps
-        protected override void EntityEntered(OnlineEntity oe)
+        internal void EntityLeavingRoom(AbstractPhysicalObject entity)
         {
-            base.EntityEntered(oe);
-            if(oe.entity is not AbstractCreature creature) { throw new InvalidOperationException("entity not a creature"); }
+            RainMeadow.Debug(this);
+            RainMeadow.Debug(entity);
+            if (!isAvailable) throw new InvalidOperationException("not available");
+            if (entities.FirstOrDefault(e=>e.entity == entity) is OnlineEntity oe)
+            {
+                if (oe.owner.isMe)
+                {
+                    EntityLeftResource(oe);
+                }
+                else
+                {
+                    RainMeadow.Debug("externally controlled entity leaving : " + oe);
+                }
+            }
+            else
+            {
+                RainMeadow.Debug("untracked entity leaving! " + entity);
+            }
+        }
+
+        protected override void EntityEnteredResource(OnlineEntity oe)
+        {
+            base.EntityEnteredResource(oe);
+            oe.inRoom = this;
+            if (oe.entity is not AbstractCreature creature) { throw new InvalidOperationException("entity not a creature"); }
             if (!oe.owner.isMe)
             {
                 RainMeadow.Debug("A remote creature entered, adding it to the room");
@@ -61,13 +85,13 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("not spawning creature " + creature);
                     RainMeadow.Debug($"reasons {absroom.realizedRoom is not null} {(absroom.realizedRoom != null && creature.AllowedToExistInRoom(absroom.realizedRoom))}");
-                    if(creature.realizedCreature != null)
+                    if (creature.realizedCreature != null)
                     {
                         if (!oe.initialPos.TileDefined && oe.initialPos.NodeDefined && absroom.realizedRoom != null && absroom.realizedRoom.shortCutsReady)
                         {
                             RainMeadow.Debug("added realized creature to shortcut system");
                             creature.realizedCreature.inShortcut = true;
-                            // this calls MOVE on the next tick which remove-adds
+                            // this calls MOVE on the next tick which remove-adds, this could be bad?
                             absroom.world.game.shortcuts.CreatureEnterFromAbstractRoom(creature.realizedCreature, absroom, oe.initialPos.abstractNode);
                         }
                         else
@@ -91,25 +115,10 @@ namespace RainMeadow
             }
         }
 
-        internal void EntityLeavingRoom(AbstractPhysicalObject entity)
+        protected override void EntityLeftResource(OnlineEntity oe)
         {
-            RainMeadow.Debug(this);
-            RainMeadow.Debug(entity);
-            if (!isAvailable) throw new InvalidOperationException("not available");
-            if (entities.FirstOrDefault(e=>e.entity == entity) is OnlineEntity oe)
-            {
-                EntityLeft(oe);
-            }
-            else
-            {
-                RainMeadow.Debug("untracked entity leaving: " + entity);
-            }
-        }
-
-        protected override void EntityLeft(OnlineEntity oe)
-        {
-            base.EntityLeft(oe);
-            if (!oe.owner.isMe)
+            base.EntityLeftResource(oe);
+            if (!oe.owner.isMe && oe.inRoom == this)
             {
                 // external entity should be removed from the game until its re-added somewhere else
                 RainMeadow.Debug("Removing entity from the game: " + oe);
@@ -119,64 +128,17 @@ namespace RainMeadow
                 {
                     po.slatedForDeletetion = true;
                     if (absroom.realizedRoom is Room room) room.RemoveObject(po);
+                    if(po is Creature c && c.inShortcut)
+                    {
+                        c.RemoveFromShortcuts();
+                        c.inShortcut = false;
+                    }
                 }
             }
             else
             {
                 RainMeadow.Debug("my own entity leaving");
             }
-        }
-
-        // I do not like this
-        // How do I abstract this away without having this be like 4 different steps
-        // this sucks
-        // I need to be able to abstract an "entity" from an event
-        // but actually instantiating the entity could be a separate step
-        // so maybe "get a potentially empty entity, then maybe realize it"
-        // maybe entity.HandleAddedToResource(resource)? this smells like a responsibility swap
-        // maybe 
-        protected override OnlineEntity CreateOrReuseEntity(NewEntityEvent newEntityEvent)
-        {
-            OnlineEntity oe = null;
-            if (newEntityEvent.owner.recentEntities.TryGetValue(newEntityEvent.entityId, out oe))
-            {
-                RainMeadow.Debug("reusing existing entity " + oe);
-                var creature = oe.entity as AbstractCreature;
-                creature.slatedForDeletion = false;
-                if (creature.realizedObject is PhysicalObject po) po.slatedForDeletetion = false;
-
-                oe.initialPos = newEntityEvent.initialPos;
-                oe.entity.pos = oe.initialPos;
-                return oe;
-            }
-            else
-            {
-                RainMeadow.Debug("spawning new entity");
-                // it is very tempting to switch to the generic tostring/fromstring from the savesystem, BUT
-                // it would be almost impossible to sanitize input and who knows what someone could do through that
-                if (!newEntityEvent.isCreature) throw new NotImplementedException("cant do non-creatures yet");
-                CreatureTemplate.Type type = new CreatureTemplate.Type(newEntityEvent.template, false);
-                if (type.Index == -1)
-                {
-                    RainMeadow.Debug(type);
-                    RainMeadow.Debug(newEntityEvent.template);
-                    throw new InvalidOperationException("invalid template");
-                }
-                EntityID id = absroom.world.game.GetNewID();
-                id.altSeed = newEntityEvent.entityId;
-                RainMeadow.Debug(id);
-                RainMeadow.Debug(newEntityEvent.initialPos);
-                var creature = new AbstractCreature(absroom.world, StaticWorld.GetCreatureTemplate(type), null, newEntityEvent.initialPos, id);
-                RainMeadow.Debug(creature);
-                if (creature.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat) // for some dumb reason it doesn't get a default
-                {
-                    creature.state = new PlayerState(creature, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionRemotePlayer, false);
-                }
-                oe = new OnlineEntity(creature, newEntityEvent.owner, newEntityEvent.entityId, newEntityEvent.initialPos);
-                newEntityEvent.owner.recentEntities.Add(newEntityEvent.entityId, oe);
-                return oe;
-            }
-            return oe;
         }
     }
 }

@@ -23,7 +23,7 @@ namespace RainMeadow
         public bool isActive { get; protected set; } // The respective in-game resource is loaded
         public bool isAvailable { get; protected set; } // The resource was leased or subscribed to
         public bool isPending => pendingRequest != null;
-        public bool canRelease => !isActive || !subresources.Any(s => s.isAvailable);
+        public bool canRelease => !isActive || !subresources.Any(s => s.isAvailable) || entities.Any(e => e.owner.isMe);
 
         public void FullyReleaseResource()
         {
@@ -33,6 +33,10 @@ namespace RainMeadow
                 foreach (var sub in subresources)
                 {
                     if (sub.isAvailable && !sub.isPending) sub.FullyReleaseResource();
+                }
+                foreach(var ent in entities.ToList())
+                {
+                    if (ent.owner.isMe) this.EntityLeftResource(ent);
                 }
             }
 
@@ -119,7 +123,7 @@ namespace RainMeadow
             
             for (int i = 0; i < entities.Count; i++)
             {
-                EntityLeft(entities[i]);
+                EntityLeftResource(entities[i]);
             }
             OnlineManager.RemoveFeeds(this); // there shouldn't be any leftovers but might as well
             entities.Clear();
@@ -209,6 +213,7 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             if (isPending) throw new InvalidOperationException("pending");
             if (!isAvailable) throw new InvalidOperationException("not available");
+            if (!canRelease) throw new InvalidOperationException("cant be released in current state");
             if (isOwner) // let go
             {
                 if (super?.owner != null) // return to super
@@ -260,7 +265,6 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             RainMeadow.Debug("Released by : " + request.from.name);
-            RainMeadow.Debug("Has subscriptions : " + (request.subscribers.Count > 0));
 
             if (isSuper && owner == request.from)
             {

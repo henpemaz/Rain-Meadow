@@ -1,53 +1,31 @@
 ﻿Rain Meadow
 
-Multiplayer menu
-	have a look at new mixed-mode so can use scrollbox for lobbies?
+on join, takes a while to get lobby data, grey out button
 
-Lobby join
-	done
+Manage missing regions:
+	right now nullrefs because missing referenced resource
+	only joinable on same world-checksum? world-list? world-index-checksum?
 
-New game session type
-	created
-	control spawning of things depending on whether you're the host or not
-		creatures done
-		todo items
-		todo room objects
-			what objects do we let spawn?
-		remove quantified creatures
+need new hookpoint for objects being moved between worlds, so they're added to the new world 
+	but maybe just the removal-addal works?
 
-basic netcode
-	on load resource, request resource
-		wont this hiccup every time?
-		should it store a list of owners, or query super-owner every time?
-	request ownership vs subscribe
+world registers entities
+entities need to be transferable
+on leave, transfer leftovers, remove untransferables
+
+thinking more and more they'll work like resources
+on leaving an entity behind, transfer it to someone else who has the room active, or return to super (world)
 
 
-if lobby owner
-	every X ticks update other players on world-owners
-
-if world owner
-	every x ticks update other players on room-owners
-	every x ticks update other players on abstract-states
-
-if room owner
-	every x ticks update other players on item-owners
-	every x ticks update other players on room state
-else
-	every x ticks update room owner on owned items state
+try enabling creature spawns
+	spanws on if world owner
+	needs resource available earlier in the load process so this can be turned on/off accordingly
 
 
-	feed on region cross crashed because resource gone
-	entity leaving room that was deactivated = bad
-	on join, takes a while to get lobby data, grey out button
+handle disconnects
 
+gamemode: meadow: stays in game, no ways to die or sleep, quits to lobby-screen
 
 
 Mod auto installing / auto disabling
 
-
-
-Manage missing regions:
-	right now nullrefs because missing referenced resource
-
-World loader takes longer than lease to load, tries to initiate worldsession on not-yet-ready world
-	maybe actual resource calls activate/deactivate, lease-independent? will it always be in a consistent state?

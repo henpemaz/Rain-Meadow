@@ -9,24 +9,36 @@ namespace RainMeadow
     {
         private void EntityHooks()
         {
+            On.AbstractPhysicalObject.ctor += AbstractPhysicalObject_ctor;
+            On.AbstractCreature.ctor += AbstractCreature_ctor; ;
+
             On.AbstractRoom.AddEntity += AbstractRoom_AddEntity;
             On.AbstractRoom.RemoveEntity_AbstractWorldEntity += AbstractRoom_RemoveEntity;
             On.AbstractPhysicalObject.ChangeRooms += AbstractPhysicalObject_ChangeRooms;
 
-            On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move;
+            IL.ShortcutHandler.Update += ShortcutHandler_Update; // cleanup of deleted entities in shortcut system
 
-            IL.ShortcutHandler.Update += ShortcutHandler_Update;
-
-            On.RoomRealizer.RealizeAndTrackRoom += RoomRealizer_RealizeAndTrackRoom;
+            On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // debug
+            On.RoomRealizer.RealizeAndTrackRoom += RoomRealizer_RealizeAndTrackRoom; // debug
         }
 
-        // disable preemptive loading
+        // disable preemptive loading for ease of debugging
         private void RoomRealizer_RealizeAndTrackRoom(On.RoomRealizer.orig_RealizeAndTrackRoom orig, RoomRealizer self, AbstractRoom room, bool actuallyEntering)
         {
             if (!actuallyEntering) return;
             orig(self, room, actuallyEntering);
         }
 
+
+        // debug
+        private void AbstractPhysicalObject_Move(On.AbstractPhysicalObject.orig_Move orig, AbstractPhysicalObject self, WorldCoordinate newCoord)
+        {
+            RainMeadow.Debug($"from {self.pos} to {newCoord}");
+            orig(self, newCoord);
+        }
+
+        // removes entities that should be deleted when going between rooms
+        // not very robust also currently only handles creatures, should check recursively for grasps/connections
         private void ShortcutHandler_Update(ILContext il)
         {
             try
@@ -107,35 +119,28 @@ namespace RainMeadow
             }
         }
 
-        // debug
-        private void AbstractPhysicalObject_Move(On.AbstractPhysicalObject.orig_Move orig, AbstractPhysicalObject self, WorldCoordinate newCoord)
-        {
-            RainMeadow.Debug($"from {self.pos} to {newCoord}");
-            orig(self, newCoord);
-        }
-
         // creature moving between rooms
         // vanilla calls removeentity + addentity but entity.pos is only updated LATER so we need this instead of addentity
         private void AbstractPhysicalObject_ChangeRooms(On.AbstractPhysicalObject.orig_ChangeRooms orig, AbstractPhysicalObject self, WorldCoordinate newCoord)
         {
             RainMeadow.DebugMethod();
             orig(self, newCoord);
-            if (self.world.game.session is OnlineGameSession os && !self.slatedForDeletion)
+            if (self.world.game.session is OnlineGameSession os && !self.slatedForDeletion && RoomSession.map.TryGetValue(self.world.GetAbstractRoom(newCoord.room), out var rs) && os.ShouldSyncObjectInRoom(rs, self))
             {
-                OnlineManager.lobby.worldSessions[self.world.region.name].roomSessions[self.world.GetAbstractRoom(newCoord.room).name].EntityEnteringRoom(self, newCoord);
+                rs.EntityEnteringRoom(self, newCoord);
             }
         }
 
-        // not the main entry-point, things will have been added already
+        // not the main entry-point for room entities moving around
         // creature.move doesn't set the new pos until after it has moved, that's the issue
         // this is only for things that are ADDED directly to the room
         private void AbstractRoom_AddEntity(On.AbstractRoom.orig_AddEntity orig, AbstractRoom self, AbstractWorldEntity ent)
         {
             RainMeadow.DebugMethod();
             orig(self, ent);
-            if (self.world.game.session is OnlineGameSession os && !ent.slatedForDeletion && ent is AbstractPhysicalObject apo && apo.pos.room == self.index)
+            if (self.world.game.session is OnlineGameSession os && !ent.slatedForDeletion && ent is AbstractPhysicalObject apo && apo.pos.room == self.index && RoomSession.map.TryGetValue(self, out var rs) && os.ShouldSyncObjectInRoom(rs, apo))
             {
-                OnlineManager.lobby.worldSessions[self.world.region.name].roomSessions[self.name].EntityEnteringRoom(apo, apo.pos);
+                rs.EntityEnteringRoom(apo, apo.pos);
             }
         }
 
@@ -143,9 +148,30 @@ namespace RainMeadow
         {
             RainMeadow.DebugMethod();
             orig(self, entity);
-            if (self.world.game.session is OnlineGameSession os && !entity.slatedForDeletion && entity is AbstractPhysicalObject apo)
+            if (self.world.game.session is OnlineGameSession os && !entity.slatedForDeletion && entity is AbstractPhysicalObject apo && RoomSession.map.TryGetValue(self, out var rs) && os.ShouldSyncObjectInRoom(rs, apo))
             {
-                OnlineManager.lobby.worldSessions[self.world.region.name].roomSessions[self.name].EntityLeavingRoom(apo);
+                rs.EntityLeavingRoom(apo);
+            }
+        }
+
+        private void AbstractPhysicalObject_ctor(On.AbstractPhysicalObject.orig_ctor orig, AbstractPhysicalObject self, World world, AbstractPhysicalObject.AbstractObjectType type, PhysicalObject realizedObject, WorldCoordinate pos, EntityID ID)
+        {
+            RainMeadow.DebugMethod();
+            orig(self, world, type, realizedObject, pos, ID);
+            if (world?.game?.session is OnlineGameSession os && WorldSession.map.TryGetValue(world, out var ws) && self is not AbstractCreature && os.ShouldSyncObjectInWorld(ws, self))
+            {
+                ws.NewEntityInWorld(self);
+            }
+        }
+
+
+        private void AbstractCreature_ctor(On.AbstractCreature.orig_ctor orig, AbstractCreature self, World world, CreatureTemplate creatureTemplate, Creature realizedCreature, WorldCoordinate pos, EntityID ID)
+        {
+            RainMeadow.DebugMethod();
+            orig(self, world, creatureTemplate, realizedCreature, pos, ID);
+            if (world?.game?.session is OnlineGameSession os && WorldSession.map.TryGetValue(world, out var ws) && os.ShouldSyncObjectInWorld(ws, self))
+            {
+                ws.NewEntityInWorld(self);
             }
         }
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace RainMeadow
 {
@@ -8,18 +9,28 @@ namespace RainMeadow
     {
         public AbstractRoom absroom;
         public bool abstractOnDeactivate;
+        internal static ConditionalWeakTable<AbstractRoom, RoomSession> map = new();
 
         public WorldSession worldSession => super as WorldSession;
+        protected override World World => worldSession.world;
+
         public RoomSession(WorldSession ws, AbstractRoom absroom)
         {
             super = ws;
             this.absroom = absroom;
+            map.Add(absroom, this);
             deactivateOnRelease = true;
         }
 
         protected override void ActivateImpl()
         {
-
+            foreach (var ent in absroom.entities)
+            {
+                if (ent is AbstractPhysicalObject apo)
+                {
+                    EntityEnteringRoom(apo, apo.pos);
+                }
+            }
         }
 
         protected override void DeactivateImpl()
@@ -27,21 +38,6 @@ namespace RainMeadow
             if (abstractOnDeactivate)
             {
                 absroom.Abstractize();
-            }
-        }
-
-        protected override void AvailableImpl()
-        {
-            base.AvailableImpl();
-            // Loaded: register entities, and from there on new entities are added automatically
-            // asap, active = fullyloaded = too late
-            // maybe I should just change what Active means instead?
-            foreach (var ent in absroom.entities)
-            {
-                if(ent is AbstractPhysicalObject apo)
-                {
-                    EntityEnteringRoom(apo, apo.pos);
-                }
             }
         }
 

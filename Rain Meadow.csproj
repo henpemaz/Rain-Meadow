@@ -190,10 +190,11 @@
     <Compile Include="Online\Events\TransferResult.cs" />
     <Compile Include="Online\Subscription.cs" />
     <Compile Include="Online\WorldSession.cs" />
+    <Compile Include="Online\WorldSession.Entities.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RainMeadow.cs" />
     <Compile Include="Game\RainMeadow.GameHooks.cs" />
-    <Compile Include="RainMeadow.EntityHooks.cs" />
+    <Compile Include="Game\RainMeadow.EntityHooks.cs" />
     <Compile Include="RainMeadow.Logging.cs" />
     <Compile Include="Menu\RainMeadow.MenuHooks.cs" />
     <Compile Include="Online\Events\RequestResult.cs" />

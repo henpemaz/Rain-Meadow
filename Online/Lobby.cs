@@ -14,6 +14,8 @@ namespace RainMeadow
 
         public Dictionary<string, WorldSession> worldSessions = new();
 
+        protected override World World => throw new NotSupportedException(); // Lobby can't add world entities
+
         public Lobby(CSteamID id)
         {
             this.id = id;
@@ -66,11 +68,6 @@ namespace RainMeadow
         internal override string Identifier()
         {
             return ".";
-        }
-
-        protected override OnlineEntity CreateOrReuseEntity(NewEntityEvent newEntityEvent)
-        {
-            throw new NotImplementedException();
         }
 
         // State has the current lease state of worldsessions

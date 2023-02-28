@@ -1,21 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace RainMeadow
 {
     public partial class WorldSession : OnlineResource
     {
         public Region region;
-        private World world;
+        public World world;
 
+        internal static ConditionalWeakTable<World, WorldSession> map = new();
         public Dictionary<string, RoomSession> roomSessions = new();
+
+        protected override World World => world;
 
         public WorldSession(Region region, Lobby lobby)
         {
             this.region = region;
             this.super = lobby;
             deactivateOnRelease = true;
+        }
+
+        internal void BindWorld(World world)
+        {
+            this.world = world;
+            map.Add(world, this);
         }
 
         protected override void ActivateImpl()
@@ -48,16 +58,6 @@ namespace RainMeadow
         internal override string Identifier()
         {
             return region.name;
-        }
-
-        internal void BindWorld(World world)
-        {
-            this.world = world;
-        }
-
-        protected override OnlineEntity CreateOrReuseEntity(NewEntityEvent newEntityEvent)
-        {
-            throw new NotImplementedException();
         }
 
         public class WorldState : ResourceState

@@ -30,7 +30,7 @@
 
         internal override void Process()
         {
-            (onlineResource as RoomSession).OnNewEntity(this);
+            this.onlineResource.OnNewEntity(this);
         }
     }
 }
