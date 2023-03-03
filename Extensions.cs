@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
     internal static class Extensions
     {
+        
         public static bool RemoveFromShortcuts(this Creature creature)
         {
             if (!creature.inShortcut) return true;
@@ -44,6 +47,18 @@ namespace RainMeadow
                 }
             }
             return false; // not found??
+        }
+
+        // suck it, linq
+        public static Dictionary<TKey, TElement> ToDictionary<TKey, TElement>(this IEnumerable<KeyValuePair<TKey, TElement>> source)
+        {
+            Dictionary<TKey, TElement> dictionary = new Dictionary<TKey, TElement>();
+            foreach (KeyValuePair<TKey, TElement> item in source)
+            {
+                dictionary.Add(item.Key, item.Value);
+            }
+
+            return dictionary;
         }
     }
 }

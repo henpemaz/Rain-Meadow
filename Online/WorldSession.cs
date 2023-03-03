@@ -37,6 +37,11 @@ namespace RainMeadow
                 roomSessions.Add(room.name, rs);
                 subresources.Add(rs);
             }
+            foreach (var item in earlyEntities)
+            {
+                NewEntityInWorld(item);
+            }
+            earlyEntities.Clear();
         }
 
         protected override void DeactivateImpl()

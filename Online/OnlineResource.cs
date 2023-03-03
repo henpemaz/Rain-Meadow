@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO.Ports;
 using System.Linq;
 
 namespace RainMeadow
@@ -13,9 +14,11 @@ namespace RainMeadow
         public OnlineResource super;
         public OnlinePlayer owner;
         public List<OnlineResource> subresources;
+        public List<OnlinePlayer> participants;
+
+        public List<Subscription> subscriptions; // I kind of want to delete this, but leasestate needs sorting out
 
         public ResourceEvent pendingRequest; // should this maybe be a list/queue? Will it be any more manageable if multiple events can cohexist?
-        public List<Subscription> subscriptions; // this could be a dict of subscriptions, but how relevant is to access them through here anyways
 
         public bool isFree => owner == null;
         public bool isOwner => owner != null && owner.id == OnlineManager.me;
@@ -23,7 +26,7 @@ namespace RainMeadow
         public bool isActive { get; protected set; } // The respective in-game resource is loaded
         public bool isAvailable { get; protected set; } // The resource was leased or subscribed to
         public bool isPending => pendingRequest != null;
-        public bool canRelease => !isActive || !subresources.Any(s => s.isAvailable) || entities.Any(e => e.owner.isMe);
+        public bool canRelease => !isPending && !(subresources.Any(s => s.isAvailable) || entities.Any(e => e.owner.isMe && !e.isTransferable));
 
         public void FullyReleaseResource()
         {
@@ -36,12 +39,36 @@ namespace RainMeadow
                 }
                 foreach(var ent in entities.ToList())
                 {
-                    if (ent.owner.isMe) this.EntityLeftResource(ent);
+                    if (ent.owner.isMe)
+                    {
+                        if (ent.isTransferable)
+                        {
+                            // i want to send these entities off to someone else
+                            // if I send them to super, super might not know about them (lobby)
+
+                            // there must be an event that handles an entity's ownership changing
+                            // maybe I can fire these directly around?
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException("non transferable resource in entity");
+                            this.EntityLeftResource(ent);
+                        }
+                    }
                 }
             }
 
-            if(!isPending && canRelease) { Release(); releaseWhenPossible = false; }
+            if(canRelease) { Release(); releaseWhenPossible = false; }
             else if (pendingRequest is not ReleaseRequest) { releaseWhenPossible = true; }
+        }
+
+        protected void SubresourcesUnloaded()
+        {
+            if (releaseWhenPossible && canRelease)
+            {
+                Release();
+                releaseWhenPossible = false;
+            }
         }
 
         protected abstract void ActivateImpl();
@@ -64,11 +91,15 @@ namespace RainMeadow
             }
             if (isOwner)
             {
-                foreach (var s in subscriptions)
-                {
-                    s.NewLeaseState(this);
-                }
+                NewLeaseState();
             }
+
+            foreach (var item in incomingEntities)
+            {
+                item.Process();
+            }
+            incomingEntities.Clear();
+
             if (releaseWhenPossible) FullyReleaseResource(); // my bad I don't want it anymore
         }
 
@@ -81,8 +112,10 @@ namespace RainMeadow
             if (isAvailable) { throw new InvalidOperationException("Resource is already available"); }
             if (isActive) { throw new InvalidOperationException("Resource is already active"); }
             isAvailable = true;
+            participants = new() { OnlineManager.mePlayer };
             subscriptions = new();
             entities = new();
+            incomingEntities = new();
 
             AvailableImpl();
         }
@@ -114,33 +147,26 @@ namespace RainMeadow
             if (!isActive) { throw new InvalidOperationException("resource is inactive, should have been unleased first"); }
             if (!isAvailable) { throw new InvalidOperationException("resource is already not available"); }
             if (subresources.Any(s => s.isAvailable)) throw new InvalidOperationException("has available subresources");
-            
+            isAvailable = false;
             UnavailableImpl();
+
+            participants.Clear();
+            participants = null;
             
             OnlineManager.RemoveSubscriptions(this);
             subscriptions.Clear();
             subscriptions = null;
             
-            for (int i = 0; i < entities.Count; i++)
-            {
-                EntityLeftResource(entities[i]);
-            }
             OnlineManager.RemoveFeeds(this); // there shouldn't be any leftovers but might as well
             entities.Clear();
             entities = null;
-
-            isAvailable = false;
 
             if (deactivateOnRelease)
             {
                 Deactivate();
             }
 
-            if (super != null && super.releaseWhenPossible && super.canRelease) // I've released, notify super if super is waiting
-            {
-                super.Release();
-                super.releaseWhenPossible = false;
-            }
+            super?.SubresourcesUnloaded(); // I've released, notify super if super is waiting
         }
 
         protected void NewOwner(OnlinePlayer player)
@@ -152,7 +178,7 @@ namespace RainMeadow
             
             if (isSuper && oldOwner != owner) // I am responsible for notifying lease changes to this
             {
-                super.SubresourceNewOwner(this);
+                super.NewLeaseState();
             }
         }
 
@@ -165,24 +191,35 @@ namespace RainMeadow
             if (subscriptions == null) throw new InvalidOperationException("nill");
             if (player.isMe) throw new InvalidOperationException("Can't subscribe to self");
 
+            participants.Add(player);
             var sub = OnlineManager.AddSubscription(this, player);
             this.subscriptions.Add(sub);
 
-            if(isActive)
+            SubscribedImpl(player);
+
+            foreach (var ent in entities)
             {
-                sub.NewLeaseState(this);
+                if (player == ent.owner) continue;
+                player.QueueEvent(new NewEntityEvent(this, ent));
             }
 
-            SubscribedImpl(player);
+            if (isActive)
+            {
+                NewLeaseState();
+            }
         }
 
         private void Unsubscribed(OnlinePlayer player)
         {
             RainMeadow.Debug(this.ToString() + " - " + player.name);
             if (player.isMe) throw new InvalidOperationException("Can't unsubscribe from self");
+
+            participants.Remove(player);
             var sub = subscriptions.First(s => s.player == player);
             this.subscriptions.Remove(sub);
             OnlineManager.RemoveSubscription(sub);
+
+            NewLeaseState();
         }
 
         // I request, possibly to someone else
@@ -268,17 +305,18 @@ namespace RainMeadow
 
             if (isSuper && owner == request.from)
             {
-                request.from.QueueEvent(new ReleaseResult.Released(request));
-                if (request.subscribers.Count > 0)
+                var newParticipants = request.participants.Where(p => p != request.from).ToList();
+                if (newParticipants.Count > 0)
                 {
-                    var newOwner = PlayersManager.BestTransferCandidate(this, request.subscribers);
+                    var newOwner = PlayersManager.BestTransferCandidate(this, newParticipants);
                     NewOwner(newOwner); // This notifies all users
-                    newOwner.TransferResource(this, request.subscribers.Where(s => s != newOwner).ToList()); // This notifies the new owner to apply subscriptions
+                    newOwner.TransferResource(this, newParticipants); // This notifies the new owner to apply subscriptions
                 }
                 else
                 {
                     NewOwner(null);
                 }
+                request.from.QueueEvent(new ReleaseResult.Released(request)); // this notifies the old owner that the release was a success
                 return;
             }
             if (isOwner)
@@ -298,7 +336,8 @@ namespace RainMeadow
             RainMeadow.Debug("Transfered by : " + request.from.name);
             if (isAvailable && isOwner && request.from == super?.owner) // I am a subscriber who now owns this resource
             {
-                foreach(var subscriber in request.subscribers)
+                participants = request.participants;
+                foreach(var subscriber in request.participants)
                 {
                     if (subscriber.isMe) continue;
                     Subscribed(subscriber);

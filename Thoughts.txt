@@ -24,3 +24,33 @@ State vs Events
 	Are states that send every tick just worse events? because they also cause the "unchanged" sends
 
 	I'm starting to think ownership-state is special
+
+
+Rain Meadow devlog (this also helped me organize my ideas)
+Studies
+I've been studying multiplayers and how they do netcode and sync. Most games have a host, either host-peer in p2p, or server in cli-serv, that has the full state of the world or the full state of the areas that are loaded, and feed that state to other client/peers. Some of the physics and collisions might be resolved locally (extrapolation) so it feels less laggy, but typically there's a server correction mechanism and the server has the final say on everything.
+
+Assumptions
+For Rain World, seemed unreasonable to have the host load all rooms, I haven't tried but I doubt it'd perform any good, and working around the limitation of one active world at a time seemed like a hassle. Insted, I've developped a resource ownership and lease mechanism, so that players could load and handle rooms themselves, while still being coordinated by a common host. You load it first, you own it and you're the room-host. If you loaded it after, you're now subscribed to whoever loaded it first, and the host has the final say on any conflicts.
+
+Lease System
+This ownership system has three levels: the lobby, the world, and the rooms. Roughly, the lease happens as follows: The lobby owner is picked by steammatchmaking automatically and unambiguously, and as players start to load worlds in-game, they'll request the lobby owner for the ownership of the world they're trying to load if they think it's free, otherwise they'll query the current world-onwer for a subscription to the world-state. With the state of the world in hands, the players now look into loading rooms and the same process happens, they'll query the world-owner for a room they think is free, otherwise subscribe to an existing room-host.
+
+It took me a couple weeks maybe more to get this lease system right, but at the end of it I had 3 test players running around on their own game, and at every moment they either had ownership of the resources they were using, or they had access to the full state of it (nothing much at the time except for lease info) as it was being loaded.
+
+Entity System
+Next I stated looking into synchronizing objects. To simplify things, I've initially handled entities as if they would belong to a room (more on this later). As players tried to add entities to the room, they'd notify the room-host of the new entity, of if they were the room-host, they'd notify everyone else about all entities added to the room. Similarly for entities leaving the room, once an online (not local) entity would have left the room, boom, gone from the game, because again they existed at a room level. Entities are defined by object-type and creature-template in order to recreate a similar enough object on the other side, and are identified with both the owner's ID and the ID of the entity in the owners world, so there's zero collisions (that's actually 12 bytes and could be trimmed down a bunch). 
+
+This got me two players on screen when there should be two players on screen etc, but no movement sync yet.
+
+State Feed:
+In order to syncronize position and whatever other relevant state there is to objects, the "owner" of the object has to provide that data. The owner of the entity is by default whatever player added that entity to the room and notified the room-host about it. The owner is then responsible for feeding the state of that object into the room-owner physics, and the room-owner then rebroadcasts the physics of all entities to all players in the room except the owner of each entity.
+
+The result of this is that your entities (such as your player character) are controlled by you and if you're not the host it's syncronized to the host's game, and the entities from eveyone else are moved by information that the room-host sends to you. I haven't bothered with anymations, but synchronizing chunk positions made the slugcats move around on eachothers screen and that was enough for a prototype. This system was flexible enough that creatures added by either player to the room would also sync over to the other player's world.
+
+Entities in a world:
+I realized that I wanted to have player positions on map, and not being limited to loaded rooms. Again, with the current system, entities only existed in loaded rooms and would get removed from the game as they left them. I could have a separate system that would feed map info, but instead I've decided to rework the system so that entities can be added/removed from both a world and a room, so that players who were subscribed to a world with an entity would receive "abstract level" information about the entity, and players in a room with the entity would receive physics information about the entity.
+
+I soon realized that with a system like this would be perfect for creature sync at a world level, by letting the world-host spawn in creatures and let realized-room-owners snag those creatures as they are realized with the rooms in order to control an broadcast their pysics. The only addition needed was a mechanism for requesting/transfering entities between players.
+
+I'm currently still implementing missing features and fixing some bugs with this system, but this is pretty much where I am at at the moment, and everything seems to point to creature-synched co-op soon-ish.

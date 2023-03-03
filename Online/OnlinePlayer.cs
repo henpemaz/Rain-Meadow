@@ -23,7 +23,7 @@ namespace RainMeadow
         public bool needsAck;
         public bool isMe;
         public string name;
-        public Dictionary<int, OnlineEntity> recentEntities = new();
+        public Dictionary<int, OnlineEntity> recentEntities = new(); // this is very handy, but is it correct? when should this be cleaned up?
 
         //public List<OnlineResource> resourcesOwned = new();
 
@@ -88,8 +88,16 @@ namespace RainMeadow
         internal void ReleaseResource(OnlineResource onlineResource)
         {
             RainMeadow.Debug($"Requesting player {this.name} for release of resource {onlineResource.Identifier()}");
-            var req = new ReleaseRequest(onlineResource, onlineResource.subscriptions.Select(s => s.player).ToList());
+            var req = new ReleaseRequest(onlineResource, onlineResource.participants);
             onlineResource.pendingRequest = req;
+            QueueEvent(req);
+        }
+
+        internal void RequestEntity(OnlineEntity oe)
+        {
+            RainMeadow.Debug($"Requesting player {this.name} for entity {oe}");
+            var req = new EntityRequest(oe);
+            oe.pendingRequest = req;
             QueueEvent(req);
         }
 

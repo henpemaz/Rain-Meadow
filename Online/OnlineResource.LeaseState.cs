@@ -7,7 +7,8 @@ namespace RainMeadow
     public abstract partial class OnlineResource
     {
         private LeaseState incomingLease; // lease to be processed on activate
-        private void SubresourceNewOwner(OnlineResource onlineResource)
+
+        private void NewLeaseState()
         {
             RainMeadow.Debug(this);
             foreach (var s in subscriptions)
@@ -42,14 +43,19 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             foreach (var item in leaseState.ownership)
             {
-                OnlineManager.ResourceFromIdentifier(item.Key).NewOwner(OnlineManager.PlayerFromId(new Steamworks.CSteamID(item.Value)));
+                OnlineManager.ResourceFromIdentifier(item.Key).NewOwner(OnlineManager.PlayerFromId(item.Value));
             }
+            this.participants = participants
+                .Union(leaseState.entered.Select(OnlineManager.PlayerFromId))
+                .Except(leaseState.left.Select(OnlineManager.PlayerFromId)).ToList();
         }
 
         public class LeaseState // its it's own weird thing, sent around as events because critical yet too big to send fully every frame
             // if the state delta-from-last-acknowledged mechanism works properly, this could then be sent as a 1-tick
         {
             public Dictionary<string,ulong> ownership;
+            public List<ulong> entered;
+            public List<ulong> left;
 
             public LeaseState() { }
             public LeaseState(OnlineResource onlineResource)
@@ -59,6 +65,8 @@ namespace RainMeadow
                 {
                     ownership[sub.Identifier()] = sub.owner is OnlinePlayer p ? p.id.m_SteamID : 0ul;
                 }
+                entered = onlineResource.participants.Select(p => p.id.m_SteamID).ToList();
+                left = new();
             }
 
             // update from other
@@ -68,6 +76,15 @@ namespace RainMeadow
                 {
                     ownership[item.Key] = item.Value;
                 }
+
+                entered = entered.Union(leaseState.entered).Except(leaseState.left).ToList();
+            }
+
+            internal void CustomSerialize(Serializer serializer)
+            {
+                serializer.Serialize(ref ownership);
+                serializer.Serialize(ref entered);
+                serializer.Serialize(ref left);
             }
 
             // difference from other
@@ -75,7 +92,11 @@ namespace RainMeadow
             {
                 if(previousLeaseState == null) { return this; }
                 var delta = new LeaseState();
-                delta.ownership = ownership.Except(previousLeaseState.ownership).ToDictionary(kvp => kvp.Key, kvp => kvp.Value); // linq why no dict from kvp
+                delta.ownership = ownership.Except(previousLeaseState.ownership).ToDictionary(); // linq why no dict from kvp
+
+                delta.entered = entered.Except(previousLeaseState.entered).ToList();
+                delta.left = previousLeaseState.entered.Except(entered).ToList();
+
                 return delta;
             }
         }

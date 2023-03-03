@@ -267,5 +267,10 @@ namespace RainMeadow
         {
             return players.FirstOrDefault(p => p.id == id);
         }
+
+        internal static OnlinePlayer PlayerFromId(ulong id)
+        {
+            return players.FirstOrDefault(p => p.id.m_SteamID == id);
+        }
     }
 }

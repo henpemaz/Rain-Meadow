@@ -4,17 +4,17 @@ namespace RainMeadow
 {
     public class ReleaseRequest : ResourceEvent
     {
-        public List<OnlinePlayer> subscribers;
+        public List<OnlinePlayer> participants;
 
-        public ReleaseRequest(OnlineResource resource, List<OnlinePlayer> subscribers) : base(resource)
+        public ReleaseRequest(OnlineResource resource, List<OnlinePlayer> participants) : base(resource)
         {
-            this.subscribers = subscribers;
+            this.participants = participants;
         }
 
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);
-            serializer.Serialize(ref subscribers);
+            serializer.Serialize(ref participants);
         }
 
         internal override void Process()

@@ -6,7 +6,7 @@ using UnityEngine;
 namespace RainMeadow
 {
     // Welcome to polymorphism hell
-    public class OnlineEntity
+    public partial class OnlineEntity
     {
         internal static ConditionalWeakTable<AbstractPhysicalObject, OnlineEntity> map = new();
 
@@ -14,8 +14,15 @@ namespace RainMeadow
         public AbstractPhysicalObject entity;
         public OnlinePlayer owner;
         public int id;
+
         public WorldCoordinate initialPos;
-        internal RoomSession inRoom;
+        public WorldSession world;
+        public RoomSession room;
+        public OnlineResource activeResource => (room as OnlineResource ?? world);
+
+        public bool realized;
+        public bool isTransferable;
+        public PlayerEvent pendingRequest;
 
         public OnlineEntity(AbstractPhysicalObject entity, OnlinePlayer owner, int id, WorldCoordinate pos)
         {
@@ -30,34 +37,10 @@ namespace RainMeadow
             return $"{entity}:{id} from {owner}";
         }
 
-        internal void ReadState(EntityState entityState, ulong tick)
-        {
-            // todo easing??
-            entityState.ReadTo(this);
-        }
-
-        internal OnlineState GetState(ulong tick, OnlineResource resource)
-        {
-            // todo return different data based on resource being fed (world vs room)
-            if (entity is AbstractCreature)
-            {
-                return new CreatureEntityState(this, tick);
-            }
-            return new PhysicalObjectEntityState(this, tick);
-        }
-
-        // I do not like this
-        // How do I abstract this away without having this be like 4 different steps
-        // this sucks
-        // I need to be able to abstract an "entity" from an event
-        // but actually instantiating the entity could be a separate step
-        // so maybe "get a potentially empty entity, then maybe realize it"
-        // maybe entity.HandleAddedToResource(resource)? this smells like a responsibility swap
-        // maybe 
         public static OnlineEntity CreateOrReuseEntity(NewEntityEvent newEntityEvent, World world)
         {
             OnlineEntity oe = null;
-            WorldSession.registeringRemoteEntity = true;
+            
             if (newEntityEvent.owner.recentEntities.TryGetValue(newEntityEvent.entityId, out oe))
             {
                 RainMeadow.Debug("reusing existing entity " + oe);
@@ -85,7 +68,9 @@ namespace RainMeadow
                 id.altSeed = newEntityEvent.entityId;
                 RainMeadow.Debug(id);
                 RainMeadow.Debug(newEntityEvent.initialPos);
+                WorldSession.registeringRemoteEntity = true;
                 var creature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, newEntityEvent.initialPos, id);
+                WorldSession.registeringRemoteEntity = false;
                 RainMeadow.Debug(creature);
                 if (creature.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat) // for some dumb reason it doesn't get a default
                 {
@@ -95,161 +80,51 @@ namespace RainMeadow
                 OnlineEntity.map.Add(creature, oe);
                 newEntityEvent.owner.recentEntities.Add(newEntityEvent.entityId, oe);
             }
-            WorldSession.registeringRemoteEntity = false;
+            
             return oe;
         }
 
-        public abstract class EntityState : OnlineState
+        internal void Request()
         {
-            public OnlineEntity onlineEntity;
+            RainMeadow.Debug(this);
+            if (owner.isMe) throw new InvalidProgrammerException("this entity is already mine");
+            if (!activeResource.isAvailable) throw new InvalidProgrammerException("in unavailable resource");
 
-            protected EntityState() : base () { }
-            protected EntityState(OnlineEntity onlineEntity, ulong ts) : base(ts)
-            {
-                this.onlineEntity = onlineEntity;
-            }
-
-            public override void CustomSerialize(Serializer serializer)
-            {
-                base.CustomSerialize(serializer);
-                serializer.Serialize(ref onlineEntity);
-            }
-
-            public abstract void ReadTo(OnlineEntity onlineEntity);
+            owner.RequestEntity(this, room); // do we have to tell them what resource this is about
+            // could be nice to avoid a desynchy situation, sanity-check that the room in question is the room 
+            // that the owner knows the entity is at
+            // as for world... would there ever be a situation in which we request a world entity at world level from the world owner?
+            // nah don't think so, it's all about the room the entity is going to be active in
+            // unless for some reason we start having lobby entitites, but I think that's against the whole point of distributing resources thin?
         }
 
-        internal class PhysicalObjectEntityState : EntityState
+        internal void Requested(EntityRequest entityRequest)
         {
-            public WorldCoordinate pos;
-            public OnlineState realizedState;
-
-            public PhysicalObjectEntityState() : base() { }
-            public PhysicalObjectEntityState(OnlineEntity onlineEntity, ulong ts) : base(onlineEntity, ts)
-            {
-                if(onlineEntity != null)
-                {
-                    this.pos = onlineEntity.entity.pos;
-                    this.realizedState = GetRealizedState();
-                }
-            }
-
-            protected virtual RealizedObjectState GetRealizedState()
-            {
-                if (onlineEntity.entity.realizedObject == null) return null;
-                return new RealizedObjectState(onlineEntity);
-            }
-
-            public override StateType stateType => StateType.PhysicalObjectEntityState;
-
-            public override void ReadTo(OnlineEntity onlineEntity)
-            {
-                onlineEntity.entity.pos = pos;
-                (realizedState as RealizedObjectState)?.ReadTo(onlineEntity);
-            }
-
-            public override void CustomSerialize(Serializer serializer)
-            {
-                base.CustomSerialize(serializer);
-                serializer.SerializeNoStrings(ref pos);
-                serializer.SerializeNullable(ref realizedState);
-            }
+            throw new NotImplementedException();
+            // do we store a list of Resources this Entity is in?
+            // then we'd know which participants to notify
+            // but I mean it's really just room and world, don't overabstract
         }
 
-        internal class CreatureEntityState : PhysicalObjectEntityState
+        internal void ResolveRequest(EntityRequestResult requestResult)
         {
-            // what do I even put here for AbstractCreature? inDen?
-            public CreatureEntityState() : base() { }
-            public CreatureEntityState(OnlineEntity onlineEntity, ulong ts) : base(onlineEntity, ts)
-            {
-                
-            }
-
-            protected override RealizedObjectState GetRealizedState()
-            {
-                if (onlineEntity.entity.realizedObject == null) return null;
-                if (onlineEntity.entity.realizedObject is Player) return new RealizedPlayerState(onlineEntity);
-                if (onlineEntity.entity.realizedObject is Creature) return new RealizedCreatureState(onlineEntity);
-                return base.GetRealizedState();
-            }
-
-            public override StateType stateType => StateType.CreatureEntityState;
+            throw new NotImplementedException();
         }
 
-        internal class RealizedObjectState : OnlineState
+        // there is only one person who can sort out a release, and it is the room-owner for an entity in room
+        // or a world owner for an entity in world
+        // but also, when releasing a room we could append a list of our entities 
+        // if we release room to room.owner, then owner can claim the entities and broadcast their new owner
+        // if we release room to world.owner, then world owner can claim them and so on
+        // entities that are tracked on room and world 
+        // vs entities that are only tracked in room and destroyed on abstraction
+        // as well as not broadcasted about at world level
+        // but this cannot be generalized to world releasing to lobby, because lobby isn't aware of entities
+        // should lobby be aware of entities
+        // should entities automatically enter super when they enter a subresource
+        internal void Release()
         {
-            ChunkState[] chunkStates;
-            public RealizedObjectState(OnlineEntity onlineEntity)
-            {
-                if(onlineEntity!=null)
-                {
-                    chunkStates = onlineEntity.entity.realizedObject.bodyChunks.Select(c=>new ChunkState(c)).ToArray();
-                }
-            }
-
-            public override StateType stateType => StateType.RealizedObjectState;
-
-            internal virtual void ReadTo(OnlineEntity onlineEntity)
-            {
-                if(onlineEntity.entity.realizedObject is PhysicalObject po)
-                {
-                    if (chunkStates.Length == po.bodyChunks.Length)
-                    {
-                        for (int i = 0; i < chunkStates.Length; i++)
-                        {
-                            chunkStates[i].ReadTo(po.bodyChunks[i]);
-                        }
-                    }
-                }
-            }
-
-            public override void CustomSerialize(Serializer serializer)
-            {
-                base.CustomSerialize(serializer);
-                serializer.Serialize(ref chunkStates);
-            }
-        }
-
-        public class ChunkState// : OnlineState
-        {
-            private Vector2 pos;
-            private Vector2 vel;
-
-            public ChunkState(BodyChunk c)
-            {
-                if (c != null)
-                {
-                    pos = c.pos;
-                    vel = c.vel;
-                }
-            }
-
-            public void CustomSerialize(Serializer serializer)
-            {
-                serializer.Serialize(ref pos);
-                serializer.Serialize(ref vel);
-            }
-
-            public void ReadTo(BodyChunk c)
-            {
-                c.pos = pos;
-                c.vel = vel;
-            }
-        }
-
-        internal class RealizedCreatureState : RealizedObjectState
-        {
-            public RealizedCreatureState(OnlineEntity onlineEntity) : base(onlineEntity)
-            {
-            }
-            public override StateType stateType => StateType.RealizedCreatureState;
-        }
-
-        internal class RealizedPlayerState : RealizedCreatureState
-        {
-            public RealizedPlayerState(OnlineEntity onlineEntity) : base(onlineEntity)
-            {
-            }
-            public override StateType stateType => StateType.RealizedPlayerState;
+            throw new NotImplementedException();
         }
     }
 }

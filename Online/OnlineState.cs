@@ -16,7 +16,7 @@ namespace RainMeadow
 
         public abstract StateType stateType { get; } // serialized externally
 
-        public virtual long EstimatedSize => 0;
+        public virtual long EstimatedSize => 1;
 
         public enum StateType : byte
         {

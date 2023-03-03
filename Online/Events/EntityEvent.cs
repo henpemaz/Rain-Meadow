@@ -1,23 +1,20 @@
 ﻿namespace RainMeadow
 {
-    public abstract class EntityEvent : ResourceEvent
+    internal abstract class EntityEvent : PlayerEvent
     {
-        public int entityId;
-        public OnlinePlayer owner;
+        public OnlineEntity oe;
 
-        protected EntityEvent() : base(null) { }
+        public EntityEvent(){}
 
-        protected EntityEvent(OnlineResource resource, OnlineEntity oe) : base(resource)
+        public EntityEvent(OnlineEntity oe)
         {
-            this.entityId = oe.id;
-            this.owner = oe.owner;
+            this.oe = oe;
         }
 
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);
-            serializer.Serialize(ref owner);
-            serializer.Serialize(ref entityId);
+            serializer.Serialize(ref oe);
         }
     }
 }

@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace RainMeadow
 {
-    public class EntityFeed
+    public class EntityFeed // Feed up entity state to resource owner
     {
         public OnlineResource resource;
         public OnlineEntity entity;
-        public Queue<OnlineState> OutgoingStates = new(128);
+        public Queue<OnlineState> OutgoingStates = new(32);
         private OnlineState lastAcknoledgedState;
 
         public EntityFeed(OnlineResource resource, OnlineEntity oe)

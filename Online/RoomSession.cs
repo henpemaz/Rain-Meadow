@@ -22,6 +22,23 @@ namespace RainMeadow
             deactivateOnRelease = true;
         }
 
+        protected override void AvailableImpl()
+        {
+            base.AvailableImpl();
+
+            if(isOwner)
+            {
+                foreach (var ent in absroom.entities)
+                {
+                    if (ent is AbstractPhysicalObject apo && OnlineEntity.map.TryGetValue(apo, out var oe) 
+                        && oe.isTransferable && !oe.realized)
+                    {
+                        //oe.Request(); // I am realizing this entity, let me have it
+                    }
+                }
+            }
+        }
+
         protected override void ActivateImpl()
         {
             foreach (var ent in absroom.entities)
@@ -40,17 +57,6 @@ namespace RainMeadow
                 absroom.Abstractize();
             }
         }
-
-        protected override void SubscribedImpl(OnlinePlayer player)
-        {
-            base.SubscribedImpl(player);
-            foreach (var ent in entities)
-            {
-                if (player == ent.owner) continue;
-                player.QueueEvent(new NewEntityEvent(this, ent));
-            }
-        }
-
         internal override string Identifier()
         {
             return super.Identifier() + absroom.name;

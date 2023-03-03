@@ -40,9 +40,14 @@ namespace RainMeadow
             return false;
         }
 
-        internal bool ShouldLoadCreatures(RainWorldGame game)
+        internal bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)
         {
             return false;
+            if (worldSession is null || !worldSession.isAvailable)
+            {
+                return false;
+            }
+            return worldSession.isOwner;
         }
 
         internal bool ShouldSyncObjectInWorld(WorldSession ws, AbstractPhysicalObject apo)

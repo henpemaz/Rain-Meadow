@@ -157,13 +157,17 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Menu\MenuDarkSprite.cs" />
     <Compile Include="Online\EntityFeed.cs" />
+    <Compile Include="Online\EntityRequestResult.cs" />
     <Compile Include="Online\Events\EntityEvent.cs" />
+    <Compile Include="Online\Events\EntityRequest.cs" />
+    <Compile Include="Online\Events\EntityResourceEvent.cs" />
     <Compile Include="Online\Events\EntityLeftEvent.cs" />
     <Compile Include="Online\Events\ResourceResultEvent.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Online\Events\LeaseChangeEvent.cs" />
     <Compile Include="Online\Events\NewEntityEvent.cs" />
     <Compile Include="Online\OnlineEntity.cs" />
+    <Compile Include="Online\OnlineEntity.EntityState.cs" />
     <Compile Include="Online\OnlineResource.Entities.cs" />
     <Compile Include="Online\OnlineResource.LeaseState.cs" />
     <Compile Include="Online\OnlineResource.State.cs" />

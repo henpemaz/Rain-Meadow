@@ -8,12 +8,20 @@ namespace RainMeadow
     public abstract partial class OnlineResource
     {
         protected abstract World World { get; }
-        protected List<OnlineEntity> entities = new();
+        public List<OnlineEntity> entities;
+        private List<EntityResourceEvent> incomingEntities;
 
         // I've been notified that a new creature has entered the room, and I must recreate the equivalent in my world
         internal void OnNewEntity(NewEntityEvent newEntityEvent)
         {
             RainMeadow.Debug(this);
+            if(!isAvailable) { throw new InvalidOperationException("not available"); }
+            if(!isActive)
+            {
+                RainMeadow.Debug("queueing for later");
+                this.incomingEntities.Add(newEntityEvent);
+                return;
+            }
             if (newEntityEvent.owner.isMe) { throw new InvalidOperationException("notified of my own creation"); }
             // todo more than just creatures
             OnlineEntity oe = OnlineEntity.CreateOrReuseEntity(newEntityEvent, this.World);
@@ -24,6 +32,13 @@ namespace RainMeadow
         internal void OnEntityLeft(EntityLeftEvent entityLeftEvent)
         {
             RainMeadow.Debug(this);
+            if (!isAvailable) { throw new InvalidOperationException("not available"); }
+            if (!isActive)
+            {
+                RainMeadow.Debug("queueing for later");
+                this.incomingEntities.Add(entityLeftEvent);
+                return;
+            }
             if (entityLeftEvent.owner.isMe) { throw new InvalidOperationException("notified of my own creation"); }
             OnlineEntity oe = entities.FirstOrDefault(e => e.owner == entityLeftEvent.owner && e.id == entityLeftEvent.entityId);
             EntityLeftResource(oe);
@@ -86,6 +101,8 @@ namespace RainMeadow
             {
                 RainMeadow.Debug("external entity leaving, not notifying anyone");
             }
+
+            if (oe.owner.isMe) this.SubresourcesUnloaded();
         }
     }
 }

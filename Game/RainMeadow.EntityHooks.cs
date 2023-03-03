@@ -10,7 +10,10 @@ namespace RainMeadow
         private void EntityHooks()
         {
             On.AbstractPhysicalObject.ctor += AbstractPhysicalObject_ctor;
-            On.AbstractCreature.ctor += AbstractCreature_ctor; ;
+            On.AbstractCreature.ctor += AbstractCreature_ctor;
+
+            On.AbstractPhysicalObject.Abstractize += AbstractPhysicalObject_Abstractize;
+            On.AbstractPhysicalObject.Realize += AbstractPhysicalObject_Realize; // todo check if base is called in overrides
 
             On.AbstractRoom.AddEntity += AbstractRoom_AddEntity;
             On.AbstractRoom.RemoveEntity_AbstractWorldEntity += AbstractRoom_RemoveEntity;
@@ -20,6 +23,35 @@ namespace RainMeadow
 
             On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // debug
             On.RoomRealizer.RealizeAndTrackRoom += RoomRealizer_RealizeAndTrackRoom; // debug
+        }
+
+        private void AbstractPhysicalObject_Realize(On.AbstractPhysicalObject.orig_Realize orig, AbstractPhysicalObject self)
+        {
+            orig(self);
+            if(self.world.game.session is OnlineGameSession os && OnlineEntity.map.TryGetValue(self, out var oe))
+            {
+                if(!oe.realized && oe.isTransferable && !oe.owner.isMe)
+                {
+                    //oe.Request();
+                }
+                else if (oe.owner.isMe)
+                {
+                    oe.realized = true;
+                }
+            }
+        }
+
+        private void AbstractPhysicalObject_Abstractize(On.AbstractPhysicalObject.orig_Abstractize orig, AbstractPhysicalObject self, WorldCoordinate coord)
+        {
+            orig(self, coord);
+            if (self.world.game.session is OnlineGameSession os && OnlineEntity.map.TryGetValue(self, out var oe))
+            {
+                if (oe.realized && oe.isTransferable && oe.owner.isMe)
+                {
+                    //oe.Release();
+                    oe.realized = false;
+                }
+            }
         }
 
         // disable preemptive loading for ease of debugging
@@ -45,6 +77,7 @@ namespace RainMeadow
             {
                 // cleanup betweenroomswaitinglobby of deleted entities
                 var c = new ILCursor(il);
+                
                 c.GotoNext(moveType: MoveType.Before,
                     i => i.MatchLdarg(0),
                     i => i.MatchLdfld<ShortcutHandler>("betweenRoomsWaitingLobby"),

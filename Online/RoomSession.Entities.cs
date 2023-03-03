@@ -11,7 +11,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (!isActive) { RainMeadow.Error("Not registering because not isActive"); return; } // throw new InvalidOperationException("not isActive"); }
-            if (OnlineEntity.map.TryGetValue(entity, out var oe)) // A new entity, presumably mine
+            if (OnlineEntity.map.TryGetValue(entity, out var oe))
             {
                 if (oe.owner.isMe)
                 {
@@ -32,7 +32,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             RainMeadow.Debug(entity);
-            if (!isAvailable) throw new InvalidOperationException("not available");
+            if (!isActive) { RainMeadow.Error("Not registering because not isActive"); return; }
             if (entities.FirstOrDefault(e=>e.entity == entity) is OnlineEntity oe)
             {
                 if (oe.owner.isMe)
@@ -53,7 +53,7 @@ namespace RainMeadow
         protected override void EntityEnteredResource(OnlineEntity oe)
         {
             base.EntityEnteredResource(oe);
-            oe.inRoom = this;
+            oe.room = this;
             if (oe.entity is not AbstractCreature creature) { throw new InvalidOperationException("entity not a creature"); }
             if (!oe.owner.isMe)
             {
@@ -118,10 +118,9 @@ namespace RainMeadow
         protected override void EntityLeftResource(OnlineEntity oe)
         {
             base.EntityLeftResource(oe);
-            if (!oe.owner.isMe && oe.inRoom == this)
+            if (!oe.owner.isMe && oe.room == this)
             {
-                // external entity should be removed from the game until its re-added somewhere else
-                RainMeadow.Debug("Removing entity from the game: " + oe);
+                RainMeadow.Debug("Removing entity from room: " + oe);
                 absroom.RemoveEntity(oe.entity);
                 oe.entity.slatedForDeletion = true;
                 if (oe.entity.realizedObject is PhysicalObject po)

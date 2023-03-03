@@ -259,24 +259,11 @@ namespace RainMeadow
 
         internal void Serialize(ref OnlineResource.LeaseState leaseState)
         {
-            if (isWriting)
-            {
-                writer.Write((byte)leaseState.ownership.Count);
-                foreach (var item in leaseState.ownership)
-                {
-                    writer.Write(item.Key); writer.Write(item.Value);
-                }
-            }
             if (isReading)
             {
                 leaseState = new();
-                var count = reader.ReadByte();
-                leaseState.ownership = new(count);
-                for (int i = 0; i < count; i++)
-                {
-                    leaseState.ownership[reader.ReadString()] = reader.ReadUInt64();
-                }
             }
+            leaseState.CustomSerialize(this);
         }
 
         internal void Serialize(ref int data)
@@ -432,6 +419,49 @@ namespace RainMeadow
                     var s = new OnlineEntity.ChunkState(null);
                     s.CustomSerialize(this);
                     chunkStates[i] = s;
+                }
+            }
+        }
+
+        internal void Serialize(ref Dictionary<string, ulong> ownership)
+        {
+            if (isWriting)
+            {
+                writer.Write((byte)ownership.Count);
+                foreach (var item in ownership)
+                {
+                    writer.Write(item.Key); writer.Write(item.Value);
+                }
+            }
+            if (isReading)
+            {
+                var count = reader.ReadByte();
+                ownership = new(count);
+                for (int i = 0; i < count; i++)
+                {
+                    ownership[reader.ReadString()] = reader.ReadUInt64();
+                }
+            }
+        }
+
+        internal void Serialize(ref List<ulong> longs)
+        {
+            if (isWriting)
+            {
+                writer.Write((byte)longs.Count);
+                for (int i = 0; i < longs.Count; i++)
+                {
+                    ulong item = longs[i];
+                    writer.Write(item);
+                }
+            }
+            if (isReading)
+            {
+                var count = reader.ReadByte();
+                longs = new(count);
+                for (int i = 0; i < count; i++)
+                {
+                    longs.Add(reader.ReadUInt64());
                 }
             }
         }

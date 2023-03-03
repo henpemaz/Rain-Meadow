@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RainMeadow
@@ -6,13 +7,18 @@ namespace RainMeadow
     public partial class WorldSession
     {
         public static bool registeringRemoteEntity;
+        private List<AbstractPhysicalObject> earlyEntities = new();
 
 
         // This happens for local entities, so we create their respective OnlineEntity
         internal void NewEntityInWorld(AbstractPhysicalObject entity)
         {
             RainMeadow.Debug(this);
-            if (!isActive) { RainMeadow.Error("Not registering because not isActive"); return; } // throw new InvalidOperationException("not isActive"); }
+            // world population generates before this can be activated
+            if (!isActive) { 
+                RainMeadow.Debug("Queuing up entity for registering later");
+                this.earlyEntities.Add(entity);
+                return; } // throw new InvalidOperationException("not isActive"); }
             if (!registeringRemoteEntity) // A new entity, presumably mine
             {
                 // todo stronger checks if my entity or a leftover
@@ -33,6 +39,5 @@ namespace RainMeadow
         {
             throw new NotImplementedException();
         }
-
     }
 }

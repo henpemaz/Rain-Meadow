@@ -14,6 +14,7 @@ namespace RainMeadow
         {
             On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues += WorldLoader_ctor;
             On.WorldLoader.Update += WorldLoader_Update;
+            On.WorldLoader.NextActivity += WorldLoader_NextActivity;
             On.RoomPreparer.ctor += RoomPreparer_ctor;
             On.RoomPreparer.Update += RoomPreparer_Update;
             On.AbstractRoom.Abstractize += AbstractRoom_Abstractize;
@@ -31,7 +32,7 @@ namespace RainMeadow
         {
             if (self.world?.game?.session is OnlineGameSession os)
             {
-                if (OnlineManager.lobby.worldSessions[self.world.region.name] is WorldSession ws && ws.roomSessions[self.name] is RoomSession rs)
+                if (RoomSession.map.TryGetValue(self, out RoomSession rs))
                 {
                     if (rs.isAvailable)
                     {
@@ -49,7 +50,7 @@ namespace RainMeadow
         {
             if (!self.shortcutsOnly && self.room?.game?.session is OnlineGameSession os)
             {
-                if(OnlineManager.lobby.worldSessions[self.room.world.region.name].roomSessions[self.room.abstractRoom.name] is RoomSession rs)
+                if(RoomSession.map.TryGetValue(self.room.abstractRoom, out RoomSession rs))
                 {
                     if (true) // force load scenario ????
                     {
@@ -62,7 +63,7 @@ namespace RainMeadow
             orig(self);
             if (!self.shortcutsOnly && self.room?.game?.session is OnlineGameSession)
             {
-                if (OnlineManager.lobby.worldSessions[self.room.world.region.name].roomSessions[self.room.abstractRoom.name] is RoomSession rs)
+                if (RoomSession.map.TryGetValue(self.room.abstractRoom, out RoomSession rs))
                 {
                     if (!rs.isActive && self.room.shortCutsReady) rs.Activate();
                 }
@@ -72,29 +73,40 @@ namespace RainMeadow
         // Room request
         private void RoomPreparer_ctor(On.RoomPreparer.orig_ctor orig, RoomPreparer self, Room room, bool loadAiHeatMaps, bool falseBake, bool shortcutsOnly)
         {
-            if (!shortcutsOnly && room?.game?.session is OnlineGameSession os)
+            if (!shortcutsOnly && room?.game?.session is OnlineGameSession os && RoomSession.map.TryGetValue(room.abstractRoom, out var rs))
             {
-                OnlineManager.lobby.worldSessions[room.world.region.name].roomSessions[room.abstractRoom.name].Request();
+                rs.Request();
             }
             orig(self, room, loadAiHeatMaps, falseBake, shortcutsOnly);
+        }
+
+        // wait until available
+        private void WorldLoader_NextActivity(On.WorldLoader.orig_NextActivity orig, WorldLoader self)
+        {
+            if (self.game?.session is OnlineGameSession os && WorldSession.map.TryGetValue(self.world, out var ws))
+            {
+                if (self.activity == WorldLoader.Activity.MappingRooms && !ws.isAvailable)
+                {
+                    self.abstractLoaderDelay = 1;
+                    return;
+                }
+                self.setupValues.worldCreaturesSpawn = os.ShouldLoadCreatures(self.game, ws);
+            }
+            orig(self);
         }
 
         // World wait, activate
         private void WorldLoader_Update(On.WorldLoader.orig_Update orig, WorldLoader self)
         {
-            if(self.game?.session is OnlineGameSession os)
-            {
-                
-            }
             orig(self);
-            if (self.game?.session is OnlineGameSession)
+            if (self.game?.session is OnlineGameSession os && WorldSession.map.TryGetValue(self.world, out var ws))
             {
                 if (self.game.overWorld?.worldLoader != self) // force-load scenario
                 {
                     SteamAPI.RunCallbacks();
                     OnlineManager.instance.RawUpdate(0.001f);
                 }
-                if (!OnlineManager.lobby.worldSessions[self.world.region.name].isAvailable)
+                if (!ws.isAvailable)
                 {
                     self.Finished = false;
                     return;
@@ -104,10 +116,7 @@ namespace RainMeadow
                     self.Finished = false;
                     return;
                 }
-                if (OnlineManager.lobby.worldSessions[self.world.region.name] is WorldSession ws)
-                {
-                    if (self.Finished) ws.Activate();
-                }
+                if (self.Finished && !ws.isActive) ws.Activate();
             }
         }
 
@@ -116,7 +125,7 @@ namespace RainMeadow
         {
             if (game?.session is OnlineGameSession os)
             {
-                setupValues.worldCreaturesSpawn = os.ShouldLoadCreatures(game);
+                setupValues.worldCreaturesSpawn = os.ShouldLoadCreatures(game, OnlineManager.lobby.worldSessions[region.name]);
             }
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
             if (game?.session is OnlineGameSession)

@@ -1,6 +1,6 @@
 ﻿namespace RainMeadow
 {
-    public class NewEntityEvent : EntityEvent
+    public class NewEntityEvent : EntityResourceEvent
     {
         public WorldCoordinate initialPos;
         public bool isCreature;

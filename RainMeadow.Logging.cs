@@ -1,8 +1,14 @@
 ﻿using BepInEx.Logging;
+using System;
 using System.Runtime.CompilerServices;
 
 namespace RainMeadow
 {
+    public class InvalidProgrammerException : InvalidOperationException
+    {
+        public InvalidProgrammerException(string message) : base(message + " you goof") { }
+    }
+
     partial class RainMeadow
     {
         public static void Debug(object data, [CallerFilePath] string callerFile = "", [CallerMemberName] string callerName = "")

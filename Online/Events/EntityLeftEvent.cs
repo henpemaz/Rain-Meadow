@@ -1,6 +1,6 @@
 ﻿namespace RainMeadow
 {
-    internal class EntityLeftEvent : EntityEvent
+    internal class EntityLeftEvent : EntityResourceEvent
     {
         public EntityLeftEvent() : base() { }
 

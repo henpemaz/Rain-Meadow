@@ -8,11 +8,9 @@ namespace RainMeadow
     public static class PlayersManager
     {
         private static Callback<SteamNetworkingMessagesSessionRequest_t> m_SessionRequest;
-        private static Callback<PersonaStateChange_t> m_PersonaStateChange;
         public static void InitPlayersManager()
         {
             m_SessionRequest = Callback<SteamNetworkingMessagesSessionRequest_t>.Create(SessionRequest);
-            m_PersonaStateChange = Callback<PersonaStateChange_t>.Create(PersonaStateChange);
         }
 
 
@@ -60,32 +58,6 @@ namespace RainMeadow
 
             RainMeadow.Debug($"PlayerLeft:{p} - {SteamFriends.GetFriendPersonaName(p)}");
             OnlineManager.players.RemoveAll(op => op.id == p);
-        }
-
-        private static void PersonaStateChange(PersonaStateChange_t param)
-        {
-            try
-            {
-                RainMeadow.Debug(param.m_nChangeFlags);
-                if (OnlineManager.lobby is { })
-                {
-                    var id = new CSteamID(param.m_ulSteamID);
-                    foreach (var p in OnlineManager.players)
-                    {
-                        if (id == p.id && p.name == "")
-                        {
-                            p.name = SteamFriends.GetFriendPersonaName(id);
-                            RainMeadow.Debug("updated name for " + p);
-                            return;
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                RainMeadow.Error(e);
-                throw;
-            }
         }
 
         private static void SessionRequest(SteamNetworkingMessagesSessionRequest_t param)
