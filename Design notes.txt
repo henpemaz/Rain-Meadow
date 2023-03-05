@@ -1,0 +1,10 @@
+﻿
+
+
+
+
+
+
+
+
+There's right about zero reasons for more-than-one-deep inheritance in the PlayerEvents system other than reusing code, specially ctors and serialization. There's no polymorphism going on.

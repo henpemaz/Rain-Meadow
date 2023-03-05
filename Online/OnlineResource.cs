@@ -26,7 +26,7 @@ namespace RainMeadow
         public bool isActive { get; protected set; } // The respective in-game resource is loaded
         public bool isAvailable { get; protected set; } // The resource was leased or subscribed to
         public bool isPending => pendingRequest != null;
-        public bool canRelease => !isPending && !(subresources.Any(s => s.isAvailable) || entities.Any(e => e.owner.isMe && !e.isTransferable));
+        public bool canRelease => !isPending && !(subresources.Any(s => s.isAvailable) || entities.Any(e => e.owner.isMe));
 
         public void FullyReleaseResource()
         {
@@ -43,16 +43,11 @@ namespace RainMeadow
                     {
                         if (ent.isTransferable)
                         {
-                            // i want to send these entities off to someone else
-                            // if I send them to super, super might not know about them (lobby)
-
-                            // there must be an event that handles an entity's ownership changing
-                            // maybe I can fire these directly around?
+                            ent.Release();
                         }
                         else
                         {
-                            throw new InvalidOperationException("non transferable resource in entity");
-                            this.EntityLeftResource(ent);
+                            throw new InvalidOperationException("non transferable entity in resource being released");
                         }
                     }
                 }
@@ -81,10 +76,11 @@ namespace RainMeadow
             if(!isAvailable) { throw new InvalidOperationException("Resource is not available"); }
             isActive = true;
             subresources = new List<OnlineResource>();
+            entities = new();
 
             ActivateImpl();
 
-            if (incomingLease != null)
+            if (incomingLease != null) // lease changes that couldn't be processed yet (needed the subresources listed, iow resource active)
             {
                 ProcessLease(incomingLease);
                 incomingLease = null;
@@ -94,7 +90,7 @@ namespace RainMeadow
                 NewLeaseState();
             }
 
-            foreach (var item in incomingEntities)
+            foreach (var item in incomingEntities) // entities that couldn't be processed yet (needed the resource active)
             {
                 item.Process();
             }
@@ -114,7 +110,7 @@ namespace RainMeadow
             isAvailable = true;
             participants = new() { OnlineManager.mePlayer };
             subscriptions = new();
-            entities = new();
+            incomingLease = null;
             incomingEntities = new();
 
             AvailableImpl();
@@ -122,7 +118,6 @@ namespace RainMeadow
 
         public bool deactivateOnRelease;
         public bool releaseWhenPossible;
-
         protected abstract void DeactivateImpl();
 
         // The game resource this corresponds to has been unloaded
@@ -334,7 +329,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             RainMeadow.Debug("Transfered by : " + request.from.name);
-            if (isAvailable && isOwner && request.from == super?.owner) // I am a subscriber who now owns this resource
+            if (isAvailable && isActive && isOwner && request.from == super?.owner) // I am a subscriber with a valid state who now owns this resource
             {
                 participants = request.participants;
                 foreach(var subscriber in request.participants)
@@ -342,12 +337,14 @@ namespace RainMeadow
                     if (subscriber.isMe) continue;
                     Subscribed(subscriber);
                 }
+
                 OnlineManager.RemoveFeeds(this);
+
                 request.from.QueueEvent(new TransferResult.Ok(request));
                 return;
             }
-            RainMeadow.Debug($"Transfer error : {isAvailable} {isOwner} {request.from == super?.owner}");
-            request.from.QueueEvent(new TransferResult.Error(request));
+            RainMeadow.Debug($"Transfer error : {isAvailable} {isActive} {isOwner} {request.from == super?.owner}");
+            request.from.QueueEvent(new TransferResult.Error(request)); // super should retry
             return;
         }
 

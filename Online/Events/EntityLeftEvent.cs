@@ -4,7 +4,7 @@
     {
         public EntityLeftEvent() : base() { }
 
-        public EntityLeftEvent(OnlineResource resource, OnlineEntity oe) : base(resource, oe) { }
+        public EntityLeftEvent(OnlineResource resource, OnlineEntity oe) : base(resource, oe.owner, oe.id) { }
 
         public override EventTypeId eventType => EventTypeId.EntityLeftEvent;
 

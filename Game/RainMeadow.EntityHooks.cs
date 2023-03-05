@@ -9,6 +9,7 @@ namespace RainMeadow
     {
         private void EntityHooks()
         {
+            On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor;
             On.AbstractPhysicalObject.ctor += AbstractPhysicalObject_ctor;
             On.AbstractCreature.ctor += AbstractCreature_ctor;
 
@@ -25,6 +26,26 @@ namespace RainMeadow
             On.RoomRealizer.RealizeAndTrackRoom += RoomRealizer_RealizeAndTrackRoom; // debug
         }
 
+        private void AbstractObjectStick_ctor(On.AbstractPhysicalObject.AbstractObjectStick.orig_ctor orig, AbstractPhysicalObject.AbstractObjectStick self, AbstractPhysicalObject A, AbstractPhysicalObject B)
+        {
+            orig(self, A, B);
+            if (A.world.game.session is OnlineGameSession)
+            {
+                if(OnlineEntity.map.TryGetValue(A, out var Aoe) && OnlineEntity.map.TryGetValue(B, out var Boe))
+                {
+                    if(Aoe.owner.isMe && !Boe.owner.isMe && Boe.isTransferable && !Boe.isPending)
+                    {
+                        Boe.Request();
+                    }
+                    else if (!Aoe.owner.isMe && Boe.owner.isMe && Aoe.isTransferable && !Aoe.isPending)
+                    {
+                        Aoe.Request();
+                    }
+                    // we don't request if pending, but when do we retry?
+                }
+            }
+        }
+
         private void AbstractPhysicalObject_Realize(On.AbstractPhysicalObject.orig_Realize orig, AbstractPhysicalObject self)
         {
             orig(self);
@@ -32,7 +53,7 @@ namespace RainMeadow
             {
                 if(!oe.realized && oe.isTransferable && !oe.owner.isMe)
                 {
-                    //oe.Request();
+                    oe.Request();
                 }
                 else if (oe.owner.isMe)
                 {
@@ -48,7 +69,7 @@ namespace RainMeadow
             {
                 if (oe.realized && oe.isTransferable && oe.owner.isMe)
                 {
-                    //oe.Release();
+                    oe.Release();
                     oe.realized = false;
                 }
             }

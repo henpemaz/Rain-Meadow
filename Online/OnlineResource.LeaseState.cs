@@ -43,6 +43,8 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             foreach (var item in leaseState.ownership)
             {
+                // todo fix the security hole in this ;3
+                // should really only be able to reference subresources here, not any resource
                 OnlineManager.ResourceFromIdentifier(item.Key).NewOwner(OnlineManager.PlayerFromId(item.Value));
             }
             this.participants = participants
@@ -51,7 +53,7 @@ namespace RainMeadow
         }
 
         public class LeaseState // its it's own weird thing, sent around as events because critical yet too big to send fully every frame
-            // if the state delta-from-last-acknowledged mechanism works properly, this could then be sent as a 1-tick
+            // if the state delta-from-last-acknowledged mechanism works properly, this could then be sent as a 1-tick, but would achieve the same?
         {
             public Dictionary<string,ulong> ownership;
             public List<ulong> entered;

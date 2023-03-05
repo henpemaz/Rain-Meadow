@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -6,6 +7,7 @@ namespace RainMeadow
     {
         public List<OnlinePlayer> participants;
 
+        public ReleaseRequest() { }
         public ReleaseRequest(OnlineResource resource, List<OnlinePlayer> participants) : base(resource)
         {
             this.participants = participants;

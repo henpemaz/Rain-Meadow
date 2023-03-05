@@ -1,5 +1,7 @@
 ﻿namespace RainMeadow
 {
+    // event betwen players that have the full state of an entity
+    // because needs a reference to oe on the receiving side as well
     internal abstract class EntityEvent : PlayerEvent
     {
         public OnlineEntity oe;

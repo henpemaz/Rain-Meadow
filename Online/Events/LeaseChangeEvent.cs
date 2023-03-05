@@ -4,6 +4,8 @@
     {
         private OnlineResource.LeaseState leaseState;
 
+        public LeaseChangeEvent() { }
+
         public LeaseChangeEvent(OnlineResource onlineResource, OnlineResource.LeaseState leaseState) : base(onlineResource)
         {
             this.leaseState = leaseState;

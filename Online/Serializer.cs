@@ -1,4 +1,5 @@
-﻿using MoreSlugcats;
+﻿using HarmonyLib;
+using MoreSlugcats;
 using Steamworks;
 using System;
 using System.Collections.Generic;
@@ -244,19 +245,6 @@ namespace RainMeadow
             }
         }
 
-        // a referenced event is something that must have been ack'd that frame
-        internal void SerializeReferencedEvent(ref ResourceEvent referencedEvent)
-        {
-            if(isWriting)
-            {
-                writer.Write(referencedEvent.eventId);
-            }
-            if (isReading)
-            {
-                referencedEvent = (ResourceEvent)currPlayer.GetRecentEvent(reader.ReadUInt64());
-            }
-        }
-
         internal void Serialize(ref OnlineResource.LeaseState leaseState)
         {
             if (isReading)
@@ -345,7 +333,8 @@ namespace RainMeadow
             {
                 var player = OnlineManager.PlayerFromId(new CSteamID(reader.ReadUInt64()));
                 var id = reader.ReadInt32();
-                onlineEntity = player.recentEntities[id];
+                // entities can change ID and we still need to read re-sent events out, outch!
+                player.recentEntities.TryGetValue(id, out onlineEntity);
             }
         }
 
@@ -463,6 +452,19 @@ namespace RainMeadow
                 {
                     longs.Add(reader.ReadUInt64());
                 }
+            }
+        }
+
+        // a referenced event is something that must have been ack'd that frame
+        internal void SerializeReferencedEvent(ref PlayerEvent referencedEvent)
+        {
+            if (isWriting)
+            {
+                writer.Write(referencedEvent.eventId);
+            }
+            if (isReading)
+            {
+                referencedEvent = currPlayer.GetRecentEvent(reader.ReadUInt64());
             }
         }
     }

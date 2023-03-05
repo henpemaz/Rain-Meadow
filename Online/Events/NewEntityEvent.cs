@@ -5,14 +5,16 @@
         public WorldCoordinate initialPos;
         public bool isCreature;
         public string template = "";
+        public int seed;
 
-        public NewEntityEvent() : base() { }
+        public NewEntityEvent() { }
 
-        public NewEntityEvent(OnlineResource resource, OnlineEntity oe) : base(resource, oe)
+        public NewEntityEvent(OnlineResource resource, OnlineEntity oe) : base(resource, oe.owner, oe.id)
         {
-            this.initialPos = oe.initialPos;
+            this.initialPos = oe.enterPos;
             isCreature = oe.entity is AbstractCreature;
             template = (oe.entity as AbstractCreature)?.creatureTemplate.type.ToString() ?? "";
+            seed = oe.seed;
         }
 
         public override EventTypeId eventType => EventTypeId.NewEntityEvent;
@@ -26,6 +28,7 @@
             {
                 serializer.Serialize(ref template);
             }
+            serializer.Serialize(ref seed);
         }
 
         internal override void Process()

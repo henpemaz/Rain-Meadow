@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -6,6 +7,7 @@ namespace RainMeadow
     {
         public List<OnlinePlayer> participants;
 
+        public TransferRequest() { }
         public TransferRequest(OnlineResource resource, List<OnlinePlayer> subscribers) : base(resource)
         {
             this.participants = subscribers;

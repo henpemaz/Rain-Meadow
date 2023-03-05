@@ -1,10 +1,12 @@
 ﻿namespace RainMeadow
 {
-    public abstract class ResourceResultEvent : PlayerEvent
+    public abstract class ResultEvent : PlayerEvent
     {
-        public ResourceEvent referencedEvent;
+        public PlayerEvent referencedEvent;
 
-        protected ResourceResultEvent(ResourceEvent referencedEvent)
+        protected ResultEvent() { }
+
+        protected ResultEvent(PlayerEvent referencedEvent)
         {
             this.referencedEvent = referencedEvent;
         }

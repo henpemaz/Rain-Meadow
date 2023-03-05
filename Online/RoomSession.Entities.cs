@@ -15,6 +15,8 @@ namespace RainMeadow
             {
                 if (oe.owner.isMe)
                 {
+                    oe.enterPos = pos;
+                    //if (entity.realizedObject is Creature c && c.inShortcut) oe.enterPos.WashTileData();
                     EntityEnteredResource(oe);
                 }
                 else
@@ -61,23 +63,23 @@ namespace RainMeadow
                 if (absroom.realizedRoom is Room room && creature.AllowedToExistInRoom(room))
                 {
                     RainMeadow.Debug("spawning creature " + creature);
-                    if (oe.initialPos.TileDefined)
+                    if (oe.enterPos.TileDefined)
                     {
                         RainMeadow.Debug("added directly to the room");
                         absroom.AddEntity(creature);
                         creature.RealizeInRoom(); // places in room
                     }
-                    else if (oe.initialPos.NodeDefined)
+                    else if (oe.enterPos.NodeDefined)
                     {
                         RainMeadow.Debug("added directly to shortcut system");
                         creature.Realize();
                         creature.realizedCreature.inShortcut = true;
                         // this calls MOVE on the next tick which remove-adds
-                        absroom.world.game.shortcuts.CreatureEnterFromAbstractRoom(creature.realizedCreature, absroom, oe.initialPos.abstractNode);
+                        absroom.world.game.shortcuts.CreatureEnterFromAbstractRoom(creature.realizedCreature, absroom, oe.enterPos.abstractNode);
                     }
                     else
                     {
-                        RainMeadow.Debug("INVALID POS??" + oe.initialPos);
+                        RainMeadow.Debug("INVALID POS??" + oe.enterPos);
                         throw new InvalidOperationException("entity must have a vaild position");
                     }
                 }
@@ -87,12 +89,12 @@ namespace RainMeadow
                     RainMeadow.Debug($"reasons {absroom.realizedRoom is not null} {(absroom.realizedRoom != null && creature.AllowedToExistInRoom(absroom.realizedRoom))}");
                     if (creature.realizedCreature != null)
                     {
-                        if (!oe.initialPos.TileDefined && oe.initialPos.NodeDefined && absroom.realizedRoom != null && absroom.realizedRoom.shortCutsReady)
+                        if (!oe.enterPos.TileDefined && oe.enterPos.NodeDefined && absroom.realizedRoom != null && absroom.realizedRoom.shortCutsReady)
                         {
                             RainMeadow.Debug("added realized creature to shortcut system");
                             creature.realizedCreature.inShortcut = true;
                             // this calls MOVE on the next tick which remove-adds, this could be bad?
-                            absroom.world.game.shortcuts.CreatureEnterFromAbstractRoom(creature.realizedCreature, absroom, oe.initialPos.abstractNode);
+                            absroom.world.game.shortcuts.CreatureEnterFromAbstractRoom(creature.realizedCreature, absroom, oe.enterPos.abstractNode);
                         }
                         else
                         {

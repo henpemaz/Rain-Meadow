@@ -19,7 +19,7 @@ namespace RainMeadow
 
         internal abstract void Process();
 
-        public enum EventTypeId : byte
+        public enum EventTypeId : byte // will we hit 255 of these I wonder
         {
             None,
             ResourceRequest,
@@ -36,6 +36,10 @@ namespace RainMeadow
             LeaseChange,
             NewEntityEvent,
             EntityLeftEvent,
+            EntityNewOwnerEvent,
+            EntityRequest,
+            EntityRequestResultOk,
+            EntityRequestResultError,
         }
 
         internal static PlayerEvent NewFromType(EventTypeId eventTypeId)
@@ -46,46 +50,58 @@ namespace RainMeadow
                 case EventTypeId.None:
                     break;
                 case EventTypeId.ResourceRequest:
-                    e = new ResourceRequest(null);
+                    e = new ResourceRequest();
                     break;
                 case EventTypeId.ReleaseRequest:
-                    e = new ReleaseRequest(null, null);
+                    e = new ReleaseRequest();
                     break;
                 case EventTypeId.TransferRequest:
-                    e = new TransferRequest(null, null);
+                    e = new TransferRequest();
                     break;
                 case EventTypeId.ReleaseResultReleased:
-                    e = new ReleaseResult.Released(null);
+                    e = new ReleaseResult.Released();
                     break;
                 case EventTypeId.ReleaseResultUnsubscribed:
-                    e = new ReleaseResult.Unsubscribed(null);
+                    e = new ReleaseResult.Unsubscribed();
                     break;
                 case EventTypeId.ReleaseResultError:
-                    e = new ReleaseResult.Error(null);
+                    e = new ReleaseResult.Error();
                     break;
                 case EventTypeId.RequestResultLeased:
-                    e = new RequestResult.Leased(null);
+                    e = new RequestResult.Leased();
                     break;
                 case EventTypeId.RequestResultSubscribed:
-                    e = new RequestResult.Subscribed(null);
+                    e = new RequestResult.Subscribed();
                     break;
                 case EventTypeId.RequestResultError:
-                    e = new RequestResult.Error(null);
+                    e = new RequestResult.Error();
                     break;
                 case EventTypeId.TransferResultError:
-                    e = new TransferResult.Error(null);
+                    e = new TransferResult.Error();
                     break;
                 case EventTypeId.TransferResultOk:
-                    e = new TransferResult.Ok(null);
+                    e = new TransferResult.Ok();
                     break;
                 case EventTypeId.LeaseChange:
-                    e = new LeaseChangeEvent(null, null);
+                    e = new LeaseChangeEvent();
                     break;
                 case EventTypeId.NewEntityEvent:
                     e = new NewEntityEvent();
                     break;
                 case EventTypeId.EntityLeftEvent:
                     e = new EntityLeftEvent();
+                    break;
+                case EventTypeId.EntityNewOwnerEvent:
+                    e = new EntityNewOwnerEvent();
+                    break;
+                case EventTypeId.EntityRequest:
+                    e = new EntityRequest();
+                    break;
+                case EventTypeId.EntityRequestResultOk:
+                    e = new EntityRequestResult.Ok();
+                    break;
+                case EventTypeId.EntityRequestResultError:
+                    e = new EntityRequestResult.Error();
                     break;
             }
             if (e is null) throw new InvalidOperationException("invalid event type");

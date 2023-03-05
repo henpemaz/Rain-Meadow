@@ -2,11 +2,22 @@
 {
     internal class EntityRequest : EntityEvent
     {
-        public EntityRequest(OnlineEntity oe) : base(oe)
+        internal int newId;
+
+        public EntityRequest() { }
+        public EntityRequest(OnlineEntity oe, int newId) : base(oe)
         {
+            this.newId = newId;
         }
 
-        public override EventTypeId eventType => throw new System.NotImplementedException();
+
+        public override void CustomSerialize(Serializer serializer)
+        {
+            base.CustomSerialize(serializer);
+            serializer.Serialize(ref newId);
+        }
+
+        public override EventTypeId eventType => EventTypeId.EntityRequest;
 
         internal override void Process()
         {

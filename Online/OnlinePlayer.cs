@@ -88,15 +88,16 @@ namespace RainMeadow
         internal void ReleaseResource(OnlineResource onlineResource)
         {
             RainMeadow.Debug($"Requesting player {this.name} for release of resource {onlineResource.Identifier()}");
-            var req = new ReleaseRequest(onlineResource, onlineResource.participants);
+            var req = new ReleaseRequest(onlineResource, 
+                onlineResource.isOwner ? onlineResource.participants : null);
             onlineResource.pendingRequest = req;
             QueueEvent(req);
         }
 
-        internal void RequestEntity(OnlineEntity oe)
+        internal void RequestEntity(OnlineEntity oe, int newId)
         {
             RainMeadow.Debug($"Requesting player {this.name} for entity {oe}");
-            var req = new EntityRequest(oe);
+            var req = new EntityRequest(oe, newId);
             oe.pendingRequest = req;
             QueueEvent(req);
         }

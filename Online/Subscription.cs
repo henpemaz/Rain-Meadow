@@ -16,7 +16,7 @@ namespace RainMeadow
 
         public void Update(ulong ts)
         {
-            // Todo delta
+            // Todo delta (copy from feeds)
             player.OutgoingStates.Enqueue(onlineResource.GetState(ts));
         }
 

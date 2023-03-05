@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using static Expedition.ExpeditionProgression;
 
 namespace RainMeadow
 {
@@ -14,22 +15,27 @@ namespace RainMeadow
         public AbstractPhysicalObject entity;
         public OnlinePlayer owner;
         public int id;
+        public int seed;
 
-        public WorldCoordinate initialPos;
+        public WorldCoordinate enterPos;
         public WorldSession world;
         public RoomSession room;
-        public OnlineResource activeResource => (room as OnlineResource ?? world);
+        public OnlineResource lowestResource => (room as OnlineResource ?? world);
+        public OnlineResource highestResource => (world as OnlineResource ?? room);
 
         public bool realized;
-        public bool isTransferable;
+        public bool isTransferable = true; // todo make own personas not transferable
+
+        public bool isPending => pendingRequest != null;
         public PlayerEvent pendingRequest;
 
-        public OnlineEntity(AbstractPhysicalObject entity, OnlinePlayer owner, int id, WorldCoordinate pos)
+        public OnlineEntity(AbstractPhysicalObject entity, OnlinePlayer owner, int id, int seed, WorldCoordinate pos)
         {
             this.entity = entity;
             this.owner = owner;
             this.id = id;
-            this.initialPos = pos;
+            this.seed = seed;
+            this.enterPos = pos;
         }
 
         public override string ToString()
@@ -48,8 +54,8 @@ namespace RainMeadow
                 creature.slatedForDeletion = false;
                 if (creature.realizedObject is PhysicalObject po) po.slatedForDeletetion = false;
 
-                oe.initialPos = newEntityEvent.initialPos;
-                oe.entity.pos = oe.initialPos;
+                oe.enterPos = newEntityEvent.initialPos;
+                oe.entity.pos = oe.enterPos;
             }
             else
             {
@@ -65,7 +71,7 @@ namespace RainMeadow
                     throw new InvalidOperationException("invalid template");
                 }
                 EntityID id = world.game.GetNewID();
-                id.altSeed = newEntityEvent.entityId;
+                id.altSeed = newEntityEvent.seed;
                 RainMeadow.Debug(id);
                 RainMeadow.Debug(newEntityEvent.initialPos);
                 WorldSession.registeringRemoteEntity = true;
@@ -76,7 +82,7 @@ namespace RainMeadow
                 {
                     creature.state = new PlayerState(creature, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionRemotePlayer, false);
                 }
-                oe = new OnlineEntity(creature, newEntityEvent.owner, newEntityEvent.entityId, newEntityEvent.initialPos);
+                oe = new OnlineEntity(creature, newEntityEvent.owner, newEntityEvent.entityId, newEntityEvent.seed, newEntityEvent.initialPos);
                 OnlineEntity.map.Add(creature, oe);
                 newEntityEvent.owner.recentEntities.Add(newEntityEvent.entityId, oe);
             }
@@ -84,45 +90,104 @@ namespace RainMeadow
             return oe;
         }
 
+        public void NewOwner(OnlinePlayer newOwner, int newId)
+        {
+            var wasOwner = owner;
+            var wasId = id;
+
+            owner = newOwner;
+            id = newId;
+
+            wasOwner.recentEntities.Remove(wasId);
+            newOwner.recentEntities.Add(newId, this);
+
+            if (wasOwner.isMe)
+            {
+                // this screams "iterate" but at the same time... it's just these two for RW, maybe next game
+                if (world != null)
+                {
+                    OnlineManager.RemoveFeed(world, this);
+                }
+                if (room != null)
+                {
+                    OnlineManager.RemoveFeed(room, this);
+                }
+            }
+            if (newOwner.isMe) // we only start feeding after we get the broadcast of new owner.
+                               // Maybe this should be in ResolveRequest instead? but then there's no guarantee the resource owner will have the new ID
+            {
+                if (world != null)
+                {
+                    OnlineManager.AddFeed(world, this);
+                }
+                if (room != null)
+                {
+                    OnlineManager.AddFeed(room, this);
+                }
+            }
+        }
+
+        // I request, to someone else
         internal void Request()
         {
             RainMeadow.Debug(this);
             if (owner.isMe) throw new InvalidProgrammerException("this entity is already mine");
-            if (!activeResource.isAvailable) throw new InvalidProgrammerException("in unavailable resource");
+            if (!isTransferable) throw new InvalidProgrammerException("cannot be transfered");
+            if (isPending) throw new InvalidProgrammerException("this entity has a pending request");
+            if (!lowestResource.isAvailable) throw new InvalidProgrammerException("in unavailable resource");
 
-            owner.RequestEntity(this, room); // do we have to tell them what resource this is about
-            // could be nice to avoid a desynchy situation, sanity-check that the room in question is the room 
-            // that the owner knows the entity is at
-            // as for world... would there ever be a situation in which we request a world entity at world level from the world owner?
-            // nah don't think so, it's all about the room the entity is going to be active in
-            // unless for some reason we start having lobby entitites, but I think that's against the whole point of distributing resources thin?
+            owner.RequestEntity(this, this.entity.ID.number);
         }
 
-        internal void Requested(EntityRequest entityRequest)
+        // I've been requested and I'll pass the entity on
+        internal void Requested(EntityRequest request)
         {
-            throw new NotImplementedException();
-            // do we store a list of Resources this Entity is in?
-            // then we'd know which participants to notify
-            // but I mean it's really just room and world, don't overabstract
+            RainMeadow.Debug(this);
+            RainMeadow.Debug("Requested by : " + request.from.name);
+            if (isTransferable && this.owner.isMe && !isPending)
+            {
+                request.from.QueueEvent(new EntityRequestResult.Ok(request)); // your request was well received, now please be patient while I transfer it
+                this.highestResource.EntityNewOwner(this, request.from, request.newId);
+            }
+            else
+            {
+                if (!isTransferable) RainMeadow.Debug("Denied because not transferable");
+                else if (!owner.isMe) RainMeadow.Debug("Denied because not mine");
+                else if (isPending) RainMeadow.Debug("Denied because pending");
+                request.from.QueueEvent(new EntityRequestResult.Error(request));
+            }
         }
 
+        // my request has been answered to
+        // is this really needed?
+        // I thought of stuff like "breaking grasps" if a request for the grasped object failed
         internal void ResolveRequest(EntityRequestResult requestResult)
         {
+            RainMeadow.Debug(this);
+            if (requestResult is EntityRequestResult.Ok) // I'm the new owner of this entity
+            {
+                // confirm pending grasps?
+            }
+            else if (requestResult is EntityRequestResult.Error) // Something went wrong, I should retry
+            {
+                // todo retry logic
+                // abort pending grasps?
+                RainMeadow.Error("request failed for " + this);
+            }
+            pendingRequest = null;
+        }
+
+        internal void Release()
+        {
             throw new NotImplementedException();
         }
 
-        // there is only one person who can sort out a release, and it is the room-owner for an entity in room
-        // or a world owner for an entity in world
-        // but also, when releasing a room we could append a list of our entities 
-        // if we release room to room.owner, then owner can claim the entities and broadcast their new owner
-        // if we release room to world.owner, then world owner can claim them and so on
-        // entities that are tracked on room and world 
-        // vs entities that are only tracked in room and destroyed on abstraction
-        // as well as not broadcasted about at world level
-        // but this cannot be generalized to world releasing to lobby, because lobby isn't aware of entities
-        // should lobby be aware of entities
-        // should entities automatically enter super when they enter a subresource
-        internal void Release()
+        internal void Released()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void ResolveRelease()
         {
             throw new NotImplementedException();
         }

@@ -23,7 +23,7 @@ namespace RainMeadow
             {
                 // todo stronger checks if my entity or a leftover
                 RainMeadow.Debug("Registering new entity as owned by myself");
-                var oe = new OnlineEntity(entity, OnlineManager.mePlayer, entity.ID.number, entity.pos);
+                var oe = new OnlineEntity(entity, OnlineManager.mePlayer, entity.ID.number, entity.ID.RandomSeed, entity.pos);
                 RainMeadow.Debug(oe);
                 OnlineManager.mePlayer.recentEntities[oe.id] = oe;
                 OnlineEntity.map.Add(entity, oe);

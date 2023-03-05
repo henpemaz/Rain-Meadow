@@ -6,25 +6,98 @@ Manage missing regions:
 	right now nullrefs because missing referenced resource
 	only joinable on same world-checksum? world-list? world-index-checksum?
 
-need new hookpoint for objects being moved between worlds, so they're added to the new world 
-	but maybe just the removal-addal works?
+Entities entities entities
+	need new hookpoint for objects being moved between worlds, so they're added to the new world 
+		but maybe just the removal-addal works?
 
-world registers entities
-entities need to be transferable
-on leave, transfer leftovers, remove untransferables
+	world registers entities
+	entities need to be transferable
+	on leave, transfer leftovers, remove untransferables
 
-thinking more and more they'll work like resources
-on leaving an entity behind, transfer it to someone else who has the room active, or return to super (world)
+	thinking more and more they'll work like resources
+	on leaving an entity behind, transfer it to someone else who has the room active, or return to super (world)
 
 
-try enabling creature spawns
-	spanws on if world owner
-	needs resource available earlier in the load process so this can be turned on/off accordingly
+	try enabling creature spawns
+		spanws on if world owner
+		needs resource available earlier in the load process so this can be turned on/off accordingly
+
+	todo sorting out "handing over entities" on resource release
+		player leaves a room, should hand over entities it had in that room
+		room owner leaves a room, should hand over entities it had in that room
+
+		region owner leaves a region, should hand over entities it had in that region
+
+	leaving entities behind:
+		Cenario 1: a player unloads an active room, they are the only player in it:
+			option 1: do nothing, still owns the entities when back to world level
+			option 2: return entities to world-owner before unleasing
+			option 3: return entities to world-owner as part of unleasing process
+
+		Cenario 2: 2 players share a room, the room-owner wants to leave and the room will be transfered to the second player
+			option 1: the owner cannot unlease the room until it has gotten rid of all its entities in there, so it transfers them one by one to another playre in the room
+			option 2: the owner returns all its entities to super, aka world-owner.
+			option 3: the unlease process includes orphan entities to be given a new owner
+			option 4: do nothing, entities have an owner that has left the resource, and can be claimed by asking room-owner
+
+		Cenario 2.5: a player subscribed to a room wants to leave, they have some entities in it
+			option 1: they cannot leave until they have transfered all resources
+			option 2: they leave entities behind that can be reclaimed by someone else
+				but really, this guy is still in world, what decision process lets owner reasign their creetchere to me??? not good
+			option 3: the unlease process includes orphan entities to be given a new owner
+
+		Cenario 3: a player unloads a world, they are the only player in it:
+			option 1: as they unload the world, entities are destroyed/discarded
+			option 2: they return entities to super (lobby) and lobby does nothing with it
+
+		Cenario 4: a player unloads a world, it is shared and will be transfered over
+			option 1: the owner cannot unlease the world until it has gotten rid of all its entities in there, so it transfers them one by one to another player in the world
+			option 2: the unlease process includes orphan entities to be given a new owner
+
+		Cenario 4.5: a player that is subscribed to a world is leaving, they have some entities in it
+			option 1: they don't have any entities in it, they have left the room and they cannot own entities at a world-level
+			option 2: they leave entities behind
+			option 3: the unlease process includes orphan entities to be given a new owner 
+
+		Formalizing options:
+			A: force transfer before unload
+				need to implement "transfer directly to"
+					could go to super as well but seems weird, BUT better since we want to quickly release and super is less likely to error-because-left
+				would fire a lot of events
+				straightforward and likely robust
+			B: do not transfer, leave behind, abandoned can be requested to resource-owner
+				simple? 
+				likely not robust? 
+				could this cause memleaks? nullrefs? weird situations on disconnects?
+				who feeds the state when old-owner has left? when do we decide to request the entity from someone else
+					this seems bad
+				how do room-super decides it can give ownership over entities from non-participants, really
+			C: handle over to super during release, let super decide what to do
+				C.1: super handles to somebody else (this seems to be the best of the bunch)
+				C.2: super keeps it until requested (same problem as B, who feeds them, when do they get rerequested)
+				easy to release
+				more work on reassign
+				more steps = more things that can fail during release/transfer
+				if super is lobby, supper doesn't know about the entities
+					but do they need to know? they're being handed over by world-authority, if shit were to be tits up it'd be already
+
+		so we want to send leftover entities to the owner or whoever we're releasing the room/world to, that's the best option it seems
+
+
+
+Tranfering a resource has a race condition, where the new-owner broadcasts it owns the entities that were abandoned, but maybe the message from world-owner that assigns them as new room-owner hasn't arrived yet in their world
+	either:
+	1. accept new-ownership events from anyone
+	2. implement message-dependency system, where a message depends on a TICK from someone else to be processed.
+
 
 
 handle disconnects
+	pending events that are going to a disconnected user should "error out" to trigger a retry against the right user
+		iPendingEvent.Fail -> resource.Resolve(errorevent)
 
 gamemode: meadow: stays in game, no ways to die or sleep, quits to lobby-screen
+gamemode: online coop: juuuust like couch coop
 
 
 Mod auto installing / auto disabling
