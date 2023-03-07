@@ -64,20 +64,10 @@ namespace RainMeadow
 
         public override void ReadState(ResourceState newState, ulong ts)
         {
+            base.ReadState(newState, ts);
             if(newState is RoomState newRoomState)
             {
-                foreach(var entityState in newRoomState.entityStates)
-                {
-                    if(entityState is OnlineEntity.EntityState es)
-                    {
-                        if (es.onlineEntity.owner.isMe) continue;
-                        es.onlineEntity.ReadState(es, ts);
-                    }
-                    else
-                    {
-                        throw new InvalidCastException("not an EntityState");
-                    }
-                }
+                // no op
             }
             else
             {
@@ -92,19 +82,8 @@ namespace RainMeadow
 
         public class RoomState : ResourceState
         {
-            public OnlineState[] entityStates;
-
             public RoomState() : base() { }
-            public RoomState(RoomSession resource, ulong ts) : base(resource, ts)
-            {
-                entityStates = resource.entities.Select(e => e.GetState(ts, resource)).ToArray();
-            }
-
-            public override void CustomSerialize(Serializer serializer)
-            {
-                base.CustomSerialize(serializer);
-                serializer.Serialize(ref entityStates);
-            }
+            public RoomState(RoomSession resource, ulong ts) : base(resource, ts) { }
 
             public override StateType stateType => StateType.RoomState;
         }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static RainMeadow.WorldSession;
 
 namespace RainMeadow
 {
@@ -62,7 +63,15 @@ namespace RainMeadow
 
         public override void ReadState(ResourceState newState, ulong ts)
         {
-            //throw new NotImplementedException();
+            base.ReadState(newState, ts);
+            if (newState is LobbyState newLobbyState)
+            {
+                // no op
+            }
+            else
+            {
+                throw new InvalidCastException("not a LobbyState");
+            }
         }
 
         internal override string Identifier()

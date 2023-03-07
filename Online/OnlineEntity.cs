@@ -11,19 +11,19 @@ namespace RainMeadow
     {
         internal static ConditionalWeakTable<AbstractPhysicalObject, OnlineEntity> map = new();
 
-        // todo abstract this into "entity" and "game entity"
+        // todo maybe abstract this into "entity" and "game entity" ?? what would I use it for though? persona data at lobby level?
         public AbstractPhysicalObject entity;
         public OnlinePlayer owner;
         public int id;
         public int seed;
 
-        public WorldCoordinate enterPos;
+        public WorldCoordinate enterPos; // todo keep this updated, currently loading with creatures mid-room still places them in shortcuts
         public WorldSession world;
         public RoomSession room;
         public OnlineResource lowestResource => (room as OnlineResource ?? world);
         public OnlineResource highestResource => (world as OnlineResource ?? room);
 
-        public bool realized;
+        public bool realized; // todo sync this
         public bool isTransferable = true; // todo make own personas not transferable
 
         public bool isPending => pendingRequest != null;
@@ -107,14 +107,17 @@ namespace RainMeadow
                 if (world != null)
                 {
                     OnlineManager.RemoveFeed(world, this);
+                    world.SubresourcesUnloaded();
                 }
                 if (room != null)
                 {
                     OnlineManager.RemoveFeed(room, this);
+                    room.SubresourcesUnloaded();
                 }
             }
             if (newOwner.isMe) // we only start feeding after we get the broadcast of new owner.
-                               // Maybe this should be in ResolveRequest instead? but then there's no guarantee the resource owner will have the new ID
+                               // Maybe this should be in ResolveRequest instead? but then there's no guarantee the resource owners will have the new ID
+                               // at least there will be no collisions so if we ignore that data its ok?
             {
                 if (world != null)
                 {
@@ -179,17 +182,46 @@ namespace RainMeadow
 
         internal void Release()
         {
-            throw new NotImplementedException();
+            RainMeadow.Debug(this);
+            if (!owner.isMe) throw new InvalidProgrammerException("not mine");
+            if (!isTransferable) throw new InvalidProgrammerException("cannot be transfered");
+            if (isPending) throw new InvalidProgrammerException("this entity has a pending request");
+
+            highestResource.owner.ReleaseEntity(this);
         }
 
-        internal void Released()
+        internal void Released(EntityReleaseEvent entityRelease)
         {
-            throw new NotImplementedException();
+            RainMeadow.Debug(this);
+            RainMeadow.Debug("Released by : " + entityRelease.from.name);
+            if (isTransferable && this.highestResource.owner.isMe && this.owner == entityRelease.from && !isPending) // theirs and can be transfered
+            {
+                entityRelease.from.QueueEvent(new EntityReleaseResult.Ok(entityRelease));
+                this.highestResource.EntityNewOwner(this, OnlineManager.mePlayer, this.entity.ID.number);
+            }
+            else
+            {
+                if (!isTransferable) RainMeadow.Debug("Denied because not transferable");
+                else if (owner != entityRelease.from) RainMeadow.Debug("Denied because not theirs");
+                else if (!highestResource.owner.isMe) RainMeadow.Debug("Denied because I don't supervise it");
+                else if (isPending) RainMeadow.Debug("Denied because pending");
+                entityRelease.from.QueueEvent(new EntityReleaseResult.Error(entityRelease));
+            }
         }
 
-        internal void ResolveRelease()
+        internal void ResolveRelease(EntityReleaseResult result)
         {
-            throw new NotImplementedException();
+            RainMeadow.Debug(this);
+            if (result is EntityReleaseResult.Ok)
+            {
+                // ?
+            }
+            else if (result is EntityReleaseResult.Error) // Something went wrong, I should retry
+            {
+                // todo retry logic
+                RainMeadow.Error("request failed for " + this);
+            }
+            pendingRequest = null;
         }
     }
 }

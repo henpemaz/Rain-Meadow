@@ -102,6 +102,14 @@ namespace RainMeadow
             QueueEvent(req);
         }
 
+        internal void ReleaseEntity(OnlineEntity oe)
+        {
+            RainMeadow.Debug($"Releasing entity {oe} back to player {this.name}");
+            var req = new EntityReleaseEvent(oe);
+            oe.pendingRequest = req;
+            QueueEvent(req);
+        }
+
         public override string ToString()
         {
             return $"{id} - {name}";

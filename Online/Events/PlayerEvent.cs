@@ -40,6 +40,9 @@ namespace RainMeadow
             EntityRequest,
             EntityRequestResultOk,
             EntityRequestResultError,
+            EntityReleaseEvent,
+            EntityReleaseResultOk,
+            EntityReleaseResultError,
         }
 
         internal static PlayerEvent NewFromType(EventTypeId eventTypeId)
@@ -103,8 +106,17 @@ namespace RainMeadow
                 case EventTypeId.EntityRequestResultError:
                     e = new EntityRequestResult.Error();
                     break;
+                case EventTypeId.EntityReleaseEvent:
+                    e = new EntityReleaseEvent();
+                    break;
+                case EventTypeId.EntityReleaseResultOk:
+                    e = new EntityReleaseResult.Ok();
+                    break;
+                case EventTypeId.EntityReleaseResultError:
+                    e = new EntityReleaseResult.Error();
+                    break;
             }
-            if (e is null) throw new InvalidOperationException("invalid event type");
+            if (e is null) throw new InvalidOperationException("invalid event type: " + eventTypeId);
             return e;
         }
     }

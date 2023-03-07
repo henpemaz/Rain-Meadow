@@ -112,11 +112,10 @@ namespace RainMeadow
         internal void EntityNewOwner(OnlineEntity oe, OnlinePlayer newOwner, int newId)
         {
             RainMeadow.Debug(this);
+            if (!isAvailable) { throw new InvalidOperationException("not available"); }
             if (oe.owner == newOwner) throw new InvalidOperationException("reasigned to same owner");
             var wasOwner = oe.owner;
             var wasId = oe.id;
-
-            oe.NewOwner(newOwner, newId);
 
             if (isOwner) // I am responsible for notifying other players about it
             {
@@ -133,10 +132,9 @@ namespace RainMeadow
                 owner.QueueEvent(new EntityNewOwnerEvent(this, wasOwner, wasId, newOwner, newId));
             }
 
-            if (wasOwner.isMe && !newOwner.isMe)
-            {
-                SubresourcesUnloaded(); // I might have been waiting on this to free this resource.
-            }
+            oe.NewOwner(newOwner, newId); // handles the entity actually changing owner and ID
+                                          // also calls to SubresourcesUnloaded which might call Release
+                                          // which is why I moved it down here :3
         }
 
         // I'm notified of a new owner for an entity in this resource

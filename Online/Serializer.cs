@@ -228,10 +228,18 @@ namespace RainMeadow
         {
             if (isWriting)
             {
-                writer.Write((byte)players.Count);
-                foreach (var player in players)
+                if (players is null) // not reeeeally nullable behavior but idc
+                    // ie null isn't reproduced on read, becomes list of 0
                 {
-                    writer.Write(player is { } ? (ulong)player.id : 0ul);
+                    writer.Write((byte)0);
+                }
+                else
+                {
+                    writer.Write((byte)players.Count);
+                    foreach (var player in players)
+                    {
+                        writer.Write(player is { } ? (ulong)player.id : 0ul);
+                    }
                 }
             }
             if (isReading)
@@ -293,11 +301,12 @@ namespace RainMeadow
             }
         }
 
-        internal void Serialize(ref OnlineState[] states)
+        internal void Serialize<T>(ref T[] states) where T : OnlineState
         {
             if (isWriting)
             {
                 // TODO dynamic length
+                if (states.Length > 255) throw new OverflowException("too many states");
                 writer.Write((byte)states.Length);
                 foreach (var state in states)
                 {
@@ -308,14 +317,14 @@ namespace RainMeadow
             if (isReading)
             {
                 byte count = reader.ReadByte();
-                states = new OnlineState[count];
+                states = new T[count];
                 for (int i = 0; i < count; i++)
                 {
                     var s = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
                     s.fromPlayer = currPlayer;
                     s.ts = currPlayer.tick;
                     s.CustomSerialize(this);
-                    states[i] = s;
+                    states[i] = s as T; // can throw an invalid cast? or will it just be null?
                 }
             }
         }

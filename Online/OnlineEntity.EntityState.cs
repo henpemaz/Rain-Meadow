@@ -11,7 +11,7 @@ namespace RainMeadow
             entityState.ReadTo(this);
         }
 
-        internal OnlineState GetState(ulong tick, OnlineResource resource)
+        internal EntityState GetState(ulong tick, OnlineResource resource) // todo differentiate stat if in-room or in-world
         {
             if (entity is AbstractCreature)
             {

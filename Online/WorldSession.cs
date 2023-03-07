@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using static RainMeadow.RoomSession;
 
 namespace RainMeadow
 {
@@ -52,7 +53,15 @@ namespace RainMeadow
 
         public override void ReadState(ResourceState newState, ulong ts)
         {
-            //throw new System.NotImplementedException();
+            base.ReadState(newState, ts);
+            if (newState is WorldState newWorldState)
+            {
+                // no op
+            }
+            else
+            {
+                throw new InvalidCastException("not a WorldState");
+            }
         }
 
         protected override ResourceState MakeState(ulong ts)

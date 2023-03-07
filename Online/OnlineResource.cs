@@ -57,7 +57,7 @@ namespace RainMeadow
             else if (pendingRequest is not ReleaseRequest) { releaseWhenPossible = true; }
         }
 
-        protected void SubresourcesUnloaded()
+        public void SubresourcesUnloaded()
         {
             if (releaseWhenPossible && canRelease)
             {

@@ -157,6 +157,8 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Menu\MenuDarkSprite.cs" />
     <Compile Include="Online\EntityFeed.cs" />
+    <Compile Include="Online\Events\EntityReleaseEvent.cs" />
+    <Compile Include="Online\Events\EntityReleaseResult.cs" />
     <Compile Include="Online\Events\EntityNewOwnerEvent.cs" />
     <Compile Include="Online\Events\EntityRequestResult.cs" />
     <Compile Include="Online\Events\EntityEvent.cs" />
