@@ -85,20 +85,20 @@ Entities entities entities
 
 
 
-Tranfering a resource has a race condition, where the new-owner broadcasts it owns the entities that were abandoned, but maybe the message from world-owner that assigns them as new room-owner hasn't arrived yet in their world
-	either:
-	1. accept new-ownership events from anyone
-	2. implement message-dependency system, where a message depends on a TICK from someone else to be processed.
-
-
-
 handle disconnects
+	if super and sublease owner missing, organize transfer
+		how do you get a list of participants though? shouldn't a participant start it so they have a list, super agrees on if current owner really detected missing?
 	pending events that are going to a disconnected user should "error out" to trigger a retry against the right user
 		iPendingEvent.Fail -> resource.Resolve(errorevent)
 
-gamemode: meadow: stays in game, no ways to die or sleep, quits to lobby-screen
+gamemode: meadow: stays in game, infinite cycle, no ways to die or sleep, quits to lobby-screen
 gamemode: online coop: juuuust like couch coop
+	needs a more fine grained description here
+	essentially need to meet a set of expectations, but better have all of those written out
 
 
 Mod auto installing / auto disabling
-
+	oh my
+	could use a whitelist maybe
+	apply automatically, re-launch and re-join the lobby in question
+		arg from the command line to join lobby, also needed for steam's Join feature thing
