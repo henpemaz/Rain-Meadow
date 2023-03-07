@@ -7,14 +7,20 @@ namespace RainMeadow
 {
     partial class RainMeadow
     {
+        public static bool sSpawningPersonas;
+
         private void EntityHooks()
         {
+            On.RainWorldGame.SpawnPlayers_bool_bool_bool_bool_WorldCoordinate += RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate;
+
             On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor;
             On.AbstractPhysicalObject.ctor += AbstractPhysicalObject_ctor;
             On.AbstractCreature.ctor += AbstractCreature_ctor;
 
+            On.AbstractPhysicalObject.Realize += AbstractPhysicalObject_Realize;
+            On.AbstractCreature.Realize += AbstractCreature_Realize;
             On.AbstractPhysicalObject.Abstractize += AbstractPhysicalObject_Abstractize;
-            On.AbstractPhysicalObject.Realize += AbstractPhysicalObject_Realize; // todo check if base is called in overrides
+            On.AbstractCreature.Abstractize += AbstractCreature_Abstractize; ;
 
             On.AbstractRoom.AddEntity += AbstractRoom_AddEntity;
             On.AbstractRoom.RemoveEntity_AbstractWorldEntity += AbstractRoom_RemoveEntity;
@@ -22,8 +28,21 @@ namespace RainMeadow
 
             IL.ShortcutHandler.Update += ShortcutHandler_Update; // cleanup of deleted entities in shortcut system
 
-            On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // debug
             On.RoomRealizer.RealizeAndTrackRoom += RoomRealizer_RealizeAndTrackRoom; // debug
+        }
+
+        private AbstractCreature RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate(On.RainWorldGame.orig_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate orig, RainWorldGame self, bool player1, bool player2, bool player3, bool player4, WorldCoordinate location)
+        {
+            if (self.session is OnlineGameSession)
+            {
+                sSpawningPersonas = true;
+            }
+            var ac = orig(self, player1, player2, player3, player4, location);
+            if (self.session is OnlineGameSession)
+            {
+                sSpawningPersonas = false;
+            }
+            return ac;
         }
 
         private void AbstractObjectStick_ctor(On.AbstractPhysicalObject.AbstractObjectStick.orig_ctor orig, AbstractPhysicalObject.AbstractObjectStick self, AbstractPhysicalObject A, AbstractPhysicalObject B)
@@ -55,7 +74,23 @@ namespace RainMeadow
                 {
                     oe.Request();
                 }
-                else if (oe.owner.isMe)
+                if (oe.owner.isMe)
+                {
+                    oe.realized = true;
+                }
+            }
+        }
+
+        private void AbstractCreature_Realize(On.AbstractCreature.orig_Realize orig, AbstractCreature self)
+        {
+            orig(self);
+            if (self.world.game.session is OnlineGameSession os && OnlineEntity.map.TryGetValue(self, out var oe))
+            {
+                if (!oe.realized && oe.isTransferable && !oe.owner.isMe)
+                {
+                    oe.Request();
+                }
+                if (oe.owner.isMe)
                 {
                     oe.realized = true;
                 }
@@ -70,24 +105,36 @@ namespace RainMeadow
                 if (oe.realized && oe.isTransferable && oe.owner.isMe)
                 {
                     oe.Release();
+                }
+                if (oe.owner.isMe)
+                {
                     oe.realized = false;
                 }
             }
         }
+
+        private void AbstractCreature_Abstractize(On.AbstractCreature.orig_Abstractize orig, AbstractCreature self, WorldCoordinate coord)
+        {
+            orig(self, coord);
+            if (self.world.game.session is OnlineGameSession os && OnlineEntity.map.TryGetValue(self, out var oe))
+            {
+                if (oe.realized && oe.isTransferable && oe.owner.isMe)
+                {
+                    oe.Release();
+                }
+                if (oe.owner.isMe)
+                {
+                    oe.realized = false;
+                }
+            }
+        }
+
 
         // disable preemptive loading for ease of debugging
         private void RoomRealizer_RealizeAndTrackRoom(On.RoomRealizer.orig_RealizeAndTrackRoom orig, RoomRealizer self, AbstractRoom room, bool actuallyEntering)
         {
             if (!actuallyEntering) return;
             orig(self, room, actuallyEntering);
-        }
-
-
-        // debug
-        private void AbstractPhysicalObject_Move(On.AbstractPhysicalObject.orig_Move orig, AbstractPhysicalObject self, WorldCoordinate newCoord)
-        {
-            RainMeadow.Debug($"from {self.pos} to {newCoord}");
-            orig(self, newCoord);
         }
 
         // removes entities that should be deleted when going between rooms
@@ -228,5 +275,7 @@ namespace RainMeadow
                 ws.NewEntityInWorld(self);
             }
         }
+
+        // todo when do things LEAVE world though?
     }
 }

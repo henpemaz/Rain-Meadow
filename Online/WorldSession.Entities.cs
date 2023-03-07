@@ -9,6 +9,7 @@ namespace RainMeadow
         public static bool registeringRemoteEntity;
         private List<AbstractPhysicalObject> earlyEntities = new();
 
+        // At a world level, entities "exist" and "have a .worldposition" and that's about it, just enough to show up on the map
 
         // This happens for local entities, so we create their respective OnlineEntity
         internal void NewEntityInWorld(AbstractPhysicalObject entity)
@@ -23,7 +24,7 @@ namespace RainMeadow
             {
                 // todo stronger checks if my entity or a leftover
                 RainMeadow.Debug("Registering new entity as owned by myself");
-                var oe = new OnlineEntity(entity, OnlineManager.mePlayer, entity.ID.number, entity.ID.RandomSeed, entity.pos);
+                var oe = new OnlineEntity(entity, OnlineManager.mePlayer, entity.ID.number, entity.ID.RandomSeed, entity.pos, !RainMeadow.sSpawningPersonas);
                 RainMeadow.Debug(oe);
                 OnlineManager.mePlayer.recentEntities[oe.id] = oe;
                 OnlineEntity.map.Add(entity, oe);

@@ -30,10 +30,10 @@ namespace RainMeadow
             {
                 foreach (var ent in absroom.entities)
                 {
-                    if (ent is AbstractPhysicalObject apo && OnlineEntity.map.TryGetValue(apo, out var oe) 
-                        && oe.isTransferable && !oe.realized)
+                    if (ent is AbstractPhysicalObject apo && OnlineEntity.map.TryGetValue(apo, out var oe)
+                         && !oe.realized && !oe.owner.isMe && oe.isTransferable && !oe.isPending)
                     {
-                        //oe.Request(); // I am realizing this entity, let me have it
+                        oe.Request(); // I am realizing this entity, let me have it
                     }
                 }
             }

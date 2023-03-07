@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using static Expedition.ExpeditionProgression;
 
 namespace RainMeadow
 {
@@ -23,19 +22,20 @@ namespace RainMeadow
         public OnlineResource lowestResource => (room as OnlineResource ?? world);
         public OnlineResource highestResource => (world as OnlineResource ?? room);
 
-        public bool realized; // todo sync this
+        public bool realized;
         public bool isTransferable = true; // todo make own personas not transferable
 
         public bool isPending => pendingRequest != null;
         public PlayerEvent pendingRequest;
 
-        public OnlineEntity(AbstractPhysicalObject entity, OnlinePlayer owner, int id, int seed, WorldCoordinate pos)
+        public OnlineEntity(AbstractPhysicalObject entity, OnlinePlayer owner, int id, int seed, WorldCoordinate pos, bool isTransferable)
         {
             this.entity = entity;
             this.owner = owner;
             this.id = id;
             this.seed = seed;
             this.enterPos = pos;
+            this.isTransferable = isTransferable;
         }
 
         public override string ToString()
@@ -82,7 +82,7 @@ namespace RainMeadow
                 {
                     creature.state = new PlayerState(creature, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionRemotePlayer, false);
                 }
-                oe = new OnlineEntity(creature, newEntityEvent.owner, newEntityEvent.entityId, newEntityEvent.seed, newEntityEvent.initialPos);
+                oe = new OnlineEntity(creature, newEntityEvent.owner, newEntityEvent.entityId, newEntityEvent.seed, newEntityEvent.initialPos, newEntityEvent.isTransferable);
                 OnlineEntity.map.Add(creature, oe);
                 newEntityEvent.owner.recentEntities.Add(newEntityEvent.entityId, oe);
             }
@@ -127,6 +127,7 @@ namespace RainMeadow
                 {
                     OnlineManager.AddFeed(room, this);
                 }
+                realized = entity.realizedObject != null; // owner is responsible for upkeeping this
             }
         }
 
@@ -187,7 +188,8 @@ namespace RainMeadow
             if (!isTransferable) throw new InvalidProgrammerException("cannot be transfered");
             if (isPending) throw new InvalidProgrammerException("this entity has a pending request");
 
-            highestResource.owner.ReleaseEntity(this);
+            if (!highestResource.owner.isMe) highestResource.owner.ReleaseEntity(this);
+            else RainMeadow.Debug("Not releasing, I am the world-owner");
         }
 
         internal void Released(EntityReleaseEvent entityRelease)

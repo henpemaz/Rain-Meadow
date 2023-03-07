@@ -3,6 +3,7 @@
     public class NewEntityEvent : EntityResourceEvent
     {
         public WorldCoordinate initialPos;
+        public bool isTransferable;
         public bool isCreature;
         public string template = "";
         public int seed;
@@ -12,6 +13,7 @@
         public NewEntityEvent(OnlineResource resource, OnlineEntity oe) : base(resource, oe.owner, oe.id)
         {
             this.initialPos = oe.enterPos;
+            isTransferable = oe.isTransferable;
             isCreature = oe.entity is AbstractCreature;
             template = (oe.entity as AbstractCreature)?.creatureTemplate.type.ToString() ?? "";
             seed = oe.seed;
@@ -23,6 +25,7 @@
         {
             base.CustomSerialize(serializer);
             serializer.SerializeNoStrings(ref initialPos);
+            serializer.Serialize(ref isTransferable);
             serializer.Serialize(ref isCreature);
             if (isCreature)
             {
