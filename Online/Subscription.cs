@@ -1,30 +1,33 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
-    public class Subscription
+    public class Subscription // Feed resource state to player
     {
-        public OnlineResource onlineResource;
+        public OnlineResource resource;
         public OnlinePlayer player;
-        private OnlineResource.LeaseState previousLeaseState;
+        public Queue<OnlineState> OutgoingStates = new(32);
+        public OnlineState lastAcknoledgedState;
 
-        public Subscription(OnlineResource onlineResource, OnlinePlayer player)
+        public Subscription(OnlineResource resource, OnlinePlayer player)
         {
-            this.onlineResource = onlineResource;
+            this.resource = resource;
             this.player = player;
         }
 
-        public void Update(ulong ts)
+        public void Update(ulong tick)
         {
-            // Todo delta (copy from feeds)
-            player.OutgoingStates.Enqueue(onlineResource.GetState(ts));
-        }
+            if (!resource.isAvailable) throw new InvalidOperationException("not available");
 
-        internal void NewLeaseState(OnlineResource onlineResource) // Lease changes are critical and thus sent as events
-        {
-            var newLeaseState = onlineResource.GetLeaseState();
-            player.QueueEvent(new LeaseChangeEvent(onlineResource, newLeaseState.Delta(previousLeaseState))); // send the delta
-            previousLeaseState = newLeaseState; // store in full
+            while (OutgoingStates.Count > 0 && OnlineManager.IsNewerOrEqual(player.lastAckdTick, OutgoingStates.Peek().ts))
+            {
+                lastAcknoledgedState = OutgoingStates.Dequeue();
+            }
+
+            var newState = resource.GetState(tick);
+            player.OutgoingStates.Enqueue(newState.Delta(lastAcknoledgedState));
+            OutgoingStates.Enqueue(newState);
         }
     }
 }

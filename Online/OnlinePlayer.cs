@@ -23,9 +23,6 @@ namespace RainMeadow
         public bool needsAck;
         public bool isMe;
         public string name;
-        public Dictionary<int, OnlineEntity> recentEntities = new(); // this is very handy, but is it correct? when should this be cleaned up?
-
-        //public List<OnlineResource> resourcesOwned = new();
 
         public OnlinePlayer(CSteamID id)
         {
@@ -77,10 +74,10 @@ namespace RainMeadow
             QueueEvent(req);
         }
 
-        internal void TransferResource(OnlineResource onlineResource, List<OnlinePlayer> subscribers)
+        internal void TransferResource(OnlineResource onlineResource, List<OnlinePlayer> subscribers, List<OnlineEntity.EntityId> abandonedEntities)
         {
             RainMeadow.Debug($"Requesting player {this.name} for transfer of {onlineResource.Identifier()}");
-            var req = new TransferRequest(onlineResource, subscribers);
+            var req = new TransferRequest(onlineResource, subscribers, abandonedEntities);
             onlineResource.pendingRequest = req;
             QueueEvent(req);
         }
@@ -88,16 +85,17 @@ namespace RainMeadow
         internal void ReleaseResource(OnlineResource onlineResource)
         {
             RainMeadow.Debug($"Requesting player {this.name} for release of resource {onlineResource.Identifier()}");
-            var req = new ReleaseRequest(onlineResource, 
-                onlineResource.isOwner ? onlineResource.participants : null);
+            var req = new ReleaseRequest(onlineResource,
+                onlineResource.participants,
+                onlineResource.entities.Where(e => e.isTransferable && !e.isPending && e.owner.isMe).Select(e=>e.id).ToList());
             onlineResource.pendingRequest = req;
             QueueEvent(req);
         }
 
-        internal void RequestEntity(OnlineEntity oe, int newId)
+        internal void RequestEntity(OnlineEntity oe)
         {
             RainMeadow.Debug($"Requesting player {this.name} for entity {oe}");
-            var req = new EntityRequest(oe, newId);
+            var req = new EntityRequest(oe);
             oe.pendingRequest = req;
             QueueEvent(req);
         }
@@ -105,7 +103,7 @@ namespace RainMeadow
         internal void ReleaseEntity(OnlineEntity oe)
         {
             RainMeadow.Debug($"Releasing entity {oe} back to player {this.name}");
-            var req = new EntityReleaseEvent(oe);
+            var req = new EntityReleaseEvent(oe, oe.lowestResource);
             oe.pendingRequest = req;
             QueueEvent(req);
         }

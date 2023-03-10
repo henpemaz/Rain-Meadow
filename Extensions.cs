@@ -53,7 +53,7 @@ namespace RainMeadow
         public static Dictionary<TKey, TElement> ToDictionary<TKey, TElement>(this IEnumerable<KeyValuePair<TKey, TElement>> source)
         {
             Dictionary<TKey, TElement> dictionary = new Dictionary<TKey, TElement>();
-            foreach (KeyValuePair<TKey, TElement> item in source)
+            foreach (KeyValuePair<TKey, TElement> item in source) // really though, you'd think there would be something like AddRange, but nah
             {
                 dictionary.Add(item.Key, item.Value);
             }

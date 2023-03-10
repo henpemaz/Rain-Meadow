@@ -42,7 +42,7 @@ namespace RainMeadow
 
         internal bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)
         {
-            return false;
+            //return false;
             if (worldSession is null || !worldSession.isAvailable)
             {
                 return false;

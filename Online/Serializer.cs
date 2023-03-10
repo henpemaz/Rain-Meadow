@@ -228,18 +228,10 @@ namespace RainMeadow
         {
             if (isWriting)
             {
-                if (players is null) // not reeeeally nullable behavior but idc
-                    // ie null isn't reproduced on read, becomes list of 0
+                writer.Write((byte)players.Count);
+                foreach (var player in players)
                 {
-                    writer.Write((byte)0);
-                }
-                else
-                {
-                    writer.Write((byte)players.Count);
-                    foreach (var player in players)
-                    {
-                        writer.Write(player is { } ? (ulong)player.id : 0ul);
-                    }
+                    writer.Write(player is { } ? (ulong)player.id : 0ul);
                 }
             }
             if (isReading)
@@ -280,6 +272,21 @@ namespace RainMeadow
             if (isReading) data = reader.ReadString();
         }
 
+        internal void Serialize(ref Vector2 data)
+        {
+            if (isWriting)
+            {
+                writer.Write(data.x);
+                writer.Write(data.y);
+            }
+            if (isReading)
+            {
+                data.x = reader.ReadSingle();
+                data.y = reader.ReadSingle();
+            }
+        }
+
+
         internal void SerializeNoStrings(ref WorldCoordinate pos)
         {
             if (isWriting)
@@ -298,6 +305,91 @@ namespace RainMeadow
                     y = reader.ReadInt16(),
                     abstractNode = reader.ReadInt16(),
                 };
+            }
+        }
+
+        internal void Serialize(ref OnlineEntity.EntityId entityId)
+        {
+            if (isWriting)
+            {
+                writer.Write(entityId.originalOwner);
+                writer.Write(entityId.id);
+            }
+            if (isReading)
+            {
+                entityId = new OnlineEntity.EntityId(reader.ReadUInt64(), reader.ReadInt32());
+            }
+        }
+
+        internal void Serialize(ref List<OnlineEntity.EntityId> entityIds)
+        {
+            if (isWriting)
+            {
+                writer.Write((byte)entityIds.Count);
+                foreach (var ent in entityIds)
+                {
+                    writer.Write(ent.originalOwner);
+                    writer.Write(ent.id);
+                }
+            }
+            if (isReading)
+            {
+                byte count = reader.ReadByte();
+                entityIds = new List<OnlineEntity.EntityId>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    OnlineEntity.EntityId ent = new OnlineEntity.EntityId(reader.ReadUInt64(), reader.ReadInt32());
+                    entityIds.Add(ent);
+                }
+            }
+        }
+
+        internal void Serialize(ref OnlineEntity onlineEntity)
+        {
+            if (isWriting)
+            {
+                writer.Write(onlineEntity.id.originalOwner);
+                writer.Write(onlineEntity.id.id);
+            }
+            if (isReading)
+            {
+                var id = new OnlineEntity.EntityId(reader.ReadUInt64(), reader.ReadInt32());
+                OnlineManager.recentEntities.TryGetValue(id, out onlineEntity);
+            }
+        }
+
+        private void Serialize(ref OnlineState state)
+        {
+            if (isWriting)
+            {
+                writer.Write((byte)state.stateType);
+                state.CustomSerialize(this);
+            }
+            if (isReading)
+            {
+                state = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
+                state.fromPlayer = currPlayer;
+                state.ts = currPlayer.tick;
+                state.CustomSerialize(this);
+            }
+        }
+
+        internal void SerializeNullable(ref OnlineState nullableState)
+        {
+            if (isWriting)
+            {
+                writer.Write(nullableState != null);
+                if (nullableState != null)
+                {
+                    Serialize(ref nullableState);
+                }
+            }
+            if (isReading)
+            {
+                if (reader.ReadBoolean())
+                {
+                    Serialize(ref nullableState);
+                }
             }
         }
 
@@ -326,73 +418,6 @@ namespace RainMeadow
                     s.CustomSerialize(this);
                     states[i] = s as T; // can throw an invalid cast? or will it just be null?
                 }
-            }
-        }
-
-        // watch this throw lots!
-        // ideally newentities are delivered through events, so they should already exist when states come
-        internal void Serialize(ref OnlineEntity onlineEntity)
-        {
-            if (isWriting)
-            {
-                writer.Write((ulong)onlineEntity.owner.id);
-                writer.Write(onlineEntity.id);
-            }
-            if (isReading)
-            {
-                var player = OnlineManager.PlayerFromId(new CSteamID(reader.ReadUInt64()));
-                var id = reader.ReadInt32();
-                // entities can change ID and we still need to read re-sent events out, outch!
-                player.recentEntities.TryGetValue(id, out onlineEntity);
-            }
-        }
-
-        internal void SerializeNullable(ref OnlineState nullableState)
-        {
-            if (isWriting)
-            {
-                writer.Write(nullableState != null);
-                if(nullableState != null)
-                {
-                    Serialize(ref nullableState);
-                }
-            }
-            if (isReading)
-            {
-                if (reader.ReadBoolean())
-                {
-                    Serialize(ref nullableState);
-                }
-            }
-        }
-
-        private void Serialize(ref OnlineState state)
-        {
-            if (isWriting)
-            {
-                writer.Write((byte)state.stateType);
-                state.CustomSerialize(this);
-            }
-            if (isReading)
-            {
-                state = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
-                state.fromPlayer = currPlayer;
-                state.ts = currPlayer.tick;
-                state.CustomSerialize(this);
-            }
-        }
-
-        internal void Serialize(ref Vector2 data)
-        {
-            if (isWriting)
-            {
-                writer.Write(data.x);
-                writer.Write(data.y);
-            }
-            if (isReading)
-            {
-                data.x = reader.ReadSingle();
-                data.y = reader.ReadSingle();
             }
         }
 

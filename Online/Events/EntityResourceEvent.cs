@@ -2,21 +2,18 @@
 {
     public abstract class EntityResourceEvent : ResourceEvent
     {
-        public OnlinePlayer owner;
-        public int entityId;
+        public OnlineEntity.EntityId entityId;
 
-        protected EntityResourceEvent() : base(null) { }
+        protected EntityResourceEvent() { }
 
-        protected EntityResourceEvent(OnlineResource resource, OnlinePlayer owner, int entityId) : base(resource)
+        protected EntityResourceEvent(OnlineResource resource, OnlineEntity.EntityId entityId) : base(resource)
         {
-            this.owner = owner;
             this.entityId = entityId;
         }
 
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);
-            serializer.Serialize(ref owner);
             serializer.Serialize(ref entityId);
         }
     }

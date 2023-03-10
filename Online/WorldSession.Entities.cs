@@ -22,17 +22,28 @@ namespace RainMeadow
                 return; } // throw new InvalidOperationException("not isActive"); }
             if (!registeringRemoteEntity) // A new entity, presumably mine
             {
-                // todo stronger checks if my entity or a leftover
                 RainMeadow.Debug("Registering new entity as owned by myself");
-                var oe = new OnlineEntity(entity, OnlineManager.mePlayer, entity.ID.number, entity.ID.RandomSeed, entity.pos, !RainMeadow.sSpawningPersonas);
+                var oe = new OnlineEntity(entity, OnlineManager.mePlayer, new OnlineEntity.EntityId(OnlineManager.mePlayer.id.m_SteamID, entity.ID.number), entity.ID.RandomSeed, entity.pos, !RainMeadow.sSpawningPersonas);
                 RainMeadow.Debug(oe);
-                OnlineManager.mePlayer.recentEntities[oe.id] = oe;
+                OnlineManager.recentEntities[oe.id] = oe;
                 OnlineEntity.map.Add(entity, oe);
                 EntityEnteredResource(oe);
             }
             else
             {
                 RainMeadow.Debug("skipping remote entity");
+            }
+        }
+
+        protected override void EntityEnteredResource(OnlineEntity oe)
+        {
+            base.EntityEnteredResource(oe);
+            oe.world = this;
+
+            // not sure how "correct" this is because on the host side it might be different?
+            if (!oe.owner.isMe) // kinda wanted a .isRemote helper at this point
+            {
+                this.world.GetAbstractRoom(oe.enterPos).AddEntity(oe.entity);
             }
         }
 

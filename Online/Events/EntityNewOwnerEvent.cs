@@ -3,21 +3,18 @@
     internal class EntityNewOwnerEvent : EntityResourceEvent
     {
         public OnlinePlayer newOwner;
-        public int newId;
 
-        public EntityNewOwnerEvent() : base() { }
+        public EntityNewOwnerEvent() { }
 
-        public EntityNewOwnerEvent(OnlineResource onlineResource, OnlinePlayer wasOwner, int wasId, OnlinePlayer newOwner, int newId) : base(onlineResource, wasOwner, wasId)
+        public EntityNewOwnerEvent(OnlineResource onlineResource, OnlineEntity.EntityId entityId, OnlinePlayer newOwner) : base(onlineResource, entityId)
         {
             this.newOwner = newOwner;
-            this.newId = newId;
         }
 
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);
             serializer.Serialize(ref newOwner);
-            serializer.Serialize(ref newId);
         }
 
         public override EventTypeId eventType => EventTypeId.EntityNewOwnerEvent;

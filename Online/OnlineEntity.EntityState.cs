@@ -145,7 +145,7 @@ namespace RainMeadow
             }
         }
 
-        public class ChunkState// : OnlineState
+        public class ChunkState// : OnlineState // no need for serializing its type, its just always the same data
         {
             private Vector2 pos;
             private Vector2 vel;

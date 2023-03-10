@@ -89,6 +89,7 @@ namespace RainMeadow
         internal static OnlinePlayer BestTransferCandidate(OnlineResource onlineResource, List<OnlinePlayer> subscribers)
         {
             if (subscribers.Contains(OnlineManager.mePlayer)) return OnlineManager.mePlayer;
+            if (subscribers.Count < 1) return null;
             return subscribers[0];
         }
     }

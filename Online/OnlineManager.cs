@@ -24,9 +24,7 @@ namespace RainMeadow
         public static List<OnlinePlayer> players;
         public static List<Subscription> subscriptions = new();
         public static List<EntityFeed> feeds = new();
-
-        //public static Dictionary<string, WorldSession> worldSessions;
-        //private static Dictionary<string, RoomSession> roomSessions;
+        public static Dictionary<OnlineEntity.EntityId, OnlineEntity> recentEntities = new();
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
@@ -222,21 +220,19 @@ namespace RainMeadow
             }
         }
 
-        internal static Subscription AddSubscription(OnlineResource onlineResource, OnlinePlayer player)
+        internal static void AddSubscription(OnlineResource onlineResource, OnlinePlayer player)
         {
-            var sub = new Subscription(onlineResource, player);
-            subscriptions.Add(sub);
-            return sub;
+            subscriptions.Add(new Subscription(onlineResource, player));
         }
 
-        internal static void RemoveSubscription(Subscription sub)
+        internal static void RemoveSubscription(OnlineResource onlineResource, OnlinePlayer player)
         {
-            subscriptions.Remove(sub);
+            subscriptions.RemoveAll(s => s.resource == onlineResource && s.player == player);
         }
 
         internal static void RemoveSubscriptions(OnlineResource onlineResource)
         {
-            subscriptions.RemoveAll(s => s.onlineResource == onlineResource);
+            subscriptions.RemoveAll(s => s.resource == onlineResource);
         }
 
         internal static void AddFeed(OnlineResource resource, OnlineEntity oe)
@@ -253,6 +249,7 @@ namespace RainMeadow
             feeds.RemoveAll(f => f.resource == resource);
         }
 
+        // this smells
         internal static OnlineResource ResourceFromIdentifier(string rid)
         {
             if (rid == ".") return lobby;

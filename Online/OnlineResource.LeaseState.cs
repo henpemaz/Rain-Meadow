@@ -7,14 +7,29 @@ namespace RainMeadow
     public abstract partial class OnlineResource
     {
         private LeaseState incomingLease; // lease to be processed on activate
+        private LeaseState currentLeaseState;
 
-        private void NewLeaseState()
+        private void NewLeaseState() { NewLeaseState(null); }
+        private void NewLeaseState(OnlinePlayer newPlayer) // Lease changes are critical and thus sent as events
         {
             RainMeadow.Debug(this);
-            foreach (var s in subscriptions)
+            if (!isActive) { throw new InvalidOperationException("not active"); }
+            if (!isOwner) { throw new InvalidOperationException("not owner"); }
+            var newLeaseState = GetLeaseState();
+            var delta = newLeaseState.Delta(currentLeaseState);
+            foreach (var player in participants)
             {
-                s.NewLeaseState(this);
+                if (player.isMe) continue;
+                if(player == newPlayer)
+                {
+                    player.QueueEvent(new LeaseChangeEvent(this, newLeaseState)); // its their first time here
+                }
+                else
+                {
+                    player.QueueEvent(new LeaseChangeEvent(this, delta)); // send the delta
+                }
             }
+            currentLeaseState = newLeaseState; // store in full
         }
 
         internal LeaseState GetLeaseState()
@@ -94,7 +109,7 @@ namespace RainMeadow
             {
                 if(previousLeaseState == null) { return this; }
                 var delta = new LeaseState();
-                delta.ownership = ownership.Except(previousLeaseState.ownership).ToDictionary(); // linq why no dict from kvp
+                delta.ownership = ownership.Except(previousLeaseState.ownership).ToDictionary();
 
                 delta.entered = entered.Except(previousLeaseState.entered).ToList();
                 delta.left = previousLeaseState.entered.Except(entered).ToList();

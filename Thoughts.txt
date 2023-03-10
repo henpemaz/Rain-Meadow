@@ -20,10 +20,18 @@ State vs Events
 			it is small and doesnt change very often
 			is very critical that it is received asap when changes occur
 				if the change is so rare and so important wouldnt it be easier to work with events?
-
 	Are states that send every tick just worse events? because they also cause the "unchanged" sends
-
 	I'm starting to think ownership-state is special
+		note, currently using events that have a delta-state in it lolmao
+
+Handshaked events
+	If I'm sending something "to owner" because owner is the only one who can handle it, then it should be a handshaked event, because by the time the event gets there owner might not be owner anymore and ask me to retry.
+
+Entities
+	I can "join" with an entity I control, I can be "joined" by entities I don't control.
+	I can "leave" with an entity I control, I can be "left" by entities I don't control.
+	I can "request" entities I want to control, I can "release" entities I don't want to control anymore.
+	release goes to a supervisor (oe.highestResource.owner) and ideally should transfer back to a room-participant, just like a resource release
 
 
 Rain Meadow devlog (this also helped me organize my ideas)

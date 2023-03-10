@@ -9,6 +9,7 @@ Manage missing regions:
 Entities entities entities
 	need new hookpoint for objects being moved between worlds, so they're added to the new world 
 		but maybe just the removal-addal works?
+		need at least to clear out untransferable self from old world so it can deactivate
 
 	world registers entities
 	entities need to be transferable
@@ -22,10 +23,49 @@ Entities entities entities
 		spanws on if world owner
 		needs resource available earlier in the load process so this can be turned on/off accordingly
 
+	but alright right now
+		when trying to release a room
+		if im the owner of the world
+		i try and release and I dont release to myself
+		also doesnt make sense to call entity leave room because the entity is staying behind, other players still need it
+
+	If entity IDs were fixed and didnt change on transfer, it would be much easier to do transfers and it would be trivial to do donations
+		could go back to "toss them to supervisor along a list of candidates"
+		if 12 bytes is too absurd, players in lobby could be given a shorter-id so that'd be 8 bytes per entity
+
+	Need to assign world/room to entities as they move around
+		how is that kept in sync?
+
+	Entity Join/leave should be handshaked, owner can change inbetween
+	Join Joined ResolveJoin
+	Leave Left ResolveLeave
+	Donate Donated ResolveDonate
+
+handle disconnects
+	if super and sublease owner missing, organize transfer
+		how do you get a list of participants though? shouldn't a participant start it so they have a list, super agrees on if current owner really detected missing?
+	pending events that are going to a disconnected user should "error out" to trigger a retry against the right user
+		iPendingEvent.Fail -> resource.Resolve(errorevent)
+
+
+gamemode: meadow: stays in game, infinite cycle, no ways to die or sleep, quits to lobby-screen
+gamemode: online coop: juuuust like couch coop
+	needs a more fine grained description here
+	essentially need to meet a set of expectations, but better have all of those written out
+
+
+Mod auto installing / auto disabling
+	oh my
+	could use a whitelist maybe
+	apply automatically, re-launch and re-join the lobby in question
+		arg from the command line to join lobby, also needed for steam's Join feature thing
+
+
+Older notes:
+	
 	todo sorting out "handing over entities" on resource release
 		player leaves a room, should hand over entities it had in that room
 		room owner leaves a room, should hand over entities it had in that room
-
 		region owner leaves a region, should hand over entities it had in that region
 
 	leaving entities behind:
@@ -83,22 +123,4 @@ Entities entities entities
 
 		so we want to send leftover entities to the owner or whoever we're releasing the room/world to, that's the best option it seems
 
-
-
-handle disconnects
-	if super and sublease owner missing, organize transfer
-		how do you get a list of participants though? shouldn't a participant start it so they have a list, super agrees on if current owner really detected missing?
-	pending events that are going to a disconnected user should "error out" to trigger a retry against the right user
-		iPendingEvent.Fail -> resource.Resolve(errorevent)
-
-gamemode: meadow: stays in game, infinite cycle, no ways to die or sleep, quits to lobby-screen
-gamemode: online coop: juuuust like couch coop
-	needs a more fine grained description here
-	essentially need to meet a set of expectations, but better have all of those written out
-
-
-Mod auto installing / auto disabling
-	oh my
-	could use a whitelist maybe
-	apply automatically, re-launch and re-join the lobby in question
-		arg from the command line to join lobby, also needed for steam's Join feature thing
+		

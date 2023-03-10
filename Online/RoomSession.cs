@@ -45,7 +45,7 @@ namespace RainMeadow
             {
                 if (ent is AbstractPhysicalObject apo)
                 {
-                    EntityEnteringRoom(apo, apo.pos);
+                    ApoEnteringRoom(apo, apo.pos);
                 }
             }
         }

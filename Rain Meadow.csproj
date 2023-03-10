@@ -211,7 +211,6 @@
   <ItemGroup>
     <Content Include="Mod\thumbnail.png" />
     <None Include="Readme.md" />
-    <Content Include="Design notes.txt" />
     <Content Include="Thoughts.txt" />
     <Content Include="TODO.txt" />
   </ItemGroup>
