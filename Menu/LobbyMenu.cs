@@ -23,13 +23,17 @@ namespace RainMeadow
             (backObject as SimplerButton).OnClick += Back;
 
             pages[0].subObjects.Add(startbtn = new SimplerButton(this, pages[0], "START", btns, btnsize));
-            //startbtn.buttonBehav.greyedOut = !OnlineManager.lobby.isOwner;
+            if (OnlineManager.lobby != null)
+            {
+                OnlineManager.lobby.lobbyMenu = this;
+            }
+            startbtn.buttonBehav.greyedOut = !OnlineManager.lobby.isAvailable;
             startbtn.OnClick += (SimplerButton obj) => { StartGame(); };
         }
 
         private void Back(SimplerButton obj)
         {
-            RainMeadow.DebugMethod();
+            RainMeadow.DebugMe();
             manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
         }
 
@@ -42,9 +46,15 @@ namespace RainMeadow
             return base.UpdateInfoText();
         }
 
+        public void OnLobbyAvailable()
+        {
+            RainMeadow.DebugMe();
+            startbtn.buttonBehav.greyedOut = false;
+        }
+
         private void StartGame()
         {
-            RainMeadow.DebugMethod();
+            RainMeadow.DebugMe();
             if (OnlineManager.lobby == null) return;
             manager.menuSetup.startGameCondition = RainMeadow.Ext_StoryGameInitCondition.Online;
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
@@ -52,6 +62,11 @@ namespace RainMeadow
 
         public override void ShutDownProcess()
         {
+            RainMeadow.DebugMe();
+            if (OnlineManager.lobby != null)
+            {
+                OnlineManager.lobby.lobbyMenu = null;
+            }
             if(manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
                 LobbyManager.LeaveLobby();

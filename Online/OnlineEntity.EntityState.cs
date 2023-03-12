@@ -1,16 +1,21 @@
 ﻿using System;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.LowLevel;
 
 namespace RainMeadow
 {
     public partial class OnlineEntity
     {
+        internal EntityState latestState;
+
         internal void ReadState(EntityState entityState, ulong tick)
         {
             // todo easing??
             // might need to get a ref to the sender all the way here for lag estimations?
+            // todo delta handling
             entityState.ReadTo(this);
+            latestState = entityState;
         }
 
         internal EntityState GetState(ulong tick, OnlineResource resource)
@@ -102,7 +107,6 @@ namespace RainMeadow
 
             protected override RealizedObjectState GetRealizedState()
             {
-                if (onlineEntity.entity.realizedObject == null) throw new InvalidOperationException("not realized");
                 if (onlineEntity.entity.realizedObject is Player) return new RealizedPlayerState(onlineEntity);
                 if (onlineEntity.entity.realizedObject is Creature) return new RealizedCreatureState(onlineEntity);
                 return base.GetRealizedState();
@@ -114,6 +118,8 @@ namespace RainMeadow
         internal class RealizedObjectState : OnlineState
         {
             ChunkState[] chunkStates;
+
+            public RealizedObjectState() { }
             public RealizedObjectState(OnlineEntity onlineEntity)
             {
                 if (onlineEntity != null)
@@ -174,18 +180,86 @@ namespace RainMeadow
 
         internal class RealizedCreatureState : RealizedObjectState
         {
+            public RealizedCreatureState() { }
             public RealizedCreatureState(OnlineEntity onlineEntity) : base(onlineEntity)
             {
+
             }
             public override StateType stateType => StateType.RealizedCreatureState;
         }
 
         internal class RealizedPlayerState : RealizedCreatureState
         {
+            private byte animationIndex;
+            private short animationFrame;
+            private byte bodyModeIndex;
+            private ushort inputs;
+            private Vector2 analogInput;
+            public RealizedPlayerState() { }
             public RealizedPlayerState(OnlineEntity onlineEntity) : base(onlineEntity)
             {
+                Player p = onlineEntity.entity.realizedObject as Player;
+                animationIndex = (byte)p.animation.Index;
+                animationFrame = (short)p.animationFrame;
+                bodyModeIndex = (byte)p.bodyMode.Index;
+
+                var i = p.input[0];
+                inputs = (ushort)(
+                      (i.x == 1 ? 1 << 0 : 0)
+                    | (i.x == -1 ? 1 << 1 : 0)
+                    | (i.y == 1 ? 1 << 2 : 0)
+                    | (i.y == -1 ? 1 << 3 : 0)
+                    | (i.downDiagonal == 1 ? 1 << 4 : 0)
+                    | (i.downDiagonal == -1 ? 1 << 5 : 0)
+                    | (i.pckp ? 1 << 6 : 0)
+                    | (i.jmp ? 1 << 7 : 0)
+                    | (i.thrw ? 1 << 8 : 0)
+                    | (i.mp ? 1 << 9 : 0));
+
+                analogInput = i.analogueDir;
             }
+            internal Player.InputPackage GetInput()
+            {
+                Player.InputPackage i = default;
+                if (((inputs >> 0) & 1) != 0) i.x = 1;
+                if (((inputs >> 1) & 1) != 0) i.x = -1;
+                if (((inputs >> 2) & 1) != 0) i.y = 1;
+                if (((inputs >> 3) & 1) != 0) i.y = -1;
+                if (((inputs >> 4) & 1) != 0) i.downDiagonal = 1;
+                if (((inputs >> 5) & 1) != 0) i.downDiagonal = -1;
+                if (((inputs >> 6) & 1) != 0) i.pckp = true;
+                if (((inputs >> 7) & 1) != 0) i.jmp = true;
+                if (((inputs >> 8) & 1) != 0) i.thrw = true;
+                if (((inputs >> 9) & 1) != 0) i.mp = true;
+                i.analogueDir = analogInput;
+                return i;
+            }
+
             public override StateType stateType => StateType.RealizedPlayerState;
+
+            public override void CustomSerialize(Serializer serializer)
+            {
+                base.CustomSerialize(serializer);
+                serializer.Serialize(ref animationIndex);
+                serializer.Serialize(ref animationFrame);
+                serializer.Serialize(ref bodyModeIndex);
+                serializer.Serialize(ref inputs);
+                serializer.Serialize(ref analogInput);
+            }
+
+            internal override void ReadTo(OnlineEntity onlineEntity)
+            {
+                base.ReadTo(onlineEntity);
+                if(onlineEntity.entity.realizedObject is Player pl)
+                {
+                    pl.animation = new Player.AnimationIndex(Player.AnimationIndex.values.GetEntry(animationIndex));
+                    pl.animationFrame = animationFrame;
+                    pl.bodyMode = new Player.BodyModeIndex(Player.BodyModeIndex.values.GetEntry(bodyModeIndex));
+                    //pl.input[0] = GetInput(); // moved to controller, otherwise we miss "pressed this frame" events
+                }
+            }
+
+            
         }
     }
 }

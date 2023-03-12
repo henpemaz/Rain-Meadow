@@ -192,12 +192,6 @@ namespace RainMeadow
             // unused
         }
 
-        internal void Serialize(ref ulong uLong)
-        {
-            if (isWriting) writer.Write(uLong);
-            if (isReading) uLong = reader.ReadUInt64();
-        }
-
         internal void Serialize(ref OnlinePlayer player)
         {
             if (isWriting)
@@ -254,10 +248,34 @@ namespace RainMeadow
             leaseState.CustomSerialize(this);
         }
 
+        internal void Serialize(ref byte data)
+        {
+            if (isWriting) writer.Write(data);
+            if (isReading) data = reader.ReadByte();
+        }
+
+        internal void Serialize(ref ushort data)
+        {
+            if (isWriting) writer.Write(data);
+            if (isReading) data = reader.ReadUInt16();
+        }
+
+        internal void Serialize(ref short data)
+        {
+            if (isWriting) writer.Write(data);
+            if (isReading) data = reader.ReadInt16();
+        }
+
         internal void Serialize(ref int data)
         {
             if (isWriting) writer.Write(data);
             if (isReading) data = reader.ReadInt32();
+        }
+
+        internal void Serialize(ref uint data)
+        {
+            if (isWriting) writer.Write(data);
+            if (isReading) data = reader.ReadUInt32();
         }
 
         internal void Serialize(ref bool data)
@@ -266,6 +284,13 @@ namespace RainMeadow
             if (isReading) data = reader.ReadBoolean();
         }
 
+        internal void Serialize(ref ulong data)
+        {
+            if (isWriting) writer.Write(data);
+            if (isReading) data = reader.ReadUInt64();
+        }
+
+        // this one isnt exactly safe, can cause huge allocations
         internal void Serialize(ref string data)
         {
             if (isWriting) writer.Write(data);

@@ -54,13 +54,13 @@ namespace RainMeadow
                     s = new OnlineEntity.CreatureEntityState();
                     break;
                 case StateType.RealizedObjectState:
-                    s = new OnlineEntity.RealizedObjectState(null);
+                    s = new OnlineEntity.RealizedObjectState();
                     break;
                 case StateType.RealizedCreatureState:
-                    s = new OnlineEntity.RealizedCreatureState(null);
+                    s = new OnlineEntity.RealizedCreatureState();
                     break;
                 case StateType.RealizedPlayerState:
-                    s = new OnlineEntity.RealizedPlayerState(null);
+                    s = new OnlineEntity.RealizedPlayerState();
                     break;
                 default:
                     break;

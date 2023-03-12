@@ -14,6 +14,7 @@ namespace RainMeadow
         private Region[] loadedRegions;
 
         public Dictionary<string, WorldSession> worldSessions = new();
+        internal LobbyMenu lobbyMenu;
 
         protected override World World => throw new NotSupportedException(); // Lobby can't add world entities
 
@@ -49,6 +50,12 @@ namespace RainMeadow
                 worldSessions.Add(r.name, ws);
                 subresources.Add(ws);
             }
+        }
+
+        protected override void AvailableImpl()
+        {
+            base.AvailableImpl();
+            this.lobbyMenu?.OnLobbyAvailable();
         }
 
         protected override void DeactivateImpl()

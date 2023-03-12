@@ -74,7 +74,7 @@ namespace RainMeadow
 
         public static OnlineEntity CreateOrReuseEntity(NewEntityEvent newEntityEvent, World world)
         {
-            RainMeadow.DebugMethod();
+            RainMeadow.DebugMe();
             OnlineEntity oe = null;
             
             if (OnlineManager.recentEntities.TryGetValue(newEntityEvent.entityId, out oe))

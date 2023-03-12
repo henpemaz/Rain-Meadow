@@ -60,6 +60,7 @@ namespace RainMeadow
                     MenuHooks();
                     GameHooks();
                     EntityHooks();
+                    GameplayHooks();
                 }
                 else
                 {

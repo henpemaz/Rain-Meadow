@@ -156,6 +156,7 @@
     <Compile Include="Ext_.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Menu\MenuDarkSprite.cs" />
+    <Compile Include="Online\OnlineController.cs" />
     <Compile Include="Online\EntityFeed.cs" />
     <Compile Include="Online\Events\EntityReleaseEvent.cs" />
     <Compile Include="Online\Events\EntityReleaseResult.cs" />
@@ -202,6 +203,7 @@
     <Compile Include="RainMeadow.cs" />
     <Compile Include="Game\RainMeadow.GameHooks.cs" />
     <Compile Include="Game\RainMeadow.EntityHooks.cs" />
+    <Compile Include="RainMeadow.GameplayHooks.cs" />
     <Compile Include="RainMeadow.Logging.cs" />
     <Compile Include="Menu\RainMeadow.MenuHooks.cs" />
     <Compile Include="Online\Events\RequestResult.cs" />

@@ -14,32 +14,39 @@ Entities entities entities
 	world registers entities
 	entities need to be transferable
 	on leave, transfer leftovers, remove untransferables
+		done
 
 	thinking more and more they'll work like resources
 	on leaving an entity behind, transfer it to someone else who has the room active, or return to super (world)
-
+		done
 
 	try enabling creature spawns
 		spanws on if world owner
 		needs resource available earlier in the load process so this can be turned on/off accordingly
-
-	but alright right now
-		when trying to release a room
-		if im the owner of the world
-		i try and release and I dont release to myself
-		also doesnt make sense to call entity leave room because the entity is staying behind, other players still need it
+			done
 
 	If entity IDs were fixed and didnt change on transfer, it would be much easier to do transfers and it would be trivial to do donations
 		could go back to "toss them to supervisor along a list of candidates"
+			done
 		if 12 bytes is too absurd, players in lobby could be given a shorter-id so that'd be 8 bytes per entity
 
 	Need to assign world/room to entities as they move around
 		how is that kept in sync?
+		enter/leave events + deactivated
 
 	Entity Join/leave should be handshaked, owner can change inbetween
 	Join Joined ResolveJoin
 	Leave Left ResolveLeave
-	Donate Donated ResolveDonate
+		done?
+	Donate Donated ResolveDonate - do we still need it with the abandom-in-room system?
+
+	handle entities entering shortcuts
+	entering/leaving shorcuts should be a room-level event with the coordinate of the damned thing
+		could do suckedintoshortcuts and spitoutofshortcut as events and bypass the whole vanilla thing
+
+	handle entities entering dens
+		could also be event-based
+		would maybe also have to handle the whole switchcase at "the end of the shortcut" when the creature then either enters a den or leaves the room or whatever
 
 handle disconnects
 	if super and sublease owner missing, organize transfer

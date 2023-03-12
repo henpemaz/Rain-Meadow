@@ -18,7 +18,7 @@ namespace RainMeadow
         {
             try
             {
-                RainMeadow.DebugMethod();
+                RainMeadow.DebugMe();
                 var n = SteamMatchmaking.GetNumLobbyMembers(cSteamID);
                 var oldplayers = OnlineManager.players.Select(p => p.id).ToArray();
                 var newplayers = new CSteamID[n];

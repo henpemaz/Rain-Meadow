@@ -31,7 +31,7 @@ namespace RainMeadow
 
         public static void RequestLobbyList()
         {
-            RainMeadow.DebugMethod();
+            RainMeadow.DebugMe();
             SteamMatchmaking.AddRequestLobbyListDistanceFilter(ELobbyDistanceFilter.k_ELobbyDistanceFilterWorldwide);
             SteamMatchmaking.AddRequestLobbyListStringFilter(OnlineManager.CLIENT_KEY, OnlineManager.CLIENT_VAL, ELobbyComparison.k_ELobbyComparisonEqual);
             m_RequestLobbyListCall.Set(SteamMatchmaking.RequestLobbyList());
@@ -41,7 +41,7 @@ namespace RainMeadow
         {
             try
             {
-                RainMeadow.DebugMethod();
+                RainMeadow.DebugMe();
                 LobbyInfo[] lobbies = new LobbyInfo[pCallback.m_nLobbiesMatching];
                 if (!bIOFailure)
                 {
@@ -63,13 +63,13 @@ namespace RainMeadow
 
         public static void CreateLobby()
         {
-            RainMeadow.DebugMethod();
+            RainMeadow.DebugMe();
             m_CreateLobbyCall.Set(SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypePublic, 10));
         }
 
         public static void JoinLobby(LobbyInfo lobby)
         {
-            RainMeadow.DebugMethod();
+            RainMeadow.DebugMe();
             m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(lobby.id));
         }
 
@@ -77,7 +77,7 @@ namespace RainMeadow
         {
             try
             {
-                RainMeadow.DebugMethod();
+                RainMeadow.DebugMe();
                 if (!bIOFailure && param.m_eResult == EResult.k_EResultOK)
                 {
                     RainMeadow.Debug("success");
@@ -124,7 +124,7 @@ namespace RainMeadow
 
         public static void LeaveLobby()
         {
-            RainMeadow.DebugMethod();
+            RainMeadow.DebugMe();
             if (OnlineManager.lobby != null)
             {
                 SteamMatchmaking.LeaveLobby(OnlineManager.lobby.id);

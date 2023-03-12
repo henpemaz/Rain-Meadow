@@ -17,7 +17,7 @@ namespace RainMeadow
             callerFile = callerFile.Substring(0, callerFile.LastIndexOf('.'));
             instance.Logger.LogInfo($"{callerFile}.{callerName}:{data}");
         }
-        public static void DebugMethod([CallerFilePath] string callerFile = "", [CallerMemberName] string callerName = "")
+        public static void DebugMe([CallerFilePath] string callerFile = "", [CallerMemberName] string callerName = "")
         {
             callerFile = callerFile.Substring(callerFile.LastIndexOf('\\') + 1);
             callerFile = callerFile.Substring(0, callerFile.LastIndexOf('.'));
