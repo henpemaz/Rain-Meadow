@@ -1,6 +1,7 @@
 ﻿Rain Meadow
 
 on join, takes a while to get lobby data, grey out button
+	done
 
 Manage missing regions:
 	right now nullrefs because missing referenced resource

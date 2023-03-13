@@ -155,7 +155,9 @@
   <ItemGroup>
     <Compile Include="Ext_.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Menu\IHaveADescription.cs" />
     <Compile Include="Menu\MenuDarkSprite.cs" />
+    <Compile Include="Menu\SmartMenu.cs" />
     <Compile Include="Online\OnlineController.cs" />
     <Compile Include="Online\EntityFeed.cs" />
     <Compile Include="Online\Events\EntityReleaseEvent.cs" />

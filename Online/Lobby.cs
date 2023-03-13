@@ -14,9 +14,9 @@ namespace RainMeadow
         private Region[] loadedRegions;
 
         public Dictionary<string, WorldSession> worldSessions = new();
-        internal LobbyMenu lobbyMenu;
-
         protected override World World => throw new NotSupportedException(); // Lobby can't add world entities
+
+        public event Action OnLobbyAvailable;
 
         public Lobby(CSteamID id)
         {
@@ -55,7 +55,8 @@ namespace RainMeadow
         protected override void AvailableImpl()
         {
             base.AvailableImpl();
-            this.lobbyMenu?.OnLobbyAvailable();
+            OnLobbyAvailable?.Invoke();
+            OnLobbyAvailable = null;
         }
 
         protected override void DeactivateImpl()

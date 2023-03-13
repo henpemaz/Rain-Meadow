@@ -4,47 +4,23 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class LobbySelectMenu : Menu.Menu
+    public class LobbySelectMenu : SmartMenu
     {
         Vector2 btns = new Vector2(350, 100);
-        Vector2 btnsize = new Vector2(100, 20);
+        Vector2 btnsize = new Vector2(100, 30);
         private SimplerButton createbtn;
+
+        public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
+        public override ProcessManager.ProcessID BackTarget => ProcessManager.ProcessID.MainMenu;
 
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
         {
-            RainMeadow.Debug("LobbySelectMenu created");
-            this.pages.Add(new Page(this, null, "main", 0));
-
-            this.scene = new InteractiveMenuScene(this, pages[0], MenuScene.SceneID.Landscape_CC);
-            pages[0].subObjects.Add(this.scene);
-
-            pages[0].subObjects.Add(new MenuDarkSprite(this, pages[0]));
-
-            pages[0].subObjects.Add(this.backObject = new SimplerButton(this, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f)));
-            (backObject as SimplerButton).OnClick += Back;
-
             pages[0].subObjects.Add(createbtn = new SimplerButton(this, pages[0], "new lobby", btns, btnsize));
             createbtn.OnClick += (SimplerButton obj) => { RequestLobbyCreate(); };
             LobbyManager.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
             LobbyManager.OnLobbyJoined += OnlineManager_OnLobbyJoined;
-            LobbyManager.RequestLobbyList();
-
             SteamNetworkingUtils.InitRelayNetworkAccess();
-        }
-
-        private void Back(SimplerButton obj)
-        {
-            RainMeadow.DebugMe();
-            manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
-        }
-
-        public override string UpdateInfoText()
-        {
-            if (this.selectedObject is SimplerButton sb)
-            {
-                return sb.description;
-            }
-            return base.UpdateInfoText();
+            LobbyManager.RequestLobbyList();
         }
 
         void RequestLobbyCreate()

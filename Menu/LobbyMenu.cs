@@ -3,52 +3,27 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class LobbyMenu : Menu.Menu
+    public class LobbyMenu : SmartMenu
     {
         Vector2 btns = new Vector2(350, 100);
         Vector2 btnsize = new Vector2(100, 20);
         private SimplerButton startbtn;
 
+        public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
+        public override ProcessManager.ProcessID BackTarget => RainMeadow.Ext_ProcessID.LobbySelectMenu;
+
         public LobbyMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbyMenu)
         {
             RainMeadow.Debug("LobbySelectMenu created");
-            this.pages.Add(new Page(this, null, "main", 0));
-
-            this.scene = new InteractiveMenuScene(this, pages[0], MenuScene.SceneID.Landscape_CC);
-            pages[0].subObjects.Add(this.scene);
-
-            pages[0].subObjects.Add(new MenuDarkSprite(this, pages[0]));
-
-            pages[0].subObjects.Add(this.backObject = new SimplerButton(this, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f)));
-            (backObject as SimplerButton).OnClick += Back;
-
+            
             pages[0].subObjects.Add(startbtn = new SimplerButton(this, pages[0], "START", btns, btnsize));
-            if (OnlineManager.lobby != null)
-            {
-                OnlineManager.lobby.lobbyMenu = this;
-            }
             startbtn.buttonBehav.greyedOut = !OnlineManager.lobby.isAvailable;
+            OnlineManager.lobby.OnLobbyAvailable += OnLobbyAvailable;
             startbtn.OnClick += (SimplerButton obj) => { StartGame(); };
         }
 
-        private void Back(SimplerButton obj)
+        void OnLobbyAvailable()
         {
-            RainMeadow.DebugMe();
-            manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
-        }
-
-        public override string UpdateInfoText()
-        {
-            if (this.selectedObject is SimplerButton sb)
-            {
-                return sb.description;
-            }
-            return base.UpdateInfoText();
-        }
-
-        public void OnLobbyAvailable()
-        {
-            RainMeadow.DebugMe();
             startbtn.buttonBehav.greyedOut = false;
         }
 
@@ -63,11 +38,8 @@ namespace RainMeadow
         public override void ShutDownProcess()
         {
             RainMeadow.DebugMe();
-            if (OnlineManager.lobby != null)
-            {
-                OnlineManager.lobby.lobbyMenu = null;
-            }
-            if(manager.upcomingProcess != ProcessManager.ProcessID.Game)
+            if (OnlineManager.lobby != null) OnlineManager.lobby.OnLobbyAvailable -= OnLobbyAvailable;
+            if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
                 LobbyManager.LeaveLobby();
             }
