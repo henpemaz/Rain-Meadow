@@ -195,7 +195,6 @@ namespace RainMeadow
             if (ok)
             {
                 this.lobbies = lobbies;
-                this.lobbies = new LobbyInfo[1] { new LobbyInfo(default) { name = "dummy" } };
                 CreateLobbyCards();
             }
         }

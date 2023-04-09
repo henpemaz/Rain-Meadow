@@ -13,7 +13,6 @@ namespace RainMeadow
         private readonly string description;
         public string Description => description;
 
-
         public override void Clicked() { base.Clicked(); OnClick?.Invoke(this); }
         public event Action<EventfulSelectOneButton> OnClick;
     }
