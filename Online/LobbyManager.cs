@@ -72,10 +72,17 @@ namespace RainMeadow
             }
         }
 
-        public static void CreateLobby()
+        public static void CreateLobby(LobbyVisibility visibility)
         {
             RainMeadow.DebugMe();
-            m_CreateLobbyCall.Set(SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypePublic, 10));
+            ELobbyType eLobbyTypeeLobbyType = visibility switch
+            {
+                LobbyVisibility.Private => ELobbyType.k_ELobbyTypePrivate,
+                LobbyVisibility.Public => ELobbyType.k_ELobbyTypePublic,
+                LobbyVisibility.FriendsOnly => ELobbyType.k_ELobbyTypeFriendsOnly,
+                _ => ELobbyType.k_ELobbyTypePublic
+            };
+            m_CreateLobbyCall.Set(SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypePublic, 16));
         }
 
         public static void JoinLobby(LobbyInfo lobby)
