@@ -14,7 +14,6 @@ namespace RainMeadow
             this.onlineResource = onlineResource;
         }
 
-
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);

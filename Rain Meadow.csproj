@@ -155,6 +155,9 @@
   <ItemGroup>
     <Compile Include="Ext_.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Menu\EventfulScrollButton.cs" />
+    <Compile Include="Menu\EventfulSelectOneButton.cs" />
+    <Compile Include="Menu\ProperlyAlignedMenuLabel.cs" />
     <Compile Include="Menu\IHaveADescription.cs" />
     <Compile Include="Menu\MenuDarkSprite.cs" />
     <Compile Include="Menu\SmartMenu.cs" />

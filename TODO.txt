@@ -11,35 +11,10 @@ Entities entities entities
 	need new hookpoint for objects being moved between worlds, so they're added to the new world 
 		but maybe just the removal-addal works?
 		need at least to clear out untransferable self from old world so it can deactivate
-
-	world registers entities
-	entities need to be transferable
-	on leave, transfer leftovers, remove untransferables
-		done
-
-	thinking more and more they'll work like resources
-	on leaving an entity behind, transfer it to someone else who has the room active, or return to super (world)
-		done
-
-	try enabling creature spawns
-		spanws on if world owner
-		needs resource available earlier in the load process so this can be turned on/off accordingly
-			done
-
-	If entity IDs were fixed and didnt change on transfer, it would be much easier to do transfers and it would be trivial to do donations
-		could go back to "toss them to supervisor along a list of candidates"
-			done
-		if 12 bytes is too absurd, players in lobby could be given a shorter-id so that'd be 8 bytes per entity
-
-	Need to assign world/room to entities as they move around
-		how is that kept in sync?
-		enter/leave events + deactivated
+	todo check how current code behaves, I havent event tested it much
 
 	Entity Join/leave should be handshaked, owner can change inbetween
-	Join Joined ResolveJoin
-	Leave Left ResolveLeave
-		done?
-	Donate Donated ResolveDonate - do we still need it with the abandom-in-room system?
+		the "ent-owner-to-room-owner"
 
 	handle entities entering shortcuts
 	entering/leaving shorcuts should be a room-level event with the coordinate of the damned thing
@@ -48,6 +23,24 @@ Entities entities entities
 	handle entities entering dens
 		could also be event-based
 		would maybe also have to handle the whole switchcase at "the end of the shortcut" when the creature then either enters a den or leaves the room or whatever
+	
+	handle grasps
+		grasps need to be sent around in a similar way entities are
+		the biggest problem is: can only send grasps once we've identified all entities involved
+		on entity-join, if all connected entities already join, then send grasps?
+		how do we handle entity leave from the non-owner side? because an entity that has grasps will try and move many things with it
+			how do we even detect that?
+		
+		if it's things that are moving together maybe the events should be just one event
+		"move with grabbed"
+		or maybe this should be the default, since ent.move DOES move things together??
+		how do I detect things that are being moved together?
+			.move is recursive isn't it
+			does the absgrasp know of the realgrasp?
+	
+	just disable grasps for now and crack on with persona-only stuff??
+		"I have failed and I'll move on with simpler things"
+			
 
 handle disconnects
 	if super and sublease owner missing, organize transfer
@@ -57,78 +50,76 @@ handle disconnects
 
 
 gamemode: meadow: stays in game, infinite cycle, no ways to die or sleep, quits to lobby-screen
-gamemode: online coop: juuuust like couch coop
+	Options:
+		visibility:
+			-Friends Only
+			-Public
+		max players:
+			defaults to 32? load critical on world owner if all in world
+	Rules:
+		- no other mods?
+		- players join a lobby
+		- in the lobby, players can
+			- pick which persona they'd like to go in game as
+			- see unique collectables they've found in the world
+			- see progression for:
+				- unlocking new personas
+				- unlocking new skins for each persona
+				- unlocking new emotes for each persona
+		- players enter the game as personas, not necessarily slugcat
+		- in the game
+			- players see eachothers personas
+			- there are no roaming creatures
+			- there are no items
+			- only cosmetic placedobjects are placed
+			- personas dont collide with eachother
+			- the only things the player can find:
+				- eachother
+				- collectables the player picks up by colliding with
+					- unique plants
+					- unique replicas of game items
+						- I'm thinking the plant-items really
+				- progression bits
+					???
+				- puzzles
+					and what I mean by this is something it takes more than 1 player to do
+				- food to eat and share?
+			- there is no cycle timer
+			- gates have no requirements
+				- or maybe... require X players, but going back is always unlocked?
+					- that drop into sub though, or other one-way situations... could be bad
+			- dying in a pit puts you back
+				- to the room entrance?
+				- to the spawn position?
+			- can't run out of air when swimming
+			- any other ways to die?
+				- coils in 5p stun only...
+				- check dnspy I guess
+			- sleeping in a shelter plays a short animation
+				- saves your spawn position
+				- doesn't close the shelter and doesn't end the game
+		
+gamemode: online coop story mode : juuuust like couch coop
 	needs a more fine grained description here
 	essentially need to meet a set of expectations, but better have all of those written out
+	- there is a host
+	- there is a savestate or savefile to be used
+	- players want to play together and make progress together
+		- even though we could have them save position separetedly, makes more sense to keep everyone together
+		- respawn in last shelter vs respawn with host (or other alive player)
+		- what if the host died
+	- there is a rain cycle, players must be all asleep or dead for the cycle to tick
+	- engine stuff missing:
+		grasps
 
 
 Mod auto installing / auto disabling
+	biggest issue: different region list
+		scenario: host that has ABC, guests have AB, BC and CA, host leaves nobody can take over hosting
 	oh my
 	could use a whitelist maybe
 	apply automatically, re-launch and re-join the lobby in question
 		arg from the command line to join lobby, also needed for steam's Join feature thing
-
-
-Older notes:
+	bruteforce
+	disable all other mods temporarily, store old enabledlist, relaunch with no mods
 	
-	todo sorting out "handing over entities" on resource release
-		player leaves a room, should hand over entities it had in that room
-		room owner leaves a room, should hand over entities it had in that room
-		region owner leaves a region, should hand over entities it had in that region
-
-	leaving entities behind:
-		Cenario 1: a player unloads an active room, they are the only player in it:
-			option 1: do nothing, still owns the entities when back to world level
-			option 2: return entities to world-owner before unleasing
-			option 3: return entities to world-owner as part of unleasing process
-
-		Cenario 2: 2 players share a room, the room-owner wants to leave and the room will be transfered to the second player
-			option 1: the owner cannot unlease the room until it has gotten rid of all its entities in there, so it transfers them one by one to another playre in the room
-			option 2: the owner returns all its entities to super, aka world-owner.
-			option 3: the unlease process includes orphan entities to be given a new owner
-			option 4: do nothing, entities have an owner that has left the resource, and can be claimed by asking room-owner
-
-		Cenario 2.5: a player subscribed to a room wants to leave, they have some entities in it
-			option 1: they cannot leave until they have transfered all resources
-			option 2: they leave entities behind that can be reclaimed by someone else
-				but really, this guy is still in world, what decision process lets owner reasign their creetchere to me??? not good
-			option 3: the unlease process includes orphan entities to be given a new owner
-
-		Cenario 3: a player unloads a world, they are the only player in it:
-			option 1: as they unload the world, entities are destroyed/discarded
-			option 2: they return entities to super (lobby) and lobby does nothing with it
-
-		Cenario 4: a player unloads a world, it is shared and will be transfered over
-			option 1: the owner cannot unlease the world until it has gotten rid of all its entities in there, so it transfers them one by one to another player in the world
-			option 2: the unlease process includes orphan entities to be given a new owner
-
-		Cenario 4.5: a player that is subscribed to a world is leaving, they have some entities in it
-			option 1: they don't have any entities in it, they have left the room and they cannot own entities at a world-level
-			option 2: they leave entities behind
-			option 3: the unlease process includes orphan entities to be given a new owner 
-
-		Formalizing options:
-			A: force transfer before unload
-				need to implement "transfer directly to"
-					could go to super as well but seems weird, BUT better since we want to quickly release and super is less likely to error-because-left
-				would fire a lot of events
-				straightforward and likely robust
-			B: do not transfer, leave behind, abandoned can be requested to resource-owner
-				simple? 
-				likely not robust? 
-				could this cause memleaks? nullrefs? weird situations on disconnects?
-				who feeds the state when old-owner has left? when do we decide to request the entity from someone else
-					this seems bad
-				how do room-super decides it can give ownership over entities from non-participants, really
-			C: handle over to super during release, let super decide what to do
-				C.1: super handles to somebody else (this seems to be the best of the bunch)
-				C.2: super keeps it until requested (same problem as B, who feeds them, when do they get rerequested)
-				easy to release
-				more work on reassign
-				more steps = more things that can fail during release/transfer
-				if super is lobby, supper doesn't know about the entities
-					but do they need to know? they're being handed over by world-authority, if shit were to be tits up it'd be already
-
-		so we want to send leftover entities to the owner or whoever we're releasing the room/world to, that's the best option it seems
-
-		

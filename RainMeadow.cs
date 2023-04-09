@@ -51,13 +51,13 @@ namespace RainMeadow
 
             try
             {
-                //pm already initialized lol
+                MenuHooks();
                 if (SteamManager.Initialized)
                 {
                     PlayersManager.InitPlayersManager();
                     LobbyManager.InitLobbyManager();
                     self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
-                    MenuHooks();
+                    
                     GameHooks();
                     EntityHooks();
                     GameplayHooks();

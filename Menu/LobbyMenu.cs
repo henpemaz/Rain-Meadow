@@ -10,8 +10,6 @@ namespace RainMeadow
         private SimplerButton startbtn;
 
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
-        public override ProcessManager.ProcessID BackTarget => RainMeadow.Ext_ProcessID.LobbySelectMenu;
-
         public LobbyMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbyMenu)
         {
             RainMeadow.Debug("LobbySelectMenu created");

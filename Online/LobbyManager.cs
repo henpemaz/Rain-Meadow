@@ -1,6 +1,7 @@
 ﻿using Steamworks;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace RainMeadow
@@ -22,6 +23,16 @@ namespace RainMeadow
             m_JoinLobbyCall = CallResult<LobbyEnter_t>.Create(LobbyJoined);
             m_LobbyDataUpdate = Callback<LobbyDataUpdate_t>.Create(LobbyUpdated);
             m_LobbyChatUpdate = Callback<LobbyChatUpdate_t>.Create(LobbyChatUpdated);
+        }
+
+        public enum LobbyVisibility
+        {
+            [Description("Public")]
+            Public = 0,
+            [Description("Friends Only")]
+            FriendsOnly,
+            [Description("Private")]
+            Private
         }
 
         public static event LobbyListReceived_t OnLobbyListReceived;
