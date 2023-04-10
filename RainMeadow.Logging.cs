@@ -1,5 +1,6 @@
 ﻿using BepInEx.Logging;
 using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -12,7 +13,7 @@ namespace RainMeadow
 
     partial class RainMeadow
     {
-        private static string TrimCaller(string callerFile) { return (callerFile = callerFile.Substring(Mathf.Max(callerFile.LastIndexOf('\\'), callerFile.LastIndexOf('/')) + 1)).Substring(0, callerFile.LastIndexOf('.')); }
+        private static string TrimCaller(string callerFile) { return (callerFile = callerFile.Substring(Mathf.Max(callerFile.LastIndexOf(Path.DirectorySeparatorChar), callerFile.LastIndexOf(Path.AltDirectorySeparatorChar)) + 1)).Substring(0, callerFile.LastIndexOf('.')); }
         private static string LogTime() { return ((int)(Time.time * 1000)).ToString(); }
         public static void Debug(object data, [CallerFilePath] string callerFile = "", [CallerMemberName] string callerName = "")
         {

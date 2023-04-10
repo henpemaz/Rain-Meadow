@@ -19,6 +19,7 @@ namespace RainMeadow
         public void Update(ulong tick)
         {
             if (!resource.isAvailable) throw new InvalidOperationException("not available");
+            if (!resource.isActive) return; // resource not ready yet
 
             while (OutgoingStates.Count > 0 && OnlineManager.IsNewerOrEqual(player.lastAckdTick, OutgoingStates.Peek().ts))
             {

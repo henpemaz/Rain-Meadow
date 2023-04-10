@@ -44,8 +44,6 @@ namespace RainMeadow
             base.Update();
             if(lobby != null)
             {
-                if (lobby.isAvailable && !lobby.isActive) lobby.Activate(); //why was this here again instead of in the activate flow?
-
                 mePlayer.tick++;
                 // Stuff mePlayer set to itself, events from the distributed lease system
                 while(mePlayer.OutgoingEvents.Count > 0)

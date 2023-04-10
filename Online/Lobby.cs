@@ -57,6 +57,8 @@ namespace RainMeadow
             base.AvailableImpl();
             OnLobbyAvailable?.Invoke();
             OnLobbyAvailable = null;
+
+            Activate();
         }
 
         protected override void DeactivateImpl()

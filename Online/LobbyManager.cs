@@ -28,7 +28,7 @@ namespace RainMeadow
         public enum LobbyVisibility
         {
             [Description("Public")]
-            Public = 0,
+            Public = 1,
             [Description("Friends Only")]
             FriendsOnly,
             [Description("Private")]
@@ -80,7 +80,7 @@ namespace RainMeadow
                 LobbyVisibility.Private => ELobbyType.k_ELobbyTypePrivate,
                 LobbyVisibility.Public => ELobbyType.k_ELobbyTypePublic,
                 LobbyVisibility.FriendsOnly => ELobbyType.k_ELobbyTypeFriendsOnly,
-                _ => ELobbyType.k_ELobbyTypePublic
+                _ => throw new ArgumentException()
             };
             m_CreateLobbyCall.Set(SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypePublic, 16));
         }

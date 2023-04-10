@@ -28,7 +28,9 @@ namespace RainMeadow
         private void StartGame()
         {
             RainMeadow.DebugMe();
-            if (OnlineManager.lobby == null) return;
+            if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
+            manager.arenaSitting = null;
+            manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.menuSetup.startGameCondition = RainMeadow.Ext_StoryGameInitCondition.Online;
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
