@@ -29,6 +29,7 @@ namespace RainMeadow
             On.AbstractRoom.RemoveEntity_AbstractWorldEntity += AbstractRoom_RemoveEntity;
             On.AbstractPhysicalObject.ChangeRooms += AbstractPhysicalObject_ChangeRooms;
 
+            On.ShortcutHandler.VesselAllowedInRoom += ShortcutHandlerOnVesselAllowedInRoom;
             IL.ShortcutHandler.Update += ShortcutHandler_Update; // cleanup of deleted entities in shortcut system
 
             On.RoomRealizer.RealizeAndTrackRoom += RoomRealizer_RealizeAndTrackRoom; // debug
@@ -132,7 +133,7 @@ namespace RainMeadow
                 if (oe.realized && oe.isTransferable && oe.owner.isMe)
                 {
                     if(oe.room != null && oe.room.releaseWhenPossible)
-                    oe.Release();
+                        oe.Release();
                 }
                 if (oe.owner.isMe)
                 {
@@ -165,6 +166,32 @@ namespace RainMeadow
             orig(self, room, actuallyEntering);
         }
 
+        // Prevent creatures from entering a room if their online counterpart has not yet entered!
+        private bool ShortcutHandlerOnVesselAllowedInRoom(On.ShortcutHandler.orig_VesselAllowedInRoom orig, ShortcutHandler self, ShortcutHandler.Vessel vessel)
+        {
+            var result = orig(self, vessel);
+            if (self.game.session is not OnlineGameSession) return result;
+
+            var absCrit = vessel.creature.abstractCreature;
+            OnlineEntity.map.TryGetValue(absCrit, out var onlineEntity);
+            if (onlineEntity.owner.isMe) return result; // If entity is ours, game handles it normally.
+            
+            if (onlineEntity.room.absroom != vessel.room) result = false; // If OnlineEntity is not yet in the room, keep waiting.
+            
+            var connectedObjects = vessel.creature.abstractCreature.GetAllConnectedObjects();
+            foreach (var apo in connectedObjects)
+            {
+                if (apo is AbstractCreature crit)
+                {
+                    OnlineEntity.map.TryGetValue(crit, out var innerOnlineEntity);
+                    if (innerOnlineEntity.room.absroom != vessel.room) result = false; // Same for all connected entities
+                }
+            }
+
+            if (result == false) Debug($"OnlineEntity {onlineEntity.id} not yet in destination room, keeping hostage...");
+            return result;
+        }
+        
         // removes entities that should be deleted when going between rooms
         // not very robust also currently only handles creatures, should check recursively for grasps/connections
         private void ShortcutHandler_Update(ILContext il)
