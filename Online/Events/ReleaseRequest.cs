@@ -9,10 +9,10 @@ namespace RainMeadow
         public List<OnlineEntity.EntityId> abandonedEntities;
 
         public ReleaseRequest() { }
-        public ReleaseRequest(OnlineResource resource, List<OnlinePlayer> participants, List<OnlineEntity.EntityId> entityIds) : base(resource)
+        public ReleaseRequest(OnlineResource resource, List<OnlinePlayer> participants, List<OnlineEntity.EntityId> abandonedEntities) : base(resource)
         {
             this.participants = participants;
-            this.abandonedEntities = entityIds;
+            this.abandonedEntities = abandonedEntities;
         }
 
         public override void CustomSerialize(Serializer serializer)

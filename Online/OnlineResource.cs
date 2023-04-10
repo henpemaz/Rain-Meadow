@@ -302,6 +302,12 @@ namespace RainMeadow
                         ent.highestResource.EntityNewOwner(ent, entitiesTo);
                     }
                 }
+                // todo what to do with the "rest" of entities? there should be none if it's just room/world stuff, but...
+                // currently the receiving side will try and Request entities they receive through this and dont own
+                foreach( var ent in theEntitiesTheySpeakOf.Except(controlledEntities))
+                {
+                    RainMeadow.Error($"Unhandled entity: {ent}");
+                }
 
                 if (newOwner != null)
                 {
@@ -331,7 +337,7 @@ namespace RainMeadow
             return;
         }
 
-        // The previous owner has left and I've been assigned as the new owner
+        // The previous owner has left and I've been assigned (by super) as the new owner
         public void Transfered(TransferRequest request)
         {
             RainMeadow.Debug(this);
@@ -354,16 +360,20 @@ namespace RainMeadow
                     var ent = this.entities.FirstOrDefault(e => e.id == entId);
                     if (ent != null)
                     {
-                        if (!ent.owner.isMe)
+                        if (!ent.owner.isMe) // it couldn't be transfered by super for some reason?
                         {
                             if (ent.highestResource.isOwner)
                             {
                                 ent.owner = null; // so it also notifies the previous owner, because they didn't initiate this change
                                 ent.highestResource.EntityNewOwner(ent, OnlineManager.mePlayer);
                             }
-                            else
+                            else if(!ent.isPending)
                             {
                                 ent.Request();
+                            }
+                            else
+                            {
+                                RainMeadow.Error("Couldn't request entitity because pending: " + ent);
                             }
                         }
                     }
