@@ -119,7 +119,7 @@ namespace RainMeadow
                 RainMeadow.Debug("notifying others in resource of entity transfer");
                 foreach (var player in participants)
                 {
-                    if (player.isMe || player == wasOwner) continue; // reeeeally though? I'm sure this wont bite me in the butt at some point
+                    if (player.isMe) continue;
                     player.QueueEvent(new EntityNewOwnerEvent(this, oe.id, newOwner));
                 }
             }
