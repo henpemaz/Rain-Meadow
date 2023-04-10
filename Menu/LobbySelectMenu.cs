@@ -171,7 +171,8 @@ namespace RainMeadow
         void RequestLobbyCreate()
         {
             RainMeadow.DebugMe();
-            LobbyManager.CreateLobby((visibilityDropDown.cfgEntry as Configurable<LobbyManager.LobbyVisibility>).Value);
+            Enum.TryParse<LobbyManager.LobbyVisibility>(visibilityDropDown.value, out var value);
+            LobbyManager.CreateLobby(value);
         }
 
         void RequestLobbyJoin(LobbyInfo lobby)
@@ -217,7 +218,7 @@ namespace RainMeadow
         public void SetCurrentlySelectedOfSeries(string series, int to)
         {
             if (series == "lobbyCards") currentlySelectedCard = to;
-            return; // TODO
+            return;
         }
     }
 }

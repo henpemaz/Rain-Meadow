@@ -74,7 +74,7 @@ namespace RainMeadow
 
         public static void CreateLobby(LobbyVisibility visibility)
         {
-            RainMeadow.DebugMe();
+            RainMeadow.Debug(visibility);
             ELobbyType eLobbyTypeeLobbyType = visibility switch
             {
                 LobbyVisibility.Private => ELobbyType.k_ELobbyTypePrivate,
@@ -87,7 +87,7 @@ namespace RainMeadow
 
         public static void JoinLobby(LobbyInfo lobby)
         {
-            RainMeadow.DebugMe();
+            RainMeadow.Debug(lobby);
             m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(lobby.id));
         }
 

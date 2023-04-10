@@ -7,11 +7,20 @@ namespace RainMeadow
     {
         private ResourceState lastState;
 
-        public virtual ResourceState GetState(ulong ts)
+        public ResourceState GetState(ulong ts)
         {
             if (lastState == null || lastState.ts != ts)
             {
-                lastState = MakeState(ts);
+
+                try
+                {
+                    lastState = MakeState(ts);
+                }
+                catch (Exception)
+                {
+                    RainMeadow.Error(this);
+                    throw;
+                }
             }
 
             return lastState;

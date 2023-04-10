@@ -305,5 +305,6 @@ namespace RainMeadow
         }
 
         // todo when do things LEAVE world though?
+        // there needs to be a hook at the world transition at gates
     }
 }
