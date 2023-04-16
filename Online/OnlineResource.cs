@@ -299,7 +299,7 @@ namespace RainMeadow
                     if(ent.owner != entitiesTo)
                     {
                         ent.owner = null;
-                        ent.highestResource.EntityNewOwner(ent, entitiesTo);
+                        ent.highestResource.EntityNewOwner(ent, entitiesTo, true);
                     }
                 }
                 // todo what to do with the "rest" of entities? there should be none if it's just room/world stuff, but...
@@ -325,7 +325,7 @@ namespace RainMeadow
                 foreach (var ent in controlledEntities) //assign myself what I can
                 {
                     ent.owner = null;
-                    ent.highestResource.EntityNewOwner(ent, OnlineManager.mePlayer);
+                    ent.highestResource.EntityNewOwner(ent, OnlineManager.mePlayer, true);
                 }
                 foreach(var ent in theEntitiesTheySpeakOf.Except(controlledEntities)) // request the rest
                 {
@@ -365,7 +365,7 @@ namespace RainMeadow
                             if (ent.highestResource.isOwner)
                             {
                                 ent.owner = null; // so it also notifies the previous owner, because they didn't initiate this change
-                                ent.highestResource.EntityNewOwner(ent, OnlineManager.mePlayer);
+                                ent.highestResource.EntityNewOwner(ent, OnlineManager.mePlayer, true);
                             }
                             else if(!ent.isPending)
                             {

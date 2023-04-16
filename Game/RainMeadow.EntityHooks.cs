@@ -116,7 +116,10 @@ namespace RainMeadow
             {
                 if (!oe.realized && oe.isTransferable && !oe.owner.isMe)
                 {
-                    oe.Request();
+                    if (oe.roomSession == null || !oe.roomSession.participants.Contains(oe.owner)) //if owner of oe is subscribed (is participant) do not request
+                    {
+                        oe.Request();
+                    }
                 }
                 if (oe.owner.isMe)
                 {
@@ -132,7 +135,7 @@ namespace RainMeadow
             {
                 if (oe.realized && oe.isTransferable && oe.owner.isMe)
                 {
-                    if(oe.room != null && oe.room.releaseWhenPossible)
+                    if(oe.roomSession != null && oe.roomSession.releaseWhenPossible)
                         oe.Release();
                 }
                 if (oe.owner.isMe)
@@ -176,7 +179,7 @@ namespace RainMeadow
             OnlineEntity.map.TryGetValue(absCrit, out var onlineEntity);
             if (onlineEntity.owner.isMe) return result; // If entity is ours, game handles it normally.
             
-            if (onlineEntity.room.absroom != vessel.room) result = false; // If OnlineEntity is not yet in the room, keep waiting.
+            if (onlineEntity.roomSession?.absroom != vessel.room) result = false; // If OnlineEntity is not yet in the room, keep waiting.
             
             var connectedObjects = vessel.creature.abstractCreature.GetAllConnectedObjects();
             foreach (var apo in connectedObjects)
@@ -184,7 +187,7 @@ namespace RainMeadow
                 if (apo is AbstractCreature crit)
                 {
                     OnlineEntity.map.TryGetValue(crit, out var innerOnlineEntity);
-                    if (innerOnlineEntity.room.absroom != vessel.room) result = false; // Same for all connected entities
+                    if (innerOnlineEntity.roomSession?.absroom != vessel.room) result = false; // Same for all connected entities
                 }
             }
 
@@ -212,24 +215,15 @@ namespace RainMeadow
                 c.EmitDelegate((ShortcutHandler self) => {
                     if(self.game.session is OnlineGameSession)
                     {
-                        for (int i = self.transportVessels.Count - 1; i >= 0; i--)
-                        {
-                            var vessel = self.transportVessels[i];
-                            if (vessel.creature.slatedForDeletetion)
-                            {
-                                RainMeadow.Debug("removing deleted creature" + vessel.creature);
-                                vessel.creature.slatedForDeletetion = false;
-                                self.transportVessels.RemoveAt(i);
-                            }
-                        }
-                        for (int i = self.betweenRoomsWaitingLobby.Count - 1; i >= 0; i--)
+                        for (var i = self.betweenRoomsWaitingLobby.Count - 1; i >= 0; i--)
                         {
                             var vessel = self.betweenRoomsWaitingLobby[i];
-                            if (vessel.creature.slatedForDeletetion)
+                            if (OnlineEntity.map.TryGetValue(vessel.creature.abstractPhysicalObject, out var oe))
                             {
-                                RainMeadow.Debug("removing deleted creature" + vessel.creature);
-                                vessel.creature.slatedForDeletetion = false;
-                                self.betweenRoomsWaitingLobby.RemoveAt(i);
+                                if(!oe.owner.isMe && oe.roomSession?.absroom != vessel.room)
+                                {
+                                    self.betweenRoomsWaitingLobby.Remove(vessel);
+                                }
                             }
                         }
                     }

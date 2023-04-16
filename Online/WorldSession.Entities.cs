@@ -38,7 +38,7 @@ namespace RainMeadow
         protected override void EntityEnteredResource(OnlineEntity oe)
         {
             base.EntityEnteredResource(oe);
-            oe.world = this;
+            oe.worldSession = this;
 
             // not sure how "correct" this is because on the host side it might be different?
             if (!oe.owner.isMe) // kinda wanted a .isRemote helper at this point

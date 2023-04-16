@@ -106,7 +106,7 @@ namespace RainMeadow
         }
 
         // Assign a new owner to this entity, if I own or supervise it, I must notify accordingly
-        internal void EntityNewOwner(OnlineEntity oe, OnlinePlayer newOwner)
+        internal void EntityNewOwner(OnlineEntity oe, OnlinePlayer newOwner, bool notifyPreviousOwner = false)
         {
             RainMeadow.Debug(this);
             if (!isAvailable) { throw new InvalidOperationException("not available"); }
@@ -119,7 +119,7 @@ namespace RainMeadow
                 RainMeadow.Debug("notifying others in resource of entity transfer");
                 foreach (var player in participants)
                 {
-                    if (player.isMe) continue;
+                    if (player.isMe || (player == wasOwner && !notifyPreviousOwner)) continue; // on transfers, we need to notify previous owner
                     player.QueueEvent(new EntityNewOwnerEvent(this, oe.id, newOwner));
                 }
             }

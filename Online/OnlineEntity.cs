@@ -46,10 +46,10 @@ namespace RainMeadow
         public int seed;
         public bool isTransferable = true; // todo make own personas not transferable
 
-        public WorldSession world;
-        public RoomSession room;
-        public OnlineResource lowestResource => (room as OnlineResource ?? world);
-        public OnlineResource highestResource => (world as OnlineResource ?? room);
+        public WorldSession worldSession;
+        public RoomSession roomSession;
+        public OnlineResource lowestResource => (roomSession as OnlineResource ?? worldSession);
+        public OnlineResource highestResource => (worldSession as OnlineResource ?? roomSession);
 
         public bool realized;
         public WorldCoordinate enterPos; // todo keep this updated, currently loading with creatures mid-room still places them in shortcuts
@@ -116,7 +116,8 @@ namespace RainMeadow
                 OnlineEntity.map.Add(creature, oe);
                 OnlineManager.recentEntities.Add(newEntityEvent.entityId, oe);
             }
-            
+            oe.realized = newEntityEvent.realized;
+
             return oe;
         }
 
@@ -124,11 +125,11 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (entity is not AbstractCreature creature) { throw new InvalidOperationException("entity not a creature"); } // todo support noncreechers
-            if (room != null && room != newRoom) // still in previous room
+            if (roomSession != null && roomSession != newRoom) // still in previous room
             {
-                LeftRoom(room);
+                LeftRoom(roomSession);
             }
-            room = newRoom;
+            roomSession = newRoom;
             if (!owner.isMe)
             {
                 RainMeadow.Debug("A remote creature entered, adding it to the room");
@@ -188,7 +189,7 @@ namespace RainMeadow
         internal void LeftRoom(RoomSession oldRoom)
         {
             RainMeadow.Debug(this);
-            if (room == oldRoom)
+            if (roomSession == oldRoom)
             {
                 if (!owner.isMe)
                 {
@@ -207,7 +208,7 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("my own entity leaving");
                 }
-                room = null;
+                roomSession = null;
             }
         }
 
@@ -221,28 +222,28 @@ namespace RainMeadow
             if (wasOwner.isMe)
             {
                 // this screams "iterate" but at the same time... it's just these two for RW, maybe next game
-                if (world != null)
+                if (worldSession != null)
                 {
-                    OnlineManager.RemoveFeed(world, this);
-                    world.SubresourcesUnloaded();
+                    OnlineManager.RemoveFeed(worldSession, this);
+                    worldSession.SubresourcesUnloaded();
                 }
-                if (room != null)
+                if (roomSession != null)
                 {
-                    OnlineManager.RemoveFeed(room, this);
-                    room.SubresourcesUnloaded();
+                    OnlineManager.RemoveFeed(roomSession, this);
+                    roomSession.SubresourcesUnloaded();
                 }
             }
             if (newOwner.isMe) // we only start feeding after we get the broadcast of new owner.
                                // Maybe this should be in ResolveRequest instead? but then there's no guarantee the resource owners will have the new ID
                                // at least there will be no collisions so if we ignore that data its ok?
             {
-                if (world != null)
+                if (worldSession != null)
                 {
-                    OnlineManager.AddFeed(world, this);
+                    OnlineManager.AddFeed(worldSession, this);
                 }
-                if (room != null)
+                if (roomSession != null)
                 {
-                    OnlineManager.AddFeed(room, this);
+                    OnlineManager.AddFeed(roomSession, this);
                 }
                 realized = entity.realizedObject != null; // owner is responsible for upkeeping this
             }
@@ -252,8 +253,8 @@ namespace RainMeadow
         internal void Deactivated(OnlineResource onlineResource)
         {
             RainMeadow.Debug(this);
-            if (onlineResource is WorldSession && this.world == onlineResource) this.world = null;
-            if (onlineResource is RoomSession && this.room == onlineResource) this.room = null;
+            if (onlineResource is WorldSession && this.worldSession == onlineResource) this.worldSession = null;
+            if (onlineResource is RoomSession && this.roomSession == onlineResource) this.roomSession = null;
             if (owner.isMe) OnlineManager.RemoveFeed(onlineResource, this);
         }
 

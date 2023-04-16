@@ -3,6 +3,7 @@
     public class NewEntityEvent : EntityResourceEvent
     {
         public OnlinePlayer owner;
+        public bool realized;
         public bool isTransferable;
         public bool isCreature;
         public string template = "";
@@ -14,6 +15,7 @@
         public NewEntityEvent(OnlineResource resource, OnlineEntity oe) : base(resource, oe.id)
         {
             owner = oe.owner;
+            realized = oe.realized;
             isTransferable = oe.isTransferable;
             isCreature = oe.entity is AbstractCreature;
             template = (oe.entity as AbstractCreature)?.creatureTemplate.type.ToString() ?? "";
@@ -27,6 +29,7 @@
         {
             base.CustomSerialize(serializer);
             serializer.Serialize(ref owner);
+            serializer.Serialize(ref realized);
             serializer.Serialize(ref isTransferable);
             serializer.Serialize(ref isCreature);
             if (isCreature)
