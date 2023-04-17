@@ -12,14 +12,13 @@ namespace RainMeadow
         private List<EntityResourceEvent> incomingEntities; // entities coming from onwer but that I can't process yet
 
         // A new OnlineEntity was added, notify accordingly
-        protected virtual void EntityEnteredResource(OnlineEntity oe)
+        public virtual void EntityEnteredResource(OnlineEntity oe)
         {
             RainMeadow.Debug(this);
             RainMeadow.Debug(oe);
             if (!isAvailable) throw new InvalidOperationException("not available");
             if (entities.Contains(oe)) throw new InvalidOperationException("already in entities");
             entities.Add(oe);
-            RainMeadow.Debug("ADDED " + oe);
             if (isOwner) // I am responsible for notifying other players about it
             {
                 RainMeadow.Debug("notifying others of entity joining");
@@ -58,15 +57,13 @@ namespace RainMeadow
             EntityEnteredResource(oe);
         }
 
-
-        protected virtual void EntityLeftResource(OnlineEntity oe)
+        public virtual void EntityLeftResource(OnlineEntity oe)
         {
             RainMeadow.Debug(this);
             RainMeadow.Debug(oe);
             if (!isAvailable) throw new InvalidOperationException("not available");
             if (!entities.Contains(oe)) throw new InvalidOperationException("not in entities");
             entities.Remove(oe);
-            RainMeadow.Debug("REMOVED " + oe);
             if (isOwner) // I am responsible for notifying other players about it
             {
                 RainMeadow.Debug("notifying others of entity leaving");

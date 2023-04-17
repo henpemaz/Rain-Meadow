@@ -29,16 +29,19 @@ namespace RainMeadow
         protected abstract ResourceState MakeState(ulong ts);
         public virtual void ReadState(ResourceState newState, ulong ts)
         {
-            foreach (var entityState in newState.entityStates)
+            if(isActive)
             {
-                if (entityState != null)
+                foreach (var entityState in newState.entityStates)
                 {
-                    if (entityState.onlineEntity == null || entityState.onlineEntity.owner.isMe) continue;
-                    entityState.onlineEntity.ReadState(entityState, ts);
-                }
-                else
-                {
-                    throw new InvalidCastException("got null state, maybe it was not an EntityState");
+                    if (entityState != null)
+                    {
+                        if (entityState.onlineEntity == null || entityState.onlineEntity.owner.isMe) continue;
+                        entityState.onlineEntity.ReadState(entityState, ts);
+                    }
+                    else
+                    {
+                        throw new InvalidCastException("got null state, maybe it was not an EntityState");
+                    }
                 }
             }
         }

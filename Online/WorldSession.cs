@@ -20,7 +20,6 @@ namespace RainMeadow
         {
             this.region = region;
             this.super = lobby;
-            deactivateOnRelease = true;
         }
 
         internal void BindWorld(World world)

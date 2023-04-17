@@ -35,7 +35,7 @@ namespace RainMeadow
             }
         }
 
-        protected override void EntityEnteredResource(OnlineEntity oe)
+        public override void EntityEnteredResource(OnlineEntity oe)
         {
             base.EntityEnteredResource(oe);
             oe.worldSession = this;
@@ -47,9 +47,10 @@ namespace RainMeadow
             }
         }
 
-        internal void EntityLeftWorld(AbstractPhysicalObject self)
+        public override void EntityLeftResource(OnlineEntity oe)
         {
-            throw new NotImplementedException();
+            base.EntityLeftResource(oe);
+            if (oe.worldSession == this) oe.worldSession = null;
         }
     }
 }

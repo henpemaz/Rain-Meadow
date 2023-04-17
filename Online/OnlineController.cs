@@ -18,6 +18,7 @@
                 return rps.GetInput();
             }
             RainMeadow.Error("no state for player");
+            RainMeadow.Error($"reasons: {ent.latestState is OnlineEntity.CreatureEntityState} {ent.latestState is OnlineEntity.CreatureEntityState ces2 && ces2.realizedState is OnlineEntity.RealizedPlayerState}");
             return base.GetInput();
         }
     }

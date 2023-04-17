@@ -19,7 +19,6 @@ namespace RainMeadow
             super = ws;
             this.absroom = absroom;
             map.Add(absroom, this);
-            deactivateOnRelease = true;
         }
 
         protected override void AvailableImpl()

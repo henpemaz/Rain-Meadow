@@ -176,6 +176,7 @@
     <Compile Include="Online\Events\LeaseChangeEvent.cs" />
     <Compile Include="Online\Events\NewEntityEvent.cs" />
     <Compile Include="Online\OnlineEntity.cs" />
+    <Compile Include="Online\OnlineEntity.EntityId.cs" />
     <Compile Include="Online\OnlineEntity.EntityState.cs" />
     <Compile Include="Online\OnlineResource.Entities.cs" />
     <Compile Include="Online\OnlineResource.LeaseState.cs" />

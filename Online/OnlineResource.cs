@@ -24,24 +24,31 @@ namespace RainMeadow
         public bool isActive { get; protected set; } // The respective in-game resource is loaded
         public bool isAvailable { get; protected set; } // The resource was leased or subscribed to
         public bool isPending => pendingRequest != null;
-        public bool canRelease => !isPending && !subresources.Any(s => s.isAvailable) && !entities.Any(e => e.owner.isMe && !e.isTransferable);
+        public bool canRelease => !isPending && !subresources.Any(s => s.isAvailable);
+        public bool isReleasing => pendingRequest is ReleaseRequest || releaseWhenPossible;
 
         public void FullyReleaseResource()
         {
             RainMeadow.Debug(this);
+            if (!isAvailable) { throw new InvalidOperationException("not available"); }
             if (isActive)
             {
                 foreach (var sub in subresources)
                 {
-                    if (sub.isAvailable && !sub.isPending) sub.FullyReleaseResource();
+                    if (sub.isAvailable) sub.FullyReleaseResource();
                 }
                 foreach (var item in entities.ToList())
                 {
-                    if(!item.isTransferable && item.owner.isMe) EntityLeftResource(item); // force remove
+                    if(!item.isTransferable && item.owner.isMe)
+                    {
+                        //RainMeadow.Debug($"Foce-remove entity {item} from resource {this}");
+                        //EntityLeftResource(item); // force remove
+                        throw new InvalidOperationException("Not isTransferable: " + item);
+                    }
                 }
             }
 
-            if(canRelease) { Release(); releaseWhenPossible = false; }
+            if (canRelease) { Release(); releaseWhenPossible = false; }
             else if (pendingRequest is not ReleaseRequest) { releaseWhenPossible = true; }
         }
 
@@ -103,11 +110,12 @@ namespace RainMeadow
             AvailableImpl();
         }
 
-        public bool deactivateOnRelease;
+        public bool deactivateOnRelease = true; // hmm turns out we always do this
         public bool releaseWhenPossible;
         protected abstract void DeactivateImpl();
 
         // The game resource this corresponds to has been unloaded
+        // or so I thought but: game tring to unload -> release, then deactivate, then let game unload
         public void Deactivate()
         {
             RainMeadow.Debug(this);
@@ -285,7 +293,7 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             RainMeadow.Debug("Released by : " + request.from.name);
 
-            if (isSuper && owner == request.from)
+            if (isSuper && owner == request.from) // The owner is returning this resource to super, but it might still have participants
             {
                 var newParticipants = request.participants.Where(p => p != owner).ToList();
                 var newOwner = PlayersManager.BestTransferCandidate(this, newParticipants);
@@ -316,7 +324,7 @@ namespace RainMeadow
                 request.from.QueueEvent(new ReleaseResult.Released(request)); // this notifies the old owner that the release was a success
                 return;
             }
-            if (isOwner)
+            if (isOwner) // A participant is unsubscribing from the resource
             {
                 request.from.QueueEvent(new ReleaseResult.Unsubscribed(request));
                 Unsubscribed(request.from);
@@ -331,6 +339,7 @@ namespace RainMeadow
                 {
                     ent.Request();
                 }
+
                 return;
             }
             request.from.QueueEvent(new ReleaseResult.Error(request));

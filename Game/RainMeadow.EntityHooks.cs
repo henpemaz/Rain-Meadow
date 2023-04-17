@@ -11,6 +11,8 @@ namespace RainMeadow
 
         private void EntityHooks()
         {
+            On.OverWorld.WorldLoaded += OverWorld_WorldLoaded;
+
             On.RainWorldGame.SpawnPlayers_bool_bool_bool_bool_WorldCoordinate += RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate;
 
             On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor;
@@ -23,7 +25,7 @@ namespace RainMeadow
             On.AbstractPhysicalObject.Realize += AbstractPhysicalObject_Realize;
             On.AbstractCreature.Realize += AbstractCreature_Realize;
             On.AbstractPhysicalObject.Abstractize += AbstractPhysicalObject_Abstractize;
-            On.AbstractCreature.Abstractize += AbstractCreature_Abstractize; ;
+            On.AbstractCreature.Abstractize += AbstractCreature_Abstractize;
 
             On.AbstractRoom.AddEntity += AbstractRoom_AddEntity;
             On.AbstractRoom.RemoveEntity_AbstractWorldEntity += AbstractRoom_RemoveEntity;
@@ -34,6 +36,7 @@ namespace RainMeadow
 
             On.RoomRealizer.RealizeAndTrackRoom += RoomRealizer_RealizeAndTrackRoom; // debug
         }
+
 
         private void AbstractCreature_Update(On.AbstractCreature.orig_Update orig, AbstractCreature self, int time)
         {
@@ -288,7 +291,7 @@ namespace RainMeadow
         {
             //RainMeadow.DebugMethod();
             orig(self, ent);
-            if (self.world.game.session is OnlineGameSession os && !ent.slatedForDeletion && ent is AbstractPhysicalObject apo && apo.pos.room == self.index && RoomSession.map.TryGetValue(self, out var rs) && os.ShouldSyncObjectInRoom(rs, apo))
+            if (self.world.game.session is OnlineGameSession os && ent is AbstractPhysicalObject apo && apo.pos.room == self.index && RoomSession.map.TryGetValue(self, out var rs) && os.ShouldSyncObjectInRoom(rs, apo))
             {
                 rs.ApoEnteringRoom(apo, apo.pos);
             }
@@ -298,7 +301,7 @@ namespace RainMeadow
         {
             //RainMeadow.DebugMethod();
             orig(self, entity);
-            if (self.world.game.session is OnlineGameSession os && !entity.slatedForDeletion && entity is AbstractPhysicalObject apo && RoomSession.map.TryGetValue(self, out var rs) && os.ShouldSyncObjectInRoom(rs, apo))
+            if (self.world.game.session is OnlineGameSession os && entity is AbstractPhysicalObject apo && RoomSession.map.TryGetValue(self, out var rs) && os.ShouldSyncObjectInRoom(rs, apo))
             {
                 rs.ApoLeavingRoom(apo);
             }
@@ -327,5 +330,85 @@ namespace RainMeadow
 
         // todo when do things LEAVE world though?
         // there needs to be a hook at the world transition at gates
+        private void OverWorld_WorldLoaded(On.OverWorld.orig_WorldLoaded orig, OverWorld self)
+        {
+            // todo creatures that were switched over need entering here
+
+            // either this or hook ShouldEntityBeMovedToNewRegion
+            // but that just runs over all entities here anyways;
+
+            if(self.game.session is OnlineGameSession os)
+            {
+                var oldWorld = self.activeWorld;
+                var newWorld = self.worldLoader.world;
+                Room room = null;
+
+                // Regular gate switch
+                // pre: remove remote entities
+                if (self.reportBackToGate != null && RoomSession.map.TryGetValue(self.reportBackToGate.room.abstractRoom, out var roomSession))
+                {
+                    // we go over all APOs in the room
+                    RainMeadow.Debug("Gate switchery 1");
+                    room = self.reportBackToGate.room;
+                    var entities = room.abstractRoom.entities;
+                    for (int i = entities.Count - 1; i >= 0; i--)
+                    {
+                        if (entities[i] is AbstractPhysicalObject apo && OnlineEntity.map.TryGetValue(apo, out var oe))
+                        {
+                            // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
+                            if (!oe.owner.isMe)
+                            {
+                                RainMeadow.Debug("removing remote entity " + oe);
+                                roomSession.entities.Remove(oe);
+                                room.abstractRoom.RemoveEntity(apo);
+                                if(apo.realizedObject != null)
+                                {
+                                    room.RemoveObject(apo.realizedObject);
+                                    room.CleanOutObjectNotInThisRoom(apo.realizedObject);
+                                }
+                            }
+                            else // mine leave the old online world
+                            {
+                                RainMeadow.Debug("removing my entity " + oe);
+                                roomSession.EntityLeftResource(oe);
+                                roomSession.worldSession.EntityLeftResource(oe);
+                            }
+                        }
+                    }
+                    roomSession.worldSession.FullyReleaseResource();
+                }
+
+                orig(self);
+
+                // post: we add our entities to the new world
+                if (room != null && RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession2))
+                {
+                    // we go over all APOs in the room
+                    RainMeadow.Debug("Gate switchery 2");
+                    var entities = room.abstractRoom.entities;
+                    for (int i = entities.Count - 1; i >= 0; i--)
+                    {
+                        if (entities[i] is AbstractPhysicalObject apo && OnlineEntity.map.TryGetValue(apo, out var oe))
+                        {
+                            if (oe.owner.isMe)
+                            {
+                                RainMeadow.Debug("readding entity to world" + oe);
+                                oe.enterPos = apo.pos;
+                                roomSession2.worldSession.EntityEnteredResource(oe);
+                            }
+                            else // what happened here
+                            {
+                                RainMeadow.Error("an entity that came through the gate wasnt mine: " + oe);
+                            }
+                        }
+                    }
+                    roomSession2.Activate(); // adds entities that are already in the room
+                }
+            }
+            else
+            {
+                orig(self);
+            }
+        }
     }
 }

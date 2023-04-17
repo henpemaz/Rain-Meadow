@@ -10,41 +10,12 @@ namespace RainMeadow
     {
         internal static ConditionalWeakTable<AbstractPhysicalObject, OnlineEntity> map = new();
 
-        public class EntityId : System.IEquatable<EntityId> // How we refer to a game entity online
-        {
-            public ulong originalOwner;
-            public int id;
-
-            public EntityId(ulong originalOwner, int id)
-            {
-                this.originalOwner = originalOwner;
-                this.id = id;
-            }
-
-            public override string ToString()
-            {
-                return $"#{id}-{originalOwner}";
-            }
-            public override bool Equals(object obj) => this.Equals(obj as EntityId);
-            public bool Equals(EntityId other)
-            {
-                return other != null && id == other.id && originalOwner == other.originalOwner;
-            }
-            public override int GetHashCode() => id.GetHashCode() + originalOwner.GetHashCode();
-
-            public static bool operator ==(EntityId lhs, EntityId rhs)
-            {
-                return lhs is null ? rhs is null : lhs.Equals(rhs);
-            }
-            public static bool operator !=(EntityId lhs, EntityId rhs) => !(lhs == rhs);
-        }
-
         // todo maybe abstract this into "entity" and "game entity" ?? what would I use it for though? persona data at lobby level?
         public AbstractPhysicalObject entity;
         public OnlinePlayer owner;
         public EntityId id;
         public int seed;
-        public bool isTransferable = true; // todo make own personas not transferable
+        public bool isTransferable = true;
 
         public WorldSession worldSession;
         public RoomSession roomSession;
@@ -85,7 +56,17 @@ namespace RainMeadow
                 if (creature.realizedObject is PhysicalObject po) po.slatedForDeletetion = false;
 
                 oe.enterPos = newEntityEvent.initialPos;
-                oe.entity.pos = oe.enterPos;
+                oe.realized = newEntityEvent.realized;
+
+                if (!world.IsRoomInRegion(oe.entity.pos.room))
+                {
+                    oe.entity.world = world;
+                    oe.entity.pos = oe.enterPos;
+                    WorldSession.registeringRemoteEntity = true;
+                    world.GetAbstractRoom(oe.enterPos).AddEntity(oe.entity);
+                    WorldSession.registeringRemoteEntity = false;
+                }
+                // we don't update other fields because they shouldn't change... in theory...
             }
             else
             {
@@ -102,12 +83,10 @@ namespace RainMeadow
                 }
                 EntityID id = world.game.GetNewID();
                 id.altSeed = newEntityEvent.seed;
-                RainMeadow.Debug(id);
-                RainMeadow.Debug(newEntityEvent.initialPos);
                 WorldSession.registeringRemoteEntity = true;
                 var creature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, newEntityEvent.initialPos, id);
+                world.GetAbstractRoom(newEntityEvent.initialPos).AddEntity(creature);
                 WorldSession.registeringRemoteEntity = false;
-                RainMeadow.Debug(creature);
                 if (creature.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat) // for some dumb reason it doesn't get a default
                 {
                     creature.state = new PlayerState(creature, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionRemotePlayer, false);
@@ -133,13 +112,13 @@ namespace RainMeadow
             if (!owner.isMe)
             {
                 RainMeadow.Debug("A remote creature entered, adding it to the room");
+                entity.Move(enterPos);
                 if (newRoom.absroom.realizedRoom is Room realRoom && creature.AllowedToExistInRoom(realRoom))
                 {
                     RainMeadow.Debug("spawning creature " + creature);
                     if (enterPos.TileDefined)
                     {
                         RainMeadow.Debug("added directly to the room");
-                        newRoom.absroom.AddEntity(creature);
                         creature.RealizeInRoom(); // places in room
                     }
                     else if (enterPos.NodeDefined)
@@ -174,13 +153,11 @@ namespace RainMeadow
                             // can't abstractize properly because previous location is lost
                             RainMeadow.Debug("cleared realized creature and added to absroom as abstract entity");
                             creature.realizedCreature = null;
-                            newRoom.absroom.AddEntity(creature);
                         }
                     }
                     else
                     {
                         RainMeadow.Debug("added to absroom as abstract entity");
-                        newRoom.absroom.AddEntity(creature);
                     }
                 }
             }
@@ -197,7 +174,11 @@ namespace RainMeadow
                     oldRoom.absroom.RemoveEntity(entity);
                     if (entity.realizedObject is PhysicalObject po)
                     {
-                        if (oldRoom.absroom.realizedRoom is Room room) room.RemoveObject(po);
+                        if (oldRoom.absroom.realizedRoom is Room room)
+                        {
+                            room.RemoveObject(po);
+                            room.CleanOutObjectNotInThisRoom(po);
+                        }
                         if (po is Creature c && c.inShortcut)
                         {
                             if (c.RemoveFromShortcuts()) c.inShortcut = false;

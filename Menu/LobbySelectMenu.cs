@@ -25,6 +25,7 @@ namespace RainMeadow
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
         {
+            RainMeadow.DebugMe();
             Vector2 buttonSize = new(130f, 30f);
 
             // title at the top

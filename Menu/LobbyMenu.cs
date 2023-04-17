@@ -12,7 +12,7 @@ namespace RainMeadow
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
         public LobbyMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbyMenu)
         {
-            RainMeadow.Debug("LobbySelectMenu created");
+            RainMeadow.DebugMe();
             
             pages[0].subObjects.Add(startbtn = new SimplerButton(this, pages[0], "START", btns, btnsize));
             startbtn.buttonBehav.greyedOut = !OnlineManager.lobby.isAvailable;

@@ -106,17 +106,42 @@ namespace RainMeadow
                     SteamAPI.RunCallbacks();
                     OnlineManager.instance.RawUpdate(0.001f);
                 }
+                // wait until new world state available
                 if (!ws.isAvailable)
                 {
                     self.Finished = false;
                     return;
                 }
-                if (self.game.overWorld?.activeWorld is World aw && OnlineManager.lobby.worldSessions[aw.region.name].isAvailable)
+                
+                // activate the new world
+                if (self.Finished && !ws.isActive)
                 {
-                    self.Finished = false;
+                    RainMeadow.Debug("world loading activating new world");
+                    ws.Activate();
+                }
+
+                // now we need to wait for it before further actions
+                if (!self.Finished)
+                {
                     return;
                 }
-                if (self.Finished && !ws.isActive) ws.Activate();
+
+                // if there is a gate, the gate's room will be reused, it needs to be made available
+                if (self.game.overWorld?.reportBackToGate is RegionGate gate)
+                {
+                    
+                    var newRoom = ws.roomSessions[gate.room.abstractRoom.name];
+                    if (!newRoom.isAvailable)
+                    {
+                        if (!newRoom.isPending)
+                        {
+                            RainMeadow.Debug("world loading requesting new room");
+                            newRoom.Request();
+                        }
+                        self.Finished = false;
+                        return;
+                    }
+                }
             }
         }
 
@@ -130,12 +155,6 @@ namespace RainMeadow
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
             if (game?.session is OnlineGameSession)
             {
-                if (game.overWorld?.activeWorld is World aw && OnlineManager.lobby.worldSessions[aw.region.name] is WorldSession ws)
-                {
-                    RainMeadow.Debug("Releasing previous region: " + aw.region.name);
-                    ws.deactivateOnRelease = true;
-                    ws.FullyReleaseResource();
-                }
                 RainMeadow.Debug("Requesting new region: " + region.name);
                 OnlineManager.lobby.worldSessions[region.name].Request();
                 OnlineManager.lobby.worldSessions[region.name].BindWorld(self.world);

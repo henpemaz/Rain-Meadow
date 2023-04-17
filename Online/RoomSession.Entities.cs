@@ -25,7 +25,7 @@ namespace RainMeadow
                     RainMeadow.Debug("externally controlled entity joining : " + oe);
                 }
             }
-            else
+            else if (!WorldSession.registeringRemoteEntity)
             {
                 throw new InvalidOperationException("Unregistered entity has entered the room! HOW!?? " + entity);
             }
@@ -35,6 +35,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             RainMeadow.Debug(entity);
+            RainMeadow.Debug(System.Environment.StackTrace);
             if (!isActive) { if (isAvailable) RainMeadow.Error("Not registering because not isActive"); return; } // only log if relevant?
             if (entities.FirstOrDefault(e=>e.entity == entity) is OnlineEntity oe)
             {
@@ -54,13 +55,13 @@ namespace RainMeadow
             }
         }
 
-        protected override void EntityEnteredResource(OnlineEntity oe)
+        public override void EntityEnteredResource(OnlineEntity oe)
         {
             base.EntityEnteredResource(oe);
             oe.EnteredRoom(this);
         }
 
-        protected override void EntityLeftResource(OnlineEntity oe)
+        public override void EntityLeftResource(OnlineEntity oe)
         {
             base.EntityLeftResource(oe);
             oe.LeftRoom(this);
