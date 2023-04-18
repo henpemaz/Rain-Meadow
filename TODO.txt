@@ -6,12 +6,16 @@ on join, takes a while to get lobby data, grey out button
 Manage missing regions:
 	right now nullrefs because missing referenced resource
 	only joinable on same world-checksum? world-list? world-index-checksum?
+	in my head the problem is that if by transfer someone who is missing things becomes the owner then some resources will be unmanageable?
+		could in this case we just create room-less RoomSessions for the stuff that is requested but doesn't exist? Only someone who has it will request it, one doesn't have to have it to lease it
+			catch: world creatures would be in an invalid position
 
 Entities entities entities
 	need new hookpoint for objects being moved between worlds, so they're added to the new world 
 		but maybe just the removal-addal works?
 		need at least to clear out untransferable self from old world so it can deactivate
-	todo check how current code behaves, I havent event tested it much
+		todo check how current code behaves, I havent event tested it much
+			done and done
 
 	Entity Join/leave should be handshaked, owner can change inbetween
 		the "ent-owner-to-room-owner"
@@ -111,6 +115,10 @@ gamemode: online coop story mode : juuuust like couch coop
 	- there is a rain cycle, players must be all asleep or dead for the cycle to tick
 	- engine stuff missing:
 		grasps
+		eating
+		ai creatures doing consistent things
+		cycle
+		going in and out of game
 
 
 Mod auto installing / auto disabling

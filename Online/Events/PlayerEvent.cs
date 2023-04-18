@@ -10,6 +10,11 @@ namespace RainMeadow
         public OnlinePlayer to;// not serialized
         public ulong eventId;
 
+        public override string ToString()
+        {
+            return $"{eventId} {eventType}";
+        }
+
         public virtual long EstimatedSize { get => sizeof(ulong); }
 
         public virtual void CustomSerialize(Serializer serializer)

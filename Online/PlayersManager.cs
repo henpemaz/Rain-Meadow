@@ -53,11 +53,20 @@ namespace RainMeadow
         private static void PlayerLeft(CSteamID p)
         {
             // todo if lobby owner leaves, update lobby resources accordingly
-
             // todo if resource owner leaves and I'm super, coordinate transfer
 
             RainMeadow.Debug($"PlayerLeft:{p} - {SteamFriends.GetFriendPersonaName(p)}");
-            OnlineManager.players.RemoveAll(op => op.id == p);
+
+            if(OnlineManager.players.FirstOrDefault(op => op.id == p) is OnlinePlayer player)
+            {
+                player.hasLeft = true;
+                //player.AbortUnacknoledgedEvents();
+                if (OnlineManager.lobby != null)
+                {
+                    OnlineManager.lobby.OnPlayerDisconnect(player);
+                }
+                OnlineManager.players.Remove(player);
+            }
         }
 
         private static void SessionRequest(SteamNetworkingMessagesSessionRequest_t param)
@@ -66,16 +75,13 @@ namespace RainMeadow
             {
                 var id = new CSteamID(param.m_identityRemote.GetSteamID64());
                 RainMeadow.Debug("session request from " + id);
-                if (OnlineManager.lobby is { })
+                if (OnlineManager.lobby != null)
                 {
-                    foreach (var p in OnlineManager.players)
+                    if (OnlineManager.players.FirstOrDefault(op => op.id == id) is OnlinePlayer p)
                     {
-                        if (id == p.id)
-                        {
-                            RainMeadow.Debug("accepted session from " + p.name);
-                            SteamNetworkingMessages.AcceptSessionWithUser(ref param.m_identityRemote);
-                            return;
-                        }
+                        RainMeadow.Debug("accepted session from " + p.name);
+                        SteamNetworkingMessages.AcceptSessionWithUser(ref param.m_identityRemote);
+                        return;
                     }
                 }
             }

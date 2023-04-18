@@ -35,8 +35,16 @@ namespace RainMeadow
                 {
                     if (entityState != null)
                     {
-                        if (entityState.onlineEntity == null || entityState.onlineEntity.owner.isMe) continue;
-                        entityState.onlineEntity.ReadState(entityState, ts);
+                        if (entityState.onlineEntity == null)
+                        {
+                            RainMeadow.Error("got state for missing onlineEntity");
+                            continue;
+                        }
+                        if (entityState.onlineEntity.owner.isMe) continue; // not interested
+                        if (entityState.onlineEntity.lowestResource == this) // this resource is the most "detailed" provider
+                        {
+                            entityState.onlineEntity.ReadState(entityState, ts);
+                        }
                     }
                     else
                     {

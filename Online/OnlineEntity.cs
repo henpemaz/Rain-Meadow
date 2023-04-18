@@ -247,8 +247,14 @@ namespace RainMeadow
             if (!isTransferable) throw new InvalidProgrammerException("cannot be transfered");
             if (isPending) throw new InvalidProgrammerException("this entity has a pending request");
             if (!lowestResource.isAvailable) throw new InvalidProgrammerException("in unavailable resource");
-
-            owner.RequestEntity(this);
+            if (!owner.hasLeft && lowestResource.participants.Contains(owner))
+            {
+                owner.RequestEntity(this);
+            }
+            else
+            {
+                highestResource.owner.RequestEntity(this);
+            }
         }
 
         // I've been requested and I'll pass the entity on
@@ -256,16 +262,20 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             RainMeadow.Debug("Requested by : " + request.from.name);
-            if (isTransferable && this.owner.isMe && !isPending)
+            if (isTransferable && this.owner.isMe)
             {
                 request.from.QueueEvent(new EntityRequestResult.Ok(request)); // your request was well received, now please be patient while I transfer it
+                this.highestResource.EntityNewOwner(this, request.from);
+            }
+            else if (isTransferable && (owner.hasLeft || !lowestResource.participants.Contains(owner)) && this.highestResource.owner.isMe)
+            {
+                request.from.QueueEvent(new EntityRequestResult.Ok(request));
                 this.highestResource.EntityNewOwner(this, request.from);
             }
             else
             {
                 if (!isTransferable) RainMeadow.Debug("Denied because not transferable");
                 else if (!owner.isMe) RainMeadow.Debug("Denied because not mine");
-                else if (isPending) RainMeadow.Debug("Denied because pending");
                 request.from.QueueEvent(new EntityRequestResult.Error(request));
             }
         }

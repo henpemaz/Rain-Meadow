@@ -14,8 +14,7 @@ namespace RainMeadow
         // A new OnlineEntity was added, notify accordingly
         public virtual void EntityEnteredResource(OnlineEntity oe)
         {
-            RainMeadow.Debug(this);
-            RainMeadow.Debug(oe);
+            RainMeadow.Debug($"{this} - {oe}");
             if (!isAvailable) throw new InvalidOperationException("not available");
             if (entities.Contains(oe)) throw new InvalidOperationException("already in entities");
             entities.Add(oe);
@@ -59,8 +58,7 @@ namespace RainMeadow
 
         public virtual void EntityLeftResource(OnlineEntity oe)
         {
-            RainMeadow.Debug(this);
-            RainMeadow.Debug(oe);
+            RainMeadow.Debug($"{this} - {oe}");
             if (!isAvailable) throw new InvalidOperationException("not available");
             if (!entities.Contains(oe)) throw new InvalidOperationException("not in entities");
             entities.Remove(oe);
@@ -105,7 +103,7 @@ namespace RainMeadow
         // Assign a new owner to this entity, if I own or supervise it, I must notify accordingly
         internal void EntityNewOwner(OnlineEntity oe, OnlinePlayer newOwner, bool notifyPreviousOwner = false)
         {
-            RainMeadow.Debug(this);
+            RainMeadow.Debug($"{this} - {oe} - {newOwner}");
             if (!isAvailable) { throw new InvalidOperationException("not available"); }
             if (oe.owner == newOwner) throw new InvalidOperationException("reasigned to same owner");
             if (oe.highestResource != this) throw new InvalidOperationException("asigned owner in wrong resource");

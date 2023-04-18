@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.LowLevel;
 
 namespace RainMeadow
 {
@@ -14,15 +13,17 @@ namespace RainMeadow
             // todo easing??
             // might need to get a ref to the sender all the way here for lag estimations?
             // todo delta handling
+            if (lowestResource is RoomSession && !entityState.realizedState) return; // We can skip abstract state if we're receiving state in a room as well
             entityState.ReadTo(this);
             latestState = entityState;
         }
 
         internal EntityState GetState(ulong tick, OnlineResource resource)
         {
-            if(resource is WorldSession ws && !OnlineManager.lobby.session.ShouldSyncObjectInWorld(ws, entity)) throw new InvalidOperationException("asked for world state, not synched");
+            if (resource is WorldSession ws && !OnlineManager.lobby.session.ShouldSyncObjectInWorld(ws, entity)) throw new InvalidOperationException("asked for world state, not synched");
             if (resource is RoomSession rs && !OnlineManager.lobby.session.ShouldSyncObjectInRoom(rs, entity)) throw new InvalidOperationException("asked for room state, not synched");
             var realizedState = resource is RoomSession;
+            if(realizedState) { if(entity.realizedObject != null && !realized) RainMeadow.Error("have realized object, but not entity not marked as realized??"); }
             if (realizedState && !realized)
             {
                 //throw new InvalidOperationException("asked for realized state, not realized");
@@ -39,17 +40,20 @@ namespace RainMeadow
         public abstract class EntityState : OnlineState // Is this class completely redundant? everything inherits from PhysicalObjectEntityState
         {
             public OnlineEntity onlineEntity;
+            public bool realizedState;
 
             protected EntityState() : base () { }
-            protected EntityState(OnlineEntity onlineEntity, ulong ts) : base(ts)
+            protected EntityState(OnlineEntity onlineEntity, ulong ts, bool realizedState) : base(ts)
             {
                 this.onlineEntity = onlineEntity;
+                this.realizedState = realizedState;
             }
 
             public override void CustomSerialize(Serializer serializer)
             {
                 base.CustomSerialize(serializer);
                 serializer.Serialize(ref onlineEntity);
+                serializer.Serialize(ref realizedState);
             }
 
             public abstract void ReadTo(OnlineEntity onlineEntity);
@@ -60,15 +64,15 @@ namespace RainMeadow
         {
             public WorldCoordinate pos;
             public bool realized;
-            public OnlineState realizedState;
+            public OnlineState realizedObjectState;
 
             public PhysicalObjectEntityState() : base() { }
-            public PhysicalObjectEntityState(OnlineEntity onlineEntity, ulong ts, bool realizedState) : base(onlineEntity, ts)
+            public PhysicalObjectEntityState(OnlineEntity onlineEntity, ulong ts, bool realizedState) : base(onlineEntity, ts, realizedState)
             {
                 this.pos = onlineEntity.entity.pos;
                 this.realized = onlineEntity.realized; // now now, oe.realized means its realized in the owners world
                                                        // not necessarily whether we're getting a real state or not
-                if (realizedState) this.realizedState = GetRealizedState();
+                if (realizedState) this.realizedObjectState = GetRealizedState();
             }
 
             protected virtual RealizedObjectState GetRealizedState()
@@ -84,7 +88,7 @@ namespace RainMeadow
                 //onlineEntity.entity.pos = pos;
                 onlineEntity.entity.Move(pos);
                 onlineEntity.realized = this.realized;
-                (realizedState as RealizedObjectState)?.ReadTo(onlineEntity);
+                (realizedObjectState as RealizedObjectState)?.ReadTo(onlineEntity);
             }
 
             public override void CustomSerialize(Serializer serializer)
@@ -92,7 +96,7 @@ namespace RainMeadow
                 base.CustomSerialize(serializer);
                 serializer.SerializeNoStrings(ref pos);
                 serializer.Serialize(ref realized);
-                serializer.SerializeNullable(ref realizedState);
+                serializer.SerializeNullable(ref realizedObjectState);
             }
         }
 
@@ -255,11 +259,8 @@ namespace RainMeadow
                     pl.animation = new Player.AnimationIndex(Player.AnimationIndex.values.GetEntry(animationIndex));
                     pl.animationFrame = animationFrame;
                     pl.bodyMode = new Player.BodyModeIndex(Player.BodyModeIndex.values.GetEntry(bodyModeIndex));
-                    //pl.input[0] = GetInput(); // moved to controller, otherwise we miss "pressed this frame" events
                 }
             }
-
-            
         }
     }
 }

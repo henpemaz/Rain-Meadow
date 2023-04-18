@@ -1,8 +1,7 @@
-﻿using BepInEx.Logging;
+﻿using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.IO.Ports;
 using System.Linq;
 
 namespace RainMeadow
@@ -18,7 +17,7 @@ namespace RainMeadow
 
         public ResourceEvent pendingRequest; // should this maybe be a list/queue? Will it be any more manageable if multiple events can cohexist?
 
-        public bool isFree => owner == null;
+        public bool isFree => owner == null || owner.hasLeft;
         public bool isOwner => owner != null && owner.id == OnlineManager.me;
         public bool isSuper => super != null && super.isOwner;
         public bool isActive { get; protected set; } // The respective in-game resource is loaded
@@ -92,6 +91,7 @@ namespace RainMeadow
             incomingEntities.Clear();
 
             if (releaseWhenPossible) FullyReleaseResource(); // my bad I don't want it anymore
+            else if (owner.hasLeft) OnPlayerDisconnect(owner); // I might be late to the party but if I'm the only one here I can claim it now
         }
 
         protected virtual void AvailableImpl() { }
@@ -173,7 +173,110 @@ namespace RainMeadow
             {
                 super.NewLeaseState();
             }
+
+            if (isOwner && isAvailable) // transfered / claimed by me
+            {
+                var oldParticipants = participants.ToList();
+                participants = new() { OnlineManager.mePlayer };
+                isActive = false; // we tell a little lie while we re-add everyone to avoid multiple NewLeaseState
+                foreach (var subscriber in oldParticipants)
+                {
+                    if (subscriber.isMe || subscriber.hasLeft) continue;
+                    Subscribed(subscriber);
+                }
+                isActive = true;
+                currentLeaseState = null; // sent in full to everyone
+                NewLeaseState();
+
+                ClaimAbandonedEntities();
+
+                OnlineManager.RemoveFeeds(this);
+            }
+            if (oldOwner != null && oldOwner.hasLeft)
+            {
+                OnPlayerDisconnect(oldOwner); // we might be able to sort out more things now
+            }
         }
+
+        public void ClaimAbandonedEntities()
+        {
+            if (!isActive) throw new InvalidOperationException("not active");
+            for (int i = entities.Count - 1; i >= 0; i--)
+            {
+                OnlineEntity ent = entities[i];
+                if (ent.owner.hasLeft || !participants.Contains(ent.owner)) // abandoned
+                {
+                    RainMeadow.Debug($"Abandoned entity: {ent}");
+                    if (ent.isTransferable)
+                    {
+                        if (!ent.isPending)
+                        {
+                            ent.Request();
+                        }
+                        else
+                        {
+                            RainMeadow.Error("Couldn't request entitity because pending: " + ent);
+                        }
+                    }
+                    else if (isOwner) // untransferable, kick it out
+                    {
+                        EntityLeftResource(ent);
+                    }
+                }
+            }
+        }
+
+        // There is a race condition here
+        // One of the participants of the room will try and reach super with a Request()
+        // but absolutely nothing guarantees that they'll reach super before a random new user requesting the resource does
+        // (if the new user gets first, the previous state is lost and these guys are left out wihout a subscription)
+        // moreso, super has no way to detect whether it should wait for an old participant
+        // and... waiting is bad
+        internal void OnPlayerDisconnect(OnlinePlayer player)
+        {
+            if(this is Lobby lobby && owner == player) // lobby owner has left
+            {
+                var newOwner = SteamMatchmaking.GetLobbyOwner(lobby.id);
+                if (newOwner == OnlineManager.me) // I am the new owner
+                {
+                    if (!isActive) // well shit this is terrible, I must disconnect imediately so someone with the proper state can claim it
+                    {
+                        // todo
+                    }
+                }
+                NewOwner(OnlineManager.PlayerFromId(newOwner));
+            }
+            if(owner == player) // Ooops we'll need a new host
+            {
+                if (isActive)
+                {
+                    if(!isPending) Request();
+                }
+                else if (isSuper)
+                {
+                    NewOwner(null);
+                }
+            }
+
+
+            if (isOwner && isAvailable && participants.Contains(player))
+            {
+                Unsubscribed(player);
+            }
+            if (isOwner && isActive)
+            {
+                ClaimAbandonedEntities();
+            }
+            if (isActive && owner != null && !owner.hasLeft) // has subresources, check when this one is sorted
+            {
+                for (int i = 0; i < subresources.Count; i++)
+                {
+                    var s = subresources[i];
+                    s.OnPlayerDisconnect(player);
+                }
+            }
+        }
+
 
         protected virtual void SubscribedImpl(OnlinePlayer player) { }
         private void Subscribed(OnlinePlayer player)
@@ -217,10 +320,10 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (isPending) throw new InvalidOperationException("pending");
-            if (isAvailable) throw new InvalidOperationException("available");
-            if (isActive) throw new InvalidOperationException("active");
+            if (isAvailable && !isFree) throw new InvalidOperationException("available");
+            if (isActive && !isFree) throw new InvalidOperationException("active");
 
-            if (owner != null)
+            if (owner != null && !owner.hasLeft)
             {
                 owner.RequestResource(this);
             }
@@ -245,6 +348,8 @@ namespace RainMeadow
             {
                 if (super?.owner != null) // return to super
                 {
+                    participants.Remove(OnlineManager.mePlayer);
+                    NewLeaseState();
                     super.owner.ReleaseResource(this);
                 }
                 else
@@ -277,6 +382,11 @@ namespace RainMeadow
             else if (isOwner) // I am the current owner and others can subscribe
             {
                 if (request.from.isMe) throw new InvalidOperationException("requested, but already own");
+                if (participants.Contains(request.from)) // they are already in this
+                {
+                    request.from.QueueEvent(new RequestResult.Error(request));
+                    return;
+                }
                 // Player subscribed to resource
                 request.from.QueueEvent(new RequestResult.Subscribed(request)); // result first, so they Activate before getting new state
                 Subscribed(request.from);
@@ -287,7 +397,7 @@ namespace RainMeadow
             }
         }
 
-        // Someone released from me, maybe myself
+        // Someone released from me, maybe myself, a resource that I own or supervise
         public void Released(ReleaseRequest request)
         {
             RainMeadow.Debug(this);
@@ -297,49 +407,19 @@ namespace RainMeadow
             {
                 var newParticipants = request.participants.Where(p => p != owner).ToList();
                 var newOwner = PlayersManager.BestTransferCandidate(this, newParticipants);
-                NewOwner(newOwner); // This notifies all users
-
-                var theEntitiesTheySpeakOf = request.abandonedEntities.Select(eid => entities.FirstOrDefault(en => en.id == eid)).Where(ent => ent != null && ent.owner == request.from).ToList();
-                var controlledEntities = theEntitiesTheySpeakOf.Where(e => e.highestResource.isOwner).ToList();
-                var entitiesTo = newOwner ?? OnlineManager.mePlayer;
-                foreach (var ent in controlledEntities) //assign myself what I can
-                {
-                    if(ent.owner != entitiesTo)
-                    {
-                        ent.owner = null;
-                        ent.highestResource.EntityNewOwner(ent, entitiesTo, true);
-                    }
-                }
-                // todo what to do with the "rest" of entities? there should be none if it's just room/world stuff, but...
-                // currently the receiving side will try and Request entities they receive through this and dont own
-                foreach( var ent in theEntitiesTheySpeakOf.Except(controlledEntities))
-                {
-                    RainMeadow.Error($"Unhandled entity: {ent}");
-                }
-
+                NewOwner(newOwner); // This notifies all users, if the new owner is active they'll restore the state
                 if (newOwner != null)
                 {
-                    newOwner.TransferResource(this, newParticipants, request.abandonedEntities); // This notifies the new owner to apply subscriptions
+                    newOwner.TransferResource(this, newParticipants, request.abandonedEntities); // This notifies the new owner, they can answer with an error if they can't handle it
                 }
                 request.from.QueueEvent(new ReleaseResult.Released(request)); // this notifies the old owner that the release was a success
                 return;
             }
             if (isOwner) // A participant is unsubscribing from the resource
             {
-                request.from.QueueEvent(new ReleaseResult.Unsubscribed(request));
                 Unsubscribed(request.from);
-                var theEntitiesTheySpeakOf = request.abandonedEntities.Select(eid => entities.FirstOrDefault(en => en.id == eid)).Where(ent => ent != null && ent.owner == request.from).ToList();
-                var controlledEntities = theEntitiesTheySpeakOf.Where(e => e.highestResource.isOwner).ToList();
-                foreach (var ent in controlledEntities) //assign myself what I can
-                {
-                    ent.owner = null;
-                    ent.highestResource.EntityNewOwner(ent, OnlineManager.mePlayer, true);
-                }
-                foreach(var ent in theEntitiesTheySpeakOf.Except(controlledEntities)) // request the rest
-                {
-                    ent.Request();
-                }
-
+                ClaimAbandonedEntities();
+                request.from.QueueEvent(new ReleaseResult.Unsubscribed(request));
                 return;
             }
             request.from.QueueEvent(new ReleaseResult.Error(request));
@@ -353,52 +433,11 @@ namespace RainMeadow
             RainMeadow.Debug("Transfered by : " + request.from.name);
             if (isAvailable && isActive && isOwner && request.from == super?.owner) // I am a subscriber with a valid state who now owns this resource
             {
-                participants = new();
-                isActive = false; // we tell a little lie while we re-add everyone
-                foreach(var subscriber in request.participants)
-                {
-                    if (subscriber.isMe) continue;
-                    Subscribed(subscriber);
-                }
-                isActive = true;
-                currentLeaseState = null;
-                NewLeaseState();
-
-                foreach (var entId in request.abandonedEntities)
-                {
-                    var ent = this.entities.FirstOrDefault(e => e.id == entId);
-                    if (ent != null)
-                    {
-                        if (!ent.owner.isMe) // it couldn't be transfered by super for some reason?
-                        {
-                            if (ent.highestResource.isOwner)
-                            {
-                                ent.owner = null; // so it also notifies the previous owner, because they didn't initiate this change
-                                ent.highestResource.EntityNewOwner(ent, OnlineManager.mePlayer, true);
-                            }
-                            else if(!ent.isPending)
-                            {
-                                ent.Request();
-                            }
-                            else
-                            {
-                                RainMeadow.Error("Couldn't request entitity because pending: " + ent);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        RainMeadow.Error("donated entity not found: " + entId);
-                    }
-                }
-
-                OnlineManager.RemoveFeeds(this);
-
                 request.from.QueueEvent(new TransferResult.Ok(request));
                 return;
             }
             RainMeadow.Debug($"Transfer error : {isAvailable} {isActive} {isOwner} {request.from == super?.owner}");
-            request.from.QueueEvent(new TransferResult.Error(request)); // super should retry
+            request.from.QueueEvent(new TransferResult.Error(request)); // super should retry with someone else
             return;
         }
 
@@ -408,10 +447,19 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             if (requestResult is RequestResult.Leased) // I'm the new owner of a previously-free resource
             {
-                Available();
+                if (isAvailable) // this was transfered to me because the previous owner left
+                {
+                    RainMeadow.Debug("Claimed abandoned resource");
+                }
+                else
+                {
+                    RainMeadow.Debug("Claimed free resource");
+                    Available();
+                }
             }
             else if (requestResult is RequestResult.Subscribed) // I'm subscribed to a resource's state and events
             {
+                RainMeadow.Debug("Subscribed to resource");
                 Available();
             }
             else if (requestResult is RequestResult.Error) // I should retry
@@ -462,7 +510,7 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return $"<Resource {Identifier()} - o:{owner?.name} - av:{isAvailable} - ac:{isActive}>";
+            return $"<Resource {Identifier()} - o:{owner?.name} - av:{(isAvailable ? 1 : 0)} - ac:{(isActive ? 1 : 0)}>";
         }
 
         internal virtual byte SizeOfIdentifier()

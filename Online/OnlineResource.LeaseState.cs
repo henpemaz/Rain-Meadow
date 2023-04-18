@@ -60,6 +60,7 @@ namespace RainMeadow
             {
                 // todo fix the security hole in this ;3
                 // should really only be able to reference subresources here, not any resource
+                // maybe subresources could be referenced with a shorter id as well?
                 OnlineManager.ResourceFromIdentifier(item.Key).NewOwner(OnlineManager.PlayerFromId(item.Value));
             }
             this.participants = participants

@@ -23,6 +23,7 @@ namespace RainMeadow
         public bool needsAck;
         public bool isMe;
         public string name;
+        public bool hasLeft;
 
         public OnlinePlayer(CSteamID id)
         {
@@ -35,10 +36,10 @@ namespace RainMeadow
 
         internal void QueueEvent(PlayerEvent e)
         {
-            RainMeadow.Debug($"Queued event {nextOutgoingEvent} {e.eventType} to player {this}");
             e.eventId = this.nextOutgoingEvent;
             e.to = this;
             e.from = OnlineManager.mePlayer;
+            RainMeadow.Debug($"{this} {e}");
             nextOutgoingEvent++;
             OutgoingEvents.Enqueue(e);
         }
@@ -56,7 +57,7 @@ namespace RainMeadow
             while (OutgoingEvents.Count > 0 && OnlineManager.IsNewerOrEqual(lastAck, OutgoingEvents.Peek().eventId))
             {
                 var e = OutgoingEvents.Dequeue();
-                RainMeadow.Debug(this.ToString() + e.ToString());
+                RainMeadow.Debug($"{this} {e}");
                 recentlyAckedEvents.Add(e);
             }
         }

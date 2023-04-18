@@ -14,6 +14,8 @@ namespace RainMeadow
         {
             this.resource = resource;
             this.player = player;
+            if (!resource.isAvailable) throw new InvalidOperationException("not available");
+            if (player.isMe) throw new InvalidOperationException("subscribed to self");
         }
 
         public void Update(ulong tick)

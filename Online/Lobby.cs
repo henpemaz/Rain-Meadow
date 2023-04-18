@@ -89,7 +89,6 @@ namespace RainMeadow
             return ".";
         }
 
-        // State has the current lease state of worldsessions
         public class LobbyState : ResourceState
         {
             public LobbyState() : base() { }
