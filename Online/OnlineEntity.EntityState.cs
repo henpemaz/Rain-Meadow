@@ -6,9 +6,9 @@ namespace RainMeadow
 {
     public partial class OnlineEntity
     {
-        internal EntityState latestState;
+        public EntityState latestState;
 
-        internal void ReadState(EntityState entityState, ulong tick)
+        public void ReadState(EntityState entityState, ulong tick)
         {
             // todo easing??
             // might need to get a ref to the sender all the way here for lag estimations?
@@ -18,7 +18,7 @@ namespace RainMeadow
             latestState = entityState;
         }
 
-        internal EntityState GetState(ulong tick, OnlineResource resource)
+        public EntityState GetState(ulong tick, OnlineResource resource)
         {
             if (resource is WorldSession ws && !OnlineManager.lobby.session.ShouldSyncObjectInWorld(ws, entity)) throw new InvalidOperationException("asked for world state, not synched");
             if (resource is RoomSession rs && !OnlineManager.lobby.session.ShouldSyncObjectInRoom(rs, entity)) throw new InvalidOperationException("asked for room state, not synched");
@@ -60,7 +60,7 @@ namespace RainMeadow
         }
 
 
-        internal class PhysicalObjectEntityState : EntityState
+        public class PhysicalObjectEntityState : EntityState
         {
             public WorldCoordinate pos;
             public bool realized;
@@ -100,7 +100,7 @@ namespace RainMeadow
             }
         }
 
-        internal class CreatureEntityState : PhysicalObjectEntityState
+        public class CreatureEntityState : PhysicalObjectEntityState
         {
             // what do I even put here for AbstractCreature? inDen?
             public CreatureEntityState() : base() { }
@@ -119,7 +119,7 @@ namespace RainMeadow
             public override StateType stateType => StateType.CreatureEntityState;
         }
 
-        internal class RealizedObjectState : OnlineState
+        public class RealizedObjectState : OnlineState
         {
             ChunkState[] chunkStates;
 
@@ -134,7 +134,7 @@ namespace RainMeadow
 
             public override StateType stateType => StateType.RealizedObjectState;
 
-            internal virtual void ReadTo(OnlineEntity onlineEntity)
+            public virtual void ReadTo(OnlineEntity onlineEntity)
             {
                 if (onlineEntity.entity.realizedObject is PhysicalObject po)
                 {
@@ -182,7 +182,7 @@ namespace RainMeadow
             }
         }
 
-        internal class RealizedCreatureState : RealizedObjectState
+        public class RealizedCreatureState : RealizedObjectState
         {
             public RealizedCreatureState() { }
             public RealizedCreatureState(OnlineEntity onlineEntity) : base(onlineEntity)
@@ -192,7 +192,7 @@ namespace RainMeadow
             public override StateType stateType => StateType.RealizedCreatureState;
         }
 
-        internal class RealizedPlayerState : RealizedCreatureState
+        public class RealizedPlayerState : RealizedCreatureState
         {
             private byte animationIndex;
             private short animationFrame;
@@ -222,7 +222,7 @@ namespace RainMeadow
 
                 analogInput = i.analogueDir;
             }
-            internal Player.InputPackage GetInput()
+            public Player.InputPackage GetInput()
             {
                 Player.InputPackage i = default;
                 if (((inputs >> 0) & 1) != 0) i.x = 1;
@@ -251,7 +251,7 @@ namespace RainMeadow
                 serializer.Serialize(ref analogInput);
             }
 
-            internal override void ReadTo(OnlineEntity onlineEntity)
+            public override void ReadTo(OnlineEntity onlineEntity)
             {
                 base.ReadTo(onlineEntity);
                 if(onlineEntity.entity.realizedObject is Player pl)

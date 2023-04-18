@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace RainMeadow
@@ -9,7 +7,7 @@ namespace RainMeadow
     {
         public AbstractRoom absroom;
         public bool abstractOnDeactivate;
-        internal static ConditionalWeakTable<AbstractRoom, RoomSession> map = new();
+        public static ConditionalWeakTable<AbstractRoom, RoomSession> map = new();
 
         public WorldSession worldSession => super as WorldSession;
         protected override World World => worldSession.world;
@@ -56,7 +54,7 @@ namespace RainMeadow
                 absroom.Abstractize();
             }
         }
-        internal override string Identifier()
+        public override string Identifier()
         {
             return super.Identifier() + absroom.name;
         }

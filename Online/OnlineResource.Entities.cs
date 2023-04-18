@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.Playables;
 
 namespace RainMeadow
 {
@@ -41,7 +40,7 @@ namespace RainMeadow
         }
 
         // I've been notified that a new creature has entered, and I must recreate the equivalent in my game
-        internal void OnNewEntity(NewEntityEvent newEntityEvent)
+        public void OnNewEntity(NewEntityEvent newEntityEvent)
         {
             RainMeadow.Debug(this);
             if (!isAvailable) { throw new InvalidOperationException("not available"); }
@@ -85,7 +84,7 @@ namespace RainMeadow
         }
 
         // I've been notified that an entity has left
-        internal void OnEntityLeft(EntityLeftEvent entityLeftEvent)
+        public void OnEntityLeft(EntityLeftEvent entityLeftEvent)
         {
             RainMeadow.Debug(this);
             if (!isAvailable) { throw new InvalidOperationException("not available"); }
@@ -101,7 +100,7 @@ namespace RainMeadow
         }
 
         // Assign a new owner to this entity, if I own or supervise it, I must notify accordingly
-        internal void EntityNewOwner(OnlineEntity oe, OnlinePlayer newOwner, bool notifyPreviousOwner = false)
+        public void EntityNewOwner(OnlineEntity oe, OnlinePlayer newOwner, bool notifyPreviousOwner = false)
         {
             RainMeadow.Debug($"{this} - {oe} - {newOwner}");
             if (!isAvailable) { throw new InvalidOperationException("not available"); }
@@ -130,7 +129,7 @@ namespace RainMeadow
         }
 
         // I'm notified of a new owner for an entity in this resource
-        internal void OnEntityNewOwner(EntityNewOwnerEvent entityNewOwner)
+        public void OnEntityNewOwner(EntityNewOwnerEvent entityNewOwner)
         {
             RainMeadow.Debug(this);
             if (!isAvailable) { throw new InvalidOperationException("not available"); }

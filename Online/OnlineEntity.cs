@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using UnityEngine;
 
 namespace RainMeadow
 {
     // Welcome to polymorphism hell
     public partial class OnlineEntity
     {
-        internal static ConditionalWeakTable<AbstractPhysicalObject, OnlineEntity> map = new();
+        public static ConditionalWeakTable<AbstractPhysicalObject, OnlineEntity> map = new();
 
         // todo maybe abstract this into "entity" and "game entity" ?? what would I use it for though? persona data at lobby level?
         public AbstractPhysicalObject entity;
@@ -26,7 +24,7 @@ namespace RainMeadow
         public WorldCoordinate enterPos; // todo keep this updated, currently loading with creatures mid-room still places them in shortcuts
 
         public bool isPending => pendingRequest != null;
-        public PlayerEvent pendingRequest;
+        public OnlineEvent pendingRequest;
 
         public OnlineEntity(AbstractPhysicalObject entity, OnlinePlayer owner, EntityId id, int seed, WorldCoordinate pos, bool isTransferable)
         {
@@ -100,7 +98,7 @@ namespace RainMeadow
             return oe;
         }
 
-        internal void EnteredRoom(RoomSession newRoom)
+        public void EnteredRoom(RoomSession newRoom)
         {
             RainMeadow.Debug(this);
             if (entity is not AbstractCreature creature) { throw new InvalidOperationException("entity not a creature"); } // todo support noncreechers
@@ -163,7 +161,7 @@ namespace RainMeadow
             }
         }
 
-        internal void LeftRoom(RoomSession oldRoom)
+        public void LeftRoom(RoomSession oldRoom)
         {
             RainMeadow.Debug(this);
             if (roomSession == oldRoom)
@@ -231,7 +229,7 @@ namespace RainMeadow
         }
 
         // I was in a resource and I was left behind
-        internal void Deactivated(OnlineResource onlineResource)
+        public void Deactivated(OnlineResource onlineResource)
         {
             RainMeadow.Debug(this);
             if (onlineResource is WorldSession && this.worldSession == onlineResource) this.worldSession = null;
@@ -240,7 +238,7 @@ namespace RainMeadow
         }
 
         // I request, to someone else
-        internal void Request()
+        public void Request()
         {
             RainMeadow.Debug(this);
             if (owner.isMe) throw new InvalidProgrammerException("this entity is already mine");
@@ -249,16 +247,16 @@ namespace RainMeadow
             if (!lowestResource.isAvailable) throw new InvalidProgrammerException("in unavailable resource");
             if (!owner.hasLeft && lowestResource.participants.Contains(owner))
             {
-                owner.RequestEntity(this);
+                pendingRequest = owner.QueueEvent(new EntityRequest(this));
             }
             else
             {
-                highestResource.owner.RequestEntity(this);
+                pendingRequest = highestResource.owner.QueueEvent(new EntityRequest(this));
             }
         }
 
         // I've been requested and I'll pass the entity on
-        internal void Requested(EntityRequest request)
+        public void Requested(EntityRequest request)
         {
             RainMeadow.Debug(this);
             RainMeadow.Debug("Requested by : " + request.from.name);
@@ -283,7 +281,7 @@ namespace RainMeadow
         // my request has been answered to
         // is this really needed?
         // I thought of stuff like "breaking grasps" if a request for the grasped object failed
-        internal void ResolveRequest(EntityRequestResult requestResult)
+        public void ResolveRequest(EntityRequestResult requestResult)
         {
             RainMeadow.Debug(this);
             if (requestResult is EntityRequestResult.Ok) // I'm the new owner of this entity (comes as separate event though)
@@ -300,7 +298,7 @@ namespace RainMeadow
         }
 
         // I release this entity (to room host or world host)
-        internal void Release()
+        public void Release()
         {
             RainMeadow.Debug(this);
             if (!owner.isMe) throw new InvalidProgrammerException("not mine");
@@ -313,12 +311,12 @@ namespace RainMeadow
             }
             else
             {
-                highestResource.owner.ReleaseEntity(this);
+                this.pendingRequest = highestResource.owner.QueueEvent(new EntityReleaseEvent(this, lowestResource));
             }
         }
 
         // someone released "to me"
-        internal void Released(EntityReleaseEvent entityRelease)
+        public void Released(EntityReleaseEvent entityRelease)
         {
             RainMeadow.Debug(this);
             RainMeadow.Debug("Released by : " + entityRelease.from.name);
@@ -332,7 +330,7 @@ namespace RainMeadow
                 }
                 else
                 {
-                    if (!this.owner.isMe) this.highestResource.EntityNewOwner(this, OnlineManager.mePlayer);
+                    if (!this.owner.isMe) this.highestResource.EntityNewOwner(this, PlayersManager.mePlayer);
                 }
             }
             else
@@ -346,7 +344,7 @@ namespace RainMeadow
         }
 
         // got an answer back from my release
-        internal void ResolveRelease(EntityReleaseResult result)
+        public void ResolveRelease(EntityReleaseResult result)
         {
             RainMeadow.Debug(this);
             if (result is EntityReleaseResult.Ok)

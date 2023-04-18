@@ -190,7 +190,7 @@ namespace RainMeadow
                 //{
                 //    this.session = new StoryGameSession(manager.rainWorld.progression.PlayingAsSlugcat, this);
                 //}
-                var c = new MonoMod.Cil.ILCursor(il);
+                var c = new ILCursor(il);
                 c.GotoNext(moveType: MoveType.After,
                     i => i.MatchLdarg(0),
                     i => i.MatchLdarg(1),

@@ -1,5 +1,4 @@
-﻿using BepInEx.Logging;
-using System;
+﻿using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -24,7 +23,7 @@ namespace RainMeadow
         {
             instance.Logger.LogInfo($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}");
         }
-        internal static void Error(object data, [CallerFilePath] string callerFile = "", [CallerMemberName] string callerName = "")
+        public static void Error(object data, [CallerFilePath] string callerFile = "", [CallerMemberName] string callerName = "")
         {
             instance.Logger.LogError($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}:{data}");
         }

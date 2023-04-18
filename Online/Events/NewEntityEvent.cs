@@ -40,7 +40,7 @@
             serializer.Serialize(ref seed);
         }
 
-        internal override void Process()
+        public override void Process()
         {
             this.onlineResource.OnNewEntity(this);
         }

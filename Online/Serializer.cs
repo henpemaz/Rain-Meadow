@@ -1,28 +1,27 @@
-﻿using HarmonyLib;
-using MoreSlugcats;
-using Steamworks;
+﻿using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace RainMeadow
 {
     public class Serializer
     {
-        public readonly byte[] buffer;
-        public readonly long capacity;
+        private readonly byte[] buffer;
+        private readonly long capacity;
         private long margin;
-        public long Position => stream.Position;
+        private long Position => stream.Position;
 
         public bool isWriting { get; private set; }
         public bool isReading { get; private set; }
         public bool Aborted { get; private set; }
 
-        MemoryStream stream;
-        BinaryWriter writer;
-        BinaryReader reader;
+        private MemoryStream stream;
+        private BinaryWriter writer;
+        private BinaryReader reader;
         private OnlinePlayer currPlayer;
         private int eventCount;
         private long eventHeader;
@@ -39,17 +38,17 @@ namespace RainMeadow
             reader = new(stream);
         }
 
-        internal void PlayerHeaders()
+        private void PlayerHeaders()
         {
             if (isWriting)
             {
                 writer.Write(currPlayer.lastEventFromRemote);
                 writer.Write(currPlayer.tick);
-                writer.Write(OnlineManager.mePlayer.tick);
+                writer.Write(PlayersManager.mePlayer.tick);
             }
             if (isReading)
             {
-                currPlayer.AckFromRemote(reader.ReadUInt64());
+                currPlayer.EventAckFromRemote(reader.ReadUInt64());
                 currPlayer.TickAckFromRemote(reader.ReadUInt64());
                 var newTick = reader.ReadUInt64();
                 if (!OnlineManager.IsNewer(newTick, currPlayer.tick))
@@ -72,7 +71,7 @@ namespace RainMeadow
             Aborted = true;
         }
 
-        internal void BeginWrite(OnlinePlayer toPlayer)
+        private void BeginWrite(OnlinePlayer toPlayer)
         {
             currPlayer = toPlayer;
             if (isWriting || isReading) throw new InvalidOperationException("not done with previous operation");
@@ -81,31 +80,31 @@ namespace RainMeadow
             stream.Seek(0, SeekOrigin.Begin);
         }
 
-        internal bool CanFit(PlayerEvent playerEvent)
+        private bool CanFit(OnlineEvent playerEvent)
         {
             return Position + playerEvent.EstimatedSize + margin < capacity;
         }
 
-        internal bool CanFit(OnlineState state)
+        private bool CanFit(OnlineState state)
         {
             return Position + state.EstimatedSize + margin < capacity;
         }
 
-        internal void BeginWriteEvents()
+        private void BeginWriteEvents()
         {
             eventCount = 0;
             eventHeader = stream.Position;
             writer.Write(eventCount);
         }
 
-        internal void WriteEvent(PlayerEvent playerEvent)
+        private void WriteEvent(OnlineEvent playerEvent)
         {
             eventCount++;
             writer.Write((byte)playerEvent.eventType);
             playerEvent.CustomSerialize(this);
         }
 
-        internal void EndWriteEvents()
+        private void EndWriteEvents()
         {
             var temp = stream.Position;
             stream.Position = eventHeader;
@@ -113,21 +112,21 @@ namespace RainMeadow
             stream.Position = temp;
         }
 
-        internal void BeginWriteStates()
+        private void BeginWriteStates()
         {
             stateCount = 0;
             stateHeader = stream.Position;
             writer.Write(stateCount);
         }
 
-        internal void WriteState(OnlineState state)
+        private void WriteState(OnlineState state)
         {
             stateCount++;
             writer.Write((byte)state.stateType);
             state.CustomSerialize(this);
         }
 
-        internal void EndWriteStates()
+        private void EndWriteStates()
         {
             var temp = stream.Position;
             stream.Position = stateHeader;
@@ -135,7 +134,7 @@ namespace RainMeadow
             stream.Position = temp;
         }
 
-        internal void EndWrite()
+        private void EndWrite()
         {
             //RainMeadow.Debug($"serializer wrote: {eventCount} events; {stateCount} states; total {stream.Position} bytes");
             currPlayer = null;
@@ -144,7 +143,7 @@ namespace RainMeadow
             writer.Flush();
         }
 
-        internal void BeginRead(OnlinePlayer fromPlayer)
+        private void BeginRead(OnlinePlayer fromPlayer)
         {
             currPlayer = fromPlayer;
             if (isWriting || isReading) throw new InvalidOperationException("not done with previous operation");
@@ -153,46 +152,157 @@ namespace RainMeadow
             stream.Seek(0, SeekOrigin.Begin);
         }
 
-        internal int BeginReadEvents()
+        private int BeginReadEvents()
         {
             return reader.ReadInt32();
         }
 
-        internal PlayerEvent ReadEvent()
+        private OnlineEvent ReadEvent()
         {
-            PlayerEvent e = PlayerEvent.NewFromType((PlayerEvent.EventTypeId)reader.ReadByte());
+            OnlineEvent e = OnlineEvent.NewFromType((OnlineEvent.EventTypeId)reader.ReadByte());
             e.from = currPlayer;
-            e.to = OnlineManager.mePlayer;
+            e.to = PlayersManager.mePlayer;
             e.CustomSerialize(this);
             return e;
         }
 
-        internal int BeginReadStates()
+        private int BeginReadStates()
         {
             return reader.ReadInt32();
         }
 
-        internal OnlineState ReadState()
+        private OnlineState ReadState()
         {
             OnlineState s = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
-            s.fromPlayer = currPlayer;
+            s.from = currPlayer;
             s.ts = currPlayer.tick;
             s.CustomSerialize(this);
             return s;
         }
 
-        internal void EndRead()
+        private void EndRead()
         {
             currPlayer = null;
             isReading = false;
         }
 
-        internal void Free()
+        private void Free()
         {
             // unused
         }
 
-        internal void Serialize(ref OnlinePlayer player)
+        // Process all incoming messages
+        public void ReceiveData()
+        {
+            lock (this)
+            {
+                int n;
+                IntPtr[] messages = new IntPtr[32];
+                do // process in batches
+                {
+                    n = SteamNetworkingMessages.ReceiveMessagesOnChannel(0, messages, messages.Length);
+                    for (int i = 0; i < n; i++)
+                    {
+                        var message = SteamNetworkingMessage_t.FromIntPtr(messages[i]);
+                        try
+                        {
+                            var fromPlayer = PlayersManager.PlayerFromId(message.m_identityPeer.GetSteamID());
+                            if (fromPlayer == null)
+                            {
+                                RainMeadow.Error("player not found: " + message.m_identityPeer + " " + message.m_identityPeer.GetSteamID());
+                                continue;
+                            }
+                            //RainMeadow.Debug($"Receiving message from {fromPlayer}");
+                            Marshal.Copy(message.m_pData, buffer, 0, message.m_cbSize);
+                            BeginRead(fromPlayer);
+
+                            PlayerHeaders();
+                            if (Aborted)
+                            {
+                                RainMeadow.Debug("skipped packet");
+                                continue;
+                            }
+
+                            int ne = BeginReadEvents();
+                            //RainMeadow.Debug($"Receiving {ne} events");
+                            for (int ie = 0; ie < ne; ie++)
+                            {
+                                OnlineManager.ProcessIncomingEvent(ReadEvent());
+                            }
+
+                            int ns = BeginReadStates();
+                            //RainMeadow.Debug($"Receiving {ns} states");
+                            for (int ist = 0; ist < ns; ist++)
+                            {
+                                OnlineManager.ProcessIncomingState(ReadState());
+                            }
+
+                            EndRead();
+                        }
+                        catch (Exception e)
+                        {
+                            RainMeadow.Error("Error reading packet from player : " + message.m_identityPeer.GetSteamID());
+                            RainMeadow.Error(e);
+                            //throw;
+                        }
+                        finally
+                        {
+                            SteamNetworkingMessage_t.Release(messages[i]);
+                        }
+                    }
+                }
+                while (n > 0);
+                Free();
+            }
+        }
+
+        public void SendData(OnlinePlayer toPlayer)
+        {
+            if (toPlayer.needsAck || toPlayer.OutgoingEvents.Any() || toPlayer.OutgoingStates.Any())
+            {
+                //RainMeadow.Debug($"Sending message to {toPlayer}");
+                lock (this)
+                {
+                    BeginWrite(toPlayer);
+
+                    PlayerHeaders();
+
+                    BeginWriteEvents();
+                    //RainMeadow.Debug($"Writing {toPlayer.OutgoingEvents.Count} events");
+                    foreach (var e in toPlayer.OutgoingEvents)
+                    {
+                        if (!CanFit(e)) throw new IOException("no buffer space for events");
+                        WriteEvent(e);
+                    }
+                    EndWriteEvents();
+
+                    BeginWriteStates();
+                    //RainMeadow.Debug($"Writing {toPlayer.OutgoingStates.Count} states");
+                    while (toPlayer.OutgoingStates.Count > 0 && CanFit(toPlayer.OutgoingStates.Peek()))
+                    {
+                        var s = toPlayer.OutgoingStates.Dequeue();
+                        WriteState(s);
+                    }
+                    // todo handle states overflow, planing a packet for maximum size and least stale states
+                    EndWriteStates();
+
+                    EndWrite();
+
+                    unsafe
+                    {
+                        fixed (byte* ptr = buffer)
+                        {
+                            SteamNetworkingMessages.SendMessageToUser(ref toPlayer.oid, (IntPtr)ptr, (uint)Position, Constants.k_nSteamNetworkingSend_UnreliableNoDelay, 0);
+                        }
+                    }
+
+                    Free();
+                }
+            }
+        }
+
+        // serializes player.id and finds reference
+        public void Serialize(ref OnlinePlayer player)
         {
             if (isWriting)
             {
@@ -200,11 +310,12 @@ namespace RainMeadow
             }
             if (isReading)
             {
-                player = OnlineManager.PlayerFromId(new CSteamID(reader.ReadUInt64()));
+                player = PlayersManager.PlayerFromId(new CSteamID(reader.ReadUInt64()));
             }
         }
 
-        internal void Serialize(ref OnlineResource onlineResource)
+        // serializes resource.id and finds reference
+        public void Serialize(ref OnlineResource onlineResource)
         {
             if (isWriting)
             {
@@ -218,7 +329,8 @@ namespace RainMeadow
             }
         }
 
-        internal void Serialize(ref List<OnlinePlayer> players)
+        // serializes a list of players by id
+        public void Serialize(ref List<OnlinePlayer> players)
         {
             if (isWriting)
             {
@@ -234,12 +346,12 @@ namespace RainMeadow
                 players = new List<OnlinePlayer>(count);
                 for (int i = 0; i < count; i++)
                 {
-                    players.Add(OnlineManager.PlayerFromId(new CSteamID(reader.ReadUInt64())));
+                    players.Add(PlayersManager.PlayerFromId(new CSteamID(reader.ReadUInt64())));
                 }
             }
         }
 
-        internal void Serialize(ref OnlineResource.LeaseState leaseState)
+        public void Serialize(ref OnlineResource.LeaseState leaseState)
         {
             if (isReading)
             {
@@ -248,56 +360,56 @@ namespace RainMeadow
             leaseState.CustomSerialize(this);
         }
 
-        internal void Serialize(ref byte data)
+        public void Serialize(ref byte data)
         {
             if (isWriting) writer.Write(data);
             if (isReading) data = reader.ReadByte();
         }
 
-        internal void Serialize(ref ushort data)
+        public void Serialize(ref ushort data)
         {
             if (isWriting) writer.Write(data);
             if (isReading) data = reader.ReadUInt16();
         }
 
-        internal void Serialize(ref short data)
+        public void Serialize(ref short data)
         {
             if (isWriting) writer.Write(data);
             if (isReading) data = reader.ReadInt16();
         }
 
-        internal void Serialize(ref int data)
+        public void Serialize(ref int data)
         {
             if (isWriting) writer.Write(data);
             if (isReading) data = reader.ReadInt32();
         }
 
-        internal void Serialize(ref uint data)
+        public void Serialize(ref uint data)
         {
             if (isWriting) writer.Write(data);
             if (isReading) data = reader.ReadUInt32();
         }
 
-        internal void Serialize(ref bool data)
+        public void Serialize(ref bool data)
         {
             if (isWriting) writer.Write(data);
             if (isReading) data = reader.ReadBoolean();
         }
 
-        internal void Serialize(ref ulong data)
+        public void Serialize(ref ulong data)
         {
             if (isWriting) writer.Write(data);
             if (isReading) data = reader.ReadUInt64();
         }
 
         // this one isnt exactly safe, can cause huge allocations
-        internal void Serialize(ref string data)
+        public void Serialize(ref string data)
         {
             if (isWriting) writer.Write(data);
             if (isReading) data = reader.ReadString();
         }
 
-        internal void Serialize(ref Vector2 data)
+        public void Serialize(ref Vector2 data)
         {
             if (isWriting)
             {
@@ -312,7 +424,7 @@ namespace RainMeadow
         }
 
 
-        internal void SerializeNoStrings(ref WorldCoordinate pos)
+        public void SerializeNoStrings(ref WorldCoordinate pos)
         {
             if (isWriting)
             {
@@ -333,7 +445,7 @@ namespace RainMeadow
             }
         }
 
-        internal void Serialize(ref OnlineEntity.EntityId entityId)
+        public void Serialize(ref OnlineEntity.EntityId entityId)
         {
             if (isWriting)
             {
@@ -346,7 +458,7 @@ namespace RainMeadow
             }
         }
 
-        internal void Serialize(ref List<OnlineEntity.EntityId> entityIds)
+        public void Serialize(ref List<OnlineEntity.EntityId> entityIds)
         {
             if (isWriting)
             {
@@ -369,7 +481,7 @@ namespace RainMeadow
             }
         }
 
-        internal void Serialize(ref OnlineEntity onlineEntity)
+        public void Serialize(ref OnlineEntity onlineEntity)
         {
             if (isWriting)
             {
@@ -383,7 +495,7 @@ namespace RainMeadow
             }
         }
 
-        private void Serialize(ref OnlineState state)
+        public void Serialize(ref OnlineState state)
         {
             if (isWriting)
             {
@@ -393,13 +505,13 @@ namespace RainMeadow
             if (isReading)
             {
                 state = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
-                state.fromPlayer = currPlayer;
+                state.from = currPlayer;
                 state.ts = currPlayer.tick;
                 state.CustomSerialize(this);
             }
         }
 
-        internal void SerializeNullable(ref OnlineState nullableState)
+        public void SerializeNullable(ref OnlineState nullableState)
         {
             if (isWriting)
             {
@@ -418,7 +530,7 @@ namespace RainMeadow
             }
         }
 
-        internal void Serialize<T>(ref T[] states) where T : OnlineState
+        public void Serialize<T>(ref T[] states) where T : OnlineState
         {
             if (isWriting)
             {
@@ -438,7 +550,7 @@ namespace RainMeadow
                 for (int i = 0; i < count; i++)
                 {
                     var s = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
-                    s.fromPlayer = currPlayer;
+                    s.from = currPlayer;
                     s.ts = currPlayer.tick;
                     s.CustomSerialize(this);
                     states[i] = s as T; // can throw an invalid cast? or will it just be null?
@@ -447,7 +559,7 @@ namespace RainMeadow
         }
 
         // todo generics for crap like this
-        internal void Serialize(ref OnlineEntity.ChunkState[] chunkStates)
+        public void Serialize(ref OnlineEntity.ChunkState[] chunkStates)
         {
             if (isWriting)
             {
@@ -471,7 +583,7 @@ namespace RainMeadow
             }
         }
 
-        internal void Serialize(ref Dictionary<string, ulong> ownership)
+        public void Serialize(ref Dictionary<string, ulong> ownership)
         {
             if (isWriting)
             {
@@ -492,7 +604,7 @@ namespace RainMeadow
             }
         }
 
-        internal void Serialize(ref List<ulong> longs)
+        public void Serialize(ref List<ulong> longs)
         {
             if (isWriting)
             {
@@ -515,7 +627,7 @@ namespace RainMeadow
         }
 
         // a referenced event is something that must have been ack'd that frame
-        internal void SerializeReferencedEvent(ref PlayerEvent referencedEvent)
+        public void SerializeReferencedEvent(ref OnlineEvent referencedEvent)
         {
             if (isWriting)
             {

@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     public abstract class TransferResult : ResultEvent
     {
-        public TransferResult(TransferRequest referencedRequest) : base(referencedRequest) { }
+        public TransferResult(ResourceTransfer referencedRequest) : base(referencedRequest) { }
 
         protected TransferResult() { }
 
-        internal override void Process()
+        public override void Process()
         {
             (referencedEvent as ResourceEvent).onlineResource.ResolveTransfer(this);
         }
@@ -18,7 +15,7 @@ namespace RainMeadow
         {
             public Error() { }
 
-            public Error(TransferRequest referencedRequest) : base(referencedRequest) { }
+            public Error(ResourceTransfer referencedRequest) : base(referencedRequest) { }
 
             public override EventTypeId eventType => EventTypeId.TransferResultError;
         }
@@ -27,7 +24,7 @@ namespace RainMeadow
         {
             public Ok() { }
 
-            public Ok(TransferRequest referencedRequest) : base(referencedRequest) { }
+            public Ok(ResourceTransfer referencedRequest) : base(referencedRequest) { }
 
             public override EventTypeId eventType => EventTypeId.TransferResultOk;
         }

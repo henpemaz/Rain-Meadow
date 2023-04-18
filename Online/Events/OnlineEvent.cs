@@ -1,9 +1,8 @@
 ﻿using System;
-using System.IO;
 
 namespace RainMeadow
 {
-    public abstract class PlayerEvent
+    public abstract class OnlineEvent
     {
         public abstract EventTypeId eventType { get; } // serialized externally
         public OnlinePlayer from;// not serialized
@@ -12,7 +11,7 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return $"{eventId} {eventType}";
+            return $"{eventId}:{eventType}";
         }
 
         public virtual long EstimatedSize { get => sizeof(ulong); }
@@ -22,14 +21,18 @@ namespace RainMeadow
             serializer.Serialize(ref eventId);
         }
 
-        internal abstract void Process();
+        public abstract void Process();
+        public interface ICanBeAborted
+        {
+            public abstract void Abort();
+        }
 
         public enum EventTypeId : byte // will we hit 255 of these I wonder
         {
             None,
             ResourceRequest,
-            ReleaseRequest,
-            TransferRequest,
+            ResourceRelease,
+            ResourceTransfer,
             RequestResultLeased,
             RequestResultSubscribed,
             RequestResultError,
@@ -45,26 +48,26 @@ namespace RainMeadow
             EntityRequest,
             EntityRequestResultOk,
             EntityRequestResultError,
-            EntityReleaseEvent,
+            EntityRelease,
             EntityReleaseResultOk,
             EntityReleaseResultError,
         }
 
-        internal static PlayerEvent NewFromType(EventTypeId eventTypeId)
+        public static OnlineEvent NewFromType(EventTypeId eventTypeId)
         {
-            PlayerEvent e = null;
+            OnlineEvent e = null;
             switch (eventTypeId)
             {
-                case EventTypeId.None:
+                case EventTypeId.None: // fault detection
                     break;
                 case EventTypeId.ResourceRequest:
                     e = new ResourceRequest();
                     break;
-                case EventTypeId.ReleaseRequest:
-                    e = new ReleaseRequest();
+                case EventTypeId.ResourceRelease:
+                    e = new ResourceRelease();
                     break;
-                case EventTypeId.TransferRequest:
-                    e = new TransferRequest();
+                case EventTypeId.ResourceTransfer:
+                    e = new ResourceTransfer();
                     break;
                 case EventTypeId.ReleaseResultReleased:
                     e = new ReleaseResult.Released();
@@ -111,7 +114,7 @@ namespace RainMeadow
                 case EventTypeId.EntityRequestResultError:
                     e = new EntityRequestResult.Error();
                     break;
-                case EventTypeId.EntityReleaseEvent:
+                case EventTypeId.EntityRelease:
                     e = new EntityReleaseEvent();
                     break;
                 case EventTypeId.EntityReleaseResultOk:

@@ -1,8 +1,6 @@
 ﻿using Steamworks;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using static RainMeadow.WorldSession;
 
 namespace RainMeadow
 {
@@ -23,7 +21,7 @@ namespace RainMeadow
             this.id = id;
             PlayersManager.UpdatePlayersList(id);
             var ownerId = SteamMatchmaking.GetLobbyOwner(id); // Steam decides
-            NewOwner(OnlineManager.PlayerFromId(ownerId));
+            NewOwner(PlayersManager.PlayerFromId(ownerId));
             if (owner == null) throw new Exception("Couldnt find lobby owner in player list");
             if (isOwner)
             {
@@ -84,7 +82,7 @@ namespace RainMeadow
             }
         }
 
-        internal override string Identifier()
+        public override string Identifier()
         {
             return ".";
         }

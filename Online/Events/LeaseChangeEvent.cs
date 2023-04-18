@@ -1,6 +1,6 @@
 ﻿namespace RainMeadow
 {
-    internal class LeaseChangeEvent : ResourceEvent
+    public class LeaseChangeEvent : ResourceEvent
     {
         private OnlineResource.LeaseState leaseState;
 
@@ -19,7 +19,7 @@
             serializer.Serialize(ref leaseState);
         }
 
-        internal override void Process()
+        public override void Process()
         {
             this.onlineResource.LeaseChange(leaseState);
         }

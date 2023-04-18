@@ -2,27 +2,26 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using UnityEngine;
 
 namespace RainMeadow
 {
-    public partial class OnlinePlayer : System.IEquatable<OnlinePlayer>
+    public partial class OnlinePlayer : IEquatable<OnlinePlayer>
     {
         public CSteamID id;
         public SteamNetworkingIdentity oid;
-        public Queue<PlayerEvent> OutgoingEvents = new(16);
-        public List<PlayerEvent> recentlyAckedEvents = new(16);
+        public string name;
+        public Queue<OnlineEvent> OutgoingEvents = new(16);
+        public List<OnlineEvent> recentlyAckedEvents = new(16);
+        public List<OnlineEvent> abortedEvents = new();
         public Queue<OnlineState> OutgoingStates = new(128);
         private ulong nextOutgoingEvent = 1;
         public ulong lastEventFromRemote; // the last event I've received from them, I'll write it back on headers as an ack
-        private ulong lastAckFromRemote; // the last event they've ack'd to me
+        private ulong lastAckFromRemote; // the last event they've ack'd to me, used imediately on receive
         public ulong tick; // the last tick I've received from them, I'll write it back on headers as an ack
         public ulong lastAckdTick; // the last tick they've ack'd to me
         public bool needsAck;
         public bool isMe;
-        public string name;
         public bool hasLeft;
 
         public OnlinePlayer(CSteamID id)
@@ -30,26 +29,28 @@ namespace RainMeadow
             this.id = id;
             this.oid = new SteamNetworkingIdentity();
             oid.SetSteamID(id);
-            isMe = id == OnlineManager.me;
+            isMe = id == PlayersManager.me;
             name = SteamFriends.GetFriendPersonaName(id);
         }
 
-        internal void QueueEvent(PlayerEvent e)
+        public OnlineEvent QueueEvent(OnlineEvent e)
         {
             e.eventId = this.nextOutgoingEvent;
             e.to = this;
-            e.from = OnlineManager.mePlayer;
+            e.from = PlayersManager.mePlayer;
             RainMeadow.Debug($"{this} {e}");
             nextOutgoingEvent++;
             OutgoingEvents.Enqueue(e);
+            return e;
         }
 
-        internal PlayerEvent GetRecentEvent(ulong id)
+        public OnlineEvent GetRecentEvent(ulong id)
         {
-            return recentlyAckedEvents.FirstOrDefault(e => e.eventId == id);
+            return recentlyAckedEvents.FirstOrDefault(e => e.eventId == id) 
+                ?? abortedEvents.FirstOrDefault(e => e.eventId == id);
         }
 
-        internal void AckFromRemote(ulong lastAck)
+        public void EventAckFromRemote(ulong lastAck)
         {
             //RainMeadow.Debug(this);
             this.recentlyAckedEvents.Clear();
@@ -62,53 +63,34 @@ namespace RainMeadow
             }
         }
 
-        internal void TickAckFromRemote(ulong lastTick)
+        public void TickAckFromRemote(ulong lastTick)
         {
             this.lastAckdTick = lastTick;
         }
 
-        internal void RequestResource(OnlineResource onlineResource)
+        public bool HasUnacknoledgedEvents()
         {
-            RainMeadow.Debug($"Requesting player {this.name} for resource {onlineResource.Identifier()}");
-            var req = new ResourceRequest(onlineResource);
-            onlineResource.pendingRequest = req;
-            QueueEvent(req);
+            return OutgoingEvents.Count > 0;
         }
 
-        internal void TransferResource(OnlineResource onlineResource, List<OnlinePlayer> subscribers, List<OnlineEntity.EntityId> abandonedEntities)
+        public void AbortUnacknoledgedEvents()
         {
-            RainMeadow.Debug($"Requesting player {this.name} for transfer of {onlineResource.Identifier()}");
-            var req = new TransferRequest(onlineResource, subscribers, abandonedEntities);
-            onlineResource.pendingRequest = req;
-            QueueEvent(req);
+            if (OutgoingEvents.Count > 0)
+            {
+                RainMeadow.Debug($"Aborting events for player {this}");
+                var toBeAborted = new Queue<OnlineEvent>(OutgoingEvents); // newly added events are not aborted on purpose
+                OutgoingEvents.Clear();
+                while (toBeAborted.Count > 0)
+                {
+                    var e = toBeAborted.Dequeue();
+                    RainMeadow.Debug($"Aborting: {e}");
+                    if (e is OnlineEvent.ICanBeAborted icba) icba.Abort();
+                    abortedEvents.Add(e);
+                }
+            }
         }
 
-        internal void ReleaseResource(OnlineResource onlineResource)
-        {
-            RainMeadow.Debug($"Requesting player {this.name} for release of resource {onlineResource.Identifier()}");
-            var req = new ReleaseRequest(onlineResource,
-                onlineResource.participants,
-                onlineResource.entities.Where(e => e.isTransferable && !e.isPending && e.owner.isMe).Select(e=>e.id).ToList());
-            onlineResource.pendingRequest = req;
-            QueueEvent(req);
-        }
-
-        internal void RequestEntity(OnlineEntity oe)
-        {
-            RainMeadow.Debug($"Requesting player {this.name} for entity {oe}");
-            var req = new EntityRequest(oe);
-            oe.pendingRequest = req;
-            QueueEvent(req);
-        }
-
-        internal void ReleaseEntity(OnlineEntity oe)
-        {
-            RainMeadow.Debug($"Releasing entity {oe} back to player {this.name}");
-            var req = new EntityReleaseEvent(oe, oe.lowestResource);
-            oe.pendingRequest = req;
-            QueueEvent(req);
-        }
-
+        // IEqu
         public override string ToString()
         {
             return $"{id} - {name}";

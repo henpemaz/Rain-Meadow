@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using static RainMeadow.RoomSession;
 
 namespace RainMeadow
 {
@@ -11,7 +9,7 @@ namespace RainMeadow
         public Region region;
         public World world;
 
-        internal static ConditionalWeakTable<World, WorldSession> map = new();
+        public static ConditionalWeakTable<World, WorldSession> map = new();
         public Dictionary<string, RoomSession> roomSessions = new();
 
         protected override World World => world;
@@ -22,7 +20,7 @@ namespace RainMeadow
             this.super = lobby;
         }
 
-        internal void BindWorld(World world)
+        public void BindWorld(World world)
         {
             this.world = world;
             map.Add(world, this);
@@ -68,7 +66,7 @@ namespace RainMeadow
             return new WorldState(this, ts);
         }
 
-        internal override string Identifier()
+        public override string Identifier()
         {
             return region.name;
         }

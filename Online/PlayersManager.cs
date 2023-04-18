@@ -8,6 +8,10 @@ namespace RainMeadow
     public static class PlayersManager
     {
         private static Callback<SteamNetworkingMessagesSessionRequest_t> m_SessionRequest;
+
+        public static CSteamID me;
+        public static OnlinePlayer mePlayer;
+        public static List<OnlinePlayer> players;
         public static void InitPlayersManager()
         {
             m_SessionRequest = Callback<SteamNetworkingMessagesSessionRequest_t>.Create(SessionRequest);
@@ -20,7 +24,7 @@ namespace RainMeadow
             {
                 RainMeadow.DebugMe();
                 var n = SteamMatchmaking.GetNumLobbyMembers(cSteamID);
-                var oldplayers = OnlineManager.players.Select(p => p.id).ToArray();
+                var oldplayers = PlayersManager.players.Select(p => p.id).ToArray();
                 var newplayers = new CSteamID[n];
                 for (int i = 0; i < n; i++)
                 {
@@ -45,27 +49,25 @@ namespace RainMeadow
         private static void PlayerJoined(CSteamID p)
         {
             RainMeadow.Debug($"PlayerJoined:{p} - {SteamFriends.GetFriendPersonaName(p)}");
-            if (p == OnlineManager.me) return;
+            if (p == PlayersManager.me) return;
             SteamFriends.RequestUserInformation(p, true);
-            OnlineManager.players.Add(new OnlinePlayer(p));
+            PlayersManager.players.Add(new OnlinePlayer(p));
         }
 
         private static void PlayerLeft(CSteamID p)
         {
-            // todo if lobby owner leaves, update lobby resources accordingly
-            // todo if resource owner leaves and I'm super, coordinate transfer
-
             RainMeadow.Debug($"PlayerLeft:{p} - {SteamFriends.GetFriendPersonaName(p)}");
 
-            if(OnlineManager.players.FirstOrDefault(op => op.id == p) is OnlinePlayer player)
+            if(PlayersManager.players.FirstOrDefault(op => op.id == p) is OnlinePlayer player)
             {
                 player.hasLeft = true;
-                //player.AbortUnacknoledgedEvents();
-                if (OnlineManager.lobby != null)
+                OnlineManager.lobby?.OnPlayerDisconnect(player);
+                while (player.HasUnacknoledgedEvents())
                 {
-                    OnlineManager.lobby.OnPlayerDisconnect(player);
+                    player.AbortUnacknoledgedEvents();
+                    OnlineManager.lobby?.OnPlayerDisconnect(player);
                 }
-                OnlineManager.players.Remove(player);
+                PlayersManager.players.Remove(player);
             }
         }
 
@@ -77,7 +79,7 @@ namespace RainMeadow
                 RainMeadow.Debug("session request from " + id);
                 if (OnlineManager.lobby != null)
                 {
-                    if (OnlineManager.players.FirstOrDefault(op => op.id == id) is OnlinePlayer p)
+                    if (PlayersManager.players.FirstOrDefault(op => op.id == id) is OnlinePlayer p)
                     {
                         RainMeadow.Debug("accepted session from " + p.name);
                         SteamNetworkingMessages.AcceptSessionWithUser(ref param.m_identityRemote);
@@ -92,12 +94,22 @@ namespace RainMeadow
             }
         }
 
-        internal static OnlinePlayer BestTransferCandidate(OnlineResource onlineResource, List<OnlinePlayer> subscribers)
+        public static OnlinePlayer BestTransferCandidate(OnlineResource onlineResource, List<OnlinePlayer> subscribers)
         {
-            if (subscribers.Contains(OnlineManager.mePlayer)) return OnlineManager.mePlayer;
+            if (subscribers.Contains(PlayersManager.mePlayer)) return PlayersManager.mePlayer;
             // todo pick by ping?
             if (subscribers.Count < 1) return null;
             return subscribers[0];
+        }
+
+        public static OnlinePlayer PlayerFromId(CSteamID id)
+        {
+            return PlayersManager.players.FirstOrDefault(p => p.id == id);
+        }
+
+        public static OnlinePlayer PlayerFromId(ulong id)
+        {
+            return PlayersManager.players.FirstOrDefault(p => p.id.m_SteamID == id);
         }
     }
 }

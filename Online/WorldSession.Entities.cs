@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -12,7 +10,7 @@ namespace RainMeadow
         // At a world level, entities "exist" and "have a .worldposition" and that's about it, just enough to show up on the map
 
         // This happens for local entities, so we create their respective OnlineEntity
-        internal void NewEntityInWorld(AbstractPhysicalObject entity)
+        public void NewEntityInWorld(AbstractPhysicalObject entity)
         {
             RainMeadow.Debug(this);
             // world population generates before this can be activated
@@ -23,7 +21,7 @@ namespace RainMeadow
             if (!registeringRemoteEntity) // A new entity, presumably mine
             {
                 RainMeadow.Debug("Registering new entity as owned by myself");
-                var oe = new OnlineEntity(entity, OnlineManager.mePlayer, new OnlineEntity.EntityId(OnlineManager.mePlayer.id.m_SteamID, entity.ID.number), entity.ID.RandomSeed, entity.pos, !RainMeadow.sSpawningPersonas);
+                var oe = new OnlineEntity(entity, PlayersManager.mePlayer, new OnlineEntity.EntityId(PlayersManager.mePlayer.id.m_SteamID, entity.ID.number), entity.ID.RandomSeed, entity.pos, !RainMeadow.sSpawningPersonas);
                 RainMeadow.Debug(oe);
                 OnlineManager.recentEntities[oe.id] = oe;
                 OnlineEntity.map.Add(entity, oe);

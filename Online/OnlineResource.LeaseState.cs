@@ -32,12 +32,12 @@ namespace RainMeadow
             currentLeaseState = newLeaseState; // store in full
         }
 
-        internal LeaseState GetLeaseState()
+        public LeaseState GetLeaseState()
         {
             return new LeaseState(this);
         }
 
-        internal void LeaseChange(LeaseState leaseState)
+        public void LeaseChange(LeaseState leaseState)
         {
             RainMeadow.Debug(this);
             if (!isAvailable) { throw new InvalidOperationException("not available"); }
@@ -61,11 +61,11 @@ namespace RainMeadow
                 // todo fix the security hole in this ;3
                 // should really only be able to reference subresources here, not any resource
                 // maybe subresources could be referenced with a shorter id as well?
-                OnlineManager.ResourceFromIdentifier(item.Key).NewOwner(OnlineManager.PlayerFromId(item.Value));
+                OnlineManager.ResourceFromIdentifier(item.Key).NewOwner(PlayersManager.PlayerFromId(item.Value));
             }
             this.participants = participants
-                .Union(leaseState.entered.Select(OnlineManager.PlayerFromId))
-                .Except(leaseState.left.Select(OnlineManager.PlayerFromId)).ToList();
+                .Union(leaseState.entered.Select(PlayersManager.PlayerFromId))
+                .Except(leaseState.left.Select(PlayersManager.PlayerFromId)).ToList();
         }
 
         public class LeaseState // its it's own weird thing, sent around as events because critical yet too big to send fully every frame
@@ -88,7 +88,7 @@ namespace RainMeadow
             }
 
             // update from other
-            internal void AddDelta(LeaseState leaseState)
+            public void AddDelta(LeaseState leaseState)
             {
                 foreach (var item in leaseState.ownership)
                 {
@@ -98,7 +98,7 @@ namespace RainMeadow
                 entered = entered.Union(leaseState.entered).Except(leaseState.left).ToList();
             }
 
-            internal void CustomSerialize(Serializer serializer)
+            public void CustomSerialize(Serializer serializer)
             {
                 serializer.Serialize(ref ownership);
                 serializer.Serialize(ref entered);
@@ -106,7 +106,7 @@ namespace RainMeadow
             }
 
             // difference from other
-            internal LeaseState Delta(LeaseState previousLeaseState)
+            public LeaseState Delta(LeaseState previousLeaseState)
             {
                 if(previousLeaseState == null) { return this; }
                 var delta = new LeaseState();

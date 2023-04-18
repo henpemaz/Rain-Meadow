@@ -1,6 +1,6 @@
 ﻿namespace RainMeadow
 {
-    internal class EntityNewOwnerEvent : EntityResourceEvent
+    public class EntityNewOwnerEvent : EntityResourceEvent
     {
         public OnlinePlayer newOwner;
 
@@ -19,7 +19,7 @@
 
         public override EventTypeId eventType => EventTypeId.EntityNewOwnerEvent;
 
-        internal override void Process()
+        public override void Process()
         {
             onlineResource.OnEntityNewOwner(this);
         }

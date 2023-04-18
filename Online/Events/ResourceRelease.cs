@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace RainMeadow
 {
-    public class ReleaseRequest : ResourceEvent
+    public class ResourceRelease : ResourceEvent
     {
         public List<OnlinePlayer> participants;
         public List<OnlineEntity.EntityId> abandonedEntities;
 
-        public ReleaseRequest() { }
-        public ReleaseRequest(OnlineResource resource, List<OnlinePlayer> participants, List<OnlineEntity.EntityId> abandonedEntities) : base(resource)
+        public ResourceRelease() { }
+        public ResourceRelease(OnlineResource resource, List<OnlinePlayer> participants, List<OnlineEntity.EntityId> abandonedEntities) : base(resource)
         {
             this.participants = participants;
             this.abandonedEntities = abandonedEntities;
@@ -22,11 +21,11 @@ namespace RainMeadow
             serializer.Serialize(ref abandonedEntities);
         }
 
-        internal override void Process()
+        public override void Process()
         {
             onlineResource.Released(this);
         }
 
-        public override EventTypeId eventType => EventTypeId.ReleaseRequest;
+        public override EventTypeId eventType => EventTypeId.ResourceRelease;
     }
 }

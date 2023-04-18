@@ -1,6 +1,6 @@
 ﻿namespace RainMeadow
 {
-    internal interface IHaveADescription
+    public interface IHaveADescription
     {
         string Description { get; }
     }

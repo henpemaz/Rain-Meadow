@@ -1,6 +1,6 @@
 ﻿namespace RainMeadow
 {
-    internal class OnlineController : Player.PlayerController
+    public class OnlineController : Player.PlayerController
     {
         private OnlineEntity ent;
         private Player self;
