@@ -1,7 +1,6 @@
 ﻿using Steamworks;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 
 namespace RainMeadow
@@ -10,21 +9,21 @@ namespace RainMeadow
     // The owner of the resource coordinates states, distributes subresources and solves conflicts
     public abstract partial class OnlineResource
     {
-        public OnlineResource super;
-        public OnlinePlayer owner;
+        public OnlineResource super; // the resource above this (ie lobby for a world, world for a room)
+        public OnlinePlayer owner; // the current owner of this resource, can perform certain operations
+        public List<OnlinePlayer> participants = new(); // all the players in the resource, current owner included
         public List<OnlineResource> subresources;
-        public List<OnlinePlayer> participants;
 
         public ResourceEvent pendingRequest; // should this maybe be a list/queue? Will it be any more manageable if multiple events can cohexist?
 
         public bool isFree => owner == null || owner.hasLeft;
         public bool isOwner => owner != null && owner.id == PlayersManager.me;
-        public bool isSuper => super != null && super.isOwner;
+        public bool isSuper => super == null || super.isOwner;
+        public OnlinePlayer supervisor => super?.owner ?? owner;
         public bool isActive { get; protected set; } // The respective in-game resource is loaded
         public bool isAvailable { get; protected set; } // The resource was leased or subscribed to
         public bool isPending => pendingRequest != null;
         public bool canRelease => !isPending && !subresources.Any(s => s.isAvailable);
-        public bool isReleasing => pendingRequest is ResourceRelease || releaseWhenPossible;
 
         public void FullyReleaseResource()
         {
@@ -103,7 +102,6 @@ namespace RainMeadow
             if (isAvailable) { throw new InvalidOperationException("Resource is already available"); }
             if (isActive) { throw new InvalidOperationException("Resource is already active"); }
             isAvailable = true;
-            participants = new() { PlayersManager.mePlayer };
             incomingLease = null;
             incomingEntities = new();
 
@@ -140,9 +138,6 @@ namespace RainMeadow
             isAvailable = false;
             UnavailableImpl();
 
-            participants.Clear();
-            participants = null;
-
             OnlineManager.RemoveSubscriptions(this);
 
 
@@ -165,7 +160,7 @@ namespace RainMeadow
         protected void NewOwner(OnlinePlayer player)
         {
             RainMeadow.Debug(this.ToString() + " - " + (player != null ? player : "null"));
-            //if (player == owner && player != null) throw new InvalidOperationException("Re-assigned to the same owner"); // this breaks in transfers, as the transferee doesnt have the delta
+            if (player == owner && player != null) throw new InvalidOperationException("Re-assigned to the same owner"); // this breaks in transfers, as the transferee doesnt have the delta
             var oldOwner = owner;
             owner = player;
 
@@ -176,15 +171,14 @@ namespace RainMeadow
 
             if (isOwner && isAvailable) // transfered / claimed by me
             {
-                var oldParticipants = participants.ToList();
-                participants = new() { PlayersManager.mePlayer };
                 isActive = false; // we tell a little lie while we re-add everyone to avoid multiple NewLeaseState
-                foreach (var subscriber in oldParticipants)
+                foreach (var subscriber in participants)
                 {
                     if (subscriber.isMe || subscriber.hasLeft) continue;
-                    Subscribed(subscriber);
+                    Subscribed(subscriber, true);
                 }
                 isActive = true;
+
                 currentLeaseState = null; // sent in full to everyone
                 NewLeaseState();
 
@@ -194,8 +188,20 @@ namespace RainMeadow
             }
             if (oldOwner != null && oldOwner.hasLeft)
             {
-                OnPlayerDisconnect(oldOwner); // we might be able to sort out more things now
+                OnPlayerDisconnect(oldOwner); // we might be able to sort out things now
             }
+        }
+
+        private void NewMember(OnlinePlayer from)
+        {
+            throw new NotImplementedException();
+        } // todo not only implement these but fire them from lease changes and have them fire lease changes
+        // maybe a mechanism for building up changes before sending :/
+        // or manually sending?
+
+        private void MemberLeft(OnlinePlayer from)
+        {
+            throw new NotImplementedException();
         }
 
         public void ClaimAbandonedEntities()
@@ -278,19 +284,22 @@ namespace RainMeadow
         }
 
 
-        protected virtual void SubscribedImpl(OnlinePlayer player) { }
-        private void Subscribed(OnlinePlayer player)
+        protected virtual void SubscribedImpl(OnlinePlayer player, bool fromTransfer) { }
+        private void Subscribed(OnlinePlayer player, bool fromTransfer)
         {
             RainMeadow.Debug(this.ToString() + " - " + player.ToString());
             if (!isAvailable) throw new InvalidOperationException("not available");
             if (!isOwner) throw new InvalidOperationException("not owner");
             if (player.isMe) throw new InvalidOperationException("Can't subscribe to self");
 
-            participants.Add(player);
+            if (!fromTransfer)
+            {
+                participants.Add(player);
+            }
             OnlineManager.AddSubscription(this, player);
-            SubscribedImpl(player);
+            SubscribedImpl(player, fromTransfer);
 
-            if (isActive)
+            if (isActive && !fromTransfer)
             {
                 NewLeaseState(player);
                 foreach (var ent in entities)
@@ -317,14 +326,18 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return $"<Resource {Identifier()} - o:{owner?.name} - av:{(isAvailable ? 1 : 0)} - ac:{(isActive ? 1 : 0)}>";
+            return $"<Resource {Id()} - o:{owner?.name} - av:{(isAvailable ? 1 : 0)} - ac:{(isActive ? 1 : 0)}>";
         }
 
         public virtual byte SizeOfIdentifier()
         {
-            return (byte)Identifier().Length;
+            return (byte)Id().Length;
         }
 
-        public abstract string Identifier();
+        public abstract string Id();
+
+        public abstract ushort ShortId();
+
+        public abstract OnlineResource SubresourceFromShortId(ushort shortId);
     }
 }

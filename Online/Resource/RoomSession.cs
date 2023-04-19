@@ -54,9 +54,19 @@ namespace RainMeadow
                 absroom.Abstractize();
             }
         }
-        public override string Identifier()
+        public override string Id()
         {
-            return super.Identifier() + absroom.name;
+            return super.Id() + absroom.name;
+        }
+
+        public override ushort ShortId()
+        {
+            return (ushort)absroom.index;
+        }
+
+        public override OnlineResource SubresourceFromShortId(ushort shortId)
+        {
+            return this.subresources[shortId];
         }
 
         public override void ReadState(ResourceState newState, ulong ts)

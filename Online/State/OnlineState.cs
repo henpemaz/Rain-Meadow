@@ -48,19 +48,19 @@ namespace RainMeadow
                     s = new RoomSession.RoomState();
                     break;
                 case StateType.PhysicalObjectEntityState:
-                    s = new OnlineEntity.PhysicalObjectEntityState();
+                    s = new PhysicalObjectEntityState();
                     break;
                 case StateType.CreatureEntityState:
-                    s = new OnlineEntity.CreatureEntityState();
+                    s = new CreatureEntityState();
                     break;
                 case StateType.RealizedObjectState:
-                    s = new OnlineEntity.RealizedObjectState();
+                    s = new RealizedObjectState();
                     break;
                 case StateType.RealizedCreatureState:
-                    s = new OnlineEntity.RealizedCreatureState();
+                    s = new RealizedCreatureState();
                     break;
                 case StateType.RealizedPlayerState:
-                    s = new OnlineEntity.RealizedPlayerState();
+                    s = new RealizedPlayerState();
                     break;
                 default:
                     break;

@@ -320,7 +320,7 @@ namespace RainMeadow
             if (isWriting)
             {
                 // todo switch to bytes?
-                writer.Write(onlineResource.Identifier());
+                writer.Write(onlineResource.Id());
             }
             if (isReading)
             {
@@ -559,7 +559,7 @@ namespace RainMeadow
         }
 
         // todo generics for crap like this
-        public void Serialize(ref OnlineEntity.ChunkState[] chunkStates)
+        public void Serialize(ref ChunkState[] chunkStates)
         {
             if (isWriting)
             {
@@ -573,10 +573,10 @@ namespace RainMeadow
             if (isReading)
             {
                 byte count = reader.ReadByte();
-                chunkStates = new OnlineEntity.ChunkState[count];
+                chunkStates = new ChunkState[count];
                 for (int i = 0; i < count; i++)
                 {
-                    var s = new OnlineEntity.ChunkState(null);
+                    var s = new ChunkState(null);
                     s.CustomSerialize(this);
                     chunkStates[i] = s;
                 }
@@ -636,6 +636,35 @@ namespace RainMeadow
             if (isReading)
             {
                 referencedEvent = currPlayer.GetRecentEvent(reader.ReadUInt64());
+            }
+        }
+
+        internal void Serialize(ref OnlineResource.OnlinePlayerGroup participants)
+        {
+            if (isReading) participants = new();
+            participants.CustomSerialize(this);
+        }
+
+        internal void Serialize(ref List<OnlineResource.SubleaseState> sublease)
+        {
+            if (isWriting)
+            {
+                writer.Write((byte)sublease.Count);
+                for (int i = 0; i < sublease.Count; i++)
+                {
+                    sublease[i].CustomSerialize(this);
+                }
+            }
+            if (isReading)
+            {
+                var count = reader.ReadByte();
+                sublease = new(count);
+                for (int i = 0; i < count; i++)
+                {
+                    var item = new OnlineResource.SubleaseState();
+                    item.CustomSerialize(this);
+                    sublease.Add(item);
+                }
             }
         }
     }

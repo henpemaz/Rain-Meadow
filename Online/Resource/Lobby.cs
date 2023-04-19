@@ -9,7 +9,6 @@ namespace RainMeadow
     {
         public CSteamID id;
         public OnlineGameSession session;
-        private Region[] loadedRegions;
 
         public Dictionary<string, WorldSession> worldSessions = new();
         protected override World World => throw new NotSupportedException(); // Lobby can't add world entities
@@ -41,8 +40,7 @@ namespace RainMeadow
 
         protected override void ActivateImpl()
         {
-            this.loadedRegions = Region.LoadAllRegions(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer);
-            foreach (var r in loadedRegions)
+            foreach (var r in Region.LoadAllRegions(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer))
             {
                 var ws = new WorldSession(r, this);
                 worldSessions.Add(r.name, ws);
@@ -82,9 +80,19 @@ namespace RainMeadow
             }
         }
 
-        public override string Identifier()
+        public override string Id()
         {
             return ".";
+        }
+
+        public override ushort ShortId()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override OnlineResource SubresourceFromShortId(ushort shortId)
+        {
+            return this.subresources[shortId];
         }
 
         public class LobbyState : ResourceState

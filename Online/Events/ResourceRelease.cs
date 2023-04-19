@@ -1,25 +1,9 @@
-﻿using System.Collections.Generic;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     public class ResourceRelease : ResourceEvent
     {
-        public List<OnlinePlayer> participants;
-        public List<OnlineEntity.EntityId> abandonedEntities;
-
         public ResourceRelease() { }
-        public ResourceRelease(OnlineResource resource, List<OnlinePlayer> participants, List<OnlineEntity.EntityId> abandonedEntities) : base(resource)
-        {
-            this.participants = participants;
-            this.abandonedEntities = abandonedEntities;
-        }
-
-        public override void CustomSerialize(Serializer serializer)
-        {
-            base.CustomSerialize(serializer);
-            serializer.Serialize(ref participants);
-            serializer.Serialize(ref abandonedEntities);
-        }
+        public ResourceRelease(OnlineResource resource) : base(resource) { }
 
         public override void Process()
         {

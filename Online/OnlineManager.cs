@@ -111,7 +111,7 @@ namespace RainMeadow
                 {
                     resourceState.resource.ReadState(resourceState, fromPlayer.tick);
                 }
-                if (state is OnlineEntity.EntityState entityState)
+                if (state is EntityState entityState)
                 {
                     entityState.onlineEntity.ReadState(entityState, fromPlayer.tick);
                 }

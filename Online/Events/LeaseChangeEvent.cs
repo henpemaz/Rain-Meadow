@@ -2,7 +2,7 @@
 {
     public class LeaseChangeEvent : ResourceEvent
     {
-        private OnlineResource.LeaseState leaseState;
+        public OnlineResource.LeaseState leaseState;
 
         public LeaseChangeEvent() { }
 
@@ -21,7 +21,7 @@
 
         public override void Process()
         {
-            this.onlineResource.LeaseChange(leaseState);
+            this.onlineResource.LeaseChange(this);
         }
     }
 }

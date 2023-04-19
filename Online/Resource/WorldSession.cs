@@ -66,9 +66,19 @@ namespace RainMeadow
             return new WorldState(this, ts);
         }
 
-        public override string Identifier()
+        public override string Id()
         {
             return region.name;
+        }
+
+        public override ushort ShortId()
+        {
+            return (ushort)region.regionNumber;
+        }
+
+        public override OnlineResource SubresourceFromShortId(ushort shortId)
+        {
+            return this.subresources[shortId - region.firstRoomIndex];
         }
 
         public class WorldState : ResourceState
