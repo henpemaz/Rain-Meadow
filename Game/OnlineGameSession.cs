@@ -1,13 +1,4 @@
-﻿using Mono.Cecil.Cil;
-using MonoMod.Cil;
-using MonoMod.RuntimeDetour.HookGen;
-using Steamworks;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     // OnlineGameSession is tightly coupled to a lobby, and the highest ownership level
     public partial class OnlineGameSession : StoryGameSession
@@ -18,7 +9,7 @@ namespace RainMeadow
             OnlineManager.lobby.session = this;
         }
 
-        internal void FilterItems(Room room)
+        public void FilterItems(Room room)
         {
             foreach (var item in room.roomSettings.placedObjects)
             {
@@ -35,12 +26,12 @@ namespace RainMeadow
 
         }
 
-        internal bool ShouldSpawnRoomItems(RainWorldGame game)
+        public bool ShouldSpawnRoomItems(RainWorldGame game)
         {
             return false;
         }
 
-        internal bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)
+        public bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)
         {
             return false;
             if (worldSession is null || !worldSession.isAvailable)
@@ -50,12 +41,12 @@ namespace RainMeadow
             return worldSession.isOwner;
         }
 
-        internal bool ShouldSyncObjectInWorld(WorldSession ws, AbstractPhysicalObject apo)
+        public bool ShouldSyncObjectInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
             return apo is AbstractCreature;
         }
 
-        internal bool ShouldSyncObjectInRoom(RoomSession rs, AbstractPhysicalObject apo)
+        public bool ShouldSyncObjectInRoom(RoomSession rs, AbstractPhysicalObject apo)
         {
             return true;
         }

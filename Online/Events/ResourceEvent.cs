@@ -1,9 +1,6 @@
-﻿using Steamworks;
-using System;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
-    public abstract class ResourceEvent : PlayerEvent
+    public abstract class ResourceEvent : OnlineEvent
     {
         public override long EstimatedSize => base.EstimatedSize + onlineResource.SizeOfIdentifier();
         public OnlineResource onlineResource;

@@ -1,12 +1,6 @@
 ﻿using BepInEx;
-using MonoMod.Cil;
-using System.Linq;
 using System;
-using Mono.Cecil.Cil;
-using UnityEngine;
 using System.Security.Permissions;
-using BepInEx.Logging;
-using System.Runtime.CompilerServices;
 using System.Reflection;
 
 [assembly: AssemblyVersion(RainMeadow.RainMeadow.MeadowVersionStr)]

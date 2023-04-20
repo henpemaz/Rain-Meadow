@@ -6,7 +6,7 @@
 
         protected RequestResult(ResourceRequest referencedEvent) : base(referencedEvent) { }
 
-        internal override void Process()
+        public override void Process()
         {
             (referencedEvent as ResourceEvent).onlineResource.ResolveRequest(this);
         }

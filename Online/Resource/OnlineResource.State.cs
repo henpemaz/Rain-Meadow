@@ -57,7 +57,7 @@ namespace RainMeadow
         public abstract class ResourceState : OnlineState
         {
             public OnlineResource resource;
-            public OnlineEntity.EntityState[] entityStates;
+            public EntityState[] entityStates;
 
             protected ResourceState() : base() { }
             protected ResourceState(OnlineResource resource, ulong ts) : base(ts)

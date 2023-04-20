@@ -1,6 +1,6 @@
 ﻿namespace RainMeadow
 {
-    internal class EntityLeftEvent : EntityResourceEvent
+    public class EntityLeftEvent : EntityResourceEvent
     {
         public EntityLeftEvent() { }
 
@@ -8,7 +8,7 @@
 
         public override EventTypeId eventType => EventTypeId.EntityLeftEvent;
 
-        internal override void Process()
+        public override void Process()
         {
             onlineResource.OnEntityLeft(this);
         }

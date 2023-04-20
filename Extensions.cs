@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace RainMeadow
 {
-    internal static class Extensions
+    public static class Extensions
     {
         
         public static bool RemoveFromShortcuts(this Creature creature)

@@ -4,7 +4,7 @@ namespace RainMeadow
 {
     public abstract class OnlineState
     {
-        public OnlinePlayer fromPlayer; // not serialized, message source
+        public OnlinePlayer from; // not serialized, message source
         public ulong ts; // not serialized, latest from player when read
 
         protected OnlineState() { }
@@ -31,7 +31,7 @@ namespace RainMeadow
             RealizedPlayerState,
         }
 
-        internal static OnlineState NewFromType(StateType stateType)
+        public static OnlineState NewFromType(StateType stateType)
         {
             OnlineState s = null;
             switch (stateType)
@@ -48,19 +48,19 @@ namespace RainMeadow
                     s = new RoomSession.RoomState();
                     break;
                 case StateType.PhysicalObjectEntityState:
-                    s = new OnlineEntity.PhysicalObjectEntityState();
+                    s = new PhysicalObjectEntityState();
                     break;
                 case StateType.CreatureEntityState:
-                    s = new OnlineEntity.CreatureEntityState();
+                    s = new CreatureEntityState();
                     break;
                 case StateType.RealizedObjectState:
-                    s = new OnlineEntity.RealizedObjectState();
+                    s = new RealizedObjectState();
                     break;
                 case StateType.RealizedCreatureState:
-                    s = new OnlineEntity.RealizedCreatureState();
+                    s = new RealizedCreatureState();
                     break;
                 case StateType.RealizedPlayerState:
-                    s = new OnlineEntity.RealizedPlayerState();
+                    s = new RealizedPlayerState();
                     break;
                 default:
                     break;
@@ -74,12 +74,12 @@ namespace RainMeadow
             // no op
         }
 
-        internal virtual OnlineState Delta(OnlineState lastAcknoledgedState)
+        public virtual OnlineState Delta(OnlineState lastAcknoledgedState)
         {
             return this;
         }
 
-        internal virtual OnlineState ApplyDelta(OnlineState newState)
+        public virtual OnlineState ApplyDelta(OnlineState newState)
         {
             return newState;
         }

@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
-    internal class EntityReleaseEvent : EntityEvent
+    public class EntityReleaseEvent : EntityEvent
     {
         public OnlineResource inResource;
 
@@ -19,9 +17,9 @@ namespace RainMeadow
             serializer.Serialize(ref inResource);
         }
 
-        public override EventTypeId eventType => EventTypeId.EntityReleaseEvent;
+        public override EventTypeId eventType => EventTypeId.EntityRelease;
 
-        internal override void Process()
+        public override void Process()
         {
             oe.Released(this);
         }

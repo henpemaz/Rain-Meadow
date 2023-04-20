@@ -1,8 +1,6 @@
 ﻿using Steamworks;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using static RainMeadow.WorldSession;
 
 namespace RainMeadow
 {
@@ -11,7 +9,6 @@ namespace RainMeadow
     {
         public CSteamID id;
         public OnlineGameSession session;
-        private Region[] loadedRegions;
 
         public Dictionary<string, WorldSession> worldSessions = new();
         protected override World World => throw new NotSupportedException(); // Lobby can't add world entities
@@ -21,9 +18,10 @@ namespace RainMeadow
         public Lobby(CSteamID id)
         {
             this.id = id;
+            this.super = this;
             PlayersManager.UpdatePlayersList(id);
             var ownerId = SteamMatchmaking.GetLobbyOwner(id); // Steam decides
-            NewOwner(OnlineManager.PlayerFromId(ownerId));
+            NewOwner(PlayersManager.PlayerFromId(ownerId));
             if (owner == null) throw new Exception("Couldnt find lobby owner in player list");
             if (isOwner)
             {
@@ -43,8 +41,7 @@ namespace RainMeadow
 
         protected override void ActivateImpl()
         {
-            this.loadedRegions = Region.LoadAllRegions(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer);
-            foreach (var r in loadedRegions)
+            foreach (var r in Region.LoadAllRegions(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer))
             {
                 var ws = new WorldSession(r, this);
                 worldSessions.Add(r.name, ws);
@@ -84,9 +81,19 @@ namespace RainMeadow
             }
         }
 
-        internal override string Identifier()
+        public override string Id()
         {
             return ".";
+        }
+
+        public override ushort ShortId()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override OnlineResource SubresourceFromShortId(ushort shortId)
+        {
+            return this.subresources[shortId];
         }
 
         public class LobbyState : ResourceState

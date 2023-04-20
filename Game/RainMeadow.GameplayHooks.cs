@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     partial class RainMeadow
     {

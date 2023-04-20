@@ -4,9 +4,9 @@
     {
         protected ReleaseResult() { }
 
-        protected ReleaseResult(ReleaseRequest referencedEvent) : base(referencedEvent) { }
+        protected ReleaseResult(ResourceRelease referencedEvent) : base(referencedEvent) { }
 
-        internal override void Process()
+        public override void Process()
         {
             (referencedEvent as ResourceEvent).onlineResource.ResolveRelease(this);
         }
@@ -14,7 +14,7 @@
         {
             public Unsubscribed() { }
 
-            public Unsubscribed(ReleaseRequest referencedEvent) : base(referencedEvent) { }
+            public Unsubscribed(ResourceRelease referencedEvent) : base(referencedEvent) { }
             public override EventTypeId eventType => EventTypeId.ReleaseResultUnsubscribed;
         }
 
@@ -22,15 +22,15 @@
         {
             public Error() { }
 
-            public Error(ReleaseRequest referencedEvent) : base(referencedEvent) { }
+            public Error(ResourceRelease referencedEvent) : base(referencedEvent) { }
             public override EventTypeId eventType => EventTypeId.ReleaseResultError;
         }
 
-        internal class Released : ReleaseResult
+        public class Released : ReleaseResult
         {
             public Released() { }
 
-            public Released(ReleaseRequest referencedEvent) : base(referencedEvent) { }
+            public Released(ResourceRelease referencedEvent) : base(referencedEvent) { }
             public override EventTypeId eventType => EventTypeId.ReleaseResultReleased;
         }
     }

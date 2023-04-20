@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.Playables;
 
 namespace RainMeadow
 {
@@ -21,7 +20,7 @@ namespace RainMeadow
             if (isOwner) // I am responsible for notifying other players about it
             {
                 RainMeadow.Debug("notifying others of entity joining");
-                foreach (var player in participants)
+                foreach (var player in memberships.Keys)
                 {
                     if (player.isMe || player == oe.owner) continue;
                     player.QueueEvent(new NewEntityEvent(this, oe));
@@ -41,7 +40,7 @@ namespace RainMeadow
         }
 
         // I've been notified that a new creature has entered, and I must recreate the equivalent in my game
-        internal void OnNewEntity(NewEntityEvent newEntityEvent)
+        public void OnNewEntity(NewEntityEvent newEntityEvent)
         {
             RainMeadow.Debug(this);
             if (!isAvailable) { throw new InvalidOperationException("not available"); }
@@ -65,7 +64,7 @@ namespace RainMeadow
             if (isOwner) // I am responsible for notifying other players about it
             {
                 RainMeadow.Debug("notifying others of entity leaving");
-                foreach (var player in participants)
+                foreach (var player in memberships.Keys)
                 {
                     if (player.isMe || player == oe.owner) continue;
                     player.QueueEvent(new EntityLeftEvent(this, oe));
@@ -85,7 +84,7 @@ namespace RainMeadow
         }
 
         // I've been notified that an entity has left
-        internal void OnEntityLeft(EntityLeftEvent entityLeftEvent)
+        public void OnEntityLeft(EntityLeftEvent entityLeftEvent)
         {
             RainMeadow.Debug(this);
             if (!isAvailable) { throw new InvalidOperationException("not available"); }
@@ -101,7 +100,7 @@ namespace RainMeadow
         }
 
         // Assign a new owner to this entity, if I own or supervise it, I must notify accordingly
-        internal void EntityNewOwner(OnlineEntity oe, OnlinePlayer newOwner, bool notifyPreviousOwner = false)
+        public void EntityNewOwner(OnlineEntity oe, OnlinePlayer newOwner, bool notifyPreviousOwner = false)
         {
             RainMeadow.Debug($"{this} - {oe} - {newOwner}");
             if (!isAvailable) { throw new InvalidOperationException("not available"); }
@@ -112,7 +111,7 @@ namespace RainMeadow
             if (isOwner) // I am responsible for notifying other players about it
             {
                 RainMeadow.Debug("notifying others in resource of entity transfer");
-                foreach (var player in participants)
+                foreach (var player in memberships.Keys)
                 {
                     if (player.isMe || (player == wasOwner && !notifyPreviousOwner)) continue; // on transfers, we need to notify previous owner
                     player.QueueEvent(new EntityNewOwnerEvent(this, oe.id, newOwner));
@@ -130,7 +129,7 @@ namespace RainMeadow
         }
 
         // I'm notified of a new owner for an entity in this resource
-        internal void OnEntityNewOwner(EntityNewOwnerEvent entityNewOwner)
+        public void OnEntityNewOwner(EntityNewOwnerEvent entityNewOwner)
         {
             RainMeadow.Debug(this);
             if (!isAvailable) { throw new InvalidOperationException("not available"); }

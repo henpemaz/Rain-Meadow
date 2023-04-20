@@ -1,6 +1,6 @@
 ﻿namespace RainMeadow
 {
-    internal class OnlineController : Player.PlayerController
+    public class OnlineController : Player.PlayerController
     {
         private OnlineEntity ent;
         private Player self;
@@ -13,12 +13,12 @@
 
         public override Player.InputPackage GetInput()
         {
-            if(ent.latestState is OnlineEntity.CreatureEntityState ces && ces.realizedObjectState is OnlineEntity.RealizedPlayerState rps)
+            if(ent.latestState is CreatureEntityState ces && ces.realizedObjectState is RealizedPlayerState rps)
             {
                 return rps.GetInput();
             }
             RainMeadow.Error("no state for player");
-            RainMeadow.Error($"reasons: {ent.latestState is OnlineEntity.CreatureEntityState} {ent.latestState is OnlineEntity.CreatureEntityState ces2 && ces2.realizedObjectState is OnlineEntity.RealizedPlayerState}");
+            RainMeadow.Error($"reasons: {ent.latestState is CreatureEntityState} {ent.latestState is CreatureEntityState ces2 && ces2.realizedObjectState is RealizedPlayerState}");
             return base.GetInput();
         }
     }

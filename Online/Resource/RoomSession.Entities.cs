@@ -7,7 +7,7 @@ namespace RainMeadow
     {
         // called by hooks on absroom.addentity, as well as Available()
         // A game entity has entered the room, check for corresponding online entity to be added
-        internal void ApoEnteringRoom(AbstractPhysicalObject entity, WorldCoordinate pos)
+        public void ApoEnteringRoom(AbstractPhysicalObject entity, WorldCoordinate pos)
         {
             RainMeadow.Debug($"{this} - {entity}");
             //RainMeadow.Debug(System.Environment.StackTrace);
@@ -32,7 +32,7 @@ namespace RainMeadow
             }
         }
 
-        internal void ApoLeavingRoom(AbstractPhysicalObject entity)
+        public void ApoLeavingRoom(AbstractPhysicalObject entity)
         {
             RainMeadow.Debug($"{this} - {entity}");
             //RainMeadow.Debug(System.Environment.StackTrace);
