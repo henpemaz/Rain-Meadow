@@ -56,10 +56,11 @@ namespace RainMeadow
 
         private static void PlayerLeft(CSteamID p)
         {
-            RainMeadow.Debug($"PlayerLeft:{p} - {SteamFriends.GetFriendPersonaName(p)}");
+            RainMeadow.Debug($"{p} - {SteamFriends.GetFriendPersonaName(p)}");
 
             if(PlayersManager.players.FirstOrDefault(op => op.id == p) is OnlinePlayer player)
             {
+                RainMeadow.Debug($"Handling player disconnect:{player}");
                 player.hasLeft = true;
                 OnlineManager.lobby?.OnPlayerDisconnect(player);
                 while (player.HasUnacknoledgedEvents())
@@ -67,6 +68,7 @@ namespace RainMeadow
                     player.AbortUnacknoledgedEvents();
                     OnlineManager.lobby?.OnPlayerDisconnect(player);
                 }
+                RainMeadow.Debug($"Actually removing player:{player}");
                 PlayersManager.players.Remove(player);
             }
         }
@@ -94,12 +96,12 @@ namespace RainMeadow
             }
         }
 
-        public static OnlinePlayer BestTransferCandidate(OnlineResource onlineResource, List<OnlinePlayer> subscribers)
+        public static OnlinePlayer BestTransferCandidate(OnlineResource onlineResource, Dictionary<OnlinePlayer, ResourceMembership> subscribers)
         {
-            if (subscribers.Contains(PlayersManager.mePlayer)) return PlayersManager.mePlayer;
+            if (subscribers.Keys.Contains(PlayersManager.mePlayer)) return PlayersManager.mePlayer;
             // todo pick by ping?
             if (subscribers.Count < 1) return null;
-            return subscribers[0];
+            return subscribers.First().Key;
         }
 
         public static OnlinePlayer PlayerFromId(CSteamID id)

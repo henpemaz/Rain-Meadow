@@ -21,7 +21,7 @@
 
         public override void Process()
         {
-            this.onlineResource.LeaseChange(this);
+            this.onlineResource.OnLeaseChange(this);
         }
     }
 }

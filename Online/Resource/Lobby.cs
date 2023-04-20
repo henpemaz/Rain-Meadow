@@ -18,6 +18,7 @@ namespace RainMeadow
         public Lobby(CSteamID id)
         {
             this.id = id;
+            this.super = this;
             PlayersManager.UpdatePlayersList(id);
             var ownerId = SteamMatchmaking.GetLobbyOwner(id); // Steam decides
             NewOwner(PlayersManager.PlayerFromId(ownerId));

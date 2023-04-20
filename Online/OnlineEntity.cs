@@ -245,7 +245,7 @@ namespace RainMeadow
             if (!isTransferable) throw new InvalidProgrammerException("cannot be transfered");
             if (isPending) throw new InvalidProgrammerException("this entity has a pending request");
             if (!lowestResource.isAvailable) throw new InvalidProgrammerException("in unavailable resource");
-            if (!owner.hasLeft && lowestResource.participants.Contains(owner))
+            if (!owner.hasLeft && lowestResource.memberships.ContainsKey(owner))
             {
                 pendingRequest = owner.QueueEvent(new EntityRequest(this));
             }
@@ -265,7 +265,7 @@ namespace RainMeadow
                 request.from.QueueEvent(new EntityRequestResult.Ok(request)); // your request was well received, now please be patient while I transfer it
                 this.highestResource.EntityNewOwner(this, request.from);
             }
-            else if (isTransferable && (owner.hasLeft || !lowestResource.participants.Contains(owner)) && this.highestResource.owner.isMe)
+            else if (isTransferable && (owner.hasLeft || !lowestResource.memberships.ContainsKey(owner)) && this.highestResource.owner.isMe)
             {
                 request.from.QueueEvent(new EntityRequestResult.Ok(request));
                 this.highestResource.EntityNewOwner(this, request.from);

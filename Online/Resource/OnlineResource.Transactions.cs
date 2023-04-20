@@ -5,7 +5,7 @@ namespace RainMeadow
 {
     public abstract partial class OnlineResource
     {
-        // I request, possibly to someone else
+        // I request this resource, so I can have either ownership or subscription
         public virtual void Request()
         {
             RainMeadow.Debug(this);
@@ -15,7 +15,7 @@ namespace RainMeadow
             pendingRequest = (ResourceEvent)supervisor.QueueEvent(new ResourceRequest(this));
         }
 
-        // I release, possibly to someone else
+        // I no longer need this resource, supervisor can coordinate its transfer if needed
         private void Release()
         {
             RainMeadow.Debug(this);
@@ -26,29 +26,30 @@ namespace RainMeadow
             pendingRequest = (ResourceEvent)supervisor.QueueEvent(new ResourceRelease(this));
         }
 
-        // Someone requested me, maybe myself
+        // Someone requested this resource, if I supervise it I'll lease it
         public void Requested(ResourceRequest request)
         {
             RainMeadow.Debug(this);
-            if (isSuper)
+            if (isSupervisor)
             {
-                if (participants.Contains(request.from)) // they are already in this
+                if (memberships.ContainsKey(request.from)) // they are already in this
                 {
                     request.from.QueueEvent(new RequestResult.Error(request));
                     return;
                 }
+
                 if (isFree)
                 {
                     // Leased to player
-                    NewOwner(request.from); // set owner first
-                    request.from.QueueEvent(new RequestResult.Leased(request)); // then make available?
+                    request.from.QueueEvent(new RequestResult.Leased(request)); // make available
+                    NewOwner(request.from); // then new lease state
                     return;
                 }
                 else
                 {
                     // Already leased, player subscribed
-                    NewMember(request.from);
                     request.from.QueueEvent(new RequestResult.Subscribed(request));
+                    NewParticipant(request.from);
                     return;
                 }
             }
@@ -56,39 +57,39 @@ namespace RainMeadow
             request.from.QueueEvent(new RequestResult.Error(request));
         }
 
-        // Someone released from me, maybe myself, a resource that I own or supervise
+        // Someone is trying to release this resource, if I supervise it, I'll handle it
         public void Released(ResourceRelease request)
         {
             RainMeadow.Debug(this);
-            if(isSuper)
+            if(isSupervisor)
             {
-                if (!participants.Contains(request.from)) // they are already out?
+                if (!memberships.ContainsKey(request.from)) // they are already out?
                 {
                     request.from.QueueEvent(new ReleaseResult.Error(request));
                     return;
                 }
 
-                if(request.from == owner)
+                if(request.from == owner) // Owner left, might need a transfer
                 {
-                    MemberLeft(request.from);
-                    var newOwner = PlayersManager.BestTransferCandidate(this, participants);
+                    request.from.QueueEvent(new ReleaseResult.Released(request)); // this notifies the old owner that the release was a success
+                    ParticipantLeft(request.from);
+                    var newOwner = PlayersManager.BestTransferCandidate(this, memberships);
                     NewOwner(newOwner); // This notifies all users, if the new owner is active they'll restore the state
                     if (newOwner != null)
                     {
                         this.pendingRequest = (ResourceEvent)newOwner.QueueEvent(new ResourceTransfer(this));
                     }
-                    request.from.QueueEvent(new ReleaseResult.Released(request)); // this notifies the old owner that the release was a success
                     return;
                 }
                 else
                 {
-                    MemberLeft(request.from);
-                    request.from.QueueEvent(new ReleaseResult.Unsubscribed(request)); // this notifies the old owner that the release was a success
+                    request.from.QueueEvent(new ReleaseResult.Unsubscribed(request)); // non-owner unsubscribed
+                    ParticipantLeft(request.from);
                     return;
                 }
             }
 
-            request.from.QueueEvent(new ReleaseResult.Error(request));
+            request.from.QueueEvent(new ReleaseResult.Error(request)); // I do not manage this resource
         }
 
         // The previous owner has left and I've been assigned (by super) as the new owner

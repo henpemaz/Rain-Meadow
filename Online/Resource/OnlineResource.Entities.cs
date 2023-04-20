@@ -20,7 +20,7 @@ namespace RainMeadow
             if (isOwner) // I am responsible for notifying other players about it
             {
                 RainMeadow.Debug("notifying others of entity joining");
-                foreach (var player in participants)
+                foreach (var player in memberships.Keys)
                 {
                     if (player.isMe || player == oe.owner) continue;
                     player.QueueEvent(new NewEntityEvent(this, oe));
@@ -64,7 +64,7 @@ namespace RainMeadow
             if (isOwner) // I am responsible for notifying other players about it
             {
                 RainMeadow.Debug("notifying others of entity leaving");
-                foreach (var player in participants)
+                foreach (var player in memberships.Keys)
                 {
                     if (player.isMe || player == oe.owner) continue;
                     player.QueueEvent(new EntityLeftEvent(this, oe));
@@ -111,7 +111,7 @@ namespace RainMeadow
             if (isOwner) // I am responsible for notifying other players about it
             {
                 RainMeadow.Debug("notifying others in resource of entity transfer");
-                foreach (var player in participants)
+                foreach (var player in memberships.Keys)
                 {
                     if (player.isMe || (player == wasOwner && !notifyPreviousOwner)) continue; // on transfers, we need to notify previous owner
                     player.QueueEvent(new EntityNewOwnerEvent(this, oe.id, newOwner));

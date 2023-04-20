@@ -6,33 +6,36 @@ namespace RainMeadow
 {
     public abstract partial class OnlineResource
     {
+        // Lease is the participants and ownership of subresources
+        // If lobby, includes participants in self
         private LeaseState incomingLease; // lease to be processed on activate
         private LeaseState currentLeaseState;
 
-        private void NewLeaseState() { NewLeaseState(null); }
-        private void NewLeaseState(OnlinePlayer newPlayer) // Lease changes are critical and thus sent as events
+        private void NewLeaseState()
         {
             RainMeadow.Debug(this);
             if (!isActive) { throw new InvalidOperationException("not active"); }
             if (!isOwner) { throw new InvalidOperationException("not owner"); }
+            if(subresources.Count == 0) { return; } // nothing to be sent
             var newLeaseState = new LeaseState(this);
             var delta = newLeaseState.Delta(currentLeaseState);
-            foreach (var player in participants)
+            foreach (var membership in memberships)
             {
-                if (player.isMe) continue;
-                if(player == newPlayer)
+                if (membership.Key.isMe) continue;
+                if(!membership.Value.everSentLease)
                 {
-                    player.QueueEvent(new LeaseChangeEvent(this, newLeaseState)); // its their first time here
+                    membership.Key.QueueEvent(new LeaseChangeEvent(this, newLeaseState)); // its their first time here
+                    membership.Value.everSentLease = true;
                 }
-                else
+                else if(!delta.isEmptyDelta)
                 {
-                    player.QueueEvent(new LeaseChangeEvent(this, delta)); // send the delta
+                    membership.Key.QueueEvent(new LeaseChangeEvent(this, delta)); // send the delta
                 }
             }
             currentLeaseState = newLeaseState; // store in full
         }
 
-        public void LeaseChange(LeaseChangeEvent leaseEvent)
+        public void OnLeaseChange(LeaseChangeEvent leaseEvent)
         {
             RainMeadow.Debug(this);
             if (!isAvailable) { throw new InvalidOperationException("not available"); }
@@ -40,6 +43,7 @@ namespace RainMeadow
             if (leaseEvent.from != owner) { throw new InvalidOperationException("not from owner"); }
             if (!isActive) // store it for later
             {
+                RainMeadow.Debug("Too early, saving for later");
                 if (incomingLease != null && leaseEvent.leaseState.isDelta) { incomingLease.AddDelta(leaseEvent.leaseState); }
                 else incomingLease = leaseEvent.leaseState;
             }
@@ -52,13 +56,21 @@ namespace RainMeadow
         private void ProcessLease(LeaseState leaseState)
         {
             RainMeadow.Debug(this);
-            if (leaseState.isDelta) { throw new InvalidOperationException("delta"); }
-            this.participants = leaseState.participants.participants;
-            foreach(var item in leaseState.sublease)
+            if(currentLeaseState != null)
+            {
+                currentLeaseState.AddDelta(leaseState);
+            }
+            else
+            {
+                if (leaseState.isDelta) { throw new InvalidOperationException("delta"); }
+                this.currentLeaseState = leaseState;
+            }
+            if(this is Lobby) this.UpdateParticipants(currentLeaseState.participants.participants); // only lobby gets self-member list remember
+            foreach (var item in currentLeaseState.sublease)
             {
                 var resource = SubresourceFromShortId(item.resourceId);
                 if (resource.owner != item.owner) resource.NewOwner(item.owner);
-                resource.participants = item.participants.participants;
+                resource.UpdateParticipants(item.participants.participants);
             }
         }
 
@@ -121,7 +133,7 @@ namespace RainMeadow
             {
                 this.resourceId = resource.ShortId();
                 this.owner = resource.owner;
-                this.participants = new OnlinePlayerGroup(resource.participants);
+                this.participants = new OnlinePlayerGroup(resource.memberships.Keys.ToList());
             }
 
             // update from other
@@ -161,13 +173,14 @@ namespace RainMeadow
         public class LeaseState // its it's own weird thing, sent around as events because critical yet too big to send fully every frame
         {
             public bool isDelta;
-            public OnlinePlayerGroup participants; // participants in current resource
+            public OnlinePlayerGroup participants; // participants in current resource, only sent for Lobby
             public List<SubleaseState> sublease; // owner and participants in subresources
+            public bool isEmptyDelta;
 
             public LeaseState() { }
             public LeaseState(OnlineResource onlineResource)
             {
-                participants = new OnlinePlayerGroup(onlineResource.participants);
+                participants = new OnlinePlayerGroup(onlineResource is Lobby ? onlineResource.memberships.Keys.ToList() : new());
                 sublease = onlineResource.subresources.Select(r => new SubleaseState(r)).ToList();
             }
 
@@ -181,7 +194,7 @@ namespace RainMeadow
                 {
                     foreach (var lease in sublease)
                     {
-                        if(lease.resourceId == otherLease.resourceId)
+                        if (lease.resourceId == otherLease.resourceId)
                         {
                             lease.AddDelta(otherLease);
                             break;
@@ -196,11 +209,14 @@ namespace RainMeadow
                 if (isDelta) throw new InvalidProgrammerException("is already delta");
                 if (other == null) { return this; }
                 if (other.isDelta) throw new InvalidProgrammerException("other is delta");
+                var deltaparticipants = participants.Delta(other.participants);
+                var deltasublease = sublease.Select(sl => sl.Delta(other.sublease.FirstOrDefault(osl => osl.resourceId == sl.resourceId))).Where(sl => !sl.isEmptyDelta).ToList();
                 return new LeaseState()
                 {
                     isDelta = true,
-                    participants = participants.Delta(other.participants),
-                    sublease = sublease.Select(sl=>sl.Delta(other.sublease.FirstOrDefault(osl=>osl.resourceId == sl.resourceId))).Where(sl=>!sl.isEmptyDelta).ToList(),
+                    participants = deltaparticipants,
+                    sublease = deltasublease,
+                    isEmptyDelta = deltaparticipants.isEmptyDelta && deltasublease.Count == 0
                 };
             }
 

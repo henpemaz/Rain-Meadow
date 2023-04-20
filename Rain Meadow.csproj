@@ -161,6 +161,7 @@
     <Compile Include="Menu\IHaveADescription.cs" />
     <Compile Include="Menu\MenuDarkSprite.cs" />
     <Compile Include="Menu\SmartMenu.cs" />
+    <Compile Include="Online\Resource\ResourceMembership.cs" />
     <Compile Include="Online\State\EntityState.cs" />
     <Compile Include="Online\OnlineController.cs" />
     <Compile Include="Online\EntityFeed.cs" />

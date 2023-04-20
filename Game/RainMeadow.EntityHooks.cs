@@ -118,7 +118,7 @@ namespace RainMeadow
             {
                 if (!oe.realized && oe.isTransferable && !oe.owner.isMe)
                 {
-                    if (oe.roomSession == null || !oe.roomSession.participants.Contains(oe.owner)) //if owner of oe is subscribed (is participant) do not request
+                    if (oe.roomSession == null || !oe.roomSession.memberships.ContainsKey(oe.owner)) //if owner of oe is subscribed (is participant) do not request
                     {
                         oe.Request();
                     }
