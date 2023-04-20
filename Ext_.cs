@@ -9,11 +9,6 @@
             public static ProcessManager.ProcessID LobbyMenu = new("MeadowLobbyMenu", true);
         }
 
-        public class Ext_StoryGameInitCondition
-        {
-            public static ProcessManager.MenuSetup.StoryGameInitCondition Online = new("MeadowOnline", true);
-        }
-
         public class Ext_SlugcatStatsName
         {
             public static SlugcatStats.Name OnlineSessionPlayer = new("MeadowOnline", true);

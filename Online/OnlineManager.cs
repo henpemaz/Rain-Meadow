@@ -1,6 +1,8 @@
-﻿using Steamworks;
+﻿using MonoMod;
+using Steamworks;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -15,33 +17,47 @@ namespace RainMeadow
         public static Serializer serializer = new Serializer(16000);
 
         public static Lobby lobby;
-        public static List<Subscription> subscriptions = new();
-        public static List<EntityFeed> feeds = new();
-        public static Dictionary<OnlineEntity.EntityId, OnlineEntity> recentEntities = new();
+        public static List<Subscription> subscriptions;
+        public static List<EntityFeed> feeds;
+        public static Dictionary<OnlineEntity.EntityId, OnlineEntity> recentEntities;
+        public static HashSet<OnlineEvent> waitingEvents;
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
             instance = this;
-            PlayersManager.me = SteamUser.GetSteamID();
-            PlayersManager.mePlayer = new OnlinePlayer(PlayersManager.me) { isMe = true, name = SteamFriends.GetPersonaName() };
+            Reset();
 
-            framesPerSecond = 5; // alternatively, run as fast as we can for the receiving stuff, but send on a lower tickrate?
-            PlayersManager.
-                        players = new List<OnlinePlayer>() { PlayersManager.mePlayer };
+            framesPerSecond = 30; // alternatively, run as fast as we can for the receiving stuff, but send on a lower tickrate?
 
             RainMeadow.Debug("OnlineManager Created");
+        }
+
+        public static void Reset()
+        {
+            lobby = null;
+            subscriptions = new();
+            feeds = new();
+            recentEntities = new();
+            waitingEvents = new(4);
+
+            WorldSession.map = new();
+            RoomSession.map = new();
+            OnlineEntity.map = new();
+
+            PlayersManager.Reset();
         }
 
         public override void Update()
         {
             base.Update();
-            if(lobby != null)
+
+            // Incoming messages
+            serializer.ReceiveData();
+
+            if (lobby != null)
             {
                 PlayersManager.mePlayer.tick++;
                 ProcessSelfEvents();
-                
-                // Incoming messages
-                serializer.ReceiveData();
 
                 // Prepare outgoing messages
                 foreach (var subscription in subscriptions)
@@ -67,7 +83,14 @@ namespace RainMeadow
             // Stuff mePlayer set to itself, events from the distributed lease system
             while (PlayersManager.mePlayer.OutgoingEvents.Count > 0)
             {
-                PlayersManager.mePlayer.OutgoingEvents.Dequeue().Process();
+                try
+                {
+                    PlayersManager.mePlayer.OutgoingEvents.Dequeue().Process();
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                }
             }
         }
 
@@ -91,14 +114,42 @@ namespace RainMeadow
             {
                 RainMeadow.Debug($"New event {onlineEvent} from {fromPlayer}, processing...");
                 fromPlayer.lastEventFromRemote = onlineEvent.eventId;
-                try
+                if(onlineEvent is OnlineEvent.IMightHaveToWait idoac && !idoac.CanBeProcessed())
                 {
-                    onlineEvent.Process();
+                    waitingEvents.Add(onlineEvent);
                 }
-                catch (Exception e)
+                else
                 {
-                    RainMeadow.Error(e);
+                    try
+                    {
+                        onlineEvent.Process();
+                    }
+                    catch (Exception e)
+                    {
+                        RainMeadow.Error(e);
+                    }
+                    MaybeProcessWaitingEvents();
                 }
+            }
+        }
+
+        public static void MaybeProcessWaitingEvents()
+        {
+            if(waitingEvents.Count > 0)
+            {
+                while (waitingEvents.FirstOrDefault(ev => ev is OnlineEvent.IMightHaveToWait idoac && idoac.CanBeProcessed()) is OnlineEvent ev)
+                {
+                    try
+                    {
+                        ev.Process();
+                    }
+                    catch (Exception e)
+                    {
+                        RainMeadow.Error(e);
+                    }
+                    waitingEvents.Remove(ev);
+                }
+                waitingEvents.RemoveWhere(ev => ev is OnlineEvent.IMightHaveToWait idoac && idoac.ShouldBeDiscarded());
             }
         }
 

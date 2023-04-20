@@ -144,7 +144,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 SteamMatchmaking.LeaveLobby(OnlineManager.lobby.id);
-                OnlineManager.lobby = null;
+                OnlineManager.Reset();
             }
         }
 

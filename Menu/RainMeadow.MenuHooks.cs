@@ -26,6 +26,9 @@ namespace RainMeadow
         private void MainMenu_ctor(On.Menu.MainMenu.orig_ctor orig, Menu.MainMenu self, ProcessManager manager, bool showRegionSpecificBkg)
         {
             orig(self, manager, showRegionSpecificBkg);
+
+            LobbyManager.LeaveLobby();
+
             var meadowButton = new Menu.SimpleButton(self, self.pages[0], self.Translate("MEADOW"), "MEADOW", Vector2.zero, new Vector2(Menu.MainMenu.GetButtonWidth(self.CurrLang), 30f));
             self.AddMainMenuButton(meadowButton, () =>
             {

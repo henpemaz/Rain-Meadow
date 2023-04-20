@@ -22,9 +22,16 @@ namespace RainMeadow
         }
 
         public abstract void Process();
+
         public interface ICanBeAborted
         {
             public abstract void Abort();
+        }
+
+        internal interface IMightHaveToWait
+        {
+            public bool CanBeProcessed();
+            public bool ShouldBeDiscarded();
         }
 
         public enum EventTypeId : byte // will we hit 255 of these I wonder

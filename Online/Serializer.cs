@@ -206,38 +206,41 @@ namespace RainMeadow
                         var message = SteamNetworkingMessage_t.FromIntPtr(messages[i]);
                         try
                         {
-                            var fromPlayer = PlayersManager.PlayerFromId(message.m_identityPeer.GetSteamID());
-                            if (fromPlayer == null)
+                            if (OnlineManager.lobby != null)
                             {
-                                RainMeadow.Error("player not found: " + message.m_identityPeer + " " + message.m_identityPeer.GetSteamID());
-                                continue;
-                            }
-                            //RainMeadow.Debug($"Receiving message from {fromPlayer}");
-                            Marshal.Copy(message.m_pData, buffer, 0, message.m_cbSize);
-                            BeginRead(fromPlayer);
+                                var fromPlayer = PlayersManager.PlayerFromId(message.m_identityPeer.GetSteamID());
+                                if (fromPlayer == null)
+                                {
+                                    RainMeadow.Error("player not found: " + message.m_identityPeer + " " + message.m_identityPeer.GetSteamID());
+                                    continue;
+                                }
+                                //RainMeadow.Debug($"Receiving message from {fromPlayer}");
+                                Marshal.Copy(message.m_pData, buffer, 0, message.m_cbSize);
+                                BeginRead(fromPlayer);
 
-                            PlayerHeaders();
-                            if (Aborted)
-                            {
-                                RainMeadow.Debug("skipped packet");
-                                continue;
-                            }
+                                PlayerHeaders();
+                                if (Aborted)
+                                {
+                                    RainMeadow.Debug("skipped packet");
+                                    continue;
+                                }
 
-                            int ne = BeginReadEvents();
-                            //RainMeadow.Debug($"Receiving {ne} events");
-                            for (int ie = 0; ie < ne; ie++)
-                            {
-                                OnlineManager.ProcessIncomingEvent(ReadEvent());
-                            }
+                                int ne = BeginReadEvents();
+                                //RainMeadow.Debug($"Receiving {ne} events");
+                                for (int ie = 0; ie < ne; ie++)
+                                {
+                                    OnlineManager.ProcessIncomingEvent(ReadEvent());
+                                }
 
-                            int ns = BeginReadStates();
-                            //RainMeadow.Debug($"Receiving {ns} states");
-                            for (int ist = 0; ist < ns; ist++)
-                            {
-                                OnlineManager.ProcessIncomingState(ReadState());
-                            }
+                                int ns = BeginReadStates();
+                                //RainMeadow.Debug($"Receiving {ns} states");
+                                for (int ist = 0; ist < ns; ist++)
+                                {
+                                    OnlineManager.ProcessIncomingState(ReadState());
+                                }
 
-                            EndRead();
+                                EndRead();
+                            }
                         }
                         catch (Exception e)
                         {
@@ -666,6 +669,12 @@ namespace RainMeadow
                     sublease.Add(item);
                 }
             }
+        }
+
+        internal void Serialize(ref PlayerTickReference dependsOnTick)
+        {
+            if (isReading) dependsOnTick = new();
+            dependsOnTick.CustomSerialize(this);
         }
     }
 }

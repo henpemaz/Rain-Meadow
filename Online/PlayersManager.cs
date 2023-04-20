@@ -17,6 +17,12 @@ namespace RainMeadow
             m_SessionRequest = Callback<SteamNetworkingMessagesSessionRequest_t>.Create(SessionRequest);
         }
 
+        public static void Reset()
+        {
+            me = SteamUser.GetSteamID();
+            mePlayer = new OnlinePlayer(me) { isMe = true, name = SteamFriends.GetPersonaName() };
+            players = new List<OnlinePlayer>() { mePlayer };
+        }
 
         public static void UpdatePlayersList(CSteamID cSteamID)
         {
@@ -24,7 +30,7 @@ namespace RainMeadow
             {
                 RainMeadow.DebugMe();
                 var n = SteamMatchmaking.GetNumLobbyMembers(cSteamID);
-                var oldplayers = PlayersManager.players.Select(p => p.id).ToArray();
+                var oldplayers = players.Select(p => p.id).ToArray();
                 var newplayers = new CSteamID[n];
                 for (int i = 0; i < n; i++)
                 {
@@ -49,16 +55,16 @@ namespace RainMeadow
         private static void PlayerJoined(CSteamID p)
         {
             RainMeadow.Debug($"PlayerJoined:{p} - {SteamFriends.GetFriendPersonaName(p)}");
-            if (p == PlayersManager.me) return;
+            if (p == me) return;
             SteamFriends.RequestUserInformation(p, true);
-            PlayersManager.players.Add(new OnlinePlayer(p));
+            players.Add(new OnlinePlayer(p));
         }
 
         private static void PlayerLeft(CSteamID p)
         {
             RainMeadow.Debug($"{p} - {SteamFriends.GetFriendPersonaName(p)}");
 
-            if(PlayersManager.players.FirstOrDefault(op => op.id == p) is OnlinePlayer player)
+            if(players.FirstOrDefault(op => op.id == p) is OnlinePlayer player)
             {
                 RainMeadow.Debug($"Handling player disconnect:{player}");
                 player.hasLeft = true;
@@ -69,7 +75,7 @@ namespace RainMeadow
                     OnlineManager.lobby?.OnPlayerDisconnect(player);
                 }
                 RainMeadow.Debug($"Actually removing player:{player}");
-                PlayersManager.players.Remove(player);
+                players.Remove(player);
             }
         }
 
@@ -81,7 +87,7 @@ namespace RainMeadow
                 RainMeadow.Debug("session request from " + id);
                 if (OnlineManager.lobby != null)
                 {
-                    if (PlayersManager.players.FirstOrDefault(op => op.id == id) is OnlinePlayer p)
+                    if (players.FirstOrDefault(op => op.id == id) is OnlinePlayer p)
                     {
                         RainMeadow.Debug("accepted session from " + p.name);
                         SteamNetworkingMessages.AcceptSessionWithUser(ref param.m_identityRemote);
@@ -98,7 +104,7 @@ namespace RainMeadow
 
         public static OnlinePlayer BestTransferCandidate(OnlineResource onlineResource, Dictionary<OnlinePlayer, ResourceMembership> subscribers)
         {
-            if (subscribers.Keys.Contains(PlayersManager.mePlayer)) return PlayersManager.mePlayer;
+            if (subscribers.Keys.Contains(mePlayer)) return mePlayer;
             // todo pick by ping?
             if (subscribers.Count < 1) return null;
             return subscribers.First().Key;
@@ -106,12 +112,12 @@ namespace RainMeadow
 
         public static OnlinePlayer PlayerFromId(CSteamID id)
         {
-            return PlayersManager.players.FirstOrDefault(p => p.id == id);
+            return players.FirstOrDefault(p => p.id == id);
         }
 
         public static OnlinePlayer PlayerFromId(ulong id)
         {
-            return PlayersManager.players.FirstOrDefault(p => p.id.m_SteamID == id);
+            return players.FirstOrDefault(p => p.id.m_SteamID == id);
         }
     }
 }

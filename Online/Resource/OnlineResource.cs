@@ -140,6 +140,9 @@ namespace RainMeadow
             isAvailable = false;
             UnavailableImpl();
 
+            incomingLease = null;
+            currentLeaseState = null;
+
             OnlineManager.RemoveSubscriptions(this);
 
 
@@ -162,9 +165,11 @@ namespace RainMeadow
         protected void NewOwner(OnlinePlayer newOwner)
         {
             RainMeadow.Debug($"{this}-{(newOwner != null ? newOwner : "null")}");
-            if (newOwner == owner && newOwner != null) throw new InvalidOperationException("Re-assigned to the same owner"); // this breaks in transfers, as the transferee doesnt have the delta
+            if (newOwner == owner && newOwner != null) throw new InvalidOperationException("Re-assigned to the same owner");
             var oldOwner = owner;
             owner = newOwner;
+
+            if(isOwner) { this.ownerSinceTick = new PlayerTickReference(supervisor, supervisor.tick); } // "since when" so I can tell others since when
 
             if (newOwner != null && !memberships.ContainsKey(newOwner)) memberships.Add(newOwner, new ResourceMembership(newOwner));
 
@@ -232,6 +237,7 @@ namespace RainMeadow
             if (isAvailable && isOwner && !participant.isMe)
             {
                 Unsubscribed(participant);
+                if (isActive) ClaimAbandonedEntities();
             }
             if (isSupervisor) // I am responsible for notifying lease changes to this
             {
@@ -291,22 +297,22 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug($"Kicking out member");
                     ParticipantLeft(player);
-
                     if (owner == player) // Ooops we'll need a new host
                     {
                         RainMeadow.Debug($"Member was the owner");
                         var newOwner = PlayersManager.BestTransferCandidate(this, memberships);
-                        NewOwner(newOwner); // This notifies all users, if the new owner is active they'll restore the state
-                        if (newOwner != null)
+                        
+                        if (newOwner != null && !isPending)
                         {
+                            NewOwner(newOwner); // This notifies all users, if the new owner is active they'll restore the state
                             this.pendingRequest = (ResourceEvent)newOwner.QueueEvent(new ResourceTransfer(this));
                         }
+                        else
+                        {
+                            if (newOwner != null) RainMeadow.Error("Can't assign because pending");
+                            else NewOwner(null);
+                        }
                     }
-                } 
-                else if (isOwner && isAvailable) // don't unsub twice
-                {
-                    RainMeadow.Debug($"Member unsubscribed");
-                    Unsubscribed(player);
                 }
             }
 
@@ -315,8 +321,7 @@ namespace RainMeadow
                 RainMeadow.Debug($"Checking subresources for {this}");
                 for (int i = 0; i < subresources.Count; i++)
                 {
-                    var s = subresources[i];
-                    s.OnPlayerDisconnect(player);
+                    subresources[i].OnPlayerDisconnect(player);
                 }
             }
         }

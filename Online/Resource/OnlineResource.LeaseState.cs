@@ -10,26 +10,28 @@ namespace RainMeadow
         // If lobby, includes participants in self
         private LeaseState incomingLease; // lease to be processed on activate
         private LeaseState currentLeaseState;
+        private PlayerTickReference ownerSinceTick;
 
         private void NewLeaseState()
         {
             RainMeadow.Debug(this);
             if (!isActive) { throw new InvalidOperationException("not active"); }
             if (!isOwner) { throw new InvalidOperationException("not owner"); }
-            if(subresources.Count == 0) { return; } // nothing to be sent
+            if (ownerSinceTick is null) { throw new InvalidOperationException("no tick reference"); }
+            if (subresources.Count == 0) { return; } // nothing to be sent
             var newLeaseState = new LeaseState(this);
             var delta = newLeaseState.Delta(currentLeaseState);
             foreach (var membership in memberships)
             {
                 if (membership.Key.isMe) continue;
-                if(!membership.Value.everSentLease)
+                if (!membership.Value.everSentLease)
                 {
-                    membership.Key.QueueEvent(new LeaseChangeEvent(this, newLeaseState)); // its their first time here
+                    membership.Key.QueueEvent(new LeaseChangeEvent(this, newLeaseState, ownerSinceTick)); // its their first time here
                     membership.Value.everSentLease = true;
                 }
                 else if(!delta.isEmptyDelta)
                 {
-                    membership.Key.QueueEvent(new LeaseChangeEvent(this, delta)); // send the delta
+                    membership.Key.QueueEvent(new LeaseChangeEvent(this, delta, ownerSinceTick)); // send the delta
                 }
             }
             currentLeaseState = newLeaseState; // store in full

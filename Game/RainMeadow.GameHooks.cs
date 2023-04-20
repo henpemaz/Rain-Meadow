@@ -12,6 +12,8 @@ namespace RainMeadow
         // prevent creature spawns as well
         private void GameHooks()
         {
+            On.RainWorldGame.ShutDownProcess += RainWorldGame_ShutDownProcess;
+
             On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues += WorldLoader_ctor;
             On.WorldLoader.Update += WorldLoader_Update;
             On.WorldLoader.NextActivity += WorldLoader_NextActivity;
@@ -26,6 +28,25 @@ namespace RainMeadow
 
             On.FliesWorldAI.AddFlyToSwarmRoom += FliesWorldAI_AddFlyToSwarmRoom;
         }
+
+        private void RainWorldGame_ShutDownProcess(On.RainWorldGame.orig_ShutDownProcess orig, RainWorldGame self)
+        {
+            orig(self);
+            if (self.session is OnlineGameSession os && WorldSession.map.TryGetValue(self.world, out var ws))
+            {
+                for(int i = ws.entities.Count - 1; i >= 0; i--)
+                {
+                    var ent = ws.entities[i];
+                    if (ent.owner.isMe && !ent.isTransferable)
+                    {
+                        if (ent.roomSession != null) ent.roomSession.EntityLeftResource(ent);
+                        ws.EntityLeftResource(ent);
+                    }
+                }
+                ws.FullyReleaseResource();
+            }
+        }
+
 
         // Room unload
         private void AbstractRoom_Abstractize(On.AbstractRoom.orig_Abstractize orig, AbstractRoom self)
@@ -182,9 +203,9 @@ namespace RainMeadow
                 //    this.session = new StoryGameSession(manager.rainWorld.progression.PlayingAsSlugcat, this);
                 //}
                 // ========== becomes ===========
-                //else if (self.manager.menuSetup.startGameCondition == OnlineGameSession.Ext_OnlineSession.Online)
+                //else if (OnlineManager.lobby != null)
                 //{
-                //    this.session = new OnlineGameSession(manager.rainWorld.progression.PlayingAsSlugcat, this);
+                //    this.session = new OnlineGameSession(this);
                 //}
                 //else
                 //{
@@ -209,7 +230,7 @@ namespace RainMeadow
                 c.MoveAfterLabels();
 
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((RainWorldGame self) => { return self.manager.menuSetup.startGameCondition == Ext_StoryGameInitCondition.Online; });
+                c.EmitDelegate((RainWorldGame self) => { return OnlineManager.lobby != null; });
                 ILLabel story = il.DefineLabel();
                 c.Emit(OpCodes.Brfalse, story);
                 c.Emit(OpCodes.Ldarg_0);
