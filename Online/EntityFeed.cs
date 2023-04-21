@@ -19,7 +19,11 @@ namespace RainMeadow
         public void Update(ulong tick)
         {
             if (!resource.isAvailable) throw new InvalidOperationException("not available");
-            if (resource.owner.isMe) throw new InvalidOperationException("feeding myself");
+            if (resource.owner.isMe)
+            {
+                RainMeadow.Error($"Self-feeding entity {entity} for resource {resource}");
+                throw new InvalidOperationException("feeding myself");
+            }
 
             while (OutgoingStates.Count > 0 && OnlineManager.IsNewerOrEqual(resource.owner.lastAckdTick, OutgoingStates.Peek().ts))
             {

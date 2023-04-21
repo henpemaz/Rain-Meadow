@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using UnityEngine;
 
 namespace RainMeadow
@@ -24,6 +25,7 @@ namespace RainMeadow
         private BinaryReader reader;
         private OnlinePlayer currPlayer;
         private int eventCount;
+        private StringBuilder eventLog;
         private long eventHeader;
         private int stateCount;
         private long stateHeader;
@@ -93,14 +95,18 @@ namespace RainMeadow
         private void BeginWriteEvents()
         {
             eventCount = 0;
+            eventLog = new(64);
             eventHeader = stream.Position;
-            writer.Write(eventCount);
+            writer.Write(eventCount); // fake write
         }
 
         private void WriteEvent(OnlineEvent playerEvent)
         {
             eventCount++;
+            long prevPos = (int)Position;
             writer.Write((byte)playerEvent.eventType);
+            eventLog.AppendLine(playerEvent.eventType.ToString());
+            eventLog.AppendLine((Position - prevPos).ToString());
             playerEvent.CustomSerialize(this);
         }
 
@@ -274,8 +280,16 @@ namespace RainMeadow
                     //RainMeadow.Debug($"Writing {toPlayer.OutgoingEvents.Count} events");
                     foreach (var e in toPlayer.OutgoingEvents)
                     {
-                        if (!CanFit(e)) throw new IOException("no buffer space for events");
-                        WriteEvent(e);
+                        if (CanFit(e))
+                        {
+                            WriteEvent(e);
+                        }
+                        else
+                        {
+                            RainMeadow.Error("no buffer space for events");
+                            RainMeadow.Error(eventLog.ToString());
+                            break;
+                        }
                     }
                     EndWriteEvents();
 

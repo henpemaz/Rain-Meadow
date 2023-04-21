@@ -204,7 +204,7 @@ namespace RainMeadow
 
         public void UpdateParticipants(List<OnlinePlayer> newParticipants)
         {
-            RainMeadow.Debug(this);
+            //RainMeadow.Debug(this);
             var originalParticipants = memberships.Keys.ToArray();
             foreach(var p in newParticipants.Except(originalParticipants))
             {

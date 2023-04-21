@@ -25,6 +25,7 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
             Vector2 buttonSize = new(130f, 30f);
+            this.backTarget = ProcessManager.ProcessID.MainMenu;
 
             // title at the top
             this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", "MeadowShadow", new Vector2(-2.99f, 265.01f), true, false));

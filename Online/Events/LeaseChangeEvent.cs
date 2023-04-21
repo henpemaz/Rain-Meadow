@@ -31,12 +31,12 @@
         // IMightHaveToWait
         public bool CanBeProcessed()
         {
-            return dependsOnTick == null || dependsOnTick.ChecksOut();
+            return dependsOnTick == null || (dependsOnTick.fromPlayer != null && dependsOnTick.ChecksOut());
         }
 
         public bool ShouldBeDiscarded()
         {
-            return dependsOnTick != null && dependsOnTick.fromPlayer.hasLeft;
+            return dependsOnTick != null && dependsOnTick.fromPlayer != null && dependsOnTick.fromPlayer.hasLeft;
         }
     }
 }

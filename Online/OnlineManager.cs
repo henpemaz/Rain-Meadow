@@ -14,7 +14,7 @@ namespace RainMeadow
         public static string CLIENT_VAL = "Meadow_" + RainMeadow.MeadowVersionStr;
         public static string NAME_KEY = "name";
         public static OnlineManager instance;
-        public static Serializer serializer = new Serializer(16000);
+        public static Serializer serializer = new Serializer(32000);
 
         public static Lobby lobby;
         public static List<Subscription> subscriptions;
@@ -27,7 +27,7 @@ namespace RainMeadow
             instance = this;
             Reset();
 
-            framesPerSecond = 30; // alternatively, run as fast as we can for the receiving stuff, but send on a lower tickrate?
+            framesPerSecond = 20; // alternatively, run as fast as we can for the receiving stuff, but send on a lower tickrate?
 
             RainMeadow.Debug("OnlineManager Created");
         }

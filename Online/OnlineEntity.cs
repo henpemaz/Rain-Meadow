@@ -104,7 +104,7 @@ namespace RainMeadow
             if (entity is not AbstractCreature creature) { throw new InvalidOperationException("entity not a creature"); } // todo support noncreechers
             if (roomSession != null && roomSession != newRoom) // still in previous room
             {
-                LeftRoom(roomSession);
+                roomSession.EntityLeftResource(this);
             }
             roomSession = newRoom;
             if (!owner.isMe)

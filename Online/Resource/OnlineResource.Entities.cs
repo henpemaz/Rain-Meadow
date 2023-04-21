@@ -58,7 +58,7 @@ namespace RainMeadow
         public virtual void EntityLeftResource(OnlineEntity oe)
         {
             RainMeadow.Debug($"{this} - {oe}");
-            if (!isAvailable) throw new InvalidOperationException("not available");
+            if (!isAvailable) { RainMeadow.Debug("not available, skipping"); return; }
             if (!entities.Contains(oe)) throw new InvalidOperationException("not in entities");
             entities.Remove(oe);
             if (isOwner) // I am responsible for notifying other players about it
@@ -87,7 +87,7 @@ namespace RainMeadow
         public void OnEntityLeft(EntityLeftEvent entityLeftEvent)
         {
             RainMeadow.Debug(this);
-            if (!isAvailable) { throw new InvalidOperationException("not available"); }
+            if (!isAvailable) { RainMeadow.Debug("not available, skipping"); return; }
             if (!isActive)
             {
                 RainMeadow.Debug("queueing for later");
