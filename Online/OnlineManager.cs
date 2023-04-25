@@ -14,20 +14,20 @@ namespace RainMeadow
         public static string CLIENT_VAL = "Meadow_" + RainMeadow.MeadowVersionStr;
         public static string NAME_KEY = "name";
         public static OnlineManager instance;
-        public static Serializer serializer = new Serializer(32000);
+        public static Serializer serializer = new Serializer(16000);
 
         public static Lobby lobby;
         public static List<Subscription> subscriptions;
         public static List<EntityFeed> feeds;
         public static Dictionary<OnlineEntity.EntityId, OnlineEntity> recentEntities;
         public static HashSet<OnlineEvent> waitingEvents;
+        public static float lastDt;
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
             instance = this;
-            Reset();
-
             framesPerSecond = 20; // alternatively, run as fast as we can for the receiving stuff, but send on a lower tickrate?
+            Reset();
 
             RainMeadow.Debug("OnlineManager Created");
         }
@@ -73,7 +73,45 @@ namespace RainMeadow
                 // Outgoing messages
                 foreach (var player in PlayersManager.players)
                 {
-                    serializer.SendData(player);
+                    SendData(player);
+                }
+            }
+
+            lastDt = UnityEngine.Time.realtimeSinceStartup;
+        }
+
+        public static void SendData(OnlinePlayer toPlayer)
+        {
+            if (toPlayer.needsAck || toPlayer.OutgoingEvents.Any() || toPlayer.OutgoingStates.Any())
+            {
+                serializer.SendData(toPlayer);
+            }
+        }
+
+        // from a force-load situation
+        public static void TickEvents()
+        {
+            SteamAPI.RunCallbacks();
+            // Incoming messages
+            serializer.ReceiveData();
+
+            if (lobby != null)
+            {
+                if(UnityEngine.Time.realtimeSinceStartup > lastDt + 1f/instance.framesPerSecond)
+                {
+                    PlayersManager.mePlayer.tick++;
+
+                    // Local messages
+                    ProcessSelfEvents();
+
+                    // no state
+
+                    // Outgoing messages
+                    foreach (var player in PlayersManager.players)
+                    {
+                        SendData(player);
+                    }
+                    lastDt = UnityEngine.Time.realtimeSinceStartup;
                 }
             }
         }
@@ -137,6 +175,7 @@ namespace RainMeadow
         {
             if(waitingEvents.Count > 0)
             {
+                waitingEvents.RemoveWhere(ev => ev is OnlineEvent.IMightHaveToWait imhtw && imhtw.ShouldBeDiscarded());
                 while (waitingEvents.FirstOrDefault(ev => ev is OnlineEvent.IMightHaveToWait imhtw && imhtw.CanBeProcessed()) is OnlineEvent ev)
                 {
                     try
@@ -149,7 +188,6 @@ namespace RainMeadow
                     }
                     waitingEvents.Remove(ev);
                 }
-                waitingEvents.RemoveWhere(ev => ev is OnlineEvent.IMightHaveToWait idoac && idoac.ShouldBeDiscarded());
             }
         }
 

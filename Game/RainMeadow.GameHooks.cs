@@ -61,6 +61,10 @@ namespace RainMeadow
                         rs.FullyReleaseResource();
                         return;
                     }
+                    if(rs.isPending)
+                    {
+                        rs.releaseWhenPossible = true;
+                    }
                 }
             }
             orig(self);
@@ -75,8 +79,7 @@ namespace RainMeadow
                 {
                     if (true) // force load scenario ????
                     {
-                        SteamAPI.RunCallbacks();
-                        OnlineManager.instance.RawUpdate(0.001f);
+                        OnlineManager.TickEvents();
                     }
                     if (!rs.isAvailable)return;
                 }
@@ -124,8 +127,7 @@ namespace RainMeadow
             {
                 if (self.game.overWorld?.worldLoader != self) // force-load scenario
                 {
-                    SteamAPI.RunCallbacks();
-                    OnlineManager.instance.RawUpdate(0.001f);
+                    OnlineManager.TickEvents();
                 }
                 // wait until new world state available
                 if (!ws.isAvailable)

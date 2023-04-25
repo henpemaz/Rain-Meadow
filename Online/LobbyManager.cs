@@ -60,7 +60,7 @@ namespace RainMeadow
                         lobbies[i] = new LobbyInfo(id);
                     }
                 }
-
+                //lobbies = new LobbyInfo[1] { new LobbyInfo(default) { name = "dummy" } };
                 OnLobbyListReceived?.Invoke(!bIOFailure, lobbies);
             }
             catch (Exception e)

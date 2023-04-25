@@ -13,12 +13,13 @@ namespace RainMeadow
     public class LobbySelectMenu : SmartMenu, SelectOneButton.SelectOneButtonOwner
     {
         private List<FSprite> sprites;
-        private SelectOneButton[] lobbyButtons;
+        private EventfulSelectOneButton[] lobbyButtons;
         private LobbyInfo[] lobbies;
         private float scroll;
         private float scrollTo;
         private int currentlySelectedCard;
         private OpComboBox visibilityDropDown;
+        private SimplerButton playButton;
 
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
@@ -34,7 +35,7 @@ namespace RainMeadow
 
             // 690 on mock -> 720 -> 768 - 720 = 48, placed at 50 so my mock has a +2 offset
             // play button at lower right
-            var playButton = new SimplerButton(this, mainPage, Translate("PLAY!"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
+            playButton = new SimplerButton(this, mainPage, Translate("PLAY!"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
             playButton.OnClick += Play;
             mainPage.subObjects.Add(playButton);
 
@@ -63,7 +64,7 @@ namespace RainMeadow
             var visibilityLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Visibility:"), where, new Vector2(200, 20f), false, null);
             mainPage.subObjects.Add(visibilityLabel);
             where.x += 80;
-            visibilityDropDown = new OpComboBox(new Configurable<LobbyManager.LobbyVisibility>(LobbyManager.LobbyVisibility.Public), where, 160, OpResourceSelector.GetEnumNames(null, typeof(LobbyManager.LobbyVisibility)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList());
+            visibilityDropDown = new OpComboBox(new Configurable<LobbyManager.LobbyVisibility>(LobbyManager.LobbyVisibility.Public), where, 160, OpResourceSelector.GetEnumNames(null, typeof(LobbyManager.LobbyVisibility)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
             new UIelementWrapper(this.tabWrapper, visibilityDropDown);
 
             // left lobby selector
@@ -86,8 +87,9 @@ namespace RainMeadow
 
             // cards
             lobbies = new LobbyInfo[0];
-            lobbyButtons = new SelectOneButton[1];
+            lobbyButtons = new EventfulSelectOneButton[1];
             lobbyButtons[0] = new EventfulSelectOneButton(this, mainPage, Translate("CREATE NEW LOBBY"), "lobbyCards", new(214, 530), new(304, 40), lobbyButtons, 0);
+            lobbyButtons[0].OnClick += BumpPlayButton;
             mainPage.subObjects.Add(lobbyButtons[0]);
             CreateLobbyCards();
             // waiting for lobby data!
@@ -111,6 +113,13 @@ namespace RainMeadow
             visibilityDropDown.greyedOut = this.currentlySelectedCard != 0;
         }
 
+        private void BumpPlayButton(EventfulSelectOneButton obj)
+        {
+            playButton.buttonBehav.flash = 1f;
+            playButton.buttonBehav.col = 1f;
+            playButton.buttonBehav.sizeBump = 1f;
+        }
+
         private void CreateLobbyCards()
         {
             var oldLobbyButtons = lobbyButtons;
@@ -121,13 +130,14 @@ namespace RainMeadow
                 mainPage.RemoveSubObject(btn);
             }
 
-            lobbyButtons = new SelectOneButton[1 + lobbies.Length];
+            lobbyButtons = new EventfulSelectOneButton[1 + lobbies.Length];
             lobbyButtons[0] = oldLobbyButtons[0];
 
             for (int i = 0; i < lobbies.Length; i++)
             {
                 var lobby = lobbies[i];
                 var btn = new LobbyInfoCard(this, mainPage, lobby.name, CardPosition(i + 1), new(304, 60), lobbyButtons, i + 1, lobby);
+                btn.OnClick += BumpPlayButton;
                 mainPage.subObjects.Add(btn);
                 lobbyButtons[i + 1] = btn;
             }

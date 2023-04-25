@@ -29,6 +29,7 @@ namespace RainMeadow
         private long eventHeader;
         private int stateCount;
         private long stateHeader;
+        private bool warnOnSizeMissmatch = true;
 
         public Serializer(long bufferCapacity) 
         {
@@ -107,7 +108,10 @@ namespace RainMeadow
             writer.Write((byte)playerEvent.eventType);
             playerEvent.CustomSerialize(this);
             eventLog.AppendLine(playerEvent.ToString());
-            eventLog.AppendLine($"size:{Position - prevPos} est:{playerEvent.EstimatedSize}");
+            long effectiveSize = Position - prevPos;
+            string msg = $"size:{effectiveSize} est:{playerEvent.EstimatedSize}";
+            if (warnOnSizeMissmatch && (effectiveSize != playerEvent.EstimatedSize)) RainMeadow.Error(msg);
+            eventLog.AppendLine(msg);
         }
 
         private void EndWriteEvents()
@@ -252,6 +256,7 @@ namespace RainMeadow
                         {
                             RainMeadow.Error("Error reading packet from player : " + message.m_identityPeer.GetSteamID());
                             RainMeadow.Error(e);
+                            EndRead();
                             //throw;
                         }
                         finally
@@ -267,54 +272,51 @@ namespace RainMeadow
 
         public void SendData(OnlinePlayer toPlayer)
         {
-            if (toPlayer.needsAck || toPlayer.OutgoingEvents.Any() || toPlayer.OutgoingStates.Any())
+            //RainMeadow.Debug($"Sending message to {toPlayer}");
+            lock (this)
             {
-                //RainMeadow.Debug($"Sending message to {toPlayer}");
-                lock (this)
+                BeginWrite(toPlayer);
+
+                PlayerHeaders();
+
+                BeginWriteEvents();
+                //RainMeadow.Debug($"Writing {toPlayer.OutgoingEvents.Count} events");
+                foreach (var e in toPlayer.OutgoingEvents)
                 {
-                    BeginWrite(toPlayer);
-
-                    PlayerHeaders();
-
-                    BeginWriteEvents();
-                    //RainMeadow.Debug($"Writing {toPlayer.OutgoingEvents.Count} events");
-                    foreach (var e in toPlayer.OutgoingEvents)
+                    if (CanFit(e))
                     {
-                        if (CanFit(e))
-                        {
-                            WriteEvent(e);
-                        }
-                        else
-                        {
-                            RainMeadow.Error("no buffer space for events");
-                            RainMeadow.Error(eventLog.ToString());
-                            break;
-                        }
+                        WriteEvent(e);
                     }
-                    EndWriteEvents();
-
-                    BeginWriteStates();
-                    //RainMeadow.Debug($"Writing {toPlayer.OutgoingStates.Count} states");
-                    while (toPlayer.OutgoingStates.Count > 0 && CanFit(toPlayer.OutgoingStates.Peek()))
+                    else
                     {
-                        var s = toPlayer.OutgoingStates.Dequeue();
-                        WriteState(s);
+                        RainMeadow.Error("no buffer space for events");
+                        RainMeadow.Error(eventLog.ToString());
+                        break;
                     }
-                    // todo handle states overflow, planing a packet for maximum size and least stale states
-                    EndWriteStates();
-
-                    EndWrite();
-
-                    unsafe
-                    {
-                        fixed (byte* ptr = buffer)
-                        {
-                            SteamNetworkingMessages.SendMessageToUser(ref toPlayer.oid, (IntPtr)ptr, (uint)Position, Constants.k_nSteamNetworkingSend_UnreliableNoDelay, 0);
-                        }
-                    }
-
-                    Free();
                 }
+                EndWriteEvents();
+
+                BeginWriteStates();
+                //RainMeadow.Debug($"Writing {toPlayer.OutgoingStates.Count} states");
+                while (toPlayer.OutgoingStates.Count > 0 && CanFit(toPlayer.OutgoingStates.Peek()))
+                {
+                    var s = toPlayer.OutgoingStates.Dequeue();
+                    WriteState(s);
+                }
+                // todo handle states overflow, planing a packet for maximum size and least stale states
+                EndWriteStates();
+
+                EndWrite();
+
+                unsafe
+                {
+                    fixed (byte* ptr = buffer)
+                    {
+                        SteamNetworkingMessages.SendMessageToUser(ref toPlayer.oid, (IntPtr)ptr, (uint)Position, Constants.k_nSteamNetworkingSend_UnreliableNoDelay, 0);
+                    }
+                }
+
+                Free();
             }
         }
 

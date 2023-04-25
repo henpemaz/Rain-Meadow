@@ -13,7 +13,7 @@ namespace RainMeadow
     {
 
         public const string MeadowVersionStr = "0.0.1";
-        static RainMeadow instance;
+        public static RainMeadow instance;
         private bool init;
 
         public void OnEnable()

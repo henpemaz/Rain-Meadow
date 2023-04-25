@@ -130,4 +130,45 @@ Mod auto installing / auto disabling
 		arg from the command line to join lobby, also needed for steam's Join feature thing
 	bruteforce
 	disable all other mods temporarily, store old enabledlist, relaunch with no mods
+
+
+
+Imediate todo:
+on force load, we send too much data
+	done
+
+greyed out lobby visibility is way too dark
+
+on sleep
+	what slug does it save to, make sure the game is doing the right thing
+
+on sleep
+	should wait release before enabling the start button
+
+other player's slugs cause the game to sleep
+
+other loaded player dying gameovers
+
+wakeup -> shelter close imediatelly -> starve issue
+
+wakeup -> slow load -> sprite issue
 	
+sleep screen
+	its picking the wrong scug
+
+on awake
+	what slug does it load
+
+On join world, join room
+if entity enter world message arrives after entity enter room message, could this cause a problem?
+
+on join resource
+	if supervisor->available message arrives late
+		leasechange event is discarded
+		newentity events are discarded
+		need "relative to membership" signaling, OR allow queueing up while not available
+
+refactor OnlineGameSession into OnlineGameMode for storing the game rules
+	game.session is irrelevant, detect based on lobby existing
+	API-ish for making custom modes?
+		Prototype arena-comp, story, meadow
