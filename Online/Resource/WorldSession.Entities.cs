@@ -5,21 +5,20 @@ namespace RainMeadow
     public partial class WorldSession
     {
         public static bool registeringRemoteEntity;
-        private List<AbstractPhysicalObject> earlyEntities = new();
-
-        // At a world level, entities "exist" and "have a .worldposition" and that's about it, just enough to show up on the map
+        private List<AbstractPhysicalObject> earlyEntities = new(); // stuff that gets added during world loading
 
         // This happens for local entities, so we create their respective OnlineEntity
         public void NewEntityInWorld(AbstractPhysicalObject entity)
         {
             RainMeadow.Debug(this);
-            // world population generates before this can be activated
-            if (!isActive) { 
-                RainMeadow.Debug("Queuing up entity for registering later");
-                this.earlyEntities.Add(entity);
-                return; } // throw new InvalidOperationException("not isActive"); }
             if (!registeringRemoteEntity) // A new entity, presumably mine
             {
+                if (!isActive) // world population generates before this can be activated
+                {
+                    RainMeadow.Debug("Queuing up entity for registering later");
+                    this.earlyEntities.Add(entity);
+                    return;
+                }
                 RainMeadow.Debug("Registering new entity as owned by myself");
                 var oe = new OnlineEntity(entity, PlayersManager.mePlayer, new OnlineEntity.EntityId(PlayersManager.mePlayer.id.m_SteamID, entity.ID.number), entity.ID.RandomSeed, entity.pos, !RainMeadow.sSpawningPersonas);
                 RainMeadow.Debug(oe);

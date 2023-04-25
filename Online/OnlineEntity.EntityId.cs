@@ -15,7 +15,7 @@
 
             public override string ToString()
             {
-                return $"#{id}-{originalOwner}";
+                return $"#{id}:{originalOwner:6}";
             }
             public override bool Equals(object obj) => this.Equals(obj as EntityId);
             public bool Equals(EntityId other)

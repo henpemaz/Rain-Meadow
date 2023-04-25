@@ -114,7 +114,7 @@ namespace RainMeadow
             {
                 RainMeadow.Debug($"New event {onlineEvent} from {fromPlayer}, processing...");
                 fromPlayer.lastEventFromRemote = onlineEvent.eventId;
-                if(onlineEvent is OnlineEvent.IMightHaveToWait idoac && !idoac.CanBeProcessed())
+                if(onlineEvent is OnlineEvent.IMightHaveToWait imhtw && !imhtw.CanBeProcessed())
                 {
                     waitingEvents.Add(onlineEvent);
                 }
@@ -137,7 +137,7 @@ namespace RainMeadow
         {
             if(waitingEvents.Count > 0)
             {
-                while (waitingEvents.FirstOrDefault(ev => ev is OnlineEvent.IMightHaveToWait idoac && idoac.CanBeProcessed()) is OnlineEvent ev)
+                while (waitingEvents.FirstOrDefault(ev => ev is OnlineEvent.IMightHaveToWait imhtw && imhtw.CanBeProcessed()) is OnlineEvent ev)
                 {
                     try
                     {

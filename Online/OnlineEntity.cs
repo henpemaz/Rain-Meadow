@@ -38,15 +38,20 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return $"{entity}:{id} from {owner}";
+            return $"{entity} from {owner.name}";
         }
 
         public static OnlineEntity CreateOrReuseEntity(NewEntityEvent newEntityEvent, World world)
         {
             RainMeadow.DebugMe();
             OnlineEntity oe = null;
-            
-            if (OnlineManager.recentEntities.TryGetValue(newEntityEvent.entityId, out oe))
+
+
+            if (world.GetAbstractRoom(newEntityEvent.initialPos) == null)
+            {
+                RainMeadow.Error($"Room not found!! {newEntityEvent.initialPos}");
+            }
+            if (OnlineManager.recentEntities.TryGetValue(newEntityEvent.entityId, out oe) && oe.entity.world.game == world.game)
             {
                 RainMeadow.Debug("reusing existing entity " + oe);
                 var creature = oe.entity as AbstractCreature;

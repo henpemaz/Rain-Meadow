@@ -97,7 +97,7 @@ namespace RainMeadow
             eventCount = 0;
             eventLog = new(64);
             eventHeader = stream.Position;
-            writer.Write(eventCount); // fake write
+            writer.Write(eventCount); // fake write, we'll overwrite this later
         }
 
         private void WriteEvent(OnlineEvent playerEvent)
@@ -105,9 +105,9 @@ namespace RainMeadow
             eventCount++;
             long prevPos = (int)Position;
             writer.Write((byte)playerEvent.eventType);
-            eventLog.AppendLine(playerEvent.eventType.ToString());
-            eventLog.AppendLine((Position - prevPos).ToString());
             playerEvent.CustomSerialize(this);
+            eventLog.AppendLine(playerEvent.ToString());
+            eventLog.AppendLine($"size:{Position - prevPos} est:{playerEvent.EstimatedSize}");
         }
 
         private void EndWriteEvents()

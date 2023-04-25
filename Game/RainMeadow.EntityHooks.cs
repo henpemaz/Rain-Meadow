@@ -100,7 +100,7 @@ namespace RainMeadow
             orig(self);
             if(self.world.game.session is OnlineGameSession os && OnlineEntity.map.TryGetValue(self, out var oe))
             {
-                if(!oe.realized && oe.isTransferable && !oe.owner.isMe)
+                if(!oe.owner.isMe && !oe.realized && oe.isTransferable)
                 {
                     oe.Request();
                 }
@@ -116,7 +116,7 @@ namespace RainMeadow
             orig(self);
             if (self.world.game.session is OnlineGameSession os && OnlineEntity.map.TryGetValue(self, out var oe))
             {
-                if (!oe.realized && oe.isTransferable && !oe.owner.isMe)
+                if (!oe.owner.isMe && !oe.realized && oe.isTransferable)
                 {
                     if (oe.roomSession == null || !oe.roomSession.memberships.ContainsKey(oe.owner)) //if owner of oe is subscribed (is participant) do not request
                     {
@@ -162,7 +162,6 @@ namespace RainMeadow
                 }
             }
         }
-
 
         // disable preemptive loading for ease of debugging
         private void RoomRealizer_RealizeAndTrackRoom(On.RoomRealizer.orig_RealizeAndTrackRoom orig, RoomRealizer self, AbstractRoom room, bool actuallyEntering)
