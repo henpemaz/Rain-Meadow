@@ -119,6 +119,12 @@ namespace RainMeadow
                 entity.Move(enterPos);
                 if (newRoom.absroom.realizedRoom is Room realRoom && creature.AllowedToExistInRoom(realRoom))
                 {
+                    if (creature.realizedCreature != null && realRoom.updateList.Contains(creature.realizedCreature))
+                    {
+                        RainMeadow.Debug($"Creature {creature.ID} already in the room {newRoom.absroom.name}, not adding!");
+                        return;
+                    }
+                    
                     RainMeadow.Debug("spawning creature " + creature);
                     if (enterPos.TileDefined)
                     {
