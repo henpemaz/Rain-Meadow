@@ -74,6 +74,7 @@ namespace RainMeadow
             else
             {
                 RainMeadow.Debug("spawning new entity");
+                OnlineManager.recentEntities.Remove(newEntityEvent.entityId);
                 // it is very tempting to switch to the generic tostring/fromstring from the savesystem, BUT
                 // it would be almost impossible to sanitize input and who knows what someone could do through that
                 if (!newEntityEvent.isCreature) throw new NotImplementedException("cant do non-creatures yet");

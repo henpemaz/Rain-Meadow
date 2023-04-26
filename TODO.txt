@@ -145,7 +145,7 @@ on sleep
 on sleep
 	should wait release before enabling the start button
 
-other player's slugs cause the game to sleep
+other player's slugs cause the game to sleep //DONE!
 
 other loaded player dying gameovers
 

@@ -1,10 +1,13 @@
-﻿namespace RainMeadow
+﻿using System.Linq;
+
+namespace RainMeadow
 {
     partial class RainMeadow
     {
         public void GameplayHooks()
         {
             On.Player.ctor += Player_ctor;
+            On.ShelterDoor.Close += ShelterDoorOnClose;
         }
 
         private void Player_ctor(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
@@ -18,6 +21,21 @@
                     self.controller = new OnlineController(ent, self);
                 }
             }
+        }
+        
+        private void ShelterDoorOnClose(On.ShelterDoor.orig_Close orig, ShelterDoor self)
+        {
+            if (self.room.game.session is not OnlineGameSession session)
+            {
+                orig(self);
+                return;
+            }
+
+            var scug = self.room.game.Players.First();
+            var realizedScug = (Player)scug.realizedCreature;
+            if (realizedScug == null || !self.room.PlayersInRoom.Contains(realizedScug)) return;
+            if (!realizedScug.readyForWin) return;
+            orig(self);
         }
     }
 }

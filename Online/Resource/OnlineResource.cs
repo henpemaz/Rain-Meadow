@@ -24,7 +24,7 @@ namespace RainMeadow
         public bool isActive { get; protected set; } // The respective in-game resource is loaded
         public bool isAvailable { get; protected set; } // The resource was leased or subscribed to
         public bool isPending => pendingRequest != null;
-        public bool canRelease => !isPending && !subresources.Any(s => s.isAvailable);
+        public bool canRelease => !isPending && isActive && !subresources.Any(s => s.isAvailable);
 
         public void FullyReleaseResource()
         {
@@ -126,6 +126,7 @@ namespace RainMeadow
             DeactivateImpl();
             subresources.Clear();
             subresources = null;
+            releaseWhenPossible = false;
         }
 
         protected virtual void UnavailableImpl() { }

@@ -29,7 +29,7 @@ namespace RainMeadow
         private long eventHeader;
         private int stateCount;
         private long stateHeader;
-        private bool warnOnSizeMissmatch = true;
+        private bool warnOnSizeMissmatch = false;
 
         public Serializer(long bufferCapacity) 
         {
