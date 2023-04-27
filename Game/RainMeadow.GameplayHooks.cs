@@ -13,7 +13,7 @@ namespace RainMeadow
         private void Player_ctor(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
         {
             orig(self, abstractCreature, world);
-            if(world.game.session is OnlineGameSession)
+            if(OnlineManager.lobby != null)
             {
                 // remote player
                 if (OnlineEntity.map.TryGetValue(self.abstractPhysicalObject, out var ent) && self.playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer)
@@ -25,7 +25,7 @@ namespace RainMeadow
         
         private void ShelterDoorOnClose(On.ShelterDoor.orig_Close orig, ShelterDoor self)
         {
-            if (self.room.game.session is not OnlineGameSession session)
+            if (OnlineManager.lobby == null)
             {
                 orig(self);
                 return;

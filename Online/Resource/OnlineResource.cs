@@ -81,7 +81,7 @@ namespace RainMeadow
             }
             if (isOwner)
             {
-                NewLeaseState();
+                NewLeaseState(); // subresources are now available for leasing
             }
 
             foreach (var item in incomingEntities) // entities that couldn't be processed yet (needed the resource active)

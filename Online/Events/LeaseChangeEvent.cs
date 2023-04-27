@@ -36,7 +36,7 @@
 
         public bool ShouldBeDiscarded()
         {
-            return dependsOnTick != null && dependsOnTick.fromPlayer != null && dependsOnTick.fromPlayer.hasLeft;
+            return dependsOnTick != null && (dependsOnTick.fromPlayer == null || dependsOnTick.fromPlayer.hasLeft);
         }
     }
 }

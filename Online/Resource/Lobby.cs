@@ -8,14 +8,16 @@ namespace RainMeadow
     public class Lobby : OnlineResource
     {
         public CSteamID id;
-        public OnlineGameSession session;
+        public OnlineGameMode session;
 
         public Dictionary<string, WorldSession> worldSessions = new();
+        public OnlineGameMode gameMode;
+
         protected override World World => throw new NotSupportedException(); // Lobby can't add world entities
 
         public event Action OnLobbyAvailable;
 
-        public Lobby(CSteamID id)
+        public Lobby(CSteamID id, string creatingWithMode)
         {
             this.id = id;
             this.super = this;
@@ -26,8 +28,11 @@ namespace RainMeadow
             if (isOwner)
             {
                 SteamMatchmaking.SetLobbyData(id, OnlineManager.CLIENT_KEY, OnlineManager.CLIENT_VAL);
-                SteamMatchmaking.SetLobbyData(id, OnlineManager.NAME_KEY, SteamFriends.GetPersonaName());
+                SteamMatchmaking.SetLobbyData(id, OnlineManager.NAME_KEY, SteamFriends.GetPersonaName() + "'s Lobby");
+                SteamMatchmaking.SetLobbyData(id, OnlineManager.MODE_KEY, creatingWithMode);
             }
+
+            this.gameMode = OnlineGameMode.FromType(new OnlineGameMode.OnlineGameModeType(creatingWithMode), this);
 
             if (isOwner)
             {

@@ -154,9 +154,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Ext_.cs" />
+    <Compile Include="Game\ArenaCompetitiveGameMode.cs" />
+    <Compile Include="Game\FreeRoamGameMode.cs" />
+    <Compile Include="Game\MeadowGameMode.cs" />
+    <Compile Include="Game\OnlineGameModeHelpers.cs" />
+    <Compile Include="Game\StoryGameMode.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Menu\EventfulScrollButton.cs" />
     <Compile Include="Menu\EventfulSelectOneButton.cs" />
+    <Compile Include="Menu\OpComboBox2.cs" />
     <Compile Include="Menu\ProperlyAlignedMenuLabel.cs" />
     <Compile Include="Menu\IHaveADescription.cs" />
     <Compile Include="Menu\MenuDarkSprite.cs" />
@@ -197,8 +203,7 @@
     <Compile Include="Menu\LobbySelectMenu.cs" />
     <Compile Include="Online\OnlinePlayer.cs" />
     <Compile Include="Online\Resource\OnlineResource.cs" />
-    <Compile Include="Game\OnlineGameSession.cs" />
-    <Compile Include="Game\OnlineGameSession.Rules.cs" />
+    <Compile Include="Game\OnlineGameMode.cs" />
     <Compile Include="Online\Events\OnlineEvent.cs" />
     <Compile Include="Online\Events\ResourceRelease.cs" />
     <Compile Include="Online\Events\ReleaseResult.cs" />

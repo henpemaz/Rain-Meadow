@@ -70,8 +70,10 @@ namespace RainMeadow
             }
         }
 
-        public static void CreateLobby(LobbyVisibility visibility)
+        private static string creatingWithMode;
+        public static void CreateLobby(LobbyVisibility visibility, string gameMode)
         {
+            creatingWithMode = gameMode;
             RainMeadow.Debug(visibility);
             ELobbyType eLobbyTypeeLobbyType = visibility switch
             {
@@ -97,7 +99,7 @@ namespace RainMeadow
                 if (!bIOFailure && param.m_eResult == EResult.k_EResultOK)
                 {
                     RainMeadow.Debug("success");
-                    OnlineManager.lobby = new Lobby(new CSteamID(param.m_ulSteamIDLobby));
+                    OnlineManager.lobby = new Lobby(new CSteamID(param.m_ulSteamIDLobby), creatingWithMode);
                     OnLobbyJoined?.Invoke(true);
                 }
                 else
@@ -121,7 +123,8 @@ namespace RainMeadow
                 if (!bIOFailure)
                 {
                     RainMeadow.Debug("success");
-                    OnlineManager.lobby = new Lobby(new CSteamID(param.m_ulSteamIDLobby));
+                    var id = new CSteamID(param.m_ulSteamIDLobby);
+                    OnlineManager.lobby = new Lobby(id, SteamMatchmaking.GetLobbyData(id, OnlineManager.MODE_KEY));
                     OnLobbyJoined?.Invoke(true);
                 }
                 else

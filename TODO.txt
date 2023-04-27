@@ -138,6 +138,7 @@ on force load, we send too much data
 	done
 
 greyed out lobby visibility is way too dark
+	done
 
 on sleep
 	what slug does it save to, make sure the game is doing the right thing
@@ -145,7 +146,8 @@ on sleep
 on sleep
 	should wait release before enabling the start button
 
-other player's slugs cause the game to sleep //DONE!
+other player's slugs cause the game to sleep
+	done
 
 other loaded player dying gameovers
 

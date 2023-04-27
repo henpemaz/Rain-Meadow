@@ -13,6 +13,7 @@ namespace RainMeadow
         public static string CLIENT_KEY = "client";
         public static string CLIENT_VAL = "Meadow_" + RainMeadow.MeadowVersionStr;
         public static string NAME_KEY = "name";
+        public static string MODE_KEY = "mode";
         public static OnlineManager instance;
         public static Serializer serializer = new Serializer(16000);
 

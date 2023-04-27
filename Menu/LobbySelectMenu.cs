@@ -9,7 +9,6 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-
     public class LobbySelectMenu : SmartMenu, SelectOneButton.SelectOneButtonOwner
     {
         private List<FSprite> sprites;
@@ -20,6 +19,9 @@ namespace RainMeadow
         private int currentlySelectedCard;
         private OpComboBox visibilityDropDown;
         private SimplerButton playButton;
+        private OpComboBox2 modeDropDown;
+        private ProperlyAlignedMenuLabel modeDescriptionLabel;
+
 
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
@@ -53,11 +55,18 @@ namespace RainMeadow
 
             // center description
             where = new Vector2(555f, 557f);
-            var modeLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("MODE: ") + Translate("RAIN MEADOW"), where, new Vector2(200, 20f), false, null);
+            var modeLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Mode:"), where, new Vector2(200, 20f), false, null);
             mainPage.subObjects.Add(modeLabel);
+            where.x += 80;
+            modeDropDown = new OpComboBox2(new Configurable<OnlineGameMode.OnlineGameModeType>(OnlineGameMode.OnlineGameModeType.FreeRoam), where, 160, OpResourceSelector.GetEnumNames(null, typeof(OnlineGameMode.OnlineGameModeType)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
+            modeDropDown.OnChanged += UpdateModeDescription;
+            new UIelementWrapper(this.tabWrapper, modeDropDown);
+            where.x -= 80;
+
             where.y -= 35;
-            var modeDescriptionLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("A peaceful mode about exploring around and discovering little secrets, \ntogether or on your own."), where, new Vector2(0, 20f), false, null);
+            modeDescriptionLabel = new ProperlyAlignedMenuLabel(this, mainPage, "", where, new Vector2(0, 20f), false, null);
             mainPage.subObjects.Add(modeDescriptionLabel);
+            UpdateModeDescription();
 
             // center-low settings
             where.y -= 45;
@@ -101,6 +110,11 @@ namespace RainMeadow
             LobbyManager.RequestLobbyList();
         }
 
+        private void UpdateModeDescription()
+        {
+            modeDescriptionLabel.text = Translate(OnlineGameMode.OnlineGameModeType.descriptions[new OnlineGameMode.OnlineGameModeType(modeDropDown.value)]);
+        }
+
         public override void Update()
         {
             base.Update();
@@ -110,6 +124,7 @@ namespace RainMeadow
             if (scrollTo > extraItems) scrollTo = RWCustom.Custom.LerpAndTick(scrollTo, extraItems, 0.1f, 0.1f);
             scroll = RWCustom.Custom.LerpAndTick(scroll, scrollTo, 0.1f, 0.1f);
 
+            modeDropDown.greyedOut = this.currentlySelectedCard != 0;
             visibilityDropDown.greyedOut = this.currentlySelectedCard != 0;
         }
 
@@ -136,7 +151,7 @@ namespace RainMeadow
             for (int i = 0; i < lobbies.Length; i++)
             {
                 var lobby = lobbies[i];
-                var btn = new LobbyInfoCard(this, mainPage, lobby.name, CardPosition(i + 1), new(304, 60), lobbyButtons, i + 1, lobby);
+                var btn = new LobbyInfoCard(this, mainPage, CardPosition(i + 1), new(304, 60), lobbyButtons, i + 1, lobby);
                 btn.OnClick += BumpPlayButton;
                 mainPage.subObjects.Add(btn);
                 lobbyButtons[i + 1] = btn;
@@ -153,9 +168,14 @@ namespace RainMeadow
         class LobbyInfoCard : EventfulSelectOneButton
         {
             public LobbyInfo lobbyInfo;
-            public LobbyInfoCard(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, SelectOneButton[] buttonArray, int buttonArrayIndex, LobbyInfo lobbyInfo) : base(menu, owner, displayText, "lobbyCards", pos, size, buttonArray, buttonArrayIndex)
+            public LobbyInfoCard(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, SelectOneButton[] buttonArray, int buttonArrayIndex, LobbyInfo lobbyInfo) : base(menu, owner, "", "lobbyCards", pos, size, buttonArray, buttonArrayIndex)
             {
                 this.lobbyInfo = lobbyInfo;
+                this.menuLabel.RemoveSprites();
+                this.RemoveSubObject(menuLabel);
+                this.menuLabel = new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.name, new(5, 30), new(10, 50), true);
+                this.subObjects.Add(this.menuLabel);
+                this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.mode, new(5, 10), new(10, 50), true));
             }
 
             public override void Update()
@@ -163,6 +183,8 @@ namespace RainMeadow
                 base.Update();
                 pos = (menu as LobbySelectMenu).CardPosition(this.buttonArrayIndex);
             }
+
+            // todo out of view
         }
 
         private void Play(SimplerButton obj)
@@ -175,14 +197,13 @@ namespace RainMeadow
             {
                 RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo);
             }
-
         }
 
         void RequestLobbyCreate()
         {
             RainMeadow.DebugMe();
             Enum.TryParse<LobbyManager.LobbyVisibility>(visibilityDropDown.value, out var value);
-            LobbyManager.CreateLobby(value);
+            LobbyManager.CreateLobby(value, modeDropDown.value);
         }
 
         void RequestLobbyJoin(LobbyInfo lobby)

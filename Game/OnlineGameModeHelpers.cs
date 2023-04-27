@@ -2,9 +2,9 @@
 
 namespace RainMeadow
 {
-    public partial class OnlineGameSession
+    public static class OnlineGameModeHelpers
     {
-        HashSet<PlacedObject.Type> cosmeticItems = new()
+        public static HashSet<PlacedObject.Type> cosmeticItems = new()
         {
             PlacedObject.Type.None,
             PlacedObject.Type.LightSource,

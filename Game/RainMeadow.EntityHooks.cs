@@ -39,7 +39,7 @@ namespace RainMeadow
 
         private void AbstractCreature_Update(On.AbstractCreature.orig_Update orig, AbstractCreature self, int time)
         {
-            if (self.world.game.session is OnlineGameSession os && OnlineEntity.map.TryGetValue(self, out var oe))
+            if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
             {
                 if (!oe.owner.isMe)
                 {
@@ -51,7 +51,7 @@ namespace RainMeadow
 
         private void AbstractPhysicalObject_Update(On.AbstractPhysicalObject.orig_Update orig, AbstractPhysicalObject self, int time)
         {
-            if (self.world.game.session is OnlineGameSession os && OnlineEntity.map.TryGetValue(self, out var oe))
+            if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
             {
                 if (!oe.owner.isMe)
                 {
@@ -63,22 +63,19 @@ namespace RainMeadow
 
         private AbstractCreature RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate(On.RainWorldGame.orig_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate orig, RainWorldGame self, bool player1, bool player2, bool player3, bool player4, WorldCoordinate location)
         {
-            if (self.session is OnlineGameSession)
+            if (OnlineManager.lobby != null)
             {
                 sSpawningPersonas = true;
             }
             var ac = orig(self, player1, player2, player3, player4, location);
-            if (self.session is OnlineGameSession)
-            {
-                sSpawningPersonas = false;
-            }
+            sSpawningPersonas = false;
             return ac;
         }
 
         private void AbstractObjectStick_ctor(On.AbstractPhysicalObject.AbstractObjectStick.orig_ctor orig, AbstractPhysicalObject.AbstractObjectStick self, AbstractPhysicalObject A, AbstractPhysicalObject B)
         {
             orig(self, A, B);
-            if (A.world.game.session is OnlineGameSession)
+            if (OnlineManager.lobby != null)
             {
                 if(OnlineEntity.map.TryGetValue(A, out var Aoe) && OnlineEntity.map.TryGetValue(B, out var Boe))
                 {
@@ -98,7 +95,7 @@ namespace RainMeadow
         private void AbstractPhysicalObject_Realize(On.AbstractPhysicalObject.orig_Realize orig, AbstractPhysicalObject self)
         {
             orig(self);
-            if(self.world.game.session is OnlineGameSession os && OnlineEntity.map.TryGetValue(self, out var oe))
+            if(OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
             {
                 if(!oe.owner.isMe && !oe.realized && oe.isTransferable)
                 {
@@ -114,7 +111,7 @@ namespace RainMeadow
         private void AbstractCreature_Realize(On.AbstractCreature.orig_Realize orig, AbstractCreature self)
         {
             orig(self);
-            if (self.world.game.session is OnlineGameSession os && OnlineEntity.map.TryGetValue(self, out var oe))
+            if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
             {
                 if (!oe.owner.isMe && !oe.realized && oe.isTransferable)
                 {
@@ -133,7 +130,7 @@ namespace RainMeadow
         private void AbstractPhysicalObject_Abstractize(On.AbstractPhysicalObject.orig_Abstractize orig, AbstractPhysicalObject self, WorldCoordinate coord)
         {
             orig(self, coord);
-            if (self.world.game.session is OnlineGameSession os && OnlineEntity.map.TryGetValue(self, out var oe))
+            if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
             {
                 if (oe.realized && oe.isTransferable && oe.owner.isMe)
                 {
@@ -150,7 +147,7 @@ namespace RainMeadow
         private void AbstractCreature_Abstractize(On.AbstractCreature.orig_Abstractize orig, AbstractCreature self, WorldCoordinate coord)
         {
             orig(self, coord);
-            if (self.world.game.session is OnlineGameSession os && OnlineEntity.map.TryGetValue(self, out var oe))
+            if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
             {
                 if (oe.realized && oe.isTransferable && oe.owner.isMe)
                 {
@@ -174,7 +171,7 @@ namespace RainMeadow
         private bool ShortcutHandlerOnVesselAllowedInRoom(On.ShortcutHandler.orig_VesselAllowedInRoom orig, ShortcutHandler self, ShortcutHandler.Vessel vessel)
         {
             var result = orig(self, vessel);
-            if (self.game.session is not OnlineGameSession) return result;
+            if (OnlineManager.lobby == null) return result;
 
             var absCrit = vessel.creature.abstractCreature;
             OnlineEntity.map.TryGetValue(absCrit, out var onlineEntity);
@@ -214,7 +211,7 @@ namespace RainMeadow
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((ShortcutHandler self) => {
-                    if(self.game.session is OnlineGameSession)
+                    if(OnlineManager.lobby != null)
                     {
                         for (var i = self.betweenRoomsWaitingLobby.Count - 1; i >= 0; i--)
                         {
@@ -249,7 +246,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldloc, indexLoc);
                 c.EmitDelegate((ShortcutHandler self, int index) => {
-                    if(self.game.session is OnlineGameSession)
+                    if(OnlineManager.lobby != null)
                     {
                         var vessel = self.betweenRoomsWaitingLobby[index];
                         if (vessel.creature.slatedForDeletetion)
@@ -276,7 +273,7 @@ namespace RainMeadow
         {
             //RainMeadow.DebugMethod();
             orig(self, newCoord);
-            if (self.world.game.session is OnlineGameSession os && !self.slatedForDeletion && RoomSession.map.TryGetValue(self.world.GetAbstractRoom(newCoord.room), out var rs) && os.ShouldSyncObjectInRoom(rs, self))
+            if (OnlineManager.lobby != null && !self.slatedForDeletion && RoomSession.map.TryGetValue(self.world.GetAbstractRoom(newCoord.room), out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, self))
             {
                 rs.ApoEnteringRoom(self, newCoord);
             }
@@ -289,7 +286,7 @@ namespace RainMeadow
         {
             //RainMeadow.DebugMethod();
             orig(self, ent);
-            if (self.world.game.session is OnlineGameSession os && ent is AbstractPhysicalObject apo && apo.pos.room == self.index && RoomSession.map.TryGetValue(self, out var rs) && os.ShouldSyncObjectInRoom(rs, apo))
+            if (OnlineManager.lobby != null && ent is AbstractPhysicalObject apo && apo.pos.room == self.index && RoomSession.map.TryGetValue(self, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo))
             {
                 rs.ApoEnteringRoom(apo, apo.pos);
             }
@@ -299,7 +296,7 @@ namespace RainMeadow
         {
             //RainMeadow.DebugMethod();
             orig(self, entity);
-            if (self.world.game.session is OnlineGameSession os && entity is AbstractPhysicalObject apo && RoomSession.map.TryGetValue(self, out var rs) && os.ShouldSyncObjectInRoom(rs, apo))
+            if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo && RoomSession.map.TryGetValue(self, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo))
             {
                 rs.ApoLeavingRoom(apo);
             }
@@ -309,7 +306,7 @@ namespace RainMeadow
         {
             //RainMeadow.DebugMethod();
             orig(self, world, type, realizedObject, pos, ID);
-            if (world?.game?.session is OnlineGameSession os && WorldSession.map.TryGetValue(world, out var ws) && self is not AbstractCreature && os.ShouldSyncObjectInWorld(ws, self))
+            if (OnlineManager.lobby != null && WorldSession.map.TryGetValue(world, out var ws) && self is not AbstractCreature && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, self))
             {
                 ws.NewEntityInWorld(self);
             }
@@ -320,7 +317,7 @@ namespace RainMeadow
         {
             //RainMeadow.DebugMethod();
             orig(self, world, creatureTemplate, realizedCreature, pos, ID);
-            if (world?.game?.session is OnlineGameSession os && WorldSession.map.TryGetValue(world, out var ws) && os.ShouldSyncObjectInWorld(ws, self))
+            if (OnlineManager.lobby != null && WorldSession.map.TryGetValue(world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, self))
             {
                 ws.NewEntityInWorld(self);
             }
@@ -335,7 +332,7 @@ namespace RainMeadow
             // either this or hook ShouldEntityBeMovedToNewRegion
             // but that just runs over all entities here anyways;
 
-            if(self.game.session is OnlineGameSession os)
+            if(OnlineManager.lobby != null)
             {
                 var oldWorld = self.activeWorld;
                 var newWorld = self.worldLoader.world;
