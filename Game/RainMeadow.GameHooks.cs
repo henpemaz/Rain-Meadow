@@ -39,9 +39,14 @@ namespace RainMeadow
         private void RainWorldGame_ShutDownProcess(On.RainWorldGame.orig_ShutDownProcess orig, RainWorldGame self)
         {
             orig(self);
-            if (OnlineManager.lobby != null && WorldSession.map.TryGetValue(self.world, out var ws))
+            if (OnlineManager.lobby != null)
             {
-                for(int i = ws.entities.Count - 1; i >= 0; i--)
+                // Don't leak entities from last session
+                OnlineManager.recentEntities.Clear();
+                
+                if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
+                
+                for (int i = ws.entities.Count - 1; i >= 0; i--)
                 {
                     var ent = ws.entities[i];
                     if (ent.owner.isMe && !ent.isTransferable)

@@ -1,6 +1,7 @@
 ﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using System;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -378,6 +379,9 @@ namespace RainMeadow
                 // post: we add our entities to the new world
                 if (room != null && RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession2))
                 {
+                    // Don't reuse entities left from previous region
+                    OnlineManager.recentEntities = OnlineManager.recentEntities.Where(e => e.Value.roomSession == roomSession2 || e.Value.owner.isMe).ToDictionary();
+                    
                     // we go over all APOs in the room
                     RainMeadow.Debug("Gate switchery 2");
                     var entities = room.abstractRoom.entities;

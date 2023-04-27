@@ -51,8 +51,10 @@ namespace RainMeadow
             {
                 RainMeadow.Error($"Room not found!! {newEntityEvent.initialPos}");
             }
-            if (OnlineManager.recentEntities.TryGetValue(newEntityEvent.entityId, out oe) && oe.entity.world.game == world.game)
+            if (OnlineManager.recentEntities.TryGetValue(newEntityEvent.entityId, out oe))
             {
+                if (oe.entity.world.game != world.game) throw new InvalidOperationException($"Entity not cleared in last session!! {oe.entity.ID}");
+                
                 RainMeadow.Debug("reusing existing entity " + oe);
                 var creature = oe.entity as AbstractCreature;
                 creature.slatedForDeletion = false;
@@ -228,11 +230,11 @@ namespace RainMeadow
                                // Maybe this should be in ResolveRequest instead? but then there's no guarantee the resource owners will have the new ID
                                // at least there will be no collisions so if we ignore that data its ok?
             {
-                if (worldSession != null)
+                if (worldSession != null && !worldSession.owner.isMe)
                 {
                     OnlineManager.AddFeed(worldSession, this);
                 }
-                if (roomSession != null)
+                if (roomSession != null && !roomSession.owner.isMe)
                 {
                     OnlineManager.AddFeed(roomSession, this);
                 }
