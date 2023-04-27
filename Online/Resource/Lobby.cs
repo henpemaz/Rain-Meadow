@@ -8,8 +8,6 @@ namespace RainMeadow
     public class Lobby : OnlineResource
     {
         public CSteamID id;
-        public OnlineGameMode session;
-
         public Dictionary<string, WorldSession> worldSessions = new();
         public OnlineGameMode gameMode;
 

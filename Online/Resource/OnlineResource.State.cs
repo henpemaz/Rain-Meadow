@@ -11,7 +11,6 @@ namespace RainMeadow
         {
             if (lastState == null || lastState.ts != ts)
             {
-
                 try
                 {
                     lastState = MakeState(ts);

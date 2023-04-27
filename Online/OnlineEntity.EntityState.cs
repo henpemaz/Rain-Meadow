@@ -18,8 +18,8 @@ namespace RainMeadow
 
         public EntityState GetState(ulong tick, OnlineResource resource)
         {
-            if (resource is WorldSession ws && !OnlineManager.lobby.session.ShouldSyncObjectInWorld(ws, entity)) throw new InvalidOperationException("asked for world state, not synched");
-            if (resource is RoomSession rs && !OnlineManager.lobby.session.ShouldSyncObjectInRoom(rs, entity)) throw new InvalidOperationException("asked for room state, not synched");
+            if (resource is WorldSession ws && !OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, entity)) throw new InvalidOperationException("asked for world state, not synched");
+            if (resource is RoomSession rs && !OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, entity)) throw new InvalidOperationException("asked for room state, not synched");
             var realizedState = resource is RoomSession;
             if(realizedState) { if(entity.realizedObject != null && !realized) RainMeadow.Error("have realized object, but not entity not marked as realized??"); }
             if (realizedState && !realized)
