@@ -150,7 +150,7 @@ namespace RainMeadow
                     {
                         if (entity.realizedObject != null && realizedRoom.updateList.Contains(entity.realizedObject))
                         {
-                            RainMeadow.Debug($"Creature {entity.ID} already in the room {newRoom.absroom.name}, not adding!");
+                            RainMeadow.Debug($"Entity {entity.ID} already in the room {newRoom.absroom.name}, not adding!");
                             return;
                         }
                         

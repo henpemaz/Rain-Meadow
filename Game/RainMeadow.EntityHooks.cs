@@ -30,6 +30,8 @@ namespace RainMeadow
             On.AbstractRoom.AddEntity += AbstractRoom_AddEntity;
             On.AbstractRoom.RemoveEntity_AbstractWorldEntity += AbstractRoom_RemoveEntity;
             On.AbstractPhysicalObject.ChangeRooms += AbstractPhysicalObject_ChangeRooms;
+            
+            On.Room.AddObject += RoomOnAddObject;
 
             On.ShortcutHandler.VesselAllowedInRoom += ShortcutHandlerOnVesselAllowedInRoom;
             IL.ShortcutHandler.Update += ShortcutHandler_Update; // cleanup of deleted entities in shortcut system
@@ -322,6 +324,26 @@ namespace RainMeadow
             {
                 ws.NewEntityInWorld(self);
             }
+        }
+        
+        // Prevent adding item to update list twice
+        private void RoomOnAddObject(On.Room.orig_AddObject orig, Room self, UpdatableAndDeletable obj)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self, obj);
+                return;
+            }
+            
+            if (self.game == null) return;
+            if (self.updateList.Contains(obj))
+            {
+                RainMeadow.Debug($"Object {(obj is PhysicalObject po ? po.abstractPhysicalObject.ID : obj)} already in the update list! Skipping...");
+                if (!Environment.StackTrace.Contains("Creature.PlaceInRoom")) // We know about this
+                    RainMeadow.Error(Environment.StackTrace); // Log cases that we still haven't found 
+                return;
+            }
+            orig(self, obj);
         }
 
         // todo when do things LEAVE world though?
