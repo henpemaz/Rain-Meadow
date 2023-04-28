@@ -136,8 +136,9 @@ other loaded player dying gameovers
 
 wakeup -> shelter close imediatelly -> starve issue
 
-
 wakeup -> slow load -> sprite issue
+
+on load, non-owner still loads saved creatures
 	
 sleep screen
 	its picking the wrong scug?
@@ -146,15 +147,4 @@ on awake
 	what slug does it load
 
 On join world, join room
-if entity enter world message arrives after entity enter room message, could this cause a problem?
-
-on join resource
-	if supervisor->available message arrives late
-		leasechange event is discarded
-		newentity events are discarded
-		need "relative to membership" signaling, OR allow queueing up while not available
-
-refactor OnlineGameSession into OnlineGameMode for storing the game rules
-	game.session is irrelevant, detect based on lobby existing
-	API-ish for making custom modes?
-		Prototype arena-comp, story, meadow
+	if entity enter world message arrives after entity enter room message, could this cause a problem?

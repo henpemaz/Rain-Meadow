@@ -32,6 +32,7 @@ namespace RainMeadow
             On.AbstractPhysicalObject.ChangeRooms += AbstractPhysicalObject_ChangeRooms;
             
             On.Room.AddObject += RoomOnAddObject;
+            On.Room.CleanOutObjectNotInThisRoom += Room_CleanOutObjectNotInThisRoom;
 
             On.ShortcutHandler.VesselAllowedInRoom += ShortcutHandlerOnVesselAllowedInRoom;
             IL.ShortcutHandler.Update += ShortcutHandler_Update; // cleanup of deleted entities in shortcut system
@@ -39,6 +40,14 @@ namespace RainMeadow
             On.RoomRealizer.RealizeAndTrackRoom += RoomRealizer_RealizeAndTrackRoom; // debug
         }
 
+        private void Room_CleanOutObjectNotInThisRoom(On.Room.orig_CleanOutObjectNotInThisRoom orig, Room self, UpdatableAndDeletable obj)
+        {
+            orig(self, obj);
+            if (OnlineManager.lobby != null && obj is PhysicalObject po && OnlineEntity.map.TryGetValue(po.abstractPhysicalObject, out var oe))
+            {
+                self.abstractRoom.RemoveEntity(po.abstractPhysicalObject);
+            }
+        }
 
         private void AbstractCreature_Update(On.AbstractCreature.orig_Update orig, AbstractCreature self, int time)
         {
@@ -314,7 +323,6 @@ namespace RainMeadow
                 ws.NewEntityInWorld(self);
             }
         }
-
 
         private void AbstractCreature_ctor(On.AbstractCreature.orig_ctor orig, AbstractCreature self, World world, CreatureTemplate creatureTemplate, Creature realizedCreature, WorldCoordinate pos, EntityID ID)
         {

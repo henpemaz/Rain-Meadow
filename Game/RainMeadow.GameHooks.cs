@@ -86,7 +86,7 @@ namespace RainMeadow
         // Room wait and activate
         private void RoomPreparer_Update(On.RoomPreparer.orig_Update orig, RoomPreparer self)
         {
-            if (!self.shortcutsOnly && OnlineManager.lobby != null)
+            if (!self.shortcutsOnly && self.room.game != null && OnlineManager.lobby != null)
             {
                 if(RoomSession.map.TryGetValue(self.room.abstractRoom, out RoomSession rs))
                 {
@@ -98,7 +98,7 @@ namespace RainMeadow
                 }
             }
             orig(self);
-            if (!self.shortcutsOnly && OnlineManager.lobby != null)
+            if (!self.shortcutsOnly && self.room.game != null && OnlineManager.lobby != null)
             {
                 if (RoomSession.map.TryGetValue(self.room.abstractRoom, out RoomSession rs))
                 {

@@ -169,6 +169,9 @@
     <Compile Include="Menu\SmartMenu.cs" />
     <Compile Include="Online\Events\PlayerTickReference.cs" />
     <Compile Include="Online\Resource\ResourceMembership.cs" />
+    <Compile Include="Online\State\AbstractCreatureState.cs" />
+    <Compile Include="Online\State\CreatureHealthStateState.cs" />
+    <Compile Include="Online\State\CreatureStateState.cs" />
     <Compile Include="Online\State\EntityState.cs" />
     <Compile Include="Online\OnlineController.cs" />
     <Compile Include="Online\EntityFeed.cs" />
@@ -212,8 +215,11 @@
     <Compile Include="Online\Events\ResourceTransfer.cs" />
     <Compile Include="Online\Events\TransferResult.cs" />
     <Compile Include="Online\State\PhysicalObjectEntityState.cs" />
-    <Compile Include="Online\State\RealizedObjectState.cs" />
+    <Compile Include="Online\State\PhysicalObjectState.cs" />
+    <Compile Include="Online\State\RealizedCreatureState.cs" />
     <Compile Include="Online\State\RealizedPlayerState.cs" />
+    <Compile Include="Online\State\RealizedSpearState.cs" />
+    <Compile Include="Online\State\RealizedWeaponState.cs" />
     <Compile Include="Online\Subscription.cs" />
     <Compile Include="Online\Resource\WorldSession.cs" />
     <Compile Include="Online\Resource\WorldSession.Entities.cs" />
