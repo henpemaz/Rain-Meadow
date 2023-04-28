@@ -24,5 +24,10 @@
         {
             return apo is AbstractCreature;
         }
+
+        public override SlugcatStats.Name LoadWorldAs(RainWorldGame game)
+        {
+            return SlugcatStats.Name.White;
+        }
     }
 }

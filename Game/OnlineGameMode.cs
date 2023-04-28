@@ -87,12 +87,17 @@ namespace RainMeadow
             return true;
         }
 
-        internal virtual bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
+        public virtual bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
         {
             return false;
         }
 
-        internal virtual SlugcatStats.Name GetStorySessionPlayer(RainWorldGame self)
+        public virtual SlugcatStats.Name GetStorySessionPlayer(RainWorldGame self)
+        {
+            return RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;
+        }
+
+        public virtual SlugcatStats.Name LoadWorldAs(RainWorldGame game)
         {
             return RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;
         }

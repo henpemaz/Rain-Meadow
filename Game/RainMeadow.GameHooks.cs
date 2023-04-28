@@ -186,7 +186,8 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
-                setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(game, OnlineManager.lobby.worldSessions[region.name]);
+                setupValues.worldCreaturesSpawn = false;
+                playerCharacter = OnlineManager.lobby.gameMode.LoadWorldAs(game);
             }
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
             if (OnlineManager.lobby != null)

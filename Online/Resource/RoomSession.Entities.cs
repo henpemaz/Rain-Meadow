@@ -28,7 +28,12 @@ namespace RainMeadow
             }
             else if (!WorldSession.registeringRemoteEntity)
             {
-                throw new InvalidOperationException("Unregistered entity has entered the room! HOW!?? " + entity);
+                RainMeadow.Debug("Registering new entity as owned by myself");
+                oe = new OnlineEntity(entity, PlayersManager.mePlayer, new OnlineEntity.EntityId(PlayersManager.mePlayer.id.m_SteamID, entity.ID.number), entity.ID.RandomSeed, entity.pos, !RainMeadow.sSpawningPersonas);
+                RainMeadow.Debug(oe);
+                OnlineManager.recentEntities[oe.id] = oe;
+                OnlineEntity.map.Add(entity, oe);
+                EntityEnteredResource(oe);
             }
         }
 
