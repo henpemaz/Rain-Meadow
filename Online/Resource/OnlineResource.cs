@@ -172,7 +172,7 @@ namespace RainMeadow
 
             if(isOwner) { this.ownerSinceTick = new PlayerTickReference(supervisor, supervisor.tick); } // "since when" so I can tell others since when
 
-            if (newOwner != null && !memberships.ContainsKey(newOwner)) memberships.Add(newOwner, new ResourceMembership(newOwner));
+            if (newOwner != null && !memberships.ContainsKey(newOwner)) memberships.Add(newOwner, new ResourceMembership(newOwner, this));
 
             if (isSupervisor && this is not Lobby && oldOwner != owner) // I am responsible for notifying lease changes to this
             {
@@ -220,7 +220,7 @@ namespace RainMeadow
         private void NewParticipant(OnlinePlayer newParticipant)
         {
             RainMeadow.Debug($"{this}-{newParticipant}");
-            memberships.Add(newParticipant, new ResourceMembership(newParticipant));
+            memberships.Add(newParticipant, new ResourceMembership(newParticipant, this));
             if(isAvailable && isOwner)
             {
                 Subscribed(newParticipant, false);
@@ -340,10 +340,11 @@ namespace RainMeadow
 
             if (isActive && !fromTransfer)
             {
+                var tickReference = new PlayerTickReference(supervisor, supervisor.tick);
                 foreach (var ent in entities)
                 {
                     if (player == ent.owner) continue;
-                    player.QueueEvent(new NewEntityEvent(this, ent));
+                    player.QueueEvent(new NewEntityEvent(this, ent, tickReference));
                 }
             }
         }

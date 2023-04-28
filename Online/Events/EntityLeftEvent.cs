@@ -4,7 +4,7 @@
     {
         public EntityLeftEvent() { }
 
-        public EntityLeftEvent(OnlineResource resource, OnlineEntity oe) : base(resource, oe.id) { }
+        public EntityLeftEvent(OnlineResource resource, OnlineEntity oe, PlayerTickReference tickReference) : base(resource, oe.id, tickReference) { }
 
         public override EventTypeId eventType => EventTypeId.EntityLeftEvent;
 

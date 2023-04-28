@@ -1,9 +1,8 @@
 ﻿namespace RainMeadow
 {
-    public class LeaseChangeEvent : ResourceEvent, OnlineEvent.IMightHaveToWait
+    public class LeaseChangeEvent : ResourceEvent
     {
         public OnlineResource.LeaseState leaseState;
-        public PlayerTickReference dependsOnTick;
 
         public LeaseChangeEvent() { }
 
@@ -25,18 +24,6 @@
         public override void Process()
         {
             this.onlineResource.OnLeaseChange(this);
-        }
-
-
-        // IMightHaveToWait
-        public bool CanBeProcessed()
-        {
-            return dependsOnTick == null || (dependsOnTick.fromPlayer != null && dependsOnTick.ChecksOut());
-        }
-
-        public bool ShouldBeDiscarded()
-        {
-            return dependsOnTick != null && (dependsOnTick.fromPlayer == null || dependsOnTick.fromPlayer.hasLeft);
         }
     }
 }

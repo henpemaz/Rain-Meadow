@@ -8,6 +8,7 @@ namespace RainMeadow
         public OnlinePlayer from;// not serialized
         public OnlinePlayer to;// not serialized
         public ulong eventId;
+        public PlayerTickReference dependsOnTick; // not serialized but universally supported, serialize if used for your event type
 
         public override string ToString()
         {
@@ -21,17 +22,21 @@ namespace RainMeadow
             serializer.Serialize(ref eventId);
         }
 
-        public abstract void Process();
-
-        public interface ICanBeAborted
+        public virtual bool CanBeProcessed() // I've been received but I might be early
         {
-            public abstract void Abort();
+            return dependsOnTick == null || dependsOnTick.ChecksOut();
         }
 
-        internal interface IMightHaveToWait
+        public virtual bool ShouldBeDiscarded() // I've been received but I might be stale/unprocessable
         {
-            public bool CanBeProcessed();
-            public bool ShouldBeDiscarded();
+            return dependsOnTick != null && dependsOnTick.Invalid();
+        }
+
+        public abstract void Process(); // I've been received and I do something
+
+        public virtual void Abort() // I was not acknowledged and the other guy left, what do
+        {
+            RainMeadow.Error($"Aborted {this}");
         }
 
         public enum EventTypeId : byte // will we hit 255 of these I wonder

@@ -12,7 +12,7 @@
 
         public NewEntityEvent() { }
 
-        public NewEntityEvent(OnlineResource resource, OnlineEntity oe) : base(resource, oe.id)
+        public NewEntityEvent(OnlineResource resource, OnlineEntity oe, PlayerTickReference tickReference) : base(resource, oe.id, tickReference)
         {
             owner = oe.owner;
             realized = oe.realized;

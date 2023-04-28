@@ -83,17 +83,18 @@ namespace RainMeadow
                 {
                     var e = toBeAborted.Dequeue();
                     RainMeadow.Debug($"Aborting: {e}");
-                    if (e is OnlineEvent.ICanBeAborted icba) icba.Abort();
+                    e.Abort();
                     abortedEvents.Add(e);
                 }
             }
         }
 
-        // IEqu
         public override string ToString()
         {
             return $"{id} - {name}";
         }
+
+        // IEqu
         public override bool Equals(object obj) => this.Equals(obj as OnlinePlayer);
         public bool Equals(OnlinePlayer other)
         {

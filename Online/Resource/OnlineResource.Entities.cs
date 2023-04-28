@@ -20,17 +20,17 @@ namespace RainMeadow
             if (isOwner) // I am responsible for notifying other players about it
             {
                 RainMeadow.Debug("notifying others of entity joining");
-                foreach (var player in memberships.Keys)
+                foreach (var member in memberships.Values)
                 {
-                    if (player.isMe || player == oe.owner) continue;
-                    player.QueueEvent(new NewEntityEvent(this, oe));
+                    if (member.player.isMe || member.player == oe.owner) continue;
+                    member.player.QueueEvent(new NewEntityEvent(this, oe, member.memberSinceTick));
                 }
             }
             else if (oe.owner.isMe) // I notify the owner about my entity in the room
             {
                 RainMeadow.Debug("notifying owner of entity joining");
                 // todo should this be handshaked? owner might change
-                owner.QueueEvent(new NewEntityEvent(this, oe));
+                owner.QueueEvent(new NewEntityEvent(this, oe, memberships[PlayersManager.mePlayer].memberSinceTick));
                 OnlineManager.AddFeed(this, oe);
             }
             else
@@ -64,17 +64,17 @@ namespace RainMeadow
             if (isOwner) // I am responsible for notifying other players about it
             {
                 RainMeadow.Debug("notifying others of entity leaving");
-                foreach (var player in memberships.Keys)
+                foreach (var member in memberships.Values)
                 {
-                    if (player.isMe || player == oe.owner) continue;
-                    player.QueueEvent(new EntityLeftEvent(this, oe));
+                    if (member.player.isMe || member.player == oe.owner) continue;
+                    member.player.QueueEvent(new EntityLeftEvent(this, oe, member.memberSinceTick));
                 }
             }
             else if (oe.owner.isMe) // I notify the owner about my entity in the room
             {
                 RainMeadow.Debug("notifying owner of entity leaving");
                 // todo should this be handshaked? owner might change
-                owner.QueueEvent(new EntityLeftEvent(this, oe));
+                owner.QueueEvent(new EntityLeftEvent(this, oe, memberships[PlayersManager.mePlayer].memberSinceTick));
                 OnlineManager.RemoveFeed(this, oe);
             }
             else
@@ -111,16 +111,16 @@ namespace RainMeadow
             if (isOwner) // I am responsible for notifying other players about it
             {
                 RainMeadow.Debug("notifying others in resource of entity transfer");
-                foreach (var player in memberships.Keys)
+                foreach (var member in memberships.Values)
                 {
-                    if (player.isMe || (player == wasOwner && !notifyPreviousOwner)) continue; // on transfers, we need to notify previous owner
-                    player.QueueEvent(new EntityNewOwnerEvent(this, oe.id, newOwner));
+                    if (member.player.isMe || (member.player == wasOwner && !notifyPreviousOwner)) continue; // on transfers, we need to notify previous owner
+                    member.player.QueueEvent(new EntityNewOwnerEvent(this, oe.id, newOwner, member.memberSinceTick));
                 }
             }
             else if (wasOwner.isMe) // I notify the owner about my entity ive donated to someone else
             {
                 RainMeadow.Debug("notifying resource owner of entity transfer");
-                owner.QueueEvent(new EntityNewOwnerEvent(this, oe.id, newOwner));
+                owner.QueueEvent(new EntityNewOwnerEvent(this, oe.id, newOwner, memberships[PlayersManager.mePlayer].memberSinceTick));
             }
 
             oe.NewOwner(newOwner); // handles the entity actually changing owner

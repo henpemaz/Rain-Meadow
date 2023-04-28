@@ -24,14 +24,15 @@ namespace RainMeadow
             foreach (var membership in memberships)
             {
                 if (membership.Key.isMe) continue;
+                var tickReference = PlayerTickReference.IsNewerOrEqual(membership.Value.memberSinceTick, ownerSinceTick, this) ? membership.Value.memberSinceTick : ownerSinceTick;
                 if (!membership.Value.everSentLease)
                 {
-                    membership.Key.QueueEvent(new LeaseChangeEvent(this, newLeaseState, ownerSinceTick)); // its their first time here
+                    membership.Key.QueueEvent(new LeaseChangeEvent(this, newLeaseState, tickReference)); // its their first time here
                     membership.Value.everSentLease = true;
                 }
                 else if(!delta.isEmptyDelta)
                 {
-                    membership.Key.QueueEvent(new LeaseChangeEvent(this, delta, ownerSinceTick)); // send the delta
+                    membership.Key.QueueEvent(new LeaseChangeEvent(this, delta, tickReference)); // send the delta
                 }
             }
             currentLeaseState = newLeaseState; // store in full

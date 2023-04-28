@@ -6,7 +6,7 @@
 
         public EntityNewOwnerEvent() { }
 
-        public EntityNewOwnerEvent(OnlineResource onlineResource, OnlineEntity.EntityId entityId, OnlinePlayer newOwner) : base(onlineResource, entityId)
+        public EntityNewOwnerEvent(OnlineResource onlineResource, OnlineEntity.EntityId entityId, OnlinePlayer newOwner, PlayerTickReference tickReference) : base(onlineResource, entityId, tickReference)
         {
             this.newOwner = newOwner;
         }

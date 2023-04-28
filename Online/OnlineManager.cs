@@ -153,11 +153,7 @@ namespace RainMeadow
             {
                 RainMeadow.Debug($"New event {onlineEvent} from {fromPlayer}, processing...");
                 fromPlayer.lastEventFromRemote = onlineEvent.eventId;
-                if(onlineEvent is OnlineEvent.IMightHaveToWait imhtw && !imhtw.CanBeProcessed())
-                {
-                    waitingEvents.Add(onlineEvent);
-                }
-                else
+                if (onlineEvent.CanBeProcessed())
                 {
                     try
                     {
@@ -169,6 +165,10 @@ namespace RainMeadow
                     }
                     MaybeProcessWaitingEvents();
                 }
+                else if (!onlineEvent.ShouldBeDiscarded())
+                {
+                    waitingEvents.Add(onlineEvent);
+                }
             }
         }
 
@@ -176,8 +176,8 @@ namespace RainMeadow
         {
             if(waitingEvents.Count > 0)
             {
-                waitingEvents.RemoveWhere(ev => ev is OnlineEvent.IMightHaveToWait imhtw && imhtw.ShouldBeDiscarded());
-                while (waitingEvents.FirstOrDefault(ev => ev is OnlineEvent.IMightHaveToWait imhtw && imhtw.CanBeProcessed()) is OnlineEvent ev)
+                waitingEvents.RemoveWhere(ev => ev.ShouldBeDiscarded());
+                while (waitingEvents.FirstOrDefault(ev => ev.CanBeProcessed()) is OnlineEvent ev)
                 {
                     try
                     {
