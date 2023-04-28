@@ -25,11 +25,14 @@ namespace RainMeadow
             WorldState,
             RoomState,
             PhysicalObjectEntityState,
-            CreatureEntityState,
-            RealizedObjectState,
+            AbstractCreatureState,
+            PhysicalObjectState,
             RealizedCreatureState,
             RealizedPlayerState,
             RealizedWeaponState,
+            RealizedSpearState,
+            CreatureStateState,
+            CreatureHealthState
         }
 
         public static OnlineState NewFromType(StateType stateType)
@@ -51,11 +54,11 @@ namespace RainMeadow
                 case StateType.PhysicalObjectEntityState:
                     s = new PhysicalObjectEntityState();
                     break;
-                case StateType.CreatureEntityState:
-                    s = new CreatureEntityState();
+                case StateType.AbstractCreatureState:
+                    s = new AbstractCreatureState();
                     break;
-                case StateType.RealizedObjectState:
-                    s = new RealizedObjectState();
+                case StateType.PhysicalObjectState:
+                    s = new PhysicalObjectState();
                     break;
                 case StateType.RealizedCreatureState:
                     s = new RealizedCreatureState();
@@ -65,6 +68,15 @@ namespace RainMeadow
                     break;
                 case StateType.RealizedWeaponState:
                     s = new RealizedWeaponState();
+                    break;
+                case StateType.RealizedSpearState:
+                    s = new RealizedSpearState();
+                    break;
+                case StateType.CreatureStateState:
+                    s = new CreatureStateState();
+                    break;
+                case StateType.CreatureHealthState:
+                    s = new CreatureStateState();
                     break;
                 default:
                     break;

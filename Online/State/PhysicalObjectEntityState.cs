@@ -17,11 +17,12 @@ namespace RainMeadow
             if (realizedState) this.realizedObjectState = GetRealizedState();
         }
 
-        protected virtual RealizedObjectState GetRealizedState()
+        protected virtual PhysicalObjectState GetRealizedState()
         {
             if (onlineEntity.entity.realizedObject == null) throw new InvalidOperationException("not realized");
+            if (onlineEntity.entity.realizedObject is Spear) return new RealizedSpearState(onlineEntity);
             if (onlineEntity.entity.realizedObject is Weapon) return new RealizedWeaponState(onlineEntity);
-            return new RealizedObjectState(onlineEntity);
+            return new PhysicalObjectState(onlineEntity);
         }
 
         public override StateType stateType => StateType.PhysicalObjectEntityState;
@@ -31,7 +32,7 @@ namespace RainMeadow
             //onlineEntity.entity.pos = pos;
             onlineEntity.entity.Move(pos);
             onlineEntity.realized = this.realized;
-            (realizedObjectState as RealizedObjectState)?.ReadTo(onlineEntity);
+            (realizedObjectState as PhysicalObjectState)?.ReadTo(onlineEntity);
         }
 
         public override void CustomSerialize(Serializer serializer)
@@ -42,24 +43,4 @@ namespace RainMeadow
             serializer.SerializeNullable(ref realizedObjectState);
         }
     }
-
-    public class CreatureEntityState : PhysicalObjectEntityState
-    {
-        // what do I even put here for AbstractCreature? inDen?
-        public CreatureEntityState() : base() { }
-        public CreatureEntityState(OnlineEntity onlineEntity, ulong ts, bool realizedState) : base(onlineEntity, ts, realizedState)
-        {
-
-        }
-
-        protected override RealizedObjectState GetRealizedState()
-        {
-            if (onlineEntity.entity.realizedObject is Player) return new RealizedPlayerState(onlineEntity);
-            if (onlineEntity.entity.realizedObject is Creature) return new RealizedCreatureState(onlineEntity);
-            return base.GetRealizedState();
-        }
-
-        public override StateType stateType => StateType.CreatureEntityState;
-    }
-
 }

@@ -21,14 +21,4 @@
 
         public abstract void ReadTo(OnlineEntity onlineEntity);
     }
-
-    public class RealizedCreatureState : RealizedObjectState
-    {
-        public RealizedCreatureState() { }
-        public RealizedCreatureState(OnlineEntity onlineEntity) : base(onlineEntity)
-        {
-
-        }
-        public override StateType stateType => StateType.RealizedCreatureState;
-    }
 }

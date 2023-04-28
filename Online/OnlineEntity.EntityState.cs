@@ -30,7 +30,7 @@ namespace RainMeadow
             }
             if (entity is AbstractCreature)
             {
-                return new CreatureEntityState(this, tick, realizedState);
+                return new AbstractCreatureState(this, tick, realizedState);
             }
             return new PhysicalObjectEntityState(this, tick, realizedState);
         }

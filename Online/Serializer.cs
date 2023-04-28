@@ -447,6 +447,26 @@ namespace RainMeadow
                 data.y = reader.ReadSingle();
             }
         }
+      
+        public void Serialize(ref Vector2? data)
+        {
+            if (isWriting)
+            {
+                writer.Write(data.HasValue);
+                if (data.HasValue)
+                {
+                    writer.Write(data.Value.x);
+                    writer.Write(data.Value.y);
+                }
+            }
+            if (isReading)
+            {
+                if (reader.ReadBoolean())
+                {
+                    data = new Vector2(reader.ReadSingle(), reader.ReadSingle());
+                }
+            }
+        }
 
 
         public void SerializeNoStrings(ref WorldCoordinate pos)

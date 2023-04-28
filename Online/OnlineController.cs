@@ -13,12 +13,12 @@
 
         public override Player.InputPackage GetInput()
         {
-            if(ent.latestState is CreatureEntityState ces && ces.realizedObjectState is RealizedPlayerState rps)
+            if(ent.latestState is AbstractCreatureState ces && ces.realizedObjectState is RealizedPlayerState rps)
             {
                 return rps.GetInput();
             }
             RainMeadow.Error("no state for player");
-            RainMeadow.Error($"reasons: {ent.latestState is CreatureEntityState} {ent.latestState is CreatureEntityState ces2 && ces2.realizedObjectState is RealizedPlayerState}");
+            RainMeadow.Error($"reasons: {ent.latestState is AbstractCreatureState} {ent.latestState is AbstractCreatureState ces2 && ces2.realizedObjectState is RealizedPlayerState}");
             return base.GetInput();
         }
     }

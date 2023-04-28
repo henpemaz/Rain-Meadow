@@ -3,9 +3,11 @@ using UnityEngine;
 namespace RainMeadow
 {
 
-    public class RealizedWeaponState : RealizedObjectState
+    public class RealizedWeaponState : PhysicalObjectState
     {
-        private byte mode;
+        public byte mode;
+        private Vector2? setRotation;
+        private Vector2 tailPos;
         private Vector2 rotation;
         private Vector2 lastRotation;
         private float rotationSpeed;
@@ -18,6 +20,8 @@ namespace RainMeadow
         {
             var weapon = (Weapon)onlineEntity.entity.realizedObject;
             mode = (byte)weapon.mode;
+            tailPos = weapon.tailPos;
+            setRotation = weapon.setRotation;
             rotation = weapon.rotation;
             lastRotation = weapon.lastRotation;
             rotationSpeed = weapon.rotationSpeed;
@@ -29,6 +33,8 @@ namespace RainMeadow
         {
             base.CustomSerialize(serializer);
             serializer.Serialize(ref mode);
+            serializer.Serialize(ref tailPos);
+            serializer.Serialize(ref setRotation);
             serializer.Serialize(ref rotation);
             serializer.Serialize(ref lastRotation);
             serializer.Serialize(ref rotationSpeed);
@@ -39,6 +45,8 @@ namespace RainMeadow
             base.ReadTo(onlineEntity);
             var weapon = (Weapon)onlineEntity.entity.realizedObject;
             weapon.ChangeMode(new Weapon.Mode(Weapon.Mode.values.GetEntry(mode)));
+            weapon.tailPos = tailPos;
+            weapon.setRotation = setRotation;
             weapon.rotation = rotation;
             weapon.lastRotation = lastRotation;
             weapon.rotationSpeed = rotationSpeed;

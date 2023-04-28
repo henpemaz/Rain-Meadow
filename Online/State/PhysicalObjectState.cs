@@ -3,39 +3,40 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class RealizedObjectState : OnlineState
+    public class PhysicalObjectState : OnlineState
     {
         ChunkState[] chunkStates;
+        private int collisionLayer;
 
-        public RealizedObjectState() { }
-        public RealizedObjectState(OnlineEntity onlineEntity)
+        public PhysicalObjectState() { }
+        public PhysicalObjectState(OnlineEntity onlineEntity)
         {
-            if (onlineEntity != null)
-            {
-                chunkStates = onlineEntity.entity.realizedObject.bodyChunks.Select(c => new ChunkState(c)).ToArray();
-            }
+            chunkStates = onlineEntity.entity.realizedObject.bodyChunks.Select(c => new ChunkState(c)).ToArray();
+            collisionLayer = onlineEntity.entity.realizedObject.collisionLayer;
         }
 
-        public override StateType stateType => StateType.RealizedObjectState;
+        public override StateType stateType => StateType.PhysicalObjectState;
 
         public virtual void ReadTo(OnlineEntity onlineEntity)
         {
-            if (onlineEntity.entity.realizedObject is PhysicalObject po)
+            var po = (PhysicalObject)onlineEntity.entity.realizedObject;
+            
+            if (chunkStates.Length == po.bodyChunks.Length)
             {
-                if (chunkStates.Length == po.bodyChunks.Length)
+                for (int i = 0; i < chunkStates.Length; i++)
                 {
-                    for (int i = 0; i < chunkStates.Length; i++)
-                    {
-                        chunkStates[i].ReadTo(po.bodyChunks[i]);
-                    }
+                    chunkStates[i].ReadTo(po.bodyChunks[i]);
                 }
             }
+
+            po.collisionLayer = collisionLayer;
         }
 
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);
             serializer.Serialize(ref chunkStates);
+            serializer.Serialize(ref collisionLayer);
         }
     }
 
