@@ -7,6 +7,7 @@ namespace RainMeadow
         private byte animationIndex;
         private short animationFrame;
         private byte bodyModeIndex;
+        private bool standing;
         private ushort inputs;
         private Vector2 analogInput;
         public RealizedPlayerState() { }
@@ -16,6 +17,7 @@ namespace RainMeadow
             animationIndex = (byte)p.animation.Index;
             animationFrame = (short)p.animationFrame;
             bodyModeIndex = (byte)p.bodyMode.Index;
+            standing = p.standing;
 
             var i = p.input[0];
             inputs = (ushort)(
@@ -57,6 +59,7 @@ namespace RainMeadow
             serializer.Serialize(ref animationIndex);
             serializer.Serialize(ref animationFrame);
             serializer.Serialize(ref bodyModeIndex);
+            serializer.Serialize(ref standing);
             serializer.Serialize(ref inputs);
             serializer.Serialize(ref analogInput);
         }
@@ -69,6 +72,7 @@ namespace RainMeadow
                 pl.animation = new Player.AnimationIndex(Player.AnimationIndex.values.GetEntry(animationIndex));
                 pl.animationFrame = animationFrame;
                 pl.bodyMode = new Player.BodyModeIndex(Player.BodyModeIndex.values.GetEntry(bodyModeIndex));
+                pl.standing = standing;
             }
         }
     }
