@@ -76,7 +76,7 @@ namespace RainMeadow
                     s = new CreatureStateState();
                     break;
                 case StateType.CreatureHealthState:
-                    s = new CreatureStateState();
+                    s = new CreatureHealthStateState();
                     break;
                 default:
                     break;

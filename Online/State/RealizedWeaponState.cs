@@ -44,7 +44,8 @@ namespace RainMeadow
         {
             base.ReadTo(onlineEntity);
             var weapon = (Weapon)onlineEntity.entity.realizedObject;
-            weapon.ChangeMode(new Weapon.Mode(Weapon.Mode.values.GetEntry(mode)));
+            var newMode = new Weapon.Mode(Weapon.Mode.values.GetEntry(mode));
+            if (weapon.mode != newMode) weapon.ChangeMode(newMode);
             weapon.tailPos = tailPos;
             weapon.setRotation = setRotation;
             weapon.rotation = rotation;

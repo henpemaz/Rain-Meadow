@@ -384,6 +384,12 @@ namespace RainMeadow
             if (isWriting) writer.Write(data);
             if (isReading) data = reader.ReadByte();
         }
+        
+        public void Serialize(ref sbyte data)
+        {
+            if (isWriting) writer.Write(data);
+            if (isReading) data = reader.ReadSByte();
+        }
 
         public void Serialize(ref ushort data)
         {
@@ -468,6 +474,26 @@ namespace RainMeadow
             }
         }
 
+        public void Serialize(ref AppendageRef data)
+        {
+            if (isWriting)
+            {
+                writer.Write(data != null);
+                if (data != null)
+                {
+                    data.CustomSerialize(this);
+                }
+            }
+
+            if (isReading)
+            {
+                if (reader.ReadBoolean())
+                {
+                    data = new AppendageRef();
+                    data.CustomSerialize(this);
+                }
+            }
+        }
 
         public void SerializeNoStrings(ref WorldCoordinate pos)
         {
@@ -571,6 +597,25 @@ namespace RainMeadow
                 if (reader.ReadBoolean())
                 {
                     Serialize(ref nullableState);
+                }
+            }
+        }
+        
+        public void SerializeNullable(ref OnlineEntity nullableEntity)
+        {
+            if (isWriting)
+            {
+                writer.Write(nullableEntity != null);
+                if (nullableEntity != null)
+                {
+                    Serialize(ref nullableEntity);
+                }
+            }
+            if (isReading)
+            {
+                if (reader.ReadBoolean())
+                {
+                    Serialize(ref nullableEntity);
                 }
             }
         }

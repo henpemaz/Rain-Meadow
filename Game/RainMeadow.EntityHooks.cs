@@ -347,7 +347,8 @@ namespace RainMeadow
             if (self.updateList.Contains(obj))
             {
                 RainMeadow.Debug($"Object {(obj is PhysicalObject po ? po.abstractPhysicalObject.ID : obj)} already in the update list! Skipping...");
-                if (!Environment.StackTrace.Contains("Creature.PlaceInRoom")) // We know about this
+                var stackTrace = Environment.StackTrace;
+                if (!stackTrace.Contains("Creature.PlaceInRoom") || !stackTrace.Contains("AbstractSpaceVisualizer")) // We know about this
                     RainMeadow.Error(Environment.StackTrace); // Log cases that we still haven't found 
                 return;
             }
