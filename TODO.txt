@@ -11,14 +11,8 @@ Manage missing regions:
 			catch: world creatures would be in an invalid position
 
 Entities entities entities
-	need new hookpoint for objects being moved between worlds, so they're added to the new world 
-		but maybe just the removal-addal works?
-		need at least to clear out untransferable self from old world so it can deactivate
-		todo check how current code behaves, I havent event tested it much
-			done and done
-
 	Entity Join/leave should be handshaked, owner can change inbetween
-		the "ent-owner-to-room-owner"
+		the "ent-owner-to-room-owner" one, not the owner-to-others broadcast
 
 	handle entities entering shortcuts
 	entering/leaving shorcuts should be a room-level event with the coordinate of the damned thing
@@ -47,10 +41,10 @@ Entities entities entities
 			
 
 handle disconnects
-	if super and sublease owner missing, organize transfer
-		how do you get a list of participants though? shouldn't a participant start it so they have a list, super agrees on if current owner really detected missing?
+	done-ish
 	pending events that are going to a disconnected user should "error out" to trigger a retry against the right user
-		iPendingEvent.Fail -> resource.Resolve(errorevent)
+		which of these events need retrying
+		retrying might need a delay so that things can resolve to a new owner?
 
 
 gamemode: meadow: stays in game, infinite cycle, no ways to die or sleep, quits to lobby-screen
@@ -134,29 +128,19 @@ Mod auto installing / auto disabling
 
 
 Imediate todo:
-on force load, we send too much data
-	done
-
-greyed out lobby visibility is way too dark
-	done
-
-on sleep
-	what slug does it save to, make sure the game is doing the right thing
 
 on sleep
 	should wait release before enabling the start button
-
-other player's slugs cause the game to sleep
-	done
 
 other loaded player dying gameovers
 
 wakeup -> shelter close imediatelly -> starve issue
 
+
 wakeup -> slow load -> sprite issue
 	
 sleep screen
-	its picking the wrong scug
+	its picking the wrong scug?
 
 on awake
 	what slug does it load

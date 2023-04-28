@@ -75,11 +75,6 @@ namespace RainMeadow
         public virtual bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)
         {
             return false;
-            if (worldSession is null || !worldSession.isAvailable)
-            {
-                return false;
-            }
-            return worldSession.isOwner;
         }
 
         public virtual bool ShouldSyncObjectInWorld(WorldSession ws, AbstractPhysicalObject apo)
