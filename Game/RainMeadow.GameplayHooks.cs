@@ -7,6 +7,7 @@ namespace RainMeadow
         public void GameplayHooks()
         {
             On.Player.ctor += Player_ctor;
+            On.SlugcatStats.ctor += SlugcatStatsOnctor;
             On.ShelterDoor.Close += ShelterDoorOnClose;
         }
 
@@ -20,6 +21,19 @@ namespace RainMeadow
                 {
                     self.controller = new OnlineController(ent, self);
                 }
+            }
+        }
+        
+        private void SlugcatStatsOnctor(On.SlugcatStats.orig_ctor orig, SlugcatStats self, SlugcatStats.Name slugcat, bool malnourished)
+        {
+            orig(self, slugcat, malnourished);
+
+            if (OnlineManager.lobby == null) return;
+            if (slugcat != Ext_SlugcatStatsName.OnlineSessionPlayer && slugcat != Ext_SlugcatStatsName.OnlineSessionRemotePlayer) return;
+
+            if (OnlineManager.lobby.gameMode is StoryGameMode or ArenaCompetitiveGameMode or FreeRoamGameMode)
+            {
+                self.throwingSkill = 1;
             }
         }
         
