@@ -29,6 +29,7 @@ namespace RainMeadow
             RealizedObjectState,
             RealizedCreatureState,
             RealizedPlayerState,
+            RealizedWeaponState,
         }
 
         public static OnlineState NewFromType(StateType stateType)
@@ -61,6 +62,9 @@ namespace RainMeadow
                     break;
                 case StateType.RealizedPlayerState:
                     s = new RealizedPlayerState();
+                    break;
+                case StateType.RealizedWeaponState:
+                    s = new RealizedWeaponState();
                     break;
                 default:
                     break;

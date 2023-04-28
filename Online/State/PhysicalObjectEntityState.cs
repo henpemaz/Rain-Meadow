@@ -20,6 +20,7 @@ namespace RainMeadow
         protected virtual RealizedObjectState GetRealizedState()
         {
             if (onlineEntity.entity.realizedObject == null) throw new InvalidOperationException("not realized");
+            if (onlineEntity.entity.realizedObject is Weapon) return new RealizedWeaponState(onlineEntity);
             return new RealizedObjectState(onlineEntity);
         }
 

@@ -420,6 +420,12 @@ namespace RainMeadow
             if (isWriting) writer.Write(data);
             if (isReading) data = reader.ReadUInt64();
         }
+        
+        public void Serialize(ref float data)
+        {
+            if (isWriting) writer.Write(data);
+            if (isReading) data = reader.ReadSingle();
+        }
 
         // this one isnt exactly safe, can cause huge allocations
         public void Serialize(ref string data)
