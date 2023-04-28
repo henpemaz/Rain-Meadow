@@ -84,7 +84,7 @@ namespace RainMeadow
 
         public virtual bool ShouldSyncObjectInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
-            return apo is AbstractCreature;
+            return true;
         }
 
         public virtual bool ShouldSyncObjectInRoom(RoomSession rs, AbstractPhysicalObject apo)

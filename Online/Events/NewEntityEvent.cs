@@ -9,6 +9,7 @@
         public string template = "";
         public WorldCoordinate initialPos;
         public int seed;
+        public string saveString;
 
         public NewEntityEvent() { }
 
@@ -18,9 +19,20 @@
             realized = oe.realized;
             isTransferable = oe.isTransferable;
             isCreature = oe.entity is AbstractCreature;
-            template = (oe.entity as AbstractCreature)?.creatureTemplate.type.ToString() ?? "";
             initialPos = oe.enterPos;
             seed = oe.seed;
+
+            if (isCreature)
+            {
+                var crit = (AbstractCreature)oe.entity;
+                template = crit.creatureTemplate.type.ToString();
+                saveString = crit.creatureTemplate.TopAncestor().type != CreatureTemplate.Type.Slugcat ? SaveState.AbstractCreatureToStringStoryWorld(crit) : ""; //todo: fix loading and serializing players?
+            }
+            else
+            {
+                saveString = oe.entity.ToString();
+            }
+
         }
 
         public override EventTypeId eventType => EventTypeId.NewEntityEvent;
@@ -38,6 +50,7 @@
             }
             serializer.SerializeNoStrings(ref initialPos);
             serializer.Serialize(ref seed);
+            serializer.Serialize(ref saveString);
         }
 
         public override void Process()

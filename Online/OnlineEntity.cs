@@ -56,9 +56,6 @@ namespace RainMeadow
                 if (oe.entity.world.game != world.game) throw new InvalidOperationException($"Entity not cleared in last session!! {oe.entity.ID}");
                 
                 RainMeadow.Debug("reusing existing entity " + oe);
-                var creature = oe.entity as AbstractCreature;
-                creature.slatedForDeletion = false;
-                if (creature.realizedObject is PhysicalObject po) po.slatedForDeletetion = false;
 
                 oe.enterPos = newEntityEvent.initialPos;
                 oe.realized = newEntityEvent.realized;
@@ -79,27 +76,55 @@ namespace RainMeadow
                 OnlineManager.recentEntities.Remove(newEntityEvent.entityId);
                 // it is very tempting to switch to the generic tostring/fromstring from the savesystem, BUT
                 // it would be almost impossible to sanitize input and who knows what someone could do through that
-                if (!newEntityEvent.isCreature) throw new NotImplementedException("cant do non-creatures yet");
-                CreatureTemplate.Type type = new CreatureTemplate.Type(newEntityEvent.template, false);
-                if (type.Index == -1)
-                {
-                    RainMeadow.Debug(type);
-                    RainMeadow.Debug(newEntityEvent.template);
-                    throw new InvalidOperationException("invalid template");
-                }
+                // EDIT : screw it, we usin' generic string savesystem anyways B)
+                
                 EntityID id = world.game.GetNewID();
                 id.altSeed = newEntityEvent.seed;
                 WorldSession.registeringRemoteEntity = true;
-                var creature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, newEntityEvent.initialPos, id);
-                world.GetAbstractRoom(newEntityEvent.initialPos).AddEntity(creature);
-                WorldSession.registeringRemoteEntity = false;
-                if (creature.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat) // for some dumb reason it doesn't get a default
+
+                if (!newEntityEvent.isCreature)
                 {
-                    creature.state = new PlayerState(creature, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionRemotePlayer, false);
+                    var abstractPhysicalObject = SaveState.AbstractPhysicalObjectFromString(world, newEntityEvent.saveString);
+                    
+                    world.GetAbstractRoom(newEntityEvent.initialPos).AddEntity(abstractPhysicalObject);
+                    WorldSession.registeringRemoteEntity = false;
+                    
+                    oe = new OnlineEntity(abstractPhysicalObject, newEntityEvent.owner, newEntityEvent.entityId, newEntityEvent.seed, newEntityEvent.initialPos, newEntityEvent.isTransferable);
+                    OnlineEntity.map.Add(abstractPhysicalObject, oe);
+                    OnlineManager.recentEntities.Add(newEntityEvent.entityId, oe);
                 }
-                oe = new OnlineEntity(creature, newEntityEvent.owner, newEntityEvent.entityId, newEntityEvent.seed, newEntityEvent.initialPos, newEntityEvent.isTransferable);
-                OnlineEntity.map.Add(creature, oe);
-                OnlineManager.recentEntities.Add(newEntityEvent.entityId, oe);
+                else
+                {
+                    AbstractCreature abstractCreature;
+                    
+                    CreatureTemplate.Type type = new CreatureTemplate.Type(newEntityEvent.template, false);
+                    if (type.Index == -1)
+                    {
+                        RainMeadow.Debug(type);
+                        RainMeadow.Debug(newEntityEvent.template);
+                        throw new InvalidOperationException("invalid template");
+                    }
+                    
+                    if (type == CreatureTemplate.Type.Slugcat) //todo: fix loading and serializing players?
+                    {
+                        abstractCreature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, newEntityEvent.initialPos, id);
+                    }
+                    else
+                    {
+                        abstractCreature = SaveState.AbstractCreatureFromString(world, newEntityEvent.saveString, false);
+                    }
+
+                    world.GetAbstractRoom(newEntityEvent.initialPos).AddEntity(abstractCreature);
+                    WorldSession.registeringRemoteEntity = false;
+                    if (abstractCreature.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat) // for some dumb reason it doesn't get a default
+                    {
+                        abstractCreature.state = new PlayerState(abstractCreature, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionRemotePlayer, false);
+                    }
+
+                    oe = new OnlineEntity(abstractCreature, newEntityEvent.owner, newEntityEvent.entityId, newEntityEvent.seed, newEntityEvent.initialPos, newEntityEvent.isTransferable);
+                    OnlineEntity.map.Add(abstractCreature, oe);
+                    OnlineManager.recentEntities.Add(newEntityEvent.entityId, oe);
+                }
             }
             oe.realized = newEntityEvent.realized;
 
@@ -109,7 +134,6 @@ namespace RainMeadow
         public void EnteredRoom(RoomSession newRoom)
         {
             RainMeadow.Debug(this);
-            if (entity is not AbstractCreature creature) { throw new InvalidOperationException("entity not a creature"); } // todo support noncreechers
             if (roomSession != null && roomSession != newRoom) // still in previous room
             {
                 roomSession.EntityLeftResource(this);
@@ -117,8 +141,25 @@ namespace RainMeadow
             roomSession = newRoom;
             if (!owner.isMe)
             {
-                RainMeadow.Debug("A remote creature entered, adding it to the room");
+                RainMeadow.Debug("A remote entity entered, adding it to the room");
                 entity.Move(enterPos);
+                
+                if (entity is not AbstractCreature creature)
+                {
+                    if (newRoom.absroom.realizedRoom is Room realizedRoom)
+                    {
+                        if (entity.realizedObject != null && realizedRoom.updateList.Contains(entity.realizedObject))
+                        {
+                            RainMeadow.Debug($"Creature {entity.ID} already in the room {newRoom.absroom.name}, not adding!");
+                            return;
+                        }
+                        
+                        RainMeadow.Debug($"Spawning entity: {entity.ID}");
+                        entity.RealizeInRoom();
+                    }
+                    return;
+                }
+
                 if (newRoom.absroom.realizedRoom is Room realRoom && creature.AllowedToExistInRoom(realRoom))
                 {
                     if (creature.realizedCreature != null && realRoom.updateList.Contains(creature.realizedCreature))
