@@ -77,4 +77,6 @@ only list lobbies of supported game type
 since moved from hook on ctor for stuff added to world, initial populations isn't picking up
 	might need to think through the "on den" situation and related hooks
 	
-	
+on room load
+	we dont know who owner is going to be, can't decide who's the host
+

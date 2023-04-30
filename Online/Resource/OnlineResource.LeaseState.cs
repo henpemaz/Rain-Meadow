@@ -24,7 +24,7 @@ namespace RainMeadow
             foreach (var membership in memberships)
             {
                 if (membership.Key.isMe) continue;
-                var tickReference = PlayerTickReference.IsNewerOrEqual(membership.Value.memberSinceTick, ownerSinceTick, this) ? membership.Value.memberSinceTick : ownerSinceTick;
+                var tickReference = PlayerTickReference.IsNewerOrEqual(membership.Value.memberSinceTick, this, ownerSinceTick, super) ? membership.Value.memberSinceTick : ownerSinceTick;
                 if (!membership.Value.everSentLease)
                 {
                     membership.Key.QueueEvent(new LeaseChangeEvent(this, newLeaseState, tickReference)); // its their first time here

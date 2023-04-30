@@ -26,12 +26,12 @@ namespace RainMeadow
             serializer.Serialize(ref tick);
         }
 
-        public static bool IsNewerOrEqual(PlayerTickReference tick, PlayerTickReference oldTick, OnlineResource inResource)
+        public static bool IsNewerOrEqual(PlayerTickReference tick, OnlineResource inResource, PlayerTickReference otherTick, OnlineResource otherResource)
         {
-            if (oldTick.fromPlayer != inResource.owner && tick.fromPlayer != inResource.owner) throw new InvalidProgrammerException("neither");
-            if (oldTick.fromPlayer != inResource.owner) return true;
+            if (otherTick.fromPlayer != otherResource.owner && tick.fromPlayer != inResource.owner) throw new InvalidProgrammerException("neither");
+            if (otherTick.fromPlayer != otherResource.owner) return true;
             if (tick.fromPlayer != inResource.owner) return false;
-            return OnlineManager.IsNewerOrEqual(tick.tick, oldTick.tick);
+            return OnlineManager.IsNewerOrEqual(tick.tick, otherTick.tick);
         }
 
         internal bool Invalid()

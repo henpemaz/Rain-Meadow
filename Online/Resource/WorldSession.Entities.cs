@@ -10,9 +10,9 @@ namespace RainMeadow
         // This happens for local entities, so we create their respective OnlineEntity
         public void EntityEnteringWorld(AbstractPhysicalObject entity)
         {
-            RainMeadow.Debug(this);
             if (!OnlineEntity.map.TryGetValue(entity, out var oe))
             {
+                RainMeadow.Debug(this);
                 if (!registeringRemoteEntity) // A new entity, presumably mine
                 {
                     if (!isActive) // world population generates before this can be activated
@@ -32,11 +32,11 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("skipping remote entity");
                 }
-            } // else already registered
-
-
-            // TODO this is not comprehensive
-            // if registered but not in world, needs sync
+            }
+            else if (!entities.Contains(oe))
+            {
+                EntityEnteredResource(oe);
+            }
         }
 
         public void EntityLeavingWorld(AbstractPhysicalObject entity)
@@ -45,14 +45,7 @@ namespace RainMeadow
 
             if (OnlineEntity.map.TryGetValue(entity, out var oe))
             {
-                if (!registeringRemoteEntity) // A new entity, presumably mine
-                {
-                    EntityLeftResource(oe);
-                }
-                else
-                {
-                    RainMeadow.Debug("skipping remote entity");
-                }
+                EntityLeftResource(oe);
             }
             else
             {

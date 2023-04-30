@@ -2,6 +2,7 @@
 using MonoMod.Cil;
 using System;
 using System.Linq;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -11,67 +12,46 @@ namespace RainMeadow
 
         private void EntityHooks()
         {
-            On.OverWorld.WorldLoaded += OverWorld_WorldLoaded;
+            On.OverWorld.WorldLoaded += OverWorld_WorldLoaded; // creature moving between WORLDS
 
-            On.RainWorldGame.SpawnPlayers_bool_bool_bool_bool_WorldCoordinate += RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate;
-
-            On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor;
-
-            On.AbstractPhysicalObject.Update += AbstractPhysicalObject_Update;
-            On.AbstractCreature.Update += AbstractCreature_Update;
-
-            On.AbstractPhysicalObject.Realize += AbstractPhysicalObject_Realize;
-            On.AbstractCreature.Realize += AbstractCreature_Realize;
-            On.AbstractPhysicalObject.Abstractize += AbstractPhysicalObject_Abstractize;
-            On.AbstractCreature.Abstractize += AbstractCreature_Abstractize;
-
-            On.AbstractRoom.AddEntity += AbstractRoom_AddEntity;
-            On.AbstractRoom.RemoveEntity_AbstractWorldEntity += AbstractRoom_RemoveEntity;
-            On.AbstractPhysicalObject.ChangeRooms += AbstractPhysicalObject_ChangeRooms;
+            On.AbstractRoom.MoveEntityToDen += AbstractRoom_MoveEntityToDen; // creature moving between rooms
+            On.AbstractWorldEntity.Destroy += AbstractWorldEntity_Destroy; // creature moving between rooms
+            On.AbstractRoom.RemoveEntity_AbstractWorldEntity += AbstractRoom_RemoveEntity; // creature moving between rooms
+            On.AbstractRoom.AddEntity += AbstractRoom_AddEntity; // creature moving between rooms
+            On.AbstractPhysicalObject.ChangeRooms += AbstractPhysicalObject_ChangeRooms; // creature moving between rooms
             
-            On.Room.AddObject += RoomOnAddObject;
-            IL.Room.CleanOutObjectNotInThisRoom += Room_CleanOutObjectNotInThisRoom;
+            On.Room.AddObject += RoomOnAddObject; // Prevent adding item to update list twice
 
-            On.ShortcutHandler.VesselAllowedInRoom += ShortcutHandlerOnVesselAllowedInRoom;
             IL.ShortcutHandler.Update += ShortcutHandler_Update; // cleanup of deleted entities in shortcut system
+            On.ShortcutHandler.VesselAllowedInRoom += ShortcutHandlerOnVesselAllowedInRoom; // Prevent creatures from entering a room if their online counterpart has not yet entered!
+            
+            On.AbstractCreature.Abstractize += AbstractCreature_Abstractize; // get real
+            On.AbstractPhysicalObject.Abstractize += AbstractPhysicalObject_Abstractize; // get real
+            On.AbstractCreature.Realize += AbstractCreature_Realize; // get real
+            On.AbstractPhysicalObject.Realize += AbstractPhysicalObject_Realize; // get real
 
-            On.RoomRealizer.RealizeAndTrackRoom += RoomRealizer_RealizeAndTrackRoom; // debug
+            On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor; // Abstract grasps
+            On.RainWorldGame.SpawnPlayers_bool_bool_bool_bool_WorldCoordinate += RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate; // Personas are set as non-transferable
+            
+            On.AbstractPhysicalObject.Update += AbstractPhysicalObject_Update; // Don't think
+            On.AbstractCreature.Update += AbstractCreature_Update; // Don't think
+            On.AbstractCreature.OpportunityToEnterDen += AbstractCreature_OpportunityToEnterDen; // Don't think
         }
 
-        private void Room_CleanOutObjectNotInThisRoom(ILContext il)
+        // Don't think
+        private void AbstractCreature_OpportunityToEnterDen(On.AbstractCreature.orig_OpportunityToEnterDen orig, AbstractCreature self, WorldCoordinate den)
         {
-            try
+            if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
             {
-                // cleanup betweenroomswaitinglobby of deleted entities
-                var c = new ILCursor(il);
-
-                c.GotoNext(moveType: MoveType.Before,
-                    i => i.MatchLdarg(0),
-                    i => i.MatchLdarg(1),
-                    i => i.MatchCallOrCallvirt<Room>("RemoveObject")
-                    );
-                c.GotoPrev(moveType: MoveType.After,
-                    i => i.MatchLdarg(1),
-                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
-                    i => i.MatchBrfalse(out _)
-                    );
-
-                c.MoveAfterLabels();
-                c.Emit(OpCodes.Ldarg_0);
-                c.Emit(OpCodes.Ldarg_1);
-                c.EmitDelegate((Room self, UpdatableAndDeletable obj) => {
-                    if (OnlineManager.lobby != null)
-                    {
-                        self.abstractRoom.RemoveEntity((obj as PhysicalObject).abstractPhysicalObject);
-                    }
-                });
+                if (!oe.owner.isMe)
+                {
+                    return;
+                }
             }
-            catch (Exception e)
-            {
-                Logger.LogError(e);
-            }
+            orig(self, den);
         }
 
+        // Don't think
         private void AbstractCreature_Update(On.AbstractCreature.orig_Update orig, AbstractCreature self, int time)
         {
             if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
@@ -84,6 +64,7 @@ namespace RainMeadow
             orig(self, time);
         }
 
+        // Don't think
         private void AbstractPhysicalObject_Update(On.AbstractPhysicalObject.orig_Update orig, AbstractPhysicalObject self, int time)
         {
             if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
@@ -96,6 +77,7 @@ namespace RainMeadow
             orig(self, time);
         }
 
+        // Personas are set as non-transferable
         private AbstractCreature RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate(On.RainWorldGame.orig_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate orig, RainWorldGame self, bool player1, bool player2, bool player3, bool player4, WorldCoordinate location)
         {
             if (OnlineManager.lobby != null)
@@ -107,6 +89,7 @@ namespace RainMeadow
             return ac;
         }
 
+        // Abstract grasps
         private void AbstractObjectStick_ctor(On.AbstractPhysicalObject.AbstractObjectStick.orig_ctor orig, AbstractPhysicalObject.AbstractObjectStick self, AbstractPhysicalObject A, AbstractPhysicalObject B)
         {
             orig(self, A, B);
@@ -122,11 +105,11 @@ namespace RainMeadow
                     {
                         Aoe.Request();
                     }
-                    // we don't request if pending, but when do we retry?
                 }
             }
         }
 
+        // get real
         private void AbstractPhysicalObject_Realize(On.AbstractPhysicalObject.orig_Realize orig, AbstractPhysicalObject self)
         {
             orig(self);
@@ -143,6 +126,7 @@ namespace RainMeadow
             }
         }
 
+        // get real
         private void AbstractCreature_Realize(On.AbstractCreature.orig_Realize orig, AbstractCreature self)
         {
             orig(self);
@@ -162,24 +146,8 @@ namespace RainMeadow
             }
         }
 
+        // get real
         private void AbstractPhysicalObject_Abstractize(On.AbstractPhysicalObject.orig_Abstractize orig, AbstractPhysicalObject self, WorldCoordinate coord)
-        {
-            orig(self, coord);
-            if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
-            {
-                if (oe.realized && oe.isTransferable && oe.owner.isMe)
-                {
-                    if(oe.roomSession != null && oe.roomSession.releaseWhenPossible)
-                        oe.Release();
-                }
-                if (oe.owner.isMe)
-                {
-                    oe.realized = false;
-                }
-            }
-        }
-
-        private void AbstractCreature_Abstractize(On.AbstractCreature.orig_Abstractize orig, AbstractCreature self, WorldCoordinate coord)
         {
             orig(self, coord);
             if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
@@ -195,11 +163,21 @@ namespace RainMeadow
             }
         }
 
-        // disable preemptive loading for ease of debugging
-        private void RoomRealizer_RealizeAndTrackRoom(On.RoomRealizer.orig_RealizeAndTrackRoom orig, RoomRealizer self, AbstractRoom room, bool actuallyEntering)
+        // get real
+        private void AbstractCreature_Abstractize(On.AbstractCreature.orig_Abstractize orig, AbstractCreature self, WorldCoordinate coord)
         {
-            if (!actuallyEntering) return;
-            orig(self, room, actuallyEntering);
+            orig(self, coord);
+            if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
+            {
+                if (oe.realized && oe.isTransferable && oe.owner.isMe)
+                {
+                    oe.Release();
+                }
+                if (oe.owner.isMe)
+                {
+                    oe.realized = false;
+                }
+            }
         }
 
         // Prevent creatures from entering a room if their online counterpart has not yet entered!
@@ -234,7 +212,7 @@ namespace RainMeadow
         {
             try
             {
-                // cleanup betweenroomswaitinglobby of deleted entities
+                // cleanup betweenroomswaitinglobby of wandering entities
                 var c = new ILCursor(il);
                 
                 c.GotoNext(moveType: MoveType.Before,
@@ -262,39 +240,39 @@ namespace RainMeadow
                     }
                 });
 
-                // if moved and deleted, skip
-                ILLabel skip = null;
-                int indexLoc = 0;
-                c.GotoNext(moveType: MoveType.Before,
-                    i => i.MatchCallOrCallvirt<ShortcutHandler>("VesselAllowedInRoom"),
-                    i => i.MatchBrfalse(out skip) // get the skip target
-                    );
-                c.GotoNext(moveType: MoveType.Before,
-                    i => i.MatchLdarg(0),
-                    i => i.MatchLdfld<ShortcutHandler>("betweenRoomsWaitingLobby"),
-                    i => i.MatchLdloc(out indexLoc) // get the current index
-                    );
-                c.GotoNext(moveType: MoveType.After,
-                    i => i.MatchCallOrCallvirt<AbstractPhysicalObject>("Move") //here we juuuust moved
-                    );
-                c.MoveAfterLabels();
-                c.Emit(OpCodes.Ldarg_0);
-                c.Emit(OpCodes.Ldloc, indexLoc);
-                c.EmitDelegate((ShortcutHandler self, int index) => {
-                    if(OnlineManager.lobby != null)
-                    {
-                        var vessel = self.betweenRoomsWaitingLobby[index];
-                        if (vessel.creature.slatedForDeletetion)
-                        {
-                            RainMeadow.Debug("removing deleted creature" + vessel.creature);
-                            vessel.creature.slatedForDeletetion = false;
-                            self.betweenRoomsWaitingLobby.RemoveAt(index);
-                            return true;
-                        }
-                    }
-                    return false;
-                });
-                c.Emit(OpCodes.Brtrue, skip);
+                //// if moved and deleted, skip
+                //ILLabel skip = null;
+                //int indexLoc = 0;
+                //c.GotoNext(moveType: MoveType.Before,
+                //    i => i.MatchCallOrCallvirt<ShortcutHandler>("VesselAllowedInRoom"),
+                //    i => i.MatchBrfalse(out skip) // get the skip target
+                //    );
+                //c.GotoNext(moveType: MoveType.Before,
+                //    i => i.MatchLdarg(0),
+                //    i => i.MatchLdfld<ShortcutHandler>("betweenRoomsWaitingLobby"),
+                //    i => i.MatchLdloc(out indexLoc) // get the current index
+                //    );
+                //c.GotoNext(moveType: MoveType.After,
+                //    i => i.MatchCallOrCallvirt<AbstractPhysicalObject>("Move") //here we juuuust moved
+                //    );
+                //c.MoveAfterLabels();
+                //c.Emit(OpCodes.Ldarg_0);
+                //c.Emit(OpCodes.Ldloc, indexLoc);
+                //c.EmitDelegate((ShortcutHandler self, int index) => {
+                //    if(OnlineManager.lobby != null)
+                //    {
+                //        var vessel = self.betweenRoomsWaitingLobby[index];
+                //        if (vessel.creature.slatedForDeletetion)
+                //        {
+                //            RainMeadow.Debug("removing deleted creature" + vessel.creature);
+                //            vessel.creature.slatedForDeletetion = false;
+                //            self.betweenRoomsWaitingLobby.RemoveAt(index);
+                //            return true;
+                //        }
+                //    }
+                //    return false;
+                //});
+                //c.Emit(OpCodes.Brtrue, skip);
             }
             catch (Exception e)
             {
@@ -323,8 +301,8 @@ namespace RainMeadow
             orig(self, ent);
             if (OnlineManager.lobby != null && ent is AbstractPhysicalObject apo && apo.pos.room == self.index)
             {
-                if (RoomSession.map.TryGetValue(self, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoEnteringRoom(apo, apo.pos);
                 if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.EntityEnteringWorld(apo);
+                if (RoomSession.map.TryGetValue(self, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoEnteringRoom(apo, apo.pos);
             }
         }
 
@@ -332,24 +310,41 @@ namespace RainMeadow
         {
             //RainMeadow.DebugMethod();
             orig(self, entity);
-            if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo && RoomSession.map.TryGetValue(self, out var rs))
+            if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo && RoomSession.map.TryGetValue(self, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo))
             {
-                if (OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoLeavingRoom(apo);
-                if (entity.slatedForDeletion && WorldSession.map.TryGetValue(self.world, out var ws)) ws.EntityLeavingWorld(apo);
+                rs.ApoLeavingRoom(apo);
             }
         }
-        
+
+        private void AbstractWorldEntity_Destroy(On.AbstractWorldEntity.orig_Destroy orig, AbstractWorldEntity self)
+        {
+            //RainMeadow.DebugMethod();
+            orig(self);
+            if (OnlineManager.lobby != null && self is AbstractPhysicalObject apo)
+            {
+                if (RoomSession.map.TryGetValue(self.Room, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoLeavingRoom(apo);
+                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.EntityLeavingWorld(apo);
+            }
+        }
+
+        // maybe leaving room, maybe entering world
+        private void AbstractRoom_MoveEntityToDen(On.AbstractRoom.orig_MoveEntityToDen orig, AbstractRoom self, AbstractWorldEntity entity)
+        {
+            orig(self, entity);
+            if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo)
+            {
+                if (RoomSession.map.TryGetValue(self, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoLeavingRoom(apo);
+                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.EntityEnteringWorld(apo);
+            }
+        }
+
+        // adds to entities already so no need to hook it!
+        // private void AbstractRoom_MoveEntityOutOfDen(On.AbstractRoom.orig_MoveEntityOutOfDen orig, AbstractRoom self, AbstractWorldEntity ent) { }
+
         // Prevent adding item to update list twice
         private void RoomOnAddObject(On.Room.orig_AddObject orig, Room self, UpdatableAndDeletable obj)
         {
-            if (OnlineManager.lobby == null)
-            {
-                orig(self, obj);
-                return;
-            }
-            
-            if (self.game == null) return;
-            if (self.updateList.Contains(obj))
+            if (OnlineManager.lobby != null && self.game != null && self.updateList.Contains(obj))
             {
                 RainMeadow.Debug($"Object {(obj is PhysicalObject po ? po.abstractPhysicalObject.ID : obj)} already in the update list! Skipping...");
                 var stackTrace = Environment.StackTrace;
@@ -360,15 +355,9 @@ namespace RainMeadow
             orig(self, obj);
         }
 
-        // todo when do things LEAVE world though?
-        // there needs to be a hook at the world transition at gates
+        // world transition at gates
         private void OverWorld_WorldLoaded(On.OverWorld.orig_WorldLoaded orig, OverWorld self)
         {
-            // todo creatures that were switched over need entering here
-
-            // either this or hook ShouldEntityBeMovedToNewRegion
-            // but that just runs over all entities here anyways;
-
             if(OnlineManager.lobby != null)
             {
                 var oldWorld = self.activeWorld;

@@ -182,20 +182,25 @@ namespace RainMeadow
             if (isAvailable && isActive && isOwner) // transfered / claimed by me
             {
                 RainMeadow.Debug($"Transfer received!");
-                isActive = false; // we tell a little lie while we re-add everyone to avoid multiple NewLeaseState
-                foreach (var subscriber in memberships.Keys)
+                foreach (var membership in memberships.Values)
                 {
-                    if (subscriber.isMe || subscriber.hasLeft) continue;
-                    Subscribed(subscriber, true);
+                    if (membership.player.isMe || membership.player.hasLeft) continue;
+                    Subscribed(membership.player, true);
+                    membership.everSentLease = false;
                 }
-                isActive = true;
-
                 NewLeaseState();
-
                 ClaimAbandonedEntities();
+            }
 
+            if (isOwner)
+            { 
                 OnlineManager.RemoveFeeds(this);
             }
+            else if (oldOwner != null && oldOwner.isMe)
+            {
+                OnlineManager.RemoveSubscriptions(this);
+            }
+
             if (oldOwner != null && oldOwner.hasLeft)
             {
                 RainMeadow.Debug($"Old owner has left, checking...");

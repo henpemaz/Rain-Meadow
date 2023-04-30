@@ -88,7 +88,6 @@ namespace RainMeadow
                     return;
                 }
             }
-
             request.from.QueueEvent(new ReleaseResult.Error(request)); // I do not manage this resource
         }
 
@@ -101,6 +100,7 @@ namespace RainMeadow
                 request.from.QueueEvent(new TransferResult.Ok(request));
                 return;
             }
+
             RainMeadow.Debug($"Transfer error : {isAvailable} {isActive} {isOwner} {request.from == supervisor}");
             request.from.QueueEvent(new TransferResult.Error(request)); // super should retry with someone else
         }
@@ -109,6 +109,8 @@ namespace RainMeadow
         public void ResolveRequest(RequestResult requestResult)
         {
             RainMeadow.Debug(this);
+            if (requestResult.referencedEvent == pendingRequest) pendingRequest = null;
+
             if (requestResult is RequestResult.Leased) // I'm the new owner of a previously-free resource
             {
                 if (isAvailable) // this was transfered to me because the previous owner left
@@ -131,13 +133,13 @@ namespace RainMeadow
                 // todo retry logic
                 RainMeadow.Error("request failed for " + this);
             }
-            if (requestResult.referencedEvent == pendingRequest) pendingRequest = null;
         }
 
         // A pending release was answered to
         public void ResolveRelease(ReleaseResult releaseResult)
         {
             RainMeadow.Debug(this);
+            if (pendingRequest == releaseResult.referencedEvent) pendingRequest = null;
 
             if (releaseResult is ReleaseResult.Released) // I've let go
             {
@@ -152,13 +154,13 @@ namespace RainMeadow
                 // todo retry logic
                 RainMeadow.Error("released failed for " + this);
             }
-            if (pendingRequest == releaseResult.referencedEvent) pendingRequest = null;
         }
 
         // A pending transfer was asnwered to
         public void ResolveTransfer(TransferResult transferResult)
         {
             RainMeadow.Debug(this);
+            if (pendingRequest == transferResult.referencedEvent) pendingRequest = null;
 
             if (transferResult is TransferResult.Ok) // New owner accepted it
             {
@@ -169,8 +171,6 @@ namespace RainMeadow
                 // todo retry logic
                 RainMeadow.Error("transfer failed for " + this);
             }
-
-            if (pendingRequest == transferResult.referencedEvent) pendingRequest = null;
         }
     }
 }
