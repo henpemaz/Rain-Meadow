@@ -2,13 +2,13 @@ using UnityEngine;
 
 namespace RainMeadow;
 
-public class CreatureEvent
+public abstract partial class CreatureEvent
 {
     public class Violence : OnlineEvent
     {
         private OnlineEntity OnlineVillain; // can be null
         private OnlineEntity OnlineVictim;
-        private int VictimChunkIndex;
+        private byte VictimChunkIndex;
         private AppendageRef VictimAppendage; // can be null
         private Vector2? DirectionAndMomentum;
         private byte DamageType;
@@ -20,7 +20,7 @@ public class CreatureEvent
         {
             OnlineVillain = onlineVillain;
             OnlineVictim = onlineVictim;
-            VictimChunkIndex = victimChunkIndex; 
+            VictimChunkIndex = (byte)victimChunkIndex; 
             VictimAppendage = victimAppendage != null ? new AppendageRef(victimAppendage) : null;
             DirectionAndMomentum = directionAndMomentum;
             DamageType = (byte)damageType;

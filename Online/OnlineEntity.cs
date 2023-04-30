@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -418,6 +419,20 @@ namespace RainMeadow
         public void CreatureViolence(OnlineEntity onlineVillain, int hitchunkIndex, PhysicalObject.Appendage.Pos hitappendage, Vector2? directionandmomentum, Creature.DamageType type, float damage, float stunbonus)
         {
             this.owner.QueueEvent(new CreatureEvent.Violence(onlineVillain, this, hitchunkIndex, hitappendage, directionandmomentum, type, damage, stunbonus));
+        }
+
+        public void GraspRequest(OnlineEntity onlineGrabbed, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool pacifying)
+        {
+            this.roomSession.owner.QueueEvent(new CreatureEvent.GraspRequest(this, onlineGrabbed, graspUsed, chunkGrabbed, shareability, dominance, pacifying));
+        }
+
+        public void GraspRelease(int graspUsed)
+        {
+            var sendList = roomSession.memberships.Select(x => x.Key).Where(x => x != owner);
+            foreach (var onlinePlayer in sendList)
+            {
+                onlinePlayer.QueueEvent(new CreatureEvent.GraspRelease(this, graspUsed));
+            }
         }
     }
 }

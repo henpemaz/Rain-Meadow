@@ -10,6 +10,8 @@ namespace RainMeadow
         {
             On.ShelterDoor.Close += ShelterDoorOnClose;
             On.Creature.Violence += CreatureOnViolence;
+            On.Creature.Grasp.ctor += GraspOnctor;
+            On.Creature.Grasp.Release += GraspOnRelease;
         }
 
         private void ShelterDoorOnClose(On.ShelterDoor.orig_Close orig, ShelterDoor self)
@@ -41,6 +43,26 @@ namespace RainMeadow
             }
             
             orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
+        }
+        
+        private void GraspOnctor(On.Creature.Grasp.orig_ctor orig, Creature.Grasp self, Creature grabber, PhysicalObject grabbed, int graspused, int chunkgrabbed, Creature.Grasp.Shareability shareability, float dominance, bool pacifying)
+        {
+            orig(self, grabber, grabbed, graspused, chunkgrabbed, shareability, dominance, pacifying);
+            if (OnlineManager.lobby == null) return;
+            if (!OnlineEntity.map.TryGetValue(grabber.abstractPhysicalObject, out var onlineGrabber)) throw new InvalidOperationException("Grabber doesn't exist in online space!");
+            if (!onlineGrabber.owner.isMe) return;
+            
+            if (!OnlineEntity.map.TryGetValue(grabbed.abstractPhysicalObject, out var onlineGrabbed)) throw new InvalidOperationException("Grabbed tjing doesn't exist in online space!");
+            onlineGrabber.GraspRequest(onlineGrabbed, graspused, chunkgrabbed, shareability, dominance, pacifying);
+        }
+        
+        private void GraspOnRelease(On.Creature.Grasp.orig_Release orig, Creature.Grasp self)
+        {
+            orig(self);
+            if (OnlineManager.lobby == null) return;
+            if (!OnlineEntity.map.TryGetValue(self.grabber.abstractPhysicalObject, out var onlineGrabber)) throw new InvalidOperationException("Grabber doesn't exist in online space!");
+
+            onlineGrabber.GraspRelease(self.graspUsed);
         }
     }
 }

@@ -6,6 +6,7 @@ partial class RainMeadow
     {
         On.Player.ctor += Player_ctor;
         On.Player.Die += PlayerOnDie;
+        On.Player.Grabability += PlayerOnGrabability;
         
         On.SlugcatStats.ctor += SlugcatStatsOnctor;
     }
@@ -34,6 +35,18 @@ partial class RainMeadow
         if (!OnlineEntity.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
         if (!onlineEntity.owner.isMe) return;
         orig(self);
+    }
+    
+    private Player.ObjectGrabability PlayerOnGrabability(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
+    {
+        if (OnlineManager.lobby != null)
+        {
+            if (self.playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer)
+            {
+                return Player.ObjectGrabability.CantGrab;
+            }
+        }
+        return orig(self, obj);
     }
         
     private void SlugcatStatsOnctor(On.SlugcatStats.orig_ctor orig, SlugcatStats self, SlugcatStats.Name slugcat, bool malnourished)

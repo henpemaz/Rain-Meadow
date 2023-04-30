@@ -29,8 +29,7 @@ namespace RainMeadow
             On.AbstractPhysicalObject.Abstractize += AbstractPhysicalObject_Abstractize; // get real
             On.AbstractCreature.Realize += AbstractCreature_Realize; // get real
             On.AbstractPhysicalObject.Realize += AbstractPhysicalObject_Realize; // get real
-
-            On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor; // Abstract grasps
+            
             On.RainWorldGame.SpawnPlayers_bool_bool_bool_bool_WorldCoordinate += RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate; // Personas are set as non-transferable
             
             On.AbstractPhysicalObject.Update += AbstractPhysicalObject_Update; // Don't think
@@ -89,27 +88,6 @@ namespace RainMeadow
             return ac;
         }
 
-        // Abstract grasps
-        private void AbstractObjectStick_ctor(On.AbstractPhysicalObject.AbstractObjectStick.orig_ctor orig, AbstractPhysicalObject.AbstractObjectStick self, AbstractPhysicalObject A, AbstractPhysicalObject B)
-        {
-            orig(self, A, B);
-            if (OnlineManager.lobby != null)
-            {
-                if(OnlineEntity.map.TryGetValue(A, out var Aoe) && OnlineEntity.map.TryGetValue(B, out var Boe))
-                {
-                    if(Aoe.owner.isMe && !Boe.owner.isMe && Boe.isTransferable && !Boe.isPending)
-                    {
-                        Boe.Request();
-                    }
-                    else if (!Aoe.owner.isMe && Boe.owner.isMe && Aoe.isTransferable && !Aoe.isPending)
-                    {
-                        Aoe.Request();
-                    }
-                }
-            }
-        }
-
-        // get real
         private void AbstractPhysicalObject_Realize(On.AbstractPhysicalObject.orig_Realize orig, AbstractPhysicalObject self)
         {
             orig(self);
