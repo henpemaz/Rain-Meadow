@@ -8,27 +8,55 @@ namespace RainMeadow
         private List<AbstractPhysicalObject> earlyEntities = new(); // stuff that gets added during world loading
 
         // This happens for local entities, so we create their respective OnlineEntity
-        public void NewEntityInWorld(AbstractPhysicalObject entity)
+        public void EntityEnteringWorld(AbstractPhysicalObject entity)
         {
             RainMeadow.Debug(this);
-            if (!registeringRemoteEntity) // A new entity, presumably mine
+            if (!OnlineEntity.map.TryGetValue(entity, out var oe))
             {
-                if (!isActive) // world population generates before this can be activated
+                if (!registeringRemoteEntity) // A new entity, presumably mine
                 {
-                    RainMeadow.Debug("Queuing up entity for registering later");
-                    this.earlyEntities.Add(entity);
-                    return;
+                    if (!isActive) // world population generates before this can be activated
+                    {
+                        RainMeadow.Debug("Queuing up entity for registering later");
+                        this.earlyEntities.Add(entity);
+                        return;
+                    }
+                    RainMeadow.Debug("Registering new entity as owned by myself");
+                    var newOe = new OnlineEntity(entity, PlayersManager.mePlayer, new OnlineEntity.EntityId(PlayersManager.mePlayer.id.m_SteamID, entity.ID.number), entity.ID.RandomSeed, entity.pos, !RainMeadow.sSpawningPersonas);
+                    RainMeadow.Debug(newOe);
+                    OnlineManager.recentEntities[newOe.id] = newOe;
+                    OnlineEntity.map.Add(entity, newOe);
+                    EntityEnteredResource(newOe);
                 }
-                RainMeadow.Debug("Registering new entity as owned by myself");
-                var oe = new OnlineEntity(entity, PlayersManager.mePlayer, new OnlineEntity.EntityId(PlayersManager.mePlayer.id.m_SteamID, entity.ID.number), entity.ID.RandomSeed, entity.pos, !RainMeadow.sSpawningPersonas);
-                RainMeadow.Debug(oe);
-                OnlineManager.recentEntities[oe.id] = oe;
-                OnlineEntity.map.Add(entity, oe);
-                EntityEnteredResource(oe);
+                else
+                {
+                    RainMeadow.Debug("skipping remote entity");
+                }
+            } // else already registered
+
+
+            // TODO this is not comprehensive
+            // if registered but not in world, needs sync
+        }
+
+        public void EntityLeavingWorld(AbstractPhysicalObject entity)
+        {
+            RainMeadow.Debug(this);
+
+            if (OnlineEntity.map.TryGetValue(entity, out var oe))
+            {
+                if (!registeringRemoteEntity) // A new entity, presumably mine
+                {
+                    EntityLeftResource(oe);
+                }
+                else
+                {
+                    RainMeadow.Debug("skipping remote entity");
+                }
             }
             else
             {
-                RainMeadow.Debug("skipping remote entity");
+                RainMeadow.Error("Unregistered entity leaving");
             }
         }
 

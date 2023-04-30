@@ -16,8 +16,6 @@ namespace RainMeadow
             On.RainWorldGame.SpawnPlayers_bool_bool_bool_bool_WorldCoordinate += RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate;
 
             On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor;
-            On.AbstractPhysicalObject.ctor += AbstractPhysicalObject_ctor;
-            On.AbstractCreature.ctor += AbstractCreature_ctor;
 
             On.AbstractPhysicalObject.Update += AbstractPhysicalObject_Update;
             On.AbstractCreature.Update += AbstractCreature_Update;
@@ -323,9 +321,10 @@ namespace RainMeadow
         {
             //RainMeadow.DebugMethod();
             orig(self, ent);
-            if (OnlineManager.lobby != null && ent is AbstractPhysicalObject apo && apo.pos.room == self.index && RoomSession.map.TryGetValue(self, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo))
+            if (OnlineManager.lobby != null && ent is AbstractPhysicalObject apo && apo.pos.room == self.index)
             {
-                rs.ApoEnteringRoom(apo, apo.pos);
+                if (RoomSession.map.TryGetValue(self, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoEnteringRoom(apo, apo.pos);
+                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.EntityEnteringWorld(apo);
             }
         }
 
@@ -333,29 +332,10 @@ namespace RainMeadow
         {
             //RainMeadow.DebugMethod();
             orig(self, entity);
-            if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo && RoomSession.map.TryGetValue(self, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo))
+            if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo && RoomSession.map.TryGetValue(self, out var rs))
             {
-                rs.ApoLeavingRoom(apo);
-            }
-        }
-
-        private void AbstractPhysicalObject_ctor(On.AbstractPhysicalObject.orig_ctor orig, AbstractPhysicalObject self, World world, AbstractPhysicalObject.AbstractObjectType type, PhysicalObject realizedObject, WorldCoordinate pos, EntityID ID)
-        {
-            //RainMeadow.DebugMethod();
-            orig(self, world, type, realizedObject, pos, ID);
-            if (OnlineManager.lobby != null && WorldSession.map.TryGetValue(world, out var ws) && self is not AbstractCreature && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, self))
-            {
-                ws.NewEntityInWorld(self);
-            }
-        }
-
-        private void AbstractCreature_ctor(On.AbstractCreature.orig_ctor orig, AbstractCreature self, World world, CreatureTemplate creatureTemplate, Creature realizedCreature, WorldCoordinate pos, EntityID ID)
-        {
-            //RainMeadow.DebugMethod();
-            orig(self, world, creatureTemplate, realizedCreature, pos, ID);
-            if (OnlineManager.lobby != null && WorldSession.map.TryGetValue(world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, self))
-            {
-                ws.NewEntityInWorld(self);
+                if (OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoLeavingRoom(apo);
+                if (entity.slatedForDeletion && WorldSession.map.TryGetValue(self.world, out var ws)) ws.EntityLeavingWorld(apo);
             }
         }
         

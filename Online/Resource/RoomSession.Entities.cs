@@ -50,8 +50,7 @@ namespace RainMeadow
                 }
                 else
                 {
-                    // are you sure this is a throw? could let it leave and hold it hostage in pipes
-                    throw new InvalidOperationException("remote entity trying to leave without being removed");
+                    RainMeadow.Error("remote entity left without being removed!");
                 }
             }
             else

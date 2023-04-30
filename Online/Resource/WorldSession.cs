@@ -37,7 +37,7 @@ namespace RainMeadow
             }
             foreach (var item in earlyEntities)
             {
-                NewEntityInWorld(item);
+                EntityEnteringWorld(item);
             }
             earlyEntities.Clear();
         }

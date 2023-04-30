@@ -67,3 +67,14 @@ sleep screen
 
 On join world, join room
 	if entity enter world message arrives after entity enter room message, could this cause a problem?
+
+shortcuts.suckincreature
+	IL hook so that player check doesn't trigger for remote
+	maybe trigger when playing as other creatures
+
+only list lobbies of supported game type
+
+since moved from hook on ctor for stuff added to world, initial populations isn't picking up
+	might need to think through the "on den" situation and related hooks
+	
+	
