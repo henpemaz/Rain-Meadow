@@ -32,7 +32,7 @@ namespace RainMeadow
             On.AbstractPhysicalObject.ChangeRooms += AbstractPhysicalObject_ChangeRooms;
             
             On.Room.AddObject += RoomOnAddObject;
-            On.Room.CleanOutObjectNotInThisRoom += Room_CleanOutObjectNotInThisRoom;
+            IL.Room.CleanOutObjectNotInThisRoom += Room_CleanOutObjectNotInThisRoom;
 
             On.ShortcutHandler.VesselAllowedInRoom += ShortcutHandlerOnVesselAllowedInRoom;
             IL.ShortcutHandler.Update += ShortcutHandler_Update; // cleanup of deleted entities in shortcut system
@@ -40,12 +40,37 @@ namespace RainMeadow
             On.RoomRealizer.RealizeAndTrackRoom += RoomRealizer_RealizeAndTrackRoom; // debug
         }
 
-        private void Room_CleanOutObjectNotInThisRoom(On.Room.orig_CleanOutObjectNotInThisRoom orig, Room self, UpdatableAndDeletable obj)
+        private void Room_CleanOutObjectNotInThisRoom(ILContext il)
         {
-            orig(self, obj);
-            if (OnlineManager.lobby != null && obj is PhysicalObject po && OnlineEntity.map.TryGetValue(po.abstractPhysicalObject, out var oe))
+            try
             {
-                self.abstractRoom.RemoveEntity(po.abstractPhysicalObject);
+                // cleanup betweenroomswaitinglobby of deleted entities
+                var c = new ILCursor(il);
+
+                c.GotoNext(moveType: MoveType.Before,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdarg(1),
+                    i => i.MatchCallOrCallvirt<Room>("RemoveObject")
+                    );
+                c.GotoPrev(moveType: MoveType.After,
+                    i => i.MatchLdarg(1),
+                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                    i => i.MatchBrfalse(out _)
+                    );
+
+                c.MoveAfterLabels();
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldarg_1);
+                c.EmitDelegate((Room self, UpdatableAndDeletable obj) => {
+                    if (OnlineManager.lobby != null)
+                    {
+                        self.abstractRoom.RemoveEntity((obj as PhysicalObject).abstractPhysicalObject);
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
             }
         }
 
@@ -348,7 +373,7 @@ namespace RainMeadow
             {
                 RainMeadow.Debug($"Object {(obj is PhysicalObject po ? po.abstractPhysicalObject.ID : obj)} already in the update list! Skipping...");
                 var stackTrace = Environment.StackTrace;
-                if (!stackTrace.Contains("Creature.PlaceInRoom") || !stackTrace.Contains("AbstractSpaceVisualizer")) // We know about this
+                if (!stackTrace.Contains("Creature.PlaceInRoom") && !stackTrace.Contains("AbstractSpaceVisualizer")) // We know about this
                     RainMeadow.Error(Environment.StackTrace); // Log cases that we still haven't found 
                 return;
             }
