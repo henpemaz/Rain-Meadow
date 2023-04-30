@@ -7,6 +7,7 @@ namespace RainMeadow
         public void GameplayHooks()
         {
             On.Player.ctor += Player_ctor;
+            On.Player.Die += PlayerOnDie;
             On.SlugcatStats.ctor += SlugcatStatsOnctor;
             On.ShelterDoor.Close += ShelterDoorOnClose;
         }
@@ -22,6 +23,19 @@ namespace RainMeadow
                     self.controller = new OnlineController(ent, self);
                 }
             }
+        }
+        
+        private void PlayerOnDie(On.Player.orig_Die orig, Player self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+                return;
+            }
+
+            if (!OnlineEntity.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+            if (!onlineEntity.owner.isMe) return;
+            orig(self);
         }
         
         private void SlugcatStatsOnctor(On.SlugcatStats.orig_ctor orig, SlugcatStats self, SlugcatStats.Name slugcat, bool malnourished)
