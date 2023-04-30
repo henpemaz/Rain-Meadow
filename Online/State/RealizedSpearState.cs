@@ -41,7 +41,7 @@ namespace RainMeadow
             if (stuckInObject != null)
             {
                 serializer.Serialize(ref stuckInChunkIndex);
-                serializer.Serialize(ref stuckInAppendage);
+                serializer.SerializeNullable(ref stuckInAppendage);
                 serializer.Serialize(ref stuckBodyPart);
                 serializer.Serialize(ref stuckRotation);
             }
@@ -80,7 +80,7 @@ namespace RainMeadow
         }
     }
 
-    public class AppendageRef
+    public class AppendageRef : Serializer.ICustomSerializable
     {
         public byte appIndex;
         public byte prevSegment;
@@ -101,5 +101,4 @@ namespace RainMeadow
             serializer.Serialize(ref distanceToNext);
         }
     }
-
 }

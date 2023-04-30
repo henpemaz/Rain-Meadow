@@ -154,11 +154,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Ext_.cs" />
-    <Compile Include="Game\ArenaCompetitiveGameMode.cs" />
-    <Compile Include="Game\FreeRoamGameMode.cs" />
-    <Compile Include="Game\MeadowGameMode.cs" />
-    <Compile Include="Game\OnlineGameModeHelpers.cs" />
-    <Compile Include="Game\StoryGameMode.cs" />
+    <Compile Include="GameModes\ArenaCompetitiveGameMode.cs" />
+    <Compile Include="GameModes\FreeRoamGameMode.cs" />
+    <Compile Include="GameModes\MeadowGameMode.cs" />
+    <Compile Include="GameModes\OnlineGameModeHelpers.cs" />
+    <Compile Include="GameModes\StoryGameMode.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Menu\EventfulScrollButton.cs" />
     <Compile Include="Menu\EventfulSelectOneButton.cs" />
@@ -169,6 +169,7 @@
     <Compile Include="Menu\SmartMenu.cs" />
     <Compile Include="Online\Events\PlayerTickReference.cs" />
     <Compile Include="Online\Resource\ResourceMembership.cs" />
+    <Compile Include="Online\Serializer.ICustomSerializable.cs" />
     <Compile Include="Online\State\AbstractCreatureState.cs" />
     <Compile Include="Online\State\CreatureHealthStateState.cs" />
     <Compile Include="Online\State\CreatureStateState.cs" />
@@ -206,7 +207,7 @@
     <Compile Include="Menu\LobbySelectMenu.cs" />
     <Compile Include="Online\OnlinePlayer.cs" />
     <Compile Include="Online\Resource\OnlineResource.cs" />
-    <Compile Include="Game\OnlineGameMode.cs" />
+    <Compile Include="GameModes\OnlineGameMode.cs" />
     <Compile Include="Online\Events\OnlineEvent.cs" />
     <Compile Include="Online\Events\ResourceRelease.cs" />
     <Compile Include="Online\Events\ReleaseResult.cs" />

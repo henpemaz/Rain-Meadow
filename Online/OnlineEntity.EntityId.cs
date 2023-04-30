@@ -2,15 +2,22 @@
 {
     public partial class OnlineEntity
     {
-        public class EntityId : System.IEquatable<EntityId> // How we refer to a game entity online
+        public class EntityId : System.IEquatable<EntityId>, Serializer.ICustomSerializable // How we refer to a game entity online
         {
             public ulong originalOwner;
             public int id;
 
+            public EntityId() { }
             public EntityId(ulong originalOwner, int id)
             {
                 this.originalOwner = originalOwner;
                 this.id = id;
+            }
+
+            public void CustomSerialize(Serializer serializer)
+            {
+                serializer.Serialize(ref originalOwner);
+                serializer.Serialize(ref id);
             }
 
             public override string ToString()

@@ -40,18 +40,16 @@ namespace RainMeadow
         }
     }
 
-    public class ChunkState // : OnlineState // no need for serializing its type, its just always the same data
+    public class ChunkState : Serializer.ICustomSerializable // : OnlineState // no need for serializing its type, its just always the same data
     {
         private Vector2 pos;
         private Vector2 vel;
 
+        public ChunkState() { }
         public ChunkState(BodyChunk c)
         {
-            if (c != null)
-            {
-                pos = c.pos;
-                vel = c.vel;
-            }
+            pos = c.pos;
+            vel = c.vel;
         }
 
         public void CustomSerialize(Serializer serializer)

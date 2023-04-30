@@ -1,8 +1,9 @@
 ﻿using System;
+using static RainMeadow.Serializer;
 
 namespace RainMeadow
 {
-    public class PlayerTickReference
+    public class PlayerTickReference : ICustomSerializable
     {
         internal OnlinePlayer fromPlayer;
         internal ulong tick;
@@ -19,7 +20,7 @@ namespace RainMeadow
             return !Invalid() && OnlineManager.IsNewerOrEqual(fromPlayer.tick, tick);
         }
 
-        internal void CustomSerialize(Serializer serializer)
+        public void CustomSerialize(Serializer serializer)
         {
             serializer.Serialize(ref fromPlayer);
             serializer.Serialize(ref tick);

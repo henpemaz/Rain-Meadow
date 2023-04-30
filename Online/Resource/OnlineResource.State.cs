@@ -70,7 +70,7 @@ namespace RainMeadow
             {
                 base.CustomSerialize(serializer);
                 serializer.Serialize(ref resource);
-                serializer.Serialize(ref entityStates);
+                serializer.SerializeStates(ref entityStates);
             }
         }
     }

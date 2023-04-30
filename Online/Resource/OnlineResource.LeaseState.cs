@@ -77,7 +77,7 @@ namespace RainMeadow
             }
         }
 
-        public class OnlinePlayerGroup
+        public class OnlinePlayerGroup : Serializer.ICustomSerializable
         {
             public List<OnlinePlayer> participants;
             public List<OnlinePlayer> left;
@@ -123,7 +123,7 @@ namespace RainMeadow
             }
         }
 
-        public class SubleaseState
+        public class SubleaseState : Serializer.ICustomSerializable
         {
             public bool isDelta;
             public ushort resourceId;
@@ -173,7 +173,7 @@ namespace RainMeadow
             }
         }
 
-        public class LeaseState // its it's own weird thing, sent around as events because critical yet too big to send fully every frame
+        public class LeaseState : Serializer.ICustomSerializable // its it's own weird thing, sent around as events because critical yet too big to send fully every frame
         {
             public bool isDelta;
             public OnlinePlayerGroup participants; // participants in current resource, only sent for Lobby

@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class Serializer
+    public partial class Serializer
     {
         private readonly byte[] buffer;
         private readonly long capacity;
@@ -370,15 +370,6 @@ namespace RainMeadow
             }
         }
 
-        public void Serialize(ref OnlineResource.LeaseState leaseState)
-        {
-            if (isReading)
-            {
-                leaseState = new();
-            }
-            leaseState.CustomSerialize(this);
-        }
-
         public void Serialize(ref byte data)
         {
             if (isWriting) writer.Write(data);
@@ -474,27 +465,6 @@ namespace RainMeadow
             }
         }
 
-        public void Serialize(ref AppendageRef data)
-        {
-            if (isWriting)
-            {
-                writer.Write(data != null);
-                if (data != null)
-                {
-                    data.CustomSerialize(this);
-                }
-            }
-
-            if (isReading)
-            {
-                if (reader.ReadBoolean())
-                {
-                    data = new AppendageRef();
-                    data.CustomSerialize(this);
-                }
-            }
-        }
-
         public void SerializeNoStrings(ref WorldCoordinate pos)
         {
             if (isWriting)
@@ -513,42 +483,6 @@ namespace RainMeadow
                     y = reader.ReadInt16(),
                     abstractNode = reader.ReadInt16(),
                 };
-            }
-        }
-
-        public void Serialize(ref OnlineEntity.EntityId entityId)
-        {
-            if (isWriting)
-            {
-                writer.Write(entityId.originalOwner);
-                writer.Write(entityId.id);
-            }
-            if (isReading)
-            {
-                entityId = new OnlineEntity.EntityId(reader.ReadUInt64(), reader.ReadInt32());
-            }
-        }
-
-        public void Serialize(ref List<OnlineEntity.EntityId> entityIds)
-        {
-            if (isWriting)
-            {
-                writer.Write((byte)entityIds.Count);
-                foreach (var ent in entityIds)
-                {
-                    writer.Write(ent.originalOwner);
-                    writer.Write(ent.id);
-                }
-            }
-            if (isReading)
-            {
-                byte count = reader.ReadByte();
-                entityIds = new List<OnlineEntity.EntityId>(count);
-                for (int i = 0; i < count; i++)
-                {
-                    OnlineEntity.EntityId ent = new OnlineEntity.EntityId(reader.ReadUInt64(), reader.ReadInt32());
-                    entityIds.Add(ent);
-                }
             }
         }
 
@@ -620,7 +554,7 @@ namespace RainMeadow
             }
         }
 
-        public void Serialize<T>(ref T[] states) where T : OnlineState
+        public void SerializeStates<T>(ref T[] states) where T : OnlineState
         {
             if (isWriting)
             {
@@ -648,74 +582,6 @@ namespace RainMeadow
             }
         }
 
-        // todo generics for crap like this
-        public void Serialize(ref ChunkState[] chunkStates)
-        {
-            if (isWriting)
-            {
-                // TODO dynamic length
-                writer.Write((byte)chunkStates.Length);
-                foreach (var state in chunkStates)
-                {
-                    state.CustomSerialize(this);
-                }
-            }
-            if (isReading)
-            {
-                byte count = reader.ReadByte();
-                chunkStates = new ChunkState[count];
-                for (int i = 0; i < count; i++)
-                {
-                    var s = new ChunkState(null);
-                    s.CustomSerialize(this);
-                    chunkStates[i] = s;
-                }
-            }
-        }
-
-        public void Serialize(ref Dictionary<string, ulong> ownership)
-        {
-            if (isWriting)
-            {
-                writer.Write((byte)ownership.Count);
-                foreach (var item in ownership)
-                {
-                    writer.Write(item.Key); writer.Write(item.Value);
-                }
-            }
-            if (isReading)
-            {
-                var count = reader.ReadByte();
-                ownership = new(count);
-                for (int i = 0; i < count; i++)
-                {
-                    ownership[reader.ReadString()] = reader.ReadUInt64();
-                }
-            }
-        }
-
-        public void Serialize(ref List<ulong> longs)
-        {
-            if (isWriting)
-            {
-                writer.Write((byte)longs.Count);
-                for (int i = 0; i < longs.Count; i++)
-                {
-                    ulong item = longs[i];
-                    writer.Write(item);
-                }
-            }
-            if (isReading)
-            {
-                var count = reader.ReadByte();
-                longs = new(count);
-                for (int i = 0; i < count; i++)
-                {
-                    longs.Add(reader.ReadUInt64());
-                }
-            }
-        }
-
         // a referenced event is something that must have been ack'd that frame
         public void SerializeReferencedEvent(ref OnlineEvent referencedEvent)
         {
@@ -727,41 +593,6 @@ namespace RainMeadow
             {
                 referencedEvent = currPlayer.GetRecentEvent(reader.ReadUInt64());
             }
-        }
-
-        internal void Serialize(ref OnlineResource.OnlinePlayerGroup participants)
-        {
-            if (isReading) participants = new();
-            participants.CustomSerialize(this);
-        }
-
-        internal void Serialize(ref List<OnlineResource.SubleaseState> sublease)
-        {
-            if (isWriting)
-            {
-                writer.Write((byte)sublease.Count);
-                for (int i = 0; i < sublease.Count; i++)
-                {
-                    sublease[i].CustomSerialize(this);
-                }
-            }
-            if (isReading)
-            {
-                var count = reader.ReadByte();
-                sublease = new(count);
-                for (int i = 0; i < count; i++)
-                {
-                    var item = new OnlineResource.SubleaseState();
-                    item.CustomSerialize(this);
-                    sublease.Add(item);
-                }
-            }
-        }
-
-        internal void Serialize(ref PlayerTickReference dependsOnTick)
-        {
-            if (isReading) dependsOnTick = new();
-            dependsOnTick.CustomSerialize(this);
         }
     }
 }

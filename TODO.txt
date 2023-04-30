@@ -1,14 +1,8 @@
 ﻿Rain Meadow
-
-on join, takes a while to get lobby data, grey out button
-	done
-
 Manage missing regions:
 	right now nullrefs because missing referenced resource
-	only joinable on same world-checksum? world-list? world-index-checksum?
-	in my head the problem is that if by transfer someone who is missing things becomes the owner then some resources will be unmanageable?
-		could in this case we just create room-less RoomSessions for the stuff that is requested but doesn't exist? Only someone who has it will request it, one doesn't have to have it to lease it
-			catch: world creatures would be in an invalid position
+	if by transfer someone who is missing things becomes the owner then some resources will be unmanageable
+	The more definitive solution seems to be sync/force mod-lists on join
 
 Entities entities entities
 	Entity Join/leave should be handshaked, owner can change inbetween
@@ -38,81 +32,6 @@ Entities entities entities
 	
 	just disable grasps for now and crack on with persona-only stuff??
 		"I have failed and I'll move on with simpler things"
-			
-
-handle disconnects
-	done-ish
-	pending events that are going to a disconnected user should "error out" to trigger a retry against the right user
-		which of these events need retrying
-		retrying might need a delay so that things can resolve to a new owner?
-
-
-gamemode: meadow: stays in game, infinite cycle, no ways to die or sleep, quits to lobby-screen
-	Options:
-		visibility:
-			-Friends Only
-			-Public
-		max players:
-			defaults to 32? load critical on world owner if all in world
-	Rules:
-		- no other mods?
-		- players join a lobby
-		- in the lobby, players can
-			- pick which persona they'd like to go in game as
-			- see unique collectables they've found in the world
-			- see progression for:
-				- unlocking new personas
-				- unlocking new skins for each persona
-				- unlocking new emotes for each persona
-		- players enter the game as personas, not necessarily slugcat
-		- in the game
-			- players see eachothers personas
-			- there are no roaming creatures
-			- there are no items
-			- only cosmetic placedobjects are placed
-			- personas dont collide with eachother
-			- the only things the player can find:
-				- eachother
-				- collectables the player picks up by colliding with
-					- unique plants
-					- unique replicas of game items
-						- I'm thinking the plant-items really
-				- progression bits
-					???
-				- puzzles
-					and what I mean by this is something it takes more than 1 player to do
-				- food to eat and share?
-			- there is no cycle timer
-			- gates have no requirements
-				- or maybe... require X players, but going back is always unlocked?
-					- that drop into sub though, or other one-way situations... could be bad
-			- dying in a pit puts you back
-				- to the room entrance?
-				- to the spawn position?
-			- can't run out of air when swimming
-			- any other ways to die?
-				- coils in 5p stun only...
-				- check dnspy I guess
-			- sleeping in a shelter plays a short animation
-				- saves your spawn position
-				- doesn't close the shelter and doesn't end the game
-		
-gamemode: online coop story mode : juuuust like couch coop
-	needs a more fine grained description here
-	essentially need to meet a set of expectations, but better have all of those written out
-	- there is a host
-	- there is a savestate or savefile to be used
-	- players want to play together and make progress together
-		- even though we could have them save position separetedly, makes more sense to keep everyone together
-		- respawn in last shelter vs respawn with host (or other alive player)
-		- what if the host died
-	- there is a rain cycle, players must be all asleep or dead for the cycle to tick
-	- engine stuff missing:
-		grasps
-		eating
-		ai creatures doing consistent things
-		cycle
-		going in and out of game
 
 
 Mod auto installing / auto disabling
@@ -126,7 +45,6 @@ Mod auto installing / auto disabling
 	disable all other mods temporarily, store old enabledlist, relaunch with no mods
 
 
-
 Imediate todo:
 
 on sleep
@@ -135,16 +53,17 @@ on sleep
 other loaded player dying gameovers
 
 wakeup -> shelter close imediatelly -> starve issue
+	solved by other players not triggering?
 
 wakeup -> slow load -> sprite issue
+	solved by waiting release?
 
 on load, non-owner still loads saved creatures
+	this will be very specific per game mode wont it?
 	
 sleep screen
 	its picking the wrong scug?
-
-on awake
-	what slug does it load
+	seems to not be happening anymore
 
 On join world, join room
 	if entity enter world message arrives after entity enter room message, could this cause a problem?

@@ -34,6 +34,73 @@ Entities
 	release goes to a supervisor (oe.highestResource.owner) and ideally should transfer back to a room-participant, just like a resource release
 
 
+gamemode: meadow: stays in game, infinite cycle, no ways to die or sleep, quits to lobby-screen
+	Options:
+		visibility:
+			-Friends Only
+			-Public
+		max players:
+			defaults to 32? load critical on world owner if all in world
+	Rules:
+		- no other mods?
+		- players join a lobby
+		- in the lobby, players can
+			- pick which persona they'd like to go in game as
+			- see unique collectables they've found in the world
+			- see progression for:
+				- unlocking new personas
+				- unlocking new skins for each persona
+				- unlocking new emotes for each persona
+		- players enter the game as personas, not necessarily slugcat
+		- in the game
+			- players see eachothers personas
+			- there are no roaming creatures
+			- there are no items
+			- only cosmetic placedobjects are placed
+			- personas dont collide with eachother
+			- the only things the player can find:
+				- eachother
+				- collectables the player picks up by colliding with
+					- unique plants
+					- unique replicas of game items
+						- I'm thinking the plant-items really
+				- progression bits
+					???
+				- puzzles
+					and what I mean by this is something it takes more than 1 player to do
+				- food to eat and share?
+			- there is no cycle timer
+			- gates have no requirements
+				- or maybe... require X players, but going back is always unlocked?
+					- that drop into sub though, or other one-way situations... could be bad
+			- dying in a pit puts you back
+				- to the room entrance?
+				- to the spawn position?
+			- can't run out of air when swimming
+			- any other ways to die?
+				- coils in 5p stun only...
+				- check dnspy I guess
+			- sleeping in a shelter plays a short animation
+				- saves your spawn position
+				- doesn't close the shelter and doesn't end the game
+		
+gamemode: online coop story mode : juuuust like couch coop
+	needs a more fine grained description here
+	essentially need to meet a set of expectations, but better have all of those written out
+	- there is a host
+	- there is a savestate or savefile to be used
+	- players want to play together and make progress together
+		- even though we could have them save position separetedly, makes more sense to keep everyone together
+		- respawn in last shelter vs respawn with host (or other alive player)
+		- what if the host died
+	- there is a rain cycle, players must be all asleep or dead for the cycle to tick
+	- engine stuff missing:
+		grasps
+		eating
+		ai creatures doing consistent things
+		cycle
+		going in and out of game
+
 Rain Meadow devlog (this also helped me organize my ideas)
 Studies
 I've been studying multiplayers and how they do netcode and sync. Most games have a host, either host-peer in p2p, or server in cli-serv, that has the full state of the world or the full state of the areas that are loaded, and feed that state to other client/peers. Some of the physics and collisions might be resolved locally (extrapolation) so it feels less laggy, but typically there's a server correction mechanism and the server has the final say on everything.
