@@ -63,6 +63,7 @@ namespace RainMeadow
             EntityRelease,
             EntityReleaseResultOk,
             EntityReleaseResultError,
+            CreatureEventViolence
         }
 
         public static OnlineEvent NewFromType(EventTypeId eventTypeId)
@@ -134,6 +135,9 @@ namespace RainMeadow
                     break;
                 case EventTypeId.EntityReleaseResultError:
                     e = new EntityReleaseResult.Error();
+                    break;
+                case EventTypeId.CreatureEventViolence:
+                    e = new CreatureEvent.Violence();
                     break;
             }
             if (e is null) throw new InvalidOperationException("invalid event type: " + eventTypeId);

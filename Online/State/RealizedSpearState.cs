@@ -58,7 +58,7 @@ namespace RainMeadow
             if (spear.stuckInObject != null)
             {
                 spear.stuckInChunkIndex = stuckInChunkIndex;
-                spear.stuckInAppendage = GetAppendagePos(stuckInAppendage);
+                spear.stuckInAppendage = stuckInAppendage?.GetAppendagePos(stuckInObject);
                 spear.stuckBodyPart = stuckBodyPart;
                 spear.stuckRotation = stuckRotation;
             }
@@ -70,14 +70,6 @@ namespace RainMeadow
                 RainMeadow.Error("Stuck in wall but has no value!");
             }
         }
-
-        private PhysicalObject.Appendage.Pos GetAppendagePos(AppendageRef appendageRef)
-        {
-            if (appendageRef == null || stuckInObject == null) return null;
-            var physicalObject = stuckInObject.entity.realizedObject;
-            var appendage = physicalObject.appendages[appendageRef.appIndex];
-            return new PhysicalObject.Appendage.Pos(appendage, appendageRef.prevSegment, appendageRef.distanceToNext);
-        }
     }
 
     public class AppendageRef : Serializer.ICustomSerializable
@@ -87,11 +79,11 @@ namespace RainMeadow
         public float distanceToNext;
 
         public AppendageRef() { }
-        public AppendageRef(PhysicalObject.Appendage.Pos spearStuckInAppendage)
+        public AppendageRef(PhysicalObject.Appendage.Pos appendagePos)
         {
-            appIndex = (byte)spearStuckInAppendage.appendage.appIndex;
-            prevSegment = (byte)spearStuckInAppendage.prevSegment;
-            distanceToNext = spearStuckInAppendage.distanceToNext;
+            appIndex = (byte)appendagePos.appendage.appIndex;
+            prevSegment = (byte)appendagePos.prevSegment;
+            distanceToNext = appendagePos.distanceToNext;
         }
 
         public void CustomSerialize(Serializer serializer)
@@ -99,6 +91,14 @@ namespace RainMeadow
             serializer.Serialize(ref appIndex);
             serializer.Serialize(ref prevSegment);
             serializer.Serialize(ref distanceToNext);
+        }
+
+        public PhysicalObject.Appendage.Pos GetAppendagePos(OnlineEntity appendageOwner)
+        {
+            if (appendageOwner == null) return null;
+            var physicalObject = appendageOwner.entity.realizedObject;
+            var appendage = physicalObject.appendages[appIndex];
+            return new PhysicalObject.Appendage.Pos(appendage, prevSegment, distanceToNext);
         }
     }
 }

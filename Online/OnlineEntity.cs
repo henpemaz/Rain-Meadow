@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -412,6 +413,11 @@ namespace RainMeadow
                 RainMeadow.Error("request failed for " + this);
             }
             pendingRequest = null;
+        }
+
+        public void CreatureViolence(OnlineEntity onlineVillain, int hitchunkIndex, PhysicalObject.Appendage.Pos hitappendage, Vector2? directionandmomentum, Creature.DamageType type, float damage, float stunbonus)
+        {
+            this.owner.QueueEvent(new CreatureEvent.Violence(onlineVillain, this, hitchunkIndex, hitappendage, directionandmomentum, type, damage, stunbonus));
         }
     }
 }
