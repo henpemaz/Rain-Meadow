@@ -436,18 +436,25 @@ namespace RainMeadow
             this.owner.QueueEvent(new CreatureEvent.Violence(onlineVillain, this, hitchunkIndex, hitappendage, directionandmomentum, type, damage, stunbonus));
         }
 
-        public void GraspRequest(OnlineEntity onlineGrabbed, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool pacifying)
+        public void ForceGrab(OnlineEntity onlineGrabbed, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool pacifying)
         {
-            this.roomSession.owner.QueueEvent(new CreatureEvent.GraspRequest(this, onlineGrabbed, graspUsed, chunkGrabbed, shareability, dominance, pacifying));
-        }
+            var grabber = (Creature)this.entity.realizedObject;
+            var grabbedThing = onlineGrabbed.entity.realizedObject;
 
-        public void GraspRelease(int graspUsed)
-        {
-            var sendList = roomSession.memberships.Select(x => x.Key).Where(x => x != owner);
-            foreach (var onlinePlayer in sendList)
+            if (grabber.grasps[graspUsed] != null)
             {
-                onlinePlayer.QueueEvent(new CreatureEvent.GraspRelease(this, graspUsed));
+                if (grabber.grasps[graspUsed].grabbed == grabbedThing) return;
+                grabber.grasps[graspUsed].Release();
             }
+            // Will I need to also include the shareability conflict here, too? Idk.
+            grabber.grasps[graspUsed] = new Creature.Grasp(grabber, grabbedThing, graspUsed, chunkGrabbed, shareability, dominance, pacifying);
+            grabbedThing.Grabbed(grabber.grasps[graspUsed]);
+            new AbstractPhysicalObject.CreatureGripStick(grabber.abstractCreature, grabbedThing.abstractPhysicalObject, graspUsed, pacifying || grabbedThing.TotalMass < grabber.TotalMass);
+        }
+        public void ForceGrab(GraspRef graspRef)
+        {
+            var castShareability = new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(graspRef.Shareability));
+            ForceGrab(graspRef.OnlineGrabbed, graspRef.GraspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
         }
     }
 }

@@ -64,9 +64,6 @@ namespace RainMeadow
             EntityReleaseResultOk,
             EntityReleaseResultError,
             CreatureEventViolence,
-            CreatureEventGraspRequest,
-            CreatureEventGraspRequestResolve,
-            CreatureEventGraspRelease
         }
 
         public static OnlineEvent NewFromType(EventTypeId eventTypeId)
@@ -141,15 +138,6 @@ namespace RainMeadow
                     break;
                 case EventTypeId.CreatureEventViolence:
                     e = new CreatureEvent.Violence();
-                    break; 
-                case EventTypeId.CreatureEventGraspRequest:
-                    e = new CreatureEvent.GraspRequest();
-                    break;
-                case EventTypeId.CreatureEventGraspRequestResolve:
-                    e = new CreatureEvent.GraspRequestResolve();
-                    break;
-                case EventTypeId.CreatureEventGraspRelease:
-                    e = new CreatureEvent.GraspRelease();
                     break;
             }
             if (e is null) throw new InvalidOperationException("invalid event type: " + eventTypeId);
