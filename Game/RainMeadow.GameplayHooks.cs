@@ -36,7 +36,8 @@ namespace RainMeadow
             if (OnlineManager.lobby == null) return;
             if (!OnlineEntity.map.TryGetValue(self.abstractPhysicalObject, out var onlineCreature)) throw new InvalidOperationException("Creature doesn't exist in online space!");
             if (!onlineCreature.owner.isMe) return;
-            
+
+            if (self.grasps == null) return;
             foreach (var grasp in self.grasps)
             {
                 if (grasp == null) continue;

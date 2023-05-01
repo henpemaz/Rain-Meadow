@@ -12,6 +12,7 @@ namespace RainMeadow
         {
             if (onlineEntity.entity.realizedObject is not Creature creature) return;
             
+            if (creature.grasps == null) return;
             foreach (var grasp in creature.grasps)
             {
                 if (grasp == null) continue;
@@ -32,6 +33,7 @@ namespace RainMeadow
             base.ReadTo(onlineEntity);
             if (onlineEntity.entity.realizedObject is not Creature creature) return;
 
+            if (creature.grasps == null) return;
             for (var i = 0; i < creature.grasps.Length; i++)
             {
                 var newGrasp = Grasps.FirstOrDefault(x => x.GraspUsed == i);
