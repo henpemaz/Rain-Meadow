@@ -9,7 +9,7 @@ namespace RainMeadow
         // A game entity has entered the room, check for corresponding online entity to be added
         public void ApoEnteringRoom(AbstractPhysicalObject entity, WorldCoordinate pos)
         {
-            RainMeadow.Debug($"{this} - {entity}");
+            //RainMeadow.Debug($"{this} - {entity}");
             //RainMeadow.Debug(System.Environment.StackTrace);
             if (!isActive) { if (isAvailable) RainMeadow.Error("Not registering because not isActive"); return; } // throw new InvalidOperationException("not isActive"); }
             if (OnlineEntity.map.TryGetValue(entity, out var oe))
@@ -39,7 +39,7 @@ namespace RainMeadow
 
         public void ApoLeavingRoom(AbstractPhysicalObject entity)
         {
-            RainMeadow.Debug($"{this} - {entity}");
+            //RainMeadow.Debug($"{this} - {entity}");
             //RainMeadow.Debug(System.Environment.StackTrace);
             if (!isActive) { if (isAvailable) RainMeadow.Error("Not registering because not isActive"); return; } // only log if relevant?
             if (entities.FirstOrDefault(e=>e.entity == entity) is OnlineEntity oe)

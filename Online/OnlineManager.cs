@@ -197,7 +197,7 @@ namespace RainMeadow
             OnlinePlayer fromPlayer = state.from;
             try
             {
-                if (state is OnlineResource.ResourceState resourceState)
+                if (state is OnlineResource.ResourceState resourceState && resourceState.resource != null && resourceState.resource.isActive)
                 {
                     resourceState.resource.ReadState(resourceState, fromPlayer.tick);
                 }

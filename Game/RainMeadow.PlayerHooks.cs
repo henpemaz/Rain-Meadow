@@ -2,15 +2,30 @@ namespace RainMeadow;
 
 partial class RainMeadow
 {
+    public static bool sSpawningPersonas;
     public void PlayerHooks()
     {
+        On.RainWorldGame.SpawnPlayers_bool_bool_bool_bool_WorldCoordinate += RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate; // Personas are set as non-transferable
+
         On.Player.ctor += Player_ctor;
         On.Player.Die += PlayerOnDie;
         On.Player.Grabability += PlayerOnGrabability;
         
         On.SlugcatStats.ctor += SlugcatStatsOnctor;
     }
-    
+
+    // Personas are set as non-transferable
+    private AbstractCreature RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate(On.RainWorldGame.orig_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate orig, RainWorldGame self, bool player1, bool player2, bool player3, bool player4, WorldCoordinate location)
+    {
+        if (OnlineManager.lobby != null)
+        {
+            sSpawningPersonas = true;
+        }
+        var ac = orig(self, player1, player2, player3, player4, location);
+        sSpawningPersonas = false;
+        return ac;
+    }
+
     private void Player_ctor(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
     {
         orig(self, abstractCreature, world);

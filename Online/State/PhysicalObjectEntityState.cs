@@ -30,9 +30,14 @@ namespace RainMeadow
         public override void ReadTo(OnlineEntity onlineEntity) // idk why this has a param if it also stores a ref to it
         {
             //onlineEntity.entity.pos = pos;
+            onlineEntity.beingMoved = true;
             onlineEntity.entity.Move(pos);
+            onlineEntity.beingMoved = false;
             onlineEntity.realized = this.realized;
-            (realizedObjectState as PhysicalObjectState)?.ReadTo(onlineEntity);
+            if(onlineEntity.entity.realizedObject != null)
+            {
+                (realizedObjectState as PhysicalObjectState)?.ReadTo(onlineEntity);
+            }
         }
 
         public override void CustomSerialize(Serializer serializer)

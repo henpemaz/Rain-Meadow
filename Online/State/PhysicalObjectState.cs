@@ -19,7 +19,7 @@ namespace RainMeadow
 
         public virtual void ReadTo(OnlineEntity onlineEntity)
         {
-            var po = (PhysicalObject)onlineEntity.entity.realizedObject;
+            var po = onlineEntity.entity.realizedObject;
             
             if (chunkStates.Length == po.bodyChunks.Length)
             {

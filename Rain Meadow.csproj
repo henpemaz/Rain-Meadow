@@ -160,6 +160,7 @@
     <Compile Include="GameModes\OnlineGameModeHelpers.cs" />
     <Compile Include="GameModes\StoryGameMode.cs" />
     <Compile Include="Game\RainMeadow.PlayerHooks.cs" />
+    <Compile Include="Game\RainMeadow.ShortcutHooks.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Menu\EventfulScrollButton.cs" />
     <Compile Include="Menu\EventfulSelectOneButton.cs" />
@@ -169,6 +170,7 @@
     <Compile Include="Menu\MenuDarkSprite.cs" />
     <Compile Include="Menu\SmartMenu.cs" />
     <Compile Include="Online\Events\CreatureEvent.cs" />
+    <Compile Include="Online\Events\CreatureEvent.Grasps.cs" />
     <Compile Include="Online\Events\PlayerTickReference.cs" />
     <Compile Include="Online\Resource\ResourceMembership.cs" />
     <Compile Include="Online\Serializer.ICustomSerializable.cs" />

@@ -61,7 +61,9 @@ namespace RainMeadow
             // not sure how "correct" this is because on the host side it might be different?
             if (!oe.owner.isMe) // kinda wanted a .isRemote helper at this point
             {
+                oe.beingMoved = true;
                 this.world.GetAbstractRoom(oe.enterPos).AddEntity(oe.entity);
+                oe.beingMoved = false;
             }
         }
 

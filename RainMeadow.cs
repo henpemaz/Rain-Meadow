@@ -54,6 +54,7 @@ namespace RainMeadow
                     
                     GameHooks();
                     EntityHooks();
+                    ShortcutHooks();
                     GameplayHooks();
                     PlayerHooks();
                 }

@@ -24,9 +24,11 @@ namespace RainMeadow
 
         public bool realized;
         public WorldCoordinate enterPos; // todo keep this updated, currently loading with creatures mid-room still places them in shortcuts
+        public bool beingMoved;
 
         public bool isPending => pendingRequest != null;
         public OnlineEvent pendingRequest;
+
 
         public OnlineEntity(AbstractPhysicalObject entity, OnlinePlayer owner, EntityId id, int seed, WorldCoordinate pos, bool isTransferable)
         {
@@ -36,6 +38,7 @@ namespace RainMeadow
             this.seed = seed;
             this.enterPos = pos;
             this.isTransferable = isTransferable;
+            this.realized = entity.realizedObject != null;
         }
 
         public override string ToString()
@@ -59,6 +62,7 @@ namespace RainMeadow
                 
                 RainMeadow.Debug("reusing existing entity " + oe);
 
+                oe.owner = newEntityEvent.owner;
                 oe.enterPos = newEntityEvent.initialPos;
                 oe.realized = newEntityEvent.realized;
 
@@ -144,7 +148,9 @@ namespace RainMeadow
             if (!owner.isMe)
             {
                 RainMeadow.Debug("A remote entity entered, adding it to the room");
+                beingMoved = true;
                 entity.Move(enterPos);
+                beingMoved = false;
                 
                 if (entity is not AbstractCreature creature)
                 {
@@ -157,7 +163,9 @@ namespace RainMeadow
                         }
                         
                         RainMeadow.Debug($"Spawning entity: {entity.ID}");
+                        beingMoved = true;
                         entity.RealizeInRoom();
+                        beingMoved = false;
                     }
                     return;
                 }
@@ -174,12 +182,16 @@ namespace RainMeadow
                     if (enterPos.TileDefined)
                     {
                         RainMeadow.Debug("added directly to the room");
+                        beingMoved = true;
                         creature.RealizeInRoom(); // places in room
+                        beingMoved = false;
                     }
                     else if (enterPos.NodeDefined)
                     {
                         RainMeadow.Debug("added directly to shortcut system");
+                        beingMoved = true;
                         creature.Realize();
+                        beingMoved = false;
                         creature.realizedCreature.inShortcut = true;
                         // this calls MOVE on the next tick which remove-adds
                         newRoom.absroom.world.game.shortcuts.CreatureEnterFromAbstractRoom(creature.realizedCreature, newRoom.absroom, enterPos.abstractNode);
@@ -226,6 +238,7 @@ namespace RainMeadow
                 if (!owner.isMe)
                 {
                     RainMeadow.Debug("Removing entity from room: " + this);
+                    beingMoved = true;
                     oldRoom.absroom.RemoveEntity(entity);
                     if (entity.realizedObject is PhysicalObject po)
                     {
@@ -239,6 +252,7 @@ namespace RainMeadow
                             if (c.RemoveFromShortcuts()) c.inShortcut = false;
                         }
                     }
+                    beingMoved = false;
                 }
                 else
                 {
@@ -361,6 +375,7 @@ namespace RainMeadow
             if (!owner.isMe) throw new InvalidProgrammerException("not mine");
             if (!isTransferable) throw new InvalidProgrammerException("cannot be transfered");
             if (isPending) throw new InvalidProgrammerException("this entity has a pending request");
+            if (highestResource is null) return; // deactivated
 
             if (highestResource.owner.isMe)
             {
