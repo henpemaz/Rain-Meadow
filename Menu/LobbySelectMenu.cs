@@ -19,6 +19,7 @@ namespace RainMeadow
         private int currentlySelectedCard;
         private OpComboBox visibilityDropDown;
         private SimplerButton playButton;
+        private SimplerButton refreshButton;
         private OpComboBox2 modeDropDown;
         private ProperlyAlignedMenuLabel modeDescriptionLabel;
 
@@ -40,6 +41,11 @@ namespace RainMeadow
             playButton = new SimplerButton(this, mainPage, Translate("PLAY!"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
             playButton.OnClick += Play;
             mainPage.subObjects.Add(playButton);
+            
+            // refresh button on lower left // P.S. I know we will probably re-align it later, I could not find an exact position that would satisfy my OCD, which usually means the alignment sucks.
+            refreshButton = new SimplerButton(this, mainPage, "REFRESH", new Vector2(315f, 50f), new Vector2(110f, 30f));
+            refreshButton.OnClick += RefreshLobbyList;
+            mainPage.subObjects.Add(refreshButton);
 
             // 188 on mock -> 218 -> 768 - 218 = 550 -> 552
             // misc buttons on topright
@@ -197,6 +203,11 @@ namespace RainMeadow
             {
                 RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo);
             }
+        }
+        
+        private void RefreshLobbyList(SimplerButton obj)
+        {
+            LobbyManager.RequestLobbyList();
         }
 
         void RequestLobbyCreate()
