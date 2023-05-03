@@ -19,6 +19,8 @@ namespace RainMeadow
 
         public virtual void ReadTo(OnlineEntity onlineEntity)
         {
+            if (!onlineEntity.owner.isMe && onlineEntity.isPending) return; // Don't sync pos if pending, reduces visibility and effect of lag
+            
             var po = onlineEntity.entity.realizedObject;
             
             if (chunkStates.Length == po.bodyChunks.Length)

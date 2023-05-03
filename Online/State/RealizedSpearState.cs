@@ -49,6 +49,8 @@ namespace RainMeadow
 
         public override void ReadTo(OnlineEntity onlineEntity)
         {
+            if (!onlineEntity.owner.isMe && onlineEntity.isPending) return; // Don't sync if pending, reduces visibility and effect of lag
+            
             var spear = (Spear)onlineEntity.entity.realizedObject;
             spear.stuckInWall = stuckInWall;
             if (!stuckInWall.HasValue) 

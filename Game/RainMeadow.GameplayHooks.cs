@@ -64,17 +64,29 @@ namespace RainMeadow
         
         private void CreatureOnViolence(On.Creature.orig_Violence orig, Creature self, BodyChunk source, Vector2? directionandmomentum, BodyChunk hitchunk, PhysicalObject.Appendage.Pos hitappendage, Creature.DamageType type, float damage, float stunbonus)
         {
-            if (OnlineManager.lobby == null) return;
+            if (OnlineManager.lobby == null) goto orig;
             if (!OnlineEntity.map.TryGetValue(hitchunk.owner.abstractPhysicalObject, out var onlineVictim)) throw new InvalidOperationException("Victim doesn't exist in online space!");
-            if (!onlineVictim.owner.isMe)
-            {
-                OnlineEntity onlineVillain = null;
-                if (source != null && !OnlineEntity.map.TryGetValue(source.owner.abstractPhysicalObject, out onlineVillain)) throw new InvalidOperationException("Villain doesn't exist in online space!");
 
-                onlineVictim.CreatureViolence(onlineVillain, hitchunk.index, hitappendage, directionandmomentum, type, damage, stunbonus);
-                return;
+            var room = hitchunk.owner.room;
+            if (room.updateIndex <= room.updateList.Count)
+            {
+                PhysicalObject trueVillain;
+                var suspect = room.updateList[room.updateIndex];
+                if (suspect is Explosion explosion) trueVillain = explosion.sourceObject;
+                else if (suspect is PhysicalObject villainObject) trueVillain = villainObject;
+                else goto orig;
+                if (!OnlineEntity.map.TryGetValue(trueVillain.abstractPhysicalObject, out var onlineTrueVillain)) throw new InvalidOperationException("TrueVillain doesn't exist in online space!");
+                if ((onlineTrueVillain.owner.isMe || onlineTrueVillain.isPending) && !onlineVictim.owner.isMe) // I'm violencing a remote entity
+                {
+                    OnlineEntity onlineVillain = null;
+                    if (source != null && !OnlineEntity.map.TryGetValue(source.owner.abstractPhysicalObject, out onlineVillain)) throw new InvalidOperationException("Villain doesn't exist in online space!");
+                    // Notify entity owner of violence
+                    onlineVictim.CreatureViolence(onlineVillain, hitchunk.index, hitappendage, directionandmomentum, type, damage, stunbonus);
+                    return; // Remote is gonna handle this
+                }
+                if (!onlineTrueVillain.owner.isMe) return; // Remote entity will send an event
             }
-            
+            orig:
             orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
         }
         

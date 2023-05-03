@@ -42,6 +42,7 @@ namespace RainMeadow
 
         public override void ReadTo(OnlineEntity onlineEntity)
         {
+            if (!onlineEntity.owner.isMe && onlineEntity.isPending) return; // Don't sync if pending, reduces visibility and effect of lag
             base.ReadTo(onlineEntity);
             var weapon = (Weapon)onlineEntity.entity.realizedObject;
             var newMode = new Weapon.Mode(Weapon.Mode.values.GetEntry(mode));
