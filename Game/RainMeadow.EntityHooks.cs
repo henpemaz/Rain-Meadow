@@ -143,7 +143,7 @@ namespace RainMeadow
             {
                 if(!oe.owner.isMe && !oe.realized && oe.isTransferable)
                 {
-                    if (oe.roomSession == null || !oe.roomSession.memberships.ContainsKey(oe.owner)) //if owner of oe is subscribed (is participant) do not request
+                    if (oe.roomSession == null || !oe.roomSession.participants.ContainsKey(oe.owner)) //if owner of oe is subscribed (is participant) do not request
                     {
                         oe.Request();
                     }
@@ -163,7 +163,7 @@ namespace RainMeadow
             {
                 if (!oe.owner.isMe && !oe.realized && oe.isTransferable)
                 {
-                    if (oe.roomSession == null || !oe.roomSession.memberships.ContainsKey(oe.owner)) //if owner of oe is subscribed (is participant) do not request
+                    if (oe.roomSession == null || !oe.roomSession.participants.ContainsKey(oe.owner)) //if owner of oe is subscribed (is participant) do not request
                     {
                         oe.Request();
                     }
@@ -242,7 +242,7 @@ namespace RainMeadow
             orig(self, ent);
             if (OnlineManager.lobby != null && ent is AbstractPhysicalObject apo && apo.pos.room == self.index)
             {
-                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.EntityEnteringWorld(apo);
+                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.ApoEnteringWorld(apo);
                 if (RoomSession.map.TryGetValue(self, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoEnteringRoom(apo, apo.pos);
             }
         }
@@ -278,7 +278,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && self is AbstractPhysicalObject apo)
             {
                 if (RoomSession.map.TryGetValue(self.Room, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoLeavingRoom(apo);
-                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.EntityLeavingWorld(apo);
+                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.ApoLeavingWorld(apo);
             }
         }
 
@@ -296,8 +296,8 @@ namespace RainMeadow
             orig(self, entity);
             if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo)
             {
+                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.ApoEnteringWorld(apo);
                 if (RoomSession.map.TryGetValue(self, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoLeavingRoom(apo);
-                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.EntityEnteringWorld(apo);
             }
         }
 
@@ -337,8 +337,8 @@ namespace RainMeadow
                             else // mine leave the old online world
                             {
                                 RainMeadow.Debug("removing my entity " + oe);
-                                roomSession.EntityLeftResource(oe);
-                                roomSession.worldSession.EntityLeftResource(oe);
+                                roomSession.old_EntityLeftResource(oe);
+                                roomSession.worldSession.old_EntityLeftResource(oe);
                             }
                         }
                     }
@@ -364,7 +364,7 @@ namespace RainMeadow
                             {
                                 RainMeadow.Debug("readding entity to world" + oe);
                                 oe.enterPos = apo.pos;
-                                roomSession2.worldSession.EntityEnteredResource(oe);
+                                roomSession2.worldSession.old_EntityEnteredResource(oe);
                             }
                             else // what happened here
                             {

@@ -11,8 +11,10 @@ namespace RainMeadow
     {
         public OnlineResource super; // the resource above this (ie lobby for a world, world for a room)
         public OnlinePlayer owner; // the current owner of this resource, can perform certain operations
-        //public List<OnlinePlayer> participants = new(); // all the players in the resource, current owner included
-        public Dictionary<OnlinePlayer, ResourceMembership> memberships = new();
+        public Dictionary<OnlinePlayer, ParticipantInResource> participants = new(); // all the players in the resource, current owner included
+        public PlayerTickReference ownerSinceTick;
+        public PlayerTickReference memberSinceTick;
+
         public List<OnlineResource> subresources;
 
         public ResourceEvent pendingRequest; // should this maybe be a list/queue? Will it be any more manageable if multiple events can cohexist?
@@ -26,38 +28,19 @@ namespace RainMeadow
         public bool isPending => pendingRequest != null;
         public bool canRelease => !isPending && isActive && !subresources.Any(s => s.isAvailable);
 
-        public void FullyReleaseResource()
+        protected virtual void AvailableImpl() { }
+
+        // The online resource has been leased and its state is available
+        protected void Available()
         {
             RainMeadow.Debug(this);
-            if (!isAvailable) { throw new InvalidOperationException("not available"); }
-            if (isActive)
-            {
-                foreach (var sub in subresources)
-                {
-                    if (sub.isAvailable) sub.FullyReleaseResource();
-                }
-                foreach (var item in entities.ToList())
-                {
-                    if (!item.isTransferable && item.owner.isMe)
-                    {
-                        //RainMeadow.Debug($"Foce-remove entity {item} from resource {this}");
-                        //EntityLeftResource(item); // force remove
-                        throw new InvalidOperationException("Not isTransferable: " + item);
-                    }
-                }
-            }
+            if (isAvailable) { throw new InvalidOperationException("Resource is already available"); }
+            if (isActive) { throw new InvalidOperationException("Resource is already active"); }
+            isAvailable = true;
+            incomingLease = null;
+            incomingEntityEvents = new();
 
-            if (canRelease) { Release(); releaseWhenPossible = false; }
-            else if (pendingRequest is not ResourceRelease) { releaseWhenPossible = true; }
-        }
-
-        public void SubresourcesUnloaded() // callback-ish for resources freeing up
-        {
-            if (releaseWhenPossible && canRelease)
-            {
-                Release();
-                releaseWhenPossible = false;
-            }
+            AvailableImpl();
         }
 
         protected abstract void ActivateImpl();
@@ -84,33 +67,51 @@ namespace RainMeadow
                 NewLeaseState(); // subresources are now available for leasing
             }
 
-            foreach (var item in incomingEntities) // entities that couldn't be processed yet (needed the resource active)
+            foreach (var item in incomingEntityEvents) // entities that couldn't be processed yet (needed the resource active)
             {
                 item.Process();
             }
-            incomingEntities.Clear();
+            incomingEntityEvents.Clear();
 
             if (releaseWhenPossible) FullyReleaseResource(); // my bad I don't want it anymore
             else if (owner.hasLeft) OnPlayerDisconnect(owner); // I might be late to the party but if I'm the only one here I can claim it now
         }
 
-        protected virtual void AvailableImpl() { }
-
-        // The online resource has been leased and its state is available
-        protected void Available()
-        {
-            RainMeadow.Debug(this);
-            if (isAvailable) { throw new InvalidOperationException("Resource is already available"); }
-            if (isActive) { throw new InvalidOperationException("Resource is already active"); }
-            isAvailable = true;
-            incomingLease = null;
-            incomingEntities = new();
-
-            AvailableImpl();
-        }
-
         public bool deactivateOnRelease = true; // hmm turns out we always do this
         public bool releaseWhenPossible;
+
+        protected virtual void UnavailableImpl() { }
+
+        // The online resource has been unleased
+        protected void Unavailable()
+        {
+            RainMeadow.Debug(this);
+            if (!isActive) { throw new InvalidOperationException("resource is inactive, should have been unleased first"); }
+            if (!isAvailable) { throw new InvalidOperationException("resource is already not available"); }
+            if (subresources.Any(s => s.isAvailable)) throw new InvalidOperationException("has available subresources");
+            isAvailable = false;
+            UnavailableImpl();
+
+            incomingLease = null;
+            currentLeaseState = null;
+            memberSinceTick = null;
+            ownerSinceTick = null;
+            OnlineManager.RemoveSubscriptions(this);
+
+            foreach (var ent in entities)
+            {
+                ent.Deactivated(this);
+            }
+            OnlineManager.RemoveFeeds(this);
+            entities.Clear();
+            entities = null;
+
+            if (deactivateOnRelease)
+            {
+                Deactivate();
+            }
+            super.SubresourcesUnloaded(); // I've released, notify super if super is waiting
+        }
 
         protected abstract void DeactivateImpl();
 
@@ -129,60 +130,58 @@ namespace RainMeadow
             releaseWhenPossible = false;
         }
 
-        protected virtual void UnavailableImpl() { }
-
-        // The online resource has been unleased
-        protected void Unavailable()
+        // Recursivelly release resources
+        public void FullyReleaseResource()
         {
             RainMeadow.Debug(this);
-            if (!isActive) { throw new InvalidOperationException("resource is inactive, should have been unleased first"); }
-            if (!isAvailable) { throw new InvalidOperationException("resource is already not available"); }
-            if (subresources.Any(s => s.isAvailable)) throw new InvalidOperationException("has available subresources");
-            isAvailable = false;
-            UnavailableImpl();
-
-            incomingLease = null;
-            currentLeaseState = null;
-
-            OnlineManager.RemoveSubscriptions(this);
-
-
-            foreach (var ent in entities)
+            if (!isAvailable) { throw new InvalidOperationException("not available"); }
+            if (isActive)
             {
-                ent.Deactivated(this);
-            }
-            OnlineManager.RemoveFeeds(this);
-            entities.Clear();
-            entities = null;
-
-            if (deactivateOnRelease)
-            {
-                Deactivate();
+                foreach (var sub in subresources)
+                {
+                    if (sub.isAvailable) sub.FullyReleaseResource();
+                }
+                foreach (var item in entities)
+                {
+                    if (!item.isTransferable && item.owner.isMe)
+                    {
+                        //RainMeadow.Debug($"Foce-remove entity {item} from resource {this}");
+                        //EntityLeftResource(item); // force remove
+                        throw new InvalidOperationException("Not isTransferable: " + item);
+                    }
+                }
             }
 
-            super?.SubresourcesUnloaded(); // I've released, notify super if super is waiting
+            if (canRelease) { Release(); releaseWhenPossible = false; }
+            else if (pendingRequest is not ResourceRelease) { releaseWhenPossible = true; }
+        }
+
+        public void SubresourcesUnloaded() // callback-ish for resources freeing up
+        {
+            if (releaseWhenPossible && canRelease)
+            {
+                Release();
+                releaseWhenPossible = false;
+            }
         }
 
         protected void NewOwner(OnlinePlayer newOwner)
         {
             RainMeadow.Debug($"{this}-{(newOwner != null ? newOwner : "null")}");
             if (newOwner == owner && newOwner != null) throw new InvalidOperationException("Re-assigned to the same owner");
+            if (isAvailable && newOwner == null) throw new InvalidOperationException("No owner for available resource");
             var oldOwner = owner;
             owner = newOwner;
 
-            if(isOwner) { this.ownerSinceTick = new PlayerTickReference(supervisor, supervisor.tick); } // "since when" so I can tell others since when
-
-            if (newOwner != null && !memberships.ContainsKey(newOwner)) memberships.Add(newOwner, new ResourceMembership(newOwner, this));
-
-            if (isSupervisor && this is not Lobby && oldOwner != owner) // I am responsible for notifying lease changes to this
+            if (oldOwner != null && oldOwner.hasLeft)
             {
-                super.NewLeaseState();
+                RainMeadow.Debug($"Old owner has left, checking...");
+                OnPlayerDisconnect(oldOwner); // we might be able to sort out things now
             }
-
             if (isAvailable && isActive && isOwner) // transfered / claimed by me
             {
                 RainMeadow.Debug($"Transfer received!");
-                foreach (var membership in memberships.Values)
+                foreach (var membership in participants.Values)
                 {
                     if (membership.player.isMe || membership.player.hasLeft) continue;
                     Subscribed(membership.player, true);
@@ -192,26 +191,53 @@ namespace RainMeadow
                 ClaimAbandonedEntities();
             }
 
-            if (isOwner)
+            if (newOwner != null && !participants.ContainsKey(newOwner)) // newly added
+            {
+                participants.Add(newOwner, new ParticipantInResource(newOwner, this));
+                if (newOwner.isMe) memberSinceTick = new PlayerTickReference(supervisor, supervisor.tick);
+            }
+            if(isOwner) // I own this now
+            {
+                this.ownerSinceTick = new PlayerTickReference(supervisor, supervisor.tick); // "since when" so I can tell others since when
+            }
+            if (isActive) // maybe has subresources, notify
+            {
+                if (this is Lobby) NewSupervisor(owner);
+                foreach (var res in subresources)
+                {
+                    if (res.isAvailable) res.NewSupervisor(owner);
+                }
+            }
+            if (isSupervisor && this is not Lobby && oldOwner != owner) // I am responsible for notifying lease changes to this
+            {
+                super.NewLeaseState();
+            }
+            if (isOwner) // do not send data to myself
             { 
                 OnlineManager.RemoveFeeds(this);
             }
-            else if (oldOwner != null && oldOwner.isMe)
+            else if (oldOwner != null && oldOwner.isMe) // no longer responsible for sending data
             {
                 OnlineManager.RemoveSubscriptions(this);
             }
+        }
 
-            if (oldOwner != null && oldOwner.hasLeft)
+        private void NewSupervisor(OnlinePlayer owner)
+        {
+            if (!isAvailable) { throw new InvalidOperationException("not available"); }
+            var newTick = new PlayerTickReference(supervisor, supervisor.tick);
+            ownerSinceTick = newTick;
+            foreach (var part in participants.Values)
             {
-                RainMeadow.Debug($"Old owner has left, checking...");
-                OnPlayerDisconnect(oldOwner); // we might be able to sort out things now
+                part.memberSinceTick = newTick;
             }
+            memberSinceTick = newTick;
         }
 
         public void UpdateParticipants(List<OnlinePlayer> newParticipants)
         {
             //RainMeadow.Debug(this);
-            var originalParticipants = memberships.Keys.ToArray();
+            var originalParticipants = participants.Keys.ToArray();
             foreach(var p in newParticipants.Except(originalParticipants))
             {
                 NewParticipant(p);
@@ -225,8 +251,9 @@ namespace RainMeadow
         private void NewParticipant(OnlinePlayer newParticipant)
         {
             RainMeadow.Debug($"{this}-{newParticipant}");
-            memberships.Add(newParticipant, new ResourceMembership(newParticipant, this));
-            if(isAvailable && isOwner)
+            participants.Add(newParticipant, new ParticipantInResource(newParticipant, this));
+            if (newParticipant.isMe) memberSinceTick = new PlayerTickReference(supervisor, supervisor.tick);
+            if (isAvailable && isOwner && !newParticipant.isMe)
             {
                 Subscribed(newParticipant, false);
             }
@@ -239,7 +266,7 @@ namespace RainMeadow
         private void ParticipantLeft(OnlinePlayer participant)
         {
             RainMeadow.Debug($"{this}-{participant}");
-            memberships.Remove(participant);
+            participants.Remove(participant);
             if (isAvailable && isOwner && !participant.isMe)
             {
                 Unsubscribed(participant);
@@ -258,7 +285,7 @@ namespace RainMeadow
             for (int i = entities.Count - 1; i >= 0; i--)
             {
                 OnlineEntity ent = entities[i];
-                if (ent.owner.hasLeft || !memberships.ContainsKey(ent.owner)) // abandoned
+                if (ent.owner.hasLeft || !participants.ContainsKey(ent.owner)) // abandoned
                 {
                     RainMeadow.Debug($"Abandoned entity: {ent}");
                     if (ent.isTransferable)
@@ -274,18 +301,12 @@ namespace RainMeadow
                     }
                     else if (isOwner) // untransferable, kick it out
                     {
-                        EntityLeftResource(ent);
+                        old_EntityLeftResource(ent);
                     }
                 }
             }
         }
 
-        // There is a race condition here
-        // One of the participants of the room will try and reach super with a Request()
-        // but absolutely nothing guarantees that they'll reach super before a random new user requesting the resource does
-        // (if the new user gets first, the previous state is lost and these guys are left out wihout a subscription)
-        // moreso, super has no way to detect whether it should wait for an old participant
-        // and... waiting is bad
         public void OnPlayerDisconnect(OnlinePlayer player)
         {
             //RainMeadow.Debug(this);
@@ -296,7 +317,7 @@ namespace RainMeadow
                 NewOwner(PlayersManager.PlayerFromId(newOwner));
             }
 
-            if (memberships.ContainsKey(player))
+            if (participants.ContainsKey(player))
             {
                 RainMeadow.Debug($"Member was in resource {this}");
                 if (isSupervisor)
@@ -306,7 +327,7 @@ namespace RainMeadow
                     if (owner == player) // Ooops we'll need a new host
                     {
                         RainMeadow.Debug($"Member was the owner");
-                        var newOwner = PlayersManager.BestTransferCandidate(this, memberships);
+                        var newOwner = PlayersManager.BestTransferCandidate(this, participants);
                         
                         if (newOwner != null && !isPending)
                         {
@@ -349,7 +370,7 @@ namespace RainMeadow
                 foreach (var ent in entities)
                 {
                     if (player == ent.owner) continue;
-                    player.QueueEvent(new NewEntityEvent(this, ent, tickReference));
+                    player.QueueEvent(new old_NewEntityEvent(this, ent, tickReference));
                 }
             }
         }
@@ -364,7 +385,7 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return $"<Resource {Id()} - o:{owner?.name} - av:{(isAvailable ? 1 : 0)} - ac:{(isActive ? 1 : 0)} - m:{memberships.Count}>";
+            return $"<Resource {Id()} - o:{owner?.name} - av:{(isAvailable ? 1 : 0)} - ac:{(isActive ? 1 : 0)} - m:{participants.Count}>";
         }
 
         public virtual byte SizeOfIdentifier()

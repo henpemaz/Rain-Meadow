@@ -39,6 +39,8 @@ namespace RainMeadow
             RainMeadow.Error($"Aborted {this}");
         }
 
+        //public abstract void Acknoledged();
+
         public enum EventTypeId : byte // will we hit 255 of these I wonder
         {
             None,
@@ -109,8 +111,8 @@ namespace RainMeadow
                 case EventTypeId.LeaseChange:
                     e = new LeaseChangeEvent();
                     break;
-                case EventTypeId.NewEntityEvent:
-                    e = new NewEntityEvent();
+                case EventTypeId.old_NewEntityEvent:
+                    e = new old_NewEntityEvent();
                     break;
                 case EventTypeId.EntityLeftEvent:
                     e = new EntityLeftEvent();

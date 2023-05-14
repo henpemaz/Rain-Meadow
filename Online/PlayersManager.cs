@@ -102,7 +102,7 @@ namespace RainMeadow
             }
         }
 
-        public static OnlinePlayer BestTransferCandidate(OnlineResource onlineResource, Dictionary<OnlinePlayer, ResourceMembership> subscribers)
+        public static OnlinePlayer BestTransferCandidate(OnlineResource onlineResource, Dictionary<OnlinePlayer, ParticipantInResource> subscribers)
         {
             if (subscribers.Keys.Contains(mePlayer)) return mePlayer;
             // todo pick by ping?

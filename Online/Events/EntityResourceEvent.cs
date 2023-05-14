@@ -15,7 +15,7 @@
         {
             base.CustomSerialize(serializer);
             serializer.Serialize(ref entityId);
-            serializer.Serialize(ref dependsOnTick);
+            serializer.SerializeNullable(ref dependsOnTick);
         }
     }
 }

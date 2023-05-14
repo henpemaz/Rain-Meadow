@@ -51,8 +51,8 @@ namespace RainMeadow
                     var ent = ws.entities[i];
                     if (ent.owner.isMe && !ent.isTransferable)
                     {
-                        if (ent.roomSession != null) ent.roomSession.EntityLeftResource(ent);
-                        ws.EntityLeftResource(ent);
+                        if (ent.roomSession != null) ent.roomSession.old_EntityLeftResource(ent);
+                        ws.old_EntityLeftResource(ent);
                     }
                 }
                 ws.FullyReleaseResource();

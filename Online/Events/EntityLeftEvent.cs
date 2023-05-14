@@ -10,7 +10,7 @@
 
         public override void Process()
         {
-            onlineResource.OnEntityLeft(this);
+            onlineResource.old_OnEntityLeft(this);
         }
     }
 }

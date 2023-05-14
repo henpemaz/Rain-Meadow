@@ -1,4 +1,6 @@
-﻿namespace RainMeadow
+﻿using System;
+
+namespace RainMeadow
 {
     public partial class OnlineEntity
     {
@@ -12,6 +14,11 @@
             {
                 this.originalOwner = originalOwner;
                 this.id = id;
+            }
+
+            internal OnlineEntity FindEntity()
+            {
+                return OnlineManager.recentEntities[this];
             }
 
             public void CustomSerialize(Serializer serializer)

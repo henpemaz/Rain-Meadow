@@ -21,7 +21,7 @@
 
         public override void Process()
         {
-            onlineResource.OnEntityNewOwner(this);
+            onlineResource.old_OnEntityNewOwner(this);
         }
     }
 }

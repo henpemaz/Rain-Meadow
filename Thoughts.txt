@@ -129,3 +129,33 @@ I realized that I wanted to have player positions on map, and not being limited 
 I soon realized that with a system like this would be perfect for creature sync at a world level, by letting the world-host spawn in creatures and let realized-room-owners snag those creatures as they are realized with the rooms in order to control an broadcast their pysics. The only addition needed was a mechanism for requesting/transfering entities between players.
 
 I'm currently still implementing missing features and fixing some bugs with this system, but this is pretty much where I am at at the moment, and everything seems to point to creature-synched co-op soon-ish.
+
+
+
+
+
+
+
+
+
+
+
+My game added a slugcat to the region, it's mine
+
+I detect it being added to a room
+It should be synched in region, fire up newapoinregion
+
+newapoinregion detects it's new and has no onlineentity attached to it
+
+create new onlineentity attached to this
+
+tell region-owner about new entity in region
+	it's got to be the owner, so handshake and retry on fail
+"new entity" and "enter region" as separate events?
+
+region-owner receives the event, recreates entity, does nothing with it? places it in absroom?
+	also because it's owner rebroadcast to others
+		what if received as non-owner? how can we detect the mistake?
+		"Join with Entity" that only owner can process
+
+

@@ -18,7 +18,7 @@ namespace RainMeadow
                 {
                     oe.enterPos = pos;
                     //if (entity.realizedObject is Creature c && c.inShortcut) oe.enterPos.WashTileData();
-                    EntityEnteredResource(oe);
+                    old_EntityEnteredResource(oe);
                 }
                 else
                 {
@@ -33,7 +33,7 @@ namespace RainMeadow
                 RainMeadow.Debug(oe);
                 OnlineManager.recentEntities[oe.id] = oe;
                 OnlineEntity.map.Add(entity, oe);
-                EntityEnteredResource(oe);
+                old_EntityEnteredResource(oe);
             }
         }
 
@@ -46,7 +46,7 @@ namespace RainMeadow
             {
                 if (oe.owner.isMe)
                 {
-                    EntityLeftResource(oe);
+                    old_EntityLeftResource(oe);
                 }
                 else
                 {
@@ -59,16 +59,16 @@ namespace RainMeadow
             }
         }
 
-        public override void EntityEnteredResource(OnlineEntity oe)
+        public override void old_EntityEnteredResource(OnlineEntity oe)
         {
-            base.EntityEnteredResource(oe);
-            oe.EnteredRoom(this);
+            base.old_EntityEnteredResource(oe);
+            oe.old_EnteredRoom(this);
         }
 
-        public override void EntityLeftResource(OnlineEntity oe)
+        public override void old_EntityLeftResource(OnlineEntity oe)
         {
-            base.EntityLeftResource(oe);
-            oe.LeftRoom(this);
+            base.old_EntityLeftResource(oe);
+            oe.old_LeftRoom(this);
         }
     }
 }

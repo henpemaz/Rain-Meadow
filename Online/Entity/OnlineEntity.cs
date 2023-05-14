@@ -1,52 +1,180 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace RainMeadow
 {
-    // Welcome to polymorphism hell
-    public partial class OnlineEntity
+    public class OnlinePhysicalObject : OnlineEntity
     {
-        public static ConditionalWeakTable<AbstractPhysicalObject, OnlineEntity> map = new();
-
-        // todo maybe abstract this into "entity" and "game entity" ?? what would I use it for though? persona data at lobby level?
-        public AbstractPhysicalObject entity;
-        public OnlinePlayer owner;
-        public EntityId id;
-        public int seed;
-        public bool isTransferable = true;
-
-        public WorldSession worldSession;
-        public RoomSession roomSession;
-        public OnlineResource lowestResource => (roomSession as OnlineResource ?? worldSession);
-        public OnlineResource highestResource => (worldSession as OnlineResource ?? roomSession);
-
+        public readonly AbstractPhysicalObject apo;
+        public readonly int seed;
         public bool realized;
         public WorldCoordinate enterPos; // todo keep this updated, currently loading with creatures mid-room still places them in shortcuts
         public bool beingMoved;
+        public static ConditionalWeakTable<AbstractPhysicalObject, OnlineEntity> map = new();
 
-        public bool isPending => pendingRequest != null;
-        public OnlineEvent pendingRequest;
-
-
-        public OnlineEntity(AbstractPhysicalObject entity, OnlinePlayer owner, EntityId id, int seed, WorldCoordinate pos, bool isTransferable)
+        internal static OnlinePhysicalObject RegisterPhysicalObject(AbstractPhysicalObject apo)
         {
-            this.entity = entity;
-            this.owner = owner;
-            this.id = id;
+            RainMeadow.Debug("Registering new entity as owned by myself");
+            var newOe = new OnlinePhysicalObject(apo, apo.ID.RandomSeed, apo.pos, PlayersManager.mePlayer, new OnlineEntity.EntityId(PlayersManager.mePlayer.id.m_SteamID, apo.ID.number), !RainMeadow.sSpawningPersonas);
+            RainMeadow.Debug(newOe);
+            OnlineManager.recentEntities[newOe.id] = newOe;
+            OnlinePhysicalObject.map.Add(apo, newOe);
+            return newOe;
+        }
+
+        public OnlinePhysicalObject(AbstractPhysicalObject apo, int seed, WorldCoordinate pos, OnlinePlayer owner, EntityId id, bool isTransferable) : base(owner, id, isTransferable)
+        {
+            this.apo = apo;
             this.seed = seed;
             this.enterPos = pos;
+            this.realized = apo.realizedObject != null; // todo do we really initialize this
+        }
+
+        public override void NewOwner(OnlinePlayer newOwner)
+        {
+            base.NewOwner(newOwner);
+            if (newOwner.isMe)
+            {
+                realized = apo.realizedObject != null; // owner is responsible for upkeeping this
+            }
+        }
+
+        internal override NewEntityEvent AsNewEntityEvent(OnlineResource onlineResource)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public abstract partial class OnlineEntity
+    {
+        public OnlinePlayer owner;
+        public readonly EntityId id;
+        public readonly bool isTransferable;
+
+        public List<OnlineResource> joinedResources; // used like a stack
+        public List<OnlineResource> locallyEnteredResources; // used like a stack
+        public OnlineResource highestResource => locallyEnteredResources?[0];
+        public OnlineResource lowestResource => locallyEnteredResources?[locallyEnteredResources.Count - 1];
+        
+        public bool isPending => pendingRequest != null;
+        public OnlineEvent pendingRequest;
+        public PlayerTickReference joinedAt;
+
+        protected OnlineEntity(OnlinePlayer owner, EntityId id, bool isTransferable)
+        {
+            this.owner = owner;
+            this.id = id;
             this.isTransferable = isTransferable;
-            this.realized = entity.realizedObject != null;
+        }
+
+        public void EnterResourceLocally(OnlineResource resource)
+        {
+            // todo handle leaving same-level resource when joining (I guess if remote)
+            // but why do we even keep track of this for non-local?
+            if (locallyEnteredResources.Count != 0 && resource.super != lowestResource) throw new InvalidOperationException("not entering a subresource");
+            locallyEnteredResources.Add(resource);
+            if (owner.isMe) JoinPending();
+        }
+
+        private void JoinPending()
+        {
+            if (!owner.isMe) { throw new InvalidProgrammerException("not owner"); }
+            if (isPending) { return; } // still pending
+            var pending = locallyEnteredResources.FirstOrDefault(r => !r.entities.ContainsKey(this.id));
+            if (pending != null)
+            {
+                pending.LocalEntityEntered(this);
+            }
+        }
+
+        public void OnJoinedResource(OnlineResource inResource)
+        {
+            joinedResources.Add(inResource);
+            if (owner.isMe) JoinPending();
+        }
+
+        internal static OnlineEntity FromNewEntityEvent(NewEntityEvent newEntityEvent, OnlineResource inResource)
+        {
+            OnlineEntity newOe = null;
+            if (newEntityEvent is NewObjectEvent newObjectEvent)
+            {
+                if (newObjectEvent is NewCreaturetEvent newCreatureEvent)
+                {
+
+                }
+                else
+                {
+
+                }
+            }
+            else if(newEntityEvent is NewGraspEvent newGraspEvent)
+            {
+
+            }
+            else
+            {
+
+            }
+
+            return newOe;
+        }
+
+        internal abstract NewEntityEvent AsNewEntityEvent(OnlineResource onlineResource);
+
+        public virtual void NewOwner(OnlinePlayer newOwner)
+        {
+            RainMeadow.Debug(this);
+            var wasOwner = owner;
+            owner = newOwner;
+
+            if (wasOwner.isMe)
+            {
+                foreach (var res in locallyEnteredResources)
+                {
+                    OnlineManager.RemoveFeed(res, this);
+                }
+            }
+            if (newOwner.isMe)
+            {
+                foreach (var res in locallyEnteredResources)
+                {
+                    OnlineManager.AddFeed(res, this);
+                }
+            }
+        }
+
+        // I was in a resource and I was left behind as the resource was released
+        public void Deactivated(OnlineResource onlineResource)
+        {
+            RainMeadow.Debug(this);
+            if (onlineResource != this.lowestResource) throw new InvalidOperationException("still active in subresource");
+            locallyEnteredResources.RemoveAt(locallyEnteredResources.Count - 1);
+            if (owner.isMe) OnlineManager.RemoveFeed(onlineResource, this);
         }
 
         public override string ToString()
         {
-            return $"{entity} from {owner.name}";
+            return $"{id} from {owner.name}";
         }
 
-        public static OnlineEntity CreateOrReuseEntity(NewEntityEvent newEntityEvent, World world)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        public static OnlineEntity old_CreateOrReuseEntity(old_NewEntityEvent newEntityEvent, World world)
         {
             RainMeadow.DebugMe();
             OnlineEntity oe = null;
@@ -58,7 +186,7 @@ namespace RainMeadow
             }
             if (OnlineManager.recentEntities.TryGetValue(newEntityEvent.entityId, out oe))
             {
-                if (oe.entity.world.game != world.game) throw new InvalidOperationException($"Entity not cleared in last session!! {oe.entity.ID}");
+                if (oe.entity.world.game != world.game) throw new InvalidOperationException($"Entity not cleared in last session!! {oe.id}");
                 
                 RainMeadow.Debug("reusing existing entity " + oe);
 
@@ -137,12 +265,12 @@ namespace RainMeadow
             return oe;
         }
 
-        public void EnteredRoom(RoomSession newRoom)
+        public void old_EnteredRoom(RoomSession newRoom)
         {
             RainMeadow.Debug(this);
             if (roomSession != null && roomSession != newRoom) // still in previous room
             {
-                roomSession.EntityLeftResource(this);
+                roomSession.old_EntityLeftResource(this);
             }
             roomSession = newRoom;
             if (!owner.isMe)
@@ -230,7 +358,7 @@ namespace RainMeadow
             }
         }
 
-        public void LeftRoom(RoomSession oldRoom)
+        public void old_LeftRoom(RoomSession oldRoom)
         {
             RainMeadow.Debug(this);
             if (roomSession == oldRoom)
@@ -262,174 +390,6 @@ namespace RainMeadow
             }
         }
 
-        public void NewOwner(OnlinePlayer newOwner)
-        {
-            RainMeadow.Debug(this);
-            var wasOwner = owner;
-
-            owner = newOwner;
-
-            if (wasOwner.isMe)
-            {
-                // this screams "iterate" but at the same time... it's just these two for RW, maybe next game
-                if (worldSession != null)
-                {
-                    OnlineManager.RemoveFeed(worldSession, this);
-                    worldSession.SubresourcesUnloaded();
-                }
-                if (roomSession != null)
-                {
-                    OnlineManager.RemoveFeed(roomSession, this);
-                    roomSession.SubresourcesUnloaded();
-                }
-            }
-            if (newOwner.isMe) // we only start feeding after we get the broadcast of new owner.
-                               // Maybe this should be in ResolveRequest instead? but then there's no guarantee the resource owners will have the new ID
-                               // at least there will be no collisions so if we ignore that data its ok?
-            {
-                if (worldSession != null && !worldSession.owner.isMe)
-                {
-                    OnlineManager.AddFeed(worldSession, this);
-                }
-                if (roomSession != null && !roomSession.owner.isMe)
-                {
-                    OnlineManager.AddFeed(roomSession, this);
-                }
-                realized = entity.realizedObject != null; // owner is responsible for upkeeping this
-            }
-        }
-
-        // I was in a resource and I was left behind
-        public void Deactivated(OnlineResource onlineResource)
-        {
-            RainMeadow.Debug(this);
-            if (onlineResource is WorldSession && this.worldSession == onlineResource) this.worldSession = null;
-            if (onlineResource is RoomSession && this.roomSession == onlineResource) this.roomSession = null;
-            if (owner.isMe) OnlineManager.RemoveFeed(onlineResource, this);
-        }
-
-        // I request, to someone else
-        public void Request()
-        {
-            RainMeadow.Debug(this);
-            if (owner.isMe) throw new InvalidProgrammerException("this entity is already mine");
-            if (!isTransferable) throw new InvalidProgrammerException("cannot be transfered");
-            if (isPending) throw new InvalidProgrammerException("this entity has a pending request");
-            if (!lowestResource.isAvailable) throw new InvalidProgrammerException("in unavailable resource");
-            if (!owner.hasLeft && lowestResource.memberships.ContainsKey(owner))
-            {
-                pendingRequest = owner.QueueEvent(new EntityRequest(this));
-            }
-            else
-            {
-                pendingRequest = highestResource.owner.QueueEvent(new EntityRequest(this));
-            }
-        }
-
-        // I've been requested and I'll pass the entity on
-        public void Requested(EntityRequest request)
-        {
-            RainMeadow.Debug(this);
-            RainMeadow.Debug("Requested by : " + request.from.name);
-            if (isTransferable && this.owner.isMe)
-            {
-                request.from.QueueEvent(new EntityRequestResult.Ok(request)); // your request was well received, now please be patient while I transfer it
-                this.highestResource.EntityNewOwner(this, request.from);
-            }
-            else if (isTransferable && (owner.hasLeft || !lowestResource.memberships.ContainsKey(owner)) && this.highestResource.owner.isMe)
-            {
-                request.from.QueueEvent(new EntityRequestResult.Ok(request));
-                this.highestResource.EntityNewOwner(this, request.from);
-            }
-            else
-            {
-                if (!isTransferable) RainMeadow.Debug("Denied because not transferable");
-                else if (!owner.isMe) RainMeadow.Debug("Denied because not mine");
-                request.from.QueueEvent(new EntityRequestResult.Error(request));
-            }
-        }
-
-        // my request has been answered to
-        // is this really needed?
-        // I thought of stuff like "breaking grasps" if a request for the grasped object failed
-        public void ResolveRequest(EntityRequestResult requestResult)
-        {
-            RainMeadow.Debug(this);
-            if (requestResult is EntityRequestResult.Ok) // I'm the new owner of this entity (comes as separate event though)
-            {
-                // confirm pending grasps?
-            }
-            else if (requestResult is EntityRequestResult.Error) // Something went wrong, I should retry
-            {
-                // todo retry logic
-                // abort pending grasps?
-                RainMeadow.Error("request failed for " + this);
-            }
-            pendingRequest = null;
-        }
-
-        // I release this entity (to room host or world host)
-        public void Release()
-        {
-            RainMeadow.Debug(this);
-            if (!owner.isMe) throw new InvalidProgrammerException("not mine");
-            if (!isTransferable) throw new InvalidProgrammerException("cannot be transfered");
-            if (isPending) throw new InvalidProgrammerException("this entity has a pending request");
-            if (highestResource is null) return; // deactivated
-
-            if (highestResource.owner.isMe)
-            {
-                RainMeadow.Debug("Staying as supervisor");
-            }
-            else
-            {
-                this.pendingRequest = highestResource.owner.QueueEvent(new EntityReleaseEvent(this, lowestResource));
-            }
-        }
-
-        // someone released "to me"
-        public void Released(EntityReleaseEvent entityRelease)
-        {
-            RainMeadow.Debug(this);
-            RainMeadow.Debug("Released by : " + entityRelease.from.name);
-            if (isTransferable && this.owner == entityRelease.from  && this.highestResource.owner.isMe) // theirs and I can transfer
-            {
-                entityRelease.from.QueueEvent(new EntityReleaseResult.Ok(entityRelease)); // ok to them
-                var res = entityRelease.inResource;
-                if (res.isAvailable || res.super.isActive)
-                {
-                    if (this.owner != res.owner) this.highestResource.EntityNewOwner(this, res.owner);
-                }
-                else
-                {
-                    if (!this.owner.isMe) this.highestResource.EntityNewOwner(this, PlayersManager.mePlayer);
-                }
-            }
-            else
-            {
-                if (!isTransferable) RainMeadow.Error("Denied because not transferable");
-                else if (owner != entityRelease.from) RainMeadow.Error("Denied because not theirs");
-                else if (!highestResource.owner.isMe) RainMeadow.Error("Denied because I don't supervise it");
-                else if (isPending) RainMeadow.Error("Denied because pending");
-                entityRelease.from.QueueEvent(new EntityReleaseResult.Error(entityRelease));
-            }
-        }
-
-        // got an answer back from my release
-        public void ResolveRelease(EntityReleaseResult result)
-        {
-            RainMeadow.Debug(this);
-            if (result is EntityReleaseResult.Ok)
-            {
-                // ?
-            }
-            else if (result is EntityReleaseResult.Error) // Something went wrong, I should retry
-            {
-                // todo retry logic
-                RainMeadow.Error("request failed for " + this);
-            }
-            pendingRequest = null;
-        }
 
         public void CreatureViolence(OnlineEntity onlineVillain, int hitchunkIndex, PhysicalObject.Appendage.Pos hitappendage, Vector2? directionandmomentum, Creature.DamageType type, float damage, float stunbonus)
         {

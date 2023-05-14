@@ -18,7 +18,7 @@ namespace RainMeadow
         public static Serializer serializer = new Serializer(16000);
 
         public static Lobby lobby;
-        public static List<Subscription> subscriptions;
+        public static List<ResourceSubscription> subscriptions;
         public static List<EntityFeed> feeds;
         public static Dictionary<OnlineEntity.EntityId, OnlineEntity> recentEntities;
         public static HashSet<OnlineEvent> waitingEvents;
@@ -214,7 +214,7 @@ namespace RainMeadow
 
         public static void AddSubscription(OnlineResource onlineResource, OnlinePlayer player)
         {
-            subscriptions.Add(new Subscription(onlineResource, player));
+            subscriptions.Add(new ResourceSubscription(onlineResource, player));
         }
 
         public static void RemoveSubscription(OnlineResource onlineResource, OnlinePlayer player)

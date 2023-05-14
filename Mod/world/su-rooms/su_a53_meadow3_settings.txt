@@ -1,0 +1,11 @@
+Template: NONE
+Clouds: 0.1304348
+Grime: 0.2391304
+BkgDroneVolume: 0.2769565
+BkgDroneNoThreatVolume: 0
+EffectColorB: 8
+Effects: Flies-0-30-30, 
+PlacedObjects: InsectGroup><551.2263><175.9486><-120~89~261~-166~TinyDragonFly~0.2282607, CustomDecal><190.1475><294.5783><633~93~661~-305~-79~-319~-332~-92~0.326087~1~0~Vertical Pink~0~0.1847826~0.7717391~0.4782609~0.2608696~0.7391304~0.5652174~0.4782609, CustomDecal><216.511><-3.199707><7~315~562~337~553~-36~615.0001~110~0.6521739~0.7173913~0.7173913~Fat Tag~0.173913~0.4782609~0.1521739~0.1304348~0.4782609~0.5543478~0.8586956~0.1304348, CustomDecal><808.9351><454.174><-18~84~-99~61~-83~-8~99~-55~0.2717391~1~0~Ghostling1~0.9347826~0.1195652~0.8913044~0.1413043~0.75~0.1304348~0.2608696~0.06521739, Vine><559.2959><606.8051><-151~-155, Vine><559.9105><607.1307><-213~8, Vine><559.177><604.8431><108~-175, CustomDecal><183.0709><338.9109><3~145~151~161~160~2~-316~-8~0.326087~1~0~jevsign~0.6847826~0.04347826~0.9239131~0.25~0.6195652~0.02173913~1~0.3586957, CustomDecal><119.5956><162.9257><-9~525~232~523~214~-3~-256~-139~0.3152174~1~0~rust1~0.3152174~1~0.3152174~1~0.3152174~1~0.3152174~1, CustomDecal><664.7><94.2449><-5~661~294~659~290~-4~-454~-110~0.3152174~1~0~rust2~0.326087~1~0.326087~1~0.326087~1~0.326087~1, 
+AmbientSounds: OMNI><AM_ENV-LightWind.ogg><830.937><650.9292><0.3478261><0.823913, 
+Triggers: Spot<tA>event<tB>MusicEvent<eA>songName<eB>NA_40 - Unseen Lands<eA>vol<eB>0.3326084<eA>prio<eB>1<eA>mxThrt<eB>1<eA>loop<eB>0<eA>droneTol<eB>0<eA>rooms<eB>-1<eA>rest<eB>5<eA>fadeIn<eB>0<eA>oneSongPerCycle<eB>0<eA>stopAtDeath<eB>0<eA>stopAtGate<eB>0<tA>multiUse<tB>0<tA>toCycle<tB>-1<tA>fromCycle<tB>0<tA>delay<tB>0<tA>panPos<tB>1045.554<tB>564.2087<tA>fireChance<tB>1<tA>entrance<tB>3<tA>karma<tB>0<tA>slugcats<tB><tA>pos<tB>588.5544<tB>223.2087<tA>handlePos<tB>-148.3553<tB>-130.3553, 
+FadePalette: 8, 0.1195652

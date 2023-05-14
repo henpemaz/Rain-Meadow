@@ -1,0 +1,23 @@
+[MERGE]
+CONDITIONAL LINKS
+// how to replace a single room in 14 lines!!
+MeadowOnline : SU_A39 : SU_A53 : SU_A53_Meadow3
+MeadowOnline : SU_A02 : SU_A53 : SU_A53_Meadow3
+MeadowOnline : SU_A38 : SU_A53 : SU_A53_Meadow3
+MeadowOnline : SU_A25 : SU_A53 : SU_A53_Meadow3
+MeadowOnline : SU_A53 : SU_A39 : DISCONNECTED
+MeadowOnline : SU_A53 : SU_A02 : DISCONNECTED
+MeadowOnline : SU_A53 : SU_A38 : DISCONNECTED
+MeadowOnline : SU_A53 : SU_A25 : DISCONNECTED
+MeadowOnline : SU_A53_Meadow3 : 1 : SU_A39
+MeadowOnline : SU_A53_Meadow3 : 2 : SU_A02
+MeadowOnline : SU_A53_Meadow3 : 3 : SU_A38
+MeadowOnline : SU_A53_Meadow3 : 4 : SU_A25
+MeadowOnline : EXCLUSIVEROOM : SU_A53_Meadow3
+MeadowOnline : HIDEROOM : SU_A53
+END CONDITIONAL LINKS
+
+ROOMS
+SU_A53_Meadow3 : DISCONNECTED, DISCONNECTED, DISCONNECTED, DISCONNECTED : VIBEZONE
+END ROOMS
+[ENDMERGE]
