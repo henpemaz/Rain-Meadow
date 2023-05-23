@@ -6,8 +6,8 @@ public abstract partial class CreatureEvent
 {
     public class Violence : OnlineEvent
     {
-        private OnlineEntity OnlineVillain; // can be null
-        private OnlineEntity OnlineVictim;
+        private OnlinePhysicalObject OnlineVillain; // can be null
+        private OnlineCreature OnlineVictim;
         private byte VictimChunkIndex;
         private AppendageRef VictimAppendage; // can be null
         private Vector2? DirectionAndMomentum;
@@ -16,7 +16,7 @@ public abstract partial class CreatureEvent
         private float StunBonus;
         
         public Violence() { }
-        public Violence(OnlineEntity onlineVillain, OnlineEntity onlineVictim, int victimChunkIndex, PhysicalObject.Appendage.Pos victimAppendage, Vector2? directionAndMomentum, Creature.DamageType damageType, float damage, float stunBonus)
+        public Violence(OnlinePhysicalObject onlineVillain, OnlineCreature onlineVictim, int victimChunkIndex, PhysicalObject.Appendage.Pos victimAppendage, Vector2? directionAndMomentum, Creature.DamageType damageType, float damage, float stunBonus)
         {
             OnlineVillain = onlineVillain;
             OnlineVictim = onlineVictim;
@@ -32,8 +32,8 @@ public abstract partial class CreatureEvent
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);
-            serializer.SerializeNullable(ref OnlineVillain);
-            serializer.Serialize(ref OnlineVictim);
+            serializer.SerializeEntityNullable(ref OnlineVillain);
+            serializer.SerializeEntity(ref OnlineVictim);
             serializer.Serialize(ref VictimChunkIndex);
             serializer.SerializeNullable(ref VictimAppendage);
             serializer.Serialize(ref DirectionAndMomentum);
@@ -47,8 +47,8 @@ public abstract partial class CreatureEvent
             var CastDamageType = new Creature.DamageType(Creature.DamageType.values.GetEntry(DamageType));
             var CastVictimAppendage = VictimAppendage?.GetAppendagePos(OnlineVictim);
 
-            var victim = (Creature)OnlineVictim.entity.realizedObject;
-            victim.Violence(OnlineVillain?.entity.realizedObject.firstChunk, DirectionAndMomentum, victim.bodyChunks[VictimChunkIndex], CastVictimAppendage, CastDamageType, Damage, StunBonus);
+            var victim = (Creature)OnlineVictim.apo.realizedObject;
+            victim.Violence(OnlineVillain?.apo.realizedObject.firstChunk, DirectionAndMomentum, victim.bodyChunks[VictimChunkIndex], CastVictimAppendage, CastDamageType, Damage, StunBonus);
         }
     }
 }

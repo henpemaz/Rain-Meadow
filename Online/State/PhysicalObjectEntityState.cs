@@ -8,35 +8,38 @@ namespace RainMeadow
         public bool realized;
         public OnlineState realizedObjectState;
 
+        public OnlinePhysicalObject onlineObject => onlineEntity as OnlinePhysicalObject;
+
         public PhysicalObjectEntityState() : base() { }
-        public PhysicalObjectEntityState(OnlineEntity onlineEntity, ulong ts, bool realizedState) : base(onlineEntity, ts, realizedState)
+        public PhysicalObjectEntityState(OnlinePhysicalObject onlineEntity, ulong ts, bool realizedState) : base(onlineEntity, ts, realizedState)
         {
-            this.pos = onlineEntity.entity.pos;
+            this.pos = onlineEntity.apo.pos;
             this.realized = onlineEntity.realized; // now now, oe.realized means its realized in the owners world
                                                    // not necessarily whether we're getting a real state or not
             if (realizedState) this.realizedObjectState = GetRealizedState();
         }
 
-        protected virtual PhysicalObjectState GetRealizedState()
+        protected virtual RealizedPhysicalObjectState GetRealizedState()
         {
-            if (onlineEntity.entity.realizedObject == null) throw new InvalidOperationException("not realized");
-            if (onlineEntity.entity.realizedObject is Spear) return new RealizedSpearState(onlineEntity);
-            if (onlineEntity.entity.realizedObject is Weapon) return new RealizedWeaponState(onlineEntity);
-            return new PhysicalObjectState(onlineEntity);
+            if (onlineObject.apo.realizedObject == null) throw new InvalidOperationException("not realized");
+            if (onlineObject.apo.realizedObject is Spear) return new RealizedSpearState(onlineObject);
+            if (onlineObject.apo.realizedObject is Weapon) return new RealizedWeaponState(onlineObject);
+            return new RealizedPhysicalObjectState(onlineObject);
         }
 
         public override StateType stateType => StateType.PhysicalObjectEntityState;
 
         public override void ReadTo(OnlineEntity onlineEntity) // idk why this has a param if it also stores a ref to it
         {
+            var onlineObject = onlineEntity as OnlinePhysicalObject;
             //onlineEntity.entity.pos = pos;
-            onlineEntity.beingMoved = true;
-            onlineEntity.entity.Move(pos);
-            onlineEntity.beingMoved = false;
-            onlineEntity.realized = this.realized;
-            if(onlineEntity.entity.realizedObject != null)
+            onlineObject.beingMoved = true;
+            onlineObject.apo.Move(pos);
+            onlineObject.beingMoved = false;
+            onlineObject.realized = this.realized;
+            if(onlineObject.apo.realizedObject != null)
             {
-                (realizedObjectState as PhysicalObjectState)?.ReadTo(onlineEntity);
+                (realizedObjectState as RealizedPhysicalObjectState)?.ReadTo(onlineEntity);
             }
         }
 

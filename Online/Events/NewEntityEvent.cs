@@ -7,7 +7,7 @@
 
         public NewEntityEvent() { }
 
-        public NewEntityEvent(OnlineResource resource, OnlineEntity oe, PlayerTickReference tickReference) : base(resource, oe.id, tickReference)
+        public NewEntityEvent(OnlineResource resource, OnlineEntity oe, TickReference tickReference) : base(resource, oe.id, tickReference)
         {
             owner = oe.owner;
             isTransferable = oe.isTransferable;

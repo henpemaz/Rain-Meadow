@@ -32,7 +32,7 @@ partial class RainMeadow
         if(OnlineManager.lobby != null)
         {
             // remote player
-            if (OnlineEntity.map.TryGetValue(self.abstractPhysicalObject, out var ent) && self.playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer)
+            if (OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var ent) && self.playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer)
             {
                 self.controller = new OnlineController(ent, self);
             }
@@ -47,7 +47,7 @@ partial class RainMeadow
             return;
         }
 
-        if (!OnlineEntity.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
         if (!onlineEntity.owner.isMe) return;
         orig(self);
     }

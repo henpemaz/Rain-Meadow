@@ -8,7 +8,7 @@ namespace RainMeadow
         public OnlinePlayer from;// not serialized
         public OnlinePlayer to;// not serialized
         public ulong eventId;
-        public PlayerTickReference dependsOnTick; // not serialized but universally supported, serialize if used for your event type
+        public TickReference dependsOnTick; // not serialized but universally supported, serialize if used for your event type
 
         public override string ToString()
         {
@@ -56,16 +56,20 @@ namespace RainMeadow
             TransferResultOk,
             TransferResultError,
             LeaseChange,
-            NewEntityEvent,
-            EntityLeftEvent,
-            EntityNewOwnerEvent,
-            EntityRequest,
-            EntityRequestResultOk,
-            EntityRequestResultError,
-            EntityRelease,
-            EntityReleaseResultOk,
-            EntityReleaseResultError,
+            GenericResultOk,
+            GenericResultError,
             CreatureEventViolence,
+            RegisterNewEntityRequest,
+            NewObjectEvent,
+            NewCreatureEvent,
+            EntityJoinRequest,
+            EntityJoinedEvent,
+            EntityLeaveRequest,
+            EntityLeftEvent,
+            EntityTransfererRequest,
+            EntityTransferedEvent,
+            EntityRequest,
+            EntityRelease,
         }
 
         public static OnlineEvent NewFromType(EventTypeId eventTypeId)
@@ -111,35 +115,47 @@ namespace RainMeadow
                 case EventTypeId.LeaseChange:
                     e = new LeaseChangeEvent();
                     break;
-                case EventTypeId.old_NewEntityEvent:
-                    e = new old_NewEntityEvent();
+                case EventTypeId.CreatureEventViolence:
+                    e = new CreatureEvent.Violence();
+                    break;
+                case EventTypeId.GenericResultOk:
+                    e = new GenericResult.Ok();
+                    break;
+                case EventTypeId.GenericResultError:
+                    e = new GenericResult.Error();
+                    break;
+                case EventTypeId.RegisterNewEntityRequest:
+                    e = new RegisterNewEntityRequest();
+                    break;
+                case EventTypeId.NewObjectEvent:
+                    e = new NewObjectEvent();
+                    break;
+                case EventTypeId.NewCreatureEvent:
+                    e = new NewCreatureEvent();
+                    break;
+                case EventTypeId.EntityJoinRequest:
+                    e = new EntityJoinRequest();
+                    break;
+                case EventTypeId.EntityJoinedEvent:
+                    e = new EntityJoinedEvent();
+                    break;
+                case EventTypeId.EntityLeaveRequest:
+                    e = new EntityLeaveRequest();
                     break;
                 case EventTypeId.EntityLeftEvent:
                     e = new EntityLeftEvent();
                     break;
-                case EventTypeId.EntityNewOwnerEvent:
-                    e = new EntityNewOwnerEvent();
+                case EventTypeId.EntityTransfererRequest:
+                    e = new EntityTransferRequest();
+                    break;
+                case EventTypeId.EntityTransferedEvent:
+                    e = new EntityTransferedEvent();
                     break;
                 case EventTypeId.EntityRequest:
                     e = new EntityRequest();
                     break;
-                case EventTypeId.EntityRequestResultOk:
-                    e = new EntityRequestResult.Ok();
-                    break;
-                case EventTypeId.EntityRequestResultError:
-                    e = new EntityRequestResult.Error();
-                    break;
                 case EventTypeId.EntityRelease:
                     e = new EntityReleaseEvent();
-                    break;
-                case EventTypeId.EntityReleaseResultOk:
-                    e = new EntityReleaseResult.Ok();
-                    break;
-                case EventTypeId.EntityReleaseResultError:
-                    e = new EntityReleaseResult.Error();
-                    break;
-                case EventTypeId.CreatureEventViolence:
-                    e = new CreatureEvent.Violence();
                     break;
             }
             if (e is null) throw new InvalidOperationException("invalid event type: " + eventTypeId);

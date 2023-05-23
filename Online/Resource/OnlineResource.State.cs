@@ -62,7 +62,7 @@ namespace RainMeadow
             protected ResourceState(OnlineResource resource, ulong ts) : base(ts)
             {
                 this.resource = resource;
-                entityStates = resource.entities.Select(e => e.GetState(ts, resource)).ToArray();
+                entityStates = resource.entities.Select(e => e.Key.GetState(ts, resource)).ToArray();
             }
 
             public override long EstimatedSize => resource.SizeOfIdentifier();

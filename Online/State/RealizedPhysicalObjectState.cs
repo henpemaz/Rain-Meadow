@@ -3,25 +3,27 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class PhysicalObjectState : OnlineState
+    public class RealizedPhysicalObjectState : OnlineState
     {
         ChunkState[] chunkStates;
         private int collisionLayer;
 
-        public PhysicalObjectState() { }
-        public PhysicalObjectState(OnlineEntity onlineEntity)
+
+
+        public RealizedPhysicalObjectState() { }
+        public RealizedPhysicalObjectState(OnlinePhysicalObject onlineEntity)
         {
-            chunkStates = onlineEntity.entity.realizedObject.bodyChunks.Select(c => new ChunkState(c)).ToArray();
-            collisionLayer = onlineEntity.entity.realizedObject.collisionLayer;
+            chunkStates = onlineEntity.apo.realizedObject.bodyChunks.Select(c => new ChunkState(c)).ToArray();
+            collisionLayer = onlineEntity.apo.realizedObject.collisionLayer;
         }
 
-        public override StateType stateType => StateType.PhysicalObjectState;
+        public override StateType stateType => StateType.RealizedPhysicalObjectState;
 
         public virtual void ReadTo(OnlineEntity onlineEntity)
         {
             if (!onlineEntity.owner.isMe && onlineEntity.isPending) return; // Don't sync pos if pending, reduces visibility and effect of lag
             
-            var po = onlineEntity.entity.realizedObject;
+            var po = (onlineEntity as OnlinePhysicalObject).apo.realizedObject;
             
             if (chunkStates.Length == po.bodyChunks.Length)
             {

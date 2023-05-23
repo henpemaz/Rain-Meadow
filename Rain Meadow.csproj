@@ -47,6 +47,7 @@
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Rain World\BepInEx\core\BepInEx.dll</HintPath>
@@ -62,6 +63,7 @@
     </Reference>
     <Reference Include="com.rlabrecque.steamworks.net">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\Managed\com.rlabrecque.steamworks.net.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="HarmonyXInterop">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Rain World\BepInEx\core\HarmonyXInterop.dll</HintPath>
@@ -111,9 +113,11 @@
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UnityWebRequestTextureModule">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\Managed\UnityEngine.UnityWebRequestTextureModule.dll</HintPath>
@@ -169,14 +173,21 @@
     <Compile Include="Menu\IHaveADescription.cs" />
     <Compile Include="Menu\MenuDarkSprite.cs" />
     <Compile Include="Menu\SmartMenu.cs" />
+    <Compile Include="Online\Events\NewCreatureEvent.cs" />
+    <Compile Include="Online\Events\NewObjectEvent.cs" />
     <Compile Include="Online\Entity\OnlineEntity.Transactions.cs" />
-    <Compile Include="Online\Entity\RegisterNewEntityEvent.cs" />
-    <Compile Include="Online\Entity\RegisterNewEntityResult.cs" />
+    <Compile Include="Online\Events\RegisterNewEntityRequest.cs" />
     <Compile Include="Online\Events\CreatureEvent.cs" />
-    <Compile Include="Online\Events\PlayerTickReference.cs" />
+    <Compile Include="Online\Events\TickReference.cs" />
     <Compile Include="Online\Events\EntityJoinedEvent.cs" />
     <Compile Include="Online\Events\NewEntityEvent.cs" />
-    <Compile Include="Online\Resource\ParticipantInResource.cs" />
+    <Compile Include="Online\Events\EntityJoinRequest.cs" />
+    <Compile Include="Online\Events\GenericResult.cs" />
+    <Compile Include="Online\Events\EntityLeaveRequest.cs" />
+    <Compile Include="Online\Resource\EntityMembership.cs" />
+    <Compile Include="Online\Resource\EntityTransferRequest.cs" />
+    <Compile Include="Online\Resource\PlayerMemebership.cs" />
+    <Compile Include="Online\Resource\ResourceMembership.cs" />
     <Compile Include="Online\Serializer.ICustomSerializable.cs" />
     <Compile Include="Online\State\AbstractCreatureState.cs" />
     <Compile Include="Online\State\CreatureHealthStateState.cs" />
@@ -185,9 +196,7 @@
     <Compile Include="Game\OnlineController.cs" />
     <Compile Include="Online\Entity\EntityFeed.cs" />
     <Compile Include="Online\Events\EntityReleaseEvent.cs" />
-    <Compile Include="Online\Events\EntityReleaseResult.cs" />
-    <Compile Include="Online\Events\EntityNewOwnerEvent.cs" />
-    <Compile Include="Online\Events\EntityRequestResult.cs" />
+    <Compile Include="Online\Events\EntityTransferedEvent.cs" />
     <Compile Include="Online\Events\EntityEvent.cs" />
     <Compile Include="Online\Events\EntityRequest.cs" />
     <Compile Include="Online\Events\EntityResourceEvent.cs" />
@@ -195,7 +204,6 @@
     <Compile Include="Online\Events\ResultEvent.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Online\Events\LeaseChangeEvent.cs" />
-    <Compile Include="Online\Events\old_NewEntityEvent.cs" />
     <Compile Include="Online\Entity\OnlineEntity.cs" />
     <Compile Include="Online\Entity\OnlineEntity.EntityId.cs" />
     <Compile Include="Online\Entity\OnlineEntity.EntityState.cs" />
@@ -224,7 +232,7 @@
     <Compile Include="Online\Events\ResourceTransfer.cs" />
     <Compile Include="Online\Events\TransferResult.cs" />
     <Compile Include="Online\State\PhysicalObjectEntityState.cs" />
-    <Compile Include="Online\State\PhysicalObjectState.cs" />
+    <Compile Include="Online\State\RealizedPhysicalObjectState.cs" />
     <Compile Include="Online\State\RealizedCreatureState.cs" />
     <Compile Include="Online\State\RealizedPlayerState.cs" />
     <Compile Include="Online\State\RealizedSpearState.cs" />
@@ -244,8 +252,17 @@
     <Compile Include="Menu\SimplerButton.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Mod\decals\jevsign.png" />
+    <Content Include="Mod\illustrations\meadowshadow.png" />
+    <Content Include="Mod\illustrations\meadowtitle.png" />
+    <Content Include="Mod\modify\world\su\map_image_su.txt" />
+    <Content Include="Mod\modify\world\su\map_su.txt" />
+    <Content Include="Mod\modify\world\su\world_su.txt" />
     <Content Include="Mod\thumbnail.png" />
     <None Include="Readme.md" />
+    <Content Include="Mod\world\su-rooms\SU_A53_Meadow3.txt" />
+    <Content Include="Mod\world\su-rooms\SU_A53_Meadow3_1.png" />
+    <Content Include="Mod\world\su-rooms\su_a53_meadow3_settings.txt" />
     <Content Include="Thoughts.txt" />
     <Content Include="TODO.txt" />
   </ItemGroup>
@@ -257,6 +274,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "$(TargetPath)" "$(ProjectDir)Mod\plugins\"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>

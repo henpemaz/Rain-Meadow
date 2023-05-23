@@ -6,400 +6,56 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class OnlinePhysicalObject : OnlineEntity
+    public class OnlineCreature : OnlinePhysicalObject
     {
-        public readonly AbstractPhysicalObject apo;
-        public readonly int seed;
-        public bool realized;
-        public WorldCoordinate enterPos; // todo keep this updated, currently loading with creatures mid-room still places them in shortcuts
-        public bool beingMoved;
-        public static ConditionalWeakTable<AbstractPhysicalObject, OnlineEntity> map = new();
-
-        internal static OnlinePhysicalObject RegisterPhysicalObject(AbstractPhysicalObject apo)
+        public OnlineCreature(AbstractCreature ac, int seed, bool realized, WorldCoordinate pos, OnlinePlayer owner, EntityId id, bool isTransferable) : base(ac, seed, realized, pos, owner, id, isTransferable)
         {
-            RainMeadow.Debug("Registering new entity as owned by myself");
-            var newOe = new OnlinePhysicalObject(apo, apo.ID.RandomSeed, apo.pos, PlayersManager.mePlayer, new OnlineEntity.EntityId(PlayersManager.mePlayer.id.m_SteamID, apo.ID.number), !RainMeadow.sSpawningPersonas);
-            RainMeadow.Debug(newOe);
-            OnlineManager.recentEntities[newOe.id] = newOe;
-            OnlinePhysicalObject.map.Add(apo, newOe);
-            return newOe;
+            // ? anything special?
         }
 
-        public OnlinePhysicalObject(AbstractPhysicalObject apo, int seed, WorldCoordinate pos, OnlinePlayer owner, EntityId id, bool isTransferable) : base(owner, id, isTransferable)
+        internal static OnlineEntity FromEvent(NewCreatureEvent newCreatureEvent, OnlineResource inResource)
         {
-            this.apo = apo;
-            this.seed = seed;
-            this.enterPos = pos;
-            this.realized = apo.realizedObject != null; // todo do we really initialize this
-        }
+            World world = inResource.World;
+            EntityID id = world.game.GetNewID();
+            id.altSeed = newCreatureEvent.seed;
 
-        public override void NewOwner(OnlinePlayer newOwner)
-        {
-            base.NewOwner(newOwner);
-            if (newOwner.isMe)
+            AbstractCreature ac = SaveState.AbstractCreatureFromString(inResource.World, newCreatureEvent.serializedObject, false);
+            ac.ID = id;
+            if (ac.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat) // for some dumb reason it doesn't get a default
             {
-                realized = apo.realizedObject != null; // owner is responsible for upkeeping this
-            }
-        }
-
-        internal override NewEntityEvent AsNewEntityEvent(OnlineResource onlineResource)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public abstract partial class OnlineEntity
-    {
-        public OnlinePlayer owner;
-        public readonly EntityId id;
-        public readonly bool isTransferable;
-
-        public List<OnlineResource> joinedResources; // used like a stack
-        public List<OnlineResource> locallyEnteredResources; // used like a stack
-        public OnlineResource highestResource => locallyEnteredResources?[0];
-        public OnlineResource lowestResource => locallyEnteredResources?[locallyEnteredResources.Count - 1];
-        
-        public bool isPending => pendingRequest != null;
-        public OnlineEvent pendingRequest;
-        public PlayerTickReference joinedAt;
-
-        protected OnlineEntity(OnlinePlayer owner, EntityId id, bool isTransferable)
-        {
-            this.owner = owner;
-            this.id = id;
-            this.isTransferable = isTransferable;
-        }
-
-        public void EnterResourceLocally(OnlineResource resource)
-        {
-            // todo handle leaving same-level resource when joining (I guess if remote)
-            // but why do we even keep track of this for non-local?
-            if (locallyEnteredResources.Count != 0 && resource.super != lowestResource) throw new InvalidOperationException("not entering a subresource");
-            locallyEnteredResources.Add(resource);
-            if (owner.isMe) JoinPending();
-        }
-
-        private void JoinPending()
-        {
-            if (!owner.isMe) { throw new InvalidProgrammerException("not owner"); }
-            if (isPending) { return; } // still pending
-            var pending = locallyEnteredResources.FirstOrDefault(r => !r.entities.ContainsKey(this.id));
-            if (pending != null)
-            {
-                pending.LocalEntityEntered(this);
-            }
-        }
-
-        public void OnJoinedResource(OnlineResource inResource)
-        {
-            joinedResources.Add(inResource);
-            if (owner.isMe) JoinPending();
-        }
-
-        internal static OnlineEntity FromNewEntityEvent(NewEntityEvent newEntityEvent, OnlineResource inResource)
-        {
-            OnlineEntity newOe = null;
-            if (newEntityEvent is NewObjectEvent newObjectEvent)
-            {
-                if (newObjectEvent is NewCreaturetEvent newCreatureEvent)
-                {
-
-                }
-                else
-                {
-
-                }
-            }
-            else if(newEntityEvent is NewGraspEvent newGraspEvent)
-            {
-
-            }
-            else
-            {
-
+                ac.state = new PlayerState(ac, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionRemotePlayer, false);
             }
 
-            return newOe;
-        }
-
-        internal abstract NewEntityEvent AsNewEntityEvent(OnlineResource onlineResource);
-
-        public virtual void NewOwner(OnlinePlayer newOwner)
-        {
-            RainMeadow.Debug(this);
-            var wasOwner = owner;
-            owner = newOwner;
-
-            if (wasOwner.isMe)
-            {
-                foreach (var res in locallyEnteredResources)
-                {
-                    OnlineManager.RemoveFeed(res, this);
-                }
-            }
-            if (newOwner.isMe)
-            {
-                foreach (var res in locallyEnteredResources)
-                {
-                    OnlineManager.AddFeed(res, this);
-                }
-            }
-        }
-
-        // I was in a resource and I was left behind as the resource was released
-        public void Deactivated(OnlineResource onlineResource)
-        {
-            RainMeadow.Debug(this);
-            if (onlineResource != this.lowestResource) throw new InvalidOperationException("still active in subresource");
-            locallyEnteredResources.RemoveAt(locallyEnteredResources.Count - 1);
-            if (owner.isMe) OnlineManager.RemoveFeed(onlineResource, this);
-        }
-
-        public override string ToString()
-        {
-            return $"{id} from {owner.name}";
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        public static OnlineEntity old_CreateOrReuseEntity(old_NewEntityEvent newEntityEvent, World world)
-        {
-            RainMeadow.DebugMe();
-            OnlineEntity oe = null;
-
-
-            if (world.GetAbstractRoom(newEntityEvent.initialPos) == null)
-            {
-                RainMeadow.Error($"Room not found!! {newEntityEvent.initialPos}");
-            }
-            if (OnlineManager.recentEntities.TryGetValue(newEntityEvent.entityId, out oe))
-            {
-                if (oe.entity.world.game != world.game) throw new InvalidOperationException($"Entity not cleared in last session!! {oe.id}");
-                
-                RainMeadow.Debug("reusing existing entity " + oe);
-
-                oe.owner = newEntityEvent.owner;
-                oe.enterPos = newEntityEvent.initialPos;
-                oe.realized = newEntityEvent.realized;
-
-                if (!world.IsRoomInRegion(oe.entity.pos.room))
-                {
-                    oe.entity.world = world;
-                    oe.entity.pos = oe.enterPos;
-                    WorldSession.registeringRemoteEntity = true;
-                    world.GetAbstractRoom(oe.enterPos).AddEntity(oe.entity);
-                    WorldSession.registeringRemoteEntity = false;
-                }
-                // we don't update other fields because they shouldn't change... in theory...
-            }
-            else
-            {
-                RainMeadow.Debug("spawning new entity");
-                OnlineManager.recentEntities.Remove(newEntityEvent.entityId);
-                // it is very tempting to switch to the generic tostring/fromstring from the savesystem, BUT
-                // it would be almost impossible to sanitize input and who knows what someone could do through that
-                // EDIT : screw it, we usin' generic string savesystem anyways B)
-                
-                EntityID id = world.game.GetNewID();
-                id.altSeed = newEntityEvent.seed;
-                WorldSession.registeringRemoteEntity = true;
-
-                if (!newEntityEvent.isCreature)
-                {
-                    var abstractPhysicalObject = SaveState.AbstractPhysicalObjectFromString(world, newEntityEvent.saveString);
-                    
-                    world.GetAbstractRoom(newEntityEvent.initialPos).AddEntity(abstractPhysicalObject);
-                    WorldSession.registeringRemoteEntity = false;
-                    
-                    oe = new OnlineEntity(abstractPhysicalObject, newEntityEvent.owner, newEntityEvent.entityId, newEntityEvent.seed, newEntityEvent.initialPos, newEntityEvent.isTransferable);
-                    OnlineEntity.map.Add(abstractPhysicalObject, oe);
-                    OnlineManager.recentEntities.Add(newEntityEvent.entityId, oe);
-                }
-                else
-                {
-                    AbstractCreature abstractCreature;
-                    
-                    CreatureTemplate.Type type = new CreatureTemplate.Type(newEntityEvent.template, false);
-                    if (type.Index == -1)
-                    {
-                        RainMeadow.Debug(type);
-                        RainMeadow.Debug(newEntityEvent.template);
-                        throw new InvalidOperationException("invalid template");
-                    }
-                    
-                    if (type == CreatureTemplate.Type.Slugcat) //todo: fix loading and serializing players?
-                    {
-                        abstractCreature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, newEntityEvent.initialPos, id);
-                    }
-                    else
-                    {
-                        abstractCreature = SaveState.AbstractCreatureFromString(world, newEntityEvent.saveString, false);
-                    }
-
-                    world.GetAbstractRoom(newEntityEvent.initialPos).AddEntity(abstractCreature);
-                    WorldSession.registeringRemoteEntity = false;
-                    if (abstractCreature.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat) // for some dumb reason it doesn't get a default
-                    {
-                        abstractCreature.state = new PlayerState(abstractCreature, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionRemotePlayer, false);
-                    }
-
-                    oe = new OnlineEntity(abstractCreature, newEntityEvent.owner, newEntityEvent.entityId, newEntityEvent.seed, newEntityEvent.initialPos, newEntityEvent.isTransferable);
-                    OnlineEntity.map.Add(abstractCreature, oe);
-                    OnlineManager.recentEntities.Add(newEntityEvent.entityId, oe);
-                }
-            }
-            oe.realized = newEntityEvent.realized;
-
+            var oe = new OnlineCreature(ac, newCreatureEvent.seed, newCreatureEvent.realized, newCreatureEvent.enterPos, newCreatureEvent.owner, newCreatureEvent.entityId, newCreatureEvent.isTransferable);
+            OnlinePhysicalObject.map.Add(ac, oe);
+            OnlineManager.recentEntities.Add(oe.id, oe);
             return oe;
         }
 
-        public void old_EnteredRoom(RoomSession newRoom)
+        public override EntityState GetState(ulong tick, OnlineResource resource)
         {
-            RainMeadow.Debug(this);
-            if (roomSession != null && roomSession != newRoom) // still in previous room
+            if (resource is WorldSession ws && !OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) throw new InvalidOperationException("asked for world state, not synched");
+            if (resource is RoomSession rs && !OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) throw new InvalidOperationException("asked for room state, not synched");
+            var realizedState = resource is RoomSession;
+            if (realizedState) { if (apo.realizedObject != null && !realized) RainMeadow.Error($"have realized object, but not entity not marked as realized??: {this} in resource {resource}"); }
+            if (realizedState && !realized)
             {
-                roomSession.old_EntityLeftResource(this);
+                //throw new InvalidOperationException("asked for realized state, not realized");
+                RainMeadow.Error($"asked for realized state, not realized: {this} in resource {resource}");
+                realizedState = false;
             }
-            roomSession = newRoom;
-            if (!owner.isMe)
-            {
-                RainMeadow.Debug("A remote entity entered, adding it to the room");
-                beingMoved = true;
-                entity.Move(enterPos);
-                beingMoved = false;
-                
-                if (entity is not AbstractCreature creature)
-                {
-                    if (newRoom.absroom.realizedRoom is Room realizedRoom)
-                    {
-                        if (entity.realizedObject != null && realizedRoom.updateList.Contains(entity.realizedObject))
-                        {
-                            RainMeadow.Debug($"Entity {entity.ID} already in the room {newRoom.absroom.name}, not adding!");
-                            return;
-                        }
-                        
-                        RainMeadow.Debug($"Spawning entity: {entity.ID}");
-                        beingMoved = true;
-                        entity.RealizeInRoom();
-                        beingMoved = false;
-                    }
-                    return;
-                }
-
-                if (newRoom.absroom.realizedRoom is Room realRoom && creature.AllowedToExistInRoom(realRoom))
-                {
-                    if (creature.realizedCreature != null && realRoom.updateList.Contains(creature.realizedCreature))
-                    {
-                        RainMeadow.Debug($"Creature {creature.ID} already in the room {newRoom.absroom.name}, not adding!");
-                        return;
-                    }
-                    
-                    RainMeadow.Debug("spawning creature " + creature);
-                    if (enterPos.TileDefined)
-                    {
-                        RainMeadow.Debug("added directly to the room");
-                        beingMoved = true;
-                        creature.RealizeInRoom(); // places in room
-                        beingMoved = false;
-                    }
-                    else if (enterPos.NodeDefined)
-                    {
-                        RainMeadow.Debug("added directly to shortcut system");
-                        beingMoved = true;
-                        creature.Realize();
-                        beingMoved = false;
-                        creature.realizedCreature.inShortcut = true;
-                        // this calls MOVE on the next tick which remove-adds
-                        newRoom.absroom.world.game.shortcuts.CreatureEnterFromAbstractRoom(creature.realizedCreature, newRoom.absroom, enterPos.abstractNode);
-                    }
-                    else
-                    {
-                        RainMeadow.Debug("INVALID POS??" + enterPos);
-                        throw new InvalidOperationException("entity must have a vaild position");
-                    }
-                }
-                else
-                {
-                    RainMeadow.Debug("not spawning creature " + creature);
-                    RainMeadow.Debug($"reasons {newRoom.absroom.realizedRoom is not null} {(newRoom.absroom.realizedRoom != null && creature.AllowedToExistInRoom(newRoom.absroom.realizedRoom))}");
-                    if (creature.realizedCreature != null)
-                    {
-                        if (!enterPos.TileDefined && enterPos.NodeDefined && newRoom.absroom.realizedRoom != null && newRoom.absroom.realizedRoom.shortCutsReady)
-                        {
-                            RainMeadow.Debug("added realized creature to shortcut system");
-                            creature.realizedCreature.inShortcut = true;
-                            // this calls MOVE on the next tick which remove-adds, this could be bad?
-                            newRoom.absroom.world.game.shortcuts.CreatureEnterFromAbstractRoom(creature.realizedCreature, newRoom.absroom, enterPos.abstractNode);
-                        }
-                        else
-                        {
-                            // can't abstractize properly because previous location is lost
-                            RainMeadow.Debug("cleared realized creature and added to absroom as abstract entity");
-                            creature.realizedCreature = null;
-                        }
-                    }
-                    else
-                    {
-                        RainMeadow.Debug("added to absroom as abstract entity");
-                    }
-                }
-            }
+            return new AbstractCreatureState(this, tick, realizedState);
         }
 
-        public void old_LeftRoom(RoomSession oldRoom)
-        {
-            RainMeadow.Debug(this);
-            if (roomSession == oldRoom)
-            {
-                if (!owner.isMe)
-                {
-                    RainMeadow.Debug("Removing entity from room: " + this);
-                    beingMoved = true;
-                    oldRoom.absroom.RemoveEntity(entity);
-                    if (entity.realizedObject is PhysicalObject po)
-                    {
-                        if (oldRoom.absroom.realizedRoom is Room room)
-                        {
-                            room.RemoveObject(po);
-                            room.CleanOutObjectNotInThisRoom(po);
-                        }
-                        if (po is Creature c && c.inShortcut)
-                        {
-                            if (c.RemoveFromShortcuts()) c.inShortcut = false;
-                        }
-                    }
-                    beingMoved = false;
-                }
-                else
-                {
-                    RainMeadow.Debug("my own entity leaving");
-                }
-                roomSession = null;
-            }
-        }
-
-
-        public void CreatureViolence(OnlineEntity onlineVillain, int hitchunkIndex, PhysicalObject.Appendage.Pos hitappendage, Vector2? directionandmomentum, Creature.DamageType type, float damage, float stunbonus)
+        public void CreatureViolence(OnlinePhysicalObject onlineVillain, int hitchunkIndex, PhysicalObject.Appendage.Pos hitappendage, Vector2? directionandmomentum, Creature.DamageType type, float damage, float stunbonus)
         {
             this.owner.QueueEvent(new CreatureEvent.Violence(onlineVillain, this, hitchunkIndex, hitappendage, directionandmomentum, type, damage, stunbonus));
         }
 
-        public void ForceGrab(OnlineEntity onlineGrabbed, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool pacifying)
+        public void ForceGrab(OnlinePhysicalObject onlineGrabbed, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool pacifying)
         {
-            var grabber = (Creature)this.entity.realizedObject;
-            var grabbedThing = onlineGrabbed.entity.realizedObject;
+            var grabber = (Creature)this.apo.realizedObject;
+            var grabbedThing = onlineGrabbed.apo.realizedObject;
 
             if (grabber.grasps[graspUsed] != null)
             {
@@ -415,6 +71,230 @@ namespace RainMeadow
         {
             var castShareability = new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(graspRef.Shareability));
             ForceGrab(graspRef.OnlineGrabbed, graspRef.GraspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
+        }
+    }
+    public class OnlinePhysicalObject : OnlineEntity
+    {
+        public readonly AbstractPhysicalObject apo;
+        public readonly int seed;
+        public bool realized;
+        public WorldCoordinate enterPos; // todo keep this updated, currently loading with creatures mid-room still places them in shortcuts
+
+        public bool beingMoved;
+        public static ConditionalWeakTable<AbstractPhysicalObject, OnlinePhysicalObject> map = new();
+
+        public RoomSession roomSession => this.lowestResource as RoomSession; // shorthand
+
+        internal static OnlinePhysicalObject RegisterPhysicalObject(AbstractPhysicalObject apo, WorldCoordinate pos)
+        {
+            RainMeadow.Debug("Registering new entity as owned by myself");
+            var newOe = new OnlinePhysicalObject(apo, apo.ID.RandomSeed, apo.realizedObject != null, pos, PlayersManager.mePlayer, new OnlineEntity.EntityId(PlayersManager.mePlayer.id.m_SteamID, apo.ID.number), !RainMeadow.sSpawningPersonas);
+            RainMeadow.Debug(newOe);
+            OnlineManager.recentEntities[newOe.id] = newOe;
+            OnlinePhysicalObject.map.Add(apo, newOe);
+            return newOe;
+        }
+
+        public OnlinePhysicalObject(AbstractPhysicalObject apo, int seed, bool realized, WorldCoordinate pos, OnlinePlayer owner, EntityId id, bool isTransferable) : base(owner, id, isTransferable)
+        {
+            this.apo = apo;
+            this.seed = seed;
+            this.enterPos = pos;
+            this.realized = realized;
+        }
+
+        public override void NewOwner(OnlinePlayer newOwner)
+        {
+            base.NewOwner(newOwner);
+            if (newOwner.isMe)
+            {
+                realized = apo.realizedObject != null; // owner is responsible for upkeeping this
+            }
+        }
+
+        internal override NewEntityEvent AsNewEntityEvent(OnlineResource inResource)
+        {
+            return new NewObjectEvent(seed, enterPos, realized, apo.ToString(), inResource, this, null);
+        }
+
+        internal static OnlineEntity FromEvent(NewObjectEvent newObjectEvent, OnlineResource inResource)
+        {
+            World world = inResource.World;
+            EntityID id = world.game.GetNewID();
+            id.altSeed = newObjectEvent.seed;
+
+            var apo = SaveState.AbstractPhysicalObjectFromString(world, newObjectEvent.serializedObject);
+            var oe = new OnlinePhysicalObject(apo, newObjectEvent.seed, newObjectEvent.realized, newObjectEvent.enterPos, newObjectEvent.owner, newObjectEvent.entityId, newObjectEvent.isTransferable);
+            OnlinePhysicalObject.map.Add(apo, oe);
+            OnlineManager.recentEntities.Add(oe.id, oe);
+            return oe;
+        }
+
+        public override void ReadState(EntityState entityState, ulong tick)
+        {
+            // todo easing??
+            // might need to get a ref to the sender all the way here for lag estimations?
+            // todo delta handling
+            if (lowestResource is RoomSession && !entityState.realizedState) return; // We can skip abstract state if we're receiving state in a room as well
+            beingMoved = true;
+            entityState.ReadTo(this);
+            beingMoved = false;
+            latestState = entityState;
+        }
+
+        public override EntityState GetState(ulong tick, OnlineResource resource)
+        {
+            if (resource is WorldSession ws && !OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) throw new InvalidOperationException("asked for world state, not synched");
+            if (resource is RoomSession rs && !OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) throw new InvalidOperationException("asked for room state, not synched");
+            var realizedState = resource is RoomSession;
+            if (realizedState) { if (apo.realizedObject != null && !realized) RainMeadow.Error($"have realized object, but not entity not marked as realized??: {this} in resource {resource}"); }
+            if (realizedState && !realized)
+            {
+                //throw new InvalidOperationException("asked for realized state, not realized");
+                RainMeadow.Error($"asked for realized state, not realized: {this} in resource {resource}");
+                realizedState = false;
+            }
+            return new PhysicalObjectEntityState(this, tick, realizedState);
+        }
+    }
+
+    public abstract partial class OnlineEntity
+    {
+        public OnlinePlayer owner;
+        public readonly EntityId id;
+        public readonly bool isTransferable;
+
+        public List<OnlineResource> joinedResources = new(); // used like a stack
+        public List<OnlineResource> enteredResources = new(); // used like a stack
+        public OnlineResource highestResource => joinedResources.Count != 0 ? joinedResources[0] : null;
+        public OnlineResource lowestResource => joinedResources.Count != 0 ? joinedResources[joinedResources.Count - 1] : null;
+        
+        public bool isPending => pendingRequest != null;
+        public OnlineEvent pendingRequest;
+
+        protected OnlineEntity(OnlinePlayer owner, EntityId id, bool isTransferable)
+        {
+            this.owner = owner;
+            this.id = id;
+            this.isTransferable = isTransferable;
+        }
+
+        public void EnterResource(OnlineResource resource)
+        {
+            // todo handle joining same-level resource when joining (I guess if remote)
+            // but why do we even keep track of this for non-local?
+            if (enteredResources.Count != 0 && resource.super != lowestResource) throw new InvalidOperationException("not entering a subresource");
+            enteredResources.Add(resource);
+            if (owner.isMe) JoinOrLeavePending();
+        }
+
+        public void LeaveResource(OnlineResource resource)
+        {
+            // todo handle leaving same-level resource when joining (I guess if remote)
+            // but why do we even keep track of this for non-local?
+            if (enteredResources.Count == 0) throw new InvalidOperationException("not in a resource");
+            if (resource != lowestResource) throw new InvalidOperationException("not the right resource");
+            enteredResources.Remove(resource);
+            if (owner.isMe) JoinOrLeavePending();
+        }
+
+        private void JoinOrLeavePending()
+        {
+            if (!owner.isMe) { throw new InvalidProgrammerException("not owner"); }
+            if (isPending) { return; } // still pending
+            // any resources to leave
+            var pending = joinedResources.Except(enteredResources).FirstOrDefault(r => r.entities.ContainsKey(this));
+            if (pending != null)
+            {
+                pending.LocalEntityLeft(this);
+                return;
+            }
+            // any resources to join
+            pending = enteredResources.FirstOrDefault(r => !r.entities.ContainsKey(this));
+            if (pending != null)
+            {
+                pending.LocalEntityEntered(this);
+                return;
+            }
+        }
+
+        public virtual void OnJoinedResource(OnlineResource inResource)
+        {
+            joinedResources.Add(inResource);
+            if (owner.isMe) JoinOrLeavePending();
+        }
+
+        public virtual void OnLeftResource(OnlineResource inResource)
+        {
+            joinedResources.Remove(inResource);
+            if (owner.isMe) JoinOrLeavePending();
+        }
+
+        internal abstract NewEntityEvent AsNewEntityEvent(OnlineResource onlineResource);
+
+        internal static OnlineEntity FromNewEntityEvent(NewEntityEvent newEntityEvent, OnlineResource inResource)
+        {
+            if (newEntityEvent is NewObjectEvent newObjectEvent)
+            {
+                if (newObjectEvent is NewCreatureEvent newCreatureEvent)
+                {
+                    return OnlineCreature.FromEvent(newCreatureEvent, inResource);
+                }
+                else
+                {
+                    return OnlinePhysicalObject.FromEvent(newObjectEvent, inResource);
+                }
+            }
+            //else if(newEntityEvent is NewGraspEvent newGraspEvent)
+            //{
+
+            //}
+            else
+            {
+                throw new InvalidOperationException("unknown entity event type");
+            }
+        }
+
+        public virtual void NewOwner(OnlinePlayer newOwner)
+        {
+            RainMeadow.Debug(this);
+            var wasOwner = owner;
+            owner = newOwner;
+
+            if (wasOwner.isMe)
+            {
+                foreach (var res in enteredResources)
+                {
+                    OnlineManager.RemoveFeed(res, this);
+                }
+            }
+            if (newOwner.isMe)
+            {
+                foreach (var res in enteredResources)
+                {
+                    OnlineManager.AddFeed(res, this);
+                }
+            }
+        }
+
+        // I was in a resource and I was left behind as the resource was released
+        public void Deactivated(OnlineResource onlineResource)
+        {
+            RainMeadow.Debug(this);
+            if (onlineResource != this.lowestResource) throw new InvalidOperationException("still active in subresource");
+            enteredResources.RemoveAt(enteredResources.Count - 1);
+            if (owner.isMe) OnlineManager.RemoveFeed(onlineResource, this);
+        }
+
+        public EntityState latestState;
+
+        public abstract void ReadState(EntityState entityState, ulong tick);
+
+        public abstract EntityState GetState(ulong tick, OnlineResource resource);
+
+        public override string ToString()
+        {
+            return $"{id} from {owner.name}";
         }
     }
 }

@@ -26,7 +26,7 @@ namespace RainMeadow
                 
                 if (!membership.Value.everSentLease)
                 {
-                    var tickReference = PlayerTickReference.NewestOf(membership.Value.memberSinceTick, this, ownerSinceTick, super);
+                    var tickReference = TickReference.NewestOf(membership.Value.memberSinceTick, this, ownerSinceTick, super);
                     membership.Key.QueueEvent(new LeaseChangeEvent(this, newLeaseState, tickReference)); // its their first time here
                     membership.Value.everSentLease = true;
                 }

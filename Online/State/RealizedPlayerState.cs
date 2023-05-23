@@ -11,9 +11,9 @@ namespace RainMeadow
         private ushort inputs;
         private Vector2 analogInput;
         public RealizedPlayerState() { }
-        public RealizedPlayerState(OnlineEntity onlineEntity) : base(onlineEntity)
+        public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
         {
-            Player p = onlineEntity.entity.realizedObject as Player;
+            Player p = onlineEntity.apo.realizedObject as Player;
             animationIndex = (byte)p.animation.Index;
             animationFrame = (short)p.animationFrame;
             bodyModeIndex = (byte)p.bodyMode.Index;
@@ -67,7 +67,7 @@ namespace RainMeadow
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
-            if (onlineEntity.entity.realizedObject is Player pl)
+            if ((onlineEntity as OnlineCreature).apo.realizedObject is Player pl)
             {
                 pl.animation = new Player.AnimationIndex(Player.AnimationIndex.values.GetEntry(animationIndex));
                 pl.animationFrame = animationFrame;

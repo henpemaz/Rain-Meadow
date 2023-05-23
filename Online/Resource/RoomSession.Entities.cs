@@ -5,70 +5,36 @@ namespace RainMeadow
 {
     public partial class RoomSession
     {
-        // called by hooks on absroom.addentity, as well as Available()
-        // A game entity has entered the room, check for corresponding online entity to be added
-        public void ApoEnteringRoom(AbstractPhysicalObject entity, WorldCoordinate pos)
+        // Something entered this resource, check if it needs registering
+        public void ApoEnteringRoom(AbstractPhysicalObject apo, WorldCoordinate pos)
         {
-            //RainMeadow.Debug($"{this} - {entity}");
-            //RainMeadow.Debug(System.Environment.StackTrace);
-            if (!isActive) { if (isAvailable) RainMeadow.Error("Not registering because not isActive"); return; } // throw new InvalidOperationException("not isActive"); }
-            if (OnlineEntity.map.TryGetValue(entity, out var oe))
+            if (!isAvailable) throw new InvalidOperationException("not available");
+            if (!isActive) throw new InvalidOperationException("not active");
+            if (!OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) // New to me
             {
-                if (oe.owner.isMe)
-                {
-                    oe.enterPos = pos;
-                    //if (entity.realizedObject is Creature c && c.inShortcut) oe.enterPos.WashTileData();
-                    old_EntityEnteredResource(oe);
-                }
-                else
-                {
-                    // we've just added it
-                    RainMeadow.Debug("externally controlled entity joining : " + oe);
-                }
+                RainMeadow.Debug($"{this} - registering {apo}");
+                oe = OnlinePhysicalObject.RegisterPhysicalObject(apo, pos);
             }
-            else if (!WorldSession.registeringRemoteEntity)
+            if (oe.owner.isMe) // Under my control
             {
-                RainMeadow.Debug("Registering new entity as owned by myself");
-                oe = new OnlineEntity(entity, PlayersManager.mePlayer, new OnlineEntity.EntityId(PlayersManager.mePlayer.id.m_SteamID, entity.ID.number), entity.ID.RandomSeed, entity.pos, !RainMeadow.sSpawningPersonas);
-                RainMeadow.Debug(oe);
-                OnlineManager.recentEntities[oe.id] = oe;
-                OnlineEntity.map.Add(entity, oe);
-                old_EntityEnteredResource(oe);
+                oe.EnterResource(this);
             }
         }
 
-        public void ApoLeavingRoom(AbstractPhysicalObject entity)
+        public void ApoLeavingRoom(AbstractPhysicalObject apo)
         {
-            //RainMeadow.Debug($"{this} - {entity}");
-            //RainMeadow.Debug(System.Environment.StackTrace);
-            if (!isActive) { if (isAvailable) RainMeadow.Error("Not registering because not isActive"); return; } // only log if relevant?
-            if (entities.FirstOrDefault(e=>e.entity == entity) is OnlineEntity oe)
+            RainMeadow.Debug(this);
+            if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
             {
                 if (oe.owner.isMe)
                 {
-                    old_EntityLeftResource(oe);
-                }
-                else
-                {
-                    RainMeadow.Error("remote entity left without being removed!");
+                    oe.LeaveResource(this);
                 }
             }
             else
             {
-                // we are removing it from the room
+                RainMeadow.Error("Unregistered entity leaving");
             }
-        }
-
-        public override void old_EntityEnteredResource(OnlineEntity oe)
-        {
-            base.old_EntityEnteredResource(oe);
-            oe.old_EnteredRoom(this);
-        }
-
-        public override void old_EntityLeftResource(OnlineEntity oe)
-        {
-            base.old_EntityLeftResource(oe);
-            oe.old_LeftRoom(this);
         }
     }
 }

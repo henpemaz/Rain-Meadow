@@ -16,7 +16,7 @@ namespace RainMeadow
                 if (isActive)
                 {
                     RainMeadow.Debug($"{this} - registering {apo}");
-                    oe = OnlinePhysicalObject.RegisterPhysicalObject(apo);
+                    oe = OnlinePhysicalObject.RegisterPhysicalObject(apo, apo.pos);
                 }
                 else // world population generates before this can be activated // can't we simply mark it as active earlier?
                 {
@@ -25,9 +25,9 @@ namespace RainMeadow
                     return;
                 }
             }
-            if (oe.owner.isMe && !oe.locallyEnteredResources.Contains(this)) // Under my control
+            if (oe.owner.isMe && !oe.enteredResources.Contains(this)) // Under my control
             {
-                oe.EnterResourceLocally(this);
+                oe.EnterResource(this);
             }
             // no error if already contained, our hooks are triggered multiple times
             // no action if remote
@@ -47,31 +47,6 @@ namespace RainMeadow
             {
                 RainMeadow.Error("Unregistered entity leaving");
             }
-        }
-
-
-
-
-
-
-        public override void old_EntityEnteredResource(OnlineEntity oe)
-        {
-            base.old_EntityEnteredResource(oe);
-            oe.worldSession = this;
-
-            // not sure how "correct" this is because on the host side it might be different?
-            if (!oe.owner.isMe) // kinda wanted a .isRemote helper at this point
-            {
-                oe.beingMoved = true;
-                this.world.GetAbstractRoom(oe.enterPos).AddEntity(oe.entity);
-                oe.beingMoved = false;
-            }
-        }
-
-        public override void old_EntityLeftResource(OnlineEntity oe)
-        {
-            base.old_EntityLeftResource(oe);
-            if (oe.worldSession == this) oe.worldSession = null;
         }
     }
 }

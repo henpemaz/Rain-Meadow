@@ -12,7 +12,7 @@ namespace RainMeadow
         public static ConditionalWeakTable<World, WorldSession> map = new();
         public Dictionary<string, RoomSession> roomSessions = new();
 
-        protected override World World => world;
+        public override World World => world;
 
         public WorldSession(Region region, Lobby lobby)
         {

@@ -26,7 +26,7 @@ namespace RainMeadow
             RoomState,
             PhysicalObjectEntityState,
             AbstractCreatureState,
-            PhysicalObjectState,
+            RealizedPhysicalObjectState,
             RealizedCreatureState,
             RealizedPlayerState,
             RealizedWeaponState,
@@ -57,8 +57,8 @@ namespace RainMeadow
                 case StateType.AbstractCreatureState:
                     s = new AbstractCreatureState();
                     break;
-                case StateType.PhysicalObjectState:
-                    s = new PhysicalObjectState();
+                case StateType.RealizedPhysicalObjectState:
+                    s = new RealizedPhysicalObjectState();
                     break;
                 case StateType.RealizedCreatureState:
                     s = new RealizedCreatureState();

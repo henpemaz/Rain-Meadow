@@ -6,7 +6,7 @@
 
         public LeaseChangeEvent() { }
 
-        public LeaseChangeEvent(OnlineResource onlineResource, OnlineResource.LeaseState leaseState, PlayerTickReference dependsOnTick) : base(onlineResource)
+        public LeaseChangeEvent(OnlineResource onlineResource, OnlineResource.LeaseState leaseState, TickReference dependsOnTick) : base(onlineResource)
         {
             this.leaseState = leaseState;
             this.dependsOnTick = dependsOnTick;

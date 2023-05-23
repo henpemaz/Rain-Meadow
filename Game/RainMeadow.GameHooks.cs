@@ -1,6 +1,7 @@
 ﻿using System;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -45,14 +46,14 @@ namespace RainMeadow
                 OnlineManager.recentEntities.Clear();
                 
                 if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
-                
+                var entities = ws.entities.Keys.ToList(); 
                 for (int i = ws.entities.Count - 1; i >= 0; i--)
                 {
-                    var ent = ws.entities[i];
-                    if (ent.owner.isMe && !ent.isTransferable)
+                    var ent = entities[i];
+                    if (ent.owner.isMe && !ent.isTransferable && ent is OnlinePhysicalObject opo)
                     {
-                        if (ent.roomSession != null) ent.roomSession.old_EntityLeftResource(ent);
-                        ws.old_EntityLeftResource(ent);
+                        if (opo.roomSession != null) opo.roomSession.LocalEntityLeft(ent);
+                        ws.LocalEntityLeft(ent);
                     }
                 }
                 ws.FullyReleaseResource();

@@ -43,7 +43,7 @@ namespace RainMeadow
 
             WorldSession.map = new();
             RoomSession.map = new();
-            OnlineEntity.map = new();
+            OnlinePhysicalObject.map = new();
 
             PlayersManager.Reset();
         }

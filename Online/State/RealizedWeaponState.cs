@@ -3,7 +3,7 @@ using UnityEngine;
 namespace RainMeadow
 {
 
-    public class RealizedWeaponState : PhysicalObjectState
+    public class RealizedWeaponState : RealizedPhysicalObjectState
     {
         public byte mode;
         private Vector2? setRotation;
@@ -16,9 +16,9 @@ namespace RainMeadow
         {
         }
 
-        public RealizedWeaponState(OnlineEntity onlineEntity) : base(onlineEntity)
+        public RealizedWeaponState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
-            var weapon = (Weapon)onlineEntity.entity.realizedObject;
+            var weapon = (Weapon)onlineEntity.apo.realizedObject;
             mode = (byte)weapon.mode;
             tailPos = weapon.tailPos;
             setRotation = weapon.setRotation;
@@ -44,7 +44,7 @@ namespace RainMeadow
         {
             if (!onlineEntity.owner.isMe && onlineEntity.isPending) return; // Don't sync if pending, reduces visibility and effect of lag
             base.ReadTo(onlineEntity);
-            var weapon = (Weapon)onlineEntity.entity.realizedObject;
+            var weapon = (Weapon)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             var newMode = new Weapon.Mode(Weapon.Mode.values.GetEntry(mode));
             if (weapon.mode != newMode) weapon.ChangeMode(newMode);
             weapon.tailPos = tailPos;

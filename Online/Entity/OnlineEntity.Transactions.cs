@@ -28,33 +28,33 @@
             RainMeadow.Debug("Requested by : " + request.from.name);
             if (isTransferable && this.owner.isMe)
             {
-                request.from.QueueEvent(new EntityRequestResult.Ok(request)); // your request was well received, now please be patient while I transfer it
-                this.highestResource.old_EntityNewOwner(this, request.from);
+                request.from.QueueEvent(new GenericResult.Ok(request)); // your request was well received, now please be patient while I transfer it
+                this.highestResource.LocalEntityTransfered(this, request.from);
             }
             else if (isTransferable && (owner.hasLeft || !lowestResource.participants.ContainsKey(owner)) && this.highestResource.owner.isMe)
             {
-                request.from.QueueEvent(new EntityRequestResult.Ok(request));
-                this.highestResource.old_EntityNewOwner(this, request.from);
+                request.from.QueueEvent(new GenericResult.Ok(request));
+                this.highestResource.LocalEntityTransfered(this, request.from);
             }
             else
             {
                 if (!isTransferable) RainMeadow.Debug("Denied because not transferable");
                 else if (!owner.isMe) RainMeadow.Debug("Denied because not mine");
-                request.from.QueueEvent(new EntityRequestResult.Error(request));
+                request.from.QueueEvent(new GenericResult.Error(request));
             }
         }
 
         // my request has been answered to
         // is this really needed?
         // I thought of stuff like "breaking grasps" if a request for the grasped object failed
-        public void ResolveRequest(EntityRequestResult requestResult)
+        public void ResolveRequest(GenericResult requestResult)
         {
             RainMeadow.Debug(this);
-            if (requestResult is EntityRequestResult.Ok) // I'm the new owner of this entity (comes as separate event though)
+            if (requestResult is GenericResult.Ok) // I'm the new owner of this entity (comes as separate event though)
             {
                 // confirm pending grasps?
             }
-            else if (requestResult is EntityRequestResult.Error) // Something went wrong, I should retry
+            else if (requestResult is GenericResult.Error) // Something went wrong, I should retry
             {
                 // todo retry logic
                 // abort pending grasps?
@@ -89,15 +89,15 @@
             RainMeadow.Debug("Released by : " + entityRelease.from.name);
             if (isTransferable && this.owner == entityRelease.from && this.highestResource.owner.isMe) // theirs and I can transfer
             {
-                entityRelease.from.QueueEvent(new EntityReleaseResult.Ok(entityRelease)); // ok to them
+                entityRelease.from.QueueEvent(new GenericResult.Ok(entityRelease)); // ok to them
                 var res = entityRelease.inResource;
                 if (res.isAvailable || res.super.isActive)
                 {
-                    if (this.owner != res.owner) this.highestResource.old_EntityNewOwner(this, res.owner);
+                    if (this.owner != res.owner) this.highestResource.LocalEntityTransfered(this, res.owner);
                 }
                 else
                 {
-                    if (!this.owner.isMe) this.highestResource.old_EntityNewOwner(this, PlayersManager.mePlayer);
+                    if (!this.owner.isMe) this.highestResource.LocalEntityTransfered(this, PlayersManager.mePlayer);
                 }
             }
             else
@@ -106,19 +106,19 @@
                 else if (owner != entityRelease.from) RainMeadow.Error("Denied because not theirs");
                 else if (!highestResource.owner.isMe) RainMeadow.Error("Denied because I don't supervise it");
                 else if (isPending) RainMeadow.Error("Denied because pending");
-                entityRelease.from.QueueEvent(new EntityReleaseResult.Error(entityRelease));
+                entityRelease.from.QueueEvent(new GenericResult.Error(entityRelease));
             }
         }
 
         // got an answer back from my release
-        public void ResolveRelease(EntityReleaseResult result)
+        public void ResolveRelease(GenericResult result)
         {
             RainMeadow.Debug(this);
-            if (result is EntityReleaseResult.Ok)
+            if (result is GenericResult.Ok)
             {
                 // ?
             }
-            else if (result is EntityReleaseResult.Error) // Something went wrong, I should retry
+            else if (result is GenericResult.Error) // Something went wrong, I should retry
             {
                 // todo retry logic
                 RainMeadow.Error("request failed for " + this);

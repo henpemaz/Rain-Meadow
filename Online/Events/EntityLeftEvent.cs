@@ -3,14 +3,13 @@
     public class EntityLeftEvent : EntityResourceEvent
     {
         public EntityLeftEvent() { }
-
-        public EntityLeftEvent(OnlineResource resource, OnlineEntity oe, PlayerTickReference tickReference) : base(resource, oe.id, tickReference) { }
+        public EntityLeftEvent(OnlineResource resource, OnlineEntity oe, TickReference tickReference) : base(resource, oe.id, tickReference) { }
 
         public override EventTypeId eventType => EventTypeId.EntityLeftEvent;
 
         public override void Process()
         {
-            onlineResource.old_OnEntityLeft(this);
+            onlineResource.OnEntityLeft(this);
         }
     }
 }

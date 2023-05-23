@@ -486,7 +486,7 @@ namespace RainMeadow
             }
         }
 
-        public void Serialize(ref OnlineEntity onlineEntity)
+        public void SerializeEntity<T>(ref T onlineEntity) where T : OnlineEntity
         {
             if (isWriting)
             {
@@ -496,7 +496,30 @@ namespace RainMeadow
             if (isReading)
             {
                 var id = new OnlineEntity.EntityId(reader.ReadUInt64(), reader.ReadInt32());
-                OnlineManager.recentEntities.TryGetValue(id, out onlineEntity);
+                OnlineManager.recentEntities.TryGetValue(id, out var temp);
+                onlineEntity = temp as T;
+            }
+        }
+
+        public void SerializeEntityNullable<T>(ref T onlineEntity) where T : OnlineEntity
+        {
+            if (isWriting)
+            {
+                writer.Write(onlineEntity != null);
+                if(onlineEntity != null)
+                {
+                    writer.Write(onlineEntity.id.originalOwner);
+                    writer.Write(onlineEntity.id.id);
+                }
+            }
+            if (isReading)
+            {
+                if (reader.ReadBoolean())
+                {
+                    var id = new OnlineEntity.EntityId(reader.ReadUInt64(), reader.ReadInt32());
+                    OnlineManager.recentEntities.TryGetValue(id, out var temp);
+                    onlineEntity = temp as T;
+                }
             }
         }
 
@@ -531,25 +554,6 @@ namespace RainMeadow
                 if (reader.ReadBoolean())
                 {
                     Serialize(ref nullableState);
-                }
-            }
-        }
-        
-        public void SerializeNullable(ref OnlineEntity nullableEntity)
-        {
-            if (isWriting)
-            {
-                writer.Write(nullableEntity != null);
-                if (nullableEntity != null)
-                {
-                    Serialize(ref nullableEntity);
-                }
-            }
-            if (isReading)
-            {
-                if (reader.ReadBoolean())
-                {
-                    Serialize(ref nullableEntity);
                 }
             }
         }
@@ -592,6 +596,22 @@ namespace RainMeadow
             if (isReading)
             {
                 referencedEvent = currPlayer.GetRecentEvent(reader.ReadUInt64());
+            }
+        }
+
+        internal void SerializeEvent<T>(ref T playerEvent) where T : OnlineEvent
+        {
+            if (isWriting)
+            {
+                writer.Write((byte)playerEvent.eventType);
+                playerEvent.CustomSerialize(this);
+            }
+            if (isReading)
+            {
+                playerEvent = (T)OnlineEvent.NewFromType((OnlineEvent.EventTypeId)reader.ReadByte());
+                playerEvent.from = currPlayer;
+                playerEvent.to = PlayersManager.mePlayer;
+                playerEvent.CustomSerialize(this);
             }
         }
     }

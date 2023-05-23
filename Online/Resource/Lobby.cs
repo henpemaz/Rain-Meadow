@@ -11,7 +11,7 @@ namespace RainMeadow
         public Dictionary<string, WorldSession> worldSessions = new();
         public OnlineGameMode gameMode;
 
-        protected override World World => throw new NotSupportedException(); // Lobby can't add world entities
+        public override World World => throw new NotSupportedException(); // Lobby can't add world entities
 
         public event Action OnLobbyAvailable;
 

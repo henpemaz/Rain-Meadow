@@ -15,7 +15,7 @@
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);
-            serializer.Serialize(ref onlineEntity);
+            serializer.SerializeEntity(ref onlineEntity);
             serializer.Serialize(ref realizedState);
         }
 

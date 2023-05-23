@@ -5,7 +5,7 @@
         public OnlineEntity.EntityId entityId;
         protected EntityResourceEvent() { }
 
-        protected EntityResourceEvent(OnlineResource resource, OnlineEntity.EntityId entityId, PlayerTickReference tickReference) : base(resource)
+        protected EntityResourceEvent(OnlineResource resource, OnlineEntity.EntityId entityId, TickReference tickReference) : base(resource)
         {
             this.entityId = entityId;
             this.dependsOnTick = tickReference;

@@ -4,11 +4,12 @@ namespace RainMeadow
     {
         public bool alive;
         public byte meatLeft;
-        
+
+
         public CreatureStateState() { }
-        public CreatureStateState(OnlineEntity onlineEntity)
+        public CreatureStateState(OnlineCreature onlineEntity)
         {
-            var abstractCreature = (AbstractCreature)onlineEntity.entity;
+            var abstractCreature = (AbstractCreature)onlineEntity.apo;
             alive = abstractCreature.state.alive;
             meatLeft = (byte)abstractCreature.state.meatLeft;
         }

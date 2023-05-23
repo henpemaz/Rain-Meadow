@@ -10,7 +10,7 @@ namespace RainMeadow
         public static ConditionalWeakTable<AbstractRoom, RoomSession> map = new();
 
         public WorldSession worldSession => super as WorldSession;
-        protected override World World => worldSession.world;
+        public override World World => worldSession.world;
 
         public RoomSession(WorldSession ws, AbstractRoom absroom)
         {
@@ -27,7 +27,7 @@ namespace RainMeadow
             {
                 foreach (var ent in absroom.entities)
                 {
-                    if (ent is AbstractPhysicalObject apo && OnlineEntity.map.TryGetValue(apo, out var oe)
+                    if (ent is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe)
                          && !oe.realized && !oe.owner.isMe && oe.isTransferable && !oe.isPending)
                     {
                         oe.Request(); // I am realizing this entity, let me have it
