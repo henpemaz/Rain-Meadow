@@ -1,6 +1,5 @@
 ﻿namespace RainMeadow
 {
-
     public abstract partial class OnlineEntity
     {
         // I request, to someone else

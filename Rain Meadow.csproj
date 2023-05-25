@@ -173,6 +173,8 @@
     <Compile Include="Menu\IHaveADescription.cs" />
     <Compile Include="Menu\MenuDarkSprite.cs" />
     <Compile Include="Menu\SmartMenu.cs" />
+    <Compile Include="Online\Entity\OnlineCreature.cs" />
+    <Compile Include="Online\Entity\OnlinePhysicalObject.cs" />
     <Compile Include="Online\Events\NewCreatureEvent.cs" />
     <Compile Include="Online\Events\NewObjectEvent.cs" />
     <Compile Include="Online\Entity\OnlineEntity.Transactions.cs" />
@@ -185,7 +187,7 @@
     <Compile Include="Online\Events\GenericResult.cs" />
     <Compile Include="Online\Events\EntityLeaveRequest.cs" />
     <Compile Include="Online\Resource\EntityMembership.cs" />
-    <Compile Include="Online\Resource\EntityTransferRequest.cs" />
+    <Compile Include="Online\Events\EntityTransferRequest.cs" />
     <Compile Include="Online\Resource\PlayerMemebership.cs" />
     <Compile Include="Online\Resource\ResourceMembership.cs" />
     <Compile Include="Online\Serializer.ICustomSerializable.cs" />
@@ -206,7 +208,6 @@
     <Compile Include="Online\Events\LeaseChangeEvent.cs" />
     <Compile Include="Online\Entity\OnlineEntity.cs" />
     <Compile Include="Online\Entity\OnlineEntity.EntityId.cs" />
-    <Compile Include="Online\Entity\OnlineEntity.EntityState.cs" />
     <Compile Include="Online\Resource\OnlineResource.Entities.cs" />
     <Compile Include="Online\Resource\OnlineResource.LeaseState.cs" />
     <Compile Include="Online\Resource\OnlineResource.State.cs" />

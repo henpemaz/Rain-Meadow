@@ -169,7 +169,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug($"{this}-{(newOwner != null ? newOwner : "null")}");
             if (newOwner == owner && newOwner != null) throw new InvalidOperationException("Re-assigned to the same owner");
-            if (isAvailable && newOwner == null) throw new InvalidOperationException("No owner for available resource");
+            if (isAvailable && newOwner == null && pendingRequest is not ResourceRelease) throw new InvalidOperationException("No owner for available resource");
             var oldOwner = owner;
             owner = newOwner;
 

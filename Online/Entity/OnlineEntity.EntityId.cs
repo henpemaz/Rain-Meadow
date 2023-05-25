@@ -29,7 +29,7 @@ namespace RainMeadow
 
             public override string ToString()
             {
-                return $"#{id}:{originalOwner:6}";
+                return $"#{id}:{originalOwner.ToString().Substring(0,6)}"; // mfw no interpolation truncate
             }
             public override bool Equals(object obj) => this.Equals(obj as EntityId);
             public bool Equals(EntityId other)

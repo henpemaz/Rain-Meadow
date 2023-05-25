@@ -18,7 +18,7 @@
         {
             base.CustomSerialize(serializer);
             serializer.Serialize(ref leaseState);
-            serializer.Serialize(ref dependsOnTick);
+            serializer.SerializeNullable(ref dependsOnTick);
         }
 
         public override void Process()

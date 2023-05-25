@@ -8,8 +8,7 @@ namespace RainMeadow
         // Something entered this resource, check if it needs registering
         public void ApoEnteringRoom(AbstractPhysicalObject apo, WorldCoordinate pos)
         {
-            if (!isAvailable) throw new InvalidOperationException("not available");
-            if (!isActive) throw new InvalidOperationException("not active");
+            if (!isAvailable || !isActive) return;
             if (!OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) // New to me
             {
                 RainMeadow.Debug($"{this} - registering {apo}");
@@ -23,6 +22,7 @@ namespace RainMeadow
 
         public void ApoLeavingRoom(AbstractPhysicalObject apo)
         {
+            if (!isAvailable || !isActive) return;
             RainMeadow.Debug(this);
             if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
             {

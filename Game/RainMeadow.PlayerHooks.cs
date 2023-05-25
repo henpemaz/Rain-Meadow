@@ -1,3 +1,7 @@
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using System;
+
 namespace RainMeadow;
 
 partial class RainMeadow
@@ -12,6 +16,20 @@ partial class RainMeadow
         On.Player.Grabability += PlayerOnGrabability;
         
         On.SlugcatStats.ctor += SlugcatStatsOnctor;
+        On.AbstractCreature.ctor += AbstractCreature_ctor;
+    }
+
+    private void AbstractCreature_ctor(On.AbstractCreature.orig_ctor orig, AbstractCreature self, World world, CreatureTemplate creatureTemplate, Creature realizedCreature, WorldCoordinate pos, EntityID ID)
+    {
+        orig(self, world, creatureTemplate, realizedCreature, pos, ID);
+        if (OnlineManager.lobby != null)
+        {
+            if (creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat && self.state == null) // please, have a state like all other creatures PLEASE
+            {
+                self.state = new PlayerState(self, 0, Ext_SlugcatStatsName.OnlineSessionRemotePlayer, false);
+            }
+            if(self.state == null) { Error($"Missing state for {self} of type {creatureTemplate}"); }
+        }
     }
 
     // Personas are set as non-transferable
@@ -76,5 +94,4 @@ partial class RainMeadow
             self.throwingSkill = 1;
         }
     }
-    
 }
