@@ -57,7 +57,7 @@ namespace RainMeadow
                             var vessel = self.betweenRoomsWaitingLobby[i];
                             if (OnlinePhysicalObject.map.TryGetValue(vessel.creature.abstractPhysicalObject, out var oe))
                             {
-                                if (!oe.owner.isMe && oe.roomSession?.absroom != vessel.room)
+                                if (!oe.isMine && oe.roomSession?.absroom != vessel.room)
                                 {
                                     self.betweenRoomsWaitingLobby.Remove(vessel);
                                 }
@@ -80,7 +80,7 @@ namespace RainMeadow
 
             var absCrit = vessel.creature.abstractCreature;
             OnlinePhysicalObject.map.TryGetValue(absCrit, out var onlineEntity);
-            if (onlineEntity.owner.isMe) return result; // If entity is ours, game handles it normally.
+            if (onlineEntity.isMine) return result; // If entity is ours, game handles it normally.
 
             if (onlineEntity.roomSession?.absroom != vessel.room) result = false; // If OnlineEntity is not yet in the room, keep waiting.
 

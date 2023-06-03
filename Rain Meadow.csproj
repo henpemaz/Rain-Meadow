@@ -253,17 +253,10 @@
     <Compile Include="Menu\SimplerButton.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Mod\decals\jevsign.png" />
     <Content Include="Mod\illustrations\meadowshadow.png" />
     <Content Include="Mod\illustrations\meadowtitle.png" />
-    <Content Include="Mod\modify\world\su\map_image_su.txt" />
-    <Content Include="Mod\modify\world\su\map_su.txt" />
-    <Content Include="Mod\modify\world\su\world_su.txt" />
     <Content Include="Mod\thumbnail.png" />
     <None Include="Readme.md" />
-    <Content Include="Mod\world\su-rooms\SU_A53_Meadow3.txt" />
-    <Content Include="Mod\world\su-rooms\SU_A53_Meadow3_1.png" />
-    <Content Include="Mod\world\su-rooms\su_a53_meadow3_settings.txt" />
     <Content Include="Thoughts.txt" />
     <Content Include="TODO.txt" />
   </ItemGroup>
@@ -275,7 +268,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>copy "$(TargetPath)" "$(ProjectDir)Mod\plugins\"</PostBuildEvent>
   </PropertyGroup>
 </Project>

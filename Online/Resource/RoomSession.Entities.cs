@@ -14,7 +14,7 @@ namespace RainMeadow
                 RainMeadow.Debug($"{this} - registering {apo}");
                 oe = OnlinePhysicalObject.RegisterPhysicalObject(apo, pos);
             }
-            if (oe.owner.isMe) // Under my control
+            if (oe.isMine) // Under my control
             {
                 oe.EnterResource(this);
             }
@@ -24,9 +24,10 @@ namespace RainMeadow
         {
             if (!isAvailable || !isActive) return;
             RainMeadow.Debug(this);
+            RainMeadow.Debug(Environment.StackTrace);
             if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
             {
-                if (oe.owner.isMe)
+                if (oe.isMine)
                 {
                     oe.LeaveResource(this);
                 }

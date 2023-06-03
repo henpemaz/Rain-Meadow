@@ -17,7 +17,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (!isActive) throw new InvalidOperationException("not active");
-            if (!oe.owner.isMe) throw new InvalidOperationException("not mine");
+            if (!oe.isMine) throw new InvalidOperationException("not mine");
             if (entities.ContainsKey(oe)) throw new InvalidOperationException("already in entities");
             RainMeadow.Debug($"{this} - joining with {oe}");
             if (this is not Lobby && super.entities.ContainsKey(oe)) // already in super, therefore known
@@ -35,7 +35,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (!isActive) throw new InvalidProgrammerException("not active");
-            if (oe.highestResource != null) { throw new InvalidOperationException("already in a resource"); }
+            if (oe.primaryResource != null) { throw new InvalidOperationException("already in a resource"); }
 
             if (isOwner) // enter right away
             {
@@ -58,7 +58,7 @@ namespace RainMeadow
         public void OnEntityRegisterRequest(RegisterNewEntityRequest registerEntityRequest)
         {
             RainMeadow.Debug(this);
-            if (isOwner && isActive && (registerEntityRequest?.dependsOnTick.ChecksOut() ?? true)) // tick checked here because needs an answer this frame
+            if (isOwner && isActive && (registerEntityRequest.dependsOnTick?.ChecksOut() ?? true)) // tick checked here because needs an answer this frame
             {
                 OnlineEntity oe = OnlineEntity.FromNewEntityEvent(registerEntityRequest.newEntityEvent, this);
                 EntityRegisteredInResource(oe);
@@ -122,7 +122,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (!isActive) throw new InvalidProgrammerException("not active");
-            if (oe.lowestResource != super) { throw new InvalidOperationException("trying to join but not in super"); }
+            if (oe.currentlyJoinedResource != super) { throw new InvalidOperationException("trying to join but not in super"); }
 
             if (isOwner) // join right away
             {
@@ -144,7 +144,7 @@ namespace RainMeadow
         public void OnEntityJoinRequest(EntityJoinRequest entityJoinRequest)
         {
             RainMeadow.Debug(this);
-            if (isOwner && isActive && entityJoinRequest.dependsOnTick.ChecksOut()) // tick checked here because needs an answer this frame
+            if (isOwner && isActive && (entityJoinRequest.dependsOnTick?.ChecksOut() ?? true)) // tick checked here because needs an answer this frame
             {
                 OnlineEntity oe = entityJoinRequest.entityId.FindEntity();
                 EntityJoinedResource(oe);
@@ -174,6 +174,11 @@ namespace RainMeadow
 
         internal void OnEntityJoined(EntityJoinedEvent entityJoinedEvent)
         {
+            if (!isActive)
+            {
+                incomingEntityEvents.Add(entityJoinedEvent);
+                return;
+            }
             RainMeadow.Debug(this);
             var oe = entityJoinedEvent.entityId.FindEntity();
             EntityJoinedResource(oe);
@@ -200,7 +205,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (!isActive) throw new InvalidProgrammerException("not active");
-            if (oe.lowestResource != this) { throw new InvalidOperationException("trying to leave but not lowest"); }
+            if (oe.currentlyJoinedResource != this) { throw new InvalidOperationException("trying to leave but not lowest"); }
 
             if (isOwner) // leave right away
             {
@@ -222,10 +227,10 @@ namespace RainMeadow
         public void OnEntityLeaveRequest(EntityLeaveRequest entityLeaveRequest)
         {
             RainMeadow.Debug(this);
-            if (isOwner && isActive && entityLeaveRequest.dependsOnTick.ChecksOut()) // tick checked here because needs an answer this frame
+            if (isOwner && isActive && (entityLeaveRequest.dependsOnTick?.ChecksOut() ?? true)) // tick checked here because needs an answer this frame
             {
                 OnlineEntity oe = entityLeaveRequest.entityId.FindEntity();
-                EntityJoinedResource(oe);
+                EntityLeftResource(oe);
                 entityLeaveRequest.from.QueueEvent(new GenericResult.Ok(entityLeaveRequest));
             }
             else
@@ -252,6 +257,11 @@ namespace RainMeadow
 
         public void OnEntityLeft(EntityLeftEvent entityLeftEvent)
         {
+            if (!isActive)
+            {
+                incomingEntityEvents.Add(entityLeftEvent);
+                return;
+            }
             RainMeadow.Debug(this);
             var oe = entityLeftEvent.entityId.FindEntity();
             EntityLeftResource(oe);
@@ -278,8 +288,8 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (!isActive) throw new InvalidOperationException("not active");
-            if (oe.highestResource != this) throw new InvalidOperationException("transfered in wrong resource");
-            if (!oe.owner.isMe && !isOwner) throw new InvalidOperationException("not my business");
+            if (oe.primaryResource != this) throw new InvalidOperationException("transfered in wrong resource");
+            if (!oe.isMine && !isOwner) throw new InvalidOperationException("not my business");
 
             if (isOwner) // transfer right away
             {

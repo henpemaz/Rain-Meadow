@@ -6,17 +6,17 @@
         public void Request()
         {
             RainMeadow.Debug(this);
-            if (owner.isMe) throw new InvalidProgrammerException("this entity is already mine");
+            if (isMine) throw new InvalidProgrammerException("this entity is already mine");
             if (!isTransferable) throw new InvalidProgrammerException("cannot be transfered");
             if (isPending) throw new InvalidProgrammerException("this entity has a pending request");
-            if (!lowestResource.isAvailable) throw new InvalidProgrammerException("in unavailable resource");
-            if (!owner.hasLeft && lowestResource.participants.ContainsKey(owner))
+            if (!currentlyJoinedResource.isAvailable) throw new InvalidProgrammerException("in unavailable resource");
+            if (!owner.hasLeft && currentlyJoinedResource.participants.ContainsKey(owner))
             {
                 pendingRequest = owner.QueueEvent(new EntityRequest(this));
             }
             else
             {
-                pendingRequest = highestResource.owner.QueueEvent(new EntityRequest(this));
+                pendingRequest = primaryResource.owner.QueueEvent(new EntityRequest(this));
             }
         }
 
@@ -25,20 +25,20 @@
         {
             RainMeadow.Debug(this);
             RainMeadow.Debug("Requested by : " + request.from.name);
-            if (isTransferable && this.owner.isMe)
+            if (isTransferable && this.isMine)
             {
                 request.from.QueueEvent(new GenericResult.Ok(request)); // your request was well received, now please be patient while I transfer it
-                this.highestResource.LocalEntityTransfered(this, request.from);
+                this.primaryResource.LocalEntityTransfered(this, request.from);
             }
-            else if (isTransferable && (owner.hasLeft || !lowestResource.participants.ContainsKey(owner)) && this.highestResource.owner.isMe)
+            else if (isTransferable && (owner.hasLeft || !currentlyJoinedResource.participants.ContainsKey(owner)) && this.primaryResource.isOwner)
             {
                 request.from.QueueEvent(new GenericResult.Ok(request));
-                this.highestResource.LocalEntityTransfered(this, request.from);
+                this.primaryResource.LocalEntityTransfered(this, request.from);
             }
             else
             {
                 if (!isTransferable) RainMeadow.Debug("Denied because not transferable");
-                else if (!owner.isMe) RainMeadow.Debug("Denied because not mine");
+                else if (!isMine) RainMeadow.Debug("Denied because not mine");
                 request.from.QueueEvent(new GenericResult.Error(request));
             }
         }
@@ -66,18 +66,18 @@
         public void Release()
         {
             RainMeadow.Debug(this);
-            if (!owner.isMe) throw new InvalidProgrammerException("not mine");
+            if (!isMine) throw new InvalidProgrammerException("not mine");
             if (!isTransferable) throw new InvalidProgrammerException("cannot be transfered");
             if (isPending) throw new InvalidProgrammerException("this entity has a pending request");
-            if (highestResource is null) return; // deactivated
+            if (primaryResource is null) return; // deactivated
 
-            if (highestResource.owner.isMe)
+            if (primaryResource.isOwner)
             {
                 RainMeadow.Debug("Staying as supervisor");
             }
             else
             {
-                this.pendingRequest = highestResource.owner.QueueEvent(new EntityReleaseEvent(this, lowestResource));
+                this.pendingRequest = primaryResource.owner.QueueEvent(new EntityReleaseEvent(this, currentlyJoinedResource));
             }
         }
 
@@ -86,24 +86,24 @@
         {
             RainMeadow.Debug(this);
             RainMeadow.Debug("Released by : " + entityRelease.from.name);
-            if (isTransferable && this.owner == entityRelease.from && this.highestResource.owner.isMe) // theirs and I can transfer
+            if (isTransferable && this.owner == entityRelease.from && this.primaryResource.isOwner) // theirs and I can transfer
             {
                 entityRelease.from.QueueEvent(new GenericResult.Ok(entityRelease)); // ok to them
                 var res = entityRelease.inResource;
                 if (res.isAvailable || res.super.isActive)
                 {
-                    if (this.owner != res.owner) this.highestResource.LocalEntityTransfered(this, res.owner);
+                    if (this.owner != res.owner) this.primaryResource.LocalEntityTransfered(this, res.owner);
                 }
                 else
                 {
-                    if (!this.owner.isMe) this.highestResource.LocalEntityTransfered(this, PlayersManager.mePlayer);
+                    if (!this.isMine) this.primaryResource.LocalEntityTransfered(this, PlayersManager.mePlayer);
                 }
             }
             else
             {
                 if (!isTransferable) RainMeadow.Error("Denied because not transferable");
                 else if (owner != entityRelease.from) RainMeadow.Error("Denied because not theirs");
-                else if (!highestResource.owner.isMe) RainMeadow.Error("Denied because I don't supervise it");
+                else if (!primaryResource.isOwner) RainMeadow.Error("Denied because I don't supervise it");
                 else if (isPending) RainMeadow.Error("Denied because pending");
                 entityRelease.from.QueueEvent(new GenericResult.Error(entityRelease));
             }

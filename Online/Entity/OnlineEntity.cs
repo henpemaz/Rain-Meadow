@@ -9,11 +9,14 @@ namespace RainMeadow
         public OnlinePlayer owner;
         public readonly EntityId id;
         public readonly bool isTransferable;
+        public bool isMine => owner.isMe;
 
         public List<OnlineResource> joinedResources = new(); // used like a stack
         public List<OnlineResource> enteredResources = new(); // used like a stack
-        public OnlineResource highestResource => joinedResources.Count != 0 ? joinedResources[0] : null;
-        public OnlineResource lowestResource => joinedResources.Count != 0 ? joinedResources[joinedResources.Count - 1] : null;
+
+        public OnlineResource primaryResource => joinedResources.Count != 0 ? joinedResources[0] : null;
+        public OnlineResource currentlyJoinedResource => joinedResources.Count != 0 ? joinedResources[joinedResources.Count - 1] : null;
+        public OnlineResource currentlyEnteredResource => enteredResources.Count != 0 ? enteredResources[enteredResources.Count - 1] : null;
         
         public bool isPending => pendingRequest != null;
         public OnlineEvent pendingRequest;
@@ -30,9 +33,9 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             // todo handle joining same-level resource when joining (I guess if remote)
             // but why do we even keep track of this for non-local?
-            if (enteredResources.Count != 0 && resource.super != lowestResource) throw new InvalidOperationException("not entering a subresource");
+            if (enteredResources.Count != 0 && resource.super != currentlyEnteredResource) throw new InvalidOperationException("not entering a subresource");
             enteredResources.Add(resource);
-            if (owner.isMe) JoinOrLeavePending();
+            if (isMine) JoinOrLeavePending();
         }
 
         public void LeaveResource(OnlineResource resource)
@@ -41,15 +44,18 @@ namespace RainMeadow
             // todo handle leaving same-level resource when joining (I guess if remote)
             // but why do we even keep track of this for non-local?
             if (enteredResources.Count == 0) throw new InvalidOperationException("not in a resource");
-            if (resource != lowestResource) throw new InvalidOperationException("not the right resource");
+
+            // this is wrong, it's cheking for joinedresources(remote) but we're looking at enteredresources(local, pending)
+            // todo fix this
+            if (resource != currentlyEnteredResource) throw new InvalidOperationException("not the right resource");
             enteredResources.Remove(resource);
-            if (owner.isMe) JoinOrLeavePending();
+            if (isMine) JoinOrLeavePending();
         }
 
         private void JoinOrLeavePending()
         {
             //RainMeadow.Debug(this);
-            if (!owner.isMe) { throw new InvalidProgrammerException("not owner"); }
+            if (!isMine) { throw new InvalidProgrammerException("not owner"); }
             if (isPending) { return; } // still pending
             // any resources to leave
             var pending = joinedResources.Except(enteredResources).FirstOrDefault(r => r.entities.ContainsKey(this));
@@ -70,15 +76,30 @@ namespace RainMeadow
         public virtual void OnJoinedResource(OnlineResource inResource)
         {
             RainMeadow.Debug(this);
+            if (!isMine && this.currentlyJoinedResource != null && currentlyJoinedResource.IsSibling(inResource))
+            {
+                currentlyJoinedResource.EntityLeftResource(this);
+            }
             joinedResources.Add(inResource);
-            if (owner.isMe) JoinOrLeavePending();
+            if (isMine)
+            {
+                if(!inResource.isOwner)
+                    OnlineManager.AddFeed(inResource, this);
+                JoinOrLeavePending();
+            }
         }
 
         public virtual void OnLeftResource(OnlineResource inResource)
         {
             RainMeadow.Debug(this);
             joinedResources.Remove(inResource);
-            if (owner.isMe) JoinOrLeavePending();
+            if (isMine)
+            {
+                OnlineManager.RemoveFeed(inResource, this);
+                JoinOrLeavePending();
+                if(!isTransferable)
+                    inResource.SubresourcesUnloaded(); // maybe you can release now
+            }
         }
 
         internal abstract NewEntityEvent AsNewEntityEvent(OnlineResource onlineResource);
@@ -123,7 +144,8 @@ namespace RainMeadow
             {
                 foreach (var res in enteredResources)
                 {
-                    OnlineManager.AddFeed(res, this);
+                    if(!res.isOwner)
+                        OnlineManager.AddFeed(res, this);
                 }
             }
         }
@@ -132,10 +154,10 @@ namespace RainMeadow
         public virtual void Deactivated(OnlineResource onlineResource)
         {
             RainMeadow.Debug(this);
-            if (onlineResource != this.lowestResource) throw new InvalidOperationException("not leaving lowest resource");
+            if (onlineResource != this.currentlyJoinedResource) throw new InvalidOperationException("not leaving lowest resource");
             enteredResources.Remove(onlineResource);
             joinedResources.Remove(onlineResource);
-            if (owner.isMe) OnlineManager.RemoveFeed(onlineResource, this);
+            if (isMine) OnlineManager.RemoveFeed(onlineResource, this);
         }
 
         public EntityState latestState;

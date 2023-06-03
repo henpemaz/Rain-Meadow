@@ -18,10 +18,6 @@ namespace RainMeadow
 
             AbstractCreature ac = SaveState.AbstractCreatureFromString(inResource.World, newCreatureEvent.serializedObject, false);
             ac.ID = id;
-            if (ac.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat) // for some dumb reason it doesn't get a default
-            {
-                ac.state = new PlayerState(ac, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionRemotePlayer, false);
-            }
 
             var oe = new OnlineCreature(ac, newCreatureEvent.seed, newCreatureEvent.realized, newCreatureEvent.enterPos, newCreatureEvent.owner, newCreatureEvent.entityId, newCreatureEvent.isTransferable);
             OnlinePhysicalObject.map.Add(ac, oe);
@@ -31,6 +27,7 @@ namespace RainMeadow
 
         internal override NewEntityEvent AsNewEntityEvent(OnlineResource inResource)
         {
+            RainMeadow.Debug($"serializing {this} in {apo.pos} as {SaveState.AbstractCreatureToStringStoryWorld(apo as AbstractCreature)}");
             return new NewCreatureEvent(seed, enterPos, realized, SaveState.AbstractCreatureToStringStoryWorld(apo as AbstractCreature), inResource, this, null);
         }
 

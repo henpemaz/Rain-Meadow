@@ -50,10 +50,10 @@ namespace RainMeadow
                 for (int i = ws.entities.Count - 1; i >= 0; i--)
                 {
                     var ent = entities[i];
-                    if (ent.owner.isMe && !ent.isTransferable && ent is OnlinePhysicalObject opo)
+                    if (ent.isMine && !ent.isTransferable && ent is OnlinePhysicalObject opo)
                     {
-                        if (opo.roomSession != null) opo.roomSession.LocalEntityLeft(ent);
-                        ws.LocalEntityLeft(ent);
+                        if (opo.roomSession != null) opo.LeaveResource(opo.roomSession);
+                        opo.LeaveResource(ws);
                     }
                 }
                 ws.FullyReleaseResource();

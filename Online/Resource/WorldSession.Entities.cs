@@ -25,7 +25,7 @@ namespace RainMeadow
                     return;
                 }
             }
-            if (oe.owner.isMe && !oe.enteredResources.Contains(this)) // Under my control
+            if (oe.isMine && !oe.enteredResources.Contains(this)) // Under my control
             {
                 oe.EnterResource(this);
             }
@@ -38,7 +38,7 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
             {
-                if (oe.owner.isMe)
+                if (oe.isMine)
                 {
                     oe.LeaveResource(this);
                 }

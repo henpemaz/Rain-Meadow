@@ -38,7 +38,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved && !(oe.roomSession != null && oe.roomSession.absroom.index == newCoord.room))
+                if (!oe.isMine && !oe.beingMoved && !(oe.roomSession != null && oe.roomSession.absroom.index == newCoord.room))
                 {
                     RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
                     return;
@@ -52,7 +52,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved && !(oe.roomSession != null && oe.roomSession.absroom.index == newCoord.room))
+                if (!oe.isMine && !oe.beingMoved && !(oe.roomSession != null && oe.roomSession.absroom.index == newCoord.room))
                 {
                     RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
                     return;
@@ -68,10 +68,14 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved && !(oe.roomSession != null && oe.roomSession.absroom.index == newCoord.room))
+                if (!oe.isMine && !oe.beingMoved && !(oe.roomSession != null && oe.roomSession.absroom.index == newCoord.room))
                 {
                     RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
                     return;
+                }
+                if(oe.beingMoved)
+                {
+                    RainMeadow.Debug($"entity being moved: {oe} from {oe.apo.pos} to {newCoord}");
                 }
             }
             orig(self, newCoord);
@@ -86,7 +90,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved && !(oe.roomSession != null && oe.roomSession.absroom.index == newCoord.room))
+                if (!oe.isMine && !oe.beingMoved && !(oe.roomSession != null && oe.roomSession.absroom.index == newCoord.room))
                 {
                     RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
                     return;
@@ -100,7 +104,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved)
+                if (!oe.isMine && !oe.beingMoved)
                 {
                     RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
                     return;
@@ -114,7 +118,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved)
+                if (!oe.isMine && !oe.beingMoved)
                 {
                     return;
                 }
@@ -127,7 +131,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved)
+                if (!oe.isMine && !oe.beingMoved)
                 {
                     return;
                 }
@@ -141,14 +145,14 @@ namespace RainMeadow
             orig(self);
             if(OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if(!oe.owner.isMe && !oe.realized && oe.isTransferable)
+                if(!oe.isMine && !oe.realized && oe.isTransferable)
                 {
                     if (oe.roomSession == null || !oe.roomSession.participants.ContainsKey(oe.owner)) //if owner of oe is subscribed (is participant) do not request
                     {
                         oe.Request();
                     }
                 }
-                if (oe.owner.isMe)
+                if (oe.isMine)
                 {
                     oe.realized = true;
                 }
@@ -161,14 +165,14 @@ namespace RainMeadow
             orig(self);
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if (!oe.owner.isMe && !oe.realized && oe.isTransferable)
+                if (!oe.isMine && !oe.realized && oe.isTransferable)
                 {
                     if (oe.roomSession == null || !oe.roomSession.participants.ContainsKey(oe.owner)) //if owner of oe is subscribed (is participant) do not request
                     {
                         oe.Request();
                     }
                 }
-                if (oe.owner.isMe)
+                if (oe.isMine)
                 {
                     oe.realized = true;
                 }
@@ -180,7 +184,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved)
+                if (!oe.isMine && !oe.beingMoved)
                 {
                     RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
                     return;
@@ -189,11 +193,11 @@ namespace RainMeadow
             orig(self, coord);
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out oe))
             {
-                if (oe.realized && oe.isTransferable && oe.owner.isMe)
+                if (oe.realized && oe.isTransferable && oe.isMine)
                 {
                     oe.Release();
                 }
-                if (oe.owner.isMe)
+                if (oe.isMine)
                 {
                     oe.realized = false;
                 }
@@ -205,7 +209,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved)
+                if (!oe.isMine && !oe.beingMoved)
                 {
                     RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
                     return;
@@ -214,11 +218,11 @@ namespace RainMeadow
             orig(self, coord);
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out oe))
             {
-                if (oe.realized && oe.isTransferable && oe.owner.isMe)
+                if (oe.realized && oe.isTransferable && oe.isMine)
                 {
                     oe.Release();
                 }
-                if (oe.owner.isMe)
+                if (oe.isMine)
                 {
                     oe.realized = false;
                 }
@@ -233,7 +237,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && ent is AbstractPhysicalObject apo0 && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved)
+                if (!oe.isMine && !oe.beingMoved)
                 {
                     RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
                     return;
@@ -251,7 +255,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo0 && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved)
+                if (!oe.isMine && !oe.beingMoved)
                 {
                     RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
                     return;
@@ -268,7 +272,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && self is AbstractPhysicalObject apo0 && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved)
+                if (!oe.isMine && !oe.beingMoved)
                 {
                     RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
                     return;
@@ -287,7 +291,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo0 && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved)
+                if (!oe.isMine && !oe.beingMoved)
                 {
                     RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
                     return;
@@ -323,7 +327,7 @@ namespace RainMeadow
                         if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
                         {
                             // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
-                            if (!oe.owner.isMe)
+                            if (!oe.isMine)
                             {
                                 RainMeadow.Debug("removing remote entity " + oe);
                                 roomSession.entities.Remove(oe);
@@ -360,7 +364,7 @@ namespace RainMeadow
                     {
                         if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
                         {
-                            if (oe.owner.isMe)
+                            if (oe.isMine)
                             {
                                 RainMeadow.Debug("readding entity to world" + oe);
                                 oe.enterPos = apo.pos;

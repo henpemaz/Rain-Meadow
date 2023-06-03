@@ -19,7 +19,7 @@ namespace RainMeadow
         public void Update(ulong tick)
         {
             if (!resource.isAvailable) throw new InvalidOperationException("not available");
-            if (resource.owner.isMe)
+            if (resource.isOwner)
             {
                 RainMeadow.Error($"Self-feeding entity {entity} for resource {resource}");
                 throw new InvalidOperationException("feeding myself");

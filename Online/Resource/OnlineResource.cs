@@ -26,7 +26,7 @@ namespace RainMeadow
         public bool isActive { get; protected set; } // The respective in-game resource is loaded
         public bool isAvailable { get; protected set; } // The resource was leased or subscribed to
         public bool isPending => pendingRequest != null;
-        public bool canRelease => !isPending && isActive && !subresources.Any(s => s.isAvailable);
+        public bool canRelease => !isPending && isActive && !subresources.Any(s => s.isAvailable) && !entities.Keys.Any(e=>e.isMine && !e.isTransferable);
 
         protected virtual void AvailableImpl() { }
 
@@ -69,6 +69,7 @@ namespace RainMeadow
 
             foreach (var item in incomingEntityEvents) // entities that couldn't be processed yet (needed the resource active)
             {
+                RainMeadow.Debug($"Processing queued entity: {item}");
                 item.Process();
             }
             incomingEntityEvents.Clear();
@@ -143,7 +144,7 @@ namespace RainMeadow
                 }
                 foreach (var ent in entities.Keys)
                 {
-                    if (!ent.isTransferable && ent.owner.isMe)
+                    if (!ent.isTransferable && ent.isMine)
                     {
                         //RainMeadow.Debug($"Foce-remove entity {item} from resource {this}");
                         //EntityLeftResource(item); // force remove
@@ -173,10 +174,14 @@ namespace RainMeadow
             var oldOwner = owner;
             owner = newOwner;
 
-            if (oldOwner != null && oldOwner.hasLeft)
+            if (newOwner != null && !participants.ContainsKey(newOwner)) // newly added
             {
-                RainMeadow.Debug($"Old owner has left, checking...");
-                OnPlayerDisconnect(oldOwner); // we might be able to sort out things now
+                participants.Add(newOwner, new PlayerMemebership(newOwner, this));
+                if (newOwner.isMe) memberSinceTick = new TickReference(supervisor, supervisor.tick);
+            }
+            if (isOwner) // I own this now
+            {
+                this.ownerSinceTick = new TickReference(supervisor, supervisor.tick); // "since when" so I can tell others since when
             }
             if (isAvailable && isActive && isOwner) // transfered / claimed by me
             {
@@ -189,16 +194,6 @@ namespace RainMeadow
                 }
                 NewLeaseState();
                 ClaimAbandonedEntities();
-            }
-
-            if (newOwner != null && !participants.ContainsKey(newOwner)) // newly added
-            {
-                participants.Add(newOwner, new PlayerMemebership(newOwner, this));
-                if (newOwner.isMe) memberSinceTick = new TickReference(supervisor, supervisor.tick);
-            }
-            if(isOwner) // I own this now
-            {
-                this.ownerSinceTick = new TickReference(supervisor, supervisor.tick); // "since when" so I can tell others since when
             }
             if (isActive) // maybe has subresources, notify
             {
@@ -219,6 +214,12 @@ namespace RainMeadow
             else if (oldOwner != null && oldOwner.isMe) // no longer responsible for sending data
             {
                 OnlineManager.RemoveSubscriptions(this);
+            }
+            // cleanup
+            if (oldOwner != null && oldOwner.hasLeft)
+            {
+                RainMeadow.Debug($"Old owner has left, checking...");
+                OnPlayerDisconnect(oldOwner); // we might be able to sort out things now
             }
         }
 
@@ -371,7 +372,14 @@ namespace RainMeadow
                 foreach (var ent in entities)
                 {
                     if (player == ent.Key.owner) continue;
-                    player.QueueEvent(ent.Key.AsNewEntityEvent(this));
+                    if(ent.Key.primaryResource == this)
+                    {
+                        player.QueueEvent(ent.Key.AsNewEntityEvent(this));
+                    }
+                    else // entity in subresource
+                    {
+                        player.QueueEvent(new EntityJoinedEvent(this, ent.Key, tickReference));
+                    }
                 }
             }
         }
@@ -397,6 +405,11 @@ namespace RainMeadow
         public abstract string Id();
 
         public abstract ushort ShortId();
+
+        public bool IsSibling(OnlineResource other)
+        {
+            return other == this || (this is not Lobby && other is not Lobby && this.super == other.super);
+        }
 
         public abstract OnlineResource SubresourceFromShortId(ushort shortId);
     }
