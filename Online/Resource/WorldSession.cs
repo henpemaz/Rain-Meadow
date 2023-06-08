@@ -26,6 +26,11 @@ namespace RainMeadow
             map.Add(world, this);
         }
 
+        protected override void AvailableImpl()
+        {
+            
+        }
+
         protected override void ActivateImpl()
         {
             if(world == null) throw new InvalidOperationException("world not set");
@@ -48,9 +53,9 @@ namespace RainMeadow
             world = null;
         }
 
-        public override void ReadState(ResourceState newState, ulong ts)
+        public override void ReadState(ResourceState newState)
         {
-            base.ReadState(newState, ts);
+            base.ReadState(newState);
             if (newState is WorldState newWorldState)
             {
                 // no op

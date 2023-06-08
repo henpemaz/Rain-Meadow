@@ -6,7 +6,7 @@ namespace RainMeadow
     {
         public WorldCoordinate pos;
         public bool realized;
-        public OnlineState realizedObjectState;
+        public RealizedPhysicalObjectState realizedObjectState;
 
         public OnlinePhysicalObject onlineObject => onlineEntity as OnlinePhysicalObject;
 
@@ -39,7 +39,7 @@ namespace RainMeadow
             onlineObject.realized = this.realized;
             if(onlineObject.apo.realizedObject != null)
             {
-                (realizedObjectState as RealizedPhysicalObjectState)?.ReadTo(onlineEntity);
+                realizedObjectState?.ReadTo(onlineEntity);
             }
         }
 
@@ -48,7 +48,7 @@ namespace RainMeadow
             base.CustomSerialize(serializer);
             serializer.SerializeNoStrings(ref pos);
             serializer.Serialize(ref realized);
-            serializer.SerializeNullable(ref realizedObjectState);
+            serializer.SerializeNullablePolyState(ref realizedObjectState);
         }
     }
 }

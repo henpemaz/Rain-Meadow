@@ -9,7 +9,7 @@ namespace RainMeadow
 
         public ResourceState GetState(ulong ts)
         {
-            if (lastState == null || lastState.ts != ts)
+            if (lastState == null || lastState.tick != ts)
             {
                 try
                 {
@@ -26,7 +26,7 @@ namespace RainMeadow
         }
 
         protected abstract ResourceState MakeState(ulong ts);
-        public virtual void ReadState(ResourceState newState, ulong ts)
+        public virtual void ReadState(ResourceState newState)
         {
             if(isActive)
             {
@@ -42,7 +42,7 @@ namespace RainMeadow
                         if (entityState.onlineEntity.isMine) continue; // not interested
                         if (entityState.onlineEntity.currentlyJoinedResource == this) // this resource is the most "detailed" provider
                         {
-                            entityState.onlineEntity.ReadState(entityState, ts);
+                            entityState.onlineEntity.ReadState(entityState, this);
                         }
                     }
                     else
@@ -63,6 +63,7 @@ namespace RainMeadow
             {
                 this.resource = resource;
                 entityStates = resource.entities.Select(e => e.Key.GetState(ts, resource)).ToArray();
+                if (entityStates.Any(es => es == null)) throw new InvalidProgrammerException("here");
             }
 
             public override long EstimatedSize => resource.SizeOfIdentifier();
@@ -70,7 +71,7 @@ namespace RainMeadow
             {
                 base.CustomSerialize(serializer);
                 serializer.Serialize(ref resource);
-                serializer.SerializeStates(ref entityStates);
+                serializer.SerializePolyStates(ref entityStates);
             }
         }
     }

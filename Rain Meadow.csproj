@@ -173,6 +173,7 @@
     <Compile Include="Menu\IHaveADescription.cs" />
     <Compile Include="Menu\MenuDarkSprite.cs" />
     <Compile Include="Menu\SmartMenu.cs" />
+    <Compile Include="Online\State\EntityInResourceState.cs" />
     <Compile Include="Online\Entity\OnlineCreature.cs" />
     <Compile Include="Online\Entity\OnlinePhysicalObject.cs" />
     <Compile Include="Online\Events\NewCreatureEvent.cs" />

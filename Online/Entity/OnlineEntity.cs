@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using static RainMeadow.OnlineResource;
 
 namespace RainMeadow
 {
@@ -73,7 +74,7 @@ namespace RainMeadow
             }
         }
 
-        public virtual void OnJoinedResource(OnlineResource inResource)
+        public virtual void OnJoinedResource(OnlineResource inResource, EntityState initialState)
         {
             RainMeadow.Debug(this);
             if (!isMine && this.currentlyJoinedResource != null && currentlyJoinedResource.IsSibling(inResource))
@@ -81,6 +82,8 @@ namespace RainMeadow
                 currentlyJoinedResource.EntityLeftResource(this);
             }
             joinedResources.Add(inResource);
+            initialState.onlineEntity = this;
+            ReadState(initialState, inResource);
             if (isMine)
             {
                 if(!inResource.isOwner)
@@ -92,7 +95,16 @@ namespace RainMeadow
         public virtual void OnLeftResource(OnlineResource inResource)
         {
             RainMeadow.Debug(this);
+            if (!joinedResources.Contains(inResource))
+            {
+                RainMeadow.Error($"Entity leaving resource it wasn't in: {this} {inResource}");
+                return;
+            }
+
+            while (currentlyJoinedResource != inResource) currentlyJoinedResource.EntityLeftResource(this);
+            
             joinedResources.Remove(inResource);
+            lastStates.Remove(inResource);
             if (isMine)
             {
                 OnlineManager.RemoveFeed(inResource, this);
@@ -160,11 +172,41 @@ namespace RainMeadow
             if (isMine) OnlineManager.RemoveFeed(onlineResource, this);
         }
 
-        public EntityState latestState;
+        public virtual void ReadState(EntityState entityState, OnlineResource inResource)
+        {
+            if (lastStates.TryGetValue(inResource, out var existingState) && OnlineManager.IsNewer(existingState.tick, entityState.tick)) return; // skipped old data
+            lastStates[inResource] = entityState;
+            if (inResource != currentlyJoinedResource) return; // skip processing
+            entityState.ReadTo(this);
+        }
 
-        public abstract void ReadState(EntityState entityState, ulong tick);
+        protected abstract EntityState MakeState(ulong tick, OnlineResource inResource);
 
-        public abstract EntityState GetState(ulong tick, OnlineResource resource);
+
+        public Dictionary<OnlineResource, EntityState> lastStates = new();
+        public EntityState GetState(ulong ts, OnlineResource inResource)
+        {
+            if (!lastStates.TryGetValue(inResource, out var lastState) || lastState == null || (isMine && lastState.tick != ts))
+            {
+                try
+                {
+                    lastState = MakeState(ts, inResource);
+                    lastStates[inResource] = lastState;
+                }
+                catch (Exception)
+                {
+                    RainMeadow.Error(this);
+                    throw;
+                }
+            }
+            if (lastState == null) throw new InvalidProgrammerException("state is null");
+            return lastState;
+        }
+
+        public EntityInResourceState GetStateInResource(ulong ts, OnlineResource inResource)
+        {
+            return new EntityInResourceState(GetState(ts, inResource), inResource, ts);
+        }
 
         public override string ToString()
         {

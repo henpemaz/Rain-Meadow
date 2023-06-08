@@ -39,7 +39,7 @@ namespace RainMeadow
 
             if (isOwner) // enter right away
             {
-                EntityRegisteredInResource(oe);
+                EntityRegisteredInResource(oe, oe.GetState(PlayersManager.mePlayer.tick, this));
             }
             else // request to register
             {
@@ -61,7 +61,7 @@ namespace RainMeadow
             if (isOwner && isActive && (registerEntityRequest.dependsOnTick?.ChecksOut() ?? true)) // tick checked here because needs an answer this frame
             {
                 OnlineEntity oe = OnlineEntity.FromNewEntityEvent(registerEntityRequest.newEntityEvent, this);
-                EntityRegisteredInResource(oe);
+                EntityRegisteredInResource(oe, registerEntityRequest.newEntityEvent.initialState);
                 registerEntityRequest.from.QueueEvent(new GenericResult.Ok(registerEntityRequest));
             }
             else
@@ -74,12 +74,13 @@ namespace RainMeadow
         internal void OnRegisterResolve(GenericResult registerResult)
         {
             RainMeadow.Debug(this);
-            var oe = (registerResult.referencedEvent as RegisterNewEntityRequest).newEntityEvent.entityId.FindEntity();
+            var nee = (registerResult.referencedEvent as RegisterNewEntityRequest).newEntityEvent;
+            var oe = nee.entityId.FindEntity();
             if (oe.pendingRequest == registerResult.referencedEvent) oe.pendingRequest = null;
 
             if (registerResult is GenericResult.Ok) // success
             {
-                EntityRegisteredInResource(oe);
+                EntityRegisteredInResource(oe, nee.initialState);
             }
             else if (registerResult is GenericResult.Error) // retry
             {
@@ -88,10 +89,11 @@ namespace RainMeadow
         }
 
         // registering new entity
-        private void EntityRegisteredInResource(OnlineEntity oe)
+        private void EntityRegisteredInResource(OnlineEntity oe, EntityState initialState)
         {
             RainMeadow.Debug(this);
             entities.Add(oe, new EntityMembership(oe, this));
+            oe.OnJoinedResource(this, initialState);
             if (isOwner)
             {
                 foreach (var part in participants)
@@ -100,7 +102,6 @@ namespace RainMeadow
                     part.Key.QueueEvent(oe.AsNewEntityEvent(this));
                 }
             }
-            oe.OnJoinedResource(this);
         }
 
         // from owner as third-party
@@ -113,7 +114,7 @@ namespace RainMeadow
             }
             RainMeadow.Debug(this);
             OnlineEntity oe = OnlineEntity.FromNewEntityEvent(newEntityEvent, this);
-            EntityRegisteredInResource(oe);
+            EntityRegisteredInResource(oe, newEntityEvent.initialState);
         }
 
 
@@ -126,7 +127,7 @@ namespace RainMeadow
 
             if (isOwner) // join right away
             {
-                EntityJoinedResource(oe);
+                EntityJoinedResource(oe, oe.GetState(PlayersManager.mePlayer.tick, this));
             }
             else // request to join
             {
@@ -138,7 +139,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (oe.isPending) throw new InvalidOperationException("can't enter subresource if pending");
-            owner.QueueEvent(new EntityJoinRequest(this, oe.id, super.entities[oe].memberSinceTick));
+            owner.QueueEvent(new EntityJoinRequest(this, oe, super.entities[oe].memberSinceTick));
         }
 
         public void OnEntityJoinRequest(EntityJoinRequest entityJoinRequest)
@@ -147,7 +148,8 @@ namespace RainMeadow
             if (isOwner && isActive && (entityJoinRequest.dependsOnTick?.ChecksOut() ?? true)) // tick checked here because needs an answer this frame
             {
                 OnlineEntity oe = entityJoinRequest.entityId.FindEntity();
-                EntityJoinedResource(oe);
+                entityJoinRequest.initialState.ReadTo(oe);
+                EntityJoinedResource(oe, entityJoinRequest.initialState);
                 entityJoinRequest.from.QueueEvent(new GenericResult.Ok(entityJoinRequest));
             }
             else
@@ -164,7 +166,7 @@ namespace RainMeadow
 
             if (entityJoinResult is GenericResult.Ok) // success
             {
-                EntityRegisteredInResource(oe);
+                EntityJoinedResource(oe, (entityJoinResult.referencedEvent as EntityJoinRequest).initialState);
             }
             else if (entityJoinResult is GenericResult.Error) // retry
             {
@@ -181,14 +183,15 @@ namespace RainMeadow
             }
             RainMeadow.Debug(this);
             var oe = entityJoinedEvent.entityId.FindEntity();
-            EntityJoinedResource(oe);
+            EntityJoinedResource(oe, entityJoinedEvent.initialState);
         }
 
         // existing entity joins
-        private void EntityJoinedResource(OnlineEntity oe)
+        private void EntityJoinedResource(OnlineEntity oe, EntityState initialState)
         {
             RainMeadow.Debug(this);
             entities.Add(oe, new EntityMembership(oe, this));
+            oe.OnJoinedResource(this, initialState);
             if (isOwner)
             {
                 var inSuper = super.entities[oe];
@@ -198,7 +201,6 @@ namespace RainMeadow
                     part.Key.QueueEvent(new EntityJoinedEvent(this, oe, TickReference.NewestOfMemberships(part.Value, inSuper)));
                 }
             }
-            oe.OnJoinedResource(this);
         }
 
         public void LocalEntityLeft(OnlineEntity oe)
@@ -271,17 +273,16 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             entities.Remove(oe);
+            oe.OnLeftResource(this);
             if (isOwner)
             {
-                EntityMembership inSuper = null;
-                super.entities.TryGetValue(oe, out inSuper);
+                super.entities.TryGetValue(oe, out EntityMembership inSuper);
                 foreach (var part in participants)
                 {
                     if (part.Key.isMe || part.Key == oe.owner) { continue; }
                     part.Key.QueueEvent(new EntityLeftEvent(this, oe, TickReference.NewestOfMemberships(part.Value, inSuper)));
                 }
             }
-            oe.OnLeftResource(this);
         }
 
         public void LocalEntityTransfered(OnlineEntity oe, OnlinePlayer to)
@@ -349,6 +350,7 @@ namespace RainMeadow
         public void EntityTransfered(OnlineEntity oe, OnlinePlayer to)
         {
             RainMeadow.Debug(this);
+            oe.NewOwner(to);
             if (isOwner)
             {
                 foreach (var part in participants)
@@ -357,7 +359,6 @@ namespace RainMeadow
                     part.Key.QueueEvent(new EntityTransferedEvent(this, oe.id, to, part.Value.memberSinceTick));
                 }
             }
-            oe.NewOwner(to);
         }
     }
 }

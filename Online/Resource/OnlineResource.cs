@@ -28,7 +28,7 @@ namespace RainMeadow
         public bool isPending => pendingRequest != null;
         public bool canRelease => !isPending && isActive && !subresources.Any(s => s.isAvailable) && !entities.Keys.Any(e=>e.isMine && !e.isTransferable);
 
-        protected virtual void AvailableImpl() { }
+        protected abstract void AvailableImpl();
 
         // The online resource has been leased and its state is available
         protected void Available()
@@ -183,7 +183,7 @@ namespace RainMeadow
             {
                 this.ownerSinceTick = new TickReference(supervisor, supervisor.tick); // "since when" so I can tell others since when
             }
-            if (isAvailable && isActive && isOwner) // transfered / claimed by me
+            if (isAvailable && isActive && isOwner) // transfered / claimed by me while already active
             {
                 RainMeadow.Debug($"Transfer received!");
                 foreach (var membership in participants.Values)
@@ -301,9 +301,9 @@ namespace RainMeadow
                             RainMeadow.Error("Couldn't request entitity because pending: " + ent);
                         }
                     }
-                    else if (isOwner) // untransferable, kick it out
+                    else // untransferable, kick it out
                     {
-                        LocalEntityLeft(ent);
+                        EntityLeftResource(ent);
                     }
                 }
             }

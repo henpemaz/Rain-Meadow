@@ -26,13 +26,11 @@ namespace RainMeadow
             On.AbstractCreature.Update += AbstractCreature_Update; // Don't think
             On.AbstractCreature.OpportunityToEnterDen += AbstractCreature_OpportunityToEnterDen; // Don't think
 
-            On.AbstractCreature.ChangeRooms += AbstractCreature_ChangeRooms; // Don't move
-            On.AbstractPhysicalObject.ChangeRooms += AbstractPhysicalObject_ChangeRooms; // Don't move
-            On.AbstractCreature.Move += AbstractCreature_Move; // Don't move
-            On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // Don't move
+            On.AbstractCreature.Move += AbstractCreature_Move; // I'm watching your every step
+            On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // I'm watching your every step
         }
 
-        // Don't move
+        // I'm watching your every step
         // remotes that aren't being moved can only move if going into the right roomSession
         private void AbstractPhysicalObject_Move(On.AbstractPhysicalObject.orig_Move orig, AbstractPhysicalObject self, WorldCoordinate newCoord)
         {
@@ -44,49 +42,21 @@ namespace RainMeadow
                     return;
                 }
             }
+            var oldCoord = self.pos;
             orig(self, newCoord);
+            if (OnlineManager.lobby != null && oldCoord.room != newCoord.room)
+            {
+                // leaving room is handled in absroom.removeentity
+                // adding to room is handled here so the position is updated properly
+                if (RoomSession.map.TryGetValue(self.world.GetAbstractRoom(newCoord.room), out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, self))
+                {
+                    rs.ApoEnteringRoom(self, newCoord);
+                }
+            }
         }
 
-        // Don't move
+        // I'm watching your every step
         private void AbstractCreature_Move(On.AbstractCreature.orig_Move orig, AbstractCreature self, WorldCoordinate newCoord)
-        {
-            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
-            {
-                if (!oe.isMine && !oe.beingMoved && !(oe.roomSession != null && oe.roomSession.absroom.index == newCoord.room))
-                {
-                    RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
-                    return;
-                }
-            }
-            orig(self, newCoord);
-        }
-
-
-        // creature moving between rooms
-        // vanilla calls removeentity + addentity but entity.pos is only updated LATER so we need this instead of addentity
-        private void AbstractPhysicalObject_ChangeRooms(On.AbstractPhysicalObject.orig_ChangeRooms orig, AbstractPhysicalObject self, WorldCoordinate newCoord)
-        {
-            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
-            {
-                if (!oe.isMine && !oe.beingMoved && !(oe.roomSession != null && oe.roomSession.absroom.index == newCoord.room))
-                {
-                    RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
-                    return;
-                }
-                if(oe.beingMoved)
-                {
-                    RainMeadow.Debug($"entity being moved: {oe} from {oe.apo.pos} to {newCoord}");
-                }
-            }
-            orig(self, newCoord);
-            if (OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.world.GetAbstractRoom(newCoord.room), out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, self))
-            {
-                rs.ApoEnteringRoom(self, newCoord);
-            }
-        }
-
-        // Don't move
-        private void AbstractCreature_ChangeRooms(On.AbstractCreature.orig_ChangeRooms orig, AbstractCreature self, WorldCoordinate newCoord)
         {
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
@@ -231,7 +201,7 @@ namespace RainMeadow
         
 
         // not the main entry-point for room entities moving around
-        // creature.move doesn't set the new pos until after it has moved, that's the issue
+        // apo.move doesn't set the new pos until after it has moved, that's the issue
         // this is only for things that are ADDED directly to the room
         private void AbstractRoom_AddEntity(On.AbstractRoom.orig_AddEntity orig, AbstractRoom self, AbstractWorldEntity ent)
         {
@@ -244,13 +214,14 @@ namespace RainMeadow
                 }
             }
             orig(self, ent);
-            if (OnlineManager.lobby != null && ent is AbstractPhysicalObject apo && apo.pos.room == self.index)
+            if (OnlineManager.lobby != null && ent is AbstractPhysicalObject apo && apo.pos.room == self.index) // skips apos being apo.Move'd
             {
                 if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.ApoEnteringWorld(apo);
                 if (RoomSession.map.TryGetValue(self, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoEnteringRoom(apo, apo.pos);
             }
         }
 
+        // called from several places, thus handled here rather than in apo.move
         private void AbstractRoom_RemoveEntity(On.AbstractRoom.orig_RemoveEntity_AbstractWorldEntity orig, AbstractRoom self, AbstractWorldEntity entity)
         {
             if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo0 && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe))
@@ -367,7 +338,6 @@ namespace RainMeadow
                             if (oe.isMine)
                             {
                                 RainMeadow.Debug("readding entity to world" + oe);
-                                oe.enterPos = apo.pos;
                                 roomSession2.worldSession.LocalEntityEntered(oe);
                             }
                             else // what happened here

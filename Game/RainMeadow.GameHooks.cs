@@ -70,15 +70,18 @@ namespace RainMeadow
                 {
                     if (rs.isAvailable)
                     {
+                        RainMeadow.Debug("Queueing room release");
                         rs.abstractOnDeactivate = true;
                         rs.FullyReleaseResource();
                         return;
                     }
                     if(rs.isPending)
                     {
+                        RainMeadow.Debug("Room pending");
                         rs.releaseWhenPossible = true;
                         return;
                     }
+                    RainMeadow.Debug("Room released");
                 }
             }
             orig(self);

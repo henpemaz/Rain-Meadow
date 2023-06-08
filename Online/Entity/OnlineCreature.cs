@@ -5,7 +5,7 @@ namespace RainMeadow
 {
     public class OnlineCreature : OnlinePhysicalObject
     {
-        public OnlineCreature(AbstractCreature ac, int seed, bool realized, WorldCoordinate pos, OnlinePlayer owner, EntityId id, bool isTransferable) : base(ac, seed, realized, pos, owner, id, isTransferable)
+        public OnlineCreature(AbstractCreature ac, int seed, bool realized, OnlinePlayer owner, EntityId id, bool isTransferable) : base(ac, seed, realized, owner, id, isTransferable)
         {
             // ? anything special?
         }
@@ -19,19 +19,21 @@ namespace RainMeadow
             AbstractCreature ac = SaveState.AbstractCreatureFromString(inResource.World, newCreatureEvent.serializedObject, false);
             ac.ID = id;
 
-            var oe = new OnlineCreature(ac, newCreatureEvent.seed, newCreatureEvent.realized, newCreatureEvent.enterPos, newCreatureEvent.owner, newCreatureEvent.entityId, newCreatureEvent.isTransferable);
+            var oe = new OnlineCreature(ac, newCreatureEvent.seed, newCreatureEvent.realized, newCreatureEvent.owner, newCreatureEvent.entityId, newCreatureEvent.isTransferable);
             OnlinePhysicalObject.map.Add(ac, oe);
             OnlineManager.recentEntities.Add(oe.id, oe);
+
+            newCreatureEvent.initialState.ReadTo(oe);
             return oe;
         }
 
         internal override NewEntityEvent AsNewEntityEvent(OnlineResource inResource)
         {
             RainMeadow.Debug($"serializing {this} in {apo.pos} as {SaveState.AbstractCreatureToStringStoryWorld(apo as AbstractCreature)}");
-            return new NewCreatureEvent(seed, enterPos, realized, SaveState.AbstractCreatureToStringStoryWorld(apo as AbstractCreature), inResource, this, null);
+            return new NewCreatureEvent(seed, realized, SaveState.AbstractCreatureToStringStoryWorld(apo as AbstractCreature), inResource, this, null);
         }
 
-        public override EntityState GetState(ulong tick, OnlineResource resource)
+        protected override EntityState MakeState(ulong tick, OnlineResource resource)
         {
             if (resource is WorldSession ws && !OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) throw new InvalidOperationException("asked for world state, not synched");
             if (resource is RoomSession rs && !OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) throw new InvalidOperationException("asked for room state, not synched");

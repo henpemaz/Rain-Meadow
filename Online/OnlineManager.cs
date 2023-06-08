@@ -199,11 +199,11 @@ namespace RainMeadow
             {
                 if (state is OnlineResource.ResourceState resourceState && resourceState.resource != null && resourceState.resource.isActive)
                 {
-                    resourceState.resource.ReadState(resourceState, fromPlayer.tick);
+                    resourceState.resource.ReadState(resourceState);
                 }
-                if (state is EntityState entityState)
+                if (state is EntityInResourceState entityInResourceState)
                 {
-                    entityState.onlineEntity.ReadState(entityState, fromPlayer.tick);
+                    entityInResourceState.entityState.onlineEntity.ReadState(entityInResourceState.entityState, entityInResourceState.inResource);
                 }
             }
             catch (Exception e)

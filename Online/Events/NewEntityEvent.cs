@@ -1,13 +1,13 @@
 ﻿namespace RainMeadow
 {
-    public abstract class NewEntityEvent : EntityResourceEvent
+    public abstract class NewEntityEvent : EntityJoinedEvent
     {
         public OnlinePlayer owner;
         public bool isTransferable;
 
         public NewEntityEvent() { }
 
-        public NewEntityEvent(OnlineResource resource, OnlineEntity oe, TickReference tickReference) : base(resource, oe.id, tickReference)
+        public NewEntityEvent(OnlineResource resource, OnlineEntity oe, TickReference tickReference) : base(resource, oe, tickReference)
         {
             owner = oe.owner;
             isTransferable = oe.isTransferable;

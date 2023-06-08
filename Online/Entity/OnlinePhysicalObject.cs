@@ -8,33 +8,31 @@ namespace RainMeadow
         public readonly AbstractPhysicalObject apo;
         public readonly int seed;
         public bool realized;
-        public WorldCoordinate enterPos; // todo keep this updated, currently loading with creatures mid-room still places them in shortcuts
 
         public bool beingMoved;
         public static ConditionalWeakTable<AbstractPhysicalObject, OnlinePhysicalObject> map = new();
 
         public RoomSession roomSession => this.currentlyJoinedResource as RoomSession; // shorthand
 
-        internal static OnlinePhysicalObject RegisterPhysicalObject(AbstractPhysicalObject apo, WorldCoordinate pos)
+        internal static OnlinePhysicalObject RegisterPhysicalObject(AbstractPhysicalObject apo)
         {
-            OnlinePhysicalObject newOe = NewFromApo(apo, pos);
+            OnlinePhysicalObject newOe = NewFromApo(apo);
             RainMeadow.Debug("Registering new entity - " + newOe.ToString());
             OnlineManager.recentEntities[newOe.id] = newOe;
             OnlinePhysicalObject.map.Add(apo, newOe);
             return newOe;
         }
 
-        public static OnlinePhysicalObject NewFromApo(AbstractPhysicalObject apo, WorldCoordinate pos)
+        public static OnlinePhysicalObject NewFromApo(AbstractPhysicalObject apo)
         {
-            if (apo is AbstractCreature ac) return new OnlineCreature(ac, apo.ID.RandomSeed, apo.realizedObject != null, pos, PlayersManager.mePlayer, new OnlineEntity.EntityId(PlayersManager.mePlayer.id.m_SteamID, apo.ID.number), !RainMeadow.sSpawningPersonas);
-            return new OnlinePhysicalObject(apo, apo.ID.RandomSeed, apo.realizedObject != null, pos, PlayersManager.mePlayer, new OnlineEntity.EntityId(PlayersManager.mePlayer.id.m_SteamID, apo.ID.number), !RainMeadow.sSpawningPersonas);
+            if (apo is AbstractCreature ac) return new OnlineCreature(ac, apo.ID.RandomSeed, apo.realizedObject != null, PlayersManager.mePlayer, new OnlineEntity.EntityId(PlayersManager.mePlayer.id.m_SteamID, apo.ID.number), !RainMeadow.sSpawningPersonas);
+            return new OnlinePhysicalObject(apo, apo.ID.RandomSeed, apo.realizedObject != null, PlayersManager.mePlayer, new OnlineEntity.EntityId(PlayersManager.mePlayer.id.m_SteamID, apo.ID.number), !RainMeadow.sSpawningPersonas);
         }
 
-        public OnlinePhysicalObject(AbstractPhysicalObject apo, int seed, bool realized, WorldCoordinate pos, OnlinePlayer owner, EntityId id, bool isTransferable) : base(owner, id, isTransferable)
+        public OnlinePhysicalObject(AbstractPhysicalObject apo, int seed, bool realized, OnlinePlayer owner, EntityId id, bool isTransferable) : base(owner, id, isTransferable)
         {
             this.apo = apo;
             this.seed = seed;
-            this.enterPos = pos;
             this.realized = realized;
         }
 
@@ -49,7 +47,7 @@ namespace RainMeadow
 
         internal override NewEntityEvent AsNewEntityEvent(OnlineResource inResource)
         {
-            return new NewObjectEvent(seed, enterPos, realized, apo.ToString(), inResource, this, null);
+            return new NewObjectEvent(seed, realized, apo.ToString(), inResource, this, null);
         }
 
         internal static OnlineEntity FromEvent(NewObjectEvent newObjectEvent, OnlineResource inResource)
@@ -59,25 +57,22 @@ namespace RainMeadow
             id.altSeed = newObjectEvent.seed;
 
             var apo = SaveState.AbstractPhysicalObjectFromString(world, newObjectEvent.serializedObject);
-            var oe = new OnlinePhysicalObject(apo, newObjectEvent.seed, newObjectEvent.realized, newObjectEvent.enterPos, newObjectEvent.owner, newObjectEvent.entityId, newObjectEvent.isTransferable);
+            var oe = new OnlinePhysicalObject(apo, newObjectEvent.seed, newObjectEvent.realized, newObjectEvent.owner, newObjectEvent.entityId, newObjectEvent.isTransferable);
             OnlinePhysicalObject.map.Add(apo, oe);
             OnlineManager.recentEntities.Add(oe.id, oe);
+
+            newObjectEvent.initialState.ReadTo(oe);
             return oe;
         }
 
-        public override void ReadState(EntityState entityState, ulong tick)
+        public override void ReadState(EntityState entityState, OnlineResource inResource)
         {
-            // todo easing??
-            // might need to get a ref to the sender all the way here for lag estimations?
-            // todo delta handling
-            if (currentlyJoinedResource is RoomSession && !entityState.realizedState) return; // We can skip abstract state if we're receiving state in a room as well
             beingMoved = true;
-            entityState.ReadTo(this);
+            base.ReadState(entityState, inResource);
             beingMoved = false;
-            latestState = entityState;
         }
 
-        public override EntityState GetState(ulong tick, OnlineResource resource)
+        protected override EntityState MakeState(ulong tick, OnlineResource resource)
         {
             if (resource is WorldSession ws && !OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) throw new InvalidOperationException("asked for world state, not synched");
             if (resource is RoomSession rs && !OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) throw new InvalidOperationException("asked for room state, not synched");
@@ -92,9 +87,9 @@ namespace RainMeadow
             return new PhysicalObjectEntityState(this, tick, realizedState);
         }
 
-        public override void OnJoinedResource(OnlineResource inResource)
+        public override void OnJoinedResource(OnlineResource inResource, EntityState initialState)
         {
-            base.OnJoinedResource(inResource);
+            base.OnJoinedResource(inResource, initialState);
             if (isMine) return; // already moved
             RainMeadow.Debug($"{this} moving in {inResource}");
             if (inResource is WorldSession ws)
@@ -105,9 +100,6 @@ namespace RainMeadow
             }
             else if (inResource is RoomSession newRoom)
             {
-                beingMoved = true;
-                apo.Move(enterPos);
-                beingMoved = false;
                 if (apo is not AbstractCreature creature)
                 {
                     if (newRoom.absroom.realizedRoom is Room realizedRoom)
@@ -135,14 +127,14 @@ namespace RainMeadow
                     }
 
                     RainMeadow.Debug("spawning creature " + creature);
-                    if (enterPos.TileDefined)
+                    if (apo.pos.TileDefined)
                     {
                         RainMeadow.Debug("added directly to the room");
                         beingMoved = true;
                         creature.RealizeInRoom(); // places in room
                         beingMoved = false;
                     }
-                    else if (enterPos.NodeDefined)
+                    else if (apo.pos.NodeDefined)
                     {
                         RainMeadow.Debug("added directly to shortcut system");
                         beingMoved = true;
@@ -150,11 +142,11 @@ namespace RainMeadow
                         beingMoved = false;
                         creature.realizedCreature.inShortcut = true;
                         // this calls MOVE on the next tick which remove-adds
-                        newRoom.absroom.world.game.shortcuts.CreatureEnterFromAbstractRoom(creature.realizedCreature, newRoom.absroom, enterPos.abstractNode);
+                        newRoom.absroom.world.game.shortcuts.CreatureEnterFromAbstractRoom(creature.realizedCreature, newRoom.absroom, apo.pos.abstractNode);
                     }
                     else
                     {
-                        RainMeadow.Debug("INVALID POS??" + enterPos);
+                        RainMeadow.Debug("INVALID POS??" + apo.pos);
                         throw new InvalidOperationException("entity must have a vaild position");
                     }
                 }
@@ -164,12 +156,12 @@ namespace RainMeadow
                     RainMeadow.Debug($"reasons {newRoom.absroom.realizedRoom is not null} {(newRoom.absroom.realizedRoom != null && creature.AllowedToExistInRoom(newRoom.absroom.realizedRoom))}");
                     if (creature.realizedCreature != null)
                     {
-                        if (!enterPos.TileDefined && enterPos.NodeDefined && newRoom.absroom.realizedRoom != null && newRoom.absroom.realizedRoom.shortCutsReady)
+                        if (!apo.pos.TileDefined && apo.pos.NodeDefined && newRoom.absroom.realizedRoom != null && newRoom.absroom.realizedRoom.shortCutsReady)
                         {
                             RainMeadow.Debug("added realized creature to shortcut system");
                             creature.realizedCreature.inShortcut = true;
                             // this calls MOVE on the next tick which remove-adds, this could be bad?
-                            newRoom.absroom.world.game.shortcuts.CreatureEnterFromAbstractRoom(creature.realizedCreature, newRoom.absroom, enterPos.abstractNode);
+                            newRoom.absroom.world.game.shortcuts.CreatureEnterFromAbstractRoom(creature.realizedCreature, newRoom.absroom, apo.pos.abstractNode);
                         }
                         else
                         {
@@ -185,7 +177,6 @@ namespace RainMeadow
                 }
             }
         }
-
 
         public override void OnLeftResource(OnlineResource inResource)
         {

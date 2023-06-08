@@ -8,11 +8,11 @@ namespace RainMeadow
         // Something entered this resource, check if it needs registering
         public void ApoEnteringRoom(AbstractPhysicalObject apo, WorldCoordinate pos)
         {
-            if (!isAvailable || !isActive) return;
+            if (!isAvailable || !isActive) return; // don't need to queue, easy enough to list on activation
             if (!OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) // New to me
             {
                 RainMeadow.Debug($"{this} - registering {apo}");
-                oe = OnlinePhysicalObject.RegisterPhysicalObject(apo, pos);
+                oe = OnlinePhysicalObject.RegisterPhysicalObject(apo);
             }
             if (oe.isMine) // Under my control
             {

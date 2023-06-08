@@ -5,13 +5,13 @@ namespace RainMeadow
     public abstract class OnlineState
     {
         public OnlinePlayer from; // not serialized, message source
-        public ulong ts; // not serialized, latest from player when read
+        public ulong tick; // not serialized, latest from player when read
 
         protected OnlineState() { }
 
         protected OnlineState(ulong ts)
         {
-            this.ts = ts;
+            this.tick = ts;
         }
 
         public abstract StateType stateType { get; } // serialized externally
@@ -24,6 +24,7 @@ namespace RainMeadow
             LobbyState,
             WorldState,
             RoomState,
+            EntityInResourceState,
             PhysicalObjectEntityState,
             AbstractCreatureState,
             RealizedPhysicalObjectState,
@@ -32,7 +33,7 @@ namespace RainMeadow
             RealizedWeaponState,
             RealizedSpearState,
             CreatureStateState,
-            CreatureHealthState
+            CreatureHealthState,
         }
 
         public static OnlineState NewFromType(StateType stateType)
@@ -50,6 +51,9 @@ namespace RainMeadow
                     break;
                 case StateType.RoomState:
                     s = new RoomSession.RoomState();
+                    break;
+                case StateType.EntityInResourceState:
+                    s = new EntityInResourceState();
                     break;
                 case StateType.PhysicalObjectEntityState:
                     s = new PhysicalObjectEntityState();

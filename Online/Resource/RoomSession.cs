@@ -21,8 +21,6 @@ namespace RainMeadow
 
         protected override void AvailableImpl()
         {
-            base.AvailableImpl();
-
             if(isOwner)
             {
                 foreach (var ent in absroom.entities)
@@ -52,6 +50,7 @@ namespace RainMeadow
             if (abstractOnDeactivate)
             {
                 absroom.Abstractize();
+                abstractOnDeactivate = false;
             }
         }
         public override string Id()
@@ -69,9 +68,9 @@ namespace RainMeadow
             return this.subresources[shortId];
         }
 
-        public override void ReadState(ResourceState newState, ulong ts)
+        public override void ReadState(ResourceState newState)
         {
-            base.ReadState(newState, ts);
+            base.ReadState(newState);
             if(newState is RoomState newRoomState)
             {
                 // no op

@@ -23,7 +23,7 @@ namespace RainMeadow
             if (!resource.isAvailable) throw new InvalidOperationException("not available");
             if (!resource.isActive) return; // resource not ready yet
 
-            while (OutgoingStates.Count > 0 && OnlineManager.IsNewerOrEqual(player.lastAckdTick, OutgoingStates.Peek().ts))
+            while (OutgoingStates.Count > 0 && OnlineManager.IsNewerOrEqual(player.lastAckdTick, OutgoingStates.Peek().tick))
             {
                 lastAcknoledgedState = OutgoingStates.Dequeue();
             }

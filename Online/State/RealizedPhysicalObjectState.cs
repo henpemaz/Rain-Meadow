@@ -21,10 +21,8 @@ namespace RainMeadow
 
         public virtual void ReadTo(OnlineEntity onlineEntity)
         {
-            if (!onlineEntity.owner.isMe && onlineEntity.isPending) return; // Don't sync pos if pending, reduces visibility and effect of lag
-            
+            if (!onlineEntity.owner.isMe && onlineEntity.isPending) return; // Don't sync if pending, reduces visibility and effect of lag
             var po = (onlineEntity as OnlinePhysicalObject).apo.realizedObject;
-            
             if (chunkStates.Length == po.bodyChunks.Length)
             {
                 for (int i = 0; i < chunkStates.Length; i++)
@@ -32,7 +30,6 @@ namespace RainMeadow
                     chunkStates[i].ReadTo(po.bodyChunks[i]);
                 }
             }
-
             po.collisionLayer = collisionLayer;
         }
 

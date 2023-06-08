@@ -16,7 +16,7 @@ namespace RainMeadow
                 if (isActive)
                 {
                     RainMeadow.Debug($"{this} - registering {apo}");
-                    oe = OnlinePhysicalObject.RegisterPhysicalObject(apo, apo.pos);
+                    oe = OnlinePhysicalObject.RegisterPhysicalObject(apo);
                 }
                 else // world population generates before this can be activated // can't we simply mark it as active earlier?
                 {

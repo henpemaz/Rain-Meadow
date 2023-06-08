@@ -5,7 +5,7 @@ namespace RainMeadow
     public class AbstractCreatureState : PhysicalObjectEntityState
     {
         public OnlineCreature onlineCreature => onlineEntity as OnlineCreature;
-        private OnlineState creatureStateState;
+        private CreatureStateState creatureStateState;
      
         public AbstractCreatureState() : base()
         {
@@ -35,7 +35,7 @@ namespace RainMeadow
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);
-            serializer.SerializeNullable(ref creatureStateState);
+            serializer.SerializeNullablePolyState(ref creatureStateState);
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)

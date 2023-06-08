@@ -54,7 +54,6 @@ namespace RainMeadow
 
         protected override void AvailableImpl()
         {
-            base.AvailableImpl();
             OnLobbyAvailable?.Invoke();
             OnLobbyAvailable = null;
 
@@ -71,9 +70,9 @@ namespace RainMeadow
             return new LobbyState(this, ts);
         }
 
-        public override void ReadState(ResourceState newState, ulong ts)
+        public override void ReadState(ResourceState newState)
         {
-            base.ReadState(newState, ts);
+            base.ReadState(newState);
             if (newState is LobbyState newLobbyState)
             {
                 // no op

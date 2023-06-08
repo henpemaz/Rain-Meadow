@@ -1,10 +1,10 @@
 ﻿namespace RainMeadow
 {
-    public class EntityJoinRequest : EntityResourceEvent, ResolvableEvent
+    public class EntityJoinRequest : EntityJoinedEvent, ResolvableEvent
     {
         public EntityJoinRequest() { }
 
-        public EntityJoinRequest(OnlineResource resource, OnlineEntity.EntityId entityId, TickReference tickReference) : base(resource, entityId, tickReference) { }
+        public EntityJoinRequest(OnlineResource resource, OnlineEntity entity, TickReference tickReference) : base(resource, entity, tickReference) { }
 
         public override EventTypeId eventType => EventTypeId.EntityJoinRequest;
 
