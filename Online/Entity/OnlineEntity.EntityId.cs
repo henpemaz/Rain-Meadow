@@ -1,4 +1,6 @@
-﻿namespace RainMeadow
+﻿using System;
+
+namespace RainMeadow
 {
     public partial class OnlineEntity
     {
@@ -14,6 +16,11 @@
                 this.id = id;
             }
 
+            internal OnlineEntity FindEntity()
+            {
+                return OnlineManager.recentEntities[this];
+            }
+
             public void CustomSerialize(Serializer serializer)
             {
                 serializer.Serialize(ref originalOwner);
@@ -22,7 +29,7 @@
 
             public override string ToString()
             {
-                return $"#{id}:{originalOwner:6}";
+                return $"#{id}:{originalOwner.ToString().Substring(0,6)}"; // mfw no interpolation truncate
             }
             public override bool Equals(object obj) => this.Equals(obj as EntityId);
             public bool Equals(EntityId other)

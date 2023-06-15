@@ -6,3 +6,4 @@
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Style", "IDE0044:Add readonly modifier", Justification = "fuck off", Scope = "namespaceanddescendants", Target = "~N:RainMeadow")]
+[assembly: SuppressMessage("Style", "IDE0074:Use compound assignment", Justification = "fuck off", Scope = "namespaceanddescendants", Target = "~N:RainMeadow")]

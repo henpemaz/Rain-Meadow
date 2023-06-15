@@ -228,6 +228,7 @@ namespace RainMeadow
             RainMeadow.Debug(ok);
             if (ok)
             {
+                // todo: switch case for different lobby types
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbyMenu);
             }
         }

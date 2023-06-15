@@ -26,67 +26,41 @@ namespace RainMeadow
             On.AbstractCreature.Update += AbstractCreature_Update; // Don't think
             On.AbstractCreature.OpportunityToEnterDen += AbstractCreature_OpportunityToEnterDen; // Don't think
 
-            On.AbstractCreature.ChangeRooms += AbstractCreature_ChangeRooms; // Don't move
-            On.AbstractPhysicalObject.ChangeRooms += AbstractPhysicalObject_ChangeRooms; // Don't move
-            On.AbstractCreature.Move += AbstractCreature_Move; // Don't move
-            On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // Don't move
+            On.AbstractCreature.Move += AbstractCreature_Move; // I'm watching your every step
+            On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // I'm watching your every step
         }
 
-        // Don't move
+        // I'm watching your every step
         // remotes that aren't being moved can only move if going into the right roomSession
         private void AbstractPhysicalObject_Move(On.AbstractPhysicalObject.orig_Move orig, AbstractPhysicalObject self, WorldCoordinate newCoord)
         {
-            if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
+            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved && !(oe.roomSession != null && oe.roomSession.absroom.index == newCoord.room))
+                if (!oe.isMine && !oe.beingMoved && !(oe.roomSession != null && oe.roomSession.absroom.index == newCoord.room))
                 {
                     RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
                     return;
                 }
             }
+            var oldCoord = self.pos;
             orig(self, newCoord);
+            if (OnlineManager.lobby != null && oldCoord.room != newCoord.room)
+            {
+                // leaving room is handled in absroom.removeentity
+                // adding to room is handled here so the position is updated properly
+                if (RoomSession.map.TryGetValue(self.world.GetAbstractRoom(newCoord.room), out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, self))
+                {
+                    rs.ApoEnteringRoom(self, newCoord);
+                }
+            }
         }
 
-        // Don't move
+        // I'm watching your every step
         private void AbstractCreature_Move(On.AbstractCreature.orig_Move orig, AbstractCreature self, WorldCoordinate newCoord)
         {
-            if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
+            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved && !(oe.roomSession != null && oe.roomSession.absroom.index == newCoord.room))
-                {
-                    RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
-                    return;
-                }
-            }
-            orig(self, newCoord);
-        }
-
-
-        // creature moving between rooms
-        // vanilla calls removeentity + addentity but entity.pos is only updated LATER so we need this instead of addentity
-        private void AbstractPhysicalObject_ChangeRooms(On.AbstractPhysicalObject.orig_ChangeRooms orig, AbstractPhysicalObject self, WorldCoordinate newCoord)
-        {
-            if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
-            {
-                if (!oe.owner.isMe && !oe.beingMoved && !(oe.roomSession != null && oe.roomSession.absroom.index == newCoord.room))
-                {
-                    RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
-                    return;
-                }
-            }
-            orig(self, newCoord);
-            if (OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.world.GetAbstractRoom(newCoord.room), out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, self))
-            {
-                rs.ApoEnteringRoom(self, newCoord);
-            }
-        }
-
-        // Don't move
-        private void AbstractCreature_ChangeRooms(On.AbstractCreature.orig_ChangeRooms orig, AbstractCreature self, WorldCoordinate newCoord)
-        {
-            if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
-            {
-                if (!oe.owner.isMe && !oe.beingMoved && !(oe.roomSession != null && oe.roomSession.absroom.index == newCoord.room))
+                if (!oe.isMine && !oe.beingMoved && !(oe.roomSession != null && oe.roomSession.absroom.index == newCoord.room))
                 {
                     RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
                     return;
@@ -98,9 +72,9 @@ namespace RainMeadow
         // Don't think
         private void AbstractCreature_OpportunityToEnterDen(On.AbstractCreature.orig_OpportunityToEnterDen orig, AbstractCreature self, WorldCoordinate den)
         {
-            if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
+            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved)
+                if (!oe.isMine && !oe.beingMoved)
                 {
                     RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
                     return;
@@ -112,9 +86,9 @@ namespace RainMeadow
         // Don't think
         private void AbstractCreature_Update(On.AbstractCreature.orig_Update orig, AbstractCreature self, int time)
         {
-            if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
+            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved)
+                if (!oe.isMine && !oe.beingMoved)
                 {
                     return;
                 }
@@ -125,9 +99,9 @@ namespace RainMeadow
         // Don't think
         private void AbstractPhysicalObject_Update(On.AbstractPhysicalObject.orig_Update orig, AbstractPhysicalObject self, int time)
         {
-            if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
+            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved)
+                if (!oe.isMine && !oe.beingMoved)
                 {
                     return;
                 }
@@ -139,16 +113,16 @@ namespace RainMeadow
         private void AbstractPhysicalObject_Realize(On.AbstractPhysicalObject.orig_Realize orig, AbstractPhysicalObject self)
         {
             orig(self);
-            if(OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
+            if(OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if(!oe.owner.isMe && !oe.realized && oe.isTransferable)
+                if(!oe.isMine && !oe.realized && oe.isTransferable)
                 {
-                    if (oe.roomSession == null || !oe.roomSession.memberships.ContainsKey(oe.owner)) //if owner of oe is subscribed (is participant) do not request
+                    if (oe.roomSession == null || !oe.roomSession.participants.ContainsKey(oe.owner)) //if owner of oe is subscribed (is participant) do not request
                     {
                         oe.Request();
                     }
                 }
-                if (oe.owner.isMe)
+                if (oe.isMine)
                 {
                     oe.realized = true;
                 }
@@ -159,16 +133,16 @@ namespace RainMeadow
         private void AbstractCreature_Realize(On.AbstractCreature.orig_Realize orig, AbstractCreature self)
         {
             orig(self);
-            if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
+            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if (!oe.owner.isMe && !oe.realized && oe.isTransferable)
+                if (!oe.isMine && !oe.realized && oe.isTransferable)
                 {
-                    if (oe.roomSession == null || !oe.roomSession.memberships.ContainsKey(oe.owner)) //if owner of oe is subscribed (is participant) do not request
+                    if (oe.roomSession == null || !oe.roomSession.participants.ContainsKey(oe.owner)) //if owner of oe is subscribed (is participant) do not request
                     {
                         oe.Request();
                     }
                 }
-                if (oe.owner.isMe)
+                if (oe.isMine)
                 {
                     oe.realized = true;
                 }
@@ -178,22 +152,22 @@ namespace RainMeadow
         // get real
         private void AbstractPhysicalObject_Abstractize(On.AbstractPhysicalObject.orig_Abstractize orig, AbstractPhysicalObject self, WorldCoordinate coord)
         {
-            if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
+            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved)
+                if (!oe.isMine && !oe.beingMoved)
                 {
                     RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
                     return;
                 }
             }
             orig(self, coord);
-            if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out oe))
+            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out oe))
             {
-                if (oe.realized && oe.isTransferable && oe.owner.isMe)
+                if (oe.realized && oe.isTransferable && oe.isMine)
                 {
                     oe.Release();
                 }
-                if (oe.owner.isMe)
+                if (oe.isMine)
                 {
                     oe.realized = false;
                 }
@@ -203,22 +177,22 @@ namespace RainMeadow
         // get real
         private void AbstractCreature_Abstractize(On.AbstractCreature.orig_Abstractize orig, AbstractCreature self, WorldCoordinate coord)
         {
-            if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out var oe))
+            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved)
+                if (!oe.isMine && !oe.beingMoved)
                 {
                     RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
                     return;
                 }
             }
             orig(self, coord);
-            if (OnlineManager.lobby != null && OnlineEntity.map.TryGetValue(self, out oe))
+            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out oe))
             {
-                if (oe.realized && oe.isTransferable && oe.owner.isMe)
+                if (oe.realized && oe.isTransferable && oe.isMine)
                 {
                     oe.Release();
                 }
-                if (oe.owner.isMe)
+                if (oe.isMine)
                 {
                     oe.realized = false;
                 }
@@ -227,31 +201,32 @@ namespace RainMeadow
         
 
         // not the main entry-point for room entities moving around
-        // creature.move doesn't set the new pos until after it has moved, that's the issue
+        // apo.move doesn't set the new pos until after it has moved, that's the issue
         // this is only for things that are ADDED directly to the room
         private void AbstractRoom_AddEntity(On.AbstractRoom.orig_AddEntity orig, AbstractRoom self, AbstractWorldEntity ent)
         {
-            if (OnlineManager.lobby != null && ent is AbstractPhysicalObject apo0 && OnlineEntity.map.TryGetValue(apo0, out var oe))
+            if (OnlineManager.lobby != null && ent is AbstractPhysicalObject apo0 && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved)
+                if (!oe.isMine && !oe.beingMoved)
                 {
                     RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
                     return;
                 }
             }
             orig(self, ent);
-            if (OnlineManager.lobby != null && ent is AbstractPhysicalObject apo && apo.pos.room == self.index)
+            if (OnlineManager.lobby != null && ent is AbstractPhysicalObject apo && apo.pos.room == self.index) // skips apos being apo.Move'd
             {
-                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.EntityEnteringWorld(apo);
+                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.ApoEnteringWorld(apo);
                 if (RoomSession.map.TryGetValue(self, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoEnteringRoom(apo, apo.pos);
             }
         }
 
+        // called from several places, thus handled here rather than in apo.move
         private void AbstractRoom_RemoveEntity(On.AbstractRoom.orig_RemoveEntity_AbstractWorldEntity orig, AbstractRoom self, AbstractWorldEntity entity)
         {
-            if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo0 && OnlineEntity.map.TryGetValue(apo0, out var oe))
+            if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo0 && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved)
+                if (!oe.isMine && !oe.beingMoved)
                 {
                     RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
                     return;
@@ -266,9 +241,9 @@ namespace RainMeadow
 
         private void AbstractWorldEntity_Destroy(On.AbstractWorldEntity.orig_Destroy orig, AbstractWorldEntity self)
         {
-            if (OnlineManager.lobby != null && self is AbstractPhysicalObject apo0 && OnlineEntity.map.TryGetValue(apo0, out var oe))
+            if (OnlineManager.lobby != null && self is AbstractPhysicalObject apo0 && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved)
+                if (!oe.isMine && !oe.beingMoved)
                 {
                     RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
                     return;
@@ -278,16 +253,16 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && self is AbstractPhysicalObject apo)
             {
                 if (RoomSession.map.TryGetValue(self.Room, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoLeavingRoom(apo);
-                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.EntityLeavingWorld(apo);
+                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.ApoLeavingWorld(apo);
             }
         }
 
         // maybe leaving room, maybe entering world
         private void AbstractRoom_MoveEntityToDen(On.AbstractRoom.orig_MoveEntityToDen orig, AbstractRoom self, AbstractWorldEntity entity)
         {
-            if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo0 && OnlineEntity.map.TryGetValue(apo0, out var oe))
+            if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo0 && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe))
             {
-                if (!oe.owner.isMe && !oe.beingMoved)
+                if (!oe.isMine && !oe.beingMoved)
                 {
                     RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
                     return;
@@ -296,8 +271,8 @@ namespace RainMeadow
             orig(self, entity);
             if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo)
             {
+                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.ApoEnteringWorld(apo);
                 if (RoomSession.map.TryGetValue(self, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoLeavingRoom(apo);
-                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.EntityEnteringWorld(apo);
             }
         }
 
@@ -320,10 +295,10 @@ namespace RainMeadow
                     var entities = room.abstractRoom.entities;
                     for (int i = entities.Count - 1; i >= 0; i--)
                     {
-                        if (entities[i] is AbstractPhysicalObject apo && OnlineEntity.map.TryGetValue(apo, out var oe))
+                        if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
                         {
                             // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
-                            if (!oe.owner.isMe)
+                            if (!oe.isMine)
                             {
                                 RainMeadow.Debug("removing remote entity " + oe);
                                 roomSession.entities.Remove(oe);
@@ -337,8 +312,8 @@ namespace RainMeadow
                             else // mine leave the old online world
                             {
                                 RainMeadow.Debug("removing my entity " + oe);
-                                roomSession.EntityLeftResource(oe);
-                                roomSession.worldSession.EntityLeftResource(oe);
+                                roomSession.LocalEntityLeft(oe);
+                                roomSession.worldSession.LocalEntityLeft(oe);
                             }
                         }
                     }
@@ -351,20 +326,19 @@ namespace RainMeadow
                 if (room != null && RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession2))
                 {
                     // Don't reuse entities left from previous region
-                    OnlineManager.recentEntities = OnlineManager.recentEntities.Where(e => e.Value.roomSession == roomSession2 || e.Value.owner.isMe).ToDictionary();
+                    OnlineManager.recentEntities.Clear();
                     
                     // we go over all APOs in the room
                     RainMeadow.Debug("Gate switchery 2");
                     var entities = room.abstractRoom.entities;
                     for (int i = entities.Count - 1; i >= 0; i--)
                     {
-                        if (entities[i] is AbstractPhysicalObject apo && OnlineEntity.map.TryGetValue(apo, out var oe))
+                        if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
                         {
-                            if (oe.owner.isMe)
+                            if (oe.isMine)
                             {
                                 RainMeadow.Debug("readding entity to world" + oe);
-                                oe.enterPos = apo.pos;
-                                roomSession2.worldSession.EntityEnteredResource(oe);
+                                roomSession2.worldSession.LocalEntityEntered(oe);
                             }
                             else // what happened here
                             {

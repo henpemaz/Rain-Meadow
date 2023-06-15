@@ -6,7 +6,7 @@
 
         public LeaseChangeEvent() { }
 
-        public LeaseChangeEvent(OnlineResource onlineResource, OnlineResource.LeaseState leaseState, PlayerTickReference dependsOnTick) : base(onlineResource)
+        public LeaseChangeEvent(OnlineResource onlineResource, OnlineResource.LeaseState leaseState, TickReference dependsOnTick) : base(onlineResource)
         {
             this.leaseState = leaseState;
             this.dependsOnTick = dependsOnTick;
@@ -18,7 +18,7 @@
         {
             base.CustomSerialize(serializer);
             serializer.Serialize(ref leaseState);
-            serializer.Serialize(ref dependsOnTick);
+            serializer.SerializeNullable(ref dependsOnTick);
         }
 
         public override void Process()

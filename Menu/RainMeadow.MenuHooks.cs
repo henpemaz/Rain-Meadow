@@ -16,6 +16,7 @@ namespace RainMeadow
             {
                 self.currentMainLoop = new LobbySelectMenu(self);
             }
+            // todo: handle different loby menu types
             if (ID == Ext_ProcessID.LobbyMenu)
             {
                 self.currentMainLoop = new LobbyMenu(self);

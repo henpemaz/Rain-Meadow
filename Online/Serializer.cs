@@ -185,7 +185,7 @@ namespace RainMeadow
         {
             OnlineState s = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
             s.from = currPlayer;
-            s.ts = currPlayer.tick;
+            s.tick = currPlayer.tick;
             s.CustomSerialize(this);
             return s;
         }
@@ -486,7 +486,7 @@ namespace RainMeadow
             }
         }
 
-        public void Serialize(ref OnlineEntity onlineEntity)
+        public void SerializeEntity<T>(ref T onlineEntity) where T : OnlineEntity
         {
             if (isWriting)
             {
@@ -496,11 +496,35 @@ namespace RainMeadow
             if (isReading)
             {
                 var id = new OnlineEntity.EntityId(reader.ReadUInt64(), reader.ReadInt32());
-                OnlineManager.recentEntities.TryGetValue(id, out onlineEntity);
+                OnlineManager.recentEntities.TryGetValue(id, out var temp);
+                onlineEntity = temp as T;
             }
         }
 
-        public void Serialize(ref OnlineState state)
+        public void SerializeEntityNullable<T>(ref T onlineEntity) where T : OnlineEntity
+        {
+            if (isWriting)
+            {
+                writer.Write(onlineEntity != null);
+                if(onlineEntity != null)
+                {
+                    writer.Write(onlineEntity.id.originalOwner);
+                    writer.Write(onlineEntity.id.id);
+                }
+            }
+            if (isReading)
+            {
+                if (reader.ReadBoolean())
+                {
+                    var id = new OnlineEntity.EntityId(reader.ReadUInt64(), reader.ReadInt32());
+                    OnlineManager.recentEntities.TryGetValue(id, out var temp);
+                    onlineEntity = temp as T;
+                }
+            }
+        }
+
+        // Polymorphic - serializes its type and instantiates from it
+        public void SerializePolyState<T>(ref T state) where T : OnlineState
         {
             if (isWriting)
             {
@@ -509,52 +533,33 @@ namespace RainMeadow
             }
             if (isReading)
             {
-                state = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
+                state = (T)OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
                 state.from = currPlayer;
-                state.ts = currPlayer.tick;
+                state.tick = currPlayer.tick;
                 state.CustomSerialize(this);
             }
         }
 
-        public void SerializeNullable(ref OnlineState nullableState)
+        public void SerializeNullablePolyState<T>(ref T nullableState) where T : OnlineState
         {
             if (isWriting)
             {
                 writer.Write(nullableState != null);
                 if (nullableState != null)
                 {
-                    Serialize(ref nullableState);
+                    SerializePolyState(ref nullableState);
                 }
             }
             if (isReading)
             {
                 if (reader.ReadBoolean())
                 {
-                    Serialize(ref nullableState);
-                }
-            }
-        }
-        
-        public void SerializeNullable(ref OnlineEntity nullableEntity)
-        {
-            if (isWriting)
-            {
-                writer.Write(nullableEntity != null);
-                if (nullableEntity != null)
-                {
-                    Serialize(ref nullableEntity);
-                }
-            }
-            if (isReading)
-            {
-                if (reader.ReadBoolean())
-                {
-                    Serialize(ref nullableEntity);
+                    SerializePolyState(ref nullableState);
                 }
             }
         }
 
-        public void SerializeStates<T>(ref T[] states) where T : OnlineState
+        public void SerializePolyStates<T>(ref T[] states) where T : OnlineState
         {
             if (isWriting)
             {
@@ -575,9 +580,71 @@ namespace RainMeadow
                 {
                     var s = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
                     s.from = currPlayer;
-                    s.ts = currPlayer.tick;
+                    s.tick = currPlayer.tick;
                     s.CustomSerialize(this);
                     states[i] = s as T; // can throw an invalid cast? or will it just be null?
+                }
+            }
+        }
+
+        // Static - fixed type
+        public void SerializeStaticState<T>(ref T state) where T : OnlineState, new()
+        {
+            if (isWriting)
+            {
+                state.CustomSerialize(this);
+            }
+            if (isReading)
+            {
+                state = new();
+                state.from = currPlayer;
+                state.tick = currPlayer.tick;
+                state.CustomSerialize(this);
+            }
+        }
+
+        public void SerializeNullableStaticState<T>(ref T nullableState) where T : OnlineState, new()
+        {
+            if (isWriting)
+            {
+                writer.Write(nullableState != null);
+                if (nullableState != null)
+                {
+                    SerializeStaticState(ref nullableState);
+                }
+            }
+            if (isReading)
+            {
+                if (reader.ReadBoolean())
+                {
+                    SerializeStaticState(ref nullableState);
+                }
+            }
+        }
+
+        public void SerializeStaticStates<T>(ref T[] states) where T : OnlineState, new()
+        {
+            if (isWriting)
+            {
+                // TODO dynamic length
+                if (states.Length > 255) throw new OverflowException("too many states");
+                writer.Write((byte)states.Length);
+                foreach (var state in states)
+                {
+                    state.CustomSerialize(this);
+                }
+            }
+            if (isReading)
+            {
+                byte count = reader.ReadByte();
+                states = new T[count];
+                for (int i = 0; i < count; i++)
+                {
+                    T s = new();
+                    s.from = currPlayer;
+                    s.tick = currPlayer.tick;
+                    s.CustomSerialize(this);
+                    states[i] = s;
                 }
             }
         }
@@ -592,6 +659,22 @@ namespace RainMeadow
             if (isReading)
             {
                 referencedEvent = currPlayer.GetRecentEvent(reader.ReadUInt64());
+            }
+        }
+
+        internal void SerializeEvent<T>(ref T playerEvent) where T : OnlineEvent
+        {
+            if (isWriting)
+            {
+                writer.Write((byte)playerEvent.eventType);
+                playerEvent.CustomSerialize(this);
+            }
+            if (isReading)
+            {
+                playerEvent = (T)OnlineEvent.NewFromType((OnlineEvent.EventTypeId)reader.ReadByte());
+                playerEvent.from = currPlayer;
+                playerEvent.to = PlayersManager.mePlayer;
+                playerEvent.CustomSerialize(this);
             }
         }
     }

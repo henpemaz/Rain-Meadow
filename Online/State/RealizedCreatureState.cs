@@ -4,13 +4,13 @@ using System.Linq;
 
 namespace RainMeadow
 {
-    public class RealizedCreatureState : PhysicalObjectState
+    public class RealizedCreatureState : RealizedPhysicalObjectState
     {
         private List<GraspRef> Grasps = new List<GraspRef>();
         public RealizedCreatureState() { }
-        public RealizedCreatureState(OnlineEntity onlineEntity) : base(onlineEntity)
+        public RealizedCreatureState(OnlineCreature onlineCreature) : base(onlineCreature)
         {
-            if (onlineEntity.entity.realizedObject is not Creature creature) return;
+            if (onlineCreature.apo.realizedObject is not Creature creature) return;
             
             if (creature.grasps == null) return;
             foreach (var grasp in creature.grasps)
@@ -31,7 +31,8 @@ namespace RainMeadow
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
-            if (onlineEntity.entity.realizedObject is not Creature creature) return;
+            if (onlineEntity is not OnlineCreature onlineCreature) return;
+            if (onlineCreature.apo.realizedObject is not Creature creature) return;
 
             if (creature.grasps == null) return;
             for (var i = 0; i < creature.grasps.Length; i++)
@@ -39,7 +40,7 @@ namespace RainMeadow
                 var newGrasp = Grasps.FirstOrDefault(x => x.GraspUsed == i);
                 if (newGrasp != null)
                 {
-                    onlineEntity.ForceGrab(newGrasp);
+                    onlineCreature.ForceGrab(newGrasp);
                 }
                 else
                 {
@@ -51,15 +52,15 @@ namespace RainMeadow
     
     public class GraspRef : Serializer.ICustomSerializable
     {
-        public OnlineEntity OnlineGrabber;
+        public OnlinePhysicalObject OnlineGrabber;
         public byte GraspUsed;
-        public OnlineEntity OnlineGrabbed;
+        public OnlinePhysicalObject OnlineGrabbed;
         public byte ChunkGrabbed;
         public byte Shareability;
         public float Dominance;
         public bool Pacifying;
         public GraspRef() { }
-        public GraspRef(OnlineEntity onlineGrabber, OnlineEntity onlineGrabbed, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool pacifying)
+        public GraspRef(OnlinePhysicalObject onlineGrabber, OnlinePhysicalObject onlineGrabbed, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool pacifying)
         {
             OnlineGrabber = onlineGrabber;
             GraspUsed = (byte)graspUsed;
@@ -72,9 +73,9 @@ namespace RainMeadow
         
         public void CustomSerialize(Serializer serializer)
         {
-            serializer.Serialize(ref OnlineGrabber);
+            serializer.SerializeEntity(ref OnlineGrabber);
             serializer.Serialize(ref GraspUsed);
-            serializer.Serialize(ref OnlineGrabbed);
+            serializer.SerializeEntity(ref OnlineGrabbed);
             serializer.Serialize(ref ChunkGrabbed);
             serializer.Serialize(ref Shareability);
             serializer.Serialize(ref Dominance);
@@ -83,8 +84,8 @@ namespace RainMeadow
 
         public static GraspRef FromGrasp(Creature.Grasp grasp)
         {
-            if (!OnlineEntity.map.TryGetValue(grasp.grabbed.abstractPhysicalObject, out var onlineGrabber)) throw new InvalidOperationException("Grabber doesn't exist in online space!");
-            if (!OnlineEntity.map.TryGetValue(grasp.grabbed.abstractPhysicalObject, out var onlineGrabbed)) throw new InvalidOperationException("Grabbed tjing doesn't exist in online space!");
+            if (!OnlinePhysicalObject.map.TryGetValue(grasp.grabbed.abstractPhysicalObject, out var onlineGrabber)) throw new InvalidOperationException("Grabber doesn't exist in online space!");
+            if (!OnlinePhysicalObject.map.TryGetValue(grasp.grabbed.abstractPhysicalObject, out var onlineGrabbed)) throw new InvalidOperationException("Grabbed tjing doesn't exist in online space!");
             return new GraspRef(onlineGrabber, onlineGrabbed, grasp.graspUsed, grasp.chunkGrabbed, grasp.shareability, grasp.dominance, grasp.pacifying);
         }
     }

@@ -1,6 +1,6 @@
 ﻿namespace RainMeadow
 {
-    public class EntityReleaseEvent : EntityEvent
+    public class EntityReleaseEvent : EntityEvent, ResolvableEvent
     {
         public OnlineResource inResource;
 
@@ -22,6 +22,11 @@
         public override void Process()
         {
             oe.Released(this);
+        }
+
+        public void Resolve(GenericResult genericResult)
+        {
+            this.oe.ResolveRelease(genericResult);
         }
     }
 }

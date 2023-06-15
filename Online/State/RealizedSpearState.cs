@@ -8,21 +8,21 @@ namespace RainMeadow
     {
         private Vector2? stuckInWall;
         private AppendageRef stuckInAppendage;
-        private OnlineEntity stuckInObject;
+        private OnlinePhysicalObject stuckInObject;
         private byte stuckInChunkIndex;
         private sbyte stuckBodyPart;
         private float stuckRotation;
         
         
         public RealizedSpearState() { }
-        public RealizedSpearState(OnlineEntity onlineEntity) : base(onlineEntity)
+        public RealizedSpearState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
-            var spear = (Spear)onlineEntity.entity.realizedObject;
+            var spear = (Spear)onlineEntity.apo.realizedObject;
             stuckInWall = spear.stuckInWall;
 
             if (spear.stuckInObject != null)
             {
-                if (!OnlineEntity.map.TryGetValue(spear.stuckInObject.abstractPhysicalObject, out var onlineStuckEntity)) throw new InvalidOperationException("Stuck to a non-synced creature!");
+                if (!OnlinePhysicalObject.map.TryGetValue(spear.stuckInObject.abstractPhysicalObject, out var onlineStuckEntity)) throw new InvalidOperationException("Stuck to a non-synced creature!");
                 stuckInObject = onlineStuckEntity;
                 stuckInChunkIndex = (byte)spear.stuckInChunkIndex;
                 stuckInAppendage = spear.stuckInAppendage != null ? new AppendageRef(spear.stuckInAppendage) : null;
@@ -37,7 +37,7 @@ namespace RainMeadow
         {
             base.CustomSerialize(serializer);
             serializer.Serialize(ref stuckInWall);
-            serializer.SerializeNullable(ref stuckInObject);
+            serializer.SerializeEntityNullable(ref stuckInObject);
             if (stuckInObject != null)
             {
                 serializer.Serialize(ref stuckInChunkIndex);
@@ -50,13 +50,12 @@ namespace RainMeadow
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             if (!onlineEntity.owner.isMe && onlineEntity.isPending) return; // Don't sync if pending, reduces visibility and effect of lag
-            
-            var spear = (Spear)onlineEntity.entity.realizedObject;
+            var spear = (Spear)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             spear.stuckInWall = stuckInWall;
             if (!stuckInWall.HasValue) 
                 spear.addPoles = false;
 
-            spear.stuckInObject = stuckInObject?.entity.realizedObject;
+            spear.stuckInObject = stuckInObject?.apo.realizedObject;
             if (spear.stuckInObject != null)
             {
                 spear.stuckInChunkIndex = stuckInChunkIndex;
@@ -95,10 +94,10 @@ namespace RainMeadow
             serializer.Serialize(ref distanceToNext);
         }
 
-        public PhysicalObject.Appendage.Pos GetAppendagePos(OnlineEntity appendageOwner)
+        public PhysicalObject.Appendage.Pos GetAppendagePos(OnlinePhysicalObject appendageOwner)
         {
             if (appendageOwner == null) return null;
-            var physicalObject = appendageOwner.entity.realizedObject;
+            var physicalObject = appendageOwner.apo.realizedObject;
             var appendage = physicalObject.appendages[appIndex];
             return new PhysicalObject.Appendage.Pos(appendage, prevSegment, distanceToNext);
         }
