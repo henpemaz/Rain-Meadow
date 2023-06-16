@@ -19,9 +19,11 @@ namespace RainMeadow
         {
             this.id = id;
             this.super = this;
-            PlayersManager.UpdatePlayersList(id);
+            //PlayersManager.UpdatePlayersList(id);
             var ownerId = SteamMatchmaking.GetLobbyOwner(id); // Steam decides
+            RainMeadow.Debug($"Steam lobby {id} owner is {ownerId}");
             NewOwner(PlayersManager.PlayerFromId(ownerId));
+            
             if (owner == null) throw new Exception("Couldnt find lobby owner in player list");
             if (isOwner)
             {
@@ -108,6 +110,10 @@ namespace RainMeadow
             }
 
             public override StateType stateType => StateType.LobbyState;
+        }
+
+        public override string ToString() {
+            return "Lobby";
         }
     }
 }

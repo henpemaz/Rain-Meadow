@@ -45,6 +45,10 @@ namespace RainMeadow
         {
             if (isWriting)
             {
+                if (!(currPlayer.isUsingSteam && PlayersManager.mePlayer.isUsingSteam)) {
+                    writer.Write(PlayersManager.mePlayer.netId);
+                }
+
                 writer.Write(currPlayer.lastEventFromRemote);
                 writer.Write(currPlayer.tick);
                 writer.Write(PlayersManager.mePlayer.tick);
@@ -201,72 +205,78 @@ namespace RainMeadow
             // unused
         }
 
-        // Process all incoming messages
-        public void ReceiveData()
-        {
-            lock (this)
-            {
-                int n;
-                IntPtr[] messages = new IntPtr[32];
-                do // process in batches
+        public void ReceiveDataSteam() {
+            while (SteamNetworking.IsP2PPacketAvailable(out uint size)) {
+                uint bytesRead;
+                CSteamID remoteId;
+
+                if (!SteamNetworking.ReadP2PPacket(buffer, size, out bytesRead, out remoteId))
+                    continue;
+                
+                var fromPlayer = PlayersManager.PlayerFromId(remoteId);
+                if (fromPlayer == null)
                 {
-                    n = SteamNetworkingMessages.ReceiveMessagesOnChannel(0, messages, messages.Length);
-                    for (int i = 0; i < n; i++)
-                    {
-                        var message = SteamNetworkingMessage_t.FromIntPtr(messages[i]);
-                        try
-                        {
-                            if (OnlineManager.lobby != null)
-                            {
-                                var fromPlayer = PlayersManager.PlayerFromId(message.m_identityPeer.GetSteamID());
-                                if (fromPlayer == null)
-                                {
-                                    RainMeadow.Error("player not found: " + message.m_identityPeer + " " + message.m_identityPeer.GetSteamID());
-                                    continue;
-                                }
-                                //RainMeadow.Debug($"Receiving message from {fromPlayer}");
-                                Marshal.Copy(message.m_pData, buffer, 0, message.m_cbSize);
-                                BeginRead(fromPlayer);
-
-                                PlayerHeaders();
-                                if (Aborted)
-                                {
-                                    RainMeadow.Debug("skipped packet");
-                                    continue;
-                                }
-
-                                int ne = BeginReadEvents();
-                                //RainMeadow.Debug($"Receiving {ne} events");
-                                for (int ie = 0; ie < ne; ie++)
-                                {
-                                    OnlineManager.ProcessIncomingEvent(ReadEvent());
-                                }
-
-                                int ns = BeginReadStates();
-                                //RainMeadow.Debug($"Receiving {ns} states");
-                                for (int ist = 0; ist < ns; ist++)
-                                {
-                                    OnlineManager.ProcessIncomingState(ReadState());
-                                }
-
-                                EndRead();
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            RainMeadow.Error("Error reading packet from player : " + message.m_identityPeer.GetSteamID());
-                            RainMeadow.Error(e);
-                            EndRead();
-                            //throw;
-                        }
-                        finally
-                        {
-                            SteamNetworkingMessage_t.Release(messages[i]);
-                        }
-                    }
+                    RainMeadow.Error("player not found: " + remoteId);
+                    continue;
                 }
-                while (n > 0);
-                Free();
+
+                ReceiveData(fromPlayer);
+            }
+            
+            Free();
+        }
+
+        public void ReceiveDataDebug(int fromNetId, byte[] data) {
+            OnlinePlayer fromPlayer = PlayersManager.PlayerFromId(fromNetId);
+            if (fromPlayer == null) {
+                RainMeadow.Error("player not found: " + fromNetId);
+                return;
+            }
+            
+            Buffer.BlockCopy(data, 0, buffer, 0, data.Length);
+            ReceiveData(fromPlayer);
+        }
+
+        // Process all incoming messages
+        public void ReceiveData(OnlinePlayer fromPlayer)
+        {
+            try
+            {
+                if (OnlineManager.lobby != null)
+                {
+                    //RainMeadow.Debug($"Receiving message from {fromPlayer}");
+                    BeginRead(fromPlayer);
+
+                    PlayerHeaders();
+                    if (Aborted)
+                    {
+                        RainMeadow.Debug("skipped packet");
+                        return;
+                    }
+
+                    int ne = BeginReadEvents();
+                    //RainMeadow.Debug($"Receiving {ne} events");
+                    for (int ie = 0; ie < ne; ie++)
+                    {
+                        OnlineManager.ProcessIncomingEvent(ReadEvent());
+                    }
+
+                    int ns = BeginReadStates();
+                    //RainMeadow.Debug($"Receiving {ns} states");
+                    for (int ist = 0; ist < ns; ist++)
+                    {
+                        OnlineManager.ProcessIncomingState(ReadState());
+                    }
+
+                    EndRead();
+                }
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error("Error reading packet from player : " + fromPlayer.netId);
+                RainMeadow.Error(e);
+                EndRead();
+                //throw;
             }
         }
 
@@ -308,12 +318,10 @@ namespace RainMeadow
 
                 EndWrite();
 
-                unsafe
-                {
-                    fixed (byte* ptr = buffer)
-                    {
-                        SteamNetworkingMessages.SendMessageToUser(ref toPlayer.oid, (IntPtr)ptr, (uint)Position, Constants.k_nSteamNetworkingSend_UnreliableNoDelay, 0);
-                    }
+                if (PlayersManager.mePlayer.isUsingSteam && toPlayer.isUsingSteam)
+                    SteamNetworking.SendP2PPacket(toPlayer.steamId, buffer, (uint)Position, EP2PSend.k_EP2PSendUnreliableNoDelay);
+                else {
+                    LocalPeer.Send(buffer, (int)Position, LocalPeer.PacketType.Unreliable, LocalPeer.PacketDataType.GameInfo);
                 }
 
                 Free();
@@ -325,11 +333,11 @@ namespace RainMeadow
         {
             if (isWriting)
             {
-                writer.Write(player is { } ? (ulong)player.id : 0ul);
+                writer.Write(player != null ? player.netId : 0);
             }
             if (isReading)
             {
-                player = PlayersManager.PlayerFromId(new CSteamID(reader.ReadUInt64()));
+                player = PlayersManager.PlayerFromId(reader.ReadInt32());
             }
         }
 
@@ -356,7 +364,7 @@ namespace RainMeadow
                 writer.Write((byte)players.Count);
                 foreach (var player in players)
                 {
-                    writer.Write(player is { } ? (ulong)player.id : 0ul);
+                    writer.Write(player != null ? player.netId : 0);
                 }
             }
             if (isReading)
@@ -365,7 +373,7 @@ namespace RainMeadow
                 players = new List<OnlinePlayer>(count);
                 for (int i = 0; i < count; i++)
                 {
-                    players.Add(PlayersManager.PlayerFromId(new CSteamID(reader.ReadUInt64())));
+                    players.Add(PlayersManager.PlayerFromId(reader.ReadInt32()));
                 }
             }
         }
@@ -495,7 +503,7 @@ namespace RainMeadow
             }
             if (isReading)
             {
-                var id = new OnlineEntity.EntityId(reader.ReadUInt64(), reader.ReadInt32());
+                var id = new OnlineEntity.EntityId(reader.ReadInt32(), reader.ReadInt32());
                 OnlineManager.recentEntities.TryGetValue(id, out onlineEntity);
             }
         }

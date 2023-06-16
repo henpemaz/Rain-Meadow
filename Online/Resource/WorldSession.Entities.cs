@@ -22,7 +22,7 @@ namespace RainMeadow
                         return;
                     }
                     RainMeadow.Debug("Registering new entity as owned by myself");
-                    var newOe = new OnlineEntity(entity, PlayersManager.mePlayer, new OnlineEntity.EntityId(PlayersManager.mePlayer.id.m_SteamID, entity.ID.number), entity.ID.RandomSeed, entity.pos, !RainMeadow.sSpawningPersonas);
+                    var newOe = new OnlineEntity(entity, PlayersManager.mePlayer, new OnlineEntity.EntityId(PlayersManager.mePlayer.netId, entity.ID.number), entity.ID.RandomSeed, entity.pos, !RainMeadow.sSpawningPersonas);
                     RainMeadow.Debug(newOe);
                     OnlineManager.recentEntities[newOe.id] = newOe;
                     OnlineEntity.map.Add(entity, newOe);

@@ -12,18 +12,27 @@ namespace RainMeadow
         private static CallResult<LobbyEnter_t> m_JoinLobbyCall;
         private static Callback<LobbyDataUpdate_t> m_LobbyDataUpdate;
         private static Callback<LobbyChatUpdate_t> m_LobbyChatUpdate;
+
+		private static Callback<P2PSessionRequest_t> m_CallbackP2PSessionRequest;
+		private static Callback<P2PSessionConnectFail_t> m_CallbackP2PSessionConnectFail;
 #pragma warning restore IDE0052 // Remove unread private members
 
-        public static void InitLobbyManager()
+        public static ProcessManager manager;
+        public static CSteamID joiningLobbyId;
+
+		public static void InitLobbyManager()
         {
             m_RequestLobbyListCall = CallResult<LobbyMatchList_t>.Create(LobbyListReceived);
             m_CreateLobbyCall = CallResult<LobbyCreated_t>.Create(LobbyCreated);
             m_JoinLobbyCall = CallResult<LobbyEnter_t>.Create(LobbyJoined);
             m_LobbyDataUpdate = Callback<LobbyDataUpdate_t>.Create(LobbyUpdated);
             m_LobbyChatUpdate = Callback<LobbyChatUpdate_t>.Create(LobbyChatUpdated);
+
+            m_CallbackP2PSessionRequest = Callback<P2PSessionRequest_t>.CreateGameServer(OnP2PSessionRequest);
+            m_CallbackP2PSessionConnectFail = Callback<P2PSessionConnectFail_t>.CreateGameServer(OnP2PSessionConnectFail);
         }
 
-        public enum LobbyVisibility
+		public enum LobbyVisibility
         {
             [Description("Public")]
             Public = 1,
@@ -87,8 +96,19 @@ namespace RainMeadow
 
         public static void JoinLobby(LobbyInfo lobby)
         {
+            joiningLobbyId = lobby.id; // Do not immediately create lobby instance
+
             RainMeadow.Debug(lobby);
-            m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(lobby.id));
+            if (SteamMatchmaking.GetLobbyOwner(lobby.id) == PlayersManager.mePlayer.steamId) { // I am joining myself
+                RainMeadow.Debug("Joining local game...");
+                LocalPeer.Startup(false);
+
+                // We need to request all the players first
+
+                PlayersManager.RequestPlayerInfo(CSteamID.Nil);
+            } else {
+                m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(joiningLobbyId));
+            }
         }
 
         private static void LobbyCreated(LobbyCreated_t param, bool bIOFailure)
@@ -101,6 +121,8 @@ namespace RainMeadow
                     RainMeadow.Debug("success");
                     OnlineManager.lobby = new Lobby(new CSteamID(param.m_ulSteamIDLobby), creatingWithMode);
                     OnLobbyJoined?.Invoke(true);
+                
+                    LocalPeer.Startup(true);
                 }
                 else
                 {
@@ -124,14 +146,16 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("success");
                     var id = new CSteamID(param.m_ulSteamIDLobby);
-                    OnlineManager.lobby = new Lobby(id, SteamMatchmaking.GetLobbyData(id, OnlineManager.MODE_KEY));
-                    OnLobbyJoined?.Invoke(true);
+                    //OnlineManager.lobby = new Lobby(id, SteamMatchmaking.GetLobbyData(id, OnlineManager.MODE_KEY));
+                    
+                    PlayersManager.RequestPlayerInfo(SteamMatchmaking.GetLobbyOwner(id));
+                    //OnLobbyJoined?.Invoke(true);
                 }
                 else
                 {
                     RainMeadow.Debug("failure");
                     OnlineManager.lobby = null;
-                    OnLobbyJoined?.Invoke(false);
+                    //OnLobbyJoined?.Invoke(false);
                 }
             }
             catch (Exception e)
@@ -147,6 +171,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 SteamMatchmaking.LeaveLobby(OnlineManager.lobby.id);
+                LocalPeer.Shutdown();
                 OnlineManager.Reset();
             }
         }
@@ -205,5 +230,19 @@ namespace RainMeadow
                 throw;
             }
         }
+
+        static void OnP2PSessionRequest(P2PSessionRequest_t pCallback) {
+			OnlinePlayer player = PlayersManager.PlayerFromId(pCallback.m_steamIDRemote.m_SteamID);
+			if (player.isUsingSteam && player.steamId.BIndividualAccount()) {
+				SteamGameServerNetworking.AcceptP2PSessionWithUser(pCallback.m_steamIDRemote);
+			    RainMeadow.DebugMe($"{player.name} joined!");
+            } else {
+			    RainMeadow.DebugMe("Someone tried to join while not in the lobby!");
+            }
+		}
+
+		static void OnP2PSessionConnectFail(P2PSessionConnectFail_t param) {
+			RainMeadow.DebugMe();
+		}
     }
 }

@@ -18,7 +18,7 @@ namespace RainMeadow
         public ResourceEvent pendingRequest; // should this maybe be a list/queue? Will it be any more manageable if multiple events can cohexist?
 
         public bool isFree => owner == null || owner.hasLeft;
-        public bool isOwner => owner != null && owner.id == PlayersManager.me;
+        public bool isOwner => owner != null && owner.netId == PlayersManager.mePlayer.netId;
         public bool isSupervisor => super.isOwner;
         public OnlinePlayer supervisor => super.owner;
         public bool isActive { get; protected set; } // The respective in-game resource is loaded
@@ -165,7 +165,7 @@ namespace RainMeadow
 
         protected void NewOwner(OnlinePlayer newOwner)
         {
-            RainMeadow.Debug($"{this}-{(newOwner != null ? newOwner : "null")}");
+            RainMeadow.Debug($"{this} - '{(newOwner != null ? newOwner : "null")}'");
             if (newOwner == owner && newOwner != null) throw new InvalidOperationException("Re-assigned to the same owner");
             var oldOwner = owner;
             owner = newOwner;
@@ -364,7 +364,7 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return $"<Resource {Id()} - o:{owner?.name} - av:{(isAvailable ? 1 : 0)} - ac:{(isActive ? 1 : 0)} - m:{memberships.Count}>";
+            return $"<Resource {Id()} - o:`{owner}` - av:{(isAvailable ? 1 : 0)} - ac:{(isActive ? 1 : 0)} - m:{memberships.Count}>";
         }
 
         public virtual byte SizeOfIdentifier()

@@ -4,11 +4,11 @@
     {
         public class EntityId : System.IEquatable<EntityId>, Serializer.ICustomSerializable // How we refer to a game entity online
         {
-            public ulong originalOwner;
+            public int originalOwner;
             public int id;
 
             public EntityId() { }
-            public EntityId(ulong originalOwner, int id)
+            public EntityId(int originalOwner, int id)
             {
                 this.originalOwner = originalOwner;
                 this.id = id;
