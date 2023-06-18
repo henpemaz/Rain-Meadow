@@ -9,9 +9,9 @@ namespace RainMeadow
     public partial class OnlinePlayer : IEquatable<OnlinePlayer>
     {
         public int netId; // independent network id
-        public CSteamID steamId; // not filled for local client debugging
+        public CSteamID steamId = CSteamID.Nil; // not filled for local client debugging
         public IPEndPoint endpoint; // not filled for a real steam account
-        public string name;
+        public string name = string.Empty;
         public Queue<OnlineEvent> OutgoingEvents = new(16);
         public List<OnlineEvent> recentlyAckedEvents = new(16);
         public List<OnlineEvent> abortedEvents = new();
@@ -27,6 +27,13 @@ namespace RainMeadow
         public bool isMe { get => this == PlayersManager.mePlayer; }
         public bool isUsingSteam { get => steamId.IsValid(); }
 
+        public OnlinePlayer(int netId, CSteamID id, IPEndPoint endPoint)
+        {
+            this.netId = netId;
+            this.steamId = id;
+            this.endpoint = endPoint;
+        }
+        
         public OnlinePlayer(int netId, IPEndPoint endPoint)
         {
             this.netId = netId;
@@ -65,7 +72,7 @@ namespace RainMeadow
             while (OutgoingEvents.Count > 0 && OnlineManager.IsNewerOrEqual(lastAck, OutgoingEvents.Peek().eventId))
             {
                 var e = OutgoingEvents.Dequeue();
-                RainMeadow.Debug($"{this} {e}");
+                RainMeadow.Debug($"{this} from {e}");
                 recentlyAckedEvents.Add(e);
             }
         }
@@ -99,7 +106,7 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return isUsingSteam ? $"{name} ({steamId})" : $"NetId-{netId}";
+            return isUsingSteam ? $"NetId-{netId} \"{name}\" ({steamId})" : $"NetId-{netId}";
         }
 
         // IEqu

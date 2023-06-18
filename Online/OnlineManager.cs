@@ -53,9 +53,7 @@ namespace RainMeadow
             base.Update();
 
             // Incoming messages
-            serializer.ReceiveDataSteam();
-            PlayersManager.ReceiveData();
-            LocalPeer.ReceiveData();
+            NetIO.Update();
 
             if (lobby != null)
             {
@@ -76,6 +74,9 @@ namespace RainMeadow
                 // Outgoing messages
                 foreach (var player in PlayersManager.players)
                 {
+                    if (player.isMe)
+                        continue;
+                    
                     SendData(player);
                 }
             }
@@ -96,8 +97,8 @@ namespace RainMeadow
         {
             SteamAPI.RunCallbacks();
             // Incoming messages
-            serializer.ReceiveDataSteam();
-            LocalPeer.ReceiveData();
+
+            NetIO.Update();
 
             if (lobby != null)
             {
@@ -206,7 +207,7 @@ namespace RainMeadow
                 }
                 if (state is EntityState entityState)
                 {
-                    entityState.onlineEntity.ReadState(entityState, fromPlayer.tick); /// -\\\\\\\
+                    entityState.onlineEntity.ReadState(entityState, fromPlayer.tick);
                 }
             }
             catch (Exception e)

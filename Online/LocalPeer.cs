@@ -21,9 +21,12 @@ namespace RainMeadow {
 			public ulong index;
 			public byte[] packet; // Raw packet data
 			public Action OnAcknowledged;
+			public Action OnFailed;
+			public int attemptsLeft;
 			
-			public SequencedPacket(ulong index, byte[] data, bool termination = false) {
+			public SequencedPacket(ulong index, byte[] data, int attempts = -1, bool termination = false) {
 				this.index = index;
+				this.attemptsLeft = attempts;
 
 				packet = new byte[9 + data.Length];
 				MemoryStream stream = new MemoryStream(packet);
@@ -43,7 +46,6 @@ namespace RainMeadow {
 		// Otherwise this will all be grouped with the communicating endpoint
 		// Dictionary<IPEndpoint, ...>
 	
-		static bool otherExists;
 		public static ulong packetIndex { get; private set; } // Increments for each reliable packet sent
 		static ulong unreliablePacketIndex; // Increments for each unreliable ordered packet sent
 		static Queue<SequencedPacket> outgoingPackets = new Queue<SequencedPacket>(); // Keep track of packets we want to send while we wait for responses
@@ -51,7 +53,7 @@ namespace RainMeadow {
 		const int TIMEOUT_TICKS = 40 * 30; // about 30 seconds
 		const int HEARTBEAT_TICKS = 40 * 5; // about 5 seconds
 		static int ticksSinceLastPacket;
-		const int RESEND_TICKS = 20;
+		const int RESEND_TICKS = 20; // about 0.5 seconds
 		static int ticksToResend = RESEND_TICKS;
 		static ulong lastAckedPacketIndex;
 		static ulong lastUnreliablePacketIndex;
@@ -63,19 +65,22 @@ namespace RainMeadow {
 		static readonly IPEndPoint localClientEndpoint = new IPEndPoint(IPAddress.Loopback, 5002);
 		static bool isHost;
 
-		public enum PacketDataType : byte {
-			Internal,
-			PlayerInfo,
-			GameInfo,
-		}
-
 		public static Action<IPEndPoint> PeerTerminated;
 
 		public static void Startup(bool host) {
 			if (debugClient != null)
 				return;
+
 			// Create debugging client for local connection
 			debugClient = new UdpClient();
+			
+			// With this set, it will be truely connectionless
+			debugClient.Client.IOControl(
+				(IOControlCode)(-1744830452), // SIO_UDP_CONNRESET
+				new byte[] { 0, 0, 0, 0 }, 
+				null
+			);
+
 			debugClient.Client.Bind(host ? localHostEndpoint : localClientEndpoint);
 			isHost = host;
 		}
@@ -84,7 +89,7 @@ namespace RainMeadow {
 		// Don't use for actual gameplay, DEBUG USE ONLY
 		public static void Shutdown() {
 			RainMeadow.DebugMe();
-			if (otherExists)
+			if (!isHost)
 				SendTermination();
 			else 
 				CleanUp();
@@ -101,7 +106,7 @@ namespace RainMeadow {
 			waitingForTermination = false;
 		}
 
-		public static void ReceiveData() {
+		public static void Update() {
 			if (debugClient == null)
 				return;
 
@@ -121,99 +126,94 @@ namespace RainMeadow {
 				ticksToResend--;
 				if (ticksToResend <= 0) {
 					IPEndPoint remoteEndpoint = !isHost ? localHostEndpoint : localClientEndpoint;
-					byte[] packetData = outgoingPackets.Peek().packet;
+					SequencedPacket outgoingPacket = outgoingPackets.Peek();
+					byte[] packetData = outgoingPacket.packet;
+					
+					if (outgoingPacket.attemptsLeft == 0)
+						outgoingPackets.Dequeue().OnFailed?.Invoke();
+
 					debugClient.Send(packetData, packetData.Length, remoteEndpoint);
+					outgoingPacket.attemptsLeft--;
 
 					ticksToResend = RESEND_TICKS;
 				}
 			}
-
-			ulong receivedPacketIndex;
-
-			while (debugClient != null && debugClient.Available > 0) {
-				IPEndPoint fromEndpoint = new IPEndPoint(IPAddress.Any, 0);
-				MemoryStream netStream = new MemoryStream(debugClient.Receive(ref fromEndpoint));
-				BinaryReader netReader = new BinaryReader(netStream);
-				
-				switch ((PacketType)netReader.ReadByte()) {
-					case PacketType.Reliable:
-						receivedPacketIndex = ReadReliableHeader(netReader);
-						SendAcknowledge(receivedPacketIndex); // Return Message
-
-						// Process data if it is new
-						if (receivedPacketIndex > lastAckedPacketIndex) {
-							lastAckedPacketIndex = receivedPacketIndex;
-							OnReceiveData(netReader, fromEndpoint);
-						}
-						break;
-
-					case PacketType.Acknowledge:
-						if (outgoingPackets.Count == 0)
-							// Nothing left to acknowledge
-							break;
-
-						receivedPacketIndex = ReadAcknowledge(netReader);
-						if (outgoingPackets.Peek().index == receivedPacketIndex) {
-							SequencedPacket acknowledgedPacket = outgoingPackets.Dequeue();
-							acknowledgedPacket.OnAcknowledged?.Invoke();
-
-							if (acknowledgedPacket == latestOutgoingPacket) {
-								latestOutgoingPacket = null;
-							}
-							
-							// Attempt to send the next reliable one if any
-							if (outgoingPackets.Count > 0) {
-								byte[] packetData = outgoingPackets.Peek().packet;
-								debugClient.Send(packetData, packetData.Length, fromEndpoint);
-								ticksToResend = RESEND_TICKS;
-							}
-						}
-						break;
-					
-					case PacketType.Unreliable:
-						OnReceiveData(netReader, fromEndpoint);
-						break;
-					
-					case PacketType.UnreliableOrdered:
-						receivedPacketIndex = ReadUnreliableOrderedHeader(netReader);
-
-						// Process data if it is latest
-						if (receivedPacketIndex > lastUnreliablePacketIndex) {
-							lastUnreliablePacketIndex = receivedPacketIndex;
-							OnReceiveData(netReader, fromEndpoint);
-						}
-						break;
-
-					case PacketType.Termination:
-						receivedPacketIndex = ReadTerminationHeader(netReader);
-						SendAcknowledge(receivedPacketIndex); // Return Message
-
-						// Process data if it is new
-						if (receivedPacketIndex > lastAckedPacketIndex) {
-							lastAckedPacketIndex = receivedPacketIndex;
-							outgoingPackets.Clear();
-							RainMeadow.Debug("Peer Terminated Connection");
-							PeerTerminated(fromEndpoint);
-						}
-						break;
-				}
-			}
 		}
 
-		public static void OnReceiveData(BinaryReader reader, IPEndPoint fromEndpoint) {
-			switch ((PacketDataType)reader.ReadByte()) {
-				case PacketDataType.PlayerInfo:
-					PlayersManager.OnReceiveData(reader, fromEndpoint, Steamworks.CSteamID.Nil);
+		public static bool Read(out BinaryReader netReader, out IPEndPoint remoteEndpoint) {
+			remoteEndpoint = new IPEndPoint(IPAddress.Any, 0);
+			MemoryStream netStream = new MemoryStream(debugClient.Receive(ref remoteEndpoint));
+			netReader = new BinaryReader(netStream);
+
+			ulong receivedPacketIndex;
+			switch ((PacketType)netReader.ReadByte()) {
+				case PacketType.Reliable:
+					receivedPacketIndex = ReadReliableHeader(netReader);
+					SendAcknowledge(receivedPacketIndex); // Return Message
+
+					// Process data if it is new
+					if (receivedPacketIndex > lastAckedPacketIndex) {
+						lastAckedPacketIndex = receivedPacketIndex;
+						return true;
+					}
 					break;
 
-				case PacketDataType.GameInfo:
-					int netId = reader.ReadInt32();
-					
-					byte[] data = reader.ReadBytes((int)(reader.BaseStream.Length - reader.BaseStream.Position));
+				case PacketType.Acknowledge:
+					if (outgoingPackets.Count == 0)
+						// Nothing left to acknowledge
+						return false;
 
-					OnlineManager.serializer.ReceiveDataDebug(netId, data);
+					receivedPacketIndex = ReadAcknowledge(netReader);
+					if (outgoingPackets.Peek().index == receivedPacketIndex) {
+						SequencedPacket acknowledgedPacket = outgoingPackets.Dequeue();
+						acknowledgedPacket.OnAcknowledged?.Invoke();
+
+						if (acknowledgedPacket == latestOutgoingPacket) {
+							latestOutgoingPacket = null;
+						}
+						
+						// Attempt to send the next reliable one if any
+						if (outgoingPackets.Count > 0) {
+							byte[] packetData = outgoingPackets.Peek().packet;
+							debugClient.Send(packetData, packetData.Length, remoteEndpoint);
+							ticksToResend = RESEND_TICKS;
+						}
+					}
+					break;
+				
+				case PacketType.Unreliable:
+					return true;
+				
+				case PacketType.UnreliableOrdered:
+					receivedPacketIndex = ReadUnreliableOrderedHeader(netReader);
+
+					// Process data if it is latest
+					if (receivedPacketIndex > lastUnreliablePacketIndex) {
+						lastUnreliablePacketIndex = receivedPacketIndex;
+						return true;
+					}
+					break;
+
+				case PacketType.Termination:
+					receivedPacketIndex = ReadTerminationHeader(netReader);
+					SendAcknowledge(receivedPacketIndex); // Return Message
+
+					// Process data if it is new
+					if (receivedPacketIndex > lastAckedPacketIndex) {
+						lastAckedPacketIndex = receivedPacketIndex;
+						outgoingPackets.Clear();
+						RainMeadow.Debug("Peer Terminated Connection");
+						PeerTerminated(remoteEndpoint);
+						return false;
+					}
 					break;
 			}
+
+			return false;
+		}
+
+		public static bool IsPacketAvailable() {
+			return debugClient != null && debugClient.Available > 0;
 		}
 
 		public static void Send(byte[] data, int length, PacketType packetType, PacketDataType dataType = PacketDataType.Internal) {
@@ -227,15 +227,15 @@ namespace RainMeadow {
 			data = typedData;
 
 			IPEndPoint remoteEndpoint = !isHost ? localHostEndpoint : localClientEndpoint;
-			byte[] buffer;
+			byte[] buffer = null;
 			byte[] packetData;
 			switch (packetType) {
 				case PacketType.Reliable:
 					latestOutgoingPacket = new SequencedPacket(++packetIndex, data);
 					outgoingPackets.Enqueue(latestOutgoingPacket);
 
-					packetData = outgoingPackets.Peek().packet;
-					debugClient.Send(packetData, packetData.Length, remoteEndpoint);
+					SequencedPacket outgoingPacket = outgoingPackets.Peek();
+					buffer = outgoingPacket.packet;
 					break;
 				
 				case PacketType.Unreliable:
@@ -246,7 +246,6 @@ namespace RainMeadow {
 					WriteUnreliableHeader(writer);
 					writer.Write(data);
 
-					debugClient.Send(buffer, buffer.Length, remoteEndpoint);
 					break;
 				
 				case PacketType.UnreliableOrdered:
@@ -257,9 +256,13 @@ namespace RainMeadow {
 					WriteUnreliableOrderedHeader(writer, ++unreliablePacketIndex);
 					writer.Write(data);
 
-					debugClient.Send(buffer, buffer.Length, remoteEndpoint);
 					break;
 			}
+
+			if (buffer == null)
+				return;
+			
+			debugClient.Send(buffer, buffer.Length, remoteEndpoint);
 		}
 
 		static void SendAcknowledge(ulong index) {
@@ -276,10 +279,11 @@ namespace RainMeadow {
 			outgoingPackets.Clear();
 			
 			IPEndPoint remoteEndpoint = !isHost ? localHostEndpoint : localClientEndpoint;
-			latestOutgoingPacket = new SequencedPacket(++packetIndex, new byte[0], true);
+			latestOutgoingPacket = new SequencedPacket(++packetIndex, new byte[0], 3, true);
 			outgoingPackets.Enqueue(latestOutgoingPacket);
 
 			latestOutgoingPacket.OnAcknowledged += CleanUp;
+			latestOutgoingPacket.OnFailed += CleanUp;
 
 			byte[] packetData = outgoingPackets.Peek().packet;
 			debugClient.Send(packetData, packetData.Length, remoteEndpoint);

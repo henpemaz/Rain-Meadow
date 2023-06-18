@@ -18,7 +18,7 @@ namespace RainMeadow
         public ResourceEvent pendingRequest; // should this maybe be a list/queue? Will it be any more manageable if multiple events can cohexist?
 
         public bool isFree => owner == null || owner.hasLeft;
-        public bool isOwner => owner != null && owner.netId == PlayersManager.mePlayer.netId;
+        public bool isOwner => owner != null && owner.isMe;
         public bool isSupervisor => super.isOwner;
         public OnlinePlayer supervisor => super.owner;
         public bool isActive { get; protected set; } // The respective in-game resource is loaded
@@ -356,7 +356,7 @@ namespace RainMeadow
 
         private void Unsubscribed(OnlinePlayer player)
         {
-            RainMeadow.Debug(this.ToString() + " - " + player.name);
+            RainMeadow.Debug(this.ToString() + " - " + player);
             if (player.isMe) throw new InvalidOperationException("Can't unsubscribe from self");
 
             OnlineManager.RemoveSubscription(this, player);

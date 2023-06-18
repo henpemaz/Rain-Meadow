@@ -17,7 +17,6 @@ namespace RainMeadow
 		private static Callback<P2PSessionConnectFail_t> m_CallbackP2PSessionConnectFail;
 #pragma warning restore IDE0052 // Remove unread private members
 
-        public static ProcessManager manager;
         public static CSteamID joiningLobbyId;
 
 		public static void InitLobbyManager()
@@ -232,7 +231,7 @@ namespace RainMeadow
         }
 
         static void OnP2PSessionRequest(P2PSessionRequest_t pCallback) {
-			OnlinePlayer player = PlayersManager.PlayerFromId(pCallback.m_steamIDRemote.m_SteamID);
+			OnlinePlayer player = PlayersManager.PlayerFromId(pCallback.m_steamIDRemote);
 			if (player.isUsingSteam && player.steamId.BIndividualAccount()) {
 				SteamGameServerNetworking.AcceptP2PSessionWithUser(pCallback.m_steamIDRemote);
 			    RainMeadow.DebugMe($"{player.name} joined!");
@@ -244,5 +243,9 @@ namespace RainMeadow
 		static void OnP2PSessionConnectFail(P2PSessionConnectFail_t param) {
 			RainMeadow.DebugMe();
 		}
+
+        public static void GoToMenu() {
+            OnLobbyJoined?.Invoke(true);
+        }
     }
 }

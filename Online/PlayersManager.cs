@@ -62,7 +62,7 @@ namespace RainMeadow
                 }
                 foreach (var p in newplayers)
                 {
-                    if (!oldplayers.Contains(p)) PlayerJoined(p);
+                    if (!oldplayers.Contains(p)) SteamPlayerJoined(p);
                 }
             }
             catch (Exception e)
@@ -73,97 +73,90 @@ namespace RainMeadow
         }
 
         // Steam version - everyone using steam gets this event automaticly
-        private static void PlayerJoined(CSteamID joiningSteamId)
-        { 
-            if (players.Exists(p => p.steamId == joiningSteamId))
+        static OnlinePlayer SteamPlayerJoined(CSteamID joiningSteamId)
+        {
+            OnlinePlayer joiningPlayer = players.Find(p => p.steamId == joiningSteamId);
+            if (joiningPlayer != null)
                 // Ignore me! I am already here!
-                return;
+                return joiningPlayer;
             
             RainMeadow.Debug($"Steam {SteamFriends.GetFriendPersonaName(joiningSteamId)} ({joiningSteamId})");
             
             // Lobby owner
             if (OnlineManager.lobby != null && OnlineManager.lobby.owner.isMe) {
-                byte[] buffer = new byte[13];
-                MemoryStream stream = new MemoryStream(buffer);
-                BinaryWriter writer = new BinaryWriter(stream);
-
-                // Tell the joining steam player to update their network id
-                writer.Write((byte)PlayerSetup.UpdatePlayer);
-                writer.Write(nextPlayerId);
-                writer.Write((ulong)joiningSteamId);
-
-                SteamNetworking.SendP2PPacket(joiningSteamId, buffer, 13, EP2PSend.k_EP2PSendReliable, 1);
-
-                // Tell other non-steam peers to create this new player
-                stream.Seek(0, SeekOrigin.Begin);
-                writer.Write((byte)PlayerSetup.CreatePlayer);
-
-                // TODO: Redo this later for when it is no longer for debugging
-                foreach (OnlinePlayer player in players) {
-                    if (player.isUsingSteam)
-                        continue;
-
-                    LocalPeer.Send(buffer, 13, LocalPeer.PacketType.Reliable, LocalPeer.PacketDataType.PlayerInfo); // Only local peer, but an endpoint should be passed here
-                }
-
-                // Tell joining player to create everyone in the server
-                foreach (OnlinePlayer p in players) {
-                    stream.Seek(0, SeekOrigin.Begin);
-                    writer.Write((byte)PlayerSetup.CreatePlayer);
-                    writer.Write(p.netId);
-                    writer.Write((ulong)p.steamId);
-
-                    SteamNetworking.SendP2PPacket(joiningSteamId, buffer, 13, EP2PSend.k_EP2PSendReliable, 1);
-                }
-
-                players.Add(new OnlinePlayer(nextPlayerId, joiningSteamId));
-                nextPlayerId ++;
+                joiningPlayer = new OnlinePlayer(PlayersManager.nextPlayerId, joiningSteamId);
+				PlayerJoined(joiningPlayer);
+                return joiningPlayer;
             }
+
+            return null;
         }
 
         // Non steam version - IF THIS IS NOT USED FOR DEBUG TODO: lobby owner needs to broadcast this
-        private static void PlayerJoined(IPEndPoint joiningEndpoint)
+        static OnlinePlayer IpPlayerJoined(IPEndPoint joiningEndpoint)
         {
-            if (players.Exists(p => p.endpoint != null && p.endpoint.Equals(joiningEndpoint)))
+            OnlinePlayer joiningPlayer = PlayerFromIp(joiningEndpoint);
+            if (joiningPlayer != null)
                 // Ignore me! I am already here!
-                return;
+                return joiningPlayer;
+            
 
             RainMeadow.Debug($"Non-Steam {joiningEndpoint}");
             
             // Lobby owner
-            if (OnlineManager.lobby != null && OnlineManager.lobby.owner.isMe) {
-                byte[] buffer = new byte[13];
-                MemoryStream stream = new MemoryStream(buffer);
-                BinaryWriter writer = new BinaryWriter(stream);
+            if (OnlineManager.lobby != null && OnlineManager.lobby.owner.isMe)
+			{
+                joiningPlayer = new OnlinePlayer(PlayersManager.nextPlayerId, joiningEndpoint);
+				PlayerJoined(joiningPlayer);
+                return joiningPlayer;
+			}
 
-                // Tell the joining player to update their network id
-                writer.Write((byte)PlayerSetup.UpdatePlayer);
-                writer.Write(nextPlayerId);
-                writer.Write((ulong)CSteamID.Nil);
+            return null;
+		}
 
-                LocalPeer.Send(buffer, 13, LocalPeer.PacketType.Reliable, LocalPeer.PacketDataType.PlayerInfo);
+		static void PlayerJoined(OnlinePlayer joiningPlayer) {
+			byte[] buffer = new byte[13];
+			MemoryStream stream = new MemoryStream(buffer);
+			BinaryWriter writer = new BinaryWriter(stream);
 
-                // Tell the other players to create this player
-                stream.Seek(0, SeekOrigin.Begin);
-                writer.Write((byte)PlayerSetup.CreatePlayer);
-                
-                foreach (OnlinePlayer player in players) {
-                    if (player.isUsingSteam) {
-                        SteamNetworking.SendP2PPacket(player.steamId, buffer, 13, EP2PSend.k_EP2PSendReliable, 1);
-                    } else {
-                        LocalPeer.Send(buffer, 13, LocalPeer.PacketType.Reliable, LocalPeer.PacketDataType.PlayerInfo);
-                    }
-                }
-            }
-            
-            // Add player yourself
-            players.Add(new OnlinePlayer(nextPlayerId, joiningEndpoint));
-            nextPlayerId ++;
-        }
+			// Tell the joining player to update their network id
+			writer.Write((byte)PlayerSetup.UpdatePlayer);
+			writer.Write(joiningPlayer.netId);
+			writer.Write((ulong)joiningPlayer.steamId);
 
-        private static void PlayerLeft(OnlinePlayer leavingPlayer)
+			NetIO.SendP2P(joiningPlayer, buffer, 13, SendType.Reliable, PacketDataType.PlayerInfo);
+
+			// Tell the other players to create this player
+			stream.Seek(0, SeekOrigin.Begin);
+			writer.Write((byte)PlayerSetup.CreatePlayer);
+
+			foreach (OnlinePlayer player in players) {
+                if (player.isMe)
+                    continue;
+
+				NetIO.SendP2P(player, buffer, 13, SendType.Reliable, PacketDataType.PlayerInfo);
+			}
+
+			// Tell joining peer to create everyone in the server
+			foreach (OnlinePlayer player in players) {
+				stream.Seek(0, SeekOrigin.Begin);
+				writer.Write((byte)PlayerSetup.CreatePlayer);
+				writer.Write(player.netId);
+				writer.Write((ulong)player.steamId);
+
+				NetIO.SendP2P(joiningPlayer, buffer, 13, SendType.Reliable, PacketDataType.PlayerInfo);
+
+				RainMeadow.Debug($"Sending Create Player {player}");
+			}
+
+			// Add player yourself
+			players.Add(joiningPlayer);
+			nextPlayerId++;
+		}
+
+		private static void PlayerLeft(OnlinePlayer leavingPlayer)
         {
-            if (leavingPlayer == null)
+            if (leavingPlayer == null || leavingPlayer.hasLeft)
                 return;
 
             RainMeadow.Debug($"Handling player disconnect:{leavingPlayer}");
@@ -178,24 +171,22 @@ namespace RainMeadow
             RainMeadow.Debug($"Actually removing player:{leavingPlayer}");
             players.Remove(leavingPlayer);
 
-            // Relay to everyone if both them and the leaving player is not using steam
+            // Relay to everyone if the leaving player is not using steam
             // If both ends are using steam, the above is already done
-            if (OnlineManager.lobby.owner.isMe) {
+            if (OnlineManager.lobby.owner.isMe && leavingPlayer.isUsingSteam) {
                 byte[] buffer = new byte[13];
                 MemoryStream stream = new MemoryStream(buffer);
                 BinaryWriter writer = new BinaryWriter(stream);
 
-                writer.Write((byte)PlayerSetup.RemovePlayer); // Remove
+                writer.Write((byte)PlayerSetup.RemovePlayer);
                 writer.Write(leavingPlayer.netId);
                 writer.Write((ulong)leavingPlayer.steamId);
 
                 foreach (OnlinePlayer player in players) {
-                    if (!(leavingPlayer.isUsingSteam && player.isUsingSteam))
+                    if (player.isMe)
                         continue;
-
-                    LocalPeer.Send(buffer, 13, LocalPeer.PacketType.Reliable);
+                    NetIO.SendP2P(player, buffer, 13, SendType.Reliable, PacketDataType.PlayerInfo);
                 }
-
             }
         }
 
@@ -230,6 +221,21 @@ namespace RainMeadow
             return subscribers.First().Key;
         }
 
+        // Use when testing for a player
+        public static OnlinePlayer TryGetPlayer(int netId)
+        {
+            return players.FirstOrDefault(p => p.netId == netId);
+        }
+
+        // Use when expecting a player in return
+        public static OnlinePlayer PlayerFromId(int netId)
+        {
+            OnlinePlayer player = TryGetPlayer(netId);
+            if (netId > 0 && player is null)
+                throw new Exception("Could not find player from given network id: " + netId);
+            return player;
+        }
+
         public static OnlinePlayer PlayerFromId(CSteamID steamId)
         {
             return players.FirstOrDefault(p => p.steamId == steamId);
@@ -240,30 +246,9 @@ namespace RainMeadow
             return players.FirstOrDefault(p => p.steamId.m_SteamID == steamId);
         }
 
-        public static OnlinePlayer PlayerFromId(int netId)
-        {
-            return players.FirstOrDefault(p => p.netId == netId);
-        }
-
         public static OnlinePlayer PlayerFromIp(IPEndPoint endpoint)
         {
             return players.FirstOrDefault(p => p.endpoint != null && p.endpoint.Equals(endpoint));
-        }
-
-        public static void ReceiveData() {
-            while (SteamNetworking.IsP2PPacketAvailable(out uint size, 1)) {
-                byte[] buffer = new byte[size];
-                uint bytesRead;
-                CSteamID remoteId;
-
-                if (!SteamNetworking.ReadP2PPacket(buffer, size, out bytesRead, out remoteId, 1))
-                    continue;
-                
-                MemoryStream stream = new MemoryStream(buffer);
-                BinaryReader reader = new BinaryReader(stream);
-
-                OnReceiveData(reader, new IPEndPoint(IPAddress.Any, 0), remoteId);
-            }
         }
 
         public static void OnReceiveData(BinaryReader reader, IPEndPoint fromEndpoint, CSteamID fromSteamID) {
@@ -277,44 +262,26 @@ namespace RainMeadow
 
 
             PlayerSetup type = (PlayerSetup)reader.ReadByte();
+            RainMeadow.Debug(type);
             int netId = reader.ReadInt32();
             CSteamID steamId = new CSteamID(reader.ReadUInt64());
 
-            OnlinePlayer player = PlayerFromId(netId);
+            OnlinePlayer player;
             switch (type) {
                 case PlayerSetup.RequestJoin:
                     // Hello packet from joining peer
 
-                    if (isUsingSteam)
-                        PlayerJoined(fromSteamID);
-                    else
-                        PlayerJoined(fromEndpoint);
+                    OnlinePlayer joiningPlayer = isUsingSteam ? SteamPlayerJoined(fromSteamID) : IpPlayerJoined(fromEndpoint);
                     
                     byte[] buffer = new byte[13];
                     MemoryStream stream = new MemoryStream(buffer);
                     BinaryWriter writer = new BinaryWriter(stream);
-                    
-                    // Tell joining peer to create everyone in the server
-                    foreach (OnlinePlayer p in players) {
-                        stream.Seek(0, SeekOrigin.Begin);
-                        writer.Write((byte)PlayerSetup.CreatePlayer);
-                        writer.Write(p.netId);
-                        writer.Write((ulong)p.steamId);
-
-                        if (isUsingSteam)
-                            SteamNetworking.SendP2PPacket(fromSteamID, buffer, 13, EP2PSend.k_EP2PSendReliable, 1);
-                        else
-                            LocalPeer.Send(buffer, 13, LocalPeer.PacketType.Reliable, LocalPeer.PacketDataType.PlayerInfo);
-                    }
 
                     // Tell them they are now ready
                     stream.Seek(0, SeekOrigin.Begin);
                     writer.Write((byte)PlayerSetup.Ready); 
                     
-                    if (isUsingSteam)
-                        SteamNetworking.SendP2PPacket(fromSteamID, buffer, 13, EP2PSend.k_EP2PSendReliable, 1);
-                    else
-                        LocalPeer.Send(buffer, 13, LocalPeer.PacketType.Reliable, LocalPeer.PacketDataType.PlayerInfo);
+                    NetIO.SendP2P(joiningPlayer, buffer, 13, SendType.Reliable, PacketDataType.PlayerInfo);
 
                     nextPlayerId = nextPlayerId + 1;
                     break;
@@ -337,13 +304,14 @@ namespace RainMeadow
                     break;
                 
                 case PlayerSetup.CreatePlayer:
+                    player = TryGetPlayer(netId);
                     if (player != null) {
                         RainMeadow.Error($"Player with ID {netId} '{player.name}' already exists!");
                         return;
                     }
 
                     if (steamId.IsValid() && steamId.BIndividualAccount()) {
-                        player = new OnlinePlayer(netId, steamId);
+                        player = new OnlinePlayer(netId, steamId, fromEndpoint);
                         RainMeadow.Debug($"New player {netId} from {steamId}");
                     } else {
                         // endpoint should be the joining player, not who sent this data
@@ -357,34 +325,31 @@ namespace RainMeadow
                     break;
                 
                 case PlayerSetup.RemovePlayer:
-                    if (player == null) {
-                        RainMeadow.Error($"Player with ID {netId} does not already exist!");
-                        return;
-                    }
-
+                    player = PlayerFromId(netId);
                     PlayerLeft(player);
                     break;
                 
                 case PlayerSetup.Ready:
                     // Final message
                     OnlineManager.lobby = new Lobby(LobbyManager.joiningLobbyId, SteamMatchmaking.GetLobbyData(LobbyManager.joiningLobbyId, OnlineManager.MODE_KEY));
-                    LobbyManager.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbyMenu); // We may change to the main lobby screen
+                    LobbyManager.GoToMenu(); // We may change to the main lobby screen
                     break;
 
                 case PlayerSetup.Leave:
                     // Local peer is leaving
+                    player = PlayerFromId(netId);
                     PlayerLeft(player);
                     break;
             }
         }
 
-		public static void RequestPlayerInfo(CSteamID steamLobbyOwner) {
+		public static void RequestPlayerInfo(CSteamID steamLobbyOwnerId) {
 			// Send empty hello packet
             byte[] buffer = new byte[13];
-            if (steamLobbyOwner.IsValid() && steamLobbyOwner.BIndividualAccount()) {
-                SteamNetworking.SendP2PPacket(steamLobbyOwner, buffer, 13, EP2PSend.k_EP2PSendReliable, 1);
+            if (steamLobbyOwnerId.IsValid() && steamLobbyOwnerId.BIndividualAccount()) {
+                SteamNetworking.SendP2PPacket(steamLobbyOwnerId, buffer, 13, EP2PSend.k_EP2PSendReliable, 1);
             } else {
-                LocalPeer.Send(buffer, 13, LocalPeer.PacketType.Reliable, LocalPeer.PacketDataType.PlayerInfo);
+                LocalPeer.Send(buffer, 13, LocalPeer.PacketType.Reliable, PacketDataType.PlayerInfo);
             }
 		}
 	}

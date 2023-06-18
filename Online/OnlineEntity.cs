@@ -43,7 +43,7 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return $"{entity} from {owner.name}";
+            return $"{entity} from {owner}";
         }
 
         public static OnlineEntity CreateOrReuseEntity(NewEntityEvent newEntityEvent, World world)
@@ -329,8 +329,7 @@ namespace RainMeadow
         // I've been requested and I'll pass the entity on
         public void Requested(EntityRequest request)
         {
-            RainMeadow.Debug(this);
-            RainMeadow.Debug("Requested by : " + request.from.name);
+            RainMeadow.Debug(this + " requested by " + request.from);
             if (isTransferable && this.owner.isMe)
             {
                 request.from.QueueEvent(new EntityRequestResult.Ok(request)); // your request was well received, now please be patient while I transfer it
@@ -390,8 +389,7 @@ namespace RainMeadow
         // someone released "to me"
         public void Released(EntityReleaseEvent entityRelease)
         {
-            RainMeadow.Debug(this);
-            RainMeadow.Debug("Released by : " + entityRelease.from.name);
+            RainMeadow.Debug(this + " released from " + entityRelease.from);
             if (isTransferable && this.owner == entityRelease.from  && this.highestResource.owner.isMe) // theirs and I can transfer
             {
                 entityRelease.from.QueueEvent(new EntityReleaseResult.Ok(entityRelease)); // ok to them

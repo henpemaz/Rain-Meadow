@@ -112,7 +112,6 @@ namespace RainMeadow
             // Lobby machine go!
             LobbyManager.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
             LobbyManager.OnLobbyJoined += OnlineManager_OnLobbyJoined;
-            LobbyManager.manager = manager; // tempory solution to get the process manager to switch processes on network response
             SteamNetworkingUtils.InitRelayNetworkAccess();
             LobbyManager.RequestLobbyList();
         }
