@@ -100,7 +100,7 @@ namespace RainMeadow
             RainMeadow.Debug(lobby);
             if (SteamMatchmaking.GetLobbyOwner(lobby.id) == PlayersManager.mePlayer.steamId) { // I am joining myself
                 RainMeadow.Debug("Joining local game...");
-                LocalPeer.Startup(false);
+                UdpPeer.Startup();
 
                 // We need to request all the players first
 
@@ -121,7 +121,7 @@ namespace RainMeadow
                     OnlineManager.lobby = new Lobby(new CSteamID(param.m_ulSteamIDLobby), creatingWithMode);
                     OnLobbyJoined?.Invoke(true);
                 
-                    LocalPeer.Startup(true);
+                    UdpPeer.Startup();
                 }
                 else
                 {
@@ -170,7 +170,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 SteamMatchmaking.LeaveLobby(OnlineManager.lobby.id);
-                LocalPeer.Shutdown();
+                UdpPeer.Shutdown();
                 OnlineManager.Reset();
             }
         }

@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Net.NetworkInformation;
 using System.IO;
+using System.Linq;
 
 namespace RainMeadow {
-	static class LocalPeer {
+	static class UdpPeer {
 		static UdpClient debugClient;
 		public enum PacketType : byte {
 			Reliable,
@@ -41,33 +43,32 @@ namespace RainMeadow {
 			}
 		}
 
-		// Everything here will refer to the other local client
-		// Only one other will be only running to test communication
-		// Otherwise this will all be grouped with the communicating endpoint
-		// Dictionary<IPEndpoint, ...>
-	
-		public static ulong packetIndex { get; private set; } // Increments for each reliable packet sent
-		static ulong unreliablePacketIndex; // Increments for each unreliable ordered packet sent
-		static Queue<SequencedPacket> outgoingPackets = new Queue<SequencedPacket>(); // Keep track of packets we want to send while we wait for responses
-		public static SequencedPacket latestOutgoingPacket { get; private set; }
+		class RemotePeer {
+			internal ulong packetIndex { get; set; } // Increments for each reliable packet sent
+			internal ulong unreliablePacketIndex; // Increments for each unreliable ordered packet sent
+			internal Queue<SequencedPacket> outgoingPackets = new Queue<SequencedPacket>(); // Keep track of packets we want to send while we wait for responses
+			internal SequencedPacket latestOutgoingPacket { get; set; }
+			internal int ticksSinceLastPacketReceived;
+			internal int ticksSinceLastPacketSent;
+			internal int ticksToResend = RESEND_TICKS;
+			internal ulong lastAckedPacketIndex;
+			internal ulong lastUnreliablePacketIndex;
+		}
+		public static bool waitingForTermination;
+
+		static Dictionary<IPEndPoint, RemotePeer> peers;
+
 		const int TIMEOUT_TICKS = 40 * 30; // about 30 seconds
 		const int HEARTBEAT_TICKS = 40 * 5; // about 5 seconds
-		static int ticksSinceLastPacket;
 		const int RESEND_TICKS = 20; // about 0.5 seconds
-		static int ticksToResend = RESEND_TICKS;
-		static ulong lastAckedPacketIndex;
-		static ulong lastUnreliablePacketIndex;
-		static bool waitingForTermination;
 
 		//
 
-		static readonly IPEndPoint localHostEndpoint = new IPEndPoint(IPAddress.Loopback, 5001);
-		static readonly IPEndPoint localClientEndpoint = new IPEndPoint(IPAddress.Loopback, 5002);
-		static bool isHost;
+		public const int STARTING_PORT = 5061;
 
 		public static Action<IPEndPoint> PeerTerminated;
 
-		public static void Startup(bool host) {
+		public static void Startup() {
 			if (debugClient != null)
 				return;
 
@@ -81,28 +82,36 @@ namespace RainMeadow {
 				null
 			);
 
-			debugClient.Client.Bind(host ? localHostEndpoint : localClientEndpoint);
-			isHost = host;
+			int port = STARTING_PORT;
+			for (int i = 0; i < 4; i++) { // 4 tries
+				bool alreadyinuse = IPGlobalProperties.GetIPGlobalProperties().GetActiveUdpListeners().Any(p => p.Port == port);
+				if (!alreadyinuse)
+					break;
+
+				RainMeadow.Debug($"Port {port} is already being used, incrementing...");
+
+				port++;
+			}
+
+			debugClient.Client.Bind(new IPEndPoint(IPAddress.Any, port));
+			peers = new Dictionary<IPEndPoint, RemotePeer>();
 		}
 
 		// This process it pretty jank rn - it works for the member but not the owner
 		// Don't use for actual gameplay, DEBUG USE ONLY
 		public static void Shutdown() {
 			RainMeadow.DebugMe();
-			if (!isHost)
-				SendTermination();
-			else 
-				CleanUp();
+			SendTermination();
 		}
 
 		static void CleanUp() {
-			if (!debugClient.Client.Connected || outgoingPackets.Count > 0)
+			if (!debugClient.Client.Connected || peers.Any(peer => peer.Value.outgoingPackets.Count > 0))
 				return;
 			
 			RainMeadow.DebugMe();
 			debugClient.Client.Shutdown(SocketShutdown.Both);
 			debugClient = null;
-			isHost = false;
+			peers = null;
 			waitingForTermination = false;
 		}
 
@@ -110,33 +119,44 @@ namespace RainMeadow {
 			if (debugClient == null)
 				return;
 
-			ticksSinceLastPacket++;
-			if (ticksSinceLastPacket > HEARTBEAT_TICKS) {
-				// Send for heartbeat
-				//Send(new byte[0], 0, PacketType.Reliable);
-			}
+			List<IPEndPoint> timedoutEndpoints = new List<IPEndPoint>();
+			foreach (var peer in peers) {
+				var peerIP = peer.Key;
+				var peerData = peer.Value;
 
-			if (ticksSinceLastPacket > TIMEOUT_TICKS) {
-				// Peer timed out and assume disconnected
-				outgoingPackets.Clear();
-			}
-
-			// Try to resend packets that have not been acknowledge on the other end
-			if (outgoingPackets.Count > 0) {
-				ticksToResend--;
-				if (ticksToResend <= 0) {
-					IPEndPoint remoteEndpoint = !isHost ? localHostEndpoint : localClientEndpoint;
-					SequencedPacket outgoingPacket = outgoingPackets.Peek();
-					byte[] packetData = outgoingPacket.packet;
-					
-					if (outgoingPacket.attemptsLeft == 0)
-						outgoingPackets.Dequeue().OnFailed?.Invoke();
-
-					debugClient.Send(packetData, packetData.Length, remoteEndpoint);
-					outgoingPacket.attemptsLeft--;
-
-					ticksToResend = RESEND_TICKS;
+				peerData.ticksSinceLastPacketSent++;
+				if (peerData.ticksSinceLastPacketSent > HEARTBEAT_TICKS) {
+					// Send to heartbeat, do not need an acknowledge if remote is doing the same
+					Send(peerIP, new byte[0], 0, PacketType.Unreliable);
 				}
+
+				peerData.ticksSinceLastPacketReceived++;
+				if (peerData.ticksSinceLastPacketReceived > TIMEOUT_TICKS) {
+					// Peer timed out and assume disconnected
+					RainMeadow.Debug($"Peer {peerIP} timed out :c");
+					timedoutEndpoints.Add(peerIP);
+				}
+
+				// Try to resend packets that have not been acknowledge on the other end
+				if (peerData.outgoingPackets.Count > 0) {
+					peerData.ticksToResend--;
+					if (peerData.ticksToResend <= 0) {
+						SequencedPacket outgoingPacket = peerData.outgoingPackets.Peek();
+						byte[] packetData = outgoingPacket.packet;
+						
+						if (outgoingPacket.attemptsLeft == 0)
+							peerData.outgoingPackets.Dequeue().OnFailed?.Invoke();
+
+						debugClient.Send(packetData, packetData.Length, peerIP);
+						outgoingPacket.attemptsLeft--;
+
+						peerData.ticksToResend = RESEND_TICKS;
+					}
+				}
+			}
+
+			foreach (IPEndPoint endPoint in timedoutEndpoints) {
+				peers.Remove(endPoint);
 			}
 		}
 
@@ -145,38 +165,48 @@ namespace RainMeadow {
 			MemoryStream netStream = new MemoryStream(debugClient.Receive(ref remoteEndpoint));
 			netReader = new BinaryReader(netStream);
 
+			PacketType type = (PacketType)netReader.ReadByte();
+
+			if (!peers.TryGetValue(remoteEndpoint, out RemotePeer peerData)) {
+				RainMeadow.Debug($"Communicating with new peer {remoteEndpoint}");
+				peerData = new RemotePeer();
+				peers[remoteEndpoint] = peerData;
+			}
+
+			peerData.ticksSinceLastPacketReceived = 0;
+
 			ulong receivedPacketIndex;
-			switch ((PacketType)netReader.ReadByte()) {
+			switch (type) {
 				case PacketType.Reliable:
 					receivedPacketIndex = ReadReliableHeader(netReader);
-					SendAcknowledge(receivedPacketIndex); // Return Message
+					SendAcknowledge(remoteEndpoint, receivedPacketIndex); // Return Message
 
 					// Process data if it is new
-					if (receivedPacketIndex > lastAckedPacketIndex) {
-						lastAckedPacketIndex = receivedPacketIndex;
+					if (receivedPacketIndex > peerData.lastAckedPacketIndex) {
+						peerData.lastAckedPacketIndex = receivedPacketIndex;
 						return true;
 					}
 					break;
 
 				case PacketType.Acknowledge:
-					if (outgoingPackets.Count == 0)
+					if (peerData.outgoingPackets.Count == 0)
 						// Nothing left to acknowledge
 						return false;
 
 					receivedPacketIndex = ReadAcknowledge(netReader);
-					if (outgoingPackets.Peek().index == receivedPacketIndex) {
-						SequencedPacket acknowledgedPacket = outgoingPackets.Dequeue();
+					if (peerData.outgoingPackets.Peek().index == receivedPacketIndex) {
+						SequencedPacket acknowledgedPacket = peerData.outgoingPackets.Dequeue();
 						acknowledgedPacket.OnAcknowledged?.Invoke();
 
-						if (acknowledgedPacket == latestOutgoingPacket) {
-							latestOutgoingPacket = null;
+						if (acknowledgedPacket == peerData.latestOutgoingPacket) {
+							peerData.latestOutgoingPacket = null;
 						}
 						
 						// Attempt to send the next reliable one if any
-						if (outgoingPackets.Count > 0) {
-							byte[] packetData = outgoingPackets.Peek().packet;
+						if (peerData.outgoingPackets.Count > 0) {
+							byte[] packetData = peerData.outgoingPackets.Peek().packet;
 							debugClient.Send(packetData, packetData.Length, remoteEndpoint);
-							ticksToResend = RESEND_TICKS;
+							peerData.ticksToResend = RESEND_TICKS;
 						}
 					}
 					break;
@@ -188,25 +218,21 @@ namespace RainMeadow {
 					receivedPacketIndex = ReadUnreliableOrderedHeader(netReader);
 
 					// Process data if it is latest
-					if (receivedPacketIndex > lastUnreliablePacketIndex) {
-						lastUnreliablePacketIndex = receivedPacketIndex;
+					if (receivedPacketIndex > peerData.lastUnreliablePacketIndex) {
+						peerData.lastUnreliablePacketIndex = receivedPacketIndex;
 						return true;
 					}
 					break;
 
 				case PacketType.Termination:
 					receivedPacketIndex = ReadTerminationHeader(netReader);
-					SendAcknowledge(receivedPacketIndex); // Return Message
+					SendAcknowledge(remoteEndpoint, receivedPacketIndex); // Return Message
 
-					// Process data if it is new
-					if (receivedPacketIndex > lastAckedPacketIndex) {
-						lastAckedPacketIndex = receivedPacketIndex;
-						outgoingPackets.Clear();
-						RainMeadow.Debug("Peer Terminated Connection");
-						PeerTerminated(remoteEndpoint);
-						return false;
-					}
-					break;
+					// Do not need to check for order if peer really wants to leave now
+					peers.Remove(remoteEndpoint);
+					RainMeadow.Debug($"Peer {remoteEndpoint} terminated connection");
+					PeerTerminated(remoteEndpoint);
+					return false;
 			}
 
 			return false;
@@ -216,30 +242,38 @@ namespace RainMeadow {
 			return debugClient != null && debugClient.Available > 0;
 		}
 
-		public static void Send(byte[] data, int length, PacketType packetType, PacketDataType dataType = PacketDataType.Internal) {
+		public static void Send(IPEndPoint remoteEndpoint, byte[] data, int length, PacketType packetType, PacketDataType dataType = PacketDataType.Internal) {
 			if (debugClient == null || waitingForTermination)
 				return;
 
-			// Insert data type because there is concept of channels here
-			byte[] typedData = new byte[data.Length + 1];
-			typedData[0] = (byte)dataType;
-			Buffer.BlockCopy(data, 0, typedData, 1, data.Length);
-			data = typedData;
+			if (!peers.TryGetValue(remoteEndpoint, out RemotePeer peerData)) {
+				RainMeadow.Debug($"Communicating with new peer {remoteEndpoint}");
+				peerData = new RemotePeer();
+				peers[remoteEndpoint] = peerData;
+			}
 
-			IPEndPoint remoteEndpoint = !isHost ? localHostEndpoint : localClientEndpoint;
+			peerData.ticksSinceLastPacketSent++;
+
+			// Insert data type because there is no concept of channels here
+			byte[] typedData = new byte[length + 1];
+			typedData[0] = (byte)dataType;
+			Buffer.BlockCopy(data, 0, typedData, 1, length);
+			data = typedData;
+			length += 1;
+
 			byte[] buffer = null;
 			byte[] packetData;
 			switch (packetType) {
 				case PacketType.Reliable:
-					latestOutgoingPacket = new SequencedPacket(++packetIndex, data);
-					outgoingPackets.Enqueue(latestOutgoingPacket);
+					peerData.latestOutgoingPacket = new SequencedPacket(++peerData.packetIndex, data);
+					peerData.outgoingPackets.Enqueue(peerData.latestOutgoingPacket);
 
-					SequencedPacket outgoingPacket = outgoingPackets.Peek();
+					SequencedPacket outgoingPacket = peerData.outgoingPackets.Peek();
 					buffer = outgoingPacket.packet;
 					break;
 				
 				case PacketType.Unreliable:
-					buffer = new byte[1 + data.Length];
+					buffer = new byte[1 + length];
 					MemoryStream stream = new MemoryStream(buffer);
 					BinaryWriter writer = new BinaryWriter(stream);
 
@@ -249,11 +283,11 @@ namespace RainMeadow {
 					break;
 				
 				case PacketType.UnreliableOrdered:
-					buffer = new byte[9 + data.Length];
-					stream = new MemoryStream(9 + data.Length);
+					buffer = new byte[9 + length];
+					stream = new MemoryStream(9 + length);
 					writer = new BinaryWriter(stream);
 
-					WriteUnreliableOrderedHeader(writer, ++unreliablePacketIndex);
+					WriteUnreliableOrderedHeader(writer, ++peerData.unreliablePacketIndex);
 					writer.Write(data);
 
 					break;
@@ -265,8 +299,7 @@ namespace RainMeadow {
 			debugClient.Send(buffer, buffer.Length, remoteEndpoint);
 		}
 
-		static void SendAcknowledge(ulong index) {
-			IPEndPoint remoteEndpoint = !isHost ? localHostEndpoint : localClientEndpoint;
+		static void SendAcknowledge(IPEndPoint remoteEndpoint, ulong index) {
 			byte[] buffer = new byte[9];
 			MemoryStream stream = new MemoryStream(buffer);
 			BinaryWriter writer = new BinaryWriter(stream);
@@ -276,17 +309,23 @@ namespace RainMeadow {
 		}
 
 		static void SendTermination() {
-			outgoingPackets.Clear();
+			RainMeadow.Debug($"Sending all known peers a final message!");
 			
-			IPEndPoint remoteEndpoint = !isHost ? localHostEndpoint : localClientEndpoint;
-			latestOutgoingPacket = new SequencedPacket(++packetIndex, new byte[0], 3, true);
-			outgoingPackets.Enqueue(latestOutgoingPacket);
+			foreach (var peer in peers) {
+				var peerIP = peer.Key;
+				var peerData = peer.Value;
+			
+				peerData.outgoingPackets.Clear();
+			
+				peerData.latestOutgoingPacket = new SequencedPacket(++peerData.packetIndex, new byte[0], 3, true);
+				peerData.outgoingPackets.Enqueue(peerData.latestOutgoingPacket);
 
-			latestOutgoingPacket.OnAcknowledged += CleanUp;
-			latestOutgoingPacket.OnFailed += CleanUp;
+				peerData.latestOutgoingPacket.OnAcknowledged += CleanUp;
+				peerData.latestOutgoingPacket.OnFailed += CleanUp;
 
-			byte[] packetData = outgoingPackets.Peek().packet;
-			debugClient.Send(packetData, packetData.Length, remoteEndpoint);
+				byte[] packetData = peerData.outgoingPackets.Peek().packet;
+				debugClient.Send(packetData, packetData.Length, peerIP);
+			}
 
 			waitingForTermination = true;
 		}

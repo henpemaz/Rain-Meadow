@@ -44,6 +44,17 @@ namespace RainMeadow
             }
         }
 
+        public Lobby(OnlinePlayer owner, string creatingWithMode)
+        {
+            this.id = id;
+            this.super = this;
+            RainMeadow.Debug($"Lobby owner is {owner}");
+            NewOwner(owner);
+            this.gameMode = OnlineGameMode.FromType(new OnlineGameMode.OnlineGameModeType(creatingWithMode), this);
+
+            Request(); // Everyone auto-subscribes this resource
+        }
+
         protected override void ActivateImpl()
         {
             foreach (var r in Region.LoadAllRegions(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer))
