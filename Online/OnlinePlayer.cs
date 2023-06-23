@@ -24,6 +24,12 @@ namespace RainMeadow
         public bool needsAck;
         public bool hasLeft;
 
+        // DEBUG
+        public bool eventsWritten;
+        public bool statesWritten;
+        public bool eventsRead;
+        public bool statesRead;
+
         public bool isMe { get => this == PlayersManager.mePlayer; }
         public bool isUsingSteam { get => steamId.IsValid(); }
 

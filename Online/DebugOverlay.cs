@@ -109,6 +109,9 @@ namespace RainMeadow {
 
 		static List<EntityNode> entityNodes = new List<EntityNode>();
 
+		static List<FLabel> outgoingLabels = new List<FLabel>();
+		static List<FLabel> incomingLabels = new List<FLabel>();
+
 		public static void Update(RainWorldGame self, float dt) {
 			if (overlayContainer == null && self.devToolsActive) {
 				CreateOverlay(self);
@@ -120,6 +123,37 @@ namespace RainMeadow {
 
 			if (overlayContainer != null) {
 				Vector2 screenSize = self.rainWorld.options.ScreenSize;
+				
+				outgoingLabels.ForEach(label => label.RemoveFromContainer());
+				outgoingLabels.Clear();
+				incomingLabels.ForEach(label => label.RemoveFromContainer());
+				incomingLabels.Clear();
+
+				int line = 0;
+				foreach (OnlinePlayer player in PlayersManager.players) {
+					if (player.statesWritten || player.eventsWritten) {
+						FLabel label = new FLabel(Custom.GetFont(), player.ToString()) { alignment = FLabelAlignment.Left, x = 5.01f, y = screenSize.y - 25 - 15 * line };
+						if (player.eventsWritten) {
+							label.color = new Color(1, 0.5f, 0);
+						}
+						overlayContainer.AddChild(label);
+						outgoingLabels.Add(label);
+						line++;
+					}
+				}
+
+				line = 0;
+				foreach (OnlinePlayer player in PlayersManager.players) {
+					if (player.statesRead || player.eventsRead) {
+						FLabel label = new FLabel(Custom.GetFont(), player.ToString()) { alignment = FLabelAlignment.Left, x = 155.01f, y = screenSize.y - 25 - 15 * line };
+						if (player.eventsRead) {
+							label.color = new Color(1, 0.5f, 0);
+						}
+						overlayContainer.AddChild(label);
+						incomingLabels.Add(label);
+						line++;
+					}
+				}
 
 				// Worlds (Regions)
 				int worldShift = -30;
@@ -139,7 +173,7 @@ namespace RainMeadow {
 						resourceNodes.Add(regionNode);
 					}
 					
-					regionNode.pos = new Vector2(50 + worldShift, screenSize.y - 90);
+					regionNode.pos = new Vector2(300 + worldShift, screenSize.y - 90);
 
 					// Rooms
 					int roomShift = -70;
@@ -159,7 +193,7 @@ namespace RainMeadow {
 							resourceNodes.Add(roomNode);
 						}
 
-						roomNode.pos = new Vector2(50 + worldShift + roomShift, screenSize.y - 150);
+						roomNode.pos = new Vector2(300 + worldShift + roomShift, screenSize.y - 150);
 						if (roomSession.Key == self.cameras[0].room.abstractRoom.name) {
 							roomNode.thickness = 4;
 						} else {
@@ -216,7 +250,7 @@ namespace RainMeadow {
 				}
 
 				entityNodes.RemoveAll(node => {
-					if (!OnlineManager.recentEntities.ContainsValue(node.entity)) {
+					if (!OnlineManager.recentEntities.ContainsValue(node.entity) || node.entity.highestResource == null) {
 						node.RemoveSprites();
 						return true;
 					}
@@ -230,13 +264,24 @@ namespace RainMeadow {
 		}
 
 		public static void CreateOverlay(RainWorldGame self) {
+			Vector2 screenSize = self.rainWorld.options.ScreenSize;
 			overlayContainer = new FContainer();
 
+			overlayContainer.AddChild(new FLabel(Custom.GetFont(), "Outgoing (Receivers)") {
+				alignment = FLabelAlignment.Left,
+				x = 5.01f,
+				y = screenSize.y - 10,
+			});
+			overlayContainer.AddChild(new FLabel(Custom.GetFont(), "Incoming (Senders)") {
+				alignment = FLabelAlignment.Left,
+				x = 155.01f,
+				y = screenSize.y - 10,
+			});
+
 			// Lobby (Root)
-			Vector2 screenSize = self.rainWorld.options.ScreenSize;
 			resourceNodes.Add(new ResourceNode(self.rainWorld, overlayContainer) {
 				resource = OnlineManager.lobby,
-				pos = new Vector2(x: 50, screenSize.y - 30),
+				pos = new Vector2(x: 300, screenSize.y - 30),
 				rad = 20,
 				text = ".",
 			});

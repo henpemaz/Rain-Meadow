@@ -269,12 +269,16 @@ namespace RainMeadow
                 OnlineManager.ProcessIncomingEvent(ReadEvent());
             }
 
+            currPlayer.eventsRead = ne > 0;
+
             int ns = BeginReadStates();
             //RainMeadow.Debug($"Receiving {ns} states");
             for (int ist = 0; ist < ns; ist++)
             {
                 OnlineManager.ProcessIncomingState(ReadState());
-            }     
+            }
+
+            currPlayer.statesRead = ns > 0;
         }
 
         public void SendData(OnlinePlayer toPlayer)
@@ -304,6 +308,8 @@ namespace RainMeadow
                 }
                 EndWriteEvents();
 
+                toPlayer.eventsWritten = eventCount > 0;
+
                 BeginWriteStates();
                 //RainMeadow.Debug($"Writing {toPlayer.OutgoingStates.Count} states");
                 while (toPlayer.OutgoingStates.Count > 0 && CanFit(toPlayer.OutgoingStates.Peek()))
@@ -313,6 +319,8 @@ namespace RainMeadow
                 }
                 // todo handle states overflow, planing a packet for maximum size and least stale states
                 EndWriteStates();
+
+                toPlayer.statesWritten = stateCount > 0;
 
                 EndWrite();
 
