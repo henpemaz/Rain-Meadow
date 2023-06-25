@@ -11,7 +11,7 @@ namespace RainMeadow
         public Dictionary<string, WorldSession> worldSessions = new();
         public OnlineGameMode gameMode;
 
-        protected override World World => throw new NotSupportedException(); // Lobby can't add world entities
+        public override World World => throw new NotSupportedException(); // Lobby can't add world entities
 
         public event Action OnLobbyAvailable;
 
@@ -67,7 +67,6 @@ namespace RainMeadow
 
         protected override void AvailableImpl()
         {
-            base.AvailableImpl();
             OnLobbyAvailable?.Invoke();
             OnLobbyAvailable = null;
 
@@ -84,9 +83,9 @@ namespace RainMeadow
             return new LobbyState(this, ts);
         }
 
-        public override void ReadState(ResourceState newState, ulong ts)
+        public override void ReadState(ResourceState newState)
         {
-            base.ReadState(newState, ts);
+            base.ReadState(newState);
             if (newState is LobbyState newLobbyState)
             {
                 // no op

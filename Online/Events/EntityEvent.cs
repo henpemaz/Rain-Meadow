@@ -16,7 +16,7 @@
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);
-            serializer.Serialize(ref oe);
+            serializer.SerializeEntity(ref oe);
         }
     }
 }

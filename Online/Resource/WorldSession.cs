@@ -12,7 +12,7 @@ namespace RainMeadow
         public static ConditionalWeakTable<World, WorldSession> map = new();
         public Dictionary<string, RoomSession> roomSessions = new();
 
-        protected override World World => world;
+        public override World World => world;
 
         public WorldSession(Region region, Lobby lobby)
         {
@@ -26,6 +26,11 @@ namespace RainMeadow
             map.Add(world, this);
         }
 
+        protected override void AvailableImpl()
+        {
+            
+        }
+
         protected override void ActivateImpl()
         {
             if(world == null) throw new InvalidOperationException("world not set");
@@ -35,11 +40,11 @@ namespace RainMeadow
                 roomSessions.Add(room.name, rs);
                 subresources.Add(rs);
             }
-            foreach (var item in earlyEntities)
+            foreach (var item in earlyApos)
             {
-                EntityEnteringWorld(item);
+                ApoEnteringWorld(item);
             }
-            earlyEntities.Clear();
+            earlyApos.Clear();
         }
 
         protected override void DeactivateImpl()
@@ -48,9 +53,9 @@ namespace RainMeadow
             world = null;
         }
 
-        public override void ReadState(ResourceState newState, ulong ts)
+        public override void ReadState(ResourceState newState)
         {
-            base.ReadState(newState, ts);
+            base.ReadState(newState);
             if (newState is WorldState newWorldState)
             {
                 // no op

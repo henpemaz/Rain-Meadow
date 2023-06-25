@@ -32,7 +32,7 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             if (isSupervisor)
             {
-                if (memberships.ContainsKey(request.from)) // they are already in this
+                if (participants.ContainsKey(request.from)) // they are already in this
                 {
                     request.from.QueueEvent(new RequestResult.Error(request));
                     return;
@@ -63,7 +63,7 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             if(isSupervisor)
             {
-                if (!memberships.ContainsKey(request.from)) // they are already out?
+                if (!participants.ContainsKey(request.from)) // they are already out?
                 {
                     request.from.QueueEvent(new ReleaseResult.Error(request));
                     return;
@@ -73,7 +73,7 @@ namespace RainMeadow
                 {
                     request.from.QueueEvent(new ReleaseResult.Released(request)); // this notifies the old owner that the release was a success
                     ParticipantLeft(request.from);
-                    var newOwner = PlayersManager.BestTransferCandidate(this, memberships);
+                    var newOwner = PlayersManager.BestTransferCandidate(this, participants);
                     NewOwner(newOwner); // This notifies all users, if the new owner is active they'll restore the state
                     if (newOwner != null)
                     {

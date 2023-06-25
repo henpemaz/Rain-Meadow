@@ -219,16 +219,16 @@ namespace RainMeadow {
 
 				foreach (var mappedEntity in OnlineManager.recentEntities) {
 					OnlineEntity onlineEntity = mappedEntity.Value;
-					ResourceNode resourceNode = resourceNodes.Find(node => node.resource == onlineEntity.lowestResource);
-					if (resourceNode != null) {
+					ResourceNode resourceNode = resourceNodes.Find(node => node.resource == onlineEntity.currentlyJoinedResource);
+					if (resourceNode != null && onlineEntity is OnlinePhysicalObject onlinePhysicalObject) {
 						
 						EntityNode entityNode = entityNodes.Find(node => node.entity == onlineEntity);
 						if (entityNode == null) {
 							
 							bool isMe = false;
 							if (onlineEntity.owner.isMe) {
-								if (onlineEntity.entity.type == AbstractPhysicalObject.AbstractObjectType.Creature) {
-									AbstractCreature creature = (AbstractCreature)onlineEntity.entity;
+								if (onlinePhysicalObject.apo.type == AbstractPhysicalObject.AbstractObjectType.Creature) {
+									AbstractCreature creature = (AbstractCreature)onlinePhysicalObject.apo;
 
 									if (creature.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat) {
 										isMe = true;
@@ -238,7 +238,7 @@ namespace RainMeadow {
 
 							entityNode = new EntityNode(self.rainWorld, overlayContainer) {
 								entity = onlineEntity,
-								text = isMe ? "YOU" : onlineEntity.entity.type == AbstractPhysicalObject.AbstractObjectType.Creature ? ((AbstractCreature)mappedEntity.Value.entity).creatureTemplate.type.ToString() : mappedEntity.Value.entity.type.ToString(),
+								text = isMe ? "YOU" : onlinePhysicalObject.apo.type == AbstractPhysicalObject.AbstractObjectType.Creature ? ((AbstractCreature)onlinePhysicalObject.apo).creatureTemplate.type.ToString() : onlinePhysicalObject.apo.type.ToString(),
 							};
 							entityNodes.Add(entityNode);
 						}
@@ -250,7 +250,7 @@ namespace RainMeadow {
 				}
 
 				entityNodes.RemoveAll(node => {
-					if (!OnlineManager.recentEntities.ContainsValue(node.entity) || node.entity.highestResource == null) {
+					if (!OnlineManager.recentEntities.ContainsValue(node.entity) || node.entity.primaryResource == null) {
 						node.RemoveSprites();
 						return true;
 					}

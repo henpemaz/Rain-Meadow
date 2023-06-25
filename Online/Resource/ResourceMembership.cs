@@ -2,14 +2,13 @@
 {
     public class ResourceMembership
     {
-        public OnlinePlayer player;
-        public bool everSentLease;
-        public PlayerTickReference memberSinceTick;
+        public OnlineResource resource;
+        public TickReference memberSinceTick;
 
-        public ResourceMembership(OnlinePlayer player, OnlineResource resource)
+        public ResourceMembership(OnlineResource resource)
         {
-            this.player = player;
-            memberSinceTick = new PlayerTickReference(resource.supervisor, resource.supervisor.tick);
+            this.resource = resource;
+            memberSinceTick = new TickReference(resource.supervisor, resource.supervisor.tick);
         }
     }
 }

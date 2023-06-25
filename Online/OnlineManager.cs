@@ -18,7 +18,7 @@ namespace RainMeadow
         public static Serializer serializer = new Serializer(16000);
 
         public static Lobby lobby;
-        public static List<Subscription> subscriptions;
+        public static List<ResourceSubscription> subscriptions;
         public static List<EntityFeed> feeds;
         public static Dictionary<OnlineEntity.EntityId, OnlineEntity> recentEntities;
         public static HashSet<OnlineEvent> waitingEvents;
@@ -43,7 +43,7 @@ namespace RainMeadow
 
             WorldSession.map = new();
             RoomSession.map = new();
-            OnlineEntity.map = new();
+            OnlinePhysicalObject.map = new();
 
             PlayersManager.Reset();
         }
@@ -203,11 +203,11 @@ namespace RainMeadow
             {
                 if (state is OnlineResource.ResourceState resourceState && resourceState.resource != null && resourceState.resource.isActive)
                 {
-                    resourceState.resource.ReadState(resourceState, fromPlayer.tick);
+                    resourceState.resource.ReadState(resourceState);
                 }
-                if (state is EntityState entityState)
+                if (state is EntityInResourceState entityInResourceState)
                 {
-                    entityState.onlineEntity.ReadState(entityState, fromPlayer.tick);
+                    entityInResourceState.entityState.onlineEntity.ReadState(entityInResourceState.entityState, entityInResourceState.inResource);
                 }
             }
             catch (Exception e)
@@ -218,7 +218,7 @@ namespace RainMeadow
 
         public static void AddSubscription(OnlineResource onlineResource, OnlinePlayer player)
         {
-            subscriptions.Add(new Subscription(onlineResource, player));
+            subscriptions.Add(new ResourceSubscription(onlineResource, player));
         }
 
         public static void RemoveSubscription(OnlineResource onlineResource, OnlinePlayer player)

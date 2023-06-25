@@ -80,3 +80,11 @@ since moved from hook on ctor for stuff added to world, initial populations isn'
 on room load
 	we dont know who owner is going to be, can't decide who's the host
 
+world entity hookery correctness
+	
+debug why lease messages so big, make it print out size and isdelta
+
+on p2 talking to p1 about a resource that p1 has fully unloaded, p1 nullrefs and doesn't give p2 any answers.
+	p1 should answer total failure
+	or p2 should timeout the request
+	or request from p2 should detect it was ackd but not answered

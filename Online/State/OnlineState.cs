@@ -5,13 +5,13 @@ namespace RainMeadow
     public abstract class OnlineState
     {
         public OnlinePlayer from; // not serialized, message source
-        public ulong ts; // not serialized, latest from player when read
+        public ulong tick; // not serialized, latest from player when read
 
         protected OnlineState() { }
 
         protected OnlineState(ulong ts)
         {
-            this.ts = ts;
+            this.tick = ts;
         }
 
         public abstract StateType stateType { get; } // serialized externally
@@ -24,15 +24,16 @@ namespace RainMeadow
             LobbyState,
             WorldState,
             RoomState,
+            EntityInResourceState,
             PhysicalObjectEntityState,
             AbstractCreatureState,
-            PhysicalObjectState,
+            RealizedPhysicalObjectState,
             RealizedCreatureState,
             RealizedPlayerState,
             RealizedWeaponState,
             RealizedSpearState,
             CreatureStateState,
-            CreatureHealthState
+            CreatureHealthState,
         }
 
         public static OnlineState NewFromType(StateType stateType)
@@ -51,14 +52,17 @@ namespace RainMeadow
                 case StateType.RoomState:
                     s = new RoomSession.RoomState();
                     break;
+                case StateType.EntityInResourceState:
+                    s = new EntityInResourceState();
+                    break;
                 case StateType.PhysicalObjectEntityState:
                     s = new PhysicalObjectEntityState();
                     break;
                 case StateType.AbstractCreatureState:
                     s = new AbstractCreatureState();
                     break;
-                case StateType.PhysicalObjectState:
-                    s = new PhysicalObjectState();
+                case StateType.RealizedPhysicalObjectState:
+                    s = new RealizedPhysicalObjectState();
                     break;
                 case StateType.RealizedCreatureState:
                     s = new RealizedCreatureState();

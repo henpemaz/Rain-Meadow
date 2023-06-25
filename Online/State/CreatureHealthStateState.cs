@@ -5,9 +5,9 @@ namespace RainMeadow
         public float health;
         
         public CreatureHealthStateState() { }
-        public CreatureHealthStateState(OnlineEntity onlineEntity) : base(onlineEntity)
+        public CreatureHealthStateState(OnlineCreature onlineEntity) : base(onlineEntity)
         {
-            var abstractCreature = (AbstractCreature)onlineEntity.entity;
+            var abstractCreature = (AbstractCreature)onlineEntity.apo;
             var healthState = (HealthState)abstractCreature.state;
             health = healthState.health;
         }

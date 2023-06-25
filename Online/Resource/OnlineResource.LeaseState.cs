@@ -10,7 +10,6 @@ namespace RainMeadow
         // If lobby, includes participants in self
         private LeaseState incomingLease; // lease to be processed on activate
         private LeaseState currentLeaseState;
-        private PlayerTickReference ownerSinceTick;
 
         private void NewLeaseState()
         {
@@ -21,18 +20,19 @@ namespace RainMeadow
             if (subresources.Count == 0) { return; } // nothing to be sent
             var newLeaseState = new LeaseState(this);
             var delta = newLeaseState.Delta(currentLeaseState);
-            foreach (var membership in memberships)
+            foreach (var membership in participants)
             {
                 if (membership.Key.isMe) continue;
-                var tickReference = PlayerTickReference.IsNewerOrEqual(membership.Value.memberSinceTick, this, ownerSinceTick, super) ? membership.Value.memberSinceTick : ownerSinceTick;
+                
                 if (!membership.Value.everSentLease)
                 {
+                    var tickReference = TickReference.NewestOf(membership.Value.memberSinceTick, this, ownerSinceTick, super);
                     membership.Key.QueueEvent(new LeaseChangeEvent(this, newLeaseState, tickReference)); // its their first time here
                     membership.Value.everSentLease = true;
                 }
                 else if(!delta.isEmptyDelta)
                 {
-                    membership.Key.QueueEvent(new LeaseChangeEvent(this, delta, tickReference)); // send the delta
+                    membership.Key.QueueEvent(new LeaseChangeEvent(this, delta, null)); // send the delta
                 }
             }
             currentLeaseState = newLeaseState; // store in full
@@ -136,7 +136,7 @@ namespace RainMeadow
             {
                 this.resourceId = resource.ShortId();
                 this.owner = resource.owner;
-                this.participants = new OnlinePlayerGroup(resource.memberships.Keys.ToList());
+                this.participants = new OnlinePlayerGroup(resource.participants.Keys.ToList());
             }
 
             // update from other
@@ -183,7 +183,7 @@ namespace RainMeadow
             public LeaseState() { }
             public LeaseState(OnlineResource onlineResource)
             {
-                participants = new OnlinePlayerGroup(onlineResource is Lobby ? onlineResource.memberships.Keys.ToList() : new());
+                participants = new OnlinePlayerGroup(onlineResource is Lobby ? onlineResource.participants.Keys.ToList() : new());
                 sublease = onlineResource.subresources.Select(r => new SubleaseState(r)).ToList();
             }
 

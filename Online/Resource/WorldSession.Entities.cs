@@ -1,76 +1,52 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
     public partial class WorldSession
     {
-        public static bool registeringRemoteEntity;
-        private List<AbstractPhysicalObject> earlyEntities = new(); // stuff that gets added during world loading
+        private List<AbstractPhysicalObject> earlyApos = new(); // stuff that gets added during world loading
 
-        // This happens for local entities, so we create their respective OnlineEntity
-        public void EntityEnteringWorld(AbstractPhysicalObject entity)
+        // Something entered this resource, check if it needs registering
+        public void ApoEnteringWorld(AbstractPhysicalObject apo)
         {
-            if (!OnlineEntity.map.TryGetValue(entity, out var oe))
+            if (!isAvailable) throw new InvalidOperationException("not available");
+            if (!OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) // New to me
             {
-                RainMeadow.Debug(this);
-                if (!registeringRemoteEntity) // A new entity, presumably mine
+                if (isActive)
                 {
-                    if (!isActive) // world population generates before this can be activated
-                    {
-                        RainMeadow.Debug("Queuing up entity for registering later");
-                        this.earlyEntities.Add(entity);
-                        return;
-                    }
-                    RainMeadow.Debug("Registering new entity as owned by myself");
-                    var newOe = new OnlineEntity(entity, PlayersManager.mePlayer, new OnlineEntity.EntityId(PlayersManager.mePlayer.netId, entity.ID.number), entity.ID.RandomSeed, entity.pos, !RainMeadow.sSpawningPersonas);
-                    RainMeadow.Debug(newOe);
-                    OnlineManager.recentEntities[newOe.id] = newOe;
-                    OnlineEntity.map.Add(entity, newOe);
-                    EntityEnteredResource(newOe);
+                    RainMeadow.Debug($"{this} - registering {apo}");
+                    oe = OnlinePhysicalObject.RegisterPhysicalObject(apo);
                 }
-                else
+                else // world population generates before this can be activated // can't we simply mark it as active earlier?
                 {
-                    RainMeadow.Debug("skipping remote entity");
+                    RainMeadow.Debug($"{this} - queuing up for later {apo}");
+                    this.earlyApos.Add(apo);
+                    return;
                 }
             }
-            else if (!entities.Contains(oe))
+            if (oe.isMine && !oe.enteredResources.Contains(this)) // Under my control
             {
-                EntityEnteredResource(oe);
+                oe.EnterResource(this);
             }
+            // no error if already contained, our hooks are triggered multiple times
+            // no action if remote
         }
 
-        public void EntityLeavingWorld(AbstractPhysicalObject entity)
+        public void ApoLeavingWorld(AbstractPhysicalObject apo)
         {
             RainMeadow.Debug(this);
-
-            if (OnlineEntity.map.TryGetValue(entity, out var oe))
+            if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
             {
-                EntityLeftResource(oe);
+                if (oe.isMine)
+                {
+                    oe.LeaveResource(this);
+                }
             }
             else
             {
                 RainMeadow.Error("Unregistered entity leaving");
             }
-        }
-
-        public override void EntityEnteredResource(OnlineEntity oe)
-        {
-            base.EntityEnteredResource(oe);
-            oe.worldSession = this;
-
-            // not sure how "correct" this is because on the host side it might be different?
-            if (!oe.owner.isMe) // kinda wanted a .isRemote helper at this point
-            {
-                oe.beingMoved = true;
-                this.world.GetAbstractRoom(oe.enterPos).AddEntity(oe.entity);
-                oe.beingMoved = false;
-            }
-        }
-
-        public override void EntityLeftResource(OnlineEntity oe)
-        {
-            base.EntityLeftResource(oe);
-            if (oe.worldSession == this) oe.worldSession = null;
         }
     }
 }

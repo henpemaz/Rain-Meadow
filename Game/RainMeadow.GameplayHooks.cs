@@ -34,15 +34,15 @@ namespace RainMeadow
         {
             orig(self, eu);
             if (OnlineManager.lobby == null) return;
-            if (!OnlineEntity.map.TryGetValue(self.abstractPhysicalObject, out var onlineCreature)) throw new InvalidOperationException("Creature doesn't exist in online space!");
-            if (!onlineCreature.owner.isMe) return;
+            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineCreature)) throw new InvalidOperationException("Creature doesn't exist in online space!");
+            if (!onlineCreature.isMine) return;
 
             if (self.grasps == null) return;
             foreach (var grasp in self.grasps)
             {
                 if (grasp == null) continue;
-                if (!OnlineEntity.map.TryGetValue(grasp.grabbed.abstractPhysicalObject, out var onlineGrabbed)) throw new InvalidOperationException("Creature doesn't exist in online space!");
-                if (!onlineGrabbed.owner.isMe && onlineGrabbed.isTransferable && !onlineGrabbed.isPending)
+                if (!OnlinePhysicalObject.map.TryGetValue(grasp.grabbed.abstractPhysicalObject, out var onlineGrabbed)) throw new InvalidOperationException("Creature doesn't exist in online space!");
+                if (!onlineGrabbed.isMine && onlineGrabbed.isTransferable && !onlineGrabbed.isPending)
                 {
                     if (grasp.grabbed is not Creature) // Non-Creetchers cannot be grabbed by multiple creatures
                     {
@@ -53,8 +53,8 @@ namespace RainMeadow
                     var grabbersOtherThanMe = grasp.grabbed.grabbedBy.Select(x => x.grabber).Where(x => x != self);
                     foreach (var grabbers in grabbersOtherThanMe)
                     {
-                        if (!OnlineEntity.map.TryGetValue(grabbers.abstractPhysicalObject, out var tempEntity)) throw new InvalidOperationException("Creature doesn't exist in online space!");
-                        if (!tempEntity.owner.isMe) return;
+                        if (!OnlinePhysicalObject.map.TryGetValue(grabbers.abstractPhysicalObject, out var tempEntity)) throw new InvalidOperationException("Creature doesn't exist in online space!");
+                        if (!tempEntity.isMine) return;
                     }
                     // If no remotes holding the entity, request it
                     onlineGrabbed.Request();
@@ -65,8 +65,7 @@ namespace RainMeadow
         private void CreatureOnViolence(On.Creature.orig_Violence orig, Creature self, BodyChunk source, Vector2? directionandmomentum, BodyChunk hitchunk, PhysicalObject.Appendage.Pos hitappendage, Creature.DamageType type, float damage, float stunbonus)
         {
             if (OnlineManager.lobby == null) goto orig;
-            if (!OnlineEntity.map.TryGetValue(hitchunk.owner.abstractPhysicalObject, out var onlineVictim)) throw new InvalidOperationException("Victim doesn't exist in online space!");
-
+            if (!OnlinePhysicalObject.map.TryGetValue(hitchunk.owner.abstractPhysicalObject, out var onlineVictim) || onlineVictim is not OnlineCreature) throw new InvalidOperationException("Victim doesn't exist in online space!");
             var room = hitchunk.owner.room;
             if (room.updateIndex <= room.updateList.Count)
             {
@@ -75,18 +74,18 @@ namespace RainMeadow
                 if (suspect is Explosion explosion) trueVillain = explosion.sourceObject;
                 else if (suspect is PhysicalObject villainObject) trueVillain = villainObject;
                 else goto orig;
-                if (!OnlineEntity.map.TryGetValue(trueVillain.abstractPhysicalObject, out var onlineTrueVillain)) throw new InvalidOperationException("TrueVillain doesn't exist in online space!");
+                if (!OnlinePhysicalObject.map.TryGetValue(trueVillain.abstractPhysicalObject, out var onlineTrueVillain)) throw new InvalidOperationException("TrueVillain doesn't exist in online space!");
                 if ((onlineTrueVillain.owner.isMe || onlineTrueVillain.isPending) && !onlineVictim.owner.isMe) // I'm violencing a remote entity
                 {
-                    OnlineEntity onlineVillain = null;
-                    if (source != null && !OnlineEntity.map.TryGetValue(source.owner.abstractPhysicalObject, out onlineVillain)) throw new InvalidOperationException("Villain doesn't exist in online space!");
+                    OnlinePhysicalObject onlineVillain = null;
+                    if (source != null && !OnlinePhysicalObject.map.TryGetValue(source.owner.abstractPhysicalObject, out onlineVillain)) throw new InvalidOperationException("Villain doesn't exist in online space!");
                     // Notify entity owner of violence
-                    onlineVictim.CreatureViolence(onlineVillain, hitchunk.index, hitappendage, directionandmomentum, type, damage, stunbonus);
+                    (onlineVictim as OnlineCreature).CreatureViolence(onlineVillain, hitchunk.index, hitappendage, directionandmomentum, type, damage, stunbonus);
                     return; // Remote is gonna handle this
                 }
                 if (!onlineTrueVillain.owner.isMe) return; // Remote entity will send an event
             }
-            orig:
+        orig:
             orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
         }
         
@@ -94,10 +93,10 @@ namespace RainMeadow
         {
             orig(self, grabber, grabbed, graspused, chunkgrabbed, shareability, dominance, pacifying);
             if (OnlineManager.lobby == null) return;
-            if (!OnlineEntity.map.TryGetValue(grabber.abstractPhysicalObject, out var onlineGrabber)) throw new InvalidOperationException("Grabber doesn't exist in online space!");
-            if (!OnlineEntity.map.TryGetValue(grabbed.abstractPhysicalObject, out var onlineGrabbed)) throw new InvalidOperationException("Grabbed tjing doesn't exist in online space!");
+            if (!OnlinePhysicalObject.map.TryGetValue(grabber.abstractPhysicalObject, out var onlineGrabber)) throw new InvalidOperationException("Grabber doesn't exist in online space!");
+            if (!OnlinePhysicalObject.map.TryGetValue(grabbed.abstractPhysicalObject, out var onlineGrabbed)) throw new InvalidOperationException("Grabbed tjing doesn't exist in online space!");
             
-            if (onlineGrabber.owner.isMe && !onlineGrabbed.owner.isMe && onlineGrabbed.isTransferable && !onlineGrabbed.isPending)
+            if (onlineGrabber.isMine && !onlineGrabbed.isMine && onlineGrabbed.isTransferable && !onlineGrabbed.isPending)
             {
                 onlineGrabbed.Request();
             }
@@ -107,12 +106,12 @@ namespace RainMeadow
         {
             orig(self, grasp);
             if (OnlineManager.lobby == null) return;
-            if (!OnlineEntity.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidOperationException("Entity doesn't exist in online space!");
-            if (!OnlineEntity.map.TryGetValue(grasp.grabber.abstractPhysicalObject, out var onlineGrabber)) throw new InvalidOperationException("Grabber doesn't exist in online space!");
+            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidOperationException("Entity doesn't exist in online space!");
+            if (!OnlinePhysicalObject.map.TryGetValue(grasp.grabber.abstractPhysicalObject, out var onlineGrabber)) throw new InvalidOperationException("Grabber doesn't exist in online space!");
             
-            if (!onlineEntity.isTransferable && onlineEntity.owner.isMe)
+            if (!onlineEntity.isTransferable && onlineEntity.isMine)
             {
-                if (!onlineGrabber.owner.isMe && onlineGrabber.isTransferable && !onlineGrabber.isPending)
+                if (!onlineGrabber.isMine && onlineGrabber.isTransferable && !onlineGrabber.isPending)
                 {
                     onlineGrabber.Request(); // If I've been grabbed and I'm not transferrable, but my grabber is, request him
                 }
