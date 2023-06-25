@@ -367,6 +367,7 @@ namespace RainMeadow
             if (steamLobbyOwnerId.IsValid() && steamLobbyOwnerId.BIndividualAccount()) {
                 SteamNetworking.SendP2PPacket(steamLobbyOwnerId, buffer, 13, EP2PSend.k_EP2PSendReliable, 1);
             } else {
+                // The IP endpoint of who you are joining with would go here
                 UdpPeer.Send(new IPEndPoint(IPAddress.Loopback, UdpPeer.STARTING_PORT), buffer, 13, UdpPeer.PacketType.Reliable, PacketDataType.PlayerInfo);
             }
 		}

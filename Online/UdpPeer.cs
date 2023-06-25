@@ -16,9 +16,7 @@ namespace RainMeadow {
 			Acknowledge,
 			Termination,
 		}
-
-		// Normally we would keep track of who is ment to receive the reliable packets
-		// Since we are just dealing with one other client for debugging purposes, we can omit
+		
 		public class SequencedPacket {
 			public ulong index;
 			public byte[] packet; // Raw packet data
@@ -60,7 +58,7 @@ namespace RainMeadow {
 
 		const int TIMEOUT_TICKS = 40 * 30; // about 30 seconds
 		const int HEARTBEAT_TICKS = 40 * 5; // about 5 seconds
-		const int RESEND_TICKS = 20; // about 0.5 seconds
+		const int RESEND_TICKS = 4; // about 0.1 seconds
 
 		//
 
@@ -97,8 +95,6 @@ namespace RainMeadow {
 			peers = new Dictionary<IPEndPoint, RemotePeer>();
 		}
 
-		// This process it pretty jank rn - it works for the member but not the owner
-		// Don't use for actual gameplay, DEBUG USE ONLY
 		public static void Shutdown() {
 			RainMeadow.DebugMe();
 			SendTermination();
@@ -147,6 +143,7 @@ namespace RainMeadow {
 						if (outgoingPacket.attemptsLeft == 0)
 							peerData.outgoingPackets.Dequeue().OnFailed?.Invoke();
 
+						RainMeadow.Debug($"Resending packet #{outgoingPacket.index}");
 						debugClient.Send(packetData, packetData.Length, peerIP);
 						outgoingPacket.attemptsLeft--;
 
@@ -164,6 +161,9 @@ namespace RainMeadow {
 			remoteEndpoint = new IPEndPoint(IPAddress.Any, 0);
 			MemoryStream netStream = new MemoryStream(debugClient.Receive(ref remoteEndpoint));
 			netReader = new BinaryReader(netStream);
+
+			if (DropPacket())
+				return false;
 
 			PacketType type = (PacketType)netReader.ReadByte();
 
@@ -242,6 +242,10 @@ namespace RainMeadow {
 			return debugClient != null && debugClient.Available > 0;
 		}
 
+		public static bool DropPacket() {
+			return new Random().NextDouble() < 0.5f; // Artificial packet loss (read to consume data but not process it)
+		}
+
 		public static void Send(IPEndPoint remoteEndpoint, byte[] data, int length, PacketType packetType, PacketDataType dataType = PacketDataType.Internal) {
 			if (debugClient == null || waitingForTermination)
 				return;
@@ -300,6 +304,8 @@ namespace RainMeadow {
 		}
 
 		static void SendAcknowledge(IPEndPoint remoteEndpoint, ulong index) {
+			RainMeadow.Debug($"Sending acknowledge for packet #{index}");
+
 			byte[] buffer = new byte[9];
 			MemoryStream stream = new MemoryStream(buffer);
 			BinaryWriter writer = new BinaryWriter(stream);
@@ -317,7 +323,7 @@ namespace RainMeadow {
 			
 				peerData.outgoingPackets.Clear();
 			
-				peerData.latestOutgoingPacket = new SequencedPacket(++peerData.packetIndex, new byte[0], 3, true);
+				peerData.latestOutgoingPacket = new SequencedPacket(++peerData.packetIndex, new byte[0], 10, true);
 				peerData.outgoingPackets.Enqueue(peerData.latestOutgoingPacket);
 
 				peerData.latestOutgoingPacket.OnAcknowledged += CleanUp;
