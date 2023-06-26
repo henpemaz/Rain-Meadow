@@ -29,7 +29,7 @@ namespace RainMeadow
 
             public override string ToString()
             {
-                return $"#{id}:{originalOwner:6D}";
+                return $"#{id}:{originalOwner:D6}";
             }
             public override bool Equals(object obj) => this.Equals(obj as EntityId);
             public bool Equals(EntityId other)
