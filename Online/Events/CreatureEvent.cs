@@ -1,3 +1,4 @@
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow;
@@ -49,6 +50,37 @@ public abstract partial class CreatureEvent
 
             var victim = (Creature)OnlineVictim.apo.realizedObject;
             victim.Violence(OnlineVillain?.apo.realizedObject.firstChunk, DirectionAndMomentum, victim.bodyChunks[VictimChunkIndex], CastVictimAppendage, CastDamageType, Damage, StunBonus);
+        }
+    }
+
+    public class SuckedIntoShortCut : OnlineEvent
+    {
+        OnlineCreature suckedCreature;
+        IntVector2 entrancePos;
+        bool carriedByOther;
+        
+        public SuckedIntoShortCut() { }
+        public SuckedIntoShortCut(OnlineCreature suckedCreature, IntVector2 entrancePos, bool carriedByOther)
+        {
+            this.suckedCreature = suckedCreature;
+            this.entrancePos = entrancePos;
+            this.carriedByOther = carriedByOther;
+        }
+        public override EventTypeId eventType => EventTypeId.CreatureEventSuckedIntoShortCut;
+
+        public override void CustomSerialize(Serializer serializer)
+        {
+            base.CustomSerialize(serializer);
+            serializer.SerializeEntity(ref suckedCreature);
+            serializer.Serialize(ref entrancePos.x);
+            serializer.Serialize(ref entrancePos.y);
+        }
+
+        public override void Process()
+        {
+            suckedCreature.enteringShortCut = true;
+            var creature = (Creature)suckedCreature.apo.realizedObject;
+            creature.SuckedIntoShortCut(entrancePos, carriedByOther);
         }
     }
 }

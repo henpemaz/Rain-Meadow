@@ -1,10 +1,13 @@
 ﻿using System;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
 {
     public class OnlineCreature : OnlinePhysicalObject
     {
+        public bool enteringShortCut;
+
         public OnlineCreature(AbstractCreature ac, int seed, bool realized, OnlinePlayer owner, EntityId id, bool isTransferable) : base(ac, seed, realized, owner, id, isTransferable)
         {
             // ? anything special?
@@ -72,6 +75,14 @@ namespace RainMeadow
         {
             var castShareability = new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(graspRef.Shareability));
             ForceGrab(graspRef.OnlineGrabbed, graspRef.GraspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
+        }
+
+        public void SuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
+        {
+            foreach (var participant in currentlyJoinedResource.participants)
+            {
+                participant.Key.QueueEvent(new CreatureEvent.SuckedIntoShortCut(this, entrancePos, carriedByOther));
+            }
         }
 
         public override string ToString()

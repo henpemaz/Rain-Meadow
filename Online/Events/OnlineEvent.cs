@@ -59,6 +59,7 @@ namespace RainMeadow
             GenericResultOk,
             GenericResultError,
             CreatureEventViolence,
+            CreatureEventSuckedIntoShortCut,
             RegisterNewEntityRequest,
             NewObjectEvent,
             NewCreatureEvent,
@@ -117,6 +118,9 @@ namespace RainMeadow
                     break;
                 case EventTypeId.CreatureEventViolence:
                     e = new CreatureEvent.Violence();
+                    break;
+                case EventTypeId.CreatureEventSuckedIntoShortCut:
+                    e = new CreatureEvent.SuckedIntoShortCut();
                     break;
                 case EventTypeId.GenericResultOk:
                     e = new GenericResult.Ok();
