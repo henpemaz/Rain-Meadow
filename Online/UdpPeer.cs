@@ -139,13 +139,13 @@ namespace RainMeadow {
 					if (peerData.ticksToResend <= 0) {
 						SequencedPacket outgoingPacket = peerData.outgoingPackets.Peek();
 						byte[] packetData = outgoingPacket.packet;
-						
-						if (outgoingPacket.attemptsLeft == 0)
-							peerData.outgoingPackets.Dequeue().OnFailed?.Invoke();
 
 						RainMeadow.Debug($"Resending packet #{outgoingPacket.index}");
 						debugClient.Send(packetData, packetData.Length, peerIP);
+						
 						outgoingPacket.attemptsLeft--;
+						if (outgoingPacket.attemptsLeft == 0)
+							peerData.outgoingPackets.Dequeue().OnFailed?.Invoke();
 
 						peerData.ticksToResend = RESEND_TICKS;
 					}
