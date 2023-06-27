@@ -95,12 +95,12 @@ namespace RainMeadow
 
         public static void JoinLobby(LobbyInfo lobby)
         {
+            UdpPeer.Startup();
             joiningLobbyId = lobby.id; // Do not immediately create lobby instance
 
             RainMeadow.Debug(lobby);
             if (SteamMatchmaking.GetLobbyOwner(lobby.id) == PlayersManager.mePlayer.steamId) { // I am joining myself
                 RainMeadow.Debug("Joining local game...");
-                UdpPeer.Startup();
 
                 // We need to request all the players first
 

@@ -65,6 +65,29 @@ namespace RainMeadow {
 		public const int STARTING_PORT = 5061;
 
 		public static Action<IPEndPoint> PeerTerminated;
+		
+		class DelayedPacket {
+			DateTime timeToSend;
+			IPEndPoint destination;
+			public byte[] packet;
+
+			public bool willSend => DateTime.Now > timeToSend;
+
+			public DelayedPacket(IPEndPoint destination, byte[] data, TimeSpan delay) {
+				this.destination = destination;
+				this.packet = data;
+				timeToSend = DateTime.Now + delay;
+			}
+
+			public void Send() {
+				debugClient.Send(packet, packet.Length, destination);
+			}
+		}
+
+		static Queue<DelayedPacket> delayedPackets;
+
+		public static float simulatedLoss = 0.1f;
+		public static TimeSpan simulatedLatency = TimeSpan.FromMilliseconds(100);
 
 		public static void Startup() {
 			if (debugClient != null)
@@ -93,6 +116,7 @@ namespace RainMeadow {
 
 			debugClient.Client.Bind(new IPEndPoint(IPAddress.Any, port));
 			peers = new Dictionary<IPEndPoint, RemotePeer>();
+			delayedPackets = new Queue<DelayedPacket>();
 		}
 
 		public static void Shutdown() {
@@ -108,12 +132,17 @@ namespace RainMeadow {
 			debugClient.Client.Shutdown(SocketShutdown.Both);
 			debugClient = null;
 			peers = null;
+			delayedPackets = null;
 			waitingForTermination = false;
 		}
 
 		public static void Update() {
 			if (debugClient == null)
 				return;
+
+			while (delayedPackets.Count > 0 && delayedPackets.Peek().willSend) {
+				delayedPackets.Dequeue().Send();
+			}
 
 			List<IPEndPoint> timedoutEndpoints = new List<IPEndPoint>();
 			foreach (var peer in peers) {
@@ -141,7 +170,7 @@ namespace RainMeadow {
 						byte[] packetData = outgoingPacket.packet;
 
 						RainMeadow.Debug($"Resending packet #{outgoingPacket.index}");
-						debugClient.Send(packetData, packetData.Length, peerIP);
+						Send(packetData, peerIP);
 						
 						outgoingPacket.attemptsLeft--;
 						if (outgoingPacket.attemptsLeft == 0)
@@ -162,7 +191,7 @@ namespace RainMeadow {
 			MemoryStream netStream = new MemoryStream(debugClient.Receive(ref remoteEndpoint));
 			netReader = new BinaryReader(netStream);
 
-			if (DropPacket())
+			if (simulatedLoss > 0 && SimulatePacketDrop())
 				return false;
 
 			PacketType type = (PacketType)netReader.ReadByte();
@@ -205,7 +234,7 @@ namespace RainMeadow {
 						// Attempt to send the next reliable one if any
 						if (peerData.outgoingPackets.Count > 0) {
 							byte[] packetData = peerData.outgoingPackets.Peek().packet;
-							debugClient.Send(packetData, packetData.Length, remoteEndpoint);
+							Send(packetData, remoteEndpoint);
 							peerData.ticksToResend = RESEND_TICKS;
 						}
 					}
@@ -242,8 +271,8 @@ namespace RainMeadow {
 			return debugClient != null && debugClient.Available > 0;
 		}
 
-		public static bool DropPacket() {
-			return new Random().NextDouble() < 0.5f; // Artificial packet loss (read to consume data but not process it)
+		public static bool SimulatePacketDrop() {
+			return new Random().NextDouble() < simulatedLoss; // Artificial packet loss (read to consume data but not process it)
 		}
 
 		public static void Send(IPEndPoint remoteEndpoint, byte[] data, int length, PacketType packetType, PacketDataType dataType = PacketDataType.Internal) {
@@ -300,7 +329,15 @@ namespace RainMeadow {
 			if (buffer == null)
 				return;
 			
-			debugClient.Send(buffer, buffer.Length, remoteEndpoint);
+			Send(buffer, remoteEndpoint);
+		}
+
+		static void Send(byte[] packet, IPEndPoint endPoint) {
+			if (simulatedLatency > TimeSpan.Zero) {
+				delayedPackets.Enqueue(new DelayedPacket(endPoint, packet, simulatedLatency));
+			} else {
+				debugClient.Send(packet, packet.Length, endPoint);
+			}
 		}
 
 		static void SendAcknowledge(IPEndPoint remoteEndpoint, ulong index) {
@@ -311,7 +348,7 @@ namespace RainMeadow {
 			BinaryWriter writer = new BinaryWriter(stream);
 
 			WriteAcknowledge(writer, index);
-			debugClient.Send(buffer, 9, remoteEndpoint);
+			Send(buffer, remoteEndpoint);
 		}
 
 		static void SendTermination() {
@@ -330,7 +367,7 @@ namespace RainMeadow {
 				peerData.latestOutgoingPacket.OnFailed += CleanUp;
 
 				byte[] packetData = peerData.outgoingPackets.Peek().packet;
-				debugClient.Send(packetData, packetData.Length, peerIP);
+				Send(packetData, peerIP);
 			}
 
 			waitingForTermination = true;
