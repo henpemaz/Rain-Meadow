@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
 using Steamworks;
+using UnityEngine;
 
 namespace RainMeadow {
 	public static class NetIO {
@@ -52,6 +53,17 @@ namespace RainMeadow {
 				dataType);
 		}
 
+		public static void SendP2P(OnlinePlayer player, Packet packet, SendType sendType, PacketDataType dataType) {
+			MemoryStream memory = new MemoryStream(128);
+			BinaryWriter writer = new BinaryWriter(memory);
+
+			Packet.Encode(packet, writer, player.steamId, player.endpoint);
+
+			byte[] bytes = memory.GetBuffer();
+
+			SendP2P(player, bytes, (uint)bytes.Length, sendType, dataType);
+		}
+
 		public static void Update() {
 			// int n;
 			// IntPtr[] messagePtrs = new IntPtr[32];
@@ -94,11 +106,11 @@ namespace RainMeadow {
 
                 if (!SteamNetworking.ReadP2PPacket(buffer, size, out uint bytesRead, out CSteamID remoteSteamId, 1))
                     continue;
-                
+
                 MemoryStream stream = new MemoryStream(buffer);
                 BinaryReader reader = new BinaryReader(stream);
 
-                PlayersManager.OnReceiveData(reader, null, remoteSteamId);
+				Packet.Decode(reader, fromSteamID: remoteSteamId);
             }
 
 			UdpPeer.Update();
@@ -108,8 +120,8 @@ namespace RainMeadow {
 					continue;
 
 				switch ((PacketDataType)netReader.ReadByte()) {
-					case PacketDataType.PlayerInfo:
-						PlayersManager.OnReceiveData(netReader, remoteEndpoint, Steamworks.CSteamID.Nil);
+					case PacketDataType.PlayerInfo:		
+						Packet.Decode(netReader, fromIpEndpoint: remoteEndpoint);
 						break;
 
 					case PacketDataType.GameInfo:
@@ -132,14 +144,19 @@ namespace RainMeadow {
 		PlayerInfo,
 	}
 
+	public interface ISerializable {
+		public void Serialize(BinaryWriter writer);
+		public void Deserialize(BinaryReader reader);
+	}
+
 	public static class NetIOExtensions {
 		public static void EncodeVLQ(this BinaryWriter writer, uint value) {
 			while (value > 0x7f) {
-				writer.Write(value & 0x7f);
+				writer.Write((byte)(value & 0x7f));
 				value >>= 7;
 			}
 				
-			writer.Write(value & 0x7f | 0x80);
+			writer.Write((byte)(value | 0x80));
 		}
 
 		public static uint DecodeVLQ(this BinaryReader reader) {
@@ -148,7 +165,7 @@ namespace RainMeadow {
 			byte part;
 			do {
 				part = reader.ReadByte();
-				value |= (uint)part << (offset++ * 7);
+				value |= (uint)(part & 0x7f) << (offset++ * 7);
 			} while ((part & 0x80) == 0);
 				
 			return value;
@@ -158,23 +175,23 @@ namespace RainMeadow {
 			writer.Write(players.netId);
 		}
 
-		public static OnlinePlayer ReadPlayer(this BinaryReader reader) {
+		public static OnlinePlayer ReadPlayer(this BinaryReader reader, bool create = false) {
 			return PlayersManager.PlayerFromId(reader.ReadInt32());
 		}
 
-		public static void Write(this BinaryWriter writer, List<OnlinePlayer> players) {
-			writer.EncodeVLQ((uint)players.Count);
-			for (int i = 0; i < players.Count; i++) {
-				writer.Write(players[i]);
-			}
+		public static void Write<T>(this BinaryWriter writer, T item) where T : ISerializable {
+			item.Serialize(writer);
 		}
 
-		public static OnlinePlayer[] ReadPlayers(this BinaryReader reader) {
-			OnlinePlayer[] players = new OnlinePlayer[reader.DecodeVLQ()];
-			for (int i = 0; i < players.Length; i++) {
-				players[i] = reader.ReadPlayer();
+		public static void Read<T>(this BinaryReader reader, T item) where T : class, ISerializable {
+			item.Deserialize(reader);
+		}
+
+		public static void WriteArray<T>(this BinaryWriter writer, T[] array) where T : ISerializable {
+			writer.EncodeVLQ((uint)array.Length);
+			for (int i = 0; i < array.Length; i++) {
+				array[i].Serialize(writer);
 			}
-			return players;
 		}
 	}
 }
