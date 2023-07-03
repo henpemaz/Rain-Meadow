@@ -15,6 +15,7 @@ namespace RainMeadow {
 			UnreliableOrdered,
 			Acknowledge,
 			Termination,
+			Heartbeat,
 		}
 		
 		public class SequencedPacket {
@@ -24,11 +25,11 @@ namespace RainMeadow {
 			public Action OnFailed;
 			public int attemptsLeft;
 			
-			public SequencedPacket(ulong index, byte[] data, int attempts = -1, bool termination = false) {
+			public SequencedPacket(ulong index, byte[] data, int length, int attempts = -1, bool termination = false) {
 				this.index = index;
 				this.attemptsLeft = attempts;
 
-				packet = new byte[9 + data.Length];
+				packet = new byte[9 + length];
 				MemoryStream stream = new MemoryStream(packet);
 				BinaryWriter writer = new BinaryWriter(stream);
 
@@ -37,7 +38,7 @@ namespace RainMeadow {
 				} else {
 					WriteReliableHeader(writer, index);
 				}
-				writer.Write(data);
+				writer.Write(data, 0, length);
 			}
 		}
 
@@ -160,6 +161,7 @@ namespace RainMeadow {
 					// Peer timed out and assume disconnected
 					RainMeadow.Debug($"Peer {peerIP} timed out :c");
 					timedoutEndpoints.Add(peerIP);
+					continue;
 				}
 
 				// Try to resend packets that have not been acknowledge on the other end
@@ -182,6 +184,7 @@ namespace RainMeadow {
 			}
 
 			foreach (IPEndPoint endPoint in timedoutEndpoints) {
+				PeerTerminated?.Invoke(endPoint);
 				peers.Remove(endPoint);
 			}
 		}
@@ -262,6 +265,9 @@ namespace RainMeadow {
 					RainMeadow.Debug($"Peer {remoteEndpoint} terminated connection");
 					PeerTerminated(remoteEndpoint);
 					return false;
+				
+				case PacketType.Heartbeat:
+					break; // Do nothing
 			}
 
 			return false;
@@ -275,7 +281,7 @@ namespace RainMeadow {
 			return new Random().NextDouble() < simulatedLoss; // Artificial packet loss (read to consume data but not process it)
 		}
 
-		public static void Send(IPEndPoint remoteEndpoint, byte[] data, int length, PacketType packetType, PacketDataType dataType = PacketDataType.Internal) {
+		public static void Send(IPEndPoint remoteEndpoint, byte[] data, int length, PacketType packetType) {
 			if (debugClient == null || waitingForTermination)
 				return;
 
@@ -285,20 +291,13 @@ namespace RainMeadow {
 				peers[remoteEndpoint] = peerData;
 			}
 
-			peerData.ticksSinceLastPacketSent++;
-
-			// Insert data type because there is no concept of channels here
-			byte[] typedData = new byte[length + 1];
-			typedData[0] = (byte)dataType;
-			Buffer.BlockCopy(data, 0, typedData, 1, length);
-			data = typedData;
-			length += 1;
+			peerData.ticksSinceLastPacketSent = 0;
 
 			byte[] buffer = null;
 			byte[] packetData;
 			switch (packetType) {
 				case PacketType.Reliable:
-					peerData.latestOutgoingPacket = new SequencedPacket(++peerData.packetIndex, data);
+					peerData.latestOutgoingPacket = new SequencedPacket(++peerData.packetIndex, data, length);
 					peerData.outgoingPackets.Enqueue(peerData.latestOutgoingPacket);
 
 					SequencedPacket outgoingPacket = peerData.outgoingPackets.Peek();
@@ -311,7 +310,7 @@ namespace RainMeadow {
 					BinaryWriter writer = new BinaryWriter(stream);
 
 					WriteUnreliableHeader(writer);
-					writer.Write(data);
+					writer.Write(data, 0, length);
 
 					break;
 				
@@ -321,7 +320,7 @@ namespace RainMeadow {
 					writer = new BinaryWriter(stream);
 
 					WriteUnreliableOrderedHeader(writer, ++peerData.unreliablePacketIndex);
-					writer.Write(data);
+					writer.Write(data, 0, length);
 
 					break;
 			}
@@ -360,7 +359,7 @@ namespace RainMeadow {
 			
 				peerData.outgoingPackets.Clear();
 			
-				peerData.latestOutgoingPacket = new SequencedPacket(++peerData.packetIndex, new byte[0], 10, true);
+				peerData.latestOutgoingPacket = new SequencedPacket(++peerData.packetIndex, new byte[0], 0, 10, true);
 				peerData.outgoingPackets.Enqueue(peerData.latestOutgoingPacket);
 
 				peerData.latestOutgoingPacket.OnAcknowledged += CleanUp;

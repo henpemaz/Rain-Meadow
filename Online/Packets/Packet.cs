@@ -11,6 +11,7 @@ namespace RainMeadow {
 			ModifyPlayer,
 			ModifyPlayerList,
 			JoinLobby,
+			Session,
 		}
 
 		public abstract Type type { get; }
@@ -37,7 +38,7 @@ namespace RainMeadow {
 
 			writer.BaseStream.Position = startingPos;
 			writer.EncodeVLQ(packet.size); // 1 - 2 bytes
-			writer.Write(((MemoryStream)writer.BaseStream).GetBuffer(),  (int)payloadPos, (int)packet.size);
+			writer.Write(((MemoryStream)writer.BaseStream).GetBuffer(), (int)payloadPos, (int)packet.size);
 		}
 
 		public static void Decode(BinaryReader reader, CSteamID fromSteamID = default(CSteamID), IPEndPoint fromIpEndpoint = null) {
@@ -51,6 +52,7 @@ namespace RainMeadow {
 				Type.ModifyPlayer => new ModifyPlayerPacket(),
 				Type.ModifyPlayerList => new ModifyPlayerListPacket(),
 				Type.JoinLobby => new JoinLobbyPacket(),
+				Type.Session => new SessionPacket(),
 				_ => null
 			};
 

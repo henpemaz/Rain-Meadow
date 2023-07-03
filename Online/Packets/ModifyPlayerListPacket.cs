@@ -80,11 +80,13 @@ namespace RainMeadow {
 		public override void Process() {
 			switch (modifyOperation) {
 				case Operation.Add:
+					RainMeadow.Debug("Adding players...\n\t" + string.Join<OnlinePlayer>("\n\t", players));
 					PlayersManager.players.AddRange(players);
 					PlayersManager.nextPlayerId = players.Last().netId + 1;
 					break;
 				
 				case Operation.Remove:
+					RainMeadow.Debug("Removing players...\n\t" + string.Join<OnlinePlayer>("\n\t", players));
 					PlayersManager.players.RemoveAll(player => players.Contains(player));
 					break;
 			}

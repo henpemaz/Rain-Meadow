@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace RainMeadow {
 	public static class NetIO {
-		public static void SendP2P(OnlinePlayer player, byte[] data, uint length, SendType sendType, PacketDataType dataType) {
+		public static void SendP2P(OnlinePlayer player, byte[] data, uint length, SendType sendType) {
 			if (PlayersManager.mePlayer.isUsingSteam && player.isUsingSteam) // Make sure both sides are using steam
 				// unsafe {
 				// 	fixed (byte* dataPointer = &data[0]) {
@@ -35,12 +35,6 @@ namespace RainMeadow {
 					SendType.Reliable => EP2PSend.k_EP2PSendReliable,
 					SendType.Unreliable => EP2PSend.k_EP2PSendUnreliableNoDelay,
 					_ => EP2PSend.k_EP2PSendUnreliableNoDelay,
-				},
-				dataType switch
-				{
-					PacketDataType.GameInfo => 0,
-					PacketDataType.PlayerInfo => 1,
-					_ => 0,
 				});
 			else
 				UdpPeer.Send(player.endpoint, data, (int)length,
@@ -49,11 +43,10 @@ namespace RainMeadow {
 					SendType.Reliable => UdpPeer.PacketType.Reliable,
 					SendType.Unreliable => UdpPeer.PacketType.Unreliable,
 					_ => UdpPeer.PacketType.Unreliable,
-				},
-				dataType);
+				});
 		}
 
-		public static void SendP2P(OnlinePlayer player, Packet packet, SendType sendType, PacketDataType dataType) {
+		public static void SendP2P(OnlinePlayer player, Packet packet, SendType sendType) {
 			MemoryStream memory = new MemoryStream(128);
 			BinaryWriter writer = new BinaryWriter(memory);
 
@@ -61,7 +54,7 @@ namespace RainMeadow {
 
 			byte[] bytes = memory.GetBuffer();
 
-			SendP2P(player, bytes, (uint)bytes.Length, sendType, dataType);
+			SendP2P(player, bytes, (uint)memory.Position, sendType);
 		}
 
 		public static void Update() {
@@ -79,32 +72,10 @@ namespace RainMeadow {
 			// 	}
 			// } while (n > 0);
 
-			while (SteamNetworking.IsP2PPacketAvailable(out uint size, 0)) {
-                if (!SteamNetworking.ReadP2PPacket(OnlineManager.serializer.buffer, size, out uint bytesRead, out CSteamID remoteSteamId))
-                    continue;
-                
-               	OnlineManager.serializer.ReceiveDataSteam();
-            }
-
-			// do { 
-			// 	n = SteamNetworkingMessages.ReceiveMessagesOnChannel(1, messagePtrs, messagePtrs.Length);
-			// 	for (int i = 0; i < n; i++) {
-			// 		var message = SteamNetworkingMessage_t.FromIntPtr(messagePtrs[i]);
-			// 		byte[] buffer = new byte[message.m_cbSize];
-			// 		Marshal.Copy(message.m_pData, buffer, 0, message.m_cbSize);
-
-			// 		MemoryStream stream = new MemoryStream(buffer);
-			// 		BinaryReader reader = new BinaryReader(stream);
-
-            //    		PlayersManager.OnReceiveData(reader, null, message.m_identityPeer.GetSteamID());
-			// 		SteamNetworkingMessage_t.Release(messagePtrs[i]);
-			// 	}
-			// } while (n > 0);
-
-			while (SteamNetworking.IsP2PPacketAvailable(out uint size, 1)) {
+			while (SteamNetworking.IsP2PPacketAvailable(out uint size)) {
                 byte[] buffer = new byte[size];
 
-                if (!SteamNetworking.ReadP2PPacket(buffer, size, out uint bytesRead, out CSteamID remoteSteamId, 1))
+                if (!SteamNetworking.ReadP2PPacket(buffer, size, out uint bytesRead, out CSteamID remoteSteamId))
                     continue;
 
                 MemoryStream stream = new MemoryStream(buffer);
@@ -118,17 +89,8 @@ namespace RainMeadow {
 			while (UdpPeer.IsPacketAvailable()) {
 				if (!UdpPeer.Read(out BinaryReader netReader, out IPEndPoint remoteEndpoint))
 					continue;
-
-				switch ((PacketDataType)netReader.ReadByte()) {
-					case PacketDataType.PlayerInfo:		
-						Packet.Decode(netReader, fromIpEndpoint: remoteEndpoint);
-						break;
-
-					case PacketDataType.GameInfo:
-						byte[] data = netReader.ReadBytes((int)(netReader.BaseStream.Length - netReader.BaseStream.Position));
-						OnlineManager.serializer.ReceiveDataDebug(remoteEndpoint, data);
-						break;
-				}
+	
+				Packet.Decode(netReader, fromIpEndpoint: remoteEndpoint);
 			}
 		}
 	}
@@ -136,12 +98,6 @@ namespace RainMeadow {
 	public enum SendType : byte {
 		Reliable,
 		Unreliable,
-	}
-
-	public enum PacketDataType : byte {
-		Internal,
-		GameInfo,
-		PlayerInfo,
 	}
 
 	public interface ISerializable {

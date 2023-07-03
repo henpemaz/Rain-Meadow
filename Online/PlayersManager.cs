@@ -108,18 +108,18 @@ namespace RainMeadow
 
 		static void PlayerJoined(OnlinePlayer joiningPlayer) {
             // Tell the joining player to update their network id
-            NetIO.SendP2P(joiningPlayer, new ModifyPlayerPacket(joiningPlayer), SendType.Reliable, PacketDataType.PlayerInfo);
+            NetIO.SendP2P(joiningPlayer, new ModifyPlayerPacket(joiningPlayer), SendType.Reliable);
 
 			// Tell the other players to create this player
 			foreach (OnlinePlayer player in players) {
                 if (player.isMe)
                     continue;
                     
-				NetIO.SendP2P(player, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Add, new OnlinePlayer[] {joiningPlayer}), SendType.Reliable, PacketDataType.PlayerInfo);
+				NetIO.SendP2P(player, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Add, new OnlinePlayer[] {joiningPlayer}), SendType.Reliable);
 			}
             
 			// Tell joining peer to create everyone in the server
-            NetIO.SendP2P(joiningPlayer, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Add, PlayersManager.players.ToArray()), SendType.Reliable, PacketDataType.PlayerInfo);
+            NetIO.SendP2P(joiningPlayer, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Add, PlayersManager.players.ToArray()), SendType.Reliable);
 
 			// Add player yourself
 			players.Add(joiningPlayer);
@@ -145,12 +145,12 @@ namespace RainMeadow
 
             // Relay to everyone if the leaving player is not using steam
             // If both ends are using steam, the above is already done
-            if (OnlineManager.lobby.owner.isMe && leavingPlayer.isUsingSteam) {
+            if (OnlineManager.lobby.owner.isMe && !leavingPlayer.isUsingSteam) {
                 foreach (OnlinePlayer player in players) {
                     if (player.isMe)
                         continue;
                     
-                    NetIO.SendP2P(player, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Remove, new OnlinePlayer[] {leavingPlayer}), SendType.Reliable, PacketDataType.PlayerInfo);
+                    NetIO.SendP2P(player, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Remove, new OnlinePlayer[] {leavingPlayer}), SendType.Reliable);
                 }
             }
         }
@@ -225,7 +225,7 @@ namespace RainMeadow
                 SteamNetworking.SendP2PPacket(steamLobbyOwnerId, memory.GetBuffer(), (uint)memory.Position, EP2PSend.k_EP2PSendReliable, 1);
             } else {
                 // The IP endpoint of who you are joining with would go here
-                UdpPeer.Send(new IPEndPoint(IPAddress.Loopback, UdpPeer.STARTING_PORT), memory.GetBuffer(), (int)memory.Position, UdpPeer.PacketType.Reliable, PacketDataType.PlayerInfo);
+                UdpPeer.Send(new IPEndPoint(IPAddress.Loopback, UdpPeer.STARTING_PORT), memory.GetBuffer(), (int)memory.Position, UdpPeer.PacketType.Reliable);
             }
 		}
 	}

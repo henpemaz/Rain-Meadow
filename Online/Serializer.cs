@@ -324,7 +324,9 @@ namespace RainMeadow
 
                 EndWrite();
 
-                NetIO.SendP2P(toPlayer, buffer, (uint)Position, SendType.Unreliable, PacketDataType.GameInfo);
+                byte[] data = new byte[stream.Position];
+                Buffer.BlockCopy(buffer, 0, data, 0, (int)stream.Position);
+                NetIO.SendP2P(toPlayer, new SessionPacket(data), SendType.Unreliable);
 
                 Free();
             }
