@@ -93,5 +93,9 @@ namespace RainMeadow
 
             public override StateType stateType => StateType.RoomState;
         }
+
+        public override string ToString() {
+            return "Room " + Id();
+        }
     }
 }

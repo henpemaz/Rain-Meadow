@@ -96,5 +96,9 @@ namespace RainMeadow
 
             public override StateType stateType => StateType.WorldState;
         }
+
+        public override string ToString() {
+            return "Region " + Id();
+        }
     }
 }

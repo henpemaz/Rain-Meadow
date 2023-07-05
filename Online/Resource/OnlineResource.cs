@@ -20,7 +20,7 @@ namespace RainMeadow
         public ResourceEvent pendingRequest; // should this maybe be a list/queue? Will it be any more manageable if multiple events can cohexist?
 
         public bool isFree => owner == null || owner.hasLeft;
-        public bool isOwner => owner != null && owner.id == PlayersManager.me;
+        public bool isOwner => owner != null && owner.isMe;
         public bool isSupervisor => super.isOwner;
         public OnlinePlayer supervisor => super.owner;
         public bool isActive { get; protected set; } // The respective in-game resource is loaded
@@ -168,7 +168,7 @@ namespace RainMeadow
 
         protected void NewOwner(OnlinePlayer newOwner)
         {
-            RainMeadow.Debug($"{this}-{(newOwner != null ? newOwner : "null")}");
+            RainMeadow.Debug($"{this} - '{(newOwner != null ? newOwner : "null")}'");
             if (newOwner == owner && newOwner != null) throw new InvalidOperationException("Re-assigned to the same owner");
             if (isAvailable && newOwner == null && pendingRequest is not ResourceRelease) throw new InvalidOperationException("No owner for available resource");
             var oldOwner = owner;
@@ -386,7 +386,7 @@ namespace RainMeadow
 
         private void Unsubscribed(OnlinePlayer player)
         {
-            RainMeadow.Debug(this.ToString() + " - " + player.name);
+            RainMeadow.Debug(this.ToString() + " - " + player);
             if (player.isMe) throw new InvalidOperationException("Can't unsubscribe from self");
 
             OnlineManager.RemoveSubscription(this, player);
@@ -394,7 +394,7 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return $"<Resource {Id()} - o:{owner?.name} - av:{(isAvailable ? 1 : 0)} - ac:{(isActive ? 1 : 0)} - m:{participants.Count}>";
+            return $"<Resource {Id()} - o:`{owner}` - av:{(isAvailable ? 1 : 0)} - ac:{(isActive ? 1 : 0)} - m:{participants.Count}>";
         }
 
         public virtual byte SizeOfIdentifier()

@@ -4,6 +4,7 @@ namespace RainMeadow
 {
     public class RealizedPlayerState : RealizedCreatureState
     {
+        static int lastupdate = 0;
         private byte animationIndex;
         private short animationFrame;
         private byte bodyModeIndex;
@@ -13,6 +14,8 @@ namespace RainMeadow
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
         {
+            lastupdate++;
+            
             Player p = onlineEntity.apo.realizedObject as Player;
             animationIndex = (byte)p.animation.Index;
             animationFrame = (short)p.animationFrame;
@@ -61,7 +64,23 @@ namespace RainMeadow
             serializer.Serialize(ref bodyModeIndex);
             serializer.Serialize(ref standing);
             serializer.Serialize(ref inputs);
-            serializer.Serialize(ref analogInput);
+
+            ushort half = 0;
+            if (serializer.isWriting) {
+                half = Mathf.FloatToHalf(analogInput.x);
+                serializer.Serialize(ref half);
+
+                half = Mathf.FloatToHalf(analogInput.y);
+                serializer.Serialize(ref half);
+            }
+
+            if (serializer.isReading) {
+                serializer.Serialize(ref half);
+                analogInput.x = Mathf.HalfToFloat(half);
+
+                serializer.Serialize(ref half);
+                analogInput.y = Mathf.HalfToFloat(half);
+            }
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)

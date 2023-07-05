@@ -53,7 +53,7 @@ namespace RainMeadow
             base.Update();
 
             // Incoming messages
-            serializer.ReceiveData();
+            NetIO.Update();
 
             if (lobby != null)
             {
@@ -74,6 +74,9 @@ namespace RainMeadow
                 // Outgoing messages
                 foreach (var player in PlayersManager.players)
                 {
+                    if (player.isMe)
+                        continue;
+                    
                     SendData(player);
                 }
             }
@@ -94,7 +97,8 @@ namespace RainMeadow
         {
             SteamAPI.RunCallbacks();
             // Incoming messages
-            serializer.ReceiveData();
+
+            NetIO.Update();
 
             if (lobby != null)
             {

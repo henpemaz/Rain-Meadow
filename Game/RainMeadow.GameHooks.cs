@@ -12,6 +12,7 @@ namespace RainMeadow
         private void GameHooks()
         {
             On.StoryGameSession.ctor += StoryGameSession_ctor;
+            On.RainWorldGame.RawUpdate += RainWorldGame_RawUpdate;
             On.RainWorldGame.ShutDownProcess += RainWorldGame_ShutDownProcess;
 
             On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues += WorldLoader_ctor;
@@ -35,6 +36,12 @@ namespace RainMeadow
                 saveStateNumber = OnlineManager.lobby.gameMode.GetStorySessionPlayer(game);
             }
             orig(self, saveStateNumber, game);
+        }
+
+        private void RainWorldGame_RawUpdate(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
+        {
+            orig(self, dt);
+            DebugOverlay.Update(self, dt);
         }
 
         private void RainWorldGame_ShutDownProcess(On.RainWorldGame.orig_ShutDownProcess orig, RainWorldGame self)
