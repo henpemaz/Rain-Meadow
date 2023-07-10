@@ -25,11 +25,11 @@ namespace RainMeadow {
 			writer.EncodeVLQ((uint)players.Length);
 			for (int i = 0; i < players.Length; i++) {
 				var player = players[i];
-				writer.Write(player.netId);
+				writer.Write(player.inLobbyId);
 
 				if (modifyOperation != Operation.Add) continue;
 
-				writer.Write((ulong)player.steamId);
+				writer.Write((ulong)player.id);
 				
 				if (!processingSteamID.IsValid() || !player.isUsingSteam) {
 					var addressBytes = player.endpoint.Address.GetAddressBytes();
@@ -82,7 +82,7 @@ namespace RainMeadow {
 				case Operation.Add:
 					RainMeadow.Debug("Adding players...\n\t" + string.Join<OnlinePlayer>("\n\t", players));
 					PlayersManager.players.AddRange(players);
-					PlayersManager.nextPlayerId = players.Last().netId + 1;
+					PlayersManager.nextPlayerId = players.Last().inLobbyId + 1;
 					break;
 				
 				case Operation.Remove:

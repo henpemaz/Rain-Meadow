@@ -53,7 +53,7 @@ namespace RainMeadow
             base.Update();
 
             // Incoming messages
-            NetIO.Update();
+            serializer.ReceiveData();
 
             if (lobby != null)
             {
@@ -97,8 +97,7 @@ namespace RainMeadow
         {
             SteamAPI.RunCallbacks();
             // Incoming messages
-
-            NetIO.Update();
+            serializer.ReceiveData();
 
             if (lobby != null)
             {

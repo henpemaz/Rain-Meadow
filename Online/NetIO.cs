@@ -29,7 +29,7 @@ namespace RainMeadow {
 				// 	}
 				// }
 
-				SteamNetworking.SendP2PPacket(player.steamId, data, length,
+				SteamNetworking.SendP2PPacket(player.id, data, length,
 				sendType switch
 				{
 					SendType.Reliable => EP2PSend.k_EP2PSendReliable,
@@ -50,7 +50,7 @@ namespace RainMeadow {
 			MemoryStream memory = new MemoryStream(128);
 			BinaryWriter writer = new BinaryWriter(memory);
 
-			Packet.Encode(packet, writer, player.steamId, player.endpoint);
+			Packet.Encode(packet, writer, player.id, player.endpoint);
 
 			byte[] bytes = memory.GetBuffer();
 
@@ -128,7 +128,7 @@ namespace RainMeadow {
 		}
 
 		public static void Write(this BinaryWriter writer, OnlinePlayer players) {
-			writer.Write(players.netId);
+			writer.Write(players.inLobbyId);
 		}
 
 		public static OnlinePlayer ReadPlayer(this BinaryReader reader, bool create = false) {

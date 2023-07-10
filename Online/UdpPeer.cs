@@ -9,7 +9,9 @@ using System.Linq;
 namespace RainMeadow {
 	static class UdpPeer {
 		static UdpClient debugClient;
-		public enum PacketType : byte {
+		public static int port;
+		public static bool isHost;
+        public enum PacketType : byte {
 			Reliable,
 			Unreliable,
 			UnreliableOrdered,
@@ -64,8 +66,6 @@ namespace RainMeadow {
 		//
 
 		public const int STARTING_PORT = 5061;
-
-		public static Action<IPEndPoint> PeerTerminated;
 		
 		class DelayedPacket {
 			DateTime timeToSend;
@@ -104,7 +104,7 @@ namespace RainMeadow {
 				null
 			);
 
-			int port = STARTING_PORT;
+			port = STARTING_PORT;
 			for (int i = 0; i < 4; i++) { // 4 tries
 				bool alreadyinuse = IPGlobalProperties.GetIPGlobalProperties().GetActiveUdpListeners().Any(p => p.Port == port);
 				if (!alreadyinuse)
@@ -114,7 +114,7 @@ namespace RainMeadow {
 
 				port++;
 			}
-
+			if (port == STARTING_PORT) isHost = true;
 			debugClient.Client.Bind(new IPEndPoint(IPAddress.Any, port));
 			peers = new Dictionary<IPEndPoint, RemotePeer>();
 			delayedPackets = new Queue<DelayedPacket>();
@@ -439,6 +439,11 @@ namespace RainMeadow {
 			return index;
 		}
 
-		//
-	}
+        internal static object PlayersInLobby()
+        {
+            throw new NotImplementedException();
+        }
+
+        //
+    }
 }

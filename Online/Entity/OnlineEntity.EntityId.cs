@@ -6,11 +6,11 @@ namespace RainMeadow
     {
         public class EntityId : System.IEquatable<EntityId>, Serializer.ICustomSerializable // How we refer to a game entity online
         {
-            public int originalOwner;
+            public ushort originalOwner;
             public int id;
 
             public EntityId() { }
-            public EntityId(int originalOwner, int id)
+            public EntityId(ushort originalOwner, int id)
             {
                 this.originalOwner = originalOwner;
                 this.id = id;
@@ -29,7 +29,7 @@ namespace RainMeadow
 
             public override string ToString()
             {
-                return $"#{id}:{originalOwner:D6}";
+                return $"#{id}:{originalOwner:D4}";
             }
             public override bool Equals(object obj) => this.Equals(obj as EntityId);
             public bool Equals(EntityId other)

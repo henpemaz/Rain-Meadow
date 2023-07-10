@@ -25,8 +25,8 @@ namespace RainMeadow
 
         public static OnlinePhysicalObject NewFromApo(AbstractPhysicalObject apo)
         {
-            if (apo is AbstractCreature ac) return new OnlineCreature(ac, apo.ID.RandomSeed, apo.realizedObject != null, PlayersManager.mePlayer, new OnlineEntity.EntityId(PlayersManager.mePlayer.netId, apo.ID.number), !RainMeadow.sSpawningPersonas);
-            return new OnlinePhysicalObject(apo, apo.ID.RandomSeed, apo.realizedObject != null, PlayersManager.mePlayer, new OnlineEntity.EntityId(PlayersManager.mePlayer.netId, apo.ID.number), !RainMeadow.sSpawningPersonas);
+            if (apo is AbstractCreature ac) return new OnlineCreature(ac, apo.ID.RandomSeed, apo.realizedObject != null, PlayersManager.mePlayer, new OnlineEntity.EntityId(PlayersManager.mePlayer.inLobbyId, apo.ID.number), !RainMeadow.sSpawningPersonas);
+            return new OnlinePhysicalObject(apo, apo.ID.RandomSeed, apo.realizedObject != null, PlayersManager.mePlayer, new OnlineEntity.EntityId(PlayersManager.mePlayer.inLobbyId, apo.ID.number), !RainMeadow.sSpawningPersonas);
         }
 
         public OnlinePhysicalObject(AbstractPhysicalObject apo, int seed, bool realized, OnlinePlayer owner, EntityId id, bool isTransferable) : base(owner, id, isTransferable)

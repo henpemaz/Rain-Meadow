@@ -11,4 +11,169 @@
   <ItemGroup>
     <Reference Include="lib\*.dll" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Reference Update="lib\0Harmony.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\0Harmony20.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Assembly-CSharp-firstpass.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\BepInEx.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\BepInEx.Harmony.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\BepInEx.Preloader.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\com.rlabrecque.steamworks.net.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\GoKit.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\HarmonyXInterop.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\HOOKS-Assembly-CSharp.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Mono.Cecil.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Mono.Cecil.Mdb.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Mono.Cecil.Pdb.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Mono.Cecil.Rocks.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\MonoMod.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\MonoMod.RuntimeDetour.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\MonoMod.Utils.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Newtonsoft.Json.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\PUBLIC-Assembly-CSharp.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.AssetBundleModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.AudioModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.CoreModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.ImageConversionModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.InputLegacyModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.InputModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.JSONSerializeModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.LocalizationModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.UI.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.UIElementsNativeModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.UIModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.UnityWebRequestAssetBundleModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.UnityWebRequestAudioModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.UnityWebRequestModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.UnityWebRequestTextureModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.UnityWebRequestWWWModule.dll">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Update="System">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Update="System.Core">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Update="System.Data">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Update="System.Drawing">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Update="System.IO.Compression.FileSystem">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Update="System.Numerics">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Update="System.Runtime.Serialization">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Update="System.Xml">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Update="System.Xml.Linq">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
 </Project>

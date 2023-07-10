@@ -11,8 +11,8 @@ namespace RainMeadow {
 
 		public ModifyPlayerPacket() : base() { }
 		public ModifyPlayerPacket(OnlinePlayer newPlayerInfo) : base() {
-			netId = newPlayerInfo.netId;
-			steamID = newPlayerInfo.steamId;
+			netId = newPlayerInfo.inLobbyId;
+			steamID = newPlayerInfo.id;
 		}
 
 		public override void Serialize(BinaryWriter writer) {
@@ -27,15 +27,15 @@ namespace RainMeadow {
 		
 		public override void Process() {
 			if (steamID.IsValid()) {
-				if (steamID != PlayersManager.mePlayer.steamId) {
+				if (steamID != PlayersManager.mePlayer.id) {
 					throw new Exception($"Tried to update self with mismatching Steam ID");
 				}
 			} else {
 				RainMeadow.Debug("Clearing steam id...");
-				PlayersManager.mePlayer.steamId.Clear();
+				PlayersManager.mePlayer.id.Clear();
 			}
 
-			PlayersManager.mePlayer.netId = netId;
+			PlayersManager.mePlayer.inLobbyId = netId;
 			RainMeadow.Debug($"Your new network id is {netId}");
 
 			PlayersManager.nextPlayerId = netId + 1;
