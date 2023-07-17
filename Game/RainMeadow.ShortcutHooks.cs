@@ -21,7 +21,7 @@ namespace RainMeadow
         // Prevent adding item to update list twice
         private void RoomOnAddObject(On.Room.orig_AddObject orig, Room self, UpdatableAndDeletable obj)
         {
-            if (OnlineManager.lobby != null && self.game != null && self.updateList.Contains(obj))
+            if (LobbyManager.lobby != null && self.game != null && self.updateList.Contains(obj))
             {
                 RainMeadow.Debug($"Object {(obj is PhysicalObject po ? po.abstractPhysicalObject.ID : obj)} already in the update list! Skipping...");
                 var stackTrace = Environment.StackTrace;
@@ -50,7 +50,7 @@ namespace RainMeadow
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((ShortcutHandler self) => {
-                    if (OnlineManager.lobby != null)
+                    if (LobbyManager.lobby != null)
                     {
                         for (var i = self.betweenRoomsWaitingLobby.Count - 1; i >= 0; i--)
                         {
@@ -76,7 +76,7 @@ namespace RainMeadow
         private bool ShortcutHandlerOnVesselAllowedInRoom(On.ShortcutHandler.orig_VesselAllowedInRoom orig, ShortcutHandler self, ShortcutHandler.Vessel vessel)
         {
             var result = orig(self, vessel);
-            if (OnlineManager.lobby == null) return result;
+            if (LobbyManager.lobby == null) return result;
 
             var absCrit = vessel.creature.abstractCreature;
             OnlinePhysicalObject.map.TryGetValue(absCrit, out var onlineEntity);

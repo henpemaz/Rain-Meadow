@@ -1,31 +1,59 @@
 ﻿using Steamworks;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 
 namespace RainMeadow
 {
     public static class LobbyManager
     {
+        public static CSteamID me;
+        public static OnlinePlayer mePlayer;
+        public static List<OnlinePlayer> players;
+        public static Lobby lobby;
+
+        public static string CLIENT_KEY = "client";
+        public static string CLIENT_VAL = "Meadow_" + RainMeadow.MeadowVersionStr;
+        public static string NAME_KEY = "name";
+        public static string MODE_KEY = "mode";
+
+#if !LOCAL_P2P
 #pragma warning disable IDE0052 // Remove unread private members
         private static CallResult<LobbyMatchList_t> m_RequestLobbyListCall;
         private static CallResult<LobbyCreated_t> m_CreateLobbyCall;
         private static CallResult<LobbyEnter_t> m_JoinLobbyCall;
         private static Callback<LobbyDataUpdate_t> m_LobbyDataUpdate;
         private static Callback<LobbyChatUpdate_t> m_LobbyChatUpdate;
+        private static Callback<SteamNetworkingMessagesSessionRequest_t> m_SessionRequest;
 #pragma warning restore IDE0052 // Remove unread private members
+#endif
+
 
         public static void InitLobbyManager()
         {
+#if LOCAL_P2P
+            UdpPeer.Startup();
+            me = new CSteamID((ulong)Process.GetCurrentProcess().Id);
+#else
             m_RequestLobbyListCall = CallResult<LobbyMatchList_t>.Create(LobbyListReceived);
             m_CreateLobbyCall = CallResult<LobbyCreated_t>.Create(LobbyCreated);
             m_JoinLobbyCall = CallResult<LobbyEnter_t>.Create(LobbyJoined);
             m_LobbyDataUpdate = Callback<LobbyDataUpdate_t>.Create(LobbyUpdated);
             m_LobbyChatUpdate = Callback<LobbyChatUpdate_t>.Create(LobbyChatUpdated);
-#if LOCAL_P2P
-            UdpPeer.Startup();
+            m_SessionRequest = Callback<SteamNetworkingMessagesSessionRequest_t>.Create(SessionRequest);
+            me = SteamUser.GetSteamID();
 #endif
+            mePlayer = new OnlinePlayer(me) { isMe = true };
+        }
+
+        public static void Reset()
+        {
+            lobby = null;
+            players = new List<OnlinePlayer>() { mePlayer };
         }
 
         public enum LobbyVisibility
@@ -47,10 +75,10 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
 #if LOCAL_P2P
-            OnLobbyListReceived?.Invoke(true, UdpPeer.isHost ? new LobbyInfo[0] { } : new LobbyInfo[1] { new LobbyInfo(default) { name = "dummy" } });
+            OnLobbyListReceived?.Invoke(true, UdpPeer.isHost ? new LobbyInfo[0] { } : new LobbyInfo[1] { new LobbyInfo(default, "local", "local") });
 #else
             SteamMatchmaking.AddRequestLobbyListDistanceFilter(ELobbyDistanceFilter.k_ELobbyDistanceFilterWorldwide);
-            SteamMatchmaking.AddRequestLobbyListStringFilter(OnlineManager.CLIENT_KEY, OnlineManager.CLIENT_VAL, ELobbyComparison.k_ELobbyComparisonEqual);
+            SteamMatchmaking.AddRequestLobbyListStringFilter(LobbyManager.CLIENT_KEY, LobbyManager.CLIENT_VAL, ELobbyComparison.k_ELobbyComparisonEqual);
             m_RequestLobbyListCall.Set(SteamMatchmaking.RequestLobbyList());
 #endif
         }
@@ -66,7 +94,7 @@ namespace RainMeadow
                     for (int i = 0; i < pCallback.m_nLobbiesMatching; i++)
                     {
                         CSteamID id = SteamMatchmaking.GetLobbyByIndex(i);
-                        lobbies[i] = new LobbyInfo(id);
+                        lobbies[i] = new LobbyInfo(id, SteamMatchmaking.GetLobbyData(id, LobbyManager.NAME_KEY), SteamMatchmaking.GetLobbyData(id, LobbyManager.MODE_KEY));
                     }
                 }
 
@@ -79,15 +107,14 @@ namespace RainMeadow
             }
         }
 
-        private static string creatingWithMode;
         public static void CreateLobby(LobbyVisibility visibility, string gameMode)
         {
-            creatingWithMode = gameMode;
             RainMeadow.Debug(visibility);
 #if LOCAL_P2P
-            OnlineManager.lobby = new Lobby(default, creatingWithMode);
+            lobby = new Lobby(default, gameMode);
             OnLobbyJoined?.Invoke(true);
 #else
+            creatingWithMode = gameMode;
             ELobbyType eLobbyTypeeLobbyType = visibility switch
             {
                 LobbyVisibility.Private => ELobbyType.k_ELobbyTypePrivate,
@@ -113,6 +140,8 @@ namespace RainMeadow
 #endif
         }
 
+#if !LOCAL_P2P
+        private static string creatingWithMode;
         private static void LobbyCreated(LobbyCreated_t param, bool bIOFailure)
         {
             try
@@ -121,13 +150,13 @@ namespace RainMeadow
                 if (!bIOFailure && param.m_eResult == EResult.k_EResultOK)
                 {
                     RainMeadow.Debug("success");
-                    OnlineManager.lobby = new Lobby(new CSteamID(param.m_ulSteamIDLobby), creatingWithMode);
+                    LobbyManager.lobby = new Lobby(new CSteamID(param.m_ulSteamIDLobby), creatingWithMode);
                     OnLobbyJoined?.Invoke(true);
                 }
                 else
                 {
                     RainMeadow.Debug("failure, error code is " + param.m_eResult);
-                    OnlineManager.lobby = null;
+                    LobbyManager.lobby = null;
                     OnLobbyJoined?.Invoke(false);
                 }
             }
@@ -146,13 +175,13 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("success");
                     var id = new CSteamID(param.m_ulSteamIDLobby);
-                    OnlineManager.lobby = new Lobby(id, SteamMatchmaking.GetLobbyData(id, OnlineManager.MODE_KEY));
+                    LobbyManager.lobby = new Lobby(id, SteamMatchmaking.GetLobbyData(id, LobbyManager.MODE_KEY));
                     OnLobbyJoined?.Invoke(true);
                 }
                 else
                 {
                     RainMeadow.Debug("failure");
-                    OnlineManager.lobby = null;
+                    LobbyManager.lobby = null;
                     OnLobbyJoined?.Invoke(false);
                 }
             }
@@ -162,42 +191,44 @@ namespace RainMeadow
                 throw;
             }
         }
+#endif
 
         public static void LeaveLobby()
         {
             RainMeadow.DebugMe();
-            if (OnlineManager.lobby != null)
+            if (LobbyManager.lobby != null)
             {
 #if LOCAL_P2P
                 UdpPeer.Shutdown();
 #else
-                SteamMatchmaking.LeaveLobby(OnlineManager.lobby.id);
+                SteamMatchmaking.LeaveLobby(LobbyManager.lobby.id);
 #endif
                 OnlineManager.Reset();
             }
         }
 
+#if !LOCAL_P2P
         private static void LobbyUpdated(LobbyDataUpdate_t param)
         {
             try
             {
                 RainMeadow.Debug($"{param.m_ulSteamIDLobby} : {param.m_ulSteamIDMember} : {param.m_bSuccess}");
-                if (OnlineManager.lobby == null)
+                if (LobbyManager.lobby == null)
                 {
                     RainMeadow.Error("got lobby event with no lobby!");
                     return;
                 }
-                if ((CSteamID)param.m_ulSteamIDLobby != OnlineManager.lobby.id)
+                if ((CSteamID)param.m_ulSteamIDLobby != LobbyManager.lobby.id)
                 {
                     RainMeadow.Error("got lobby event for wrong lobby!");
                     return;
                 }
                 if (param.m_bSuccess > 0)
                 {
-                    if (OnlineManager.lobby != null && OnlineManager.lobby.id == new CSteamID(param.m_ulSteamIDLobby))
+                    if (LobbyManager.lobby != null && LobbyManager.lobby.id == new CSteamID(param.m_ulSteamIDLobby))
                     {
                         // lobby event, check for possible changes
-                        PlayersManager.UpdatePlayersList(OnlineManager.lobby.id);
+                        UpdatePlayersList(LobbyManager.lobby);
                     }
                 }
             }
@@ -213,25 +244,118 @@ namespace RainMeadow
             try
             {
                 RainMeadow.Debug($"{param.m_ulSteamIDLobby} : {param.m_ulSteamIDUserChanged} : {param.m_ulSteamIDMakingChange} : {param.m_rgfChatMemberStateChange}");
-                if (OnlineManager.lobby == null)
+                if (LobbyManager.lobby == null)
                 {
                     RainMeadow.Error("got lobby event with no lobby!");
                     return;
                 }
 
-                if ((CSteamID)param.m_ulSteamIDLobby != OnlineManager.lobby.id)
+                if ((CSteamID)param.m_ulSteamIDLobby != LobbyManager.lobby.id)
                 {
                     RainMeadow.Error("got lobby event for wrong lobby!");
                     return;
                 }
 
-                PlayersManager.UpdatePlayersList(OnlineManager.lobby.id);
+                UpdatePlayersList(LobbyManager.lobby);
             }
             catch (Exception e)
             {
                 RainMeadow.Error(e);
                 throw;
             }
+        }
+
+        private static void SessionRequest(SteamNetworkingMessagesSessionRequest_t param)
+        {
+            try
+            {
+                var id = new CSteamID(param.m_identityRemote.GetSteamID64());
+                RainMeadow.Debug("session request from " + id);
+                if (LobbyManager.lobby != null)
+                {
+                    if (players.FirstOrDefault(op => op.id == id) is OnlinePlayer p)
+                    {
+                        RainMeadow.Debug("accepted session from " + p.name);
+                        SteamNetworkingMessages.AcceptSessionWithUser(ref param.m_identityRemote);
+                        return;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                throw;
+            }
+        }
+#endif
+
+
+        public static void UpdatePlayersList(Lobby lobby)
+        {
+            try
+            {
+                RainMeadow.DebugMe();
+                var oldplayers = players.Select(p => p.id).ToArray();
+                var n = SteamMatchmaking.GetNumLobbyMembers(lobby.id);
+                var newplayers = new CSteamID[n];
+                for (int i = 0; i < n; i++)
+                {
+                    newplayers[i] = SteamMatchmaking.GetLobbyMemberByIndex(lobby.id, i);
+                }
+                foreach (var p in oldplayers)
+                {
+                    if (!newplayers.Contains(p)) PlayerLeft(p);
+                }
+                foreach (var p in newplayers)
+                {
+                    if (!oldplayers.Contains(p)) PlayerJoined(p);
+                }
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                throw;
+            }
+        }
+
+        private static void PlayerJoined(CSteamID p)
+        {
+            RainMeadow.Debug($"PlayerJoined:{p} - {SteamFriends.GetFriendPersonaName(p)}");
+            if (p == me) return;
+            SteamFriends.RequestUserInformation(p, true);
+            players.Add(new OnlinePlayer(p));
+        }
+
+        private static void PlayerLeft(CSteamID p)
+        {
+            RainMeadow.Debug($"{p} - {SteamFriends.GetFriendPersonaName(p)}");
+
+            if (players.FirstOrDefault(op => op.id == p) is OnlinePlayer player)
+            {
+                RainMeadow.Debug($"Handling player disconnect:{player}");
+                player.hasLeft = true;
+                LobbyManager.lobby?.OnPlayerDisconnect(player);
+                while (player.HasUnacknoledgedEvents())
+                {
+                    player.AbortUnacknoledgedEvents();
+                    LobbyManager.lobby?.OnPlayerDisconnect(player);
+                }
+                RainMeadow.Debug($"Actually removing player:{player}");
+                players.Remove(player);
+            }
+        }
+
+        public static OnlinePlayer PlayerFromId(ulong id)
+        {
+            return LobbyManager.players.FirstOrDefault(p => p.id.m_SteamID == id);
+        }
+
+        public static OnlinePlayer BestTransferCandidate(OnlineResource onlineResource, Dictionary<OnlinePlayer, PlayerMemebership> subscribers)
+        {
+            if (subscribers.Keys.Contains(mePlayer)) return mePlayer;
+            // todo pick by ping?
+            if (subscribers.Count < 1) return null;
+            return subscribers.First().Key;
         }
     }
 }

@@ -19,15 +19,15 @@ namespace RainMeadow
         {
             this.id = id;
             this.super = this;
-            PlayersManager.UpdatePlayersList(id);
+            LobbyManager.UpdatePlayersList(this);
             var ownerId = SteamMatchmaking.GetLobbyOwner(id); // Steam decides
             NewOwner(PlayersManager.PlayerFromId(ownerId));
             if (owner == null) throw new Exception("Couldnt find lobby owner in player list");
             if (isOwner)
             {
-                SteamMatchmaking.SetLobbyData(id, OnlineManager.CLIENT_KEY, OnlineManager.CLIENT_VAL);
-                SteamMatchmaking.SetLobbyData(id, OnlineManager.NAME_KEY, SteamFriends.GetPersonaName() + "'s Lobby");
-                SteamMatchmaking.SetLobbyData(id, OnlineManager.MODE_KEY, creatingWithMode);
+                SteamMatchmaking.SetLobbyData(id, LobbyManager.CLIENT_KEY, LobbyManager.CLIENT_VAL);
+                SteamMatchmaking.SetLobbyData(id, LobbyManager.NAME_KEY, SteamFriends.GetPersonaName() + "'s Lobby");
+                SteamMatchmaking.SetLobbyData(id, LobbyManager.MODE_KEY, creatingWithMode);
             }
 
             this.gameMode = OnlineGameMode.FromType(new OnlineGameMode.OnlineGameModeType(creatingWithMode), this);

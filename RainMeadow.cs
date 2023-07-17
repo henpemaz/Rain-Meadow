@@ -12,7 +12,7 @@ namespace RainMeadow
     partial class RainMeadow : BaseUnityPlugin
     {
 
-        public const string MeadowVersionStr = "0.0.3";
+        public const string MeadowVersionStr = "0.0.4";
         public static RainMeadow instance;
         private bool init;
 
@@ -25,9 +25,6 @@ namespace RainMeadow
             On.RoomPreparer.UpdateThread += RoomPreparer_UpdateThread;
             On.WorldLoader.FindingCreaturesThread += WorldLoader_FindingCreaturesThread;
             On.WorldLoader.CreatingAbstractRoomsThread += WorldLoader_CreatingAbstractRoomsThread;
-
-            var the = Ext_SlugcatStatsName.OnlineSessionPlayer;
-            Debug(the);
         }
 
         private void WorldLoader_CreatingAbstractRoomsThread(On.WorldLoader.orig_CreatingAbstractRoomsThread orig, WorldLoader self)
@@ -82,7 +79,6 @@ namespace RainMeadow
             }
         }
 
-        // Debug
         private void RainWorld_Update(On.RainWorld.orig_Update orig, RainWorld self)
         {
             try
@@ -104,23 +100,15 @@ namespace RainMeadow
 
             try
             {
+                LobbyManager.InitLobbyManager();
+                self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
+
                 MenuHooks();
-                if (SteamManager.Initialized)
-                {
-                    PlayersManager.InitPlayersManager();
-                    LobbyManager.InitLobbyManager();
-                    self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
-                    
-                    GameHooks();
-                    EntityHooks();
-                    ShortcutHooks();
-                    GameplayHooks();
-                    PlayerHooks();
-                }
-                else
-                {
-                    Error("Steam is required to play this mod");
-                }
+                GameHooks();
+                EntityHooks();
+                ShortcutHooks();
+                GameplayHooks();
+                PlayerHooks();
             }
             catch (Exception e)
             {

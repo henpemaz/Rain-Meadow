@@ -15,8 +15,8 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             
             pages[0].subObjects.Add(startbtn = new SimplerButton(this, pages[0], "START", btns, btnsize));
-            startbtn.buttonBehav.greyedOut = !OnlineManager.lobby.isAvailable;
-            OnlineManager.lobby.OnLobbyAvailable += OnLobbyAvailable;
+            startbtn.buttonBehav.greyedOut = !LobbyManager.lobby.isAvailable;
+            LobbyManager.lobby.OnLobbyAvailable += OnLobbyAvailable;
             startbtn.OnClick += (SimplerButton obj) => { StartGame(); };
         }
 
@@ -28,7 +28,7 @@ namespace RainMeadow
         private void StartGame()
         {
             RainMeadow.DebugMe();
-            if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
+            if (LobbyManager.lobby == null || !LobbyManager.lobby.isActive) return;
             manager.arenaSitting = null;
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
@@ -38,7 +38,7 @@ namespace RainMeadow
         public override void ShutDownProcess()
         {
             RainMeadow.DebugMe();
-            if (OnlineManager.lobby != null) OnlineManager.lobby.OnLobbyAvailable -= OnLobbyAvailable;
+            if (LobbyManager.lobby != null) LobbyManager.lobby.OnLobbyAvailable -= OnLobbyAvailable;
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
                 LobbyManager.LeaveLobby();

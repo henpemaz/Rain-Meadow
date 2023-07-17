@@ -24,12 +24,12 @@ namespace RainMeadow
         private BinaryWriter writer;
         private BinaryReader reader;
         private OnlinePlayer currPlayer;
-        private int eventCount;
+        private uint eventCount;
         private StringBuilder eventLog;
         private long eventHeader;
-        private int stateCount;
+        private uint stateCount;
         private long stateHeader;
-        private bool warnOnSizeMissmatch = false;
+        private bool warnOnSizeMissmatch = false; // to the brave soul that will fix/implement the estimates for obj sizes, good luck
 
         public Serializer(long bufferCapacity)
         {
@@ -47,7 +47,7 @@ namespace RainMeadow
             {
                 writer.Write(currPlayer.lastEventFromRemote);
                 writer.Write(currPlayer.tick);
-                writer.Write(PlayersManager.mePlayer.tick);
+                writer.Write(LobbyManager.mePlayer.tick);
             }
             if (isReading)
             {
@@ -171,7 +171,7 @@ namespace RainMeadow
         {
             OnlineEvent e = OnlineEvent.NewFromType((OnlineEvent.EventTypeId)reader.ReadByte());
             e.from = currPlayer;
-            e.to = PlayersManager.mePlayer;
+            e.to = LobbyManager.mePlayer;
             e.CustomSerialize(this);
             return e;
         }
@@ -216,9 +216,9 @@ namespace RainMeadow
                         var message = SteamNetworkingMessage_t.FromIntPtr(messages[i]);
                         try
                         {
-                            if (OnlineManager.lobby != null)
+                            if (LobbyManager.lobby != null)
                             {
-                                var fromPlayer = PlayersManager.PlayerFromId(message.m_identityPeer.GetSteamID());
+                                var fromPlayer = LobbyManager.PlayerFromId(message.m_identityPeer.GetSteamID().m_SteamID);
                                 if (fromPlayer == null)
                                 {
                                     RainMeadow.Error("player not found: " + message.m_identityPeer + " " + message.m_identityPeer.GetSteamID());
@@ -308,28 +308,19 @@ namespace RainMeadow
 
                 EndWrite();
 
+#if LOCAL_P2P
+                UdpPeer.SendSessionData(toPlayer.endPoint, buffer, (int)Position, UdpPeer.PacketType.Unreliable);
+#else
                 unsafe
                 {
-                    fixed (byte* ptr = buffer)
+                    fixed (byte* dataPointer = buffer)
                     {
-                        SteamNetworkingMessages.SendMessageToUser(ref toPlayer.oid, (IntPtr)ptr, (uint)Position, Constants.k_nSteamNetworkingSend_UnreliableNoDelay, 0);
+                        SteamNetworkingMessages.SendMessageToUser(ref toPlayer.steamNetId, (IntPtr)dataPointer, (uint)Position, Constants.k_nSteamNetworkingSend_Unreliable, 0);
                     }
                 }
+#endif
 
                 Free();
-            }
-        }
-
-        // serializes player.id and finds reference
-        public void Serialize(ref OnlinePlayer player)
-        {
-            if (isWriting)
-            {
-                writer.Write(player is { } ? (ulong)player.id : 0ul);
-            }
-            if (isReading)
-            {
-                player = PlayersManager.PlayerFromId(new CSteamID(reader.ReadUInt64()));
             }
         }
 
@@ -348,6 +339,19 @@ namespace RainMeadow
             }
         }
 
+        // serializes player.id and finds reference
+        public void Serialize(ref OnlinePlayer player)
+        {
+            if (isWriting)
+            {
+                writer.Write(player is { } ? player.inLobbyId : (ushort)0);
+            }
+            if (isReading)
+            {
+                player = LobbyManager.PlayerFromId(reader.ReadUInt16());
+            }
+        }
+
         // serializes a list of players by id
         public void Serialize(ref List<OnlinePlayer> players)
         {
@@ -356,7 +360,7 @@ namespace RainMeadow
                 writer.Write((byte)players.Count);
                 foreach (var player in players)
                 {
-                    writer.Write(player is { } ? (ulong)player.id : 0ul);
+                    writer.Write(player is { } ? player.inLobbyId : (ushort)0);
                 }
             }
             if (isReading)
@@ -365,7 +369,7 @@ namespace RainMeadow
                 players = new List<OnlinePlayer>(count);
                 for (int i = 0; i < count; i++)
                 {
-                    players.Add(PlayersManager.PlayerFromId(new CSteamID(reader.ReadUInt64())));
+                    players.Add(LobbyManager.PlayerFromId(reader.ReadUInt16()));
                 }
             }
         }
@@ -495,7 +499,7 @@ namespace RainMeadow
             }
             if (isReading)
             {
-                var id = new OnlineEntity.EntityId(reader.ReadUInt64(), reader.ReadInt32());
+                var id = new OnlineEntity.EntityId(reader.ReadUInt16(), reader.ReadInt32());
                 OnlineManager.recentEntities.TryGetValue(id, out var temp);
                 onlineEntity = temp as T;
             }
@@ -516,7 +520,7 @@ namespace RainMeadow
             {
                 if (reader.ReadBoolean())
                 {
-                    var id = new OnlineEntity.EntityId(reader.ReadUInt64(), reader.ReadInt32());
+                    var id = new OnlineEntity.EntityId(reader.ReadUInt16(), reader.ReadInt32());
                     OnlineManager.recentEntities.TryGetValue(id, out var temp);
                     onlineEntity = temp as T;
                 }
@@ -673,7 +677,7 @@ namespace RainMeadow
             {
                 playerEvent = (T)OnlineEvent.NewFromType((OnlineEvent.EventTypeId)reader.ReadByte());
                 playerEvent.from = currPlayer;
-                playerEvent.to = PlayersManager.mePlayer;
+                playerEvent.to = LobbyManager.mePlayer;
                 playerEvent.CustomSerialize(this);
             }
         }

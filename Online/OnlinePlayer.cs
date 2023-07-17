@@ -3,33 +3,37 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 
 namespace RainMeadow
 {
     public partial class OnlinePlayer : IEquatable<OnlinePlayer>
     {
+#if LOCAL_P2P
+        int id;
+        public IPEndPoint endPoint;
+#else
         public CSteamID id;
         public SteamNetworkingIdentity oid;
-        public ushort inLobbyId; // small id in lobby
-        public string name;
-#if LOCAL_P2P
-        public IPEndPoint endpoint;
 #endif
+
+        public string name;
+        public ushort inLobbyId; // small id in lobby
+
         public Queue<OnlineEvent> OutgoingEvents = new(16);
         public List<OnlineEvent> recentlyAckedEvents = new(16);
         public List<OnlineEvent> abortedEvents = new();
         public Queue<OnlineState> OutgoingStates = new(128);
+
         private ulong nextOutgoingEvent = 1;
         public ulong lastEventFromRemote; // the last event I've received from them, I'll write it back on headers as an ack
         private ulong lastAckFromRemote; // the last event they've ack'd to me, used imediately on receive
         public ulong tick; // the last tick I've received from them, I'll write it back on headers as an ack
         public ulong lastAckdTick; // the last tick they've ack'd to me
         public bool needsAck;
+
         public bool isMe;
         public bool hasLeft;
-#if LOCAL_P2P
-        public IPEndPoint endpoint; // not filled for a real steam account
-#endif
 
         // DEBUG
         public bool eventsWritten;
@@ -38,18 +42,28 @@ namespace RainMeadow
         public bool statesRead;
 
 
+#if LOCAL_P2P
+        public OnlinePlayer(int id, IPEndPoint endPoint)
+        {
+            this.id = id;
+            this.endPoint = endPoint;
+            name = "local:" + id;
+        }
+#else
         public OnlinePlayer(CSteamID id)
         {
             this.id = id;
-            isMe = this == PlayersManager.mePlayer;
+            this.oid = new SteamNetworkingIdentity();
+            oid.SetSteamID(id);
             name = SteamFriends.GetFriendPersonaName(id) ?? string.Empty;
         }
+#endif
 
         public OnlineEvent QueueEvent(OnlineEvent e)
         {
             e.eventId = this.nextOutgoingEvent;
             e.to = this;
-            e.from = PlayersManager.mePlayer;
+            e.from = LobbyManager.mePlayer;
             RainMeadow.Debug($"{e} for {this}");
             nextOutgoingEvent++;
             OutgoingEvents.Enqueue(e);
@@ -64,13 +78,12 @@ namespace RainMeadow
 
         public void EventAckFromRemote(ulong lastAck)
         {
-            //RainMeadow.Debug(this);
             this.recentlyAckedEvents.Clear();
             this.lastAckFromRemote = lastAck;
             while (OutgoingEvents.Count > 0 && OnlineManager.IsNewerOrEqual(lastAck, OutgoingEvents.Peek().eventId))
             {
                 var e = OutgoingEvents.Dequeue();
-                RainMeadow.Debug($"{this} ack {e}");
+                RainMeadow.Debug($"{this} ackd {e}");
                 recentlyAckedEvents.Add(e);
             }
         }
@@ -104,16 +117,16 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return $"{inLobbyId} \"{name}\"";
+            return $"{inLobbyId}:{id}";
         }
 
         // IEqu
         public override bool Equals(object obj) => this.Equals(obj as OnlinePlayer);
         public bool Equals(OnlinePlayer other)
         {
-            return other != null && inLobbyId == other.inLobbyId;
+            return other != null && id == other.id;
         }
-        public override int GetHashCode() => inLobbyId.GetHashCode();
+        public override int GetHashCode() => id.GetHashCode();
 
         public static bool operator ==(OnlinePlayer lhs, OnlinePlayer rhs)
         {

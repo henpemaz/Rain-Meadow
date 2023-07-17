@@ -444,6 +444,11 @@ namespace RainMeadow {
             throw new NotImplementedException();
         }
 
+        internal static void SendSessionData(IPEndPoint endPoint, byte[] buffer, int position, PacketType unreliable)
+        {
+            throw new NotImplementedException();
+        }
+
         //
     }
 }

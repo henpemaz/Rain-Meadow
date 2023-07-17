@@ -22,7 +22,7 @@ partial class RainMeadow
     private void AbstractCreature_ctor(On.AbstractCreature.orig_ctor orig, AbstractCreature self, World world, CreatureTemplate creatureTemplate, Creature realizedCreature, WorldCoordinate pos, EntityID ID)
     {
         orig(self, world, creatureTemplate, realizedCreature, pos, ID);
-        if (OnlineManager.lobby != null)
+        if (LobbyManager.lobby != null)
         {
             if (creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat && self.state == null) // please, have a state like all other creatures PLEASE
             {
@@ -35,7 +35,7 @@ partial class RainMeadow
     // Personas are set as non-transferable
     private AbstractCreature RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate(On.RainWorldGame.orig_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate orig, RainWorldGame self, bool player1, bool player2, bool player3, bool player4, WorldCoordinate location)
     {
-        if (OnlineManager.lobby != null)
+        if (LobbyManager.lobby != null)
         {
             sSpawningPersonas = true;
         }
@@ -47,7 +47,7 @@ partial class RainMeadow
     private void Player_ctor(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
     {
         orig(self, abstractCreature, world);
-        if(OnlineManager.lobby != null)
+        if(LobbyManager.lobby != null)
         {
             // remote player
             if (OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var ent) && self.playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer)
@@ -59,7 +59,7 @@ partial class RainMeadow
         
     private void PlayerOnDie(On.Player.orig_Die orig, Player self)
     {
-        if (OnlineManager.lobby == null)
+        if (LobbyManager.lobby == null)
         {
             orig(self);
             return;
@@ -72,7 +72,7 @@ partial class RainMeadow
     
     private Player.ObjectGrabability PlayerOnGrabability(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
     {
-        if (OnlineManager.lobby != null)
+        if (LobbyManager.lobby != null)
         {
             if (self.playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer)
             {
@@ -86,10 +86,10 @@ partial class RainMeadow
     {
         orig(self, slugcat, malnourished);
 
-        if (OnlineManager.lobby == null) return;
+        if (LobbyManager.lobby == null) return;
         if (slugcat != Ext_SlugcatStatsName.OnlineSessionPlayer && slugcat != Ext_SlugcatStatsName.OnlineSessionRemotePlayer) return;
 
-        if (OnlineManager.lobby.gameMode is StoryGameMode or ArenaCompetitiveGameMode or FreeRoamGameMode)
+        if (LobbyManager.lobby.gameMode is StoryGameMode or ArenaCompetitiveGameMode or FreeRoamGameMode)
         {
             self.throwingSkill = 1;
         }

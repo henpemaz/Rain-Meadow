@@ -26,7 +26,7 @@ namespace RainMeadow {
 		
 		public override void Process() {
 			PlayersManager.nextPlayerId = nextPlayerId;
-			OnlineManager.lobby = new Lobby(lobbyOwner, SteamMatchmaking.GetLobbyData(LobbyManager.joiningLobbyId, OnlineManager.MODE_KEY));
+            LobbyManager.lobby = new Lobby(lobbyOwner, SteamMatchmaking.GetLobbyData(LobbyManager.joiningLobbyId, LobbyManager.MODE_KEY));
 			RainMeadow.Debug("Joining as " + PlayersManager.mePlayer);
 			LobbyManager.GoToMenu();
 		}

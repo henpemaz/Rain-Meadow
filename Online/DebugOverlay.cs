@@ -130,7 +130,7 @@ namespace RainMeadow {
 				incomingLabels.Clear();
 
 				int line = 0;
-				foreach (OnlinePlayer player in PlayersManager.players) {
+				foreach (OnlinePlayer player in LobbyManager.players) {
 					if (player.statesWritten || player.eventsWritten) {
 						FLabel label = new FLabel(Custom.GetFont(), player.ToString()) { alignment = FLabelAlignment.Left, x = 5.01f, y = screenSize.y - 25 - 15 * line };
 						if (player.eventsWritten) {
@@ -143,7 +143,7 @@ namespace RainMeadow {
 				}
 
 				line = 0;
-				foreach (OnlinePlayer player in PlayersManager.players) {
+				foreach (OnlinePlayer player in LobbyManager.players) {
 					if (player.statesRead || player.eventsRead) {
 						FLabel label = new FLabel(Custom.GetFont(), player.ToString()) { alignment = FLabelAlignment.Left, x = 155.01f, y = screenSize.y - 25 - 15 * line };
 						if (player.eventsRead) {
@@ -157,7 +157,7 @@ namespace RainMeadow {
 
 				// Worlds (Regions)
 				int worldShift = -30;
-				foreach (var worldSession in OnlineManager.lobby.worldSessions) {
+				foreach (var worldSession in LobbyManager.lobby.worldSessions) {
 					if (!worldSession.Value.isActive)
 						continue;
 
@@ -280,7 +280,7 @@ namespace RainMeadow {
 
 			// Lobby (Root)
 			resourceNodes.Add(new ResourceNode(self.rainWorld, overlayContainer) {
-				resource = OnlineManager.lobby,
+				resource = LobbyManager.lobby,
 				pos = new Vector2(x: 300, screenSize.y - 30),
 				rad = 20,
 				text = ".",
