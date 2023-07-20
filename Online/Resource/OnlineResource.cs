@@ -315,8 +315,7 @@ namespace RainMeadow
             if (this is Lobby lobby && owner == player) // lobby owner has left
             {
                 RainMeadow.Debug($"Lobby owner {player} left!!!");
-                var newOwner = SteamMatchmaking.GetLobbyOwner(lobby.id);
-                NewOwner(PlayersManager.PlayerFromId(newOwner));
+                NewOwner(LobbyManager.instance.GetLobbyOwner());
             }
 
             if (participants.ContainsKey(player))
@@ -329,7 +328,7 @@ namespace RainMeadow
                     if (owner == player) // Ooops we'll need a new host
                     {
                         RainMeadow.Debug($"Member was the owner");
-                        var newOwner = PlayersManager.BestTransferCandidate(this, participants);
+                        var newOwner = LobbyManager.instance.BestTransferCandidate(this, participants);
                         
                         if (newOwner != null && !isPending)
                         {

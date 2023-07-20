@@ -41,7 +41,7 @@ namespace RainMeadow
             if (LobbyManager.lobby != null) LobbyManager.lobby.OnLobbyAvailable -= OnLobbyAvailable;
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
-                LobbyManager.LeaveLobby();
+                LobbyManager.instance.LeaveLobby();
             }
             base.ShutDownProcess();
         }

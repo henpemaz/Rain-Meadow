@@ -9,7 +9,7 @@ namespace RainMeadow
         // Lease is the participants and ownership of subresources
         // If lobby, includes participants in self
         private LeaseState incomingLease; // lease to be processed on activate
-        private LeaseState currentLeaseState;
+        protected LeaseState currentLeaseState;
 
         private void NewLeaseState()
         {

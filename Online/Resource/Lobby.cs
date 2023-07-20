@@ -1,36 +1,29 @@
 ﻿using Steamworks;
 using System;
 using System.Collections.Generic;
+using static RainMeadow.OnlineGameMode;
 
 namespace RainMeadow
 {
     // Lobby is tightly bound to a SteamMatchmaking Lobby, also the top-level resource
     public class Lobby : OnlineResource
     {
-        public CSteamID id;
-        public Dictionary<string, WorldSession> worldSessions = new();
         public OnlineGameMode gameMode;
+        public Dictionary<string, WorldSession> worldSessions = new();
 
         public override World World => throw new NotSupportedException(); // Lobby can't add world entities
 
         public event Action OnLobbyAvailable;
 
-        public Lobby(CSteamID id, string creatingWithMode)
+        public Lobby(OnlineGameModeType mode, OnlinePlayer owner)
         {
-            this.id = id;
             this.super = this;
-            LobbyManager.UpdatePlayersList(this);
-            var ownerId = SteamMatchmaking.GetLobbyOwner(id); // Steam decides
-            NewOwner(PlayersManager.PlayerFromId(ownerId));
-            if (owner == null) throw new Exception("Couldnt find lobby owner in player list");
-            if (isOwner)
-            {
-                SteamMatchmaking.SetLobbyData(id, LobbyManager.CLIENT_KEY, LobbyManager.CLIENT_VAL);
-                SteamMatchmaking.SetLobbyData(id, LobbyManager.NAME_KEY, SteamFriends.GetPersonaName() + "'s Lobby");
-                SteamMatchmaking.SetLobbyData(id, LobbyManager.MODE_KEY, creatingWithMode);
-            }
 
-            this.gameMode = OnlineGameMode.FromType(new OnlineGameMode.OnlineGameModeType(creatingWithMode), this);
+            this.gameMode = OnlineGameMode.FromType(mode, this);
+            if(gameMode == null) throw new Exception($"Invalid game mode {mode}");
+
+            if (owner == null) throw new Exception("No lobby owner");
+            NewOwner(owner);
 
             if (isOwner)
             {
@@ -111,6 +104,11 @@ namespace RainMeadow
 
         public override string ToString() {
             return "Lobby";
+        }
+
+        internal OnlinePlayer PlayerFromId(ushort id)
+        {
+            return currentLeaseState.participants.participants[id];
         }
     }
 }

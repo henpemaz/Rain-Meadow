@@ -11,24 +11,68 @@ namespace RainMeadow
 {
     public static class NetIO
     {
-        public static void SendData(OnlinePlayer player, byte[] data, uint length, SendType sendType)
+        public enum SendType : byte
         {
+            Reliable,
+            Unreliable,
+        }
+
+        internal static void SendSessionData(OnlinePlayer toPlayer)
+        {
+
+            try
+            {
+                OnlineManager.serializer.WriteData(toPlayer);
+#if LOCAL_P2P
+                SendP2P(toPlayer, new SessionPacket(OnlineManager.serializer.buffer, (ushort)OnlineManager.serializer.Position), SendType.Unreliable);
+#else
+                var steamNetId = (toPlayer.id as SteamLobbyManager.SteamPlayerId).oid;
+                unsafe
+                {
+                    fixed (byte* dataPointer = OnlineManager.serializer.buffer)
+                    {
+                        SteamNetworkingMessages.SendMessageToUser(ref steamNetId, (IntPtr)dataPointer, (uint)OnlineManager.serializer.Position, Constants.k_nSteamNetworkingSend_Unreliable, 0);
+                    }
+                }
+#endif
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                throw;
+            }
 
         }
 
         public static void SendP2P(OnlinePlayer player, Packet packet, SendType sendType)
         {
+            var localPlayerId = player.id as LocalLobbyManager.LocalPlayerId;
             MemoryStream memory = new MemoryStream(128);
             BinaryWriter writer = new BinaryWriter(memory);
 
-            Packet.Encode(packet, writer, player.id, player.endpoint);
+            Packet.Encode(packet, writer, player);
 
             byte[] bytes = memory.GetBuffer();
 
-            SendData(player, bytes, (uint)memory.Position, sendType);
+            UdpPeer.Send(localPlayerId.endPoint, bytes, (int)memory.Position,
+                sendType switch
+                {
+                    SendType.Reliable => UdpPeer.PacketType.Reliable,
+                    SendType.Unreliable => UdpPeer.PacketType.Unreliable,
+                    _ => UdpPeer.PacketType.Unreliable,
+                });
         }
 
         public static void Update()
+        {
+#if LOCAL_P2P
+            ReceiveDataLocal();
+#else
+            ReceiveDataSteam();
+#endif
+        }
+
+        public static void ReceiveDataLocal()
         {
             UdpPeer.Update();
 
@@ -36,21 +80,59 @@ namespace RainMeadow
             {
                 if (!UdpPeer.Read(out BinaryReader netReader, out IPEndPoint remoteEndpoint))
                     continue;
+                var player = (LobbyManager.instance as LocalLobbyManager).GetPlayerLocal(remoteEndpoint.Port);
+                if(player == null)
+                {
+                    player = new OnlinePlayer(new LocalLobbyManager.LocalPlayerId(remoteEndpoint.Port, remoteEndpoint, remoteEndpoint.Port == UdpPeer.STARTING_PORT));
+                }
 
-                Packet.Decode(netReader, fromIpEndpoint: remoteEndpoint);
+                Packet.Decode(netReader, player);
             }
         }
-    }
 
-    public enum SendType : byte
-    {
-        Reliable,
-        Unreliable,
-    }
+        public static void ReceiveDataSteam()
+        {
+            lock (OnlineManager.serializer)
+            {
+                int n;
+                IntPtr[] messages = new IntPtr[32];
+                do // process in batches
+                {
+                    n = SteamNetworkingMessages.ReceiveMessagesOnChannel(0, messages, messages.Length);
+                    for (int i = 0; i < n; i++)
+                    {
+                        var message = SteamNetworkingMessage_t.FromIntPtr(messages[i]);
+                        try
+                        {
+                            if (LobbyManager.lobby != null)
+                            {
 
-    public interface ISerializable
-    {
-        public void Serialize(BinaryWriter writer);
-        public void Deserialize(BinaryReader reader);
+                                var fromPlayer = (LobbyManager.instance as SteamLobbyManager).GetPlayerSteam(message.m_identityPeer.GetSteamID().m_SteamID);
+                                if (fromPlayer == null)
+                                {
+                                    RainMeadow.Error("player not found: " + message.m_identityPeer + " " + message.m_identityPeer.GetSteamID());
+                                    continue;
+                                }
+                                //RainMeadow.Debug($"Receiving message from {fromPlayer}");
+                                Marshal.Copy(message.m_pData, OnlineManager.serializer.buffer, 0, message.m_cbSize);
+                                OnlineManager.serializer.ReadData(fromPlayer, message.m_cbSize);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            RainMeadow.Error("Error reading packet from player : " + message.m_identityPeer.GetSteamID());
+                            RainMeadow.Error(e);
+                            OnlineManager.serializer.EndRead();
+                            //throw;
+                        }
+                        finally
+                        {
+                            SteamNetworkingMessage_t.Release(messages[i]);
+                        }
+                    }
+                }
+                while (n > 0);
+            }
+        }
     }
 }

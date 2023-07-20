@@ -24,7 +24,7 @@
         public void Requested(EntityRequest request)
         {
             RainMeadow.Debug(this);
-            RainMeadow.Debug("Requested by : " + request.from.name);
+            RainMeadow.Debug("Requested by : " + request.from.id);
             if (isTransferable && this.isMine)
             {
                 request.from.QueueEvent(new GenericResult.Ok(request)); // your request was well received, now please be patient while I transfer it
@@ -85,7 +85,7 @@
         public void Released(EntityReleaseEvent entityRelease)
         {
             RainMeadow.Debug(this);
-            RainMeadow.Debug("Released by : " + entityRelease.from.name);
+            RainMeadow.Debug("Released by : " + entityRelease.from.id);
             if (isTransferable && this.owner == entityRelease.from && this.primaryResource.isOwner) // theirs and I can transfer
             {
                 entityRelease.from.QueueEvent(new GenericResult.Ok(entityRelease)); // ok to them
@@ -96,7 +96,7 @@
                 }
                 else
                 {
-                    if (!this.isMine) this.primaryResource.LocalEntityTransfered(this, PlayersManager.mePlayer);
+                    if (!this.isMine) this.primaryResource.LocalEntityTransfered(this, LobbyManager.mePlayer);
                 }
             }
             else

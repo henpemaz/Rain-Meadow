@@ -110,10 +110,10 @@ namespace RainMeadow
             // waiting for lobby data!
 
             // Lobby machine go!
-            LobbyManager.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
-            LobbyManager.OnLobbyJoined += OnlineManager_OnLobbyJoined;
+            LobbyManager.instance.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
+            LobbyManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
             SteamNetworkingUtils.InitRelayNetworkAccess();
-            LobbyManager.RequestLobbyList();
+            LobbyManager.instance.RequestLobbyList();
         }
 
         private void UpdateModeDescription()
@@ -207,20 +207,20 @@ namespace RainMeadow
         
         private void RefreshLobbyList(SimplerButton obj)
         {
-            LobbyManager.RequestLobbyList();
+            LobbyManager.instance.RequestLobbyList();
         }
 
         void RequestLobbyCreate()
         {
             RainMeadow.DebugMe();
             Enum.TryParse<LobbyManager.LobbyVisibility>(visibilityDropDown.value, out var value);
-            LobbyManager.CreateLobby(value, modeDropDown.value);
+            LobbyManager.instance.CreateLobby(value, modeDropDown.value);
         }
 
         void RequestLobbyJoin(LobbyInfo lobby)
         {
             RainMeadow.DebugMe();
-            LobbyManager.JoinLobby(lobby);
+            LobbyManager.instance.JoinLobby(lobby);
         }
 
         private void OnlineManager_OnLobbyJoined(bool ok)
@@ -245,8 +245,8 @@ namespace RainMeadow
 
         public override void ShutDownProcess()
         {
-            LobbyManager.OnLobbyListReceived -= OnlineManager_OnLobbyListReceived;
-            LobbyManager.OnLobbyJoined -= OnlineManager_OnLobbyJoined;
+            LobbyManager.instance.OnLobbyListReceived -= OnlineManager_OnLobbyListReceived;
+            LobbyManager.instance.OnLobbyJoined -= OnlineManager_OnLobbyJoined;
             base.ShutDownProcess();
         }
 

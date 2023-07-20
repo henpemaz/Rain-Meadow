@@ -8,12 +8,13 @@ namespace RainMeadow {
 		byte[] data;
 
 		public SessionPacket() : base() { }
-		public SessionPacket(byte[] data) : base() {
+		public SessionPacket(byte[] data, ushort size) : base() {
 			this.data = data;
+			this.size = size;
 		}
 
 		public override void Serialize(BinaryWriter writer) {
-			writer.Write(data);
+			writer.Write(data, 0, size);
 		}
 
 		public override void Deserialize(BinaryReader reader) {
@@ -21,12 +22,8 @@ namespace RainMeadow {
 		}
 		
 		public override void Process() {
-			if (processingSteamID.IsValid()) {
-				Buffer.BlockCopy(data, 0, OnlineManager.serializer.buffer, 0, (int)size);
-				OnlineManager.serializer.ReceiveDataSteam();
-			} else {
-				OnlineManager.serializer.ReceiveDataDebug(processingIpEndpoint, data);
-			}
-		}
+            Buffer.BlockCopy(data, 0, OnlineManager.serializer.buffer, 0, (int)size);
+            OnlineManager.serializer.ReadData(processingPlayer, size);
+        }
 	}
 }

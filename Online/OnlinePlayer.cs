@@ -9,15 +9,7 @@ namespace RainMeadow
 {
     public partial class OnlinePlayer : IEquatable<OnlinePlayer>
     {
-#if LOCAL_P2P
-        int id;
-        public IPEndPoint endPoint;
-#else
-        public CSteamID id;
-        public SteamNetworkingIdentity oid;
-#endif
-
-        public string name;
+        public MeadowPlayerId id;
         public ushort inLobbyId; // small id in lobby
 
         public Queue<OnlineEvent> OutgoingEvents = new(16);
@@ -42,22 +34,10 @@ namespace RainMeadow
         public bool statesRead;
 
 
-#if LOCAL_P2P
-        public OnlinePlayer(int id, IPEndPoint endPoint)
+        public OnlinePlayer(MeadowPlayerId id)
         {
             this.id = id;
-            this.endPoint = endPoint;
-            name = "local:" + id;
         }
-#else
-        public OnlinePlayer(CSteamID id)
-        {
-            this.id = id;
-            this.oid = new SteamNetworkingIdentity();
-            oid.SetSteamID(id);
-            name = SteamFriends.GetFriendPersonaName(id) ?? string.Empty;
-        }
-#endif
 
         public OnlineEvent QueueEvent(OnlineEvent e)
         {
@@ -72,8 +52,7 @@ namespace RainMeadow
 
         public OnlineEvent GetRecentEvent(ulong id)
         {
-            return recentlyAckedEvents.FirstOrDefault(e => e.eventId == id) 
-                ?? abortedEvents.FirstOrDefault(e => e.eventId == id);
+            return recentlyAckedEvents.FirstOrDefault(e => e.eventId == id) ?? abortedEvents.FirstOrDefault(e => e.eventId == id);
         }
 
         public void EventAckFromRemote(ulong lastAck)

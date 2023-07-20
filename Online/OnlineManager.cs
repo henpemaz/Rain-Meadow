@@ -21,6 +21,8 @@ namespace RainMeadow
         {
             instance = this;
             framesPerSecond = 20; // alternatively, run as fast as we can for the receiving stuff, but send on a lower tickrate?
+
+            LobbyManager.InitLobbyManager();
             Reset();
             RainMeadow.Debug("OnlineManager Created");
         }
@@ -36,7 +38,7 @@ namespace RainMeadow
             RoomSession.map = new();
             OnlinePhysicalObject.map = new();
 
-            LobbyManager.Reset();
+            LobbyManager.instance.Reset();
         }
 
         public override void Update()
@@ -44,7 +46,7 @@ namespace RainMeadow
             base.Update();
 
             // Incoming messages
-            serializer.ReceiveData();
+            NetIO.Update();
 
             if (LobbyManager.lobby != null)
             {
@@ -79,7 +81,7 @@ namespace RainMeadow
 
             if (toPlayer.needsAck || toPlayer.OutgoingEvents.Any() || toPlayer.OutgoingStates.Any())
             {
-                serializer.SendData(toPlayer);
+                NetIO.SendSessionData(toPlayer);
             }
         }
 
@@ -87,8 +89,9 @@ namespace RainMeadow
         public static void TickEvents()
         {
             SteamAPI.RunCallbacks();
+
             // Incoming messages
-            serializer.ReceiveData();
+            NetIO.Update();
 
             if (LobbyManager.lobby != null)
             {

@@ -39,7 +39,7 @@ namespace RainMeadow
 
             if (isOwner) // enter right away
             {
-                EntityRegisteredInResource(oe, oe.GetState(PlayersManager.mePlayer.tick, this));
+                EntityRegisteredInResource(oe, oe.GetState(LobbyManager.mePlayer.tick, this));
             }
             else // request to register
             {
@@ -127,7 +127,7 @@ namespace RainMeadow
 
             if (isOwner) // join right away
             {
-                EntityJoinedResource(oe, oe.GetState(PlayersManager.mePlayer.tick, this));
+                EntityJoinedResource(oe, oe.GetState(LobbyManager.mePlayer.tick, this));
             }
             else // request to join
             {

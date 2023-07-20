@@ -9,13 +9,14 @@ namespace RainMeadow
 
         public override void Process()
         {
-            // Hello packet from joining peer
-            OnlinePlayer joiningPlayer = processingSteamID.IsValid() ?
-                PlayersManager.SteamPlayerJoined(processingSteamID) :
-                PlayersManager.IpPlayerJoined(processingIpEndpoint);
+            if(LobbyManager.lobby != null)
+            {
+                // Hello packet from joining peer
+                (LobbyManager.instance as LocalLobbyManager).LocalPlayerJoined(processingPlayer);
 
-            // Tell them they are now ready by sending them the owner
-            NetIO.SendP2P(joiningPlayer, new JoinLobbyPacket(LobbyManager.lobby.owner, PlayersManager.nextPlayerId), SendType.Reliable);
+                // Tell them they are in
+                NetIO.SendP2P(processingPlayer, new JoinLobbyPacket(), NetIO.SendType.Reliable);
+            }
         }
     }
 }

@@ -11,14 +11,14 @@ namespace RainMeadow
 {
     public partial class Serializer
     {
-        private readonly byte[] buffer;
+        public readonly byte[] buffer;
         private readonly long capacity;
         private long margin;
-        private long Position => stream.Position;
+        public long Position => stream.Position;
 
-        public bool isWriting { get; private set; }
-        public bool isReading { get; private set; }
-        public bool Aborted { get; private set; }
+        private bool isWriting { get; set; }
+        private bool isReading { get; set; }
+        private bool Aborted { get; set; }
 
         private MemoryStream stream;
         private BinaryWriter writer;
@@ -190,138 +190,76 @@ namespace RainMeadow
             return s;
         }
 
-        private void EndRead()
+        public void EndRead()
         {
             currPlayer = null;
             isReading = false;
         }
 
-        private void Free()
+        public void ReadData(OnlinePlayer fromPlayer, long size)
         {
-            // unused
+            BeginRead(fromPlayer);
+
+            PlayerHeaders();
+            if (Aborted)
+            {
+                RainMeadow.Debug("skipped packet");
+                return;
+            }
+
+            int ne = BeginReadEvents();
+            //RainMeadow.Debug($"Receiving {ne} events");
+            for (int ie = 0; ie < ne; ie++)
+            {
+                OnlineManager.ProcessIncomingEvent(ReadEvent());
+            }
+
+            int ns = BeginReadStates();
+            //RainMeadow.Debug($"Receiving {ns} states");
+            for (int ist = 0; ist < ns; ist++)
+            {
+                OnlineManager.ProcessIncomingState(ReadState());
+            }
+
+            EndRead();
         }
 
-        // Process all incoming messages
-        public void ReceiveData()
+        public long WriteData(OnlinePlayer toPlayer)
         {
-            lock (this)
+            BeginWrite(toPlayer);
+
+            PlayerHeaders();
+
+            BeginWriteEvents();
+            //RainMeadow.Debug($"Writing {toPlayer.OutgoingEvents.Count} events");
+            foreach (var e in toPlayer.OutgoingEvents)
             {
-                int n;
-                IntPtr[] messages = new IntPtr[32];
-                do // process in batches
+                if (CanFit(e))
                 {
-                    n = SteamNetworkingMessages.ReceiveMessagesOnChannel(0, messages, messages.Length);
-                    for (int i = 0; i < n; i++)
-                    {
-                        var message = SteamNetworkingMessage_t.FromIntPtr(messages[i]);
-                        try
-                        {
-                            if (LobbyManager.lobby != null)
-                            {
-                                var fromPlayer = LobbyManager.PlayerFromId(message.m_identityPeer.GetSteamID().m_SteamID);
-                                if (fromPlayer == null)
-                                {
-                                    RainMeadow.Error("player not found: " + message.m_identityPeer + " " + message.m_identityPeer.GetSteamID());
-                                    continue;
-                                }
-                                //RainMeadow.Debug($"Receiving message from {fromPlayer}");
-                                Marshal.Copy(message.m_pData, buffer, 0, message.m_cbSize);
-                                BeginRead(fromPlayer);
-
-                                PlayerHeaders();
-                                if (Aborted)
-                                {
-                                    RainMeadow.Debug("skipped packet");
-                                    continue;
-                                }
-
-                                int ne = BeginReadEvents();
-                                //RainMeadow.Debug($"Receiving {ne} events");
-                                for (int ie = 0; ie < ne; ie++)
-                                {
-                                    OnlineManager.ProcessIncomingEvent(ReadEvent());
-                                }
-
-                                int ns = BeginReadStates();
-                                //RainMeadow.Debug($"Receiving {ns} states");
-                                for (int ist = 0; ist < ns; ist++)
-                                {
-                                    OnlineManager.ProcessIncomingState(ReadState());
-                                }
-
-                                EndRead();
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            RainMeadow.Error("Error reading packet from player : " + message.m_identityPeer.GetSteamID());
-                            RainMeadow.Error(e);
-                            EndRead();
-                            //throw;
-                        }
-                        finally
-                        {
-                            SteamNetworkingMessage_t.Release(messages[i]);
-                        }
-                    }
+                    WriteEvent(e);
                 }
-                while (n > 0);
-                Free();
+                else
+                {
+                    RainMeadow.Error("no buffer space for events");
+                    RainMeadow.Error(eventLog.ToString());
+                    break;
+                }
             }
-        }
+            EndWriteEvents();
 
-        public void SendData(OnlinePlayer toPlayer)
-        {
-            //RainMeadow.Debug($"Sending message to {toPlayer}");
-            lock (this)
+            BeginWriteStates();
+            //RainMeadow.Debug($"Writing {toPlayer.OutgoingStates.Count} states");
+            while (toPlayer.OutgoingStates.Count > 0 && CanFit(toPlayer.OutgoingStates.Peek()))
             {
-                BeginWrite(toPlayer);
-
-                PlayerHeaders();
-
-                BeginWriteEvents();
-                //RainMeadow.Debug($"Writing {toPlayer.OutgoingEvents.Count} events");
-                foreach (var e in toPlayer.OutgoingEvents)
-                {
-                    if (CanFit(e))
-                    {
-                        WriteEvent(e);
-                    }
-                    else
-                    {
-                        RainMeadow.Error("no buffer space for events");
-                        RainMeadow.Error(eventLog.ToString());
-                        break;
-                    }
-                }
-                EndWriteEvents();
-
-                BeginWriteStates();
-                //RainMeadow.Debug($"Writing {toPlayer.OutgoingStates.Count} states");
-                while (toPlayer.OutgoingStates.Count > 0 && CanFit(toPlayer.OutgoingStates.Peek()))
-                {
-                    var s = toPlayer.OutgoingStates.Dequeue();
-                    WriteState(s);
-                }
-                // todo handle states overflow, planing a packet for maximum size and least stale states
-                EndWriteStates();
-
-                EndWrite();
-
-#if LOCAL_P2P
-                UdpPeer.SendSessionData(toPlayer.endPoint, buffer, (int)Position, UdpPeer.PacketType.Unreliable);
-#else
-                unsafe
-                {
-                    fixed (byte* dataPointer = buffer)
-                    {
-                        SteamNetworkingMessages.SendMessageToUser(ref toPlayer.steamNetId, (IntPtr)dataPointer, (uint)Position, Constants.k_nSteamNetworkingSend_Unreliable, 0);
-                    }
-                }
-#endif
-
-                Free();
+                var s = toPlayer.OutgoingStates.Dequeue();
+                WriteState(s);
             }
+            // todo handle states overflow, planing a packet for maximum size and least stale states
+            EndWriteStates();
+
+            EndWrite();
+
+            return Position;
         }
 
         // serializes resource.id and finds reference
@@ -348,7 +286,7 @@ namespace RainMeadow
             }
             if (isReading)
             {
-                player = LobbyManager.PlayerFromId(reader.ReadUInt16());
+                player = LobbyManager.lobby?.PlayerFromId(reader.ReadUInt16());
             }
         }
 
@@ -369,7 +307,7 @@ namespace RainMeadow
                 players = new List<OnlinePlayer>(count);
                 for (int i = 0; i < count; i++)
                 {
-                    players.Add(LobbyManager.PlayerFromId(reader.ReadUInt16()));
+                    players.Add(LobbyManager.lobby?.PlayerFromId(reader.ReadUInt16()));
                 }
             }
         }

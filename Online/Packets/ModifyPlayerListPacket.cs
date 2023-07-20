@@ -3,94 +3,87 @@ using System.Net;
 using System.Linq;
 using Steamworks;
 
-namespace RainMeadow {
-	public class ModifyPlayerListPacket : Packet {
-		public override Type type => Packet.Type.ModifyPlayerList;
+namespace RainMeadow
+{
+    public class ModifyPlayerListPacket : Packet
+    {
+        public override Type type => Packet.Type.ModifyPlayerList;
 
-		public enum Operation : byte {
-			Add,
-			Remove,
-		}
-		Operation modifyOperation;
-		OnlinePlayer[] players;
+        public enum Operation : byte
+        {
+            Add,
+            Remove,
+        }
+        Operation modifyOperation;
+        OnlinePlayer[] players;
 
-		public ModifyPlayerListPacket() : base() { }
-		public ModifyPlayerListPacket(Operation modifyOperation, OnlinePlayer[] players) : base() {
-			this.modifyOperation = modifyOperation;
-			this.players = players;
-		}
+        public ModifyPlayerListPacket() : base() { }
+        public ModifyPlayerListPacket(Operation modifyOperation, OnlinePlayer[] players) : base()
+        {
+            this.modifyOperation = modifyOperation;
+            this.players = players;
+        }
 
-		public override void Serialize(BinaryWriter writer) {
-			writer.Write((byte)modifyOperation);
-			writer.EncodeVLQ((uint)players.Length);
-			for (int i = 0; i < players.Length; i++) {
-				var player = players[i];
-				writer.Write(player.inLobbyId);
+        public override void Serialize(BinaryWriter writer)
+        {
+            writer.Write((byte)modifyOperation);
+            writer.Write(players.Length);
+            for (int i = 0; i < players.Length; i++)
+            {
+                var player = players[i].id as LocalLobbyManager.LocalPlayerId;
+                writer.Write(player.id);
 
-				if (modifyOperation != Operation.Add) continue;
+                if (modifyOperation != Operation.Add) continue;
 
-				writer.Write((ulong)player.id);
-				
-				if (!processingSteamID.IsValid() || !player.isUsingSteam) {
-					var addressBytes = player.endpoint.Address.GetAddressBytes();
-					writer.Write((byte)addressBytes.Length);
-					writer.Write(addressBytes);
-					writer.Write((ushort)player.endpoint.Port);
-				}
-			}
-		}
+                writer.Write((ushort)player.endPoint.Port);
+            }
+        }
 
-		public override void Deserialize(BinaryReader reader) {
-			modifyOperation = (Operation)reader.ReadByte();
-			players = new OnlinePlayer[reader.DecodeVLQ()];
-			for (int i = 0; i < players.Length; i++) {
-				int netId = reader.ReadInt32();
+        public override void Deserialize(BinaryReader reader)
+        {
+            modifyOperation = (Operation)reader.ReadByte();
+            players = new OnlinePlayer[reader.ReadInt32()];
+            for (int i = 0; i < players.Length; i++)
+            {
+                int netId = reader.ReadInt32();
 
-				switch (modifyOperation) {
-					case Operation.Add:
-						CSteamID steamId = new CSteamID(reader.ReadUInt64());
+                switch (modifyOperation)
+                {
+                    case Operation.Add:
+                        var endPoint = new IPEndPoint(IPAddress.Loopback, (int)reader.ReadUInt16());
+                        players[i] = (LobbyManager.instance as LocalLobbyManager).GetPlayerLocal(netId)
+                            ?? new OnlinePlayer(new LocalLobbyManager.LocalPlayerId(netId, endPoint, endPoint.Port == UdpPeer.STARTING_PORT));
+                        break;
 
-						IPEndPoint endPoint = null;
-						if (!PlayersManager.mePlayer.isUsingSteam || !steamId.IsValid()) {
-							endPoint = new IPEndPoint(new IPAddress(reader.ReadBytes(reader.ReadByte())), (int)reader.ReadUInt16());
-							if (PlayersManager.players.Count == 1) {
-								// The first thing received is the communicating peer, but they will send a loopback ip
-								// so override it with where they are communicating from
-								endPoint = processingIpEndpoint; 
-							}
-						}
 
-						var player = PlayersManager.TryGetPlayer(netId);
-						if (player != null) {
-							RainMeadow.Error($"Player with ID {netId} '{player.name}' already exists!");
-							continue;
-						}
-						
-						players[i] = new OnlinePlayer(netId, steamId, endPoint);
-						break;
-					
-					
-					case Operation.Remove:
-						players[i] = PlayersManager.TryGetPlayer(netId);
-						break;
-				}
-			}
-		}
-		
-		public override void Process() {
-			switch (modifyOperation) {
-				case Operation.Add:
-					RainMeadow.Debug("Adding players...\n\t" + string.Join<OnlinePlayer>("\n\t", players));
-					PlayersManager.players.AddRange(players);
-					PlayersManager.nextPlayerId = players.Last().inLobbyId + 1;
-					break;
-				
-				case Operation.Remove:
-					RainMeadow.Debug("Removing players...\n\t" + string.Join<OnlinePlayer>("\n\t", players));
-					PlayersManager.players.RemoveAll(player => players.Contains(player));
-					break;
-			}
-			
-		}
-	}
+                    case Operation.Remove:
+                        players[i] = (LobbyManager.instance as LocalLobbyManager).GetPlayerLocal(netId);
+                        break;
+                }
+            }
+        }
+
+        public override void Process()
+        {
+            switch (modifyOperation)
+            {
+                case Operation.Add:
+                    RainMeadow.Debug("Adding players...\n\t" + string.Join<OnlinePlayer>("\n\t", players));
+                    for (int i = 0; i < players.Length; i++)
+                    {
+                        (LobbyManager.instance as LocalLobbyManager).LocalPlayerJoined(players[i]);
+                    }
+                    break;
+
+                case Operation.Remove:
+                    RainMeadow.Debug("Removing players...\n\t" + string.Join<OnlinePlayer>("\n\t", players));
+                    for (int i = 0; i < players.Length; i++)
+                    {
+                        (LobbyManager.instance as LocalLobbyManager).LocalPlayerLeft(players[i]);
+                    }
+                    break;
+            }
+
+        }
+    }
 }

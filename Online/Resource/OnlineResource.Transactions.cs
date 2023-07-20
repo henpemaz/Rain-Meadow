@@ -73,7 +73,7 @@ namespace RainMeadow
                 {
                     request.from.QueueEvent(new ReleaseResult.Released(request)); // this notifies the old owner that the release was a success
                     ParticipantLeft(request.from);
-                    var newOwner = PlayersManager.BestTransferCandidate(this, participants);
+                    var newOwner = LobbyManager.instance.BestTransferCandidate(this, participants);
                     NewOwner(newOwner); // This notifies all users, if the new owner is active they'll restore the state
                     if (newOwner != null)
                     {

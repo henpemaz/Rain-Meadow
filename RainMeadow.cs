@@ -100,7 +100,6 @@ namespace RainMeadow
 
             try
             {
-                LobbyManager.InitLobbyManager();
                 self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
 
                 MenuHooks();
