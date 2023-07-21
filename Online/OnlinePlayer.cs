@@ -17,9 +17,9 @@ namespace RainMeadow
         public List<OnlineEvent> abortedEvents = new();
         public Queue<OnlineState> OutgoingStates = new(128);
 
-        private ulong nextOutgoingEvent = 1;
-        public ulong lastEventFromRemote; // the last event I've received from them, I'll write it back on headers as an ack
-        private ulong lastAckFromRemote; // the last event they've ack'd to me, used imediately on receive
+        private ushort nextOutgoingEvent = 1;
+        public ushort lastEventFromRemote; // the last event I've received from them, I'll write it back on headers as an ack
+        private ushort lastAckFromRemote; // the last event they've ack'd to me, used imediately on receive
         public ulong tick; // the last tick I've received from them, I'll write it back on headers as an ack
         public ulong lastAckdTick; // the last tick they've ack'd to me
         public bool needsAck;
