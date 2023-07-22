@@ -315,7 +315,7 @@ namespace RainMeadow
             if (isOwner && isActive)
             {
                 OnlineEntity oe = entityTransferRequest.entityId.FindEntity();
-                EntityTransfered(oe, entityTransferRequest.newOwner);
+                EntityTransfered(oe, LobbyManager.lobby.PlayerFromId(entityTransferRequest.newOwner));
                 entityTransferRequest.from.QueueEvent(new GenericResult.Ok(entityTransferRequest));
             }
             else
@@ -332,7 +332,7 @@ namespace RainMeadow
 
             if (entityTransferResult is GenericResult.Ok) // success
             {
-                EntityTransfered(oe, (entityTransferResult.referencedEvent as EntityTransferRequest).newOwner);
+                EntityTransfered(oe, LobbyManager.lobby.PlayerFromId((entityTransferResult.referencedEvent as EntityTransferRequest).newOwner));
             }
             else if (entityTransferResult is GenericResult.Error) // retry
             {
@@ -344,7 +344,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             var oe = entityTransferedEvent.entityId.FindEntity();
-            EntityTransfered(oe, entityTransferedEvent.newOwner);
+            EntityTransfered(oe, LobbyManager.lobby.PlayerFromId(entityTransferedEvent.newOwner));
         }
 
         public void EntityTransfered(OnlineEntity oe, OnlinePlayer to)

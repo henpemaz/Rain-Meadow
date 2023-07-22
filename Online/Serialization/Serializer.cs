@@ -51,9 +51,9 @@ namespace RainMeadow
             }
             if (isReading)
             {
-                currPlayer.EventAckFromRemote(reader.ReadUInt64());
-                currPlayer.TickAckFromRemote(reader.ReadUInt64());
-                var newTick = reader.ReadUInt64();
+                currPlayer.EventAckFromRemote(reader.ReadUInt16());
+                currPlayer.TickAckFromRemote(reader.ReadUInt16());
+                var newTick = reader.ReadUInt32();
                 if (!OnlineManager.IsNewer(newTick, currPlayer.tick))
                 {
                     // abort reading
@@ -399,6 +399,29 @@ namespace RainMeadow
                     s.tick = currPlayer.tick;
                     s.CustomSerialize(this);
                     states[i] = s;
+                }
+            }
+        }
+
+        public void SerializePlayerIds(ref List<MeadowPlayerId> ids)
+        {
+            if (isWriting)
+            {
+                writer.Write((byte)ids.Count);
+                foreach (var id in ids)
+                {
+                    id.CustomSerialize(this);
+                }
+            }
+            if (isReading)
+            {
+                byte count = reader.ReadByte();
+                ids = new(count);
+                for (int i = 0; i < count; i++)
+                {
+                    MeadowPlayerId s = LobbyManager.instance.GetEmptyId();
+                    s.CustomSerialize(this);
+                    ids[i] = s;
                 }
             }
         }

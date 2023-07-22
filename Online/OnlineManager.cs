@@ -142,6 +142,30 @@ namespace RainMeadow
             return delta < ulong.MaxValue / 2;
         }
 
+        public static bool IsNewer(uint eventId, uint lastIncomingEvent)
+        {
+            var delta = eventId - lastIncomingEvent;
+            return delta != 0 && delta < uint.MaxValue / 2;
+        }
+
+        public static bool IsNewerOrEqual(uint eventId, uint lastIncomingEvent)
+        {
+            var delta = eventId - lastIncomingEvent;
+            return delta < uint.MaxValue / 2;
+        }
+
+        public static bool IsNewer(ushort eventId, ushort lastIncomingEvent)
+        {
+            var delta = eventId - lastIncomingEvent;
+            return delta != 0 && delta < ushort.MaxValue / 2;
+        }
+
+        public static bool IsNewerOrEqual(ushort eventId, ushort lastIncomingEvent)
+        {
+            var delta = eventId - lastIncomingEvent;
+            return delta < ushort.MaxValue / 2;
+        }
+
         public static void ProcessIncomingEvent(OnlineEvent onlineEvent)
         {
             OnlinePlayer fromPlayer = onlineEvent.from;
@@ -200,7 +224,7 @@ namespace RainMeadow
                 }
                 if (state is EntityInResourceState entityInResourceState)
                 {
-                    entityInResourceState.entityState.onlineEntity.ReadState(entityInResourceState.entityState, entityInResourceState.inResource);
+                    entityInResourceState.entityState.entityId.FindEntity().ReadState(entityInResourceState.entityState, entityInResourceState.inResource);
                 }
             }
             catch (Exception e)

@@ -11,11 +11,17 @@ namespace RainMeadow
             public CSteamID steamID;
             public SteamNetworkingIdentity oid;
 
+            public SteamPlayerId() { }
             public SteamPlayerId(CSteamID steamID) : base(SteamFriends.GetFriendPersonaName(steamID) ?? string.Empty)
             {
                 this.steamID = steamID;
                 oid = new SteamNetworkingIdentity();
                 oid.SetSteamID(steamID);
+            }
+
+            public override void CustomSerialize(Serializer serializer)
+            {
+                serializer.Serialize(ref steamID.m_SteamID);
             }
 
             public override bool Equals(MeadowPlayerId other)
@@ -27,6 +33,11 @@ namespace RainMeadow
             {
                 return steamID.GetHashCode();
             }
+        }
+
+        public override MeadowPlayerId GetEmptyId()
+        {
+            return new SteamPlayerId();
         }
 
 #pragma warning disable IDE0052 // Remove unread private members

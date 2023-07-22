@@ -2,12 +2,12 @@
 {
     public class EntityTransferRequest : EntityResourceEvent, ResolvableEvent
     {
-        public OnlinePlayer newOwner;
+        public ushort newOwner;
         public EntityTransferRequest() { }
 
         public EntityTransferRequest(OnlineResource resource, OnlineEntity.EntityId entityId, OnlinePlayer newOwner) : base(resource, entityId, null)
         {
-            this.newOwner = newOwner;
+            this.newOwner = newOwner.inLobbyId;
         }
 
         public override void CustomSerialize(Serializer serializer)

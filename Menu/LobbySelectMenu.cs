@@ -112,7 +112,9 @@ namespace RainMeadow
             // Lobby machine go!
             LobbyManager.instance.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
             LobbyManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
+#if !LOCAL_P2P
             SteamNetworkingUtils.InitRelayNetworkAccess();
+#endif
             LobbyManager.instance.RequestLobbyList();
         }
 

@@ -21,12 +21,12 @@
 
         public override void Process()
         {
-            oe.Released(this);
+            entityId.FindEntity().Released(this);
         }
 
         public void Resolve(GenericResult genericResult)
         {
-            this.oe.ResolveRelease(genericResult);
+            this.entityId.FindEntity().ResolveRelease(genericResult);
         }
     }
 }

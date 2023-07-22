@@ -16,11 +16,17 @@ namespace RainMeadow
             public IPEndPoint endPoint;
             public bool isHost;
 
+            public LocalPlayerId() { }
             public LocalPlayerId(int id, IPEndPoint endPoint, bool isHost) : base($"local:{id}")
             {
                 this.id = id;
                 this.endPoint = endPoint;
                 this.isHost = isHost;
+            }
+
+            public override void CustomSerialize(Serializer serializer)
+            {
+                serializer.Serialize(ref id);
             }
 
             public override bool Equals(MeadowPlayerId other)
@@ -32,6 +38,11 @@ namespace RainMeadow
             {
                 return id;
             }
+        }
+
+        public override MeadowPlayerId GetEmptyId()
+        {
+            return new LocalPlayerId();
         }
 
         int me;

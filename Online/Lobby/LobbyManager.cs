@@ -72,5 +72,6 @@ namespace RainMeadow
             return subscribers.First().Key;
         }
 
+        public abstract MeadowPlayerId GetEmptyId();
     }
 }

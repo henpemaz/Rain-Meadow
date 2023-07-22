@@ -82,7 +82,7 @@ namespace RainMeadow
                 currentlyJoinedResource.EntityLeftResource(this);
             }
             joinedResources.Add(inResource);
-            initialState.onlineEntity = this;
+            initialState.entityId = this.id;
             ReadState(initialState, inResource);
             if (isMine)
             {

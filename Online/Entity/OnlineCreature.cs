@@ -22,7 +22,7 @@ namespace RainMeadow
             AbstractCreature ac = SaveState.AbstractCreatureFromString(inResource.World, newCreatureEvent.serializedObject, false);
             ac.ID = id;
 
-            var oe = new OnlineCreature(ac, newCreatureEvent.seed, newCreatureEvent.realized, newCreatureEvent.owner, newCreatureEvent.entityId, newCreatureEvent.isTransferable);
+            var oe = new OnlineCreature(ac, newCreatureEvent.seed, newCreatureEvent.realized, LobbyManager.lobby.PlayerFromId(newCreatureEvent.owner), newCreatureEvent.entityId, newCreatureEvent.isTransferable);
             OnlinePhysicalObject.map.Add(ac, oe);
             OnlineManager.recentEntities.Add(oe.id, oe);
 
@@ -74,7 +74,7 @@ namespace RainMeadow
         public void ForceGrab(GraspRef graspRef)
         {
             var castShareability = new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(graspRef.Shareability));
-            ForceGrab(graspRef.OnlineGrabbed, graspRef.GraspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
+            ForceGrab(graspRef.OnlineGrabbed.FindEntity() as OnlinePhysicalObject, graspRef.GraspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
         }
 
         public void SuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)

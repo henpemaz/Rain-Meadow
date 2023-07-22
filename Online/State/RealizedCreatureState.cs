@@ -52,9 +52,9 @@ namespace RainMeadow
     
     public class GraspRef : Serializer.ICustomSerializable
     {
-        public OnlinePhysicalObject OnlineGrabber;
+        public OnlineEntity.EntityId OnlineGrabber;
         public byte GraspUsed;
-        public OnlinePhysicalObject OnlineGrabbed;
+        public OnlineEntity.EntityId OnlineGrabbed;
         public byte ChunkGrabbed;
         public byte Shareability;
         public float Dominance;
@@ -62,9 +62,9 @@ namespace RainMeadow
         public GraspRef() { }
         public GraspRef(OnlinePhysicalObject onlineGrabber, OnlinePhysicalObject onlineGrabbed, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool pacifying)
         {
-            OnlineGrabber = onlineGrabber;
+            OnlineGrabber = onlineGrabber.id;
             GraspUsed = (byte)graspUsed;
-            OnlineGrabbed = onlineGrabbed;
+            OnlineGrabbed = onlineGrabbed.id;
             ChunkGrabbed = (byte)chunkGrabbed;
             Shareability = (byte)shareability;
             Dominance = dominance;
@@ -73,9 +73,9 @@ namespace RainMeadow
         
         public void CustomSerialize(Serializer serializer)
         {
-            serializer.SerializeEntity(ref OnlineGrabber);
+            serializer.Serialize(ref OnlineGrabber);
             serializer.Serialize(ref GraspUsed);
-            serializer.SerializeEntity(ref OnlineGrabbed);
+            serializer.Serialize(ref OnlineGrabbed);
             serializer.Serialize(ref ChunkGrabbed);
             serializer.Serialize(ref Shareability);
             serializer.Serialize(ref Dominance);

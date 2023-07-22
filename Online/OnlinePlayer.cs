@@ -20,8 +20,8 @@ namespace RainMeadow
         private ushort nextOutgoingEvent = 1;
         public ushort lastEventFromRemote; // the last event I've received from them, I'll write it back on headers as an ack
         private ushort lastAckFromRemote; // the last event they've ack'd to me, used imediately on receive
-        public ulong tick; // the last tick I've received from them, I'll write it back on headers as an ack
-        public ulong lastAckdTick; // the last tick they've ack'd to me
+        public uint tick; // the last tick I've received from them, I'll write it back on headers as an ack
+        public uint lastAckdTick; // the last tick they've ack'd to me
         public bool needsAck;
 
         public bool isMe;
@@ -55,7 +55,7 @@ namespace RainMeadow
             return recentlyAckedEvents.FirstOrDefault(e => e.eventId == id) ?? abortedEvents.FirstOrDefault(e => e.eventId == id);
         }
 
-        public void EventAckFromRemote(ulong lastAck)
+        public void EventAckFromRemote(ushort lastAck)
         {
             this.recentlyAckedEvents.Clear();
             this.lastAckFromRemote = lastAck;
@@ -67,7 +67,7 @@ namespace RainMeadow
             }
         }
 
-        public void TickAckFromRemote(ulong lastTick)
+        public void TickAckFromRemote(uint lastTick)
         {
             this.lastAckdTick = lastTick;
         }

@@ -151,4 +151,21 @@ namespace RainMeadow
             }
         }
     }
+
+    public class SerializableIDeltaSortedListOfPlayerId : SerializableIDeltaSortedList<MeadowPlayerId, SerializableIDeltaSortedListOfPlayerId>
+    {
+        public SerializableIDeltaSortedListOfPlayerId() { }
+        public SerializableIDeltaSortedListOfPlayerId(List<MeadowPlayerId> list) : base(list) { }
+
+        public override void CustomSerialize(Serializer serializer)
+        {
+            serializer.Serialize(ref _isDelta);
+            serializer.SerializePlayerIds(ref list);
+            if (isDelta)
+            {
+                serializer.Serialize(ref listIndexes);
+                serializer.Serialize(ref removedIndexes);
+            }
+        }
+    }
 }

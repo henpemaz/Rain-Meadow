@@ -2,15 +2,17 @@
 
 namespace RainMeadow
 {
-    public abstract class MeadowPlayerId : IEquatable<MeadowPlayerId>
+    public abstract class MeadowPlayerId : IEquatable<MeadowPlayerId>, Serializer.ICustomSerializable
     {
         public string name;
 
+        protected MeadowPlayerId() { }
         protected MeadowPlayerId(string name)
         {
             this.name = name;
         }
 
+        public abstract void CustomSerialize(Serializer serializer);
         public abstract bool Equals(MeadowPlayerId other);
         public override bool Equals(object obj)
         {

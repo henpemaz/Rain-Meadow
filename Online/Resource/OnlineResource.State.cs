@@ -34,15 +34,16 @@ namespace RainMeadow
                 {
                     if (entityState != null)
                     {
-                        if (entityState.onlineEntity == null)
+                        var entity = entityState.entityId.FindEntity();
+                        if (entity == null)
                         {
-                            RainMeadow.Error("got state for missing onlineEntity");
+                            RainMeadow.Error("got state for missing onlineEntity " + entityState.entityId);
                             continue;
                         }
-                        if (entityState.onlineEntity.isMine) continue; // not interested
-                        if (entityState.onlineEntity.currentlyJoinedResource == this) // this resource is the most "detailed" provider
+                        if (entity.isMine) continue; // not interested
+                        if (entity.currentlyJoinedResource == this) // this resource is the most "detailed" provider
                         {
-                            entityState.onlineEntity.ReadState(entityState, this);
+                            entity.ReadState(entityState, this);
                         }
                     }
                     else

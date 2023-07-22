@@ -57,7 +57,7 @@ namespace RainMeadow
             id.altSeed = newObjectEvent.seed;
 
             var apo = SaveState.AbstractPhysicalObjectFromString(world, newObjectEvent.serializedObject);
-            var oe = new OnlinePhysicalObject(apo, newObjectEvent.seed, newObjectEvent.realized, newObjectEvent.owner, newObjectEvent.entityId, newObjectEvent.isTransferable);
+            var oe = new OnlinePhysicalObject(apo, newObjectEvent.seed, newObjectEvent.realized, LobbyManager.lobby.PlayerFromId(newObjectEvent.owner), newObjectEvent.entityId, newObjectEvent.isTransferable);
             OnlinePhysicalObject.map.Add(apo, oe);
             OnlineManager.recentEntities.Add(oe.id, oe);
 

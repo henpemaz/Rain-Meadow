@@ -9,12 +9,12 @@
 
         public override void Process()
         {
-            this.oe.Requested(this);
+            this.entityId.FindEntity().Requested(this);
         }
 
         public void Resolve(GenericResult genericResult)
         {
-            this.oe.ResolveRequest(genericResult);
+            this.entityId.FindEntity().ResolveRequest(genericResult);
         }
     }
 }

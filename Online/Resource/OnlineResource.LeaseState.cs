@@ -18,7 +18,7 @@ namespace RainMeadow
             if (!isOwner) { throw new InvalidOperationException("not owner"); }
             if (ownerSinceTick is null) { throw new InvalidOperationException("no tick reference"); }
             if (subresources.Count == 0) { return; } // nothing to be sent
-            var newLeaseState = new LeaseState(this);
+            var newLeaseState = this is Lobby ? new LobbyLeaseState(this) : new LeaseState(this);
             var delta = newLeaseState.Delta(currentLeaseState);
             foreach (var membership in participants)
             {
@@ -27,18 +27,36 @@ namespace RainMeadow
                 if (!membership.Value.everSentLease)
                 {
                     var tickReference = TickReference.NewestOf(membership.Value.memberSinceTick, this, ownerSinceTick, super);
-                    membership.Key.QueueEvent(new LeaseChangeEvent(this, newLeaseState, tickReference)); // its their first time here
+                    membership.Key.QueueEvent(this is Lobby ? new LobbyLeaseChangeEvent(this, newLeaseState, tickReference) : new LeaseChangeEvent(this, newLeaseState, tickReference)); // its their first time here
                     membership.Value.everSentLease = true;
                 }
                 else if(!delta.isEmptyDelta)
                 {
-                    membership.Key.QueueEvent(new LeaseChangeEvent(this, delta, null)); // send the delta
+                    membership.Key.QueueEvent(this is Lobby ? new LobbyLeaseChangeEvent(this, delta, null) : new LeaseChangeEvent(this, delta, null)); // send the delta
                 }
             }
             currentLeaseState = newLeaseState; // store in full
         }
 
         public void OnLeaseChange(LeaseChangeEvent leaseEvent)
+        {
+            RainMeadow.Debug(this);
+            if (!isAvailable) { throw new InvalidOperationException("not available"); }
+            if (isOwner) { throw new InvalidOperationException("I am owner"); }
+            if (leaseEvent.from != owner) { throw new InvalidOperationException("not from owner"); }
+            if (!isActive) // store it for later
+            {
+                RainMeadow.Debug("Too early, saving for later");
+                if (incomingLease != null && leaseEvent.leaseState.isDelta) { incomingLease.AddDelta(leaseEvent.leaseState); }
+                else incomingLease = leaseEvent.leaseState;
+            }
+            else
+            {
+                ProcessLease(leaseEvent.leaseState);
+            }
+        }
+
+        public void OnLobbyLeaseChange(LobbyLeaseChangeEvent leaseEvent)
         {
             RainMeadow.Debug(this);
             if (!isAvailable) { throw new InvalidOperationException("not available"); }
@@ -68,6 +86,7 @@ namespace RainMeadow
                 if (leaseState.isDelta) { throw new InvalidOperationException("delta"); }
                 this.currentLeaseState = leaseState;
             }
+            if (leaseState is LobbyLeaseState lobbyLease) { UpdateParticipants(lobbyLease.players.list.Select(id => LobbyManager.instance.GetPlayer(id)).ToList()); }
             foreach (var item in currentLeaseState.sublease)
             {
                 var resource = SubresourceFromShortId(item.resourceId);
@@ -89,7 +108,7 @@ namespace RainMeadow
             public SubleaseState(OnlineResource resource)
             {
                 this.resourceId = resource.ShortId();
-                this.owner = resource.owner.inLobbyId;
+                this.owner = resource.owner?.inLobbyId ?? default;
                 this.participants = new SerializableIDeltaUnsortedListOfUShorts(resource.participants.Keys.Select(p => p.inLobbyId).ToList());
             }
 
@@ -140,7 +159,7 @@ namespace RainMeadow
             }
 
             // update from other
-            public void AddDelta(LeaseState other)
+            public virtual void AddDelta(LeaseState other)
             {
                 if (isDelta) throw new InvalidProgrammerException("is already delta");
                 if (!other.isDelta) throw new InvalidProgrammerException("other not delta");
@@ -158,7 +177,7 @@ namespace RainMeadow
             }
 
             // difference from other
-            public LeaseState Delta(LeaseState other)
+            public virtual LeaseState Delta(LeaseState other)
             {
                 if (isDelta) throw new InvalidProgrammerException("is already delta");
                 if (other == null) { return this; }
@@ -172,10 +191,53 @@ namespace RainMeadow
                 };
             }
 
-            public void CustomSerialize(Serializer serializer)
+            public virtual void CustomSerialize(Serializer serializer)
             {
                 serializer.Serialize(ref isDelta);
                 serializer.Serialize(ref sublease);
+            }
+        }
+
+        public class LobbyLeaseState : LeaseState
+        {
+            public SerializableIDeltaSortedListOfPlayerId players;
+
+            public LobbyLeaseState() { }
+            public LobbyLeaseState(OnlineResource onlineResource) : base(onlineResource)
+            {
+                players = new(onlineResource.participants.Keys.Select(p=>p.id).ToList());
+            }
+
+            // update from other
+            public override void AddDelta(LeaseState _other)
+            {
+                base.AddDelta(_other);
+                var other = _other as LobbyLeaseState;
+                players.AddDelta(other.players);
+                
+            }
+
+            // difference from other
+            public override LeaseState Delta(LeaseState _other)
+            {
+                var other = _other as LobbyLeaseState;
+                if (isDelta) throw new InvalidProgrammerException("is already delta");
+                if (other == null) { return this; }
+                if (other.isDelta) throw new InvalidProgrammerException("other is delta");
+                var delta = new LobbyLeaseState()
+                {
+                    isDelta = true,
+                    players = players.Delta(other.players),
+                    sublease = sublease.Select(sl => sl.Delta(other.sublease.FirstOrDefault(osl => osl.resourceId == sl.resourceId))).Where(sl => !sl.isEmptyDelta).ToList()
+                };
+                delta.isEmptyDelta = delta.sublease.Count == 0 && delta.players.isEmptyDelta;
+                return delta;
+            }
+
+            public override void CustomSerialize(Serializer serializer)
+            {
+                base.CustomSerialize(serializer);
+                serializer.Serialize(ref players);
             }
         }
     }

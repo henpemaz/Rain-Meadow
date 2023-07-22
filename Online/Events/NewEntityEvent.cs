@@ -2,14 +2,14 @@
 {
     public abstract class NewEntityEvent : EntityJoinedEvent
     {
-        public OnlinePlayer owner;
+        public ushort owner;
         public bool isTransferable;
 
         public NewEntityEvent() { }
 
         public NewEntityEvent(OnlineResource resource, OnlineEntity oe, TickReference tickReference) : base(resource, oe, tickReference)
         {
-            owner = oe.owner;
+            owner = oe.owner.inLobbyId;
             isTransferable = oe.isTransferable;
         }
 

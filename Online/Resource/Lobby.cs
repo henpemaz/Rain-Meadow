@@ -1,6 +1,7 @@
 ﻿using Steamworks;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using static RainMeadow.OnlineGameMode;
 
 namespace RainMeadow
@@ -108,7 +109,7 @@ namespace RainMeadow
 
         internal OnlinePlayer PlayerFromId(ushort id)
         {
-            return currentLeaseState.participants.participants[id];
+            return LobbyManager.players.First(p => p.inLobbyId == id);
         }
     }
 }

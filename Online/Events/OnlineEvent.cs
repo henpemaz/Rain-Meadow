@@ -71,6 +71,7 @@ namespace RainMeadow
             EntityTransferedEvent,
             EntityRequest,
             EntityRelease,
+            LobbyLeaseChange,
         }
 
         public static OnlineEvent NewFromType(EventTypeId eventTypeId)
