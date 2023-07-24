@@ -14,13 +14,13 @@ namespace RainMeadow
 
         public void Serialize(ref byte data)
         {
-            if (isWriting) writer.Write(data);
-            if (isReading) data = reader.ReadByte();
+            if (IsWriting) writer.Write(data);
+            if (IsReading) data = reader.ReadByte();
         }
 
         public void Serialize(ref byte[] data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)data.Length);
                 for (int i = 0; i < data.Length; i++)
@@ -28,7 +28,7 @@ namespace RainMeadow
                     writer.Write(data[i]);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 data = new byte[reader.ReadByte()];
                 for (int i = 0; i < data.Length; i++)
@@ -40,7 +40,7 @@ namespace RainMeadow
 
         public void Serialize(ref List<byte> data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)data.Count);
                 for (int i = 0; i < data.Count; i++)
@@ -48,7 +48,7 @@ namespace RainMeadow
                     writer.Write(data[i]);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 data = new(reader.ReadByte());
                 for (int i = 0; i < data.Count; i++)
@@ -60,13 +60,13 @@ namespace RainMeadow
 
         public void Serialize(ref sbyte data)
         {
-            if (isWriting) writer.Write(data);
-            if (isReading) data = reader.ReadSByte();
+            if (IsWriting) writer.Write(data);
+            if (IsReading) data = reader.ReadSByte();
         }
 
         public void Serialize(ref sbyte[] data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)data.Length);
                 for (int i = 0; i < data.Length; i++)
@@ -74,7 +74,7 @@ namespace RainMeadow
                     writer.Write(data[i]);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 data = new sbyte[reader.ReadByte()];
                 for (int i = 0; i < data.Length; i++)
@@ -86,7 +86,7 @@ namespace RainMeadow
 
         public void Serialize(ref List<sbyte> data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)data.Count);
                 for (int i = 0; i < data.Count; i++)
@@ -94,7 +94,7 @@ namespace RainMeadow
                     writer.Write(data[i]);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 data = new(reader.ReadByte());
                 for (int i = 0; i < data.Count; i++)
@@ -106,13 +106,13 @@ namespace RainMeadow
 
         public void Serialize(ref ushort data)
         {
-            if (isWriting) writer.Write(data);
-            if (isReading) data = reader.ReadUInt16();
+            if (IsWriting) writer.Write(data);
+            if (IsReading) data = reader.ReadUInt16();
         }
 
         public void Serialize(ref ushort[] data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)data.Length);
                 for (int i = 0; i < data.Length; i++)
@@ -120,7 +120,7 @@ namespace RainMeadow
                     writer.Write(data[i]);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 data = new ushort[reader.ReadByte()];
                 for (int i = 0; i < data.Length; i++)
@@ -132,7 +132,7 @@ namespace RainMeadow
 
         public void Serialize(ref List<ushort> data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)data.Count);
                 for (int i = 0; i < data.Count; i++)
@@ -140,7 +140,7 @@ namespace RainMeadow
                     writer.Write(data[i]);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 data = new(reader.ReadByte());
                 for (int i = 0; i < data.Count; i++)
@@ -152,13 +152,13 @@ namespace RainMeadow
         
         public void Serialize(ref short data)
         {
-            if (isWriting) writer.Write(data);
-            if (isReading) data = reader.ReadInt16();
+            if (IsWriting) writer.Write(data);
+            if (IsReading) data = reader.ReadInt16();
         }
 
         public void Serialize(ref short[] data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)data.Length);
                 for (int i = 0; i < data.Length; i++)
@@ -166,7 +166,7 @@ namespace RainMeadow
                     writer.Write(data[i]);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 data = new short[reader.ReadByte()];
                 for (int i = 0; i < data.Length; i++)
@@ -178,7 +178,7 @@ namespace RainMeadow
 
         public void Serialize(ref List<short> data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)data.Count);
                 for (int i = 0; i < data.Count; i++)
@@ -186,7 +186,7 @@ namespace RainMeadow
                     writer.Write(data[i]);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 data = new(reader.ReadByte());
                 for (int i = 0; i < data.Count; i++)
@@ -198,13 +198,13 @@ namespace RainMeadow
 
         public void Serialize(ref int data)
         {
-            if (isWriting) writer.Write(data);
-            if (isReading) data = reader.ReadInt32();
+            if (IsWriting) writer.Write(data);
+            if (IsReading) data = reader.ReadInt32();
         }
 
         public void Serialize(ref int[] data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)data.Length);
                 for (int i = 0; i < data.Length; i++)
@@ -212,7 +212,7 @@ namespace RainMeadow
                     writer.Write(data[i]);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 data = new int[reader.ReadByte()];
                 for (int i = 0; i < data.Length; i++)
@@ -224,7 +224,7 @@ namespace RainMeadow
 
         public void Serialize(ref List<int> data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)data.Count);
                 for (int i = 0; i < data.Count; i++)
@@ -232,7 +232,7 @@ namespace RainMeadow
                     writer.Write(data[i]);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 data = new(reader.ReadByte());
                 for (int i = 0; i < data.Count; i++)
@@ -244,13 +244,13 @@ namespace RainMeadow
 
         public void Serialize(ref uint data)
         {
-            if (isWriting) writer.Write(data);
-            if (isReading) data = reader.ReadUInt32();
+            if (IsWriting) writer.Write(data);
+            if (IsReading) data = reader.ReadUInt32();
         }
 
         public void Serialize(ref uint[] data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)data.Length);
                 for (int i = 0; i < data.Length; i++)
@@ -258,7 +258,7 @@ namespace RainMeadow
                     writer.Write(data[i]);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 data = new uint[reader.ReadByte()];
                 for (int i = 0; i < data.Length; i++)
@@ -270,7 +270,7 @@ namespace RainMeadow
 
         public void Serialize(ref List<uint> data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)data.Count);
                 for (int i = 0; i < data.Count; i++)
@@ -278,7 +278,7 @@ namespace RainMeadow
                     writer.Write(data[i]);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 data = new(reader.ReadByte());
                 for (int i = 0; i < data.Count; i++)
@@ -290,13 +290,13 @@ namespace RainMeadow
 
         public void Serialize(ref bool data)
         {
-            if (isWriting) writer.Write(data);
-            if (isReading) data = reader.ReadBoolean();
+            if (IsWriting) writer.Write(data);
+            if (IsReading) data = reader.ReadBoolean();
         }
 
         public void Serialize(ref bool[] data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)data.Length);
                 for (int i = 0; i < data.Length; i++)
@@ -304,7 +304,7 @@ namespace RainMeadow
                     writer.Write(data[i]);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 data = new bool[reader.ReadByte()];
                 for (int i = 0; i < data.Length; i++)
@@ -316,7 +316,7 @@ namespace RainMeadow
 
         public void Serialize(ref List<bool> data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)data.Count);
                 for (int i = 0; i < data.Count; i++)
@@ -324,7 +324,7 @@ namespace RainMeadow
                     writer.Write(data[i]);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 data = new(reader.ReadByte());
                 for (int i = 0; i < data.Count; i++)
@@ -336,13 +336,13 @@ namespace RainMeadow
 
         public void Serialize(ref ulong data)
         {
-            if (isWriting) writer.Write(data);
-            if (isReading) data = reader.ReadUInt64();
+            if (IsWriting) writer.Write(data);
+            if (IsReading) data = reader.ReadUInt64();
         }
 
         public void Serialize(ref ulong[] data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)data.Length);
                 for (int i = 0; i < data.Length; i++)
@@ -350,7 +350,7 @@ namespace RainMeadow
                     writer.Write(data[i]);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 data = new ulong[reader.ReadByte()];
                 for (int i = 0; i < data.Length; i++)
@@ -362,7 +362,7 @@ namespace RainMeadow
 
         public void Serialize(ref List<ulong> data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)data.Count);
                 for (int i = 0; i < data.Count; i++)
@@ -370,7 +370,7 @@ namespace RainMeadow
                     writer.Write(data[i]);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 data = new(reader.ReadByte());
                 for (int i = 0; i < data.Count; i++)
@@ -382,13 +382,13 @@ namespace RainMeadow
 
         public void Serialize(ref float data)
         {
-            if (isWriting) writer.Write(data);
-            if (isReading) data = reader.ReadSingle();
+            if (IsWriting) writer.Write(data);
+            if (IsReading) data = reader.ReadSingle();
         }
 
         public void Serialize(ref float[] data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)data.Length);
                 for (int i = 0; i < data.Length; i++)
@@ -396,7 +396,7 @@ namespace RainMeadow
                     writer.Write(data[i]);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 data = new float[reader.ReadByte()];
                 for (int i = 0; i < data.Length; i++)
@@ -408,7 +408,7 @@ namespace RainMeadow
 
         public void Serialize(ref List<float> data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)data.Count);
                 for (int i = 0; i < data.Count; i++)
@@ -416,7 +416,7 @@ namespace RainMeadow
                     writer.Write(data[i]);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 data = new(reader.ReadByte());
                 for (int i = 0; i < data.Count; i++)
@@ -428,13 +428,13 @@ namespace RainMeadow
 
         public void Serialize(ref string data)
         {
-            if (isWriting) writer.Write(data);
-            if (isReading) data = reader.ReadString();
+            if (IsWriting) writer.Write(data);
+            if (IsReading) data = reader.ReadString();
         }
 
         public void Serialize(ref string[] data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)data.Length);
                 for (int i = 0; i < data.Length; i++)
@@ -442,7 +442,7 @@ namespace RainMeadow
                     writer.Write(data[i]);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 data = new string[reader.ReadByte()];
                 for (int i = 0; i < data.Length; i++)
@@ -454,7 +454,7 @@ namespace RainMeadow
 
         public void Serialize(ref List<string> data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)data.Count);
                 for (int i = 0; i < data.Count; i++)
@@ -462,7 +462,7 @@ namespace RainMeadow
                     writer.Write(data[i]);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 data = new(reader.ReadByte());
                 for (int i = 0; i < data.Count; i++)
@@ -474,12 +474,12 @@ namespace RainMeadow
 
         public void Serialize(ref Vector2 data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write(data.x);
                 writer.Write(data.y);
             }
-            if (isReading)
+            if (IsReading)
             {
                 data.x = reader.ReadSingle();
                 data.y = reader.ReadSingle();
@@ -488,7 +488,7 @@ namespace RainMeadow
 
         public void Serialize(ref Vector2? data)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write(data.HasValue);
                 if (data.HasValue)
@@ -497,7 +497,7 @@ namespace RainMeadow
                     writer.Write(data.Value.y);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 if (reader.ReadBoolean())
                 {
@@ -508,14 +508,14 @@ namespace RainMeadow
 
         public void SerializeNoStrings(ref WorldCoordinate pos)
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((short)pos.room);
                 writer.Write((short)pos.x);
                 writer.Write((short)pos.y);
                 writer.Write((short)pos.abstractNode);
             }
-            if (isReading)
+            if (IsReading)
             {
                 pos = new WorldCoordinate()
                 {

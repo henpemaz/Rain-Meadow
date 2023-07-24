@@ -1,19 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RainMeadow
 {
     public abstract partial class OnlineResource
     {
-        private ResourceState lastState;
+        private ResourceState latestState;
 
         public ResourceState GetState(ulong ts)
         {
-            if (lastState == null || lastState.tick != ts)
+            if (latestState == null || latestState.tick != ts)
             {
                 try
                 {
-                    lastState = MakeState(ts);
+                    latestState = MakeState(ts);
                 }
                 catch (Exception)
                 {
@@ -22,7 +23,7 @@ namespace RainMeadow
                 }
             }
 
-            return lastState;
+            return latestState;
         }
 
         protected abstract ResourceState MakeState(ulong ts);
@@ -71,8 +72,81 @@ namespace RainMeadow
             public override void CustomSerialize(Serializer serializer)
             {
                 base.CustomSerialize(serializer);
-                serializer.Serialize(ref resource);
+                serializer.SerializeResourceByReference(ref resource);
                 serializer.SerializePolyStates(ref entityStates);
+            }
+        }
+
+        public abstract class ResourceWithSubresourcesState : ResourceState
+        {
+            public IdentifiablesDeltaList<SubleaseState, ushort> subleaseState;
+
+            protected ResourceWithSubresourcesState() { }
+            protected ResourceWithSubresourcesState(OnlineResource resource, ulong ts) : base(resource, ts)
+            {
+                subleaseState = new IdentifiablesDeltaList<SubleaseState, ushort>(resource.subresources.Select(r => new SubleaseState(r)).ToList());
+            }
+
+
+            public override OnlineState ApplyDelta(OnlineState newState)
+            {
+                // todo
+                return base.ApplyDelta(newState);
+            }
+
+            public override OnlineState Delta(OnlineState lastAcknoledgedState)
+            {
+                return base.Delta(lastAcknoledgedState);
+            }
+
+            public override void CustomSerialize(Serializer serializer)
+            {
+                base.CustomSerialize(serializer);
+                serializer.Serialize(ref subleaseState);
+            }
+
+        }
+
+        public class SubleaseState : Serializer.ICustomSerializable, IDelta<SubleaseState>, IIdentifiable<ushort>
+        {
+            public ushort resourceId;
+            public ushort owner;
+            public AddRemoveUnsortedUshorts participants;
+
+            public ushort ID => resourceId;
+
+            public SubleaseState() { }
+            public SubleaseState(OnlineResource resource)
+            {
+                this.resourceId = resource.ShortId();
+                this.owner = resource.owner?.inLobbyId ?? default;
+                this.participants = new AddRemoveUnsortedUshorts(resource.participants.Keys.Select(p => p.inLobbyId).ToList());
+            }
+
+            public void ApplyDelta(SubleaseState other)
+            {
+                if (resourceId != other.resourceId) throw new InvalidProgrammerException("wrong resource");
+                owner = other.owner;
+                participants.ApplyDelta(other.participants);
+            }
+
+            public SubleaseState Delta(SubleaseState other)
+            {
+                if (other == null) { return this; }
+                var delta = new SubleaseState()
+                {
+                    resourceId = resourceId,
+                    owner = owner,
+                    participants = participants.Delta(other.participants),
+                };
+                return (owner == other.owner && delta == null) ? null : delta;
+            }
+
+            public void CustomSerialize(Serializer serializer)
+            {
+                serializer.Serialize(ref resourceId);
+                serializer.Serialize(ref owner);
+                serializer.Serialize(ref participants);
             }
         }
     }

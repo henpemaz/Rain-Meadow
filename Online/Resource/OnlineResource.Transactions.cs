@@ -6,7 +6,7 @@ namespace RainMeadow
     public abstract partial class OnlineResource
     {
         // I request this resource, so I can have either ownership or subscription
-        public virtual void Request()
+        public void Request()
         {
             RainMeadow.Debug(this);
             if (isPending) throw new InvalidOperationException("pending");

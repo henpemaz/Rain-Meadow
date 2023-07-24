@@ -2,7 +2,7 @@
 
 namespace RainMeadow
 {
-    public abstract class OnlineState
+    public abstract class OnlineState : IPrimaryDelta<OnlineState>
     {
         public OnlinePlayer from; // not serialized, message source
         public ulong tick; // not serialized, latest from player when read
@@ -91,8 +91,13 @@ namespace RainMeadow
 
         public virtual void CustomSerialize(Serializer serializer)
         {
-            // no op
+            serializer.Serialize(ref _isDelta);
+            serializer.IsDelta = IsDelta;
         }
+
+        public bool IsDelta { get => _isDelta; set => _isDelta = value; }
+        bool _isDelta;
+
 
         public virtual OnlineState Delta(OnlineState lastAcknoledgedState)
         {

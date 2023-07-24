@@ -14,7 +14,7 @@
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);
-            serializer.Serialize(ref inResource);
+            serializer.SerializeResourceByReference(ref inResource);
         }
 
         public override EventTypeId eventType => EventTypeId.EntityRelease;

@@ -1,9 +1,10 @@
 ﻿namespace RainMeadow
 {
-    public abstract class EntityState : OnlineState // Is this class completely redundant? everything inherits from PhysicalObjectEntityState
+    public abstract class EntityState : OnlineState, IIdentifiable<OnlineEntity.EntityId>
     {
         public OnlineEntity.EntityId entityId;
         public bool realizedState;
+        public OnlineEntity.EntityId ID => entityId;
 
         protected EntityState() : base() { }
         protected EntityState(OnlineEntity onlineEntity, ulong ts, bool realizedState) : base(ts)

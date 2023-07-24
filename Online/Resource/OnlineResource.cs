@@ -249,6 +249,8 @@ namespace RainMeadow
             }
         }
 
+        protected virtual void NewParticipantImpl(OnlinePlayer player) { }
+
         private void NewParticipant(OnlinePlayer newParticipant)
         {
             RainMeadow.Debug($"{this}-{newParticipant}");
@@ -258,12 +260,14 @@ namespace RainMeadow
             {
                 Subscribed(newParticipant, false);
             }
+            NewParticipantImpl(newParticipant);
             if (isSupervisor) // I am responsible for notifying lease changes to this
             {
                 super.NewLeaseState();
             }
         }
 
+        protected virtual void ParticipantLeftImpl(OnlinePlayer player) { }
         private void ParticipantLeft(OnlinePlayer participant)
         {
             RainMeadow.Debug($"{this}-{participant}");
@@ -273,6 +277,7 @@ namespace RainMeadow
                 Unsubscribed(participant);
                 if (isActive) ClaimAbandonedEntities();
             }
+            ParticipantLeftImpl(participant);
             if (isSupervisor) // I am responsible for notifying lease changes to this
             {
                 super.NewLeaseState();
@@ -354,7 +359,6 @@ namespace RainMeadow
             }
         }
 
-        protected virtual void SubscribedImpl(OnlinePlayer player, bool fromTransfer) { }
         private void Subscribed(OnlinePlayer player, bool fromTransfer)
         {
             RainMeadow.Debug(this.ToString() + " - " + player.ToString());
@@ -363,7 +367,6 @@ namespace RainMeadow
             if (player.isMe) throw new InvalidOperationException("Can't subscribe to self");
 
             OnlineManager.AddSubscription(this, player);
-            SubscribedImpl(player, fromTransfer);
 
             if (isActive && !fromTransfer)
             {

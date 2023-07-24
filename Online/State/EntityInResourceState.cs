@@ -17,7 +17,7 @@
         {
             base.CustomSerialize(serializer);
             serializer.SerializePolyState(ref entityState);
-            serializer.Serialize(ref inResource);
+            serializer.SerializeResourceByReference(ref inResource);
         }
 
         public override StateType stateType => StateType.EntityInResourceState;

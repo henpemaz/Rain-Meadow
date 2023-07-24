@@ -6,94 +6,88 @@ namespace RainMeadow
 {
     // Welcome to generics hell
 
+    public interface IPrimaryDelta<T>
+    {
+        public bool IsDelta { get; set; }
+        public T Delta(T other);
+        public T ApplyDelta(T other); // Apply has a chance to pass other through without processing
+    }
+
     public interface IDelta<T>
     {
         public T Delta(T other);
-        public void AddDelta(T other);
-        public bool isDelta { get; }
-        public bool isEmptyDelta { get; }
+        public void ApplyDelta(T other);
     }
 
-    // T is the type, U is the concrete class for new()
-    public abstract class SerializableIDeltaUnsortedList<T, U> : IDelta<U>, Serializer.ICustomSerializable where U : SerializableIDeltaUnsortedList<T, U>, new()
+    public interface IIdentifiable<T> where T: IEquatable<T>
+    {
+        public T ID { get; }
+    }
+
+    /// <summary>
+    /// Dynamic list, order-unaware
+    /// </summary>
+    public abstract class AddRemoveUnsortedList<T, U> : IDelta<U>, Serializer.ICustomSerializable where U : AddRemoveUnsortedList<T, U>, new()
     {
         public List<T> list;
         public List<T> removed;
-        protected bool _isDelta;
 
-        public bool isDelta { get => _isDelta; protected set => _isDelta = value; }
-        public bool isEmptyDelta { get; protected set; }
-
-        public SerializableIDeltaUnsortedList() { }
-        public SerializableIDeltaUnsortedList(List<T> list)
+        public AddRemoveUnsortedList() { }
+        public AddRemoveUnsortedList(List<T> list)
         {
             this.list = list;
         }
 
         public U Delta(U other)
         {
-            if (isDelta) throw new InvalidProgrammerException("is already delta");
             if (other == null) { return (U)this; }
-            if (other.isDelta) throw new InvalidProgrammerException("other is delta");
-            return new U()
+            var delta = new U()
             {
-                isDelta = true,
                 list = list.Except(other.list).ToList(),
                 removed = other.list.Except(list).ToList(),
-                isEmptyDelta = list.Count == 0 && removed.Count == 0
             };
+            return (delta.list.Count == 0 && delta.removed.Count == 0) ? null : delta;
         }
 
-        public void AddDelta(U other)
+        public void ApplyDelta(U other)
         {
-            if (isDelta) throw new InvalidProgrammerException("is already delta");
-            if (!other.isDelta) throw new InvalidProgrammerException("other not delta");
-            list = list.Union(other.list).Except(other.removed).ToList();
+            if(other != null) list = list.Union(other.list).Except(other.removed).ToList();
         }
 
         public abstract void CustomSerialize(Serializer serializer);
     }
 
 
-    // not thorougly tested
-    // T is the type, U is the concrete class for new()
-    public abstract class SerializableIDeltaSortedList<T, U> : IDelta<U>, Serializer.ICustomSerializable where U : SerializableIDeltaSortedList<T, U>, new()
+    /// <summary>
+    /// Dynamic list, order-aware
+    /// </summary>
+    public abstract class AddRemoveSortedList<T, U> : IDelta<U>, Serializer.ICustomSerializable where U : AddRemoveSortedList<T, U>, new()
     {
         public List<T> list;
         public List<byte> listIndexes;
         public List<byte> removedIndexes;
-        protected bool _isDelta;
 
-        public bool isDelta { get => _isDelta; protected set => _isDelta = value; }
-        public bool isEmptyDelta { get; protected set; }
-
-        public SerializableIDeltaSortedList() { }
-        public SerializableIDeltaSortedList(List<T> list)
+        public AddRemoveSortedList() { }
+        public AddRemoveSortedList(List<T> list)
         {
             this.list = list;
         }
 
         public U Delta(U other)
         {
-            if (isDelta) throw new InvalidProgrammerException("is already delta");
             if (other == null) { return (U)this; }
-            if (other.isDelta) throw new InvalidProgrammerException("other is delta");
 
             var delta = new U()
             {
-                isDelta = true,
                 list = list.Except(other.list).ToList(),
                 listIndexes = list.Except(other.list).Select(e => (byte)list.IndexOf(e)).ToList(),
                 removedIndexes = other.list.Except(list).Select(e => (byte)other.list.IndexOf(e)).ToList(),
             };
-            delta.isEmptyDelta = delta.list.Count == 0 && delta.removedIndexes.Count == 0;
-            return delta;
+            return (delta.list.Count == 0 && delta.removedIndexes.Count == 0) ? null : delta;
         }
 
-        public void AddDelta(U other)
+        public void ApplyDelta(U other)
         {
-            if (isDelta) throw new InvalidProgrammerException("is already delta");
-            if (!other.isDelta) throw new InvalidProgrammerException("other not delta");
             list.Capacity = list.Count + other.list.Count;
             for (int j = other.removedIndexes.Count - 1; j >= 0; j--)
             {
@@ -108,43 +102,79 @@ namespace RainMeadow
         public abstract void CustomSerialize(Serializer serializer);
     }
 
-
-    public class SerializableIDeltaUnsortedListOfUShorts : SerializableIDeltaUnsortedList<ushort, SerializableIDeltaUnsortedListOfUShorts>
+    /// <summary>
+    /// Fixed list, no adds/removes supported, id-elementwise delta
+    /// </summary>
+    public class IdentifiablesDeltaList<T, U> : Serializer.ICustomSerializable, IDelta<IdentifiablesDeltaList<T,U>> where T: Serializer.ICustomSerializable, IDelta<T>, IIdentifiable<U>, new() where U: IEquatable<U>
     {
-        public SerializableIDeltaUnsortedListOfUShorts() { }
-        public SerializableIDeltaUnsortedListOfUShorts(List<ushort> list) : base(list) { }
-
-        public override void CustomSerialize(Serializer serializer)
+        public List<T> list;
+        public IdentifiablesDeltaList() { }
+        public IdentifiablesDeltaList(List<T> list)
         {
-            serializer.Serialize(ref _isDelta);
+            this.list = list;
+        }
+
+        public virtual void ApplyDelta(IdentifiablesDeltaList<T, U> other)
+        {
+            foreach (var otherElement in other.list)
+            {
+                foreach (var element in list)
+                {
+                    if (element.ID.Equals(otherElement.ID))
+                    {
+                        element.ApplyDelta(otherElement);
+                        break;
+                    }
+                }
+            }
+        }
+
+        public virtual IdentifiablesDeltaList<T, U> Delta(IdentifiablesDeltaList<T, U> other)
+        {
+            if (other == null) { return this; }
+            var deltaList = list.Select(sl => sl.Delta(other.list.FirstOrDefault(osl => osl.ID.Equals(sl.ID)))).Where(sl => sl != null).ToList();
+            return deltaList.Count == 0 ? null : new() { list = deltaList };
+        }
+
+        public virtual void CustomSerialize(Serializer serializer)
+        {
             serializer.Serialize(ref list);
-            if (isDelta) serializer.Serialize(ref removed);
         }
     }
 
-    public class SerializableIDeltaUnsortedListOfICustomSerializables<T> : SerializableIDeltaUnsortedList<T, SerializableIDeltaUnsortedListOfICustomSerializables<T>> where T : Serializer.ICustomSerializable, new()
+    public class AddRemoveUnsortedUshorts : AddRemoveUnsortedList<ushort, AddRemoveUnsortedUshorts>
     {
-        public SerializableIDeltaUnsortedListOfICustomSerializables() { }
-        public SerializableIDeltaUnsortedListOfICustomSerializables(List<T> list) : base(list) { }
+        public AddRemoveUnsortedUshorts() { }
+        public AddRemoveUnsortedUshorts(List<ushort> list) : base(list) { }
 
         public override void CustomSerialize(Serializer serializer)
         {
-            serializer.Serialize(ref _isDelta);
             serializer.Serialize(ref list);
-            if (isDelta) serializer.Serialize(ref removed);
+            if(serializer.IsDelta) serializer.Serialize(ref removed);
         }
     }
 
-    public class SerializableIDeltaSortedListOfICustomSerializables<T> : SerializableIDeltaSortedList<T, SerializableIDeltaSortedListOfICustomSerializables<T>> where T : Serializer.ICustomSerializable, new()
+    public class AddRemoveUnsortedCustomSerializables<T> : AddRemoveUnsortedList<T, AddRemoveUnsortedCustomSerializables<T>> where T : Serializer.ICustomSerializable, new()
     {
-        public SerializableIDeltaSortedListOfICustomSerializables() { }
-        public SerializableIDeltaSortedListOfICustomSerializables(List<T> list) : base(list) { }
+        public AddRemoveUnsortedCustomSerializables() { }
+        public AddRemoveUnsortedCustomSerializables(List<T> list) : base(list) { }
 
         public override void CustomSerialize(Serializer serializer)
         {
-            serializer.Serialize(ref _isDelta);
             serializer.Serialize(ref list);
-            if (isDelta)
+            if (serializer.IsDelta) serializer.Serialize(ref removed);
+        }
+    }
+
+    public class AddRemoveSortedCustomSerializables<T> : AddRemoveSortedList<T, AddRemoveSortedCustomSerializables<T>> where T : Serializer.ICustomSerializable, new()
+    {
+        public AddRemoveSortedCustomSerializables() { }
+        public AddRemoveSortedCustomSerializables(List<T> list) : base(list) { }
+
+        public override void CustomSerialize(Serializer serializer)
+        {
+            serializer.Serialize(ref list);
+            if (serializer.IsDelta)
             {
                 serializer.Serialize(ref listIndexes);
                 serializer.Serialize(ref removedIndexes);
@@ -152,20 +182,21 @@ namespace RainMeadow
         }
     }
 
-    public class SerializableIDeltaSortedListOfPlayerId : SerializableIDeltaSortedList<MeadowPlayerId, SerializableIDeltaSortedListOfPlayerId>
+    public class AddRemoveSortedPlayerIDs : AddRemoveSortedList<MeadowPlayerId, AddRemoveSortedPlayerIDs>
     {
-        public SerializableIDeltaSortedListOfPlayerId() { }
-        public SerializableIDeltaSortedListOfPlayerId(List<MeadowPlayerId> list) : base(list) { }
+        public AddRemoveSortedPlayerIDs() { }
+        public AddRemoveSortedPlayerIDs(List<MeadowPlayerId> list) : base(list) { }
 
         public override void CustomSerialize(Serializer serializer)
         {
-            serializer.Serialize(ref _isDelta);
             serializer.SerializePlayerIds(ref list);
-            if (isDelta)
+            if (serializer.IsDelta)
             {
                 serializer.Serialize(ref listIndexes);
                 serializer.Serialize(ref removedIndexes);
             }
         }
     }
+
+
 }

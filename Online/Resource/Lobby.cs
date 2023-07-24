@@ -14,7 +14,7 @@ namespace RainMeadow
 
         public override World World => throw new NotSupportedException(); // Lobby can't add world entities
 
-        public event Action OnLobbyAvailable;
+        public event Action OnLobbyAvailable; // for menus
 
         public Lobby(OnlineGameModeType mode, OnlinePlayer owner)
         {
@@ -69,7 +69,7 @@ namespace RainMeadow
             base.ReadState(newState);
             if (newState is LobbyState newLobbyState)
             {
-                // no op
+                nextId = newLobbyState.nextId;
             }
             else
             {
@@ -92,15 +92,24 @@ namespace RainMeadow
             return this.subresources[shortId];
         }
 
+        protected ushort nextId = 1;
+
         public class LobbyState : ResourceState
         {
+            public ushort nextId;
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, ulong ts) : base(lobby, ts)
             {
-
+                nextId = lobby.nextId;
             }
 
             public override StateType stateType => StateType.LobbyState;
+
+            public override void CustomSerialize(Serializer serializer)
+            {
+                base.CustomSerialize(serializer);
+                serializer.Serialize(ref nextId);
+            }
         }
 
         public override string ToString() {
@@ -110,6 +119,13 @@ namespace RainMeadow
         internal OnlinePlayer PlayerFromId(ushort id)
         {
             return LobbyManager.players.First(p => p.inLobbyId == id);
+        }
+
+        protected override void NewParticipantImpl(OnlinePlayer player)
+        {
+            base.NewParticipantImpl(player);
+            player.inLobbyId = nextId;
+            nextId++;
         }
     }
 }
