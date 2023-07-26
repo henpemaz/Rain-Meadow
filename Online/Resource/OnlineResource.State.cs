@@ -34,11 +34,11 @@ namespace RainMeadow
             if(newState.from != owner) { RainMeadow.Debug($"Skipping state resource for {this} from wrong owner {newState.from}"); return; }
             if(newState.IsDelta)
             {
-                RainMeadow.Debug($"received delta state for tick {newState.tick} referencing baseline {newState.DeltaFromTick}");
+                //RainMeadow.Debug($"received delta state for tick {newState.tick} referencing baseline {newState.DeltaFromTick}");
                 while (incomingState.Count > 0 && NetIO.IsNewer(newState.DeltaFromTick, incomingState.Peek().tick))
                 {
                     var discarded = incomingState.Dequeue();
-                    RainMeadow.Debug("discarding old event from tick " + discarded.tick);
+                    //RainMeadow.Debug("discarding old event from tick " + discarded.tick);
                 }
                 if(incomingState.Count == 0 || newState.DeltaFromTick != incomingState.Peek().tick)
                 {
@@ -48,7 +48,7 @@ namespace RainMeadow
             }
             else
             {
-                RainMeadow.Debug("received absolute state for tick " + newState.tick);
+                //RainMeadow.Debug("received absolute state for tick " + newState.tick);
             }
             incomingState.Enqueue(newState);
             newState.ReadTo(this);
@@ -72,6 +72,7 @@ namespace RainMeadow
 
             public override OnlineState ApplyDelta(OnlineState newState)
             {
+                if (!newState.IsDelta) throw new InvalidProgrammerException("other isn't delta");
                 var result = NewInstance();
                 result.tick = newState.tick;
                 result.resource = resource;
@@ -146,7 +147,7 @@ namespace RainMeadow
             public override OnlineState Delta(OnlineState lastAcknoledgedState)
             {
                 var delta = (ResourceWithSubresourcesState)base.Delta(lastAcknoledgedState);
-                delta.subleaseState = subleaseState.Delta((lastAcknoledgedState as ResourceWithSubresourcesState)?.subleaseState);
+                delta.subleaseState = subleaseState.Delta((lastAcknoledgedState as ResourceWithSubresourcesState).subleaseState);
                 return delta;
             }
 
@@ -193,8 +194,8 @@ namespace RainMeadow
             {
                 var result = EmptyInstance();
                 result.resourceId = resourceId;
-                result.owner = other.owner;
-                result.participants = (Generics.AddRemoveUnsortedUshorts)participants.ApplyDelta(other.participants);
+                result.owner = other?.owner ?? owner;
+                result.participants = (Generics.AddRemoveUnsortedUshorts)participants.ApplyDelta(other?.participants);
                 return result;
             }
 

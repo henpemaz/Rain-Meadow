@@ -92,8 +92,8 @@ namespace RainMeadow
         public virtual void CustomSerialize(Serializer serializer)
         {
             serializer.Serialize(ref _isDelta);
-            serializer.IsDelta = IsDelta; // Serializer wraps this call and restores the previous value later (override-proof)
-            if(serializer.IsDelta) { serializer.Serialize(ref DeltaFromTick); }
+            serializer.IsDelta = _isDelta; // Serializer wraps this call and restores the previous value later (override-proof)
+            if(_isDelta) { serializer.Serialize(ref DeltaFromTick); }
         }
 
         public virtual bool SupportsDelta => false;
@@ -103,12 +103,12 @@ namespace RainMeadow
 
         public virtual OnlineState Delta(OnlineState lastAcknoledgedState)
         {
-            throw new NotImplementedException();
+            return this;
         }
 
         public virtual OnlineState ApplyDelta(OnlineState newState)
         {
-            throw new NotImplementedException();
+            return newState;
         }
     }
 }

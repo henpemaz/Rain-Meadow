@@ -96,7 +96,7 @@ namespace RainMeadow
             public void Send()
             {
                 debugClient.Send(packet, packet.Length, destination);
-                RainMeadow.Debug("Sent: " + packet.Length);
+                //RainMeadow.Debug("Sent: " + packet.Length);
             }
         }
 
@@ -226,7 +226,7 @@ namespace RainMeadow
                 return false;
 
             PacketType type = (PacketType)netReader.ReadByte();
-            RainMeadow.Debug("Got packet meta-type: " + type);
+            //RainMeadow.Debug("Got packet meta-type: " + type);
 
             if (!peers.TryGetValue(remoteEndpoint, out RemotePeer peerData))
             {
@@ -380,7 +380,7 @@ namespace RainMeadow
             else
             {
                 debugClient.Send(packet, packet.Length, endPoint);
-                RainMeadow.Debug("sent: " + packet.Length);
+                //RainMeadow.Debug("sent: " + packet.Length);
             }
         }
 

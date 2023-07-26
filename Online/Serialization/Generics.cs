@@ -181,7 +181,7 @@ namespace RainMeadow.Generics
         public virtual IdentifiablesAddRemoveDeltaList<T, U, W> ApplyDelta(IdentifiablesAddRemoveDeltaList<T, U, W> other)
         {
             var result = EmptyInstance();
-            result.list = other == null ? list : list.Select(e => (T)e.ApplyDelta(other.list.FirstOrDefault(o => e.ID.Equals(o.ID)))).Concat(other.list.Where(o => list.FirstOrDefault(e => e.ID.Equals(o.ID)) == null)).ToList();
+            result.list = other == null ? list : list.Where(e => other.list.FirstOrDefault(o => e.ID.Equals(o.ID)) != null).Select(e => (T)e.ApplyDelta(other.list.FirstOrDefault(o => e.ID.Equals(o.ID)))).Concat(other.list.Where(o => list.FirstOrDefault(e => e.ID.Equals(o.ID)) == null)).ToList();
             return result;
         }
 

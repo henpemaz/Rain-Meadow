@@ -155,7 +155,7 @@ namespace RainMeadow
                     waitingEvents.Add(onlineEvent);
                 }
             }
-            else { RainMeadow.Debug($"Stale event {onlineEvent} from {fromPlayer}"); }
+            //else { RainMeadow.Debug($"Stale event {onlineEvent} from {fromPlayer}"); }
         }
 
         public static void MaybeProcessWaitingEvents()

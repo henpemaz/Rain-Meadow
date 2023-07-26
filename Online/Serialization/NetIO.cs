@@ -78,7 +78,7 @@ namespace RainMeadow
 
             while (UdpPeer.IsPacketAvailable())
             {
-                RainMeadow.Debug("To read: " + UdpPeer.debugClient.Available);
+                //RainMeadow.Debug("To read: " + UdpPeer.debugClient.Available);
                 if (!UdpPeer.Read(out BinaryReader netReader, out IPEndPoint remoteEndpoint))
                     continue;
                 var player = (LobbyManager.instance as LocalLobbyManager).GetPlayerLocal(remoteEndpoint.Port);

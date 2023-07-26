@@ -28,16 +28,17 @@ namespace RainMeadow
             {
                 lastAcknoledgedState = OutgoingStates.Dequeue();
             }
+            if (lastAcknoledgedState != null && lastAcknoledgedState.tick != player.lastAckdTick) lastAcknoledgedState = null;
 
             var newState = resource.GetState(tick);
             if (lastAcknoledgedState != null)
             {
-                RainMeadow.Debug($"sending delta for tick {newState.tick} from reference {lastAcknoledgedState.tick} ");
+                //RainMeadow.Debug($"sending delta for tick {newState.tick} from reference {lastAcknoledgedState.tick} ");
                 player.OutgoingStates.Enqueue(newState.Delta(lastAcknoledgedState));
             }
             else
             {
-                RainMeadow.Debug($"sending absolute state for tick {newState.tick}");
+                //RainMeadow.Debug($"sending absolute state for tick {newState.tick}");
                 player.OutgoingStates.Enqueue(newState);
             }
             OutgoingStates.Enqueue(newState);

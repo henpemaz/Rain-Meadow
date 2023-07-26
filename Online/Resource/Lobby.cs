@@ -102,8 +102,8 @@ namespace RainMeadow
                 var newState = _newState as LobbyState;
                 var result = (LobbyState)base.ApplyDelta(newState);
                 result.nextId = newState?.nextId ?? nextId;
-                result.players = (Generics.AddRemoveSortedPlayerIDs)(newState?.players?.ApplyDelta(players) ?? players);
-                result.inLobbyIds = (Generics.AddRemoveSortedUshorts)(newState?.inLobbyIds?.ApplyDelta(inLobbyIds) ?? inLobbyIds);
+                result.players = (Generics.AddRemoveSortedPlayerIDs)players.ApplyDelta(newState.players);
+                result.inLobbyIds = (Generics.AddRemoveSortedUshorts)inLobbyIds.ApplyDelta(newState.inLobbyIds);
                 return result;
             }
 
@@ -111,8 +111,8 @@ namespace RainMeadow
             {
                 var delta =  (LobbyState)base.Delta(lastAcknoledgedState);
                 delta.nextId = nextId;
-                delta.players = (Generics.AddRemoveSortedPlayerIDs)players.Delta((lastAcknoledgedState as LobbyState)?.players);
-                delta.inLobbyIds = (Generics.AddRemoveSortedUshorts)inLobbyIds.Delta((lastAcknoledgedState as LobbyState)?.inLobbyIds);
+                delta.players = (Generics.AddRemoveSortedPlayerIDs)players.Delta((lastAcknoledgedState as LobbyState).players);
+                delta.inLobbyIds = (Generics.AddRemoveSortedUshorts)inLobbyIds.Delta((lastAcknoledgedState as LobbyState).inLobbyIds);
                 return delta;
             }
 
