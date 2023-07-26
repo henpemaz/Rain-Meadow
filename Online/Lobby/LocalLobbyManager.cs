@@ -46,7 +46,7 @@ namespace RainMeadow
         }
 
         int me;
-        string localGameMode = "Story";
+        string localGameMode = "FreeRoam";
 
         public LocalLobbyManager()
         {
@@ -116,6 +116,7 @@ namespace RainMeadow
         internal void LocalPlayerJoined(OnlinePlayer joiningPlayer)
         {
             if (players.Contains(joiningPlayer)) { return; }
+            RainMeadow.Debug($"Added {joiningPlayer} to the lobby matchmaking player list");
             players.Add(joiningPlayer);
 
             if (lobby != null && lobby.owner.isMe)
@@ -123,7 +124,7 @@ namespace RainMeadow
                 // Tell the other players to create this player
                 foreach (OnlinePlayer player in players)
                 {
-                    if (player.isMe)
+                    if (player.isMe || player == joiningPlayer)
                         continue;
 
                     NetIO.SendP2P(player, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Add, new OnlinePlayer[] { joiningPlayer }), SendType.Reliable);

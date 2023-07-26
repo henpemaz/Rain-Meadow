@@ -68,20 +68,7 @@ namespace RainMeadow
             return this.subresources[shortId];
         }
 
-        public override void ReadState(ResourceState newState)
-        {
-            base.ReadState(newState);
-            if(newState is RoomState newRoomState)
-            {
-                // no op
-            }
-            else
-            {
-                throw new InvalidCastException("not a RoomState");
-            }
-        }
-
-        protected override ResourceState MakeState(ulong ts)
+        protected override ResourceState MakeState(uint ts)
         {
             return new RoomState(this, ts);
         }
@@ -89,7 +76,8 @@ namespace RainMeadow
         public class RoomState : ResourceState
         {
             public RoomState() : base() { }
-            public RoomState(RoomSession resource, ulong ts) : base(resource, ts) { }
+            public RoomState(RoomSession resource, uint ts) : base(resource, ts) { }
+            protected override ResourceState NewInstance() => new RoomState();
 
             public override StateType stateType => StateType.RoomState;
         }

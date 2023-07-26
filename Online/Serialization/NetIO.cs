@@ -78,11 +78,13 @@ namespace RainMeadow
 
             while (UdpPeer.IsPacketAvailable())
             {
+                RainMeadow.Debug("To read: " + UdpPeer.debugClient.Available);
                 if (!UdpPeer.Read(out BinaryReader netReader, out IPEndPoint remoteEndpoint))
                     continue;
                 var player = (LobbyManager.instance as LocalLobbyManager).GetPlayerLocal(remoteEndpoint.Port);
                 if(player == null)
                 {
+                    RainMeadow.Debug("Player not found! Instantiating new at: " + remoteEndpoint.Port);
                     player = new OnlinePlayer(new LocalLobbyManager.LocalPlayerId(remoteEndpoint.Port, remoteEndpoint, remoteEndpoint.Port == UdpPeer.STARTING_PORT));
                 }
 
@@ -133,6 +135,42 @@ namespace RainMeadow
                 }
                 while (n > 0);
             }
+        }
+
+        public static bool IsNewer(ulong eventId, ulong lastIncomingEvent)
+        {
+            ulong delta = eventId - lastIncomingEvent;
+            return delta != 0 && delta < ulong.MaxValue / 2;
+        }
+
+        public static bool IsNewerOrEqual(ulong eventId, ulong lastIncomingEvent)
+        {
+            ulong delta = eventId - lastIncomingEvent;
+            return delta < ulong.MaxValue / 2;
+        }
+
+        public static bool IsNewer(uint eventId, uint lastIncomingEvent)
+        {
+            uint delta = eventId - lastIncomingEvent;
+            return delta != 0 && delta < uint.MaxValue / 2;
+        }
+
+        public static bool IsNewerOrEqual(uint eventId, uint lastIncomingEvent)
+        {
+            uint delta = eventId - lastIncomingEvent;
+            return delta < uint.MaxValue / 2;
+        }
+
+        public static bool IsNewer(ushort eventId, ushort lastIncomingEvent)
+        {
+            ushort delta = (ushort)(eventId - lastIncomingEvent);
+            return delta != 0 && delta < ushort.MaxValue / 2;
+        }
+
+        public static bool IsNewerOrEqual(ushort eventId, ushort lastIncomingEvent)
+        {
+            ushort delta = (ushort)(eventId - lastIncomingEvent);
+            return delta < ushort.MaxValue / 2;
         }
     }
 }

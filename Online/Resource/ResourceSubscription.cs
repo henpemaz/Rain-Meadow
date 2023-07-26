@@ -18,18 +18,28 @@ namespace RainMeadow
             if (player.isMe) throw new InvalidOperationException("subscribed to self");
         }
 
-        public void Update(ulong tick)
+        public void Update(uint tick)
         {
             if (!resource.isAvailable) throw new InvalidOperationException("not available");
+            if (!resource.isOwner) throw new InvalidOperationException("not owner");
             if (!resource.isActive) return; // resource not ready yet
 
-            while (OutgoingStates.Count > 0 && OnlineManager.IsNewerOrEqual(player.lastAckdTick, OutgoingStates.Peek().tick))
+            while (OutgoingStates.Count > 0 && NetIO.IsNewerOrEqual(player.lastAckdTick, OutgoingStates.Peek().tick))
             {
                 lastAcknoledgedState = OutgoingStates.Dequeue();
             }
 
             var newState = resource.GetState(tick);
-            player.OutgoingStates.Enqueue(newState.Delta(lastAcknoledgedState));
+            if (lastAcknoledgedState != null)
+            {
+                RainMeadow.Debug($"sending delta for tick {newState.tick} from reference {lastAcknoledgedState.tick} ");
+                player.OutgoingStates.Enqueue(newState.Delta(lastAcknoledgedState));
+            }
+            else
+            {
+                RainMeadow.Debug($"sending absolute state for tick {newState.tick}");
+                player.OutgoingStates.Enqueue(newState);
+            }
             OutgoingStates.Enqueue(newState);
         }
     }

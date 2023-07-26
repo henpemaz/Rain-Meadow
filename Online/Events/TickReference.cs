@@ -29,7 +29,7 @@ namespace RainMeadow
 
         internal bool ChecksOut()
         {
-            return !Invalid() && OnlineManager.IsNewerOrEqual(LobbyManager.lobby.PlayerFromId(fromPlayer).tick, tick);
+            return !Invalid() && NetIO.IsNewerOrEqual(LobbyManager.lobby.PlayerFromId(fromPlayer).tick, tick);
         }
 
         public void CustomSerialize(Serializer serializer)
@@ -43,7 +43,7 @@ namespace RainMeadow
             if (otherTick.fromPlayer != otherResource.owner.inLobbyId && tick.fromPlayer != inResource.owner.inLobbyId) return null;
             if (otherTick.fromPlayer != otherResource.owner.inLobbyId) return tick;
             if (tick.fromPlayer != inResource.owner.inLobbyId) return otherTick;
-            return OnlineManager.IsNewerOrEqual(tick.tick, otherTick.tick) ? tick : otherTick;
+            return NetIO.IsNewerOrEqual(tick.tick, otherTick.tick) ? tick : otherTick;
         }
 
         internal static TickReference NewestOfMemberships(ResourceMembership membershipA, ResourceMembership membershipB)
@@ -51,7 +51,7 @@ namespace RainMeadow
             if (membershipA.memberSinceTick.fromPlayer != membershipA.resource.owner.inLobbyId && membershipB.memberSinceTick.fromPlayer != membershipB.resource.owner.inLobbyId) return null;
             if (membershipA.memberSinceTick.fromPlayer != membershipA.resource.owner.inLobbyId) return membershipB.memberSinceTick;
             if (membershipB.memberSinceTick.fromPlayer != membershipB.resource.owner.inLobbyId) return membershipA.memberSinceTick;
-            return OnlineManager.IsNewerOrEqual(membershipA.memberSinceTick.tick, membershipB.memberSinceTick.tick) ? membershipA.memberSinceTick : membershipB.memberSinceTick;
+            return NetIO.IsNewerOrEqual(membershipA.memberSinceTick.tick, membershipB.memberSinceTick.tick) ? membershipA.memberSinceTick : membershipB.memberSinceTick;
         }
     }
 }

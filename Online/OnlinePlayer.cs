@@ -19,7 +19,7 @@ namespace RainMeadow
 
         private ushort nextOutgoingEvent = 1;
         public ushort lastEventFromRemote; // the last event I've received from them, I'll write it back on headers as an ack
-        private ushort lastAckFromRemote; // the last event they've ack'd to me, used imediately on receive
+        public ushort lastAckFromRemote; // the last event they've ack'd to me, used imediately on receive
         public uint tick; // the last tick I've received from them, I'll write it back on headers as an ack
         public uint lastAckdTick; // the last tick they've ack'd to me
         public bool needsAck;
@@ -36,6 +36,8 @@ namespace RainMeadow
 
         public OnlinePlayer(MeadowPlayerId id)
         {
+            //RainMeadow.Debug("Player instantiated! " + id);
+            //RainMeadow.Debug(System.Environment.StackTrace);
             this.id = id;
         }
 
@@ -50,7 +52,7 @@ namespace RainMeadow
             return e;
         }
 
-        public OnlineEvent GetRecentEvent(ulong id)
+        public OnlineEvent GetRecentEvent(ushort id)
         {
             return recentlyAckedEvents.FirstOrDefault(e => e.eventId == id) ?? abortedEvents.FirstOrDefault(e => e.eventId == id);
         }
@@ -59,7 +61,7 @@ namespace RainMeadow
         {
             this.recentlyAckedEvents.Clear();
             this.lastAckFromRemote = lastAck;
-            while (OutgoingEvents.Count > 0 && OnlineManager.IsNewerOrEqual(lastAck, OutgoingEvents.Peek().eventId))
+            while (OutgoingEvents.Count > 0 && NetIO.IsNewerOrEqual(lastAck, OutgoingEvents.Peek().eventId))
             {
                 var e = OutgoingEvents.Dequeue();
                 RainMeadow.Debug($"{this} ackd {e}");

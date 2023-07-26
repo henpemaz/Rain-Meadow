@@ -48,13 +48,15 @@ namespace RainMeadow
                 writer.Write(currPlayer.lastEventFromRemote);
                 writer.Write(currPlayer.tick);
                 writer.Write(LobbyManager.mePlayer.tick);
+                //RainMeadow.Debug($"Wrote {currPlayer.lastEventFromRemote} {currPlayer.tick} and {LobbyManager.mePlayer.tick}");
             }
             if (IsReading)
             {
                 currPlayer.EventAckFromRemote(reader.ReadUInt16());
-                currPlayer.TickAckFromRemote(reader.ReadUInt16());
+                currPlayer.TickAckFromRemote(reader.ReadUInt32());
                 var newTick = reader.ReadUInt32();
-                if (!OnlineManager.IsNewer(newTick, currPlayer.tick))
+                //RainMeadow.Debug($"Got {currPlayer.lastAckFromRemote} {currPlayer.lastAckdTick} and {newTick}");
+                if (!NetIO.IsNewer(newTick, currPlayer.tick))
                 {
                     // abort reading
                     AbortRead();
@@ -71,6 +73,7 @@ namespace RainMeadow
             RainMeadow.Debug("aborted read");
             currPlayer = null;
             IsReading = false;
+            IsDelta = false;
             Aborted = true;
         }
 
@@ -79,6 +82,7 @@ namespace RainMeadow
             currPlayer = toPlayer;
             if (IsWriting || IsReading) throw new InvalidOperationException("not done with previous operation");
             IsWriting = true;
+            IsDelta = false;
             Aborted = false;
             stream.Seek(0, SeekOrigin.Begin);
         }
@@ -162,9 +166,9 @@ namespace RainMeadow
             stream.Seek(0, SeekOrigin.Begin);
         }
 
-        private int BeginReadEvents()
+        private uint BeginReadEvents()
         {
-            return reader.ReadInt32();
+            return reader.ReadUInt32();
         }
 
         private OnlineEvent ReadEvent()
@@ -176,9 +180,9 @@ namespace RainMeadow
             return e;
         }
 
-        private int BeginReadStates()
+        private uint BeginReadStates()
         {
-            return reader.ReadInt32();
+            return reader.ReadUInt32();
         }
 
         private OnlineState ReadState()
@@ -207,16 +211,16 @@ namespace RainMeadow
                 return;
             }
 
-            int ne = BeginReadEvents();
-            //RainMeadow.Debug($"Receiving {ne} events");
-            for (int ie = 0; ie < ne; ie++)
+            uint ne = BeginReadEvents();
+            //RainMeadow.Debug($"Receiving {ne} events from player {fromPlayer}");
+            for (uint ie = 0; ie < ne; ie++)
             {
                 OnlineManager.ProcessIncomingEvent(ReadEvent());
             }
 
-            int ns = BeginReadStates();
+            uint ns = BeginReadStates();
             //RainMeadow.Debug($"Receiving {ns} states");
-            for (int ist = 0; ist < ns; ist++)
+            for (uint ist = 0; ist < ns; ist++)
             {
                 OnlineManager.ProcessIncomingState(ReadState());
             }
@@ -231,12 +235,13 @@ namespace RainMeadow
             PlayerHeaders();
 
             BeginWriteEvents();
-            //RainMeadow.Debug($"Writing {toPlayer.OutgoingEvents.Count} events");
+            //RainMeadow.Debug($"Writing {toPlayer.OutgoingEvents.Count} events to player {toPlayer}");
             foreach (var e in toPlayer.OutgoingEvents)
             {
                 if (CanFit(e))
                 {
                     WriteEvent(e);
+                    //RainMeadow.Debug($"Wrote {e}");
                 }
                 else
                 {
@@ -349,6 +354,34 @@ namespace RainMeadow
             }
         }
 
+        public void SerializePolyStates<T>(ref List<T> states) where T : OnlineState
+        {
+            if (IsWriting)
+            {
+                // TODO dynamic length
+                if (states.Count > 255) throw new OverflowException("too many states");
+                writer.Write((byte)states.Count);
+                foreach (var state in states)
+                {
+                    writer.Write((byte)state.stateType);
+                    WrappedSerialize(state);
+                }
+            }
+            if (IsReading)
+            {
+                byte count = reader.ReadByte();
+                states = new(count);
+                for (int i = 0; i < count; i++)
+                {
+                    var s = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
+                    s.from = currPlayer;
+                    s.tick = currPlayer.tick;
+                    WrappedSerialize(s);
+                    states.Add(s as T);
+                }
+            }
+        }
+
         // Static - fixed type
         public void SerializeStaticState<T>(ref T state) where T : OnlineState, new()
         {
@@ -429,7 +462,7 @@ namespace RainMeadow
                 {
                     MeadowPlayerId s = LobbyManager.instance.GetEmptyId();
                     s.CustomSerialize(this);
-                    ids[i] = s;
+                    ids.Add(s);
                 }
             }
         }
@@ -443,7 +476,7 @@ namespace RainMeadow
             }
             if (IsReading)
             {
-                referencedEvent = currPlayer.GetRecentEvent(reader.ReadUInt64());
+                referencedEvent = currPlayer.GetRecentEvent(reader.ReadUInt16());
             }
         }
 

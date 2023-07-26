@@ -43,6 +43,7 @@ namespace RainMeadow
             processingPlayer = fromPlayer;
 
             Type type = (Type)reader.ReadByte();
+            RainMeadow.Debug("Got packet type: " + type);
 
             Packet? packet = type switch
             {

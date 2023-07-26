@@ -50,10 +50,11 @@ namespace RainMeadow
             }
             if (IsReading)
             {
-                data = new(reader.ReadByte());
-                for (int i = 0; i < data.Count; i++)
+                var count = reader.ReadByte();
+                data = new(count);
+                for (int i = 0; i < count; i++)
                 {
-                    data[i] = reader.ReadByte();
+                    data.Add(reader.ReadByte());
                 }
             }
         }
@@ -96,10 +97,11 @@ namespace RainMeadow
             }
             if (IsReading)
             {
-                data = new(reader.ReadByte());
-                for (int i = 0; i < data.Count; i++)
+                var count = reader.ReadByte();
+                data = new(count);
+                for (int i = 0; i < count; i++)
                 {
-                    data[i] = reader.ReadSByte();
+                    data.Add(reader.ReadSByte());
                 }
             }
         }
@@ -142,10 +144,11 @@ namespace RainMeadow
             }
             if (IsReading)
             {
-                data = new(reader.ReadByte());
-                for (int i = 0; i < data.Count; i++)
+                var count = reader.ReadByte();
+                data = new(count);
+                for (int i = 0; i < count; i++)
                 {
-                    data[i] = reader.ReadUInt16();
+                    data.Add(reader.ReadUInt16());
                 }
             }
         }
@@ -188,10 +191,11 @@ namespace RainMeadow
             }
             if (IsReading)
             {
-                data = new(reader.ReadByte());
-                for (int i = 0; i < data.Count; i++)
+                var count = reader.ReadByte();
+                data = new(count);
+                for (int i = 0; i < count; i++)
                 {
-                    data[i] = reader.ReadInt16();
+                    data.Add(reader.ReadInt16());
                 }
             }
         }
@@ -234,10 +238,11 @@ namespace RainMeadow
             }
             if (IsReading)
             {
-                data = new(reader.ReadByte());
-                for (int i = 0; i < data.Count; i++)
+                var count = reader.ReadByte();
+                data = new(count);
+                for (int i = 0; i < count; i++)
                 {
-                    data[i] = reader.ReadInt32();
+                    data.Add(reader.ReadInt32());
                 }
             }
         }
@@ -280,10 +285,11 @@ namespace RainMeadow
             }
             if (IsReading)
             {
-                data = new(reader.ReadByte());
-                for (int i = 0; i < data.Count; i++)
+                var count = reader.ReadByte();
+                data = new(count);
+                for (int i = 0; i < count; i++)
                 {
-                    data[i] = reader.ReadUInt32();
+                    data.Add(reader.ReadUInt32());
                 }
             }
         }
@@ -326,10 +332,11 @@ namespace RainMeadow
             }
             if (IsReading)
             {
-                data = new(reader.ReadByte());
-                for (int i = 0; i < data.Count; i++)
+                var count = reader.ReadByte();
+                data = new(count);
+                for (int i = 0; i < count; i++)
                 {
-                    data[i] = reader.ReadBoolean();
+                    data.Add(reader.ReadBoolean());
                 }
             }
         }
@@ -372,10 +379,11 @@ namespace RainMeadow
             }
             if (IsReading)
             {
-                data = new(reader.ReadByte());
-                for (int i = 0; i < data.Count; i++)
+                var count = reader.ReadByte();
+                data = new(count);
+                for (int i = 0; i < count; i++)
                 {
-                    data[i] = reader.ReadUInt64();
+                    data.Add(reader.ReadUInt64());
                 }
             }
         }
@@ -418,10 +426,11 @@ namespace RainMeadow
             }
             if (IsReading)
             {
-                data = new(reader.ReadByte());
-                for (int i = 0; i < data.Count; i++)
+                var count = reader.ReadByte();
+                data = new(count);
+                for (int i = 0; i < count; i++)
                 {
-                    data[i] = reader.ReadSingle();
+                    data.Add(reader.ReadSingle());
                 }
             }
         }
@@ -464,10 +473,11 @@ namespace RainMeadow
             }
             if (IsReading)
             {
-                data = new(reader.ReadByte());
-                for (int i = 0; i < data.Count; i++)
+                var count = reader.ReadByte();
+                data = new(count);
+                for (int i = 0; i < count; i++)
                 {
-                    data[i] = reader.ReadString();
+                    data.Add(reader.ReadString());
                 }
             }
         }

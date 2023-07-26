@@ -59,22 +59,9 @@ namespace RainMeadow
             throw new InvalidOperationException("cant deactivate");
         }
 
-        protected override ResourceState MakeState(ulong ts)
+        protected override ResourceState MakeState(uint ts)
         {
             return new LobbyState(this, ts);
-        }
-
-        public override void ReadState(ResourceState newState)
-        {
-            base.ReadState(newState);
-            if (newState is LobbyState newLobbyState)
-            {
-                nextId = newLobbyState.nextId;
-            }
-            else
-            {
-                throw new InvalidCastException("not a LobbyState");
-            }
         }
 
         public override string Id()
@@ -94,21 +81,67 @@ namespace RainMeadow
 
         protected ushort nextId = 1;
 
-        public class LobbyState : ResourceState
+        public class LobbyState : ResourceWithSubresourcesState
         {
             public ushort nextId;
+            public Generics.AddRemoveSortedPlayerIDs players;
+            public Generics.AddRemoveSortedUshorts inLobbyIds;
             public LobbyState() : base() { }
-            public LobbyState(Lobby lobby, ulong ts) : base(lobby, ts)
+            public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
                 nextId = lobby.nextId;
+                players = new(lobby.participants.Keys.Select(p=>p.id).ToList());
+                inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
             }
+            protected override ResourceState NewInstance() => new LobbyState();
 
             public override StateType stateType => StateType.LobbyState;
+
+            public override OnlineState ApplyDelta(OnlineState _newState)
+            {
+                var newState = _newState as LobbyState;
+                var result = (LobbyState)base.ApplyDelta(newState);
+                result.nextId = newState?.nextId ?? nextId;
+                result.players = (Generics.AddRemoveSortedPlayerIDs)(newState?.players?.ApplyDelta(players) ?? players);
+                result.inLobbyIds = (Generics.AddRemoveSortedUshorts)(newState?.inLobbyIds?.ApplyDelta(inLobbyIds) ?? inLobbyIds);
+                return result;
+            }
+
+            public override OnlineState Delta(OnlineState lastAcknoledgedState)
+            {
+                var delta =  (LobbyState)base.Delta(lastAcknoledgedState);
+                delta.nextId = nextId;
+                delta.players = (Generics.AddRemoveSortedPlayerIDs)players.Delta((lastAcknoledgedState as LobbyState)?.players);
+                delta.inLobbyIds = (Generics.AddRemoveSortedUshorts)inLobbyIds.Delta((lastAcknoledgedState as LobbyState)?.inLobbyIds);
+                return delta;
+            }
 
             public override void CustomSerialize(Serializer serializer)
             {
                 base.CustomSerialize(serializer);
                 serializer.Serialize(ref nextId);
+                serializer.SerializeNullable(ref players);
+                serializer.SerializeNullable(ref inLobbyIds);
+            }
+
+            public override void ReadTo(OnlineResource resource)
+            {
+                var lobby = (Lobby)resource;
+                lobby.nextId = nextId;
+                for (int i = 0; i < players.list.Count; i++)
+                {
+                    if (LobbyManager.instance.GetPlayer(players.list[i]) is OnlinePlayer p)
+                    {
+                        if (p.inLobbyId != inLobbyIds.list[i]) RainMeadow.Debug($"Setting player {p} to lobbyId {inLobbyIds.list[i]}");
+                        p.inLobbyId = inLobbyIds.list[i];
+                    }
+                    else
+                    {
+                        RainMeadow.Error("Player not found! " + players.list[i]);
+                    }
+                }
+                lobby.UpdateParticipants(players.list.Select(LobbyManager.instance.GetPlayer).ToList());
+                base.ReadTo(resource);
             }
         }
 
@@ -118,6 +151,7 @@ namespace RainMeadow
 
         internal OnlinePlayer PlayerFromId(ushort id)
         {
+            if (id == 0) return null;
             return LobbyManager.players.First(p => p.inLobbyId == id);
         }
 
@@ -125,7 +159,9 @@ namespace RainMeadow
         {
             base.NewParticipantImpl(player);
             player.inLobbyId = nextId;
+            RainMeadow.Debug($"Assigned inLobbyId of {nextId} to player {player}");
             nextId++;
+            // todo overflows and repeats
         }
     }
 }

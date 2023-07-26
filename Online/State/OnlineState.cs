@@ -2,14 +2,14 @@
 
 namespace RainMeadow
 {
-    public abstract class OnlineState : IPrimaryDelta<OnlineState>
+    public abstract class OnlineState : Generics.IDelta<OnlineState>
     {
         public OnlinePlayer from; // not serialized, message source
-        public ulong tick; // not serialized, latest from player when read
+        public uint tick; // not serialized, latest from player when read
 
         protected OnlineState() { }
 
-        protected OnlineState(ulong ts)
+        protected OnlineState(uint ts)
         {
             this.tick = ts;
         }
@@ -53,7 +53,7 @@ namespace RainMeadow
                     s = new RoomSession.RoomState();
                     break;
                 case StateType.EntityInResourceState:
-                    s = new EntityInResourceState();
+                    s = new EntityFeedState();
                     break;
                 case StateType.PhysicalObjectEntityState:
                     s = new PhysicalObjectEntityState();
@@ -92,21 +92,23 @@ namespace RainMeadow
         public virtual void CustomSerialize(Serializer serializer)
         {
             serializer.Serialize(ref _isDelta);
-            serializer.IsDelta = IsDelta;
+            serializer.IsDelta = IsDelta; // Serializer wraps this call and restores the previous value later (override-proof)
+            if(serializer.IsDelta) { serializer.Serialize(ref DeltaFromTick); }
         }
 
+        public virtual bool SupportsDelta => false;
         public bool IsDelta { get => _isDelta; set => _isDelta = value; }
         bool _isDelta;
-
+        public uint DeltaFromTick;
 
         public virtual OnlineState Delta(OnlineState lastAcknoledgedState)
         {
-            return this;
+            throw new NotImplementedException();
         }
 
         public virtual OnlineState ApplyDelta(OnlineState newState)
         {
-            return newState;
+            throw new NotImplementedException();
         }
     }
 }

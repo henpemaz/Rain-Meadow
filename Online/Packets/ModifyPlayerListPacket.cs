@@ -51,8 +51,14 @@ namespace RainMeadow
                 {
                     case Operation.Add:
                         var endPoint = new IPEndPoint(IPAddress.Loopback, (int)reader.ReadUInt16());
-                        players[i] = (LobbyManager.instance as LocalLobbyManager).GetPlayerLocal(netId)
-                            ?? new OnlinePlayer(new LocalLobbyManager.LocalPlayerId(netId, endPoint, endPoint.Port == UdpPeer.STARTING_PORT));
+                        //players[i] = (LobbyManager.instance as LocalLobbyManager).GetPlayerLocal(netId)
+                        //    ?? new OnlinePlayer(new LocalLobbyManager.LocalPlayerId(netId, endPoint, endPoint.Port == UdpPeer.STARTING_PORT));
+                        players[i] = (LobbyManager.instance as LocalLobbyManager).GetPlayerLocal(netId);
+                        if(players[i] == null)
+                        {
+                            RainMeadow.Debug("Player not found: " + netId);
+                            players[i] = new OnlinePlayer(new LocalLobbyManager.LocalPlayerId(netId, endPoint, endPoint.Port == UdpPeer.STARTING_PORT));
+                        }
                         break;
 
 

@@ -53,20 +53,7 @@ namespace RainMeadow
             world = null;
         }
 
-        public override void ReadState(ResourceState newState)
-        {
-            base.ReadState(newState);
-            if (newState is WorldState newWorldState)
-            {
-                // no op
-            }
-            else
-            {
-                throw new InvalidCastException("not a WorldState");
-            }
-        }
-
-        protected override ResourceState MakeState(ulong ts)
+        protected override ResourceState MakeState(uint ts)
         {
             return new WorldState(this, ts);
         }
@@ -86,13 +73,11 @@ namespace RainMeadow
             return this.subresources[shortId - region.firstRoomIndex];
         }
 
-        public class WorldState : ResourceState
+        public class WorldState : ResourceWithSubresourcesState
         {
             public WorldState() : base() { }
-            public WorldState(OnlineResource resource, ulong ts) : base(resource, ts)
-            {
-
-            }
+            public WorldState(OnlineResource resource, uint ts) : base(resource, ts) { }
+            protected override ResourceState NewInstance() => new WorldState();
 
             public override StateType stateType => StateType.WorldState;
         }

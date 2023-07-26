@@ -174,17 +174,17 @@ namespace RainMeadow
 
         public virtual void ReadState(EntityState entityState, OnlineResource inResource)
         {
-            if (lastStates.TryGetValue(inResource, out var existingState) && OnlineManager.IsNewer(existingState.tick, entityState.tick)) return; // skipped old data
+            if (lastStates.TryGetValue(inResource, out var existingState) && NetIO.IsNewer(existingState.tick, entityState.tick)) return; // skipped old data
             lastStates[inResource] = entityState;
             if (inResource != currentlyJoinedResource) return; // skip processing
             entityState.ReadTo(this);
         }
 
-        protected abstract EntityState MakeState(ulong tick, OnlineResource inResource);
+        protected abstract EntityState MakeState(uint tick, OnlineResource inResource);
 
 
         public Dictionary<OnlineResource, EntityState> lastStates = new();
-        public EntityState GetState(ulong ts, OnlineResource inResource)
+        public EntityState GetState(uint ts, OnlineResource inResource)
         {
             if (!lastStates.TryGetValue(inResource, out var lastState) || lastState == null || (isMine && lastState.tick != ts))
             {
@@ -203,9 +203,9 @@ namespace RainMeadow
             return lastState;
         }
 
-        public EntityInResourceState GetStateInResource(ulong ts, OnlineResource inResource)
+        public EntityFeedState GetFeedState(uint ts, OnlineResource inResource)
         {
-            return new EntityInResourceState(GetState(ts, inResource), inResource, ts);
+            return new EntityFeedState(GetState(ts, inResource), inResource, ts);
         }
 
         public override string ToString()

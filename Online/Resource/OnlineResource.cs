@@ -37,8 +37,8 @@ namespace RainMeadow
             if (isAvailable) { throw new InvalidOperationException("Resource is already available"); }
             if (isActive) { throw new InvalidOperationException("Resource is already active"); }
             isAvailable = true;
-            incomingLease = null;
             incomingEntityEvents = new();
+            incomingState = new(32);
 
             AvailableImpl();
         }
@@ -57,14 +57,9 @@ namespace RainMeadow
 
             ActivateImpl();
 
-            if (incomingLease != null) // lease changes that couldn't be processed yet (needed the subresources listed, iow resource active)
+            if (latestState != null) // couldn't be processed yet
             {
-                ProcessLease(incomingLease);
-                incomingLease = null;
-            }
-            if (isOwner)
-            {
-                NewLeaseState(); // subresources are now available for leasing
+                latestState.ReadTo(this);
             }
 
             foreach (var item in incomingEntityEvents) // entities that couldn't be processed yet (needed the resource active)
@@ -91,10 +86,11 @@ namespace RainMeadow
             if (!isAvailable) { throw new InvalidOperationException("resource is already not available"); }
             if (subresources.Any(s => s.isAvailable)) throw new InvalidOperationException("has available subresources");
             isAvailable = false;
+
             UnavailableImpl();
 
-            incomingLease = null;
-            currentLeaseState = null;
+            incomingEntityEvents = null;
+            incomingState = null;
             memberSinceTick = null;
             ownerSinceTick = null;
             OnlineManager.RemoveSubscriptions(this);
@@ -176,7 +172,7 @@ namespace RainMeadow
 
             if (newOwner != null && !participants.ContainsKey(newOwner)) // newly added
             {
-                participants.Add(newOwner, new PlayerMemebership(newOwner, this));
+                NewParticipant(newOwner);
                 if (newOwner.isMe) memberSinceTick = new TickReference(supervisor, supervisor.tick);
             }
             if (isOwner) // I own this now
@@ -190,9 +186,7 @@ namespace RainMeadow
                 {
                     if (membership.player.isMe || membership.player.hasLeft) continue;
                     Subscribed(membership.player, true);
-                    membership.everSentLease = false;
                 }
-                NewLeaseState();
                 ClaimAbandonedEntities();
             }
             if (isActive) // maybe has subresources, notify
@@ -202,10 +196,6 @@ namespace RainMeadow
                 {
                     if (res.isAvailable) res.NewSupervisor(owner);
                 }
-            }
-            if (isSupervisor && this is not Lobby && oldOwner != owner) // I am responsible for notifying lease changes to this
-            {
-                super.NewLeaseState();
             }
             if (isOwner) // do not send data to myself
             { 
@@ -261,10 +251,6 @@ namespace RainMeadow
                 Subscribed(newParticipant, false);
             }
             NewParticipantImpl(newParticipant);
-            if (isSupervisor) // I am responsible for notifying lease changes to this
-            {
-                super.NewLeaseState();
-            }
         }
 
         protected virtual void ParticipantLeftImpl(OnlinePlayer player) { }
@@ -278,10 +264,6 @@ namespace RainMeadow
                 if (isActive) ClaimAbandonedEntities();
             }
             ParticipantLeftImpl(participant);
-            if (isSupervisor) // I am responsible for notifying lease changes to this
-            {
-                super.NewLeaseState();
-            }
         }
 
         public void ClaimAbandonedEntities()

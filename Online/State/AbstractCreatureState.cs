@@ -7,7 +7,7 @@ namespace RainMeadow
         private CreatureStateState creatureStateState;
 
         public AbstractCreatureState() : base() { }
-        public AbstractCreatureState(OnlineCreature onlineEntity, ulong ts, bool realizedState) : base(onlineEntity, ts, realizedState)
+        public AbstractCreatureState(OnlineCreature onlineEntity, uint ts, bool realizedState) : base(onlineEntity, ts, realizedState)
         {
             if (realizedState) creatureStateState = GetCreatureStateState(onlineEntity);
         }

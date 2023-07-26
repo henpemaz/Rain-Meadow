@@ -130,47 +130,11 @@ namespace RainMeadow
             }
         }
 
-        public static bool IsNewer(ulong eventId, ulong lastIncomingEvent)
-        {
-            var delta = eventId - lastIncomingEvent;
-            return delta != 0 && delta < ulong.MaxValue / 2;
-        }
-
-        public static bool IsNewerOrEqual(ulong eventId, ulong lastIncomingEvent)
-        {
-            var delta = eventId - lastIncomingEvent;
-            return delta < ulong.MaxValue / 2;
-        }
-
-        public static bool IsNewer(uint eventId, uint lastIncomingEvent)
-        {
-            var delta = eventId - lastIncomingEvent;
-            return delta != 0 && delta < uint.MaxValue / 2;
-        }
-
-        public static bool IsNewerOrEqual(uint eventId, uint lastIncomingEvent)
-        {
-            var delta = eventId - lastIncomingEvent;
-            return delta < uint.MaxValue / 2;
-        }
-
-        public static bool IsNewer(ushort eventId, ushort lastIncomingEvent)
-        {
-            var delta = eventId - lastIncomingEvent;
-            return delta != 0 && delta < ushort.MaxValue / 2;
-        }
-
-        public static bool IsNewerOrEqual(ushort eventId, ushort lastIncomingEvent)
-        {
-            var delta = eventId - lastIncomingEvent;
-            return delta < ushort.MaxValue / 2;
-        }
-
         public static void ProcessIncomingEvent(OnlineEvent onlineEvent)
         {
             OnlinePlayer fromPlayer = onlineEvent.from;
             fromPlayer.needsAck = true;
-            if (IsNewer(onlineEvent.eventId, fromPlayer.lastEventFromRemote))
+            if (NetIO.IsNewer(onlineEvent.eventId, fromPlayer.lastEventFromRemote))
             {
                 RainMeadow.Debug($"New event {onlineEvent} from {fromPlayer}, processing...");
                 fromPlayer.lastEventFromRemote = onlineEvent.eventId;
@@ -191,6 +155,7 @@ namespace RainMeadow
                     waitingEvents.Add(onlineEvent);
                 }
             }
+            else { RainMeadow.Debug($"Stale event {onlineEvent} from {fromPlayer}"); }
         }
 
         public static void MaybeProcessWaitingEvents()
@@ -218,13 +183,13 @@ namespace RainMeadow
             OnlinePlayer fromPlayer = state.from;
             try
             {
-                if (state is OnlineResource.ResourceState resourceState && resourceState.resource != null && resourceState.resource.isActive)
+                if (state is OnlineResource.ResourceState resourceState && resourceState.resource != null && resourceState.resource.isAvailable)
                 {
                     resourceState.resource.ReadState(resourceState);
                 }
-                if (state is EntityInResourceState entityInResourceState)
+                if (state is EntityFeedState entityInResourceState && entityInResourceState.inResource != null && entityInResourceState.inResource.isAvailable)
                 {
-                    entityInResourceState.entityState.entityId.FindEntity().ReadState(entityInResourceState.entityState, entityInResourceState.inResource);
+                    entityInResourceState.entityState.entityId.FindEntity()?.ReadState(entityInResourceState.entityState, entityInResourceState.inResource);
                 }
             }
             catch (Exception e)
@@ -266,10 +231,12 @@ namespace RainMeadow
         // this smells
         public static OnlineResource ResourceFromIdentifier(string rid)
         {
-            if (rid == ".") return LobbyManager.lobby;
-            if (rid.Length == 2 && LobbyManager.lobby.worldSessions.TryGetValue(rid, out var r)) return r;
-            if (rid.Length > 2 && LobbyManager.lobby.worldSessions.TryGetValue(rid.Substring(0, 2), out var r2) && r2.roomSessions.TryGetValue(rid.Substring(2), out var room)) return room;
-
+            if(LobbyManager.lobby != null)
+            {
+                if (rid == ".") return LobbyManager.lobby;
+                if (rid.Length == 2 && LobbyManager.lobby.worldSessions.TryGetValue(rid, out var r)) return r;
+                if (rid.Length > 2 && LobbyManager.lobby.worldSessions.TryGetValue(rid.Substring(0, 2), out var r2) && r2.roomSessions.TryGetValue(rid.Substring(2), out var room)) return room;
+            }
             RainMeadow.Error("resource not found : " + rid);
             return null;
         }

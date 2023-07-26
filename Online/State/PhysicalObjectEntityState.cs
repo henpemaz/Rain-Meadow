@@ -9,7 +9,7 @@ namespace RainMeadow
         public RealizedPhysicalObjectState realizedObjectState;
 
         public PhysicalObjectEntityState() : base() { }
-        public PhysicalObjectEntityState(OnlinePhysicalObject onlineEntity, ulong ts, bool realizedState) : base(onlineEntity, ts, realizedState)
+        public PhysicalObjectEntityState(OnlinePhysicalObject onlineEntity, uint ts, bool realizedState) : base(onlineEntity, ts, realizedState)
         {
             this.pos = onlineEntity.apo.pos;
             this.realized = onlineEntity.realized; // now now, oe.realized means its realized in the owners world

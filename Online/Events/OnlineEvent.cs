@@ -55,7 +55,6 @@ namespace RainMeadow
             ReleaseResultError,
             TransferResultOk,
             TransferResultError,
-            LeaseChange,
             GenericResultOk,
             GenericResultError,
             CreatureEventViolence,
@@ -71,7 +70,6 @@ namespace RainMeadow
             EntityTransferedEvent,
             EntityRequest,
             EntityRelease,
-            LobbyLeaseChange,
         }
 
         public static OnlineEvent NewFromType(EventTypeId eventTypeId)
@@ -113,9 +111,6 @@ namespace RainMeadow
                     break;
                 case EventTypeId.TransferResultOk:
                     e = new TransferResult.Ok();
-                    break;
-                case EventTypeId.LeaseChange:
-                    e = new LeaseChangeEvent();
                     break;
                 case EventTypeId.CreatureEventViolence:
                     e = new CreatureEvent.Violence();

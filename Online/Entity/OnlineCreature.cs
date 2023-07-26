@@ -36,7 +36,7 @@ namespace RainMeadow
             return new NewCreatureEvent(seed, realized, SaveState.AbstractCreatureToStringStoryWorld(apo as AbstractCreature), inResource, this, null);
         }
 
-        protected override EntityState MakeState(ulong tick, OnlineResource resource)
+        protected override EntityState MakeState(uint tick, OnlineResource resource)
         {
             if (resource is WorldSession ws && !LobbyManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) throw new InvalidOperationException("asked for world state, not synched");
             if (resource is RoomSession rs && !LobbyManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) throw new InvalidOperationException("asked for room state, not synched");

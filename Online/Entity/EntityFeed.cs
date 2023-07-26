@@ -7,8 +7,8 @@ namespace RainMeadow
     {
         public OnlineResource resource;
         public OnlineEntity entity;
-        public Queue<EntityInResourceState> OutgoingStates = new(32);
-        public EntityInResourceState lastAcknoledgedState;
+        public Queue<EntityFeedState> OutgoingStates = new(32);
+        public EntityFeedState lastAcknoledgedState;
 
         public EntityFeed(OnlineResource resource, OnlineEntity oe)
         {
@@ -16,7 +16,7 @@ namespace RainMeadow
             this.entity = oe;
         }
 
-        public void Update(ulong tick)
+        public void Update(uint tick)
         {
             if (!resource.isAvailable) throw new InvalidOperationException("not available");
             if (resource.isOwner)
@@ -25,13 +25,13 @@ namespace RainMeadow
                 throw new InvalidOperationException("feeding myself");
             }
 
-            while (OutgoingStates.Count > 0 && OnlineManager.IsNewerOrEqual(resource.owner.lastAckdTick, OutgoingStates.Peek().tick))
+            while (OutgoingStates.Count > 0 && NetIO.IsNewerOrEqual(resource.owner.lastAckdTick, OutgoingStates.Peek().tick))
             {
                 lastAcknoledgedState = OutgoingStates.Dequeue();
             }
 
             // todo detect owner changed and reset? maybe get rid of reset and just remove feed add feed on ownership changes?
-            var newState = entity.GetStateInResource(tick, resource);
+            var newState = entity.GetFeedState(tick, resource);
             resource.owner.OutgoingStates.Enqueue(newState.Delta(lastAcknoledgedState));
             OutgoingStates.Enqueue(newState);
         }
