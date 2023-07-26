@@ -129,7 +129,14 @@ namespace RainMeadow {
 				incomingLabels.ForEach(label => label.RemoveFromContainer());
 				incomingLabels.Clear();
 
-				int line = 0;
+                if (UnityEngine.Input.GetKey(KeyCode.LeftAlt))
+                {
+                    FLabel label = new FLabel(Custom.GetFont(), "!! CONNECTION CUT !!") { x = screenSize.x / 2, y = 15.0f};
+                    overlayContainer.AddChild(label);
+                    outgoingLabels.Add(label);
+                }
+
+                int line = 0;
 				foreach (OnlinePlayer player in PlayersManager.players) {
 					if (player.statesWritten || player.eventsWritten) {
 						FLabel label = new FLabel(Custom.GetFont(), player.ToString()) { alignment = FLabelAlignment.Left, x = 5.01f, y = screenSize.y - 25 - 15 * line };

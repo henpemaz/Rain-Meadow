@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -7,8 +8,6 @@ namespace RainMeadow
     {
         ChunkState[] chunkStates;
         private int collisionLayer;
-
-
 
         public RealizedPhysicalObjectState() { }
         public RealizedPhysicalObjectState(OnlinePhysicalObject onlineEntity)
@@ -25,9 +24,25 @@ namespace RainMeadow
             var po = (onlineEntity as OnlinePhysicalObject).apo.realizedObject;
             if (chunkStates.Length == po.bodyChunks.Length)
             {
+                float diffAverage = 0;
                 for (int i = 0; i < chunkStates.Length; i++)
                 {
-                    chunkStates[i].ReadTo(po.bodyChunks[i]);
+                    diffAverage += Math.Max(0, (chunkStates[i].pos - po.bodyChunks[i].pos).magnitude - po.bodyChunks[i].vel.magnitude * .25f);
+                }
+                diffAverage /= chunkStates.Length;  //a rating of how different the two states are, more
+                RainMeadow.Debug(diffAverage);
+                if (diffAverage > .3)               //forgiving the higher the object's velocity
+                {
+                    for (int i = 0; i < chunkStates.Length; i++) //sync bodychunk positions
+                    {
+                        chunkStates[i].ReadTo(po.bodyChunks[i]);
+                    }
+
+                    foreach (BodyPart bodyPart in po.graphicsModule.bodyParts) //prevent tail from stretching accross the screen
+                    {
+                        var tailSegment = bodyPart as TailSegment;
+                        if (tailSegment != null) tailSegment.affectPrevious = 0f;
+                    }
                 }
             }
             po.collisionLayer = collisionLayer;
@@ -43,14 +58,18 @@ namespace RainMeadow
 
     public class ChunkState : Serializer.ICustomSerializable // : OnlineState // no need for serializing its type, its just always the same data
     {
-        private Vector2 pos;
-        private Vector2 vel;
+        public Vector2 pos;
+        public Vector2 vel;
+        private Vector2 lastpos;
+        private Vector2 lastlastpos;
 
         public ChunkState() { }
         public ChunkState(BodyChunk c)
         {
             pos = c.pos;
             vel = c.vel;
+            lastpos = c.lastPos;
+            lastlastpos = c.lastLastPos;
         }
 
         public void CustomSerialize(Serializer serializer)
@@ -63,6 +82,8 @@ namespace RainMeadow
         {
             c.pos = pos;
             c.vel = vel;
+            c.lastPos = lastpos;
+            c.lastLastPos = lastlastpos;
         }
     }
 }

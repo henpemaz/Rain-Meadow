@@ -11,23 +11,24 @@ namespace RainMeadow {
 	public static class NetIO {
 		public static void SendP2P(OnlinePlayer player, byte[] data, uint length, SendType sendType) {
 			if (PlayersManager.mePlayer.isUsingSteam && player.isUsingSteam) // Make sure both sides are using steam
-				// unsafe {
-				// 	fixed (byte* dataPointer = &data[0]) {
-				// 		SteamNetworkingMessages.SendMessageToUser(ref player.steamNetId, (IntPtr)dataPointer, length,
-				// 		sendType switch
-				// 		{
-				// 			SendType.Reliable => Constants.k_nSteamNetworkingSend_Reliable,
-				// 			SendType.Unreliable => Constants.k_nSteamNetworkingSend_Unreliable,
-				// 			_ => Constants.k_nSteamNetworkingSend_Unreliable,
-				// 		},
-				// 		dataType switch
-				// 		{
-				// 			PacketDataType.GameInfo => 0,
-				// 			PacketDataType.PlayerInfo => 1,
-				// 			_ => 0,
-				// 		});
-				// 	}
-				// }
+            {
+			  // unsafe {
+			  // 	fixed (byte* dataPointer = &data[0]) {
+			  // 		SteamNetworkingMessages.SendMessageToUser(ref player.steamNetId, (IntPtr)dataPointer, length,
+			  // 		sendType switch
+			  // 		{
+			  // 			SendType.Reliable => Constants.k_nSteamNetworkingSend_Reliable,
+			  // 			SendType.Unreliable => Constants.k_nSteamNetworkingSend_Unreliable,
+			  // 			_ => Constants.k_nSteamNetworkingSend_Unreliable,
+			  // 		},
+			  // 		dataType switch
+			  // 		{
+			  // 			PacketDataType.GameInfo => 0,
+			  // 			PacketDataType.PlayerInfo => 1,
+			  // 			_ => 0,
+			  // 		});
+			  // 	}
+			  // }
 
 				SteamNetworking.SendP2PPacket(player.steamId, data, length,
 				sendType switch
@@ -36,14 +37,19 @@ namespace RainMeadow {
 					SendType.Unreliable => EP2PSend.k_EP2PSendUnreliableNoDelay,
 					_ => EP2PSend.k_EP2PSendUnreliableNoDelay,
 				});
+			}
 			else
-				UdpPeer.Send(player.endpoint, data, (int)length,
+			{
+                if (UnityEngine.Input.GetKey(KeyCode.LeftAlt))
+					return;
+                UdpPeer.Send(player.endpoint, data, (int)length,
 				sendType switch
 				{
 					SendType.Reliable => UdpPeer.PacketType.Reliable,
 					SendType.Unreliable => UdpPeer.PacketType.Unreliable,
 					_ => UdpPeer.PacketType.Unreliable,
 				});
+			}
 		}
 
 		public static void SendP2P(OnlinePlayer player, Packet packet, SendType sendType) {
