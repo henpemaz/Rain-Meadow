@@ -1,21 +1,18 @@
-﻿using Steamworks;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Security.Cryptography;
 
 namespace RainMeadow
 {
     public partial class OnlinePlayer : IEquatable<OnlinePlayer>
     {
-        public MeadowPlayerId id;
-        public ushort inLobbyId; // small id in lobby
+        public MeadowPlayerId id; // big id for matchmaking
+        public ushort inLobbyId; // small id in lobby serialization
 
-        public Queue<OnlineEvent> OutgoingEvents = new(16);
-        public List<OnlineEvent> recentlyAckedEvents = new(16);
-        public List<OnlineEvent> abortedEvents = new();
-        public Queue<OnlineState> OutgoingStates = new(128);
+        public Queue<OnlineEvent> OutgoingEvents = new(8);
+        public List<OnlineEvent> recentlyAckedEvents = new(4);
+        public List<OnlineEvent> abortedEvents = new(8);
+        public Queue<OnlineState> OutgoingStates = new(16);
 
         private ushort nextOutgoingEvent = 1;
         public ushort lastEventFromRemote; // the last event I've received from them, I'll write it back on headers as an ack
@@ -36,8 +33,6 @@ namespace RainMeadow
 
         public OnlinePlayer(MeadowPlayerId id)
         {
-            //RainMeadow.Debug("Player instantiated! " + id);
-            //RainMeadow.Debug(System.Environment.StackTrace);
             this.id = id;
         }
 
@@ -45,7 +40,7 @@ namespace RainMeadow
         {
             e.eventId = this.nextOutgoingEvent;
             e.to = this;
-            e.from = LobbyManager.mePlayer;
+            e.from = OnlineManager.mePlayer;
             RainMeadow.Debug($"{e} for {this}");
             nextOutgoingEvent++;
             OutgoingEvents.Enqueue(e);

@@ -16,7 +16,7 @@ namespace RainMeadow.Generics
         public T ApplyDelta(T other);
     }
 
-    public interface IIdentifiable<T> where T: IEquatable<T>
+    public interface IIdentifiable<T> where T : IEquatable<T>
     {
         public T ID { get; }
     }
@@ -95,7 +95,7 @@ namespace RainMeadow.Generics
             delta.list = list.Except(other.list).ToList();
             delta.listIndexes = list.Except(other.list).Select(e => (byte)list.IndexOf(e)).ToList();
             delta.removedIndexes = other.list.Except(list).Select(e => (byte)other.list.IndexOf(e)).ToList();
-            
+
             return (delta.list.Count == 0 && delta.removedIndexes.Count == 0) ? null : delta;
         }
 
@@ -103,7 +103,7 @@ namespace RainMeadow.Generics
         {
             var result = EmptyInstance();
             result.list = list.ToList();
-            if(other != null)
+            if (other != null)
             {
                 result.list.Capacity = list.Count + other.list.Count;
                 for (int j = other.removedIndexes.Count - 1; j >= 0; j--)
@@ -174,7 +174,7 @@ namespace RainMeadow.Generics
             if (other == null) { return this; }
             var delta = EmptyInstance();
             delta.list = list.Select(sl => (T)sl.Delta(other.list.FirstOrDefault(osl => osl.ID.Equals(sl.ID)))).Where(sl => sl != null).ToList();
-            delta.removed = other.list.Except(list, new IdentityComparer<T,U>()).Select(e => e.ID).ToList();
+            delta.removed = other.list.Except(list, new IdentityComparer<T, U>()).Select(e => e.ID).ToList();
             return (delta.list.Count == 0 && delta.removed.Count == 0) ? null : delta;
         }
 
@@ -236,7 +236,7 @@ namespace RainMeadow.Generics
         public override void CustomSerialize(Serializer serializer)
         {
             serializer.Serialize(ref list);
-            if(serializer.IsDelta) serializer.Serialize(ref removed);
+            if (serializer.IsDelta) serializer.Serialize(ref removed);
         }
     }
 

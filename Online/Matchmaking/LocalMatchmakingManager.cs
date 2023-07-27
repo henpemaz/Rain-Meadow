@@ -1,14 +1,11 @@
-﻿using Steamworks;
-using System;
-using System.Diagnostics;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Net;
 using static RainMeadow.NetIO;
 
 namespace RainMeadow
 {
-    public class LocalLobbyManager : LobbyManager
+    public class LocalMatchmakingManager : MatchmakingManager
     {
         public class LocalPlayerId : MeadowPlayerId
         {
@@ -45,15 +42,15 @@ namespace RainMeadow
             return new LocalPlayerId();
         }
 
-        int me;
-        string localGameMode = "FreeRoam";
+        private int me;
+        private string localGameMode = "FreeRoam";
 
-        public LocalLobbyManager()
+        public LocalMatchmakingManager()
         {
             RainMeadow.DebugMe();
             UdpPeer.Startup();
             me = UdpPeer.port;
-            mePlayer = new OnlinePlayer(new LocalPlayerId(me, UdpPeer.ownAddress, UdpPeer.isHost)) { isMe = true };
+            OnlineManager.mePlayer = new OnlinePlayer(new LocalPlayerId(me, UdpPeer.ownAddress, UdpPeer.isHost)) { isMe = true };
         }
 
         public override event LobbyListReceived_t OnLobbyListReceived;
@@ -67,7 +64,7 @@ namespace RainMeadow
 
         public override void CreateLobby(LobbyVisibility visibility, string gameMode)
         {
-            lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), mePlayer);
+            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer);
             OnLobbyJoined?.Invoke(true);
         }
 
@@ -82,73 +79,69 @@ namespace RainMeadow
 
         public void LobbyJoined()
         {
-            lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), GetLobbyOwner());
+            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), GetLobbyOwner());
             OnLobbyJoined?.Invoke(true);
         }
 
         public override void LeaveLobby()
         {
-            if (lobby != null)
+            if (OnlineManager.lobby != null)
             {
                 var memory = new MemoryStream(16);
                 var writer = new BinaryWriter(memory);
                 Packet.Encode(new RequestJoinPacket(), writer, null);
                 UdpPeer.Send(new IPEndPoint(IPAddress.Loopback, UdpPeer.STARTING_PORT), memory.GetBuffer(), (int)memory.Position, UdpPeer.PacketType.Termination);
-                lobby = null;
+                OnlineManager.lobby = null;
             }
         }
 
         public override OnlinePlayer GetLobbyOwner()
         {
-            return players.First(p => (p.id as LocalPlayerId).isHost);
+            return OnlineManager.players.First(p => (p.id as LocalPlayerId).isHost);
         }
 
-        public override void UpdatePlayersList()
+        public OnlinePlayer GetPlayerLocal(int port)
         {
-            // no op
+            return OnlineManager.players.FirstOrDefault(p => (p.id as LocalPlayerId).id == port);
         }
 
-        internal OnlinePlayer GetPlayerLocal(int port)
+        public void LocalPlayerJoined(OnlinePlayer joiningPlayer)
         {
-            return players.FirstOrDefault(p => (p.id as LocalPlayerId).id == port);
-        }
-
-        internal void LocalPlayerJoined(OnlinePlayer joiningPlayer)
-        {
-            if (players.Contains(joiningPlayer)) { return; }
+            if (OnlineManager.players.Contains(joiningPlayer)) { return; }
             RainMeadow.Debug($"Added {joiningPlayer} to the lobby matchmaking player list");
-            players.Add(joiningPlayer);
+            OnlineManager.players.Add(joiningPlayer);
 
-            if (lobby != null && lobby.owner.isMe)
+            if (OnlineManager.lobby != null && OnlineManager.lobby.owner.isMe)
             {
                 // Tell the other players to create this player
-                foreach (OnlinePlayer player in players)
+                foreach (OnlinePlayer player in OnlineManager.players)
                 {
                     if (player.isMe || player == joiningPlayer)
                         continue;
 
-                    NetIO.SendP2P(player, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Add, new OnlinePlayer[] { joiningPlayer }), SendType.Reliable);
+                    SendP2P(player, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Add, new OnlinePlayer[] { joiningPlayer }), SendType.Reliable);
                 }
 
                 // Tell joining peer to create everyone in the server
-                NetIO.SendP2P(joiningPlayer, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Add, players.ToArray()), SendType.Reliable);
+                SendP2P(joiningPlayer, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Add, OnlineManager.players.ToArray()), SendType.Reliable);
             }
         }
 
-        internal void LocalPlayerLeft(OnlinePlayer leavingPlayer)
+        public void LocalPlayerLeft(OnlinePlayer leavingPlayer)
         {
-            if (!players.Contains(leavingPlayer)) { return; }
-            players.Remove(leavingPlayer);
+            if (!OnlineManager.players.Contains(leavingPlayer)) { return; }
 
-            if (lobby.owner.isMe)
+            OnlineManager.players.Remove(leavingPlayer);
+
+            if (OnlineManager.lobby.owner.isMe)
             {
                 // Tell the other players to create this player
-                foreach (OnlinePlayer player in players)
+                foreach (OnlinePlayer player in OnlineManager.players)
                 {
                     if (player.isMe)
                         continue;
 
-                    NetIO.SendP2P(player, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Remove, new OnlinePlayer[] { leavingPlayer }), SendType.Reliable);
+                    SendP2P(player, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Remove, new OnlinePlayer[] { leavingPlayer }), SendType.Reliable);
                 }
             }
         }

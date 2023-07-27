@@ -1,11 +1,8 @@
+using Steamworks;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Runtime.InteropServices;
-using Steamworks;
-using UnityEngine;
 
 namespace RainMeadow
 {
@@ -17,7 +14,7 @@ namespace RainMeadow
             Unreliable,
         }
 
-        internal static void SendSessionData(OnlinePlayer toPlayer)
+        public static void SendSessionData(OnlinePlayer toPlayer)
         {
 
             try
@@ -46,7 +43,7 @@ namespace RainMeadow
 
         public static void SendP2P(OnlinePlayer player, Packet packet, SendType sendType)
         {
-            var localPlayerId = player.id as LocalLobbyManager.LocalPlayerId;
+            var localPlayerId = player.id as LocalMatchmakingManager.LocalPlayerId;
             MemoryStream memory = new MemoryStream(128);
             BinaryWriter writer = new BinaryWriter(memory);
 
@@ -81,11 +78,11 @@ namespace RainMeadow
                 //RainMeadow.Debug("To read: " + UdpPeer.debugClient.Available);
                 if (!UdpPeer.Read(out BinaryReader netReader, out IPEndPoint remoteEndpoint))
                     continue;
-                var player = (LobbyManager.instance as LocalLobbyManager).GetPlayerLocal(remoteEndpoint.Port);
-                if(player == null)
+                var player = (MatchmakingManager.instance as LocalMatchmakingManager).GetPlayerLocal(remoteEndpoint.Port);
+                if (player == null)
                 {
                     RainMeadow.Debug("Player not found! Instantiating new at: " + remoteEndpoint.Port);
-                    player = new OnlinePlayer(new LocalLobbyManager.LocalPlayerId(remoteEndpoint.Port, remoteEndpoint, remoteEndpoint.Port == UdpPeer.STARTING_PORT));
+                    player = new OnlinePlayer(new LocalMatchmakingManager.LocalPlayerId(remoteEndpoint.Port, remoteEndpoint, remoteEndpoint.Port == UdpPeer.STARTING_PORT));
                 }
 
                 Packet.Decode(netReader, player);
@@ -106,10 +103,10 @@ namespace RainMeadow
                         var message = SteamNetworkingMessage_t.FromIntPtr(messages[i]);
                         try
                         {
-                            if (LobbyManager.lobby != null)
+                            if (OnlineManager.lobby != null)
                             {
 
-                                var fromPlayer = (LobbyManager.instance as SteamLobbyManager).GetPlayerSteam(message.m_identityPeer.GetSteamID().m_SteamID);
+                                var fromPlayer = (MatchmakingManager.instance as SteamMatchmakingManager).GetPlayerSteam(message.m_identityPeer.GetSteamID().m_SteamID);
                                 if (fromPlayer == null)
                                 {
                                     RainMeadow.Error("player not found: " + message.m_identityPeer + " " + message.m_identityPeer.GetSteamID());

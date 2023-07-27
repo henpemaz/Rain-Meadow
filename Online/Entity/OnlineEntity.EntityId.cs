@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     public partial class OnlineEntity
     {
@@ -16,7 +14,7 @@ namespace RainMeadow
                 this.id = id;
             }
 
-            internal OnlineEntity FindEntity()
+            public OnlineEntity FindEntity()
             {
                 return OnlineManager.recentEntities[this];
             }

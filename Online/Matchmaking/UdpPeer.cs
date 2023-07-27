@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Net.Sockets;
-using System.Net.NetworkInformation;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 
 namespace RainMeadow
 {
-    static class UdpPeer
+    public static class UdpPeer
     {
         public static UdpClient debugClient;
         public static int port;
@@ -54,34 +54,32 @@ namespace RainMeadow
             }
         }
 
-        class RemotePeer
+        private class RemotePeer
         {
-            internal ulong packetIndex { get; set; } // Increments for each reliable packet sent
-            internal ulong unreliablePacketIndex; // Increments for each unreliable ordered packet sent
-            internal Queue<SequencedPacket> outgoingPackets = new Queue<SequencedPacket>(); // Keep track of packets we want to send while we wait for responses
-            internal SequencedPacket latestOutgoingPacket { get; set; }
-            internal int ticksSinceLastPacketReceived;
-            internal int ticksSinceLastPacketSent;
-            internal int ticksToResend = RESEND_TICKS;
-            internal ulong lastAckedPacketIndex;
-            internal ulong lastUnreliablePacketIndex;
+            public ulong packetIndex { get; set; } // Increments for each reliable packet sent
+            public ulong unreliablePacketIndex; // Increments for each unreliable ordered packet sent
+            public Queue<SequencedPacket> outgoingPackets = new Queue<SequencedPacket>(); // Keep track of packets we want to send while we wait for responses
+            public SequencedPacket latestOutgoingPacket { get; set; }
+            public int ticksSinceLastPacketReceived;
+            public int ticksSinceLastPacketSent;
+            public int ticksToResend = RESEND_TICKS;
+            public ulong lastAckedPacketIndex;
+            public ulong lastUnreliablePacketIndex;
         }
         public static bool waitingForTermination;
-
-        static Dictionary<IPEndPoint, RemotePeer> peers;
-
-        const int TIMEOUT_TICKS = 40 * 30; // about 30 seconds
-        const int HEARTBEAT_TICKS = 40 * 5; // about 5 seconds
-        const int RESEND_TICKS = 4; // about 0.1 seconds
+        private static Dictionary<IPEndPoint, RemotePeer> peers;
+        private const int TIMEOUT_TICKS = 40 * 30; // about 30 seconds
+        private const int HEARTBEAT_TICKS = 40 * 5; // about 5 seconds
+        private const int RESEND_TICKS = 4; // about 0.1 seconds
 
         //
 
         public const int STARTING_PORT = 5061;
 
-        class DelayedPacket
+        private class DelayedPacket
         {
-            DateTime timeToSend;
-            IPEndPoint destination;
+            private DateTime timeToSend;
+            private IPEndPoint destination;
             public byte[] packet;
 
             public bool willSend => DateTime.Now > timeToSend;
@@ -100,7 +98,7 @@ namespace RainMeadow
             }
         }
 
-        static Queue<DelayedPacket> delayedPackets;
+        private static Queue<DelayedPacket> delayedPackets;
 
         public static float simulatedLoss = 0.1f;
         public static TimeSpan simulatedLatency = TimeSpan.FromMilliseconds(100);
@@ -144,7 +142,7 @@ namespace RainMeadow
             SendTermination();
         }
 
-        static void CleanUp()
+        private static void CleanUp()
         {
             if (!debugClient.Client.Connected || peers.Any(peer => peer.Value.outgoingPackets.Count > 0))
                 return;
@@ -371,7 +369,7 @@ namespace RainMeadow
             Send(buffer, remoteEndpoint);
         }
 
-        static void Send(byte[] packet, IPEndPoint endPoint)
+        private static void Send(byte[] packet, IPEndPoint endPoint)
         {
             if (simulatedLatency > TimeSpan.Zero)
             {
@@ -384,7 +382,7 @@ namespace RainMeadow
             }
         }
 
-        static void SendAcknowledge(IPEndPoint remoteEndpoint, ulong index)
+        private static void SendAcknowledge(IPEndPoint remoteEndpoint, ulong index)
         {
             RainMeadow.Debug($"Sending acknowledge for packet #{index}");
 
@@ -396,7 +394,7 @@ namespace RainMeadow
             Send(buffer, remoteEndpoint);
         }
 
-        static void SendTermination()
+        private static void SendTermination()
         {
             RainMeadow.Debug($"Sending all known peers a final message!");
 
@@ -423,13 +421,13 @@ namespace RainMeadow
         //
 
         /// <summary>Writes 9 bytes</summary>
-        static void WriteReliableHeader(BinaryWriter writer, ulong index)
+        private static void WriteReliableHeader(BinaryWriter writer, ulong index)
         {
             writer.Write((byte)PacketType.Reliable);
             writer.Write(index);
         }
 
-        static ulong ReadReliableHeader(BinaryReader reader)
+        private static ulong ReadReliableHeader(BinaryReader reader)
         {
             // Ignore type
             ulong index = reader.ReadUInt64();
@@ -439,12 +437,12 @@ namespace RainMeadow
         //
 
         /// <summary>Writes 1 byte</summary>
-        static void WriteUnreliableHeader(BinaryWriter writer)
+        private static void WriteUnreliableHeader(BinaryWriter writer)
         {
             writer.Write((byte)PacketType.Unreliable);
         }
 
-        static void ReadUnreliableHeader(BinaryReader reader)
+        private static void ReadUnreliableHeader(BinaryReader reader)
         {
             // Ignore type
         }
@@ -452,13 +450,13 @@ namespace RainMeadow
         //
 
         /// <summary>Writes 9 bytes</summary>
-        static void WriteUnreliableOrderedHeader(BinaryWriter writer, ulong index)
+        private static void WriteUnreliableOrderedHeader(BinaryWriter writer, ulong index)
         {
             writer.Write((byte)PacketType.UnreliableOrdered);
             writer.Write(index);
         }
 
-        static ulong ReadUnreliableOrderedHeader(BinaryReader reader)
+        private static ulong ReadUnreliableOrderedHeader(BinaryReader reader)
         {
             // Ignore type
             ulong index = reader.ReadUInt64();
@@ -468,13 +466,13 @@ namespace RainMeadow
         //
 
         /// <summary>Writes 9 bytes</summary>
-        static void WriteAcknowledge(BinaryWriter writer, ulong index)
+        private static void WriteAcknowledge(BinaryWriter writer, ulong index)
         {
             writer.Write((byte)PacketType.Acknowledge);
             writer.Write(index);
         }
 
-        static ulong ReadAcknowledge(BinaryReader reader)
+        private static ulong ReadAcknowledge(BinaryReader reader)
         {
             // Ignore type
             ulong index = reader.ReadUInt64();
@@ -484,13 +482,13 @@ namespace RainMeadow
         //
 
         /// <summary>Writes 9 bytes</summary>
-        static void WriteTerminationHeader(BinaryWriter writer, ulong index)
+        private static void WriteTerminationHeader(BinaryWriter writer, ulong index)
         {
             writer.Write((byte)PacketType.Termination);
             writer.Write(index);
         }
 
-        static ulong ReadTerminationHeader(BinaryReader reader)
+        private static ulong ReadTerminationHeader(BinaryReader reader)
         {
             // Ignore type
             ulong index = reader.ReadUInt64();

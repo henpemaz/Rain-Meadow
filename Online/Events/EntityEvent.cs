@@ -6,7 +6,7 @@
     {
         public OnlineEntity.EntityId entityId;
 
-        public EntityEvent(){}
+        public EntityEvent() { }
 
         public EntityEvent(OnlineEntity oe)
         {

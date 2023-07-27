@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using static RainMeadow.OnlineResource;
 
 namespace RainMeadow
 {
@@ -18,7 +17,7 @@ namespace RainMeadow
         public OnlineResource primaryResource => joinedResources.Count != 0 ? joinedResources[0] : null;
         public OnlineResource currentlyJoinedResource => joinedResources.Count != 0 ? joinedResources[joinedResources.Count - 1] : null;
         public OnlineResource currentlyEnteredResource => enteredResources.Count != 0 ? enteredResources[enteredResources.Count - 1] : null;
-        
+
         public bool isPending => pendingRequest != null;
         public OnlineEvent pendingRequest;
 
@@ -86,7 +85,7 @@ namespace RainMeadow
             ReadState(initialState, inResource);
             if (isMine)
             {
-                if(!inResource.isOwner)
+                if (!inResource.isOwner)
                     OnlineManager.AddFeed(inResource, this);
                 JoinOrLeavePending();
             }
@@ -102,21 +101,21 @@ namespace RainMeadow
             }
 
             while (currentlyJoinedResource != inResource) currentlyJoinedResource.EntityLeftResource(this);
-            
+
             joinedResources.Remove(inResource);
             lastStates.Remove(inResource);
             if (isMine)
             {
                 OnlineManager.RemoveFeed(inResource, this);
                 JoinOrLeavePending();
-                if(!isTransferable)
+                if (!isTransferable)
                     inResource.SubresourcesUnloaded(); // maybe you can release now
             }
         }
 
-        internal abstract NewEntityEvent AsNewEntityEvent(OnlineResource onlineResource);
+        public abstract NewEntityEvent AsNewEntityEvent(OnlineResource onlineResource);
 
-        internal static OnlineEntity FromNewEntityEvent(NewEntityEvent newEntityEvent, OnlineResource inResource)
+        public static OnlineEntity FromNewEntityEvent(NewEntityEvent newEntityEvent, OnlineResource inResource)
         {
             if (newEntityEvent is NewObjectEvent newObjectEvent)
             {
@@ -156,7 +155,7 @@ namespace RainMeadow
             {
                 foreach (var res in enteredResources)
                 {
-                    if(!res.isOwner)
+                    if (!res.isOwner)
                         OnlineManager.AddFeed(res, this);
                 }
             }

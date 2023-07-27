@@ -96,7 +96,7 @@
                 }
                 else
                 {
-                    if (!this.isMine) this.primaryResource.LocalEntityTransfered(this, LobbyManager.mePlayer);
+                    if (!this.isMine) this.primaryResource.LocalEntityTransfered(this, OnlineManager.mePlayer);
                 }
             }
             else

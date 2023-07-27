@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace RainMeadow
 {
     public class AbstractCreatureState : PhysicalObjectEntityState
@@ -37,7 +35,7 @@ namespace RainMeadow
         {
             base.ReadTo(onlineEntity);
             var abstractCreature = (AbstractCreature)((OnlineCreature)onlineEntity).apo;
-            
+
             if (creatureStateState is CreatureStateState newState)
             {
                 abstractCreature.state.alive = newState.alive;

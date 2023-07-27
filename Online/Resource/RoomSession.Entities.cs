@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     public partial class RoomSession
     {

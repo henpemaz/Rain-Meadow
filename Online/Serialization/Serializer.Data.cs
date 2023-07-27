@@ -1,10 +1,4 @@
-﻿using Steamworks;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace RainMeadow
@@ -152,7 +146,7 @@ namespace RainMeadow
                 }
             }
         }
-        
+
         public void Serialize(ref short data)
         {
             if (IsWriting) writer.Write(data);

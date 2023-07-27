@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    class SimplerButton : SimpleButton, IHaveADescription
+    public class SimplerButton : SimpleButton, IHaveADescription
     {
-        public SimplerButton(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, string description="") : base(menu, owner, displayText, "", pos, size)
+        public SimplerButton(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, string description = "") : base(menu, owner, displayText, "", pos, size)
         {
             this.description = description;
         }

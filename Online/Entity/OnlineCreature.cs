@@ -1,5 +1,5 @@
-﻿using System;
-using RWCustom;
+﻿using RWCustom;
+using System;
 using UnityEngine;
 
 namespace RainMeadow
@@ -13,7 +13,7 @@ namespace RainMeadow
             // ? anything special?
         }
 
-        internal static OnlineEntity FromEvent(NewCreatureEvent newCreatureEvent, OnlineResource inResource)
+        public static OnlineEntity FromEvent(NewCreatureEvent newCreatureEvent, OnlineResource inResource)
         {
             World world = inResource.World;
             EntityID id = world.game.GetNewID();
@@ -22,15 +22,15 @@ namespace RainMeadow
             AbstractCreature ac = SaveState.AbstractCreatureFromString(inResource.World, newCreatureEvent.serializedObject, false);
             ac.ID = id;
 
-            var oe = new OnlineCreature(ac, newCreatureEvent.seed, newCreatureEvent.realized, LobbyManager.lobby.PlayerFromId(newCreatureEvent.owner), newCreatureEvent.entityId, newCreatureEvent.isTransferable);
-            OnlinePhysicalObject.map.Add(ac, oe);
+            var oe = new OnlineCreature(ac, newCreatureEvent.seed, newCreatureEvent.realized, OnlineManager.lobby.PlayerFromId(newCreatureEvent.owner), newCreatureEvent.entityId, newCreatureEvent.isTransferable);
+            map.Add(ac, oe);
             OnlineManager.recentEntities.Add(oe.id, oe);
 
             newCreatureEvent.initialState.ReadTo(oe);
             return oe;
         }
 
-        internal override NewEntityEvent AsNewEntityEvent(OnlineResource inResource)
+        public override NewEntityEvent AsNewEntityEvent(OnlineResource inResource)
         {
             RainMeadow.Debug($"serializing {this} in {apo.pos} as {SaveState.AbstractCreatureToStringStoryWorld(apo as AbstractCreature)}");
             return new NewCreatureEvent(seed, realized, SaveState.AbstractCreatureToStringStoryWorld(apo as AbstractCreature), inResource, this, null);
@@ -38,8 +38,8 @@ namespace RainMeadow
 
         protected override EntityState MakeState(uint tick, OnlineResource resource)
         {
-            if (resource is WorldSession ws && !LobbyManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) throw new InvalidOperationException("asked for world state, not synched");
-            if (resource is RoomSession rs && !LobbyManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) throw new InvalidOperationException("asked for room state, not synched");
+            if (resource is WorldSession ws && !OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) throw new InvalidOperationException("asked for world state, not synched");
+            if (resource is RoomSession rs && !OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) throw new InvalidOperationException("asked for room state, not synched");
             var realizedState = resource is RoomSession;
             if (realizedState) { if (apo.realizedObject != null && !realized) RainMeadow.Error($"have realized object, but not entity not marked as realized??: {this} in resource {resource}"); }
             if (realizedState && !realized)

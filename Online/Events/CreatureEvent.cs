@@ -15,13 +15,13 @@ public abstract partial class CreatureEvent
         private byte DamageType;
         private float Damage;
         private float StunBonus;
-        
+
         public Violence() { }
         public Violence(OnlinePhysicalObject onlineVillain, OnlineCreature onlineVictim, int victimChunkIndex, PhysicalObject.Appendage.Pos victimAppendage, Vector2? directionAndMomentum, Creature.DamageType damageType, float damage, float stunBonus)
         {
             OnlineVillain = onlineVillain?.id;
             OnlineVictim = onlineVictim.id;
-            VictimChunkIndex = (byte)victimChunkIndex; 
+            VictimChunkIndex = (byte)victimChunkIndex;
             VictimAppendage = victimAppendage != null ? new AppendageRef(victimAppendage) : null;
             DirectionAndMomentum = directionAndMomentum;
             DamageType = (byte)damageType;
@@ -57,10 +57,10 @@ public abstract partial class CreatureEvent
 
     public class SuckedIntoShortCut : OnlineEvent
     {
-        OnlineEntity.EntityId suckedCreature;
-        IntVector2 entrancePos;
-        bool carriedByOther;
-        
+        private OnlineEntity.EntityId suckedCreature;
+        private IntVector2 entrancePos;
+        private bool carriedByOther;
+
         public SuckedIntoShortCut() { }
         public SuckedIntoShortCut(OnlineCreature suckedCreature, IntVector2 entrancePos, bool carriedByOther)
         {

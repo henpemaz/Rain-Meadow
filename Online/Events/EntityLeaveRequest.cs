@@ -1,6 +1,4 @@
-﻿using Mono.Cecil;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     public class EntityLeaveRequest : EntityResourceEvent, ResolvableEvent
     {

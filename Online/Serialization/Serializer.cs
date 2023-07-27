@@ -1,11 +1,7 @@
-﻿using Steamworks;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-using UnityEngine;
 
 namespace RainMeadow
 {
@@ -47,7 +43,7 @@ namespace RainMeadow
             {
                 writer.Write(currPlayer.lastEventFromRemote);
                 writer.Write(currPlayer.tick);
-                writer.Write(LobbyManager.mePlayer.tick);
+                writer.Write(OnlineManager.mePlayer.tick);
                 //RainMeadow.Debug($"Wrote {currPlayer.lastEventFromRemote} {currPlayer.tick} and {LobbyManager.mePlayer.tick}");
             }
             if (IsReading)
@@ -175,7 +171,7 @@ namespace RainMeadow
         {
             OnlineEvent e = OnlineEvent.NewFromType((OnlineEvent.EventTypeId)reader.ReadByte());
             e.from = currPlayer;
-            e.to = LobbyManager.mePlayer;
+            e.to = OnlineManager.mePlayer;
             e.CustomSerialize(this);
             return e;
         }
@@ -460,7 +456,7 @@ namespace RainMeadow
                 ids = new(count);
                 for (int i = 0; i < count; i++)
                 {
-                    MeadowPlayerId s = LobbyManager.instance.GetEmptyId();
+                    MeadowPlayerId s = MatchmakingManager.instance.GetEmptyId();
                     s.CustomSerialize(this);
                     ids.Add(s);
                 }
@@ -480,7 +476,7 @@ namespace RainMeadow
             }
         }
 
-        internal void SerializeEvent<T>(ref T playerEvent) where T : OnlineEvent
+        public void SerializeEvent<T>(ref T playerEvent) where T : OnlineEvent
         {
             if (IsWriting)
             {
@@ -491,7 +487,7 @@ namespace RainMeadow
             {
                 playerEvent = (T)OnlineEvent.NewFromType((OnlineEvent.EventTypeId)reader.ReadByte());
                 playerEvent.from = currPlayer;
-                playerEvent.to = LobbyManager.mePlayer;
+                playerEvent.to = OnlineManager.mePlayer;
                 playerEvent.CustomSerialize(this);
             }
         }

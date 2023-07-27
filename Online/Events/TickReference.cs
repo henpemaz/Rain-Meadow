@@ -1,13 +1,11 @@
-﻿using Mono.Cecil;
-using System;
-using static RainMeadow.Serializer;
+﻿using static RainMeadow.Serializer;
 
 namespace RainMeadow
 {
     public class TickReference : ICustomSerializable
     {
-        internal ushort fromPlayer;
-        internal ulong tick;
+        public ushort fromPlayer;
+        public ulong tick;
 
         public TickReference() { }
         public TickReference(OnlinePlayer fromPlayer, ulong tick)
@@ -22,14 +20,14 @@ namespace RainMeadow
             this.tick = player.tick;
         }
 
-        internal bool Invalid()
+        public bool Invalid()
         {
-            return LobbyManager.lobby.PlayerFromId(fromPlayer) == null;
+            return OnlineManager.lobby.PlayerFromId(fromPlayer) == null;
         }
 
-        internal bool ChecksOut()
+        public bool ChecksOut()
         {
-            return !Invalid() && NetIO.IsNewerOrEqual(LobbyManager.lobby.PlayerFromId(fromPlayer).tick, tick);
+            return !Invalid() && NetIO.IsNewerOrEqual(OnlineManager.lobby.PlayerFromId(fromPlayer).tick, tick);
         }
 
         public void CustomSerialize(Serializer serializer)
@@ -46,7 +44,7 @@ namespace RainMeadow
             return NetIO.IsNewerOrEqual(tick.tick, otherTick.tick) ? tick : otherTick;
         }
 
-        internal static TickReference NewestOfMemberships(ResourceMembership membershipA, ResourceMembership membershipB)
+        public static TickReference NewestOfMemberships(ResourceMembership membershipA, ResourceMembership membershipB)
         {
             if (membershipA.memberSinceTick.fromPlayer != membershipA.resource.owner.inLobbyId && membershipB.memberSinceTick.fromPlayer != membershipB.resource.owner.inLobbyId) return null;
             if (membershipA.memberSinceTick.fromPlayer != membershipA.resource.owner.inLobbyId) return membershipB.memberSinceTick;

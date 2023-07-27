@@ -1,11 +1,10 @@
 ﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using System;
-using System.Linq;
 
 namespace RainMeadow
 {
-    partial class RainMeadow
+    public partial class RainMeadow
     {
         private void ShortcutHooks()
         {
@@ -21,12 +20,12 @@ namespace RainMeadow
         // Prevent adding item to update list twice
         private void RoomOnAddObject(On.Room.orig_AddObject orig, Room self, UpdatableAndDeletable obj)
         {
-            if (LobbyManager.lobby != null && self.game != null && self.updateList.Contains(obj))
+            if (OnlineManager.lobby != null && self.game != null && self.updateList.Contains(obj))
             {
-                RainMeadow.Debug($"Object {(obj is PhysicalObject po ? po.abstractPhysicalObject.ID : obj)} already in the update list! Skipping...");
+                Debug($"Object {(obj is PhysicalObject po ? po.abstractPhysicalObject.ID : obj)} already in the update list! Skipping...");
                 var stackTrace = Environment.StackTrace;
                 if (!stackTrace.Contains("Creature.PlaceInRoom") && !stackTrace.Contains("AbstractSpaceVisualizer")) // We know about this
-                    RainMeadow.Error(Environment.StackTrace); // Log cases that we still haven't found 
+                    Error(Environment.StackTrace); // Log cases that we still haven't found 
                 return;
             }
             orig(self, obj);
@@ -49,8 +48,9 @@ namespace RainMeadow
                     );
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((ShortcutHandler self) => {
-                    if (LobbyManager.lobby != null)
+                c.EmitDelegate((ShortcutHandler self) =>
+                {
+                    if (OnlineManager.lobby != null)
                     {
                         for (var i = self.betweenRoomsWaitingLobby.Count - 1; i >= 0; i--)
                         {
@@ -76,7 +76,7 @@ namespace RainMeadow
         private bool ShortcutHandlerOnVesselAllowedInRoom(On.ShortcutHandler.orig_VesselAllowedInRoom orig, ShortcutHandler self, ShortcutHandler.Vessel vessel)
         {
             var result = orig(self, vessel);
-            if (LobbyManager.lobby == null) return result;
+            if (OnlineManager.lobby == null) return result;
 
             var absCrit = vessel.creature.abstractCreature;
             OnlinePhysicalObject.map.TryGetValue(absCrit, out var onlineEntity);

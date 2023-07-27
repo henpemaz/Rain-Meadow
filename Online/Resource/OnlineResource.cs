@@ -1,5 +1,4 @@
-﻿using Steamworks;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -26,7 +25,7 @@ namespace RainMeadow
         public bool isActive { get; protected set; } // The respective in-game resource is loaded
         public bool isAvailable { get; protected set; } // The resource was leased or subscribed to
         public bool isPending => pendingRequest != null;
-        public bool canRelease => !isPending && isActive && !subresources.Any(s => s.isAvailable) && !entities.Keys.Any(e=>e.isMine && !e.isTransferable);
+        public bool canRelease => !isPending && isActive && !subresources.Any(s => s.isAvailable) && !entities.Keys.Any(e => e.isMine && !e.isTransferable);
 
         protected abstract void AvailableImpl();
 
@@ -198,7 +197,7 @@ namespace RainMeadow
                 }
             }
             if (isOwner) // do not send data to myself
-            { 
+            {
                 OnlineManager.RemoveFeeds(this);
             }
             else if (oldOwner != null && oldOwner.isMe) // no longer responsible for sending data
@@ -229,11 +228,11 @@ namespace RainMeadow
         {
             //RainMeadow.Debug(this);
             var originalParticipants = participants.Keys.ToArray();
-            foreach(var p in newParticipants.Except(originalParticipants))
+            foreach (var p in newParticipants.Except(originalParticipants))
             {
                 NewParticipant(p);
             }
-            foreach(var p in originalParticipants.Except(newParticipants))
+            foreach (var p in originalParticipants.Except(newParticipants))
             {
                 ParticipantLeft(p);
             }
@@ -302,7 +301,7 @@ namespace RainMeadow
             if (this is Lobby lobby && owner == player) // lobby owner has left
             {
                 RainMeadow.Debug($"Lobby owner {player} left!!!");
-                NewOwner(LobbyManager.instance.GetLobbyOwner());
+                NewOwner(MatchmakingManager.instance.GetLobbyOwner());
             }
 
             if (participants.ContainsKey(player))
@@ -315,8 +314,8 @@ namespace RainMeadow
                     if (owner == player) // Ooops we'll need a new host
                     {
                         RainMeadow.Debug($"Member was the owner");
-                        var newOwner = LobbyManager.instance.BestTransferCandidate(this, participants);
-                        
+                        var newOwner = MatchmakingManager.instance.BestTransferCandidate(this, participants);
+
                         if (newOwner != null && !isPending)
                         {
                             NewOwner(newOwner); // This notifies all users, if the new owner is active they'll restore the state
@@ -356,7 +355,7 @@ namespace RainMeadow
                 foreach (var ent in entities)
                 {
                     if (player == ent.Key.owner) continue;
-                    if(ent.Key.primaryResource == this)
+                    if (ent.Key.primaryResource == this)
                     {
                         player.QueueEvent(ent.Key.AsNewEntityEvent(this));
                     }

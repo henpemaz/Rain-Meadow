@@ -11,7 +11,7 @@ namespace RainMeadow
         public RealizedCreatureState(OnlineCreature onlineCreature) : base(onlineCreature)
         {
             if (onlineCreature.apo.realizedObject is not Creature creature) return;
-            
+
             if (creature.grasps == null) return;
             foreach (var grasp in creature.grasps)
             {
@@ -49,7 +49,7 @@ namespace RainMeadow
             }
         }
     }
-    
+
     public class GraspRef : Serializer.ICustomSerializable
     {
         public OnlineEntity.EntityId OnlineGrabber;
@@ -70,7 +70,7 @@ namespace RainMeadow
             Dominance = dominance;
             Pacifying = pacifying;
         }
-        
+
         public void CustomSerialize(Serializer serializer)
         {
             serializer.Serialize(ref OnlineGrabber);

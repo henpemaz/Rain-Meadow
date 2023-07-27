@@ -10,7 +10,7 @@ namespace RainMeadow
 
         public ResourceState GetState(uint ts)
         {
-            if(!isOwner) { throw new InvalidProgrammerException("not owner"); }
+            if (!isOwner) { throw new InvalidProgrammerException("not owner"); }
             if (latestState == null || latestState.tick != ts)
             {
                 try
@@ -31,8 +31,8 @@ namespace RainMeadow
         protected abstract ResourceState MakeState(uint ts);
         public void ReadState(ResourceState newState)
         {
-            if(newState.from != owner) { RainMeadow.Debug($"Skipping state resource for {this} from wrong owner {newState.from}"); return; }
-            if(newState.IsDelta)
+            if (newState.from != owner) { RainMeadow.Debug($"Skipping state resource for {this} from wrong owner {newState.from}"); return; }
+            if (newState.IsDelta)
             {
                 //RainMeadow.Debug($"received delta state for tick {newState.tick} referencing baseline {newState.DeltaFromTick}");
                 while (incomingState.Count > 0 && NetIO.IsNewer(newState.DeltaFromTick, incomingState.Peek().tick))
@@ -40,7 +40,7 @@ namespace RainMeadow
                     var discarded = incomingState.Dequeue();
                     //RainMeadow.Debug("discarding old event from tick " + discarded.tick);
                 }
-                if(incomingState.Count == 0 || newState.DeltaFromTick != incomingState.Peek().tick)
+                if (incomingState.Count == 0 || newState.DeltaFromTick != incomingState.Peek().tick)
                 {
                     throw new InvalidProgrammerException($"Unprocessable delta");
                 }
@@ -165,9 +165,9 @@ namespace RainMeadow
                     foreach (var item in subleaseState.list)
                     {
                         var subresource = resource.SubresourceFromShortId(item.resourceId);
-                        var itemOwner = LobbyManager.lobby.PlayerFromId(item.owner);
+                        var itemOwner = OnlineManager.lobby.PlayerFromId(item.owner);
                         if (subresource.owner != itemOwner) subresource.NewOwner(itemOwner);
-                        subresource.UpdateParticipants(item.participants.list.Select(u => LobbyManager.lobby.PlayerFromId(u)).ToList());
+                        subresource.UpdateParticipants(item.participants.list.Select(u => OnlineManager.lobby.PlayerFromId(u)).ToList());
                     }
                 }
             }

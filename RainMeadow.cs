@@ -1,7 +1,7 @@
 ﻿using BepInEx;
 using System;
-using System.Security.Permissions;
 using System.Reflection;
+using System.Security.Permissions;
 
 [assembly: AssemblyVersion(RainMeadow.RainMeadow.MeadowVersionStr)]
 #pragma warning disable CS0618
@@ -9,7 +9,7 @@ using System.Reflection;
 namespace RainMeadow
 {
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
-    partial class RainMeadow : BaseUnityPlugin
+    public partial class RainMeadow : BaseUnityPlugin
     {
 
         public const string MeadowVersionStr = "0.0.4";

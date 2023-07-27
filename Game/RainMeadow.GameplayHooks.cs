@@ -1,11 +1,11 @@
-﻿using System;
+﻿using RWCustom;
+using System;
 using System.Linq;
-using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
 {
-    partial class RainMeadow
+    public partial class RainMeadow
     {
         public void GameplayHooks()
         {
@@ -19,7 +19,7 @@ namespace RainMeadow
 
         private void ShelterDoorOnClose(On.ShelterDoor.orig_Close orig, ShelterDoor self)
         {
-            if (LobbyManager.lobby == null)
+            if (OnlineManager.lobby == null)
             {
                 orig(self);
                 return;
@@ -31,11 +31,11 @@ namespace RainMeadow
             if (!realizedScug.readyForWin) return;
             orig(self);
         }
-        
+
         private void CreatureOnUpdate(On.Creature.orig_Update orig, Creature self, bool eu)
         {
             orig(self, eu);
-            if (LobbyManager.lobby == null) return;
+            if (OnlineManager.lobby == null) return;
             if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineCreature)) throw new InvalidOperationException("Creature doesn't exist in online space!");
             if (!onlineCreature.isMine) return;
 
@@ -51,7 +51,7 @@ namespace RainMeadow
                         grasp.Release();
                         return;
                     }
-                    
+
                     var grabbersOtherThanMe = grasp.grabbed.grabbedBy.Select(x => x.grabber).Where(x => x != self);
                     foreach (var grabbers in grabbersOtherThanMe)
                     {
@@ -63,10 +63,10 @@ namespace RainMeadow
                 }
             }
         }
-        
+
         private void CreatureOnViolence(On.Creature.orig_Violence orig, Creature self, BodyChunk source, Vector2? directionandmomentum, BodyChunk hitchunk, PhysicalObject.Appendage.Pos hitappendage, Creature.DamageType type, float damage, float stunbonus)
         {
-            if (LobbyManager.lobby == null) goto orig;
+            if (OnlineManager.lobby == null) goto orig;
             if (!OnlinePhysicalObject.map.TryGetValue(hitchunk.owner.abstractPhysicalObject, out var onlineVictim) || onlineVictim is not OnlineCreature) throw new InvalidOperationException("Victim doesn't exist in online space!");
             var room = hitchunk.owner.room;
             if (room.updateIndex <= room.updateList.Count)
@@ -90,14 +90,14 @@ namespace RainMeadow
         orig:
             orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
         }
-        
+
         private void GraspOnctor(On.Creature.Grasp.orig_ctor orig, Creature.Grasp self, Creature grabber, PhysicalObject grabbed, int graspused, int chunkgrabbed, Creature.Grasp.Shareability shareability, float dominance, bool pacifying)
         {
             orig(self, grabber, grabbed, graspused, chunkgrabbed, shareability, dominance, pacifying);
-            if (LobbyManager.lobby == null) return;
+            if (OnlineManager.lobby == null) return;
             if (!OnlinePhysicalObject.map.TryGetValue(grabber.abstractPhysicalObject, out var onlineGrabber)) throw new InvalidOperationException("Grabber doesn't exist in online space!");
             if (!OnlinePhysicalObject.map.TryGetValue(grabbed.abstractPhysicalObject, out var onlineGrabbed)) throw new InvalidOperationException("Grabbed tjing doesn't exist in online space!");
-            
+
             if (onlineGrabber.isMine && !onlineGrabbed.isMine && onlineGrabbed.isTransferable && !onlineGrabbed.isPending)
             {
                 onlineGrabbed.Request();
@@ -107,10 +107,10 @@ namespace RainMeadow
         private void PhysicalObjectOnGrabbed(On.PhysicalObject.orig_Grabbed orig, PhysicalObject self, Creature.Grasp grasp)
         {
             orig(self, grasp);
-            if (LobbyManager.lobby == null) return;
+            if (OnlineManager.lobby == null) return;
             if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidOperationException("Entity doesn't exist in online space!");
             if (!OnlinePhysicalObject.map.TryGetValue(grasp.grabber.abstractPhysicalObject, out var onlineGrabber)) throw new InvalidOperationException("Grabber doesn't exist in online space!");
-            
+
             if (!onlineEntity.isTransferable && onlineEntity.isMine)
             {
                 if (!onlineGrabber.isMine && onlineGrabber.isTransferable && !onlineGrabber.isPending)
@@ -122,7 +122,7 @@ namespace RainMeadow
 
         private void CreatureSuckedIntoShortCut(On.Creature.orig_SuckedIntoShortCut orig, Creature self, IntVector2 entrancePos, bool carriedByOther)
         {
-            if (LobbyManager.lobby == null) return;
+            if (OnlineManager.lobby == null) return;
             if (!OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var onlineEntity)) throw new InvalidOperationException("Entity doesn't exist in online space!");
 
             var onlineCreature = (OnlineCreature)onlineEntity;
@@ -132,12 +132,12 @@ namespace RainMeadow
                 orig(self, entrancePos, carriedByOther);
                 onlineCreature.enteringShortCut = false;
             }
-            else if (onlineCreature.isMine) 
+            else if (onlineCreature.isMine)
             {
                 // tell everyone that I am about to enter a shortcut!
                 onlineCreature.SuckedIntoShortCut(entrancePos, carriedByOther);
             }
-            else 
+            else
             {
                 // Clear shortcut that it was meant to enter
                 self.enteringShortCut = null;

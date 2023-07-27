@@ -14,19 +14,19 @@ namespace RainMeadow
 
         public RoomSession roomSession => this.currentlyJoinedResource as RoomSession; // shorthand
 
-        internal static OnlinePhysicalObject RegisterPhysicalObject(AbstractPhysicalObject apo)
+        public static OnlinePhysicalObject RegisterPhysicalObject(AbstractPhysicalObject apo)
         {
             OnlinePhysicalObject newOe = NewFromApo(apo);
             RainMeadow.Debug("Registering new entity - " + newOe.ToString());
             OnlineManager.recentEntities[newOe.id] = newOe;
-            OnlinePhysicalObject.map.Add(apo, newOe);
+            map.Add(apo, newOe);
             return newOe;
         }
 
         public static OnlinePhysicalObject NewFromApo(AbstractPhysicalObject apo)
         {
-            if (apo is AbstractCreature ac) return new OnlineCreature(ac, apo.ID.RandomSeed, apo.realizedObject != null, LobbyManager.mePlayer, new OnlineEntity.EntityId(LobbyManager.mePlayer.inLobbyId, apo.ID.number), !RainMeadow.sSpawningPersonas);
-            return new OnlinePhysicalObject(apo, apo.ID.RandomSeed, apo.realizedObject != null, LobbyManager.mePlayer, new OnlineEntity.EntityId(LobbyManager.mePlayer.inLobbyId, apo.ID.number), !RainMeadow.sSpawningPersonas);
+            if (apo is AbstractCreature ac) return new OnlineCreature(ac, apo.ID.RandomSeed, apo.realizedObject != null, OnlineManager.mePlayer, new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, apo.ID.number), !RainMeadow.sSpawningPersonas);
+            return new OnlinePhysicalObject(apo, apo.ID.RandomSeed, apo.realizedObject != null, OnlineManager.mePlayer, new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, apo.ID.number), !RainMeadow.sSpawningPersonas);
         }
 
         public OnlinePhysicalObject(AbstractPhysicalObject apo, int seed, bool realized, OnlinePlayer owner, EntityId id, bool isTransferable) : base(owner, id, isTransferable)
@@ -45,20 +45,20 @@ namespace RainMeadow
             }
         }
 
-        internal override NewEntityEvent AsNewEntityEvent(OnlineResource inResource)
+        public override NewEntityEvent AsNewEntityEvent(OnlineResource inResource)
         {
             return new NewObjectEvent(seed, realized, apo.ToString(), inResource, this, null);
         }
 
-        internal static OnlineEntity FromEvent(NewObjectEvent newObjectEvent, OnlineResource inResource)
+        public static OnlineEntity FromEvent(NewObjectEvent newObjectEvent, OnlineResource inResource)
         {
             World world = inResource.World;
             EntityID id = world.game.GetNewID();
             id.altSeed = newObjectEvent.seed;
 
             var apo = SaveState.AbstractPhysicalObjectFromString(world, newObjectEvent.serializedObject);
-            var oe = new OnlinePhysicalObject(apo, newObjectEvent.seed, newObjectEvent.realized, LobbyManager.lobby.PlayerFromId(newObjectEvent.owner), newObjectEvent.entityId, newObjectEvent.isTransferable);
-            OnlinePhysicalObject.map.Add(apo, oe);
+            var oe = new OnlinePhysicalObject(apo, newObjectEvent.seed, newObjectEvent.realized, OnlineManager.lobby.PlayerFromId(newObjectEvent.owner), newObjectEvent.entityId, newObjectEvent.isTransferable);
+            map.Add(apo, oe);
             OnlineManager.recentEntities.Add(oe.id, oe);
 
             newObjectEvent.initialState.ReadTo(oe);
@@ -74,8 +74,8 @@ namespace RainMeadow
 
         protected override EntityState MakeState(uint tick, OnlineResource resource)
         {
-            if (resource is WorldSession ws && !LobbyManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) throw new InvalidOperationException("asked for world state, not synched");
-            if (resource is RoomSession rs && !LobbyManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) throw new InvalidOperationException("asked for room state, not synched");
+            if (resource is WorldSession ws && !OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) throw new InvalidOperationException("asked for world state, not synched");
+            if (resource is RoomSession rs && !OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) throw new InvalidOperationException("asked for room state, not synched");
             var realizedState = resource is RoomSession;
             if (realizedState && isMine && apo.realizedObject != null && !realized) { RainMeadow.Error($"have realized object, but not entity not marked as realized??: {this} in resource {resource}"); }
             if (realizedState && isMine && !realized)
@@ -182,7 +182,7 @@ namespace RainMeadow
         {
             base.OnLeftResource(inResource);
             if (isMine) return;
-            if(inResource is RoomSession oldRoom)
+            if (inResource is RoomSession oldRoom)
             {
                 RainMeadow.Debug(this);
                 if (roomSession == oldRoom)

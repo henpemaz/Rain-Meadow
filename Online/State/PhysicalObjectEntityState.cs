@@ -35,7 +35,7 @@ namespace RainMeadow
             onlineObject.apo.Move(pos);
             onlineObject.beingMoved = false;
             onlineObject.realized = this.realized;
-            if(onlineObject.apo.realizedObject != null)
+            if (onlineObject.apo.realizedObject != null)
             {
                 realizedObjectState?.ReadTo(onlineEntity);
             }

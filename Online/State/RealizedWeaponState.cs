@@ -11,7 +11,7 @@ namespace RainMeadow
         private Vector2 rotation;
         private Vector2 lastRotation;
         private float rotationSpeed;
-        
+
         public RealizedWeaponState()
         {
         }

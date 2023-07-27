@@ -93,12 +93,13 @@ namespace RainMeadow
         {
             serializer.Serialize(ref _isDelta);
             serializer.IsDelta = _isDelta; // Serializer wraps this call and restores the previous value later (override-proof)
-            if(_isDelta) { serializer.Serialize(ref DeltaFromTick); }
+            if (_isDelta) { serializer.Serialize(ref DeltaFromTick); }
         }
 
         public virtual bool SupportsDelta => false;
         public bool IsDelta { get => _isDelta; set => _isDelta = value; }
-        bool _isDelta;
+
+        private bool _isDelta;
         public uint DeltaFromTick;
 
         public virtual OnlineState Delta(OnlineState lastAcknoledgedState)

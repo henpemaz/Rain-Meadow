@@ -10,7 +10,7 @@ namespace RainMeadow
         public InvalidProgrammerException(string message) : base(message + " you goof") { }
     }
 
-    partial class RainMeadow
+    public partial class RainMeadow
     {
         private static string TrimCaller(string callerFile) { return (callerFile = callerFile.Substring(Mathf.Max(callerFile.LastIndexOf(Path.DirectorySeparatorChar), callerFile.LastIndexOf(Path.AltDirectorySeparatorChar)) + 1)).Substring(0, callerFile.LastIndexOf('.')); }
         private static string LogTime() { return ((int)(Time.time * 1000)).ToString(); }

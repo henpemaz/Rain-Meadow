@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace RainMeadow
 {
@@ -21,7 +20,7 @@ namespace RainMeadow
 
         protected override void AvailableImpl()
         {
-            if(isOwner)
+            if (isOwner)
             {
                 foreach (var ent in absroom.entities)
                 {
@@ -82,7 +81,8 @@ namespace RainMeadow
             public override StateType stateType => StateType.RoomState;
         }
 
-        public override string ToString() {
+        public override string ToString()
+        {
             return "Room " + Id();
         }
     }

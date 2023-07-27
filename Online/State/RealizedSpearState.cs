@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -12,8 +11,8 @@ namespace RainMeadow
         private byte stuckInChunkIndex;
         private sbyte stuckBodyPart;
         private float stuckRotation;
-        
-        
+
+
         public RealizedSpearState() { }
         public RealizedSpearState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
@@ -52,7 +51,7 @@ namespace RainMeadow
             if (!onlineEntity.owner.isMe && onlineEntity.isPending) return; // Don't sync if pending, reduces visibility and effect of lag
             var spear = (Spear)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             spear.stuckInWall = stuckInWall;
-            if (!stuckInWall.HasValue) 
+            if (!stuckInWall.HasValue)
                 spear.addPoles = false;
 
             spear.stuckInObject = (stuckInObject?.FindEntity() as OnlinePhysicalObject)?.apo.realizedObject;

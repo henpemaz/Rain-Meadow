@@ -28,12 +28,12 @@ namespace RainMeadow
 
         protected override void AvailableImpl()
         {
-            
+
         }
 
         protected override void ActivateImpl()
         {
-            if(world == null) throw new InvalidOperationException("world not set");
+            if (world == null) throw new InvalidOperationException("world not set");
             foreach (var room in world.abstractRooms)
             {
                 var rs = new RoomSession(this, room);
@@ -82,7 +82,8 @@ namespace RainMeadow
             public override StateType stateType => StateType.WorldState;
         }
 
-        public override string ToString() {
+        public override string ToString()
+        {
             return "Region " + Id();
         }
     }

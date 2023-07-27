@@ -1,5 +1,4 @@
-﻿using MonoMod;
-using Steamworks;
+﻿using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +7,8 @@ namespace RainMeadow
 {
     // Static/singleton class for online features and callbacks
     // is a mainloopprocess so update bound to game update? worth it? idk
-    public class OnlineManager : MainLoopProcess {
+    public class OnlineManager : MainLoopProcess
+    {
         public static OnlineManager instance;
         public static Serializer serializer = new Serializer(16000);
         public static List<ResourceSubscription> subscriptions;
@@ -16,13 +16,16 @@ namespace RainMeadow
         public static Dictionary<OnlineEntity.EntityId, OnlineEntity> recentEntities;
         public static HashSet<OnlineEvent> waitingEvents;
         public static float lastDt;
+        public static OnlinePlayer mePlayer;
+        public static List<OnlinePlayer> players;
+        public static Lobby lobby;
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
             instance = this;
             framesPerSecond = 20; // alternatively, run as fast as we can for the receiving stuff, but send on a lower tickrate?
 
-            LobbyManager.InitLobbyManager();
+            MatchmakingManager.InitLobbyManager();
             Reset();
             RainMeadow.Debug("OnlineManager Created");
         }
@@ -38,7 +41,9 @@ namespace RainMeadow
             RoomSession.map = new();
             OnlinePhysicalObject.map = new();
 
-            LobbyManager.instance.Reset();
+            lobby = null;
+            mePlayer = new OnlinePlayer(mePlayer.id);
+            players = new List<OnlinePlayer>() { mePlayer };
         }
 
         public override void Update()
@@ -48,24 +53,24 @@ namespace RainMeadow
             // Incoming messages
             NetIO.Update();
 
-            if (LobbyManager.lobby != null)
+            if (lobby != null)
             {
-                LobbyManager.mePlayer.tick++;
+                mePlayer.tick++;
                 ProcessSelfEvents();
 
                 // Prepare outgoing messages
                 foreach (var subscription in subscriptions)
                 {
-                    subscription.Update(LobbyManager.mePlayer.tick);
+                    subscription.Update(mePlayer.tick);
                 }
 
                 foreach (var feed in feeds)
                 {
-                    feed.Update(LobbyManager.mePlayer.tick);
+                    feed.Update(mePlayer.tick);
                 }
 
                 // Outgoing messages
-                foreach (var player in LobbyManager.players)
+                foreach (var player in players)
                 {
                     SendData(player);
                 }
@@ -93,11 +98,11 @@ namespace RainMeadow
             // Incoming messages
             NetIO.Update();
 
-            if (LobbyManager.lobby != null)
+            if (lobby != null)
             {
-                if(UnityEngine.Time.realtimeSinceStartup > lastDt + 1f/instance.framesPerSecond)
+                if (UnityEngine.Time.realtimeSinceStartup > lastDt + 1f / instance.framesPerSecond)
                 {
-                    LobbyManager.mePlayer.tick++;
+                    mePlayer.tick++;
 
                     // Local messages
                     ProcessSelfEvents();
@@ -105,7 +110,7 @@ namespace RainMeadow
                     // no state
 
                     // Outgoing messages
-                    foreach (var player in LobbyManager.players)
+                    foreach (var player in players)
                     {
                         SendData(player);
                     }
@@ -117,11 +122,11 @@ namespace RainMeadow
         public static void ProcessSelfEvents()
         {
             // Stuff mePlayer set to itself, events from the distributed lease system
-            while (LobbyManager.mePlayer.OutgoingEvents.Count > 0)
+            while (mePlayer.OutgoingEvents.Count > 0)
             {
                 try
                 {
-                    LobbyManager.mePlayer.OutgoingEvents.Dequeue().Process();
+                    mePlayer.OutgoingEvents.Dequeue().Process();
                 }
                 catch (Exception e)
                 {
@@ -160,7 +165,7 @@ namespace RainMeadow
 
         public static void MaybeProcessWaitingEvents()
         {
-            if(waitingEvents.Count > 0)
+            if (waitingEvents.Count > 0)
             {
                 waitingEvents.RemoveWhere(ev => ev.ShouldBeDiscarded());
                 while (waitingEvents.FirstOrDefault(ev => ev.CanBeProcessed()) is OnlineEvent ev)
@@ -231,11 +236,11 @@ namespace RainMeadow
         // this smells
         public static OnlineResource ResourceFromIdentifier(string rid)
         {
-            if(LobbyManager.lobby != null)
+            if (lobby != null)
             {
-                if (rid == ".") return LobbyManager.lobby;
-                if (rid.Length == 2 && LobbyManager.lobby.worldSessions.TryGetValue(rid, out var r)) return r;
-                if (rid.Length > 2 && LobbyManager.lobby.worldSessions.TryGetValue(rid.Substring(0, 2), out var r2) && r2.roomSessions.TryGetValue(rid.Substring(2), out var room)) return room;
+                if (rid == ".") return lobby;
+                if (rid.Length == 2 && lobby.worldSessions.TryGetValue(rid, out var r)) return r;
+                if (rid.Length > 2 && lobby.worldSessions.TryGetValue(rid.Substring(0, 2), out var r2) && r2.roomSessions.TryGetValue(rid.Substring(2), out var room)) return room;
             }
             RainMeadow.Error("resource not found : " + rid);
             return null;

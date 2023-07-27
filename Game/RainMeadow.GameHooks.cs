@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using Mono.Cecil.Cil;
+using System;
 using System.Linq;
 
 namespace RainMeadow
 {
-    partial class RainMeadow
+    public partial class RainMeadow
     {
         // World/room load unload wait
         // prevent creature spawns as well
@@ -31,9 +31,9 @@ namespace RainMeadow
 
         private void StoryGameSession_ctor(On.StoryGameSession.orig_ctor orig, StoryGameSession self, SlugcatStats.Name saveStateNumber, RainWorldGame game)
         {
-            if(LobbyManager.lobby != null)
+            if (OnlineManager.lobby != null)
             {
-                saveStateNumber = LobbyManager.lobby.gameMode.GetStorySessionPlayer(game);
+                saveStateNumber = OnlineManager.lobby.gameMode.GetStorySessionPlayer(game);
             }
             orig(self, saveStateNumber, game);
         }
@@ -47,13 +47,13 @@ namespace RainMeadow
         private void RainWorldGame_ShutDownProcess(On.RainWorldGame.orig_ShutDownProcess orig, RainWorldGame self)
         {
             orig(self);
-            if (LobbyManager.lobby != null)
+            if (OnlineManager.lobby != null)
             {
                 // Don't leak entities from last session
                 OnlineManager.recentEntities.Clear();
-                
+
                 if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
-                var entities = ws.entities.Keys.ToList(); 
+                var entities = ws.entities.Keys.ToList();
                 for (int i = ws.entities.Count - 1; i >= 0; i--)
                 {
                     var ent = entities[i];
@@ -71,24 +71,24 @@ namespace RainMeadow
         // Room unload
         private void AbstractRoom_Abstractize(On.AbstractRoom.orig_Abstractize orig, AbstractRoom self)
         {
-            if (LobbyManager.lobby != null)
+            if (OnlineManager.lobby != null)
             {
                 if (RoomSession.map.TryGetValue(self, out RoomSession rs))
                 {
                     if (rs.isAvailable)
                     {
-                        RainMeadow.Debug("Queueing room release");
+                        Debug("Queueing room release");
                         rs.abstractOnDeactivate = true;
                         rs.FullyReleaseResource();
                         return;
                     }
-                    if(rs.isPending)
+                    if (rs.isPending)
                     {
-                        RainMeadow.Debug("Room pending");
+                        Debug("Room pending");
                         rs.releaseWhenPossible = true;
                         return;
                     }
-                    RainMeadow.Debug("Room released");
+                    Debug("Room released");
                 }
             }
             orig(self);
@@ -97,19 +97,19 @@ namespace RainMeadow
         // Room wait and activate
         private void RoomPreparer_Update(On.RoomPreparer.orig_Update orig, RoomPreparer self)
         {
-            if (!self.shortcutsOnly && self.room.game != null && LobbyManager.lobby != null)
+            if (!self.shortcutsOnly && self.room.game != null && OnlineManager.lobby != null)
             {
-                if(RoomSession.map.TryGetValue(self.room.abstractRoom, out RoomSession rs))
+                if (RoomSession.map.TryGetValue(self.room.abstractRoom, out RoomSession rs))
                 {
                     if (true) // force load scenario ????
                     {
                         OnlineManager.TickEvents();
                     }
-                    if (!rs.isAvailable)return;
+                    if (!rs.isAvailable) return;
                 }
             }
             orig(self);
-            if (!self.shortcutsOnly && self.room.game != null && LobbyManager.lobby != null)
+            if (!self.shortcutsOnly && self.room.game != null && OnlineManager.lobby != null)
             {
                 if (RoomSession.map.TryGetValue(self.room.abstractRoom, out RoomSession rs))
                 {
@@ -121,7 +121,7 @@ namespace RainMeadow
         // Room request
         private void RoomPreparer_ctor(On.RoomPreparer.orig_ctor orig, RoomPreparer self, Room room, bool loadAiHeatMaps, bool falseBake, bool shortcutsOnly)
         {
-            if (!shortcutsOnly && room.game != null && LobbyManager.lobby != null && RoomSession.map.TryGetValue(room.abstractRoom, out var rs))
+            if (!shortcutsOnly && room.game != null && OnlineManager.lobby != null && RoomSession.map.TryGetValue(room.abstractRoom, out var rs))
             {
                 rs.Request();
             }
@@ -131,14 +131,14 @@ namespace RainMeadow
         // wait until available
         private void WorldLoader_NextActivity(On.WorldLoader.orig_NextActivity orig, WorldLoader self)
         {
-            if (LobbyManager.lobby != null && WorldSession.map.TryGetValue(self.world, out var ws))
+            if (OnlineManager.lobby != null && WorldSession.map.TryGetValue(self.world, out var ws))
             {
                 if (self.activity == WorldLoader.Activity.MappingRooms && !ws.isAvailable)
                 {
                     self.abstractLoaderDelay = 1;
                     return;
                 }
-                self.setupValues.worldCreaturesSpawn = LobbyManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);
+                self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);
             }
             orig(self);
         }
@@ -147,7 +147,7 @@ namespace RainMeadow
         private void WorldLoader_Update(On.WorldLoader.orig_Update orig, WorldLoader self)
         {
             orig(self);
-            if (LobbyManager.lobby != null && WorldSession.map.TryGetValue(self.world, out var ws))
+            if (OnlineManager.lobby != null && WorldSession.map.TryGetValue(self.world, out var ws))
             {
                 if (self.game.overWorld?.worldLoader != self) // force-load scenario
                 {
@@ -159,11 +159,11 @@ namespace RainMeadow
                     self.Finished = false;
                     return;
                 }
-                
+
                 // activate the new world
                 if (self.Finished && !ws.isActive)
                 {
-                    RainMeadow.Debug("world loading activating new world");
+                    Debug("world loading activating new world");
                     ws.Activate();
                 }
 
@@ -176,13 +176,13 @@ namespace RainMeadow
                 // if there is a gate, the gate's room will be reused, it needs to be made available
                 if (self.game.overWorld?.reportBackToGate is RegionGate gate)
                 {
-                    
+
                     var newRoom = ws.roomSessions[gate.room.abstractRoom.name];
                     if (!newRoom.isAvailable)
                     {
                         if (!newRoom.isPending)
                         {
-                            RainMeadow.Debug("world loading requesting new room");
+                            Debug("world loading requesting new room");
                             newRoom.Request();
                         }
                         self.Finished = false;
@@ -195,17 +195,17 @@ namespace RainMeadow
         // World request/release
         private void WorldLoader_ctor(On.WorldLoader.orig_ctor_RainWorldGame_Name_bool_string_Region_SetupValues orig, WorldLoader self, RainWorldGame game, SlugcatStats.Name playerCharacter, bool singleRoomWorld, string worldName, Region region, RainWorldGame.SetupValues setupValues)
         {
-            if (LobbyManager.lobby != null)
+            if (OnlineManager.lobby != null)
             {
                 setupValues.worldCreaturesSpawn = false;
-                playerCharacter = LobbyManager.lobby.gameMode.LoadWorldAs(game);
+                playerCharacter = OnlineManager.lobby.gameMode.LoadWorldAs(game);
             }
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
-            if (LobbyManager.lobby != null)
+            if (OnlineManager.lobby != null)
             {
-                RainMeadow.Debug("Requesting new region: " + region.name);
-                LobbyManager.lobby.worldSessions[region.name].Request();
-                LobbyManager.lobby.worldSessions[region.name].BindWorld(self.world);
+                Debug("Requesting new region: " + region.name);
+                OnlineManager.lobby.worldSessions[region.name].Request();
+                OnlineManager.lobby.worldSessions[region.name].BindWorld(self.world);
             }
         }
 
@@ -213,9 +213,9 @@ namespace RainMeadow
         private void Room_ctor(On.Room.orig_ctor orig, Room self, RainWorldGame game, World world, AbstractRoom abstractRoom)
         {
             orig(self, game, world, abstractRoom);
-            if (game != null && LobbyManager.lobby != null)
+            if (game != null && OnlineManager.lobby != null)
             {
-                LobbyManager.lobby.gameMode.FilterItems(self);
+                OnlineManager.lobby.gameMode.FilterItems(self);
             }
         }
 
@@ -237,7 +237,7 @@ namespace RainMeadow
                     );
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((Room self) => { return LobbyManager.lobby != null && !LobbyManager.lobby.gameMode.ShouldSpawnRoomItems(self.game); });
+                c.EmitDelegate((Room self) => { return OnlineManager.lobby != null && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.game); });
                 c.Emit(OpCodes.Brtrue, skip);
             }
             catch (Exception e)
@@ -265,7 +265,7 @@ namespace RainMeadow
                     );
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((Room self) => { return LobbyManager.lobby != null && !LobbyManager.lobby.gameMode.ShouldSpawnRoomItems(self.game); }); // during room.loaded the RoomSession isn't available yet so no point in passing self?
+                c.EmitDelegate((Room self) => { return OnlineManager.lobby != null && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.game); }); // during room.loaded the RoomSession isn't available yet so no point in passing self?
                 c.Emit(OpCodes.Brtrue, skip);
             }
             catch (Exception e)
@@ -277,7 +277,7 @@ namespace RainMeadow
         // please dont spawn flies
         private void FliesWorldAI_AddFlyToSwarmRoom(On.FliesWorldAI.orig_AddFlyToSwarmRoom orig, FliesWorldAI self, int spawnRoom)
         {
-            if (LobbyManager.lobby != null && !LobbyManager.lobby.gameMode.ShouldSpawnFly(self, spawnRoom))
+            if (OnlineManager.lobby != null && !OnlineManager.lobby.gameMode.ShouldSpawnFly(self, spawnRoom))
             {
                 return;
             }

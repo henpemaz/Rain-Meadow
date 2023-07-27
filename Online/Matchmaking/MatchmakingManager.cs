@@ -5,13 +5,9 @@ using System.Linq;
 namespace RainMeadow
 {
 
-    public abstract class LobbyManager
+    public abstract class MatchmakingManager
     {
-        public static LobbyManager instance;
-        public static OnlinePlayer mePlayer;
-        public static List<OnlinePlayer> players;
-        public static Lobby lobby;
-
+        public static MatchmakingManager instance;
         public static string CLIENT_KEY = "client";
         public static string CLIENT_VAL = "Meadow_" + RainMeadow.MeadowVersionStr;
         public static string NAME_KEY = "name";
@@ -21,16 +17,10 @@ namespace RainMeadow
         public static void InitLobbyManager()
         {
 #if LOCAL_P2P
-            instance = new LocalLobbyManager();
+            instance = new LocalMatchmakingManager();
 #else
             instance = new SteamLobbyManager();
 #endif
-        }
-
-        public virtual void Reset()
-        {
-            lobby = null;
-            players = new List<OnlinePlayer>() { mePlayer };
         }
 
         public enum LobbyVisibility
@@ -58,16 +48,14 @@ namespace RainMeadow
 
         public abstract OnlinePlayer GetLobbyOwner();
 
-        public abstract void UpdatePlayersList(); // todo remove this
-
         public virtual OnlinePlayer GetPlayer(MeadowPlayerId id)
         {
-            return players.FirstOrDefault(p => p.id == id);
+            return OnlineManager.players.FirstOrDefault(p => p.id == id);
         }
 
         public virtual OnlinePlayer BestTransferCandidate(OnlineResource onlineResource, Dictionary<OnlinePlayer, PlayerMemebership> subscribers)
         {
-            if (subscribers.Keys.Contains(mePlayer)) return mePlayer;
+            if (subscribers.Keys.Contains(OnlineManager.mePlayer)) return OnlineManager.mePlayer;
             if (subscribers.Count < 1) return null;
             return subscribers.First().Key;
         }

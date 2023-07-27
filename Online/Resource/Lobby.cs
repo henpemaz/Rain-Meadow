@@ -1,5 +1,4 @@
-﻿using Steamworks;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using static RainMeadow.OnlineGameMode;
@@ -20,8 +19,8 @@ namespace RainMeadow
         {
             this.super = this;
 
-            this.gameMode = OnlineGameMode.FromType(mode, this);
-            if(gameMode == null) throw new Exception($"Invalid game mode {mode}");
+            this.gameMode = FromType(mode, this);
+            if (gameMode == null) throw new Exception($"Invalid game mode {mode}");
 
             if (owner == null) throw new Exception("No lobby owner");
             NewOwner(owner);
@@ -90,7 +89,7 @@ namespace RainMeadow
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
                 nextId = lobby.nextId;
-                players = new(lobby.participants.Keys.Select(p=>p.id).ToList());
+                players = new(lobby.participants.Keys.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
             }
             protected override ResourceState NewInstance() => new LobbyState();
@@ -109,7 +108,7 @@ namespace RainMeadow
 
             public override OnlineState Delta(OnlineState lastAcknoledgedState)
             {
-                var delta =  (LobbyState)base.Delta(lastAcknoledgedState);
+                var delta = (LobbyState)base.Delta(lastAcknoledgedState);
                 delta.nextId = nextId;
                 delta.players = (Generics.AddRemoveSortedPlayerIDs)players.Delta((lastAcknoledgedState as LobbyState).players);
                 delta.inLobbyIds = (Generics.AddRemoveSortedUshorts)inLobbyIds.Delta((lastAcknoledgedState as LobbyState).inLobbyIds);
@@ -130,7 +129,7 @@ namespace RainMeadow
                 lobby.nextId = nextId;
                 for (int i = 0; i < players.list.Count; i++)
                 {
-                    if (LobbyManager.instance.GetPlayer(players.list[i]) is OnlinePlayer p)
+                    if (MatchmakingManager.instance.GetPlayer(players.list[i]) is OnlinePlayer p)
                     {
                         if (p.inLobbyId != inLobbyIds.list[i]) RainMeadow.Debug($"Setting player {p} to lobbyId {inLobbyIds.list[i]}");
                         p.inLobbyId = inLobbyIds.list[i];
@@ -140,19 +139,20 @@ namespace RainMeadow
                         RainMeadow.Error("Player not found! " + players.list[i]);
                     }
                 }
-                lobby.UpdateParticipants(players.list.Select(LobbyManager.instance.GetPlayer).ToList());
+                lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).ToList());
                 base.ReadTo(resource);
             }
         }
 
-        public override string ToString() {
+        public override string ToString()
+        {
             return "Lobby";
         }
 
-        internal OnlinePlayer PlayerFromId(ushort id)
+        public OnlinePlayer PlayerFromId(ushort id)
         {
             if (id == 0) return null;
-            return LobbyManager.players.First(p => p.inLobbyId == id);
+            return OnlineManager.players.First(p => p.inLobbyId == id);
         }
 
         protected override void NewParticipantImpl(OnlinePlayer player)
