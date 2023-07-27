@@ -9,7 +9,9 @@ namespace RainMeadow
         private byte bodyModeIndex;
         private bool standing;
         private ushort inputs;
-        private Vector2 analogInput;
+        private ushort analogInputX;
+        private ushort analogInputY;
+
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
         {
@@ -32,7 +34,8 @@ namespace RainMeadow
                 | (i.thrw ? 1 << 8 : 0)
                 | (i.mp ? 1 << 9 : 0));
 
-            analogInput = i.analogueDir;
+            analogInputX = Mathf.FloatToHalf(i.analogueDir.x);
+            analogInputY = Mathf.FloatToHalf(i.analogueDir.y);
         }
         public Player.InputPackage GetInput()
         {
@@ -47,7 +50,8 @@ namespace RainMeadow
             if (((inputs >> 7) & 1) != 0) i.jmp = true;
             if (((inputs >> 8) & 1) != 0) i.thrw = true;
             if (((inputs >> 9) & 1) != 0) i.mp = true;
-            i.analogueDir = analogInput;
+            i.analogueDir.x = Mathf.HalfToFloat(analogInputX);
+            i.analogueDir.x = Mathf.HalfToFloat(analogInputY);
             return i;
         }
 
@@ -61,7 +65,8 @@ namespace RainMeadow
             serializer.Serialize(ref bodyModeIndex);
             serializer.Serialize(ref standing);
             serializer.Serialize(ref inputs);
-            serializer.Serialize(ref analogInput);
+            serializer.Serialize(ref analogInputX);
+            serializer.Serialize(ref analogInputY);
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)

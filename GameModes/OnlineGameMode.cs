@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -30,7 +29,7 @@ namespace RainMeadow
             this.lobby = lobby;
         }
 
-        internal static OnlineGameMode FromType(OnlineGameModeType onlineGameModeType, Lobby lobby)
+        public static OnlineGameMode FromType(OnlineGameModeType onlineGameModeType, Lobby lobby)
         {
             if (onlineGameModeType == OnlineGameModeType.Meadow)
             {
@@ -55,7 +54,7 @@ namespace RainMeadow
         {
             foreach (var item in room.roomSettings.placedObjects)
             {
-                if(item.active && !AllowedInMode(item))
+                if (item.active && !AllowedInMode(item))
                 {
                     item.active = false;
                 }

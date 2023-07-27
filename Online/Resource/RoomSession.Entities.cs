@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     public partial class RoomSession
     {
@@ -24,7 +21,7 @@ namespace RainMeadow
         {
             if (!isAvailable || !isActive) return;
             RainMeadow.Debug(this);
-            RainMeadow.Debug(Environment.StackTrace);
+            //RainMeadow.Debug(Environment.StackTrace);
             if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
             {
                 if (oe.isMine)

@@ -1,5 +1,4 @@
-﻿using Steamworks;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,62 +6,65 @@ namespace RainMeadow
 {
     public partial class OnlinePlayer : IEquatable<OnlinePlayer>
     {
-        public CSteamID id;
-        public SteamNetworkingIdentity oid;
-        public string name;
-        public Queue<OnlineEvent> OutgoingEvents = new(16);
-        public List<OnlineEvent> recentlyAckedEvents = new(16);
-        public List<OnlineEvent> abortedEvents = new();
-        public Queue<OnlineState> OutgoingStates = new(128);
-        private ulong nextOutgoingEvent = 1;
-        public ulong lastEventFromRemote; // the last event I've received from them, I'll write it back on headers as an ack
-        private ulong lastAckFromRemote; // the last event they've ack'd to me, used imediately on receive
-        public ulong tick; // the last tick I've received from them, I'll write it back on headers as an ack
-        public ulong lastAckdTick; // the last tick they've ack'd to me
+        public MeadowPlayerId id; // big id for matchmaking
+        public ushort inLobbyId; // small id in lobby serialization
+
+        public Queue<OnlineEvent> OutgoingEvents = new(8);
+        public List<OnlineEvent> recentlyAckedEvents = new(4);
+        public List<OnlineEvent> abortedEvents = new(8);
+        public Queue<OnlineState> OutgoingStates = new(16);
+
+        private ushort nextOutgoingEvent = 1;
+        public ushort lastEventFromRemote; // the last event I've received from them, I'll write it back on headers as an ack
+        public ushort lastAckFromRemote; // the last event they've ack'd to me, used imediately on receive
+        public uint tick; // the last tick I've received from them, I'll write it back on headers as an ack
+        public uint lastAckdTick; // the last tick they've ack'd to me
         public bool needsAck;
+
         public bool isMe;
         public bool hasLeft;
 
-        public OnlinePlayer(CSteamID id)
+        // DEBUG
+        public bool eventsWritten;
+        public bool statesWritten;
+        public bool eventsRead;
+        public bool statesRead;
+
+
+        public OnlinePlayer(MeadowPlayerId id)
         {
             this.id = id;
-            this.oid = new SteamNetworkingIdentity();
-            oid.SetSteamID(id);
-            isMe = id == PlayersManager.me;
-            name = SteamFriends.GetFriendPersonaName(id);
         }
 
         public OnlineEvent QueueEvent(OnlineEvent e)
         {
             e.eventId = this.nextOutgoingEvent;
             e.to = this;
-            e.from = PlayersManager.mePlayer;
-            RainMeadow.Debug($"{this} {e}");
+            e.from = OnlineManager.mePlayer;
+            RainMeadow.Debug($"{e} for {this}");
             nextOutgoingEvent++;
             OutgoingEvents.Enqueue(e);
             return e;
         }
 
-        public OnlineEvent GetRecentEvent(ulong id)
+        public OnlineEvent GetRecentEvent(ushort id)
         {
-            return recentlyAckedEvents.FirstOrDefault(e => e.eventId == id) 
-                ?? abortedEvents.FirstOrDefault(e => e.eventId == id);
+            return recentlyAckedEvents.FirstOrDefault(e => e.eventId == id) ?? abortedEvents.FirstOrDefault(e => e.eventId == id);
         }
 
-        public void EventAckFromRemote(ulong lastAck)
+        public void EventAckFromRemote(ushort lastAck)
         {
-            //RainMeadow.Debug(this);
             this.recentlyAckedEvents.Clear();
             this.lastAckFromRemote = lastAck;
-            while (OutgoingEvents.Count > 0 && OnlineManager.IsNewerOrEqual(lastAck, OutgoingEvents.Peek().eventId))
+            while (OutgoingEvents.Count > 0 && NetIO.IsNewerOrEqual(lastAck, OutgoingEvents.Peek().eventId))
             {
                 var e = OutgoingEvents.Dequeue();
-                RainMeadow.Debug($"{this} {e}");
+                RainMeadow.Debug($"{this} ackd {e}");
                 recentlyAckedEvents.Add(e);
             }
         }
 
-        public void TickAckFromRemote(ulong lastTick)
+        public void TickAckFromRemote(uint lastTick)
         {
             this.lastAckdTick = lastTick;
         }
@@ -91,7 +93,7 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return $"{id} - {name}";
+            return $"{inLobbyId}:{id}";
         }
 
         // IEqu

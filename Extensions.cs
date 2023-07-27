@@ -4,7 +4,7 @@ namespace RainMeadow
 {
     public static class Extensions
     {
-        
+
         public static bool RemoveFromShortcuts(this Creature creature)
         {
             if (!creature.inShortcut) return true;

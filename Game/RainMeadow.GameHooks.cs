@@ -1,17 +1,18 @@
-﻿using System;
+﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using Mono.Cecil.Cil;
+using System;
 using System.Linq;
 
 namespace RainMeadow
 {
-    partial class RainMeadow
+    public partial class RainMeadow
     {
         // World/room load unload wait
         // prevent creature spawns as well
         private void GameHooks()
         {
             On.StoryGameSession.ctor += StoryGameSession_ctor;
+            On.RainWorldGame.RawUpdate += RainWorldGame_RawUpdate;
             On.RainWorldGame.ShutDownProcess += RainWorldGame_ShutDownProcess;
 
             On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues += WorldLoader_ctor;
@@ -30,11 +31,17 @@ namespace RainMeadow
 
         private void StoryGameSession_ctor(On.StoryGameSession.orig_ctor orig, StoryGameSession self, SlugcatStats.Name saveStateNumber, RainWorldGame game)
         {
-            if(OnlineManager.lobby != null)
+            if (OnlineManager.lobby != null)
             {
                 saveStateNumber = OnlineManager.lobby.gameMode.GetStorySessionPlayer(game);
             }
             orig(self, saveStateNumber, game);
+        }
+
+        private void RainWorldGame_RawUpdate(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
+        {
+            orig(self, dt);
+            DebugOverlay.Update(self, dt);
         }
 
         private void RainWorldGame_ShutDownProcess(On.RainWorldGame.orig_ShutDownProcess orig, RainWorldGame self)
@@ -44,9 +51,9 @@ namespace RainMeadow
             {
                 // Don't leak entities from last session
                 OnlineManager.recentEntities.Clear();
-                
+
                 if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
-                var entities = ws.entities.Keys.ToList(); 
+                var entities = ws.entities.Keys.ToList();
                 for (int i = ws.entities.Count - 1; i >= 0; i--)
                 {
                     var ent = entities[i];
@@ -70,18 +77,18 @@ namespace RainMeadow
                 {
                     if (rs.isAvailable)
                     {
-                        RainMeadow.Debug("Queueing room release");
+                        Debug("Queueing room release");
                         rs.abstractOnDeactivate = true;
                         rs.FullyReleaseResource();
                         return;
                     }
-                    if(rs.isPending)
+                    if (rs.isPending)
                     {
-                        RainMeadow.Debug("Room pending");
+                        Debug("Room pending");
                         rs.releaseWhenPossible = true;
                         return;
                     }
-                    RainMeadow.Debug("Room released");
+                    Debug("Room released");
                 }
             }
             orig(self);
@@ -92,13 +99,13 @@ namespace RainMeadow
         {
             if (!self.shortcutsOnly && self.room.game != null && OnlineManager.lobby != null)
             {
-                if(RoomSession.map.TryGetValue(self.room.abstractRoom, out RoomSession rs))
+                if (RoomSession.map.TryGetValue(self.room.abstractRoom, out RoomSession rs))
                 {
                     if (true) // force load scenario ????
                     {
                         OnlineManager.TickEvents();
                     }
-                    if (!rs.isAvailable)return;
+                    if (!rs.isAvailable) return;
                 }
             }
             orig(self);
@@ -152,11 +159,11 @@ namespace RainMeadow
                     self.Finished = false;
                     return;
                 }
-                
+
                 // activate the new world
                 if (self.Finished && !ws.isActive)
                 {
-                    RainMeadow.Debug("world loading activating new world");
+                    Debug("world loading activating new world");
                     ws.Activate();
                 }
 
@@ -169,13 +176,13 @@ namespace RainMeadow
                 // if there is a gate, the gate's room will be reused, it needs to be made available
                 if (self.game.overWorld?.reportBackToGate is RegionGate gate)
                 {
-                    
+
                     var newRoom = ws.roomSessions[gate.room.abstractRoom.name];
                     if (!newRoom.isAvailable)
                     {
                         if (!newRoom.isPending)
                         {
-                            RainMeadow.Debug("world loading requesting new room");
+                            Debug("world loading requesting new room");
                             newRoom.Request();
                         }
                         self.Finished = false;
@@ -196,7 +203,7 @@ namespace RainMeadow
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
             if (OnlineManager.lobby != null)
             {
-                RainMeadow.Debug("Requesting new region: " + region.name);
+                Debug("Requesting new region: " + region.name);
                 OnlineManager.lobby.worldSessions[region.name].Request();
                 OnlineManager.lobby.worldSessions[region.name].BindWorld(self.world);
             }

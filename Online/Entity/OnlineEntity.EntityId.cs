@@ -1,22 +1,20 @@
-﻿using System;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     public partial class OnlineEntity
     {
         public class EntityId : System.IEquatable<EntityId>, Serializer.ICustomSerializable // How we refer to a game entity online
         {
-            public ulong originalOwner;
+            public ushort originalOwner;
             public int id;
 
             public EntityId() { }
-            public EntityId(ulong originalOwner, int id)
+            public EntityId(ushort originalOwner, int id)
             {
                 this.originalOwner = originalOwner;
                 this.id = id;
             }
 
-            internal OnlineEntity FindEntity()
+            public OnlineEntity FindEntity()
             {
                 return OnlineManager.recentEntities[this];
             }
@@ -29,7 +27,7 @@ namespace RainMeadow
 
             public override string ToString()
             {
-                return $"#{id}:{originalOwner.ToString().Substring(0,6)}"; // mfw no interpolation truncate
+                return $"#{id}:{originalOwner:D4}";
             }
             public override bool Equals(object obj) => this.Equals(obj as EntityId);
             public bool Equals(EntityId other)

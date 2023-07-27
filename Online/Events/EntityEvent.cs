@@ -4,19 +4,19 @@
     // because needs a reference to oe on the receiving side as well
     public abstract class EntityEvent : OnlineEvent
     {
-        public OnlineEntity oe;
+        public OnlineEntity.EntityId entityId;
 
-        public EntityEvent(){}
+        public EntityEvent() { }
 
         public EntityEvent(OnlineEntity oe)
         {
-            this.oe = oe;
+            this.entityId = oe.id;
         }
 
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);
-            serializer.SerializeEntity(ref oe);
+            serializer.Serialize(ref entityId);
         }
     }
 }

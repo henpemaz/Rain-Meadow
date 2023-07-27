@@ -14,19 +14,19 @@
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);
-            serializer.Serialize(ref inResource);
+            serializer.SerializeResourceByReference(ref inResource);
         }
 
         public override EventTypeId eventType => EventTypeId.EntityRelease;
 
         public override void Process()
         {
-            oe.Released(this);
+            entityId.FindEntity().Released(this);
         }
 
         public void Resolve(GenericResult genericResult)
         {
-            this.oe.ResolveRelease(genericResult);
+            this.entityId.FindEntity().ResolveRelease(genericResult);
         }
     }
 }

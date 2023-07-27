@@ -8,18 +8,16 @@ namespace RainMeadow
         public bool realized;
         public RealizedPhysicalObjectState realizedObjectState;
 
-        public OnlinePhysicalObject onlineObject => onlineEntity as OnlinePhysicalObject;
-
         public PhysicalObjectEntityState() : base() { }
-        public PhysicalObjectEntityState(OnlinePhysicalObject onlineEntity, ulong ts, bool realizedState) : base(onlineEntity, ts, realizedState)
+        public PhysicalObjectEntityState(OnlinePhysicalObject onlineEntity, uint ts, bool realizedState) : base(onlineEntity, ts, realizedState)
         {
             this.pos = onlineEntity.apo.pos;
             this.realized = onlineEntity.realized; // now now, oe.realized means its realized in the owners world
                                                    // not necessarily whether we're getting a real state or not
-            if (realizedState) this.realizedObjectState = GetRealizedState();
+            if (realizedState) this.realizedObjectState = GetRealizedState(onlineEntity);
         }
 
-        protected virtual RealizedPhysicalObjectState GetRealizedState()
+        protected virtual RealizedPhysicalObjectState GetRealizedState(OnlinePhysicalObject onlineObject)
         {
             if (onlineObject.apo.realizedObject == null) throw new InvalidOperationException("not realized");
             if (onlineObject.apo.realizedObject is Spear) return new RealizedSpearState(onlineObject);
@@ -37,7 +35,7 @@ namespace RainMeadow
             onlineObject.apo.Move(pos);
             onlineObject.beingMoved = false;
             onlineObject.realized = this.realized;
-            if(onlineObject.apo.realizedObject != null)
+            if (onlineObject.apo.realizedObject != null)
             {
                 realizedObjectState?.ReadTo(onlineEntity);
             }

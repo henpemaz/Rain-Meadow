@@ -5,22 +5,22 @@ namespace RainMeadow
 {
     public class LobbyMenu : SmartMenu
     {
-        Vector2 btns = new Vector2(350, 100);
-        Vector2 btnsize = new Vector2(100, 20);
+        private Vector2 btns = new Vector2(350, 100);
+        private Vector2 btnsize = new Vector2(100, 20);
         private SimplerButton startbtn;
 
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
         public LobbyMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbyMenu)
         {
             RainMeadow.DebugMe();
-            
+
             pages[0].subObjects.Add(startbtn = new SimplerButton(this, pages[0], "START", btns, btnsize));
             startbtn.buttonBehav.greyedOut = !OnlineManager.lobby.isAvailable;
             OnlineManager.lobby.OnLobbyAvailable += OnLobbyAvailable;
             startbtn.OnClick += (SimplerButton obj) => { StartGame(); };
         }
 
-        void OnLobbyAvailable()
+        private void OnLobbyAvailable()
         {
             startbtn.buttonBehav.greyedOut = false;
         }
@@ -41,7 +41,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null) OnlineManager.lobby.OnLobbyAvailable -= OnLobbyAvailable;
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
-                LobbyManager.LeaveLobby();
+                MatchmakingManager.instance.LeaveLobby();
             }
             base.ShutDownProcess();
         }

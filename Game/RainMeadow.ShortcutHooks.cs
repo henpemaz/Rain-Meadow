@@ -1,11 +1,10 @@
 ﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using System;
-using System.Linq;
 
 namespace RainMeadow
 {
-    partial class RainMeadow
+    public partial class RainMeadow
     {
         private void ShortcutHooks()
         {
@@ -23,10 +22,10 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && self.game != null && self.updateList.Contains(obj))
             {
-                RainMeadow.Debug($"Object {(obj is PhysicalObject po ? po.abstractPhysicalObject.ID : obj)} already in the update list! Skipping...");
+                Debug($"Object {(obj is PhysicalObject po ? po.abstractPhysicalObject.ID : obj)} already in the update list! Skipping...");
                 var stackTrace = Environment.StackTrace;
                 if (!stackTrace.Contains("Creature.PlaceInRoom") && !stackTrace.Contains("AbstractSpaceVisualizer")) // We know about this
-                    RainMeadow.Error(Environment.StackTrace); // Log cases that we still haven't found 
+                    Error(Environment.StackTrace); // Log cases that we still haven't found 
                 return;
             }
             orig(self, obj);
@@ -49,7 +48,8 @@ namespace RainMeadow
                     );
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((ShortcutHandler self) => {
+                c.EmitDelegate((ShortcutHandler self) =>
+                {
                     if (OnlineManager.lobby != null)
                     {
                         for (var i = self.betweenRoomsWaitingLobby.Count - 1; i >= 0; i--)

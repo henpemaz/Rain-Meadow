@@ -1,6 +1,6 @@
 ﻿namespace RainMeadow
 {
-    partial class RainMeadow
+    public partial class RainMeadow
     {
         public class Ext_ProcessID
         {

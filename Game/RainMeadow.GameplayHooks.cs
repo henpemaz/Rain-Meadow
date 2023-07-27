@@ -1,10 +1,11 @@
-﻿using System;
+﻿using RWCustom;
+using System;
 using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
 {
-    partial class RainMeadow
+    public partial class RainMeadow
     {
         public void GameplayHooks()
         {
@@ -13,6 +14,7 @@ namespace RainMeadow
             On.Creature.Violence += CreatureOnViolence;
             On.Creature.Grasp.ctor += GraspOnctor;
             On.PhysicalObject.Grabbed += PhysicalObjectOnGrabbed;
+            On.Creature.SuckedIntoShortCut += CreatureSuckedIntoShortCut;
         }
 
         private void ShelterDoorOnClose(On.ShelterDoor.orig_Close orig, ShelterDoor self)
@@ -29,7 +31,7 @@ namespace RainMeadow
             if (!realizedScug.readyForWin) return;
             orig(self);
         }
-        
+
         private void CreatureOnUpdate(On.Creature.orig_Update orig, Creature self, bool eu)
         {
             orig(self, eu);
@@ -49,7 +51,7 @@ namespace RainMeadow
                         grasp.Release();
                         return;
                     }
-                    
+
                     var grabbersOtherThanMe = grasp.grabbed.grabbedBy.Select(x => x.grabber).Where(x => x != self);
                     foreach (var grabbers in grabbersOtherThanMe)
                     {
@@ -61,7 +63,7 @@ namespace RainMeadow
                 }
             }
         }
-        
+
         private void CreatureOnViolence(On.Creature.orig_Violence orig, Creature self, BodyChunk source, Vector2? directionandmomentum, BodyChunk hitchunk, PhysicalObject.Appendage.Pos hitappendage, Creature.DamageType type, float damage, float stunbonus)
         {
             if (OnlineManager.lobby == null) goto orig;
@@ -88,14 +90,14 @@ namespace RainMeadow
         orig:
             orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
         }
-        
+
         private void GraspOnctor(On.Creature.Grasp.orig_ctor orig, Creature.Grasp self, Creature grabber, PhysicalObject grabbed, int graspused, int chunkgrabbed, Creature.Grasp.Shareability shareability, float dominance, bool pacifying)
         {
             orig(self, grabber, grabbed, graspused, chunkgrabbed, shareability, dominance, pacifying);
             if (OnlineManager.lobby == null) return;
             if (!OnlinePhysicalObject.map.TryGetValue(grabber.abstractPhysicalObject, out var onlineGrabber)) throw new InvalidOperationException("Grabber doesn't exist in online space!");
             if (!OnlinePhysicalObject.map.TryGetValue(grabbed.abstractPhysicalObject, out var onlineGrabbed)) throw new InvalidOperationException("Grabbed tjing doesn't exist in online space!");
-            
+
             if (onlineGrabber.isMine && !onlineGrabbed.isMine && onlineGrabbed.isTransferable && !onlineGrabbed.isPending)
             {
                 onlineGrabbed.Request();
@@ -108,13 +110,37 @@ namespace RainMeadow
             if (OnlineManager.lobby == null) return;
             if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidOperationException("Entity doesn't exist in online space!");
             if (!OnlinePhysicalObject.map.TryGetValue(grasp.grabber.abstractPhysicalObject, out var onlineGrabber)) throw new InvalidOperationException("Grabber doesn't exist in online space!");
-            
+
             if (!onlineEntity.isTransferable && onlineEntity.isMine)
             {
                 if (!onlineGrabber.isMine && onlineGrabber.isTransferable && !onlineGrabber.isPending)
                 {
                     onlineGrabber.Request(); // If I've been grabbed and I'm not transferrable, but my grabber is, request him
                 }
+            }
+        }
+
+        private void CreatureSuckedIntoShortCut(On.Creature.orig_SuckedIntoShortCut orig, Creature self, IntVector2 entrancePos, bool carriedByOther)
+        {
+            if (OnlineManager.lobby == null) return;
+            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var onlineEntity)) throw new InvalidOperationException("Entity doesn't exist in online space!");
+
+            var onlineCreature = (OnlineCreature)onlineEntity;
+
+            if (onlineCreature.enteringShortCut) // If this call was from a processing event
+            {
+                orig(self, entrancePos, carriedByOther);
+                onlineCreature.enteringShortCut = false;
+            }
+            else if (onlineCreature.isMine)
+            {
+                // tell everyone that I am about to enter a shortcut!
+                onlineCreature.SuckedIntoShortCut(entrancePos, carriedByOther);
+            }
+            else
+            {
+                // Clear shortcut that it was meant to enter
+                self.enteringShortCut = null;
             }
         }
     }

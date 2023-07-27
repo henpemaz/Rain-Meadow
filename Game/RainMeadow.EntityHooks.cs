@@ -1,13 +1,10 @@
-﻿using Mono.Cecil.Cil;
-using MonoMod.Cil;
-using System;
-using System.Linq;
+﻿using System;
 
 namespace RainMeadow
 {
-    partial class RainMeadow
+    public partial class RainMeadow
     {
-        
+
         private void EntityHooks()
         {
             On.OverWorld.WorldLoaded += OverWorld_WorldLoaded; // creature moving between WORLDS
@@ -16,12 +13,12 @@ namespace RainMeadow
             On.AbstractWorldEntity.Destroy += AbstractWorldEntity_Destroy; // creature moving between rooms
             On.AbstractRoom.RemoveEntity_AbstractWorldEntity += AbstractRoom_RemoveEntity; // creature moving between rooms
             On.AbstractRoom.AddEntity += AbstractRoom_AddEntity; // creature moving between rooms
-            
+
             On.AbstractCreature.Abstractize += AbstractCreature_Abstractize; // get real
             On.AbstractPhysicalObject.Abstractize += AbstractPhysicalObject_Abstractize; // get real
             On.AbstractCreature.Realize += AbstractCreature_Realize; // get real
             On.AbstractPhysicalObject.Realize += AbstractPhysicalObject_Realize; // get real
-            
+
             On.AbstractPhysicalObject.Update += AbstractPhysicalObject_Update; // Don't think
             On.AbstractCreature.Update += AbstractCreature_Update; // Don't think
             On.AbstractCreature.OpportunityToEnterDen += AbstractCreature_OpportunityToEnterDen; // Don't think
@@ -38,7 +35,7 @@ namespace RainMeadow
             {
                 if (!oe.isMine && !oe.beingMoved && !(oe.roomSession != null && oe.roomSession.absroom.index == newCoord.room))
                 {
-                    RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
+                    Error($"Remote entity trying to move: {oe} at {oe.roomSession} {Environment.StackTrace}");
                     return;
                 }
             }
@@ -62,7 +59,7 @@ namespace RainMeadow
             {
                 if (!oe.isMine && !oe.beingMoved && !(oe.roomSession != null && oe.roomSession.absroom.index == newCoord.room))
                 {
-                    RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
+                    Error($"Remote entity trying to move: {oe} at {oe.roomSession} {Environment.StackTrace}");
                     return;
                 }
             }
@@ -76,7 +73,7 @@ namespace RainMeadow
             {
                 if (!oe.isMine && !oe.beingMoved)
                 {
-                    RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
+                    Error($"Remote entity trying to move: {oe} at {oe.roomSession} {Environment.StackTrace}");
                     return;
                 }
             }
@@ -109,13 +106,13 @@ namespace RainMeadow
             orig(self, time);
         }
 
-        
+
         private void AbstractPhysicalObject_Realize(On.AbstractPhysicalObject.orig_Realize orig, AbstractPhysicalObject self)
         {
             orig(self);
-            if(OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
+            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if(!oe.isMine && !oe.realized && oe.isTransferable)
+                if (!oe.isMine && !oe.realized && oe.isTransferable)
                 {
                     if (oe.roomSession == null || !oe.roomSession.participants.ContainsKey(oe.owner)) //if owner of oe is subscribed (is participant) do not request
                     {
@@ -156,7 +153,7 @@ namespace RainMeadow
             {
                 if (!oe.isMine && !oe.beingMoved)
                 {
-                    RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
+                    Error($"Remote entity trying to move: {oe} at {oe.roomSession} {Environment.StackTrace}");
                     return;
                 }
             }
@@ -181,7 +178,7 @@ namespace RainMeadow
             {
                 if (!oe.isMine && !oe.beingMoved)
                 {
-                    RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
+                    Error($"Remote entity trying to move: {oe} at {oe.roomSession} {Environment.StackTrace}");
                     return;
                 }
             }
@@ -198,7 +195,7 @@ namespace RainMeadow
                 }
             }
         }
-        
+
 
         // not the main entry-point for room entities moving around
         // apo.move doesn't set the new pos until after it has moved, that's the issue
@@ -209,7 +206,7 @@ namespace RainMeadow
             {
                 if (!oe.isMine && !oe.beingMoved)
                 {
-                    RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
+                    Error($"Remote entity trying to move: {oe} at {oe.roomSession} {Environment.StackTrace}");
                     return;
                 }
             }
@@ -228,7 +225,7 @@ namespace RainMeadow
             {
                 if (!oe.isMine && !oe.beingMoved)
                 {
-                    RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
+                    Error($"Remote entity trying to move: {oe} at {oe.roomSession} {Environment.StackTrace}");
                     return;
                 }
             }
@@ -245,7 +242,7 @@ namespace RainMeadow
             {
                 if (!oe.isMine && !oe.beingMoved)
                 {
-                    RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
+                    Error($"Remote entity trying to move: {oe} at {oe.roomSession} {Environment.StackTrace}");
                     return;
                 }
             }
@@ -264,7 +261,7 @@ namespace RainMeadow
             {
                 if (!oe.isMine && !oe.beingMoved)
                 {
-                    RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {System.Environment.StackTrace}");
+                    Error($"Remote entity trying to move: {oe} at {oe.roomSession} {Environment.StackTrace}");
                     return;
                 }
             }
@@ -279,7 +276,7 @@ namespace RainMeadow
         // world transition at gates
         private void OverWorld_WorldLoaded(On.OverWorld.orig_WorldLoaded orig, OverWorld self)
         {
-            if(OnlineManager.lobby != null)
+            if (OnlineManager.lobby != null)
             {
                 var oldWorld = self.activeWorld;
                 var newWorld = self.worldLoader.world;
@@ -290,7 +287,7 @@ namespace RainMeadow
                 if (self.reportBackToGate != null && RoomSession.map.TryGetValue(self.reportBackToGate.room.abstractRoom, out var roomSession))
                 {
                     // we go over all APOs in the room
-                    RainMeadow.Debug("Gate switchery 1");
+                    Debug("Gate switchery 1");
                     room = self.reportBackToGate.room;
                     var entities = room.abstractRoom.entities;
                     for (int i = entities.Count - 1; i >= 0; i--)
@@ -300,10 +297,10 @@ namespace RainMeadow
                             // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
                             if (!oe.isMine)
                             {
-                                RainMeadow.Debug("removing remote entity " + oe);
+                                Debug("removing remote entity " + oe);
                                 roomSession.entities.Remove(oe);
                                 room.abstractRoom.RemoveEntity(apo);
-                                if(apo.realizedObject != null)
+                                if (apo.realizedObject != null)
                                 {
                                     room.RemoveObject(apo.realizedObject);
                                     room.CleanOutObjectNotInThisRoom(apo.realizedObject);
@@ -311,7 +308,7 @@ namespace RainMeadow
                             }
                             else // mine leave the old online world
                             {
-                                RainMeadow.Debug("removing my entity " + oe);
+                                Debug("removing my entity " + oe);
                                 roomSession.LocalEntityLeft(oe);
                                 roomSession.worldSession.LocalEntityLeft(oe);
                             }
@@ -327,9 +324,9 @@ namespace RainMeadow
                 {
                     // Don't reuse entities left from previous region
                     OnlineManager.recentEntities.Clear();
-                    
+
                     // we go over all APOs in the room
-                    RainMeadow.Debug("Gate switchery 2");
+                    Debug("Gate switchery 2");
                     var entities = room.abstractRoom.entities;
                     for (int i = entities.Count - 1; i >= 0; i--)
                     {
@@ -337,12 +334,12 @@ namespace RainMeadow
                         {
                             if (oe.isMine)
                             {
-                                RainMeadow.Debug("readding entity to world" + oe);
+                                Debug("readding entity to world" + oe);
                                 roomSession2.worldSession.LocalEntityEntered(oe);
                             }
                             else // what happened here
                             {
-                                RainMeadow.Error("an entity that came through the gate wasnt mine: " + oe);
+                                Error("an entity that came through the gate wasnt mine: " + oe);
                             }
                         }
                     }

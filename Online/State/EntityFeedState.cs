@@ -1,13 +1,13 @@
 ﻿namespace RainMeadow
 {
-    public class EntityInResourceState : OnlineState
+    public class EntityFeedState : OnlineState
     {
         public EntityState entityState;
         public OnlineResource inResource;
 
-        public EntityInResourceState() { }
+        public EntityFeedState() { }
 
-        public EntityInResourceState(EntityState entityState, OnlineResource inResource, ulong ts) : base(ts)
+        public EntityFeedState(EntityState entityState, OnlineResource inResource, uint ts) : base(ts)
         {
             this.entityState = entityState;
             this.inResource = inResource;
@@ -17,7 +17,7 @@
         {
             base.CustomSerialize(serializer);
             serializer.SerializePolyState(ref entityState);
-            serializer.Serialize(ref inResource);
+            serializer.SerializeResourceByReference(ref inResource);
         }
 
         public override StateType stateType => StateType.EntityInResourceState;

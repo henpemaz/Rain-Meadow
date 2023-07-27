@@ -1,16 +1,19 @@
-﻿using System;
+﻿using RWCustom;
+using System;
 using UnityEngine;
 
 namespace RainMeadow
 {
     public class OnlineCreature : OnlinePhysicalObject
     {
+        public bool enteringShortCut;
+
         public OnlineCreature(AbstractCreature ac, int seed, bool realized, OnlinePlayer owner, EntityId id, bool isTransferable) : base(ac, seed, realized, owner, id, isTransferable)
         {
             // ? anything special?
         }
 
-        internal static OnlineEntity FromEvent(NewCreatureEvent newCreatureEvent, OnlineResource inResource)
+        public static OnlineEntity FromEvent(NewCreatureEvent newCreatureEvent, OnlineResource inResource)
         {
             World world = inResource.World;
             EntityID id = world.game.GetNewID();
@@ -19,21 +22,21 @@ namespace RainMeadow
             AbstractCreature ac = SaveState.AbstractCreatureFromString(inResource.World, newCreatureEvent.serializedObject, false);
             ac.ID = id;
 
-            var oe = new OnlineCreature(ac, newCreatureEvent.seed, newCreatureEvent.realized, newCreatureEvent.owner, newCreatureEvent.entityId, newCreatureEvent.isTransferable);
-            OnlinePhysicalObject.map.Add(ac, oe);
+            var oe = new OnlineCreature(ac, newCreatureEvent.seed, newCreatureEvent.realized, OnlineManager.lobby.PlayerFromId(newCreatureEvent.owner), newCreatureEvent.entityId, newCreatureEvent.isTransferable);
+            map.Add(ac, oe);
             OnlineManager.recentEntities.Add(oe.id, oe);
 
             newCreatureEvent.initialState.ReadTo(oe);
             return oe;
         }
 
-        internal override NewEntityEvent AsNewEntityEvent(OnlineResource inResource)
+        public override NewEntityEvent AsNewEntityEvent(OnlineResource inResource)
         {
             RainMeadow.Debug($"serializing {this} in {apo.pos} as {SaveState.AbstractCreatureToStringStoryWorld(apo as AbstractCreature)}");
             return new NewCreatureEvent(seed, realized, SaveState.AbstractCreatureToStringStoryWorld(apo as AbstractCreature), inResource, this, null);
         }
 
-        protected override EntityState MakeState(ulong tick, OnlineResource resource)
+        protected override EntityState MakeState(uint tick, OnlineResource resource)
         {
             if (resource is WorldSession ws && !OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) throw new InvalidOperationException("asked for world state, not synched");
             if (resource is RoomSession rs && !OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) throw new InvalidOperationException("asked for room state, not synched");
@@ -71,7 +74,15 @@ namespace RainMeadow
         public void ForceGrab(GraspRef graspRef)
         {
             var castShareability = new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(graspRef.Shareability));
-            ForceGrab(graspRef.OnlineGrabbed, graspRef.GraspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
+            ForceGrab(graspRef.OnlineGrabbed.FindEntity() as OnlinePhysicalObject, graspRef.GraspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
+        }
+
+        public void SuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
+        {
+            foreach (var participant in currentlyJoinedResource.participants)
+            {
+                participant.Key.QueueEvent(new CreatureEvent.SuckedIntoShortCut(this, entrancePos, carriedByOther));
+            }
         }
 
         public override string ToString()

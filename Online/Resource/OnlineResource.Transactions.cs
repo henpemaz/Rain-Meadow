@@ -1,12 +1,11 @@
-﻿using System.Linq;
-using System;
+﻿using System;
 
 namespace RainMeadow
 {
     public abstract partial class OnlineResource
     {
         // I request this resource, so I can have either ownership or subscription
-        public virtual void Request()
+        public void Request()
         {
             RainMeadow.Debug(this);
             if (isPending) throw new InvalidOperationException("pending");
@@ -61,7 +60,7 @@ namespace RainMeadow
         public void Released(ResourceRelease request)
         {
             RainMeadow.Debug(this);
-            if(isSupervisor)
+            if (isSupervisor)
             {
                 if (!participants.ContainsKey(request.from)) // they are already out?
                 {
@@ -69,11 +68,11 @@ namespace RainMeadow
                     return;
                 }
 
-                if(request.from == owner) // Owner left, might need a transfer
+                if (request.from == owner) // Owner left, might need a transfer
                 {
                     request.from.QueueEvent(new ReleaseResult.Released(request)); // this notifies the old owner that the release was a success
                     ParticipantLeft(request.from);
-                    var newOwner = PlayersManager.BestTransferCandidate(this, participants);
+                    var newOwner = MatchmakingManager.instance.BestTransferCandidate(this, participants);
                     NewOwner(newOwner); // This notifies all users, if the new owner is active they'll restore the state
                     if (newOwner != null)
                     {
