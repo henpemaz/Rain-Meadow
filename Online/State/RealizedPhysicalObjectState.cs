@@ -24,15 +24,17 @@ namespace RainMeadow
             var po = (onlineEntity as OnlinePhysicalObject).apo.realizedObject;
             if (chunkStates.Length == po.bodyChunks.Length)
             {
+                RainMeadow.Debug(onlineEntity.owner.lastAckdTick - PlayersManager.mePlayer.tick); //??????
                 float diffAverage = 0;
                 for (int i = 0; i < chunkStates.Length; i++)
                 {
-                    diffAverage += Math.Max(0, (chunkStates[i].pos - po.bodyChunks[i].pos).magnitude - po.bodyChunks[i].vel.magnitude * .25f);
+                    float physicsLoopDeltaTime = Math.Max(26, UnityEngine.Time.deltaTime);
+                    var couldReasonablyReach = po.bodyChunks[i].vel.magnitude * (UdpPeer.simulatedLatency.Milliseconds / physicsLoopDeltaTime);
+                    diffAverage += Math.Max(0, (chunkStates[i].pos - po.bodyChunks[i].pos).magnitude - couldReasonablyReach);
                 }
-                diffAverage /= chunkStates.Length;  //a rating of how different the two states are, more
-                RainMeadow.Debug(diffAverage);
-                if (diffAverage > .3)               //forgiving the higher the object's velocity
-                {
+                diffAverage /= chunkStates.Length; //a rating of how different the two states are, more
+                if (diffAverage > 4)               //forgiving the higher the object's velocity and the
+                {                                  //update's latency
                     for (int i = 0; i < chunkStates.Length; i++) //sync bodychunk positions
                     {
                         chunkStates[i].ReadTo(po.bodyChunks[i]);

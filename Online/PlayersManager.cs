@@ -134,9 +134,9 @@ namespace RainMeadow
             RainMeadow.Debug($"Handling player disconnect:{leavingPlayer}");
             leavingPlayer.hasLeft = true;
             OnlineManager.lobby?.OnPlayerDisconnect(leavingPlayer);
-            while (leavingPlayer.HasUnacknoledgedEvents())
+            while (leavingPlayer.HasUnacknowledgedEvents())
             {
-                leavingPlayer.AbortUnacknoledgedEvents();
+                leavingPlayer.AbortUnacknowledgedEvents();
                 OnlineManager.lobby?.OnPlayerDisconnect(leavingPlayer);
             }
 

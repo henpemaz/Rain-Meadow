@@ -88,12 +88,12 @@ namespace RainMeadow
             this.lastAckdTick = lastTick;
         }
 
-        public bool HasUnacknoledgedEvents()
+        public bool HasUnacknowledgedEvents()
         {
             return OutgoingEvents.Count > 0;
         }
 
-        public void AbortUnacknoledgedEvents()
+        public void AbortUnacknowledgedEvents()
         {
             if (OutgoingEvents.Count > 0)
             {
