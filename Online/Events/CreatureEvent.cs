@@ -82,7 +82,7 @@ public abstract partial class CreatureEvent
         {
             var creature = suckedCreature.FindEntity() as OnlineCreature ?? throw new System.Exception("Entity not found: " + suckedCreature);
             creature.enteringShortCut = true;
-            (creature.apo.realizedObject as Creature).SuckedIntoShortCut(entrancePos, carriedByOther);
+            (creature.apo.realizedObject as Creature)?.SuckedIntoShortCut(entrancePos, carriedByOther);
         }
     }
 }

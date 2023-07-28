@@ -5,10 +5,10 @@ namespace RainMeadow
     public class TickReference : ICustomSerializable
     {
         public ushort fromPlayer;
-        public ulong tick;
+        public uint tick;
 
         public TickReference() { }
-        public TickReference(OnlinePlayer fromPlayer, ulong tick)
+        public TickReference(OnlinePlayer fromPlayer, uint tick)
         {
             this.fromPlayer = fromPlayer.inLobbyId;
             this.tick = tick;
@@ -38,17 +38,21 @@ namespace RainMeadow
 
         public static TickReference NewestOf(TickReference tick, OnlineResource inResource, TickReference otherTick, OnlineResource otherResource)
         {
-            if (otherTick.fromPlayer != otherResource.owner.inLobbyId && tick.fromPlayer != inResource.owner.inLobbyId) return null;
-            if (otherTick.fromPlayer != otherResource.owner.inLobbyId) return tick;
-            if (tick.fromPlayer != inResource.owner.inLobbyId) return otherTick;
+            var aInvalid = inResource.supervisor == null || tick.fromPlayer != inResource.supervisor.inLobbyId;
+            var bInvalid = otherResource.supervisor == null || otherTick.fromPlayer != otherResource.supervisor.inLobbyId;
+            if (aInvalid && bInvalid) return null;
+            if (aInvalid) return otherTick;
+            if (bInvalid) return tick;
             return NetIO.IsNewerOrEqual(tick.tick, otherTick.tick) ? tick : otherTick;
         }
 
         public static TickReference NewestOfMemberships(ResourceMembership membershipA, ResourceMembership membershipB)
         {
-            if (membershipA.memberSinceTick.fromPlayer != membershipA.resource.owner.inLobbyId && membershipB.memberSinceTick.fromPlayer != membershipB.resource.owner.inLobbyId) return null;
-            if (membershipA.memberSinceTick.fromPlayer != membershipA.resource.owner.inLobbyId) return membershipB.memberSinceTick;
-            if (membershipB.memberSinceTick.fromPlayer != membershipB.resource.owner.inLobbyId) return membershipA.memberSinceTick;
+            var aInvalid = membershipA.resource.supervisor == null || membershipA.memberSinceTick.fromPlayer != membershipA.resource.supervisor.inLobbyId;
+            var bInvalid = membershipB.resource.supervisor == null || membershipB.memberSinceTick.fromPlayer != membershipB.resource.supervisor.inLobbyId;
+            if (aInvalid && bInvalid) return null;
+            if (aInvalid) return membershipB.memberSinceTick;
+            if (bInvalid) return membershipA.memberSinceTick;
             return NetIO.IsNewerOrEqual(membershipA.memberSinceTick.tick, membershipB.memberSinceTick.tick) ? membershipA.memberSinceTick : membershipB.memberSinceTick;
         }
     }

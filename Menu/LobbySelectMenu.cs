@@ -25,7 +25,6 @@ namespace RainMeadow
         private OpComboBox2 modeDropDown;
         private ProperlyAlignedMenuLabel modeDescriptionLabel;
 
-
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
         {

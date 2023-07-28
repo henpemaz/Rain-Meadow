@@ -16,7 +16,9 @@
 
             public OnlineEntity FindEntity()
             {
-                return OnlineManager.recentEntities[this];
+                if (OnlineManager.recentEntities.TryGetValue(this, out var entity)) return entity;
+                RainMeadow.Error("Entity not found: " + this);
+                return null;
             }
 
             public void CustomSerialize(Serializer serializer)
