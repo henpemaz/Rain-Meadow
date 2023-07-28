@@ -176,7 +176,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
-                if (!oe.isMine && !oe.beingMoved)
+                if (!oe.isMine && !oe.beingMoved && RoomSession.map.TryGetValue(self.Room, out var room) && oe.joinedResources.Contains(room))
                 {
                     Error($"Remote entity trying to move: {oe} at {oe.roomSession} {Environment.StackTrace}");
                     return;

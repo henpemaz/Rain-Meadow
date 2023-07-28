@@ -137,7 +137,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (oe.isPending) throw new InvalidOperationException("can't enter subresource if pending");
-            owner.QueueEvent(new EntityJoinRequest(this, oe, super.entities[oe].memberSinceTick));
+            oe.pendingRequest = owner.QueueEvent(new EntityJoinRequest(this, oe, super.entities[oe].memberSinceTick));
         }
 
         public void OnEntityJoinRequest(EntityJoinRequest entityJoinRequest)
@@ -221,7 +221,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (oe.isPending) throw new InvalidOperationException("can't leave if pending");
-            owner.QueueEvent(new EntityLeaveRequest(this, oe.id, entities[oe].memberSinceTick));
+            oe.pendingRequest = owner.QueueEvent(new EntityLeaveRequest(this, oe.id, entities[oe].memberSinceTick));
         }
 
         public void OnEntityLeaveRequest(EntityLeaveRequest entityLeaveRequest)

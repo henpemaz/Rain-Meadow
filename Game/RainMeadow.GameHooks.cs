@@ -21,6 +21,7 @@ namespace RainMeadow
             On.RoomPreparer.ctor += RoomPreparer_ctor;
             On.RoomPreparer.Update += RoomPreparer_Update;
             On.AbstractRoom.Abstractize += AbstractRoom_Abstractize;
+            IL.ShortcutHandler.SuckInCreature += ShortcutHandler_SuckInCreature;
 
             On.Room.ctor += Room_ctor;
             IL.Room.LoadFromDataString += Room_LoadFromDataString;
@@ -67,6 +68,31 @@ namespace RainMeadow
             }
         }
 
+        // Don't activate rooms on other slugs moving around, dumbass
+        private void ShortcutHandler_SuckInCreature(ILContext il)
+        {
+            try
+            {
+                // if (creature is Player && shortCut.shortCutType == ShortcutData.Type.RoomExit)
+                //becomes
+                // if (creature is Player && ((Player) creature).playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer && shortCut.shortCutType == ShortcutData.Type.RoomExit)
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdarg(1),
+                    i => i.MatchIsinst<Player>(),
+                    i => i.MatchBrfalse(out skip)
+                    );
+                c.MoveAfterLabels();
+                c.Emit(OpCodes.Ldarg_1);
+                c.EmitDelegate((Creature creature) => { return OnlineManager.lobby != null && ((Player)creature).playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer; });
+                c.Emit(OpCodes.Brtrue, skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
 
         // Room unload
         private void AbstractRoom_Abstractize(On.AbstractRoom.orig_Abstractize orig, AbstractRoom self)
@@ -77,18 +103,18 @@ namespace RainMeadow
                 {
                     if (rs.isAvailable)
                     {
-                        Debug("Queueing room release");
+                        Debug("Queueing room release: " + self.name);
                         rs.abstractOnDeactivate = true;
                         rs.FullyReleaseResource();
                         return;
                     }
                     if (rs.isPending)
                     {
-                        Debug("Room pending");
+                        Debug("Room pending: " + self.name);
                         rs.releaseWhenPossible = true;
                         return;
                     }
-                    Debug("Room released");
+                    Debug("Room released: " + self.name);
                 }
             }
             orig(self);
@@ -103,7 +129,7 @@ namespace RainMeadow
                 {
                     if (true) // force load scenario ????
                     {
-                        OnlineManager.TickEvents();
+                        OnlineManager.ForceLoadUpdate();
                     }
                     if (!rs.isAvailable) return;
                 }
@@ -151,7 +177,7 @@ namespace RainMeadow
             {
                 if (self.game.overWorld?.worldLoader != self) // force-load scenario
                 {
-                    OnlineManager.TickEvents();
+                    OnlineManager.ForceLoadUpdate();
                 }
                 // wait until new world state available
                 if (!ws.isAvailable)

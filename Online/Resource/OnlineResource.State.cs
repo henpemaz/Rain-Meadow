@@ -52,6 +52,7 @@ namespace RainMeadow
             }
             incomingState.Enqueue(newState);
             newState.ReadTo(this);
+            if(isWaitingForState) { Available(); }
         }
 
         public abstract class ResourceState : OnlineState

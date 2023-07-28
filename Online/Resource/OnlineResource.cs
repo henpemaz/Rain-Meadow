@@ -23,9 +23,21 @@ namespace RainMeadow
         public bool isSupervisor => super.isOwner;
         public OnlinePlayer supervisor => super.owner;
         public bool isActive { get; protected set; } // The respective in-game resource is loaded
-        public bool isAvailable { get; protected set; } // The resource was leased or subscribed to
-        public bool isPending => pendingRequest != null;
+        public bool isAvailable { get; protected set; } // The resource state is available
+        public bool isWaitingForState { get; protected set; } // The resource was leased or subscribed to
+        public bool isPending => pendingRequest != null || isWaitingForState;
         public bool canRelease => !isPending && isActive && !subresources.Any(s => s.isAvailable) && !entities.Keys.Any(e => e.isMine && !e.isTransferable);
+
+        // The online resource has been leased
+        public void WaitingForState()
+        {
+            RainMeadow.Debug(this);
+            if (isAvailable) { throw new InvalidOperationException("Resource is already available"); }
+            if (isActive) { throw new InvalidOperationException("Resource is already active"); }
+            isWaitingForState = true;
+            incomingEntityEvents = new();
+            incomingState = new(32);
+        }
 
         protected abstract void AvailableImpl();
 
@@ -35,9 +47,13 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             if (isAvailable) { throw new InvalidOperationException("Resource is already available"); }
             if (isActive) { throw new InvalidOperationException("Resource is already active"); }
+            if (!isWaitingForState)
+            {
+                incomingEntityEvents = new();
+                incomingState = new(32);
+            }
+            isWaitingForState = false;
             isAvailable = true;
-            incomingEntityEvents = new();
-            incomingState = new(32);
 
             AvailableImpl();
         }
@@ -319,7 +335,7 @@ namespace RainMeadow
                         if (newOwner != null && !isPending)
                         {
                             NewOwner(newOwner); // This notifies all users, if the new owner is active they'll restore the state
-                            this.pendingRequest = (ResourceEvent)newOwner.QueueEvent(new ResourceTransfer(this));
+                            newOwner.QueueEvent(new ResourceTransfer(this));
                         }
                         else
                         {

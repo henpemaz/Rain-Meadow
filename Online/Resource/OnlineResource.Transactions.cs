@@ -76,7 +76,7 @@ namespace RainMeadow
                     NewOwner(newOwner); // This notifies all users, if the new owner is active they'll restore the state
                     if (newOwner != null)
                     {
-                        this.pendingRequest = (ResourceEvent)newOwner.QueueEvent(new ResourceTransfer(this));
+                        newOwner.QueueEvent(new ResourceTransfer(this));
                     }
                     return;
                 }
@@ -94,13 +94,13 @@ namespace RainMeadow
         public void Transfered(ResourceTransfer request)
         {
             RainMeadow.Debug(this);
-            if (isAvailable && isActive && isOwner && request.from == supervisor) // I am a subscriber with a valid state who now owns this resource
+            if (isAvailable && isActive && request.from == supervisor) // I am a subscriber with a valid state who now owns this resource
             {
                 request.from.QueueEvent(new TransferResult.Ok(request));
                 return;
             }
 
-            RainMeadow.Debug($"Transfer error : {isAvailable} {isActive} {isOwner} {request.from == supervisor}");
+            RainMeadow.Debug($"Transfer error : {isAvailable} {isActive} {request.from == supervisor}");
             request.from.QueueEvent(new TransferResult.Error(request)); // super should retry with someone else
         }
 
@@ -109,6 +109,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (requestResult.referencedEvent == pendingRequest) pendingRequest = null;
+            else RainMeadow.Debug($"Weird event situation, pending is {pendingRequest} and referenced is {requestResult.referencedEvent}");
 
             if (requestResult is RequestResult.Leased) // I'm the new owner of a previously-free resource
             {
@@ -119,13 +120,14 @@ namespace RainMeadow
                 else
                 {
                     RainMeadow.Debug("Claimed free resource");
+                    WaitingForState();
                     Available();
                 }
             }
             else if (requestResult is RequestResult.Subscribed) // I'm subscribed to a resource's state and events
             {
                 RainMeadow.Debug("Subscribed to resource");
-                Available();
+                WaitingForState();
             }
             else if (requestResult is RequestResult.Error) // I should retry
             {
@@ -139,6 +141,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (pendingRequest == releaseResult.referencedEvent) pendingRequest = null;
+            else RainMeadow.Debug($"Weird event situation, pending is {pendingRequest} and referenced is {releaseResult.referencedEvent}");
 
             if (releaseResult is ReleaseResult.Released) // I've let go
             {
@@ -160,6 +163,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (pendingRequest == transferResult.referencedEvent) pendingRequest = null;
+            else RainMeadow.Debug($"Weird event situation, pending is {pendingRequest} and referenced is {transferResult.referencedEvent}");
 
             if (transferResult is TransferResult.Ok) // New owner accepted it
             {

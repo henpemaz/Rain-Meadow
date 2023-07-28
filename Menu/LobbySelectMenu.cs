@@ -1,6 +1,9 @@
 ﻿using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
+#if !LOCAL_P2P
+using Steamworks;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Linq;

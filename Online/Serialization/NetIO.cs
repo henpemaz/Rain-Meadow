@@ -23,7 +23,7 @@ namespace RainMeadow
 #if LOCAL_P2P
                 SendP2P(toPlayer, new SessionPacket(OnlineManager.serializer.buffer, (ushort)OnlineManager.serializer.Position), SendType.Unreliable);
 #else
-                var steamNetId = (toPlayer.id as SteamLobbyManager.SteamPlayerId).oid;
+                var steamNetId = (toPlayer.id as SteamMatchmakingManager.SteamPlayerId).oid;
                 unsafe
                 {
                     fixed (byte* dataPointer = OnlineManager.serializer.buffer)

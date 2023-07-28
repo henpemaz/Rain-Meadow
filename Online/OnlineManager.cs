@@ -42,7 +42,7 @@ namespace RainMeadow
             OnlinePhysicalObject.map = new();
 
             lobby = null;
-            mePlayer = new OnlinePlayer(mePlayer.id);
+            mePlayer = new OnlinePlayer(mePlayer.id) { isMe = true };
             players = new List<OnlinePlayer>() { mePlayer };
         }
 
@@ -50,6 +50,24 @@ namespace RainMeadow
         {
             base.Update();
 
+            NetTick();
+        }
+
+        // from a force-load situation
+        public static void ForceLoadUpdate()
+        {
+                if (UnityEngine.Time.realtimeSinceStartup > lastDt + 1f / instance.framesPerSecond)
+            {
+#if !LOCAL_P2P
+                SteamAPI.RunCallbacks();
+#endif
+                NetTick();
+
+            }
+        }
+
+        public static void NetTick()
+        {
             // Incoming messages
             NetIO.Update();
 
@@ -87,35 +105,6 @@ namespace RainMeadow
             if (toPlayer.needsAck || toPlayer.OutgoingEvents.Any() || toPlayer.OutgoingStates.Any())
             {
                 NetIO.SendSessionData(toPlayer);
-            }
-        }
-
-        // from a force-load situation
-        public static void TickEvents()
-        {
-            SteamAPI.RunCallbacks();
-
-            // Incoming messages
-            NetIO.Update();
-
-            if (lobby != null)
-            {
-                if (UnityEngine.Time.realtimeSinceStartup > lastDt + 1f / instance.framesPerSecond)
-                {
-                    mePlayer.tick++;
-
-                    // Local messages
-                    ProcessSelfEvents();
-
-                    // no state
-
-                    // Outgoing messages
-                    foreach (var player in players)
-                    {
-                        SendData(player);
-                    }
-                    lastDt = UnityEngine.Time.realtimeSinceStartup;
-                }
             }
         }
 
@@ -185,10 +174,9 @@ namespace RainMeadow
 
         public static void ProcessIncomingState(OnlineState state)
         {
-            OnlinePlayer fromPlayer = state.from;
             try
             {
-                if (state is OnlineResource.ResourceState resourceState && resourceState.resource != null && resourceState.resource.isAvailable)
+                if (state is OnlineResource.ResourceState resourceState && resourceState.resource != null && (resourceState.resource.isAvailable || resourceState.resource.isWaitingForState))
                 {
                     resourceState.resource.ReadState(resourceState);
                 }

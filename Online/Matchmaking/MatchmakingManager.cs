@@ -19,7 +19,7 @@ namespace RainMeadow
 #if LOCAL_P2P
             instance = new LocalMatchmakingManager();
 #else
-            instance = new SteamLobbyManager();
+            instance = new SteamMatchmakingManager();
 #endif
         }
 
