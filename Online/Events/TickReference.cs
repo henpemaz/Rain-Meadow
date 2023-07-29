@@ -48,8 +48,8 @@ namespace RainMeadow
 
         public static TickReference NewestOfMemberships(ResourceMembership membershipA, ResourceMembership membershipB)
         {
-            var aInvalid = membershipA.resource.supervisor == null || membershipA.memberSinceTick.fromPlayer != membershipA.resource.supervisor.inLobbyId;
-            var bInvalid = membershipB.resource.supervisor == null || membershipB.memberSinceTick.fromPlayer != membershipB.resource.supervisor.inLobbyId;
+            var aInvalid = membershipA == null || membershipA.resource.supervisor == null || membershipA.memberSinceTick.fromPlayer != membershipA.resource.supervisor.inLobbyId;
+            var bInvalid = membershipB == null || membershipB.resource.supervisor == null || membershipB.memberSinceTick.fromPlayer != membershipB.resource.supervisor.inLobbyId;
             if (aInvalid && bInvalid) return null;
             if (aInvalid) return membershipB.memberSinceTick;
             if (bInvalid) return membershipA.memberSinceTick;

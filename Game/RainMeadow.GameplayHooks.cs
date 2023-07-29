@@ -36,14 +36,22 @@ namespace RainMeadow
         {
             orig(self, eu);
             if (OnlineManager.lobby == null) return;
-            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineCreature)) throw new InvalidOperationException("Creature doesn't exist in online space!");
+            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineCreature))
+            {
+                Error($"Creature {self} {self.abstractPhysicalObject.ID} doesn't exist in online space!");
+                return;
+            }
             if (!onlineCreature.isMine) return;
 
             if (self.grasps == null) return;
             foreach (var grasp in self.grasps)
             {
                 if (grasp == null) continue;
-                if (!OnlinePhysicalObject.map.TryGetValue(grasp.grabbed.abstractPhysicalObject, out var onlineGrabbed)) throw new InvalidOperationException("Creature doesn't exist in online space!");
+                if (!OnlinePhysicalObject.map.TryGetValue(grasp.grabbed.abstractPhysicalObject, out var onlineGrabbed))
+                {
+                    Error($"Grabbed object {grasp.grabbed.abstractPhysicalObject} {grasp.grabbed.abstractPhysicalObject.ID} doesn't exist in online space!");
+                    continue;
+                }
                 if (!onlineGrabbed.isMine && onlineGrabbed.isTransferable && !onlineGrabbed.isPending)
                 {
                     if (grasp.grabbed is not Creature) // Non-Creetchers cannot be grabbed by multiple creatures
@@ -55,7 +63,11 @@ namespace RainMeadow
                     var grabbersOtherThanMe = grasp.grabbed.grabbedBy.Select(x => x.grabber).Where(x => x != self);
                     foreach (var grabbers in grabbersOtherThanMe)
                     {
-                        if (!OnlinePhysicalObject.map.TryGetValue(grabbers.abstractPhysicalObject, out var tempEntity)) throw new InvalidOperationException("Creature doesn't exist in online space!");
+                        if (!OnlinePhysicalObject.map.TryGetValue(grabbers.abstractPhysicalObject, out var tempEntity))
+                        {
+                            Error($"Other grabber {grabbers.abstractPhysicalObject} {grabbers.abstractPhysicalObject.ID} doesn't exist in online space!");
+                            continue;
+                        }
                         if (!tempEntity.isMine) return;
                     }
                     // If no remotes holding the entity, request it

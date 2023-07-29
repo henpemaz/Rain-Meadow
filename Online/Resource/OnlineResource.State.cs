@@ -42,7 +42,8 @@ namespace RainMeadow
                 }
                 if (incomingState.Count == 0 || newState.DeltaFromTick != incomingState.Peek().tick)
                 {
-                    throw new InvalidProgrammerException($"Unprocessable delta");
+                    RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}");
+                    return;
                 }
                 newState = (ResourceState)incomingState.Peek().ApplyDelta(newState);
             }

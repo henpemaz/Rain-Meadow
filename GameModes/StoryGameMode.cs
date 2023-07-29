@@ -15,9 +15,10 @@
             return worldSession.isOwner;
         }
 
-        public override bool ShouldSpawnRoomItems(RainWorldGame game)
+        public override bool ShouldSpawnRoomItems(RainWorldGame game, RoomSession roomSession)
         {
-            return true;
+            return roomSession.owner == null || roomSession.owner.isMe;
+            // todo if two join at once, this first check is faulty
         }
 
         public override bool ShouldSyncObjectInWorld(WorldSession ws, AbstractPhysicalObject apo)

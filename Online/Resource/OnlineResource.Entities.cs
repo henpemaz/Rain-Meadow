@@ -353,7 +353,7 @@ namespace RainMeadow
             {
                 foreach (var part in participants)
                 {
-                    if (part.Key.isMe || part.Key == oe.owner) { continue; }
+                    if (part.Key.isMe) { continue; }
                     part.Key.QueueEvent(new EntityTransferedEvent(this, oe.id, to, part.Value.memberSinceTick));
                 }
             }

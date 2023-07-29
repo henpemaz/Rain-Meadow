@@ -5,11 +5,20 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using UnityEngine;
 
 namespace RainMeadow
 {
     public static class UdpPeer
     {
+        public static float simulatedLoss = 0.1f;
+        public static float simulatedChainLoss = 0.4f;
+        public static float simulatedLatency = 150;
+        public static float simulatedJitter = 100;
+        public static float simulatedJitterPower = 2;
+
+        public static System.Random random = new System.Random();
+
         public static UdpClient debugClient;
         public static int port;
         public static bool isHost;
@@ -65,6 +74,7 @@ namespace RainMeadow
             public int ticksToResend = RESEND_TICKS;
             public ulong lastAckedPacketIndex;
             public ulong lastUnreliablePacketIndex;
+            internal bool loss;
         }
         public static bool waitingForTermination;
         private static Dictionary<IPEndPoint, RemotePeer> peers;
@@ -99,9 +109,6 @@ namespace RainMeadow
         }
 
         private static Queue<DelayedPacket> delayedPackets;
-
-        public static float simulatedLoss = 0.1f;
-        public static TimeSpan simulatedLatency = TimeSpan.FromMilliseconds(100);
 
         public static void Startup()
         {
@@ -220,9 +227,6 @@ namespace RainMeadow
             MemoryStream netStream = new MemoryStream(debugClient.Receive(ref remoteEndpoint));
             netReader = new BinaryReader(netStream);
 
-            if (simulatedLoss > 0 && SimulatePacketDrop())
-                return false;
-
             PacketType type = (PacketType)netReader.ReadByte();
             //RainMeadow.Debug("Got packet meta-type: " + type);
 
@@ -231,6 +235,17 @@ namespace RainMeadow
                 RainMeadow.Debug($"Communicating with new peer {remoteEndpoint}");
                 peerData = new RemotePeer();
                 peers[remoteEndpoint] = peerData;
+            }
+
+            if(simulatedLoss > 0)
+            {
+                if (simulatedLoss > random.NextDouble() || (peerData.loss && simulatedChainLoss > random.NextDouble()))
+                {
+                    // packet loss
+                    peerData.loss = true;
+                    return false;
+                }
+                peerData.loss = false;
             }
 
             peerData.ticksSinceLastPacketReceived = 0;
@@ -311,11 +326,6 @@ namespace RainMeadow
             return debugClient != null && debugClient.Available > 0;
         }
 
-        public static bool SimulatePacketDrop()
-        {
-            return new Random().NextDouble() < simulatedLoss; // Artificial packet loss (read to consume data but not process it)
-        }
-
         public static void Send(IPEndPoint remoteEndpoint, byte[] data, int length, PacketType packetType)
         {
             if (debugClient == null || waitingForTermination)
@@ -371,9 +381,9 @@ namespace RainMeadow
 
         private static void Send(byte[] packet, IPEndPoint endPoint)
         {
-            if (simulatedLatency > TimeSpan.Zero)
+            if (simulatedLatency > 0)
             {
-                delayedPackets.Enqueue(new DelayedPacket(endPoint, packet, simulatedLatency));
+                delayedPackets.Enqueue(new DelayedPacket(endPoint, packet, TimeSpan.FromMilliseconds(simulatedLatency + simulatedJitter * Mathf.Pow((float)random.NextDouble(), simulatedJitterPower))));
             }
             else
             {

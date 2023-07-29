@@ -30,24 +30,28 @@ namespace RainMeadow
 
         public void EnterResource(OnlineResource resource)
         {
-            RainMeadow.Debug(this);
+            RainMeadow.Debug($"{this} entered {resource}");
             // todo handle joining same-level resource when joining (I guess if remote)
             // but why do we even keep track of this for non-local?
-            if (enteredResources.Count != 0 && resource.super != currentlyEnteredResource) throw new InvalidOperationException("not entering a subresource");
+            if (enteredResources.Count != 0 && resource.super != currentlyEnteredResource)
+            {
+                RainMeadow.Error($"Not the right resource {this} - {resource} - {currentlyEnteredResource}");
+            }
             enteredResources.Add(resource);
             if (isMine) JoinOrLeavePending();
         }
 
         public void LeaveResource(OnlineResource resource)
         {
-            RainMeadow.Debug(this);
+            RainMeadow.Debug($"{this} left {resource}");
             // todo handle leaving same-level resource when joining (I guess if remote)
             // but why do we even keep track of this for non-local?
             if (enteredResources.Count == 0) throw new InvalidOperationException("not in a resource");
 
-            // this is wrong, it's cheking for joinedresources(remote) but we're looking at enteredresources(local, pending)
-            // todo fix this
-            if (resource != currentlyEnteredResource) throw new InvalidOperationException("not the right resource");
+            if (resource != currentlyEnteredResource)
+            {
+                RainMeadow.Error($"Not the right resource {this} - {resource} - {currentlyEnteredResource}");
+            }
             enteredResources.Remove(resource);
             if (isMine) JoinOrLeavePending();
         }
@@ -142,6 +146,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             var wasOwner = owner;
+            if (wasOwner == newOwner) return;
             owner = newOwner;
 
             if (wasOwner.isMe)
@@ -173,10 +178,19 @@ namespace RainMeadow
 
         public virtual void ReadState(EntityState entityState, OnlineResource inResource)
         {
-            if (lastStates.TryGetValue(inResource, out var existingState) && NetIO.IsNewer(existingState.tick, entityState.tick)) return; // skipped old data
+            if (lastStates.TryGetValue(inResource, out var existingState) && NetIO.IsNewer(existingState.tick, entityState.tick)) { RainMeadow.Debug($"Skipping stale state"); return; }
             lastStates[inResource] = entityState;
-            if (inResource != currentlyJoinedResource) return; // skip processing
-            entityState.ReadTo(this);
+            if (inResource != currentlyJoinedResource)
+            {
+                // RainMeadow.Debug($"Skipping state for wrong resource" + Environment.StackTrace);
+                // since we send both region state and room state even if it's the same guy owning both, this gets spammed a lot
+                // todo supress sending if more specialized state being sent
+                return;
+            }
+            if(!isMine)
+            {
+                entityState.ReadTo(this);
+            }
         }
 
         protected abstract EntityState MakeState(uint tick, OnlineResource inResource);
