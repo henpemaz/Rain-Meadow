@@ -18,12 +18,12 @@
 
         public override void Process()
         {
-            (newEntityEvent as NewEntityEvent).onlineResource.OnEntityRegisterRequest(this);
+            newEntityEvent.onlineResource.OnEntityRegisterRequest(this);
         }
 
         public void Resolve(GenericResult genericResult)
         {
-            (newEntityEvent as NewEntityEvent).onlineResource.OnRegisterResolve(genericResult);
+            newEntityEvent.onlineResource.OnRegisterResolve(genericResult);
         }
 
         public override EventTypeId eventType => EventTypeId.RegisterNewEntityRequest;

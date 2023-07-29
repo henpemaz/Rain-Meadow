@@ -11,13 +11,13 @@ namespace RainMeadow
 
         public void Serialize<T>(ref T customSerializable) where T : ICustomSerializable, new()
         {
-            if (isReading) customSerializable = new();
+            if (IsReading) customSerializable = new();
             customSerializable.CustomSerialize(this);
         }
 
         public void SerializeNullable<T>(ref T customSerializable) where T : ICustomSerializable, new()
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write(customSerializable != null);
                 if (customSerializable != null)
@@ -25,7 +25,7 @@ namespace RainMeadow
                     customSerializable.CustomSerialize(this);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 if (reader.ReadBoolean())
                 {
@@ -37,7 +37,7 @@ namespace RainMeadow
 
         public void Serialize<T>(ref List<T> listOfSerializables) where T : ICustomSerializable, new()
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)listOfSerializables.Count);
                 for (int i = 0; i < listOfSerializables.Count; i++)
@@ -45,7 +45,7 @@ namespace RainMeadow
                     listOfSerializables[i].CustomSerialize(this);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 var count = reader.ReadByte();
                 listOfSerializables = new(count);
@@ -60,7 +60,7 @@ namespace RainMeadow
 
         public void Serialize<T>(ref T[] arrayOfSerializables) where T : ICustomSerializable, new()
         {
-            if (isWriting)
+            if (IsWriting)
             {
                 writer.Write((byte)arrayOfSerializables.Length);
                 for (int i = 0; i < arrayOfSerializables.Length; i++)
@@ -68,7 +68,7 @@ namespace RainMeadow
                     arrayOfSerializables[i].CustomSerialize(this);
                 }
             }
-            if (isReading)
+            if (IsReading)
             {
                 var count = reader.ReadByte();
                 arrayOfSerializables = new T[count];

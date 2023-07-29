@@ -7,7 +7,7 @@ namespace RainMeadow
         public abstract EventTypeId eventType { get; } // serialized externally
         public OnlinePlayer from;// not serialized
         public OnlinePlayer to;// not serialized
-        public ulong eventId;
+        public ushort eventId;
         public TickReference dependsOnTick; // not serialized but universally supported, serialize if used for your event type
 
         public override string ToString()
@@ -15,7 +15,7 @@ namespace RainMeadow
             return $"{eventId}:{eventType}";
         }
 
-        public virtual long EstimatedSize { get => sizeof(ulong); }
+        public virtual long EstimatedSize { get => sizeof(ushort); }
 
         public virtual void CustomSerialize(Serializer serializer)
         {
@@ -55,7 +55,6 @@ namespace RainMeadow
             ReleaseResultError,
             TransferResultOk,
             TransferResultError,
-            LeaseChange,
             GenericResultOk,
             GenericResultError,
             CreatureEventViolence,
@@ -112,9 +111,6 @@ namespace RainMeadow
                     break;
                 case EventTypeId.TransferResultOk:
                     e = new TransferResult.Ok();
-                    break;
-                case EventTypeId.LeaseChange:
-                    e = new LeaseChangeEvent();
                     break;
                 case EventTypeId.CreatureEventViolence:
                     e = new CreatureEvent.Violence();

@@ -2,13 +2,13 @@
 {
     public class EntityTransferedEvent : EntityResourceEvent
     {
-        public OnlinePlayer newOwner;
+        public ushort newOwner;
 
         public EntityTransferedEvent() { }
 
         public EntityTransferedEvent(OnlineResource onlineResource, OnlineEntity.EntityId entityId, OnlinePlayer newOwner, TickReference tickReference) : base(onlineResource, entityId, tickReference)
         {
-            this.newOwner = newOwner;
+            this.newOwner = newOwner.inLobbyId;
         }
 
         public override void CustomSerialize(Serializer serializer)

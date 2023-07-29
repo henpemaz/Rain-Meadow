@@ -6,7 +6,7 @@ namespace RainMeadow
 {
     public class RealizedPhysicalObjectState : OnlineState
     {
-        ChunkState[] chunkStates;
+        private ChunkState[] chunkStates;
         private int collisionLayer;
 
         public RealizedPhysicalObjectState() { }

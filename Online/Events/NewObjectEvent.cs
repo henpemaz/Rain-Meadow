@@ -1,8 +1,6 @@
-﻿using Mono.Cecil;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
-    internal class NewObjectEvent : NewEntityEvent
+    public class NewObjectEvent : NewEntityEvent
     {
         public int seed;
         public bool realized;

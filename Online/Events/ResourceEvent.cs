@@ -14,7 +14,7 @@
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);
-            serializer.Serialize(ref onlineResource);
+            serializer.SerializeResourceByReference(ref onlineResource);
         }
     }
 }

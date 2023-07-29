@@ -1,7 +1,9 @@
 ﻿using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
+#if !LOCAL_P2P
 using Steamworks;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +25,6 @@ namespace RainMeadow
         private OpComboBox2 modeDropDown;
         private ProperlyAlignedMenuLabel modeDescriptionLabel;
 
-
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
         {
@@ -41,7 +42,7 @@ namespace RainMeadow
             playButton = new SimplerButton(this, mainPage, Translate("PLAY!"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
             playButton.OnClick += Play;
             mainPage.subObjects.Add(playButton);
-            
+
             // refresh button on lower left // P.S. I know we will probably re-align it later, I could not find an exact position that would satisfy my OCD, which usually means the alignment sucks.
             refreshButton = new SimplerButton(this, mainPage, "REFRESH", new Vector2(315f, 50f), new Vector2(110f, 30f));
             refreshButton.OnClick += RefreshLobbyList;
@@ -79,7 +80,7 @@ namespace RainMeadow
             var visibilityLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Visibility:"), where, new Vector2(200, 20f), false, null);
             mainPage.subObjects.Add(visibilityLabel);
             where.x += 80;
-            visibilityDropDown = new OpComboBox(new Configurable<LobbyManager.LobbyVisibility>(LobbyManager.LobbyVisibility.Public), where, 160, OpResourceSelector.GetEnumNames(null, typeof(LobbyManager.LobbyVisibility)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
+            visibilityDropDown = new OpComboBox(new Configurable<MatchmakingManager.LobbyVisibility>(MatchmakingManager.LobbyVisibility.Public), where, 160, OpResourceSelector.GetEnumNames(null, typeof(MatchmakingManager.LobbyVisibility)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
             new UIelementWrapper(this.tabWrapper, visibilityDropDown);
 
             // left lobby selector
@@ -110,10 +111,12 @@ namespace RainMeadow
             // waiting for lobby data!
 
             // Lobby machine go!
-            LobbyManager.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
-            LobbyManager.OnLobbyJoined += OnlineManager_OnLobbyJoined;
+            MatchmakingManager.instance.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
+            MatchmakingManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
+#if !LOCAL_P2P
             SteamNetworkingUtils.InitRelayNetworkAccess();
-            LobbyManager.RequestLobbyList();
+#endif
+            MatchmakingManager.instance.RequestLobbyList();
         }
 
         private void UpdateModeDescription()
@@ -167,11 +170,11 @@ namespace RainMeadow
         private Vector2 CardPosition(int i)
         {
             Vector2 rootPos = new(214, 460);
-            Vector2 offset = new(0,70);
-            return rootPos - (scroll + (float)i - 1) * offset;
+            Vector2 offset = new(0, 70);
+            return rootPos - (scroll + i - 1) * offset;
         }
 
-        class LobbyInfoCard : EventfulSelectOneButton
+        private class LobbyInfoCard : EventfulSelectOneButton
         {
             public LobbyInfo lobbyInfo;
             public LobbyInfoCard(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, SelectOneButton[] buttonArray, int buttonArrayIndex, LobbyInfo lobbyInfo) : base(menu, owner, "", "lobbyCards", pos, size, buttonArray, buttonArrayIndex)
@@ -195,7 +198,7 @@ namespace RainMeadow
 
         private void Play(SimplerButton obj)
         {
-            if(currentlySelectedCard == 0)
+            if (currentlySelectedCard == 0)
             {
                 RequestLobbyCreate();
             }
@@ -204,23 +207,23 @@ namespace RainMeadow
                 RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo);
             }
         }
-        
+
         private void RefreshLobbyList(SimplerButton obj)
         {
-            LobbyManager.RequestLobbyList();
+            MatchmakingManager.instance.RequestLobbyList();
         }
 
-        void RequestLobbyCreate()
+        private void RequestLobbyCreate()
         {
             RainMeadow.DebugMe();
-            Enum.TryParse<LobbyManager.LobbyVisibility>(visibilityDropDown.value, out var value);
-            LobbyManager.CreateLobby(value, modeDropDown.value);
+            Enum.TryParse<MatchmakingManager.LobbyVisibility>(visibilityDropDown.value, out var value);
+            MatchmakingManager.instance.CreateLobby(value, modeDropDown.value);
         }
 
-        void RequestLobbyJoin(LobbyInfo lobby)
+        private void RequestLobbyJoin(LobbyInfo lobby)
         {
             RainMeadow.DebugMe();
-            LobbyManager.JoinLobby(lobby);
+            MatchmakingManager.instance.JoinLobby(lobby);
         }
 
         private void OnlineManager_OnLobbyJoined(bool ok)
@@ -245,8 +248,8 @@ namespace RainMeadow
 
         public override void ShutDownProcess()
         {
-            LobbyManager.OnLobbyListReceived -= OnlineManager_OnLobbyListReceived;
-            LobbyManager.OnLobbyJoined -= OnlineManager_OnLobbyJoined;
+            MatchmakingManager.instance.OnLobbyListReceived -= OnlineManager_OnLobbyListReceived;
+            MatchmakingManager.instance.OnLobbyJoined -= OnlineManager_OnLobbyJoined;
             base.ShutDownProcess();
         }
 

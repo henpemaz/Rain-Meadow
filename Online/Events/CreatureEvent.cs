@@ -7,21 +7,21 @@ public abstract partial class CreatureEvent
 {
     public class Violence : OnlineEvent
     {
-        private OnlinePhysicalObject OnlineVillain; // can be null
-        private OnlineCreature OnlineVictim;
+        private OnlineEntity.EntityId OnlineVillain; // can be null
+        private OnlineEntity.EntityId OnlineVictim;
         private byte VictimChunkIndex;
         private AppendageRef VictimAppendage; // can be null
         private Vector2? DirectionAndMomentum;
         private byte DamageType;
         private float Damage;
         private float StunBonus;
-        
+
         public Violence() { }
         public Violence(OnlinePhysicalObject onlineVillain, OnlineCreature onlineVictim, int victimChunkIndex, PhysicalObject.Appendage.Pos victimAppendage, Vector2? directionAndMomentum, Creature.DamageType damageType, float damage, float stunBonus)
         {
-            OnlineVillain = onlineVillain;
-            OnlineVictim = onlineVictim;
-            VictimChunkIndex = (byte)victimChunkIndex; 
+            OnlineVillain = onlineVillain?.id;
+            OnlineVictim = onlineVictim.id;
+            VictimChunkIndex = (byte)victimChunkIndex;
             VictimAppendage = victimAppendage != null ? new AppendageRef(victimAppendage) : null;
             DirectionAndMomentum = directionAndMomentum;
             DamageType = (byte)damageType;
@@ -33,8 +33,8 @@ public abstract partial class CreatureEvent
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);
-            serializer.SerializeEntityNullable(ref OnlineVillain);
-            serializer.SerializeEntity(ref OnlineVictim);
+            serializer.SerializeNullable(ref OnlineVillain);
+            serializer.Serialize(ref OnlineVictim);
             serializer.Serialize(ref VictimChunkIndex);
             serializer.SerializeNullable(ref VictimAppendage);
             serializer.Serialize(ref DirectionAndMomentum);
@@ -45,24 +45,26 @@ public abstract partial class CreatureEvent
 
         public override void Process()
         {
+            var victim = OnlineVictim.FindEntity() as OnlineCreature ?? throw new System.Exception("Entity not found: " + OnlineVictim);
+            var villain = OnlineVillain?.FindEntity() as OnlinePhysicalObject;
             var CastDamageType = new Creature.DamageType(Creature.DamageType.values.GetEntry(DamageType));
-            var CastVictimAppendage = VictimAppendage?.GetAppendagePos(OnlineVictim);
+            var CastVictimAppendage = VictimAppendage?.GetAppendagePos(victim);
 
-            var victim = (Creature)OnlineVictim.apo.realizedObject;
-            victim.Violence(OnlineVillain?.apo.realizedObject.firstChunk, DirectionAndMomentum, victim.bodyChunks[VictimChunkIndex], CastVictimAppendage, CastDamageType, Damage, StunBonus);
+            var victimCreature = (Creature)victim.apo.realizedObject;
+            victimCreature.Violence(villain?.apo.realizedObject.firstChunk, DirectionAndMomentum, victimCreature.bodyChunks[VictimChunkIndex], CastVictimAppendage, CastDamageType, Damage, StunBonus);
         }
     }
 
     public class SuckedIntoShortCut : OnlineEvent
     {
-        OnlineCreature suckedCreature;
-        IntVector2 entrancePos;
-        bool carriedByOther;
-        
+        private OnlineEntity.EntityId suckedCreature;
+        private IntVector2 entrancePos;
+        private bool carriedByOther;
+
         public SuckedIntoShortCut() { }
         public SuckedIntoShortCut(OnlineCreature suckedCreature, IntVector2 entrancePos, bool carriedByOther)
         {
-            this.suckedCreature = suckedCreature;
+            this.suckedCreature = suckedCreature.id;
             this.entrancePos = entrancePos;
             this.carriedByOther = carriedByOther;
         }
@@ -71,16 +73,16 @@ public abstract partial class CreatureEvent
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);
-            serializer.SerializeEntity(ref suckedCreature);
+            serializer.Serialize(ref suckedCreature);
             serializer.Serialize(ref entrancePos.x);
             serializer.Serialize(ref entrancePos.y);
         }
 
         public override void Process()
         {
-            suckedCreature.enteringShortCut = true;
-            var creature = (Creature)suckedCreature.apo.realizedObject;
-            creature.SuckedIntoShortCut(entrancePos, carriedByOther);
+            var creature = suckedCreature.FindEntity() as OnlineCreature ?? throw new System.Exception("Entity not found: " + suckedCreature);
+            creature.enteringShortCut = true;
+            (creature.apo.realizedObject as Creature)?.SuckedIntoShortCut(entrancePos, carriedByOther);
         }
     }
 }

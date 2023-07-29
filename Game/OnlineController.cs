@@ -13,13 +13,21 @@
 
         public override Player.InputPackage GetInput()
         {
-            var latestState = ent.lastStates[ent.currentlyJoinedResource];
-            if (latestState is AbstractCreatureState ces && ces.realizedObjectState is RealizedPlayerState rps)
+            if(ent.currentlyJoinedResource != null)
             {
-                return rps.GetInput();
+                var latestState = ent.lastStates[ent.currentlyJoinedResource];
+                if (latestState is AbstractCreatureState ces && ces.realizedObjectState is RealizedPlayerState rps)
+                {
+                    return rps.GetInput();
+                }
+                //RainMeadow.Error($"no state for player {ent}");
+                //RainMeadow.Error($"reasons: {latestState is AbstractCreatureState} {latestState is AbstractCreatureState ces2 && ces2.realizedObjectState is RealizedPlayerState}");
             }
-            RainMeadow.Error($"no state for player {ent}");
-            RainMeadow.Error($"reasons: {latestState is AbstractCreatureState} {latestState is AbstractCreatureState ces2 && ces2.realizedObjectState is RealizedPlayerState}");
+            else
+            {
+                RainMeadow.Error($"player {ent} hasn't joined the room yet");
+            }
+            
             return base.GetInput();
         }
     }

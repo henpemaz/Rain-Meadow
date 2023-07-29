@@ -1,28 +1,27 @@
-﻿using Steamworks;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 
 namespace RainMeadow
 {
     public partial class OnlinePlayer : IEquatable<OnlinePlayer>
     {
-        public int netId; // independent network id
-        public CSteamID steamId = CSteamID.Nil; // not filled for local client debugging
-        public IPEndPoint endpoint; // not filled for a real steam account
-        public string name = string.Empty;
-        public Queue<OnlineEvent> OutgoingEvents = new(16);
-        public List<OnlineEvent> recentlyAckedEvents = new(16);
-        public List<OnlineEvent> abortedEvents = new();
-        public Queue<OnlineState> OutgoingStates = new(128);
-        private ulong nextOutgoingEvent = 1;
-        public ulong lastEventFromRemote; // the last event I've received from them, I'll write it back on headers as an ack
-        private ulong lastAckFromRemote; // the last event they've ack'd to me, used imediately on receive
-        public ulong tick; // the last tick I've received from them, I'll write it back on headers as an ack
-        public ulong lastAckdTick; // the last tick they've ack'd to me
-        public DateTime timestamp; // date i've last received from this
+        public MeadowPlayerId id; // big id for matchmaking
+        public ushort inLobbyId; // small id in lobby serialization
+
+        public Queue<OnlineEvent> OutgoingEvents = new(8);
+        public List<OnlineEvent> recentlyAckedEvents = new(4);
+        public List<OnlineEvent> abortedEvents = new(8);
+        public Queue<OnlineState> OutgoingStates = new(16);
+
+        private ushort nextOutgoingEvent = 1;
+        public ushort lastEventFromRemote; // the last event I've received from them, I'll write it back on headers as an ack
+        public ushort lastAckFromRemote; // the last event they've ack'd to me, used imediately on receive
+        public uint tick; // the last tick I've received from them, I'll write it back on headers as an ack
+        public uint lastAckdTick; // the last tick they've ack'd to me
         public bool needsAck;
+
+        public bool isMe;
         public bool hasLeft;
 
         // DEBUG
@@ -31,75 +30,51 @@ namespace RainMeadow
         public bool eventsRead;
         public bool statesRead;
 
-        public bool isMe { get => this == PlayersManager.mePlayer; }
-        public bool isUsingSteam { get => steamId.IsValid(); }
 
-        public OnlinePlayer(int netId, CSteamID id, IPEndPoint endPoint)
+        public OnlinePlayer(MeadowPlayerId id)
         {
-            this.netId = netId;
-            this.steamId = id;
-            this.endpoint = endPoint;
-        }
-        
-        public OnlinePlayer(int netId, IPEndPoint endPoint)
-        {
-            this.netId = netId;
-            this.endpoint = endPoint;
-        }
-
-        public OnlinePlayer(int netId, CSteamID id)
-        {
-            this.netId = netId;
-            this.steamId = id;
-            name = SteamFriends.GetFriendPersonaName(id);
-        }
-
-        public int timeSinceLastTick()
-        {
-            return (DateTime.Now - timestamp).Milliseconds;
+            this.id = id;
         }
 
         public OnlineEvent QueueEvent(OnlineEvent e)
         {
             e.eventId = this.nextOutgoingEvent;
             e.to = this;
-            e.from = PlayersManager.mePlayer;
+            e.from = OnlineManager.mePlayer;
             RainMeadow.Debug($"{e} for {this}");
             nextOutgoingEvent++;
             OutgoingEvents.Enqueue(e);
             return e;
         }
 
-        public OnlineEvent GetRecentEvent(ulong id)
+        public OnlineEvent GetRecentEvent(ushort id)
         {
-            return recentlyAckedEvents.FirstOrDefault(e => e.eventId == id) 
-                ?? abortedEvents.FirstOrDefault(e => e.eventId == id);
+            return recentlyAckedEvents.FirstOrDefault(e => e.eventId == id) ?? abortedEvents.FirstOrDefault(e => e.eventId == id);
         }
 
-        public void EventAckFromRemote(ulong lastAck)
+        public void EventAckFromRemote(ushort lastAck)
         {
-            //RainMeadow.Debug(this);
             this.recentlyAckedEvents.Clear();
             this.lastAckFromRemote = lastAck;
-            while (OutgoingEvents.Count > 0 && OnlineManager.IsNewerOrEqual(lastAck, OutgoingEvents.Peek().eventId))
+            while (OutgoingEvents.Count > 0 && NetIO.IsNewerOrEqual(lastAck, OutgoingEvents.Peek().eventId))
             {
                 var e = OutgoingEvents.Dequeue();
-                RainMeadow.Debug($"{this} from {e}");
+                RainMeadow.Debug($"{this} ackd {e}");
                 recentlyAckedEvents.Add(e);
             }
         }
 
-        public void TickAckFromRemote(ulong lastTick)
+        public void TickAckFromRemote(uint lastTick)
         {
             this.lastAckdTick = lastTick;
         }
 
-        public bool HasUnacknowledgedEvents()
+        public bool HasUnacknoledgedEvents()
         {
             return OutgoingEvents.Count > 0;
         }
 
-        public void AbortUnacknowledgedEvents()
+        public void AbortUnacknoledgedEvents()
         {
             if (OutgoingEvents.Count > 0)
             {
@@ -118,16 +93,16 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return isUsingSteam ? $"NetId-{netId} \"{name}\" ({steamId})" : $"NetId-{netId}";
+            return $"{inLobbyId}:{id}";
         }
 
         // IEqu
         public override bool Equals(object obj) => this.Equals(obj as OnlinePlayer);
         public bool Equals(OnlinePlayer other)
         {
-            return other != null && netId == other.netId;
+            return other != null && id == other.id;
         }
-        public override int GetHashCode() => netId.GetHashCode();
+        public override int GetHashCode() => id.GetHashCode();
 
         public static bool operator ==(OnlinePlayer lhs, OnlinePlayer rhs)
         {

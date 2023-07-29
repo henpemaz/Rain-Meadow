@@ -1,33 +1,26 @@
-using UnityEngine;
-
 namespace RainMeadow
 {
     public class AbstractCreatureState : PhysicalObjectEntityState
     {
-        public OnlineCreature onlineCreature => onlineEntity as OnlineCreature;
         private CreatureStateState creatureStateState;
-     
-        public AbstractCreatureState() : base()
+
+        public AbstractCreatureState() : base() { }
+        public AbstractCreatureState(OnlineCreature onlineEntity, uint ts, bool realizedState) : base(onlineEntity, ts, realizedState)
         {
+            if (realizedState) creatureStateState = GetCreatureStateState(onlineEntity);
         }
 
-        public AbstractCreatureState(OnlineCreature onlineEntity, ulong ts, bool realizedState) : base(onlineEntity, ts, realizedState)
+        protected virtual CreatureStateState GetCreatureStateState(OnlineCreature onlineCreature)
         {
-            var abstractCreature = (AbstractCreature)onlineEntity.apo;
-            if (realizedState) creatureStateState = GetCreatureStateState(abstractCreature);
-        }
-
-        private CreatureStateState GetCreatureStateState(AbstractCreature abstractCreature)
-        {
-            if (abstractCreature.state is HealthState) return new CreatureHealthStateState(onlineCreature);
+            if ((onlineCreature.apo as AbstractCreature).state is HealthState) return new CreatureHealthStateState(onlineCreature);
             return new CreatureStateState(onlineCreature);
         }
 
-        protected override RealizedPhysicalObjectState GetRealizedState()
+        protected override RealizedPhysicalObjectState GetRealizedState(OnlinePhysicalObject onlineObject)
         {
-            if (onlineCreature.apo.realizedObject is Player) return new RealizedPlayerState(onlineCreature);
-            if (onlineCreature.apo.realizedObject is Creature) return new RealizedCreatureState(onlineCreature);
-            return base.GetRealizedState();
+            if (onlineObject.apo.realizedObject is Player) return new RealizedPlayerState((OnlineCreature)onlineObject);
+            if (onlineObject.apo.realizedObject is Creature) return new RealizedCreatureState((OnlineCreature)onlineObject);
+            return base.GetRealizedState(onlineObject);
         }
 
         public override StateType stateType => StateType.AbstractCreatureState;
@@ -42,7 +35,7 @@ namespace RainMeadow
         {
             base.ReadTo(onlineEntity);
             var abstractCreature = (AbstractCreature)((OnlineCreature)onlineEntity).apo;
-            
+
             if (creatureStateState is CreatureStateState newState)
             {
                 abstractCreature.state.alive = newState.alive;

@@ -4,18 +4,17 @@ namespace RainMeadow
 {
     public class RealizedPlayerState : RealizedCreatureState
     {
-        static int lastupdate = 0;
         private byte animationIndex;
         private short animationFrame;
         private byte bodyModeIndex;
         private bool standing;
         private ushort inputs;
-        private Vector2 analogInput;
+        private ushort analogInputX;
+        private ushort analogInputY;
+
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
         {
-            lastupdate++;
-            
             Player p = onlineEntity.apo.realizedObject as Player;
             animationIndex = (byte)p.animation.Index;
             animationFrame = (short)p.animationFrame;
@@ -35,7 +34,8 @@ namespace RainMeadow
                 | (i.thrw ? 1 << 8 : 0)
                 | (i.mp ? 1 << 9 : 0));
 
-            analogInput = i.analogueDir;
+            analogInputX = Mathf.FloatToHalf(i.analogueDir.x);
+            analogInputY = Mathf.FloatToHalf(i.analogueDir.y);
         }
         public Player.InputPackage GetInput()
         {
@@ -50,7 +50,8 @@ namespace RainMeadow
             if (((inputs >> 7) & 1) != 0) i.jmp = true;
             if (((inputs >> 8) & 1) != 0) i.thrw = true;
             if (((inputs >> 9) & 1) != 0) i.mp = true;
-            i.analogueDir = analogInput;
+            i.analogueDir.x = Mathf.HalfToFloat(analogInputX);
+            i.analogueDir.x = Mathf.HalfToFloat(analogInputY);
             return i;
         }
 
@@ -64,23 +65,8 @@ namespace RainMeadow
             serializer.Serialize(ref bodyModeIndex);
             serializer.Serialize(ref standing);
             serializer.Serialize(ref inputs);
-
-            ushort half = 0;
-            if (serializer.isWriting) {
-                half = Mathf.FloatToHalf(analogInput.x);
-                serializer.Serialize(ref half);
-
-                half = Mathf.FloatToHalf(analogInput.y);
-                serializer.Serialize(ref half);
-            }
-
-            if (serializer.isReading) {
-                serializer.Serialize(ref half);
-                analogInput.x = Mathf.HalfToFloat(half);
-
-                serializer.Serialize(ref half);
-                analogInput.y = Mathf.HalfToFloat(half);
-            }
+            serializer.Serialize(ref analogInputX);
+            serializer.Serialize(ref analogInputY);
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)

@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -8,12 +7,12 @@ namespace RainMeadow
     {
         private Vector2? stuckInWall;
         private AppendageRef stuckInAppendage;
-        private OnlinePhysicalObject stuckInObject;
+        private OnlineEntity.EntityId stuckInObject;
         private byte stuckInChunkIndex;
         private sbyte stuckBodyPart;
         private float stuckRotation;
-        
-        
+
+
         public RealizedSpearState() { }
         public RealizedSpearState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
@@ -23,7 +22,7 @@ namespace RainMeadow
             if (spear.stuckInObject != null)
             {
                 if (!OnlinePhysicalObject.map.TryGetValue(spear.stuckInObject.abstractPhysicalObject, out var onlineStuckEntity)) throw new InvalidOperationException("Stuck to a non-synced creature!");
-                stuckInObject = onlineStuckEntity;
+                stuckInObject = onlineStuckEntity?.id;
                 stuckInChunkIndex = (byte)spear.stuckInChunkIndex;
                 stuckInAppendage = spear.stuckInAppendage != null ? new AppendageRef(spear.stuckInAppendage) : null;
                 stuckBodyPart = (sbyte)spear.stuckBodyPart;
@@ -37,7 +36,7 @@ namespace RainMeadow
         {
             base.CustomSerialize(serializer);
             serializer.Serialize(ref stuckInWall);
-            serializer.SerializeEntityNullable(ref stuckInObject);
+            serializer.SerializeNullable(ref stuckInObject);
             if (stuckInObject != null)
             {
                 serializer.Serialize(ref stuckInChunkIndex);
@@ -52,14 +51,14 @@ namespace RainMeadow
             if (!onlineEntity.owner.isMe && onlineEntity.isPending) return; // Don't sync if pending, reduces visibility and effect of lag
             var spear = (Spear)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             spear.stuckInWall = stuckInWall;
-            if (!stuckInWall.HasValue) 
+            if (!stuckInWall.HasValue)
                 spear.addPoles = false;
 
-            spear.stuckInObject = stuckInObject?.apo.realizedObject;
+            spear.stuckInObject = (stuckInObject?.FindEntity() as OnlinePhysicalObject)?.apo.realizedObject;
             if (spear.stuckInObject != null)
             {
                 spear.stuckInChunkIndex = stuckInChunkIndex;
-                spear.stuckInAppendage = stuckInAppendage?.GetAppendagePos(stuckInObject);
+                spear.stuckInAppendage = stuckInAppendage?.GetAppendagePos(stuckInObject.FindEntity() as OnlinePhysicalObject);
                 spear.stuckBodyPart = stuckBodyPart;
                 spear.stuckRotation = stuckRotation;
             }

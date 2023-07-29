@@ -1,10 +1,6 @@
-using Mono.Cecil.Cil;
-using MonoMod.Cil;
-using System;
-
 namespace RainMeadow;
 
-partial class RainMeadow
+public partial class RainMeadow
 {
     public static bool sSpawningPersonas;
     public void PlayerHooks()
@@ -14,7 +10,7 @@ partial class RainMeadow
         On.Player.ctor += Player_ctor;
         On.Player.Die += PlayerOnDie;
         On.Player.Grabability += PlayerOnGrabability;
-        
+
         On.SlugcatStats.ctor += SlugcatStatsOnctor;
         On.AbstractCreature.ctor += AbstractCreature_ctor;
     }
@@ -28,7 +24,7 @@ partial class RainMeadow
             {
                 self.state = new PlayerState(self, 0, Ext_SlugcatStatsName.OnlineSessionRemotePlayer, false);
             }
-            if(self.state == null) { Error($"Missing state for {self} of type {creatureTemplate}"); }
+            if (self.state == null) { Error($"Missing state for {self} of type {creatureTemplate}"); }
         }
     }
 
@@ -47,7 +43,7 @@ partial class RainMeadow
     private void Player_ctor(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
     {
         orig(self, abstractCreature, world);
-        if(OnlineManager.lobby != null)
+        if (OnlineManager.lobby != null)
         {
             // remote player
             if (OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var ent) && self.playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer)
@@ -56,7 +52,7 @@ partial class RainMeadow
             }
         }
     }
-        
+
     private void PlayerOnDie(On.Player.orig_Die orig, Player self)
     {
         if (OnlineManager.lobby == null)
@@ -69,7 +65,7 @@ partial class RainMeadow
         if (!onlineEntity.isMine) return;
         orig(self);
     }
-    
+
     private Player.ObjectGrabability PlayerOnGrabability(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
     {
         if (OnlineManager.lobby != null)
@@ -81,7 +77,7 @@ partial class RainMeadow
         }
         return orig(self, obj);
     }
-        
+
     private void SlugcatStatsOnctor(On.SlugcatStats.orig_ctor orig, SlugcatStats self, SlugcatStats.Name slugcat, bool malnourished)
     {
         orig(self, slugcat, malnourished);

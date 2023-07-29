@@ -3,7 +3,6 @@
     public class PlayerMemebership : ResourceMembership
     {
         public OnlinePlayer player;
-        public bool everSentLease;
 
         public PlayerMemebership(OnlinePlayer player, OnlineResource resource) : base(resource)
         {

@@ -5,7 +5,6 @@ namespace RainMeadow
         public bool alive;
         public byte meatLeft;
 
-
         public CreatureStateState() { }
         public CreatureStateState(OnlineCreature onlineEntity)
         {
@@ -13,7 +12,7 @@ namespace RainMeadow
             alive = abstractCreature.state.alive;
             meatLeft = (byte)abstractCreature.state.meatLeft;
         }
-        
+
         public override StateType stateType => StateType.CreatureStateState;
 
         public override void CustomSerialize(Serializer serializer)
