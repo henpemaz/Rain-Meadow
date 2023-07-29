@@ -27,9 +27,8 @@ namespace RainMeadow
                 float diffAverage = 0;
                 for (int i = 0; i < chunkStates.Length; i++)
                 {
-                    int latency = onlineEntity.owner.timeSinceLastTick();
-                    float physicsLoopDeltaTime = Math.Max(26, UnityEngine.Time.deltaTime);
-                    var couldReasonablyReach = chunkStates[i].vel.magnitude * (latency / physicsLoopDeltaTime);
+                    float physicsLoopDeltaTime = Math.Max(25, UnityEngine.Time.deltaTime);
+                    var couldReasonablyReach = chunkStates[i].vel.magnitude * (100 / physicsLoopDeltaTime);
                     diffAverage += Math.Max(0, (chunkStates[i].pos - po.bodyChunks[i].pos).magnitude - couldReasonablyReach);
                 }
                 diffAverage /= chunkStates.Length; //a rating of how different the two states are, more forgiving the
