@@ -21,6 +21,7 @@ namespace RainMeadow
         private ulong lastAckFromRemote; // the last event they've ack'd to me, used imediately on receive
         public ulong tick; // the last tick I've received from them, I'll write it back on headers as an ack
         public ulong lastAckdTick; // the last tick they've ack'd to me
+        public DateTime timestamp; // date i've last received from this
         public bool needsAck;
         public bool hasLeft;
 
@@ -51,6 +52,11 @@ namespace RainMeadow
             this.netId = netId;
             this.steamId = id;
             name = SteamFriends.GetFriendPersonaName(id);
+        }
+
+        public int timeSinceLastTick()
+        {
+            return (DateTime.Now - timestamp).Milliseconds;
         }
 
         public OnlineEvent QueueEvent(OnlineEvent e)

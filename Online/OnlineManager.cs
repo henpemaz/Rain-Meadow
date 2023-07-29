@@ -24,6 +24,25 @@ namespace RainMeadow
         public static HashSet<OnlineEvent> waitingEvents;
         public static float lastDt;
 
+        public static TimeSpan defaultOffset = TimeSpan.FromMilliseconds(20);
+        public static TimeSpan timeOffset;
+        public static DateTime lastStateTimestamp;
+        public static TimeSpan lastStateTimeDiff;
+        public static Queue<QueuedState> QueuedStates;
+        public class QueuedState
+        {
+            public OnlineState state;
+            public DateTime SendWhen;
+
+            public bool timeToSend => DateTime.Now > SendWhen;
+
+            public QueuedState(OnlineState state, TimeSpan delay)
+            {
+                this.state = state;
+                this.SendWhen = DateTime.Now + delay;
+            }
+        }
+
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
             instance = this;
@@ -40,6 +59,8 @@ namespace RainMeadow
             feeds = new();
             recentEntities = new();
             waitingEvents = new(4);
+            QueuedStates = new Queue<QueuedState>();
+            timeOffset = defaultOffset;
 
             WorldSession.map = new();
             RoomSession.map = new();
@@ -54,6 +75,11 @@ namespace RainMeadow
 
             // Incoming messages
             NetIO.Update();
+
+            while (QueuedStates.Count > 0 && QueuedStates.Peek().timeToSend)
+            {
+                ProcessState(QueuedStates.Dequeue().state);
+            }
 
             if (lobby != null)
             {
@@ -198,7 +224,26 @@ namespace RainMeadow
 
         public static void ProcessIncomingState(OnlineState state)
         {
+            RainMeadow.Debug(timeOffset);
             OnlinePlayer fromPlayer = state.from;
+            TimeSpan StateLatency = TimeSpan.FromMilliseconds(fromPlayer.timeSinceLastTick());
+            if (timeOffset < TimeSpan.Zero) //doing this would require a time machine
+            {
+                timeOffset = defaultOffset;
+                RainMeadow.Error("time Offset is lower than 0 (Currently " + timeOffset + ");");
+            }
+            if (lastStateTimestamp + timeOffset < DateTime.Now) //This state should've already been updated
+            {
+                ProcessState(state);
+            }
+            else QueuedStates.Enqueue(new QueuedState(state, timeOffset));
+            timeOffset += StateLatency - lastStateTimeDiff;
+            lastStateTimeDiff = StateLatency;
+            lastStateTimestamp = fromPlayer.timestamp;
+        }
+
+        public static void ProcessState(OnlineState state)
+        {
             try
             {
                 if (state is OnlineResource.ResourceState resourceState && resourceState.resource != null && resourceState.resource.isActive)

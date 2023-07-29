@@ -50,6 +50,7 @@ namespace RainMeadow
                 writer.Write(currPlayer.lastEventFromRemote);
                 writer.Write(currPlayer.tick);
                 writer.Write(PlayersManager.mePlayer.tick);
+                writer.Write(DateTime.Now.Ticks);
             }
             if (isReading)
             {
@@ -65,6 +66,7 @@ namespace RainMeadow
                 currPlayer.EventAckFromRemote(reader.ReadUInt64());
                 currPlayer.TickAckFromRemote(reader.ReadUInt64());
                 var newTick = reader.ReadUInt64();
+                currPlayer.timestamp = new DateTime(reader.ReadInt64());
                 if (!OnlineManager.IsNewer(newTick, currPlayer.tick))
                 {
                     // abort reading

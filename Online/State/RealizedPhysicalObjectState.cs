@@ -24,26 +24,20 @@ namespace RainMeadow
             var po = (onlineEntity as OnlinePhysicalObject).apo.realizedObject;
             if (chunkStates.Length == po.bodyChunks.Length)
             {
-                RainMeadow.Debug(onlineEntity.owner.lastAckdTick - PlayersManager.mePlayer.tick); //??????
                 float diffAverage = 0;
                 for (int i = 0; i < chunkStates.Length; i++)
                 {
+                    int latency = onlineEntity.owner.timeSinceLastTick();
                     float physicsLoopDeltaTime = Math.Max(26, UnityEngine.Time.deltaTime);
-                    var couldReasonablyReach = po.bodyChunks[i].vel.magnitude * (UdpPeer.simulatedLatency.Milliseconds / physicsLoopDeltaTime);
+                    var couldReasonablyReach = chunkStates[i].vel.magnitude * (latency / physicsLoopDeltaTime);
                     diffAverage += Math.Max(0, (chunkStates[i].pos - po.bodyChunks[i].pos).magnitude - couldReasonablyReach);
                 }
-                diffAverage /= chunkStates.Length; //a rating of how different the two states are, more
-                if (diffAverage > 4)               //forgiving the higher the object's velocity and the
-                {                                  //update's latency
+                diffAverage /= chunkStates.Length; //a rating of how different the two states are, more forgiving the
+                if (diffAverage > 4)               //higher the object's velocity and the update's latency
+                {
                     for (int i = 0; i < chunkStates.Length; i++) //sync bodychunk positions
                     {
                         chunkStates[i].ReadTo(po.bodyChunks[i]);
-                    }
-
-                    foreach (BodyPart bodyPart in po.graphicsModule.bodyParts) //prevent tail from stretching accross the screen
-                    {
-                        var tailSegment = bodyPart as TailSegment;
-                        if (tailSegment != null) tailSegment.affectPrevious = 0f;
                     }
                 }
             }
@@ -62,16 +56,12 @@ namespace RainMeadow
     {
         public Vector2 pos;
         public Vector2 vel;
-        private Vector2 lastpos;
-        private Vector2 lastlastpos;
 
         public ChunkState() { }
         public ChunkState(BodyChunk c)
         {
             pos = c.pos;
             vel = c.vel;
-            lastpos = c.lastPos;
-            lastlastpos = c.lastLastPos;
         }
 
         public void CustomSerialize(Serializer serializer)
@@ -84,8 +74,6 @@ namespace RainMeadow
         {
             c.pos = pos;
             c.vel = vel;
-            c.lastPos = lastpos;
-            c.lastLastPos = lastlastpos;
         }
     }
 }
