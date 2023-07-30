@@ -218,13 +218,7 @@ namespace RainMeadow
             //RainMeadow.Debug($"Receiving {ns} states");
             for (uint ist = 0; ist < ns; ist++)
             {
-                var state = ReadState();
-#if LOCAL_P2P
-                if (state.stateType == OnlineState.StateType.LobbyState)
-                    OnlineManager.ProcessState(state);
-                else
-#endif
-                    OnlineManager.ProcessIncomingState(state);
+                OnlineManager.ProcessIncomingState(ReadState());
             }
 
             EndRead();

@@ -20,26 +20,6 @@ namespace RainMeadow
         public static List<OnlinePlayer> players;
         public static Lobby lobby;
 
-        public static uint tickOffsetDefault = 2; //each unit is 50ms of added latency
-        public static uint tickOffset;
-        public static uint deltaTick;
-        public static uint lastDeltaTick;
-        public static uint lastStateTimestamp;
-        public static Queue<QueuedState> QueuedStates;
-        public class QueuedState
-        {
-            public OnlineState state;
-            public uint SendWhen;
-
-            public bool timeToSend => mePlayer.tick > SendWhen;
-
-            public QueuedState(OnlineState state, uint delay)
-            {
-                this.state = state;
-                this.SendWhen = mePlayer.tick + delay;
-            }
-        }
-
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
             instance = this;
@@ -56,8 +36,6 @@ namespace RainMeadow
             feeds = new();
             recentEntities = new();
             waitingEvents = new(4);
-            QueuedStates = new Queue<QueuedState>();
-            tickOffset = tickOffsetDefault;
 
             WorldSession.map = new();
             RoomSession.map = new();
@@ -73,22 +51,17 @@ namespace RainMeadow
             base.Update();
 
             NetTick();
-
-            while (QueuedStates.Count > 0 && QueuedStates.Peek().timeToSend)
-            {
-                ProcessState(QueuedStates.Dequeue().state);
-            }
         }
 
         // from a force-load situation
         public static void ForceLoadUpdate()
         {
-            if (UnityEngine.Time.realtimeSinceStartup > lastDt + 1f / instance.framesPerSecond)
+                if (UnityEngine.Time.realtimeSinceStartup > lastDt + 1f / instance.framesPerSecond)
             {
 #if !LOCAL_P2P
-             SteamAPI.RunCallbacks();
+                SteamAPI.RunCallbacks();
 #endif
-             NetTick();
+                NetTick();
 
             }
         }
@@ -102,18 +75,18 @@ namespace RainMeadow
             {
                 mePlayer.tick++;
                 ProcessSelfEvents();
-                
+
                 // Prepare outgoing messages
                 foreach (var subscription in subscriptions)
                 {
                     subscription.Update(mePlayer.tick);
                 }
-                
+
                 foreach (var feed in feeds)
                 {
                     feed.Update(mePlayer.tick);
                 }
-                
+
                 // Outgoing messages
                 foreach (var player in players)
                 {
@@ -199,40 +172,7 @@ namespace RainMeadow
             }
         }
 
-        public static void resetOffset()
-        {
-            QueuedStates.Clear();
-            tickOffset = tickOffsetDefault;
-        }
         public static void ProcessIncomingState(OnlineState state)
-        {
-            OnlinePlayer fromPlayer = state.from;
-            deltaTick = fromPlayer.tick - fromPlayer.lastAckdTick;
-
-            if (tickOffset < 0) //doing this would require a time machine
-            {
-                ProcessState(state);
-                resetOffset();
-            }
-            if (lastStateTimestamp + tickOffset < mePlayer.tick) //this should've already been updated
-            {
-                ProcessState(state);
-            }
-            else
-                QueuedStates.Enqueue(new QueuedState(state, tickOffset));
-            
-            tickOffset += deltaTick - lastDeltaTick;
-            lastDeltaTick = deltaTick;
-            lastStateTimestamp = mePlayer.tick;
-            
-            if (tickOffset > 20) //we're falling behind
-            {
-                ProcessState(state);
-                resetOffset();
-            }
-        }
-
-        public static void ProcessState(OnlineState state)
         {
             try
             {
