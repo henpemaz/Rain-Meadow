@@ -27,13 +27,11 @@ namespace RainMeadow
                 float diffAverage = 0;
                 for (int i = 0; i < chunkStates.Length; i++)
                 {
-                    int latency = onlineEntity.owner.timeSinceLastTick();
-                    float physicsLoopDeltaTime = Math.Max(26, UnityEngine.Time.deltaTime);
-                    var couldReasonablyReach = chunkStates[i].vel.magnitude * (latency / physicsLoopDeltaTime);
+                    var couldReasonablyReach = chunkStates[i].vel.magnitude;
                     diffAverage += Math.Max(0, (chunkStates[i].pos - po.bodyChunks[i].pos).magnitude - couldReasonablyReach);
                 }
                 diffAverage /= chunkStates.Length; //a rating of how different the two states are, more forgiving the
-                if (diffAverage > 4)               //higher the object's velocity and the update's latency
+                if (diffAverage > 3)               //higher the object's velocity
                 {
                     for (int i = 0; i < chunkStates.Length; i++) //sync bodychunk positions
                     {
