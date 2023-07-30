@@ -112,7 +112,6 @@ namespace RainMeadow
 
             // Lobby machine go!
             MatchmakingManager.instance.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
-            MatchmakingManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
 #if !LOCAL_P2P
             SteamNetworkingUtils.InitRelayNetworkAccess();
 #endif
@@ -226,16 +225,6 @@ namespace RainMeadow
             MatchmakingManager.instance.JoinLobby(lobby);
         }
 
-        private void OnlineManager_OnLobbyJoined(bool ok)
-        {
-            RainMeadow.Debug(ok);
-            if (ok)
-            {
-                // todo: switch case for different lobby types
-                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbyMenu);
-            }
-        }
-
         private void OnlineManager_OnLobbyListReceived(bool ok, LobbyInfo[] lobbies)
         {
             RainMeadow.Debug(ok);
@@ -249,7 +238,6 @@ namespace RainMeadow
         public override void ShutDownProcess()
         {
             MatchmakingManager.instance.OnLobbyListReceived -= OnlineManager_OnLobbyListReceived;
-            MatchmakingManager.instance.OnLobbyJoined -= OnlineManager_OnLobbyJoined;
             base.ShutDownProcess();
         }
 
