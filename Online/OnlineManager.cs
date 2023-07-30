@@ -27,7 +27,18 @@ namespace RainMeadow
 
             MatchmakingManager.InitLobbyManager();
             Reset();
+            MatchmakingManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
             RainMeadow.Debug("OnlineManager Created");
+        }
+        
+        private void OnlineManager_OnLobbyJoined(bool ok)
+        {
+            RainMeadow.Debug(ok);
+            if (ok)
+            {
+                // todo: switch case for different lobby types
+                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbyMenu);
+            }
         }
 
         public static void Reset()

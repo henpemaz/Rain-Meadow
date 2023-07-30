@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Steamworks;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -21,6 +22,28 @@ namespace RainMeadow
             {
                 self.currentMainLoop = new LobbyMenu(self);
             }
+
+#if !LOCAL_P2P
+            if (ID == ProcessManager.ProcessID.IntroRoll)
+            {
+                var args = System.Environment.GetCommandLineArgs();
+                for (var i = 0; i < args.Length; i++)
+                {
+                    if (args[i] == "+connect_lobby")
+                    {
+                        if (args.Length > i + 1 && ulong.TryParse(args[i + 1], out var id)) {
+                            Debug($"joining lobby with id {id} from the command line");
+                            MatchmakingManager.instance.JoinLobby(new LobbyInfo(new CSteamID(id), "", ""));
+                        }
+                        else
+                        {
+                            Error($"found +connect_lobby but no valid lobby id in the command line");
+                        }
+                        break;
+                    }
+                }
+            }
+#endif
             orig(self, ID);
         }
 
