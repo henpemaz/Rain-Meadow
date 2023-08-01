@@ -25,6 +25,12 @@ namespace RainMeadow
         public bool isMe;
         public bool hasLeft;
 
+        
+        // For Debug Overlay
+        public bool eventsWritten;
+        public bool statesWritten;
+        public bool eventsRead;
+        public bool statesRead;
 
         public OnlinePlayer(MeadowPlayerId id)
         {
@@ -61,8 +67,6 @@ namespace RainMeadow
 
         public void TickAckFromRemote(uint lastTick)
         {
-            DebugOverlay.playersRead.addPlayer(this);
-
             var timeSinceLastTick = (int)Math.Floor(Math.Max(1, (UnityEngine.Time.realtimeSinceStartup - OnlineManager.lastUpdate) * 1000));
             ping = (int)(OnlineManager.mePlayer.tick - lastTick) * 50 + timeSinceLastTick;
 

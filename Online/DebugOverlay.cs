@@ -211,15 +211,15 @@ namespace RainMeadow
 
 				FLabel label = new FLabel(Custom.GetFont(), $"{player} ({playerTruePing}ms)")
 				{
-					alignment = FLabelAlignment.Left,
 					x = 5.01f,
-					y = screenSize.y - 25 - 15 * line
+					y = screenSize.y - 25 - 15 * line,
+					alignment = FLabelAlignment.Left,
+                    color = 
+                        player.eventsWritten ? new Color(1, 0.5f, 0) :
+                        player.statesWritten ? Color.white : 
+                        Color.grey
 				};
 
-				//if (player.eventsWritten)
-				//{
-				//    label.color = new Color(1, 0.5f, 0);
-				//}
 				overlayContainer.AddChild(label);
 				outgoingLabels.Add(label);
 				line++;
@@ -233,15 +233,15 @@ namespace RainMeadow
 
 				FLabel label = new FLabel(Custom.GetFont(), $"{player} ({playerTruePing}ms)")
 				{
-					alignment = FLabelAlignment.Left,
 					x = 155.01f,
-					y = screenSize.y - 25 - 15 * line
+					y = screenSize.y - 25 - 15 * line,
+					alignment = FLabelAlignment.Left,
+                    color = 
+                        player.eventsRead ? new Color(1, 0.5f, 0) :
+                        player.statesRead ? Color.white : 
+                        Color.grey
 				};
 
-				//if (player.eventsRead)
-				//{
-				//    label.color = new Color(1, 0.5f, 0);
-				//}
 				overlayContainer.AddChild(label);
 				incomingLabels.Add(label);
 				line++;
