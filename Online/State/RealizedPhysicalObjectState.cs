@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -7,8 +8,6 @@ namespace RainMeadow
     {
         private ChunkState[] chunkStates;
         private int collisionLayer;
-
-
 
         public RealizedPhysicalObjectState() { }
         public RealizedPhysicalObjectState(OnlinePhysicalObject onlineEntity)
@@ -25,9 +24,19 @@ namespace RainMeadow
             var po = (onlineEntity as OnlinePhysicalObject).apo.realizedObject;
             if (chunkStates.Length == po.bodyChunks.Length)
             {
+                float diffAverage = 0;
                 for (int i = 0; i < chunkStates.Length; i++)
                 {
-                    chunkStates[i].ReadTo(po.bodyChunks[i]);
+                    var couldReasonablyReach = chunkStates[i].vel.magnitude;
+                    diffAverage += Math.Max(0, (chunkStates[i].pos - po.bodyChunks[i].pos).magnitude - couldReasonablyReach);
+                }
+                diffAverage /= chunkStates.Length; //a rating of how different the two states are, more forgiving the
+                if (diffAverage > 3)               //higher the object's velocity
+                {
+                    for (int i = 0; i < chunkStates.Length; i++) //sync bodychunk positions
+                    {
+                        chunkStates[i].ReadTo(po.bodyChunks[i]);
+                    }
                 }
             }
             po.collisionLayer = collisionLayer;
@@ -43,8 +52,8 @@ namespace RainMeadow
 
     public class ChunkState : Serializer.ICustomSerializable // : OnlineState // no need for serializing its type, its just always the same data
     {
-        private Vector2 pos;
-        private Vector2 vel;
+        public Vector2 pos;
+        public Vector2 vel;
 
         public ChunkState() { }
         public ChunkState(BodyChunk c)

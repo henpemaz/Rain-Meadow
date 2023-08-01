@@ -43,7 +43,7 @@ namespace RainMeadow
         }
 
         private int me;
-        private string localGameMode = "FreeRoam";
+        private string localGameMode = "Story";
 
         public LocalMatchmakingManager()
         {
@@ -64,6 +64,11 @@ namespace RainMeadow
 
         public override void CreateLobby(LobbyVisibility visibility, string gameMode)
         {
+            if (!UdpPeer.isHost)
+            {
+                OnLobbyJoined?.Invoke(false);
+                return;
+            }
             OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer);
             OnLobbyJoined?.Invoke(true);
         }

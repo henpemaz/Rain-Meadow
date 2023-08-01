@@ -208,7 +208,6 @@ namespace RainMeadow
             }
 
             uint ne = BeginReadEvents();
-            fromPlayer.eventsRead = ne > 0; // something is being read, record for debug
             //RainMeadow.Debug($"Receiving {ne} events from player {fromPlayer}");
             for (uint ie = 0; ie < ne; ie++)
             {
@@ -216,7 +215,6 @@ namespace RainMeadow
             }
 
             uint ns = BeginReadStates();
-            fromPlayer.statesRead = ns > 0; // something is being read, record for debug
             //RainMeadow.Debug($"Receiving {ns} states");
             for (uint ist = 0; ist < ns; ist++)
             {
@@ -233,7 +231,6 @@ namespace RainMeadow
             PlayerHeaders();
 
             BeginWriteEvents();
-            toPlayer.eventsWritten = toPlayer.OutgoingEvents.Count > 0; // something is being written, record for debug
             //RainMeadow.Debug($"Writing {toPlayer.OutgoingEvents.Count} events to player {toPlayer}");
             foreach (var e in toPlayer.OutgoingEvents)
             {
@@ -252,7 +249,6 @@ namespace RainMeadow
             EndWriteEvents();
 
             BeginWriteStates();
-            toPlayer.statesWritten = toPlayer.OutgoingStates.Count > 0; // something is being written, record for debug
             //RainMeadow.Debug($"Writing {toPlayer.OutgoingStates.Count} states");
             while (toPlayer.OutgoingStates.Count > 0 && CanFit(toPlayer.OutgoingStates.Peek()))
             {

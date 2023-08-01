@@ -18,7 +18,7 @@ namespace RainMeadow
         {
             OnlinePhysicalObject newOe = NewFromApo(apo);
             RainMeadow.Debug("Registering new entity - " + newOe.ToString());
-            OnlineManager.recentEntities[newOe.id] = newOe;
+            OnlineManager.recentEntities.Add(newOe.id, newOe);
             map.Add(apo, newOe);
             return newOe;
         }
@@ -56,12 +56,14 @@ namespace RainMeadow
             EntityID id = world.game.GetNewID();
             id.altSeed = newObjectEvent.seed;
 
+            RainMeadow.Debug("serializedObject: " + newObjectEvent.serializedObject);
             var apo = SaveState.AbstractPhysicalObjectFromString(world, newObjectEvent.serializedObject);
+            apo.ID = id;
+            
             var oe = new OnlinePhysicalObject(apo, newObjectEvent.seed, newObjectEvent.realized, OnlineManager.lobby.PlayerFromId(newObjectEvent.owner), newObjectEvent.entityId, newObjectEvent.isTransferable);
             map.Add(apo, oe);
             OnlineManager.recentEntities.Add(oe.id, oe);
 
-            newObjectEvent.initialState.ReadTo(oe);
             return oe;
         }
 
@@ -80,8 +82,7 @@ namespace RainMeadow
             if (realizedState && isMine && apo.realizedObject != null && !realized) { RainMeadow.Error($"have realized object, but not entity not marked as realized??: {this} in resource {resource}"); }
             if (realizedState && isMine && !realized)
             {
-                //throw new InvalidOperationException("asked for realized state, not realized");
-                RainMeadow.Error($"asked for realized state, not realized: {this} in resource {resource}");
+                //RainMeadow.Error($"asked for realized state, not realized: {this} in resource {resource}");
                 realizedState = false;
             }
             return new PhysicalObjectEntityState(this, tick, realizedState);
@@ -180,30 +181,38 @@ namespace RainMeadow
 
         public override void OnLeftResource(OnlineResource inResource)
         {
+            bool unregister = inResource == primaryResource;
             base.OnLeftResource(inResource);
-            if (isMine) return;
-            if (inResource is RoomSession oldRoom)
+            if (!isMine)
             {
-                RainMeadow.Debug(this);
-                if (roomSession == oldRoom)
+                if (inResource is RoomSession oldRoom)
                 {
-                    RainMeadow.Debug("Removing entity from room: " + this);
-                    beingMoved = true;
-                    oldRoom.absroom.RemoveEntity(apo);
-                    if (apo.realizedObject is PhysicalObject po)
+                    RainMeadow.Debug(this);
+                    if (roomSession == oldRoom)
                     {
-                        if (oldRoom.absroom.realizedRoom is Room room)
+                        RainMeadow.Debug("Removing entity from room: " + this);
+                        beingMoved = true;
+                        oldRoom.absroom.RemoveEntity(apo);
+                        if (apo.realizedObject is PhysicalObject po)
                         {
-                            room.RemoveObject(po);
-                            room.CleanOutObjectNotInThisRoom(po);
+                            if (oldRoom.absroom.realizedRoom is Room room)
+                            {
+                                room.RemoveObject(po);
+                                room.CleanOutObjectNotInThisRoom(po);
+                            }
+                            if (po is Creature c && c.inShortcut)
+                            {
+                                if (c.RemoveFromShortcuts()) c.inShortcut = false;
+                            }
                         }
-                        if (po is Creature c && c.inShortcut)
-                        {
-                            if (c.RemoveFromShortcuts()) c.inShortcut = false;
-                        }
+                        beingMoved = false;
                     }
-                    beingMoved = false;
                 }
+            }
+            if(unregister)
+            {
+                map.Remove(apo);
+                OnlineManager.recentEntities.Remove(id);
             }
         }
 

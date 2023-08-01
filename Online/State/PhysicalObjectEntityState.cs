@@ -27,12 +27,13 @@ namespace RainMeadow
 
         public override StateType stateType => StateType.PhysicalObjectEntityState;
 
-        public override void ReadTo(OnlineEntity onlineEntity) // idk why this has a param if it also stores a ref to it
+        public override void ReadTo(OnlineEntity onlineEntity)
         {
             var onlineObject = onlineEntity as OnlinePhysicalObject;
-            //onlineEntity.entity.pos = pos;
             onlineObject.beingMoved = true;
+            var wasPos = onlineObject.apo.pos;
             onlineObject.apo.Move(pos);
+            if(!pos.NodeDefined && !wasPos.CompareDisregardingNode(pos))onlineObject.apo.pos = pos; // pos isn't updated if compareDisregardingTile, but please, do
             onlineObject.beingMoved = false;
             onlineObject.realized = this.realized;
             if (onlineObject.apo.realizedObject != null)

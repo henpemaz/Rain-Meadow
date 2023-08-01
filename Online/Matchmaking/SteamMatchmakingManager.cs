@@ -47,6 +47,7 @@ namespace RainMeadow
         private Callback<LobbyDataUpdate_t> m_LobbyDataUpdate;
         private Callback<LobbyChatUpdate_t> m_LobbyChatUpdate;
         private Callback<SteamNetworkingMessagesSessionRequest_t> m_SessionRequest;
+        private Callback<GameLobbyJoinRequested_t> m_GameLobbyJoinRequested;
 #pragma warning restore IDE0052 // Remove unread private members
 
         private CSteamID me;
@@ -61,6 +62,7 @@ namespace RainMeadow
             m_LobbyDataUpdate = Callback<LobbyDataUpdate_t>.Create(LobbyUpdated);
             m_LobbyChatUpdate = Callback<LobbyChatUpdate_t>.Create(LobbyChatUpdated);
             m_SessionRequest = Callback<SteamNetworkingMessagesSessionRequest_t>.Create(SessionRequest);
+            m_GameLobbyJoinRequested = Callback<GameLobbyJoinRequested_t>.Create(GameLobbyJoinRequested);
 
             me = SteamUser.GetSteamID();
             OnlineManager.mePlayer = new OnlinePlayer(new SteamPlayerId(me)) { isMe = true };
@@ -132,6 +134,7 @@ namespace RainMeadow
                     SteamMatchmaking.SetLobbyData(lobbyID, NAME_KEY, SteamFriends.GetPersonaName() + "'s Lobby");
                     SteamMatchmaking.SetLobbyData(lobbyID, MODE_KEY, creatingWithMode);
                     OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(creatingWithMode), OnlineManager.mePlayer);
+                    SteamFriends.SetRichPresence("connect", lobbyID.ToString());
                     OnLobbyJoined?.Invoke(true);
                 }
                 else
@@ -165,6 +168,7 @@ namespace RainMeadow
                         SteamMatchmaking.SetLobbyData(lobbyID, CLIENT_KEY, CLIENT_VAL);
                         SteamMatchmaking.SetLobbyData(lobbyID, NAME_KEY, SteamFriends.GetPersonaName() + "'s Lobby");
                     }
+                    SteamFriends.SetRichPresence("connect", lobbyID.ToString());
 
                     OnlineManager.lobby = new Lobby(mode, owner);
                     OnLobbyJoined?.Invoke(true);
@@ -318,6 +322,24 @@ namespace RainMeadow
             }
         }
 
+        private void GameLobbyJoinRequested(GameLobbyJoinRequested_t param)
+        {
+            try
+            {
+                if (param.m_steamIDLobby == lobbyID)
+                {
+                    RainMeadow.Debug("trying to rejoin same lobby, ignoring, id: " + param.m_steamIDLobby);
+                    return;
+                }
+                m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(param.m_steamIDLobby));
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                throw;
+            }
+        }
+
         public override void LeaveLobby()
         {
             RainMeadow.DebugMe();
@@ -326,6 +348,8 @@ namespace RainMeadow
                 SteamMatchmaking.LeaveLobby(lobbyID);
                 OnlineManager.Reset();
             }
+            lobbyID = default;
+            SteamFriends.ClearRichPresence();
         }
 
         public override OnlinePlayer GetPlayer(MeadowPlayerId id)

@@ -139,7 +139,7 @@ namespace RainMeadow
                         RainMeadow.Error("Player not found! " + players.list[i]);
                     }
                 }
-                lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).ToList());
+                lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
                 base.ReadTo(resource);
             }
         }
@@ -152,7 +152,7 @@ namespace RainMeadow
         public OnlinePlayer PlayerFromId(ushort id)
         {
             if (id == 0) return null;
-            return OnlineManager.players.First(p => p.inLobbyId == id);
+            return OnlineManager.players.FirstOrDefault(p => p.inLobbyId == id);
         }
 
         protected override void NewParticipantImpl(OnlinePlayer player)

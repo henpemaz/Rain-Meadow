@@ -19,6 +19,7 @@ namespace RainMeadow
             EntityID id = world.game.GetNewID();
             id.altSeed = newCreatureEvent.seed;
 
+            RainMeadow.Debug("serializedObject: " + newCreatureEvent.serializedObject);
             AbstractCreature ac = SaveState.AbstractCreatureFromString(inResource.World, newCreatureEvent.serializedObject, false);
             ac.ID = id;
 
@@ -26,7 +27,6 @@ namespace RainMeadow
             map.Add(ac, oe);
             OnlineManager.recentEntities.Add(oe.id, oe);
 
-            newCreatureEvent.initialState.ReadTo(oe);
             return oe;
         }
 

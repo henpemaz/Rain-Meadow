@@ -16,6 +16,7 @@ namespace RainMeadow
         public static Dictionary<OnlineEntity.EntityId, OnlineEntity> recentEntities;
         public static HashSet<OnlineEvent> waitingEvents;
         public static float lastDt;
+        public static float lastUpdate;
         public static OnlinePlayer mePlayer;
         public static List<OnlinePlayer> players;
         public static Lobby lobby;
@@ -27,7 +28,18 @@ namespace RainMeadow
 
             MatchmakingManager.InitLobbyManager();
             Reset();
+            MatchmakingManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
             RainMeadow.Debug("OnlineManager Created");
+        }
+        
+        private void OnlineManager_OnLobbyJoined(bool ok)
+        {
+            RainMeadow.Debug(ok);
+            if (ok)
+            {
+                // todo: switch case for different lobby types
+                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbyMenu);
+            }
         }
 
         public static void Reset()
@@ -46,31 +58,42 @@ namespace RainMeadow
             players = new List<OnlinePlayer>() { mePlayer };
         }
 
-        public override void Update()
+        public override void RawUpdate(float dt)
         {
-            base.Update();
+            myTimeStacker += dt * (float)framesPerSecond;
+            NetIO.Update(); // incoming data
 
-            NetTick();
+            if (myTimeStacker >= 1f)
+            {
+                myTimeStacker -= 1f;
+                if (myTimeStacker >= 1f)
+                {
+                    myTimeStacker = 0f;
+                }
+                Update(); // outgoing data
+            }
+            lastUpdate = UnityEngine.Time.realtimeSinceStartup;
         }
+
 
         // from a force-load situation
         public static void ForceLoadUpdate()
         {
-                if (UnityEngine.Time.realtimeSinceStartup > lastDt + 1f / instance.framesPerSecond)
-            {
 #if !LOCAL_P2P
-                SteamAPI.RunCallbacks();
+            SteamAPI.RunCallbacks();
 #endif
-                NetTick();
-
-            }
-        }
-
-        public static void NetTick()
-        {
-            // Incoming messages
             NetIO.Update();
 
+
+            if (UnityEngine.Time.realtimeSinceStartup > lastDt + 1f / instance.framesPerSecond)
+            {
+                instance.Update();
+            }
+            lastDt = UnityEngine.Time.realtimeSinceStartup;
+        }
+
+        public override void Update()
+        {
             if (lobby != null)
             {
                 mePlayer.tick++;
@@ -93,8 +116,6 @@ namespace RainMeadow
                     SendData(player);
                 }
             }
-
-            lastDt = UnityEngine.Time.realtimeSinceStartup;
         }
 
         public static void SendData(OnlinePlayer toPlayer)

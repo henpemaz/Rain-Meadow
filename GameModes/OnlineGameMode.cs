@@ -66,7 +66,7 @@ namespace RainMeadow
             return OnlineGameModeHelpers.cosmeticItems.Contains(item.type);
         }
 
-        public virtual bool ShouldSpawnRoomItems(RainWorldGame game)
+        public virtual bool ShouldSpawnRoomItems(RainWorldGame game, RoomSession roomSession)
         {
             return false;
         }

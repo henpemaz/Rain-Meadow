@@ -263,7 +263,7 @@ namespace RainMeadow
                     );
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((Room self) => { return OnlineManager.lobby != null && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.game); });
+                c.EmitDelegate((Room self) => { return OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.abstractRoom, out var roomSession) && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.game, roomSession); });
                 c.Emit(OpCodes.Brtrue, skip);
             }
             catch (Exception e)
@@ -291,7 +291,7 @@ namespace RainMeadow
                     );
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((Room self) => { return OnlineManager.lobby != null && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.game); }); // during room.loaded the RoomSession isn't available yet so no point in passing self?
+                c.EmitDelegate((Room self) => { return OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.abstractRoom, out var roomSession) && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.game, roomSession); }); // during room.loaded the RoomSession isn't available yet so no point in passing self?
                 c.Emit(OpCodes.Brtrue, skip);
             }
             catch (Exception e)

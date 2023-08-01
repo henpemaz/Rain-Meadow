@@ -399,3 +399,4 @@ FodyWeavers.xsd
 
 # sync software duh
 /.sync
+Properties/Settings.Designer.cs

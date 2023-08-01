@@ -1,7 +1,8 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using RWCustom;
 using UnityEngine;
-using System.Linq;
 
 namespace RainMeadow
 {
@@ -113,10 +114,10 @@ namespace RainMeadow
 
 			public void Update()
 			{
-                float alpha = entity.isMine ? 1 : 0.5f;
-                iconSymbol.symbolSprite.alpha = alpha;
-                iconSymbol.shadowSprite1.alpha = alpha;
-                iconSymbol.shadowSprite2.alpha = alpha;
+				float alpha = entity.isMine ? 1 : 0.5f;
+				iconSymbol.symbolSprite.alpha = alpha;
+				iconSymbol.shadowSprite1.alpha = alpha;
+				iconSymbol.shadowSprite2.alpha = alpha;
 				iconSymbol.Draw(1, pos + new Vector2(0.5f, 0));
 
 				label.x = pos.x + 0.01f;
@@ -134,6 +135,48 @@ namespace RainMeadow
 		private static List<EntityNode> entityNodes = new List<EntityNode>();
 		private static List<FLabel> outgoingLabels = new List<FLabel>();
 		private static List<FLabel> incomingLabels = new List<FLabel>();
+
+		public class playerCache
+		{
+			public List<Individual> items;
+			public static TimeSpan itemsExpiralDate;
+			public class Individual
+			{
+				public OnlinePlayer player;
+				public DateTime expiralDate;
+
+				public bool timeToDelete => DateTime.Now > expiralDate;
+				public Individual(OnlinePlayer Player)
+				{
+					player = Player;
+					expiralDate = DateTime.Now + itemsExpiralDate;
+				}
+			}
+
+			public playerCache(int size, TimeSpan expiry)
+			{
+				items = new List<Individual>(size);
+				itemsExpiralDate = expiry;
+			}
+
+			public void addPlayer(OnlinePlayer Player)
+			{
+				if (items.Exists(x => x.player == Player))
+				{
+					items.Find(x => x.player == Player).expiralDate = DateTime.Now + itemsExpiralDate;
+					return;
+				}
+				items.Add(new Individual(Player));
+			}
+
+			public void removeExpired()
+			{
+				items.RemoveAll(x => x.timeToDelete);
+			}
+		}
+
+		public static playerCache playersRead = new playerCache(16, TimeSpan.FromSeconds(5));
+		public static playerCache playersWritten = new playerCache(16, TimeSpan.FromSeconds(5));
 
 		public static void Update(RainWorldGame self, float dt)
 		{
@@ -157,36 +200,51 @@ namespace RainMeadow
 			incomingLabels.ForEach(label => label.RemoveFromContainer());
 			incomingLabels.Clear();
 
+			playersWritten.removeExpired();
+			playersRead.removeExpired();
+
 			int line = 0;
-			foreach (OnlinePlayer player in OnlineManager.players)
+			foreach (playerCache.Individual idv in playersWritten.items)
 			{
-				if (player.statesWritten || player.eventsWritten)
+				var player = idv.player;
+				var playerTruePing = Math.Max(1, player.ping - 16);
+
+				FLabel label = new FLabel(Custom.GetFont(), $"{player} ({playerTruePing}ms)")
 				{
-					FLabel label = new FLabel(Custom.GetFont(), player.ToString()) { alignment = FLabelAlignment.Left, x = 5.01f, y = screenSize.y - 25 - 15 * line };
-					if (player.eventsWritten)
-					{
-						label.color = new Color(1, 0.5f, 0);
-					}
-					overlayContainer.AddChild(label);
-					outgoingLabels.Add(label);
-					line++;
-				}
+					alignment = FLabelAlignment.Left,
+					x = 5.01f,
+					y = screenSize.y - 25 - 15 * line
+				};
+
+				//if (player.eventsWritten)
+				//{
+				//    label.color = new Color(1, 0.5f, 0);
+				//}
+				overlayContainer.AddChild(label);
+				outgoingLabels.Add(label);
+				line++;
 			}
 
 			line = 0;
-			foreach (OnlinePlayer player in OnlineManager.players)
+			foreach (playerCache.Individual idv in playersRead.items)
 			{
-				if (player.statesRead || player.eventsRead)
+				var player = idv.player;
+				var playerTruePing = Math.Max(1, player.ping - 16);
+
+				FLabel label = new FLabel(Custom.GetFont(), $"{player} ({playerTruePing}ms)")
 				{
-					FLabel label = new FLabel(Custom.GetFont(), player.ToString()) { alignment = FLabelAlignment.Left, x = 155.01f, y = screenSize.y - 25 - 15 * line };
-					if (player.eventsRead)
-					{
-						label.color = new Color(1, 0.5f, 0);
-					}
-					overlayContainer.AddChild(label);
-					incomingLabels.Add(label);
-					line++;
-				}
+					alignment = FLabelAlignment.Left,
+					x = 155.01f,
+					y = screenSize.y - 25 - 15 * line
+				};
+
+				//if (player.eventsRead)
+				//{
+				//    label.color = new Color(1, 0.5f, 0);
+				//}
+				overlayContainer.AddChild(label);
+				incomingLabels.Add(label);
+				line++;
 			}
 
 			resourceNodes.RemoveAll(node =>
@@ -202,15 +260,16 @@ namespace RainMeadow
 			var root = resourceNodes[0];
 
 			// Worlds (Regions)
-            
-            RoomSession inRoomSession;
-            WorldSession inWorldSession = null;
-            if (RoomSession.map.TryGetValue(self.cameras[0].room.abstractRoom, out inRoomSession)) {
-                inWorldSession = inRoomSession.worldSession;
-            }
 
-            var worlds = OnlineManager.lobby.worldSessions.Values.ToList();
-            worlds.Sort((x,y) => (x == inWorldSession ? -1 : 0) + (y == inWorldSession ? 1 : 0));
+			RoomSession inRoomSession;
+			WorldSession inWorldSession = null;
+			if (RoomSession.map.TryGetValue(self.cameras[0].room.abstractRoom, out inRoomSession))
+			{
+				inWorldSession = inRoomSession.worldSession;
+			}
+
+			var worlds = OnlineManager.lobby.worldSessions.Values.ToList();
+			worlds.Sort((x, y) => (x == inWorldSession ? -1 : 0) + (y == inWorldSession ? 1 : 0));
 
 			int lastWorldLines = 0;
 			foreach (var worldSession in worlds)
@@ -229,8 +288,8 @@ namespace RainMeadow
 				regionNode.pos = root.pos + new Vector2(20, root.lines * -35);
 
 				// Rooms
-                var rooms = worldSession.roomSessions.Values.ToList();
-                rooms.Sort((x,y) => (x == inRoomSession ? -1 : 0) + (y == inRoomSession ? 1 : 0));
+				var rooms = worldSession.roomSessions.Values.ToList();
+				rooms.Sort((x, y) => (x == inRoomSession ? -1 : 0) + (y == inRoomSession ? 1 : 0));
 				foreach (var roomSession in rooms)
 				{
 					if (!roomSession.isActive)
@@ -255,18 +314,21 @@ namespace RainMeadow
 				node.Update();
 			}
 
-            var onlineEntities = OnlineManager.recentEntities.Values.ToList();
-            onlineEntities.Sort((x, y) => {
-                int comp = (x is OnlineCreature ? -1 : 0) + (y is OnlineCreature ? 1 : 0);
-                if (comp == 0) {
-                    comp = (int)((OnlinePhysicalObject)x).apo.type - (int)((OnlinePhysicalObject)y).apo.type;
-                    if (comp == 0) {
-                        comp = (x.isMine ? -1 : 0) + (y.isMine ? 1 : 0);
-                    }
-                }
+			var onlineEntities = OnlineManager.recentEntities.Values.ToList();
+			onlineEntities.Sort((x, y) =>
+			{
+				int comp = (x is OnlineCreature ? -1 : 0) + (y is OnlineCreature ? 1 : 0);
+				if (comp == 0)
+				{
+					comp = (int)((OnlinePhysicalObject)x).apo.type - (int)((OnlinePhysicalObject)y).apo.type;
+					if (comp == 0)
+					{
+						comp = (x.isMine ? -1 : 0) + (y.isMine ? 1 : 0);
+					}
+				}
 
-                return comp;
-            });
+				return comp;
+			});
 			foreach (var onlineEntity in onlineEntities)
 			{
 				ResourceNode resourceNode = resourceNodes.Find(node => node.resource == onlineEntity.currentlyJoinedResource);

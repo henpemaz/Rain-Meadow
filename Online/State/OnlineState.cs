@@ -11,6 +11,7 @@ namespace RainMeadow
 
         protected OnlineState(uint ts)
         {
+            this.from = OnlineManager.mePlayer;
             this.tick = ts;
         }
 
