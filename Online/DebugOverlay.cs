@@ -1,4 +1,5 @@
 using RWCustom;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -69,7 +70,49 @@ namespace RainMeadow
             }
         }
 
+        public class playerCache
+        {
+            public List<Individual> items;
+            public static TimeSpan itemsExpiralDate;
+            public class Individual
+            {
+                public OnlinePlayer player;
+                public DateTime expiralDate;
+
+                public bool timeToDelete => DateTime.Now > expiralDate;
+                public Individual(OnlinePlayer Player)
+                {
+                    player = Player;
+                    expiralDate = DateTime.Now + itemsExpiralDate;
+                }
+            }
+
+            public playerCache(int size, TimeSpan expiry)
+            {
+                items = new List<Individual>(size);
+                itemsExpiralDate = expiry;
+            }
+
+            public void addPlayer(OnlinePlayer Player)
+            {
+                if (items.Exists(x => x.player == Player))
+                {
+                    items.Find(x => x.player == Player).expiralDate = DateTime.Now + itemsExpiralDate;
+                    return;
+                }
+                items.Add(new Individual(Player));
+            }
+
+            public void removeExpired()
+            {
+                items.RemoveAll(x => x.timeToDelete);
+            }
+        }
+
         private static List<ResourceNode> resourceNodes = new List<ResourceNode>();
+
+        public static playerCache playersRead = new playerCache(16, TimeSpan.FromSeconds(5));
+        public static playerCache playersWritten = new playerCache(16, TimeSpan.FromSeconds(5));
 
         private class EntityNode
         {
@@ -132,6 +175,8 @@ namespace RainMeadow
 
         public static void Update(RainWorldGame self, float dt)
         {
+            playersWritten.removeExpired();
+            playersRead.removeExpired();
             if (overlayContainer == null && self.devToolsActive)
             {
                 CreateOverlay(self);
@@ -152,35 +197,37 @@ namespace RainMeadow
                 incomingLabels.Clear();
 
                 int line = 0;
-                foreach (OnlinePlayer player in OnlineManager.players)
+                foreach (playerCache.Individual idv in playersWritten.items)
                 {
-                    if (player.statesWritten || player.eventsWritten)
-                    {
-                        FLabel label = new FLabel(Custom.GetFont(), player.ToString()) { alignment = FLabelAlignment.Left, x = 5.01f, y = screenSize.y - 25 - 15 * line };
-                        if (player.eventsWritten)
-                        {
-                            label.color = new Color(1, 0.5f, 0);
-                        }
-                        overlayContainer.AddChild(label);
-                        outgoingLabels.Add(label);
-                        line++;
-                    }
+                    var player = idv.player;
+                    var playerTruePing = Math.Max(1, player.ping - 16);
+
+                    FLabel label = new FLabel(Custom.GetFont(), player.ToString() + "(" + playerTruePing + "ms)") { alignment = FLabelAlignment.Left, x = 5.01f, y = screenSize.y - 25 - 15 * line };
+                        
+                    //if (player.eventsWritten)
+                    //{
+                    //    label.color = new Color(1, 0.5f, 0);
+                    //}
+                    overlayContainer.AddChild(label);
+                    outgoingLabels.Add(label);
+                    line++;
                 }
 
                 line = 0;
-                foreach (OnlinePlayer player in OnlineManager.players)
+                foreach (playerCache.Individual idv in playersRead.items)
                 {
-                    if (player.statesRead || player.eventsRead)
-                    {
-                        FLabel label = new FLabel(Custom.GetFont(), player.ToString()) { alignment = FLabelAlignment.Left, x = 155.01f, y = screenSize.y - 25 - 15 * line };
-                        if (player.eventsRead)
-                        {
-                            label.color = new Color(1, 0.5f, 0);
-                        }
-                        overlayContainer.AddChild(label);
-                        incomingLabels.Add(label);
-                        line++;
-                    }
+                    var player = idv.player;
+                    var playerTruePing = Math.Max(1, player.ping - 16);
+                    
+                    FLabel label = new FLabel(Custom.GetFont(), player.ToString() + "(" + playerTruePing +"ms)") { alignment = FLabelAlignment.Left, x = 155.01f, y = screenSize.y - 25 - 15 * line };
+                    
+                    //if (player.eventsRead)
+                    //{
+                    //    label.color = new Color(1, 0.5f, 0);
+                    //}
+                    overlayContainer.AddChild(label);
+                    incomingLabels.Add(label);
+                    line++;
                 }
 
                 // Worlds (Regions)

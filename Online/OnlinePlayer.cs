@@ -20,15 +20,10 @@ namespace RainMeadow
         public uint tick; // the last tick I've received from them, I'll write it back on headers as an ack
         public uint lastAckdTick; // the last tick they've ack'd to me
         public bool needsAck;
+        public int ping; // rtt
 
         public bool isMe;
         public bool hasLeft;
-
-        // DEBUG
-        public bool eventsWritten;
-        public bool statesWritten;
-        public bool eventsRead;
-        public bool statesRead;
 
 
         public OnlinePlayer(MeadowPlayerId id)
@@ -66,6 +61,11 @@ namespace RainMeadow
 
         public void TickAckFromRemote(uint lastTick)
         {
+            DebugOverlay.playersRead.addPlayer(this);
+
+            var timeSinceLastTick = (int)Math.Floor(Math.Max(1, (UnityEngine.Time.realtimeSinceStartup - OnlineManager.lastUpdate) * 1000));
+            ping = (int)(OnlineManager.mePlayer.tick - lastTick) * 50 + timeSinceLastTick;
+
             this.lastAckdTick = lastTick;
         }
 
