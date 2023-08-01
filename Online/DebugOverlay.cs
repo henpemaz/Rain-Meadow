@@ -208,8 +208,15 @@ namespace RainMeadow
 			{
 				var player = idv.player;
 				var playerTruePing = Math.Max(1, player.ping - 16);
+                var averageBytes = 0;
+                foreach (var bytes in player.bytesOut) {
+                    averageBytes += bytes;
+                }
+                // averageBytes = bytes per 40 frames
+                averageBytes = (int)((float)averageBytes / 40 * OnlineManager.instance.framesPerSecond); // bytes per second
+                var averageBits = averageBytes * 8;
 
-				FLabel label = new FLabel(Custom.GetFont(), $"{player} ({playerTruePing}ms)")
+				FLabel label = new FLabel(Custom.GetFont(), $"{player} ({averageBits / 1000}kbps - {playerTruePing}ms)")
 				{
 					x = 5.01f,
 					y = screenSize.y - 25 - 15 * line,
@@ -230,10 +237,17 @@ namespace RainMeadow
 			{
 				var player = idv.player;
 				var playerTruePing = Math.Max(1, player.ping - 16);
+                var averageBytes = 0;
+                foreach (var bytes in player.bytesIn) {
+                    averageBytes += bytes;
+                }
+                // averageBytes = bytes per 40 frames
+                averageBytes = (int)((float)averageBytes / 40 * OnlineManager.instance.framesPerSecond); // bytes per second
+                var averageBits = averageBytes * 8;
 
-				FLabel label = new FLabel(Custom.GetFont(), $"{player} ({playerTruePing}ms)")
+				FLabel label = new FLabel(Custom.GetFont(), $"{player} ({averageBits / 1000}kbps - {playerTruePing}ms)")
 				{
-					x = 155.01f,
+					x = 205.01f,
 					y = screenSize.y - 25 - 15 * line,
 					alignment = FLabelAlignment.Left,
                     color = 
@@ -322,9 +336,18 @@ namespace RainMeadow
 				{
 					comp = (int)((OnlinePhysicalObject)x).apo.type - (int)((OnlinePhysicalObject)y).apo.type;
 					if (comp == 0)
-					{
-						comp = (x.isMine ? -1 : 0) + (y.isMine ? 1 : 0);
-					}
+                    {
+                        if (x is OnlineCreature && y is OnlineCreature) {
+                            comp = (int)((AbstractCreature)((OnlineCreature)x).apo).creatureTemplate.type - (int)((AbstractCreature)((OnlineCreature)y).apo).creatureTemplate.type;
+                            if (comp == 0) {
+                                comp = (x.isMine ? -1 : 0) + (y.isMine ? 1 : 0);
+                            }
+                        }
+                        else
+                        {
+                            comp = (x.isMine ? -1 : 0) + (y.isMine ? 1 : 0);
+                        }
+                    }
 				}
 
 				return comp;
@@ -395,14 +418,14 @@ namespace RainMeadow
 			overlayContainer.AddChild(new FLabel(Custom.GetFont(), "Incoming (Senders)")
 			{
 				alignment = FLabelAlignment.Left,
-				x = 155.01f,
+				x = 205.01f,
 				y = screenSize.y - 10,
 			});
 
 			// Lobby (Root)
 			resourceNodes.Add(new ResourceNode(self.rainWorld, overlayContainer, OnlineManager.lobby)
 			{
-				pos = new Vector2(300, screenSize.y - 30),
+				pos = new Vector2(400, screenSize.y - 30),
 			});
 
 			Futile.stage.AddChild(overlayContainer);

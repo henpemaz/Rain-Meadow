@@ -200,6 +200,8 @@ namespace RainMeadow
 
         public void ReadData(OnlinePlayer fromPlayer, long size)
         {
+            fromPlayer.bytesIn[fromPlayer.bytesSnapIndex] = (int)size;
+
             BeginRead(fromPlayer);
 
             PlayerHeaders();
@@ -266,6 +268,7 @@ namespace RainMeadow
 
             EndWrite();
 
+            toPlayer.bytesOut[toPlayer.bytesSnapIndex] = (int)Position;
             return Position;
         }
 

@@ -31,6 +31,9 @@ namespace RainMeadow
         public bool statesWritten;
         public bool eventsRead;
         public bool statesRead;
+        public int bytesSnapIndex; // used to loop through the array and overwrite old data
+        public readonly int[] bytesIn = new int[40];
+        public readonly int[] bytesOut = new int[40];
 
         public OnlinePlayer(MeadowPlayerId id)
         {
