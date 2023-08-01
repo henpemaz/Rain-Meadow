@@ -41,6 +41,7 @@ namespace RainMeadow
         {
             if (IsWriting)
             {
+                DebugOverlay.playersWritten.addPlayer(currPlayer);
                 writer.Write(currPlayer.lastEventFromRemote);
                 writer.Write(currPlayer.tick);
                 writer.Write(OnlineManager.mePlayer.tick);
@@ -48,6 +49,7 @@ namespace RainMeadow
             }
             if (IsReading)
             {
+                DebugOverlay.playersRead.addPlayer(currPlayer);
                 currPlayer.EventAckFromRemote(reader.ReadUInt16());
                 currPlayer.TickAckFromRemote(reader.ReadUInt32());
                 var newTick = reader.ReadUInt32();
@@ -198,6 +200,8 @@ namespace RainMeadow
 
         public void ReadData(OnlinePlayer fromPlayer, long size)
         {
+            fromPlayer.bytesIn[fromPlayer.bytesSnapIndex] = (int)size;
+
             BeginRead(fromPlayer);
 
             PlayerHeaders();
@@ -208,6 +212,7 @@ namespace RainMeadow
             }
 
             uint ne = BeginReadEvents();
+            fromPlayer.eventsRead = ne > 0; // something is being read, record for debug
             //RainMeadow.Debug($"Receiving {ne} events from player {fromPlayer}");
             for (uint ie = 0; ie < ne; ie++)
             {
@@ -215,6 +220,7 @@ namespace RainMeadow
             }
 
             uint ns = BeginReadStates();
+            fromPlayer.statesRead = ns > 0; // something is being read, record for debug
             //RainMeadow.Debug($"Receiving {ns} states");
             for (uint ist = 0; ist < ns; ist++)
             {
@@ -231,6 +237,7 @@ namespace RainMeadow
             PlayerHeaders();
 
             BeginWriteEvents();
+            toPlayer.eventsWritten = toPlayer.OutgoingEvents.Count > 0; // something is being written, record for debug
             //RainMeadow.Debug($"Writing {toPlayer.OutgoingEvents.Count} events to player {toPlayer}");
             foreach (var e in toPlayer.OutgoingEvents)
             {
@@ -249,6 +256,7 @@ namespace RainMeadow
             EndWriteEvents();
 
             BeginWriteStates();
+            toPlayer.statesWritten = toPlayer.OutgoingStates.Count > 0; // something is being written, record for debug
             //RainMeadow.Debug($"Writing {toPlayer.OutgoingStates.Count} states");
             while (toPlayer.OutgoingStates.Count > 0 && CanFit(toPlayer.OutgoingStates.Peek()))
             {
@@ -260,6 +268,7 @@ namespace RainMeadow
 
             EndWrite();
 
+            toPlayer.bytesOut[toPlayer.bytesSnapIndex] = (int)Position;
             return Position;
         }
 
