@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -7,13 +8,16 @@ namespace RainMeadow
     {
         public OnlineResource resource;
         public OnlineEntity entity;
+        public OnlinePlayer player;
         public Queue<EntityFeedState> OutgoingStates = new(32);
         public EntityFeedState lastAcknoledgedState;
 
         public EntityFeed(OnlineResource resource, OnlineEntity oe)
         {
             this.resource = resource;
+            this.player = resource.owner;
             this.entity = oe;
+            if (resource.isOwner) throw new InvalidOperationException("feeding myself");
         }
 
         public void Update(uint tick)
@@ -24,22 +28,29 @@ namespace RainMeadow
                 RainMeadow.Error($"Self-feeding entity {entity} for resource {resource}");
                 throw new InvalidOperationException("feeding myself");
             }
-
-            while (OutgoingStates.Count > 0 && NetIO.IsNewerOrEqual(resource.owner.lastAckdTick, OutgoingStates.Peek().tick))
+            if (resource.owner != player) // they don't know
             {
-                lastAcknoledgedState = OutgoingStates.Dequeue();
+                OutgoingStates.Clear();
+                lastAcknoledgedState = null;
             }
+            player = resource.owner;
 
-            // todo detect owner changed and reset? maybe get rid of reset and just remove feed add feed on ownership changes?
+            if (player.recentlyAckdTicks.Count > 0) while (OutgoingStates.Count > 0 && NetIO.IsNewerOrEqual(player.oldestTickToConsider, OutgoingStates.Peek().tick)) OutgoingStates.Dequeue(); // discard obsolete
+            if (player.recentlyAckdTicks.Count > 0) while (OutgoingStates.Count > 0 && player.recentlyAckdTicks.Contains(OutgoingStates.Peek().tick)) lastAcknoledgedState = OutgoingStates.Dequeue(); // use most recent available
+            if (lastAcknoledgedState != null && !player.recentlyAckdTicks.Contains(lastAcknoledgedState.tick)) lastAcknoledgedState = null; // not available
+
             var newState = entity.GetFeedState(tick, resource);
-            resource.owner.OutgoingStates.Enqueue(newState.Delta(lastAcknoledgedState));
+            if (lastAcknoledgedState != null)
+            {
+                //RainMeadow.Debug($"sending delta for tick {newState.tick} from reference {lastAcknoledgedState.tick} ");
+                player.OutgoingStates.Enqueue(newState.Delta(lastAcknoledgedState));
+            }
+            else
+            {
+                //RainMeadow.Debug($"sending absolute state for tick {newState.tick}");
+                player.OutgoingStates.Enqueue(newState);
+            }
             OutgoingStates.Enqueue(newState);
-        }
-
-        public void Reset()
-        {
-            OutgoingStates.Clear();
-            lastAcknoledgedState = null;
         }
     }
 }

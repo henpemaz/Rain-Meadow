@@ -45,9 +45,13 @@ namespace RainMeadow
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);
-            serializer.SerializeNoStrings(ref pos);
+            serializer.SerializeNoStrings(ref pos); // todo make nullable if delta
             serializer.Serialize(ref realized);
             serializer.SerializeNullablePolyState(ref realizedObjectState);
         }
+
+        public override bool SupportsDelta => true;
+        public virtual PhysicalObjectEntityState NewInstance() => new();
+
     }
 }

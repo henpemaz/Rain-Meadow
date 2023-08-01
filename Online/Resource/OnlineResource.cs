@@ -188,7 +188,6 @@ namespace RainMeadow
             if (newOwner != null && !participants.ContainsKey(newOwner)) // newly added
             {
                 NewParticipant(newOwner);
-                if (newOwner.isMe) memberSinceTick = new TickReference(supervisor, supervisor.tick);
             }
             if (isOwner) // I own this now
             {

@@ -42,27 +42,21 @@ namespace RainMeadow
             if (IsWriting)
             {
                 DebugOverlay.playersWritten.addPlayer(currPlayer);
-                writer.Write(currPlayer.lastEventFromRemote);
-                writer.Write(currPlayer.tick);
                 writer.Write(OnlineManager.mePlayer.tick);
-                //RainMeadow.Debug($"Wrote {currPlayer.lastEventFromRemote} {currPlayer.tick} and {LobbyManager.mePlayer.tick}");
+                writer.Write(currPlayer.lastEventFromRemote);
+                writer.Write(currPlayer.tick); writer.Write(currPlayer.recentTicksToAckBitpack);
             }
             if (IsReading)
             {
                 DebugOverlay.playersRead.addPlayer(currPlayer);
-                currPlayer.EventAckFromRemote(reader.ReadUInt16());
-                currPlayer.TickAckFromRemote(reader.ReadUInt32());
                 var newTick = reader.ReadUInt32();
-                //RainMeadow.Debug($"Got {currPlayer.lastAckFromRemote} {currPlayer.lastAckdTick} and {newTick}");
                 if (!NetIO.IsNewer(newTick, currPlayer.tick))
                 {
-                    // abort reading
                     AbortRead();
                 }
-                else
-                {
-                    currPlayer.tick = newTick;
-                }
+                currPlayer.NewTick(newTick);
+                currPlayer.EventAckFromRemote(reader.ReadUInt16());
+                currPlayer.TickAckFromRemote(reader.ReadUInt32(), reader.ReadUInt16());
             }
         }
 

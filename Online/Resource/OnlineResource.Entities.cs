@@ -146,7 +146,6 @@ namespace RainMeadow
             if (isOwner && isActive && (entityJoinRequest.dependsOnTick?.ChecksOut() ?? true)) // tick checked here because needs an answer this frame
             {
                 OnlineEntity oe = entityJoinRequest.entityId.FindEntity();
-                entityJoinRequest.initialState.ReadTo(oe);
                 EntityJoinedResource(oe, entityJoinRequest.initialState);
                 entityJoinRequest.from.QueueEvent(new GenericResult.Ok(entityJoinRequest));
             }

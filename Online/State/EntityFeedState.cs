@@ -5,8 +5,8 @@
         public EntityState entityState;
         public OnlineResource inResource;
 
+        public override StateType stateType => StateType.EntityInResourceState;
         public EntityFeedState() { }
-
         public EntityFeedState(EntityState entityState, OnlineResource inResource, uint ts) : base(ts)
         {
             this.entityState = entityState;
@@ -20,6 +20,5 @@
             serializer.SerializeResourceByReference(ref inResource);
         }
 
-        public override StateType stateType => StateType.EntityInResourceState;
     }
 }

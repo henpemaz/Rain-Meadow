@@ -24,11 +24,9 @@ namespace RainMeadow
             if (!resource.isOwner) throw new InvalidOperationException("not owner");
             if (!resource.isActive) return; // resource not ready yet
 
-            while (OutgoingStates.Count > 0 && NetIO.IsNewerOrEqual(player.lastAckdTick, OutgoingStates.Peek().tick))
-            {
-                lastAcknoledgedState = OutgoingStates.Dequeue();
-            }
-            if (lastAcknoledgedState != null && lastAcknoledgedState.tick != player.lastAckdTick) lastAcknoledgedState = null;
+            if (player.recentlyAckdTicks.Count > 0) while (OutgoingStates.Count > 0 && NetIO.IsNewerOrEqual(player.oldestTickToConsider, OutgoingStates.Peek().tick)) OutgoingStates.Dequeue(); // discard obsolete
+            if (player.recentlyAckdTicks.Count > 0) while (OutgoingStates.Count > 0 && player.recentlyAckdTicks.Contains(OutgoingStates.Peek().tick)) lastAcknoledgedState = OutgoingStates.Dequeue(); // use most recent available
+            if (lastAcknoledgedState != null && !player.recentlyAckdTicks.Contains(lastAcknoledgedState.tick)) lastAcknoledgedState = null; // not available
 
             var newState = resource.GetState(tick);
             if (lastAcknoledgedState != null)

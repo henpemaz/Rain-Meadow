@@ -1,4 +1,6 @@
-﻿namespace RainMeadow
+﻿using RainMeadow.Generics;
+
+namespace RainMeadow
 {
     public abstract class EntityState : OnlineState, Generics.IIdentifiable<OnlineEntity.EntityId>
     {

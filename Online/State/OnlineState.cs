@@ -94,19 +94,19 @@ namespace RainMeadow
             return s;
         }
 
-        public virtual void CustomSerialize(Serializer serializer)
-        {
-            serializer.Serialize(ref _isDelta);
-            serializer.IsDelta = _isDelta; // Serializer wraps this call and restores the previous value later (override-proof)
-            if (_isDelta) { serializer.Serialize(ref DeltaFromTick); }
-        }
-
         public virtual bool SupportsDelta => false;
         public bool IsDelta { get => _isDelta; set => _isDelta = value; }
-
         private bool _isDelta;
         public uint DeltaFromTick;
-
+        public virtual void CustomSerialize(Serializer serializer)
+        {
+            if (SupportsDelta)
+            {
+                serializer.Serialize(ref _isDelta);
+                serializer.IsDelta = _isDelta; // Serializer wraps this call and restores the previous value later (override-proof)
+                if (_isDelta) { serializer.Serialize(ref DeltaFromTick); }
+            }
+        }
         public virtual OnlineState Delta(OnlineState lastAcknoledgedState)
         {
             return this;

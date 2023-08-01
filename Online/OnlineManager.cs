@@ -75,7 +75,6 @@ namespace RainMeadow
             lastUpdate = UnityEngine.Time.realtimeSinceStartup;
         }
 
-
         // from a force-load situation
         public static void ForceLoadUpdate()
         {
@@ -83,7 +82,6 @@ namespace RainMeadow
             SteamAPI.RunCallbacks();
 #endif
             NetIO.Update();
-
 
             if (UnityEngine.Time.realtimeSinceStartup > lastDt + 1f / instance.framesPerSecond)
             {
@@ -209,9 +207,21 @@ namespace RainMeadow
                 {
                     resourceState.resource.ReadState(resourceState);
                 }
-                if (state is EntityFeedState entityInResourceState && entityInResourceState.inResource != null && entityInResourceState.inResource.isAvailable)
+                else if (state is EntityFeedState entityInResourceState && entityInResourceState.inResource != null && entityInResourceState.inResource.isAvailable)
                 {
-                    entityInResourceState.entityState.entityId.FindEntity()?.ReadState(entityInResourceState.entityState, entityInResourceState.inResource);
+                    var ent = entityInResourceState.entityState.entityId.FindEntity();
+                    if(ent != null)
+                    {
+                        ent.ReadState(entityInResourceState.entityState, entityInResourceState.inResource);
+                    }
+                    else
+                    {
+                        RainMeadow.Error($"Entity {entityInResourceState.entityState.entityId} not found for incoming state from {state.from} in {entityInResourceState.inResource}");
+                    }
+                }
+                else
+                {
+                    RainMeadow.Error($"Unexpected incoming state: {state}");
                 }
             }
             catch (Exception e)

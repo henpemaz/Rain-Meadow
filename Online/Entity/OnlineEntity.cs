@@ -178,6 +178,7 @@ namespace RainMeadow
 
         public virtual void ReadState(EntityState entityState, OnlineResource inResource)
         {
+            if (isMine) { RainMeadow.Error("Skipping state for entity I own: " +this); return; }
             if (lastStates.TryGetValue(inResource, out var existingState) && NetIO.IsNewer(existingState.tick, entityState.tick)) { RainMeadow.Debug($"Skipping stale state"); return; }
             lastStates[inResource] = entityState;
             if (inResource != currentlyJoinedResource)
@@ -187,10 +188,7 @@ namespace RainMeadow
                 // todo supress sending if more specialized state being sent
                 return;
             }
-            if(!isMine)
-            {
-                entityState.ReadTo(this);
-            }
+            entityState.ReadTo(this);
         }
 
         protected abstract EntityState MakeState(uint tick, OnlineResource inResource);
