@@ -23,18 +23,6 @@ namespace RainMeadow
         private Vector2 lookAt;
         private byte mode;
         private float extended;
-        private IntVector2 tempHoverTile; // used for zipping calculation. If not synced, zips will be out of sync.
-        //private IntVector2 
-
-        // Zipping. 
-        //private List<IntVector2> zipPath;
-        //private float[] zipProgs;
-        //private int zipPathCount;
-
-        // Graphics
-        //private Vector2 lookAtAdd; // is random but seems too small to matter
-        //private float holoLensUp;
-
 
         public RealizedOverseerState() { }
         public RealizedOverseerState(OnlineCreature entity) : base(entity)
@@ -47,8 +35,6 @@ namespace RainMeadow
             mode = (byte)o.mode.index;
             lookAt = o.AI.lookAt;
             extended = o.extended;
-            tempHoverTile = o.AI.tempHoverTile;
-            //lookAtAdd = o.AI.lookAtAdd;
         }
 
         public override StateType stateType => StateType.RealizedOverseerState;
@@ -62,8 +48,6 @@ namespace RainMeadow
             serializer.Serialize(ref mode);
             serializer.Serialize(ref lookAt);
             serializer.Serialize(ref extended);
-            serializer.Serialize(ref tempHoverTile);
-            //serializer.Serialize(ref lookAtAdd);
 
         }
 
@@ -72,15 +56,12 @@ namespace RainMeadow
             base.ReadTo(onlineEntity);
             var overseer = (Overseer)((OnlineCreature)onlineEntity).apo.realizedObject;
 
-
             overseer.rootPos = rootPos;
             overseer.rootTile = rootTile;
             overseer.hoverTile = hoverTile;
             overseer.mode = new Overseer.Mode(Overseer.Mode.values.GetEntry(mode));
             overseer.AI.lookAt = lookAt;
             overseer.extended = extended;
-            overseer.AI.tempHoverTile = tempHoverTile;
-            //overseer.AI.lookAtAdd = lookAtAdd;
         }
     }
 }
