@@ -11,9 +11,12 @@ namespace RainMeadow
     //          we could technically do this here if we didnt mind resending the same information every packet lmao.
     // TODO: Conversations dont work, remote conversations dont play the animation.
     // TODO: Remote overseers' mycelium (the lil tentacles) dont get moved along in a zip
+    // TODO: Death is completely broken, need to make Die or HitSomethingWithoutStopping an event.
+    //          this leads to an overseer being fake killed on remote.
     // TODO: Ask videocult to remove overseers from the game.
     public class RealizedOverseerState : RealizedCreatureState
     {
+        
         private Vector2 rootPos;
         private IntVector2 rootTile;
         private IntVector2 hoverTile;
@@ -29,7 +32,7 @@ namespace RainMeadow
         //private int zipPathCount;
 
         // Graphics
-        private Vector2 lookAtAdd; // is random but seems too small to matter
+        //private Vector2 lookAtAdd; // is random but seems too small to matter
         //private float holoLensUp;
 
 
@@ -45,7 +48,7 @@ namespace RainMeadow
             lookAt = o.AI.lookAt;
             extended = o.extended;
             tempHoverTile = o.AI.tempHoverTile;
-            lookAtAdd = o.AI.lookAtAdd;
+            //lookAtAdd = o.AI.lookAtAdd;
         }
 
         public override StateType stateType => StateType.RealizedOverseerState;
@@ -60,7 +63,7 @@ namespace RainMeadow
             serializer.Serialize(ref lookAt);
             serializer.Serialize(ref extended);
             serializer.Serialize(ref tempHoverTile);
-            serializer.Serialize(ref lookAtAdd);
+            //serializer.Serialize(ref lookAtAdd);
 
         }
 
@@ -77,7 +80,7 @@ namespace RainMeadow
             overseer.AI.lookAt = lookAt;
             overseer.extended = extended;
             overseer.AI.tempHoverTile = tempHoverTile;
-            overseer.AI.lookAtAdd = lookAtAdd;
+            //overseer.AI.lookAtAdd = lookAtAdd;
         }
     }
 }
