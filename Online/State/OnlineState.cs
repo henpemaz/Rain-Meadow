@@ -31,6 +31,7 @@ namespace RainMeadow
             RealizedPhysicalObjectState,
             RealizedCreatureState,
             RealizedPlayerState,
+            RealizedOverseerState,
             RealizedWeaponState,
             RealizedSpearState,
             CreatureStateState,
@@ -70,6 +71,9 @@ namespace RainMeadow
                     break;
                 case StateType.RealizedPlayerState:
                     s = new RealizedPlayerState();
+                    break;
+                case StateType.RealizedOverseerState:
+                    s = new RealizedOverseerState();
                     break;
                 case StateType.RealizedWeaponState:
                     s = new RealizedWeaponState();

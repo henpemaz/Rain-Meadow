@@ -25,6 +25,35 @@ namespace RainMeadow
 
             On.AbstractCreature.Move += AbstractCreature_Move; // I'm watching your every step
             On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // I'm watching your every step
+
+            On.OverseerAI.UpdateTempHoverPosition += OverseerAI_UpdateTempHoverPosition;
+            On.OverseerAI.Update += OverseerAI_Update;
+        }
+
+        private void OverseerAI_Update(On.OverseerAI.orig_Update orig, OverseerAI self)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                if (OnlinePhysicalObject.map.TryGetValue(self.overseer.abstractCreature, out var oe) && !oe.isMine)
+                {
+                    // remote overseers have gotten their zipping permissions revoked.
+                    return;
+                }
+            }
+            orig(self);
+        }
+
+        private void OverseerAI_UpdateTempHoverPosition(On.OverseerAI.orig_UpdateTempHoverPosition orig, OverseerAI self)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                if (OnlinePhysicalObject.map.TryGetValue(self.overseer.abstractCreature, out var oe) && !oe.isMine)
+                {
+                    // remote overseers have gotten their zipping permissions revoked.
+                    return;
+                }
+            }
+            orig(self);
         }
 
         // I'm watching your every step

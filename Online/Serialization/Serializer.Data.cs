@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using RWCustom;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace RainMeadow
@@ -487,6 +488,20 @@ namespace RainMeadow
             {
                 data.x = reader.ReadSingle();
                 data.y = reader.ReadSingle();
+            }
+        }
+
+        public void Serialize(ref IntVector2 data)
+        {
+            if (IsWriting)
+            {
+                writer.Write(data.x);
+                writer.Write(data.y);
+            }
+            if (IsReading)
+            {
+                data.x = reader.ReadInt32();
+                data.y = reader.ReadInt32();
             }
         }
 
