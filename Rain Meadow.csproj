@@ -7,6 +7,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Configurations>Debug;Release;LocalP2P</Configurations>
+    <RootNamespace>RainMeadow</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>$(DefineConstants)TRACE</DefineConstants>
@@ -98,6 +99,12 @@
       <Private>False</Private>
     </Reference>
     <Reference Update="lib\PUBLIC-Assembly-CSharp.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Rewired_Core.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Rewired_Windows.dll">
       <Private>False</Private>
     </Reference>
     <Reference Update="lib\UnityEngine.AssetBundleModule.dll">
