@@ -48,6 +48,7 @@ namespace RainMeadow
         private void RainWorldGame_ShutDownProcess(On.RainWorldGame.orig_ShutDownProcess orig, RainWorldGame self)
         {
             orig(self);
+            DebugOverlay.RemoveOverlay(self);
             if (OnlineManager.lobby != null)
             {
                 // Don't leak entities from last session
