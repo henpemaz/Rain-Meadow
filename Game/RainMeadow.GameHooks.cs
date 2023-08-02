@@ -225,7 +225,6 @@ namespace RainMeadow
         // World request/release
         private void WorldLoader_ctor(On.WorldLoader.orig_ctor_RainWorldGame_Name_bool_string_Region_SetupValues orig, WorldLoader self, RainWorldGame game, SlugcatStats.Name playerCharacter, bool singleRoomWorld, string worldName, Region region, RainWorldGame.SetupValues setupValues)
         {
-            Debug($"{(self != null ? self : "self_null")} {(game != null ? game : "game_null")} {(playerCharacter != null ? playerCharacter : "player_id_null")} {singleRoomWorld} {worldName ?? "world_null"} {(region != null ? region.name ?? "region_name_null" : "region_null")}");
             if (OnlineManager.lobby != null)
             {
                 setupValues.worldCreaturesSpawn = false;
