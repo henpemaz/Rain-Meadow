@@ -40,7 +40,14 @@ namespace RainMeadow
             if (ok)
             {
                 // todo: switch case for different lobby types
-                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbyMenu);
+				if (lobby.gameModeType == OnlineGameMode.OnlineGameModeType.ArenaCompetitive)
+				{
+					manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
+				}
+				else
+				{
+					manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbyMenu);
+				}
             }
             else
             {

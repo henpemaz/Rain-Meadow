@@ -7,6 +7,7 @@
             public static ProcessManager.ProcessID OnlineManager = new("MeadowOnlineManager", true);
             public static ProcessManager.ProcessID LobbySelectMenu = new("MeadowLobbySelectMenu", true);
             public static ProcessManager.ProcessID LobbyMenu = new("MeadowLobbyMenu", true);
+            public static ProcessManager.ProcessID ArenaLobbyMenu = new("MeadowArenaLobbyMenu", true);
         }
 
         public class Ext_SlugcatStatsName

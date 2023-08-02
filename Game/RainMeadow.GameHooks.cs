@@ -232,7 +232,8 @@ namespace RainMeadow
                 playerCharacter = OnlineManager.lobby.gameMode.LoadWorldAs(game);
             }
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
-            if (OnlineManager.lobby != null)
+            // TODO: Add support for null regions?
+            if (OnlineManager.lobby != null && region != null)
             {
                 Debug("Requesting new region: " + region.name);
                 OnlineManager.lobby.worldSessions[region.name].Request();

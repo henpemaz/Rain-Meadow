@@ -9,6 +9,7 @@ namespace RainMeadow
     public class Lobby : OnlineResource
     {
         public OnlineGameMode gameMode;
+        public OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
         public RainCycle cycle;
 
@@ -22,6 +23,8 @@ namespace RainMeadow
 
             this.gameMode = FromType(mode, this);
             if (gameMode == null) throw new Exception($"Invalid game mode {mode}");
+
+            gameModeType = mode;
 
             if (owner == null) throw new Exception("No lobby owner");
             NewOwner(owner);

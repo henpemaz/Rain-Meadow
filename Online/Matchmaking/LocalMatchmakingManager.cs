@@ -69,7 +69,7 @@ namespace RainMeadow
                 OnLobbyJoined?.Invoke(false);
                 return;
             }
-            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer);
+            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(gameMode), OnlineManager.mePlayer);
             OnLobbyJoined?.Invoke(true);
         }
 
