@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -36,7 +37,13 @@ namespace RainMeadow
             {
                 if (OnlinePhysicalObject.map.TryGetValue(self.overseer.abstractCreature, out var oe) && !oe.isMine)
                 {
-                    // remote overseers have gotten their zipping permissions revoked.
+                    // overseers determine what they look at based on:
+                    // Random.range/value calls, a ton of state that would be a waste to sync,
+                    // who player 1 is (i think), and the location of stars in the sky.
+                    // so lets not let them choose for themselves.
+                    Vector2 tempLookAt = self.lookAt;
+                    orig(self);
+                    self.lookAt = tempLookAt;
                     return;
                 }
             }
