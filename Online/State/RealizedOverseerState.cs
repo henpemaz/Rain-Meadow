@@ -23,7 +23,7 @@ namespace RainMeadow
         private Vector2 lookAt;
         private byte mode;
         private float extended;
-
+        private OnlineEntity.EntityId? conversationPartner;
         public RealizedOverseerState() { }
         public RealizedOverseerState(OnlineCreature entity) : base(entity)
         {
@@ -35,6 +35,16 @@ namespace RainMeadow
             mode = (byte)o.mode.index;
             lookAt = o.AI.lookAt;
             extended = o.extended;
+
+            if (o.conversationPartner != null)
+            {
+                if (!OnlinePhysicalObject.map.TryGetValue(o.conversationPartner.abstractPhysicalObject, out var conversationPartner)) throw new System.InvalidOperationException("Conversation partner doesnt exist in online space!");
+                this.conversationPartner = conversationPartner.id;
+            }
+            else
+            {
+                this.conversationPartner = null;
+            }
         }
 
         public override StateType stateType => StateType.RealizedOverseerState;
@@ -48,7 +58,7 @@ namespace RainMeadow
             serializer.Serialize(ref mode);
             serializer.Serialize(ref lookAt);
             serializer.Serialize(ref extended);
-
+            serializer.SerializeNullable(ref conversationPartner);
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
@@ -62,6 +72,16 @@ namespace RainMeadow
             overseer.mode = new Overseer.Mode(Overseer.Mode.values.GetEntry(mode));
             overseer.AI.lookAt = lookAt;
             overseer.extended = extended;
+
+            if (conversationPartner != null)
+            {
+                overseer.conversationPartner = (conversationPartner.FindEntity() as OnlineCreature).apo.realizedObject as Overseer;
+            }
+            else
+            {
+                conversationPartner = null;
+            }
+
         }
     }
 }
