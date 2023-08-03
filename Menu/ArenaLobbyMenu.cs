@@ -32,7 +32,10 @@ namespace RainMeadow
             mm = (MultiplayerMenu)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(MultiplayerMenu));
             mm.ID = ProcessManager.ProcessID.MultiplayerMenu;
             mm.manager = manager;
-            mm.currentGameType = ArenaSetup.GameTypeID.Competitive;
+            mm.currentGameType = mm.nextGameType = ArenaSetup.GameTypeID.Competitive;
+            mm.pages = pages;
+            mm.mySoundLoopName = mySoundLoopName;
+            mm.mySoundLoopID = mySoundLoopID;
 
             UnlockAndLoadLevels();
 
@@ -122,7 +125,7 @@ namespace RainMeadow
             scene.AddIllustration(new MenuIllustration(this, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
             scene.flatIllustrations[scene.flatIllustrations.Count - 1].sprite.shader = manager.rainWorld.Shaders["MenuText"];
 
-            CreateButton(new SimpleButtonCreateOptions()
+            mm.playButton = CreateButton(new SimpleButtonCreateOptions()
             {
                 text = "START",
                 pos = new Vector2(ScreenWidth - 304, 50),
@@ -135,7 +138,7 @@ namespace RainMeadow
             pages[0].subObjects.Add(infoButton);
 
             BuildPlayerSlots();
-            //BuildLevelLists();
+            AddAbovePlayText();
         }
 
         public SymbolButton infoButton;
@@ -181,13 +184,26 @@ namespace RainMeadow
 
                 if (ModManager.MSC)
                 {
-                    playerJoinButtons[l].portrait.fileName = ArenaImage(manager.arenaSetup.playerClass[l], l);
+                    playerJoinButtons[l].portrait.fileName = mm.ArenaImage(manager.arenaSetup.playerClass[l], l);
                     playerJoinButtons[l].portrait.LoadFile();
                     playerJoinButtons[l].portrait.sprite.SetElementByName(playerJoinButtons[l].portrait.fileName);
                     MutualVerticalButtonBind(playerClassButtons[l], playerJoinButtons[l]);
                 }
 
                 pages[0].subObjects.Add(playerJoinButtons[l]);
+            }
+        }
+
+        void AddAbovePlayText()
+        {
+            mm.abovePlayButtonLabel = new MenuLabel(this, pages[0], "", mm.playButton.pos + new Vector2((0f - mm.playButton.size.x) / 2f + 0.01f, 50.01f), new Vector2(mm.playButton.size.x, 20f), bigText: false);
+            mm.abovePlayButtonLabel.label.alignment = FLabelAlignment.Left;
+            mm.abovePlayButtonLabel.label.color = MenuRGB(MenuColors.DarkGrey);
+            pages[0].subObjects.Add(mm.abovePlayButtonLabel);
+            if (manager.rainWorld.options.ScreenSize.x < 1280f)
+            {
+                mm.abovePlayButtonLabel.label.alignment = FLabelAlignment.Right;
+                mm.abovePlayButtonLabel.pos.x = mm.playButton.pos.x + 55f;
             }
         }
 
@@ -256,9 +272,8 @@ namespace RainMeadow
 
         public override void Update()
         {
-            base.Update();
-
-            //mm.Update();
+            //base.Update();
+            mm.Update();
         }
 
         public override void ShutDownProcess()
@@ -271,16 +286,6 @@ namespace RainMeadow
                 MatchmakingManager.instance.LeaveLobby();
             }
             base.ShutDownProcess();
-        }
-
-        public string ArenaImage(SlugcatStats.Name classID, int color)
-        {
-            if (classID == null)
-            {
-                return "MultiplayerPortrait" + color + "2";
-            }
-
-            return "MultiplayerPortrait" + color + "1-" + classID.ToString();
         }
     }
 }

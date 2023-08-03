@@ -28,6 +28,10 @@ namespace RainMeadow
             IL.Room.Loaded += Room_Loaded;
 
             On.FliesWorldAI.AddFlyToSwarmRoom += FliesWorldAI_AddFlyToSwarmRoom;
+            
+            // Arena specific
+            On.GameSession.AddPlayer += GameSession_AddPlayer;
+            On.World.LoadWorld += World_LoadWorld;
         }
 
         private void StoryGameSession_ctor(On.StoryGameSession.orig_ctor orig, StoryGameSession self, SlugcatStats.Name saveStateNumber, RainWorldGame game)
@@ -313,6 +317,34 @@ namespace RainMeadow
                 return;
             }
             orig(self, spawnRoom);
+        }
+
+        // Arena doesn't report it's rooms in ctor
+        private void World_LoadWorld(On.World.orig_LoadWorld orig, World self, SlugcatStats.Name slugcatNumber, System.Collections.Generic.List<AbstractRoom> abstractRoomsList, int[] swarmRooms, int[] shelters, int[] gates)
+        {
+            orig(self, slugcatNumber, abstractRoomsList, swarmRooms, shelters, gates);
+            if (OnlineManager.lobby.gameModeType != OnlineGameMode.OnlineGameModeType.ArenaCompetitive)
+            {
+                return;
+            }
+            if (OnlineManager.lobby != null)
+            {
+                OnlineManager.lobby.worldSessions["arena"].Request();
+                OnlineManager.lobby.worldSessions["arena"].BindWorld(self);
+            }
+        }
+
+        private void GameSession_AddPlayer(On.GameSession.orig_AddPlayer orig, GameSession self, AbstractCreature player)
+        {
+            orig(self, player);
+
+            if (OnlineManager.lobby == null || self is not CompetitiveGameSession)
+            {
+                return;
+            }
+
+            OnlineManager.lobby.worldSessions["arena"].ApoEnteringWorld(player);
+            OnlineManager.lobby.worldSessions["arena"].roomSessions.First().Value.ApoEnteringRoom(player, player.pos);
         }
     }
 }

@@ -47,6 +47,8 @@ namespace RainMeadow
                 worldSessions.Add(r.name, ws);
                 subresources.Add(ws);
             }
+
+            AddArenaRegion();
         }
 
         protected override void AvailableImpl()
@@ -138,6 +140,15 @@ namespace RainMeadow
             RainMeadow.Debug($"Assigned inLobbyId of {nextId} to player {player}");
             nextId++;
             // todo overflows and repeats
+        }
+
+        private void AddArenaRegion()
+        {
+            // Arena or null regions
+            var nr = new Region("arena", 0, -1, null);
+            var ns = new WorldSession(nr, this);
+            worldSessions.Add(nr.name, ns);
+            subresources.Add(ns);
         }
     }
 }

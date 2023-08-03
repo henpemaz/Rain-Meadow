@@ -37,12 +37,32 @@ This seems to be true since now I can fully understand the code for Monkland and
 
 I'm an Automation engineer with experience in devices communicating with industrial protocols over lossy, laggy networks, as well as server API design. While I haven't properly done game netcode before, I can design protocols and write serialization with some confidence.
 
----
 # Project Installation
 
-How to quickly setup Rain Meadow source code and everything you need to know to contribute.
+Rain Meadow builds it's mod files into the `\Mod` directory. 
 
-## Overview
+While this project is still early in development, it is not recommended you install it directly from the repository, not all commits will contain a stable or up-to-date build.
+
+Instead you should join the discord server and check pins in the #playtesting channel.
+
+Instructions on how to install the mod into your game:
+
+1. Open Steam
+2. Right click Rain World
+3. Manage > Browse Local Files
+4. Navigate down to RainWorld_Data\StreamingAssets\mods
+5. Follow next steps depending on where you downloaded the mod:
+    - GitHub Repository (latest)
+        1. Copy `\Mod` folder into game mods folder
+        2. Rename directory to `rainmeadow`
+    - #playtesting channel (stable)
+        1. Extract downloaded zip file
+        2. If you see a single folder named 'rainmeadow', copy the folder into your game mods folder
+
+
+# Contributions
+
+If you would like to contribute to the project, 
 
 This is a mod which implements a custom made engine for multiplayer support.
 Please watch this video with an explanation of the engine: 
@@ -63,7 +83,7 @@ You should ensure all clients have the same mods enabled, it's probably just rec
 
 You can choose to copy the build into your game manually, or go through some setup to speed up development productivity.
 
-The project builds into the `Mod\` folder, you can create a symbolic link from the game files of your choosing to redirect to the folder:
+Just like the project installation section, the project builds to the `\Mod` directory, you can use this to create a symbolic link from the game files of your choosing to redirect to the folder:
 
 - Open cmd.exe as Administrator
 - Type (or copy) ```mklink /D "[GameDirectory]\RainWorld_Data\StreamingAssets\mods\rainmeadow" "[ProjectDirectory]\Mod"```
