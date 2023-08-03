@@ -491,17 +491,20 @@ namespace RainMeadow
             }
         }
 
+        // We cast to shorts as we assume that
+        // all IntVector2 represent tile coordinates.
+        // Sorry if this caused a bug, yell at DevLope.
         public void Serialize(ref IntVector2 data)
         {
             if (IsWriting)
             {
-                writer.Write(data.x);
-                writer.Write(data.y);
+                writer.Write((short)data.x);
+                writer.Write((short)data.y);
             }
             if (IsReading)
             {
-                data.x = reader.ReadInt32();
-                data.y = reader.ReadInt32();
+                data.x = reader.ReadInt16();
+                data.y = reader.ReadInt16();
             }
         }
 
