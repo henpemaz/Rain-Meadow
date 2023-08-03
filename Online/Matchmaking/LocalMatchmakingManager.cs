@@ -43,7 +43,7 @@ namespace RainMeadow
         }
 
         private int me;
-        private string localGameMode = "FreeRoam";
+        private string localGameMode = "Story";
 
         public LocalMatchmakingManager()
         {
