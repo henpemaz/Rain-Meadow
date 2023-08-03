@@ -376,6 +376,7 @@ namespace RainMeadow
         }
 
         // remote overseers have gotten their zipping permissions revoked.
+        // we might also need to block ziptoposition, but i havent been able to test if thats an issue.
         private void OverseerAI_UpdateTempHoverPosition(On.OverseerAI.orig_UpdateTempHoverPosition orig, OverseerAI self)
         {
             if (OnlineManager.lobby != null)
