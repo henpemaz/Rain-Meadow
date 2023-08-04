@@ -2,26 +2,57 @@
 
 namespace RainMeadow
 {
-    public abstract class EntityState : OnlineState, Generics.IIdentifiable<OnlineEntity.EntityId>
+    public abstract class EntityState : DeltaState, IPrimaryDelta<EntityState>, IIdentifiable<OnlineEntity.EntityId>
     {
+        // if sent "standalone" tracks deltafromtick
+        // if sent inside another delta, doesn't
+
         public OnlineEntity.EntityId entityId;
-        public bool realizedState;
         public OnlineEntity.EntityId ID => entityId;
 
+        public override long EstimatedSize(Serializer serializer)
+        {
+            return base.EstimatedSize(serializer) + 6;
+        }
         protected EntityState() : base() { }
-        protected EntityState(OnlineEntity onlineEntity, uint ts, bool realizedState) : base(ts)
+        protected EntityState(OnlineEntity onlineEntity, uint ts) : base(ts)
         {
             this.entityId = onlineEntity.id;
-            this.realizedState = realizedState;
         }
 
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);
             serializer.Serialize(ref entityId);
-            serializer.Serialize(ref realizedState);
         }
 
         public abstract void ReadTo(OnlineEntity onlineEntity);
+
+        public abstract EntityState EmptyDelta();
+        public bool IsEmptyDelta { get; set; }
+
+        public virtual EntityState Delta(EntityState other)
+        {
+            if(other == null) throw new InvalidProgrammerException("null");
+            if(other.IsDelta) throw new InvalidProgrammerException("other is delta");
+            var delta = EmptyDelta();
+            delta.from = OnlineManager.mePlayer;
+            delta.tick = tick;
+            delta.entityId = entityId;
+            delta.IsDelta = true;
+            delta.IsEmptyDelta = true;
+            return delta;
+        }
+
+        public virtual EntityState ApplyDelta(EntityState other)
+        {
+            if (other == null) throw new InvalidProgrammerException("null");
+            if (!other.IsDelta) throw new InvalidProgrammerException("other not delta");
+            var result = EmptyDelta();
+            result.from = other.from;
+            result.tick = other.tick;
+            result.entityId = entityId;
+            return result;
+        }
     }
 }

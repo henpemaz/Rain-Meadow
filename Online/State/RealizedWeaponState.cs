@@ -12,10 +12,7 @@ namespace RainMeadow
         private Vector2 lastRotation;
         private float rotationSpeed;
 
-        public RealizedWeaponState()
-        {
-        }
-
+        public RealizedWeaponState() { }
         public RealizedWeaponState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
             var weapon = (Weapon)onlineEntity.apo.realizedObject;

@@ -207,16 +207,16 @@ namespace RainMeadow
                 {
                     resourceState.resource.ReadState(resourceState);
                 }
-                else if (state is EntityFeedState entityInResourceState && entityInResourceState.inResource != null && entityInResourceState.inResource.isAvailable)
+                else if (state is EntityFeedState entityFeedState && entityFeedState.inResource != null && entityFeedState.inResource.isAvailable)
                 {
-                    var ent = entityInResourceState.entityState.entityId.FindEntity();
+                    var ent = entityFeedState.entityState.entityId.FindEntity();
                     if(ent != null)
                     {
-                        ent.ReadState(entityInResourceState.entityState, entityInResourceState.inResource);
+                        ent.ReadState(entityFeedState);
                     }
                     else
                     {
-                        RainMeadow.Error($"Entity {entityInResourceState.entityState.entityId} not found for incoming state from {state.from} in {entityInResourceState.inResource}");
+                        RainMeadow.Error($"Entity {entityFeedState.entityState.entityId} not found for incoming state from {entityFeedState.entityState.from} in {entityFeedState.inResource}");
                     }
                 }
                 else

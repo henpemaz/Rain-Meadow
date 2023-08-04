@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RainMeadow.Generics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -56,10 +57,10 @@ namespace RainMeadow
             if(isWaitingForState) { Available(); }
         }
 
-        public abstract class ResourceState : OnlineState
+        public abstract class ResourceState : DeltaState, IPrimaryDelta<ResourceState>
         {
             public OnlineResource resource;
-            public Generics.DeltaStates<EntityState, OnlineEntity.EntityId> entityStates;
+            public DeltaStates<EntityState, OnlineEntity.EntityId> entityStates;
 
             protected ResourceState() : base() { }
             protected ResourceState(OnlineResource resource, uint ts) : base(ts)
@@ -67,29 +68,30 @@ namespace RainMeadow
                 this.resource = resource;
                 entityStates = new(resource.entities.Select(e => e.Key.GetState(ts, resource)).ToList());
             }
-            protected abstract ResourceState NewInstance();
+            public abstract ResourceState EmptyDelta();
 
-            public override long EstimatedSize => resource.SizeOfIdentifier();
-            public override bool SupportsDelta => true;
+            public override long EstimatedSize => resource.SizeOfIdentifier() + entityStates.list.Sum(e => e.EstimatedSize);
 
-            public override OnlineState ApplyDelta(OnlineState newState)
+            public bool IsEmptyDelta { get ; set; }
+
+            public virtual ResourceState ApplyDelta(ResourceState newState)
             {
                 if (!newState.IsDelta) throw new InvalidProgrammerException("other isn't delta");
-                var result = NewInstance();
+                var result = EmptyDelta();
                 result.tick = newState.tick;
                 result.resource = resource;
-                result.entityStates = (Generics.DeltaStates<EntityState, OnlineEntity.EntityId>)entityStates.ApplyDelta(((ResourceState)newState)?.entityStates);
+                result.entityStates = entityStates.ApplyDelta(newState.entityStates);
                 return result;
             }
 
-            public override OnlineState Delta(OnlineState lastAcknoledgedState)
+            public virtual ResourceState Delta(ResourceState lastAcknoledgedState)
             {
                 if (lastAcknoledgedState == null) throw new InvalidProgrammerException("null");
-                var delta = NewInstance();
+                var delta = EmptyDelta();
                 delta.IsDelta = true;
                 delta.DeltaFromTick = lastAcknoledgedState.tick;
                 delta.resource = resource;
-                delta.entityStates = (Generics.DeltaStates<EntityState, OnlineEntity.EntityId>)entityStates.Delta(((ResourceState)lastAcknoledgedState)?.entityStates);
+                delta.entityStates = entityStates.Delta(lastAcknoledgedState.entityStates);
                 return delta;
             }
 
@@ -129,24 +131,36 @@ namespace RainMeadow
             }
         }
 
+        public class LeaseList : IdentifiablesDeltaList<SubleaseState, ushort, SubleaseState, LeaseList>
+        {
+            public LeaseList() { }
+
+            public LeaseList(List<SubleaseState> list) : base(list) { }
+
+            public override void CustomSerialize(Serializer serializer)
+            {
+                serializer.Serialize(ref list);
+            }
+        }
+
         public abstract class ResourceWithSubresourcesState : ResourceState
         {
-            public Generics.IdentifiablesDeltaList<SubleaseState, ushort, SubleaseState> subleaseState;
+            public LeaseList subleaseState;
 
             protected ResourceWithSubresourcesState() { }
             protected ResourceWithSubresourcesState(OnlineResource resource, uint ts) : base(resource, ts)
             {
-                subleaseState = new Generics.IdentifiablesDeltaList<SubleaseState, ushort, SubleaseState>(resource.subresources.Select(r => new SubleaseState(r)).ToList());
+                subleaseState = new LeaseList(resource.subresources.Select(r => new SubleaseState(r)).ToList());
             }
 
-            public override OnlineState ApplyDelta(OnlineState newState)
+            public override ResourceState ApplyDelta(ResourceState newState)
             {
                 var result = (ResourceWithSubresourcesState)base.ApplyDelta(newState);
                 result.subleaseState = subleaseState.ApplyDelta(((ResourceWithSubresourcesState)newState).subleaseState);
                 return result;
             }
 
-            public override OnlineState Delta(OnlineState lastAcknoledgedState)
+            public override ResourceState Delta(ResourceState lastAcknoledgedState)
             {
                 var delta = (ResourceWithSubresourcesState)base.Delta(lastAcknoledgedState);
                 delta.subleaseState = subleaseState.Delta((lastAcknoledgedState as ResourceWithSubresourcesState).subleaseState);
@@ -190,11 +204,11 @@ namespace RainMeadow
                 this.owner = resource.owner?.inLobbyId ?? default;
                 this.participants = new Generics.AddRemoveUnsortedUshorts(resource.participants.Keys.Select(p => p.inLobbyId).ToList());
             }
-            public virtual SubleaseState EmptyInstance() => new();
+            public virtual SubleaseState EmptyDelta() => new();
 
             public SubleaseState ApplyDelta(SubleaseState other)
             {
-                var result = EmptyInstance();
+                var result = EmptyDelta();
                 result.resourceId = resourceId;
                 result.owner = other?.owner ?? owner;
                 result.participants = (Generics.AddRemoveUnsortedUshorts)participants.ApplyDelta(other?.participants);
@@ -204,7 +218,7 @@ namespace RainMeadow
             public SubleaseState Delta(SubleaseState other)
             {
                 if (other == null) { return this; }
-                var delta = EmptyInstance();
+                var delta = EmptyDelta();
                 delta.resourceId = resourceId;
                 delta.owner = owner;
                 delta.participants = (Generics.AddRemoveUnsortedUshorts)participants.Delta(other.participants);

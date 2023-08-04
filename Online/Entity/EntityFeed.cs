@@ -9,8 +9,8 @@ namespace RainMeadow
         public OnlineResource resource;
         public OnlineEntity entity;
         public OnlinePlayer player;
-        public Queue<EntityFeedState> OutgoingStates = new(32);
-        public EntityFeedState lastAcknoledgedState;
+        public Queue<EntityState> OutgoingStates = new(32);
+        public EntityState lastAcknoledgedState;
 
         public EntityFeed(OnlineResource resource, OnlineEntity oe)
         {
@@ -39,16 +39,16 @@ namespace RainMeadow
             if (player.recentlyAckdTicks.Count > 0) while (OutgoingStates.Count > 0 && player.recentlyAckdTicks.Contains(OutgoingStates.Peek().tick)) lastAcknoledgedState = OutgoingStates.Dequeue(); // use most recent available
             if (lastAcknoledgedState != null && !player.recentlyAckdTicks.Contains(lastAcknoledgedState.tick)) lastAcknoledgedState = null; // not available
 
-            var newState = entity.GetFeedState(tick, resource);
+            var newState = entity.GetState(tick, resource);
             if (lastAcknoledgedState != null)
             {
                 //RainMeadow.Debug($"sending delta for tick {newState.tick} from reference {lastAcknoledgedState.tick} ");
-                player.OutgoingStates.Enqueue(newState.Delta(lastAcknoledgedState));
+                player.OutgoingStates.Enqueue(new EntityFeedState(newState.Delta(lastAcknoledgedState), resource));
             }
             else
             {
                 //RainMeadow.Debug($"sending absolute state for tick {newState.tick}");
-                player.OutgoingStates.Enqueue(newState);
+                player.OutgoingStates.Enqueue(new EntityFeedState(newState, resource));
             }
             OutgoingStates.Enqueue(newState);
         }

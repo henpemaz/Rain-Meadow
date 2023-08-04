@@ -7,8 +7,8 @@ namespace RainMeadow
     {
         public OnlineResource resource;
         public OnlinePlayer player;
-        public Queue<OnlineState> OutgoingStates = new(32);
-        public OnlineState lastAcknoledgedState;
+        public Queue<OnlineResource.ResourceState> OutgoingStates = new(32);
+        public OnlineResource.ResourceState lastAcknoledgedState;
 
         public ResourceSubscription(OnlineResource resource, OnlinePlayer player)
         {

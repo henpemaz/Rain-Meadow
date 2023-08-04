@@ -70,7 +70,7 @@ namespace RainMeadow
 
         public override ushort ShortId()
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException(); // Lobby cannot be a subresource
         }
 
         public override OnlineResource SubresourceFromShortId(ushort shortId)
@@ -92,11 +92,11 @@ namespace RainMeadow
                 players = new(lobby.participants.Keys.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
             }
-            protected override ResourceState NewInstance() => new LobbyState();
+            public override ResourceState EmptyDelta() => new LobbyState();
 
             public override StateType stateType => StateType.LobbyState;
 
-            public override OnlineState ApplyDelta(OnlineState _newState)
+            public override ResourceState ApplyDelta(ResourceState _newState)
             {
                 var newState = _newState as LobbyState;
                 var result = (LobbyState)base.ApplyDelta(newState);
@@ -106,7 +106,7 @@ namespace RainMeadow
                 return result;
             }
 
-            public override OnlineState Delta(OnlineState lastAcknoledgedState)
+            public override ResourceState Delta(ResourceState lastAcknoledgedState)
             {
                 var delta = (LobbyState)base.Delta(lastAcknoledgedState);
                 delta.nextId = nextId;

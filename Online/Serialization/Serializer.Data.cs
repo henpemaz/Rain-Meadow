@@ -528,7 +528,7 @@ namespace RainMeadow
             }
         }
 
-        public void SerializeNoStrings(ref WorldCoordinate pos)
+        public void Serialize(ref WorldCoordinate pos)
         {
             if (IsWriting)
             {
@@ -546,6 +546,55 @@ namespace RainMeadow
                     y = reader.ReadInt16(),
                     abstractNode = reader.ReadInt16(),
                 };
+            }
+        }
+
+        public void Serialize(ref WorldCoordinate? pos)
+        {
+            if (IsWriting)
+            {
+                writer.Write((short)pos.Value.room);
+                writer.Write((short)pos.Value.x);
+                writer.Write((short)pos.Value.y);
+                writer.Write((short)pos.Value.abstractNode);
+            }
+            if (IsReading)
+            {
+                pos = new WorldCoordinate()
+                {
+                    room = reader.ReadInt16(),
+                    x = reader.ReadInt16(),
+                    y = reader.ReadInt16(),
+                    abstractNode = reader.ReadInt16(),
+                };
+            }
+        }
+
+        public void SerializeNullable(ref WorldCoordinate? pos)
+        {
+            if (IsWriting)
+            {
+                writer.Write(pos.HasValue);
+                if (pos.HasValue)
+                {
+                    writer.Write((short)pos.Value.room);
+                    writer.Write((short)pos.Value.x);
+                    writer.Write((short)pos.Value.y);
+                    writer.Write((short)pos.Value.abstractNode);
+                }
+            }
+            if (IsReading)
+            {
+                if (reader.ReadBoolean())
+                {
+                    pos = new WorldCoordinate()
+                    {
+                        room = reader.ReadInt16(),
+                        x = reader.ReadInt16(),
+                        y = reader.ReadInt16(),
+                        abstractNode = reader.ReadInt16(),
+                    };
+                }
             }
         }
     }

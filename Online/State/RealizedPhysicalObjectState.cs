@@ -1,19 +1,20 @@
-﻿using System;
+﻿using RainMeadow.Generics;
+using System;
 using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
 {
-    public class RealizedPhysicalObjectState : OnlineState
+    public class RealizedPhysicalObjectState : OnlineState, IDelta<RealizedPhysicalObjectState>
     {
         private ChunkState[] chunkStates;
-        private int collisionLayer;
+        private byte collisionLayer;
 
         public RealizedPhysicalObjectState() { }
         public RealizedPhysicalObjectState(OnlinePhysicalObject onlineEntity)
         {
             chunkStates = onlineEntity.apo.realizedObject.bodyChunks.Select(c => new ChunkState(c)).ToArray();
-            collisionLayer = onlineEntity.apo.realizedObject.collisionLayer;
+            collisionLayer = (byte)onlineEntity.apo.realizedObject.collisionLayer;
         }
 
         public override StateType stateType => StateType.RealizedPhysicalObjectState;
@@ -44,9 +45,23 @@ namespace RainMeadow
 
         public override void CustomSerialize(Serializer serializer)
         {
-            base.CustomSerialize(serializer);
             serializer.Serialize(ref chunkStates);
             serializer.Serialize(ref collisionLayer);
+        }
+
+        public override long EstimatedSize(Serializer serializer)
+        {
+            throw new NotImplementedException();
+        }
+
+        public RealizedPhysicalObjectState Delta(RealizedPhysicalObjectState other)
+        {
+            throw new NotImplementedException();
+        }
+
+        public RealizedPhysicalObjectState ApplyDelta(RealizedPhysicalObjectState other)
+        {
+            throw new NotImplementedException();
         }
     }
 

@@ -178,17 +178,22 @@ namespace RainMeadow
 
         public virtual void ReadState(EntityState entityState, OnlineResource inResource)
         {
-            if (isMine) { RainMeadow.Error("Skipping state for entity I own: " +this); return; }
+            if (isMine) { RainMeadow.Error("Skipping state for entity I own: " + this); return; }
             if (lastStates.TryGetValue(inResource, out var existingState) && NetIO.IsNewer(existingState.tick, entityState.tick)) { RainMeadow.Debug($"Skipping stale state"); return; }
             lastStates[inResource] = entityState;
             if (inResource != currentlyJoinedResource)
             {
                 // RainMeadow.Debug($"Skipping state for wrong resource" + Environment.StackTrace);
                 // since we send both region state and room state even if it's the same guy owning both, this gets spammed a lot
-                // todo supress sending if more specialized state being sent
+                // todo supress sending if more specialized state being sent to the same person
                 return;
             }
             entityState.ReadTo(this);
+        }
+
+        public virtual void ReadState(EntityFeedState entityFeedState)
+        {
+            // todo process incoming full and delta states
         }
 
         protected abstract EntityState MakeState(uint tick, OnlineResource inResource);
@@ -212,11 +217,6 @@ namespace RainMeadow
             }
             if (lastState == null) throw new InvalidProgrammerException("state is null");
             return lastState;
-        }
-
-        public EntityFeedState GetFeedState(uint ts, OnlineResource inResource)
-        {
-            return new EntityFeedState(GetState(ts, inResource), inResource, ts);
         }
 
         public override string ToString()

@@ -17,9 +17,13 @@ namespace RainMeadow
 
         public override void CustomSerialize(Serializer serializer)
         {
-            base.CustomSerialize(serializer);
             serializer.Serialize(ref alive);
             serializer.Serialize(ref meatLeft);
+        }
+
+        public override long EstimatedSize(Serializer serializer)
+        {
+            return 2;
         }
     }
 }

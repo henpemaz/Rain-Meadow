@@ -2,22 +2,11 @@
 
 namespace RainMeadow
 {
-    public abstract class OnlineState : Generics.IDelta<OnlineState>
+    public abstract class OnlineState
     {
-        public OnlinePlayer from; // not serialized, message source
-        public uint tick; // not serialized, latest from player when read
-
         protected OnlineState() { }
 
-        protected OnlineState(uint ts)
-        {
-            this.from = OnlineManager.mePlayer;
-            this.tick = ts;
-        }
-
         public abstract StateType stateType { get; } // serialized externally
-
-        public virtual long EstimatedSize => 1;
 
         public enum StateType : byte
         {
@@ -94,27 +83,8 @@ namespace RainMeadow
             return s;
         }
 
-        public virtual bool SupportsDelta => false;
-        public bool IsDelta { get => _isDelta; set => _isDelta = value; }
-        private bool _isDelta;
-        public uint DeltaFromTick;
-        public virtual void CustomSerialize(Serializer serializer)
-        {
-            if (SupportsDelta)
-            {
-                serializer.Serialize(ref _isDelta);
-                serializer.IsDelta = _isDelta; // Serializer wraps this call and restores the previous value later (override-proof)
-                if (_isDelta) { serializer.Serialize(ref DeltaFromTick); }
-            }
-        }
-        public virtual OnlineState Delta(OnlineState lastAcknoledgedState)
-        {
-            return this;
-        }
+        public abstract void CustomSerialize(Serializer serializer);
 
-        public virtual OnlineState ApplyDelta(OnlineState newState)
-        {
-            return newState;
-        }
+        public abstract long EstimatedSize(Serializer serializer);
     }
 }
