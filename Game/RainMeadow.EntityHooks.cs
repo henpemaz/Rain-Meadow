@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -25,6 +26,9 @@ namespace RainMeadow
 
             On.AbstractCreature.Move += AbstractCreature_Move; // I'm watching your every step
             On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // I'm watching your every step
+
+            On.OverseerAI.UpdateTempHoverPosition += OverseerAI_UpdateTempHoverPosition; // no teleporting
+            On.OverseerAI.Update += OverseerAI_Update; // please look at what i tell you to
         }
 
         // I'm watching your every step
@@ -350,6 +354,39 @@ namespace RainMeadow
             {
                 orig(self);
             }
+        }
+
+        // overseers determine what they look at based on:
+        // Random.range/value calls, a ton of state that would be a waste to sync,
+        // who player 1 is (i think), and the location of stars in the sky.
+        // so lets not let them choose for themselves.
+        private void OverseerAI_Update(On.OverseerAI.orig_Update orig, OverseerAI self)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                if (OnlinePhysicalObject.map.TryGetValue(self.overseer.abstractCreature, out var oe) && !oe.isMine)
+                {
+                    Vector2 tempLookAt = self.lookAt;
+                    orig(self);
+                    self.lookAt = tempLookAt;
+                    return;
+                }
+            }
+            orig(self);
+        }
+
+        // remote overseers have gotten their zipping permissions revoked.
+        // we might also need to block ziptoposition, but i havent been able to test if thats an issue.
+        private void OverseerAI_UpdateTempHoverPosition(On.OverseerAI.orig_UpdateTempHoverPosition orig, OverseerAI self)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                if (OnlinePhysicalObject.map.TryGetValue(self.overseer.abstractCreature, out var oe) && !oe.isMine)
+                {
+                    return;
+                }
+            }
+            orig(self);
         }
     }
 }
