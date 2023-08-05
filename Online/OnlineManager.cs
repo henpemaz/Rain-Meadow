@@ -205,6 +205,7 @@ namespace RainMeadow
             {
                 if (state is OnlineResource.ResourceState resourceState && resourceState.resource != null && (resourceState.resource.isAvailable || resourceState.resource.isWaitingForState))
                 {
+                    //RainMeadow.Debug($"Processing {resourceState} for {resourceState.resource}");
                     resourceState.resource.ReadState(resourceState);
                 }
                 else if (state is EntityFeedState entityFeedState && entityFeedState.inResource != null && entityFeedState.inResource.isAvailable)
@@ -212,6 +213,7 @@ namespace RainMeadow
                     var ent = entityFeedState.entityState.entityId.FindEntity();
                     if(ent != null)
                     {
+                        //RainMeadow.Debug($"Processing {entityFeedState} for {ent}");
                         ent.ReadState(entityFeedState);
                     }
                     else

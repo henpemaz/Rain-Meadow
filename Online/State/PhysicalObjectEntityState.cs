@@ -67,7 +67,7 @@ namespace RainMeadow
             var size = base.EstimatedSize(inDeltaContext);
             if (IsDelta) size += 2;
             if (!IsDelta || hasPosValue) size += 9;
-            if (!IsDelta || hasRealizedValue) size += realizedObjectState.EstimatedSize(inDeltaContext);
+            if (!IsDelta || hasRealizedValue) size += realizedObjectState == null ? 1 : 1 + realizedObjectState.EstimatedSize(inDeltaContext);
             return size;
         }
 

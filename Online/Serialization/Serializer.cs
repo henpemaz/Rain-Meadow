@@ -185,10 +185,6 @@ namespace RainMeadow
                 ps.from = currPlayer;
                 ps.tick = currPlayer.tick;
             }
-            else
-            {
-                RainMeadow.Error($"Not a primary state in state list! {s} {s.stateType}");
-            }
             
             WrappedSerialize(s);
             return s;

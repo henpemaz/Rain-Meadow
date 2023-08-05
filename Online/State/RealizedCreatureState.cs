@@ -12,7 +12,7 @@ namespace RainMeadow
         public RealizedCreatureState() { }
         public RealizedCreatureState(OnlineCreature onlineCreature) : base(onlineCreature)
         {
-            Grasps = new((onlineCreature.apo.realizedObject as Creature).grasps?.Where(g => g != null).Select(GraspRef.FromGrasp).ToList());
+            Grasps = new((onlineCreature.apo.realizedObject as Creature).grasps?.Where(g => g != null).Select(GraspRef.FromGrasp).ToList() ?? new());
         }
         public override void ReadTo(OnlineEntity onlineEntity)
         {

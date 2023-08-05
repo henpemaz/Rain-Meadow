@@ -32,28 +32,32 @@ namespace RainMeadow
         protected abstract ResourceState MakeState(uint ts);
         public void ReadState(ResourceState newState)
         {
-            if (newState.from != owner) { RainMeadow.Debug($"Skipping state resource for {this} from wrong owner {newState.from}"); return; }
+            // this has a flaw when there's multiple players talking to me.
             if (newState.IsDelta)
             {
-                //RainMeadow.Debug($"received delta state for tick {newState.tick} referencing baseline {newState.DeltaFromTick}");
-                while (incomingState.Count > 0 && NetIO.IsNewer(newState.DeltaFromTick, incomingState.Peek().tick))
+                //RainMeadow.Debug($"received delta state from {newState.from} for tick {newState.tick} referencing baseline {newState.DeltaFromTick}");
+                while (incomingState.Count > 0 && (owner != incomingState.Peek().from || NetIO.IsNewer(newState.DeltaFromTick, incomingState.Peek().tick)))
                 {
                     var discarded = incomingState.Dequeue();
                     //RainMeadow.Debug("discarding old event from tick " + discarded.tick);
                 }
                 if (incomingState.Count == 0 || newState.DeltaFromTick != incomingState.Peek().tick)
                 {
-                    RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}");
+                    RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.DeltaFromTick}");
                     return;
                 }
-                newState = (ResourceState)incomingState.Peek().ApplyDelta(newState);
+                newState = incomingState.Peek().ApplyDelta(newState);
             }
             else
             {
-                //RainMeadow.Debug("received absolute state for tick " + newState.tick);
+                //RainMeadow.Debug($"received absolute state from {newState.from} for tick " + newState.tick);
             }
             incomingState.Enqueue(newState);
-            newState.ReadTo(this);
+            if (latestState == null || latestState.from != owner || NetIO.IsNewer(newState.tick, latestState.tick))
+            {
+                latestState = newState;
+                newState.ReadTo(this);
+            }
             if(isWaitingForState) { Available(); }
         }
 
