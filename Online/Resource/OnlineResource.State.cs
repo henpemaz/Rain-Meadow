@@ -57,7 +57,7 @@ namespace RainMeadow
             if(isWaitingForState) { Available(); }
         }
 
-        public abstract class ResourceState : DeltaState, IPrimaryDelta<ResourceState>
+        public abstract class ResourceState : RootDeltaState, IPrimaryDelta<ResourceState>
         {
             public OnlineResource resource;
             public DeltaStates<EntityState, OnlineEntity.EntityId> entityStates;
@@ -70,7 +70,10 @@ namespace RainMeadow
             }
             public abstract ResourceState EmptyDelta();
 
-            public override long EstimatedSize => resource.SizeOfIdentifier() + entityStates.list.Sum(e => e.EstimatedSize);
+            public override long EstimatedSize(bool inDeltaContext)
+            {
+                return base.EstimatedSize(inDeltaContext) + resource.SizeOfIdentifier() + (entityStates != null ? (2 + entityStates.list.Sum(e => e.EstimatedSize(inDeltaContext))) : 1);
+            }
 
             public bool IsEmptyDelta { get ; set; }
 

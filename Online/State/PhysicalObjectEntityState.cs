@@ -31,8 +31,6 @@ namespace RainMeadow
 
         public override StateType stateType => StateType.PhysicalObjectEntityState;
 
-        
-
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             var onlineObject = onlineEntity as OnlinePhysicalObject;
@@ -64,33 +62,34 @@ namespace RainMeadow
             }
         }
 
-        public override long EstimatedSize(Serializer serializer)
+        public override long EstimatedSize(bool inDeltaContext)
         {
-            var size = base.EstimatedSize(serializer);
+            var size = base.EstimatedSize(inDeltaContext);
             if (IsDelta) size += 2;
             if (!IsDelta || hasPosValue) size += 9;
-            if (!IsDelta || hasRealizedValue) size += realizedObjectState.EstimatedSize(serializer);
+            if (!IsDelta || hasRealizedValue) size += realizedObjectState.EstimatedSize(inDeltaContext);
             return size;
         }
 
-        public override EntityState Delta(EntityState other)
+        public override EntityState Delta(EntityState _other)
         {
-            var otherpoes = (PhysicalObjectEntityState)other;
-            var delta = (PhysicalObjectEntityState)base.Delta(other);
+            var delta = (PhysicalObjectEntityState)base.Delta(_other);
+            var other = (PhysicalObjectEntityState)_other;
             delta.pos = pos;
             delta.realized = realized;
-            delta.hasPosValue = pos != otherpoes.pos || realized != otherpoes.realized;
-            delta.realizedObjectState = realizedObjectState?.Delta(otherpoes.realizedObjectState);
-            delta.hasRealizedValue = realizedObjectState != null;
+            delta.hasPosValue = pos != other.pos || realized != other.realized;
+            delta.realizedObjectState = other.realizedObjectState != null ? realizedObjectState?.Delta(other.realizedObjectState) : realizedObjectState;
+            delta.hasRealizedValue = realizedObjectState != other.realizedObjectState && !delta.realizedObjectState.IsEmptyDelta;
+            delta.IsEmptyDelta &= (!delta.hasPosValue && !delta.hasRealizedValue);
             return delta;
         }
-        public override EntityState ApplyDelta(EntityState other)
+        public override EntityState ApplyDelta(EntityState _other)
         {
-            var result = (PhysicalObjectEntityState)base.ApplyDelta(other);
-            var otherp = (PhysicalObjectEntityState)other;
-            result.pos = otherp.hasPosValue ? otherp.pos : pos;
-            result.realized = otherp.hasPosValue ? otherp.realized : realized;
-            result.realizedObjectState = otherp.hasRealizedValue ? realizedObjectState?.ApplyDelta(otherp.realizedObjectState) ?? otherp.realizedObjectState : null;
+            var result = (PhysicalObjectEntityState)base.ApplyDelta(_other);
+            var other = (PhysicalObjectEntityState)_other;
+            result.pos = other.hasPosValue ? other.pos : pos;
+            result.realized = other.hasPosValue ? other.realized : realized;
+            result.realizedObjectState = other.hasRealizedValue ? realizedObjectState?.ApplyDelta(other.realizedObjectState) ?? other.realizedObjectState : realizedObjectState;
             return result;
         }
     }

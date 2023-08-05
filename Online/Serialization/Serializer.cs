@@ -86,7 +86,7 @@ namespace RainMeadow
 
         private bool CanFit(OnlineState state)
         {
-            return Position + state.EstimatedSize + margin < capacity;
+            return Position + state.EstimatedSize(false) + margin < capacity;
         }
 
         private void BeginWriteEvents()
@@ -180,7 +180,7 @@ namespace RainMeadow
         private OnlineState ReadState()
         {
             OnlineState s = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
-            if(s is DeltaState ps)
+            if(s is RootDeltaState ps)
             {
                 ps.from = currPlayer;
                 ps.tick = currPlayer.tick;
@@ -308,7 +308,7 @@ namespace RainMeadow
             if (IsReading)
             {
                 state = (T)OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
-                if(state is DeltaState ps)
+                if(state is RootDeltaState ps)
                 {
                     ps.from = currPlayer;
                     ps.tick = currPlayer.tick;
@@ -356,7 +356,7 @@ namespace RainMeadow
                 for (int i = 0; i < count; i++)
                 {
                     var s = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
-                    if (s is DeltaState ps)
+                    if (s is RootDeltaState ps)
                     {
                         ps.from = currPlayer;
                         ps.tick = currPlayer.tick;
@@ -387,7 +387,7 @@ namespace RainMeadow
                 for (int i = 0; i < count; i++)
                 {
                     var s = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
-                    if (s is DeltaState ps)
+                    if (s is RootDeltaState ps)
                     {
                         ps.from = currPlayer;
                         ps.tick = currPlayer.tick;
@@ -408,7 +408,7 @@ namespace RainMeadow
             if (IsReading)
             {
                 state = new();
-                if (state is DeltaState ps)
+                if (state is RootDeltaState ps)
                 {
                     ps.from = currPlayer;
                     ps.tick = currPlayer.tick;
@@ -455,7 +455,7 @@ namespace RainMeadow
                 for (int i = 0; i < count; i++)
                 {
                     T s = new();
-                    if (s is DeltaState ps)
+                    if (s is RootDeltaState ps)
                     {
                         ps.from = currPlayer;
                         ps.tick = currPlayer.tick;

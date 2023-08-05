@@ -2,7 +2,7 @@
 
 namespace RainMeadow
 {
-    public abstract class EntityState : DeltaState, IPrimaryDelta<EntityState>, IIdentifiable<OnlineEntity.EntityId>
+    public abstract class EntityState : RootDeltaState, IPrimaryDelta<EntityState>, IIdentifiable<OnlineEntity.EntityId>
     {
         // if sent "standalone" tracks deltafromtick
         // if sent inside another delta, doesn't
@@ -10,15 +10,13 @@ namespace RainMeadow
         public OnlineEntity.EntityId entityId;
         public OnlineEntity.EntityId ID => entityId;
 
-        public override long EstimatedSize(Serializer serializer)
-        {
-            return base.EstimatedSize(serializer) + 6;
-        }
         protected EntityState() : base() { }
         protected EntityState(OnlineEntity onlineEntity, uint ts) : base(ts)
         {
             this.entityId = onlineEntity.id;
         }
+
+        public abstract void ReadTo(OnlineEntity onlineEntity);
 
         public override void CustomSerialize(Serializer serializer)
         {
@@ -26,15 +24,18 @@ namespace RainMeadow
             serializer.Serialize(ref entityId);
         }
 
-        public abstract void ReadTo(OnlineEntity onlineEntity);
+        public override long EstimatedSize(bool inDeltaContext)
+        {
+            return base.EstimatedSize(inDeltaContext) + 6;
+        }
 
         public abstract EntityState EmptyDelta();
         public bool IsEmptyDelta { get; set; }
 
-        public virtual EntityState Delta(EntityState other)
+        public virtual EntityState Delta(EntityState _other)
         {
-            if(other == null) throw new InvalidProgrammerException("null");
-            if(other.IsDelta) throw new InvalidProgrammerException("other is delta");
+            if(_other == null) throw new InvalidProgrammerException("null");
+            if(_other.IsDelta) throw new InvalidProgrammerException("other is delta");
             var delta = EmptyDelta();
             delta.from = OnlineManager.mePlayer;
             delta.tick = tick;
@@ -44,13 +45,13 @@ namespace RainMeadow
             return delta;
         }
 
-        public virtual EntityState ApplyDelta(EntityState other)
+        public virtual EntityState ApplyDelta(EntityState _other)
         {
-            if (other == null) throw new InvalidProgrammerException("null");
-            if (!other.IsDelta) throw new InvalidProgrammerException("other not delta");
+            if (_other == null) throw new InvalidProgrammerException("null");
+            if (!_other.IsDelta) throw new InvalidProgrammerException("other not delta");
             var result = EmptyDelta();
-            result.from = other.from;
-            result.tick = other.tick;
+            result.from = _other.from;
+            result.tick = _other.tick;
             result.entityId = entityId;
             return result;
         }

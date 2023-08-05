@@ -85,6 +85,6 @@ namespace RainMeadow
 
         public abstract void CustomSerialize(Serializer serializer);
 
-        public abstract long EstimatedSize(Serializer serializer);
+        public abstract long EstimatedSize(bool inDeltaContext);
     }
 }

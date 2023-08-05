@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -57,6 +58,19 @@ namespace RainMeadow
             }
 
             return dictionary;
+        }
+
+        public static bool CloseEnoughZeroSnap(this Vector2 a, Vector2 b, float tolerance)
+        {
+            if (a == b) return true;
+            if (a.x == 0 && a.y == 0) return false; // zero and non-zero situation!
+            if (b.x == 0 && b.y == 0) return false;
+            return (a - b).sqrMagnitude < tolerance * tolerance;
+        }
+
+        public static bool CloseEnough(this Vector2 a, Vector2 b, float tolerance)
+        {
+            return (a - b).sqrMagnitude < tolerance * tolerance;
         }
     }
 }

@@ -5,11 +5,15 @@ using UnityEngine;
 
 namespace RainMeadow
 {
+    // main-ish component of PhysicalObjectEntityState
     public class RealizedPhysicalObjectState : OnlineState, IDelta<RealizedPhysicalObjectState>
     {
         private ChunkState[] chunkStates;
         private byte collisionLayer;
 
+        bool hasPhysicsValue;
+
+        public virtual RealizedPhysicalObjectState EmptyDelta() => new();
         public RealizedPhysicalObjectState() { }
         public RealizedPhysicalObjectState(OnlinePhysicalObject onlineEntity)
         {
@@ -43,29 +47,63 @@ namespace RainMeadow
             po.collisionLayer = collisionLayer;
         }
 
+        public bool IsDelta { get => _isDelta; set => _isDelta = value; }
+        protected bool _isDelta;
+        public bool IsEmptyDelta { get; set; }
+
         public override void CustomSerialize(Serializer serializer)
         {
-            serializer.Serialize(ref chunkStates);
-            serializer.Serialize(ref collisionLayer);
+            if (serializer.IsDelta) // In a non-delta context, can only be non-delta
+            {
+                serializer.Serialize(ref _isDelta);
+                serializer.IsDelta = IsDelta;
+            }
+            if (IsDelta) serializer.Serialize(ref hasPhysicsValue);
+            if (!IsDelta || hasPhysicsValue)
+            {
+                serializer.Serialize(ref chunkStates);
+                serializer.Serialize(ref collisionLayer);
+            }
         }
 
-        public override long EstimatedSize(Serializer serializer)
+        public override long EstimatedSize(bool inDeltaContext)
         {
-            throw new NotImplementedException();
+            long val = 1;
+            if (inDeltaContext) val += 1; // In a non-delta context, can only be non-delta
+            if (!IsDelta || hasPhysicsValue)
+            {
+                val += 2 + chunkStates.Length * 16;
+            }
+            return val;
         }
 
-        public RealizedPhysicalObjectState Delta(RealizedPhysicalObjectState other)
+        public virtual RealizedPhysicalObjectState Delta(RealizedPhysicalObjectState _other)
         {
-            throw new NotImplementedException();
+            if (_other == null) throw new InvalidProgrammerException("null");
+            if (_other.IsDelta) throw new InvalidProgrammerException("other is delta");
+            var delta = EmptyDelta();
+            delta.IsDelta = true;
+            delta.chunkStates = chunkStates;
+            delta.collisionLayer = collisionLayer;
+            delta.hasPhysicsValue = !chunkStates.SequenceEqual(_other.chunkStates) || collisionLayer != _other.collisionLayer;
+            delta.IsEmptyDelta = !delta.hasPhysicsValue;
+            return delta;
         }
 
-        public RealizedPhysicalObjectState ApplyDelta(RealizedPhysicalObjectState other)
+        public virtual RealizedPhysicalObjectState ApplyDelta(RealizedPhysicalObjectState _other)
         {
-            throw new NotImplementedException();
+            if (_other == null) throw new InvalidProgrammerException("null");
+            if (!_other.IsDelta) throw new InvalidProgrammerException("other not delta");
+            var result = EmptyDelta();
+            result.chunkStates = _other.hasPhysicsValue ? _other.chunkStates : chunkStates;
+            result.collisionLayer = _other.hasPhysicsValue ? _other.collisionLayer : collisionLayer;
+            return result;
         }
     }
 
-    public class ChunkState : Serializer.ICustomSerializable // : OnlineState // no need for serializing its type, its just always the same data
+    // Todo: a lot can be optmized here. A custom list of these with member-wise delta/omit (see generics)
+    // and then in each entry have a "delta mode" where it encodes a HALF relative to last pos
+    public class ChunkState : Serializer.ICustomSerializable, IEquatable<ChunkState> 
     {
         public Vector2 pos;
         public Vector2 vel;
@@ -87,6 +125,22 @@ namespace RainMeadow
         {
             c.pos = pos;
             c.vel = vel;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is ChunkState other && Equals(other);
+        }
+
+        public bool Equals(ChunkState other)
+        {
+            //return other != null && pos == other.pos && vel == other.vel;
+            return other != null && pos.CloseEnough(other.pos, 1f) && vel.CloseEnoughZeroSnap(other.vel, 1f);
+        }
+
+        public override int GetHashCode()
+        {
+            return pos.GetHashCode() + vel.GetHashCode();
         }
     }
 }

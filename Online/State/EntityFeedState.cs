@@ -20,9 +20,9 @@
             serializer.SerializeResourceByReference(ref inResource);
         }
 
-        public override long EstimatedSize(Serializer serializer)
+        public override long EstimatedSize(bool inDeltaContext)
         {
-            return entityState.EstimatedSize(serializer) + inResource.SizeOfIdentifier();
+            return entityState.EstimatedSize(inDeltaContext) + inResource.SizeOfIdentifier();
         }
     }
 }

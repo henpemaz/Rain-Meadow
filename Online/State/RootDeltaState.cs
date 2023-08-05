@@ -4,14 +4,14 @@
     /// Root-element state. Meant to be used with IPrimaryDelta
     /// Turns out to be not root-only as EntityStates are this but are sent inside ResourceState as well, chaos
     /// </summary>
-    public abstract class DeltaState : OnlineState
+    public abstract class RootDeltaState : OnlineState
     {
         public OnlinePlayer from; // not serialized, message source
         public uint tick; // not serialized, latest from player when read
 
-        protected DeltaState() { }
+        protected RootDeltaState() { }
 
-        protected DeltaState(uint tick)
+        protected RootDeltaState(uint tick)
         {
             this.from = OnlineManager.mePlayer;
             this.tick = tick;
@@ -27,9 +27,9 @@
             serializer.IsDelta = _isDelta; // Serializer wraps this call and restores the previous value later (override-proof)
         }
 
-        public override long EstimatedSize(Serializer serializer)
+        public override long EstimatedSize(bool inDeltaContext)
         {
-            return !serializer.IsDelta && _isDelta ? 6 : 2;
+            return !inDeltaContext && _isDelta ? 6 : 2;
         }
     }
 }

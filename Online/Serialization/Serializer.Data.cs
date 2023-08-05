@@ -430,6 +430,53 @@ namespace RainMeadow
             }
         }
 
+        public void SerializeHalf(ref float data)
+        {
+            if (IsWriting) writer.Write(Mathf.FloatToHalf(data));
+            if (IsReading) data = Mathf.HalfToFloat(reader.ReadUInt16());
+        }
+
+        public void SerializeHalf(ref float[] data)
+        {
+            if (IsWriting)
+            {
+                writer.Write((byte)data.Length);
+                for (int i = 0; i < data.Length; i++)
+                {
+                    writer.Write(Mathf.FloatToHalf(data[i]));
+                }
+            }
+            if (IsReading)
+            {
+                data = new float[reader.ReadByte()];
+                for (int i = 0; i < data.Length; i++)
+                {
+                    data[i] = Mathf.HalfToFloat(reader.ReadUInt16());
+                }
+            }
+        }
+
+        public void SerializeHalf(ref List<float> data)
+        {
+            if (IsWriting)
+            {
+                writer.Write((byte)data.Count);
+                for (int i = 0; i < data.Count; i++)
+                {
+                    writer.Write(Mathf.FloatToHalf(data[i]));
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadByte();
+                data = new(count);
+                for (int i = 0; i < count; i++)
+                {
+                    data.Add(Mathf.HalfToFloat(reader.ReadUInt16()));
+                }
+            }
+        }
+
         public void Serialize(ref string data)
         {
             if (IsWriting) writer.Write(data);
@@ -477,6 +524,8 @@ namespace RainMeadow
             }
         }
 
+
+        // Todo make Half version for these as well see SerializeHalf(float)
         public void Serialize(ref Vector2 data)
         {
             if (IsWriting)
@@ -491,24 +540,7 @@ namespace RainMeadow
             }
         }
 
-        // We cast to shorts as we assume that
-        // all IntVector2 represent tile coordinates.
-        // Sorry if this caused a bug, yell at DevLope.
-        public void Serialize(ref IntVector2 data)
-        {
-            if (IsWriting)
-            {
-                writer.Write((short)data.x);
-                writer.Write((short)data.y);
-            }
-            if (IsReading)
-            {
-                data.x = reader.ReadInt16();
-                data.y = reader.ReadInt16();
-            }
-        }
-
-        public void Serialize(ref Vector2? data)
+        public void SerializeNullable(ref Vector2? data)
         {
             if (IsWriting)
             {
@@ -528,6 +560,23 @@ namespace RainMeadow
             }
         }
 
+        // We cast to shorts as we assume that
+        // all IntVector2 represent tile coordinates.
+        // Sorry if this caused a bug, yell at DevLope and Henpemaz.
+        public void Serialize(ref IntVector2 data)
+        {
+            if (IsWriting)
+            {
+                writer.Write((short)data.x);
+                writer.Write((short)data.y);
+            }
+            if (IsReading)
+            {
+                data.x = reader.ReadInt16();
+                data.y = reader.ReadInt16();
+            }
+        }
+
         public void Serialize(ref WorldCoordinate pos)
         {
             if (IsWriting)
@@ -536,27 +585,6 @@ namespace RainMeadow
                 writer.Write((short)pos.x);
                 writer.Write((short)pos.y);
                 writer.Write((short)pos.abstractNode);
-            }
-            if (IsReading)
-            {
-                pos = new WorldCoordinate()
-                {
-                    room = reader.ReadInt16(),
-                    x = reader.ReadInt16(),
-                    y = reader.ReadInt16(),
-                    abstractNode = reader.ReadInt16(),
-                };
-            }
-        }
-
-        public void Serialize(ref WorldCoordinate? pos)
-        {
-            if (IsWriting)
-            {
-                writer.Write((short)pos.Value.room);
-                writer.Write((short)pos.Value.x);
-                writer.Write((short)pos.Value.y);
-                writer.Write((short)pos.Value.abstractNode);
             }
             if (IsReading)
             {

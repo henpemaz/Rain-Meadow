@@ -35,6 +35,13 @@ namespace RainMeadow
             }
         }
 
+        public void SerializeNullableDelta<T>(ref T customSerializable) where T : ICustomSerializable, new()
+        {
+            if(IsDelta) SerializeNullable(ref customSerializable);
+            else Serialize(ref customSerializable);
+        }
+
+
         public void Serialize<T>(ref List<T> listOfSerializables) where T : ICustomSerializable, new()
         {
             if (IsWriting)
