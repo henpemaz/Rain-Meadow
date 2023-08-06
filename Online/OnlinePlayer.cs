@@ -67,6 +67,7 @@ namespace RainMeadow
             if (recentTicks.Count >= 16) recentTicks.Dequeue();
             recentTicks.Enqueue(tick);
             recentTicksToAckBitpack = recentTicks.Select(t => (int)(uint)(tick - t)).Aggregate((ushort)0, (s, e) => (ushort)(s | (ushort)(1 << e)));
+            needsAck = true;
             //RainMeadow.Debug(tick);
             //RainMeadow.Debug(Convert.ToString(recentTicksToAckBitpack, 2));
         }
@@ -103,7 +104,6 @@ namespace RainMeadow
                         oldestTickToConsider = tickAck - (uint)i;
                     }
                 }
-                needsAck = true;
             }
         }
 

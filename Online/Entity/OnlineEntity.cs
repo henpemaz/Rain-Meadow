@@ -184,7 +184,7 @@ namespace RainMeadow
             if (isMine) { RainMeadow.Error($"Skipping state for entity I own {this}: " + Environment.StackTrace); return; }
             if (lastStates.TryGetValue(inResource, out var existingState) && NetIO.IsNewer(existingState.tick, entityState.tick))
             {
-                RainMeadow.Debug($"Skipping stale state for {this}. Got {entityState.tick} from {entityState.from} had {existingState.tick} from {existingState.from}");
+                RainMeadow.Debug($"Skipping stale state for {this}. Got {entityState.tick} from {entityState.from} had {existingState.tick} from {existingState.from}. Sender is at tick {entityState.from.tick}");
                 return;
             }
             lastStates[inResource] = entityState;

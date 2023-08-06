@@ -90,6 +90,7 @@ namespace RainMeadow
                 result.from = newState.from;
                 result.resource = resource;
                 result.entityStates = entityStates.ApplyDelta(newState.entityStates);
+                result.entityStates.list.ForEach(s => s.tick = newState.tick); // Not ideal but needed for now
                 return result;
             }
 
