@@ -5,9 +5,10 @@
         public EntityState entityState;
         public OnlineResource inResource;
 
-        public EntityFeedState() { }
+        public override StateType stateType => StateType.EntityInResourceState;
 
-        public EntityFeedState(EntityState entityState, OnlineResource inResource, uint ts) : base(ts)
+        public EntityFeedState() { }
+        public EntityFeedState(EntityState entityState, OnlineResource inResource) : base()
         {
             this.entityState = entityState;
             this.inResource = inResource;
@@ -15,11 +16,18 @@
 
         public override void CustomSerialize(Serializer serializer)
         {
-            base.CustomSerialize(serializer);
             serializer.SerializePolyState(ref entityState);
             serializer.SerializeResourceByReference(ref inResource);
         }
 
-        public override StateType stateType => StateType.EntityInResourceState;
+        public override long EstimatedSize(bool inDeltaContext)
+        {
+            return entityState.EstimatedSize(inDeltaContext) + inResource.SizeOfIdentifier();
+        }
+
+        public override string DebugPrint(int ident)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

@@ -9,13 +9,38 @@ namespace RainMeadow.Generics
     //      because then we get the right types out of delta/addelta without silly casts
     // how do we manage returning null on empty delta, vs supporting override of delta?
 
-    public interface IDelta<T>
+    /// <summary>
+    /// Object that tracks/serializes whether it's a delta
+    /// by convention returns object with IsEmptyDelta set on same-value delta (ease for polymorphism)
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public interface IPrimaryDelta<T> : IDelta<T> where T : IPrimaryDelta<T>
     {
-        //public T EmptyInstance();
+        public bool IsDelta { get; set; }
+        public bool IsEmptyDelta { get; set; }
+
+        public T EmptyDelta(); // new() but easier on inheritance
         public T Delta(T other);
         public T ApplyDelta(T other);
     }
 
+    /// <summary>
+    /// Simple delta, doesn't know/serialize whether its delta or not
+    /// by convention retuns null on same-value delta
+    /// no convenient inheritance/poly support
+    /// use new() to instantiate new
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public interface IDelta<T> where T : IDelta<T>
+    {
+        public T Delta(T other);
+        public T ApplyDelta(T other);
+    }
+
+    /// <summary>
+    /// ID for matching elements in list-wise deltas
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public interface IIdentifiable<T> where T : IEquatable<T>
     {
         public T ID { get; }
@@ -23,6 +48,7 @@ namespace RainMeadow.Generics
 
     public class IdentityComparer<T, U> : IEqualityComparer<T> where T : IIdentifiable<U> where U : IEquatable<U>
     {
+        public static IdentityComparer<T, U> instance = new();
         public bool Equals(T x, T y)
         {
             return x.ID.Equals(y.ID);
@@ -37,7 +63,7 @@ namespace RainMeadow.Generics
     /// <summary>
     /// Dynamic list, order-unaware
     /// </summary>
-    public abstract class AddRemoveUnsortedList<T> : IDelta<AddRemoveUnsortedList<T>>, Serializer.ICustomSerializable
+    public abstract class AddRemoveUnsortedList<T, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp: AddRemoveUnsortedList<T, Imp>, new()
     {
         public List<T> list;
         public List<T> removed;
@@ -48,20 +74,18 @@ namespace RainMeadow.Generics
             this.list = list;
         }
 
-        public abstract AddRemoveUnsortedList<T> EmptyInstance();
-
-        public AddRemoveUnsortedList<T> Delta(AddRemoveUnsortedList<T> other)
+        public Imp Delta(Imp other)
         {
-            if (other == null) { return this; }
-            var delta = EmptyInstance();
+            if (other == null) { return (Imp)this; }
+            Imp delta = new();
             delta.list = list.Except(other.list).ToList();
             delta.removed = other.list.Except(list).ToList();
             return (delta.list.Count == 0 && delta.removed.Count == 0) ? null : delta;
         }
 
-        public AddRemoveUnsortedList<T> ApplyDelta(AddRemoveUnsortedList<T> other)
+        public Imp ApplyDelta(Imp other)
         {
-            var result = EmptyInstance();
+            Imp result = new();
             result.list = other == null ? list : list.Union(other.list).Except(other.removed).ToList();
             return result;
         }
@@ -73,7 +97,7 @@ namespace RainMeadow.Generics
     /// <summary>
     /// Dynamic list, order-aware
     /// </summary>
-    public abstract class AddRemoveSortedList<T> : IDelta<AddRemoveSortedList<T>>, Serializer.ICustomSerializable
+    public abstract class AddRemoveSortedList<T, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp : AddRemoveSortedList<T, Imp>, new()
     {
         public List<T> list;
         public List<byte> listIndexes;
@@ -85,13 +109,11 @@ namespace RainMeadow.Generics
             this.list = list;
         }
 
-        public abstract AddRemoveSortedList<T> EmptyInstance();
-
-        public AddRemoveSortedList<T> Delta(AddRemoveSortedList<T> other)
+        public Imp Delta(Imp other)
         {
-            if (other == null) { return this; }
+            if (other == null) { return (Imp)this; }
 
-            var delta = EmptyInstance();
+            Imp delta = new();
             delta.list = list.Except(other.list).ToList();
             delta.listIndexes = list.Except(other.list).Select(e => (byte)list.IndexOf(e)).ToList();
             delta.removedIndexes = other.list.Except(list).Select(e => (byte)other.list.IndexOf(e)).ToList();
@@ -99,9 +121,9 @@ namespace RainMeadow.Generics
             return (delta.list.Count == 0 && delta.removedIndexes.Count == 0) ? null : delta;
         }
 
-        public AddRemoveSortedList<T> ApplyDelta(AddRemoveSortedList<T> other)
+        public Imp ApplyDelta(Imp other)
         {
-            var result = EmptyInstance();
+            Imp result = new();
             result.list = list.ToList();
             if (other != null)
             {
@@ -122,9 +144,9 @@ namespace RainMeadow.Generics
     }
 
     /// <summary>
-    /// Fixed list, no adds/removes supported, id-elementwise delta
+    /// Static list, no adds/removes supported, id-elementwise delta
     /// </summary>
-    public class IdentifiablesDeltaList<T, U, W> : Serializer.ICustomSerializable, IDelta<IdentifiablesDeltaList<T, U, W>> where T : Serializer.ICustomSerializable, IDelta<W>, W, IIdentifiable<U>, new() where U : IEquatable<U>
+    public abstract class IdentifiablesDeltaList<T, U, V, Imp> : Serializer.ICustomSerializable, IDelta<Imp> where T : IDelta<V>, V, IIdentifiable<U> where V: IDelta<V> where U : IEquatable<U> where Imp : IdentifiablesDeltaList<T, U, V, Imp>, new()
     {
         public List<T> list;
         public IdentifiablesDeltaList() { }
@@ -132,33 +154,29 @@ namespace RainMeadow.Generics
         {
             this.list = list;
         }
-        public virtual IdentifiablesDeltaList<T, U, W> EmptyInstance() => new();
 
-        public virtual IdentifiablesDeltaList<T, U, W> Delta(IdentifiablesDeltaList<T, U, W> other)
+        public virtual Imp Delta(Imp other)
         {
-            if (other == null) { return this; }
-            var delta = EmptyInstance();
+            if (other == null) { return (Imp)this; }
+            Imp delta = new();
             delta.list = list.Select(sl => (T)sl.Delta(other.list.FirstOrDefault(osl => osl.ID.Equals(sl.ID)))).Where(sl => sl != null).ToList();
             return delta.list.Count == 0 ? null : delta;
         }
 
-        public virtual IdentifiablesDeltaList<T, U, W> ApplyDelta(IdentifiablesDeltaList<T, U, W> other)
+        public virtual Imp ApplyDelta(Imp other)
         {
-            var result = EmptyInstance();
+            Imp result = new();
             result.list = other == null ? list : list.Select(e => (T)e.ApplyDelta(other.list.FirstOrDefault(o => e.ID.Equals(o.ID)))).ToList();
             return result;
         }
 
-        public virtual void CustomSerialize(Serializer serializer)
-        {
-            serializer.Serialize(ref list);
-        }
+        public abstract void CustomSerialize(Serializer serializer);
     }
 
     /// <summary>
     /// Dynamic list, id-elementwise delta
     /// </summary>
-    public abstract class IdentifiablesAddRemoveDeltaList<T, U, W> : Serializer.ICustomSerializable, IDelta<IdentifiablesAddRemoveDeltaList<T, U, W>> where T : class, IDelta<W>, W, IIdentifiable<U> where U : IEquatable<U>
+    public abstract class IdentifiablesAddRemoveDeltaList<T, U, W, Imp> : Serializer.ICustomSerializable, IDelta<Imp> where T : class, IDelta<W>, W, IIdentifiable<U> where W : IDelta<W> where U : IEquatable<U> where Imp : IdentifiablesAddRemoveDeltaList<T, U, W, Imp>, new()
     {
         public List<T> list;
         public List<U> removed;
@@ -167,20 +185,19 @@ namespace RainMeadow.Generics
         {
             this.list = list;
         }
-        public abstract IdentifiablesAddRemoveDeltaList<T, U, W> EmptyInstance();
 
-        public virtual IdentifiablesAddRemoveDeltaList<T, U, W> Delta(IdentifiablesAddRemoveDeltaList<T, U, W> other)
+        public virtual Imp Delta(Imp other)
         {
-            if (other == null) { return this; }
-            var delta = EmptyInstance();
+            if (other == null) { return (Imp)this; }
+            Imp delta = new();
             delta.list = list.Select(sl => (T)sl.Delta(other.list.FirstOrDefault(osl => osl.ID.Equals(sl.ID)))).Where(sl => sl != null).ToList();
             delta.removed = other.list.Except(list, new IdentityComparer<T, U>()).Select(e => e.ID).ToList();
             return (delta.list.Count == 0 && delta.removed.Count == 0) ? null : delta;
         }
 
-        public virtual IdentifiablesAddRemoveDeltaList<T, U, W> ApplyDelta(IdentifiablesAddRemoveDeltaList<T, U, W> other)
+        public virtual Imp ApplyDelta(Imp other)
         {
-            var result = EmptyInstance();
+            Imp result = new();
             result.list = other == null ? list : list.Where(e => other.list.FirstOrDefault(o => e.ID.Equals(o.ID)) != null).Select(e => (T)e.ApplyDelta(other.list.FirstOrDefault(o => e.ID.Equals(o.ID)))).Concat(other.list.Where(o => list.FirstOrDefault(e => e.ID.Equals(o.ID)) == null)).ToList();
             return result;
         }
@@ -188,11 +205,42 @@ namespace RainMeadow.Generics
         public abstract void CustomSerialize(Serializer serializer);
     }
 
-    public class IdentifiablesAddRemoveDeltaListByUSort<T, W> : IdentifiablesAddRemoveDeltaList<T, ushort, W> where T : class, Serializer.ICustomSerializable, IDelta<W>, W, IIdentifiable<ushort>, new()
+    /// <summary>
+    /// Dynamic list, id-elementwise delta
+    /// </summary>
+    public abstract class IdentifiablesAddRemovePrimaryDeltaList<T, U, W, Imp> : Serializer.ICustomSerializable, IDelta<Imp> where T : class, IPrimaryDelta<W>, W, IIdentifiable<U> where W : IPrimaryDelta<W> where U : IEquatable<U> where Imp : IdentifiablesAddRemovePrimaryDeltaList<T, U, W, Imp>, new()
+    {
+        public List<T> list;
+        public List<U> removed;
+        public IdentifiablesAddRemovePrimaryDeltaList() { }
+        public IdentifiablesAddRemovePrimaryDeltaList(List<T> list)
+        {
+            this.list = list;
+        }
+
+        public virtual Imp Delta(Imp other)
+        {
+            if (other == null) { return (Imp)this; }
+            Imp delta = new();
+            delta.list = list.Select(sl => other.list.FirstOrDefault(osl => osl.ID.Equals(sl.ID)) is T so ? (T)sl.Delta(so) : sl).Where(sl => !sl.IsEmptyDelta).ToList();
+            delta.removed = other.list.Except(list, new IdentityComparer<T, U>()).Select(e => e.ID).ToList();
+            return (delta.list.Count == 0 && delta.removed.Count == 0) ? null : delta;
+        }
+
+        public virtual Imp ApplyDelta(Imp other)
+        {
+            Imp result = new();
+            result.list = other == null ? list : list.Where(e => other.list.FirstOrDefault(o => e.ID.Equals(o.ID)) != null).Select(e => (T)e.ApplyDelta(other.list.FirstOrDefault(o => e.ID.Equals(o.ID)))).Concat(other.list.Where(o => list.FirstOrDefault(e => e.ID.Equals(o.ID)) == null)).ToList();
+            return result;
+        }
+
+        public abstract void CustomSerialize(Serializer serializer);
+    }
+
+    public class IdentifiablesAddRemoveDeltaListByUSort<T, W> : IdentifiablesAddRemoveDeltaList<T, ushort, W, IdentifiablesAddRemoveDeltaListByUSort<T, W>> where T : class, Serializer.ICustomSerializable, IDelta<W>, W, IIdentifiable<ushort>, new() where W: IDelta<W>, new()
     {
         public IdentifiablesAddRemoveDeltaListByUSort() : base() { }
         public IdentifiablesAddRemoveDeltaListByUSort(List<T> list) : base(list) { }
-        public override IdentifiablesAddRemoveDeltaList<T, ushort, W> EmptyInstance() => new IdentifiablesAddRemoveDeltaListByUSort<T, W>();
 
         public override void CustomSerialize(Serializer serializer)
         {
@@ -201,11 +249,10 @@ namespace RainMeadow.Generics
         }
     }
 
-    public class IdentifiablesAddRemoveDeltaListByCustomSeri<T, U, W> : IdentifiablesAddRemoveDeltaList<T, U, W> where T : class, Serializer.ICustomSerializable, IDelta<W>, W, IIdentifiable<U>, new() where U : Serializer.ICustomSerializable, IEquatable<U>, new()
+    public class IdentifiablesAddRemoveDeltaListByCustomSeri<T, U, W> : IdentifiablesAddRemoveDeltaList<T, U, W, IdentifiablesAddRemoveDeltaListByCustomSeri<T, U, W>> where T : class, Serializer.ICustomSerializable, IDelta<W>, W, IIdentifiable<U>, new() where W : IDelta<W>, new() where U : Serializer.ICustomSerializable, IEquatable<U>, new()
     {
         public IdentifiablesAddRemoveDeltaListByCustomSeri() : base() { }
         public IdentifiablesAddRemoveDeltaListByCustomSeri(List<T> list) : base(list) { }
-        public override IdentifiablesAddRemoveDeltaList<T, U, W> EmptyInstance() => new IdentifiablesAddRemoveDeltaListByCustomSeri<T, U, W>();
 
         public override void CustomSerialize(Serializer serializer)
         {
@@ -214,11 +261,10 @@ namespace RainMeadow.Generics
         }
     }
 
-    public class DeltaStates<T, U> : IdentifiablesAddRemoveDeltaList<T, U, OnlineState> where T : OnlineState, IDelta<OnlineState>, IIdentifiable<U> where U : Serializer.ICustomSerializable, IEquatable<U>, new()
+    public class DeltaStates<T, U> : IdentifiablesAddRemovePrimaryDeltaList<T, U, T, DeltaStates<T, U>> where T : OnlineState, IPrimaryDelta<T>, IIdentifiable<U> where U : Serializer.ICustomSerializable, IEquatable<U>, new()
     {
         public DeltaStates() : base() { }
         public DeltaStates(List<T> list) : base(list) { }
-        public override IdentifiablesAddRemoveDeltaList<T, U, OnlineState> EmptyInstance() => new DeltaStates<T, U>();
 
         public override void CustomSerialize(Serializer serializer)
         {
@@ -227,11 +273,10 @@ namespace RainMeadow.Generics
         }
     }
 
-    public class AddRemoveUnsortedUshorts : AddRemoveUnsortedList<ushort>
+    public class AddRemoveUnsortedUshorts : AddRemoveUnsortedList<ushort, AddRemoveUnsortedUshorts>
     {
         public AddRemoveUnsortedUshorts() { }
         public AddRemoveUnsortedUshorts(List<ushort> list) : base(list) { }
-        public override AddRemoveUnsortedList<ushort> EmptyInstance() => new AddRemoveUnsortedUshorts();
 
         public override void CustomSerialize(Serializer serializer)
         {
@@ -240,11 +285,10 @@ namespace RainMeadow.Generics
         }
     }
 
-    public class AddRemoveUnsortedCustomSerializables<T> : AddRemoveUnsortedList<T> where T : Serializer.ICustomSerializable, new()
+    public class AddRemoveUnsortedCustomSerializables<T> : AddRemoveUnsortedList<T, AddRemoveUnsortedCustomSerializables<T>> where T : Serializer.ICustomSerializable, new()
     {
         public AddRemoveUnsortedCustomSerializables() { }
         public AddRemoveUnsortedCustomSerializables(List<T> list) : base(list) { }
-        public override AddRemoveUnsortedList<T> EmptyInstance() => new AddRemoveUnsortedCustomSerializables<T>();
 
         public override void CustomSerialize(Serializer serializer)
         {
@@ -253,11 +297,10 @@ namespace RainMeadow.Generics
         }
     }
 
-    public class AddRemoveSortedCustomSerializables<T> : AddRemoveSortedList<T> where T : Serializer.ICustomSerializable, new()
+    public class AddRemoveSortedCustomSerializables<T> : AddRemoveSortedList<T, AddRemoveSortedCustomSerializables<T>> where T : Serializer.ICustomSerializable, new()
     {
         public AddRemoveSortedCustomSerializables() { }
         public AddRemoveSortedCustomSerializables(List<T> list) : base(list) { }
-        public override AddRemoveSortedList<T> EmptyInstance() => new AddRemoveSortedCustomSerializables<T>();
 
         public override void CustomSerialize(Serializer serializer)
         {
@@ -270,11 +313,10 @@ namespace RainMeadow.Generics
         }
     }
 
-    public class AddRemoveSortedPlayerIDs : AddRemoveSortedList<MeadowPlayerId>
+    public class AddRemoveSortedPlayerIDs : AddRemoveSortedList<MeadowPlayerId, AddRemoveSortedPlayerIDs>
     {
         public AddRemoveSortedPlayerIDs() { }
         public AddRemoveSortedPlayerIDs(List<MeadowPlayerId> list) : base(list) { }
-        public override AddRemoveSortedList<MeadowPlayerId> EmptyInstance() => new AddRemoveSortedPlayerIDs();
 
         public override void CustomSerialize(Serializer serializer)
         {
@@ -287,11 +329,10 @@ namespace RainMeadow.Generics
         }
     }
 
-    public class AddRemoveSortedUshorts : AddRemoveSortedList<ushort>
+    public class AddRemoveSortedUshorts : AddRemoveSortedList<ushort, AddRemoveSortedUshorts>
     {
         public AddRemoveSortedUshorts() { }
         public AddRemoveSortedUshorts(List<ushort> list) : base(list) { }
-        public override AddRemoveSortedList<ushort> EmptyInstance() => new AddRemoveSortedUshorts();
 
         public override void CustomSerialize(Serializer serializer)
         {

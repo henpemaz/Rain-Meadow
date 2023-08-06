@@ -14,19 +14,24 @@ namespace RainMeadow
         public List<OnlineEvent> abortedEvents = new(8);
         public Queue<OnlineState> OutgoingStates = new(16);
 
-        private ushort nextOutgoingEvent = 1;
-        public ushort lastEventFromRemote; // the last event I've received from them, I'll write it back on headers as an ack
-        public ushort lastAckFromRemote; // the last event they've ack'd to me, used imediately on receive
-        public uint tick; // the last tick I've received from them, I'll write it back on headers as an ack
-        public uint lastAckdTick; // the last tick they've ack'd to me
+        private ushort nextOutgoingEvent = 1; // outgoing, event id
+        public ushort lastEventFromRemote; // incoming, the last event I've received from them, I'll write it back on headers as an ack
+        public ushort lastAckFromRemote; // incoming, the last event they've ack'd to me, used imediately on receive
+        public uint tick; // incoming, the latest tick I've received from them, I'll write it back on headers as an ack
+        public Queue<uint> recentTicks = new(16); // incoming ticks
+        public ushort recentTicksToAckBitpack; // outgoing, bitpack of recent ticks relative to tick, used for ack
+        public uint latestTickAck; // incoming, the last tick they've ack'd to me
+        public HashSet<uint> recentlyAckdTicks = new (); // incoming, recent ticks they've acked (from bitpack)
+        public uint oldestTickToConsider; // incoming, from acked ticks the oldest to use for deltas
+
         public bool needsAck;
-        public int ping; // rtt
 
         public bool isMe;
         public bool hasLeft;
 
         
         // For Debug Overlay
+        public int ping; // rtt
         public bool eventsWritten;
         public bool statesWritten;
         public bool eventsRead;
@@ -56,6 +61,17 @@ namespace RainMeadow
             return recentlyAckedEvents.FirstOrDefault(e => e.eventId == id) ?? abortedEvents.FirstOrDefault(e => e.eventId == id);
         }
 
+        internal void NewTick(uint newTick)
+        {
+            tick = newTick;
+            if (recentTicks.Count >= 16) recentTicks.Dequeue();
+            recentTicks.Enqueue(tick);
+            recentTicksToAckBitpack = recentTicks.Select(t => (int)(uint)(tick - t)).Aggregate((ushort)0, (s, e) => (ushort)(s | (ushort)(1 << e)));
+            needsAck = true;
+            //RainMeadow.Debug(tick);
+            //RainMeadow.Debug(Convert.ToString(recentTicksToAckBitpack, 2));
+        }
+
         public void EventAckFromRemote(ushort lastAck)
         {
             this.recentlyAckedEvents.Clear();
@@ -68,12 +84,27 @@ namespace RainMeadow
             }
         }
 
-        public void TickAckFromRemote(uint lastTick)
+        public void TickAckFromRemote(uint tickAck, ushort recentTickAcks)
         {
             var timeSinceLastTick = (int)Math.Floor(Math.Max(1, (UnityEngine.Time.realtimeSinceStartup - OnlineManager.lastUpdate) * 1000));
-            ping = (int)(OnlineManager.mePlayer.tick - lastTick) * 50 + timeSinceLastTick;
+            ping = (int)(OnlineManager.mePlayer.tick - tickAck) * 50 + timeSinceLastTick;
 
-            this.lastAckdTick = lastTick;
+            if (NetIO.IsNewerOrEqual(tickAck, latestTickAck))
+            {
+                //RainMeadow.Debug(tickAck);
+                //RainMeadow.Debug(Convert.ToString(recentTickAcks, 2));
+                this.latestTickAck = tickAck;
+                this.oldestTickToConsider = tickAck;
+                recentlyAckdTicks = new();
+                for (int i = 0; i < 16; i++)
+                {
+                    if ((recentTickAcks & (1 << i)) != 0)
+                    {
+                        recentlyAckdTicks.Add(tickAck - (uint)i);
+                        oldestTickToConsider = tickAck - (uint)i;
+                    }
+                }
+            }
         }
 
         public bool HasUnacknoledgedEvents()

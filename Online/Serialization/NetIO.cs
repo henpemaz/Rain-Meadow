@@ -75,17 +75,25 @@ namespace RainMeadow
 
             while (UdpPeer.IsPacketAvailable())
             {
-                //RainMeadow.Debug("To read: " + UdpPeer.debugClient.Available);
-                if (!UdpPeer.Read(out BinaryReader netReader, out IPEndPoint remoteEndpoint))
-                    continue;
-                var player = (MatchmakingManager.instance as LocalMatchmakingManager).GetPlayerLocal(remoteEndpoint.Port);
-                if (player == null)
+                try
                 {
-                    RainMeadow.Debug("Player not found! Instantiating new at: " + remoteEndpoint.Port);
-                    player = new OnlinePlayer(new LocalMatchmakingManager.LocalPlayerId(remoteEndpoint.Port, remoteEndpoint, remoteEndpoint.Port == UdpPeer.STARTING_PORT));
+                    //RainMeadow.Debug("To read: " + UdpPeer.debugClient.Available);
+                    if (!UdpPeer.Read(out BinaryReader netReader, out IPEndPoint remoteEndpoint))
+                        continue;
+                    if (netReader.BaseStream.Position == ((MemoryStream)netReader.BaseStream).Length) continue; // nothing to read somehow?
+                    var player = (MatchmakingManager.instance as LocalMatchmakingManager).GetPlayerLocal(remoteEndpoint.Port);
+                    if (player == null)
+                    {
+                        RainMeadow.Debug("Player not found! Instantiating new at: " + remoteEndpoint.Port);
+                        player = new OnlinePlayer(new LocalMatchmakingManager.LocalPlayerId(remoteEndpoint.Port, remoteEndpoint, remoteEndpoint.Port == UdpPeer.STARTING_PORT));
+                    }
+                    
+                    Packet.Decode(netReader, player);
                 }
-
-                Packet.Decode(netReader, player);
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                }
             }
         }
 

@@ -75,7 +75,6 @@ namespace RainMeadow
             lastUpdate = UnityEngine.Time.realtimeSinceStartup;
         }
 
-
         // from a force-load situation
         public static void ForceLoadUpdate()
         {
@@ -83,7 +82,6 @@ namespace RainMeadow
             SteamAPI.RunCallbacks();
 #endif
             NetIO.Update();
-
 
             if (UnityEngine.Time.realtimeSinceStartup > lastDt + 1f / instance.framesPerSecond)
             {
@@ -207,11 +205,25 @@ namespace RainMeadow
             {
                 if (state is OnlineResource.ResourceState resourceState && resourceState.resource != null && (resourceState.resource.isAvailable || resourceState.resource.isWaitingForState))
                 {
+                    //RainMeadow.Debug($"Processing {resourceState} for {resourceState.resource}");
                     resourceState.resource.ReadState(resourceState);
                 }
-                if (state is EntityFeedState entityInResourceState && entityInResourceState.inResource != null && entityInResourceState.inResource.isAvailable)
+                else if (state is EntityFeedState entityFeedState && entityFeedState.inResource != null && entityFeedState.inResource.isAvailable)
                 {
-                    entityInResourceState.entityState.entityId.FindEntity()?.ReadState(entityInResourceState.entityState, entityInResourceState.inResource);
+                    var ent = entityFeedState.entityState.entityId.FindEntity();
+                    if(ent != null)
+                    {
+                        //RainMeadow.Debug($"Processing {entityFeedState} for {ent}");
+                        ent.ReadState(entityFeedState);
+                    }
+                    else
+                    {
+                        RainMeadow.Error($"Entity {entityFeedState.entityState.entityId} not found for incoming state from {entityFeedState.entityState.from} in {entityFeedState.inResource}");
+                    }
+                }
+                else
+                {
+                    RainMeadow.Error($"Unexpected incoming state: {state}");
                 }
             }
             catch (Exception e)

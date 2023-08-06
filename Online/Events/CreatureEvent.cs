@@ -37,7 +37,7 @@ public abstract partial class CreatureEvent
             serializer.Serialize(ref OnlineVictim);
             serializer.Serialize(ref VictimChunkIndex);
             serializer.SerializeNullable(ref VictimAppendage);
-            serializer.Serialize(ref DirectionAndMomentum);
+            serializer.SerializeNullable(ref DirectionAndMomentum);
             serializer.Serialize(ref DamageType);
             serializer.Serialize(ref Damage);
             serializer.Serialize(ref StunBonus);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using static RainMeadow.OnlineResource;
 
 namespace RainMeadow
 {
@@ -86,7 +87,7 @@ namespace RainMeadow
             }
             joinedResources.Add(inResource);
             initialState.entityId = this.id;
-            ReadState(initialState, inResource);
+            if (!isMine) ReadState(initialState, inResource);
             if (isMine)
             {
                 if (!inResource.isOwner)
@@ -108,6 +109,7 @@ namespace RainMeadow
 
             joinedResources.Remove(inResource);
             lastStates.Remove(inResource);
+            incomingState.Remove(inResource);
             if (isMine)
             {
                 OnlineManager.RemoveFeed(inResource, this);
@@ -173,24 +175,57 @@ namespace RainMeadow
             if (onlineResource != this.currentlyJoinedResource) throw new InvalidOperationException("not leaving lowest resource");
             enteredResources.Remove(onlineResource);
             joinedResources.Remove(onlineResource);
+            incomingState.Remove(onlineResource);
             if (isMine) OnlineManager.RemoveFeed(onlineResource, this);
         }
 
         public virtual void ReadState(EntityState entityState, OnlineResource inResource)
         {
-            if (lastStates.TryGetValue(inResource, out var existingState) && NetIO.IsNewer(existingState.tick, entityState.tick)) { RainMeadow.Debug($"Skipping stale state"); return; }
+            if (isMine) { RainMeadow.Error($"Skipping state for entity I own {this}: " + Environment.StackTrace); return; }
+            if (lastStates.TryGetValue(inResource, out var existingState) && NetIO.IsNewer(existingState.tick, entityState.tick))
+            {
+                RainMeadow.Debug($"Skipping stale state for {this}. Got {entityState.tick} from {entityState.from} had {existingState.tick} from {existingState.from}. Sender is at tick {entityState.from.tick}");
+                return;
+            }
             lastStates[inResource] = entityState;
             if (inResource != currentlyJoinedResource)
             {
                 // RainMeadow.Debug($"Skipping state for wrong resource" + Environment.StackTrace);
                 // since we send both region state and room state even if it's the same guy owning both, this gets spammed a lot
-                // todo supress sending if more specialized state being sent
+                // todo supress sending if more specialized state being sent to the same person
                 return;
             }
-            if(!isMine)
+            entityState.ReadTo(this);
+        }
+
+        public Dictionary<OnlineResource, Queue<EntityState>> incomingState = new();
+        public virtual void ReadState(EntityFeedState entityFeedState)
+        {
+            var newState = entityFeedState.entityState;
+            var inResource = entityFeedState.inResource;
+            if (!incomingState.ContainsKey(inResource)) incomingState.Add(inResource, new Queue<EntityState>());
+            var stateQueue = incomingState[inResource];
+            if (newState.IsDelta)
             {
-                entityState.ReadTo(this);
+                //RainMeadow.Debug($"received delta state for tick {newState.tick} referencing baseline {newState.DeltaFromTick}");
+                while (stateQueue.Count > 0 && NetIO.IsNewer(newState.DeltaFromTick, stateQueue.Peek().tick))
+                {
+                    var discarded = stateQueue.Dequeue();
+                    //RainMeadow.Debug("discarding old event from tick " + discarded.tick);
+                }
+                if (stateQueue.Count == 0 || newState.DeltaFromTick != stateQueue.Peek().tick)
+                {
+                    RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.DeltaFromTick}");
+                    return;
+                }
+                newState = stateQueue.Peek().ApplyDelta(newState);
             }
+            else
+            {
+                //RainMeadow.Debug("received absolute state for tick " + newState.tick);
+            }
+            stateQueue.Enqueue(newState);
+            ReadState(newState, inResource);
         }
 
         protected abstract EntityState MakeState(uint tick, OnlineResource inResource);
@@ -214,11 +249,6 @@ namespace RainMeadow
             }
             if (lastState == null) throw new InvalidProgrammerException("state is null");
             return lastState;
-        }
-
-        public EntityFeedState GetFeedState(uint ts, OnlineResource inResource)
-        {
-            return new EntityFeedState(GetState(ts, inResource), inResource, ts);
         }
 
         public override string ToString()

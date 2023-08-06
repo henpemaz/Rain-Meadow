@@ -42,27 +42,22 @@ namespace RainMeadow
             if (IsWriting)
             {
                 DebugOverlay.playersWritten.addPlayer(currPlayer);
-                writer.Write(currPlayer.lastEventFromRemote);
-                writer.Write(currPlayer.tick);
                 writer.Write(OnlineManager.mePlayer.tick);
-                //RainMeadow.Debug($"Wrote {currPlayer.lastEventFromRemote} {currPlayer.tick} and {LobbyManager.mePlayer.tick}");
+                writer.Write(currPlayer.lastEventFromRemote);
+                writer.Write(currPlayer.tick); writer.Write(currPlayer.recentTicksToAckBitpack);
             }
             if (IsReading)
             {
                 DebugOverlay.playersRead.addPlayer(currPlayer);
-                currPlayer.EventAckFromRemote(reader.ReadUInt16());
-                currPlayer.TickAckFromRemote(reader.ReadUInt32());
                 var newTick = reader.ReadUInt32();
-                //RainMeadow.Debug($"Got {currPlayer.lastAckFromRemote} {currPlayer.lastAckdTick} and {newTick}");
                 if (!NetIO.IsNewer(newTick, currPlayer.tick))
                 {
-                    // abort reading
                     AbortRead();
+                    return;
                 }
-                else
-                {
-                    currPlayer.tick = newTick;
-                }
+                currPlayer.NewTick(newTick);
+                currPlayer.EventAckFromRemote(reader.ReadUInt16());
+                currPlayer.TickAckFromRemote(reader.ReadUInt32(), reader.ReadUInt16());
             }
         }
 
@@ -92,7 +87,7 @@ namespace RainMeadow
 
         private bool CanFit(OnlineState state)
         {
-            return Position + state.EstimatedSize + margin < capacity;
+            return Position + state.EstimatedSize(false) + margin < capacity;
         }
 
         private void BeginWriteEvents()
@@ -186,8 +181,12 @@ namespace RainMeadow
         private OnlineState ReadState()
         {
             OnlineState s = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
-            s.from = currPlayer;
-            s.tick = currPlayer.tick;
+            if(s is RootDeltaState ps)
+            {
+                ps.from = currPlayer;
+                ps.tick = currPlayer.tick;
+            }
+            
             WrappedSerialize(s);
             return s;
         }
@@ -306,8 +305,11 @@ namespace RainMeadow
             if (IsReading)
             {
                 state = (T)OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
-                state.from = currPlayer;
-                state.tick = currPlayer.tick;
+                if(state is RootDeltaState ps)
+                {
+                    ps.from = currPlayer;
+                    ps.tick = currPlayer.tick;
+                }
                 WrappedSerialize(state);
             }
         }
@@ -351,8 +353,11 @@ namespace RainMeadow
                 for (int i = 0; i < count; i++)
                 {
                     var s = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
-                    s.from = currPlayer;
-                    s.tick = currPlayer.tick;
+                    if (s is RootDeltaState ps)
+                    {
+                        ps.from = currPlayer;
+                        ps.tick = currPlayer.tick;
+                    }
                     WrappedSerialize(s);
                     states[i] = s as T; // can throw an invalid cast? or will it just be null?
                 }
@@ -379,8 +384,11 @@ namespace RainMeadow
                 for (int i = 0; i < count; i++)
                 {
                     var s = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
-                    s.from = currPlayer;
-                    s.tick = currPlayer.tick;
+                    if (s is RootDeltaState ps)
+                    {
+                        ps.from = currPlayer;
+                        ps.tick = currPlayer.tick;
+                    }
                     WrappedSerialize(s);
                     states.Add(s as T);
                 }
@@ -397,8 +405,11 @@ namespace RainMeadow
             if (IsReading)
             {
                 state = new();
-                state.from = currPlayer;
-                state.tick = currPlayer.tick;
+                if (state is RootDeltaState ps)
+                {
+                    ps.from = currPlayer;
+                    ps.tick = currPlayer.tick;
+                }
                 WrappedSerialize(state);
             }
         }
@@ -441,8 +452,11 @@ namespace RainMeadow
                 for (int i = 0; i < count; i++)
                 {
                     T s = new();
-                    s.from = currPlayer;
-                    s.tick = currPlayer.tick;
+                    if (s is RootDeltaState ps)
+                    {
+                        ps.from = currPlayer;
+                        ps.tick = currPlayer.tick;
+                    }
                     WrappedSerialize(s);
                     states[i] = s;
                 }
