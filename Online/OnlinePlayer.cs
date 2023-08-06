@@ -18,7 +18,7 @@ namespace RainMeadow
         public ushort lastEventFromRemote; // incoming, the last event I've received from them, I'll write it back on headers as an ack
         public ushort lastAckFromRemote; // incoming, the last event they've ack'd to me, used imediately on receive
         public uint tick; // incoming, the latest tick I've received from them, I'll write it back on headers as an ack
-        public Deque<uint> recentTicks = new(16); // incoming ticks
+        public Queue<uint> recentTicks = new(16); // incoming ticks
         public ushort recentTicksToAckBitpack; // outgoing, bitpack of recent ticks relative to tick, used for ack
         public uint latestTickAck; // incoming, the last tick they've ack'd to me
         public HashSet<uint> recentlyAckdTicks = new (); // incoming, recent ticks they've acked (from bitpack)
