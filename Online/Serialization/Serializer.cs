@@ -53,6 +53,7 @@ namespace RainMeadow
                 if (!NetIO.IsNewer(newTick, currPlayer.tick))
                 {
                     AbortRead();
+                    return;
                 }
                 currPlayer.NewTick(newTick);
                 currPlayer.EventAckFromRemote(reader.ReadUInt16());

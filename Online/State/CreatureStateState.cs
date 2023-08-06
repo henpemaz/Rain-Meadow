@@ -71,5 +71,10 @@ namespace RainMeadow
             }
             return result;
         }
+
+        public override string DebugPrint(int ident)
+        {
+            return new string(' ', ident) + GetType().Name + "\n";
+        }
     }
 }

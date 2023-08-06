@@ -66,7 +66,9 @@ namespace RainMeadow
             tick = newTick;
             if (recentTicks.Count >= 16) recentTicks.Dequeue();
             recentTicks.Enqueue(tick);
-            recentTicksToAckBitpack = recentTicks.Select(t => (int)(uint)(t + 1 - tick)).Aggregate((ushort)0, (s, e) => ((ushort)(s | (ushort)(1 >> e))));
+            recentTicksToAckBitpack = recentTicks.Select(t => (int)(uint)(tick - t)).Aggregate((ushort)0, (s, e) => (ushort)(s | (ushort)(1 << e)));
+            //RainMeadow.Debug(tick);
+            //RainMeadow.Debug(Convert.ToString(recentTicksToAckBitpack, 2));
         }
 
         public void EventAckFromRemote(ushort lastAck)
@@ -88,13 +90,14 @@ namespace RainMeadow
 
             if (NetIO.IsNewerOrEqual(tickAck, latestTickAck))
             {
+                //RainMeadow.Debug(tickAck);
+                //RainMeadow.Debug(Convert.ToString(recentTickAcks, 2));
                 this.latestTickAck = tickAck;
                 this.oldestTickToConsider = tickAck;
                 recentlyAckdTicks = new();
-                recentlyAckdTicks.Add(tickAck);
                 for (int i = 0; i < 16; i++)
                 {
-                    if ((recentTickAcks & (1 >> i)) > 0)
+                    if ((recentTickAcks & (1 << i)) != 0)
                     {
                         recentlyAckdTicks.Add(tickAck - (uint)i);
                         oldestTickToConsider = tickAck - (uint)i;

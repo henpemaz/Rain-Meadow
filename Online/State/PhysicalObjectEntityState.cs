@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Mono.Cecil;
+using System;
+using System.Text;
 
 namespace RainMeadow
 {
@@ -36,7 +38,16 @@ namespace RainMeadow
             var onlineObject = onlineEntity as OnlinePhysicalObject;
             onlineObject.beingMoved = true;
             var wasPos = onlineObject.apo.pos;
-            onlineObject.apo.Move(pos);
+            try
+            {
+                onlineObject.apo.Move(pos);
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error($"failed to move from {wasPos} to {pos}: " + e);
+                //throw;
+            }
+            
             if(!pos.NodeDefined && !wasPos.CompareDisregardingNode(pos))onlineObject.apo.pos = pos; // pos isn't updated if compareDisregardingTile, but please, do
             onlineObject.beingMoved = false;
             onlineObject.realized = this.realized;
@@ -91,6 +102,22 @@ namespace RainMeadow
             result.realized = other.hasPosValue ? other.realized : realized;
             result.realizedObjectState = other.hasRealizedValue ? realizedObjectState?.ApplyDelta(other.realizedObjectState) ?? other.realizedObjectState : realizedObjectState;
             return result;
+        }
+
+        public override string DebugPrint(int ident)
+        {
+            var sb = new StringBuilder(new string(' ', ident) + GetType().Name + " " + entityId + " " + (IsDelta ? "(delta)" : "(full)") + "\n");
+            
+            if (!IsDelta || hasPosValue)
+            {
+                sb.Append(new string(' ', ident + 1) + "PosValue\n");
+            }
+            if (!IsDelta || hasRealizedValue)
+            {
+                sb.Append(new string(' ', ident + 1) + "RealizedValue:\n");
+                sb.Append(realizedObjectState != null ? realizedObjectState.DebugPrint(ident + 2) : new string(' ', ident + 2) + "null");
+            }
+            return sb.ToString();
         }
     }
 }

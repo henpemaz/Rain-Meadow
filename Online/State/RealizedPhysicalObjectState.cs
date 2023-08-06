@@ -1,6 +1,7 @@
 ﻿using RainMeadow.Generics;
 using System;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 
 namespace RainMeadow
@@ -98,6 +99,16 @@ namespace RainMeadow
             result.chunkStates = _other.hasPhysicsValue ? _other.chunkStates : chunkStates;
             result.collisionLayer = _other.hasPhysicsValue ? _other.collisionLayer : collisionLayer;
             return result;
+        }
+
+        public override string DebugPrint(int ident)
+        {
+            var sb = new StringBuilder(new string(' ', ident) + GetType().Name + " " + (IsDelta ? "(delta)" : "(full)") + "\n");
+            if (!IsDelta || hasPhysicsValue)
+            {
+                sb.Append(new string(' ', ident + 1) + "PhysicsValue\n");
+            }
+            return sb.ToString();
         }
     }
 

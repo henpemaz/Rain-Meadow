@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace RainMeadow
 {
@@ -39,7 +40,7 @@ namespace RainMeadow
                 while (incomingState.Count > 0 && (owner != incomingState.Peek().from || NetIO.IsNewer(newState.DeltaFromTick, incomingState.Peek().tick)))
                 {
                     var discarded = incomingState.Dequeue();
-                    //RainMeadow.Debug("discarding old event from tick " + discarded.tick);
+                    //RainMeadow.Debug("discarding old state from tick " + discarded.tick);
                 }
                 if (incomingState.Count == 0 || newState.DeltaFromTick != incomingState.Peek().tick)
                 {
@@ -86,6 +87,7 @@ namespace RainMeadow
                 if (!newState.IsDelta) throw new InvalidProgrammerException("other isn't delta");
                 var result = EmptyDelta();
                 result.tick = newState.tick;
+                result.from = newState.from;
                 result.resource = resource;
                 result.entityStates = entityStates.ApplyDelta(newState.entityStates);
                 return result;
@@ -135,6 +137,20 @@ namespace RainMeadow
                         }
                     }
                 }
+            }
+
+            public override string DebugPrint(int ident)
+            {
+                var sb = new StringBuilder(new string(' ', ident) + GetType().Name +" "+ resource.ToString() +" " + (IsDelta ? "(delta)" : "(full)") + "\n");
+                sb.Append(new string(' ', ident + 1) + "Entities:" + (entityStates == null ? "null\n" : "\n"));
+                if(entityStates != null)
+                {
+                    foreach (var item in entityStates.list)
+                    {
+                        sb.Append(item.DebugPrint(ident + 2));
+                    }
+                }
+                return sb.ToString();
             }
         }
 
@@ -193,6 +209,11 @@ namespace RainMeadow
                         subresource.UpdateParticipants(item.participants.list.Select(u => OnlineManager.lobby.PlayerFromId(u)).ToList());
                     }
                 }
+            }
+
+            public override string DebugPrint(int ident)
+            {
+                return base.DebugPrint(ident) + new string(' ', ident + 1) + "LeaseList " + (subleaseState?.list?.Count) + "\n";
             }
         }
 

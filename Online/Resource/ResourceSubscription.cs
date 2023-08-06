@@ -24,19 +24,34 @@ namespace RainMeadow
             if (!resource.isOwner) throw new InvalidOperationException("not owner");
             if (!resource.isActive) return; // resource not ready yet
 
-            if (player.recentlyAckdTicks.Count > 0) while (OutgoingStates.Count > 0 && NetIO.IsNewerOrEqual(player.oldestTickToConsider, OutgoingStates.Peek().tick)) OutgoingStates.Dequeue(); // discard obsolete
-            if (player.recentlyAckdTicks.Count > 0) while (OutgoingStates.Count > 0 && player.recentlyAckdTicks.Contains(OutgoingStates.Peek().tick)) lastAcknoledgedState = OutgoingStates.Dequeue(); // use most recent available
-            if (lastAcknoledgedState != null && !player.recentlyAckdTicks.Contains(lastAcknoledgedState.tick)) lastAcknoledgedState = null; // not available
+            if (player.recentlyAckdTicks.Count > 0) while (OutgoingStates.Count > 0 && NetIO.IsNewer(player.oldestTickToConsider, OutgoingStates.Peek().tick))
+                {
+                    //RainMeadow.Debug("Discarding obsolete:" + OutgoingStates.Peek().tick);
+                    OutgoingStates.Dequeue(); // discard obsolete
+                }
+            if (player.recentlyAckdTicks.Count > 0) while (OutgoingStates.Count > 0 && player.recentlyAckdTicks.Contains(OutgoingStates.Peek().tick))
+                {
+                    //RainMeadow.Debug("Considering candidate:" + OutgoingStates.Peek().tick);
+                    lastAcknoledgedState = OutgoingStates.Dequeue(); // use most recent available
+                }
+            if (lastAcknoledgedState != null && !player.recentlyAckdTicks.Contains(lastAcknoledgedState.tick))
+            {
+                //RainMeadow.Debug("invalid:" + lastAcknoledgedState.tick);
+                lastAcknoledgedState = null; // not available
+            }
 
             var newState = resource.GetState(tick);
             if (lastAcknoledgedState != null)
             {
                 //RainMeadow.Debug($"sending delta for tick {newState.tick} from reference {lastAcknoledgedState.tick} ");
-                player.OutgoingStates.Enqueue(newState.Delta(lastAcknoledgedState));
+                var delta = newState.Delta(lastAcknoledgedState);
+                //RainMeadow.Debug("Sending delta:\n" + delta.DebugPrint(0));
+                player.OutgoingStates.Enqueue(delta);
             }
             else
             {
                 //RainMeadow.Debug($"sending absolute state for tick {newState.tick}");
+                //RainMeadow.Debug("Sending full:\n" + newState.DebugPrint(0));
                 player.OutgoingStates.Enqueue(newState);
             }
             OutgoingStates.Enqueue(newState);

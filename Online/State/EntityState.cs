@@ -37,10 +37,9 @@ namespace RainMeadow
             if(_other == null) throw new InvalidProgrammerException("null");
             if(_other.IsDelta) throw new InvalidProgrammerException("other is delta");
             var delta = EmptyDelta();
-            delta.from = OnlineManager.mePlayer;
-            delta.tick = tick;
-            delta.entityId = entityId;
             delta.IsDelta = true;
+            delta.DeltaFromTick = _other.tick;
+            delta.entityId = entityId;
             delta.IsEmptyDelta = true;
             return delta;
         }
@@ -50,8 +49,8 @@ namespace RainMeadow
             if (_other == null) throw new InvalidProgrammerException("null");
             if (!_other.IsDelta) throw new InvalidProgrammerException("other not delta");
             var result = EmptyDelta();
-            result.from = _other.from;
             result.tick = _other.tick;
+            result.from = _other.from;
             result.entityId = entityId;
             return result;
         }

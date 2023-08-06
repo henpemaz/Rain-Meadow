@@ -24,5 +24,10 @@
         {
             return entityState.EstimatedSize(inDeltaContext) + inResource.SizeOfIdentifier();
         }
+
+        public override string DebugPrint(int ident)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

@@ -104,7 +104,7 @@ namespace RainMeadow
             delta.hasSpearData = stuckInWall != other.stuckInWall
                 || stuckInObject != other.stuckInObject
                 || stuckInChunkIndex != other.stuckInChunkIndex
-                || stuckInAppendage.Equals(other.stuckInAppendage)
+                || !(stuckInAppendage?.Equals(other.stuckInAppendage) ?? other.stuckInAppendage == null)
                 || stuckBodyPart != other.stuckBodyPart
                 || stuckRotation != other.stuckRotation;
             delta.IsEmptyDelta &= !delta.hasSpearData;

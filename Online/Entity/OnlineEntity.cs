@@ -87,7 +87,7 @@ namespace RainMeadow
             }
             joinedResources.Add(inResource);
             initialState.entityId = this.id;
-            ReadState(initialState, inResource);
+            if (!isMine) ReadState(initialState, inResource);
             if (isMine)
             {
                 if (!inResource.isOwner)
@@ -182,7 +182,11 @@ namespace RainMeadow
         public virtual void ReadState(EntityState entityState, OnlineResource inResource)
         {
             if (isMine) { RainMeadow.Error($"Skipping state for entity I own {this}: " + Environment.StackTrace); return; }
-            if (lastStates.TryGetValue(inResource, out var existingState) && NetIO.IsNewer(existingState.tick, entityState.tick)) { RainMeadow.Debug($"Skipping stale state"); return; }
+            if (lastStates.TryGetValue(inResource, out var existingState) && NetIO.IsNewer(existingState.tick, entityState.tick))
+            {
+                RainMeadow.Debug($"Skipping stale state for {this}. Got {entityState.tick} from {entityState.from} had {existingState.tick} from {existingState.from}");
+                return;
+            }
             lastStates[inResource] = entityState;
             if (inResource != currentlyJoinedResource)
             {
@@ -204,14 +208,14 @@ namespace RainMeadow
             if (newState.IsDelta)
             {
                 //RainMeadow.Debug($"received delta state for tick {newState.tick} referencing baseline {newState.DeltaFromTick}");
-                while (incomingState.Count > 0 && NetIO.IsNewer(newState.DeltaFromTick, stateQueue.Peek().tick))
+                while (stateQueue.Count > 0 && NetIO.IsNewer(newState.DeltaFromTick, stateQueue.Peek().tick))
                 {
                     var discarded = stateQueue.Dequeue();
                     //RainMeadow.Debug("discarding old event from tick " + discarded.tick);
                 }
-                if (incomingState.Count == 0 || newState.DeltaFromTick != stateQueue.Peek().tick)
+                if (stateQueue.Count == 0 || newState.DeltaFromTick != stateQueue.Peek().tick)
                 {
-                    RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}");
+                    RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.DeltaFromTick}");
                     return;
                 }
                 newState = stateQueue.Peek().ApplyDelta(newState);

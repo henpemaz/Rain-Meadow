@@ -176,7 +176,7 @@ namespace RainMeadow.Generics
     /// <summary>
     /// Dynamic list, id-elementwise delta
     /// </summary>
-    public abstract class IdentifiablesAddRemoveDeltaList<T, U, W, Imp> : Serializer.ICustomSerializable, IDelta<Imp> where T : class, IDelta<W>, W, IIdentifiable<U> where W: IDelta<W> where U : IEquatable<U> where Imp : IdentifiablesAddRemoveDeltaList<T, U, W, Imp>, new()
+    public abstract class IdentifiablesAddRemoveDeltaList<T, U, W, Imp> : Serializer.ICustomSerializable, IDelta<Imp> where T : class, IDelta<W>, W, IIdentifiable<U> where W : IDelta<W> where U : IEquatable<U> where Imp : IdentifiablesAddRemoveDeltaList<T, U, W, Imp>, new()
     {
         public List<T> list;
         public List<U> removed;
@@ -191,6 +191,38 @@ namespace RainMeadow.Generics
             if (other == null) { return (Imp)this; }
             Imp delta = new();
             delta.list = list.Select(sl => (T)sl.Delta(other.list.FirstOrDefault(osl => osl.ID.Equals(sl.ID)))).Where(sl => sl != null).ToList();
+            delta.removed = other.list.Except(list, new IdentityComparer<T, U>()).Select(e => e.ID).ToList();
+            return (delta.list.Count == 0 && delta.removed.Count == 0) ? null : delta;
+        }
+
+        public virtual Imp ApplyDelta(Imp other)
+        {
+            Imp result = new();
+            result.list = other == null ? list : list.Where(e => other.list.FirstOrDefault(o => e.ID.Equals(o.ID)) != null).Select(e => (T)e.ApplyDelta(other.list.FirstOrDefault(o => e.ID.Equals(o.ID)))).Concat(other.list.Where(o => list.FirstOrDefault(e => e.ID.Equals(o.ID)) == null)).ToList();
+            return result;
+        }
+
+        public abstract void CustomSerialize(Serializer serializer);
+    }
+
+    /// <summary>
+    /// Dynamic list, id-elementwise delta
+    /// </summary>
+    public abstract class IdentifiablesAddRemovePrimaryDeltaList<T, U, W, Imp> : Serializer.ICustomSerializable, IDelta<Imp> where T : class, IPrimaryDelta<W>, W, IIdentifiable<U> where W : IPrimaryDelta<W> where U : IEquatable<U> where Imp : IdentifiablesAddRemovePrimaryDeltaList<T, U, W, Imp>, new()
+    {
+        public List<T> list;
+        public List<U> removed;
+        public IdentifiablesAddRemovePrimaryDeltaList() { }
+        public IdentifiablesAddRemovePrimaryDeltaList(List<T> list)
+        {
+            this.list = list;
+        }
+
+        public virtual Imp Delta(Imp other)
+        {
+            if (other == null) { return (Imp)this; }
+            Imp delta = new();
+            delta.list = list.Select(sl => other.list.FirstOrDefault(osl => osl.ID.Equals(sl.ID)) is T so ? (T)sl.Delta(so) : sl).Where(sl => !sl.IsEmptyDelta).ToList();
             delta.removed = other.list.Except(list, new IdentityComparer<T, U>()).Select(e => e.ID).ToList();
             return (delta.list.Count == 0 && delta.removed.Count == 0) ? null : delta;
         }
@@ -229,7 +261,7 @@ namespace RainMeadow.Generics
         }
     }
 
-    public class DeltaStates<T, U> : IdentifiablesAddRemoveDeltaList<T, U, T, DeltaStates<T, U>> where T : OnlineState, IDelta<T>, IIdentifiable<U> where U : Serializer.ICustomSerializable, IEquatable<U>, new()
+    public class DeltaStates<T, U> : IdentifiablesAddRemovePrimaryDeltaList<T, U, T, DeltaStates<T, U>> where T : OnlineState, IPrimaryDelta<T>, IIdentifiable<U> where U : Serializer.ICustomSerializable, IEquatable<U>, new()
     {
         public DeltaStates() : base() { }
         public DeltaStates(List<T> list) : base(list) { }
