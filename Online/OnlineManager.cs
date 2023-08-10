@@ -20,6 +20,7 @@ namespace RainMeadow
         public static OnlinePlayer mePlayer;
         public static List<OnlinePlayer> players;
         public static Lobby lobby;
+        public static LobbyInfo currentlyJoiningLobby;
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
@@ -32,13 +33,18 @@ namespace RainMeadow
             RainMeadow.Debug("OnlineManager Created");
         }
         
-        private void OnlineManager_OnLobbyJoined(bool ok)
+        private void OnlineManager_OnLobbyJoined(bool ok, string error)
         {
             RainMeadow.Debug(ok);
+            currentlyJoiningLobby = default;
             if (ok)
             {
                 // todo: switch case for different lobby types
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbyMenu);
+            }
+            else
+            {
+                MatchmakingManager.instance.LeaveLobby();
             }
         }
 
