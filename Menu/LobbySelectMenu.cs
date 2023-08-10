@@ -24,6 +24,7 @@ namespace RainMeadow
         private SimplerButton refreshButton;
         private OpComboBox2 modeDropDown;
         private ProperlyAlignedMenuLabel modeDescriptionLabel;
+        private MenuDialogBox popupDialog;
 
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
@@ -110,8 +111,14 @@ namespace RainMeadow
             CreateLobbyCards();
             // waiting for lobby data!
 
+            if (OnlineManager.currentlyJoiningLobby != default)
+            {
+                ShowLoadingDialog("Joining lobby...");
+            }
+
             // Lobby machine go!
             MatchmakingManager.instance.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
+            MatchmakingManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
 #if !LOCAL_P2P
             SteamNetworkingUtils.InitRelayNetworkAccess();
 #endif
@@ -125,6 +132,12 @@ namespace RainMeadow
 
         public override void Update()
         {
+            if (popupDialog is DialogBoxAsyncWait)
+            {
+                popupDialog.Update();
+                return;
+            }
+            
             base.Update();
             int extraItems = Mathf.Max(lobbies.Length - 4, 0);
             scrollTo = Mathf.Clamp(scrollTo, -0.5f, extraItems + 0.5f);
@@ -134,6 +147,8 @@ namespace RainMeadow
 
             modeDropDown.greyedOut = this.currentlySelectedCard != 0;
             visibilityDropDown.greyedOut = this.currentlySelectedCard != 0;
+
+            popupDialog?.Update();
         }
 
         private void BumpPlayButton(EventfulSelectOneButton obj)
@@ -200,11 +215,14 @@ namespace RainMeadow
             if (currentlySelectedCard == 0)
             {
                 RequestLobbyCreate();
+                ShowLoadingDialog("Creating lobby...");
             }
             else
             {
                 RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo);
+                ShowLoadingDialog("Joining lobby...");
             }
+            
         }
 
         private void RefreshLobbyList(SimplerButton obj)
@@ -234,10 +252,20 @@ namespace RainMeadow
                 CreateLobbyCards();
             }
         }
+        
+        private void OnlineManager_OnLobbyJoined(bool ok, string error)
+        {
+            RainMeadow.Debug(ok);
+            if (!ok)
+            {
+                ShowErrorDialog($"Failed to join lobby.<LINE>{error}");
+            }
+        }
 
         public override void ShutDownProcess()
         {
             MatchmakingManager.instance.OnLobbyListReceived -= OnlineManager_OnLobbyListReceived;
+            MatchmakingManager.instance.OnLobbyJoined -= OnlineManager_OnLobbyJoined;
             base.ShutDownProcess();
         }
 
@@ -253,6 +281,40 @@ namespace RainMeadow
         {
             if (series == "lobbyCards") currentlySelectedCard = to;
             return;
+        }
+    
+        public void ShowLoadingDialog(string text)
+        {
+            if (popupDialog != null) HideDialog();
+
+            popupDialog = new DialogBoxAsyncWait(this, mainPage, text, new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
+        }
+
+        public void ShowErrorDialog(string error)
+        {
+            if (popupDialog != null) HideDialog();
+            
+            popupDialog = new DialogBoxNotify(this, mainPage, error, "HIDE_DIALOG", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
+        }
+
+        public void HideDialog()
+        {
+            if (popupDialog == null) return;
+
+            mainPage.RemoveSubObject(popupDialog);
+            popupDialog.RemoveSprites();
+        }
+
+        public override void Singal(MenuObject sender, string message)
+        {
+            base.Singal(sender, message);
+
+            switch (message)
+            {
+                case "HIDE_DIALOG":
+                    HideDialog();
+                    break;
+            }
         }
     }
 }

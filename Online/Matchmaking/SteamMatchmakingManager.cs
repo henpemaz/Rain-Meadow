@@ -1,6 +1,7 @@
 ﻿using Steamworks;
 using System;
 using System.Linq;
+using RWCustom;
 
 namespace RainMeadow
 {
@@ -142,7 +143,7 @@ namespace RainMeadow
                     RainMeadow.Debug("failure, error code is " + param.m_eResult);
                     OnlineManager.lobby = null;
                     lobbyID = default;
-                    OnLobbyJoined?.Invoke(false);
+                    OnLobbyJoined?.Invoke(false, param.m_eResult.ToString());
                 }
             }
             catch (Exception e)
@@ -177,7 +178,7 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("failure");
                     OnlineManager.lobby = null;
-                    OnLobbyJoined?.Invoke(false);
+                    OnLobbyJoined?.Invoke(false, ((EChatRoomEnterResponse)param.m_EChatRoomEnterResponse).ToString());
                 }
             }
             catch (Exception e)
@@ -326,11 +327,22 @@ namespace RainMeadow
         {
             try
             {
-                if (param.m_steamIDLobby == lobbyID)
+                if (param.m_steamIDLobby.m_SteamID == lobbyID.m_SteamID)
                 {
                     RainMeadow.Debug("trying to rejoin same lobby, ignoring, id: " + param.m_steamIDLobby);
                     return;
                 }
+                
+                RainMeadow.Debug("trying to join lobby from steam with id: " + param.m_steamIDLobby);
+
+                if (lobbyID != default)
+                {
+                    LeaveLobby();
+                }
+
+                OnlineManager.currentlyJoiningLobby = new LobbyInfo(param.m_steamIDLobby, "", "");
+                Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+
                 m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(param.m_steamIDLobby));
             }
             catch (Exception e)
