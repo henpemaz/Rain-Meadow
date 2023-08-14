@@ -42,15 +42,18 @@ namespace RainMeadow
         private void RainWorldGame_RawUpdate(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
         {
             orig(self, dt);
-            DebugOverlay.Update(self, dt);
+            if(OnlineManager.lobby != null)
+            {
+                DebugOverlay.Update(self, dt);
+            }
         }
 
         private void RainWorldGame_ShutDownProcess(On.RainWorldGame.orig_ShutDownProcess orig, RainWorldGame self)
         {
             orig(self);
-            DebugOverlay.RemoveOverlay(self);
             if (OnlineManager.lobby != null)
             {
+                DebugOverlay.RemoveOverlay(self);
                 // Don't leak entities from last session
                 OnlineManager.recentEntities.Clear();
 

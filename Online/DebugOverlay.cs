@@ -435,7 +435,7 @@ namespace RainMeadow
 		{
 			resourceNodes.Clear();
 			entityNodes.Clear();
-			overlayContainer.RemoveFromContainer();
+			overlayContainer?.RemoveFromContainer();
 			overlayContainer = null;
 		}
 	}
