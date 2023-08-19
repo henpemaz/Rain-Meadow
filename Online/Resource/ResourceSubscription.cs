@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -55,6 +56,11 @@ namespace RainMeadow
                 player.OutgoingStates.Enqueue(newState);
             }
             OutgoingStates.Enqueue(newState);
+        }
+
+        public void ResetDeltas()
+        {
+            OutgoingStates = new Queue<OnlineResource.ResourceState>(OutgoingStates.Where(x => !x.IsDelta && x.tick > player.latestTickAck));
         }
     }
 }

@@ -45,6 +45,10 @@ namespace RainMeadow
                 if (incomingState.Count == 0 || newState.DeltaFromTick != incomingState.Peek().tick)
                 {
                     RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.DeltaFromTick}");
+                    if(!newState.from.OutgoingEvents.Any(e=>e is DeltaReset dr && dr.onlineResource == this && dr.entity == null))
+                    {
+                        newState.from.QueueEvent(new DeltaReset(this, null));
+                    }
                     return;
                 }
                 newState = incomingState.Peek().ApplyDelta(newState);
@@ -54,12 +58,12 @@ namespace RainMeadow
                 //RainMeadow.Debug($"received absolute state from {newState.from} for tick " + newState.tick);
             }
             incomingState.Enqueue(newState);
-            if (latestState == null || latestState.from != owner || NetIO.IsNewer(newState.tick, latestState.tick))
+            if (newState.from == owner)
             {
                 latestState = newState;
                 newState.ReadTo(this);
+                if(isWaitingForState) { Available(); }
             }
-            if(isWaitingForState) { Available(); }
         }
 
         public abstract class ResourceState : RootDeltaState, IPrimaryDelta<ResourceState>

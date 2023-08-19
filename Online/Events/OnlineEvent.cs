@@ -70,6 +70,7 @@ namespace RainMeadow
             EntityTransferedEvent,
             EntityRequest,
             EntityRelease,
+            DeltaReset,
         }
 
         public static OnlineEvent NewFromType(EventTypeId eventTypeId)
@@ -156,6 +157,9 @@ namespace RainMeadow
                     break;
                 case EventTypeId.EntityRelease:
                     e = new EntityReleaseEvent();
+                    break;
+                case EventTypeId.DeltaReset:
+                    e = new DeltaReset();
                     break;
             }
             if (e is null) throw new InvalidOperationException("invalid event type: " + eventTypeId);

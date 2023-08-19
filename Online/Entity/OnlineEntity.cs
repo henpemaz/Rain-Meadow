@@ -208,7 +208,7 @@ namespace RainMeadow
             if (newState.IsDelta)
             {
                 //RainMeadow.Debug($"received delta state for tick {newState.tick} referencing baseline {newState.DeltaFromTick}");
-                while (stateQueue.Count > 0 && NetIO.IsNewer(newState.DeltaFromTick, stateQueue.Peek().tick))
+                while (stateQueue.Count > 0 && (newState.from != stateQueue.Peek().from || NetIO.IsNewer(newState.DeltaFromTick, stateQueue.Peek().tick)))
                 {
                     var discarded = stateQueue.Dequeue();
                     //RainMeadow.Debug("discarding old event from tick " + discarded.tick);
@@ -216,6 +216,10 @@ namespace RainMeadow
                 if (stateQueue.Count == 0 || newState.DeltaFromTick != stateQueue.Peek().tick)
                 {
                     RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.DeltaFromTick}");
+                    if (!newState.from.OutgoingEvents.Any(e => e is DeltaReset dr && dr.onlineResource == inResource && dr.entity == this.id))
+                    {
+                        newState.from.QueueEvent(new DeltaReset(inResource, this.id));
+                    }
                     return;
                 }
                 newState = stateQueue.Peek().ApplyDelta(newState);
@@ -225,11 +229,13 @@ namespace RainMeadow
                 //RainMeadow.Debug("received absolute state for tick " + newState.tick);
             }
             stateQueue.Enqueue(newState);
-            ReadState(newState, inResource);
+            if(newState.from == owner)
+            {
+                ReadState(newState, inResource);
+            }
         }
 
         protected abstract EntityState MakeState(uint tick, OnlineResource inResource);
-
 
         public Dictionary<OnlineResource, EntityState> lastStates = new();
         public EntityState GetState(uint ts, OnlineResource inResource)

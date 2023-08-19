@@ -12,7 +12,7 @@ namespace RainMeadow
     public partial class RainMeadow : BaseUnityPlugin
     {
 
-        public const string MeadowVersionStr = "0.0.4";
+        public const string MeadowVersionStr = "0.0.41";
         public static RainMeadow instance;
         private bool init;
 

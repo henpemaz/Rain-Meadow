@@ -67,5 +67,10 @@ namespace RainMeadow
             }
             OutgoingStates.Enqueue(newState);
         }
+
+        public void ResetDeltas()
+        {
+            OutgoingStates = new Queue<EntityState>(OutgoingStates.Where(x => !x.IsDelta && x.tick > player.latestTickAck));
+        }
     }
 }
