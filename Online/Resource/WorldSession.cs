@@ -8,7 +8,6 @@ namespace RainMeadow
     {
         public Region region;
         public World world;
-
         public static ConditionalWeakTable<World, WorldSession> map = new();
         public Dictionary<string, RoomSession> roomSessions = new();
 
@@ -75,10 +74,57 @@ namespace RainMeadow
 
         public class WorldState : ResourceWithSubresourcesState
         {
+            public int cycleLength;
+            public int timer;
+            public int preTimer;
             public WorldState() : base() { }
-            public WorldState(OnlineResource resource, uint ts) : base(resource, ts) { }
-            public override ResourceState EmptyDelta() => new WorldState();
+            public WorldState(WorldSession resource, uint ts) : base(resource, ts) 
+            {
+                if (resource.world != null) {
+                    RainCycle rainCycle = resource.world.rainCycle;
+                    cycleLength = rainCycle.cycleLength;
+                    timer = rainCycle.timer;
+                    preTimer = rainCycle.preTimer;
+                }
+            }
+            public override ResourceState ApplyDelta(ResourceState newState)
+            {
+                var newWorldState = (WorldState)newState;
+                var value = (WorldState)base.ApplyDelta(newState);
+                value.cycleLength = newWorldState.cycleLength;
+                value.timer = newWorldState.timer;
+                value.preTimer = newWorldState.preTimer;
+                return value;
+            }
 
+            public override ResourceState Delta(ResourceState lastAcknoledgedState)
+            {
+                var delta = (WorldState)base.Delta(lastAcknoledgedState);
+                delta.cycleLength = cycleLength;
+                delta.timer = timer;
+                delta.preTimer = preTimer;
+                return delta;
+            }
+            public override ResourceState EmptyDelta() => new WorldState();
+            public override void CustomSerialize(Serializer serializer)
+            {
+                base.CustomSerialize(serializer);
+                serializer.Serialize(ref cycleLength);
+                serializer.Serialize(ref timer);
+                serializer.Serialize(ref preTimer);
+            }
+            public override void ReadTo(OnlineResource resource)
+            {
+                if (resource.isActive) {
+                    var ws = (WorldSession)resource;
+                    RainCycle cycle = ws.world.rainCycle;
+                    cycle.preTimer = preTimer;
+                    cycle.timer = timer;
+                    cycle.cycleLength = cycleLength;
+                }
+                  
+                base.ReadTo(resource);
+            }
             public override StateType stateType => StateType.WorldState;
         }
 

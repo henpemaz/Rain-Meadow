@@ -28,8 +28,8 @@ namespace RainMeadow
             IL.Room.Loaded += Room_Loaded;
 
             On.FliesWorldAI.AddFlyToSwarmRoom += FliesWorldAI_AddFlyToSwarmRoom;
-        }
 
+        }
         private void StoryGameSession_ctor(On.StoryGameSession.orig_ctor orig, StoryGameSession self, SlugcatStats.Name saveStateNumber, RainWorldGame game)
         {
             if (OnlineManager.lobby != null)
@@ -313,5 +313,6 @@ namespace RainMeadow
             }
             orig(self, spawnRoom);
         }
+
     }
 }
