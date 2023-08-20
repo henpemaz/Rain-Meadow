@@ -12,7 +12,7 @@ namespace RainMeadow
             //PlacedObject.Type.PuffBall,
             //PlacedObject.Type.TempleGuard,
             PlacedObject.Type.LightFixture,
-            PlacedObject.Type.DangleFruit,
+            //PlacedObject.Type.DangleFruit,
             PlacedObject.Type.CoralStem,
             PlacedObject.Type.CoralStemWithNeurons,
             PlacedObject.Type.CoralNeuron,
