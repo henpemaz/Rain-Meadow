@@ -10,6 +10,13 @@ namespace RainMeadow
         bool hasStalk = false;
         byte bites = 3; //for some reason converting this to a bool does not work
         Vector2 pos; //helps with physics simulation. Stops massive jumps
+        public override long EstimatedSize(bool inDeltaContext) {
+            var size = base.EstimatedSize(inDeltaContext);
+            size += sizeof(bool);
+            size += sizeof(byte);
+            size += sizeof(float)*2;
+            return size;
+        }
         public override RealizedPhysicalObjectState EmptyDelta() => new RealizedDangleFruitState();
 
         public RealizedDangleFruitState() { }
@@ -17,6 +24,8 @@ namespace RainMeadow
         public RealizedDangleFruitState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
             var fruit = (DangleFruit)onlineEntity.apo.realizedObject;
+            Vector2 test = new Vector2(2, 2);
+
             this.pos = fruit.firstChunk.pos;
             this.bites = (byte)fruit.bites;
             if (fruit.stalk.ropeLength > 0f)
