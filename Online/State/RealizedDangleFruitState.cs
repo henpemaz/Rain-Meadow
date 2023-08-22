@@ -8,6 +8,7 @@ namespace RainMeadow
     public class RealizedDangleFruitState : RealizedPhysicalObjectState
     {
         bool hasStalk = false;
+        bool isEaten = false;
         public override RealizedPhysicalObjectState EmptyDelta() => new RealizedDangleFruitState();
 
         public RealizedDangleFruitState() { }
@@ -19,24 +20,25 @@ namespace RainMeadow
             {
                 this.hasStalk = true;
             }
+            if (fruit.BitesLeft < 2) {
+                this.isEaten = true;
+            }
 
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
         {
-            if (!onlineEntity.owner.isMe && onlineEntity.isPending) return; // Don't sync if pending, reduces visibility and effect of lag
-            base.ReadTo(onlineEntity);
             var fruit = (DangleFruit)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
+            if (isEaten)
+            {
+                fruit.Destroy();
+            }
             if (hasStalk && fruit.stalk == null)
             {
-                if (fruit.stalk == null) {
-
-                    fruit.stalk = new DangleFruit.Stalk(fruit, fruit.room, fruit.firstChunk.pos);
-                    fruit.room.AddObject(fruit.stalk);
-
-                }
+                fruit.stalk = new DangleFruit.Stalk(fruit, fruit.room, fruit.firstChunk.pos);
+                fruit.room.AddObject(fruit.stalk);
             }
-
+            base.ReadTo(onlineEntity);
         }
 
         public override StateType stateType => StateType.RealizedDangleFruitState;
@@ -45,11 +47,13 @@ namespace RainMeadow
         {
             base.CustomSerialize(serializer);
             serializer.Serialize(ref hasStalk);
+            serializer.Serialize(ref isEaten);
         }
 
         public override long EstimatedSize(bool inDeltaContext)
         {
             var size = base.EstimatedSize(inDeltaContext);
+            size += 1;
             size += 1;
             return size;
         }
@@ -59,6 +63,7 @@ namespace RainMeadow
             var other = (RealizedDangleFruitState)_other;
             var delta = (RealizedDangleFruitState)base.Delta(_other);
             delta.hasStalk = this.hasStalk;
+            delta.isEaten = this.isEaten;
             return delta;
         }
 
@@ -66,6 +71,7 @@ namespace RainMeadow
             var other = (RealizedDangleFruitState)_other;
             var result = (RealizedDangleFruitState)base.ApplyDelta(_other);
             result.hasStalk = other.hasStalk;
+            result.isEaten = other.isEaten;
             return result;
         }
     }
