@@ -8,7 +8,8 @@ namespace RainMeadow
     public class RealizedDangleFruitState : RealizedPhysicalObjectState
     {
         bool hasStalk = false;
-        bool isEaten = false;
+        byte bites = 3; //for some reason converting this to a bool does not work
+        Vector2 pos; //helps with physics simulation. Stops massive jumps
         public override RealizedPhysicalObjectState EmptyDelta() => new RealizedDangleFruitState();
 
         public RealizedDangleFruitState() { }
@@ -16,12 +17,11 @@ namespace RainMeadow
         public RealizedDangleFruitState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
             var fruit = (DangleFruit)onlineEntity.apo.realizedObject;
-            if (fruit.stalk != null)
+            this.pos = fruit.firstChunk.pos;
+            this.bites = (byte)fruit.bites;
+            if (fruit.stalk.ropeLength > 0f)
             {
                 this.hasStalk = true;
-            }
-            if (fruit.BitesLeft < 2) {
-                this.isEaten = true;
             }
 
         }
@@ -29,13 +29,13 @@ namespace RainMeadow
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             var fruit = (DangleFruit)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
-            if (isEaten)
+            if (bites < 1)
             {
                 fruit.Destroy();
             }
             if (hasStalk && fruit.stalk == null)
             {
-                fruit.stalk = new DangleFruit.Stalk(fruit, fruit.room, fruit.firstChunk.pos);
+                fruit.stalk = new DangleFruit.Stalk(fruit, fruit.room, pos);
                 fruit.room.AddObject(fruit.stalk);
             }
             base.ReadTo(onlineEntity);
@@ -47,15 +47,8 @@ namespace RainMeadow
         {
             base.CustomSerialize(serializer);
             serializer.Serialize(ref hasStalk);
-            serializer.Serialize(ref isEaten);
-        }
-
-        public override long EstimatedSize(bool inDeltaContext)
-        {
-            var size = base.EstimatedSize(inDeltaContext);
-            size += 1;
-            size += 1;
-            return size;
+            serializer.Serialize(ref bites);
+            serializer.Serialize(ref pos);
         }
 
         public override RealizedPhysicalObjectState Delta(RealizedPhysicalObjectState _other)
@@ -63,7 +56,8 @@ namespace RainMeadow
             var other = (RealizedDangleFruitState)_other;
             var delta = (RealizedDangleFruitState)base.Delta(_other);
             delta.hasStalk = this.hasStalk;
-            delta.isEaten = this.isEaten;
+            delta.bites = this.bites;
+
             return delta;
         }
 
@@ -71,7 +65,8 @@ namespace RainMeadow
             var other = (RealizedDangleFruitState)_other;
             var result = (RealizedDangleFruitState)base.ApplyDelta(_other);
             result.hasStalk = other.hasStalk;
-            result.isEaten = other.isEaten;
+            result.bites = other.bites;
+
             return result;
         }
     }

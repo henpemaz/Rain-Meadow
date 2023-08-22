@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace RainMeadow
@@ -29,6 +30,17 @@ namespace RainMeadow
 
             On.OverseerAI.UpdateTempHoverPosition += OverseerAI_UpdateTempHoverPosition; // no teleporting
             On.OverseerAI.Update += OverseerAI_Update; // please look at what i tell you to
+
+            On.UpdatableAndDeletable.Destroy += UpdatableAndDeletable_Destroy;
+        }
+
+        private void UpdatableAndDeletable_Destroy(On.UpdatableAndDeletable.orig_Destroy orig, UpdatableAndDeletable self)
+        {
+            //Adding a delay on mark for garbage collection. Need to give network a chance to see an object has been destroyed
+            Task.Run(async () => {
+                await Task.Delay(250);
+                orig(self);
+            });
         }
 
         // I'm watching your every step
