@@ -16,7 +16,7 @@ namespace RainMeadow
         public bool IsReading { get; set; }
         private bool Aborted { get; set; }
 
-        private MemoryStream stream;
+        public MemoryStream stream;
         private BinaryWriter writer;
         private BinaryReader reader;
         private OnlinePlayer currPlayer;
@@ -70,7 +70,7 @@ namespace RainMeadow
             Aborted = true;
         }
 
-        private void BeginWrite(OnlinePlayer toPlayer)
+        public void BeginWrite(OnlinePlayer toPlayer)
         {
             currPlayer = toPlayer;
             if (IsWriting || IsReading) throw new InvalidOperationException("not done with previous operation");
@@ -87,7 +87,7 @@ namespace RainMeadow
 
         private bool CanFit(OnlineState state)
         {
-            return Position + state.EstimatedSize(false) + margin < capacity;
+            return Position + state.EstimatedSize(this) + margin < capacity;
         }
 
         private void BeginWriteEvents()

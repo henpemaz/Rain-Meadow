@@ -12,10 +12,6 @@ namespace RainMeadow
         private float analogInputX;
         private float analogInputY;
 
-        bool hasAnimationValue;
-        bool hasInputValue;
-
-        public override RealizedPhysicalObjectState EmptyDelta() => new RealizedPlayerState();
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
         {
@@ -70,93 +66,6 @@ namespace RainMeadow
                 pl.bodyMode = new Player.BodyModeIndex(Player.BodyModeIndex.values.GetEntry(bodyModeIndex));
                 pl.standing = standing;
             }
-        }
-
-        public override StateType stateType => StateType.RealizedPlayerState;
-
-        public override void CustomSerialize(Serializer serializer)
-        {
-            base.CustomSerialize(serializer);
-            if (IsDelta) serializer.Serialize(ref hasAnimationValue);
-            if (!IsDelta || hasAnimationValue)
-            {
-                serializer.Serialize(ref animationIndex);
-                serializer.Serialize(ref animationFrame);
-                serializer.Serialize(ref bodyModeIndex);
-                serializer.Serialize(ref standing);
-            }
-            if (IsDelta) serializer.Serialize(ref hasInputValue);
-            if (!IsDelta || hasInputValue)
-            {
-                serializer.Serialize(ref inputs);
-                serializer.SerializeHalf(ref analogInputX);
-                serializer.SerializeHalf(ref analogInputY);
-            }
-        }
-
-        public override long EstimatedSize(bool inDeltaContext)
-        {
-            var val = base.EstimatedSize(inDeltaContext);
-            if (IsDelta) val += 2;
-            if (!IsDelta || hasAnimationValue)
-            {
-                val += 5;
-            }
-            if (!IsDelta || hasInputValue)
-            {
-                val += 6;
-            }
-            return val;
-        }
-
-        public override RealizedPhysicalObjectState Delta(RealizedPhysicalObjectState _other)
-        {
-            var other = (RealizedPlayerState)_other;
-            var delta = (RealizedPlayerState)base.Delta(_other);
-            delta.animationIndex = animationIndex;
-            delta.animationFrame = animationFrame;
-            delta.bodyModeIndex = bodyModeIndex;
-            delta.standing = standing;
-            delta.hasAnimationValue = animationIndex != other.animationIndex || bodyModeIndex != other.bodyModeIndex || standing != other.standing;
-            delta.inputs = inputs;
-            delta.analogInputX = analogInputX;
-            delta.analogInputY = analogInputY;
-            delta.hasInputValue = inputs != other.inputs || analogInputX != other.analogInputX || analogInputY != other.analogInputY;
-            delta.IsEmptyDelta &= !delta.hasAnimationValue && !delta.hasInputValue;
-            return delta;
-        }
-
-        public override RealizedPhysicalObjectState ApplyDelta(RealizedPhysicalObjectState _other)
-        {
-            var other = (RealizedPlayerState)_other;
-            var result = (RealizedPlayerState)base.ApplyDelta(_other);
-            if (other.hasAnimationValue)
-            {
-                result.animationIndex = other.animationIndex;
-                result.animationFrame = other.animationFrame;
-                result.bodyModeIndex = other.bodyModeIndex;
-                result.standing = other.standing;
-            }
-            else
-            {
-                result.animationIndex = animationIndex;
-                result.animationFrame = animationFrame;
-                result.bodyModeIndex = bodyModeIndex;
-                result.standing = standing;
-            }
-            if (other.hasInputValue)
-            {
-                result.inputs = other.inputs;
-                result.analogInputX = other.analogInputX;
-                result.analogInputY = other.analogInputY;
-            }
-            else
-            {
-                result.inputs = inputs;
-                result.analogInputX = analogInputX;
-                result.analogInputY = analogInputY;
-            }
-            return result;
         }
     }
 }

@@ -14,14 +14,9 @@ namespace RainMeadow.Generics
     /// by convention returns object with IsEmptyDelta set on same-value delta (ease for polymorphism)
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public interface IPrimaryDelta<T> : IDelta<T> where T : IPrimaryDelta<T>
+    public interface IPrimaryDelta<T> : IDelta<T>
     {
-        public bool IsDelta { get; set; }
-        public bool IsEmptyDelta { get; set; }
-
-        public T EmptyDelta(); // new() but easier on inheritance
-        public T Delta(T other);
-        public T ApplyDelta(T other);
+        public bool IsEmptyDelta { get; }
     }
 
     /// <summary>
@@ -31,7 +26,7 @@ namespace RainMeadow.Generics
     /// use new() to instantiate new
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public interface IDelta<T> where T : IDelta<T>
+    public interface IDelta<T>
     {
         public T Delta(T other);
         public T ApplyDelta(T other);
@@ -146,7 +141,7 @@ namespace RainMeadow.Generics
     /// <summary>
     /// Static list, no adds/removes supported, id-elementwise delta
     /// </summary>
-    public abstract class IdentifiablesDeltaList<T, U, V, Imp> : Serializer.ICustomSerializable, IDelta<Imp> where T : IDelta<V>, V, IIdentifiable<U> where V: IDelta<V> where U : IEquatable<U> where Imp : IdentifiablesDeltaList<T, U, V, Imp>, new()
+    public abstract class IdentifiablesDeltaList<T, U, V, Imp> : Serializer.ICustomSerializable, IDelta<Imp> where T : IDelta<V>, V, IIdentifiable<U> where U : IEquatable<U> where Imp : IdentifiablesDeltaList<T, U, V, Imp>, new()
     {
         public List<T> list;
         public IdentifiablesDeltaList() { }
@@ -176,7 +171,7 @@ namespace RainMeadow.Generics
     /// <summary>
     /// Dynamic list, id-elementwise delta
     /// </summary>
-    public abstract class IdentifiablesAddRemoveDeltaList<T, U, W, Imp> : Serializer.ICustomSerializable, IDelta<Imp> where T : class, IDelta<W>, W, IIdentifiable<U> where W : IDelta<W> where U : IEquatable<U> where Imp : IdentifiablesAddRemoveDeltaList<T, U, W, Imp>, new()
+    public abstract class IdentifiablesAddRemoveDeltaList<T, U, W, Imp> : Serializer.ICustomSerializable, IDelta<Imp> where T : class, IDelta<W>, W, IIdentifiable<U> where U : IEquatable<U> where Imp : IdentifiablesAddRemoveDeltaList<T, U, W, Imp>, new()
     {
         public List<T> list;
         public List<U> removed;
@@ -208,7 +203,7 @@ namespace RainMeadow.Generics
     /// <summary>
     /// Dynamic list, id-elementwise delta
     /// </summary>
-    public abstract class IdentifiablesAddRemovePrimaryDeltaList<T, U, W, Imp> : Serializer.ICustomSerializable, IDelta<Imp> where T : class, IPrimaryDelta<W>, W, IIdentifiable<U> where W : IPrimaryDelta<W> where U : IEquatable<U> where Imp : IdentifiablesAddRemovePrimaryDeltaList<T, U, W, Imp>, new()
+    public abstract class IdentifiablesAddRemovePrimaryDeltaList<T, U, W, Imp> : Serializer.ICustomSerializable, IDelta<Imp> where T : class, IPrimaryDelta<W>, W, IIdentifiable<U> where U : IEquatable<U> where Imp : IdentifiablesAddRemovePrimaryDeltaList<T, U, W, Imp>, new()
     {
         public List<T> list;
         public List<U> removed;
@@ -237,7 +232,7 @@ namespace RainMeadow.Generics
         public abstract void CustomSerialize(Serializer serializer);
     }
 
-    public class IdentifiablesAddRemoveDeltaListByUSort<T, W> : IdentifiablesAddRemoveDeltaList<T, ushort, W, IdentifiablesAddRemoveDeltaListByUSort<T, W>> where T : class, Serializer.ICustomSerializable, IDelta<W>, W, IIdentifiable<ushort>, new() where W: IDelta<W>, new()
+    public class IdentifiablesAddRemoveDeltaListByUSort<T, W> : IdentifiablesAddRemoveDeltaList<T, ushort, W, IdentifiablesAddRemoveDeltaListByUSort<T, W>> where T : class, Serializer.ICustomSerializable, IDelta<W>, W, IIdentifiable<ushort>, new()
     {
         public IdentifiablesAddRemoveDeltaListByUSort() : base() { }
         public IdentifiablesAddRemoveDeltaListByUSort(List<T> list) : base(list) { }
@@ -249,7 +244,7 @@ namespace RainMeadow.Generics
         }
     }
 
-    public class IdentifiablesAddRemoveDeltaListByCustomSeri<T, U, W> : IdentifiablesAddRemoveDeltaList<T, U, W, IdentifiablesAddRemoveDeltaListByCustomSeri<T, U, W>> where T : class, Serializer.ICustomSerializable, IDelta<W>, W, IIdentifiable<U>, new() where W : IDelta<W>, new() where U : Serializer.ICustomSerializable, IEquatable<U>, new()
+    public class IdentifiablesAddRemoveDeltaListByCustomSeri<T, U, W> : IdentifiablesAddRemoveDeltaList<T, U, W, IdentifiablesAddRemoveDeltaListByCustomSeri<T, U, W>> where T : class, Serializer.ICustomSerializable, IDelta<W>, W, IIdentifiable<U>, new() where U : Serializer.ICustomSerializable, IEquatable<U>, new()
     {
         public IdentifiablesAddRemoveDeltaListByCustomSeri() : base() { }
         public IdentifiablesAddRemoveDeltaListByCustomSeri(List<T> list) : base(list) { }
@@ -261,7 +256,7 @@ namespace RainMeadow.Generics
         }
     }
 
-    public class DeltaStates<T, U> : IdentifiablesAddRemovePrimaryDeltaList<T, U, T, DeltaStates<T, U>> where T : OnlineState, IPrimaryDelta<T>, IIdentifiable<U> where U : Serializer.ICustomSerializable, IEquatable<U>, new()
+    public class DeltaStates<T, W, U> : IdentifiablesAddRemovePrimaryDeltaList<T, U, W, DeltaStates<T, W, U>> where T : OnlineState, IPrimaryDelta<W>, W, IIdentifiable<U> where U : Serializer.ICustomSerializable, IEquatable<U>, new()
     {
         public DeltaStates() : base() { }
         public DeltaStates(List<T> list) : base(list) { }

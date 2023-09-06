@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using static RainMeadow.OnlineResource;
 
 namespace RainMeadow
 {
@@ -32,8 +31,6 @@ namespace RainMeadow
         public void EnterResource(OnlineResource resource)
         {
             RainMeadow.Debug($"{this} entered {resource}");
-            // todo handle joining same-level resource when joining (I guess if remote)
-            // but why do we even keep track of this for non-local?
             if (enteredResources.Count != 0 && resource.super != currentlyEnteredResource)
             {
                 RainMeadow.Error($"Not the right resource {this} - {resource} - {currentlyEnteredResource}");
@@ -45,10 +42,6 @@ namespace RainMeadow
         public void LeaveResource(OnlineResource resource)
         {
             RainMeadow.Debug($"{this} left {resource}");
-            // todo handle leaving same-level resource when joining (I guess if remote)
-            // but why do we even keep track of this for non-local?
-            if (enteredResources.Count == 0) throw new InvalidOperationException("not in a resource");
-
             if (resource != currentlyEnteredResource)
             {
                 RainMeadow.Error($"Not the right resource {this} - {resource} - {currentlyEnteredResource}");
@@ -101,7 +94,7 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             if (!joinedResources.Contains(inResource))
             {
-                RainMeadow.Error($"Entity leaving resource it wasn't in: {this} {inResource}");
+                RainMeadow.Debug($"Entity already left: {this} {inResource}");
                 return;
             }
 
@@ -134,10 +127,6 @@ namespace RainMeadow
                     return OnlinePhysicalObject.FromEvent(newObjectEvent, inResource);
                 }
             }
-            //else if(newEntityEvent is NewGraspEvent newGraspEvent)
-            //{
-
-            //}
             else
             {
                 throw new InvalidOperationException("unknown entity event type");
@@ -172,7 +161,6 @@ namespace RainMeadow
         public virtual void Deactivated(OnlineResource onlineResource)
         {
             RainMeadow.Debug(this);
-            if (onlineResource != this.currentlyJoinedResource) throw new InvalidOperationException("not leaving lowest resource");
             enteredResources.Remove(onlineResource);
             joinedResources.Remove(onlineResource);
             incomingState.Remove(onlineResource);
@@ -181,12 +169,6 @@ namespace RainMeadow
 
         public virtual void ReadState(EntityState entityState, OnlineResource inResource)
         {
-            if (isMine) { RainMeadow.Error($"Skipping state for entity I own {this}: " + Environment.StackTrace); return; }
-            if (lastStates.TryGetValue(inResource, out var existingState) && NetIO.IsNewer(existingState.tick, entityState.tick))
-            {
-                RainMeadow.Debug($"Skipping stale state for {this}. Got {entityState.tick} from {entityState.from} had {existingState.tick} from {existingState.from}. Sender is at tick {entityState.from.tick}");
-                return;
-            }
             lastStates[inResource] = entityState;
             if (inResource != currentlyJoinedResource)
             {
@@ -205,24 +187,24 @@ namespace RainMeadow
             var inResource = entityFeedState.inResource;
             if (!incomingState.ContainsKey(inResource)) incomingState.Add(inResource, new Queue<EntityState>());
             var stateQueue = incomingState[inResource];
-            if (newState.IsDelta)
+            if (newState.isDelta)
             {
-                //RainMeadow.Debug($"received delta state for tick {newState.tick} referencing baseline {newState.DeltaFromTick}");
-                while (stateQueue.Count > 0 && (newState.from != stateQueue.Peek().from || NetIO.IsNewer(newState.DeltaFromTick, stateQueue.Peek().tick)))
+                //RainMeadow.Debug($"received delta state for tick {newState.tick} referencing baseline {newState.Baseline}");
+                while (stateQueue.Count > 0 && (newState.from != stateQueue.Peek().from || NetIO.IsNewer(newState.baseline, stateQueue.Peek().tick)))
                 {
                     var discarded = stateQueue.Dequeue();
                     //RainMeadow.Debug("discarding old event from tick " + discarded.tick);
                 }
-                if (stateQueue.Count == 0 || newState.DeltaFromTick != stateQueue.Peek().tick)
+                if (stateQueue.Count == 0 || newState.baseline != stateQueue.Peek().tick)
                 {
-                    RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.DeltaFromTick}");
+                    RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.baseline}");
                     if (!newState.from.OutgoingEvents.Any(e => e is DeltaReset dr && dr.onlineResource == inResource && dr.entity == this.id))
                     {
                         newState.from.QueueEvent(new DeltaReset(inResource, this.id));
                     }
                     return;
                 }
-                newState = stateQueue.Peek().ApplyDelta(newState);
+                newState = (EntityState)stateQueue.Peek().ApplyDelta(newState);
             }
             else
             {

@@ -8,7 +8,6 @@ namespace RainMeadow
     {
         private Generics.AddRemoveUnsortedCustomSerializables<GraspRef> Grasps;
 
-        public override RealizedPhysicalObjectState EmptyDelta() => new RealizedCreatureState();
         public RealizedCreatureState() { }
         public RealizedCreatureState(OnlineCreature onlineCreature) : base(onlineCreature)
         {
@@ -34,38 +33,6 @@ namespace RainMeadow
                     creature.grasps[i]?.Release();
                 }
             }
-        }
-
-        public override StateType stateType => StateType.RealizedCreatureState;
-
-        public override void CustomSerialize(Serializer serializer)
-        {
-            base.CustomSerialize(serializer);
-            serializer.SerializeNullableDelta(ref Grasps);
-        }
-
-        public override long EstimatedSize(bool inDeltaContext)
-        {
-            return base.EstimatedSize(inDeltaContext) 
-                + (IsDelta ? 1 : 0) 
-                + (Grasps != null ? 1 + Grasps.list.Count * 20 : 0);
-        }
-
-        public override RealizedPhysicalObjectState Delta(RealizedPhysicalObjectState _other)
-        {
-            var other = (RealizedCreatureState)_other;
-            var delta = (RealizedCreatureState)base.Delta(_other);
-            delta.Grasps = Grasps.Delta(other.Grasps);
-            delta.IsEmptyDelta &= Grasps == null;
-            return delta;
-        }
-
-        public override RealizedPhysicalObjectState ApplyDelta(RealizedPhysicalObjectState _other)
-        {
-            var other = (RealizedCreatureState) _other;
-            var result = (RealizedCreatureState)base.ApplyDelta(_other);
-            result.Grasps = Grasps.ApplyDelta(other.Grasps);
-            return result;
         }
     }
 

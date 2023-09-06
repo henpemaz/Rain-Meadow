@@ -77,9 +77,6 @@ namespace RainMeadow
         {
             public WorldState() : base() { }
             public WorldState(OnlineResource resource, uint ts) : base(resource, ts) { }
-            public override ResourceState EmptyDelta() => new WorldState();
-
-            public override StateType stateType => StateType.WorldState;
         }
 
         public override string ToString()

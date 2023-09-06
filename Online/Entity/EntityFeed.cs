@@ -55,7 +55,7 @@ namespace RainMeadow
             if (lastAcknoledgedState != null)
             {
                 //RainMeadow.Debug($"sending delta for tick {newState.tick} from reference {lastAcknoledgedState.tick} ");
-                var delta = newState.Delta(lastAcknoledgedState);
+                var delta = (EntityState)newState.Delta(lastAcknoledgedState);
                 //RainMeadow.Debug("Sending delta:\n" + delta.DebugPrint(0));
                 player.OutgoingStates.Enqueue(new EntityFeedState(delta, resource));
             }
@@ -70,7 +70,7 @@ namespace RainMeadow
 
         public void ResetDeltas()
         {
-            OutgoingStates = new Queue<EntityState>(OutgoingStates.Where(x => !x.IsDelta && x.tick > player.latestTickAck));
+            OutgoingStates = new Queue<EntityState>(OutgoingStates.Where(x => !x.isDelta && x.tick > player.latestTickAck));
         }
     }
 }

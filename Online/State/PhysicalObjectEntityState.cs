@@ -10,10 +10,6 @@ namespace RainMeadow
         public bool realized;
         public RealizedPhysicalObjectState realizedObjectState;
 
-        private bool hasPosValue; // delta
-        private bool hasRealizedValue; // delta
-
-        public override EntityState EmptyDelta() => new PhysicalObjectEntityState();
         public PhysicalObjectEntityState() : base() { }
         public PhysicalObjectEntityState(OnlinePhysicalObject onlineEntity, uint ts, bool realizedState) : base(onlineEntity, ts)
         {
@@ -30,8 +26,6 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject is Weapon) return new RealizedWeaponState(onlineObject);
             return new RealizedPhysicalObjectState(onlineObject);
         }
-
-        public override StateType stateType => StateType.PhysicalObjectEntityState;
 
         public override void ReadTo(OnlineEntity onlineEntity)
         {
@@ -55,69 +49,6 @@ namespace RainMeadow
             {
                 realizedObjectState?.ReadTo(onlineEntity);
             }
-        }
-
-        public override void CustomSerialize(Serializer serializer)
-        {
-            base.CustomSerialize(serializer);
-            if (IsDelta) serializer.Serialize(ref hasPosValue);
-            if (!IsDelta || hasPosValue)
-            {
-                serializer.Serialize(ref pos);
-                serializer.Serialize(ref realized);
-            }
-            if (IsDelta) serializer.Serialize(ref hasRealizedValue);
-            if (!IsDelta || hasRealizedValue)
-            {
-                serializer.SerializeNullablePolyState(ref realizedObjectState);
-            }
-        }
-
-        public override long EstimatedSize(bool inDeltaContext)
-        {
-            var size = base.EstimatedSize(inDeltaContext);
-            if (IsDelta) size += 2;
-            if (!IsDelta || hasPosValue) size += 9;
-            if (!IsDelta || hasRealizedValue) size += realizedObjectState == null ? 1 : 1 + realizedObjectState.EstimatedSize(inDeltaContext);
-            return size;
-        }
-
-        public override EntityState Delta(EntityState _other)
-        {
-            var delta = (PhysicalObjectEntityState)base.Delta(_other);
-            var other = (PhysicalObjectEntityState)_other;
-            delta.pos = pos;
-            delta.realized = realized;
-            delta.hasPosValue = pos != other.pos || realized != other.realized;
-            delta.realizedObjectState = other.realizedObjectState != null ? realizedObjectState?.Delta(other.realizedObjectState) : realizedObjectState;
-            delta.hasRealizedValue = realizedObjectState != other.realizedObjectState && !delta.realizedObjectState.IsEmptyDelta;
-            delta.IsEmptyDelta &= (!delta.hasPosValue && !delta.hasRealizedValue);
-            return delta;
-        }
-        public override EntityState ApplyDelta(EntityState _other)
-        {
-            var result = (PhysicalObjectEntityState)base.ApplyDelta(_other);
-            var other = (PhysicalObjectEntityState)_other;
-            result.pos = other.hasPosValue ? other.pos : pos;
-            result.realized = other.hasPosValue ? other.realized : realized;
-            result.realizedObjectState = other.hasRealizedValue ? realizedObjectState?.ApplyDelta(other.realizedObjectState) ?? other.realizedObjectState : realizedObjectState;
-            return result;
-        }
-
-        public override string DebugPrint(int ident)
-        {
-            var sb = new StringBuilder(new string(' ', ident) + GetType().Name + " " + entityId + " " + (IsDelta ? "(delta)" : "(full)") + "\n");
-            
-            if (!IsDelta || hasPosValue)
-            {
-                sb.Append(new string(' ', ident + 1) + "PosValue\n");
-            }
-            if (!IsDelta || hasRealizedValue)
-            {
-                sb.Append(new string(' ', ident + 1) + "RealizedValue:\n");
-                sb.Append(realizedObjectState != null ? realizedObjectState.DebugPrint(ident + 2) : new string(' ', ident + 2) + "null");
-            }
-            return sb.ToString();
         }
     }
 }
