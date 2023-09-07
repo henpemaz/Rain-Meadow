@@ -6,8 +6,11 @@ namespace RainMeadow
 {
     public class PhysicalObjectEntityState : EntityState
     {
+        [OnlineField]
         public WorldCoordinate pos;
+        [OnlineField]
         public bool realized;
+        [OnlineField(group = "realized", nullable = true, polymorphic = true)]
         public RealizedPhysicalObjectState realizedObjectState;
 
         public PhysicalObjectEntityState() : base() { }

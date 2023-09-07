@@ -5,11 +5,17 @@ namespace RainMeadow
 {
     public class RealizedSpearState : RealizedWeaponState
     {
+        [OnlineField(group = "spear", nullable = true)]
         private Vector2? stuckInWall;
+        [OnlineField(group = "spear", nullable = true)]
         private OnlineEntity.EntityId stuckInObject;
+        [OnlineField(group = "spear", nullable = true)]
         private AppendageRef stuckInAppendage;
+        [OnlineField(group = "spear")]
         private byte stuckInChunkIndex;
+        [OnlineField(group = "spear")]
         private sbyte stuckBodyPart;
+        [OnlineField(group = "spear")]
         private float stuckRotation;
 
         public RealizedSpearState() { }

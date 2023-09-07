@@ -2,6 +2,7 @@ namespace RainMeadow
 {
     public class AbstractCreatureState : PhysicalObjectEntityState
     {
+        [OnlineField(polymorphic = true)]
         private CreatureStateState creatureStateState;
         public AbstractCreatureState() : base() { }
         public AbstractCreatureState(OnlineCreature onlineEntity, uint ts, bool realizedState) : base(onlineEntity, ts, realizedState)

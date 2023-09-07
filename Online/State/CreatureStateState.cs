@@ -3,10 +3,13 @@ using System.Collections.Generic;
 
 namespace RainMeadow
 {
+    [DeltaSupport(level = StateHandler.DeltaSupport.FollowsContainer)]
     public class CreatureStateState : OnlineState
     {
         // main part of AbstractCreatureState
+        [OnlineField]
         public bool alive;
+        [OnlineField]
         public byte meatLeft;
 
         public CreatureStateState() { }

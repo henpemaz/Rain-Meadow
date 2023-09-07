@@ -5,8 +5,6 @@ using System.Linq;
 namespace RainMeadow.Generics
 {
     // Welcome to generics hell
-    // I think I want to go back to using a type parameter for concrete type with new() instead of newinstance pattern, 
-    //      because then we get the right types out of delta/addelta without silly casts
     // how do we manage returning null on empty delta, vs supporting override of delta?
 
     /// <summary>

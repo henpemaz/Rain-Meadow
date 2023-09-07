@@ -4,12 +4,19 @@ namespace RainMeadow
 {
     public class RealizedPlayerState : RealizedCreatureState
     {
+        [OnlineField]
         private byte animationIndex;
+        [OnlineField]
         private short animationFrame;
+        [OnlineField]
         private byte bodyModeIndex;
+        [OnlineField]
         private bool standing;
+        [OnlineField(group = "inputs")]
         private ushort inputs;
+        [OnlineField(group = "inputs")]
         private float analogInputX;
+        [OnlineField(group = "inputs")]
         private float analogInputY;
 
         public RealizedPlayerState() { }

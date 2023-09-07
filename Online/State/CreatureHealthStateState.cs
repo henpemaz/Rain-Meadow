@@ -2,6 +2,7 @@ namespace RainMeadow
 {
     public class CreatureHealthStateState : CreatureStateState
     {
+        [OnlineField]
         public float health;
 
         public CreatureHealthStateState() { }

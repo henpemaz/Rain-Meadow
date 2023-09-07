@@ -25,18 +25,22 @@ namespace RainMeadow
             On.WorldLoader.FindingCreaturesThread += WorldLoader_FindingCreaturesThread;
             On.WorldLoader.CreatingAbstractRoomsThread += WorldLoader_CreatingAbstractRoomsThread;
 
-            Logger.LogInfo("A");
-            OnlineState.StateType.CreatureStateState = new OnlineState.StateType("asdf", true);
-
             try
             {
-                OnlineState.RegisterState(OnlineState.StateType.CreatureStateState, typeof(CreatureStateState), OnlineState.DeltaSupport.FollowsContainer);
+                TestSeri();
             }
             catch (Exception e)
             {
                 Logger.LogError(e);
                 throw;
             }
+        }
+
+        private void TestSeri()
+        {
+            Logger.LogInfo("A");
+
+            var unk = OnlineState.StateType.Unknown;
 
             Logger.LogInfo("B");
             try

@@ -6,6 +6,7 @@ namespace RainMeadow
 {
     public class RealizedCreatureState : RealizedPhysicalObjectState
     {
+        [OnlineField]
         private Generics.AddRemoveUnsortedCustomSerializables<GraspRef> Grasps;
 
         public RealizedCreatureState() { }

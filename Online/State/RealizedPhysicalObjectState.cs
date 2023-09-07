@@ -7,9 +7,12 @@ using UnityEngine;
 namespace RainMeadow
 {
     // main-ish component of PhysicalObjectEntityState
+    [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class RealizedPhysicalObjectState : OnlineState
     {
+        [OnlineField(group = "realized")]
         private ChunkState[] chunkStates;
+        [OnlineField(group = "realized")]
         private byte collisionLayer;
 
         public RealizedPhysicalObjectState() { }

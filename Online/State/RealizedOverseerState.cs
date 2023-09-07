@@ -13,12 +13,19 @@ namespace RainMeadow
     //          this leads to an overseer being fake killed on remote.
     public class RealizedOverseerState : RealizedCreatureState
     {
+        [OnlineField]
         private Vector2 rootPos;
+        [OnlineField]
         private IntVector2 rootTile;
+        [OnlineField]
         private IntVector2 hoverTile;
+        [OnlineField]
         private Vector2 lookAt;
+        [OnlineField]
         private byte mode;
+        [OnlineField]
         private float extended;
+        [OnlineField(nullable = true)]
         private OnlineEntity.EntityId? conversationPartner;
 
         public RealizedOverseerState() { }

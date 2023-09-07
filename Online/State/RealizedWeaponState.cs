@@ -7,11 +7,17 @@ namespace RainMeadow
     public class RealizedWeaponState : RealizedPhysicalObjectState
     {
         // is all this data really necessary?
+        [OnlineField]
         protected byte mode;
+        [OnlineField]
         private Vector2 tailPos;
+        [OnlineField(nullable = true)]
         private Vector2? setRotation;
+        [OnlineField]
         private Vector2 rotation;
+        [OnlineField]
         private Vector2 lastRotation;
+        [OnlineField]
         private float rotationSpeed;
         
         public RealizedWeaponState() { }

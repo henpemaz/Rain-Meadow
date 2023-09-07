@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 
 namespace RainMeadow
@@ -68,7 +70,9 @@ namespace RainMeadow
 
         public abstract class ResourceState : RootDeltaState
         {
+            [OnlineResourceRefField]
             public OnlineResource resource;
+            [OnlineField]
             public DeltaStates<EntityState, OnlineState, OnlineEntity.EntityId> entityStates;
 
             protected ResourceState() : base() { }
@@ -120,6 +124,7 @@ namespace RainMeadow
 
         public abstract class ResourceWithSubresourcesState : ResourceState
         {
+            [OnlineField]
             public LeaseList subleaseState;
 
             protected ResourceWithSubresourcesState() { }

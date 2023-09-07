@@ -2,7 +2,9 @@
 {
     public class EntityFeedState : OnlineState
     {
+        [OnlineField(polymorphic = true)]
         public EntityState entityState;
+        [OnlineResourceRefField]
         public OnlineResource inResource;
 
         public EntityFeedState() { }

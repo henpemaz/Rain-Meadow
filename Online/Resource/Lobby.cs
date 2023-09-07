@@ -82,8 +82,11 @@ namespace RainMeadow
 
         public class LobbyState : ResourceWithSubresourcesState
         {
+            [OnlineField]
             public ushort nextId;
+            [OnlineField]
             public Generics.AddRemoveSortedPlayerIDs players;
+            [OnlineField]
             public Generics.AddRemoveSortedUshorts inLobbyIds;
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
