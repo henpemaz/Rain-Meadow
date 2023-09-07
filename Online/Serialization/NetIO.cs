@@ -16,7 +16,6 @@ namespace RainMeadow
 
         public static void SendSessionData(OnlinePlayer toPlayer)
         {
-
             try
             {
                 OnlineManager.serializer.WriteData(toPlayer);

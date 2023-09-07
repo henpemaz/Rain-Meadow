@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 
 namespace RainMeadow
@@ -34,24 +36,24 @@ namespace RainMeadow
         public void ReadState(ResourceState newState)
         {
             // this has a flaw when there's multiple players talking to me.
-            if (newState.IsDelta)
+            if (newState.isDelta)
             {
-                //RainMeadow.Debug($"received delta state from {newState.from} for tick {newState.tick} referencing baseline {newState.DeltaFromTick}");
-                while (incomingState.Count > 0 && (owner != incomingState.Peek().from || NetIO.IsNewer(newState.DeltaFromTick, incomingState.Peek().tick)))
+                //RainMeadow.Debug($"received delta state from {newState.from} for tick {newState.tick} referencing baseline {newState.Baseline}");
+                while (incomingState.Count > 0 && (owner != incomingState.Peek().from || NetIO.IsNewer(newState.baseline, incomingState.Peek().tick)))
                 {
                     var discarded = incomingState.Dequeue();
                     //RainMeadow.Debug("discarding old state from tick " + discarded.tick);
                 }
-                if (incomingState.Count == 0 || newState.DeltaFromTick != incomingState.Peek().tick)
+                if (incomingState.Count == 0 || newState.baseline != incomingState.Peek().tick)
                 {
-                    RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.DeltaFromTick}");
+                    RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.baseline}");
                     if(!newState.from.OutgoingEvents.Any(e=>e is DeltaReset dr && dr.onlineResource == this && dr.entity == null))
                     {
                         newState.from.QueueEvent(new DeltaReset(this, null));
                     }
                     return;
                 }
-                newState = incomingState.Peek().ApplyDelta(newState);
+                newState = (ResourceState)incomingState.Peek().ApplyDelta(newState);
             }
             else
             {
@@ -66,10 +68,12 @@ namespace RainMeadow
             }
         }
 
-        public abstract class ResourceState : RootDeltaState, IPrimaryDelta<ResourceState>
+        public abstract class ResourceState : RootDeltaState
         {
+            [OnlineResourceRefField]
             public OnlineResource resource;
-            public DeltaStates<EntityState, OnlineEntity.EntityId> entityStates;
+            [OnlineField]
+            public DeltaStates<EntityState, OnlineState, OnlineEntity.EntityId> entityStates;
 
             protected ResourceState() : base() { }
             protected ResourceState(OnlineResource resource, uint ts) : base(ts)
@@ -77,45 +81,6 @@ namespace RainMeadow
                 this.resource = resource;
                 entityStates = new(resource.entities.Select(e => e.Key.GetState(ts, resource)).ToList());
             }
-            public abstract ResourceState EmptyDelta();
-
-            public override long EstimatedSize(bool inDeltaContext)
-            {
-                return base.EstimatedSize(inDeltaContext) + resource.SizeOfIdentifier() + (entityStates != null ? (2 + entityStates.list.Sum(e => e.EstimatedSize(inDeltaContext))) : 1);
-            }
-
-            public bool IsEmptyDelta { get ; set; }
-
-            public virtual ResourceState ApplyDelta(ResourceState newState)
-            {
-                if (!newState.IsDelta) throw new InvalidProgrammerException("other isn't delta");
-                var result = EmptyDelta();
-                result.tick = newState.tick;
-                result.from = newState.from;
-                result.resource = resource;
-                result.entityStates = entityStates.ApplyDelta(newState.entityStates);
-                result.entityStates.list.ForEach(s => s.tick = newState.tick); // Not ideal but needed for now
-                return result;
-            }
-
-            public virtual ResourceState Delta(ResourceState lastAcknoledgedState)
-            {
-                if (lastAcknoledgedState == null) throw new InvalidProgrammerException("null");
-                var delta = EmptyDelta();
-                delta.IsDelta = true;
-                delta.DeltaFromTick = lastAcknoledgedState.tick;
-                delta.resource = resource;
-                delta.entityStates = entityStates.Delta(lastAcknoledgedState.entityStates);
-                return delta;
-            }
-
-            public override void CustomSerialize(Serializer serializer)
-            {
-                base.CustomSerialize(serializer);
-                serializer.SerializeResourceByReference(ref resource);
-                serializer.SerializeNullable(ref entityStates);
-            }
-
             public virtual void ReadTo(OnlineResource resource)
             {
                 if (resource.isActive)
@@ -143,20 +108,6 @@ namespace RainMeadow
                     }
                 }
             }
-
-            public override string DebugPrint(int ident)
-            {
-                var sb = new StringBuilder(new string(' ', ident) + GetType().Name +" "+ resource.ToString() +" " + (IsDelta ? "(delta)" : "(full)") + "\n");
-                sb.Append(new string(' ', ident + 1) + "Entities:" + (entityStates == null ? "null\n" : "\n"));
-                if(entityStates != null)
-                {
-                    foreach (var item in entityStates.list)
-                    {
-                        sb.Append(item.DebugPrint(ident + 2));
-                    }
-                }
-                return sb.ToString();
-            }
         }
 
         public class LeaseList : IdentifiablesDeltaList<SubleaseState, ushort, SubleaseState, LeaseList>
@@ -173,32 +124,13 @@ namespace RainMeadow
 
         public abstract class ResourceWithSubresourcesState : ResourceState
         {
+            [OnlineField]
             public LeaseList subleaseState;
 
             protected ResourceWithSubresourcesState() { }
             protected ResourceWithSubresourcesState(OnlineResource resource, uint ts) : base(resource, ts)
             {
                 subleaseState = new LeaseList(resource.subresources.Select(r => new SubleaseState(r)).ToList());
-            }
-
-            public override ResourceState ApplyDelta(ResourceState newState)
-            {
-                var result = (ResourceWithSubresourcesState)base.ApplyDelta(newState);
-                result.subleaseState = subleaseState.ApplyDelta(((ResourceWithSubresourcesState)newState).subleaseState);
-                return result;
-            }
-
-            public override ResourceState Delta(ResourceState lastAcknoledgedState)
-            {
-                var delta = (ResourceWithSubresourcesState)base.Delta(lastAcknoledgedState);
-                delta.subleaseState = subleaseState.Delta((lastAcknoledgedState as ResourceWithSubresourcesState).subleaseState);
-                return delta;
-            }
-
-            public override void CustomSerialize(Serializer serializer)
-            {
-                base.CustomSerialize(serializer);
-                serializer.SerializeNullable(ref subleaseState);
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -215,13 +147,9 @@ namespace RainMeadow
                     }
                 }
             }
-
-            public override string DebugPrint(int ident)
-            {
-                return base.DebugPrint(ident) + new string(' ', ident + 1) + "LeaseList " + (subleaseState?.list?.Count) + "\n";
-            }
         }
 
+        // TODO improve this kind of data object
         public class SubleaseState : Serializer.ICustomSerializable, Generics.IDelta<SubleaseState>, Generics.IIdentifiable<ushort>
         {
             public ushort resourceId;

@@ -11,8 +11,7 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-
-        public const string MeadowVersionStr = "0.0.41";
+        public const string MeadowVersionStr = "0.0.42";
         public static RainMeadow instance;
         private bool init;
 
@@ -25,6 +24,62 @@ namespace RainMeadow
             On.RoomPreparer.UpdateThread += RoomPreparer_UpdateThread;
             On.WorldLoader.FindingCreaturesThread += WorldLoader_FindingCreaturesThread;
             On.WorldLoader.CreatingAbstractRoomsThread += WorldLoader_CreatingAbstractRoomsThread;
+
+            try
+            {
+                TestSeri();
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+                throw;
+            }
+        }
+
+        private void TestSeri()
+        {
+            Logger.LogInfo("A");
+
+            var unk = OnlineState.StateType.Unknown;
+
+            Logger.LogInfo("B");
+            try
+            {
+                var seri = new Serializer(1000);
+                var state = new CreatureStateState();
+                state.alive = true;
+                state.meatLeft = 6;
+                Logger.LogInfo("C");
+
+                seri.BeginWrite(null);
+                state.CustomSerialize(seri);
+                Logger.LogInfo(seri.stream.ToString());
+                Logger.LogInfo(seri.Position.ToString());
+
+                Logger.LogInfo("D");
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+                throw;
+            }
+
+            try
+            {
+                var state = new CreatureStateState();
+                state.alive = true;
+                state.meatLeft = 6;
+                var other = (CreatureStateState)state.DeepCopy();
+                Logger.LogInfo(state.meatLeft);
+                Logger.LogInfo(other.meatLeft);
+
+                Logger.LogInfo("E");
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+                throw;
+            }
         }
 
         private void WorldLoader_CreatingAbstractRoomsThread(On.WorldLoader.orig_CreatingAbstractRoomsThread orig, WorldLoader self)

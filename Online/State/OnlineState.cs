@@ -1,92 +1,429 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using static RainMeadow.Lobby;
+using static RainMeadow.RoomSession;
+using static RainMeadow.WorldSession;
 
 namespace RainMeadow
 {
-    public abstract class OnlineState
+    public abstract class OnlineState : Generics.IDelta<OnlineState>
     {
-        protected OnlineState() { }
+        public StateHandler handler;
+        public bool[] valueFlags;
 
-        public abstract StateType stateType { get; } // serialized externally
+        public bool isDelta;
+        public bool IsEmptyDelta => !this.valueFlags.Any();
 
-        public enum StateType : byte
+        protected OnlineState()
         {
-            Unknown = 0,
-            LobbyState,
-            WorldState,
-            RoomState,
-            EntityInResourceState,
-            PhysicalObjectEntityState,
-            AbstractCreatureState,
-            RealizedPhysicalObjectState,
-            RealizedCreatureState,
-            RealizedPlayerState,
-            RealizedOverseerState,
-            RealizedWeaponState,
-            RealizedSpearState,
-            CreatureStateState,
-            CreatureHealthState,
+            handler = handlersByType[GetType()];
+            valueFlags = new bool[handler.ngroups];
         }
 
-        public static OnlineState NewFromType(StateType stateType)
+        // todo figure out how to handle indexes for modded stuff (so doesn't depend on load-order and so forth)
+        public class StateType : ExtEnum<StateType>
         {
-            OnlineState s = null;
-            switch (stateType)
+            private StateType(string value, bool register) : base(value, register) { }
+            public StateType(string value) : base(value, false) { }
+            public StateType(string value, Type type) : base(value, true) { OnlineState.RegisterState(this, type); }
+
+            public static readonly StateType Unknown = new("Unknown", true); // sending zeroes over should error out
+            public static readonly StateType LobbyState = new("LobbyState", typeof(LobbyState));
+            public static readonly StateType WorldState = new("WorldState", typeof(WorldState));
+            public static readonly StateType RoomState = new("RoomState", typeof(RoomState));
+            public static readonly StateType EntityFeedState = new("EntityFeedState", typeof(EntityFeedState));
+            public static readonly StateType PhysicalObjectEntityState = new("PhysicalObjectEntityState", typeof(PhysicalObjectEntityState));
+            public static readonly StateType AbstractCreatureState = new("AbstractCreatureState", typeof(AbstractCreatureState));
+            public static readonly StateType RealizedPhysicalObjectState = new("RealizedPhysicalObjectState", typeof(RealizedPhysicalObjectState));
+            public static readonly StateType RealizedCreatureState = new("RealizedCreatureState", typeof(RealizedCreatureState));
+            public static readonly StateType RealizedPlayerState = new("RealizedPlayerState", typeof(RealizedPlayerState));
+            public static readonly StateType RealizedOverseerState = new("RealizedOverseerState", typeof(RealizedOverseerState));
+            public static readonly StateType RealizedWeaponState = new("RealizedWeaponState", typeof(RealizedWeaponState));
+            public static readonly StateType RealizedSpearState = new("RealizedSpearState", typeof(RealizedSpearState));
+            public static readonly StateType CreatureStateState = new("CreatureStateState", typeof(CreatureStateState));
+            public static readonly StateType CreatureHealthStateState = new("CreatureHealthStateState", typeof(CreatureHealthStateState));
+        }
+
+        public static OnlineState ParsePolymorph(Serializer serializer)
+        {
+            return handlersByEnum[new StateType(StateType.values.GetEntry(serializer.reader.ReadByte()))].factory();
+        }
+
+        public void WritePolymorph(Serializer serializer)
+        {
+            serializer.writer.Write((byte)handler.stateType.index);
+        }
+
+        private static Dictionary<StateType, StateHandler> handlersByEnum = new Dictionary<StateType, StateHandler>();
+        private static Dictionary<Type, StateHandler> handlersByType = new Dictionary<Type, StateHandler>();
+        
+        public static void RegisterState(StateType stateType, Type type)
+        {
+            if (!handlersByEnum.ContainsKey(stateType)) { handlersByEnum[stateType] = handlersByType[type] = new StateHandler(stateType, type); }
+        }
+
+        public void CustomSerialize(Serializer serializer)
+        {
+            try
             {
-                case StateType.Unknown:
-                    break;
-                case StateType.LobbyState:
-                    s = new Lobby.LobbyState();
-                    break;
-                case StateType.WorldState:
-                    s = new WorldSession.WorldState();
-                    break;
-                case StateType.RoomState:
-                    s = new RoomSession.RoomState();
-                    break;
-                case StateType.EntityInResourceState:
-                    s = new EntityFeedState();
-                    break;
-                case StateType.PhysicalObjectEntityState:
-                    s = new PhysicalObjectEntityState();
-                    break;
-                case StateType.AbstractCreatureState:
-                    s = new AbstractCreatureState();
-                    break;
-                case StateType.RealizedPhysicalObjectState:
-                    s = new RealizedPhysicalObjectState();
-                    break;
-                case StateType.RealizedCreatureState:
-                    s = new RealizedCreatureState();
-                    break;
-                case StateType.RealizedPlayerState:
-                    s = new RealizedPlayerState();
-                    break;
-                case StateType.RealizedOverseerState:
-                    s = new RealizedOverseerState();
-                    break;
-                case StateType.RealizedWeaponState:
-                    s = new RealizedWeaponState();
-                    break;
-                case StateType.RealizedSpearState:
-                    s = new RealizedSpearState();
-                    break;
-                case StateType.CreatureStateState:
-                    s = new CreatureStateState();
-                    break;
-                case StateType.CreatureHealthState:
-                    s = new CreatureHealthStateState();
-                    break;
-                default:
-                    break;
+                handler.serialize(this, serializer);
             }
-            if (s is null) throw new InvalidOperationException("invalid state type");
-            return s;
+            catch (Exception e)
+            {
+                RainMeadow.Error($"Error serializing {this.GetType()}");
+                RainMeadow.Error(e);
+                throw;
+            }
         }
 
-        public abstract void CustomSerialize(Serializer serializer);
+        public OnlineState DeepCopy()
+        {
+            return handler.deepcopy(this);
+        }
 
-        public abstract long EstimatedSize(bool inDeltaContext);
+        static Serializer mock = new Serializer(4096);
+        public long EstimatedSize(Serializer serializer)
+        {
+            mock.BeginWrite(OnlineManager.mePlayer);
+            CustomSerialize(mock);
+            mock.EndWrite();
+            return mock.Position;
+        }
 
-        public abstract string DebugPrint(int ident);
+        public OnlineState Delta(OnlineState baseline)
+        {
+            return handler.delta(this, baseline);
+        }
+
+        public OnlineState ApplyDelta(OnlineState incoming)
+        {
+            return handler.applydelta(this, incoming);
+        }
+
+        public class OnlineFieldAttribute : Attribute
+        {
+            public string group;
+            public bool nullable;
+            public bool polymorphic;
+
+            public OnlineFieldAttribute(string group = "default", bool nullable = false, bool polymorphic = false)
+            {
+                this.group = group;
+                this.nullable = nullable;
+                this.polymorphic = polymorphic;
+            }
+
+            public virtual Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
+            {
+                if (typeof(OnlineState).IsAssignableFrom(f.FieldType))
+                {
+                    return Expression.Call(serializerRef, typeof(Serializer).GetMethods().Single(m =>
+                    m.Name == this switch
+                    {
+                        { nullable: false, polymorphic: false } => "SerializeStaticState",
+                        { nullable: false, polymorphic: true } => "SerializePolyState",
+                        { nullable: true, polymorphic: false } => "SerializeNullableStaticState",
+                        { nullable: true, polymorphic: true } => "SerializeNullablePolyState"
+                    } && m.IsGenericMethod).MakeGenericMethod(new Type[] { f.FieldType }), fieldRef);
+                }
+                if (typeof(OnlineState[]).IsAssignableFrom(f.FieldType) || (f.FieldType.IsGenericType && f.FieldType.GetGenericTypeDefinition() == typeof(List<>) && typeof(OnlineState).IsAssignableFrom(f.FieldType.GetGenericArguments()[0])))
+                {
+                    return Expression.Call(serializerRef, typeof(Serializer).GetMethods().Single(m =>
+                    m.Name == this switch
+                    {
+                        { nullable: false, polymorphic: false } => "SerializeStaticStates",
+                        { nullable: false, polymorphic: true } => "SerializePolyStates",
+                        { nullable: true, polymorphic: false } => "SerializeNullableStaticStates",
+                        { nullable: true, polymorphic: true } => "SerializeNullablePolyStates"
+                    } && m.IsGenericMethod && (m.GetParameters()[0].ParameterType.GetElementType().IsArray == f.FieldType.IsArray)).MakeGenericMethod(new Type[] { f.FieldType.IsArray ? f.FieldType.GetElementType() : f.FieldType.GetGenericArguments()[0] }), fieldRef);
+                }
+                
+                if (typeof(Serializer.ICustomSerializable).IsAssignableFrom(f.FieldType))
+                {
+                    return Expression.Call(serializerRef, typeof(Serializer).GetMethods().Single(m =>
+                    m.Name == this switch
+                    {
+                        { nullable: false } => "Serialize",
+                        { nullable: true } => "SerializeNullable"
+                    } && m.IsGenericMethod && m.GetGenericMethodDefinition().GetGenericArguments().Any(ga => ga.GetGenericParameterConstraints().Any(t => t == typeof(Serializer.ICustomSerializable)))
+                    && m.GetParameters().Any(p => p.ParameterType.IsByRef && (!p.ParameterType.GetElementType().IsGenericType || p.ParameterType.GetElementType().GetGenericTypeDefinition() != typeof(List<>)) && !p.ParameterType.GetElementType().IsArray)
+                    ).MakeGenericMethod(new Type[] { f.FieldType }), fieldRef);
+                }
+                if (typeof(Serializer.ICustomSerializable[]).IsAssignableFrom(f.FieldType) || (f.FieldType.IsGenericType && f.FieldType.GetGenericTypeDefinition() == typeof(List<>) && typeof(Serializer.ICustomSerializable).IsAssignableFrom(f.FieldType.GetGenericArguments()[0])))
+                {
+                    return Expression.Call(serializerRef, typeof(Serializer).GetMethods().Single(m =>
+                    m.Name == this switch
+                    {
+                        { nullable: false } => "Serialize",
+                        { nullable: true } => "SerializeNullable"
+                    } && m.IsGenericMethod && m.GetGenericMethodDefinition().GetGenericArguments().Any(ga => ga.GetGenericParameterConstraints().Any(t => t == typeof(Serializer.ICustomSerializable)))
+                    && m.GetParameters().Any(p => p.ParameterType.IsByRef && (p.ParameterType.GetElementType().IsGenericType && p.ParameterType.GetElementType().GetGenericTypeDefinition() == typeof(List<>)) != f.FieldType.IsArray && p.ParameterType.GetElementType().IsArray == f.FieldType.IsArray)
+                    ).MakeGenericMethod(new Type[] { f.FieldType.IsArray ? f.FieldType.GetElementType() : f.FieldType.GetGenericArguments()[0] }), fieldRef);
+                }
+                if (!f.FieldType.IsValueType) { RainMeadow.Error($"{f.FieldType} not handled by SerializerCallMethod"); }
+                return Expression.Call(serializerRef, typeof(Serializer).GetMethod(nullable ? "SerializeNullable" : "Serialize", new[] { f.FieldType.MakeByRefType() }), fieldRef);
+            }
+
+            public virtual Expression ComparisonMethod(FieldInfo f, MemberExpression currentField, MemberExpression baselineField)
+            {
+                return Expression.Equal(currentField, baselineField);
+            }
+
+            public virtual Expression CopyExpression(FieldInfo f, ParameterExpression output, MethodInfo deepCopyRef)
+            {
+                if(typeof(OnlineState).IsAssignableFrom(f.FieldType))
+                {
+                    return Expression.Call(output, deepCopyRef);
+                }
+                return null;
+            }
+        }
+
+        public class OnlineResourceRefFieldAttribute : OnlineFieldAttribute
+        {
+            public override Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
+            {
+                return Expression.Call(serializerRef, typeof(Serializer).GetMethod("SerializeResourceByReference", new[] { f.FieldType.MakeByRefType() }), fieldRef);
+            }
+        }
+
+        public class DeltaSupportAttribute : Attribute { public StateHandler.DeltaSupport level; }
+
+        public class StateHandler
+        {
+            public OnlineState.StateType stateType;
+            public Type type;
+            public DeltaSupport deltaSupport;
+            public Func<OnlineState> factory;
+            public Action<OnlineState, Serializer> serialize;
+            public Func<OnlineState, OnlineState> deepcopy;
+            public Func<OnlineState, OnlineState, OnlineState> delta;
+            public Func<OnlineState, OnlineState, OnlineState> applydelta;
+            public int ngroups;
+
+            public enum DeltaSupport
+            {
+                None,
+                FollowsContainer,
+                NullableDelta,
+                Full
+            }
+
+            // Welcome to Expression Trees hell
+            public StateHandler(OnlineState.StateType stateType, Type type)
+            {
+                RainMeadow.Debug($"Registering " + type.FullName);
+                if (!type.IsValueType && !type.IsClass) throw new InvalidProgrammerException("not class or struct");
+                this.stateType = stateType;
+                this.type = type;
+                this.deltaSupport = type.GetCustomAttribute<DeltaSupportAttribute>()?.level ?? DeltaSupport.None;
+
+                BindingFlags anyInstance = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+                var fields = type.GetFields(anyInstance).Where(f => f.GetCustomAttribute<OnlineFieldAttribute>() != null).OrderBy(f => f.Name).ToArray();
+                RainMeadow.Debug($"found {fields.Length} fields");
+                if (fields.Length > 0) RainMeadow.Debug(fields.Select(f => $"{f.FieldType.Name} {f.Name}").Aggregate((a, b) => a + "\n" + b));
+                else throw new InvalidProgrammerException($"Type {type} has no online fields");
+                Dictionary<string, List<FieldInfo>> deltaGroups = fields.GroupBy(o => o.GetCustomAttribute<OnlineFieldAttribute>().group).ToDictionary(g => g.Key, g => g.ToList());
+                ngroups = deltaGroups.Count;
+                RainMeadow.Debug($"found {ngroups} groups");
+                var valueFlagsAcessor = typeof(OnlineState).GetField("valueFlags", anyInstance);
+                var isDeltaAcessor = typeof(OnlineState).GetField("isDelta", anyInstance);
+                var baselineAcessor = typeof(RootDeltaState).GetField("baseline", anyInstance);
+                var tickAcessor = typeof(RootDeltaState).GetField("tick", anyInstance);
+                var serializerIsDeltaAcessor = typeof(Serializer).GetField("IsDelta", anyInstance);
+                var serializeBoolRef = typeof(Serializer).GetMethod("Serialize", new[] { typeof(bool).MakeByRefType() });
+                var serializeUintRef = typeof(Serializer).GetMethod("Serialize", new[] { typeof(uint).MakeByRefType() });
+
+                var expressions = new List<Expression>();
+
+                // make factory
+
+                factory = Expression.Lambda<Func<OnlineState>>(Expression.New(type.GetConstructor(new Type[] { }))).Compile();
+
+                // make serialize func
+
+                ParameterExpression self = Expression.Parameter(typeof(OnlineState));
+                ParameterExpression selfConverted = Expression.Variable(type);
+                ParameterExpression serializer = Expression.Parameter(typeof(Serializer));
+
+                expressions = new List<Expression>();
+                expressions.Add(Expression.Assign(selfConverted, Expression.Convert(self, type)));
+
+                switch (deltaSupport)
+                {
+                    case DeltaSupport.None:
+                        // serializer.Serialize(ref field);
+                        expressions.Add(Expression.Block(fields.Select(
+                            f => f.GetCustomAttribute<OnlineFieldAttribute>().SerializerCallMethod(f, serializer, Expression.Field(selfConverted, f))
+                        ).Where(e => e != null)));
+                        break;
+                    case DeltaSupport.FollowsContainer:
+                        // if (serializer.IsDelta) serializer.Serialize(ref hasGroupValue[n]);
+                        // if (!serializer.IsDelta || hasGroupValue)
+                        // {
+                        //     serializer.Serialize(ref fieldInGroup);
+                        // }
+                        for (int i = 0; i < ngroups; i++)
+                        {
+                            if (deltaGroups[deltaGroups.Keys.ToList()[i]].Count == 0) continue;
+                            expressions.Add(Expression.IfThen(Expression.Field(serializer, serializerIsDeltaAcessor),
+                                Expression.Call(serializer, serializeBoolRef, new[] {
+                                Expression.ArrayAccess(Expression.Field(selfConverted, valueFlagsAcessor), Expression.Constant(i)) })));
+                            expressions.Add(Expression.IfThen(Expression.OrElse(Expression.Not(Expression.Field(serializer, serializerIsDeltaAcessor)),
+                                    Expression.ArrayAccess(Expression.Field(selfConverted, valueFlagsAcessor), Expression.Constant(i))),
+                                Expression.Block(deltaGroups[deltaGroups.Keys.ToList()[i]].Select(
+                                    f => f.GetCustomAttribute<OnlineFieldAttribute>().SerializerCallMethod(f, serializer, Expression.Field(selfConverted, f))
+                                ).Where(e => e != null))));
+                        }
+                        break;
+                    case DeltaSupport.NullableDelta:
+                        // if (serializer.IsDelta) // In a non-delta context, can only be non-delta
+                        // {
+                        //     serializer.Serialize(ref IsDelta);
+                        //     serializer.IsDelta = IsDelta;
+                        // }
+                        // if (IsDelta) serializer.Serialize(ref hasGroupValue);
+                        // if (!IsDelta || hasGroupValue)
+                        // {
+                        //     serializer.Serialize(ref fieldInGroup);
+                        // }
+                        expressions.Add(Expression.IfThen(Expression.Field(serializer, serializerIsDeltaAcessor), Expression.Block(
+                                Expression.Call(serializer, serializeBoolRef, new[] { Expression.Field(self, isDeltaAcessor) }),
+                                Expression.Assign(Expression.Field(serializer, serializerIsDeltaAcessor), Expression.Field(self, isDeltaAcessor)
+                            ))));
+                        goto case DeltaSupport.FollowsContainer;
+                    case DeltaSupport.Full:
+                        // serializer.Serialize(ref IsDelta);
+                        // if (!serializer.IsDelta && IsDelta) { serializer.Serialize(ref Baseline); }
+                        // serializer.IsDelta = IsDelta; // Serializer wraps this call and restores the previous value later
+                        // ...etc
+                        expressions.Add(Expression.Call(serializer, serializeBoolRef, new[] { Expression.Field(selfConverted, isDeltaAcessor) }));
+                        expressions.Add(Expression.IfThen(Expression.AndAlso(Expression.Not(Expression.Field(serializer, serializerIsDeltaAcessor)),
+                                                                 Expression.Field(selfConverted, isDeltaAcessor)),
+                                    Expression.Call(serializer, serializeUintRef, new[] { Expression.Field(selfConverted, baselineAcessor) })));
+                        expressions.Add(Expression.Assign(Expression.Field(serializer, serializerIsDeltaAcessor), Expression.Field(selfConverted, isDeltaAcessor)));
+                        goto case DeltaSupport.FollowsContainer;
+                }
+
+                serialize = Expression.Lambda<Action<OnlineState, Serializer>>(Expression.Block(new[] { selfConverted }, expressions), self, serializer).Compile();
+
+                // make deepcopy func
+
+                var output = Expression.Variable(type);
+                var memberwiseCloneRef = typeof(object).GetMethod("MemberwiseClone", anyInstance);
+                var deepCopyRef = typeof(OnlineState).GetMethod("DeepCopy", anyInstance);
+
+                expressions = new List<Expression>();
+                expressions.Add(Expression.Assign(selfConverted, Expression.Convert(self, type)));
+                expressions.Add(Expression.Assign(output, Expression.Convert(Expression.Call(selfConverted, memberwiseCloneRef), type)));
+                foreach (var f in fields)
+                {
+                    var exp = f.GetCustomAttribute<OnlineFieldAttribute>().CopyExpression(f, output, deepCopyRef);
+                    if (exp != null)
+                    {
+                        expressions.Add(Expression.Assign(Expression.Field(output, f), Expression.Convert(exp, f.FieldType)));
+                    }
+                }
+                expressions.Add(output); // return
+
+                deepcopy = Expression.Lambda<Func<OnlineState, OnlineState>>(Expression.Block(new[] { selfConverted, output }, expressions), self).Compile();
+
+                // if supports delta
+                if (deltaSupport != DeltaSupport.None)
+                {
+                    // make delta func
+
+                    ParameterExpression baseline = Expression.Parameter(typeof(OnlineState));
+                    ParameterExpression baselineConverted = Expression.Variable(type);
+
+                    // if (baseline == null) throw new InvalidProgrammerException("baseline is null");
+                    // **if (baseline.IsDelta) throw new InvalidProgrammerException("baseline is delta");
+                    // var output = DeepCopy();
+                    // **output.IsDelta = true;
+                    // **output.baseline = baseline.tick;
+                    // 
+                    // output.hasGroupValue = field != baseline.field || field2 != baseline.field2;
+
+                    expressions = new List<Expression>();
+                    // todo arg checking
+                    expressions.Add(Expression.Assign(selfConverted, Expression.Convert(self, type)));
+                    expressions.Add(Expression.Assign(baselineConverted, Expression.Convert(baseline, type)));
+                    expressions.Add(Expression.Assign(output, Expression.Convert(Expression.Call(self, deepCopyRef), type)));
+
+                    if (deltaSupport != DeltaSupport.FollowsContainer)
+                    {
+                        expressions.Add(Expression.Assign(Expression.Field(output, isDeltaAcessor), Expression.Constant(true)));
+                        if (deltaSupport != DeltaSupport.NullableDelta)
+                            expressions.Add(Expression.Assign(Expression.Field(output, baselineAcessor), Expression.Field(baselineConverted, tickAcessor)));
+                    }
+
+                    // todo check if field is deltaable, fieldwise delta
+                    for (int i = 0; i < ngroups; i++)
+                    {
+                        if (deltaGroups[deltaGroups.Keys.ToList()[i]].Count == 0) continue;
+                        expressions.Add(Expression.Assign(Expression.ArrayAccess(Expression.Field(selfConverted, valueFlagsAcessor), Expression.Constant(i)),
+                            OrAny(deltaGroups[deltaGroups.Keys.ToList()[i]].Select(
+                                    f => f.GetCustomAttribute<OnlineFieldAttribute>().ComparisonMethod(f, Expression.Field(selfConverted, f), Expression.Field(baselineConverted, f))
+                                ).Where(e => e != null).ToArray())
+                            ));
+                    }
+
+                    expressions.Add(output); // return
+
+                    delta = Expression.Lambda<Func<OnlineState, OnlineState, OnlineState>>(Expression.Block(new[] { selfConverted, baselineConverted, output }, expressions), self, baseline).Compile();
+
+                    // make applydelta func
+
+                    ParameterExpression incoming = Expression.Parameter(typeof(OnlineState));
+                    ParameterExpression incomingConverted = Expression.Variable(type);
+
+                    // if (incoming == null) throw new InvalidProgrammerException("incoming is null");
+                    // **if (!incoming.IsDelta) throw new InvalidProgrammerException("incoming not delta");
+                    // var result = DeepClone();
+                    // **result.tick = incoming.tick;
+                    // if incoming.hasGroupValue
+                    //      result.field1 = incoming.field1;
+                    // return result;
+
+                    expressions = new List<Expression>();
+                    // todo arg checking
+                    expressions.Add(Expression.Assign(selfConverted, Expression.Convert(self, type)));
+                    expressions.Add(Expression.Assign(incomingConverted, Expression.Convert(incoming, type)));
+                    expressions.Add(Expression.Assign(output, Expression.Convert(Expression.Call(self, deepCopyRef), type)));
+
+                    if (deltaSupport != DeltaSupport.FollowsContainer && deltaSupport != DeltaSupport.NullableDelta)
+                    {
+                        expressions.Add(Expression.Assign(Expression.Field(output, tickAcessor), Expression.Field(incomingConverted, tickAcessor)));
+                    }
+
+                    for (int i = 0; i < ngroups; i++)
+                    {
+                        if (deltaGroups[deltaGroups.Keys.ToList()[i]].Count == 0) continue;
+
+                        // todo check if field is deltaable, fieldwise delta
+                        expressions.Add(Expression.IfThen(Expression.ArrayAccess(Expression.Field(incomingConverted, valueFlagsAcessor), Expression.Constant(i)),
+                                Expression.Block(deltaGroups[deltaGroups.Keys.ToList()[i]].Select(
+                                    f => Expression.Assign(Expression.Field(selfConverted, f), Expression.Field(incomingConverted, f))
+                                ))));
+                    }
+
+                    expressions.Add(output); // return
+
+                    applydelta = Expression.Lambda<Func<OnlineState, OnlineState, OnlineState>>(Expression.Block(new[] { selfConverted, incomingConverted, output }, expressions), self, incoming).Compile();
+                }
+            }
+
+            // c# son why must you disappoint me so often
+            private Expression OrAny(params Expression[] args)
+            {
+                if (args.Length == 1) return args[0];
+                if (args.Length == 2) return Expression.OrElse(args[0], args[1]);
+                return Expression.OrElse(args[0], OrAny(args.Skip(1).ToArray()));
+            }
+        }
     }
 }
