@@ -44,5 +44,28 @@ namespace RainMeadow
                 healthState.health = healthStateState.health;
             }
         }
+
+        public override OnlineState Delta(OnlineState baseline)
+        {
+            try
+            {
+                return base.Delta(baseline);
+            }
+            catch (System.Exception e)
+            {
+                RainMeadow.Debug(this.baseline);
+                RainMeadow.Debug(this.creatureStateState);
+                RainMeadow.Debug(this.entityId);
+                RainMeadow.Debug(this.from);
+                RainMeadow.Debug(this.handler);
+                RainMeadow.Debug(this.isDelta);
+                RainMeadow.Debug(this.pos);
+                RainMeadow.Debug(this.realized);
+                RainMeadow.Debug(this.realizedObjectState);
+                RainMeadow.Debug(this.tick);
+                RainMeadow.Debug(this.valueFlags);
+                throw;
+            }
+        }
     }
 }

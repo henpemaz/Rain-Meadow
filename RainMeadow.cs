@@ -53,27 +53,9 @@ namespace RainMeadow
 
                 seri.BeginWrite(null);
                 state.CustomSerialize(seri);
-                Logger.LogInfo(seri.stream.ToString());
                 Logger.LogInfo(seri.Position.ToString());
 
                 Logger.LogInfo("D");
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e);
-                throw;
-            }
-
-            try
-            {
-                var state = new CreatureStateState();
-                state.alive = true;
-                state.meatLeft = 6;
-                var other = (CreatureStateState)state.DeepCopy();
-                Logger.LogInfo(state.meatLeft);
-                Logger.LogInfo(other.meatLeft);
-
-                Logger.LogInfo("E");
             }
             catch (Exception e)
             {
