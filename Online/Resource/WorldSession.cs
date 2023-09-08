@@ -74,6 +74,7 @@ namespace RainMeadow
 
         public class WorldState : ResourceWithSubresourcesState
         {
+            [OnlineField]
             public RainCycleData rainCycleData;
             public WorldState() : base() { }
             public WorldState(WorldSession resource, uint ts) : base(resource, ts) 
@@ -83,41 +84,19 @@ namespace RainMeadow
                     rainCycleData = new RainCycleData(rainCycle);
                 }
             }
-            public override ResourceState ApplyDelta(ResourceState newState)
-            {
-                var newWorldState = (WorldState)newState;
-                var value = (WorldState)base.ApplyDelta(newState);
-                value.rainCycleData.WriteDelta(newWorldState.rainCycleData);
-                return value;
-            }
 
-            public override ResourceState Delta(ResourceState lastAcknoledgedState)
-            {
-                var delta = (WorldState)base.Delta(lastAcknoledgedState);
-                delta.rainCycleData.UpdateDelta(rainCycleData);
-                return delta;
-            }
-            public override ResourceState EmptyDelta() => new WorldState();
-            public override void CustomSerialize(Serializer serializer)
-            {
-                base.CustomSerialize(serializer);
-                serializer.Serialize(ref rainCycleData);
-            }
             public override void ReadTo(OnlineResource resource)
             {
                 if (resource.isActive) {
                     var ws = (WorldSession)resource;
                     RainCycle cycle = ws.world.rainCycle;
-                    if (rainCycleData.delta) {
-                        cycle.preTimer = rainCycleData.preTimer;
-                        cycle.timer = rainCycleData.timer;
-                        cycle.cycleLength = rainCycleData.cycleLength;
-                    }
+                    cycle.preTimer = rainCycleData.preTimer;
+                    cycle.timer = rainCycleData.timer;
+                    cycle.cycleLength = rainCycleData.cycleLength;
                 }
                   
                 base.ReadTo(resource);
             }
-            public override StateType stateType => StateType.WorldState;
         }
 
         public override string ToString()
