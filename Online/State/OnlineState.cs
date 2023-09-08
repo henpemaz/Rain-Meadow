@@ -268,6 +268,7 @@ namespace RainMeadow
                 ParameterExpression serializer = Expression.Parameter(typeof(Serializer));
 
                 MemberExpression serializerIsDelta = Expression.Field(serializer, serializerIsDeltaAcessor);
+                MemberExpression selfIsDelta = Expression.Field(self, isDeltaAcessor);
 
                 expressions = new List<Expression>();
                 expressions.Add(Expression.Assign(selfConverted, Expression.Convert(self, type)));
@@ -281,14 +282,16 @@ namespace RainMeadow
                         ).Where(e => e != null)));
                         break;
                     case DeltaSupport.FollowsContainer:
-                        // if (serializer.IsDelta) serializer.Serialize(ref hasGroupValue[n]);
-                        // if (!serializer.IsDelta || hasGroupValue)
-                        // {
-                        //     serializer.Serialize(ref fieldInGroup);
-                        // }
+                        // for each group
+                        //      if (serializer.IsDelta) serializer.Serialize(ref hasGroupValue[n]);
+                        //      if (!serializer.IsDelta || hasGroupValue)
+                        //      {
+                        //          serializer.Serialize(ref fieldInGroup);
+                        //      }
                         for (int i = 0; i < ngroups; i++)
                         {
                             if (deltaGroups[deltaGroups.Keys.ToList()[i]].Count == 0) continue;
+
                             expressions.Add(Expression.IfThen(serializerIsDelta,
                                 Expression.Call(serializer, serializeBoolRef, new[] {
                                 Expression.ArrayAccess(Expression.Field(selfConverted, valueFlagsAcessor), Expression.Constant(i)) })));
@@ -311,8 +314,8 @@ namespace RainMeadow
                         //     serializer.Serialize(ref fieldInGroup);
                         // }
                         expressions.Add(Expression.IfThen(serializerIsDelta, Expression.Block(
-                                Expression.Call(serializer, serializeBoolRef, new[] { Expression.Field(self, isDeltaAcessor) }),
-                                Expression.Assign(serializerIsDelta, Expression.Field(self, isDeltaAcessor)
+                                Expression.Call(serializer, serializeBoolRef, new[] { selfIsDelta }),
+                                Expression.Assign(serializerIsDelta, selfIsDelta
                             ))));
                         goto case DeltaSupport.FollowsContainer;
                     case DeltaSupport.Full:
@@ -320,11 +323,11 @@ namespace RainMeadow
                         // if (!serializer.IsDelta && IsDelta) { serializer.Serialize(ref Baseline); }
                         // serializer.IsDelta = IsDelta; // Serializer wraps this call and restores the previous value later
                         // ...etc
-                        expressions.Add(Expression.Call(serializer, serializeBoolRef, new[] { Expression.Field(selfConverted, isDeltaAcessor) }));
+                        expressions.Add(Expression.Call(serializer, serializeBoolRef, new[] { selfIsDelta }));
                         expressions.Add(Expression.IfThen(Expression.AndAlso(Expression.Not(serializerIsDelta),
-                                                                 Expression.Field(selfConverted, isDeltaAcessor)),
+                                                                 selfIsDelta),
                                     Expression.Call(serializer, serializeUintRef, new[] { Expression.Field(selfConverted, baselineAcessor) })));
-                        expressions.Add(Expression.Assign(serializerIsDelta, Expression.Field(selfConverted, isDeltaAcessor)));
+                        expressions.Add(Expression.Assign(serializerIsDelta, selfIsDelta));
                         goto case DeltaSupport.FollowsContainer;
                 }
 
@@ -361,7 +364,7 @@ namespace RainMeadow
                     if (deltaSupport != DeltaSupport.FollowsContainer)
                     {
                         expressions.Add(Expression.Assign(Expression.Field(output, isDeltaAcessor), Expression.Constant(true)));
-                        if (deltaSupport != DeltaSupport.NullableDelta)
+                        if (deltaSupport == DeltaSupport.Full)
                             expressions.Add(Expression.Assign(Expression.Field(output, baselineAcessor), Expression.Field(baselineConverted, tickAcessor)));
                     }
 
@@ -371,11 +374,10 @@ namespace RainMeadow
 
                         if (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(Generics.IDelta<>)))
                         {
-                            // regular:         o.f = f;
-                            // IPrimaryDelta:   o.f = f ? (b.f ? f.delta(b.f) : f) : null // can this be simplified?
-                            // IDelta:          o.f = f?.delta(b.f)
+                            // IPrimaryDelta:   o.f = this.f ? (b.f ? this.f.delta(b.f) : this.f) : null // can this be simplified?
+                            //                        b.f != null ? f?.delta(b.f) : f;
+                            // IDelta:          o.f = this.f?.delta(b.f)
                             expressions.Add(Expression.Assign(Expression.Field(output, f),
-                                        (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(Generics.IDelta<>))) ?
                                         Expression.Condition(Expression.Equal(Expression.Field(selfConverted, f), Expression.Constant(null, f.FieldType)),
                                             Expression.Constant(null, f.FieldType),
                                             (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(Generics.IPrimaryDelta<>))) ?
@@ -384,12 +386,12 @@ namespace RainMeadow
                                                 Expression.Convert(Expression.Call(Expression.Field(selfConverted, f), f.FieldType.GetMethod("Delta"), Expression.Field(baselineConverted, f)), f.FieldType))
                                             : Expression.Convert(Expression.Call(Expression.Field(selfConverted, f), f.FieldType.GetMethod("Delta"), Expression.Field(baselineConverted, f)), f.FieldType)
                                             )
-                                        : Expression.Field(selfConverted, f) // regular
                                        ));
                         }
                     }
 
                     // todo check empty delta? right now its comparing self and baseline
+                    // set flags for sent/omitted fields
                     for (int i = 0; i < ngroups; i++)
                     {
                         if (deltaGroups[deltaGroups.Keys.ToList()[i]].Count == 0) continue;
