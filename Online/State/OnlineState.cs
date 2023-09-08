@@ -110,7 +110,7 @@ namespace RainMeadow
             }
         }
 
-        public OnlineState ApplyDelta(OnlineState incoming)
+        public virtual OnlineState ApplyDelta(OnlineState incoming)
         {
             if (incoming == null) throw new ArgumentNullException();
             try
@@ -233,10 +233,12 @@ namespace RainMeadow
                 this.type = type;
                 this.deltaSupport = type.GetCustomAttribute<DeltaSupportAttribute>()?.level ?? DeltaSupport.None;
 
+                if (deltaSupport == DeltaSupport.None) RainMeadow.Error("No delta support for type: " + type.Name);
+
                 BindingFlags anyInstance = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
                 var tresults = new List<FieldInfo>();
-                var t = type; while (t != null) { tresults.AddRange(t.GetFields(anyInstance).Where(f => f.GetCustomAttribute<OnlineFieldAttribute>() != null)); t = t.BaseType; }
+                var t = type; while (t != null) { tresults.AddRange(t.GetFields(anyInstance | BindingFlags.DeclaredOnly).Where(f => f.GetCustomAttribute<OnlineFieldAttribute>() != null)); t = t.BaseType; }
                 var fields = tresults.ToArray();
                 RainMeadow.Debug($"found {fields.Length} fields");
                 if (fields.Length > 0) RainMeadow.Debug(fields.Select(f => $"{f.FieldType.Name} {f.Name}").Aggregate((a, b) => a + "\n" + b));
@@ -393,7 +395,7 @@ namespace RainMeadow
                         if (deltaGroups[deltaGroups.Keys.ToList()[i]].Count == 0) continue;
                         expressions.Add(Expression.Assign(Expression.ArrayAccess(Expression.Field(output, valueFlagsAcessor), Expression.Constant(i)),
                             OrAny(deltaGroups[deltaGroups.Keys.ToList()[i]].Select(
-                                    f => f.GetCustomAttribute<OnlineFieldAttribute>().ComparisonMethod(f, Expression.Field(selfConverted, f), Expression.Field(baselineConverted, f))
+                                    f => Expression.Not(f.GetCustomAttribute<OnlineFieldAttribute>().ComparisonMethod(f, Expression.Field(selfConverted, f), Expression.Field(baselineConverted, f)))
                                 ).Where(e => e != null).ToArray())
                             ));
                     }
