@@ -7,7 +7,7 @@ namespace RainMeadow
     /// Turns out to be not root-only as EntityStates are this but are sent inside ResourceState as well, chaos
     /// </summary>
     [DeltaSupport(level = StateHandler.DeltaSupport.Full)]
-    public abstract class RootDeltaState : OnlineState, Generics.IPrimaryDelta<OnlineState>
+    public abstract class RootDeltaState : OnlineState
     {
         public OnlinePlayer from; // not serialized, message source
         public uint tick; // not serialized, latest from player when read

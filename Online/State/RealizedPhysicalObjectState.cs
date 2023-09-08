@@ -10,9 +10,9 @@ namespace RainMeadow
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class RealizedPhysicalObjectState : OnlineState
     {
-        [OnlineField(group = "realized")]
+        [OnlineField]
         private ChunkState[] chunkStates;
-        [OnlineField(group = "realized")]
+        [OnlineField]
         private byte collisionLayer;
 
         public RealizedPhysicalObjectState() { }
@@ -20,6 +20,13 @@ namespace RainMeadow
         {
             chunkStates = onlineEntity.apo.realizedObject.bodyChunks.Select(c => new ChunkState(c)).ToArray();
             collisionLayer = (byte)onlineEntity.apo.realizedObject.collisionLayer;
+        }
+
+        public override void CustomSerialize(Serializer serializer)
+        {
+            base.CustomSerialize(serializer);
+            if (chunkStates == null)
+                RainMeadow.Debug($"Null reading ?{serializer.IsReading} isDelta?{isDelta} ");
         }
 
         public virtual void ReadTo(OnlineEntity onlineEntity)

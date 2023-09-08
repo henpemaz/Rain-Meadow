@@ -72,7 +72,7 @@ namespace RainMeadow
         {
             [OnlineResourceRefField]
             public OnlineResource resource;
-            [OnlineField]
+            [OnlineField(nullable = true)]
             public DeltaStates<EntityState, OnlineState, OnlineEntity.EntityId> entityStates;
 
             protected ResourceState() : base() { }
@@ -124,7 +124,7 @@ namespace RainMeadow
 
         public abstract class ResourceWithSubresourcesState : ResourceState
         {
-            [OnlineField]
+            [OnlineField(nullable = true)]
             public LeaseList subleaseState;
 
             protected ResourceWithSubresourcesState() { }
