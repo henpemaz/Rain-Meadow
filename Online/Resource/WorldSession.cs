@@ -8,7 +8,6 @@ namespace RainMeadow
     {
         public Region region;
         public World world;
-
         public static ConditionalWeakTable<World, WorldSession> map = new();
         public Dictionary<string, RoomSession> roomSessions = new();
 
@@ -75,8 +74,29 @@ namespace RainMeadow
 
         public class WorldState : ResourceWithSubresourcesState
         {
+            [OnlineField]
+            public RainCycleData rainCycleData;
             public WorldState() : base() { }
-            public WorldState(OnlineResource resource, uint ts) : base(resource, ts) { }
+            public WorldState(WorldSession resource, uint ts) : base(resource, ts) 
+            {
+                if (resource.world != null) {
+                    RainCycle rainCycle = resource.world.rainCycle;
+                    rainCycleData = new RainCycleData(rainCycle);
+                }
+            }
+
+            public override void ReadTo(OnlineResource resource)
+            {
+                if (resource.isActive) {
+                    var ws = (WorldSession)resource;
+                    RainCycle cycle = ws.world.rainCycle;
+                    cycle.preTimer = rainCycleData.preTimer;
+                    cycle.timer = rainCycleData.timer;
+                    cycle.cycleLength = rainCycleData.cycleLength;
+                }
+                  
+                base.ReadTo(resource);
+            }
         }
 
         public override string ToString()
