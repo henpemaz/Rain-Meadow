@@ -278,7 +278,16 @@ namespace RainMeadow
             //MultiplayerMenuUpdate();
             mm.Update();
             //base.Update();
-        }
+
+			if (mm.GetGameTypeSetup.playList.Count * mm.GetGameTypeSetup.levelRepeats > 0)
+			{
+				mm.playButton.buttonBehav.greyedOut = false;
+			}
+			else
+			{
+				mm.playButton.buttonBehav.greyedOut = OnlineManager.lobby.isAvailable;
+			}
+		}
 
 
         public override void Singal(MenuObject sender, string message)
