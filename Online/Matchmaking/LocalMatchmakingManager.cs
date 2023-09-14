@@ -43,7 +43,13 @@ namespace RainMeadow
         }
 
         private int me;
+#if ARENAP2P
         private string localGameMode = "ArenaCompetitive";
+#elif STORYP2P
+        private string localGameMode = "Story";
+#else
+        private string localGameMode = "FreeRoam";
+#endif
 
         public LocalMatchmakingManager()
         {
@@ -69,7 +75,7 @@ namespace RainMeadow
                 OnLobbyJoined?.Invoke(false);
                 return;
             }
-            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(gameMode), OnlineManager.mePlayer);
+            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer);
             OnLobbyJoined?.Invoke(true);
         }
 
