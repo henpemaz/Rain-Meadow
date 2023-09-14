@@ -400,3 +400,6 @@ FodyWeavers.xsd
 # sync software duh
 /.sync
 Properties/Settings.Designer.cs
+
+# Mod folder
+[Mm]od/plugins/*
