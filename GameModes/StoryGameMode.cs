@@ -5,7 +5,10 @@
         public StoryGameMode(Lobby lobby) : base(lobby)
         {
         }
-
+        public override bool AllowedInMode(PlacedObject item)
+        {
+            return base.AllowedInMode(item) || OnlineGameModeHelpers.PlayerGrablableItems.Contains(item.type);
+        }
         public override bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)
         {
             if (worldSession is null || !worldSession.isAvailable)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -30,15 +31,16 @@ namespace RainMeadow
 
         public override void ReadTo(OnlineEntity onlineEntity)
         {
+            base.ReadTo(onlineEntity);
+
             var fruit = (DangleFruit)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             fruit.bites = bites;
             if (bites < 3) { RainMeadow.Debug($"Bites written to: {bites}"); }
             if (hasStalk && fruit.stalk == null)
             {
-                fruit.stalk = new DangleFruit.Stalk(fruit, fruit.room, this.chunkStates[0].pos);
+                fruit.stalk = new DangleFruit.Stalk(fruit, fruit.room, fruit.bodyChunks[0].pos);
                 fruit.room.AddObject(fruit.stalk);
             }
-            base.ReadTo(onlineEntity);
         }
     }
 }
