@@ -323,7 +323,7 @@ namespace RainMeadow
         private void World_LoadWorld(On.World.orig_LoadWorld orig, World self, SlugcatStats.Name slugcatNumber, System.Collections.Generic.List<AbstractRoom> abstractRoomsList, int[] swarmRooms, int[] shelters, int[] gates)
         {
             orig(self, slugcatNumber, abstractRoomsList, swarmRooms, shelters, gates);
-            if (OnlineManager.lobby.gameModeType != OnlineGameMode.OnlineGameModeType.ArenaCompetitive)
+            if (OnlineManager.lobby.gameMode is not ArenaCompetitiveGameMode)
             {
                 return;
             }
@@ -338,7 +338,7 @@ namespace RainMeadow
         {
             orig(self, player);
 
-            if (OnlineManager.lobby == null || self is not CompetitiveGameSession)
+            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not ArenaCompetitiveGameMode)
             {
                 return;
             }

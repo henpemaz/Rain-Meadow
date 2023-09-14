@@ -54,7 +54,7 @@ Instructions on how to install the mod into your game:
 5. Follow next steps depending on where you downloaded the mod:
     - GitHub Repository (latest)
         1. Copy `\Mod` folder into game mods folder
-        2. Rename directory to `rainmeadow`
+        2. Rename copied folder to `rainmeadow`
     - #playtesting channel (stable)
         1. Extract downloaded zip file
         2. If you see a single folder named 'rainmeadow', copy the folder into your game mods folder
@@ -62,7 +62,7 @@ Instructions on how to install the mod into your game:
 
 # Contributions
 
-If you would like to contribute to the project, 
+If you would like to contribute to the project, please take the time to learn more about it:
 
 This is a mod which implements a custom made engine for multiplayer support.
 Please watch this video with an explanation of the engine: 

@@ -9,7 +9,6 @@ namespace RainMeadow
     public class Lobby : OnlineResource
     {
         public OnlineGameMode gameMode;
-        public OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
         public RainCycle cycle;
 
@@ -23,8 +22,6 @@ namespace RainMeadow
 
             this.gameMode = FromType(mode, this);
             if (gameMode == null) throw new Exception($"Invalid game mode {mode}");
-
-            gameModeType = mode;
 
             if (owner == null) throw new Exception("No lobby owner");
             NewOwner(owner);
@@ -144,11 +141,14 @@ namespace RainMeadow
 
         private void AddArenaRegion()
         {
-            // Arena or null regions
-            var nr = new Region("arena", 0, -1, null);
-            var ns = new WorldSession(nr, this);
-            worldSessions.Add(nr.name, ns);
-            subresources.Add(ns);
+            if (!worldSessions.ContainsKey("arena"))
+            {
+                // Arena or null regions
+                var nr = new Region("arena", 0, -1, null);
+                var ns = new WorldSession(nr, this);
+                worldSessions.Add(nr.name, ns);
+                subresources.Add(ns);
+            }
         }
     }
 }

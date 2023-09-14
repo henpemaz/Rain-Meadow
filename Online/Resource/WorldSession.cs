@@ -33,6 +33,7 @@ namespace RainMeadow
         protected override void ActivateImpl()
         {
             if (world == null) throw new InvalidOperationException("world not set");
+            if (world.abstractRooms == null) throw new InvalidOperationException("world.abstractRooms is null");
             foreach (var room in world.abstractRooms)
             {
                 var rs = new RoomSession(this, room);

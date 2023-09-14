@@ -43,7 +43,7 @@ namespace RainMeadow
         }
 
         private int me;
-        private string localGameMode = "Story";
+        private string localGameMode = "ArenaCompetitive";
 
         public LocalMatchmakingManager()
         {
