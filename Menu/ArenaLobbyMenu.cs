@@ -31,22 +31,7 @@ namespace RainMeadow
             UninitializeInheritedScene();
 
             BuildLayout();
-
-            //CreateArenaRegion();
         }
-
-        void CreateArenaRegion()
-        {
-            var lobby = OnlineManager.lobby;
-            if (!lobby.worldSessions.ContainsKey("arena"))
-			{
-				// Arena or null regions
-				var nr = new Region("arena", 0, -1, null);
-				var ns = new WorldSession(nr, lobby);
-				lobby.worldSessions.Add(nr.name, ns);
-				lobby.subresources.Add(ns);
-			}
-		}
 
         void UninitializeInheritedScene()
         {
@@ -113,41 +98,23 @@ namespace RainMeadow
         }
 
         #region Menu Builders
-        struct SimpleButtonCreateOptions
+        SimplerButton CreateButton(string text, Vector2 pos, Vector2 size, bool waitLobbyAvailability, Action<SimplerButton>? clicked = null, Page? page = null)
         {
-            public string text;
-            public Vector2 pos;
-            public Vector2 size;
-            public Action<SimplerButton>? clicked;
-            public bool waitLobbyAvailability;
-            public Page? page;
-        }
+            page = page ?? pages[0];
 
-        SimplerButton CreateButton(SimpleButtonCreateOptions options)
-        {
-            var page = options.page ?? pages[0];
+            var b = new SimplerButton(mm, page, text, pos, size);
 
-            var b = new SimplerButton(mm, page, options.text, options.pos, options.size);
-
-            if (options.waitLobbyAvailability && !OnlineManager.lobby.isAvailable)
+            if (waitLobbyAvailability && !OnlineManager.lobby.isAvailable)
             {
                 b.buttonBehav.greyedOut = true;
                 enableOnLobbyAvailable.Add(b);
             }
 
-            if (options.clicked != null) b.OnClick += options.clicked;
+            if (clicked != null) b.OnClick += clicked;
 
             page.subObjects.Add(b);
 
             return b;
-        }
-
-        struct PlayerButtonCreateOptions
-        {
-            public int playerIndex;
-            public Vector2 pos;
-            public Page? page;
-            public float? width;
         }
 
         #endregion
@@ -159,14 +126,7 @@ namespace RainMeadow
             scene.AddIllustration(new MenuIllustration(mm, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
             scene.flatIllustrations[scene.flatIllustrations.Count - 1].sprite.shader = manager.rainWorld.Shaders["MenuText"];
 
-            mm.playButton = CreateButton(new SimpleButtonCreateOptions()
-            {
-                text = "START",
-                pos = new Vector2(ScreenWidth - 304, 50),
-                size = new Vector2(110, 30),
-                waitLobbyAvailability = true,
-                clicked = self => StartGame()
-            });
+            mm.playButton = CreateButton("START", new Vector2(ScreenWidth - 304, 50), new Vector2(110, 30), true, self => StartGame());
 
             infoButton = new SymbolButton(mm, pages[0], "Menu_InfoI", "INFO", new Vector2(1142f, 624f));
             pages[0].subObjects.Add(infoButton);
