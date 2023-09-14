@@ -41,7 +41,7 @@ I'm an Automation engineer with experience in devices communicating with industr
 
 Rain Meadow builds it's mod files into the `\Mod` directory. 
 
-While this project is still early in development, it is not recommended you install it directly from the repository, not all commits will contain a stable or up-to-date build.
+While this project is still in development, it is not recommended you install it directly from the repository, not all commits will contain a stable or up-to-date build.
 
 Instead you should join the discord server and check pins in the #playtesting channel.
 
@@ -53,11 +53,13 @@ Instructions on how to install the mod into your game:
 4. Navigate down to RainWorld_Data\StreamingAssets\mods
 5. Follow next steps depending on where you downloaded the mod:
     - GitHub Repository (latest)
-        1. Copy `\Mod` folder into game mods folder
-        2. Rename copied folder to `rainmeadow`
+        1. Open the repo in visual studio and build the project
+        2. Copy `\Mod` folder into game mods folder
+        3. Rename copied folder to `rainmeadow`
     - #playtesting channel (stable)
-        1. Extract downloaded zip file
-        2. If you see a single folder named 'rainmeadow', copy the folder into your game mods folder
+        1. Open the pinned messages and download the latest version
+        2. Extract downloaded zip file
+        3. If you see a single folder named 'rainmeadow', copy the folder into your game mods folder
 
 
 # Contributions
@@ -87,6 +89,7 @@ Just like the project installation section, the project builds to the `\Mod` dir
 
 - Open cmd.exe as Administrator
 - Type (or copy) ```mklink /D "[GameDirectory]\RainWorld_Data\StreamingAssets\mods\rainmeadow" "[ProjectDirectory]\Mod"```
+    - Replace `[GameDirectory]` with the game's root directory and `[ProjectDirectory]` with the project root folder.
 
 Now whenever you build the project, the changes should automatically reflect in-game.
 
