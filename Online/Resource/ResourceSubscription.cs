@@ -60,7 +60,7 @@ namespace RainMeadow
 
         public void ResetDeltas()
         {
-            OutgoingStates = new Queue<OnlineResource.ResourceState>(OutgoingStates.Where(x => !x.IsDelta && x.tick > player.latestTickAck));
+            OutgoingStates = new Queue<OnlineResource.ResourceState>(OutgoingStates.Where(x => !x.isDelta && x.tick > player.latestTickAck));
         }
     }
 }

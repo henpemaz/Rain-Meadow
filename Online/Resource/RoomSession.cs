@@ -76,9 +76,6 @@ namespace RainMeadow
         {
             public RoomState() : base() { }
             public RoomState(RoomSession resource, uint ts) : base(resource, ts) { }
-            public override ResourceState EmptyDelta() => new RoomState();
-
-            public override StateType stateType => StateType.RoomState;
         }
 
         public override string ToString()

@@ -2,11 +2,8 @@ namespace RainMeadow
 {
     public class AbstractCreatureState : PhysicalObjectEntityState
     {
+        [OnlineField(polymorphic = true)]
         private CreatureStateState creatureStateState;
-
-        bool hasStateState;
-
-        public override EntityState EmptyDelta() => new AbstractCreatureState();
         public AbstractCreatureState() : base() { }
         public AbstractCreatureState(OnlineCreature onlineEntity, uint ts, bool realizedState) : base(onlineEntity, ts, realizedState)
         {
@@ -26,8 +23,6 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject is Creature) return new RealizedCreatureState((OnlineCreature)onlineObject);
             return base.GetRealizedState(onlineObject);
         }
-
-        public override StateType stateType => StateType.AbstractCreatureState;
 
         public override void ReadTo(OnlineEntity onlineEntity)
         {
@@ -50,37 +45,27 @@ namespace RainMeadow
             }
         }
 
-        public override void CustomSerialize(Serializer serializer)
+        public override OnlineState Delta(OnlineState baseline)
         {
-            base.CustomSerialize(serializer);
-            if (IsDelta) serializer.Serialize(ref hasStateState);
-            if (!IsDelta || hasStateState)
+            try
             {
-                serializer.SerializePolyState(ref creatureStateState);
+                return base.Delta(baseline);
             }
-        }
-
-        public override long EstimatedSize(bool inDeltaContext)
-        {
-            return base.EstimatedSize(inDeltaContext) + creatureStateState.EstimatedSize(inDeltaContext);
-        }
-
-        public override EntityState Delta(EntityState _other)
-        {
-            var delta = (AbstractCreatureState)base.Delta(_other);
-            var other = (AbstractCreatureState)_other;
-            delta.creatureStateState = creatureStateState.Delta(other.creatureStateState);
-            delta.hasStateState = !delta.creatureStateState.IsEmptyDelta;
-            delta.IsEmptyDelta &= !delta.hasStateState;
-            return delta;
-        }
-
-        public override EntityState ApplyDelta(EntityState _other)
-        {
-            var result = (AbstractCreatureState)base.ApplyDelta(_other);
-            var other = (AbstractCreatureState)_other;
-            result.creatureStateState = other.hasStateState ? creatureStateState.ApplyDelta(other.creatureStateState) : creatureStateState;
-            return result;
+            catch (System.Exception e)
+            {
+                RainMeadow.Debug(this.baseline);
+                RainMeadow.Debug(this.creatureStateState);
+                RainMeadow.Debug(this.entityId);
+                RainMeadow.Debug(this.from);
+                RainMeadow.Debug(this.handler);
+                RainMeadow.Debug(this.isDelta);
+                RainMeadow.Debug(this.pos);
+                RainMeadow.Debug(this.realized);
+                RainMeadow.Debug(this.realizedObjectState);
+                RainMeadow.Debug(this.tick);
+                RainMeadow.Debug(this.valueFlags);
+                throw;
+            }
         }
     }
 }

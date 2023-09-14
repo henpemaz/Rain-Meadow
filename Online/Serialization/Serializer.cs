@@ -16,10 +16,10 @@ namespace RainMeadow
         public bool IsReading { get; set; }
         private bool Aborted { get; set; }
 
-        private MemoryStream stream;
-        private BinaryWriter writer;
-        private BinaryReader reader;
-        private OnlinePlayer currPlayer;
+        public MemoryStream stream;
+        public BinaryWriter writer;
+        public BinaryReader reader;
+        public OnlinePlayer currPlayer;
         private uint eventCount;
         private StringBuilder eventLog;
         private long eventHeader;
@@ -70,7 +70,7 @@ namespace RainMeadow
             Aborted = true;
         }
 
-        private void BeginWrite(OnlinePlayer toPlayer)
+        public void BeginWrite(OnlinePlayer toPlayer)
         {
             currPlayer = toPlayer;
             if (IsWriting || IsReading) throw new InvalidOperationException("not done with previous operation");
@@ -87,7 +87,7 @@ namespace RainMeadow
 
         private bool CanFit(OnlineState state)
         {
-            return Position + state.EstimatedSize(false) + margin < capacity;
+            return Position + state.EstimatedSize(this) + margin < capacity;
         }
 
         private void BeginWriteEvents()
@@ -129,7 +129,7 @@ namespace RainMeadow
         private void WriteState(OnlineState state)
         {
             stateCount++;
-            writer.Write((byte)state.stateType);
+            state.WritePolymorph(this);
             WrappedSerialize(state);
         }
 
@@ -141,7 +141,7 @@ namespace RainMeadow
             stream.Position = temp;
         }
 
-        private void EndWrite()
+        public void EndWrite()
         {
             //RainMeadow.Debug($"serializer wrote: {eventCount} events; {stateCount} states; total {stream.Position} bytes");
             currPlayer = null;
@@ -180,7 +180,7 @@ namespace RainMeadow
 
         private OnlineState ReadState()
         {
-            OnlineState s = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
+            OnlineState s = OnlineState.ParsePolymorph(this);
             if(s is RootDeltaState ps)
             {
                 ps.from = currPlayer;
@@ -299,12 +299,12 @@ namespace RainMeadow
         {
             if (IsWriting)
             {
-                writer.Write((byte)state.stateType);
+                state.WritePolymorph(this);
                 WrappedSerialize(state);
             }
             if (IsReading)
             {
-                state = (T)OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
+                state = (T)OnlineState.ParsePolymorph(this);
                 if(state is RootDeltaState ps)
                 {
                     ps.from = currPlayer;
@@ -342,7 +342,7 @@ namespace RainMeadow
                 writer.Write((byte)states.Length);
                 foreach (var state in states)
                 {
-                    writer.Write((byte)state.stateType);
+                    state.WritePolymorph(this);
                     WrappedSerialize(state);
                 }
             }
@@ -352,14 +352,14 @@ namespace RainMeadow
                 states = new T[count];
                 for (int i = 0; i < count; i++)
                 {
-                    var s = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
+                    var s = (T)OnlineState.ParsePolymorph(this);
                     if (s is RootDeltaState ps)
                     {
                         ps.from = currPlayer;
                         ps.tick = currPlayer.tick;
                     }
                     WrappedSerialize(s);
-                    states[i] = s as T; // can throw an invalid cast? or will it just be null?
+                    states[i] = s;
                 }
             }
         }
@@ -373,7 +373,7 @@ namespace RainMeadow
                 writer.Write((byte)states.Count);
                 foreach (var state in states)
                 {
-                    writer.Write((byte)state.stateType);
+                    state.WritePolymorph(this);
                     WrappedSerialize(state);
                 }
             }
@@ -383,14 +383,14 @@ namespace RainMeadow
                 states = new(count);
                 for (int i = 0; i < count; i++)
                 {
-                    var s = OnlineState.NewFromType((OnlineState.StateType)reader.ReadByte());
+                    var s = (T)OnlineState.ParsePolymorph(this);
                     if (s is RootDeltaState ps)
                     {
                         ps.from = currPlayer;
                         ps.tick = currPlayer.tick;
                     }
                     WrappedSerialize(s);
-                    states.Add(s as T);
+                    states.Add(s);
                 }
             }
         }

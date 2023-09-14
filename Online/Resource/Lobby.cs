@@ -82,8 +82,11 @@ namespace RainMeadow
 
         public class LobbyState : ResourceWithSubresourcesState
         {
+            [OnlineField]
             public ushort nextId;
+            [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedPlayerIDs players;
+            [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedUshorts inLobbyIds;
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
@@ -91,36 +94,6 @@ namespace RainMeadow
                 nextId = lobby.nextId;
                 players = new(lobby.participants.Keys.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
-            }
-            public override ResourceState EmptyDelta() => new LobbyState();
-
-            public override StateType stateType => StateType.LobbyState;
-
-            public override ResourceState ApplyDelta(ResourceState _newState)
-            {
-                var newState = _newState as LobbyState;
-                var result = (LobbyState)base.ApplyDelta(newState);
-                result.nextId = newState?.nextId ?? nextId;
-                result.players = (Generics.AddRemoveSortedPlayerIDs)players.ApplyDelta(newState.players);
-                result.inLobbyIds = (Generics.AddRemoveSortedUshorts)inLobbyIds.ApplyDelta(newState.inLobbyIds);
-                return result;
-            }
-
-            public override ResourceState Delta(ResourceState lastAcknoledgedState)
-            {
-                var delta = (LobbyState)base.Delta(lastAcknoledgedState);
-                delta.nextId = nextId;
-                delta.players = (Generics.AddRemoveSortedPlayerIDs)players.Delta((lastAcknoledgedState as LobbyState).players);
-                delta.inLobbyIds = (Generics.AddRemoveSortedUshorts)inLobbyIds.Delta((lastAcknoledgedState as LobbyState).inLobbyIds);
-                return delta;
-            }
-
-            public override void CustomSerialize(Serializer serializer)
-            {
-                base.CustomSerialize(serializer);
-                serializer.Serialize(ref nextId);
-                serializer.SerializeNullable(ref players);
-                serializer.SerializeNullable(ref inLobbyIds);
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -143,7 +116,6 @@ namespace RainMeadow
                 base.ReadTo(resource);
             }
         }
-
         public override string ToString()
         {
             return "Lobby";
