@@ -17,7 +17,6 @@ namespace RainMeadow
 
             On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues += WorldLoader_ctor;
             On.WorldLoader.Update += WorldLoader_Update;
-            On.WorldLoader.NextActivity += WorldLoader_NextActivity;
             On.RoomPreparer.ctor += RoomPreparer_ctor;
             On.RoomPreparer.Update += RoomPreparer_Update;
             On.AbstractRoom.Abstractize += AbstractRoom_Abstractize;
@@ -28,6 +27,9 @@ namespace RainMeadow
             IL.Room.Loaded += Room_Loaded;
 
             On.FliesWorldAI.AddFlyToSwarmRoom += FliesWorldAI_AddFlyToSwarmRoom;
+            
+            // Arena specific
+            On.GameSession.AddPlayer += GameSession_AddPlayer;
         }
 
         private void StoryGameSession_ctor(On.StoryGameSession.orig_ctor orig, StoryGameSession self, SlugcatStats.Name saveStateNumber, RainWorldGame game)
@@ -158,21 +160,6 @@ namespace RainMeadow
             orig(self, room, loadAiHeatMaps, falseBake, shortcutsOnly);
         }
 
-        // wait until available
-        private void WorldLoader_NextActivity(On.WorldLoader.orig_NextActivity orig, WorldLoader self)
-        {
-            if (OnlineManager.lobby != null && WorldSession.map.TryGetValue(self.world, out var ws))
-            {
-                if (self.activity == WorldLoader.Activity.MappingRooms && !ws.isAvailable)
-                {
-                    self.abstractLoaderDelay = 1;
-                    return;
-                }
-                self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);
-            }
-            orig(self);
-        }
-
         // World wait, activate
         private void WorldLoader_Update(On.WorldLoader.orig_Update orig, WorldLoader self)
         {
@@ -233,9 +220,21 @@ namespace RainMeadow
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
             if (OnlineManager.lobby != null)
             {
-                Debug("Requesting new region: " + region.name);
-                OnlineManager.lobby.worldSessions[region.name].Request();
-                OnlineManager.lobby.worldSessions[region.name].BindWorld(self.world);
+                WorldSession ws = null;
+                if (game.IsArenaSession)
+                {
+                    // Arena has null region and single-room world
+                    Debug("Requesting arena world resource");
+                    ws = OnlineManager.lobby.worldSessions["arena"];
+                }
+                else
+                {
+                    Debug("Requesting new region: " + region.name);
+                    ws = OnlineManager.lobby.worldSessions[region.name];
+                }
+                ws.Request();
+                ws.BindWorld(self.world);
+                self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);
             }
         }
 
@@ -312,6 +311,19 @@ namespace RainMeadow
                 return;
             }
             orig(self, spawnRoom);
+        }
+
+        private void GameSession_AddPlayer(On.GameSession.orig_AddPlayer orig, GameSession self, AbstractCreature player)
+        {
+            orig(self, player);
+
+            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not ArenaCompetitiveGameMode)
+            {
+                return;
+            }
+
+            OnlineManager.lobby.worldSessions["arena"].ApoEnteringWorld(player);
+            OnlineManager.lobby.worldSessions["arena"].roomSessions.First().Value.ApoEnteringRoom(player, player.pos);
         }
     }
 }

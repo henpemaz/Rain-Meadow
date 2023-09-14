@@ -6,12 +6,19 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Configurations>Debug;Release;LocalP2P</Configurations>
+    <Configurations>Debug;Release;LocalP2P;ArenaP2P;StoryP2P</Configurations>
+    <RootNamespace>RainMeadow</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>$(DefineConstants)TRACE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='LocalP2P|AnyCPU'">
+    <DefineConstants>$(DefineConstants)TRACE;LOCAL_P2P</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StoryP2P|AnyCPU'">
+    <DefineConstants>$(DefineConstants)TRACE;LOCAL_P2P</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ArenaP2P|AnyCPU'">
     <DefineConstants>$(DefineConstants)TRACE;LOCAL_P2P</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -98,6 +105,12 @@
       <Private>False</Private>
     </Reference>
     <Reference Update="lib\PUBLIC-Assembly-CSharp.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Rewired_Core.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Rewired_Windows.dll">
       <Private>False</Private>
     </Reference>
     <Reference Update="lib\UnityEngine.AssetBundleModule.dll">

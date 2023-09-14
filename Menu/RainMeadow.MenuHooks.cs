@@ -1,4 +1,4 @@
-﻿using Steamworks;
+using Steamworks;
 using UnityEngine;
 
 namespace RainMeadow
@@ -18,6 +18,11 @@ namespace RainMeadow
                 self.currentMainLoop = new LobbySelectMenu(self);
             }
             // todo: handle different loby menu types
+            if (ID == Ext_ProcessID.ArenaLobbyMenu)
+            {
+                self.currentMainLoop = new ArenaLobbyMenu(self);
+            }
+
             if (ID == Ext_ProcessID.LobbyMenu)
             {
                 self.currentMainLoop = new LobbyMenu(self);

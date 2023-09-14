@@ -43,7 +43,13 @@ namespace RainMeadow
         }
 
         private int me;
+#if ARENAP2P
+        private string localGameMode = "ArenaCompetitive";
+#elif STORYP2P
         private string localGameMode = "Story";
+#else
+        private string localGameMode = "FreeRoam";
+#endif
 
         public LocalMatchmakingManager()
         {
