@@ -10,7 +10,7 @@ namespace RainMeadow
     {
         public OnlineResource super; // the resource above this (ie lobby for a world, world for a room)
         public OnlinePlayer owner; // the current owner of this resource, can perform certain operations
-        public Dictionary<OnlinePlayer, PlayerMemebership> participants = new(); // all the players in the resource, current owner included
+        public Dictionary<OnlinePlayer, PlayerMemebership> participants = new(); // all the players in the resource, owner included
         public TickReference ownerSinceTick;
         public TickReference memberSinceTick;
 
@@ -26,7 +26,7 @@ namespace RainMeadow
         public bool isAvailable { get; protected set; } // The resource state is available
         public bool isWaitingForState { get; protected set; } // The resource was leased or subscribed to
         public bool isPending => pendingRequest != null || isWaitingForState;
-        public bool canRelease => !isPending && isActive && !subresources.Any(s => s.isAvailable) && !entities.Keys.Any(e => e.isMine && !e.isTransferable);
+        public bool canRelease => !isPending && isActive && !subresources.Any(s => s.isAvailable);
 
         // The online resource has been leased
         public void WaitingForState()
@@ -157,9 +157,8 @@ namespace RainMeadow
                 {
                     if (!ent.isTransferable && ent.isMine)
                     {
-                        //RainMeadow.Debug($"Foce-remove entity {item} from resource {this}");
-                        //EntityLeftResource(item); // force remove
-                        throw new InvalidOperationException("Not isTransferable: " + ent);
+                        RainMeadow.Debug($"Foce-remove entity {ent} from resource {this}");
+                        EntityLeftResource(ent); // force remove
                     }
                 }
             }

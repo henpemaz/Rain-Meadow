@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using static RainMeadow.OnlineState;
-using static RainMeadow.Serializer;
-using static RainMeadow.WorldSession;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     public partial class WorldSession
     {
@@ -14,7 +7,7 @@ namespace RainMeadow
         {
             [OnlineField]
             public int cycleLength = 0;
-            [OnlineField]
+            [OnlineField(group:"timer")]
             public int timer = 0;
             [OnlineField]
             public int preTimer = 0;

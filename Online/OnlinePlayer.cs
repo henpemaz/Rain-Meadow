@@ -129,6 +129,15 @@ namespace RainMeadow
             }
         }
 
+        internal void Updade()
+        {
+            // Update snapshot cycle for debug overlay and reset for snapshot frame
+            var nextSnapshotIndex = (bytesSnapIndex + 1) % 40;
+            bytesIn[nextSnapshotIndex] = 0;
+            bytesOut[nextSnapshotIndex] = 0;
+            bytesSnapIndex = nextSnapshotIndex;
+        }
+
         public override string ToString()
         {
             return $"{inLobbyId}:{id}";

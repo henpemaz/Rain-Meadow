@@ -18,7 +18,7 @@ namespace RainMeadow
             if (!oe.isMine) throw new InvalidOperationException("not mine");
             if (entities.ContainsKey(oe)) throw new InvalidOperationException("already in entities");
             RainMeadow.Debug($"{this} - joining with {oe}");
-            if (this is not Lobby && super.entities.ContainsKey(oe)) // already in super, therefore known
+            if (this is not Lobby && super.entities.ContainsKey(oe)) // already known
             {
                 EntityJoin(oe);
             }

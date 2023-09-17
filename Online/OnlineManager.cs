@@ -107,12 +107,9 @@ namespace RainMeadow
         {
             if (lobby != null)
             {
-                // Update snapshot cycle for debug overlay and reset for snapshot frame
-                foreach (OnlinePlayer player in players) {
-                    var nextSnapshotIndex = (player.bytesSnapIndex + 1) % 40;
-                    player.bytesIn[nextSnapshotIndex] = 0;
-                    player.bytesOut[nextSnapshotIndex] = 0;
-                    player.bytesSnapIndex = nextSnapshotIndex;
+                foreach (OnlinePlayer player in players)
+                {
+                    player.Updade();
                 }
 
                 mePlayer.tick++;

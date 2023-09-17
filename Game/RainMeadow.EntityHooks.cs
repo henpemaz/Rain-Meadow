@@ -305,18 +305,13 @@ namespace RainMeadow
                             {
                                 Debug("removing remote entity " + oe);
                                 roomSession.entities.Remove(oe);
-                                room.abstractRoom.RemoveEntity(apo);
-                                if (apo.realizedObject != null)
-                                {
-                                    room.RemoveObject(apo.realizedObject);
-                                    room.CleanOutObjectNotInThisRoom(apo.realizedObject);
-                                }
+                                oe.OnLeftResource(roomSession);
                             }
                             else // mine leave the old online world
                             {
                                 Debug("removing my entity " + oe);
-                                roomSession.LocalEntityLeft(oe);
-                                roomSession.worldSession.LocalEntityLeft(oe);
+                                oe.LeaveResource(roomSession);
+                                oe.LeaveResource(roomSession.worldSession);
                             }
                         }
                     }

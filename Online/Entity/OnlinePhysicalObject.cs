@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace RainMeadow
@@ -181,35 +182,30 @@ namespace RainMeadow
 
         public override void OnLeftResource(OnlineResource inResource)
         {
-            bool unregister = inResource == primaryResource;
             base.OnLeftResource(inResource);
             if (!isMine)
             {
-                if (inResource is RoomSession oldRoom)
+                if (inResource is RoomSession rs)
                 {
-                    RainMeadow.Debug(this);
-                    if (roomSession == oldRoom)
+                    RainMeadow.Debug("Removing entity from room: " + this);
+                    beingMoved = true;
+                    rs.absroom.RemoveEntity(apo);
+                    if (apo.realizedObject is PhysicalObject po)
                     {
-                        RainMeadow.Debug("Removing entity from room: " + this);
-                        beingMoved = true;
-                        oldRoom.absroom.RemoveEntity(apo);
-                        if (apo.realizedObject is PhysicalObject po)
+                        if (rs.absroom.realizedRoom is Room room)
                         {
-                            if (oldRoom.absroom.realizedRoom is Room room)
-                            {
-                                room.RemoveObject(po);
-                                room.CleanOutObjectNotInThisRoom(po);
-                            }
-                            if (po is Creature c && c.inShortcut)
-                            {
-                                if (c.RemoveFromShortcuts()) c.inShortcut = false;
-                            }
+                            room.RemoveObject(po);
+                            room.CleanOutObjectNotInThisRoom(po);
                         }
-                        beingMoved = false;
+                        if (po is Creature c && c.inShortcut && !joinedResources.Any(r => r is RoomSession))
+                        {
+                            if (c.RemoveFromShortcuts()) c.inShortcut = false;
+                        }
                     }
+                    beingMoved = false;
                 }
             }
-            if(unregister)
+            if(primaryResource == null)
             {
                 map.Remove(apo);
                 OnlineManager.recentEntities.Remove(id);
