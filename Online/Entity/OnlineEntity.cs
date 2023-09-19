@@ -139,14 +139,14 @@ namespace RainMeadow
 
             if (wasOwner.isMe)
             {
-                foreach (var res in enteredResources)
+                foreach (var res in joinedResources)
                 {
                     OnlineManager.RemoveFeed(res, this);
                 }
             }
             if (newOwner.isMe)
             {
-                foreach (var res in enteredResources)
+                foreach (var res in joinedResources)
                 {
                     if (!res.isOwner)
                         OnlineManager.AddFeed(res, this);

@@ -6,7 +6,7 @@ namespace RainMeadow
     {
         // if sent "standalone" tracks Baseline
         // if sent inside another delta, doesn't
-        [OnlineField]
+        [OnlineField(always:true)]
         public OnlineEntity.EntityId entityId;
         public OnlineEntity.EntityId ID => entityId;
 

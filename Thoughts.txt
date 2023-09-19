@@ -23,6 +23,7 @@ State vs Events
 	Are states that send every tick just worse events? because they also cause the "unchanged" sends
 	I'm starting to think ownership-state is special
 		note, currently using events that have a delta-state in it lolmao
+			note, switched back to state now that states handle deltas nicely
 
 Handshaked events
 	If I'm sending something "to owner" because owner is the only one who can handle it, then it should be a handshaked event, because by the time the event gets there owner might not be owner anymore and ask me to retry.

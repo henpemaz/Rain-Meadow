@@ -11,16 +11,12 @@
         }
         public override bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)
         {
-            if (worldSession is null || !worldSession.isAvailable)
-            {
-                return false;
-            }
-            return worldSession.isOwner;
+            return worldSession.owner == null || worldSession.isOwner;
         }
 
         public override bool ShouldSpawnRoomItems(RainWorldGame game, RoomSession roomSession)
         {
-            return roomSession.owner == null || roomSession.owner.isMe;
+            return roomSession.owner == null || roomSession.isOwner;
             // todo if two join at once, this first check is faulty
         }
 

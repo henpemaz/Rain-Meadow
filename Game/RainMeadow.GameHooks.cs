@@ -179,6 +179,8 @@ namespace RainMeadow
                     return;
                 }
 
+                self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);
+
                 // activate the new world
                 if (self.Finished && !ws.isActive)
                 {
