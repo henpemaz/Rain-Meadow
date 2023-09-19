@@ -31,7 +31,7 @@ namespace RainMeadow
             return latestState;
         }
 
-        protected Queue<ResourceState> incomingState;
+        protected Queue<ResourceState> incomingState = new(32);
         protected abstract ResourceState MakeState(uint ts);
         public void ReadState(ResourceState newState)
         {

@@ -33,7 +33,7 @@ namespace RainMeadow
         // todo figure out how to handle indexes for modded stuff (so doesn't depend on load-order and so forth)
         public class StateType : ExtEnum<StateType>
         {
-            private StateType(string value, bool register) : base(value, register) { }
+            public StateType(string value, bool register) : base(value, register) { }
             public StateType(string value) : base(value, false) { }
             public StateType(string value, Type type) : base(value, true) { OnlineState.RegisterState(this, type); }
 
@@ -73,6 +73,10 @@ namespace RainMeadow
         public static void RegisterState(StateType stateType, Type type)
         {
             if (!handlersByEnum.ContainsKey(stateType)) { handlersByEnum[stateType] = handlersByType[type] = new StateHandler(stateType, type); }
+        }
+        internal static void InitializeBuiltinTypes()
+        {
+            _ = StateType.Unknown; // runs static init
         }
 
         public virtual void CustomSerialize(Serializer serializer)

@@ -11,6 +11,7 @@ namespace RainMeadow
             if (isPending) throw new InvalidOperationException("pending");
             if (isAvailable) throw new InvalidOperationException("available");
 
+            ClearIncommingBuffers();
             pendingRequest = (ResourceEvent)supervisor.QueueEvent(new ResourceRequest(this));
         }
 

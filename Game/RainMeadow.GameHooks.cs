@@ -22,6 +22,8 @@ namespace RainMeadow
             On.AbstractRoom.Abstractize += AbstractRoom_Abstractize;
             IL.ShortcutHandler.SuckInCreature += ShortcutHandler_SuckInCreature;
 
+            On.RegionState.AdaptWorldToRegionState += RegionState_AdaptWorldToRegionState;
+
             On.Room.ctor += Room_ctor;
             IL.Room.LoadFromDataString += Room_LoadFromDataString;
             IL.Room.Loaded += Room_Loaded;
@@ -207,6 +209,26 @@ namespace RainMeadow
                     }
                 }
             }
+        }
+
+        // World loading items/creatures
+        private void RegionState_AdaptWorldToRegionState(On.RegionState.orig_AdaptWorldToRegionState orig, RegionState self)
+        {
+            if (OnlineManager.lobby != null && WorldSession.map.TryGetValue(self.world, out var ws))
+            {
+                if (!OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.world.game, ws) || !ws.isOwner)
+                {
+                    self.savedPopulation.Clear();
+                    self.saveState.pendingFriendCreatures.Clear(); // maybe these should be let through, but we remove them on leaving the world to sleepscreen?
+                }
+                if (!ws.isOwner)
+                {
+                    self.savedObjects.Clear();
+                    self.saveState.pendingObjects.Clear();
+                }
+            }
+            
+            orig(self);
         }
 
         // World request/release

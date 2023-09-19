@@ -62,8 +62,17 @@ namespace RainMeadow
             apo.ID = id;
             
             var oe = new OnlinePhysicalObject(apo, newObjectEvent.seed, newObjectEvent.realized, OnlineManager.lobby.PlayerFromId(newObjectEvent.owner), newObjectEvent.entityId, newObjectEvent.isTransferable);
-            map.Add(apo, oe);
-            OnlineManager.recentEntities.Add(oe.id, oe);
+            try
+            {
+                map.Add(apo, oe);
+                OnlineManager.recentEntities.Add(oe.id, oe);
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                RainMeadow.Error(Environment.StackTrace);
+            }
+            return oe;
 
             return oe;
         }
