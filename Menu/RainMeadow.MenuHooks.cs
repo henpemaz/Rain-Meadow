@@ -17,12 +17,10 @@ namespace RainMeadow
             {
                 self.currentMainLoop = new LobbySelectMenu(self);
             }
-            // todo: handle different loby menu types
             if (ID == Ext_ProcessID.ArenaLobbyMenu)
             {
                 self.currentMainLoop = new ArenaLobbyMenu(self);
             }
-
             if (ID == Ext_ProcessID.LobbyMenu)
             {
                 self.currentMainLoop = new LobbyMenu(self);
@@ -62,7 +60,7 @@ namespace RainMeadow
             self.AddMainMenuButton(meadowButton, () =>
             {
 #if !LOCAL_P2P
-                if (!SteamManager.Instance.m_bInitialized)
+                if (!SteamManager.Instance.m_bInitialized || !SteamUser.BLoggedOn())
                 {
                     self.manager.ShowDialog(new Menu.DialogNotify("You need Steam active to play Rain Meadow", self.manager, null));
                     return;

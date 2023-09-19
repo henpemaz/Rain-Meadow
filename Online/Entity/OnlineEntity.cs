@@ -127,10 +127,7 @@ namespace RainMeadow
                     return OnlinePhysicalObject.FromEvent(newObjectEvent, inResource);
                 }
             }
-            else
-            {
-                throw new InvalidOperationException("unknown entity event type");
-            }
+            throw new InvalidOperationException("unknown entity event type");
         }
 
         public virtual void NewOwner(OnlinePlayer newOwner)

@@ -24,9 +24,16 @@ namespace RainMeadow
             ac.ID = id;
 
             var oe = new OnlineCreature(ac, newCreatureEvent.seed, newCreatureEvent.realized, OnlineManager.lobby.PlayerFromId(newCreatureEvent.owner), newCreatureEvent.entityId, newCreatureEvent.isTransferable);
-            map.Add(ac, oe);
-            OnlineManager.recentEntities.Add(oe.id, oe);
-
+            try
+            {
+                map.Add(ac, oe);
+                OnlineManager.recentEntities.Add(oe.id, oe);
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                RainMeadow.Error(Environment.StackTrace);
+            }
             return oe;
         }
 

@@ -70,7 +70,7 @@ namespace RainMeadow
 
         public static bool CloseEnough(this Vector2 a, Vector2 b, float tolerance)
         {
-            return (a - b).sqrMagnitude < tolerance * tolerance;
+            return a == b || (a - b).sqrMagnitude < tolerance * tolerance;
         }
     }
 }

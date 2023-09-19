@@ -7,7 +7,7 @@ namespace RainMeadow
     {
         public abstract World World { get; }
         public Dictionary<OnlineEntity, EntityMembership> entities;
-        private List<EntityResourceEvent> incomingEntityEvents; // entities coming from onwer but that I can't process yet
+        private List<EntityResourceEvent> incomingEntityEvents = new(); // entities coming from onwer but that I can't process yet
 
         // An entity I control has entered the resource, consider registering or joining
         // called from entity join logic - entities join on a queue of resources they need to join
@@ -18,7 +18,7 @@ namespace RainMeadow
             if (!oe.isMine) throw new InvalidOperationException("not mine");
             if (entities.ContainsKey(oe)) throw new InvalidOperationException("already in entities");
             RainMeadow.Debug($"{this} - joining with {oe}");
-            if (this is not Lobby && super.entities.ContainsKey(oe)) // already in super, therefore known
+            if (this is not Lobby && super.entities.ContainsKey(oe)) // already known
             {
                 EntityJoin(oe);
             }
@@ -91,6 +91,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             entities.Add(oe, new EntityMembership(oe, this));
+            if (!oe.isMine) oe.EnterResource(this);
             oe.OnJoinedResource(this, initialState);
             if (isOwner)
             {
@@ -188,6 +189,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             entities.Add(oe, new EntityMembership(oe, this));
+            if (!oe.isMine) oe.EnterResource(this);
             oe.OnJoinedResource(this, initialState);
             if (isOwner)
             {

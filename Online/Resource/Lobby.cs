@@ -11,7 +11,6 @@ namespace RainMeadow
         public OnlineGameMode gameMode;
         public OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
-        public RainCycle cycle;
 
         public override World World => throw new NotSupportedException(); // Lobby can't add world entities
 
