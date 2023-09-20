@@ -72,6 +72,7 @@ namespace RainMeadow
             EntityRelease,
             DeltaReset,
             PlayerAddFood,
+            PlayerAddQuarterFood,
         }
 
         public static OnlineEvent NewFromType(EventTypeId eventTypeId)
@@ -164,6 +165,9 @@ namespace RainMeadow
                     break;
                 case EventTypeId.PlayerAddFood:
                     e = new PlayerEvent.AddFood();
+                    break;
+                case EventTypeId.PlayerAddQuarterFood:
+                    e = new PlayerEvent.AddQuarterFood();
                     break;
             }
             if (e is null) throw new InvalidOperationException("invalid event type: " + eventTypeId);

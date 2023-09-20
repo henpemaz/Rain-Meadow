@@ -22,6 +22,17 @@ public partial class RainMeadow
     private void Player_AddQuarterFood(On.Player.orig_AddQuarterFood orig, Player self)
     {
         orig(self);
+
+        if (OnlineManager.lobby != null)
+        {
+            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+            if (!onlineEntity.isMine) return;
+
+            if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                OnlineManager.lobby.owner.QueueEvent(new AddQuarterFood());
+            }
+        }
     }
 
     private void Player_AddFood(On.Player.orig_AddFood orig, Player self, int add)

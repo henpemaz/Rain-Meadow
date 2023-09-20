@@ -27,5 +27,14 @@ public class PlayerEvent
             ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].realizedCreature as Player).AddFood(add);
         }
     }
+    public class AddQuarterFood : OnlineEvent
+    {
 
+        public AddQuarterFood() { }
+        public override EventTypeId eventType => EventTypeId.PlayerAddQuarterFood;
+        public override void Process()
+        {
+            ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].realizedCreature as Player).AddQuarterFood();
+        }
+    }
 }
