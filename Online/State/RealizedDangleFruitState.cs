@@ -35,7 +35,6 @@ namespace RainMeadow
 
             var fruit = (DangleFruit)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             fruit.bites = bites;
-            if (bites < 3) { RainMeadow.Debug($"Bites written to: {bites}"); }
             if (hasStalk && fruit.stalk == null)
             {
                 fruit.stalk = new DangleFruit.Stalk(fruit, fruit.room, fruit.bodyChunks[0].pos);
