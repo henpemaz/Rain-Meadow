@@ -43,6 +43,7 @@ namespace RainMeadow
             public static readonly StateType RoomState = new("RoomState", typeof(RoomState));
             public static readonly StateType EntityFeedState = new("EntityFeedState", typeof(EntityFeedState));
             public static readonly StateType PhysicalObjectEntityState = new("PhysicalObjectEntityState", typeof(PhysicalObjectEntityState));
+            public static readonly StateType PlayerStateState = new("PlayerStateState", typeof(PlayerStateState));
             public static readonly StateType AbstractCreatureState = new("AbstractCreatureState", typeof(AbstractCreatureState));
             public static readonly StateType RealizedPhysicalObjectState = new("RealizedPhysicalObjectState", typeof(RealizedPhysicalObjectState));
             public static readonly StateType RealizedDangleFruitState = new("RealizedDangleFruitState", typeof(RealizedDangleFruitState));
@@ -194,7 +195,9 @@ namespace RainMeadow
                     && m.GetParameters().Any(p => p.ParameterType.IsByRef && (p.ParameterType.GetElementType().IsGenericType && p.ParameterType.GetElementType().GetGenericTypeDefinition() == typeof(List<>)) != f.FieldType.IsArray && p.ParameterType.GetElementType().IsArray == f.FieldType.IsArray)
                     ).MakeGenericMethod(new Type[] { f.FieldType.IsArray ? f.FieldType.GetElementType() : f.FieldType.GetGenericArguments()[0] }), fieldRef);
                 }
-                if (!f.FieldType.IsValueType) { RainMeadow.Error($"{f.FieldType} not handled by SerializerCallMethod"); }
+                if (!f.FieldType.IsValueType && f.FieldType != typeof(string)) { 
+                    RainMeadow.Error($"{f.FieldType} not handled by SerializerCallMethod"); 
+                }
                 return Expression.Call(serializerRef, typeof(Serializer).GetMethod(nullable ? "SerializeNullable" : "Serialize", new[] { f.FieldType.MakeByRefType() }), fieldRef);
             }
 

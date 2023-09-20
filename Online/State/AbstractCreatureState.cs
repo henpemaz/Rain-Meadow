@@ -13,6 +13,7 @@ namespace RainMeadow
         protected virtual CreatureStateState GetCreatureStateState(OnlineCreature onlineCreature)
         {
             if ((onlineCreature.apo as AbstractCreature).state is HealthState) return new CreatureHealthStateState(onlineCreature);
+            if ((onlineCreature.apo as AbstractCreature).state is PlayerState) return new PlayerStateState(onlineCreature);
             return new CreatureStateState(onlineCreature);
         }
 
@@ -28,21 +29,7 @@ namespace RainMeadow
         {
             base.ReadTo(onlineEntity);
             var abstractCreature = (AbstractCreature)((OnlineCreature)onlineEntity).apo;
-
-            if (creatureStateState is CreatureStateState newState)
-            {
-                abstractCreature.state.alive = newState.alive;
-                abstractCreature.state.meatLeft = newState.meatLeft;
-                if (abstractCreature.realizedCreature is Creature realCreature)
-                {
-                    realCreature.dead = !newState.alive;
-                }
-            }
-            if (creatureStateState is CreatureHealthStateState healthStateState)
-            {
-                var healthState = (HealthState)abstractCreature.state;
-                healthState.health = healthStateState.health;
-            }
+            creatureStateState.ReadTo(abstractCreature);
         }
 
         public override OnlineState Delta(OnlineState baseline)
