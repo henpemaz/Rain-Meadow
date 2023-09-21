@@ -321,6 +321,21 @@ namespace RainMeadow.Generics
             }
         }
     }
+    public class AddRemoveSortedStrings : AddRemoveSortedList<string, AddRemoveSortedStrings>
+    {
+        public AddRemoveSortedStrings() { }
+        public AddRemoveSortedStrings(List<string> list) : base(list) { }
+
+        public override void CustomSerialize(Serializer serializer)
+        {
+            serializer.Serialize(ref list);
+            if (serializer.IsDelta)
+            {
+                serializer.Serialize(ref listIndexes);
+                serializer.Serialize(ref removedIndexes);
+            }
+        }
+    }
 
     public class AddRemoveSortedUshorts : AddRemoveSortedList<ushort, AddRemoveSortedUshorts>
     {

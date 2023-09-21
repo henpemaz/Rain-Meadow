@@ -1,3 +1,5 @@
+using static RainMeadow.PlayerEvent;
+
 namespace RainMeadow;
 
 public partial class RainMeadow
@@ -10,9 +12,42 @@ public partial class RainMeadow
         On.Player.ctor += Player_ctor;
         On.Player.Die += PlayerOnDie;
         On.Player.Grabability += PlayerOnGrabability;
+        On.Player.AddFood += Player_AddFood;
+        On.Player.AddQuarterFood += Player_AddQuarterFood;
 
         On.SlugcatStats.ctor += SlugcatStatsOnctor;
         On.AbstractCreature.ctor += AbstractCreature_ctor;
+    }
+
+    private void Player_AddQuarterFood(On.Player.orig_AddQuarterFood orig, Player self)
+    {
+        orig(self);
+
+        if (OnlineManager.lobby != null)
+        {
+            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+            if (!onlineEntity.isMine) return;
+
+            if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                OnlineManager.lobby.owner.QueueEvent(new AddQuarterFood());
+            }
+        }
+    }
+
+    private void Player_AddFood(On.Player.orig_AddFood orig, Player self, int add)
+    {
+        orig(self, add);
+
+        if (OnlineManager.lobby != null) {
+            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+            if (!onlineEntity.isMine) return;
+
+            if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                OnlineManager.lobby.owner.QueueEvent(new AddFood(add));
+            }
+        }
     }
 
     private void AbstractCreature_ctor(On.AbstractCreature.orig_ctor orig, AbstractCreature self, World world, CreatureTemplate creatureTemplate, Creature realizedCreature, WorldCoordinate pos, EntityID ID)

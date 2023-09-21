@@ -71,6 +71,9 @@ namespace RainMeadow
             EntityRequest,
             EntityRelease,
             DeltaReset,
+            PlayerAddFood,
+            PlayerAddQuarterFood,
+            AbstractRoomFirstTimeRealized,
         }
 
         public static OnlineEvent NewFromType(EventTypeId eventTypeId)
@@ -160,6 +163,15 @@ namespace RainMeadow
                     break;
                 case EventTypeId.DeltaReset:
                     e = new DeltaReset();
+                    break;
+                case EventTypeId.PlayerAddFood:
+                    e = new PlayerEvent.AddFood();
+                    break;
+                case EventTypeId.PlayerAddQuarterFood:
+                    e = new PlayerEvent.AddQuarterFood();
+                    break;
+                case EventTypeId.AbstractRoomFirstTimeRealized:
+                    e = new AbstractRoomFirstTimeRealizedEvent();
                     break;
             }
             if (e is null) throw new InvalidOperationException("invalid event type: " + eventTypeId);
