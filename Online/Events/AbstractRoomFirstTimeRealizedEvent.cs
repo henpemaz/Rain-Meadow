@@ -14,7 +14,6 @@ namespace RainMeadow
 
         public override void Process()
         {
-            RainMeadow.Debug("processing room realized event");
             var rs = onlineResource as RoomSession;
 
             rs.absroom.firstTimeRealized = false;

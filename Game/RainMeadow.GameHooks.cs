@@ -50,7 +50,6 @@ namespace RainMeadow
 
                     if (self.abstractRoom.firstTimeRealized != isFirstTimeRealized)
                     {
-                        RainMeadow.Debug("sending to host room realized event");
                         OnlineManager.lobby.owner.QueueEvent(new AbstractRoomFirstTimeRealizedEvent(rs));
                     }
                 }
