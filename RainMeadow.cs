@@ -100,6 +100,7 @@ namespace RainMeadow
             try
             {
                 OnlineState.InitializeBuiltinTypes();
+                OnlineGameMode.InitializeBuiltinTypes();
 
                 self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
 

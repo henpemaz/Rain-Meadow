@@ -8,6 +8,7 @@
             public static ProcessManager.ProcessID LobbySelectMenu = new("MeadowLobbySelectMenu", true);
             public static ProcessManager.ProcessID LobbyMenu = new("MeadowLobbyMenu", true);
             public static ProcessManager.ProcessID ArenaLobbyMenu = new("MeadowArenaLobbyMenu", true);
+            public static ProcessManager.ProcessID MeadowMenu = new("MeadowMenu", true);
         }
 
         public class Ext_SlugcatStatsName

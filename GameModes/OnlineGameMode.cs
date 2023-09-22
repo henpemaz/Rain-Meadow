@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -24,30 +25,34 @@ namespace RainMeadow
             };
         }
 
-        public OnlineGameMode(Lobby lobby)
+        public static Dictionary<OnlineGameModeType, Type> gamemodes = new()
         {
-            this.lobby = lobby;
-        }
+            { OnlineGameModeType.Meadow, typeof(MeadowGameMode) },
+            { OnlineGameModeType.Story, typeof(StoryGameMode) },
+            { OnlineGameModeType.FreeRoam, typeof(FreeRoamGameMode) },
+            { OnlineGameModeType.ArenaCompetitive, typeof(ArenaCompetitiveGameMode) }
+        };
 
         public static OnlineGameMode FromType(OnlineGameModeType onlineGameModeType, Lobby lobby)
         {
-            if (onlineGameModeType == OnlineGameModeType.Meadow)
-            {
-                return new MeadowGameMode(lobby);
-            }
-            if (onlineGameModeType == OnlineGameModeType.Story)
-            {
-                return new StoryGameMode(lobby);
-            }
-            if (onlineGameModeType == OnlineGameModeType.FreeRoam)
-            {
-                return new FreeRoamGameMode(lobby);
-            }
-            if (onlineGameModeType == OnlineGameModeType.ArenaCompetitive)
-            {
-                return new ArenaCompetitiveGameMode(lobby);
-            }
-            return null;
+            return (OnlineGameMode)Activator.CreateInstance(gamemodes[onlineGameModeType], new { lobby });
+        }
+
+        // todo handle modded ones
+        public static void RegisterType(OnlineGameModeType onlineGameModeType, Type type, string description)
+        {
+            gamemodes[onlineGameModeType] = type;
+            OnlineGameModeType.descriptions[onlineGameModeType] = description;
+        }
+
+        public static void InitializeBuiltinTypes()
+        {
+            _ = gamemodes;
+        }
+
+        public OnlineGameMode(Lobby lobby)
+        {
+            this.lobby = lobby;
         }
 
         public virtual void FilterItems(Room room)
@@ -99,6 +104,11 @@ namespace RainMeadow
         public virtual SlugcatStats.Name LoadWorldAs(RainWorldGame game)
         {
             return RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;
+        }
+
+        public virtual ProcessManager.ProcessID MenuProcessId()
+        {
+            return RainMeadow.Ext_ProcessID.LobbyMenu;
         }
     }
 }

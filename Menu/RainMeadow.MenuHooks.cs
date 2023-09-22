@@ -21,6 +21,10 @@ namespace RainMeadow
             {
                 self.currentMainLoop = new ArenaLobbyMenu(self);
             }
+            if (ID == Ext_ProcessID.MeadowMenu)
+            {
+                self.currentMainLoop = new MeadowMenu(self);
+            }
             if (ID == Ext_ProcessID.LobbyMenu)
             {
                 self.currentMainLoop = new LobbyMenu(self);

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using static RainMeadow.OnlineGameMode;
 
 namespace RainMeadow
 {
@@ -9,18 +8,18 @@ namespace RainMeadow
     public class Lobby : OnlineResource
     {
         public OnlineGameMode gameMode;
-        public OnlineGameModeType gameModeType;
+        public OnlineGameMode.OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
 
         public override World World => throw new NotSupportedException(); // Lobby can't add world entities
 
         public event Action OnLobbyAvailable; // for menus
 
-        public Lobby(OnlineGameModeType mode, OnlinePlayer owner)
+        public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner)
         {
             this.super = this;
 
-            this.gameMode = FromType(mode, this);
+            this.gameMode = OnlineGameMode.FromType(mode, this);
             this.gameModeType = mode;
             if (gameMode == null) throw new Exception($"Invalid game mode {mode}");
 
