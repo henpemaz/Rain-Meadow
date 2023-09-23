@@ -21,6 +21,7 @@ namespace RainMeadow
 
             RainMeadow.Debug("serializedObject: " + newCreatureEvent.serializedObject);
             AbstractCreature ac = SaveState.AbstractCreatureFromString(inResource.World, newCreatureEvent.serializedObject, false);
+            if (ac == null) throw new InvalidOperationException("AbstractCreature is null");
             ac.ID = id;
 
             var oe = new OnlineCreature(ac, newCreatureEvent.seed, newCreatureEvent.realized, OnlineManager.lobby.PlayerFromId(newCreatureEvent.owner), newCreatureEvent.entityId, newCreatureEvent.isTransferable);
@@ -39,8 +40,18 @@ namespace RainMeadow
 
         public override NewEntityEvent AsNewEntityEvent(OnlineResource inResource)
         {
-            RainMeadow.Debug($"serializing {this} in {apo.pos} as {SaveState.AbstractCreatureToStringStoryWorld(apo as AbstractCreature)}");
-            return new NewCreatureEvent(seed, realized, SaveState.AbstractCreatureToStringStoryWorld(apo as AbstractCreature), inResource, this, null);
+            string serializedCreature;
+            if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode)
+            {
+                serializedCreature = SaveState.AbstractCreatureToStringSingleRoomWorld(apo as AbstractCreature);
+            }
+            else
+            {
+                serializedCreature = SaveState.AbstractCreatureToStringStoryWorld(apo as AbstractCreature);
+            }
+
+            RainMeadow.Debug($"serializing {this} in {apo.pos} as {serializedCreature}");
+            return new NewCreatureEvent(seed, realized, serializedCreature, inResource, this, null);
         }
 
         protected override EntityState MakeState(uint tick, OnlineResource resource)

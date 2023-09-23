@@ -20,6 +20,7 @@ namespace RainMeadow
 
             if (OnlineManager.lobby == null) throw new InvalidOperationException("lobby is null");
             OnlineManager.lobby.OnLobbyAvailable += OnLobbyAvailable;
+            OnlineManager.lobby.OnPlayerEntered += OnPlayerEntered;
 
             manager.arenaSetup = new ArenaSetup(manager)
             {
@@ -31,6 +32,12 @@ namespace RainMeadow
             UninitializeInheritedScene();
 
             BuildLayout();
+        }
+
+        private void OnPlayerEntered(OnlinePlayer player)
+        {
+            RainMeadow.Debug("Got lobby player " + player.id);
+
         }
 
         void UninitializeInheritedScene()
@@ -223,7 +230,11 @@ namespace RainMeadow
         {
             manager.arenaSitting = new ArenaSitting(mm.GetGameTypeSetup, mm.multiplayerUnlocks);
 
-            manager.arenaSitting.AddPlayer(0); // placeholder add player
+            for (int i = 0; i < OnlineManager.lobby.participants.Count; i++)
+            {
+                manager.arenaSitting.AddPlayer(i);
+            }
+
             manager.arenaSitting.levelPlaylist = new List<string>();
 
             if (mm.GetGameTypeSetup.shufflePlaylist)
@@ -267,7 +278,7 @@ namespace RainMeadow
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
 
             // temp
-            UserInput.SetUserCount(OnlineManager.players.Count);
+            UserInput.SetUserCount(1);
             UserInput.SetForceDisconnectControllers(forceDisconnect: false);
 
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
@@ -279,15 +290,15 @@ namespace RainMeadow
             mm.Update();
             //base.Update();
 
-			if (mm.GetGameTypeSetup.playList.Count * mm.GetGameTypeSetup.levelRepeats > 0)
-			{
-				mm.playButton.buttonBehav.greyedOut = false;
-			}
-			else
-			{
-				mm.playButton.buttonBehav.greyedOut = OnlineManager.lobby.isAvailable;
-			}
-		}
+            if (mm.GetGameTypeSetup.playList.Count * mm.GetGameTypeSetup.levelRepeats > 0)
+            {
+                mm.playButton.buttonBehav.greyedOut = false;
+            }
+            else
+            {
+                mm.playButton.buttonBehav.greyedOut = OnlineManager.lobby.isAvailable;
+            }
+        }
 
 
         public override void Singal(MenuObject sender, string message)
@@ -445,7 +456,11 @@ namespace RainMeadow
         {
             // Rain Meadow
             RainMeadow.DebugMe();
-            if (OnlineManager.lobby != null) OnlineManager.lobby.OnLobbyAvailable -= OnLobbyAvailable;
+            if (OnlineManager.lobby != null)
+            {
+                OnlineManager.lobby.OnLobbyAvailable -= OnLobbyAvailable;
+                OnlineManager.lobby.OnPlayerEntered -= OnPlayerEntered;
+            }
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
                 MatchmakingManager.instance.LeaveLobby();

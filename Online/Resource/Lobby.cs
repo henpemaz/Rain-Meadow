@@ -15,6 +15,7 @@ namespace RainMeadow
         public override World World => throw new NotSupportedException(); // Lobby can't add world entities
 
         public event Action OnLobbyAvailable; // for menus
+        public event Action<OnlinePlayer> OnPlayerEntered;
 
         public Lobby(OnlineGameModeType mode, OnlinePlayer owner)
         {
@@ -41,7 +42,7 @@ namespace RainMeadow
         {
             if(gameModeType == OnlineGameMode.OnlineGameModeType.ArenaCompetitive) // Arena
             {
-                var nr = new Region("arena", 0, -1, null);
+                var nr = new Region("arena", 0, 0, null);
                 var ns = new WorldSession(nr, this);
                 worldSessions.Add(nr.name, ns);
                 subresources.Add(ns);
@@ -144,6 +145,7 @@ namespace RainMeadow
             base.NewParticipantImpl(player);
             player.inLobbyId = nextId;
             RainMeadow.Debug($"Assigned inLobbyId of {nextId} to player {player}");
+            OnPlayerEntered?.Invoke(player);
             nextId++;
             // todo overflows and repeats
         }
