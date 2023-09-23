@@ -35,12 +35,13 @@ namespace RainMeadow
 
         public static OnlineGameMode FromType(OnlineGameModeType onlineGameModeType, Lobby lobby)
         {
-            return (OnlineGameMode)Activator.CreateInstance(gamemodes[onlineGameModeType], new { lobby });
+            return (OnlineGameMode)Activator.CreateInstance(gamemodes[onlineGameModeType], lobby);
         }
 
         // todo handle modded ones
         public static void RegisterType(OnlineGameModeType onlineGameModeType, Type type, string description)
         {
+            if (!typeof(OnlineGameMode).IsAssignableFrom(type) || type.GetConstructor(new[] { typeof(Lobby) }) == null) throw new ArgumentException("Needs to be OnlineGameMode with a (Lobby) ctor");
             gamemodes[onlineGameModeType] = type;
             OnlineGameModeType.descriptions[onlineGameModeType] = description;
         }

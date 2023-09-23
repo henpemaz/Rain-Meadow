@@ -5,7 +5,6 @@ using Steamworks;
 
 namespace RainMeadow
 {
-
     public class LobbyMenu : SmartMenu
     {
         private List<FSprite> sprites;

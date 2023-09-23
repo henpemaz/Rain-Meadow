@@ -1,3 +1,5 @@
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
 using Steamworks;
 using UnityEngine;
 
@@ -9,6 +11,29 @@ namespace RainMeadow
         {
             On.Menu.MainMenu.ctor += MainMenu_ctor;
             On.ProcessManager.PostSwitchMainProcess += ProcessManager_PostSwitchMainProcess;
+
+            IL.Menu.SlugcatSelectMenu.SlugcatPage.AddImage += SlugcatPage_AddImage;
+        }
+
+        private void SlugcatPage_AddImage(ILContext il)
+        {
+            var c = new ILCursor(il);
+            c.Index = il.Instrs.Count - 1;
+            c.GotoPrev(MoveType.Before,
+                (i) => i.MatchLdarg(0),
+                (i) => i.MatchLdflda<Menu.SlugcatSelectMenu.SlugcatPage>("sceneOffset"),
+                (i) => i.MatchLdflda<Vector2>("x"));
+            c.MoveAfterLabels();
+            c.Emit(OpCodes.Ldarg_0);
+            c.Emit(OpCodes.Ldloca, 0);
+            c.EmitDelegate((Menu.SlugcatSelectMenu.SlugcatPage self, ref Menu.MenuScene.SceneID sceneID) => { 
+            if(self.slugcatNumber == RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer)
+                {
+                    sceneID = Menu.MenuScene.SceneID.Ghost_White;
+                    self.sceneOffset = new Vector2(-10f, 100f);
+                    self.slugcatDepth = 3.1000001f;
+                }
+            });
         }
 
         private void ProcessManager_PostSwitchMainProcess(On.ProcessManager.orig_PostSwitchMainProcess orig, ProcessManager self, ProcessManager.ProcessID ID)
