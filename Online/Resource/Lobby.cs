@@ -101,12 +101,19 @@ namespace RainMeadow
             public Generics.AddRemoveSortedPlayerIDs players;
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedUshorts inLobbyIds;
+            [OnlineField]
+            public int food;
+            [OnlineField]
+            public int quarterfood;
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
                 nextId = lobby.nextId;
                 players = new(lobby.participants.Keys.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
+
+                food = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
+                quarterfood = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -126,6 +133,12 @@ namespace RainMeadow
                     }
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
+                var playerstate = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState);
+                if (playerstate != null)
+                {
+                    playerstate.foodInStomach = food;
+                    playerstate.quarterFoodPoints = quarterfood;
+                }
                 base.ReadTo(resource);
             }
         }

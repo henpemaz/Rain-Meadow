@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace RainMeadow
@@ -10,7 +11,6 @@ namespace RainMeadow
         public World world;
         public static ConditionalWeakTable<World, WorldSession> map = new();
         public Dictionary<string, RoomSession> roomSessions = new();
-
         public override World World => world;
 
         public WorldSession(Region region, Lobby lobby)
@@ -77,12 +77,15 @@ namespace RainMeadow
         {
             [OnlineField]
             public RainCycleData rainCycleData;
+            [OnlineField(nullable:true)]
+            public Generics.AddRemoveSortedUshorts realizedRooms;
             public WorldState() : base() { }
             public WorldState(WorldSession resource, uint ts) : base(resource, ts) 
             {
                 if (resource.world != null) {
                     RainCycle rainCycle = resource.world.rainCycle;
                     rainCycleData = new RainCycleData(rainCycle);
+                    realizedRooms = new(resource.world.abstractRooms.Where(s => s.firstTimeRealized == false).Select(r => (ushort)r.index).ToList());
                 }
             }
 
@@ -94,6 +97,14 @@ namespace RainMeadow
                     cycle.preTimer = rainCycleData.preTimer;
                     cycle.timer = rainCycleData.timer;
                     cycle.cycleLength = rainCycleData.cycleLength;
+
+                    if (realizedRooms != null) {
+                        foreach (var index in realizedRooms.list)
+                        {
+                            var abstractRoom = ws.world.GetAbstractRoom(index);
+                            abstractRoom.firstTimeRealized = false;
+                        }
+                    }
                 }
                   
                 base.ReadTo(resource);

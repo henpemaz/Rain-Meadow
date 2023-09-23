@@ -2,6 +2,7 @@
 using MonoMod.Cil;
 using System;
 using System.Linq;
+using static RainMeadow.PlayerEvent;
 
 namespace RainMeadow
 {
@@ -27,11 +28,32 @@ namespace RainMeadow
             On.Room.ctor += Room_ctor;
             IL.Room.LoadFromDataString += Room_LoadFromDataString;
             IL.Room.Loaded += Room_Loaded;
+            On.Room.Loaded += Room_LoadedCheck;
 
             On.FliesWorldAI.AddFlyToSwarmRoom += FliesWorldAI_AddFlyToSwarmRoom;
             
             // Arena specific
             On.GameSession.AddPlayer += GameSession_AddPlayer;
+        }
+
+        private void Room_LoadedCheck(On.Room.orig_Loaded orig, Room self)
+        {
+            var isFirstTimeRealized = self.abstractRoom.firstTimeRealized;
+            orig(self);
+
+            if (OnlineManager.lobby != null)
+            {
+                if (!RoomSession.map.TryGetValue(self.abstractRoom, out var rs)) return;
+                if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
+
+                if (!ws.isOwner) {
+
+                    if (self.abstractRoom.firstTimeRealized != isFirstTimeRealized)
+                    {
+                        OnlineManager.lobby.owner.QueueEvent(new AbstractRoomFirstTimeRealizedEvent(rs));
+                    }
+                }
+            }
         }
 
         private void StoryGameSession_ctor(On.StoryGameSession.orig_ctor orig, StoryGameSession self, SlugcatStats.Name saveStateNumber, RainWorldGame game)

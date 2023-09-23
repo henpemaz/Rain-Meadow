@@ -8,11 +8,14 @@ namespace RainMeadow
     {
         [OnlineField(nullable = true)]
         private Generics.AddRemoveUnsortedCustomSerializables<GraspRef> Grasps;
-
+        [OnlineField]
+        public short stun;
         public RealizedCreatureState() { }
         public RealizedCreatureState(OnlineCreature onlineCreature) : base(onlineCreature)
         {
-            Grasps = new((onlineCreature.apo.realizedObject as Creature).grasps?.Where(g => g != null).Select(GraspRef.FromGrasp).ToList() ?? new());
+            var creature = onlineCreature.apo.realizedObject as Creature;
+            Grasps = new(creature.grasps?.Where(g => g != null).Select(GraspRef.FromGrasp).ToList() ?? new());
+            stun = (short)creature.stun;
         }
         public override void ReadTo(OnlineEntity onlineEntity)
         {
@@ -20,6 +23,8 @@ namespace RainMeadow
             if (onlineEntity.owner.isMe || onlineEntity.isPending) return; // Don't sync if pending, reduces visibility and effect of lag
             if (onlineEntity is not OnlineCreature onlineCreature) return;
             if (onlineCreature.apo.realizedObject is not Creature creature) return;
+
+            creature.stun = stun;
 
             if (creature.grasps == null) return;
             for (var i = 0; i < creature.grasps.Length; i++)

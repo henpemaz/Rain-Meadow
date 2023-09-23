@@ -1,4 +1,5 @@
 using RainMeadow.Generics;
+using System;
 using System.Collections.Generic;
 
 namespace RainMeadow
@@ -18,6 +19,16 @@ namespace RainMeadow
             var abstractCreature = (AbstractCreature)onlineEntity.apo;
             alive = abstractCreature.state.alive;
             meatLeft = (byte)abstractCreature.state.meatLeft;
+        }
+
+        public virtual void ReadTo(AbstractCreature abstractCreature)
+        {
+            abstractCreature.state.alive = this.alive;
+            abstractCreature.state.meatLeft = this.meatLeft;
+            if (abstractCreature.realizedCreature is Creature realCreature)
+            {
+                realCreature.dead = !this.alive;
+            }
         }
     }
 }
