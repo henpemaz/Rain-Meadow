@@ -19,6 +19,14 @@ namespace RainMeadow
         private Vector2 dir;
         [OnlineField(nullable:true)]
         private Vector2? burrowOrHangSpot;
+        [OnlineField]
+        float flap;
+        [OnlineField]
+        float flapSpeed;
+        [OnlineField]
+        float flapDepth;
+        [OnlineField]
+        float lastFlapDepth;
         public RealizedFlyState() { }
         public RealizedFlyState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
@@ -28,10 +36,13 @@ namespace RainMeadow
             this.eaten = (byte)fly.eaten;
             this.dir = fly.dir;
             this.movMode = (byte)fly.movMode.index;
+            this.flap = fly.flap;
+            this.flapSpeed = fly.flapSpeed;
+            this.flapDepth = fly.flapDepth;
+            this.lastFlapDepth = fly.lastFlapDepth;
             if (fly.burrowOrHangSpot.HasValue) {
                 this.burrowOrHangSpot = fly.burrowOrHangSpot.Value;
             }
-
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)

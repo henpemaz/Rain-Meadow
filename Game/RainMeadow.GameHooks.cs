@@ -29,7 +29,7 @@ namespace RainMeadow
             IL.Room.LoadFromDataString += Room_LoadFromDataString;
             IL.Room.Loaded += Room_Loaded;
             On.Room.Loaded += Room_LoadedCheck;
-            On.Room.ReadyForAI += Room_ReadyForAI;
+            On.Room.PlaceQuantifiedCreaturesInRoom += Room_PlaceQuantifiedCreaturesInRoom;
 
             On.FliesWorldAI.AddFlyToSwarmRoom += FliesWorldAI_AddFlyToSwarmRoom;
             
@@ -37,16 +37,19 @@ namespace RainMeadow
             On.GameSession.AddPlayer += GameSession_AddPlayer;
         }
 
-        private void Room_ReadyForAI(On.Room.orig_ReadyForAI orig, Room self)
+        private void Room_PlaceQuantifiedCreaturesInRoom(On.Room.orig_PlaceQuantifiedCreaturesInRoom orig, Room self, CreatureTemplate.Type critType)
         {
             if (OnlineManager.lobby != null)
             {
-                if (!RoomSession.map.TryGetValue(self.abstractRoom, out var rs)) return;
-                if (!rs.isOwner) {
-                    self.abstractRoom.quantifiedCreatures = null;
+                if (RoomSession.map.TryGetValue(self.abstractRoom, out var rs))
+                {
+                    if (!rs.isOwner && critType == CreatureTemplate.Type.Fly)
+                    {
+                        return; // don't place fly in room if not owner
+                    }
                 }
             }
-            orig(self);
+            orig(self,critType);
         }
 
         private void Room_LoadedCheck(On.Room.orig_Loaded orig, Room self)
