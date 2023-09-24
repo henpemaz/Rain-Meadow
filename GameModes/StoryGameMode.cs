@@ -29,5 +29,10 @@
         {
             return SlugcatStats.Name.White;
         }
+
+        public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
+        {
+            return true;
+        }
     }
 }
