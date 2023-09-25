@@ -1,26 +1,27 @@
-﻿using HarmonyLib;
-using Menu;
+﻿using Menu;
+using Menu.Remix;
+using Menu.Remix.MixedUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
 {
     public class MeadowMenu : SmartMenu, SelectOneButton.SelectOneButtonOwner
     {
-        private Vector2 btns = new Vector2(350, 100);
-        private Vector2 btnsize = new Vector2(100, 20);
         private RainEffect rainEffect;
-        private List<SlugcatSelectMenu.SlugcatPage> characterPages;
-        private List<MeadowProgression.Character> playableCharacters;
-        private Dictionary<MeadowProgression.Character, List<MeadowProgression.Skin>> characterSkins;
+
         private EventfulHoldButton startButton;
         private EventfulBigArrowButton prevButton;
         private EventfulBigArrowButton nextButton;
+
         private SlugcatSelectMenu ssm;
+        private List<SlugcatSelectMenu.SlugcatPage> characterPages;
         private EventfulSelectOneButton[] skinButtons;
+
+        private List<MeadowProgression.Character> playableCharacters;
+        private Dictionary<MeadowProgression.Character, List<MeadowProgression.Skin>> characterSkins;
 
         public override MenuScene.SceneID GetScene => null;
         public MeadowMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.MeadowMenu)
@@ -72,9 +73,54 @@ namespace RainMeadow
             this.pages[0].subObjects.Add(this.nextButton);
             this.mySoundLoopID = SoundID.MENU_Main_Menu_LOOP;
 
-            var skinLabel = new MenuLabel(this, mainPage, this.Translate("SKINS"), new Vector2(194, 553), new(110, 30), true);
-            this.pages[0].subObjects.Add(skinLabel);
+            this.pages[0].subObjects.Add(new MenuLabel(this, mainPage, this.Translate("SKINS"), new Vector2(194, 553), new(110, 30), true));
+
+            var colorpicker = new OpTinyColorPicker(this, new Vector2(800, 60), "FFFFFF"); // todo read stored
+            var wrapper = new UIelementWrapper(this.tabWrapper, colorpicker);
+            tabWrapper._tab.AddItems(colorpicker.colorPicker); // so much work for a nested object man...
+            colorpicker.colorPicker.wrapper = wrapper;
+            colorpicker.colorPicker.Hide();
+            // todo update a preview of some sort!
+
+            var label = new MenuLabel(this, mainPage, this.Translate("Tint color"), new Vector2(845, 60), new(0, 30), false);
+            label.label.alignment = FLabelAlignment.Left;
+            this.pages[0].subObjects.Add(label);
+
+            var slider = new SubtleSlider2(this, mainPage, "Tint amount", new Vector2(800, 30), new Vector2(100, 30));
+            this.pages[0].subObjects.Add(slider);
+
             UpdateCharacterUI();
+        }
+
+        public class SubtleSlider2 : HorizontalSlider
+        {
+            public SubtleSlider2(Menu.Menu menu, MenuObject owner, string text, Vector2 pos, Vector2 size) : base(menu, owner, text, pos, size, null, true)
+            {
+                this.menuLabel = new MenuLabel(menu, this, text, new Vector2(this.length + 10f, 0f), size, false, null);
+                this.subObjects.Add(this.menuLabel);
+                this.subtleSliderNob.pos = new Vector2(-10f, 5f);
+            }
+            public override void GrafUpdate(float timeStacker)
+            {
+                base.GrafUpdate(timeStacker);
+                this.menuLabel.label.x = base.RelativeAnchorPoint.x + 5f + this.length/2f;
+                this.menuLabel.label.y = this.DrawY(timeStacker);
+                
+                var vector = this.subtleSliderNob.DrawPos(timeStacker);
+                var vector2 = new Vector2(this.subtleSliderNob.DrawSize(timeStacker), this.subtleSliderNob.DrawSize(timeStacker));
+                this.lineSprites[2].x = base.RelativeAnchorPoint.x + this.length + 10;
+                this.lineSprites[2].scaleX = this.length + 10 - (vector.x + vector2.x - base.RelativeAnchorPoint.x);
+            }
+        }
+
+        float tint;
+        public override void SliderSetValue(Slider slider, float f)
+        {
+            tint = f;
+        }
+        public override float ValueOfSlider(Slider slider)
+        {
+            return tint;
         }
 
         private void UpdateCharacterUI()
