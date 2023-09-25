@@ -34,8 +34,10 @@ namespace RainMeadow
         }
 
         public abstract event LobbyListReceived_t OnLobbyListReceived;
+        public abstract event PlayerListReceived_t OnPlayerListReceived;
         public abstract event LobbyJoined_t OnLobbyJoined;
         public delegate void LobbyListReceived_t(bool ok, LobbyInfo[] lobbies);
+        public delegate void PlayerListReceived_t(PlayerInfo[] players);
         public delegate void LobbyJoined_t(bool ok, string error = "");
 
         public abstract void RequestLobbyList();
