@@ -74,6 +74,7 @@ namespace RainMeadow
             PlayerAddFood,
             PlayerAddQuarterFood,
             AbstractRoomFirstTimeRealized,
+            NewMeadowPersonaSettingsEvent,
         }
 
         public static OnlineEvent NewFromType(EventTypeId eventTypeId)
@@ -172,6 +173,9 @@ namespace RainMeadow
                     break;
                 case EventTypeId.AbstractRoomFirstTimeRealized:
                     e = new AbstractRoomFirstTimeRealizedEvent();
+                    break;
+                case EventTypeId.NewMeadowPersonaSettingsEvent:
+                    e = new NewMeadowPersonaSettingsEvent();
                     break;
             }
             if (e is null) throw new InvalidOperationException("invalid event type: " + eventTypeId);

@@ -57,7 +57,7 @@ namespace RainMeadow
             this.startButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
             this.startButton.OnClick += (_) => { StartGame(); };
             startButton.buttonBehav.greyedOut = !OnlineManager.lobby.isAvailable;
-            OnlineManager.lobby.OnLobbyAvailable += OnLobbyAvailable;
+
             this.pages[0].subObjects.Add(this.startButton);
             this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
             this.prevButton.OnClick += (_) => {
@@ -75,11 +75,12 @@ namespace RainMeadow
 
             this.pages[0].subObjects.Add(new MenuLabel(this, mainPage, this.Translate("SKINS"), new Vector2(194, 553), new(110, 30), true));
 
-            var colorpicker = new OpTinyColorPicker(this, new Vector2(800, 60), "FFFFFF"); // todo read stored
+            colorpicker = new OpTinyColorPicker(this, new Vector2(800, 60), "FFFFFF"); // todo read stored
             var wrapper = new UIelementWrapper(this.tabWrapper, colorpicker);
             tabWrapper._tab.AddItems(colorpicker.colorPicker); // so much work for a nested object man...
             colorpicker.colorPicker.wrapper = wrapper;
             colorpicker.colorPicker.Hide();
+            colorpicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
             // todo update a preview of some sort!
 
             var label = new MenuLabel(this, mainPage, this.Translate("Tint color"), new Vector2(845, 60), new(0, 30), false);
@@ -90,37 +91,29 @@ namespace RainMeadow
             this.pages[0].subObjects.Add(slider);
 
             UpdateCharacterUI();
+
+            if (OnlineManager.lobby.isAvailable)
+            {
+                BindSettings();
+            }
+
+            OnlineManager.lobby.OnLobbyAvailable += OnLobbyAvailable;
         }
 
-        public class SubtleSlider2 : HorizontalSlider
+        private void Colorpicker_OnValueChangedEvent()
         {
-            public SubtleSlider2(Menu.Menu menu, MenuObject owner, string text, Vector2 pos, Vector2 size) : base(menu, owner, text, pos, size, null, true)
-            {
-                this.menuLabel = new MenuLabel(menu, this, text, new Vector2(this.length + 10f, 0f), size, false, null);
-                this.subObjects.Add(this.menuLabel);
-                this.subtleSliderNob.pos = new Vector2(-10f, 5f);
-            }
-            public override void GrafUpdate(float timeStacker)
-            {
-                base.GrafUpdate(timeStacker);
-                this.menuLabel.label.x = base.RelativeAnchorPoint.x + 5f + this.length/2f;
-                this.menuLabel.label.y = this.DrawY(timeStacker);
-                
-                var vector = this.subtleSliderNob.DrawPos(timeStacker);
-                var vector2 = new Vector2(this.subtleSliderNob.DrawSize(timeStacker), this.subtleSliderNob.DrawSize(timeStacker));
-                this.lineSprites[2].x = base.RelativeAnchorPoint.x + this.length + 10;
-                this.lineSprites[2].scaleX = this.length + 10 - (vector.x + vector2.x - base.RelativeAnchorPoint.x);
-            }
+            if (personaSettings != null) personaSettings.tint = colorpicker.valuecolor;
         }
 
-        float tint;
+        float tintAmount;
         public override void SliderSetValue(Slider slider, float f)
         {
-            tint = f;
+            tintAmount = f;
+            if (personaSettings != null) personaSettings.tintAmount = f;
         }
         public override float ValueOfSlider(Slider slider)
         {
-            return tint;
+            return tintAmount;
         }
 
         private void UpdateCharacterUI()
@@ -157,8 +150,6 @@ namespace RainMeadow
 
             ssm.lastScroll = ssm.scroll;
             ssm.scroll = ssm.NextScroll;
-            // todo check if we need this
-            ////this.startButton.GetButtonBehavior.greyedOut = (Mathf.Abs(ssm.scroll) > 0.1f || !this.SlugcatUnlocked(this.colorFromIndex(this.slugcatPageIndex)));
             if (Mathf.Abs(ssm.lastScroll) > 0.5f && Mathf.Abs(ssm.scroll) <= 0.5f)
             {
                 this.UpdateCharacterUI();
@@ -181,6 +172,12 @@ namespace RainMeadow
         private void OnLobbyAvailable()
         {
             startButton.buttonBehav.greyedOut = false;
+            BindSettings();
+        }
+
+        private void BindSettings()
+        {
+            this.personaSettings = (OnlineManager.lobby.gameMode as MeadowGameMode).personaSettings;
         }
 
         private void StartGame()
@@ -204,14 +201,19 @@ namespace RainMeadow
             base.ShutDownProcess();
         }
 
+        int skinIndex;
+        private MeadowPersonaSettings personaSettings;
+        private OpTinyColorPicker colorpicker;
+
         public int GetCurrentlySelectedOfSeries(string series) // SelectOneButton.SelectOneButtonOwner
         {
-            return 0;
+            return skinIndex;
         }
 
         public void SetCurrentlySelectedOfSeries(string series, int to) // SelectOneButton.SelectOneButtonOwner
         {
-            return;
+            skinIndex = to;
+            if(personaSettings != null) personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][to];
         }
     }
 }

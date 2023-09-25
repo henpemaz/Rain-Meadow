@@ -56,7 +56,7 @@ namespace RainMeadow
             public static readonly StateType CreatureStateState = new("CreatureStateState", typeof(CreatureStateState));
             public static readonly StateType CreatureHealthStateState = new("CreatureHealthStateState", typeof(CreatureHealthStateState));
             public static readonly StateType RainCycleDataState = new("RainCycleDataState", typeof(RainCycleData));
-
+            public static readonly StateType MeadowPersonaSettingsState = new("MeadowPersonaSettingsState", typeof(MeadowPersonaSettings.MeadowPersonaSettingsState));
         }
 
         public static OnlineState ParsePolymorph(Serializer serializer)

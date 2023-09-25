@@ -113,6 +113,9 @@
     <Reference Update="lib\Rewired_Windows.dll">
       <Private>False</Private>
     </Reference>
+    <Reference Update="lib\stripped-assembly-csharp.dll">
+      <Private>False</Private>
+    </Reference>
     <Reference Update="lib\UnityEngine.AssetBundleModule.dll">
       <Private>False</Private>
     </Reference>

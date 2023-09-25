@@ -108,6 +108,7 @@ namespace RainMeadow
         {
             if (!isActive)
             {
+                RainMeadow.Debug("queued");
                 incomingEntityEvents.Add(newEntityEvent);
                 return;
             }
@@ -176,6 +177,7 @@ namespace RainMeadow
         {
             if (!isActive)
             {
+                RainMeadow.Debug("queued");
                 incomingEntityEvents.Add(entityJoinedEvent);
                 return;
             }
@@ -260,6 +262,7 @@ namespace RainMeadow
         {
             if (!isActive)
             {
+                RainMeadow.Debug("queued");
                 incomingEntityEvents.Add(entityLeftEvent);
                 return;
             }
