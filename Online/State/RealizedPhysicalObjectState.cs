@@ -11,7 +11,7 @@ namespace RainMeadow
     public class RealizedPhysicalObjectState : OnlineState
     {
         [OnlineField]
-        private protected ChunkState[] chunkStates;
+        private ChunkState[] chunkStates;
         [OnlineField]
         private byte collisionLayer;
 
