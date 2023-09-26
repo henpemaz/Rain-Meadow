@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Net;
+using System.Collections.Generic;
 using static RainMeadow.NetIO;
 
 namespace RainMeadow
@@ -60,12 +61,13 @@ namespace RainMeadow
         }
 
         public override event LobbyListReceived_t OnLobbyListReceived;
+        public override event PlayerListReceived_t OnPlayerListReceived;
         public override event LobbyJoined_t OnLobbyJoined;
 
         public override void RequestLobbyList()
         {
             RainMeadow.DebugMe();
-            OnLobbyListReceived?.Invoke(true, UdpPeer.isHost ? new LobbyInfo[0] { } : new LobbyInfo[1] { new LobbyInfo(default, "local", localGameMode) });
+            OnLobbyListReceived?.Invoke(true, UdpPeer.isHost ? new LobbyInfo[0] { } : new LobbyInfo[1] { new LobbyInfo(default, "local", localGameMode, 0) });
         }
 
         public override void CreateLobby(LobbyVisibility visibility, string gameMode)
@@ -136,6 +138,7 @@ namespace RainMeadow
                 // Tell joining peer to create everyone in the server
                 SendP2P(joiningPlayer, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Add, OnlineManager.players.ToArray()), SendType.Reliable);
             }
+            UpdatePlayersList();
         }
 
         public void LocalPlayerLeft(OnlinePlayer leavingPlayer)
@@ -155,6 +158,18 @@ namespace RainMeadow
                     SendP2P(player, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Remove, new OnlinePlayer[] { leavingPlayer }), SendType.Reliable);
                 }
             }
+            UpdatePlayersList();
+        }
+
+        public void UpdatePlayersList()
+        {
+            List<PlayerInfo> playersinfo = new List<PlayerInfo>();
+            foreach (OnlinePlayer player in OnlineManager.players)
+            {
+                if (!player.isMe)
+                    playersinfo.Add(new PlayerInfo(default, player.id.name));
+            }
+            OnPlayerListReceived?.Invoke(playersinfo.ToArray());
         }
     }
 }

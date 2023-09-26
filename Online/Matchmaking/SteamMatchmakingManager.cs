@@ -1,5 +1,6 @@
 ﻿using Steamworks;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using RWCustom;
 
@@ -70,6 +71,7 @@ namespace RainMeadow
         }
 
         public override event LobbyListReceived_t OnLobbyListReceived;
+        public override event PlayerListReceived_t OnPlayerListReceived;
         public override event LobbyJoined_t OnLobbyJoined;
 
         public override void RequestLobbyList()
@@ -90,7 +92,7 @@ namespace RainMeadow
                     for (int i = 0; i < pCallback.m_nLobbiesMatching; i++)
                     {
                         CSteamID id = SteamMatchmaking.GetLobbyByIndex(i);
-                        lobbies[i] = new LobbyInfo(id, SteamMatchmaking.GetLobbyData(id, NAME_KEY), SteamMatchmaking.GetLobbyData(id, MODE_KEY));
+                        lobbies[i] = new LobbyInfo(id, SteamMatchmaking.GetLobbyData(id, NAME_KEY), SteamMatchmaking.GetLobbyData(id, MODE_KEY), SteamMatchmaking.GetNumLobbyMembers(id));
                     }
                 }
 
@@ -208,6 +210,13 @@ namespace RainMeadow
                 {
                     if (!oldplayers.Contains(p)) PlayerJoined(p);
                 }
+                List<PlayerInfo> playersinfo = new List<PlayerInfo>();
+                foreach (CSteamID player in newplayers)
+                {
+                    if (player.m_SteamID != me.m_SteamID)
+                        playersinfo.Add(new PlayerInfo(player, SteamFriends.GetFriendPersonaName(player)));
+                }
+                OnPlayerListReceived?.Invoke(playersinfo.ToArray());
             }
             catch (Exception e)
             {
@@ -340,7 +349,7 @@ namespace RainMeadow
                     LeaveLobby();
                 }
 
-                OnlineManager.currentlyJoiningLobby = new LobbyInfo(param.m_steamIDLobby, "", "");
+                OnlineManager.currentlyJoiningLobby = new LobbyInfo(param.m_steamIDLobby, "", "", 0);
                 Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
 
                 m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(param.m_steamIDLobby));
