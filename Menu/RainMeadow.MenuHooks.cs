@@ -101,23 +101,26 @@ namespace RainMeadow
             c.Emit(OpCodes.Ldarg_0);
             c.Emit(OpCodes.Ldloca, 0);
             c.EmitDelegate((SlugcatSelectMenu.SlugcatPage self, ref MenuScene.SceneID sceneID) => {
-                if (self.slugcatNumber == RainMeadow.Ext_SlugcatStatsName.MeadowSlugcat)
+                if (self.slugcatNumber == RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer && self is MeadowCharacterSelectPage mcsp)
                 {
-                    sceneID = Menu.MenuScene.SceneID.Slugcat_White;
-                    self.sceneOffset = new Vector2(-10f, 100f);
-                    self.slugcatDepth = 3.1000001f;
-                }
-                if (self.slugcatNumber == RainMeadow.Ext_SlugcatStatsName.MeadowSquidcicada)
-                {
-                    sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowSquidcicada;
-                    self.sceneOffset = new Vector2(-10f, 100f);
-                    self.slugcatDepth = 3.1000001f;
-                }
-                if (self.slugcatNumber == RainMeadow.Ext_SlugcatStatsName.MeadowLizard)
-                {
-                    sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowLizard;
-                    self.sceneOffset = new Vector2(-10f, 100f);
-                    self.slugcatDepth = 3.1000001f;
+                    if (mcsp.character == MeadowProgression.Character.Slugcat)
+                    {
+                        sceneID = Menu.MenuScene.SceneID.Slugcat_White;
+                        self.sceneOffset = new Vector2(-10f, 100f);
+                        self.slugcatDepth = 3.1000001f;
+                    }
+                    if (mcsp.character == MeadowProgression.Character.Cicada)
+                    {
+                        sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowSquidcicada;
+                        self.sceneOffset = new Vector2(-10f, 100f);
+                        self.slugcatDepth = 3.1000001f;
+                    }
+                    if (mcsp.character == MeadowProgression.Character.Lizard)
+                    {
+                        sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowLizard;
+                        self.sceneOffset = new Vector2(-10f, 100f);
+                        self.slugcatDepth = 3.1000001f;
+                    }
                 }
             });
         }

@@ -1,16 +1,21 @@
-﻿using System;
+﻿using Newtonsoft.Json.Serialization;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
+using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
 {
-    public class MeadowProgression
+    // Progression is the content unlock system
+    // Characters, skins, emotes are listed here
+    // Saving loading what's unlocked is handled here
+    public static class MeadowProgression
     {
-        public static Dictionary<Character, List<Skin>> characterSkins = new();
-        public static MeadowProgression instance = new MeadowProgression();
-        public MeadowProgression()
+
+        internal static void InitializeBuiltinTypes()
         {
             // todo load
             try
@@ -25,60 +30,107 @@ namespace RainMeadow
             }
         }
 
-        // do I really need this?
+        public static Dictionary<Character, CharacterData> characterData = new();
+
+        public class CharacterData
+        {
+            public string displayName;
+            public List<Skin> skins = new();
+        }
+
         public class Character : ExtEnum<Character>
         {
-            public Character(string value, bool register = false, SlugcatStats.Name statsName = null, string displayName = null) : base(value, register)
+            public Character(string value, bool register = false, CharacterData characterDataEntry = null) : base(value, register)
             {
                 if(register)
                 {
-                    characterStats[this] = statsName;
-                    characterNames[this] = displayName;
-                    characterSkins[this] = new();
+                    characterData[this] = characterDataEntry;
                 }
             }
 
-            public static Dictionary<Character, SlugcatStats.Name> characterStats = new();
-            public static Dictionary<Character, string> characterNames = new();
+            public static Character Slugcat = new("Slugcat", true, new() { displayName = "SLUGCAT" });
+            public static Character Cicada = new("Cicada", true, new() { displayName = "CICADA" });
+            public static Character Lizard = new("Lizard", true, new() { displayName = "LIZARD" });
+        }
 
-            public static Character Slugcat = new("Slugcat", true, RainMeadow.Ext_SlugcatStatsName.MeadowSlugcat, "SLUGCAT");
-            public static Character Cicada = new("Cicada", true, RainMeadow.Ext_SlugcatStatsName.MeadowSquidcicada, "CICADA");
-            public static Character Lizard = new("Lizard", true, RainMeadow.Ext_SlugcatStatsName.MeadowLizard, "LIZARD");
+        public static Dictionary<Skin, SkinData> skinData = new();
+
+        public class SkinData
+        {
+            public string displayName;
+            public CreatureTemplate.Type creatureType;
+            public SlugcatStats.Name statsName; // curently only used for color
+            public Color? baseColor;
+            public Color? eyeColor;
+            public Color? effectColor;
+            public float tintFactor = 0.3f;
         }
 
         public class Skin : ExtEnum<Skin>
         {
-            public static Dictionary<Skin, string> skinNames = new();
-            public Skin(string value, bool register = false, Character character = null, string skinName = null, bool isDefaul = false) : base(value, register)
+            public Skin(string value, bool register = false, Character character = null, SkinData skinDataEntry = null) : base(value, register)
             {
                 if (register)
                 {
-                    characterSkins[character].Add(this);
-                    skinNames[this] = skinName;
+                    skinData[this] = skinDataEntry;
+                    characterData[character].skins.Add(this);
                 }
             }
-            public static Skin Slugcat_Survivor = new("Slugcat_Survivor", true, Character.Slugcat, "Survivor");
-            public static Skin Slugcat_Monk = new("Slugcat_Monk", true, Character.Slugcat, "Monk");
-            public static Skin Slugcat_Hunter = new("Slugcat_Hunter", true, Character.Slugcat, "Hunter");
-            public static Skin Slugcat_Fluffy = new("Slugcat_Fluffy", true, Character.Slugcat, "Fluffy");
 
-            public static Skin Cicada_White = new("Cicada_White", true, Character.Cicada, "White");
-            public static Skin Cicada_Dark = new("Cicada_Dark", true, Character.Cicada, "Dark");
+            public static Skin Slugcat_Survivor = new("Slugcat_Survivor", true, Character.Slugcat, new() {
+                displayName = "Survivor",
+                creatureType = CreatureTemplate.Type.Slugcat,
+                statsName = SlugcatStats.Name.White,
+            });
+            public static Skin Slugcat_Monk = new("Slugcat_Monk", true, Character.Slugcat, new()
+            {
+                displayName = "Monk",
+                creatureType = CreatureTemplate.Type.Slugcat,
+                statsName = SlugcatStats.Name.Yellow,
+            });
+            public static Skin Slugcat_Hunter = new("Slugcat_Hunter", true, Character.Slugcat, new()
+            {
+                displayName = "Hunter",
+                creatureType = CreatureTemplate.Type.Slugcat,
+                statsName = SlugcatStats.Name.Red,
+            });
+            public static Skin Slugcat_Fluffy = new("Slugcat_Fluffy", true, Character.Slugcat, new()
+            {
+                displayName = "Fluffy",
+                creatureType = CreatureTemplate.Type.Slugcat,
+                statsName = SlugcatStats.Name.White,
+                baseColor = new Color(111, 216, 255, 255)/255f
+            });
 
-            public static Skin Lizard_Pink = new("Lizard_Pink", true, Character.Lizard, "Pink");
+            public static Skin Cicada_White = new("Cicada_White", true, Character.Cicada, new()
+            {
+                displayName = "White",
+                creatureType = CreatureTemplate.Type.CicadaA,
+            });
+            public static Skin Cicada_Dark = new("Cicada_Dark", true, Character.Cicada, new()
+            {
+                displayName = "Dark",
+                creatureType = CreatureTemplate.Type.CicadaB,
+            });
+
+            public static Skin Lizard_Pink = new("Lizard_Pink", true, Character.Lizard, new()
+            {
+                displayName = "Pink",
+                creatureType = CreatureTemplate.Type.PinkLizard,
+            });
         }
 
-        public bool SkinAvailable(Skin skin)
+        public static bool SkinAvailable(Skin skin)
         {
             return true;
         }
 
-        public List<Skin> AllAvailableSkins(Character character)
+        public static List<Skin> AllAvailableSkins(Character character)
         {
-            return characterSkins[character].Where(SkinAvailable).ToList();
+            return characterData[character].skins.Where(SkinAvailable).ToList();
         }
 
-        public List<Character> AllAvailableCharacters()
+        public static List<Character> AllAvailableCharacters()
         {
             return Character.values.entries.Select(s => new Character(s)).ToList();
         }

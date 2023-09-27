@@ -12,7 +12,7 @@ namespace RainMeadow
         public bool isNew;
         public float flashSin;
 
-        public MeadowCharacterSelectPage(MeadowMenu realMenu, SlugcatSelectMenu fakeMenu, int pageIndex, MeadowProgression.Character character) : base(fakeMenu, null, pageIndex, MeadowProgression.Character.characterStats[character])
+        public MeadowCharacterSelectPage(MeadowMenu realMenu, SlugcatSelectMenu fakeMenu, int pageIndex, MeadowProgression.Character character) : base(fakeMenu, null, pageIndex, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer)
         {
             this.realMenu = realMenu;
             this.character = character;
@@ -46,15 +46,15 @@ namespace RainMeadow
         private string GetSaveLocation()
         {
             // todo
-            if (slugcatNumber == RainMeadow.Ext_SlugcatStatsName.MeadowSlugcat)
+            if (character == MeadowProgression.Character.Slugcat)
             {
                 return "Five Pebbles";
             }
-            if (slugcatNumber == RainMeadow.Ext_SlugcatStatsName.MeadowSquidcicada)
+            if (character == MeadowProgression.Character.Cicada)
             {
                 return "Outskirts";
             }
-            if (slugcatNumber == RainMeadow.Ext_SlugcatStatsName.MeadowLizard)
+            if (character == MeadowProgression.Character.Lizard)
             {
                 return "";
             }
@@ -65,37 +65,37 @@ namespace RainMeadow
         private string GetPlaytime()
         {
             // todo
-            if (slugcatNumber == RainMeadow.Ext_SlugcatStatsName.MeadowSlugcat)
+            if (character == MeadowProgression.Character.Slugcat)
             {
                 return "2h37";
             }
-            if (slugcatNumber == RainMeadow.Ext_SlugcatStatsName.MeadowSquidcicada)
+            if (character == MeadowProgression.Character.Cicada)
             {
                 return "16m";
             }
-            if (slugcatNumber == RainMeadow.Ext_SlugcatStatsName.MeadowLizard)
+            if (character == MeadowProgression.Character.Lizard)
             {
                 return "";
             }
-            RainMeadow.Error("no status string for " + this.slugcatNumber);
+            RainMeadow.Error("no status string for " + this.character);
             return "";
         }
 
         public string GetCharacterName()
         {
-            if (slugcatNumber == RainMeadow.Ext_SlugcatStatsName.MeadowSlugcat)
+            if (character == MeadowProgression.Character.Slugcat)
             {
                 return "SLUGCAT";
             }
-            if (slugcatNumber == RainMeadow.Ext_SlugcatStatsName.MeadowSquidcicada)
+            if (character == MeadowProgression.Character.Cicada)
             {
                 return "SQUIDCADA";
             }
-            if (slugcatNumber == RainMeadow.Ext_SlugcatStatsName.MeadowLizard)
+            if (character == MeadowProgression.Character.Lizard)
             {
                 return "LIZARD";
             }
-            RainMeadow.Error("no name string for " + this.slugcatNumber);
+            RainMeadow.Error("no name string for " + this.character);
             return "";
         }
 

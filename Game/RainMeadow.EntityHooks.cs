@@ -6,7 +6,6 @@ namespace RainMeadow
 {
     public partial class RainMeadow
     {
-
         private void EntityHooks()
         {
             On.OverWorld.WorldLoaded += OverWorld_WorldLoaded; // creature moving between WORLDS
@@ -138,6 +137,7 @@ namespace RainMeadow
             orig(self);
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
+                MeadowCustomization.Customize(self, oe);
                 if (!oe.isMine && !oe.realized && oe.isTransferable)
                 {
                     if (oe.roomSession == null || !oe.roomSession.participants.ContainsKey(oe.owner)) //if owner of oe is subscribed (is participant) do not request

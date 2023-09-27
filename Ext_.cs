@@ -17,9 +17,6 @@ namespace RainMeadow
         {
             public static SlugcatStats.Name OnlineSessionPlayer = new("MeadowOnline", true);
             public static SlugcatStats.Name OnlineSessionRemotePlayer = new("MeadowOnlineRemote", true);
-            public static SlugcatStats.Name MeadowSlugcat = new("MeadowSlugcat", true);
-            public static SlugcatStats.Name MeadowSquidcicada = new("MeadowSquidcicada", true);
-            public static SlugcatStats.Name MeadowLizard = new("MeadowLizard", true);
         }
 
         public class Ext_SceneID

@@ -56,6 +56,8 @@ namespace RainMeadow
             this.lobby = lobby;
         }
 
+        public PersonaSettingsEntity personaSettings;
+
         public virtual void FilterItems(Room room)
         {
             foreach (var item in room.roomSettings.placedObjects)

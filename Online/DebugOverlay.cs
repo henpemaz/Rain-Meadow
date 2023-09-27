@@ -330,28 +330,45 @@ namespace RainMeadow
 
 			var onlineEntities = OnlineManager.recentEntities.Values.ToList();
 			onlineEntities.Sort((x, y) =>
-			{
-				int comp = (x is OnlineCreature ? -1 : 0) + (y is OnlineCreature ? 1 : 0);
-				if (comp == 0)
-				{
-					comp = (int)((OnlinePhysicalObject)x).apo.type - (int)((OnlinePhysicalObject)y).apo.type;
-					if (comp == 0)
+            {
+                int comp = (x is OnlinePhysicalObject ? -1 : 0) + (y is OnlinePhysicalObject ? 1 : 0);
+                if (comp != 0)
+                {
+                    return comp;
+                }
+                comp = (x is OnlineCreature ? -1 : 0) + (y is OnlineCreature ? 1 : 0);
+                if (comp != 0)
+                {
+                    return comp;
+                }
+                comp = (x is PersonaSettingsEntity ? -1 : 0) + (y is PersonaSettingsEntity ? 1 : 0);
+                if (comp != 0)
+                {
+                    return comp;
+                }
+                comp = (x.isMine ? -1 : 0) + (y.isMine ? 1 : 0);
+                if (comp != 0)
+                {
+                    return comp;
+                }
+                if (x is OnlinePhysicalObject && y is OnlinePhysicalObject)
+                {
+                    comp = (int)((OnlinePhysicalObject)x).apo.type - (int)((OnlinePhysicalObject)y).apo.type;
+                    if (comp != 0)
                     {
-                        if (x is OnlineCreature && y is OnlineCreature) {
-                            comp = (int)((AbstractCreature)((OnlineCreature)x).apo).creatureTemplate.type - (int)((AbstractCreature)((OnlineCreature)y).apo).creatureTemplate.type;
-                            if (comp == 0) {
-                                comp = (x.isMine ? -1 : 0) + (y.isMine ? 1 : 0);
-                            }
-                        }
-                        else
-                        {
-                            comp = (x.isMine ? -1 : 0) + (y.isMine ? 1 : 0);
-                        }
+                        return comp;
                     }
-				}
-
-				return comp;
-			});
+                }
+                if (x is OnlineCreature && y is OnlineCreature)
+                {
+                    comp = (int)((AbstractCreature)((OnlineCreature)x).apo).creatureTemplate.type - (int)((AbstractCreature)((OnlineCreature)y).apo).creatureTemplate.type;
+                    if (comp != 0)
+                    {
+                        return comp;
+                    }
+                }
+                return comp;
+            });
 			foreach (var onlineEntity in onlineEntities)
 			{
 				ResourceNode resourceNode = resourceNodes.Find(node => node.resource == onlineEntity.currentlyJoinedResource);

@@ -40,7 +40,7 @@ namespace RainMeadow
             ssm.manager = manager;
             ssm.pages = pages;
 
-            playableCharacters = MeadowProgression.instance.AllAvailableCharacters();
+            playableCharacters = MeadowProgression.AllAvailableCharacters();
             characterSkins = new();
             for (int j = 0; j < this.playableCharacters.Count; j++)
             {
@@ -48,7 +48,7 @@ namespace RainMeadow
                 if (characterPages[j].sceneOffset.y == 0) characterPages[0].sceneOffset = new Vector2(-10f, 100f);
                 this.pages.Add(this.characterPages[j]);
 
-                var skins = MeadowProgression.instance.AllAvailableSkins(this.playableCharacters[j]);
+                var skins = MeadowProgression.AllAvailableSkins(this.playableCharacters[j]);
                 RainMeadow.Debug(skins);
                 RainMeadow.Debug(skins.Select(s => s.ToString()).Aggregate((a, b) => (a + b)));
                 characterSkins[playableCharacters[j]] = skins;
@@ -94,10 +94,12 @@ namespace RainMeadow
 
             if (OnlineManager.lobby.isAvailable)
             {
-                BindSettings();
+                OnLobbyAvailable();
             }
-
-            OnlineManager.lobby.OnLobbyAvailable += OnLobbyAvailable;
+            else
+            {
+                OnlineManager.lobby.OnLobbyAvailable += OnLobbyAvailable;
+            }
         }
 
         private void Colorpicker_OnValueChangedEvent()
@@ -134,7 +136,7 @@ namespace RainMeadow
             for (int i = 0; i < skins.Count; i++)
             {
                 var skin = skins[i];
-                var btn = new EventfulSelectOneButton(this, mainPage, MeadowProgression.Skin.skinNames[skin], "skinButtons", new Vector2(194, 515) - i * new Vector2(0, 38), new(110, 30), skinButtons, i);
+                var btn = new EventfulSelectOneButton(this, mainPage, MeadowProgression.skinData[skin].displayName, "skinButtons", new Vector2(194, 515) - i * new Vector2(0, 38), new(110, 30), skinButtons, i);
                 mainPage.subObjects.Add(btn);
                 skinButtons[i] = btn;
             }
@@ -177,7 +179,11 @@ namespace RainMeadow
 
         private void BindSettings()
         {
-            this.personaSettings = (OnlineManager.lobby.gameMode as MeadowGameMode).personaSettings;
+            this.personaSettings = (MeadowPersonaSettings)OnlineManager.lobby.gameMode.personaSettings;
+            personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][skinIndex];
+            personaSettings.tint = colorpicker.valuecolor;
+            personaSettings.tintAmount = this.tintAmount;
+
         }
 
         private void StartGame()
