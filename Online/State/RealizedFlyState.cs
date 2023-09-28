@@ -14,8 +14,6 @@ namespace RainMeadow
         [OnlineField]
         byte eaten;
         [OnlineField]
-        byte movMode;
-        [OnlineField]
         private Vector2 dir;
         [OnlineField(nullable:true)]
         private Vector2? burrowOrHangSpot;
@@ -35,7 +33,6 @@ namespace RainMeadow
             this.bites = (byte)fly.bites;
             this.eaten = (byte)fly.eaten;
             this.dir = fly.dir;
-            this.movMode = (byte)fly.movMode.index;
             this.flap = fly.flap;
             this.flapSpeed = fly.flapSpeed;
             this.flapDepth = fly.flapDepth;
@@ -53,9 +50,8 @@ namespace RainMeadow
             fly.bites = bites;
             fly.eaten = eaten; 
             fly.dir = dir;
-            fly.movMode = new Fly.MovementMode(Fly.MovementMode.values.GetEntry(movMode));
             if (burrowOrHangSpot != null) {
-                fly.burrowOrHangSpot = this.burrowOrHangSpot;
+            fly.burrowOrHangSpot = this.burrowOrHangSpot;
             }
         }
     }
