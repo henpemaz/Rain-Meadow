@@ -18,7 +18,7 @@ namespace RainMeadow
             throw new InvalidOperationException("unknown entity event type");
         }
 
-        internal abstract void ApplyCustomizations(AbstractCreature creature, OnlinePhysicalObject oe);
+        internal abstract void ApplyCustomizations(Creature creature, OnlinePhysicalObject oe);
 
         internal void BindEntity(OnlineEntity target)
         {

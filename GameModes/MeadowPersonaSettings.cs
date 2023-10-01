@@ -46,9 +46,9 @@ namespace RainMeadow
             return new MeadowPersonaSettingsState(this, tick);
         }
 
-        internal override void ApplyCustomizations(AbstractCreature creature, OnlinePhysicalObject oe)
+        internal override void ApplyCustomizations(Creature creature, OnlinePhysicalObject oe)
         {
-            if(creature.realizedCreature is Player player)
+            if(creature is Player player)
             {
                 MeadowCustomization.CreatureCustomization customization = new MeadowCustomization.CreatureCustomization();
                 customization.skinData = MeadowProgression.skinData[skin];

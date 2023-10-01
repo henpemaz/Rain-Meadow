@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using RWCustom;
 
 namespace RainMeadow
 {
-    public class MeadowCustomization
+    public partial class MeadowCustomization
     {
         public class CreatureCustomization
         {
@@ -28,11 +30,16 @@ namespace RainMeadow
 
         public static ConditionalWeakTable<Creature, CreatureCustomization> creatureCustomizations = new();
 
-        internal static void Customize(AbstractCreature creature, OnlinePhysicalObject oe)
+        internal static void Customize(Creature creature, OnlinePhysicalObject oe)
         {
             if(OnlineManager.lobby.entities.Keys.FirstOrDefault(e=> e is PersonaSettingsEntity settings && settings.target == oe.id) is PersonaSettingsEntity settings)
             {
                 settings.ApplyCustomizations(creature, oe);
+            }
+
+            if(oe.isMine && !oe.isTransferable) // persona, wish there was a better flag
+            {
+                CreatureController.BindCreature(creature);
             }
         }
     }

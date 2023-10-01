@@ -113,5 +113,10 @@ namespace RainMeadow
         {
             return RainMeadow.Ext_ProcessID.LobbyMenu;
         }
+
+        public virtual AbstractCreature SpawnPersona(RainWorldGame self, WorldCoordinate location)
+        {
+            return null;
+        }
     }
 }

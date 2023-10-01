@@ -163,6 +163,8 @@ namespace RainMeadow
                     var sign = (int)Mathf.Sign(ssm.quedSideInput);
                     ssm.slugcatPageIndex += sign;
                     ssm.slugcatPageIndex = (ssm.slugcatPageIndex + ssm.slugcatPages.Count) % ssm.slugcatPages.Count;
+                    skinIndex = Mathf.Min(skinIndex, characterSkins[playableCharacters[ssm.slugcatPageIndex]].Count);
+                    if (personaSettings != null) personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][skinIndex];
                     ssm.scroll = -sign;
                     ssm.lastScroll = -sign;
                     ssm.quedSideInput -= sign;
