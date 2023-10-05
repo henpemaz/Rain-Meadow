@@ -27,13 +27,13 @@ namespace RainMeadow
 
         class CicadaController : CreatureController
         {
-            public CicadaController(Cicada creature, int playerNumber) : base(creature, playerNumber)
-            {
-            }
+            public CicadaController(Cicada creature, int playerNumber) : base(creature, playerNumber) { }
+
+            public Cicada cicada => creature as Cicada;
 
             public override bool GrabImpl(PhysicalObject pickUpCandidate)
             {
-                return (creature as Cicada).TryToGrabPrey(pickUpCandidate);
+                return cicada.TryToGrabPrey(pickUpCandidate);
             }
         }
 
@@ -149,7 +149,6 @@ namespace RainMeadow
                 var basepos = 0.5f * (self.firstChunk.pos + room.MiddleOfTile(self.abstractCreature.pos.Tile));
                 if (p.inputDir != Vector2.zero || self.Charging)
                 {
-                    self.AI.pathFinder.AbortCurrentGenerationPathFinding(); // ignore previous dest
                     self.AI.behavior = CicadaAI.Behavior.GetUnstuck; // helps with sitting behavior
                     var dest = basepos + p.inputDir * 20f;
                     if (self.flying) dest.y -= 12f; // nose up goes funny
@@ -157,7 +156,12 @@ namespace RainMeadow
                     {
                         dest.y -= self.mainBodyChunk.vel.y * 1.3f;
                     }
-                    self.abstractCreature.abstractAI.SetDestination(self.room.GetWorldCoordinate(dest));
+                    var destCoord = self.room.GetWorldCoordinate(dest);
+                    if (destCoord != self.abstractCreature.abstractAI.destination)
+                    {
+                        self.AI.pathFinder.AbortCurrentGenerationPathFinding(); // ignore previous dest
+                        self.abstractCreature.abstractAI.SetDestination(self.room.GetWorldCoordinate(dest));
+                    }
                 }
                 else
                 {
