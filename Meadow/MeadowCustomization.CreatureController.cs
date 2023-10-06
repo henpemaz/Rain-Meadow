@@ -11,6 +11,8 @@ namespace RainMeadow
         public static ConditionalWeakTable<AbstractCreature, CreatureController> creatureController = new();
         public abstract class CreatureController
         {
+            public DebugDestinationVisualizer debugDestinationVisualizer;
+
             internal static void BindCreature(Creature creature)
             {
                 if (creature is Cicada cada)
@@ -23,7 +25,7 @@ namespace RainMeadow
                     var controller = new LizardController(liz, 0);
                     creatureController.Add(liz.abstractCreature, controller);
                 }
-            }
+        }
 
             public Creature creature;
 
@@ -34,6 +36,9 @@ namespace RainMeadow
 
                 input = new Player.InputPackage[10];
                 rainWorld = creature.abstractCreature.world.game.rainWorld;
+
+                //creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
+                debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);
             }
 
             public int playerNumber = 0;
@@ -95,6 +100,11 @@ namespace RainMeadow
             {
                 // Input
                 this.checkInput();
+
+                if (this.debugDestinationVisualizer != null)
+                {
+                    this.debugDestinationVisualizer.Update();
+                }
 
                 // a lot of things copypasted from from p.update
                 if (this.wantToJump > 0) this.wantToJump--;
@@ -300,6 +310,16 @@ namespace RainMeadow
                         creature.bodyChunks[1].vel += Custom.DirVec(creature.bodyChunks[1].pos, Input.mousePosition) * 7f;
                     }
                 }
+            }
+
+            public void ForceAIDestination(WorldCoordinate coord)
+            {
+                var absAI = creature.abstractCreature.abstractAI;
+                var realAI = absAI.RealAI;
+                absAI.SetDestination(coord);
+                // pathfinder has some "optimizations" that need bypassing
+                realAI.pathFinder.nextDestination = null;
+                realAI.pathFinder.AssignNewDestination(coord);
             }
 
             public virtual PhysicalObject PickupCandidate(float favorSpears)

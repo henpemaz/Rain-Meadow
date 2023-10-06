@@ -62,7 +62,8 @@ namespace RainMeadow
                 var nc = chunks.Length;
 
                 // move
-                var basepos = 0.5f * (self.firstChunk.pos + room.MiddleOfTile(self.abstractCreature.pos.Tile));
+                //var basepos = 0.5f * (self.bodyChunks[0].pos + self.bodyChunks[1].pos);
+                var basepos = self.bodyChunks[0].pos;
                 var basecoord = self.room.GetWorldCoordinate(basepos);
                 if (p.inputDir != Vector2.zero)
                 {
@@ -70,9 +71,9 @@ namespace RainMeadow
                     self.AI.runSpeed = Custom.LerpAndTick(self.AI.runSpeed, 0.8f, 0.2f, 0.05f);
                     self.AI.excitement = Custom.LerpAndTick(self.AI.excitement, 0.5f, 0.1f, 0.05f);
 
-                    var toPos = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(p.inputDir * 1.4f));
+                    var toPos = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(p.inputDir * 1.42f));
 
-                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("moving");
+                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"moving towards {toPos.Tile}");
                     if (p.inputDir.x != 0) // to sides
                     {
                         if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("sides");
@@ -87,44 +88,46 @@ namespace RainMeadow
                             if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("down");
                             toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(0, -1));
                         }
-                        if (!solidAhead) // reach further out
+                        var furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(p.inputDir * 2.84f));
+                        if (room.aimap.TileAccessibleToCreature(furtherOut.Tile, self.Template) && QuickConnectivity.Check(room, self.Template, basecoord.Tile, furtherOut.Tile, 10) > 0)
                         {
-                            if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("further out");
-                            var furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(p.inputDir * 2.2f));
-                            if (room.aimap.TileAccessibleToCreature(furtherOut.Tile, self.Template))
-                            {
-                                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("reaching");
-                                toPos = furtherOut;
-                            }
-                            else if (room.aimap.TileAccessibleToCreature(furtherOut.Tile + new IntVector2(0, 1), self.Template))
-                            {
-                                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("up");
-                                toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, 1));
-                            }
-                            else if (room.aimap.TileAccessibleToCreature(furtherOut.Tile + new IntVector2(0, -1), self.Template))
-                            {
-                                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("down");
-                                toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, -1));
-                            }
-                            else if(!room.aimap.TileAccessibleToCreature(toPos.Tile, self.Template)) // already not accessible, improve
-                            {
-                                toPos = furtherOut;
-                            }
+                            if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("reaching");
+                            toPos = furtherOut;
+                        }
+                        else if (room.aimap.TileAccessibleToCreature(furtherOut.Tile + new IntVector2(0, 1), self.Template) && QuickConnectivity.Check(room, self.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, 1), 10) > 0)
+                        {
+                            if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("up");
+                            toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, 1));
+                        }
+                        else if (room.aimap.TileAccessibleToCreature(furtherOut.Tile + new IntVector2(0, -1), self.Template) && QuickConnectivity.Check(room, self.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, -1), 10) > 0)
+                        {
+                            if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("down");
+                            toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, -1));
+                        }
+                        else if (!room.aimap.TileAccessibleToCreature(toPos.Tile, self.Template)) // already not accessible, improve
+                        {
+                            toPos = furtherOut;
                         }
                     }
                     else
                     {
-                        // todo reach up a 3-tall consistently?
-                        if(room.aimap.TileAccessibleToCreature(toPos.Tile, self.Template)) // ahead unblocked
+                        if(!room.GetTile(toPos).Solid) // ahead unblocked
                         {
                             toPos = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(p.inputDir * 2.2f));
                         }
                     }
 
+                    var curVel = self.mainBodyChunk.vel;
+                    var inDirection = Vector2.Dot(curVel, p.inputDir);
+                    if (inDirection < 3)
+                    {
+                        self.mainBodyChunk.vel += p.inputDir * (3 - inDirection);
+                    }
+
                     if (toPos != self.abstractCreature.abstractAI.destination)
                     {
-                        self.AI.pathFinder.AbortCurrentGenerationPathFinding(); // ignore previous dest
-                        self.abstractCreature.abstractAI.SetDestination(toPos);
+                        RainMeadow.Debug($"new destination {toPos.Tile}");
+                        p.ForceAIDestination(toPos);
                     }
                 }
                 else
@@ -143,9 +146,14 @@ namespace RainMeadow
                     }
                     if (p.inputDir == Vector2.zero && p.inputLastDir != Vector2.zero) // let go
                     {
-                        self.abstractCreature.abstractAI.SetDestination(basecoord);
+                        RainMeadow.Debug($"resting at {basecoord.Tile}");
+                        p.ForceAIDestination(basecoord);
                     }
                 }
+                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"current AI destination {p.creature.abstractCreature.abstractAI.destination}");
+                //if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"current AI destination {p.creature.abstractCreature.abstractAI.RealAI.pathFinder.destination}");
+                //if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"current AI destination2 {p.creature.abstractCreature.abstractAI.RealAI.pathFinder.GetDestination}");
+                //if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"current AI destination3 {p.creature.abstractCreature.abstractAI.RealAI.pathFinder.GetEffectualDestination}");
             }
             orig(self);
         }
@@ -154,17 +162,18 @@ namespace RainMeadow
         {
             if (creatureController.TryGetValue(self.creature, out var p))
             {
-                if (self.destination == originPos) return null;
+                // path will be null if calculating from an inaccessible tile
+                // lizard has code to "pick a nearby accessible tile to calculate from"
+                // todo always use main pos for pathing?
+                // path will be always a path "out" of the current cell, even if current cell is destination
+                // should be fine as long as runspeed = 0, just gotta not fall for it here
+
+                if (!actuallyFollowingThisPath && self.destination == originPos) return null; // prevent bad followups
                 if (actuallyFollowingThisPath)
                 {
-                    // path will be null if calculating from an inaccessible tile
-                    // lizard has code to "pick a nearby accessible tile to calculate from"
-                    // todo always use main pos for pathing?
-
-                    // path will be always a path "out" of the current cell, even if current cell is destination
-                    // should be fine as long as runspeed = 0, just gotta not fall for it here
-
                     bool needOverride = false;
+                    if (self.destination == originPos) { RainMeadow.Debug("bad originPos override"); originPos = self.creature.pos; }
+                    if (self.destination == originPos) { if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("at destination"); return null; }
                     var path = orig(self, originPos, bodyDirection, actuallyFollowingThisPath);
 
                     if (path == null && p.inputDir != Vector2.zero)
@@ -172,23 +181,25 @@ namespace RainMeadow
                         RainMeadow.Debug("wants to move but can't");
                         needOverride = true;
                     }
-                    else if (path != null && p.inputDir != Vector2.zero && path.type < MovementConnection.MovementType.ShortCut)
-                    {
-                        // prevent moving in the wrong direction
-                        var pathDir = (path.destinationCoord.Tile - path.startCoord.Tile).ToVector2().normalized;
-                        // dot product of input * move should > 0
-                        if(Vector2.Dot(p.inputDir, pathDir) <= 0)
-                        {
-                            RainMeadow.Debug("wrong direction");
-                            needOverride = true;
-                        }
-                    }
+                    //else if (path != null && p.inputDir != Vector2.zero && path.type < MovementConnection.MovementType.ShortCut)
+                    //{
+                            // turns out this is bad for going up 1-ledges holding forward :/
+                    //    // prevent moving in the wrong direction
+                    //    // dot product of input * move should > 0
+                    //    var pathDir = (path.destinationCoord.Tile - path.startCoord.Tile).ToVector2().normalized;
+                    //    if(Vector2.Dot(p.inputDir, pathDir) <= 0)
+                    //    {
+                    //        RainMeadow.Debug($"wrong direction: {pathDir}");
+                    //        needOverride = true;
+                    //    }
+                    //}
 
                     if (needOverride)
                     {
                         RainMeadow.Debug("overriding lizard pathing");
-                        var toPos = WorldCoordinate.AddIntVector(originPos, IntVector2.FromVector2(p.inputDir * 2));
+                        var toPos = WorldCoordinate.AddIntVector(originPos, IntVector2.FromVector2(p.inputDir * 1.42f));
                         path = new MovementConnection(MovementConnection.MovementType.Standard, originPos, toPos, 2);
+                        RainMeadow.Debug($"overriding lizard pathing: {path}");
                     }
 
                     return path;
