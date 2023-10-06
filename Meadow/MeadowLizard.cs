@@ -1,6 +1,6 @@
-﻿using static MonoMod.InlineRT.MonoModRule;
-using UnityEngine;
+﻿using UnityEngine;
 using System;
+using RWCustom;
 
 namespace RainMeadow
 {
@@ -21,7 +21,7 @@ namespace RainMeadow
 
         private static void Lizard_FollowConnection(On.Lizard.orig_FollowConnection orig, Lizard self, float runSpeed)
         {
-            if (Input.GetKey(KeyCode.L)) RainMeadow.DebugMe();
+            if (Input.GetKey(KeyCode.L)) RainMeadow.Debug(self.followingConnection);
             orig(self, runSpeed);
         }
 
@@ -63,25 +63,75 @@ namespace RainMeadow
 
                 // move
                 var basepos = 0.5f * (self.firstChunk.pos + room.MiddleOfTile(self.abstractCreature.pos.Tile));
+                var basecoord = self.room.GetWorldCoordinate(basepos);
                 if (p.inputDir != Vector2.zero)
                 {
-                    
                     self.AI.behavior = LizardAI.Behavior.Travelling;
-                    self.AI.runSpeed = RWCustom.Custom.LerpAndTick(self.AI.runSpeed, 0.8f, 0.2f, 0.05f);
-                    self.AI.excitement = RWCustom.Custom.LerpAndTick(self.AI.excitement, 0.5f, 0.1f, 0.05f);
-                    var dest = basepos + p.inputDir * 40f;
-                    var destCoord = self.room.GetWorldCoordinate(dest);
-                    if(destCoord != self.abstractCreature.abstractAI.destination)
+                    self.AI.runSpeed = Custom.LerpAndTick(self.AI.runSpeed, 0.8f, 0.2f, 0.05f);
+                    self.AI.excitement = Custom.LerpAndTick(self.AI.excitement, 0.5f, 0.1f, 0.05f);
+
+                    var toPos = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(p.inputDir * 1.4f));
+
+                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("moving");
+                    if (p.inputDir.x != 0) // to sides
+                    {
+                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("sides");
+                        var solidAhead = room.GetTile(toPos).Solid; // ahead blocked
+                        if (solidAhead && room.aimap.TileAccessibleToCreature(toPos.Tile + new IntVector2(0, 1), self.Template)) // try up
+                        {
+                            if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("up");
+                            toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(0, 1));
+                        }
+                        else if(!solidAhead && !room.aimap.TileAccessibleToCreature(toPos.Tile, self.Template) && room.aimap.TileAccessibleToCreature(toPos.Tile + new IntVector2(0, -1), self.Template)) // try down
+                        {
+                            if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("down");
+                            toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(0, -1));
+                        }
+                        if (!solidAhead) // reach further out
+                        {
+                            if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("further out");
+                            var furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(p.inputDir * 2.2f));
+                            if (room.aimap.TileAccessibleToCreature(furtherOut.Tile, self.Template))
+                            {
+                                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("reaching");
+                                toPos = furtherOut;
+                            }
+                            else if (room.aimap.TileAccessibleToCreature(furtherOut.Tile + new IntVector2(0, 1), self.Template))
+                            {
+                                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("up");
+                                toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, 1));
+                            }
+                            else if (room.aimap.TileAccessibleToCreature(furtherOut.Tile + new IntVector2(0, -1), self.Template))
+                            {
+                                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("down");
+                                toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, -1));
+                            }
+                            else if(!room.aimap.TileAccessibleToCreature(toPos.Tile, self.Template)) // already not accessible, improve
+                            {
+                                toPos = furtherOut;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // todo reach up a 3-tall consistently?
+                        if(room.aimap.TileAccessibleToCreature(toPos.Tile, self.Template)) // ahead unblocked
+                        {
+                            toPos = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(p.inputDir * 2.2f));
+                        }
+                    }
+
+                    if (toPos != self.abstractCreature.abstractAI.destination)
                     {
                         self.AI.pathFinder.AbortCurrentGenerationPathFinding(); // ignore previous dest
-                        self.abstractCreature.abstractAI.SetDestination(self.room.GetWorldCoordinate(dest));
+                        self.abstractCreature.abstractAI.SetDestination(toPos);
                     }
                 }
                 else
                 {
                     self.AI.behavior = LizardAI.Behavior.Idle;
-                    self.AI.runSpeed = RWCustom.Custom.LerpAndTick(self.AI.runSpeed, 0, 0.4f, 0.1f);
-                    self.AI.excitement = RWCustom.Custom.LerpAndTick(self.AI.excitement, 0.2f, 0.1f, 0.05f);
+                    self.AI.runSpeed = Custom.LerpAndTick(self.AI.runSpeed, 0, 0.4f, 0.1f);
+                    self.AI.excitement = Custom.LerpAndTick(self.AI.excitement, 0.2f, 0.1f, 0.05f);
 
                     for (int i = 0; i < 3; i++)
                     {
@@ -93,7 +143,7 @@ namespace RainMeadow
                     }
                     if (p.inputDir == Vector2.zero && p.inputLastDir != Vector2.zero) // let go
                     {
-                        self.abstractCreature.abstractAI.SetDestination(self.room.GetWorldCoordinate(basepos));
+                        self.abstractCreature.abstractAI.SetDestination(basecoord);
                     }
                 }
             }
@@ -104,6 +154,7 @@ namespace RainMeadow
         {
             if (creatureController.TryGetValue(self.creature, out var p))
             {
+                if (self.destination == originPos) return null;
                 if (actuallyFollowingThisPath)
                 {
                     // path will be null if calculating from an inaccessible tile
@@ -112,27 +163,32 @@ namespace RainMeadow
 
                     // path will be always a path "out" of the current cell, even if current cell is destination
                     // should be fine as long as runspeed = 0, just gotta not fall for it here
-                    bool needOverride;
+
+                    bool needOverride = false;
                     var path = orig(self, originPos, bodyDirection, actuallyFollowingThisPath);
 
                     if (path == null && p.inputDir != Vector2.zero)
                     {
-                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("wants to move but can't");
-                        // todo generate connection
+                        RainMeadow.Debug("wants to move but can't");
+                        needOverride = true;
                     }
-                    else if (path != null && p.inputDir == Vector2.zero)
+                    else if (path != null && p.inputDir != Vector2.zero && path.type < MovementConnection.MovementType.ShortCut)
                     {
-                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("doesn't want to move but is following path");
-                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"{originPos} - {bodyDirection} - {path} - {path.distance}");
-                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"{p.creature.abstractCreature.pos} - {p.creature.abstractCreature.abstractAI.destination}");
-                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"{p.creature.mainBodyChunk.pos} - {p.creature.room.GetWorldCoordinate(p.creature.mainBodyChunk.pos)}");
-                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"{self.destination} - {self.nextDestination}");
-                        //if (Input.GetKey(KeyCode.L)) RainMeadow.Debug(Environment.StackTrace);
-                    }
-                    else if (path != null && p.inputDir != Vector2.zero)
-                    {
-                        // todo prevent moving in the wrong direction
+                        // prevent moving in the wrong direction
+                        var pathDir = (path.destinationCoord.Tile - path.startCoord.Tile).ToVector2().normalized;
                         // dot product of input * move should > 0
+                        if(Vector2.Dot(p.inputDir, pathDir) <= 0)
+                        {
+                            RainMeadow.Debug("wrong direction");
+                            needOverride = true;
+                        }
+                    }
+
+                    if (needOverride)
+                    {
+                        RainMeadow.Debug("overriding lizard pathing");
+                        var toPos = WorldCoordinate.AddIntVector(originPos, IntVector2.FromVector2(p.inputDir * 2));
+                        path = new MovementConnection(MovementConnection.MovementType.Standard, originPos, toPos, 2);
                     }
 
                     return path;
@@ -162,7 +218,7 @@ namespace RainMeadow
             {
                 foreach (BodyChunk chunk in creature.bodyChunks)
                 {
-                    if (RWCustom.Custom.DistLess(creature.mainBodyChunk.pos + RWCustom.Custom.DirVec(creature.bodyChunks[1].pos, creature.mainBodyChunk.pos) * lizard.lizardParams.biteInFront, chunk.pos, chunk.rad + lizard.lizardParams.biteRadBonus))
+                    if (Custom.DistLess(creature.mainBodyChunk.pos + Custom.DirVec(creature.bodyChunks[1].pos, creature.mainBodyChunk.pos) * lizard.lizardParams.biteInFront, chunk.pos, chunk.rad + lizard.lizardParams.biteRadBonus))
                     {
                         lizard.biteControlReset = false;
                         lizard.JawOpen = 0f;
