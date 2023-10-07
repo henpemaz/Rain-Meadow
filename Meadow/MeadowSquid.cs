@@ -23,6 +23,37 @@ namespace RainMeadow
 
             IL.Cicada.Act += Cicada_Act1; // cicada pather gets confused about entering shortcuts, let our code handle that instead
                                           // also fix zerog
+
+            // colors
+            IL.CicadaGraphics.ApplyPalette += CicadaGraphics_ApplyPalette;
+        }
+
+        private static void CicadaGraphics_ApplyPalette(ILContext il)
+        {
+            var c = new ILCursor(il);
+            try
+            {
+                c.Index = c.Instrs.Count - 1;
+                c.GotoPrev(MoveType.After,
+                i => i.MatchStloc(0)
+                );
+                c.MoveAfterLabels();
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldloca, 0);
+                c.EmitDelegate((CicadaGraphics self, ref Color origColor) => // squiddy don't
+                {
+                    if (creatureCustomizations.TryGetValue(self.cicada, out var c))
+                    {
+                        c.ModifyBodyColor(ref origColor);
+                        // todo eyecolor? does it matter if not customizable?
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                throw;
+            }
         }
 
         class CicadaController : CreatureController

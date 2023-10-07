@@ -17,6 +17,19 @@ namespace RainMeadow
             On.Lizard.SwimBehavior += Lizard_SwimBehavior;
             On.Lizard.FollowConnection += Lizard_FollowConnection;
 
+            // color
+            On.LizardGraphics.ctor += LizardGraphics_ctor;
+        }
+
+        private static void LizardGraphics_ctor(On.LizardGraphics.orig_ctor orig, LizardGraphics self, PhysicalObject ow)
+        {
+            orig(self, ow);
+            if(creatureCustomizations.TryGetValue(ow as Creature, out var c))
+            {
+                var col = self.lizard.effectColor;
+                c.ModifyBodyColor(ref col);
+                self.lizard.effectColor = col;
+            }
         }
 
         private static void Lizard_FollowConnection(On.Lizard.orig_FollowConnection orig, Lizard self, float runSpeed)
@@ -106,6 +119,7 @@ namespace RainMeadow
                         }
                         else if (!room.aimap.TileAccessibleToCreature(toPos.Tile, self.Template)) // already not accessible, improve
                         {
+                            if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("blind reaching");
                             toPos = furtherOut;
                         }
                     }
@@ -117,8 +131,7 @@ namespace RainMeadow
                         }
                     }
 
-                    var curVel = self.mainBodyChunk.vel;
-                    var inDirection = Vector2.Dot(curVel, p.inputDir);
+                    var inDirection = Vector2.Dot(self.mainBodyChunk.vel, p.inputDir);
                     if (inDirection < 3)
                     {
                         self.mainBodyChunk.vel += p.inputDir * (3 - inDirection);
@@ -126,7 +139,7 @@ namespace RainMeadow
 
                     if (toPos != self.abstractCreature.abstractAI.destination)
                     {
-                        RainMeadow.Debug($"new destination {toPos.Tile}");
+                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"new destination {toPos.Tile}");
                         p.ForceAIDestination(toPos);
                     }
                 }
@@ -146,14 +159,11 @@ namespace RainMeadow
                     }
                     if (p.inputDir == Vector2.zero && p.inputLastDir != Vector2.zero) // let go
                     {
-                        RainMeadow.Debug($"resting at {basecoord.Tile}");
+                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"resting at {basecoord.Tile}");
                         p.ForceAIDestination(basecoord);
                     }
                 }
                 if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"current AI destination {p.creature.abstractCreature.abstractAI.destination}");
-                //if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"current AI destination {p.creature.abstractCreature.abstractAI.RealAI.pathFinder.destination}");
-                //if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"current AI destination2 {p.creature.abstractCreature.abstractAI.RealAI.pathFinder.GetDestination}");
-                //if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"current AI destination3 {p.creature.abstractCreature.abstractAI.RealAI.pathFinder.GetEffectualDestination}");
             }
             orig(self);
         }
@@ -172,37 +182,9 @@ namespace RainMeadow
                 if (actuallyFollowingThisPath)
                 {
                     bool needOverride = false;
-                    if (self.destination == originPos) { RainMeadow.Debug("bad originPos override"); originPos = self.creature.pos; }
+                    if (self.destination == originPos && originPos != self.creature.pos) { if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("bad originPos override"); originPos = self.creature.pos; }
                     if (self.destination == originPos) { if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("at destination"); return null; }
-                    var path = orig(self, originPos, bodyDirection, actuallyFollowingThisPath);
-
-                    if (path == null && p.inputDir != Vector2.zero)
-                    {
-                        RainMeadow.Debug("wants to move but can't");
-                        needOverride = true;
-                    }
-                    //else if (path != null && p.inputDir != Vector2.zero && path.type < MovementConnection.MovementType.ShortCut)
-                    //{
-                            // turns out this is bad for going up 1-ledges holding forward :/
-                    //    // prevent moving in the wrong direction
-                    //    // dot product of input * move should > 0
-                    //    var pathDir = (path.destinationCoord.Tile - path.startCoord.Tile).ToVector2().normalized;
-                    //    if(Vector2.Dot(p.inputDir, pathDir) <= 0)
-                    //    {
-                    //        RainMeadow.Debug($"wrong direction: {pathDir}");
-                    //        needOverride = true;
-                    //    }
-                    //}
-
-                    if (needOverride)
-                    {
-                        RainMeadow.Debug("overriding lizard pathing");
-                        var toPos = WorldCoordinate.AddIntVector(originPos, IntVector2.FromVector2(p.inputDir * 1.42f));
-                        path = new MovementConnection(MovementConnection.MovementType.Standard, originPos, toPos, 2);
-                        RainMeadow.Debug($"overriding lizard pathing: {path}");
-                    }
-
-                    return path;
+                    return orig(self, originPos, bodyDirection, actuallyFollowingThisPath);
                 }
             }
             return orig(self, originPos, bodyDirection, actuallyFollowingThisPath);

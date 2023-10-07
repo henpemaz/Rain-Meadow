@@ -117,6 +117,13 @@ namespace RainMeadow
             {
                 displayName = "Pink",
                 creatureType = CreatureTemplate.Type.PinkLizard,
+                tintFactor = 0.5f,
+            });
+            public static Skin Lizard_Blue = new("Lizard_Blue", true, Character.Lizard, new()
+            {
+                displayName = "Blue",
+                creatureType = CreatureTemplate.Type.BlueLizard,
+                tintFactor = 0.5f,
             });
         }
 

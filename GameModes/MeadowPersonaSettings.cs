@@ -48,15 +48,11 @@ namespace RainMeadow
 
         internal override void ApplyCustomizations(Creature creature, OnlinePhysicalObject oe)
         {
-            if(creature is Player player)
-            {
-                MeadowCustomization.CreatureCustomization customization = new MeadowCustomization.CreatureCustomization();
-                customization.skinData = MeadowProgression.skinData[skin];
-                customization.tint = new(Mathf.Clamp01(tint.r), Mathf.Clamp01(tint.g), Mathf.Clamp01(tint.b)); // trust nobody
-                customization.tintAmount = Mathf.Clamp01(tintAmount) * MeadowProgression.skinData[skin].tintFactor;
-
-                MeadowCustomization.creatureCustomizations.Add(player, customization);
-            }
+            MeadowCustomization.CreatureCustomization customization = new();
+            customization.skinData = MeadowProgression.skinData[skin];
+            customization.tint = new(tint.r, tint.g, tint.b);
+            customization.tintAmount = tintAmount * MeadowProgression.skinData[skin].tintFactor;
+            MeadowCustomization.creatureCustomizations.Add(creature, customization);
         }
 
         public class MeadowPersonaSettingsState : PersonaSettingsState
@@ -64,7 +60,7 @@ namespace RainMeadow
             [OnlineField]
             public short skin;
             [OnlineField]
-            public float tintAmount;
+            public byte tintAmount;
             [OnlineField]
             public byte tintR;
             [OnlineField]
@@ -78,7 +74,7 @@ namespace RainMeadow
             {
                 var meadowPersonaSettings = (MeadowPersonaSettings)onlineEntity;
                 skin = (short)(meadowPersonaSettings.skin?.Index ?? -1);
-                tintAmount = meadowPersonaSettings.tintAmount;
+                tintAmount = (byte)(meadowPersonaSettings.tintAmount * 255);
                 tintR = (byte)(meadowPersonaSettings.tint.r * 255);
                 tintG = (byte)(meadowPersonaSettings.tint.g * 255);
                 tintB = (byte)(meadowPersonaSettings.tint.b * 255);
@@ -95,7 +91,7 @@ namespace RainMeadow
 
                 }
                 meadowPersonaSettings.skin = new MeadowProgression.Skin(MeadowProgression.Skin.values.GetEntry(skin));
-                meadowPersonaSettings.tintAmount = tintAmount;
+                meadowPersonaSettings.tintAmount = tintAmount / 255f;
                 meadowPersonaSettings.tint.r = tintR / 255f;
                 meadowPersonaSettings.tint.g = tintG / 255f;
                 meadowPersonaSettings.tint.b = tintB / 255f;
