@@ -7,5 +7,5 @@
   "description": "A pacific online coop mode",
   "requirements": [],
   "requirements_names": [],
-  "checksum_override_version": false
+  "checksum_override_version": true
 }

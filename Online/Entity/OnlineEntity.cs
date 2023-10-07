@@ -127,6 +127,10 @@ namespace RainMeadow
                     return OnlinePhysicalObject.FromEvent(newObjectEvent, inResource);
                 }
             }
+            if(newEntityEvent is NewPersonaSettingsEvent newPersonaSettingsEvent)
+            {
+                return PersonaSettingsEntity.FromEvent(newPersonaSettingsEvent, inResource);
+            }
             throw new InvalidOperationException("unknown entity event type");
         }
 

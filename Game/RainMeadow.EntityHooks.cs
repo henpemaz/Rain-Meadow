@@ -6,7 +6,6 @@ namespace RainMeadow
 {
     public partial class RainMeadow
     {
-
         private void EntityHooks()
         {
             On.OverWorld.WorldLoaded += OverWorld_WorldLoaded; // creature moving between WORLDS
@@ -30,7 +29,6 @@ namespace RainMeadow
 
             On.OverseerAI.UpdateTempHoverPosition += OverseerAI_UpdateTempHoverPosition; // no teleporting
             On.OverseerAI.Update += OverseerAI_Update; // please look at what i tell you to
-
         }
 
         // I'm watching your every step
@@ -138,6 +136,10 @@ namespace RainMeadow
             orig(self);
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
+                if (OnlineManager.lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Meadow && self.realizedCreature != null)
+                {
+                    MeadowCustomization.Customize(self.realizedCreature, oe);
+                }
                 if (!oe.isMine && !oe.realized && oe.isTransferable)
                 {
                     if (oe.roomSession == null || !oe.roomSession.participants.ContainsKey(oe.owner)) //if owner of oe is subscribed (is participant) do not request

@@ -69,10 +69,16 @@ public partial class RainMeadow
         if (OnlineManager.lobby != null)
         {
             sSpawningPersonas = true;
+            AbstractCreature ac = OnlineManager.lobby.gameMode.SpawnPersona(self, location);
+            if (ac == null) ac = orig(self, player1, player2, player3, player4, location);
+            sSpawningPersonas = false;
+            if (OnlineCreature.map.TryGetValue(ac, out var onlinePersona))
+            {
+                OnlineManager.lobby.gameMode.personaSettings.BindEntity(onlinePersona);
+            }
+            return ac;
         }
-        var ac = orig(self, player1, player2, player3, player4, location);
-        sSpawningPersonas = false;
-        return ac;
+        return orig(self, player1, player2, player3, player4, location);
     }
 
     private void Player_ctor(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)

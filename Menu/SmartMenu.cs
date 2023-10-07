@@ -17,7 +17,7 @@ namespace RainMeadow
         {
             backTarget = manager.oldProcess.ID;
             this.pages.Add(this.mainPage = new Page(this, null, "main", 0));
-            mainPage.subObjects.Add(this.scene = new InteractiveMenuScene(this, mainPage, this.GetScene));
+            if (this.GetScene != null) mainPage.subObjects.Add(this.scene = new InteractiveMenuScene(this, mainPage, this.GetScene));
             mainPage.subObjects.Add(new MenuDarkSprite(this, mainPage));
             mainPage.subObjects.Add(this.tabWrapper = new MenuTabWrapper(this, mainPage));
             // what the fuck why the fuck are these added

@@ -10,5 +10,10 @@
         {
             return false;
         }
+
+        public override ProcessManager.ProcessID MenuProcessId()
+        {
+            return RainMeadow.Ext_ProcessID.ArenaLobbyMenu;
+        }
     }
 }

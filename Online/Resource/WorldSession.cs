@@ -106,7 +106,7 @@ namespace RainMeadow
                         }
                     }
                 }
-                  
+                
                 base.ReadTo(resource);
             }
         }
