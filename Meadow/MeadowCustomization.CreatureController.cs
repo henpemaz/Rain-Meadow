@@ -38,7 +38,7 @@ namespace RainMeadow
                 rainWorld = creature.abstractCreature.world.game.rainWorld;
 
                 //creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
-                debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);
+                //debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);
             }
 
             public int playerNumber = 0;
@@ -100,11 +100,6 @@ namespace RainMeadow
             {
                 // Input
                 this.checkInput();
-
-                if (this.debugDestinationVisualizer != null)
-                {
-                    this.debugDestinationVisualizer.Update();
-                }
 
                 // a lot of things copypasted from from p.update
                 if (this.wantToJump > 0) this.wantToJump--;
@@ -309,6 +304,11 @@ namespace RainMeadow
                     {
                         creature.bodyChunks[1].vel += Custom.DirVec(creature.bodyChunks[1].pos, Input.mousePosition) * 7f;
                     }
+                }
+
+                if (this.debugDestinationVisualizer != null)
+                {
+                    this.debugDestinationVisualizer.Update();
                 }
             }
 

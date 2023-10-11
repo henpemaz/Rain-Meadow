@@ -131,10 +131,13 @@ namespace RainMeadow
                         }
                     }
 
-                    var inDirection = Vector2.Dot(self.mainBodyChunk.vel, p.inputDir);
-                    if (inDirection < 3)
+                    if((self.graphicsModule as LizardGraphics)?.frontLegsGrabbing > 0 && room.aimap.TileAccessibleToCreature(toPos.Tile, self.Template))
                     {
-                        self.mainBodyChunk.vel += p.inputDir * (3 - inDirection);
+                        var inDirection = Vector2.Dot(self.mainBodyChunk.vel, p.inputDir);
+                        if (inDirection < 2)
+                        {
+                            self.mainBodyChunk.vel += p.inputDir * (2 - inDirection);
+                        }
                     }
 
                     if (toPos != self.abstractCreature.abstractAI.destination)

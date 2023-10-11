@@ -72,7 +72,7 @@ public partial class RainMeadow
             AbstractCreature ac = OnlineManager.lobby.gameMode.SpawnPersona(self, location);
             if (ac == null) ac = orig(self, player1, player2, player3, player4, location);
             sSpawningPersonas = false;
-            if (OnlineCreature.map.TryGetValue(ac, out var onlinePersona))
+            if (OnlineManager.lobby.gameMode.personaSettings != null && OnlineCreature.map.TryGetValue(ac, out var onlinePersona))
             {
                 OnlineManager.lobby.gameMode.personaSettings.BindEntity(onlinePersona);
             }
