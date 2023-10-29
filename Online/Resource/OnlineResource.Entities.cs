@@ -87,6 +87,7 @@ namespace RainMeadow
         }
 
         // registering new entity
+        [RPCMethod]
         private void EntityRegisteredInResource(OnlineEntity oe, EntityState initialState)
         {
             RainMeadow.Debug(this);

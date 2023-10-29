@@ -151,55 +151,7 @@ namespace RainMeadow
 
             public virtual Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
             {
-                if (typeof(OnlineState).IsAssignableFrom(f.FieldType))
-                {
-                    return Expression.Call(serializerRef, typeof(Serializer).GetMethods().Single(m =>
-                    m.Name == this switch
-                    {
-                        { nullable: false, polymorphic: false } => "SerializeStaticState",
-                        { nullable: false, polymorphic: true } => "SerializePolyState",
-                        { nullable: true, polymorphic: false } => "SerializeNullableStaticState",
-                        { nullable: true, polymorphic: true } => "SerializeNullablePolyState"
-                    } && m.IsGenericMethod).MakeGenericMethod(new Type[] { f.FieldType }), fieldRef);
-                }
-                if (typeof(OnlineState[]).IsAssignableFrom(f.FieldType) || (f.FieldType.IsGenericType && f.FieldType.GetGenericTypeDefinition() == typeof(List<>) && typeof(OnlineState).IsAssignableFrom(f.FieldType.GetGenericArguments()[0])))
-                {
-                    return Expression.Call(serializerRef, typeof(Serializer).GetMethods().Single(m =>
-                    m.Name == this switch
-                    {
-                        { nullable: false, polymorphic: false } => "SerializeStaticStates",
-                        { nullable: false, polymorphic: true } => "SerializePolyStates",
-                        { nullable: true, polymorphic: false } => "SerializeNullableStaticStates",
-                        { nullable: true, polymorphic: true } => "SerializeNullablePolyStates"
-                    } && m.IsGenericMethod && (m.GetParameters()[0].ParameterType.GetElementType().IsArray == f.FieldType.IsArray)).MakeGenericMethod(new Type[] { f.FieldType.IsArray ? f.FieldType.GetElementType() : f.FieldType.GetGenericArguments()[0] }), fieldRef);
-                }
-                
-                if (typeof(Serializer.ICustomSerializable).IsAssignableFrom(f.FieldType))
-                {
-                    return Expression.Call(serializerRef, typeof(Serializer).GetMethods().Single(m =>
-                    m.Name == this switch
-                    {
-                        { nullable: false } => "Serialize",
-                        { nullable: true } => "SerializeNullable"
-                    } && m.IsGenericMethod && m.GetGenericMethodDefinition().GetGenericArguments().Any(ga => ga.GetGenericParameterConstraints().Any(t => t == typeof(Serializer.ICustomSerializable)))
-                    && m.GetParameters().Any(p => p.ParameterType.IsByRef && (!p.ParameterType.GetElementType().IsGenericType || p.ParameterType.GetElementType().GetGenericTypeDefinition() != typeof(List<>)) && !p.ParameterType.GetElementType().IsArray)
-                    ).MakeGenericMethod(new Type[] { f.FieldType }), fieldRef);
-                }
-                if (typeof(Serializer.ICustomSerializable[]).IsAssignableFrom(f.FieldType) || (f.FieldType.IsGenericType && f.FieldType.GetGenericTypeDefinition() == typeof(List<>) && typeof(Serializer.ICustomSerializable).IsAssignableFrom(f.FieldType.GetGenericArguments()[0])))
-                {
-                    return Expression.Call(serializerRef, typeof(Serializer).GetMethods().Single(m =>
-                    m.Name == this switch
-                    {
-                        { nullable: false } => "Serialize",
-                        { nullable: true } => "SerializeNullable"
-                    } && m.IsGenericMethod && m.GetGenericMethodDefinition().GetGenericArguments().Any(ga => ga.GetGenericParameterConstraints().Any(t => t == typeof(Serializer.ICustomSerializable)))
-                    && m.GetParameters().Any(p => p.ParameterType.IsByRef && (p.ParameterType.GetElementType().IsGenericType && p.ParameterType.GetElementType().GetGenericTypeDefinition() == typeof(List<>)) != f.FieldType.IsArray && p.ParameterType.GetElementType().IsArray == f.FieldType.IsArray)
-                    ).MakeGenericMethod(new Type[] { f.FieldType.IsArray ? f.FieldType.GetElementType() : f.FieldType.GetGenericArguments()[0] }), fieldRef);
-                }
-                if (!f.FieldType.IsValueType && f.FieldType != typeof(string)) { 
-                    RainMeadow.Error($"{f.FieldType} not handled by SerializerCallMethod"); 
-                }
-                return Expression.Call(serializerRef, typeof(Serializer).GetMethod(nullable ? "SerializeNullable" : "Serialize", new[] { f.FieldType.MakeByRefType() }), fieldRef);
+                return Expression.Call(serializerRef, Serializer.GetSerializationMethod(f.FieldType, nullable, polymorphic), fieldRef);
             }
 
             public virtual Expression ComparisonMethod(FieldInfo f, MemberExpression currentField, MemberExpression baselineField)

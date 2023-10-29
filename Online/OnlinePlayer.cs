@@ -129,6 +129,12 @@ namespace RainMeadow
             }
         }
 
+        internal void InvokeRPC(Delegate del)
+        {
+            this.QueueEvent(RPCManager.BuildRPC(del));
+        }
+
+
         internal void Updade()
         {
             // Update snapshot cycle for debug overlay and reset for snapshot frame

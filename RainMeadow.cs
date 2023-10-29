@@ -102,6 +102,7 @@ namespace RainMeadow
                 OnlineState.InitializeBuiltinTypes();
                 OnlineGameMode.InitializeBuiltinTypes();
                 MeadowProgression.InitializeBuiltinTypes();
+                RPCManager.SetupRPCs();
 
                 self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
 
@@ -112,6 +113,7 @@ namespace RainMeadow
                 GameplayHooks();
                 PlayerHooks();
                 CustomizationHooks();
+                
             }
             catch (Exception e)
             {
