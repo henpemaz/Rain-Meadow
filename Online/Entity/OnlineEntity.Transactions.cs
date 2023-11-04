@@ -77,22 +77,27 @@
             }
             else
             {
-                this.pendingRequest = primaryResource.owner.QueueEvent(new EntityReleaseEvent(this, currentlyJoinedResource));
+                this.pendingRequest = primaryResource.owner.InvokeRPC(Release, currentlyJoinedResource).Then(ResolveRelease);
             }
         }
 
         // someone released "to me"
-        public void Released(EntityReleaseEvent entityRelease)
+        [RPCMethod]
+        // todo maybe arg1 is rpcevent
+
+        // todo friendly way to set a result for iresolvable
+        // todo auto result for iresolvable
+        public void Released(OnlineResource inResource)
         {
+            RPCEvent entityRelease = RPCManager.currentEvent;
             RainMeadow.Debug(this);
             RainMeadow.Debug("Released by : " + entityRelease.from.id);
             if (isTransferable && this.owner == entityRelease.from && this.primaryResource.isOwner) // theirs and I can transfer
             {
                 entityRelease.from.QueueEvent(new GenericResult.Ok(entityRelease)); // ok to them
-                var res = entityRelease.inResource;
-                if (res.isAvailable || res.super.isActive)
+                if (inResource.isAvailable || inResource.super.isActive)
                 {
-                    if (this.owner != res.owner) this.primaryResource.LocalEntityTransfered(this, res.owner);
+                    if (this.owner != inResource.owner) this.primaryResource.LocalEntityTransfered(this, inResource.owner);
                 }
                 else
                 {

@@ -264,6 +264,33 @@ namespace RainMeadow
             feeds.RemoveAll(f => f.resource == resource);
         }
 
+        [RPCMethod]
+        public void DeltaReset(OnlineResource onlineResource, OnlineEntity.EntityId entity)
+        {
+            if (entity != null)
+            {
+                foreach (var feed in OnlineManager.feeds)
+                {
+                    if (feed.player == RPCManager.currentEvent.from && feed.entity.id == entity && feed.resource == onlineResource)
+                    {
+                        feed.ResetDeltas();
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                foreach (var subscription in OnlineManager.subscriptions)
+                {
+                    if (subscription.player == RPCManager.currentEvent.from && subscription.resource == onlineResource)
+                    {
+                        subscription.ResetDeltas();
+                        return;
+                    }
+                }
+            }
+        }
+
         // this smells
         public static OnlineResource ResourceFromIdentifier(string rid)
         {

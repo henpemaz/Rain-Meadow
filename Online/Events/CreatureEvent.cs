@@ -74,8 +74,7 @@ public abstract partial class CreatureEvent
         {
             base.CustomSerialize(serializer);
             serializer.Serialize(ref suckedCreature);
-            serializer.Serialize(ref entrancePos.x);
-            serializer.Serialize(ref entrancePos.y);
+            serializer.Serialize(ref entrancePos);
         }
 
         public override void Process()

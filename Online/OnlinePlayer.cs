@@ -129,9 +129,9 @@ namespace RainMeadow
             }
         }
 
-        internal void InvokeRPC(Delegate del)
+        internal RPCEvent InvokeRPC(Delegate del, params object[] args)
         {
-            this.QueueEvent(RPCManager.BuildRPC(del));
+            return (RPCEvent)this.QueueEvent(RPCManager.BuildRPC(del, args));
         }
 
 

@@ -66,7 +66,7 @@ namespace RainMeadow
 
                     if (self.abstractRoom.firstTimeRealized != isFirstTimeRealized)
                     {
-                        OnlineManager.lobby.owner.QueueEvent(new AbstractRoomFirstTimeRealizedEvent(rs));
+                        ws.owner.InvokeRPC(rs.AbstractRoomFirstTimeRealized);
                     }
                 }
             }
