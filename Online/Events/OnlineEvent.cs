@@ -44,15 +44,7 @@ namespace RainMeadow
         public enum EventTypeId : byte // will we hit 255 of these I wonder
         {
             None,
-            ResourceRequest,
-            ResourceRelease,
             ResourceTransfer,
-            RequestResultLeased,
-            RequestResultSubscribed,
-            RequestResultError,
-            ReleaseResultReleased,
-            ReleaseResultUnsubscribed,
-            ReleaseResultError,
             TransferResultOk,
             TransferResultError,
             GenericResultOk,
@@ -69,12 +61,10 @@ namespace RainMeadow
             EntityTransfererRequest,
             EntityTransferedEvent,
             EntityRequest,
-            EntityRelease,
-            DeltaReset,
             PlayerAddFood,
             PlayerAddQuarterFood,
-            AbstractRoomFirstTimeRealized,
             NewMeadowPersonaSettingsEvent,
+            RPCEvent,
         }
 
         public static OnlineEvent NewFromType(EventTypeId eventTypeId)
@@ -84,32 +74,8 @@ namespace RainMeadow
             {
                 case EventTypeId.None: // fault detection
                     break;
-                case EventTypeId.ResourceRequest:
-                    e = new ResourceRequest();
-                    break;
-                case EventTypeId.ResourceRelease:
-                    e = new ResourceRelease();
-                    break;
                 case EventTypeId.ResourceTransfer:
                     e = new ResourceTransfer();
-                    break;
-                case EventTypeId.ReleaseResultReleased:
-                    e = new ReleaseResult.Released();
-                    break;
-                case EventTypeId.ReleaseResultUnsubscribed:
-                    e = new ReleaseResult.Unsubscribed();
-                    break;
-                case EventTypeId.ReleaseResultError:
-                    e = new ReleaseResult.Error();
-                    break;
-                case EventTypeId.RequestResultLeased:
-                    e = new RequestResult.Leased();
-                    break;
-                case EventTypeId.RequestResultSubscribed:
-                    e = new RequestResult.Subscribed();
-                    break;
-                case EventTypeId.RequestResultError:
-                    e = new RequestResult.Error();
                     break;
                 case EventTypeId.TransferResultError:
                     e = new TransferResult.Error();
@@ -159,23 +125,17 @@ namespace RainMeadow
                 case EventTypeId.EntityRequest:
                     e = new EntityRequest();
                     break;
-                case EventTypeId.EntityRelease:
-                    e = new EntityReleaseEvent();
-                    break;
-                case EventTypeId.DeltaReset:
-                    e = new DeltaReset();
-                    break;
                 case EventTypeId.PlayerAddFood:
                     e = new PlayerEvent.AddFood();
                     break;
                 case EventTypeId.PlayerAddQuarterFood:
                     e = new PlayerEvent.AddQuarterFood();
                     break;
-                case EventTypeId.AbstractRoomFirstTimeRealized:
-                    e = new AbstractRoomFirstTimeRealizedEvent();
-                    break;
                 case EventTypeId.NewMeadowPersonaSettingsEvent:
                     e = new NewMeadowPersonaSettingsEvent();
+                    break;
+                case EventTypeId.RPCEvent:
+                    e = new RPCEvent();
                     break;
             }
             if (e is null) throw new InvalidOperationException("invalid event type: " + eventTypeId);

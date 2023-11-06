@@ -12,7 +12,7 @@ namespace RainMeadow
             if (isAvailable) throw new InvalidOperationException("available");
 
             ClearIncommingBuffers();
-            pendingRequest = (ResourceEvent)supervisor.QueueEvent(new ResourceRequest(this));
+            pendingRequest = supervisor.InvokeRPC(this.Requested).Then(this.ResolveRequest);
         }
 
         // I no longer need this resource, supervisor can coordinate its transfer if needed
@@ -23,55 +23,57 @@ namespace RainMeadow
             if (!isAvailable) throw new InvalidOperationException("not available");
             if (!canRelease) throw new InvalidOperationException("cant be released in current state");
 
-            pendingRequest = (ResourceEvent)supervisor.QueueEvent(new ResourceRelease(this));
+            pendingRequest = supervisor.InvokeRPC(this.Released).Then(this.ResolveRelease);
         }
 
         // Someone requested this resource, if I supervise it I'll lease it
-        public void Requested(ResourceRequest request)
+        [RPCMethod]
+        public void Requested(RPCEvent request)
         {
             RainMeadow.Debug(this);
             if (isSupervisor)
             {
                 if (participants.ContainsKey(request.from)) // they are already in this
                 {
-                    request.from.QueueEvent(new RequestResult.Error(request));
+                    request.from.QueueEvent(new GenericResult.Error(request));
                     return;
                 }
 
                 if (isFree)
                 {
                     // Leased to player
-                    request.from.QueueEvent(new RequestResult.Leased(request)); // make available
-                    NewOwner(request.from); // then new lease state
+                    request.from.QueueEvent(new GenericResult.Ok(request));
+                    NewOwner(request.from);
                     return;
                 }
                 else
                 {
                     // Already leased, player subscribed
-                    request.from.QueueEvent(new RequestResult.Subscribed(request));
+                    request.from.QueueEvent(new GenericResult.Ok(request));
                     NewParticipant(request.from);
                     return;
                 }
             }
 
-            request.from.QueueEvent(new RequestResult.Error(request));
+            request.from.QueueEvent(new GenericResult.Error(request));
         }
 
         // Someone is trying to release this resource, if I supervise it, I'll handle it
-        public void Released(ResourceRelease request)
+        [RPCMethod]
+        public void Released(RPCEvent request)
         {
             RainMeadow.Debug(this);
             if (isSupervisor)
             {
                 if (!participants.ContainsKey(request.from)) // they are already out?
                 {
-                    request.from.QueueEvent(new ReleaseResult.Error(request));
+                    request.from.QueueEvent(new GenericResult.Error(request));
                     return;
                 }
 
                 if (request.from == owner) // Owner left, might need a transfer
                 {
-                    request.from.QueueEvent(new ReleaseResult.Released(request)); // this notifies the old owner that the release was a success
+                    request.from.QueueEvent(new GenericResult.Ok(request)); // this notifies the old owner that the release was a success
                     ParticipantLeft(request.from);
                     var newOwner = MatchmakingManager.instance.BestTransferCandidate(this, participants);
                     NewOwner(newOwner); // This notifies all users, if the new owner is active they'll restore the state
@@ -83,12 +85,12 @@ namespace RainMeadow
                 }
                 else
                 {
-                    request.from.QueueEvent(new ReleaseResult.Unsubscribed(request)); // non-owner unsubscribed
+                    request.from.QueueEvent(new GenericResult.Ok(request)); // non-owner unsubscribed
                     ParticipantLeft(request.from);
                     return;
                 }
             }
-            request.from.QueueEvent(new ReleaseResult.Error(request)); // I do not manage this resource
+            request.from.QueueEvent(new GenericResult.Error(request)); // I do not manage this resource
         }
 
         // The previous owner has left and I've been assigned (by super) as the new owner
@@ -106,13 +108,13 @@ namespace RainMeadow
         }
 
         // A pending request was answered to
-        public void ResolveRequest(RequestResult requestResult)
+        public void ResolveRequest(GenericResult requestResult)
         {
             RainMeadow.Debug(this);
             if (requestResult.referencedEvent == pendingRequest) pendingRequest = null;
             else RainMeadow.Debug($"Weird event situation, pending is {pendingRequest} and referenced is {requestResult.referencedEvent}");
 
-            if (requestResult is RequestResult.Leased) // I'm the new owner of a previously-free resource
+            if (requestResult is GenericResult.Ok)
             {
                 if (isAvailable) // this was transfered to me because the previous owner left
                 {
@@ -122,15 +124,10 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("Claimed free resource");
                     WaitingForState();
-                    Available();
+                    if (isOwner) Available();
                 }
             }
-            else if (requestResult is RequestResult.Subscribed) // I'm subscribed to a resource's state and events
-            {
-                RainMeadow.Debug("Subscribed to resource");
-                WaitingForState();
-            }
-            else if (requestResult is RequestResult.Error) // I should retry
+            else if (requestResult is GenericResult.Error) // I should retry
             {
                 // todo retry logic
                 RainMeadow.Error("request failed for " + this);
@@ -138,21 +135,17 @@ namespace RainMeadow
         }
 
         // A pending release was answered to
-        public void ResolveRelease(ReleaseResult releaseResult)
+        public void ResolveRelease(GenericResult releaseResult)
         {
             RainMeadow.Debug(this);
             if (pendingRequest == releaseResult.referencedEvent) pendingRequest = null;
             else RainMeadow.Debug($"Weird event situation, pending is {pendingRequest} and referenced is {releaseResult.referencedEvent}");
 
-            if (releaseResult is ReleaseResult.Released) // I've let go
+            if (releaseResult is GenericResult.Ok) // I've let go
             {
                 Unavailable();
             }
-            else if (releaseResult is ReleaseResult.Unsubscribed) // I'm clear
-            {
-                Unavailable();
-            }
-            else if (releaseResult is ReleaseResult.Error) // I should retry
+            else if (releaseResult is GenericResult.Error) // I should retry
             {
                 // todo retry logic
                 RainMeadow.Error("released failed for " + this);

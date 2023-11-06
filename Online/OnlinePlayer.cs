@@ -14,7 +14,7 @@ namespace RainMeadow
         public List<OnlineEvent> abortedEvents = new(8);
         public Queue<OnlineState> OutgoingStates = new(16);
 
-        private ushort nextOutgoingEvent = 1; // outgoing, event id
+        public ushort nextOutgoingEvent = 1; // outgoing, event id
         public ushort lastEventFromRemote; // incoming, the last event I've received from them, I'll write it back on headers as an ack
         public ushort lastAckFromRemote; // incoming, the last event they've ack'd to me, used imediately on receive
         public uint tick; // incoming, the latest tick I've received from them, I'll write it back on headers as an ack
@@ -133,7 +133,6 @@ namespace RainMeadow
         {
             return (RPCEvent)this.QueueEvent(RPCManager.BuildRPC(del, args));
         }
-
 
         internal void Updade()
         {

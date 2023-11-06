@@ -160,14 +160,6 @@ namespace RainMeadow
             }
         }
 
-        public class OnlineResourceRefFieldAttribute : OnlineFieldAttribute
-        {
-            public override Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
-            {
-                return Expression.Call(serializerRef, typeof(Serializer).GetMethod("SerializeResourceByReference", new[] { f.FieldType.MakeByRefType() }), fieldRef);
-            }
-        }
-
         public class DeltaSupportAttribute : Attribute { public StateHandler.DeltaSupport level; }
 
         public class StateHandler

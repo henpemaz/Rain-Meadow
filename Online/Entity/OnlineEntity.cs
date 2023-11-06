@@ -199,9 +199,9 @@ namespace RainMeadow
                 if (stateQueue.Count == 0 || newState.baseline != stateQueue.Peek().tick)
                 {
                     RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.baseline}");
-                    if (!newState.from.OutgoingEvents.Any(e => e is DeltaReset dr && dr.onlineResource == inResource && dr.entity == this.id))
+                    if (!newState.from.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlineManager.DeltaReset, inResource, this.id)))
                     {
-                        newState.from.QueueEvent(new DeltaReset(inResource, this.id));
+                        newState.from.InvokeRPC(OnlineManager.DeltaReset, inResource, this.id);
                     }
                     return;
                 }

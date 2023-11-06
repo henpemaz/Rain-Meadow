@@ -77,7 +77,7 @@
             }
             else
             {
-                this.pendingRequest = primaryResource.owner.InvokeRPC(Release, currentlyJoinedResource).Then(ResolveRelease);
+                this.pendingRequest = primaryResource.owner.InvokeRPC(Released, currentlyJoinedResource).Then(ResolveRelease);
             }
         }
 
@@ -87,14 +87,13 @@
 
         // todo friendly way to set a result for iresolvable
         // todo auto result for iresolvable
-        public void Released(OnlineResource inResource)
+        public void Released(RPCEvent rpcEvent, OnlineResource inResource)
         {
-            RPCEvent entityRelease = RPCManager.currentEvent;
             RainMeadow.Debug(this);
-            RainMeadow.Debug("Released by : " + entityRelease.from.id);
-            if (isTransferable && this.owner == entityRelease.from && this.primaryResource.isOwner) // theirs and I can transfer
+            RainMeadow.Debug("Released by : " + rpcEvent.from.id);
+            if (isTransferable && this.owner == rpcEvent.from && this.primaryResource.isOwner) // theirs and I can transfer
             {
-                entityRelease.from.QueueEvent(new GenericResult.Ok(entityRelease)); // ok to them
+                rpcEvent.from.QueueEvent(new GenericResult.Ok(rpcEvent)); // ok to them
                 if (inResource.isAvailable || inResource.super.isActive)
                 {
                     if (this.owner != inResource.owner) this.primaryResource.LocalEntityTransfered(this, inResource.owner);
@@ -107,10 +106,10 @@
             else
             {
                 if (!isTransferable) RainMeadow.Error("Denied because not transferable");
-                else if (owner != entityRelease.from) RainMeadow.Error("Denied because not theirs");
+                else if (owner != rpcEvent.from) RainMeadow.Error("Denied because not theirs");
                 else if (!primaryResource.isOwner) RainMeadow.Error("Denied because I don't supervise it");
                 else if (isPending) RainMeadow.Error("Denied because pending");
-                entityRelease.from.QueueEvent(new GenericResult.Error(entityRelease));
+                rpcEvent.from.QueueEvent(new GenericResult.Error(rpcEvent));
             }
         }
 

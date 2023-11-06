@@ -286,6 +286,21 @@ namespace RainMeadow
             }
         }
 
+        // serializes resource.id and finds reference
+        public void SerializEntityById(ref OnlineEntity onlineEntity)
+        {
+            if (IsWriting)
+            {
+                onlineEntity.id.CustomSerialize(this);
+            }
+            if (IsReading)
+            {
+                OnlineEntity.EntityId id = new();
+                id.CustomSerialize(this);
+                onlineEntity = id.FindEntity();
+            }
+        }
+
         public bool IsDelta; // OnlineState is allowed to change this (at the start of its serialize method)
         private void WrappedSerialize(OnlineState state)
         {

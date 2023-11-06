@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace RainMeadow
@@ -91,9 +92,10 @@ namespace RainMeadow
             }
         }
 
+        // tempting to try and cache this, would need a query icomparable
         internal static MethodInfo GetSerializationMethod(Type fieldType, bool nullable, bool polymorphic)
         {
-            var arguments = new { nullable = nullable, polymorphic = polymorphic }; // one hell of a drug
+            var arguments = new { nullable, polymorphic }; // one hell of a drug
             if (typeof(OnlineState).IsAssignableFrom(fieldType))
             {
                 return typeof(Serializer).GetMethods().Single(m =>
@@ -139,6 +141,11 @@ namespace RainMeadow
                 && m.GetParameters().Any(p => p.ParameterType.IsByRef && (p.ParameterType.GetElementType().IsGenericType && p.ParameterType.GetElementType().GetGenericTypeDefinition() == typeof(List<>)) != fieldType.IsArray && p.ParameterType.GetElementType().IsArray == fieldType.IsArray)
                 ).MakeGenericMethod(new Type[] { fieldType.IsArray ? fieldType.GetElementType() : fieldType.GetGenericArguments()[0] }) ;
             }
+            if (typeof(OnlineResource).IsAssignableFrom(fieldType))
+            {
+                return typeof(Serializer).GetMethod("SerializeResourceByReference", new[] { fieldType.MakeByRefType() });
+            }
+
             if (!fieldType.IsValueType && fieldType != typeof(string))
             {
                 RainMeadow.Error($"{fieldType} not handled by SerializerCallMethod");

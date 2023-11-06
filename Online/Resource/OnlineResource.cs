@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -14,7 +15,7 @@ namespace RainMeadow
 
         public List<OnlineResource> subresources;
 
-        public ResourceEvent pendingRequest; // should this maybe be a list/queue? Will it be any more manageable if multiple events can cohexist?
+        public OnlineEvent pendingRequest; // should this maybe be a list/queue? Will it be any more manageable if multiple events can cohexist?
 
         public bool isFree => owner == null || owner.hasLeft;
         public bool isOwner => owner != null && owner.isMe;
@@ -152,7 +153,7 @@ namespace RainMeadow
             }
 
             if (canRelease) { Release(); releaseWhenPossible = false; }
-            else if (pendingRequest is not ResourceRelease) { releaseWhenPossible = true; }
+            else if (pendingRequest is not RPCEvent rc || rc.handler.method.Name != nameof(this.Released)) { releaseWhenPossible = true; }
         }
 
         public void SubresourcesUnloaded() // callback-ish for resources freeing up
@@ -174,7 +175,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug($"{this} - '{(newOwner != null ? newOwner : "null")}'");
             if (newOwner == owner && newOwner != null) throw new InvalidOperationException("Re-assigned to the same owner");
-            if (isAvailable && newOwner == null && pendingRequest is not ResourceRelease) throw new InvalidOperationException("No owner for available resource");
+            if (isAvailable && newOwner == null && (pendingRequest is not RPCEvent rc || rc.handler.method.Name != nameof(this.Released))) throw new InvalidOperationException("No owner for available resource");
             var oldOwner = owner;
             owner = newOwner;
 
@@ -189,6 +190,11 @@ namespace RainMeadow
                     Subscribed(membership.player, true);
                 }
                 ClaimAbandonedEntitiesAndResources();
+            }
+
+            if(isWaitingForState) // I am the authority for the state of this
+            {
+                Available();
             }
 
             if (isActive) // maybe has subresources, notify

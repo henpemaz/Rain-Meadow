@@ -4,7 +4,7 @@
     {
         [OnlineField(polymorphic = true)]
         public EntityState entityState;
-        [OnlineResourceRefField]
+        [OnlineField]
         public OnlineResource inResource;
 
         public EntityFeedState() { }
