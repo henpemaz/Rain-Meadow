@@ -58,9 +58,18 @@ namespace RainMeadow
             return new AbstractCreatureState(this, tick, realizedState);
         }
 
-        public void CreatureViolence(OnlinePhysicalObject onlineVillain, int hitchunkIndex, PhysicalObject.Appendage.Pos hitappendage, Vector2? directionandmomentum, Creature.DamageType type, float damage, float stunbonus)
+        public void RPCCreatureViolence(OnlinePhysicalObject onlineVillain, int hitchunkIndex, PhysicalObject.Appendage.Pos hitappendage, Vector2? directionandmomentum, Creature.DamageType type, float damage, float stunbonus)
         {
-            this.owner.QueueEvent(new CreatureEvent.Violence(onlineVillain, this, hitchunkIndex, hitappendage, directionandmomentum, type, damage, stunbonus));
+            this.owner.InvokeRPC(this.CreatureViolence, onlineVillain, (byte)hitchunkIndex, hitappendage == null ? null : new AppendageRef(hitappendage), directionandmomentum, type, damage, stunbonus);
+        }
+
+        [RPCMethod]
+        public void CreatureViolence(OnlinePhysicalObject? onlineVillain, byte victimChunkIndex, AppendageRef? victimAppendageRef, Vector2? directionAndMomentum, Creature.DamageType damageType, float damage, float stunBonus)
+        {
+            var victimAppendage = victimAppendageRef?.GetAppendagePos(this);
+            var creature = (this.apo.realizedObject as Creature);
+            if (creature == null) return;
+            creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, creature.bodyChunks[victimChunkIndex], victimAppendage, damageType, damage, stunBonus);
         }
 
         public void ForceGrab(OnlinePhysicalObject onlineGrabbed, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool pacifying)
@@ -84,12 +93,19 @@ namespace RainMeadow
             ForceGrab(graspRef.OnlineGrabbed.FindEntity() as OnlinePhysicalObject, graspRef.GraspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
         }
 
-        public void SuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
+        public void BroadcastSuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
         {
             foreach (var participant in currentlyJoinedResource.participants)
             {
-                participant.Key.QueueEvent(new CreatureEvent.SuckedIntoShortCut(this, entrancePos, carriedByOther));
+                participant.Key.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
             }
+        }
+
+        [RPCMethod]
+        public void SuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
+        {
+            enteringShortCut = true;
+            (apo.realizedObject as Creature)?.SuckedIntoShortCut(entrancePos, carriedByOther);
         }
 
         public override string ToString()

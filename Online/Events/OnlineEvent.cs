@@ -49,8 +49,6 @@ namespace RainMeadow
             TransferResultError,
             GenericResultOk,
             GenericResultError,
-            CreatureEventViolence,
-            CreatureEventSuckedIntoShortCut,
             RegisterNewEntityRequest,
             NewObjectEvent,
             NewCreatureEvent,
@@ -82,12 +80,6 @@ namespace RainMeadow
                     break;
                 case EventTypeId.TransferResultOk:
                     e = new TransferResult.Ok();
-                    break;
-                case EventTypeId.CreatureEventViolence:
-                    e = new CreatureEvent.Violence();
-                    break;
-                case EventTypeId.CreatureEventSuckedIntoShortCut:
-                    e = new CreatureEvent.SuckedIntoShortCut();
                     break;
                 case EventTypeId.GenericResultOk:
                     e = new GenericResult.Ok();

@@ -14,6 +14,10 @@ namespace RainMeadow
 
     }
 
+    // todo
+    // support nullable parameters
+    // support enumext (serializer finder pick right method)
+    // support polymorphism of entity target
     public static class RPCManager
     {
         public static Dictionary<ushort, RPCDefinition> defsByIndex = new Dictionary<ushort, RPCDefinition>();
