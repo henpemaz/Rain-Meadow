@@ -79,7 +79,7 @@ namespace RainMeadow
                     NewOwner(newOwner); // This notifies all users, if the new owner is active they'll restore the state
                     if (newOwner != null)
                     {
-                        newOwner.QueueEvent(new ResourceTransfer(this));
+                        newOwner.InvokeRPC(this.Transfered);
                     }
                     return;
                 }
@@ -94,17 +94,18 @@ namespace RainMeadow
         }
 
         // The previous owner has left and I've been assigned (by super) as the new owner
-        public void Transfered(ResourceTransfer request)
+        [RPCMethod]
+        public void Transfered(RPCEvent request)
         {
             RainMeadow.Debug(this);
             if (isAvailable && isActive && request.from == supervisor) // I am a subscriber with a valid state who now owns this resource
             {
-                request.from.QueueEvent(new TransferResult.Ok(request));
+                request.from.QueueEvent(new GenericResult.Ok(request));
                 return;
             }
 
             RainMeadow.Debug($"Transfer error : {isAvailable} {isActive} {request.from == supervisor}");
-            request.from.QueueEvent(new TransferResult.Error(request)); // super should retry with someone else
+            request.from.QueueEvent(new GenericResult.Error(request)); // super should retry with someone else
         }
 
         // A pending request was answered to
@@ -153,17 +154,17 @@ namespace RainMeadow
         }
 
         // A pending transfer was asnwered to
-        public void ResolveTransfer(TransferResult transferResult)
+        public void ResolveTransfer(GenericResult transferResult)
         {
             RainMeadow.Debug(this);
             if (pendingRequest == transferResult.referencedEvent) pendingRequest = null;
             else RainMeadow.Debug($"Weird event situation, pending is {pendingRequest} and referenced is {transferResult.referencedEvent}");
 
-            if (transferResult is TransferResult.Ok) // New owner accepted it
+            if (transferResult is GenericResult.Ok) // New owner accepted it
             {
                 // no op
             }
-            else if (transferResult is TransferResult.Error) // I should retry
+            else if (transferResult is GenericResult.Error) // I should retry
             {
                 // todo retry logic
                 RainMeadow.Error("transfer failed for " + this);

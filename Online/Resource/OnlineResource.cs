@@ -356,9 +356,6 @@ namespace RainMeadow
                         if (newOwner != null && !isPending)
                         {
                             NewOwner(newOwner); // This notifies all users, if the new owner is active they'll restore the state
-                            // old
-                            newOwner.QueueEvent(new ResourceTransfer(this));
-                            // new
                             newOwner.InvokeRPC(this.Transfered);
                         }
                         else

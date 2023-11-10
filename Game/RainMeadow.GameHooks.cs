@@ -2,7 +2,6 @@
 using MonoMod.Cil;
 using System;
 using System.Linq;
-using static RainMeadow.PlayerEvent;
 
 namespace RainMeadow
 {

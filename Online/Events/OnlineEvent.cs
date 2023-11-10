@@ -44,9 +44,6 @@ namespace RainMeadow
         public enum EventTypeId : byte // will we hit 255 of these I wonder
         {
             None,
-            ResourceTransfer,
-            TransferResultOk,
-            TransferResultError,
             GenericResultOk,
             GenericResultError,
             RegisterNewEntityRequest,
@@ -59,8 +56,6 @@ namespace RainMeadow
             EntityTransfererRequest,
             EntityTransferedEvent,
             EntityRequest,
-            PlayerAddFood,
-            PlayerAddQuarterFood,
             NewMeadowPersonaSettingsEvent,
             RPCEvent,
         }
@@ -71,15 +66,6 @@ namespace RainMeadow
             switch (eventTypeId)
             {
                 case EventTypeId.None: // fault detection
-                    break;
-                case EventTypeId.ResourceTransfer:
-                    e = new ResourceTransfer();
-                    break;
-                case EventTypeId.TransferResultError:
-                    e = new TransferResult.Error();
-                    break;
-                case EventTypeId.TransferResultOk:
-                    e = new TransferResult.Ok();
                     break;
                 case EventTypeId.GenericResultOk:
                     e = new GenericResult.Ok();
@@ -116,12 +102,6 @@ namespace RainMeadow
                     break;
                 case EventTypeId.EntityRequest:
                     e = new EntityRequest();
-                    break;
-                case EventTypeId.PlayerAddFood:
-                    e = new PlayerEvent.AddFood();
-                    break;
-                case EventTypeId.PlayerAddQuarterFood:
-                    e = new PlayerEvent.AddQuarterFood();
                     break;
                 case EventTypeId.NewMeadowPersonaSettingsEvent:
                     e = new NewMeadowPersonaSettingsEvent();

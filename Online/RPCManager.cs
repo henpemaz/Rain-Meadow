@@ -9,6 +9,7 @@ namespace RainMeadow
     // what sort of options are needed here?
     // "if target owner only"
     // ""
+    [AttributeUsage(AttributeTargets.Method)]
     public class RPCMethodAttribute : Attribute
     {
 
@@ -218,7 +219,9 @@ namespace RainMeadow
 
             // todo "must be owner" support and similar for simplicity
 
+            var nout = from.OutgoingEvents.Count;
             var result = handler.method.Invoke(target, args);
+            if (from.OutgoingEvents.Count != nout && from.OutgoingEvents.Any(e => e is GenericResult gr && gr.referencedEvent == this)) return;
 
             if (result is GenericResult res) from.QueueEvent(res);
             else from.QueueEvent(new GenericResult.Ok(this));
