@@ -143,9 +143,17 @@ namespace RainMeadow
             }
             if (typeof(OnlineResource).IsAssignableFrom(fieldType))
             {
-                return typeof(Serializer).GetMethod("SerializeResourceByReference", new[] { fieldType.MakeByRefType() });
+                return typeof(Serializer).GetMethod(nameof(Serializer.SerializeResourceByReference));
             }
-
+            if (typeof(OnlineEntity).IsAssignableFrom(fieldType))
+            {
+                return typeof(Serializer).GetMethod(nameof(Serializer.SerializEntityById));
+            }
+            if ((fieldType.BaseType?.IsGenericType ?? false) && typeof(ExtEnum<>).IsAssignableFrom(fieldType.BaseType.GetGenericTypeDefinition()))
+            {
+                return typeof(Serializer).GetMethods().Single(m =>
+                m.Name == "SerializeExtEnum" && m.IsGenericMethod).MakeGenericMethod(fieldType);
+            }
             if (!fieldType.IsValueType && fieldType != typeof(string))
             {
                 RainMeadow.Error($"{fieldType} not handled by SerializerCallMethod");

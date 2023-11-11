@@ -15,10 +15,6 @@ namespace RainMeadow
 
     }
 
-    // todo
-    // support nullable parameters
-    // support enumext (serializer finder pick right method)
-    // support polymorphism of entity target
     public static class RPCManager
     {
         public static Dictionary<ushort, RPCDefinition> defsByIndex = new Dictionary<ushort, RPCDefinition>();
@@ -56,7 +52,7 @@ namespace RainMeadow
 
         public static void RegisterRPCs(Type targetType)
         {
-            var methods = targetType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance| BindingFlags.Static | BindingFlags.DeclaredOnly).Where(m => m.GetCustomAttribute<RPCMethodAttribute>() != null);
+            var methods = targetType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly).Where(m => m.GetCustomAttribute<RPCMethodAttribute>() != null);
             if (!methods.Any()) return;
 
             foreach (var method in methods)
@@ -69,7 +65,7 @@ namespace RainMeadow
                 var argsEventIndex = -1;
                 for (int i = 0; i < args.Length; i++)
                 {
-                    if(args[i].ParameterType == typeof(RPCEvent))
+                    if (args[i].ParameterType == typeof(RPCEvent))
                     {
                         argsEventIndex = i;
                         var tempArgs = args.ToList();
@@ -79,9 +75,7 @@ namespace RainMeadow
                 }
                 RainMeadow.Debug(args.Aggregate("", (e, a) => e + " - " + a));
 
-                // make serialize method
-                // uses rpcEvent, serializer
-
+                // make serialize method(rpcEvent, serializer)
                 ParameterExpression targetVar = Expression.Variable(targetType, "target");
                 var expressions = new List<Expression>();
                 var vars = new List<ParameterExpression>()
@@ -92,16 +86,21 @@ namespace RainMeadow
                 if (targetType != null && !isStatic)
                 {
                     expressions.Add(Expression.Assign(targetVar, Expression.Convert(Expression.Field(rpceventParam, rpcEventTargetAccessor), targetType)));
-                    // todo
+
                     // serialize the target type
                     // for Resource or Entity we know what to do
+                    // dunno how to make this extensible, it's probably enough for now
                     if (typeof(OnlineResource).IsAssignableFrom(targetType))
                     {
                         expressions.Add(Expression.Call(serializerParam, serializeResourceByRef, targetVar));
                     }
-                    else if( typeof(OnlineEntity).IsAssignableFrom(targetType))
+                    else if (typeof(OnlineEntity).IsAssignableFrom(targetType))
                     {
                         expressions.Add(Expression.Call(serializerParam, serializeEntityById, targetVar));
+                    }
+                    else if (typeof(RainMeadow).IsAssignableFrom(targetType)) // lambdas aren't static lol
+                    {
+                        expressions.Add(Expression.Assign(targetVar, Expression.Constant(RainMeadow.instance)));
                     }
                     else
                     {
@@ -132,10 +131,10 @@ namespace RainMeadow
                         ParameterExpression argVar = Expression.Variable(argType);
                         vars.Add(argVar);
                         expressions.Add(Expression.Assign(argVar, Expression.Convert(Expression.ArrayAccess(argsVar, Expression.Constant(i)), argType)));
-                        var serializerMethod = Serializer.GetSerializationMethod(argType, false, false);
-                        if(serializerMethod == null)
+                        var serializerMethod = Serializer.GetSerializationMethod(argType, !argType.IsValueType || Nullable.GetUnderlyingType(argType) != null, true);
+                        if (serializerMethod == null)
                         {
-                            throw new NotSupportedException($"can't serialize parameter {args[i].ParameterType} on type {targetType}");
+                            throw new NotSupportedException($"can't serialize parameter {args[i].ParameterType} on type {method} for {targetType}");
                         }
                         expressions.Add(Expression.Call(serializerParam, serializerMethod, argVar));
                         expressions.Add(Expression.Assign(Expression.ArrayAccess(argsVar, Expression.Constant(i)), Expression.Convert(argVar, typeof(object))));
@@ -143,6 +142,7 @@ namespace RainMeadow
                 }
                 else
                 {
+                    // if(serializer.IsReading) args = new[0];
                     expressions.Add(Expression.IfThen(Expression.Property(serializerParam, serializerIsReadingProp),
                         Expression.Assign(Expression.Field(rpceventParam, rpcEventArgsAccessor), Expression.NewArrayBounds(typeof(object), Expression.Constant(0)))
                       ));
