@@ -168,6 +168,7 @@ namespace RainMeadow
 
         public virtual void ReadState(EntityState entityState, OnlineResource inResource)
         {
+            if (entityState == null) throw new InvalidProgrammerException("state is null");
             lastStates[inResource] = entityState;
             if (inResource != currentlyJoinedResource)
             {

@@ -83,11 +83,11 @@ namespace RainMeadow
         private void EntityRegisteredInResource(NewEntityEvent newEntityEvent)
         {
             RainMeadow.Debug(this);
-            if (!isOwner) throw new InvalidProgrammerException("not owner");
+            //if (!isOwner) throw new InvalidProgrammerException("not owner");
 
-            // todo, I'm re-creating my own entities here if i'm owner running the direct path. how fix with minimun lookups?
+            // todo, I'm looking up my own entities here if i'm owner running the direct path. how fix with minimun lookups?
             registeredEntities.Add(newEntityEvent.entityId, newEntityEvent);
-            OnlineEntity oe = OnlineEntity.FromNewEntityEvent(newEntityEvent, this);
+            OnlineEntity oe = newEntityEvent.entityId.FindEntity() ?? OnlineEntity.FromNewEntityEvent(newEntityEvent, this);
             entities.Add(oe.id, new EntityMembership(oe, this));
             if (!oe.isMine) oe.EnterResource(this);
             oe.OnJoinedResource(this);
@@ -103,7 +103,7 @@ namespace RainMeadow
 
             if (isOwner) // join right away
             {
-                EntityJoinedResource(oe);
+                EntityJoinedResource(oe, null);
             }
             else // request to join
             {
@@ -120,12 +120,12 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public void OnEntityJoinRequest(RPCEvent rpcEvent, OnlineEntity oe)
+        public void OnEntityJoinRequest(RPCEvent rpcEvent, OnlineEntity oe, EntityState initialState)
         {
             RainMeadow.Debug(this);
             if (isOwner && isActive)
             {
-                EntityJoinedResource(oe);
+                EntityJoinedResource(oe, initialState);
                 rpcEvent.from.QueueEvent(new GenericResult.Ok(rpcEvent));
             }
             else
@@ -142,7 +142,7 @@ namespace RainMeadow
 
             if (entityJoinResult is GenericResult.Ok) // success
             {
-                EntityJoinedResource(oe);
+
             }
             else if (entityJoinResult is GenericResult.Error) // retry
             {
@@ -151,11 +151,16 @@ namespace RainMeadow
         }
 
         // existing entity joins
-        private void EntityJoinedResource(OnlineEntity oe)
+        private void EntityJoinedResource(OnlineEntity oe, EntityState initialState)
         {
             RainMeadow.Debug(this);
             entities.Add(oe.id, new EntityMembership(oe, this));
-            if (!oe.isMine) oe.EnterResource(this);
+
+            if (!oe.isMine)
+            {
+                oe.EnterResource(this);
+                oe.ReadState(initialState, this);
+            }
             oe.OnJoinedResource(this);
         }
 

@@ -272,7 +272,7 @@ namespace RainMeadow
         }
 
         // serializes resource.id and finds reference
-        public void SerializeResourceByReference(ref OnlineResource onlineResource)
+        public void SerializeResourceByReference<T>(ref T onlineResource) where T : OnlineResource
         {
             if (IsWriting)
             {
@@ -282,7 +282,7 @@ namespace RainMeadow
             if (IsReading)
             {
                 string r = reader.ReadString();
-                onlineResource = OnlineManager.ResourceFromIdentifier(r);
+                onlineResource = (T)OnlineManager.ResourceFromIdentifier(r);
             }
         }
 
@@ -565,7 +565,7 @@ namespace RainMeadow
                     playerEvent.from = currPlayer;
                     playerEvent.to = OnlineManager.mePlayer;
                     playerEvent.CustomSerialize(this);
-                    events[i] = playerEvent;
+                    events.Add(playerEvent);
                 }
             }
         }

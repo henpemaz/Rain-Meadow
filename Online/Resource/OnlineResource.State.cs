@@ -105,8 +105,17 @@ namespace RainMeadow
                         {
                             // there might be some timing considerations to this, entity from higher up not being available locally yet
                             var ent = entityId.FindEntity();
-                            if(ent != null)
-                                resource.EntityJoinedResource(ent);
+                            if (ent != null)
+                                resource.EntityJoinedResource(ent, entityStates.list.Find(es => es.ID == entityId));
+                        }
+                    }
+
+                    foreach (var kvp in resource.entities)
+                    {
+                        // this would be better as a set not a list
+                        if (!entitiesJoined.list.Contains(kvp.Key))
+                        {
+                            resource.EntityLeftResource(kvp.Value.entity);
                         }
                     }
 
