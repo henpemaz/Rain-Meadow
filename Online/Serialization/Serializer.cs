@@ -501,6 +501,18 @@ namespace RainMeadow
             }
         }
 
+        public void SerializePlayerInLobby(ref OnlinePlayer player)
+        {
+            if (IsWriting)
+            {
+                writer.Write(player.inLobbyId);
+            }
+            if (IsReading)
+            {
+                player = OnlineManager.lobby?.PlayerFromId(reader.ReadUInt16());
+            }
+        }
+
         // a referenced event is something that must have been ack'd that frame
         public void SerializeReferencedEvent(ref OnlineEvent referencedEvent)
         {
@@ -527,6 +539,34 @@ namespace RainMeadow
                 playerEvent.from = currPlayer;
                 playerEvent.to = OnlineManager.mePlayer;
                 playerEvent.CustomSerialize(this);
+            }
+        }
+
+        public void SerializeEvents<T>(ref List<T> events) where T : OnlineEvent
+        {
+            if (IsWriting)
+            {
+                // TODO dynamic length
+                if (events.Count > 255) throw new OverflowException("too many events");
+                writer.Write((byte)events.Count);
+                foreach (var playerEvent in events)
+                {
+                    writer.Write((byte)playerEvent.eventType);
+                    playerEvent.CustomSerialize(this);
+                }
+            }
+            if (IsReading)
+            {
+                byte count = reader.ReadByte();
+                events = new(count);
+                for (int i = 0; i < count; i++)
+                {
+                    T playerEvent = (T)OnlineEvent.NewFromType((OnlineEvent.EventTypeId)reader.ReadByte());
+                    playerEvent.from = currPlayer;
+                    playerEvent.to = OnlineManager.mePlayer;
+                    playerEvent.CustomSerialize(this);
+                    events[i] = playerEvent;
+                }
             }
         }
     }

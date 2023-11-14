@@ -149,11 +149,21 @@ namespace RainMeadow
             {
                 return typeof(Serializer).GetMethod(nameof(Serializer.SerializEntityById));
             }
+            if (typeof(OnlinePlayer).IsAssignableFrom(fieldType))
+            {
+                return typeof(Serializer).GetMethod(nameof(Serializer.SerializePlayerInLobby));
+            }
+            if (typeof(OnlineEvent).IsAssignableFrom(fieldType))
+            {
+                return typeof(Serializer).GetMethods().Single(m =>
+                m.Name == "SerializeEvent" && m.IsGenericMethod).MakeGenericMethod(fieldType);
+            }
             if ((fieldType.BaseType?.IsGenericType ?? false) && typeof(ExtEnum<>).IsAssignableFrom(fieldType.BaseType.GetGenericTypeDefinition()))
             {
                 return typeof(Serializer).GetMethods().Single(m =>
                 m.Name == "SerializeExtEnum" && m.IsGenericMethod).MakeGenericMethod(fieldType);
             }
+            
             if (!fieldType.IsValueType && fieldType != typeof(string))
             {
                 RainMeadow.Error($"{fieldType} not handled by SerializerCallMethod");

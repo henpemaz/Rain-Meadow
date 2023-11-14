@@ -18,6 +18,7 @@ namespace RainMeadow
         public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner)
         {
             this.super = this;
+            OnlineManager.lobby = this; // needed for early entity processing
 
             this.gameMode = OnlineGameMode.FromType(mode, this);
             this.gameModeType = mode;

@@ -306,7 +306,7 @@ namespace RainMeadow
                             if (!oe.isMine)
                             {
                                 Debug("removing remote entity " + oe);
-                                roomSession.entities.Remove(oe);
+                                roomSession.entities.Remove(oe.id);
                                 oe.OnLeftResource(roomSession);
                             }
                             else // mine leave the old online world

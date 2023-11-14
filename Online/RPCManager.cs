@@ -8,7 +8,7 @@ namespace RainMeadow
 {
     // what sort of options are needed here?
     // "if target owner only"
-    // ""
+    // "if resource active"
     [AttributeUsage(AttributeTargets.Method)]
     public class RPCMethodAttribute : Attribute
     {
@@ -229,9 +229,15 @@ namespace RainMeadow
 
         public event Action<GenericResult> OnResolve;
 
-        internal OnlineEvent Then(Action<GenericResult> onResolve)
+        internal RPCEvent Then(Action<GenericResult> onResolve)
         {
             this.OnResolve += onResolve;
+            return this;
+        }
+
+        internal RPCEvent NotBefore(TickReference notbefore)
+        {
+            this.dependsOnTick = notbefore;
             return this;
         }
 

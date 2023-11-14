@@ -60,21 +60,19 @@ namespace RainMeadow
             if (!isAvailable) { throw new InvalidOperationException("Resource is not available"); }
             isActive = true;
             subresources = new List<OnlineResource>();
+            registeredEntities = new();
             entities = new();
 
             ActivateImpl();
 
-            if (latestState != null) // couldn't be processed yet
+            if (latestState != null)
             {
                 latestState.ReadTo(this);
             }
-
-            foreach (var item in incomingEntityEvents) // entities that couldn't be processed yet (needed the resource active)
+            else if (!isOwner)
             {
-                RainMeadow.Debug($"Processing queued entity: {item}");
-                item.Process();
+                RainMeadow.Error($"Active but no state available! {this}");
             }
-            incomingEntityEvents.Clear();
 
             if (releaseWhenPossible) FullyReleaseResource(); // my bad I don't want it anymore
             else if (owner.hasLeft) OnPlayerDisconnect(owner); // I might be late to the party but if I'm the only one here I can claim it now
@@ -101,7 +99,7 @@ namespace RainMeadow
 
             foreach (var ent in entities)
             {
-                ent.Key.Deactivated(this);
+                ent.Value.entity.Deactivated(this);
             }
             OnlineManager.RemoveFeeds(this);
             entities.Clear();
@@ -142,8 +140,9 @@ namespace RainMeadow
                 {
                     if (sub.isAvailable) sub.FullyReleaseResource();
                 }
-                foreach (var ent in entities.Keys.ToArray())
+                foreach (var entm in entities.Values.ToArray())
                 {
+                    var ent = entm.entity;
                     if (!ent.isTransferable && ent.isMine)
                     {
                         RainMeadow.Debug($"Foce-remove entity {ent} from resource {this}");
@@ -167,7 +166,7 @@ namespace RainMeadow
 
         protected virtual void ClearIncommingBuffers()
         {
-            incomingEntityEvents = new();
+            //incomingEntityEvents = new();
             incomingState = new(32);
         }
 
@@ -291,7 +290,7 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             if (!isActive) throw new InvalidOperationException("not active");
             if (!isOwner) throw new InvalidOperationException("not owner");
-            var entities = this.entities.Keys.ToList();
+            var entities = this.entities.Values.Select(em => em.entity).ToList();
             for (int i = entities.Count - 1; i >= 0; i--)
             {
                 OnlineEntity ent = entities[i];
@@ -385,23 +384,6 @@ namespace RainMeadow
             if (player.isMe) throw new InvalidOperationException("Can't subscribe to self");
 
             OnlineManager.AddSubscription(this, player);
-
-            if (isActive && !fromTransfer)
-            {
-                var tickReference = new TickReference(supervisor, supervisor.tick);
-                foreach (var ent in entities)
-                {
-                    if (player == ent.Key.owner) continue;
-                    if (ent.Key.primaryResource == this)
-                    {
-                        player.QueueEvent(ent.Key.AsNewEntityEvent(this));
-                    }
-                    else // entity in subresource
-                    {
-                        player.QueueEvent(new EntityJoinedEvent(this, ent.Key, tickReference));
-                    }
-                }
-            }
         }
 
         private void Unsubscribed(OnlinePlayer player)

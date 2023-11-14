@@ -46,16 +46,8 @@ namespace RainMeadow
             None,
             GenericResultOk,
             GenericResultError,
-            RegisterNewEntityRequest,
             NewObjectEvent,
             NewCreatureEvent,
-            EntityJoinRequest,
-            EntityJoinedEvent,
-            EntityLeaveRequest,
-            EntityLeftEvent,
-            EntityTransfererRequest,
-            EntityTransferedEvent,
-            EntityRequest,
             NewMeadowPersonaSettingsEvent,
             RPCEvent,
         }
@@ -73,35 +65,11 @@ namespace RainMeadow
                 case EventTypeId.GenericResultError:
                     e = new GenericResult.Error();
                     break;
-                case EventTypeId.RegisterNewEntityRequest:
-                    e = new RegisterNewEntityRequest();
-                    break;
                 case EventTypeId.NewObjectEvent:
                     e = new NewObjectEvent();
                     break;
                 case EventTypeId.NewCreatureEvent:
                     e = new NewCreatureEvent();
-                    break;
-                case EventTypeId.EntityJoinRequest:
-                    e = new EntityJoinRequest();
-                    break;
-                case EventTypeId.EntityJoinedEvent:
-                    e = new EntityJoinedEvent();
-                    break;
-                case EventTypeId.EntityLeaveRequest:
-                    e = new EntityLeaveRequest();
-                    break;
-                case EventTypeId.EntityLeftEvent:
-                    e = new EntityLeftEvent();
-                    break;
-                case EventTypeId.EntityTransfererRequest:
-                    e = new EntityTransferRequest();
-                    break;
-                case EventTypeId.EntityTransferedEvent:
-                    e = new EntityTransferedEvent();
-                    break;
-                case EventTypeId.EntityRequest:
-                    e = new EntityRequest();
                     break;
                 case EventTypeId.NewMeadowPersonaSettingsEvent:
                     e = new NewMeadowPersonaSettingsEvent();

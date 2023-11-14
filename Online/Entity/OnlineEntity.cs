@@ -27,7 +27,7 @@ namespace RainMeadow
             this.id = id;
             this.isTransferable = isTransferable;
         }
-
+        
         public void EnterResource(OnlineResource resource)
         {
             RainMeadow.Debug($"{this} entered {resource}");
@@ -56,14 +56,14 @@ namespace RainMeadow
             if (!isMine) { throw new InvalidProgrammerException("not owner"); }
             if (isPending) { return; } // still pending
             // any resources to leave
-            var pending = joinedResources.Except(enteredResources).FirstOrDefault(r => r.entities.ContainsKey(this));
+            var pending = joinedResources.Except(enteredResources).FirstOrDefault(r => r.entities.ContainsKey(this.id));
             if (pending != null)
             {
                 pending.LocalEntityLeft(this);
                 return;
             }
             // any resources to join
-            pending = enteredResources.FirstOrDefault(r => !r.entities.ContainsKey(this));
+            pending = enteredResources.FirstOrDefault(r => !r.entities.ContainsKey(this.id));
             if (pending != null)
             {
                 pending.LocalEntityEntered(this);
@@ -71,7 +71,7 @@ namespace RainMeadow
             }
         }
 
-        public virtual void OnJoinedResource(OnlineResource inResource, EntityState initialState)
+        public virtual void OnJoinedResource(OnlineResource inResource)
         {
             RainMeadow.Debug(this);
             if (!isMine && this.currentlyJoinedResource != null && currentlyJoinedResource.IsSibling(inResource))
@@ -79,8 +79,6 @@ namespace RainMeadow
                 currentlyJoinedResource.EntityLeftResource(this);
             }
             joinedResources.Add(inResource);
-            initialState.entityId = this.id;
-            if (!isMine) ReadState(initialState, inResource);
             if (isMine)
             {
                 if (!inResource.isOwner)

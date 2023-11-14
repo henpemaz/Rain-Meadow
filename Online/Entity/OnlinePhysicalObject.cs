@@ -98,9 +98,9 @@ namespace RainMeadow
             return new PhysicalObjectEntityState(this, tick, realizedState);
         }
 
-        public override void OnJoinedResource(OnlineResource inResource, EntityState initialState)
+        public override void OnJoinedResource(OnlineResource inResource)
         {
-            base.OnJoinedResource(inResource, initialState);
+            base.OnJoinedResource(inResource);
             if (isMine) return; // already moved
             RainMeadow.Debug($"{this} moving in {inResource}");
             if (inResource is WorldSession ws)

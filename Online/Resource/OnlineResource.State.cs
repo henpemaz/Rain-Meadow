@@ -73,18 +73,43 @@ namespace RainMeadow
             [OnlineField]
             public OnlineResource resource;
             [OnlineField(nullable = true)]
+            public Generics.AddRemoveSortedCustomSerializables<OnlineEntity.EntityId> entitiesJoined;
+            [OnlineField(nullable = true)]
+            public Generics.AddRemoveSortedEvents<NewEntityEvent> registeredEntities;
+            [OnlineField(nullable = true)]
             public DeltaStates<EntityState, OnlineState, OnlineEntity.EntityId> entityStates;
 
             protected ResourceState() : base() { }
             protected ResourceState(OnlineResource resource, uint ts) : base(ts)
             {
                 this.resource = resource;
-                entityStates = new(resource.entities.Select(e => e.Key.GetState(ts, resource)).ToList());
+                entitiesJoined = new(resource.entities.Keys.ToList());
+                registeredEntities = new(resource.registeredEntities.Values.ToList());
+                entityStates = new(resource.entities.Select(e => e.Value.entity.GetState(ts, resource)).ToList());
             }
             public virtual void ReadTo(OnlineResource resource)
             {
                 if (resource.isActive)
                 {
+                    foreach (var def in registeredEntities.list)
+                    {
+                        if (!resource.registeredEntities.ContainsKey(def.entityId))
+                        {
+                            resource.EntityRegisteredInResource(def);
+                        }
+                    }
+
+                    foreach (var entityId in entitiesJoined.list)
+                    {
+                        if (!resource.entities.ContainsKey(entityId))
+                        {
+                            // there might be some timing considerations to this, entity from higher up not being available locally yet
+                            var ent = entityId.FindEntity();
+                            if(ent != null)
+                                resource.EntityJoinedResource(ent);
+                        }
+                    }
+
                     foreach (var entityState in entityStates.list)
                     {
                         if (entityState != null)
