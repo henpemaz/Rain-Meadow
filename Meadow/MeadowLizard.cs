@@ -69,7 +69,7 @@ namespace RainMeadow
             {
                 p.ConsciousUpdate();
 
-                // todo
+                // todo JUMP
                 var room = self.room;
                 var chunks = self.bodyChunks;
                 var nc = chunks.Length;
@@ -177,7 +177,6 @@ namespace RainMeadow
             {
                 // path will be null if calculating from an inaccessible tile
                 // lizard has code to "pick a nearby accessible tile to calculate from"
-                // todo always use main pos for pathing?
                 // path will be always a path "out" of the current cell, even if current cell is destination
                 // should be fine as long as runspeed = 0, just gotta not fall for it here
 

@@ -37,22 +37,22 @@ namespace RainMeadow
 
             if (isOwner) // enter right away
             {
-                EntityRegisteredInResource(oe.AsNewEntityEvent(this));
+                EntityRegisteredInResource(oe, oe.AsNewEntityEvent(this), null);
             }
             else // request to register
             {
-                oe.pendingRequest = owner.InvokeRPC(this.OnEntityRegisterRequest, oe.AsNewEntityEvent(this)).Then(OnRegisterResolve);
+                oe.pendingRequest = owner.InvokeRPC(this.OnEntityRegisterRequest, oe.AsNewEntityEvent(this), oe.GetState(oe.owner.tick, this)).Then(OnRegisterResolve);
             }
         }
 
         // as owner, from other
         [RPCMethod]
-        public void OnEntityRegisterRequest(RPCEvent rpcEvent, NewEntityEvent newEntityEvent)
+        public void OnEntityRegisterRequest(RPCEvent rpcEvent, NewEntityEvent newEntityEvent, EntityState initialState)
         {
             RainMeadow.Debug(this);
             if (isOwner && isActive)
             {
-                EntityRegisteredInResource(newEntityEvent);
+                OnNewRemoteEntity(newEntityEvent, initialState);
                 rpcEvent.from.QueueEvent(new GenericResult.Ok(rpcEvent));
             }
             else
@@ -79,18 +79,20 @@ namespace RainMeadow
             }
         }
 
-        // registering new entity
-        private void EntityRegisteredInResource(NewEntityEvent newEntityEvent)
+        // recreate from event
+        public void OnNewRemoteEntity(NewEntityEvent newEntityEvent, EntityState initialState)
         {
             RainMeadow.Debug(this);
-            //if (!isOwner) throw new InvalidProgrammerException("not owner");
+            OnlineEntity oe = newEntityEvent.owner.isMe ? newEntityEvent.entityId.FindEntity() : OnlineEntity.FromNewEntityEvent(newEntityEvent, this);
+            EntityRegisteredInResource(oe, newEntityEvent, initialState);
+        }
 
-            // todo, I'm looking up my own entities here if i'm owner running the direct path. how fix with minimun lookups?
+        // registering new entity
+        private void EntityRegisteredInResource(OnlineEntity oe, NewEntityEvent newEntityEvent, EntityState initialState)
+        {
+            RainMeadow.Debug(this);
             registeredEntities.Add(newEntityEvent.entityId, newEntityEvent);
-            OnlineEntity oe = newEntityEvent.entityId.FindEntity() ?? OnlineEntity.FromNewEntityEvent(newEntityEvent, this);
-            entities.Add(oe.id, new EntityMembership(oe, this));
-            if (!oe.isMine) oe.EnterResource(this);
-            oe.OnJoinedResource(this);
+            EntityJoinedResource(oe, initialState);
         }
 
 

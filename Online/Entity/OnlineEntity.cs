@@ -33,7 +33,9 @@ namespace RainMeadow
             RainMeadow.Debug($"{this} entered {resource}");
             if (enteredResources.Count != 0 && resource.super != currentlyEnteredResource)
             {
-                RainMeadow.Error($"Not the right resource {this} - {resource} - {currentlyEnteredResource}");
+                RainMeadow.Error($"Not the right resource {this} - {resource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
+                if(resource == currentlyEnteredResource) { return; }
+                if(resource.IsSibling(currentlyEnteredResource)) { LeaveResource(currentlyEnteredResource); }
             }
             enteredResources.Add(resource);
             if (isMine) JoinOrLeavePending();
@@ -44,7 +46,7 @@ namespace RainMeadow
             RainMeadow.Debug($"{this} left {resource}");
             if (resource != currentlyEnteredResource)
             {
-                RainMeadow.Error($"Not the right resource {this} - {resource} - {currentlyEnteredResource}");
+                RainMeadow.Error($"Not the right resource {this} - {resource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
             }
             enteredResources.Remove(resource);
             if (isMine) JoinOrLeavePending();
@@ -170,7 +172,7 @@ namespace RainMeadow
         {
             if (entityState == null) throw new InvalidProgrammerException("state is null");
             lastStates[inResource] = entityState;
-            if (inResource != currentlyJoinedResource)
+            if (inResource != currentlyEnteredResource)
             {
                 // RainMeadow.Debug($"Skipping state for wrong resource" + Environment.StackTrace);
                 // since we send both region state and room state even if it's the same guy owning both, this gets spammed a lot

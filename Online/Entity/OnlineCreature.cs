@@ -23,7 +23,7 @@ namespace RainMeadow
             AbstractCreature ac = SaveState.AbstractCreatureFromString(inResource.World, newCreatureEvent.serializedObject, false);
             ac.ID = id;
 
-            var oe = new OnlineCreature(ac, newCreatureEvent.seed, newCreatureEvent.realized, OnlineManager.lobby.PlayerFromId(newCreatureEvent.owner), newCreatureEvent.entityId, newCreatureEvent.isTransferable);
+            var oe = new OnlineCreature(ac, newCreatureEvent.seed, newCreatureEvent.realized, newCreatureEvent.owner, newCreatureEvent.entityId, newCreatureEvent.isTransferable);
             try
             {
                 map.Add(ac, oe);

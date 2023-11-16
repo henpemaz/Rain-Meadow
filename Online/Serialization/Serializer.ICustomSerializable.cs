@@ -143,7 +143,7 @@ namespace RainMeadow
             }
             if (typeof(OnlineResource).IsAssignableFrom(fieldType))
             {
-                return typeof(Serializer).GetMethod(nameof(Serializer.SerializeResourceByReference));
+                return typeof(Serializer).GetMethod(nameof(Serializer.SerializeResourceByReference)).MakeGenericMethod(fieldType);
             }
             if (typeof(OnlineEntity).IsAssignableFrom(fieldType))
             {

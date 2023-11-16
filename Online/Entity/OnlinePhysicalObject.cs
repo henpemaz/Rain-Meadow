@@ -61,7 +61,7 @@ namespace RainMeadow
             var apo = SaveState.AbstractPhysicalObjectFromString(world, newObjectEvent.serializedObject);
             apo.ID = id;
             
-            var oe = new OnlinePhysicalObject(apo, newObjectEvent.seed, newObjectEvent.realized, OnlineManager.lobby.PlayerFromId(newObjectEvent.owner), newObjectEvent.entityId, newObjectEvent.isTransferable);
+            var oe = new OnlinePhysicalObject(apo, newObjectEvent.seed, newObjectEvent.realized, newObjectEvent.owner, newObjectEvent.entityId, newObjectEvent.isTransferable);
             try
             {
                 map.Add(apo, oe);
@@ -72,8 +72,6 @@ namespace RainMeadow
                 RainMeadow.Error(e);
                 RainMeadow.Error(Environment.StackTrace);
             }
-            return oe;
-
             return oe;
         }
 

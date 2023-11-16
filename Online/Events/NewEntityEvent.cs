@@ -2,21 +2,21 @@
 {
     public abstract class NewEntityEvent : EntityResourceEvent
     {
-        public ushort owner;
+        public OnlinePlayer owner;
         public bool isTransferable;
 
         public NewEntityEvent() { }
 
         public NewEntityEvent(OnlineResource resource, OnlineEntity oe, TickReference tickReference) : base(resource, oe.id, tickReference)
         {
-            owner = oe.owner.inLobbyId;
+            owner = oe.owner;
             isTransferable = oe.isTransferable;
         }
 
         public override void CustomSerialize(Serializer serializer)
         {
             base.CustomSerialize(serializer);
-            serializer.Serialize(ref owner);
+            serializer.SerializePlayerInLobby(ref owner);
             serializer.Serialize(ref isTransferable);
         }
 

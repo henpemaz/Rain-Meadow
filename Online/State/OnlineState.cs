@@ -356,11 +356,12 @@ namespace RainMeadow
                             }
                         }
 
-                        // todo check empty delta? right now its comparing self and baseline
                         // set flags for sent/omitted fields
                         for (int i = 0; i < ngroups; i++)
                         {
                             if (deltaGroups[deltaGroups.Keys.ToList()[i]].Count == 0) continue;
+                            // valueFlags[i] = self.f != baseline.f || self.f2 != baseline.f2 || ...
+                            // todo if f is iPrimaryDelta should instead have a isEmptyDelta check
                             expressions.Add(Expression.Assign(Expression.ArrayAccess(Expression.Field(output, valueFlagsAcessor), Expression.Constant(i)),
                                 OrAny(deltaGroups[deltaGroups.Keys.ToList()[i]].Select(
                                         f => Expression.Not(f.GetCustomAttribute<OnlineFieldAttribute>().ComparisonMethod(f, Expression.Field(selfConverted, f), Expression.Field(baselineConverted, f)))

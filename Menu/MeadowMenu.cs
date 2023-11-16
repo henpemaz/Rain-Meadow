@@ -81,7 +81,7 @@ namespace RainMeadow
             colorpicker.colorPicker.wrapper = wrapper;
             colorpicker.colorPicker.Hide();
             colorpicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
-            // todo update a preview of some sort!
+            // todo update a preview of some sort for the resulting tinted color!
 
             var label = new MenuLabel(this, mainPage, this.Translate("Tint color"), new Vector2(845, 60), new(0, 30), false);
             label.label.alignment = FLabelAlignment.Left;

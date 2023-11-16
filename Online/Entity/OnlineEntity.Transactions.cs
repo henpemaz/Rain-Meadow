@@ -84,10 +84,6 @@
 
         // someone released "to me"
         [RPCMethod]
-        // todo maybe arg1 is rpcevent
-
-        // todo friendly way to set a result for iresolvable
-        // todo auto result for iresolvable
         public void Released(RPCEvent rpcEvent, OnlineResource inResource)
         {
             RainMeadow.Debug(this);

@@ -276,7 +276,6 @@ namespace RainMeadow
         {
             if (IsWriting)
             {
-                // todo switch to bytes?
                 writer.Write(onlineResource.Id());
             }
             if (IsReading)

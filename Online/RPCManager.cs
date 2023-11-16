@@ -92,7 +92,7 @@ namespace RainMeadow
                     // dunno how to make this extensible, it's probably enough for now
                     if (typeof(OnlineResource).IsAssignableFrom(targetType))
                     {
-                        expressions.Add(Expression.Call(serializerParam, serializeResourceByRef, targetVar));
+                        expressions.Add(Expression.Call(serializerParam, serializeResourceByRef.MakeGenericMethod(targetType), targetVar));
                     }
                     else if (typeof(OnlineEntity).IsAssignableFrom(targetType))
                     {
@@ -216,8 +216,6 @@ namespace RainMeadow
                 newArgs.Insert(handler.eventArgIndex, this);
                 args = newArgs.ToArray();
             }
-
-            // todo "must be owner" support and similar for simplicity
 
             var nout = from.OutgoingEvents.Count;
             var result = handler.method.Invoke(target, args);

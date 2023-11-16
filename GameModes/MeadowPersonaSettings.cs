@@ -26,11 +26,11 @@ namespace RainMeadow
         public static MeadowPersonaSettings FromEvent(NewMeadowPersonaSettingsEvent newPersonaSettingsEvent, OnlineResource inResource)
         {
             RainMeadow.Debug(newPersonaSettingsEvent);
-            var oe = new MeadowPersonaSettings(OnlineManager.lobby.PlayerFromId(newPersonaSettingsEvent.owner), newPersonaSettingsEvent.entityId);
+            var oe = new MeadowPersonaSettings(newPersonaSettingsEvent.owner, newPersonaSettingsEvent.entityId);
 
             try
             {
-                map.Add(OnlineManager.lobby.PlayerFromId(newPersonaSettingsEvent.owner), oe);
+                map.Add(newPersonaSettingsEvent.owner, oe);
                 OnlineManager.recentEntities.Add(oe.id, oe);
             }
             catch (Exception e)

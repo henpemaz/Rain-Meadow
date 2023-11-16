@@ -95,7 +95,7 @@ namespace RainMeadow
                     {
                         if (!resource.registeredEntities.ContainsKey(def.entityId))
                         {
-                            resource.EntityRegisteredInResource(def);
+                            resource.OnNewRemoteEntity(def, entityStates.list.Find(es => es.entityId == def.entityId));
                         }
                     }
 
@@ -106,7 +106,7 @@ namespace RainMeadow
                             // there might be some timing considerations to this, entity from higher up not being available locally yet
                             var ent = entityId.FindEntity();
                             if (ent != null)
-                                resource.EntityJoinedResource(ent, entityStates.list.Find(es => es.ID == entityId));
+                                resource.EntityJoinedResource(ent, entityStates.list.Find(es => es.entityId == entityId));
                         }
                     }
 
