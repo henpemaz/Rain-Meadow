@@ -77,11 +77,13 @@ namespace RainMeadow
 
                 // make serialize method(rpcEvent, serializer)
                 ParameterExpression targetVar = Expression.Variable(targetType, "target");
+                ParameterExpression isReading = Expression.Variable(typeof(bool), "isReading");
                 var expressions = new List<Expression>();
                 var vars = new List<ParameterExpression>()
                 {
-                    targetVar, argsVar,
+                    targetVar, argsVar, isReading
                 };
+                expressions.Add(Expression.Assign(isReading, Expression.Property(serializerParam, serializerIsReadingProp))); // minimize invokes :pensive:
 
                 if (targetType != null && !isStatic)
                 {
@@ -116,34 +118,35 @@ namespace RainMeadow
                     // if(serializer.IsReading) args = new[x];
                     // event.args = args;
                     expressions.Add(Expression.Assign(argsVar, Expression.Field(rpceventParam, rpcEventArgsAccessor)));
-                    expressions.Add(Expression.IfThen(Expression.Property(serializerParam, serializerIsReadingProp),
+                    expressions.Add(Expression.IfThen(isReading,
                         Expression.Assign(argsVar, Expression.NewArrayBounds(typeof(object), Expression.Constant(args.Length)))
                       ));
                     expressions.Add(Expression.Assign(Expression.Field(rpceventParam, rpcEventArgsAccessor), argsVar));
 
                     for (int i = 0; i < args.Length; i++)
                     {
-                        // T arg = (T)args[i];
+                        // T arg
+                        // if(isWritting) arg = (T)args[i];
                         // serializer.Serialize(ref arg);
-                        // args[i] = (object)arg;
+                        // if(isReading) args[i] = (object)arg;
 
                         var argType = args[i].ParameterType;
                         ParameterExpression argVar = Expression.Variable(argType);
                         vars.Add(argVar);
-                        expressions.Add(Expression.Assign(argVar, Expression.Convert(Expression.ArrayAccess(argsVar, Expression.Constant(i)), argType)));
+                        expressions.Add(Expression.IfThen(Expression.Not(isReading), Expression.Assign(argVar, Expression.Convert(Expression.ArrayAccess(argsVar, Expression.Constant(i)), argType))));
                         var serializerMethod = Serializer.GetSerializationMethod(argType, !argType.IsValueType || Nullable.GetUnderlyingType(argType) != null, true);
                         if (serializerMethod == null)
                         {
                             throw new NotSupportedException($"can't serialize parameter {args[i].ParameterType} on type {method} for {targetType}");
                         }
                         expressions.Add(Expression.Call(serializerParam, serializerMethod, argVar));
-                        expressions.Add(Expression.Assign(Expression.ArrayAccess(argsVar, Expression.Constant(i)), Expression.Convert(argVar, typeof(object))));
+                        expressions.Add(Expression.IfThen(isReading, Expression.Assign(Expression.ArrayAccess(argsVar, Expression.Constant(i)), Expression.Convert(argVar, typeof(object)))));
                     }
                 }
                 else
                 {
                     // if(serializer.IsReading) args = new[0];
-                    expressions.Add(Expression.IfThen(Expression.Property(serializerParam, serializerIsReadingProp),
+                    expressions.Add(Expression.IfThen(isReading,
                         Expression.Assign(Expression.Field(rpceventParam, rpcEventArgsAccessor), Expression.NewArrayBounds(typeof(object), Expression.Constant(0)))
                       ));
                 }

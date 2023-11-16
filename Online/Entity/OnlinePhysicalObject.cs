@@ -149,6 +149,7 @@ namespace RainMeadow
                         beingMoved = true;
                         creature.Realize();
                         beingMoved = false;
+                        creature.realizedCreature.RemoveFromShortcuts();
                         creature.realizedCreature.inShortcut = true;
                         // this calls MOVE on the next tick which remove-adds
                         newRoom.absroom.world.game.shortcuts.CreatureEnterFromAbstractRoom(creature.realizedCreature, newRoom.absroom, apo.pos.abstractNode);

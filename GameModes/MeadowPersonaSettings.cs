@@ -48,11 +48,10 @@ namespace RainMeadow
 
         internal override void ApplyCustomizations(Creature creature, OnlinePhysicalObject oe)
         {
-            MeadowCustomization.CreatureCustomization customization = new();
+            MeadowCustomization.CreatureCustomization customization = MeadowCustomization.creatureCustomizations.GetOrCreateValue(creature);
             customization.skinData = MeadowProgression.skinData[skin];
             customization.tint = new(tint.r, tint.g, tint.b);
             customization.tintAmount = tintAmount * MeadowProgression.skinData[skin].tintFactor;
-            MeadowCustomization.creatureCustomizations.Add(creature, customization);
         }
 
         public class MeadowPersonaSettingsState : PersonaSettingsState
