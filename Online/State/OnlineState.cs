@@ -38,10 +38,13 @@ namespace RainMeadow
             public StateType(string value, Type type) : base(value, true) { OnlineState.RegisterState(this, type); }
 
             public static readonly StateType Unknown = new("Unknown", true); // sending zeroes over should error out
+
             public static readonly StateType LobbyState = new("LobbyState", typeof(LobbyState));
             public static readonly StateType WorldState = new("WorldState", typeof(WorldState));
             public static readonly StateType RoomState = new("RoomState", typeof(RoomState));
+
             public static readonly StateType EntityFeedState = new("EntityFeedState", typeof(EntityFeedState));
+
             public static readonly StateType PhysicalObjectEntityState = new("PhysicalObjectEntityState", typeof(PhysicalObjectEntityState));
             public static readonly StateType PlayerStateState = new("PlayerStateState", typeof(PlayerStateState));
             public static readonly StateType AbstractCreatureState = new("AbstractCreatureState", typeof(AbstractCreatureState));
@@ -57,6 +60,10 @@ namespace RainMeadow
             public static readonly StateType CreatureHealthStateState = new("CreatureHealthStateState", typeof(CreatureHealthStateState));
             public static readonly StateType RainCycleDataState = new("RainCycleDataState", typeof(RainCycleData));
             public static readonly StateType MeadowPersonaSettingsState = new("MeadowPersonaSettingsState", typeof(MeadowPersonaSettings.MeadowPersonaSettingsState));
+
+            public static readonly StateType OnlinePhysicalObjectDefinition = new("OnlinePhysicalObjectDefinition", typeof(OnlinePhysicalObjectDefinition));
+            public static readonly StateType OnlineCreatureDefinition = new("OnlineCreatureDefinition", typeof(OnlineCreatureDefinition));
+            public static readonly StateType NewMeadowPersonaSettingsEvent = new("NewMeadowPersonaSettingsEvent", typeof(MeadowPersonaSettingsDefinition));
         }
 
         public static OnlineState ParsePolymorph(Serializer serializer)
@@ -136,10 +143,10 @@ namespace RainMeadow
 
         public class OnlineFieldAttribute : Attribute
         {
-            public string group;
-            public bool nullable;
-            public bool polymorphic;
-            public bool always;
+            public string group; // things on the same group are gruped in deltas, saving bytes
+            public bool nullable; // field can be null
+            public bool polymorphic; // type of field needs to be serialized/parsed
+            public bool always; // field is always sent, to be used as key
 
             public OnlineFieldAttribute(string group = "default", bool nullable = false, bool polymorphic = false, bool always = false)
             {

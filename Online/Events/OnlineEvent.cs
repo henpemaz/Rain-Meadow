@@ -52,6 +52,7 @@ namespace RainMeadow
             RPCEvent,
         }
 
+        // there used to be a lot more stuff in here until I made everything into RPCs and state
         public static OnlineEvent NewFromType(EventTypeId eventTypeId)
         {
             OnlineEvent e = null;
@@ -64,15 +65,6 @@ namespace RainMeadow
                     break;
                 case EventTypeId.GenericResultError:
                     e = new GenericResult.Error();
-                    break;
-                case EventTypeId.NewObjectEvent:
-                    e = new NewObjectEvent();
-                    break;
-                case EventTypeId.NewCreatureEvent:
-                    e = new NewCreatureEvent();
-                    break;
-                case EventTypeId.NewMeadowPersonaSettingsEvent:
-                    e = new NewMeadowPersonaSettingsEvent();
                     break;
                 case EventTypeId.RPCEvent:
                     e = new RPCEvent();

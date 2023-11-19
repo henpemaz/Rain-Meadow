@@ -13,7 +13,7 @@ namespace RainMeadow
             // ? anything special?
         }
 
-        public static OnlineEntity FromEvent(NewCreatureEvent newCreatureEvent, OnlineResource inResource)
+        public static OnlineEntity FromEvent(OnlineCreatureDefinition newCreatureEvent, OnlineResource inResource)
         {
             World world = inResource.World;
             EntityID id = world.game.GetNewID();
@@ -37,10 +37,10 @@ namespace RainMeadow
             return oe;
         }
 
-        public override NewEntityEvent AsNewEntityEvent(OnlineResource inResource)
+        public override EntityDefinition AsNewEntityEvent(OnlineResource inResource)
         {
             RainMeadow.Debug($"serializing {this} in {apo.pos} as {SaveState.AbstractCreatureToStringStoryWorld(apo as AbstractCreature)}");
-            return new NewCreatureEvent(seed, realized, SaveState.AbstractCreatureToStringStoryWorld(apo as AbstractCreature), inResource, this, null);
+            return new OnlineCreatureDefinition(seed, realized, SaveState.AbstractCreatureToStringStoryWorld(apo as AbstractCreature), inResource, this, null);
         }
 
         protected override EntityState MakeState(uint tick, OnlineResource resource)
@@ -95,6 +95,7 @@ namespace RainMeadow
 
         public void BroadcastSuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
         {
+            if (currentlyJoinedResource == null) return;
             foreach (var participant in currentlyJoinedResource.participants)
             {
                 participant.Key.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);

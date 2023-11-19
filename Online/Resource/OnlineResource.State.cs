@@ -75,7 +75,7 @@ namespace RainMeadow
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedCustomSerializables<OnlineEntity.EntityId> entitiesJoined;
             [OnlineField(nullable = true)]
-            public Generics.AddRemoveSortedEvents<NewEntityEvent> registeredEntities;
+            public DeltaStates<EntityDefinition, OnlineState, OnlineEntity.EntityId> registeredEntities;
             [OnlineField(nullable = true)]
             public DeltaStates<EntityState, OnlineState, OnlineEntity.EntityId> entityStates;
 
@@ -110,7 +110,7 @@ namespace RainMeadow
                         }
                     }
 
-                    foreach (var kvp in resource.entities)
+                    foreach (var kvp in resource.entities.ToList())
                     {
                         // this would be better as a set not a list
                         if (!entitiesJoined.list.Contains(kvp.Key))

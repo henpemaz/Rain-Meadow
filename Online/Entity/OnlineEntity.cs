@@ -110,15 +110,20 @@ namespace RainMeadow
                 if (!isTransferable)
                     inResource.SubresourcesUnloaded(); // maybe you can release now
             }
+            if (primaryResource == null)
+            {
+                RainMeadow.Debug("Removing entity from recentEntities: " + this);
+                OnlineManager.recentEntities.Remove(id);
+            }
         }
 
-        public abstract NewEntityEvent AsNewEntityEvent(OnlineResource onlineResource);
+        public abstract EntityDefinition AsNewEntityEvent(OnlineResource onlineResource);
 
-        public static OnlineEntity FromNewEntityEvent(NewEntityEvent newEntityEvent, OnlineResource inResource)
+        public static OnlineEntity FromNewEntityEvent(EntityDefinition newEntityEvent, OnlineResource inResource)
         {
-            if (newEntityEvent is NewObjectEvent newObjectEvent)
+            if (newEntityEvent is OnlinePhysicalObjectDefinition newObjectEvent)
             {
-                if (newObjectEvent is NewCreatureEvent newCreatureEvent)
+                if (newObjectEvent is OnlineCreatureDefinition newCreatureEvent)
                 {
                     return OnlineCreature.FromEvent(newCreatureEvent, inResource);
                 }
@@ -127,7 +132,7 @@ namespace RainMeadow
                     return OnlinePhysicalObject.FromEvent(newObjectEvent, inResource);
                 }
             }
-            if(newEntityEvent is NewPersonaSettingsEvent newPersonaSettingsEvent)
+            if(newEntityEvent is PersonaSettingsDefinition newPersonaSettingsEvent)
             {
                 return PersonaSettingsEntity.FromEvent(newPersonaSettingsEvent, inResource);
             }
@@ -140,6 +145,7 @@ namespace RainMeadow
             var wasOwner = owner;
             if (wasOwner == newOwner) return;
             owner = newOwner;
+            RainMeadow.Debug(this);
 
             if (wasOwner.isMe)
             {
@@ -152,8 +158,7 @@ namespace RainMeadow
             {
                 foreach (var res in joinedResources)
                 {
-                    if (!res.isOwner)
-                        OnlineManager.AddFeed(res, this);
+                    if (!res.isOwner) OnlineManager.AddFeed(res, this);
                 }
             }
         }

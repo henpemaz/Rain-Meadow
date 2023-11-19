@@ -6,7 +6,7 @@ namespace RainMeadow
     public abstract partial class OnlineResource
     {
         public abstract World World { get; }
-        public Dictionary<OnlineEntity.EntityId, NewEntityEvent> registeredEntities;
+        public Dictionary<OnlineEntity.EntityId, EntityDefinition> registeredEntities;
         public Dictionary<OnlineEntity.EntityId, EntityMembership> entities;
 
         // An entity I control has entered the resource, consider registering or joining
@@ -47,7 +47,7 @@ namespace RainMeadow
 
         // as owner, from other
         [RPCMethod]
-        public void OnEntityRegisterRequest(RPCEvent rpcEvent, NewEntityEvent newEntityEvent, EntityState initialState)
+        public void OnEntityRegisterRequest(RPCEvent rpcEvent, EntityDefinition newEntityEvent, EntityState initialState)
         {
             RainMeadow.Debug(this);
             if (isOwner && isActive)
@@ -65,7 +65,7 @@ namespace RainMeadow
         public void OnRegisterResolve(GenericResult registerResult)
         {
             RainMeadow.Debug(this);
-            var nee = ((registerResult.referencedEvent as RPCEvent).args[0]) as NewEntityEvent;
+            var nee = ((registerResult.referencedEvent as RPCEvent).args[0]) as EntityDefinition;
             var oe = nee.entityId.FindEntity();
             if (oe.pendingRequest == registerResult.referencedEvent) oe.pendingRequest = null;
 
@@ -80,7 +80,7 @@ namespace RainMeadow
         }
 
         // recreate from event
-        public void OnNewRemoteEntity(NewEntityEvent newEntityEvent, EntityState initialState)
+        public void OnNewRemoteEntity(EntityDefinition newEntityEvent, EntityState initialState)
         {
             RainMeadow.Debug(this);
             OnlineEntity oe = newEntityEvent.owner.isMe ? newEntityEvent.entityId.FindEntity() : OnlineEntity.FromNewEntityEvent(newEntityEvent, this);
@@ -88,7 +88,7 @@ namespace RainMeadow
         }
 
         // registering new entity
-        private void EntityRegisteredInResource(OnlineEntity oe, NewEntityEvent newEntityEvent, EntityState initialState)
+        private void EntityRegisteredInResource(OnlineEntity oe, EntityDefinition newEntityEvent, EntityState initialState)
         {
             RainMeadow.Debug(this);
             registeredEntities.Add(newEntityEvent.entityId, newEntityEvent);

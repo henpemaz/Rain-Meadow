@@ -12,9 +12,9 @@ namespace RainMeadow
 
         }
 
-        internal static OnlineEntity FromEvent(NewPersonaSettingsEvent newPersonaSettingsEvent, OnlineResource inResource)
+        internal static OnlineEntity FromEvent(PersonaSettingsDefinition newPersonaSettingsEvent, OnlineResource inResource)
         {
-            if (newPersonaSettingsEvent is NewMeadowPersonaSettingsEvent meadowPersonaSettings) return MeadowPersonaSettings.FromEvent(meadowPersonaSettings, inResource);
+            if (newPersonaSettingsEvent is MeadowPersonaSettingsDefinition meadowPersonaSettings) return MeadowPersonaSettings.FromEvent(meadowPersonaSettings, inResource);
             throw new InvalidOperationException("unknown entity event type");
         }
 

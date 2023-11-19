@@ -17,13 +17,13 @@ namespace RainMeadow
             RainMeadow.Debug(this);
         }
 
-        public override NewEntityEvent AsNewEntityEvent(OnlineResource onlineResource)
+        public override EntityDefinition AsNewEntityEvent(OnlineResource onlineResource)
         {
             RainMeadow.Debug(this);
-            return new NewMeadowPersonaSettingsEvent(this);
+            return new MeadowPersonaSettingsDefinition(this);
         }
 
-        public static MeadowPersonaSettings FromEvent(NewMeadowPersonaSettingsEvent newPersonaSettingsEvent, OnlineResource inResource)
+        public static MeadowPersonaSettings FromEvent(MeadowPersonaSettingsDefinition newPersonaSettingsEvent, OnlineResource inResource)
         {
             RainMeadow.Debug(newPersonaSettingsEvent);
             var oe = new MeadowPersonaSettings(newPersonaSettingsEvent.owner, newPersonaSettingsEvent.entityId);

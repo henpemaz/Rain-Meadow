@@ -46,12 +46,12 @@ namespace RainMeadow
             }
         }
 
-        public override NewEntityEvent AsNewEntityEvent(OnlineResource inResource)
+        public override EntityDefinition AsNewEntityEvent(OnlineResource inResource)
         {
-            return new NewObjectEvent(seed, realized, apo.ToString(), inResource, this, null);
+            return new OnlinePhysicalObjectDefinition(seed, realized, apo.ToString(), this);
         }
 
-        public static OnlineEntity FromEvent(NewObjectEvent newObjectEvent, OnlineResource inResource)
+        public static OnlineEntity FromEvent(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource)
         {
             World world = inResource.World;
             EntityID id = world.game.GetNewID();
@@ -213,10 +213,10 @@ namespace RainMeadow
                     beingMoved = false;
                 }
             }
-            if(primaryResource == null)
+            if (primaryResource == null)
             {
+                RainMeadow.Debug("Removing entity from OnlinePhysicalObject.map: " + this);
                 map.Remove(apo);
-                OnlineManager.recentEntities.Remove(id);
             }
         }
 

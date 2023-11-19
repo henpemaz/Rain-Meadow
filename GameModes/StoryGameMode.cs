@@ -22,7 +22,7 @@
 
         public override bool ShouldSyncObjectInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
-            return apo is AbstractCreature;
+            return true;
         }
 
         public override SlugcatStats.Name LoadWorldAs(RainWorldGame game)
