@@ -28,6 +28,7 @@ namespace RainMeadow
             public Action<RPCEvent, Serializer> serialize;
             public int eventArgIndex;
             internal bool isStatic;
+            public string summary;
         }
 
         public static void SetupRPCs()
@@ -85,7 +86,7 @@ namespace RainMeadow
                 };
                 expressions.Add(Expression.Assign(isReading, Expression.Property(serializerParam, serializerIsReadingProp))); // minimize invokes :pensive:
 
-                if (targetType != null && !isStatic)
+                if (!isStatic)
                 {
                     expressions.Add(Expression.Assign(targetVar, Expression.Convert(Expression.Field(rpceventParam, rpcEventTargetAccessor), targetType)));
 
@@ -159,7 +160,8 @@ namespace RainMeadow
                     method = method,
                     serialize = serialize,
                     eventArgIndex = argsEventIndex,
-                    isStatic = isStatic
+                    isStatic = isStatic,
+                    summary = $"{targetType.Name}{method.Name}"
                 };
 
                 defsByIndex[index] = entry;
@@ -212,7 +214,7 @@ namespace RainMeadow
 
         public override void Process()
         {
-            RainMeadow.Debug($"Processing RPC: {handler.method}");
+            RainMeadow.Debug($"Processing RPC: {handler.summary}");
             if (handler.eventArgIndex > -1)
             {
                 var newArgs = args.ToList();

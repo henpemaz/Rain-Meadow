@@ -18,23 +18,30 @@ namespace RainMeadow
         public static OnlinePhysicalObject RegisterPhysicalObject(AbstractPhysicalObject apo)
         {
             OnlinePhysicalObject newOe = NewFromApo(apo);
-            RainMeadow.Debug("Registering new entity - " + newOe.ToString());
-            OnlineManager.recentEntities.Add(newOe.id, newOe);
-            map.Add(apo, newOe);
+            RainMeadow.Debug("Registered new entity - " + newOe.ToString());
             return newOe;
         }
 
         public static OnlinePhysicalObject NewFromApo(AbstractPhysicalObject apo)
         {
-            if (apo is AbstractCreature ac) return new OnlineCreature(ac, apo.ID.RandomSeed, apo.realizedObject != null, OnlineManager.mePlayer, new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, apo.ID.number), !RainMeadow.sSpawningPersonas);
-            return new OnlinePhysicalObject(apo, apo.ID.RandomSeed, apo.realizedObject != null, OnlineManager.mePlayer, new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, apo.ID.number), !RainMeadow.sSpawningPersonas);
+            if (apo is AbstractCreature ac)
+            {
+                var def = new OnlineCreatureDefinition(apo.ID.RandomSeed, apo.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, apo.ID.number), OnlineManager.mePlayer, !RainMeadow.sSpawningPersonas);
+                return new OnlineCreature(def, ac);
+            }
+            else
+            {
+                var def = new OnlinePhysicalObjectDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, apo.ID.number), OnlineManager.mePlayer, !RainMeadow.sSpawningPersonas);
+                return new OnlinePhysicalObject(def, apo);
+            }
         }
 
-        public OnlinePhysicalObject(AbstractPhysicalObject apo, int seed, bool realized, OnlinePlayer owner, EntityId id, bool isTransferable) : base(owner, id, isTransferable)
+        public OnlinePhysicalObject(OnlinePhysicalObjectDefinition entityDefinition, AbstractPhysicalObject apo) : base(entityDefinition)
         {
             this.apo = apo;
-            this.seed = seed;
-            this.realized = realized;
+            this.seed = entityDefinition.seed;
+            this.realized = entityDefinition.realized;
+            map.Add(apo, this);
         }
 
         public override void NewOwner(OnlinePlayer newOwner)
@@ -46,12 +53,7 @@ namespace RainMeadow
             }
         }
 
-        public override EntityDefinition AsNewEntityEvent(OnlineResource inResource)
-        {
-            return new OnlinePhysicalObjectDefinition(seed, realized, apo.ToString(), this);
-        }
-
-        public static OnlineEntity FromEvent(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource)
+        public static OnlineEntity FromDefinition(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource)
         {
             World world = inResource.World;
             EntityID id = world.game.GetNewID();
@@ -60,19 +62,8 @@ namespace RainMeadow
             RainMeadow.Debug("serializedObject: " + newObjectEvent.serializedObject);
             var apo = SaveState.AbstractPhysicalObjectFromString(world, newObjectEvent.serializedObject);
             apo.ID = id;
-            
-            var oe = new OnlinePhysicalObject(apo, newObjectEvent.seed, newObjectEvent.realized, newObjectEvent.owner, newObjectEvent.entityId, newObjectEvent.isTransferable);
-            try
-            {
-                map.Add(apo, oe);
-                OnlineManager.recentEntities.Add(oe.id, oe);
-            }
-            catch (Exception e)
-            {
-                RainMeadow.Error(e);
-                RainMeadow.Error(Environment.StackTrace);
-            }
-            return oe;
+
+            return new OnlinePhysicalObject(newObjectEvent, apo);
         }
 
         public override void ReadState(EntityState entityState, OnlineResource inResource)

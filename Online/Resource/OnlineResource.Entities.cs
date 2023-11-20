@@ -37,11 +37,11 @@ namespace RainMeadow
 
             if (isOwner) // enter right away
             {
-                EntityRegisteredInResource(oe, oe.AsNewEntityEvent(this), null);
+                EntityRegisteredInResource(oe, oe.definition, null);
             }
             else // request to register
             {
-                oe.pendingRequest = owner.InvokeRPC(this.OnEntityRegisterRequest, oe.AsNewEntityEvent(this), oe.GetState(oe.owner.tick, this)).Then(OnRegisterResolve);
+                oe.pendingRequest = owner.InvokeRPC(this.OnEntityRegisterRequest, oe.definition, oe.GetState(oe.owner.tick, this)).Then(OnRegisterResolve);
             }
         }
 
@@ -80,11 +80,11 @@ namespace RainMeadow
         }
 
         // recreate from event
-        public void OnNewRemoteEntity(EntityDefinition newEntityEvent, EntityState initialState)
+        public void OnNewRemoteEntity(EntityDefinition entityDefinition, EntityState initialState)
         {
             RainMeadow.Debug(this);
-            OnlineEntity oe = newEntityEvent.owner.isMe ? newEntityEvent.entityId.FindEntity() : OnlineEntity.FromNewEntityEvent(newEntityEvent, this);
-            EntityRegisteredInResource(oe, newEntityEvent, initialState);
+            OnlineEntity oe = entityDefinition.owner.isMe ? entityDefinition.entityId.FindEntity() : entityDefinition.MakeEntity(this);
+            EntityRegisteredInResource(oe, entityDefinition, initialState);
         }
 
         // registering new entity

@@ -8,12 +8,12 @@ namespace RainMeadow
     {
         public bool enteringShortCut;
 
-        public OnlineCreature(AbstractCreature ac, int seed, bool realized, OnlinePlayer owner, EntityId id, bool isTransferable) : base(ac, seed, realized, owner, id, isTransferable)
+        public OnlineCreature(OnlineCreatureDefinition def, AbstractCreature ac) : base(def, ac)
         {
             // ? anything special?
         }
 
-        public static OnlineEntity FromEvent(OnlineCreatureDefinition newCreatureEvent, OnlineResource inResource)
+        public static OnlineEntity FromDefinition(OnlineCreatureDefinition newCreatureEvent, OnlineResource inResource)
         {
             World world = inResource.World;
             EntityID id = world.game.GetNewID();
@@ -23,24 +23,7 @@ namespace RainMeadow
             AbstractCreature ac = SaveState.AbstractCreatureFromString(inResource.World, newCreatureEvent.serializedObject, false);
             ac.ID = id;
 
-            var oe = new OnlineCreature(ac, newCreatureEvent.seed, newCreatureEvent.realized, newCreatureEvent.owner, newCreatureEvent.entityId, newCreatureEvent.isTransferable);
-            try
-            {
-                map.Add(ac, oe);
-                OnlineManager.recentEntities.Add(oe.id, oe);
-            }
-            catch (Exception e)
-            {
-                RainMeadow.Error(e);
-                RainMeadow.Error(Environment.StackTrace);
-            }
-            return oe;
-        }
-
-        public override EntityDefinition AsNewEntityEvent(OnlineResource inResource)
-        {
-            RainMeadow.Debug($"serializing {this} in {apo.pos} as {SaveState.AbstractCreatureToStringStoryWorld(apo as AbstractCreature)}");
-            return new OnlineCreatureDefinition(seed, realized, SaveState.AbstractCreatureToStringStoryWorld(apo as AbstractCreature), inResource, this, null);
+            return new OnlineCreature(newCreatureEvent, ac);
         }
 
         protected override EntityState MakeState(uint tick, OnlineResource resource)

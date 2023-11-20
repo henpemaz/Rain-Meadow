@@ -6,9 +6,11 @@ namespace RainMeadow
 {
     public abstract partial class OnlineEntity
     {
-        public OnlinePlayer owner;
+        public OnlinePlayer owner => definition.owner; // can be updated
+        public EntityDefinition definition;
         public readonly EntityId id;
         public readonly bool isTransferable;
+
         public bool isMine => owner.isMe;
 
         public List<OnlineResource> joinedResources = new(); // used like a stack
@@ -21,13 +23,15 @@ namespace RainMeadow
         public bool isPending => pendingRequest != null;
         public OnlineEvent pendingRequest;
 
-        protected OnlineEntity(OnlinePlayer owner, EntityId id, bool isTransferable)
+        protected OnlineEntity(EntityDefinition entityDefinition)
         {
-            this.owner = owner;
-            this.id = id;
-            this.isTransferable = isTransferable;
+            this.definition = entityDefinition;
+            this.id = entityDefinition.entityId;
+            this.isTransferable = entityDefinition.isTransferable;
+
+            OnlineManager.recentEntities.Add(id, this);
         }
-        
+
         public void EnterResource(OnlineResource resource)
         {
             RainMeadow.Debug($"{this} entered {resource}");
@@ -117,34 +121,12 @@ namespace RainMeadow
             }
         }
 
-        public abstract EntityDefinition AsNewEntityEvent(OnlineResource onlineResource);
-
-        public static OnlineEntity FromNewEntityEvent(EntityDefinition newEntityEvent, OnlineResource inResource)
-        {
-            if (newEntityEvent is OnlinePhysicalObjectDefinition newObjectEvent)
-            {
-                if (newObjectEvent is OnlineCreatureDefinition newCreatureEvent)
-                {
-                    return OnlineCreature.FromEvent(newCreatureEvent, inResource);
-                }
-                else
-                {
-                    return OnlinePhysicalObject.FromEvent(newObjectEvent, inResource);
-                }
-            }
-            if(newEntityEvent is PersonaSettingsDefinition newPersonaSettingsEvent)
-            {
-                return PersonaSettingsEntity.FromEvent(newPersonaSettingsEvent, inResource);
-            }
-            throw new InvalidOperationException("unknown entity event type");
-        }
-
         public virtual void NewOwner(OnlinePlayer newOwner)
         {
             RainMeadow.Debug(this);
             var wasOwner = owner;
             if (wasOwner == newOwner) return;
-            owner = newOwner;
+            definition.owner = newOwner;
             RainMeadow.Debug(this);
 
             if (wasOwner.isMe)

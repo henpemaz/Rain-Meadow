@@ -160,10 +160,13 @@ namespace RainMeadow
         protected override void NewParticipantImpl(OnlinePlayer player)
         {
             base.NewParticipantImpl(player);
-            player.inLobbyId = nextId;
-            RainMeadow.Debug($"Assigned inLobbyId of {nextId} to player {player}");
-            nextId++;
-            // todo overflows and repeats (unrealistic but it's a ushort)
+            if (isOwner)
+            {
+                player.inLobbyId = nextId;
+                RainMeadow.Debug($"Assigned inLobbyId of {nextId} to player {player}");
+                nextId++;
+                // todo overflows and repeats (unrealistic but it's a ushort)
+            }
         }
     }
 }

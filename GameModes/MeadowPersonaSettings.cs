@@ -12,33 +12,16 @@ namespace RainMeadow
 
         public static ConditionalWeakTable<OnlinePlayer, MeadowPersonaSettings> map = new();
 
-        public MeadowPersonaSettings(OnlinePlayer owner, EntityId id) : base(owner, id)
+        public MeadowPersonaSettings(EntityDefinition entityDefinition) : base(entityDefinition)
         {
             RainMeadow.Debug(this);
+            map.Add(owner, this);
         }
 
-        public override EntityDefinition AsNewEntityEvent(OnlineResource onlineResource)
+        public static MeadowPersonaSettings FromDefinition(MeadowPersonaSettingsDefinition meadowPersonaSettingsDefinition , OnlineResource inResource)
         {
-            RainMeadow.Debug(this);
-            return new MeadowPersonaSettingsDefinition(this);
-        }
-
-        public static MeadowPersonaSettings FromEvent(MeadowPersonaSettingsDefinition newPersonaSettingsEvent, OnlineResource inResource)
-        {
-            RainMeadow.Debug(newPersonaSettingsEvent);
-            var oe = new MeadowPersonaSettings(newPersonaSettingsEvent.owner, newPersonaSettingsEvent.entityId);
-
-            try
-            {
-                map.Add(newPersonaSettingsEvent.owner, oe);
-                OnlineManager.recentEntities.Add(oe.id, oe);
-            }
-            catch (Exception e)
-            {
-                RainMeadow.Error(e);
-                RainMeadow.Error(Environment.StackTrace);
-            }
-            return oe;
+            RainMeadow.Debug(meadowPersonaSettingsDefinition);
+            return new MeadowPersonaSettings(meadowPersonaSettingsDefinition);
         }
 
         protected override EntityState MakeState(uint tick, OnlineResource inResource)

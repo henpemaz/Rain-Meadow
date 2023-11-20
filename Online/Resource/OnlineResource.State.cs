@@ -84,7 +84,7 @@ namespace RainMeadow
             {
                 this.resource = resource;
                 entitiesJoined = new(resource.entities.Keys.ToList());
-                registeredEntities = new(resource.registeredEntities.Values.ToList());
+                registeredEntities = new(resource.registeredEntities.Values.Select(def => def.Clone() as EntityDefinition).ToList());
                 entityStates = new(resource.entities.Select(e => e.Value.entity.GetState(ts, resource)).ToList());
             }
             public virtual void ReadTo(OnlineResource resource)
@@ -106,7 +106,13 @@ namespace RainMeadow
                             // there might be some timing considerations to this, entity from higher up not being available locally yet
                             var ent = entityId.FindEntity();
                             if (ent != null)
+                            {
                                 resource.EntityJoinedResource(ent, entityStates.list.Find(es => es.entityId == entityId));
+                            }
+                            else
+                            {
+                                RainMeadow.Error($"Entity in resource {this} missing: " + entityId);
+                            }
                         }
                     }
 
@@ -116,6 +122,21 @@ namespace RainMeadow
                         if (!entitiesJoined.list.Contains(kvp.Key))
                         {
                             resource.EntityLeftResource(kvp.Value.entity);
+                        }
+                    }
+
+                    foreach (var def in registeredEntities.list)
+                    {
+                        if (resource.entities.TryGetValue(def.entityId, out var ent)) // hmm
+                        {
+                            if (def.owner != ent.entity.owner)
+                            {
+                                ent.entity.NewOwner(def.owner);
+                            }
+                        }
+                        else
+                        {
+                            RainMeadow.Error($"Entity in resource {this} missing: " + def.entityId);
                         }
                     }
 

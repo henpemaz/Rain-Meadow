@@ -23,7 +23,8 @@ namespace RainMeadow
             valueFlags = new bool[handler.ngroups];
         }
 
-        private OnlineState Clone()
+        // Warning: not a deep clone
+        public OnlineState Clone()
         {
             var e = (OnlineState)MemberwiseClone();
             e.valueFlags = new bool[handler.ngroups];

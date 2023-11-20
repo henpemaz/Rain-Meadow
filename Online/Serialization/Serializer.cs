@@ -508,7 +508,9 @@ namespace RainMeadow
             }
             if (IsReading)
             {
-                player = OnlineManager.lobby?.PlayerFromId(reader.ReadUInt16());
+                var inLobbyId = reader.ReadUInt16();
+                player = OnlineManager.lobby?.PlayerFromId(inLobbyId);
+                if (player == null) RainMeadow.Error("Player not found! " + inLobbyId);
             }
         }
 
