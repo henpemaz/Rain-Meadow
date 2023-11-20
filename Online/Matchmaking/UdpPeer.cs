@@ -11,9 +11,9 @@ namespace RainMeadow
 {
     public static class UdpPeer
     {
-        public static float simulatedLoss = 0.1f;
+        public static float simulatedLoss = 0.05f;
         public static float simulatedChainLoss = 0.4f;
-        public static float simulatedLatency = 150;
+        public static float simulatedLatency = 80;
         public static float simulatedJitter = 100;
         public static float simulatedJitterPower = 2;
 

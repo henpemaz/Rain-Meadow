@@ -1,5 +1,7 @@
 ﻿using BepInEx;
 using System;
+using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Security.Permissions;
 
@@ -99,9 +101,27 @@ namespace RainMeadow
 
             try
             {
+                TestExpressions();
+                var sw = Stopwatch.StartNew();
                 OnlineState.InitializeBuiltinTypes();
+                sw.Stop();
+                RainMeadow.Debug($"OnlineState.InitializeBuiltinTypes: {sw.Elapsed}");
+
+                sw = Stopwatch.StartNew();
                 OnlineGameMode.InitializeBuiltinTypes();
+                sw.Stop();
+                RainMeadow.Debug($"OnlineGameMode.InitializeBuiltinTypes: {sw.Elapsed}");
+
+                sw = Stopwatch.StartNew();
                 MeadowProgression.InitializeBuiltinTypes();
+                sw.Stop();
+                RainMeadow.Debug($"MeadowProgression.InitializeBuiltinTypes: {sw.Elapsed}");
+                
+                sw = Stopwatch.StartNew();
+                RPCManager.SetupRPCs();
+                sw.Stop();
+                RainMeadow.Debug($"MeadowProgression.InitializeBuiltinTypes: {sw.Elapsed}");
+
 
                 self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
 
@@ -112,11 +132,78 @@ namespace RainMeadow
                 GameplayHooks();
                 PlayerHooks();
                 CustomizationHooks();
+                
             }
             catch (Exception e)
             {
                 Logger.LogError(e);
                 throw;
+            }
+        }
+
+        private void TestExpressions()
+        {
+           
+            Stopwatch sw = Stopwatch.StartNew();
+            var objParam = Expression.Parameter(typeof(TestObject), "objParam");
+            var goodMethod = Expression.Lambda<Action<TestObject>>(Expression.Call(objParam, typeof(TestObject).GetMethod("GoodMethod")), objParam).Compile();
+            var badMethod = Expression.Lambda<Action<TestObject>>(Expression.Call(objParam, typeof(TestObject).GetMethod("BadMethod")), objParam).Compile();
+            sw.Stop();
+            RainMeadow.Debug($"compiling: {sw.Elapsed}");
+
+            sw = Stopwatch.StartNew();
+            new TestObject().GoodMethod();
+            sw.Stop();
+            RainMeadow.Debug($"good method direct: {sw.Elapsed}");
+            sw = Stopwatch.StartNew();
+            new TestObject().GoodMethod();
+            sw.Stop();
+            RainMeadow.Debug($"good method direct 2: {sw.Elapsed}");
+            sw = Stopwatch.StartNew();
+            new TestObject().GoodMethod();
+            sw.Stop();
+            RainMeadow.Debug($"good method direct 3: {sw.Elapsed}");
+
+            var lb = (TestObject obj) => obj.GoodMethod();
+            sw = Stopwatch.StartNew();
+            lb(new TestObject());
+            sw.Stop();
+            RainMeadow.Debug($"good method lambda: {sw.Elapsed}");
+            sw = Stopwatch.StartNew();
+            lb(new TestObject());
+            sw.Stop();
+            RainMeadow.Debug($"good method lambda 2: {sw.Elapsed}");
+            sw = Stopwatch.StartNew();
+            lb(new TestObject());
+            sw.Stop();
+            RainMeadow.Debug($"good method lambda 3: {sw.Elapsed}");
+
+            sw = Stopwatch.StartNew();
+            goodMethod(new TestObject());
+            sw.Stop();
+            RainMeadow.Debug($"good method et lambda: {sw.Elapsed}");
+            sw = Stopwatch.StartNew();
+            goodMethod(new TestObject());
+            sw.Stop();
+            RainMeadow.Debug($"good method et lambda 2: {sw.Elapsed}");
+            sw = Stopwatch.StartNew();
+            goodMethod(new TestObject());
+            sw.Stop();
+            RainMeadow.Debug($"good method et lambda 3: {sw.Elapsed}");
+
+            //badMethod(new TestObject());
+        }
+
+        private class TestObject
+        {
+            public void GoodMethod()
+            {
+                //throw new Exception("gotcha");
+            }
+
+            public void BadMethod()
+            {
+                throw new Exception("gotcha");
             }
         }
     }

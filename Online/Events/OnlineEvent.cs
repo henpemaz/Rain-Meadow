@@ -44,39 +44,15 @@ namespace RainMeadow
         public enum EventTypeId : byte // will we hit 255 of these I wonder
         {
             None,
-            ResourceRequest,
-            ResourceRelease,
-            ResourceTransfer,
-            RequestResultLeased,
-            RequestResultSubscribed,
-            RequestResultError,
-            ReleaseResultReleased,
-            ReleaseResultUnsubscribed,
-            ReleaseResultError,
-            TransferResultOk,
-            TransferResultError,
             GenericResultOk,
             GenericResultError,
-            CreatureEventViolence,
-            CreatureEventSuckedIntoShortCut,
-            RegisterNewEntityRequest,
             NewObjectEvent,
             NewCreatureEvent,
-            EntityJoinRequest,
-            EntityJoinedEvent,
-            EntityLeaveRequest,
-            EntityLeftEvent,
-            EntityTransfererRequest,
-            EntityTransferedEvent,
-            EntityRequest,
-            EntityRelease,
-            DeltaReset,
-            PlayerAddFood,
-            PlayerAddQuarterFood,
-            AbstractRoomFirstTimeRealized,
             NewMeadowPersonaSettingsEvent,
+            RPCEvent,
         }
 
+        // there used to be a lot more stuff in here until I made everything into RPCs and state
         public static OnlineEvent NewFromType(EventTypeId eventTypeId)
         {
             OnlineEvent e = null;
@@ -84,98 +60,14 @@ namespace RainMeadow
             {
                 case EventTypeId.None: // fault detection
                     break;
-                case EventTypeId.ResourceRequest:
-                    e = new ResourceRequest();
-                    break;
-                case EventTypeId.ResourceRelease:
-                    e = new ResourceRelease();
-                    break;
-                case EventTypeId.ResourceTransfer:
-                    e = new ResourceTransfer();
-                    break;
-                case EventTypeId.ReleaseResultReleased:
-                    e = new ReleaseResult.Released();
-                    break;
-                case EventTypeId.ReleaseResultUnsubscribed:
-                    e = new ReleaseResult.Unsubscribed();
-                    break;
-                case EventTypeId.ReleaseResultError:
-                    e = new ReleaseResult.Error();
-                    break;
-                case EventTypeId.RequestResultLeased:
-                    e = new RequestResult.Leased();
-                    break;
-                case EventTypeId.RequestResultSubscribed:
-                    e = new RequestResult.Subscribed();
-                    break;
-                case EventTypeId.RequestResultError:
-                    e = new RequestResult.Error();
-                    break;
-                case EventTypeId.TransferResultError:
-                    e = new TransferResult.Error();
-                    break;
-                case EventTypeId.TransferResultOk:
-                    e = new TransferResult.Ok();
-                    break;
-                case EventTypeId.CreatureEventViolence:
-                    e = new CreatureEvent.Violence();
-                    break;
-                case EventTypeId.CreatureEventSuckedIntoShortCut:
-                    e = new CreatureEvent.SuckedIntoShortCut();
-                    break;
                 case EventTypeId.GenericResultOk:
                     e = new GenericResult.Ok();
                     break;
                 case EventTypeId.GenericResultError:
                     e = new GenericResult.Error();
                     break;
-                case EventTypeId.RegisterNewEntityRequest:
-                    e = new RegisterNewEntityRequest();
-                    break;
-                case EventTypeId.NewObjectEvent:
-                    e = new NewObjectEvent();
-                    break;
-                case EventTypeId.NewCreatureEvent:
-                    e = new NewCreatureEvent();
-                    break;
-                case EventTypeId.EntityJoinRequest:
-                    e = new EntityJoinRequest();
-                    break;
-                case EventTypeId.EntityJoinedEvent:
-                    e = new EntityJoinedEvent();
-                    break;
-                case EventTypeId.EntityLeaveRequest:
-                    e = new EntityLeaveRequest();
-                    break;
-                case EventTypeId.EntityLeftEvent:
-                    e = new EntityLeftEvent();
-                    break;
-                case EventTypeId.EntityTransfererRequest:
-                    e = new EntityTransferRequest();
-                    break;
-                case EventTypeId.EntityTransferedEvent:
-                    e = new EntityTransferedEvent();
-                    break;
-                case EventTypeId.EntityRequest:
-                    e = new EntityRequest();
-                    break;
-                case EventTypeId.EntityRelease:
-                    e = new EntityReleaseEvent();
-                    break;
-                case EventTypeId.DeltaReset:
-                    e = new DeltaReset();
-                    break;
-                case EventTypeId.PlayerAddFood:
-                    e = new PlayerEvent.AddFood();
-                    break;
-                case EventTypeId.PlayerAddQuarterFood:
-                    e = new PlayerEvent.AddQuarterFood();
-                    break;
-                case EventTypeId.AbstractRoomFirstTimeRealized:
-                    e = new AbstractRoomFirstTimeRealizedEvent();
-                    break;
-                case EventTypeId.NewMeadowPersonaSettingsEvent:
-                    e = new NewMeadowPersonaSettingsEvent();
+                case EventTypeId.RPCEvent:
+                    e = new RPCEvent();
                     break;
             }
             if (e is null) throw new InvalidOperationException("invalid event type: " + eventTypeId);

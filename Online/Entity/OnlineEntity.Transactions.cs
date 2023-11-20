@@ -12,16 +12,17 @@
             if (!currentlyJoinedResource.isAvailable) throw new InvalidProgrammerException("in unavailable resource");
             if (!owner.hasLeft && currentlyJoinedResource.participants.ContainsKey(owner))
             {
-                pendingRequest = owner.QueueEvent(new EntityRequest(this));
+                pendingRequest = owner.InvokeRPC(this.Requested).Then(this.ResolveRequest);
             }
             else
             {
-                pendingRequest = primaryResource.owner.QueueEvent(new EntityRequest(this));
+                pendingRequest = primaryResource.owner.InvokeRPC(this.Requested).Then(this.ResolveRequest);
             }
         }
 
         // I've been requested and I'll pass the entity on
-        public void Requested(EntityRequest request)
+        [RPCMethod]
+        public void Requested(RPCEvent request)
         {
             RainMeadow.Debug(this);
             RainMeadow.Debug("Requested by : " + request.from.id);
@@ -49,6 +50,7 @@
         public void ResolveRequest(GenericResult requestResult)
         {
             RainMeadow.Debug(this);
+            if (requestResult.referencedEvent == pendingRequest) pendingRequest = null;
             if (requestResult is GenericResult.Ok) // I'm the new owner of this entity (comes as separate event though)
             {
                 // confirm pending grasps?
@@ -59,7 +61,6 @@
                 // abort pending grasps?
                 RainMeadow.Error("request failed for " + this);
             }
-            pendingRequest = null;
         }
 
         // I release this entity (to room host or world host)
@@ -68,7 +69,7 @@
             RainMeadow.Debug(this);
             if (!isMine) throw new InvalidProgrammerException("not mine");
             if (!isTransferable) throw new InvalidProgrammerException("cannot be transfered");
-            if (isPending && pendingRequest is not EntityLeaveRequest) throw new InvalidProgrammerException("this entity has a pending request");
+            //if (isPending && pendingRequest is not EntityLeaveRequest) throw new InvalidProgrammerException("this entity has a pending request");
             if (primaryResource is null) return; // deactivated
 
             if (primaryResource.isOwner)
@@ -77,22 +78,22 @@
             }
             else
             {
-                this.pendingRequest = primaryResource.owner.QueueEvent(new EntityReleaseEvent(this, currentlyJoinedResource));
+                this.pendingRequest = primaryResource.owner.InvokeRPC(Released, currentlyJoinedResource).Then(ResolveRelease);
             }
         }
 
         // someone released "to me"
-        public void Released(EntityReleaseEvent entityRelease)
+        [RPCMethod]
+        public void Released(RPCEvent rpcEvent, OnlineResource inResource)
         {
             RainMeadow.Debug(this);
-            RainMeadow.Debug("Released by : " + entityRelease.from.id);
-            if (isTransferable && this.owner == entityRelease.from && this.primaryResource.isOwner) // theirs and I can transfer
+            RainMeadow.Debug("Released by : " + rpcEvent.from.id);
+            if (isTransferable && this.owner == rpcEvent.from && this.primaryResource.isOwner) // theirs and I can transfer
             {
-                entityRelease.from.QueueEvent(new GenericResult.Ok(entityRelease)); // ok to them
-                var res = entityRelease.inResource;
-                if (res.isAvailable || res.super.isActive)
+                rpcEvent.from.QueueEvent(new GenericResult.Ok(rpcEvent)); // ok to them
+                if (inResource.isAvailable || inResource.super.isActive)
                 {
-                    if (this.owner != res.owner) this.primaryResource.LocalEntityTransfered(this, res.owner);
+                    if (this.owner != inResource.owner) this.primaryResource.LocalEntityTransfered(this, inResource.owner);
                 }
                 else
                 {
@@ -102,10 +103,10 @@
             else
             {
                 if (!isTransferable) RainMeadow.Error("Denied because not transferable");
-                else if (owner != entityRelease.from) RainMeadow.Error("Denied because not theirs");
+                else if (owner != rpcEvent.from) RainMeadow.Error("Denied because not theirs");
                 else if (!primaryResource.isOwner) RainMeadow.Error("Denied because I don't supervise it");
                 else if (isPending) RainMeadow.Error("Denied because pending");
-                entityRelease.from.QueueEvent(new GenericResult.Error(entityRelease));
+                rpcEvent.from.QueueEvent(new GenericResult.Error(rpcEvent));
             }
         }
 
@@ -113,6 +114,7 @@
         public void ResolveRelease(GenericResult result)
         {
             RainMeadow.Debug(this);
+            if (result.referencedEvent == pendingRequest) pendingRequest = null;
             if (result is GenericResult.Ok)
             {
                 // ?
@@ -122,7 +124,6 @@
                 // todo retry logic
                 RainMeadow.Error("request failed for " + this);
             }
-            pendingRequest = null;
         }
     }
 }

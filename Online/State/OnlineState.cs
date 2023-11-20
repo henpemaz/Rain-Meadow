@@ -23,7 +23,8 @@ namespace RainMeadow
             valueFlags = new bool[handler.ngroups];
         }
 
-        private OnlineState Clone()
+        // Warning: not a deep clone
+        public OnlineState Clone()
         {
             var e = (OnlineState)MemberwiseClone();
             e.valueFlags = new bool[handler.ngroups];
@@ -38,10 +39,13 @@ namespace RainMeadow
             public StateType(string value, Type type) : base(value, true) { OnlineState.RegisterState(this, type); }
 
             public static readonly StateType Unknown = new("Unknown", true); // sending zeroes over should error out
+
             public static readonly StateType LobbyState = new("LobbyState", typeof(LobbyState));
             public static readonly StateType WorldState = new("WorldState", typeof(WorldState));
             public static readonly StateType RoomState = new("RoomState", typeof(RoomState));
+
             public static readonly StateType EntityFeedState = new("EntityFeedState", typeof(EntityFeedState));
+
             public static readonly StateType PhysicalObjectEntityState = new("PhysicalObjectEntityState", typeof(PhysicalObjectEntityState));
             public static readonly StateType PlayerStateState = new("PlayerStateState", typeof(PlayerStateState));
             public static readonly StateType AbstractCreatureState = new("AbstractCreatureState", typeof(AbstractCreatureState));
@@ -57,6 +61,10 @@ namespace RainMeadow
             public static readonly StateType CreatureHealthStateState = new("CreatureHealthStateState", typeof(CreatureHealthStateState));
             public static readonly StateType RainCycleDataState = new("RainCycleDataState", typeof(RainCycleData));
             public static readonly StateType MeadowPersonaSettingsState = new("MeadowPersonaSettingsState", typeof(MeadowPersonaSettings.MeadowPersonaSettingsState));
+
+            public static readonly StateType OnlinePhysicalObjectDefinition = new("OnlinePhysicalObjectDefinition", typeof(OnlinePhysicalObjectDefinition));
+            public static readonly StateType OnlineCreatureDefinition = new("OnlineCreatureDefinition", typeof(OnlineCreatureDefinition));
+            public static readonly StateType NewMeadowPersonaSettingsEvent = new("NewMeadowPersonaSettingsEvent", typeof(MeadowPersonaSettingsDefinition));
         }
 
         public static OnlineState ParsePolymorph(Serializer serializer)
@@ -136,10 +144,10 @@ namespace RainMeadow
 
         public class OnlineFieldAttribute : Attribute
         {
-            public string group;
-            public bool nullable;
-            public bool polymorphic;
-            public bool always;
+            public string group; // things on the same group are gruped in deltas, saving bytes
+            public bool nullable; // field can be null
+            public bool polymorphic; // type of field needs to be serialized/parsed
+            public bool always; // field is always sent, to be used as key
 
             public OnlineFieldAttribute(string group = "default", bool nullable = false, bool polymorphic = false, bool always = false)
             {
@@ -151,68 +159,12 @@ namespace RainMeadow
 
             public virtual Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
             {
-                if (typeof(OnlineState).IsAssignableFrom(f.FieldType))
-                {
-                    return Expression.Call(serializerRef, typeof(Serializer).GetMethods().Single(m =>
-                    m.Name == this switch
-                    {
-                        { nullable: false, polymorphic: false } => "SerializeStaticState",
-                        { nullable: false, polymorphic: true } => "SerializePolyState",
-                        { nullable: true, polymorphic: false } => "SerializeNullableStaticState",
-                        { nullable: true, polymorphic: true } => "SerializeNullablePolyState"
-                    } && m.IsGenericMethod).MakeGenericMethod(new Type[] { f.FieldType }), fieldRef);
-                }
-                if (typeof(OnlineState[]).IsAssignableFrom(f.FieldType) || (f.FieldType.IsGenericType && f.FieldType.GetGenericTypeDefinition() == typeof(List<>) && typeof(OnlineState).IsAssignableFrom(f.FieldType.GetGenericArguments()[0])))
-                {
-                    return Expression.Call(serializerRef, typeof(Serializer).GetMethods().Single(m =>
-                    m.Name == this switch
-                    {
-                        { nullable: false, polymorphic: false } => "SerializeStaticStates",
-                        { nullable: false, polymorphic: true } => "SerializePolyStates",
-                        { nullable: true, polymorphic: false } => "SerializeNullableStaticStates",
-                        { nullable: true, polymorphic: true } => "SerializeNullablePolyStates"
-                    } && m.IsGenericMethod && (m.GetParameters()[0].ParameterType.GetElementType().IsArray == f.FieldType.IsArray)).MakeGenericMethod(new Type[] { f.FieldType.IsArray ? f.FieldType.GetElementType() : f.FieldType.GetGenericArguments()[0] }), fieldRef);
-                }
-                
-                if (typeof(Serializer.ICustomSerializable).IsAssignableFrom(f.FieldType))
-                {
-                    return Expression.Call(serializerRef, typeof(Serializer).GetMethods().Single(m =>
-                    m.Name == this switch
-                    {
-                        { nullable: false } => "Serialize",
-                        { nullable: true } => "SerializeNullable"
-                    } && m.IsGenericMethod && m.GetGenericMethodDefinition().GetGenericArguments().Any(ga => ga.GetGenericParameterConstraints().Any(t => t == typeof(Serializer.ICustomSerializable)))
-                    && m.GetParameters().Any(p => p.ParameterType.IsByRef && (!p.ParameterType.GetElementType().IsGenericType || p.ParameterType.GetElementType().GetGenericTypeDefinition() != typeof(List<>)) && !p.ParameterType.GetElementType().IsArray)
-                    ).MakeGenericMethod(new Type[] { f.FieldType }), fieldRef);
-                }
-                if (typeof(Serializer.ICustomSerializable[]).IsAssignableFrom(f.FieldType) || (f.FieldType.IsGenericType && f.FieldType.GetGenericTypeDefinition() == typeof(List<>) && typeof(Serializer.ICustomSerializable).IsAssignableFrom(f.FieldType.GetGenericArguments()[0])))
-                {
-                    return Expression.Call(serializerRef, typeof(Serializer).GetMethods().Single(m =>
-                    m.Name == this switch
-                    {
-                        { nullable: false } => "Serialize",
-                        { nullable: true } => "SerializeNullable"
-                    } && m.IsGenericMethod && m.GetGenericMethodDefinition().GetGenericArguments().Any(ga => ga.GetGenericParameterConstraints().Any(t => t == typeof(Serializer.ICustomSerializable)))
-                    && m.GetParameters().Any(p => p.ParameterType.IsByRef && (p.ParameterType.GetElementType().IsGenericType && p.ParameterType.GetElementType().GetGenericTypeDefinition() == typeof(List<>)) != f.FieldType.IsArray && p.ParameterType.GetElementType().IsArray == f.FieldType.IsArray)
-                    ).MakeGenericMethod(new Type[] { f.FieldType.IsArray ? f.FieldType.GetElementType() : f.FieldType.GetGenericArguments()[0] }), fieldRef);
-                }
-                if (!f.FieldType.IsValueType && f.FieldType != typeof(string)) { 
-                    RainMeadow.Error($"{f.FieldType} not handled by SerializerCallMethod"); 
-                }
-                return Expression.Call(serializerRef, typeof(Serializer).GetMethod(nullable ? "SerializeNullable" : "Serialize", new[] { f.FieldType.MakeByRefType() }), fieldRef);
+                return Expression.Call(serializerRef, Serializer.GetSerializationMethod(f.FieldType, nullable, polymorphic), fieldRef);
             }
 
             public virtual Expression ComparisonMethod(FieldInfo f, MemberExpression currentField, MemberExpression baselineField)
             {
                 return Expression.Equal(currentField, baselineField);
-            }
-        }
-
-        public class OnlineResourceRefFieldAttribute : OnlineFieldAttribute
-        {
-            public override Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
-            {
-                return Expression.Call(serializerRef, typeof(Serializer).GetMethod("SerializeResourceByReference", new[] { f.FieldType.MakeByRefType() }), fieldRef);
             }
         }
 
@@ -412,11 +364,12 @@ namespace RainMeadow
                             }
                         }
 
-                        // todo check empty delta? right now its comparing self and baseline
                         // set flags for sent/omitted fields
                         for (int i = 0; i < ngroups; i++)
                         {
                             if (deltaGroups[deltaGroups.Keys.ToList()[i]].Count == 0) continue;
+                            // valueFlags[i] = self.f != baseline.f || self.f2 != baseline.f2 || ...
+                            // todo if f is iPrimaryDelta should instead have a isEmptyDelta check
                             expressions.Add(Expression.Assign(Expression.ArrayAccess(Expression.Field(output, valueFlagsAcessor), Expression.Constant(i)),
                                 OrAny(deltaGroups[deltaGroups.Keys.ToList()[i]].Select(
                                         f => Expression.Not(f.GetCustomAttribute<OnlineFieldAttribute>().ComparisonMethod(f, Expression.Field(selfConverted, f), Expression.Field(baselineConverted, f)))

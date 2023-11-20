@@ -47,9 +47,9 @@ namespace RainMeadow
                 if (incomingState.Count == 0 || newState.baseline != incomingState.Peek().tick)
                 {
                     RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.baseline}");
-                    if(!newState.from.OutgoingEvents.Any(e=>e is DeltaReset dr && dr.onlineResource == this && dr.entity == null))
+                    if(!newState.from.OutgoingEvents.Any(e=>e is RPCEvent rpc && rpc.IsIdentical(RPCs.DeltaReset, this, null)))
                     {
-                        newState.from.QueueEvent(new DeltaReset(this, null));
+                        newState.from.InvokeRPC(RPCs.DeltaReset, this, null);
                     }
                     return;
                 }
@@ -70,8 +70,12 @@ namespace RainMeadow
 
         public abstract class ResourceState : RootDeltaState
         {
-            [OnlineResourceRefField]
+            [OnlineField]
             public OnlineResource resource;
+            [OnlineField(nullable = true)]
+            public Generics.AddRemoveSortedCustomSerializables<OnlineEntity.EntityId> entitiesJoined;
+            [OnlineField(nullable = true)]
+            public DeltaStates<EntityDefinition, OnlineState, OnlineEntity.EntityId> registeredEntities;
             [OnlineField(nullable = true)]
             public DeltaStates<EntityState, OnlineState, OnlineEntity.EntityId> entityStates;
 
@@ -79,12 +83,63 @@ namespace RainMeadow
             protected ResourceState(OnlineResource resource, uint ts) : base(ts)
             {
                 this.resource = resource;
-                entityStates = new(resource.entities.Select(e => e.Key.GetState(ts, resource)).ToList());
+                entitiesJoined = new(resource.entities.Keys.ToList());
+                registeredEntities = new(resource.registeredEntities.Values.Select(def => def.Clone() as EntityDefinition).ToList());
+                entityStates = new(resource.entities.Select(e => e.Value.entity.GetState(ts, resource)).ToList());
             }
             public virtual void ReadTo(OnlineResource resource)
             {
                 if (resource.isActive)
                 {
+                    foreach (var def in registeredEntities.list)
+                    {
+                        if (!resource.registeredEntities.ContainsKey(def.entityId))
+                        {
+                            resource.OnNewRemoteEntity(def, entityStates.list.Find(es => es.entityId == def.entityId));
+                        }
+                    }
+
+                    foreach (var entityId in entitiesJoined.list)
+                    {
+                        if (!resource.entities.ContainsKey(entityId))
+                        {
+                            // there might be some timing considerations to this, entity from higher up not being available locally yet
+                            var ent = entityId.FindEntity();
+                            if (ent != null)
+                            {
+                                resource.EntityJoinedResource(ent, entityStates.list.Find(es => es.entityId == entityId));
+                            }
+                            else
+                            {
+                                RainMeadow.Error($"Entity in resource {this} missing: " + entityId);
+                            }
+                        }
+                    }
+
+                    foreach (var kvp in resource.entities.ToList())
+                    {
+                        // this would be better as a set not a list
+                        if (!entitiesJoined.list.Contains(kvp.Key))
+                        {
+                            resource.EntityLeftResource(kvp.Value.entity);
+                        }
+                    }
+
+                    foreach (var def in registeredEntities.list)
+                    {
+                        if (resource.entities.TryGetValue(def.entityId, out var ent)) // hmm
+                        {
+                            if (def.owner != ent.entity.owner)
+                            {
+                                ent.entity.NewOwner(def.owner);
+                            }
+                        }
+                        else
+                        {
+                            RainMeadow.Error($"Entity in resource {this} missing: " + def.entityId);
+                        }
+                    }
+
                     foreach (var entityState in entityStates.list)
                     {
                         if (entityState != null)

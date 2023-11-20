@@ -54,7 +54,7 @@ namespace RainMeadow
         }
     }
 
-    // Todo: a lot can be optmized here. A custom list of these with member-wise delta/omit (see generics)
+    // Todo: a lot can be optmized here. A custom list of these with member-wise delta/omit (see serializer/generics)
     // and then in each entry have a "delta mode" where it encodes a HALF relative to last pos
     public class ChunkState : Serializer.ICustomSerializable, IEquatable<ChunkState> 
     {

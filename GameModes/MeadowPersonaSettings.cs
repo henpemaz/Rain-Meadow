@@ -12,33 +12,16 @@ namespace RainMeadow
 
         public static ConditionalWeakTable<OnlinePlayer, MeadowPersonaSettings> map = new();
 
-        public MeadowPersonaSettings(OnlinePlayer owner, EntityId id) : base(owner, id)
+        public MeadowPersonaSettings(EntityDefinition entityDefinition) : base(entityDefinition)
         {
             RainMeadow.Debug(this);
+            map.Add(owner, this);
         }
 
-        public override NewEntityEvent AsNewEntityEvent(OnlineResource onlineResource)
+        public static MeadowPersonaSettings FromDefinition(MeadowPersonaSettingsDefinition meadowPersonaSettingsDefinition , OnlineResource inResource)
         {
-            RainMeadow.Debug(this);
-            return new NewMeadowPersonaSettingsEvent(this);
-        }
-
-        public static MeadowPersonaSettings FromEvent(NewMeadowPersonaSettingsEvent newPersonaSettingsEvent, OnlineResource inResource)
-        {
-            RainMeadow.Debug(newPersonaSettingsEvent);
-            var oe = new MeadowPersonaSettings(OnlineManager.lobby.PlayerFromId(newPersonaSettingsEvent.owner), newPersonaSettingsEvent.entityId);
-
-            try
-            {
-                map.Add(OnlineManager.lobby.PlayerFromId(newPersonaSettingsEvent.owner), oe);
-                OnlineManager.recentEntities.Add(oe.id, oe);
-            }
-            catch (Exception e)
-            {
-                RainMeadow.Error(e);
-                RainMeadow.Error(Environment.StackTrace);
-            }
-            return oe;
+            RainMeadow.Debug(meadowPersonaSettingsDefinition);
+            return new MeadowPersonaSettings(meadowPersonaSettingsDefinition);
         }
 
         protected override EntityState MakeState(uint tick, OnlineResource inResource)
@@ -48,11 +31,10 @@ namespace RainMeadow
 
         internal override void ApplyCustomizations(Creature creature, OnlinePhysicalObject oe)
         {
-            MeadowCustomization.CreatureCustomization customization = new();
+            MeadowCustomization.CreatureCustomization customization = MeadowCustomization.creatureCustomizations.GetOrCreateValue(creature);
             customization.skinData = MeadowProgression.skinData[skin];
             customization.tint = new(tint.r, tint.g, tint.b);
             customization.tintAmount = tintAmount * MeadowProgression.skinData[skin].tintFactor;
-            MeadowCustomization.creatureCustomizations.Add(creature, customization);
         }
 
         public class MeadowPersonaSettingsState : PersonaSettingsState

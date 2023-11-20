@@ -7,16 +7,7 @@ namespace RainMeadow
         internal static int personaID = -100;
         public EntityId target;
 
-        public PersonaSettingsEntity(OnlinePlayer owner, EntityId id) : base(owner, id, false)
-        {
-
-        }
-
-        internal static OnlineEntity FromEvent(NewPersonaSettingsEvent newPersonaSettingsEvent, OnlineResource inResource)
-        {
-            if (newPersonaSettingsEvent is NewMeadowPersonaSettingsEvent meadowPersonaSettings) return MeadowPersonaSettings.FromEvent(meadowPersonaSettings, inResource);
-            throw new InvalidOperationException("unknown entity event type");
-        }
+        public PersonaSettingsEntity(EntityDefinition entityDefinition) : base(entityDefinition) { }
 
         internal abstract void ApplyCustomizations(Creature creature, OnlinePhysicalObject oe);
 

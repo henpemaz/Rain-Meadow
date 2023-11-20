@@ -1,5 +1,3 @@
-using static RainMeadow.PlayerEvent;
-
 namespace RainMeadow;
 
 public partial class RainMeadow
@@ -30,7 +28,7 @@ public partial class RainMeadow
 
             if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                OnlineManager.lobby.owner.QueueEvent(new AddQuarterFood());
+                OnlineManager.lobby.owner.InvokeRPC(RPCs.AddQuarterFood);
             }
         }
     }
@@ -45,7 +43,7 @@ public partial class RainMeadow
 
             if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                OnlineManager.lobby.owner.QueueEvent(new AddFood(add));
+                OnlineManager.lobby.owner.InvokeRPC(RPCs.AddFood, add);
             }
         }
     }

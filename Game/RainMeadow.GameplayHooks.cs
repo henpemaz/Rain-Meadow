@@ -114,7 +114,7 @@ namespace RainMeadow
                             return;
                         }
                         // Notify entity owner of violence
-                        (onlineVictim as OnlineCreature).CreatureViolence(onlineVillain, hitchunk.index, hitappendage, directionandmomentum, type, damage, stunbonus);
+                        (onlineVictim as OnlineCreature).RPCCreatureViolence(onlineVillain, hitchunk.index, hitappendage, directionandmomentum, type, damage, stunbonus);
                         return; // Remote is gonna handle this
                     }
                     if (!onlineTrueVillain.owner.isMe) return; // Remote entity will send an event
@@ -177,7 +177,7 @@ namespace RainMeadow
             else if (onlineCreature.isMine)
             {
                 // tell everyone that I am about to enter a shortcut!
-                onlineCreature.SuckedIntoShortCut(entrancePos, carriedByOther);
+                onlineCreature.BroadcastSuckedIntoShortCut(entrancePos, carriedByOther);
             }
             else
             {

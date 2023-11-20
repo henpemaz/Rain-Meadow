@@ -11,23 +11,15 @@
                 RainMeadow.Debug($"{this} - registering {apo}");
                 oe = OnlinePhysicalObject.RegisterPhysicalObject(apo);
             }
-            if (oe.isMine) // Under my control
-            {
-                oe.EnterResource(this);
-            }
+            oe.EnterResource(this);
         }
 
         public void ApoLeavingRoom(AbstractPhysicalObject apo)
         {
             if (!isAvailable || !isActive) return;
-            RainMeadow.Debug(this);
-            //RainMeadow.Debug(Environment.StackTrace);
             if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
             {
-                if (oe.isMine)
-                {
-                    oe.LeaveResource(this);
-                }
+                oe.LeaveResource(this);
             }
             else
             {

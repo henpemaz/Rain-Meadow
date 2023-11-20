@@ -2,7 +2,6 @@
 using MonoMod.Cil;
 using System;
 using System.Linq;
-using static RainMeadow.PlayerEvent;
 
 namespace RainMeadow
 {
@@ -66,7 +65,7 @@ namespace RainMeadow
 
                     if (self.abstractRoom.firstTimeRealized != isFirstTimeRealized)
                     {
-                        OnlineManager.lobby.owner.QueueEvent(new AbstractRoomFirstTimeRealizedEvent(rs));
+                        ws.owner.InvokeRPC(rs.AbstractRoomFirstTimeRealized);
                     }
                 }
             }
@@ -100,7 +99,7 @@ namespace RainMeadow
                 OnlineManager.recentEntities.Clear();
 
                 if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
-                var entities = ws.entities.Keys.ToList();
+                var entities = ws.entities.Values.Select(em => em.entity).ToList();
                 for (int i = ws.entities.Count - 1; i >= 0; i--)
                 {
                     var ent = entities[i];

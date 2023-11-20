@@ -272,17 +272,31 @@ namespace RainMeadow
         }
 
         // serializes resource.id and finds reference
-        public void SerializeResourceByReference(ref OnlineResource onlineResource)
+        public void SerializeResourceByReference<T>(ref T onlineResource) where T : OnlineResource
         {
             if (IsWriting)
             {
-                // todo switch to bytes?
                 writer.Write(onlineResource.Id());
             }
             if (IsReading)
             {
                 string r = reader.ReadString();
-                onlineResource = OnlineManager.ResourceFromIdentifier(r);
+                onlineResource = (T)OnlineManager.ResourceFromIdentifier(r);
+            }
+        }
+
+        // serializes resource.id and finds reference
+        public void SerializEntityById(ref OnlineEntity onlineEntity)
+        {
+            if (IsWriting)
+            {
+                onlineEntity.id.CustomSerialize(this);
+            }
+            if (IsReading)
+            {
+                OnlineEntity.EntityId id = new();
+                id.CustomSerialize(this);
+                onlineEntity = id.FindEntity();
             }
         }
 
@@ -486,6 +500,20 @@ namespace RainMeadow
             }
         }
 
+        public void SerializePlayerInLobby(ref OnlinePlayer player)
+        {
+            if (IsWriting)
+            {
+                writer.Write(player.inLobbyId);
+            }
+            if (IsReading)
+            {
+                var inLobbyId = reader.ReadUInt16();
+                player = OnlineManager.lobby?.PlayerFromId(inLobbyId);
+                if (player == null) RainMeadow.Error("Player not found! " + inLobbyId);
+            }
+        }
+
         // a referenced event is something that must have been ack'd that frame
         public void SerializeReferencedEvent(ref OnlineEvent referencedEvent)
         {
@@ -512,6 +540,34 @@ namespace RainMeadow
                 playerEvent.from = currPlayer;
                 playerEvent.to = OnlineManager.mePlayer;
                 playerEvent.CustomSerialize(this);
+            }
+        }
+
+        public void SerializeEvents<T>(ref List<T> events) where T : OnlineEvent
+        {
+            if (IsWriting)
+            {
+                // TODO dynamic length
+                if (events.Count > 255) throw new OverflowException("too many events");
+                writer.Write((byte)events.Count);
+                foreach (var playerEvent in events)
+                {
+                    writer.Write((byte)playerEvent.eventType);
+                    playerEvent.CustomSerialize(this);
+                }
+            }
+            if (IsReading)
+            {
+                byte count = reader.ReadByte();
+                events = new(count);
+                for (int i = 0; i < count; i++)
+                {
+                    T playerEvent = (T)OnlineEvent.NewFromType((OnlineEvent.EventTypeId)reader.ReadByte());
+                    playerEvent.from = currPlayer;
+                    playerEvent.to = OnlineManager.mePlayer;
+                    playerEvent.CustomSerialize(this);
+                    events.Add(playerEvent);
+                }
             }
         }
     }

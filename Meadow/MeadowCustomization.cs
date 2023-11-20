@@ -32,7 +32,7 @@ namespace RainMeadow
 
         internal static void Customize(Creature creature, OnlinePhysicalObject oe)
         {
-            if(OnlineManager.lobby.entities.Keys.FirstOrDefault(e=> e is PersonaSettingsEntity settings && settings.target == oe.id) is PersonaSettingsEntity settings)
+            if (OnlineManager.lobby.entities.Values.Select(em => em.entity).FirstOrDefault(e => e is PersonaSettingsEntity settings && settings.target == oe.id) is PersonaSettingsEntity settings)
             {
                 settings.ApplyCustomizations(creature, oe);
             }
