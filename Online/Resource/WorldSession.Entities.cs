@@ -25,12 +25,7 @@ namespace RainMeadow
                     return;
                 }
             }
-            if (oe.isMine && !oe.enteredResources.Contains(this)) // Under my control
-            {
-                oe.EnterResource(this);
-            }
-            // no error if already contained, our hooks are triggered multiple times
-            // no action if remote
+            oe.EnterResource(this);
         }
 
         public void ApoLeavingWorld(AbstractPhysicalObject apo)
@@ -38,10 +33,7 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
             {
-                if (oe.isMine)
-                {
-                    oe.LeaveResource(this);
-                }
+                oe.LeaveResource(this);
             }
             else
             {

@@ -37,8 +37,8 @@ namespace RainMeadow
             RainMeadow.Debug($"{this} entered {resource}");
             if (enteredResources.Count != 0 && resource.super != currentlyEnteredResource)
             {
-                RainMeadow.Error($"Not the right resource {this} - {resource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
                 if(resource == currentlyEnteredResource) { return; }
+                RainMeadow.Error($"Not the right resource {this} - {resource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
                 if(resource.IsSibling(currentlyEnteredResource)) { LeaveResource(currentlyEnteredResource); }
             }
             enteredResources.Add(resource);
@@ -142,6 +142,7 @@ namespace RainMeadow
                 {
                     if (!res.isOwner) OnlineManager.AddFeed(res, this);
                 }
+                JoinOrLeavePending();
             }
         }
 

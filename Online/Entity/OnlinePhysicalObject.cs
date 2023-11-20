@@ -203,10 +203,19 @@ namespace RainMeadow
                     }
                     beingMoved = false;
                 }
+                if (primaryResource == null) // gone
+                {
+                    RainMeadow.Debug("Removing entity from game: " + this);
+                    beingMoved = true;
+                    apo.Destroy();
+                    apo.Room?.RemoveEntity(apo);
+                    beingMoved = false;
+                }
             }
             if (primaryResource == null)
             {
                 RainMeadow.Debug("Removing entity from OnlinePhysicalObject.map: " + this);
+
                 map.Remove(apo);
             }
         }

@@ -91,8 +91,8 @@ namespace RainMeadow
             if (UnityEngine.Time.realtimeSinceStartup > lastDt + 1f / instance.framesPerSecond)
             {
                 instance.Update();
+                lastDt = UnityEngine.Time.realtimeSinceStartup;
             }
-            lastDt = UnityEngine.Time.realtimeSinceStartup;
         }
 
         public override void Update()
