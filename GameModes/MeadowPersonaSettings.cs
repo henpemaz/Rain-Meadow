@@ -1,14 +1,13 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace RainMeadow
 {
     public class MeadowPersonaSettings : PersonaSettingsEntity
     {
-        internal float tintAmount;
-        internal MeadowProgression.Skin skin;
-        internal Color tint;
+        public float tintAmount;
+        public MeadowProgression.Skin skin;
+        public Color tint;
 
         public static ConditionalWeakTable<OnlinePlayer, MeadowPersonaSettings> map = new();
 
@@ -18,7 +17,7 @@ namespace RainMeadow
             map.Add(owner, this);
         }
 
-        public static MeadowPersonaSettings FromDefinition(MeadowPersonaSettingsDefinition meadowPersonaSettingsDefinition , OnlineResource inResource)
+        public static MeadowPersonaSettings FromDefinition(MeadowPersonaSettingsDefinition meadowPersonaSettingsDefinition, OnlineResource inResource)
         {
             RainMeadow.Debug(meadowPersonaSettingsDefinition);
             return new MeadowPersonaSettings(meadowPersonaSettingsDefinition);
@@ -29,7 +28,7 @@ namespace RainMeadow
             return new MeadowPersonaSettingsState(this, tick);
         }
 
-        internal override void ApplyCustomizations(Creature creature, OnlinePhysicalObject oe)
+        public override void ApplyCustomizations(Creature creature, OnlinePhysicalObject oe)
         {
             MeadowCustomization.CreatureCustomization customization = MeadowCustomization.creatureCustomizations.GetOrCreateValue(creature);
             customization.skinData = MeadowProgression.skinData[skin];
@@ -66,7 +65,7 @@ namespace RainMeadow
             {
                 base.ReadTo(onlineEntity);
                 var meadowPersonaSettings = (MeadowPersonaSettings)onlineEntity;
-                if(meadowPersonaSettings == null)
+                if (meadowPersonaSettings == null)
                 {
                     RainMeadow.Debug("meadowPersonaSettings is null");
                     RainMeadow.Debug(onlineEntity.GetType().FullName);

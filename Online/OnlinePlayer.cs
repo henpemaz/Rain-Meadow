@@ -21,7 +21,7 @@ namespace RainMeadow
         public Queue<uint> recentTicks = new(16); // incoming ticks
         public ushort recentTicksToAckBitpack; // outgoing, bitpack of recent ticks relative to tick, used for ack
         public uint latestTickAck; // incoming, the last tick they've ack'd to me
-        public HashSet<uint> recentlyAckdTicks = new (); // incoming, recent ticks they've acked (from bitpack)
+        public HashSet<uint> recentlyAckdTicks = new(); // incoming, recent ticks they've acked (from bitpack)
         public uint oldestTickToConsider; // incoming, from acked ticks the oldest to use for deltas
 
         public bool needsAck;
@@ -29,7 +29,7 @@ namespace RainMeadow
         public bool isMe;
         public bool hasLeft;
 
-        
+
         // For Debug Overlay
         public int ping; // rtt
         public bool eventsWritten;
@@ -61,12 +61,12 @@ namespace RainMeadow
             return recentlyAckedEvents.FirstOrDefault(e => e.eventId == id) ?? abortedEvents.FirstOrDefault(e => e.eventId == id);
         }
 
-        internal void NewTick(uint newTick)
+        public void NewTick(uint newTick)
         {
             tick = newTick;
             if (recentTicks.Count >= 16) recentTicks.Dequeue();
             recentTicks.Enqueue(tick);
-            recentTicksToAckBitpack = recentTicks.Select(t => (int)(uint)(tick - t)).Aggregate((ushort)0, (s, e) => (ushort)(s | (ushort)(1 << e)));
+            recentTicksToAckBitpack = recentTicks.Select(t => (int)(tick - t)).Aggregate((ushort)0, (s, e) => (ushort)(s | (ushort)(1 << e)));
             needsAck = true;
             //RainMeadow.Debug(tick);
             //RainMeadow.Debug(Convert.ToString(recentTicksToAckBitpack, 2));
@@ -129,12 +129,12 @@ namespace RainMeadow
             }
         }
 
-        internal RPCEvent InvokeRPC(Delegate del, params object[] args)
+        public RPCEvent InvokeRPC(Delegate del, params object[] args)
         {
             return (RPCEvent)this.QueueEvent(RPCManager.BuildRPC(del, args));
         }
 
-        internal void Updade()
+        public void Updade()
         {
             // Update snapshot cycle for debug overlay and reset for snapshot frame
             var nextSnapshotIndex = (bytesSnapIndex + 1) % 40;

@@ -1,11 +1,10 @@
+using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using Steamworks;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using UnityEngine;
-using Menu;
 
 namespace RainMeadow
 {
@@ -79,7 +78,7 @@ namespace RainMeadow
             if (File.Exists(path2))
             {
                 string[] array3 = File.ReadAllLines(path2);
-                
+
                 for (int num3 = 0; num3 < array3.Length && num3 < self.depthIllustrations.Count; num3++)
                 {
                     self.depthIllustrations[num3].pos.x = float.Parse(Regex.Split(RWCustom.Custom.ValidateSpacedDelimiter(array3[num3], ","), ", ")[0], NumberStyles.Any, CultureInfo.InvariantCulture);
@@ -100,7 +99,8 @@ namespace RainMeadow
             c.MoveAfterLabels();
             c.Emit(OpCodes.Ldarg_0);
             c.Emit(OpCodes.Ldloca, 0);
-            c.EmitDelegate((SlugcatSelectMenu.SlugcatPage self, ref MenuScene.SceneID sceneID) => {
+            c.EmitDelegate((SlugcatSelectMenu.SlugcatPage self, ref MenuScene.SceneID sceneID) =>
+            {
                 if (self.slugcatNumber == RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer && self is MeadowCharacterSelectPage mcsp)
                 {
                     if (mcsp.character == MeadowProgression.Character.Slugcat)

@@ -137,7 +137,7 @@ namespace RainMeadow
                 popupDialog.Update();
                 return;
             }
-            
+
             base.Update();
             int extraItems = Mathf.Max(lobbies.Length - 4, 0);
             scrollTo = Mathf.Clamp(scrollTo, -0.5f, extraItems + 0.5f);
@@ -223,7 +223,7 @@ namespace RainMeadow
                 RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo);
                 ShowLoadingDialog("Joining lobby...");
             }
-            
+
         }
 
         private void RefreshLobbyList(SimplerButton obj)
@@ -253,7 +253,7 @@ namespace RainMeadow
                 CreateLobbyCards();
             }
         }
-        
+
         private void OnlineManager_OnLobbyJoined(bool ok, string error)
         {
             RainMeadow.Debug(ok);
@@ -283,7 +283,7 @@ namespace RainMeadow
             if (series == "lobbyCards") currentlySelectedCard = to;
             return;
         }
-    
+
         public void ShowLoadingDialog(string text)
         {
             if (popupDialog != null) HideDialog();
@@ -294,7 +294,7 @@ namespace RainMeadow
         public void ShowErrorDialog(string error)
         {
             if (popupDialog != null) HideDialog();
-            
+
             popupDialog = new DialogBoxNotify(this, mainPage, error, "HIDE_DIALOG", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
         }
 

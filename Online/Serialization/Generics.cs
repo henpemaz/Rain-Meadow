@@ -56,7 +56,7 @@ namespace RainMeadow.Generics
     /// <summary>
     /// Dynamic list, order-unaware
     /// </summary>
-    public abstract class AddRemoveUnsortedList<T, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp: AddRemoveUnsortedList<T, Imp>, new()
+    public abstract class AddRemoveUnsortedList<T, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp : AddRemoveUnsortedList<T, Imp>, new()
     {
         public List<T> list;
         public List<T> removed;

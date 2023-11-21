@@ -1,5 +1,4 @@
-﻿using Steamworks;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -32,7 +31,7 @@ namespace RainMeadow
             MatchmakingManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
             RainMeadow.Debug("OnlineManager Created");
         }
-        
+
         private void OnlineManager_OnLobbyJoined(bool ok, string error)
         {
             RainMeadow.Debug(ok);
@@ -65,7 +64,7 @@ namespace RainMeadow
 
         public override void RawUpdate(float dt)
         {
-            myTimeStacker += dt * (float)framesPerSecond;
+            myTimeStacker += dt * framesPerSecond;
             NetIO.Update(); // incoming data
 
             if (myTimeStacker >= 1f)
@@ -213,7 +212,7 @@ namespace RainMeadow
                 else if (state is EntityFeedState entityFeedState && entityFeedState.inResource != null && entityFeedState.inResource.isAvailable)
                 {
                     var ent = entityFeedState.entityState.entityId.FindEntity();
-                    if(ent != null)
+                    if (ent != null)
                     {
                         //RainMeadow.Debug($"Processing {entityFeedState} for {ent}");
                         ent.ReadState(entityFeedState);

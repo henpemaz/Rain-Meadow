@@ -74,7 +74,7 @@ namespace RainMeadow
             public int ticksToResend = RESEND_TICKS;
             public ulong lastAckedPacketIndex;
             public ulong lastUnreliablePacketIndex;
-            internal bool loss;
+            public bool loss;
         }
         public static bool waitingForTermination;
         private static Dictionary<IPEndPoint, RemotePeer> peers;
@@ -237,7 +237,7 @@ namespace RainMeadow
                 peers[remoteEndpoint] = peerData;
             }
 
-            if(simulatedLoss > 0)
+            if (simulatedLoss > 0)
             {
                 if (simulatedLoss > random.NextDouble() || (peerData.loss && simulatedChainLoss > random.NextDouble()))
                 {

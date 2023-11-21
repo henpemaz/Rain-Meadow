@@ -79,12 +79,12 @@ namespace RainMeadow
 
         private static Dictionary<StateType, StateHandler> handlersByEnum = new Dictionary<StateType, StateHandler>();
         private static Dictionary<Type, StateHandler> handlersByType = new Dictionary<Type, StateHandler>();
-        
+
         public static void RegisterState(StateType stateType, Type type)
         {
             if (!handlersByEnum.ContainsKey(stateType)) { handlersByEnum[stateType] = handlersByType[type] = new StateHandler(stateType, type); }
         }
-        internal static void InitializeBuiltinTypes()
+        public static void InitializeBuiltinTypes()
         {
             _ = StateType.Unknown; // runs static init
         }
@@ -103,7 +103,7 @@ namespace RainMeadow
             }
         }
 
-        static Serializer mock = new Serializer(10000);
+        private static Serializer mock = new Serializer(10000);
         public long EstimatedSize(Serializer serializer)
         {
             mock.BeginWrite(OnlineManager.mePlayer);

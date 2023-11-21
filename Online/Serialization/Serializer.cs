@@ -181,12 +181,12 @@ namespace RainMeadow
         private OnlineState ReadState()
         {
             OnlineState s = OnlineState.ParsePolymorph(this);
-            if(s is RootDeltaState ps)
+            if (s is RootDeltaState ps)
             {
                 ps.from = currPlayer;
                 ps.tick = currPlayer.tick;
             }
-            
+
             WrappedSerialize(s);
             return s;
         }
@@ -319,7 +319,7 @@ namespace RainMeadow
             if (IsReading)
             {
                 state = (T)OnlineState.ParsePolymorph(this);
-                if(state is RootDeltaState ps)
+                if (state is RootDeltaState ps)
                 {
                     ps.from = currPlayer;
                     ps.tick = currPlayer.tick;

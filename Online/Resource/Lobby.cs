@@ -39,7 +39,7 @@ namespace RainMeadow
 
         protected override void ActivateImpl()
         {
-            if(gameModeType == OnlineGameMode.OnlineGameModeType.ArenaCompetitive) // Arena
+            if (gameModeType == OnlineGameMode.OnlineGameModeType.ArenaCompetitive) // Arena
             {
                 var nr = new Region("arena", 0, -1, null);
                 var ns = new WorldSession(nr, this);
@@ -110,7 +110,7 @@ namespace RainMeadow
                 players = new(lobby.participants.Keys.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
 
-                if(lobby.gameModeType != OnlineGameMode.OnlineGameModeType.Meadow)
+                if (lobby.gameModeType != OnlineGameMode.OnlineGameModeType.Meadow)
                 {
                     food = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
                     quarterfood = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;

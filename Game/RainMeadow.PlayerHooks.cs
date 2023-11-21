@@ -37,7 +37,8 @@ public partial class RainMeadow
     {
         orig(self, add);
 
-        if (OnlineManager.lobby != null) {
+        if (OnlineManager.lobby != null)
+        {
             if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
             if (!onlineEntity.isMine) return;
 

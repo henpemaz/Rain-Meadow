@@ -1,6 +1,5 @@
 ﻿using Menu;
 using Menu.Remix;
-using Menu.Remix.MixedUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -60,13 +59,15 @@ namespace RainMeadow
 
             this.pages[0].subObjects.Add(this.startButton);
             this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
-            this.prevButton.OnClick += (_) => {
+            this.prevButton.OnClick += (_) =>
+            {
                 ssm.quedSideInput = Math.Max(-3, ssm.quedSideInput - 1);
                 base.PlaySound(SoundID.MENU_Next_Slugcat);
             };
             this.pages[0].subObjects.Add(this.prevButton);
             this.nextButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(985f, 50f), 1);
-            this.nextButton.OnClick += (_) => {
+            this.nextButton.OnClick += (_) =>
+            {
                 ssm.quedSideInput = Math.Min(3, ssm.quedSideInput + 1);
                 base.PlaySound(SoundID.MENU_Next_Slugcat);
             };
@@ -107,7 +108,7 @@ namespace RainMeadow
             if (personaSettings != null) personaSettings.tint = colorpicker.valuecolor;
         }
 
-        float tintAmount;
+        private float tintAmount;
         public override void SliderSetValue(Slider slider, float f)
         {
             tintAmount = f;
@@ -120,7 +121,7 @@ namespace RainMeadow
 
         private void UpdateCharacterUI()
         {
-            if(skinButtons != null)
+            if (skinButtons != null)
             {
                 var oldSkinButtons = skinButtons;
                 for (int i = 0; i < oldSkinButtons.Length; i++)
@@ -130,7 +131,7 @@ namespace RainMeadow
                     mainPage.RemoveSubObject(btn);
                 }
             }
-            
+
             var skins = characterSkins[playableCharacters[ssm.slugcatPageIndex]];
             skinButtons = new EventfulSelectOneButton[skins.Count];
             for (int i = 0; i < skins.Count; i++)
@@ -158,7 +159,7 @@ namespace RainMeadow
             }
             if (ssm.scroll == 0f && ssm.lastScroll == 0f)
             {
-                if(ssm.quedSideInput != 0)
+                if (ssm.quedSideInput != 0)
                 {
                     var sign = (int)Mathf.Sign(ssm.quedSideInput);
                     ssm.slugcatPageIndex += sign;
@@ -209,7 +210,7 @@ namespace RainMeadow
             base.ShutDownProcess();
         }
 
-        int skinIndex;
+        private int skinIndex;
         private MeadowPersonaSettings personaSettings;
         private OpTinyColorPicker colorpicker;
 
@@ -221,7 +222,7 @@ namespace RainMeadow
         public void SetCurrentlySelectedOfSeries(string series, int to) // SelectOneButton.SelectOneButtonOwner
         {
             skinIndex = to;
-            if(personaSettings != null) personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][to];
+            if (personaSettings != null) personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][to];
         }
     }
 }

@@ -1,24 +1,22 @@
-﻿using System;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     public abstract class PersonaSettingsEntity : OnlineEntity
     {
-        internal static int personaID = -100;
+        public static int personaID = -100;
         public EntityId target;
 
         public PersonaSettingsEntity(EntityDefinition entityDefinition) : base(entityDefinition) { }
 
-        internal abstract void ApplyCustomizations(Creature creature, OnlinePhysicalObject oe);
+        public abstract void ApplyCustomizations(Creature creature, OnlinePhysicalObject oe);
 
-        internal void BindEntity(OnlineEntity target)
+        public void BindEntity(OnlineEntity target)
         {
             this.target = target.id;
         }
 
         public abstract class PersonaSettingsState : EntityState
         {
-            [OnlineField(nullable:true)]
+            [OnlineField(nullable: true)]
             private EntityId target;
 
             protected PersonaSettingsState() { }

@@ -1,7 +1,5 @@
-﻿using RainMeadow.Generics;
-using System;
+﻿using System;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace RainMeadow
@@ -56,7 +54,7 @@ namespace RainMeadow
 
     // Todo: a lot can be optmized here. A custom list of these with member-wise delta/omit (see serializer/generics)
     // and then in each entry have a "delta mode" where it encodes a HALF relative to last pos
-    public class ChunkState : Serializer.ICustomSerializable, IEquatable<ChunkState> 
+    public class ChunkState : Serializer.ICustomSerializable, IEquatable<ChunkState>
     {
         public Vector2 pos;
         public Vector2 vel;

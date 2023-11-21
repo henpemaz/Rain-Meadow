@@ -1,6 +1,5 @@
-﻿using UnityEngine;
-using System;
-using RWCustom;
+﻿using RWCustom;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -24,7 +23,7 @@ namespace RainMeadow
         private static void LizardGraphics_ctor(On.LizardGraphics.orig_ctor orig, LizardGraphics self, PhysicalObject ow)
         {
             orig(self, ow);
-            if(creatureCustomizations.TryGetValue(ow as Creature, out var c))
+            if (creatureCustomizations.TryGetValue(ow as Creature, out var c))
             {
                 var col = self.lizard.effectColor;
                 c.ModifyBodyColor(ref col);
@@ -96,7 +95,7 @@ namespace RainMeadow
                             if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("up");
                             toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(0, 1));
                         }
-                        else if(!solidAhead && !room.aimap.TileAccessibleToCreature(toPos.Tile, self.Template) && room.aimap.TileAccessibleToCreature(toPos.Tile + new IntVector2(0, -1), self.Template)) // try down
+                        else if (!solidAhead && !room.aimap.TileAccessibleToCreature(toPos.Tile, self.Template) && room.aimap.TileAccessibleToCreature(toPos.Tile + new IntVector2(0, -1), self.Template)) // try down
                         {
                             if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("down");
                             toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(0, -1));
@@ -125,13 +124,13 @@ namespace RainMeadow
                     }
                     else
                     {
-                        if(!room.GetTile(toPos).Solid) // ahead unblocked
+                        if (!room.GetTile(toPos).Solid) // ahead unblocked
                         {
                             toPos = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(p.inputDir * 2.2f));
                         }
                     }
 
-                    if((self.graphicsModule as LizardGraphics)?.frontLegsGrabbing > 0 && room.aimap.TileAccessibleToCreature(toPos.Tile, self.Template))
+                    if ((self.graphicsModule as LizardGraphics)?.frontLegsGrabbing > 0 && room.aimap.TileAccessibleToCreature(toPos.Tile, self.Template))
                     {
                         var inDirection = Vector2.Dot(self.mainBodyChunk.vel, p.inputDir);
                         if (inDirection < 2)
@@ -203,7 +202,7 @@ namespace RainMeadow
             orig(self, eu);
         }
 
-        class LizardController : CreatureController
+        private class LizardController : CreatureController
         {
             public LizardController(Lizard creature, int playerNumber) : base(creature, playerNumber) { }
 

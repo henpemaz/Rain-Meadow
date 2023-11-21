@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     // 
     public class RealizedDangleFruitState : RealizedPhysicalObjectState
     {
         [OnlineField]
-        bool hasStalk = false;
+        private bool hasStalk = false;
         [OnlineField]
-        byte bites = 3;
+        private byte bites = 3;
         public RealizedDangleFruitState() { }
 
         public RealizedDangleFruitState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)

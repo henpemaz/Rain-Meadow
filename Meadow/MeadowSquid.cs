@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using UnityEngine;
-using RWCustom;
+﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
+using RWCustom;
+using System;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -56,7 +52,7 @@ namespace RainMeadow
             }
         }
 
-        class CicadaController : CreatureController
+        private class CicadaController : CreatureController
         {
             public CicadaController(Cicada creature, int playerNumber) : base(creature, playerNumber) { }
 

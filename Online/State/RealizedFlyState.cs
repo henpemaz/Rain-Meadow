@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Policy;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace RainMeadow
 {
@@ -10,21 +6,21 @@ namespace RainMeadow
     public class RealizedFlyState : RealizedPhysicalObjectState
     {
         [OnlineField]
-        byte bites;
+        private byte bites;
         [OnlineField]
-        byte eaten;
+        private byte eaten;
         [OnlineField]
         private Vector2 dir;
-        [OnlineField(nullable:true)]
+        [OnlineField(nullable: true)]
         private Vector2? burrowOrHangSpot;
         [OnlineField]
-        float flap;
+        private float flap;
         [OnlineField]
-        float flapSpeed;
+        private float flapSpeed;
         [OnlineField]
-        float flapDepth;
+        private float flapDepth;
         [OnlineField]
-        float lastFlapDepth;
+        private float lastFlapDepth;
         public RealizedFlyState() { }
         public RealizedFlyState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
@@ -37,7 +33,8 @@ namespace RainMeadow
             this.flapSpeed = fly.flapSpeed;
             this.flapDepth = fly.flapDepth;
             this.lastFlapDepth = fly.lastFlapDepth;
-            if (fly.burrowOrHangSpot.HasValue) {
+            if (fly.burrowOrHangSpot.HasValue)
+            {
                 this.burrowOrHangSpot = fly.burrowOrHangSpot.Value;
             }
         }
@@ -48,10 +45,11 @@ namespace RainMeadow
 
             var fly = (Fly)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             fly.bites = bites;
-            fly.eaten = eaten; 
+            fly.eaten = eaten;
             fly.dir = dir;
-            if (burrowOrHangSpot != null) {
-            fly.burrowOrHangSpot = this.burrowOrHangSpot;
+            if (burrowOrHangSpot != null)
+            {
+                fly.burrowOrHangSpot = this.burrowOrHangSpot;
             }
         }
     }

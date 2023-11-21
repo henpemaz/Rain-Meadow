@@ -71,7 +71,7 @@ namespace RainMeadow
 
             if (registerResult is GenericResult.Ok) // success
             {
-                
+
             }
             else if (registerResult is GenericResult.Error) // retry
             {

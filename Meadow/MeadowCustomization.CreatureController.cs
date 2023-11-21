@@ -1,8 +1,8 @@
-﻿using System;
-using UnityEngine;
-using RWCustom;
-using System.Runtime.CompilerServices;
+﻿using RWCustom;
+using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -13,7 +13,7 @@ namespace RainMeadow
         {
             public DebugDestinationVisualizer debugDestinationVisualizer;
 
-            internal static void BindCreature(Creature creature)
+            public static void BindCreature(Creature creature)
             {
                 if (creature is Cicada cada)
                 {
@@ -25,7 +25,7 @@ namespace RainMeadow
                     var controller = new LizardController(liz, 0);
                     creatureController.Add(liz.abstractCreature, controller);
                 }
-        }
+            }
 
             public Creature creature;
 
@@ -96,7 +96,7 @@ namespace RainMeadow
                     : input[1].IntVec.ToVector2().magnitude > 0.2 ? input[1].IntVec.ToVector2().normalized
                     : Vector2.zero;
             }
-            internal virtual void Update(bool eu)
+            public virtual void Update(bool eu)
             {
                 // Input
                 this.checkInput();
@@ -405,7 +405,7 @@ namespace RainMeadow
                 return Player.ObjectGrabability.CantGrab;
             }
 
-            internal void BiteEdibleObject(Creature.Grasp edible, bool eu)
+            public void BiteEdibleObject(Creature.Grasp edible, bool eu)
             {
                 try
                 {
@@ -418,7 +418,7 @@ namespace RainMeadow
                 }
             }
 
-            internal bool CanEat()
+            public bool CanEat()
             {
                 return true;
             }
@@ -537,7 +537,7 @@ namespace RainMeadow
 
             public abstract bool GrabImpl(PhysicalObject pickUpCandidate);
 
-            internal virtual void ConsciousUpdate()
+            public virtual void ConsciousUpdate()
             {
                 var room = creature.room;
                 var chunks = creature.bodyChunks;
@@ -552,7 +552,7 @@ namespace RainMeadow
                     {
                         if (room.GetTile(chunks[n].pos + input[0].IntVec.ToVector2() * 40f).Terrain == Room.Tile.TerrainType.ShortcutEntrance)
                         {
-                            chunks[n].vel += (room.MiddleOfTile(chunks[n].pos + new Vector2(20f * (float)input[0].x, 20f * (float)input[0].y)) - chunks[n].pos) / 10f;
+                            chunks[n].vel += (room.MiddleOfTile(chunks[n].pos + new Vector2(20f * input[0].x, 20f * input[0].y)) - chunks[n].pos) / 10f;
                             break;
                         }
                     }
@@ -580,7 +580,7 @@ namespace RainMeadow
                 }
             }
 
-            internal void AIUpdate(ArtificialIntelligence ai)
+            public void AIUpdate(ArtificialIntelligence ai)
             {
                 if (creature.room?.Tiles != null && !ai.pathFinder.DoneMappingAccessibility)
                     ai.pathFinder.accessibilityStepsPerFrame = creature.room.Tiles.Length; // faster, damn it. on entering a new room this needs to complete before it can pathfind

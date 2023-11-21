@@ -2,9 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Text;
 
 namespace RainMeadow
 {
@@ -47,7 +44,7 @@ namespace RainMeadow
                 if (incomingState.Count == 0 || newState.baseline != incomingState.Peek().tick)
                 {
                     RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.baseline}");
-                    if(!newState.from.OutgoingEvents.Any(e=>e is RPCEvent rpc && rpc.IsIdentical(RPCs.DeltaReset, this, null)))
+                    if (!newState.from.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.DeltaReset, this, null)))
                     {
                         newState.from.InvokeRPC(RPCs.DeltaReset, this, null);
                     }
@@ -64,7 +61,7 @@ namespace RainMeadow
             {
                 latestState = newState;
                 newState.ReadTo(this);
-                if(isWaitingForState) { Available(); }
+                if (isWaitingForState) { Available(); }
             }
         }
 
@@ -227,7 +224,7 @@ namespace RainMeadow
                 var result = EmptyDelta();
                 result.resourceId = resourceId;
                 result.owner = other?.owner ?? owner;
-                result.participants = (Generics.AddRemoveUnsortedUshorts)participants.ApplyDelta(other?.participants);
+                result.participants = participants.ApplyDelta(other?.participants);
                 return result;
             }
 
@@ -237,7 +234,7 @@ namespace RainMeadow
                 var delta = EmptyDelta();
                 delta.resourceId = resourceId;
                 delta.owner = owner;
-                delta.participants = (Generics.AddRemoveUnsortedUshorts)participants.Delta(other.participants);
+                delta.participants = participants.Delta(other.participants);
                 return (owner == other.owner && delta.participants == null) ? null : delta;
             }
 

@@ -116,7 +116,7 @@ namespace RainMeadow
                 MeadowProgression.InitializeBuiltinTypes();
                 sw.Stop();
                 RainMeadow.Debug($"MeadowProgression.InitializeBuiltinTypes: {sw.Elapsed}");
-                
+
                 sw = Stopwatch.StartNew();
                 RPCManager.SetupRPCs();
                 sw.Stop();
@@ -132,7 +132,7 @@ namespace RainMeadow
                 GameplayHooks();
                 PlayerHooks();
                 CustomizationHooks();
-                
+
             }
             catch (Exception e)
             {
@@ -143,7 +143,6 @@ namespace RainMeadow
 
         private void TestExpressions()
         {
-           
             Stopwatch sw = Stopwatch.StartNew();
             var objParam = Expression.Parameter(typeof(TestObject), "objParam");
             var goodMethod = Expression.Lambda<Action<TestObject>>(Expression.Call(objParam, typeof(TestObject).GetMethod("GoodMethod")), objParam).Compile();

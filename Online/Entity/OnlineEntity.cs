@@ -37,9 +37,9 @@ namespace RainMeadow
             RainMeadow.Debug($"{this} entered {resource}");
             if (enteredResources.Count != 0 && resource.super != currentlyEnteredResource)
             {
-                if(resource == currentlyEnteredResource) { return; }
+                if (resource == currentlyEnteredResource) { return; }
                 RainMeadow.Error($"Not the right resource {this} - {resource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
-                if(resource.IsSibling(currentlyEnteredResource)) { LeaveResource(currentlyEnteredResource); }
+                if (resource.IsSibling(currentlyEnteredResource)) { LeaveResource(currentlyEnteredResource); }
             }
             enteredResources.Add(resource);
             if (isMine) JoinOrLeavePending();
@@ -201,7 +201,7 @@ namespace RainMeadow
                 //RainMeadow.Debug("received absolute state for tick " + newState.tick);
             }
             stateQueue.Enqueue(newState);
-            if(newState.from == owner)
+            if (newState.from == owner)
             {
                 ReadState(newState, inResource);
             }

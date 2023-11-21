@@ -31,7 +31,7 @@ namespace RainMeadow
             On.Room.PlaceQuantifiedCreaturesInRoom += Room_PlaceQuantifiedCreaturesInRoom;
 
             On.FliesWorldAI.AddFlyToSwarmRoom += FliesWorldAI_AddFlyToSwarmRoom;
-            
+
             // Arena specific
             On.GameSession.AddPlayer += GameSession_AddPlayer;
 
@@ -52,7 +52,7 @@ namespace RainMeadow
                     }
                 }
             }
-            orig(self,critType);
+            orig(self, critType);
         }
 
         private void Room_LoadedCheck(On.Room.orig_Loaded orig, Room self)
@@ -65,7 +65,8 @@ namespace RainMeadow
                 if (!RoomSession.map.TryGetValue(self.abstractRoom, out var rs)) return;
                 if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
 
-                if (!ws.isOwner) {
+                if (!ws.isOwner)
+                {
 
                     if (self.abstractRoom.firstTimeRealized != isFirstTimeRealized)
                     {
@@ -87,7 +88,7 @@ namespace RainMeadow
         private void RainWorldGame_RawUpdate(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
         {
             orig(self, dt);
-            if(OnlineManager.lobby != null)
+            if (OnlineManager.lobby != null)
             {
                 DebugOverlay.Update(self, dt);
             }
@@ -270,7 +271,7 @@ namespace RainMeadow
                     self.saveState.pendingObjects.Clear();
                 }
             }
-            
+
             orig(self);
         }
 

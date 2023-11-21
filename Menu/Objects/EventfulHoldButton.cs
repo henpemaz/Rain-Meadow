@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    internal class EventfulHoldButton : HoldButton
+    public class EventfulHoldButton : HoldButton
     {
         public EventfulHoldButton(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, float fillTime) : base(menu, owner, displayText, "", pos, fillTime)
         {
@@ -14,7 +14,7 @@ namespace RainMeadow
         {
             var was = hasSignalled;
             base.Update();
-            if(!was && hasSignalled)
+            if (!was && hasSignalled)
             {
                 OnClick?.Invoke(this);
             }

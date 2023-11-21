@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     public class RealizedPlayerState : RealizedCreatureState
     {

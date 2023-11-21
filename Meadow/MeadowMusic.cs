@@ -1,8 +1,8 @@
-using UnityEngine;
-using System.IO;
-using System.Collections.Generic;
 using Music;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -16,23 +16,18 @@ namespace RainMeadow
             On.VirtualMicrophone.NewRoom += NewRoomPatch;
         }
 
-        const int waitSecs = 5;
+        private const int waitSecs = 5;
+        private static bool filesChecked = false;
+        private static bool gateOpen = false;
+        private static readonly Dictionary<string, string[]> ambientDict = new();
+        private static readonly Dictionary<string, VibeZone[]> vibeZonesDict = new();
+        private static Dictionary<int, ActiveZone> activeZonesDict = null;
+        private static string[] ambienceSongArray = null;
+        private static float time = 0f;
+        private static bool timerStopped = true;
+        private static ActiveZone? activeZone = null;
 
-        static bool filesChecked = false;
-        static bool gateOpen = false;
-
-        static readonly Dictionary<string, string[]> ambientDict = new();
-        static readonly Dictionary<string, VibeZone[]> vibeZonesDict = new();
-
-        static Dictionary<int, ActiveZone> activeZonesDict = null;
-        static string[] ambienceSongArray = null;
-
-        static float time = 0f;
-        static bool timerStopped = true;
-
-        static ActiveZone? activeZone = null;
-
-        struct VibeZone
+        private struct VibeZone
         {
             public VibeZone(string room, float radius, string songName)
             {
@@ -46,7 +41,7 @@ namespace RainMeadow
             public string songName;
         }
 
-        struct ActiveZone
+        private struct ActiveZone
         {
             public ActiveZone(float radius, string songName)
             {
@@ -58,7 +53,7 @@ namespace RainMeadow
             public string songName;
         }
 
-        static void GameCtorPatch(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
+        private static void GameCtorPatch(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
         {
             orig.Invoke(self, manager);
 
@@ -99,7 +94,7 @@ namespace RainMeadow
             }
         }
 
-        static void RawUpdatePatch(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
+        private static void RawUpdatePatch(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
         {
             orig.Invoke(self, dt);
             if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode) return;
@@ -148,7 +143,7 @@ namespace RainMeadow
             }
         }
 
-        static void GateUpdatePatch(On.RegionGate.orig_Update orig, RegionGate self, bool eu)
+        private static void GateUpdatePatch(On.RegionGate.orig_Update orig, RegionGate self, bool eu)
         {
             orig.Invoke(self, eu);
 
@@ -163,7 +158,7 @@ namespace RainMeadow
             else if (gateOpen && self.mode != RegionGate.Mode.MiddleOpen) gateOpen = false;
         }
 
-        static void NewRoomPatch(On.VirtualMicrophone.orig_NewRoom orig, VirtualMicrophone self, Room room)
+        private static void NewRoomPatch(On.VirtualMicrophone.orig_NewRoom orig, VirtualMicrophone self, Room room)
         {
             orig.Invoke(self, room);
 
@@ -203,20 +198,20 @@ namespace RainMeadow
             }
         }
 
-        static string GetFolderName(string path)
+        private static string GetFolderName(string path)
         {
             string[] arr = path.Split(Path.DirectorySeparatorChar);
             return arr[arr.Length - 1];
         }
 
-        static void AnalyzeRegion(World world)
+        private static void AnalyzeRegion(World world)
         {
             VibeZone[] vzArray;
             activeZonesDict = null;
             if (vibeZonesDict.TryGetValue(world.region.name, out vzArray))
             {
                 activeZonesDict = new Dictionary<int, ActiveZone>();
-                foreach(VibeZone vz in vzArray)
+                foreach (VibeZone vz in vzArray)
                 {
                     foreach (AbstractRoom room in world.abstractRooms)
                     {

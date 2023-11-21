@@ -1,7 +1,6 @@
 ﻿using RWCustom;
 using System.Collections.Generic;
 using UnityEngine;
-using static RainMeadow.Serializer;
 
 namespace RainMeadow
 {
@@ -484,7 +483,8 @@ namespace RainMeadow
             if (IsReading) data = reader.ReadString();
         }
 
-        public void SerializeNullable(ref string data) {
+        public void SerializeNullable(ref string data)
+        {
             if (IsWriting)
             {
                 writer.Write(data != null);
@@ -543,7 +543,7 @@ namespace RainMeadow
             }
         }
 
-        public void SerializeNullable(ref List<string> data) 
+        public void SerializeNullable(ref List<string> data)
         {
             if (IsWriting)
             {

@@ -96,7 +96,7 @@ namespace RainMeadow
                 var suspect = room.updateList[room.updateIndex];
                 if (suspect is Explosion explosion) trueVillain = explosion.sourceObject;
                 else if (suspect is PhysicalObject villainObject) trueVillain = villainObject;
-                if(trueVillain != null)
+                if (trueVillain != null)
                 {
                     if (!OnlinePhysicalObject.map.TryGetValue(trueVillain.abstractPhysicalObject, out var onlineTrueVillain))
                     {

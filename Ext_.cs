@@ -22,8 +22,8 @@ namespace RainMeadow
         public class Ext_SceneID
         {
             // MeadowSlugcat => Slugcat_White
-            internal static MenuScene.SceneID Slugcat_MeadowSquidcicada = new("Slugcat_MeadowSquidcicada", true);
-            internal static MenuScene.SceneID Slugcat_MeadowLizard = new("Slugcat_MeadowLizard", true);
+            public static MenuScene.SceneID Slugcat_MeadowSquidcicada = new("Slugcat_MeadowSquidcicada", true);
+            public static MenuScene.SceneID Slugcat_MeadowLizard = new("Slugcat_MeadowLizard", true);
         }
     }
 }

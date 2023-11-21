@@ -27,7 +27,7 @@ namespace RainMeadow
             public MethodInfo method;
             public Action<RPCEvent, Serializer> serialize;
             public int eventArgIndex;
-            internal bool isStatic;
+            public bool isStatic;
             public string summary;
         }
 
@@ -40,16 +40,15 @@ namespace RainMeadow
             }
         }
 
-        static ushort index;
-        static ParameterExpression rpceventParam = Expression.Parameter(typeof(RPCEvent), "rpcEvent");
-        static ParameterExpression serializerParam = Expression.Parameter(typeof(Serializer), "serializer");
-
-        static ParameterExpression argsVar = Expression.Variable(typeof(object[]), "args");
-        static FieldInfo rpcEventTargetAccessor = typeof(RPCEvent).GetField(nameof(RPCEvent.target));
-        static FieldInfo rpcEventArgsAccessor = typeof(RPCEvent).GetField(nameof(RPCEvent.args));
-        static PropertyInfo serializerIsReadingProp = typeof(Serializer).GetProperty(nameof(Serializer.IsReading));
-        static MethodInfo serializeResourceByRef = typeof(Serializer).GetMethod(nameof(Serializer.SerializeResourceByReference));
-        static MethodInfo serializeEntityById = typeof(Serializer).GetMethod(nameof(Serializer.SerializEntityById));
+        private static ushort index;
+        private static ParameterExpression rpceventParam = Expression.Parameter(typeof(RPCEvent), "rpcEvent");
+        private static ParameterExpression serializerParam = Expression.Parameter(typeof(Serializer), "serializer");
+        private static ParameterExpression argsVar = Expression.Variable(typeof(object[]), "args");
+        private static FieldInfo rpcEventTargetAccessor = typeof(RPCEvent).GetField(nameof(RPCEvent.target));
+        private static FieldInfo rpcEventArgsAccessor = typeof(RPCEvent).GetField(nameof(RPCEvent.args));
+        private static PropertyInfo serializerIsReadingProp = typeof(Serializer).GetProperty(nameof(Serializer.IsReading));
+        private static MethodInfo serializeResourceByRef = typeof(Serializer).GetMethod(nameof(Serializer.SerializeResourceByReference));
+        private static MethodInfo serializeEntityById = typeof(Serializer).GetMethod(nameof(Serializer.SerializEntityById));
 
         public static void RegisterRPCs(Type targetType)
         {
@@ -170,7 +169,7 @@ namespace RainMeadow
             }
         }
 
-        internal static RPCEvent BuildRPC(Delegate del, object[] args)
+        public static RPCEvent BuildRPC(Delegate del, object[] args)
         {
             RainMeadow.Debug($"Sending RPC: {del.Method}");
             return new RPCEvent(del, args);
@@ -232,13 +231,13 @@ namespace RainMeadow
 
         public event Action<GenericResult> OnResolve;
 
-        internal RPCEvent Then(Action<GenericResult> onResolve)
+        public RPCEvent Then(Action<GenericResult> onResolve)
         {
             this.OnResolve += onResolve;
             return this;
         }
 
-        internal RPCEvent NotBefore(TickReference notbefore)
+        public RPCEvent NotBefore(TickReference notbefore)
         {
             this.dependsOnTick = notbefore;
             return this;
@@ -249,7 +248,7 @@ namespace RainMeadow
             this.OnResolve?.Invoke(genericResult);
         }
 
-        internal bool IsIdentical(Delegate del, params object[] args)
+        public bool IsIdentical(Delegate del, params object[] args)
         {
             return handler.method == del.Method && this.target == del.Target && this.args.SequenceEqual(args);
         }

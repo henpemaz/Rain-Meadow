@@ -1,6 +1,4 @@
-﻿using Mono.Cecil;
-using System;
-using System.Text;
+﻿using System;
 
 namespace RainMeadow
 {
@@ -45,8 +43,8 @@ namespace RainMeadow
                 RainMeadow.Error($"failed to move from {wasPos} to {pos}: " + e);
                 //throw;
             }
-            
-            if(!pos.NodeDefined && !wasPos.CompareDisregardingNode(pos))onlineObject.apo.pos = pos; // pos isn't updated if compareDisregardingTile, but please, do
+
+            if (!pos.NodeDefined && !wasPos.CompareDisregardingNode(pos)) onlineObject.apo.pos = pos; // pos isn't updated if compareDisregardingTile, but please, do
             onlineObject.beingMoved = false;
             onlineObject.realized = this.realized;
             if (onlineObject.apo.realizedObject != null)

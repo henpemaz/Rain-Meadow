@@ -1,5 +1,4 @@
 ﻿using RainMeadow.Generics;
-using UnityEngine;
 
 namespace RainMeadow
 {
@@ -7,7 +6,7 @@ namespace RainMeadow
     {
         // if sent "standalone" tracks Baseline
         // if sent inside another delta, doesn't
-        [OnlineField(always:true)]
+        [OnlineField(always: true)]
         public OnlineEntity.EntityId entityId;
         public OnlineEntity.EntityId ID => entityId;
 

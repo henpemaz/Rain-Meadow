@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace RainMeadow
 {
@@ -178,7 +177,7 @@ namespace RainMeadow
             var oldOwner = owner;
             owner = newOwner;
 
-            if(owner != null) NewParticipant(owner);
+            if (owner != null) NewParticipant(owner);
 
             if (isAvailable && isActive && isOwner) // transfered / claimed by me while already active
             {
@@ -191,7 +190,7 @@ namespace RainMeadow
                 ClaimAbandonedEntitiesAndResources();
             }
 
-            if(isWaitingForState) // I am the authority for the state of this
+            if (isWaitingForState) // I am the authority for the state of this
             {
                 Available();
             }
@@ -252,7 +251,7 @@ namespace RainMeadow
         {
             if (participants.ContainsKey(newParticipant)) return;
             RainMeadow.Debug($"{this}-{newParticipant}");
-            if(super != this && super.isActive && super.isOwner)
+            if (super != this && super.isActive && super.isOwner)
             {
                 super.NewParticipant(newParticipant);
             }
@@ -301,7 +300,7 @@ namespace RainMeadow
                     {
                         if (!ent.primaryResource.participants.ContainsKey(ent.owner) || ent.owner.hasLeft) // owner really just left if behind
                         {
-                            if(ent.primaryResource == this) // we're in control
+                            if (ent.primaryResource == this) // we're in control
                             {
                                 EntityTransfered(ent, OnlineManager.mePlayer);
                             }
@@ -321,7 +320,7 @@ namespace RainMeadow
                     }
                 }
             }
-            foreach(var resource in subresources)
+            foreach (var resource in subresources)
             {
                 if (resource.owner != null && ((resource.owner.hasLeft) || !participants.ContainsKey(resource.owner))) // abandoned
                 {

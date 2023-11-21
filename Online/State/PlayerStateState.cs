@@ -1,7 +1,4 @@
-﻿using RainMeadow;
-using static RainMeadow.OnlineState;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     public class PlayerStateState : CreatureStateState
     {
@@ -9,7 +6,7 @@ namespace RainMeadow
         public int foodInStomach;
         [OnlineField]
         public int quarterFoodPoints;
-        [OnlineField(nullable:true)]
+        [OnlineField(nullable: true)]
         public string swallowedItem;
 
         public PlayerStateState() { }

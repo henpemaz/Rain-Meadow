@@ -1,11 +1,7 @@
-﻿using Newtonsoft.Json.Serialization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
 {
@@ -15,7 +11,7 @@ namespace RainMeadow
     public static class MeadowProgression
     {
 
-        internal static void InitializeBuiltinTypes()
+        public static void InitializeBuiltinTypes()
         {
             // todo load
             try
@@ -42,7 +38,7 @@ namespace RainMeadow
         {
             public Character(string value, bool register = false, CharacterData characterDataEntry = null) : base(value, register)
             {
-                if(register)
+                if (register)
                 {
                     characterData[this] = characterDataEntry;
                 }
@@ -77,7 +73,8 @@ namespace RainMeadow
                 }
             }
 
-            public static Skin Slugcat_Survivor = new("Slugcat_Survivor", true, Character.Slugcat, new() {
+            public static Skin Slugcat_Survivor = new("Slugcat_Survivor", true, Character.Slugcat, new()
+            {
                 displayName = "Survivor",
                 creatureType = CreatureTemplate.Type.Slugcat,
                 statsName = SlugcatStats.Name.White,
@@ -99,7 +96,7 @@ namespace RainMeadow
                 displayName = "Fluffy",
                 creatureType = CreatureTemplate.Type.Slugcat,
                 statsName = SlugcatStats.Name.White,
-                baseColor = new Color(111, 216, 255, 255)/255f
+                baseColor = new Color(111, 216, 255, 255) / 255f
             });
 
             public static Skin Cicada_White = new("Cicada_White", true, Character.Cicada, new()

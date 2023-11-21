@@ -33,7 +33,7 @@ namespace RainMeadow
             BuildLayout();
         }
 
-        void UninitializeInheritedScene()
+        private void UninitializeInheritedScene()
         {
             mainPage.subObjects.Remove(this.backObject);
 
@@ -44,9 +44,9 @@ namespace RainMeadow
             };
         }
 
-        MultiplayerMenu mm;
+        private MultiplayerMenu mm;
 
-        void FakeInitializeMultiplayerMenu()
+        private void FakeInitializeMultiplayerMenu()
         {
             mm = (MultiplayerMenu)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(MultiplayerMenu));
             mm.ID = ProcessManager.ProcessID.MultiplayerMenu;
@@ -70,7 +70,7 @@ namespace RainMeadow
             mm.init = true;
         }
 
-        void UnlockAndLoadLevels()
+        private void UnlockAndLoadLevels()
         {
             string[] array = AssetManager.ListDirectory("Levels");
 
@@ -98,7 +98,7 @@ namespace RainMeadow
         }
 
         #region Menu Builders
-        SimplerButton CreateButton(string text, Vector2 pos, Vector2 size, bool waitLobbyAvailability, Action<SimplerButton>? clicked = null, Page? page = null)
+        private SimplerButton CreateButton(string text, Vector2 pos, Vector2 size, bool waitLobbyAvailability, Action<SimplerButton>? clicked = null, Page? page = null)
         {
             page = page ?? pages[0];
 
@@ -119,8 +119,9 @@ namespace RainMeadow
 
         #endregion
 
-        int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x; // been using 1360 as ref
-        void BuildLayout()
+        private int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x; // been using 1360 as ref
+
+        private void BuildLayout()
         {
             scene.AddIllustration(new MenuIllustration(mm, scene, "", "CompetitiveShadow", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
             scene.AddIllustration(new MenuIllustration(mm, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
@@ -135,14 +136,14 @@ namespace RainMeadow
             AddAbovePlayText();
         }
 
-        OpSliderTick playerCountSlider;
-        UIelementWrapper playerCountWrapper;
+        private OpSliderTick playerCountSlider;
+        private UIelementWrapper playerCountWrapper;
 
         public SymbolButton infoButton;
+        private SimpleButton[] playerClassButtons;
+        private PlayerJoinButton[] playerJoinButtons;
 
-        SimpleButton[] playerClassButtons;
-        PlayerJoinButton[] playerJoinButtons;
-        void BuildPlayerSlots()
+        private void BuildPlayerSlots()
         {
             float num = 120f;
             float num2 = 0f;
@@ -197,7 +198,7 @@ namespace RainMeadow
             playerJoinButtons[0].Joined = true; // host should be part of game
         }
 
-        void AddAbovePlayText()
+        private void AddAbovePlayText()
         {
             mm.abovePlayButtonLabel = new MenuLabel(mm, pages[0], "", mm.playButton.pos + new Vector2((0f - mm.playButton.size.x) / 2f + 0.01f, 50.01f), new Vector2(mm.playButton.size.x, 20f), bigText: false);
             mm.abovePlayButtonLabel.label.alignment = FLabelAlignment.Left;
@@ -210,7 +211,7 @@ namespace RainMeadow
             }
         }
 
-        List<SimplerButton> enableOnLobbyAvailable = new();
+        private List<SimplerButton> enableOnLobbyAvailable = new();
         private void OnLobbyAvailable()
         {
             foreach (var b in enableOnLobbyAvailable)
@@ -279,15 +280,15 @@ namespace RainMeadow
             mm.Update();
             //base.Update();
 
-			if (mm.GetGameTypeSetup.playList.Count * mm.GetGameTypeSetup.levelRepeats > 0)
-			{
-				mm.playButton.buttonBehav.greyedOut = false;
-			}
-			else
-			{
-				mm.playButton.buttonBehav.greyedOut = OnlineManager.lobby.isAvailable;
-			}
-		}
+            if (mm.GetGameTypeSetup.playList.Count * mm.GetGameTypeSetup.levelRepeats > 0)
+            {
+                mm.playButton.buttonBehav.greyedOut = false;
+            }
+            else
+            {
+                mm.playButton.buttonBehav.greyedOut = OnlineManager.lobby.isAvailable;
+            }
+        }
 
 
         public override void Singal(MenuObject sender, string message)
@@ -350,7 +351,7 @@ namespace RainMeadow
             return base.UpdateInfoText();
         }
 
-        void MultiplayerMenuUpdate()
+        private void MultiplayerMenuUpdate()
         {
             if (!mm.requestingControllerConnections && !mm.exiting)
             {

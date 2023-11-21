@@ -1,8 +1,8 @@
-﻿using Steamworks;
+﻿using RWCustom;
+using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RWCustom;
 
 namespace RainMeadow
 {
@@ -341,7 +341,7 @@ namespace RainMeadow
                     RainMeadow.Debug("trying to rejoin same lobby, ignoring, id: " + param.m_steamIDLobby);
                     return;
                 }
-                
+
                 RainMeadow.Debug("trying to join lobby from steam with id: " + param.m_steamIDLobby);
 
                 if (lobbyID != default)
