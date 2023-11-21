@@ -34,6 +34,10 @@ namespace RainMeadow
             
             // Arena specific
             On.GameSession.AddPlayer += GameSession_AddPlayer;
+
+
+            //Rain Meadow Music
+            MeadowMusic.EnableMusic();
         }
 
         private void Room_PlaceQuantifiedCreaturesInRoom(On.Room.orig_PlaceQuantifiedCreaturesInRoom orig, Room self, CreatureTemplate.Type critType)
