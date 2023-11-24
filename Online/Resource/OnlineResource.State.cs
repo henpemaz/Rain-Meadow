@@ -129,9 +129,9 @@ namespace RainMeadow
                     {
                         if (resource.entities.TryGetValue(def.entityId, out var ent)) // hmm
                         {
-                            if (def.owner != ent.entity.owner)
+                            if (def.owner != ent.entity.owner.inLobbyId)
                             {
-                                ent.entity.NewOwner(def.owner);
+                                ent.entity.NewOwner(OnlineManager.lobby.PlayerFromId(def.owner));
                             }
                         }
                         else

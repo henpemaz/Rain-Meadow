@@ -8,7 +8,7 @@ namespace RainMeadow
         [OnlineField(always: true)]
         public OnlineEntity.EntityId entityId;
         [OnlineField]
-        public OnlinePlayer owner;
+        public ushort owner;
         [OnlineField]
         public bool isTransferable;
 
@@ -17,7 +17,7 @@ namespace RainMeadow
         protected EntityDefinition(OnlineEntity.EntityId entityId, OnlinePlayer owner, bool isTransferable)
         {
             this.entityId = entityId;
-            this.owner = owner;
+            this.owner = owner.inLobbyId;
             this.isTransferable = isTransferable;
         }
 

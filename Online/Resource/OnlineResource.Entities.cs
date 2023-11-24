@@ -83,7 +83,7 @@ namespace RainMeadow
         public void OnNewRemoteEntity(EntityDefinition entityDefinition, EntityState initialState)
         {
             RainMeadow.Debug(this);
-            OnlineEntity oe = entityDefinition.owner.isMe ? entityDefinition.entityId.FindEntity() : entityDefinition.MakeEntity(this);
+            OnlineEntity oe = OnlineManager.lobby.PlayerFromId(entityDefinition.owner).isMe ? entityDefinition.entityId.FindEntity() : entityDefinition.MakeEntity(this);
             EntityRegisteredInResource(oe, entityDefinition, initialState);
         }
 

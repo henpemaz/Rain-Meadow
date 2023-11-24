@@ -12,8 +12,6 @@
             RainMeadow.Debug("Added persona settings!");
             var def = new MeadowPersonaSettingsDefinition(new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, PersonaSettingsEntity.personaID), OnlineManager.mePlayer, false);
             personaSettings = new MeadowPersonaSettings(def);
-            MeadowPersonaSettings.map.Add(OnlineManager.mePlayer, personaSettings as MeadowPersonaSettings);
-            OnlineManager.recentEntities.Add(personaSettings.id, personaSettings);
             personaSettings.EnterResource(lobby);
         }
 

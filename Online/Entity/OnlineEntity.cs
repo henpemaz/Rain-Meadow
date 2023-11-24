@@ -6,7 +6,7 @@ namespace RainMeadow
 {
     public abstract partial class OnlineEntity
     {
-        public OnlinePlayer owner => definition.owner; // can be updated
+        public OnlinePlayer owner;
         public EntityDefinition definition;
         public readonly EntityId id;
         public readonly bool isTransferable;
@@ -26,6 +26,7 @@ namespace RainMeadow
         protected OnlineEntity(EntityDefinition entityDefinition)
         {
             this.definition = entityDefinition;
+            this.owner = OnlineManager.lobby.PlayerFromId(entityDefinition.owner);
             this.id = entityDefinition.entityId;
             this.isTransferable = entityDefinition.isTransferable;
 
@@ -126,7 +127,8 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             var wasOwner = owner;
             if (wasOwner == newOwner) return;
-            definition.owner = newOwner;
+            owner = newOwner;
+            definition.owner = newOwner.inLobbyId;
             RainMeadow.Debug(this);
 
             if (wasOwner.isMe)
