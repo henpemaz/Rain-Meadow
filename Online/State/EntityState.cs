@@ -9,14 +9,20 @@ namespace RainMeadow
         // if sent inside another delta, doesn't
         [OnlineField(always:true)]
         public OnlineEntity.EntityId entityId;
+        [OnlineField(nullable:true)]
+        public GamemodeDataState gamemodeDataState;
         public OnlineEntity.EntityId ID => entityId;
 
         protected EntityState() : base() { }
         protected EntityState(OnlineEntity onlineEntity, uint ts) : base(ts)
         {
             this.entityId = onlineEntity.id;
+            this.gamemodeDataState = onlineEntity.gameModeData.MakeState();
         }
 
-        public abstract void ReadTo(OnlineEntity onlineEntity);
+        public virtual void ReadTo(OnlineEntity onlineEntity)
+        {
+            gamemodeDataState?.ReadTo(onlineEntity.gameModeData);
+        }
     }
 }

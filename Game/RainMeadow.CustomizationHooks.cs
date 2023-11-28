@@ -12,9 +12,6 @@ namespace RainMeadow
         {
             IL.PlayerGraphics.ApplyPalette += PlayerGraphics_ApplyPalette;
             IL.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
-
-            MeadowCustomization.EnableCicada();
-            MeadowCustomization.EnableLizard();
         }
 
         // eyecolor is overwritten every frame for some stupid reason

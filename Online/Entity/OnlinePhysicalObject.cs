@@ -26,12 +26,12 @@ namespace RainMeadow
         {
             if (apo is AbstractCreature ac)
             {
-                var def = new OnlineCreatureDefinition(apo.ID.RandomSeed, apo.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, apo.ID.number), OnlineManager.mePlayer, !RainMeadow.sSpawningPersonas);
+                var def = new OnlineCreatureDefinition(apo.ID.RandomSeed, apo.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, apo.ID.number), OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 return new OnlineCreature(def, ac);
             }
             else
             {
-                var def = new OnlinePhysicalObjectDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, apo.ID.number), OnlineManager.mePlayer, !RainMeadow.sSpawningPersonas);
+                var def = new OnlinePhysicalObjectDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, apo.ID.number), OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 return new OnlinePhysicalObject(def, apo);
             }
         }

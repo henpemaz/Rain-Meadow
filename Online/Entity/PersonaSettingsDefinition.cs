@@ -13,7 +13,7 @@
 
         public override OnlineEntity MakeEntity(OnlineResource inResource)
         {
-            return MeadowPersonaSettings.FromDefinition(this, inResource);
+            return MeadowAvatarSettings.FromDefinition(this, inResource);
         }
     }
 }
