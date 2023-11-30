@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
+using static RainMeadow.MeadowCustomization;
 
 namespace RainMeadow
 {
@@ -102,18 +104,20 @@ namespace RainMeadow
             }
         }
 
-        OnlineCreature avatar;
-        EmoteHolder mainHolder;
+        MeadowGameMode gameMode;
+        EmoteDisplayer mainHolder => EmoteDisplayer.map.GetValue(gameMode.avatar.realizedCreature, null);
 
-        public EmoteHandler(OnlineCreature avatar, EmoteHolder mainHolder)
+        public EmoteHandler(MeadowGameMode gameMode)
         {
-            this.avatar = avatar;
-            this.mainHolder = mainHolder;
+            this.gameMode = gameMode;
+
+            todo wire me in
         }
 
         private void EmotePressed(EmoteType emoteType)
         {
             RainMeadow.Debug(emoteType);
+            if (gameMode?.avatar == null) return;
             if(mainHolder.AddEmoteLocal(emoteType))
             {
                 // todo play local input sound
@@ -121,7 +125,7 @@ namespace RainMeadow
         }
     }
 
-    public class EmoteHolder
+    public class EmoteDisplayer
     {
         public Creature owner;
         public MeadowCustomization.CreatureCustomization customization;
@@ -133,12 +137,25 @@ namespace RainMeadow
         public int startInGameClock;
         public float timeToLive;
 
-        public EmoteHolder(Creature owner, MeadowCustomization.CreatureCustomization customization)
+        public EmoteDisplayer(Creature owner, MeadowCreatureData creatureData, MeadowCustomization.CreatureCustomization customization)
         {
             this.owner = owner;
             this.customization = customization ?? throw new System.ArgumentNullException(nameof(customization));
         }
 
+        public void OnUpdate()
+        {
+            this.pos = owner.firstChunk.pos;
+
+            var game = owner.abstractPhysicalObject.world.game;
+            time = (game.clock - startInGameClock) / (float)game.framesPerSecond;
+            alpha = Mathf.Min(
+                Mathf.InverseLerp(0, 0.6f, time), //fade in
+                Mathf.InverseLerp(timeToLive, timeToLive - 1f, time) // fade out
+                );
+        }
+
+        // maybe move this logic to the data thing?
         internal bool AddEmoteLocal(EmoteType emoteType)
         {
             RainMeadow.Debug(emoteType);
@@ -160,7 +177,7 @@ namespace RainMeadow
             emotes.Add(emoteType);
 
             // todo display
-            owner.abstractPhysicalObject.Room.realizedRoom.AddObject(new EmoteFrame(emoteType, emotes.Count -1, this));
+            owner.abstractPhysicalObject.Room.realizedRoom.AddObject(new EmoteTile(emoteType, emotes.Count -1, this));
 
             RainMeadow.Debug("Added");
             return true;
@@ -170,9 +187,13 @@ namespace RainMeadow
         static Vector2 halfHeight = new Vector2(0, 30);
         static Vector2 width = new Vector2(60, 0);
 
+        public Vector2 pos;
+        public float time;
+        public float alpha;
+        public static ConditionalWeakTable<Creature, EmoteDisplayer> map = new();
+
         internal Vector2 GetPos(int index)
         {
-            var pos = owner.firstChunk.pos;
             switch (emotes.Count)
             {
                 case 0:
@@ -189,22 +210,26 @@ namespace RainMeadow
         }
     }
 
-    internal class EmoteFrame : UpdatableAndDeletable, IDrawable
+    internal class EmoteTile : UpdatableAndDeletable, IDrawable
     {
         private EmoteType emote;
+        private EmoteDisplayer holder;
         private int index;
-        private EmoteHolder holder;
 
         public Vector2 pos;
         private float lastAlpha;
         private float alpha;
         public Vector2 lastPos;
 
-        public EmoteFrame(EmoteType emote, int index, EmoteHolder emoteHolder)
+        public EmoteTile(EmoteType emote, int index, EmoteDisplayer emoteHolder)
         {
             this.emote = emote;
             this.index = index;
             this.holder = emoteHolder;
+            this.pos = holder.GetPos(index);
+            this.alpha = holder.alpha;
+            this.lastPos = this.pos;
+            lastAlpha = alpha;
         }
 
         public override void Update(bool eu)
@@ -212,11 +237,7 @@ namespace RainMeadow
             this.lastPos = this.pos;
             this.pos = holder.GetPos(index);
             lastAlpha = alpha;
-            var time = (room.game.clock - holder.startInGameClock) / (float)room.game.framesPerSecond;
-            alpha = Mathf.Min(
-                Mathf.InverseLerp(0, 0.6f, time), //fade in
-                Mathf.InverseLerp(holder.timeToLive, holder.timeToLive - 1f, time) // fade out
-                );
+            alpha = holder.alpha;
             if(holder.owner.room != this.room) { Destroy(); }
             base.Update(eu);
         }

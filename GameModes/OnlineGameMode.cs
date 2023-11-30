@@ -115,9 +115,17 @@ namespace RainMeadow
             return RainMeadow.Ext_ProcessID.LobbyMenu;
         }
 
-        public virtual AbstractCreature SpawnPersona(RainWorldGame self, WorldCoordinate location)
+        public virtual AbstractCreature SpawnAvatar(RainWorldGame self, WorldCoordinate location)
         {
             return null;
+        }
+
+        internal virtual void NewEntity(OnlineEntity oe)
+        {
+            if(RainMeadow.sSpawningAvatar && avatar == null)
+            {
+                avatar = (OnlineCreature)oe;
+            }
         }
     }
 }

@@ -10,7 +10,7 @@
         private void Lobby_OnLobbyAvailable()
         {
             RainMeadow.Debug("Adding persona settings!");
-            var def = new MeadowPersonaSettingsDefinition(new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, AvatarSettingsEntity.personaID), OnlineManager.mePlayer, false);
+            var def = new MeadowPersonaSettingsDefinition(new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.unique, 0), OnlineManager.mePlayer, false);
             avatarSettings = new MeadowAvatarSettings(def);
             avatarSettings.EnterResource(lobby);
         }
@@ -20,7 +20,16 @@
             return RainMeadow.Ext_ProcessID.MeadowMenu;
         }
 
-        public override AbstractCreature SpawnPersona(RainWorldGame game, WorldCoordinate location)
+        internal override void NewEntity(OnlineEntity oe)
+        {
+            base.NewEntity(oe);
+            if(oe is OnlineCreature oc)
+            {
+                oe.gameModeData = new MeadowCreatureData(oc);
+            }
+        }
+
+        public override AbstractCreature SpawnAvatar(RainWorldGame game, WorldCoordinate location)
         {
             var settings = (avatarSettings as MeadowAvatarSettings);
             var skinData = MeadowProgression.skinData[settings.skin];

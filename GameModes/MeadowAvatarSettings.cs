@@ -6,9 +6,9 @@ namespace RainMeadow
 {
     public class MeadowAvatarSettings : AvatarSettingsEntity
     {
-        internal float tintAmount;
         internal MeadowProgression.Skin skin;
         internal Color tint;
+        internal float tintAmount;
 
         public static ConditionalWeakTable<OnlinePlayer, MeadowAvatarSettings> map = new();
 
@@ -26,16 +26,12 @@ namespace RainMeadow
 
         protected override EntityState MakeState(uint tick, OnlineResource inResource)
         {
-            return new MeadowAvatarSettingsState(this, tick);
+            return new MeadowAvatarSettingsState(this, inResource, tick);
         }
 
-        internal override void ApplyCustomizations(object subject, OnlineEntity oe)
+        internal MeadowCustomization.CreatureCustomization MakeCustomization()
         {
-            Creature creature = (Creature)subject;
-            MeadowCustomization.CreatureCustomization customization = MeadowCustomization.creatureCustomizations.GetOrCreateValue(creature);
-            customization.skinData = MeadowProgression.skinData[skin];
-            customization.tint = new(tint.r, tint.g, tint.b);
-            customization.tintAmount = tintAmount * MeadowProgression.skinData[skin].tintFactor;
+            return new MeadowCustomization.CreatureCustomization(skin, tint, tintAmount);
         }
 
         public class MeadowAvatarSettingsState : AvatarSettingsState
@@ -53,7 +49,7 @@ namespace RainMeadow
 
             public MeadowAvatarSettingsState() : base() { }
 
-            public MeadowAvatarSettingsState(OnlineEntity onlineEntity, uint ts) : base(onlineEntity, ts)
+            public MeadowAvatarSettingsState(OnlineEntity onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
             {
                 var meadowAvatarSettings = (MeadowAvatarSettings)onlineEntity;
                 skin = (short)(meadowAvatarSettings.skin?.Index ?? -1);

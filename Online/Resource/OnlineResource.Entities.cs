@@ -35,7 +35,7 @@ namespace RainMeadow
             if (!isActive) throw new InvalidProgrammerException("not active");
             if (oe.primaryResource != null) { throw new InvalidOperationException("already in a resource"); }
 
-            if (isOwner) // enter right away
+            if (isOwner) // I control this, enter right away
             {
                 EntityRegisteredInResource(oe, oe.definition, null);
             }
@@ -92,6 +92,9 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             registeredEntities.Add(newEntityEvent.entityId, newEntityEvent);
+
+            OnlineManager.lobby.gameMode.NewEntity(oe);
+
             EntityJoinedResource(oe, initialState);
         }
 

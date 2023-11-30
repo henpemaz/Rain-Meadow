@@ -26,12 +26,12 @@ namespace RainMeadow
         {
             if (apo is AbstractCreature ac)
             {
-                var def = new OnlineCreatureDefinition(apo.ID.RandomSeed, apo.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, apo.ID.number), OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+                var def = new OnlineCreatureDefinition(apo.ID.RandomSeed, apo.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number), OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 return new OnlineCreature(def, ac);
             }
             else
             {
-                var def = new OnlinePhysicalObjectDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, apo.ID.number), OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+                var def = new OnlinePhysicalObjectDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number), OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 return new OnlinePhysicalObject(def, apo);
             }
         }
@@ -73,18 +73,9 @@ namespace RainMeadow
             beingMoved = false;
         }
 
-        protected override EntityState MakeState(uint tick, OnlineResource resource)
+        protected override EntityState MakeState(uint tick, OnlineResource inResource)
         {
-            if (resource is WorldSession ws && !OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) throw new InvalidOperationException("asked for world state, not synched");
-            if (resource is RoomSession rs && !OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) throw new InvalidOperationException("asked for room state, not synched");
-            var realizedState = resource is RoomSession;
-            if (realizedState && isMine && apo.realizedObject != null && !realized) { RainMeadow.Error($"have realized object, but not entity not marked as realized??: {this} in resource {resource}"); }
-            if (realizedState && isMine && !realized)
-            {
-                //RainMeadow.Error($"asked for realized state, not realized: {this} in resource {resource}");
-                realizedState = false;
-            }
-            return new PhysicalObjectEntityState(this, tick, realizedState);
+            return new PhysicalObjectEntityState(this, inResource, tick);
         }
 
         public override void OnJoinedResource(OnlineResource inResource)

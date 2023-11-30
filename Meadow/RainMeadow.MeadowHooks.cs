@@ -9,8 +9,6 @@ namespace RainMeadow
         {
             MeadowCustomization.EnableCicada();
             MeadowCustomization.EnableLizard();
-
-            EmoteHandler.Apply();
         }
     }
 }

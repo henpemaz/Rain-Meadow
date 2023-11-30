@@ -7,6 +7,7 @@ namespace RainMeadow
     public class OnlineCreature : OnlinePhysicalObject
     {
         public bool enteringShortCut;
+        internal Creature realizedCreature => apo.realizedObject as Creature;
 
         public OnlineCreature(OnlineCreatureDefinition def, AbstractCreature ac) : base(def, ac)
         {
@@ -26,19 +27,9 @@ namespace RainMeadow
             return new OnlineCreature(newCreatureEvent, ac);
         }
 
-        protected override EntityState MakeState(uint tick, OnlineResource resource)
+        protected override EntityState MakeState(uint tick, OnlineResource inResource)
         {
-            if (resource is WorldSession ws && !OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) throw new InvalidOperationException("asked for world state, not synched");
-            if (resource is RoomSession rs && !OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) throw new InvalidOperationException("asked for room state, not synched");
-            var realizedState = resource is RoomSession;
-            if (realizedState) { if (apo.realizedObject != null && !realized) RainMeadow.Error($"have realized object, but not entity not marked as realized??: {this} in resource {resource}"); }
-            if (realizedState && !realized)
-            {
-                //throw new InvalidOperationException("asked for realized state, not realized");
-                RainMeadow.Error($"asked for realized state, not realized: {this} in resource {resource}");
-                realizedState = false;
-            }
-            return new AbstractCreatureState(this, tick, realizedState);
+            return new AbstractCreatureState(this, inResource, tick);
         }
 
         public void RPCCreatureViolence(OnlinePhysicalObject onlineVillain, int hitchunkIndex, PhysicalObject.Appendage.Pos hitappendage, Vector2? directionandmomentum, Creature.DamageType type, float damage, float stunbonus)

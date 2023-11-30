@@ -11,14 +11,17 @@ namespace RainMeadow
     {
         public class CreatureCustomization
         {
+            public MeadowProgression.Skin skin;
             public MeadowProgression.SkinData skinData;
             public Color tint;
             public float tintAmount;
 
-            internal Color EmoteTileColor()
+            public CreatureCustomization(MeadowProgression.Skin skin, Color tint, float tintAmount)
             {
-                var color = skinData.emoteTileColor;
-                return Color.Lerp(color, tint, tintAmount);
+                this.skin = skin;
+                this.skinData = MeadowProgression.skinData[skin];
+                this.tint = new(tint.r, tint.g, tint.b);
+                this.tintAmount = tintAmount * skinData.tintFactor;
             }
 
             internal string GetEmote(EmoteType emote)
@@ -28,6 +31,12 @@ namespace RainMeadow
                     return (skinData.emotePrefix ?? MeadowProgression.characterData[skinData.character].emotePrefix) + emote.value;
                 }
                 return emote.value;
+            }
+
+            internal Color EmoteTileColor()
+            {
+                var color = skinData.emoteTileColor;
+                return Color.Lerp(color, tint, tintAmount);
             }
 
             internal void ModifyBodyColor(ref Color originalBodyColor)
@@ -47,10 +56,22 @@ namespace RainMeadow
 
         internal static void Customize(Creature creature, OnlineCreature oc)
         {
-            // loose definition of "this is someone's avatar"
-            if (OnlineManager.lobby.entities.Values.Select(em => em.entity).FirstOrDefault(e => e is AvatarSettingsEntity settings && settings.target == oc.id) is AvatarSettingsEntity settings)
+            if (MeadowAvatarSettings.map.TryGetValue(oc.owner, out MeadowAvatarSettings mas))
             {
-                settings.ApplyCustomizations(creature, oc);
+                var mcc = mas.MakeCustomization();
+                MeadowCustomization.creatureCustomizations.Add(creature, mcc); // for easier finding
+                if (oc.gameModeData is MeadowCreatureData mcd)
+                {
+                    EmoteDisplayer.map.Add(creature, new EmoteDisplayer(creature, mcd, mcc));
+                }
+                else
+                {
+                    RainMeadow.Error("missing mcd?? " + oc);
+                }
+            }
+            else
+            {
+                RainMeadow.Error("missing mas?? " + oc);
             }
 
             if(oc.isMine && !oc.isTransferable) // persona, wish there was a better flag

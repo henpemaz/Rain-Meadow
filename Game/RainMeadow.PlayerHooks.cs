@@ -67,22 +67,9 @@ public partial class RainMeadow
         if (OnlineManager.lobby != null)
         {
             sSpawningAvatar = true;
-            AbstractCreature ac = OnlineManager.lobby.gameMode.SpawnPersona(self, location);
+            AbstractCreature ac = OnlineManager.lobby.gameMode.SpawnAvatar(self, location);
             if (ac == null) ac = orig(self, player1, player2, player3, player4, location);
             sSpawningAvatar = false;
-
-            if (OnlinePhysicalObject.map.TryGetValue(ac, out var onlineAvatarApo) && onlineAvatarApo is OnlineCreature onlineAvatar)
-            {
-                OnlineManager.lobby.gameMode.avatar = onlineAvatar;
-                if (OnlineManager.lobby.gameMode.avatarSettings != null)
-                {
-                    OnlineManager.lobby.gameMode.avatarSettings.BindEntity(onlineAvatar);
-                }
-            }
-            else
-            {
-                RainMeadow.Error("OnlineEntity of avatar not found!");
-            }
             return ac;
         }
         return orig(self, player1, player2, player3, player4, location);

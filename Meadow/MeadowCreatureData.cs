@@ -2,17 +2,14 @@
 {
     public class MeadowCreatureData : GamemodeData
     {
-        //MeadowCustomization.CreatureCustomization customization; // todo maybe actually move it here!
-        public EmoteHolder emoteHolder;
         public OnlineCreature owner;
 
         public MeadowCreatureData(OnlineCreature owner)
         {
             this.owner = owner;
-            this.emoteHolder = new EmoteHolder(owner);
         }
 
-        internal override GamemodeDataState MakeState()
+        internal override GamemodeDataState MakeState(OnlineResource inResource)
         {
             return new MeadowCreatureDataState(this);
         }
@@ -22,18 +19,26 @@
     {
         protected GamemodeData() { }
 
-        internal abstract GamemodeDataState? MakeState();
+        internal abstract GamemodeDataState MakeState(OnlineResource inResource);
     }
 
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public abstract class GamemodeDataState : OnlineState
     {
+        protected GamemodeDataState()
+        {
+        }
+
         internal abstract void ReadTo(GamemodeData gameModeData);
     }
 
 
     public class MeadowCreatureDataState : GamemodeDataState
     {
+        [OnlineField]
+        bool unused;
+
+        public MeadowCreatureDataState() { }
         public MeadowCreatureDataState(MeadowCreatureData meadowCreatureData)
         {
 

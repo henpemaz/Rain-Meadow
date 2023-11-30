@@ -5,7 +5,7 @@ namespace RainMeadow
         [OnlineField(polymorphic = true)]
         private CreatureStateState creatureStateState;
         public AbstractCreatureState() : base() { }
-        public AbstractCreatureState(OnlineCreature onlineEntity, uint ts, bool realizedState) : base(onlineEntity, ts, realizedState)
+        public AbstractCreatureState(OnlineCreature onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
         {
             creatureStateState = GetCreatureStateState(onlineEntity);
         }
