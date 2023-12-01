@@ -173,8 +173,6 @@ namespace RainMeadow
 
             if (!ownerEntity.isMine)
             {
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("remote update");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug(string.Join("-", creatureData.emotes.Select(e => e.value)));
                 if (localVersion != this.creatureData.emotesVersion)
                 {
                     RainMeadow.Debug("new version");
@@ -202,8 +200,8 @@ namespace RainMeadow
         {
             RainMeadow.Debug(emoteType);
             if (ownerEntity.isMine) throw new InvalidProgrammerException("mine");
-            if (this.creatureData.emotes.Contains(emoteType)) return;
-            if (this.creatureData.emotes.Count >= maxEmoteCount) return;
+            if (tiles.Any(t => t.emote == emoteType)) return;
+            if (tiles.Count >= maxEmoteCount) return;
             if (owner.abstractPhysicalObject.realizedObject == null) return;
             if (owner.abstractPhysicalObject.Room.realizedRoom == null) return;
             
@@ -340,7 +338,7 @@ namespace RainMeadow
             {
                 sLeaser.sprites = new FSprite[2];
                 sLeaser.sprites[0] = new FSprite("emote_background");
-                sLeaser.sprites[0].color = Color.clear;// holder.customization.EmoteTileColor;
+                sLeaser.sprites[0].color = holder.customization.EmoteTileColor;
                 sLeaser.sprites[1] = new FSprite((emote.value.StartsWith("emote") ? holder.customization.EmotePrefix + emote.value : emote.value).ToLowerInvariant());
 
                 var container = rCam.ReturnFContainer("HUD");

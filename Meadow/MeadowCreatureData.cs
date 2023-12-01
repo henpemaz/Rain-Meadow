@@ -57,16 +57,10 @@ namespace RainMeadow
         public MeadowCreatureDataState() { }
         public MeadowCreatureDataState(MeadowCreatureData meadowCreatureData)
         {
-            emotes = new(meadowCreatureData.emotes);
+            emotes = new(meadowCreatureData.emotes.ToList());
             emotesVersion = meadowCreatureData.emotesVersion;
             emotesLife = meadowCreatureData.emotesLife;
             emotesTick = meadowCreatureData.emotesTick;
-
-            if (Input.GetKey(KeyCode.L))
-            {
-                RainMeadow.Debug($"sending {emotesTick} {emotesLife} {emotesVersion}");
-                RainMeadow.Debug(string.Join("-", emotes.list.Select(e => e.value)));
-            }
         }
 
         internal override void ReadTo(OnlineEntity onlineEntity)
@@ -77,14 +71,7 @@ namespace RainMeadow
                 mcd.emotesVersion = emotesVersion;
                 mcd.emotesLife = emotesLife;
                 mcd.emotesTick = emotesTick;
-
-                if (Input.GetKey(KeyCode.L))
-                {
-                    RainMeadow.Debug($"reading {emotesTick} {emotesLife} {emotesVersion}");
-                    RainMeadow.Debug(string.Join("-", emotes.list.Select(e => e.value)));
-                }
             }
         }
     }
-
 }
