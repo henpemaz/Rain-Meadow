@@ -10,19 +10,19 @@ namespace RainMeadow
         [OnlineField(always:true)]
         public OnlineEntity.EntityId entityId;
         [OnlineField(nullable:true, polymorphic:true)]
-        public GamemodeDataState gamemodeDataState;
+        public EntityDataState gamemodeDataState;
         public OnlineEntity.EntityId ID => entityId;
 
         protected EntityState() : base() { }
         protected EntityState(OnlineEntity onlineEntity, OnlineResource inResource, uint ts) : base(ts)
         {
             this.entityId = onlineEntity.id;
-            this.gamemodeDataState = onlineEntity.gameModeData.MakeState(inResource);
+            this.gamemodeDataState = onlineEntity.gameModeData?.MakeState(inResource);
         }
 
         public virtual void ReadTo(OnlineEntity onlineEntity)
         {
-            gamemodeDataState?.ReadTo(onlineEntity.gameModeData);
+            gamemodeDataState?.ReadTo(onlineEntity);
         }
     }
 }

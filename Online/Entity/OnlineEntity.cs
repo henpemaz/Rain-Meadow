@@ -11,7 +11,7 @@ namespace RainMeadow
         public readonly EntityId id;
         public readonly bool isTransferable;
 
-        internal GamemodeData gameModeData;
+        internal EntityData gameModeData;
 
         public bool isMine => owner.isMe;
 

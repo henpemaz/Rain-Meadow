@@ -36,6 +36,8 @@ namespace RainMeadow
         {
             public string displayName;
             public string emotePrefix;
+            public string emoteAtlas;
+            public Color emoteTileColor;
             public List<Skin> skins = new();
         }
 
@@ -49,9 +51,24 @@ namespace RainMeadow
                 }
             }
 
-            public static Character Slugcat = new("Slugcat", true, new() { displayName = "SLUGCAT", emotePrefix = "scW" });
-            public static Character Cicada = new("Cicada", true, new() { displayName = "CICADA", emotePrefix = "cadaA" });
-            public static Character Lizard = new("Lizard", true, new() { displayName = "LIZARD", emotePrefix = "lizP" });
+            public static Character Slugcat = new("Slugcat", true, new() {
+                displayName = "SLUGCAT",
+                emotePrefix = "sc_",
+                emoteAtlas = "emotes_slugcat",
+                emoteTileColor = new Color(80f, 120f, 120f, 255f) / 255f,
+            });
+            public static Character Cicada = new("Cicada", true, new() { 
+                displayName = "CICADA", 
+                emotePrefix = "cada_",
+                emoteAtlas = "emotes_cicada",
+                emoteTileColor = new Color(120f, 80f, 120f, 255f) / 255f,
+            });
+            public static Character Lizard = new("Lizard", true, new() { 
+                displayName = "LIZARD", 
+                emotePrefix = "liz_",
+                emoteAtlas = "emotes_lizard",
+                emoteTileColor = new Color(120f, 120f, 160f, 255f) / 255f,
+            });
         }
 
         public static Dictionary<Skin, SkinData> skinData = new();
@@ -66,8 +83,9 @@ namespace RainMeadow
             public Color? eyeColor;
             public Color? effectColor;
             public float tintFactor = 0.3f;
-            public string emotePrefix;
-            public Color emoteTileColor;
+            public string emoteAtlasOverride;
+            public string emotePrefixOverride;
+            public Color? emoteTileColorOverride;
         }
 
         public class Skin : ExtEnum<Skin>

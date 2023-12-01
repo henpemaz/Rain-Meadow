@@ -122,10 +122,12 @@ namespace RainMeadow
 
         internal virtual void NewEntity(OnlineEntity oe)
         {
-            if(RainMeadow.sSpawningAvatar && avatar == null)
-            {
-                avatar = (OnlineCreature)oe;
-            }
+            
+        }
+
+        internal virtual void SetAvatar(OnlineCreature onlineCreature)
+        {
+            this.avatar = onlineCreature;
         }
     }
 }

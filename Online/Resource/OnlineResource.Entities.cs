@@ -35,6 +35,8 @@ namespace RainMeadow
             if (!isActive) throw new InvalidProgrammerException("not active");
             if (oe.primaryResource != null) { throw new InvalidOperationException("already in a resource"); }
 
+            OnlineManager.lobby.gameMode.NewEntity(oe);
+
             if (isOwner) // I control this, enter right away
             {
                 EntityRegisteredInResource(oe, oe.definition, null);
@@ -84,6 +86,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             OnlineEntity oe = OnlineManager.lobby.PlayerFromId(entityDefinition.owner).isMe ? entityDefinition.entityId.FindEntity() : entityDefinition.MakeEntity(this);
+            if (!oe.isMine && !registeredEntities.ContainsKey(entityDefinition.entityId)) OnlineManager.lobby.gameMode.NewEntity(oe);
             EntityRegisteredInResource(oe, entityDefinition, initialState);
         }
 
@@ -92,9 +95,6 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             registeredEntities.Add(newEntityEvent.entityId, newEntityEvent);
-
-            OnlineManager.lobby.gameMode.NewEntity(oe);
-
             EntityJoinedResource(oe, initialState);
         }
 

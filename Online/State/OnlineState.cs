@@ -173,6 +173,16 @@ namespace RainMeadow
             }
         }
 
+        public class OnlineFieldHalf : OnlineFieldAttribute
+        {
+
+            public OnlineFieldHalf(string group = "default", bool nullable = false, bool polymorphic = false, bool always = false) : base(group, nullable, polymorphic, always) { }
+            public override Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
+            {
+                return Expression.Call(serializerRef, typeof(Serializer).GetMethods().First(m => m.Name == nameof(Serializer.SerializeHalf) && m.GetParameters()[0].ParameterType == typeof(float).MakeByRefType()), fieldRef);
+            }
+        }
+
         public class DeltaSupportAttribute : Attribute { public StateHandler.DeltaSupport level; }
 
         public class StateHandler

@@ -70,6 +70,12 @@ public partial class RainMeadow
             AbstractCreature ac = OnlineManager.lobby.gameMode.SpawnAvatar(self, location);
             if (ac == null) ac = orig(self, player1, player2, player3, player4, location);
             sSpawningAvatar = false;
+
+            if(OnlineCreature.map.TryGetValue(ac, out var onlineCreature))
+            {
+                OnlineManager.lobby.gameMode.SetAvatar(onlineCreature as OnlineCreature);
+            }
+
             return ac;
         }
         return orig(self, player1, player2, player3, player4, location);

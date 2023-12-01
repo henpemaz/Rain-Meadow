@@ -20,8 +20,8 @@ namespace RainMeadow
             if (inResource is WorldSession ws && !OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, onlineEntity.apo)) throw new InvalidOperationException("asked for world state, not synched");
             if (inResource is RoomSession rs && !OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, onlineEntity.apo)) throw new InvalidOperationException("asked for room state, not synched");
             var realizedState = inResource is RoomSession;
-            if (realizedState && onlineEntity.isMine && onlineEntity.apo.realizedObject != null && !realized) { RainMeadow.Error($"have realized object, but not entity not marked as realized??: {this} in resource {inResource}"); }
-            if (realizedState && onlineEntity.isMine && !realized)
+            if (realizedState && onlineEntity.isMine && onlineEntity.apo.realizedObject != null && !onlineEntity.realized) { RainMeadow.Error($"have realized object, but not entity not marked as realized??: {onlineEntity} in resource {inResource}"); }
+            if (realizedState && onlineEntity.isMine && !onlineEntity.realized)
             {
                 //RainMeadow.Error($"asked for realized state, not realized: {this} in resource {inResource}");
                 realizedState = false;
@@ -44,6 +44,7 @@ namespace RainMeadow
 
         public override void ReadTo(OnlineEntity onlineEntity)
         {
+            base.ReadTo(onlineEntity);
             var onlineObject = onlineEntity as OnlinePhysicalObject;
             onlineObject.beingMoved = true;
             var wasPos = onlineObject.apo.pos;

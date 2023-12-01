@@ -145,7 +145,7 @@ namespace RainMeadow
                 }
                 if (oe.isMine)
                 {
-                    oe.realized = true;
+                    oe.realized = self.realizedObject != null;
                 }
                 if (OnlineManager.lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Meadow && self.realizedCreature != null && oe is OnlineCreature oc)
                 {

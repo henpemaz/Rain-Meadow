@@ -12,7 +12,8 @@ namespace RainMeadow
         public class CreatureCustomization
         {
             public MeadowProgression.Skin skin;
-            public MeadowProgression.SkinData skinData;
+            private MeadowProgression.SkinData skinData;
+            private MeadowProgression.CharacterData characterData;
             public Color tint;
             public float tintAmount;
 
@@ -20,24 +21,14 @@ namespace RainMeadow
             {
                 this.skin = skin;
                 this.skinData = MeadowProgression.skinData[skin];
+                this.characterData = MeadowProgression.characterData[skinData.character];
                 this.tint = new(tint.r, tint.g, tint.b);
                 this.tintAmount = tintAmount * skinData.tintFactor;
             }
 
-            internal string GetEmote(EmoteType emote)
-            {
-                if (emote.value.StartsWith("emote"))
-                {
-                    return (skinData.emotePrefix ?? MeadowProgression.characterData[skinData.character].emotePrefix) + emote.value;
-                }
-                return emote.value;
-            }
-
-            internal Color EmoteTileColor()
-            {
-                var color = skinData.emoteTileColor;
-                return Color.Lerp(color, tint, tintAmount);
-            }
+            internal string EmoteAtlas => skinData.emoteAtlasOverride ?? characterData.emoteAtlas;
+            internal string EmotePrefix => skinData.emotePrefixOverride ?? characterData.emotePrefix;
+            internal Color EmoteTileColor => Color.Lerp(skinData.emoteTileColorOverride ?? characterData.emoteTileColor, tint, tintAmount);
 
             internal void ModifyBodyColor(ref Color originalBodyColor)
             {
@@ -58,11 +49,11 @@ namespace RainMeadow
         {
             if (MeadowAvatarSettings.map.TryGetValue(oc.owner, out MeadowAvatarSettings mas))
             {
-                var mcc = mas.MakeCustomization();
-                MeadowCustomization.creatureCustomizations.Add(creature, mcc); // for easier finding
+                RainMeadow.Debug($"Customizing avatar {creature} for {oc.owner}");
+                var mcc = MeadowCustomization.creatureCustomizations.GetValue(creature, (c) => mas.MakeCustomization());
                 if (oc.gameModeData is MeadowCreatureData mcd)
                 {
-                    EmoteDisplayer.map.Add(creature, new EmoteDisplayer(creature, mcd, mcc));
+                    EmoteDisplayer.map.GetValue(creature, (c) => new EmoteDisplayer(creature, oc, mcd, mcc));
                 }
                 else
                 {

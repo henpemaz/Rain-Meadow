@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -14,7 +15,48 @@ namespace RainMeadow
             }
             if (IsReading)
             {
-                extEnum = (T)Activator.CreateInstance(typeof(T), new object[] { ExtEnum<T>.values.GetEntry(reader.ReadByte()) , false});
+                extEnum = (T)Activator.CreateInstance(typeof(T), new object[] { ExtEnum<T>.values.GetEntry(reader.ReadByte()), false });
+            }
+        }
+
+        public void SerializeExtEnums<T>(ref T[] extEnum) where T : ExtEnum<T>
+        {
+            if (IsWriting)
+            {
+                writer.Write((byte)extEnum.Length);
+                for (int i = 0; i < extEnum.Length; i++)
+                {
+                    writer.Write((byte)extEnum[i].Index);
+                }
+            }
+            if (IsReading)
+            {
+                extEnum = new T[reader.ReadByte()];
+                for (int i = 0; i < extEnum.Length; i++)
+                {
+                    extEnum[i] = (T)Activator.CreateInstance(typeof(T), new object[] { ExtEnum<T>.values.GetEntry(reader.ReadByte()), false });
+                }
+            }
+        }
+
+        public void SerializeExtEnums<T>(ref List<T> extEnum) where T : ExtEnum<T>
+        {
+            if (IsWriting)
+            {
+                writer.Write((byte)extEnum.Count);
+                for (int i = 0; i < extEnum.Count; i++)
+                {
+                    writer.Write((byte)extEnum[i].Index);
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadByte();
+                extEnum = new(count);
+                for (int i = 0; i < count; i++)
+                {
+                    extEnum.Add((T)Activator.CreateInstance(typeof(T), new object[] { ExtEnum<T>.values.GetEntry(reader.ReadByte()), false }));
+                }
             }
         }
     }
