@@ -56,7 +56,8 @@ namespace RainMeadow
             this.lobby = lobby;
         }
 
-        public PersonaSettingsEntity personaSettings;
+        public OnlineCreature avatar;
+        public AvatarSettingsEntity avatarSettings;
 
         public virtual void FilterItems(Room room)
         {
@@ -114,9 +115,19 @@ namespace RainMeadow
             return RainMeadow.Ext_ProcessID.LobbyMenu;
         }
 
-        public virtual AbstractCreature SpawnPersona(RainWorldGame self, WorldCoordinate location)
+        public virtual AbstractCreature SpawnAvatar(RainWorldGame self, WorldCoordinate location)
         {
             return null;
+        }
+
+        internal virtual void NewEntity(OnlineEntity oe)
+        {
+            
+        }
+
+        internal virtual void SetAvatar(OnlineCreature onlineCreature)
+        {
+            this.avatar = onlineCreature;
         }
     }
 }

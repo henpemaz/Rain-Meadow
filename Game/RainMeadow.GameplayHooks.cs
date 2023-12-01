@@ -41,37 +41,41 @@ namespace RainMeadow
                 Error($"Creature {self} {self.abstractPhysicalObject.ID} doesn't exist in online space!");
                 return;
             }
-            if (!onlineCreature.isMine) return;
-
-            if (self.grasps == null) return;
-            foreach (var grasp in self.grasps)
+            if(OnlineManager.lobby.gameMode is MeadowGameMode && EmoteDisplayer.map.TryGetValue(self, out var displayer))
             {
-                if (grasp == null) continue;
-                if (!OnlinePhysicalObject.map.TryGetValue(grasp.grabbed.abstractPhysicalObject, out var onlineGrabbed))
+                displayer.OnUpdate();
+            }
+            if (onlineCreature.isMine && self.grasps != null)
+            {
+                foreach (var grasp in self.grasps)
                 {
-                    Error($"Grabbed object {grasp.grabbed.abstractPhysicalObject} {grasp.grabbed.abstractPhysicalObject.ID} doesn't exist in online space!");
-                    continue;
-                }
-                if (!onlineGrabbed.isMine && onlineGrabbed.isTransferable && !onlineGrabbed.isPending)
-                {
-                    if (grasp.grabbed is not Creature) // Non-Creetchers cannot be grabbed by multiple creatures
+                    if (grasp == null) continue;
+                    if (!OnlinePhysicalObject.map.TryGetValue(grasp.grabbed.abstractPhysicalObject, out var onlineGrabbed))
                     {
-                        grasp.Release();
-                        return;
+                        Error($"Grabbed object {grasp.grabbed.abstractPhysicalObject} {grasp.grabbed.abstractPhysicalObject.ID} doesn't exist in online space!");
+                        continue;
                     }
-
-                    var grabbersOtherThanMe = grasp.grabbed.grabbedBy.Select(x => x.grabber).Where(x => x != self);
-                    foreach (var grabbers in grabbersOtherThanMe)
+                    if (!onlineGrabbed.isMine && onlineGrabbed.isTransferable && !onlineGrabbed.isPending)
                     {
-                        if (!OnlinePhysicalObject.map.TryGetValue(grabbers.abstractPhysicalObject, out var tempEntity))
+                        if (grasp.grabbed is not Creature) // Non-Creetchers cannot be grabbed by multiple creatures
                         {
-                            Error($"Other grabber {grabbers.abstractPhysicalObject} {grabbers.abstractPhysicalObject.ID} doesn't exist in online space!");
-                            continue;
+                            grasp.Release();
+                            return;
                         }
-                        if (!tempEntity.isMine) return;
+
+                        var grabbersOtherThanMe = grasp.grabbed.grabbedBy.Select(x => x.grabber).Where(x => x != self);
+                        foreach (var grabbers in grabbersOtherThanMe)
+                        {
+                            if (!OnlinePhysicalObject.map.TryGetValue(grabbers.abstractPhysicalObject, out var tempEntity))
+                            {
+                                Error($"Other grabber {grabbers.abstractPhysicalObject} {grabbers.abstractPhysicalObject.ID} doesn't exist in online space!");
+                                continue;
+                            }
+                            if (!tempEntity.isMine) return;
+                        }
+                        // If no remotes holding the entity, request it
+                        onlineGrabbed.Request();
                     }
-                    // If no remotes holding the entity, request it
-                    onlineGrabbed.Request();
                 }
             }
         }

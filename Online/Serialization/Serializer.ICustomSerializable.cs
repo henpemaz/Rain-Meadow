@@ -158,11 +158,11 @@ namespace RainMeadow
                 return typeof(Serializer).GetMethods().Single(m =>
                 m.Name == "SerializeEvent" && m.IsGenericMethod).MakeGenericMethod(fieldType);
             }
-            if ((fieldType.BaseType?.IsGenericType ?? false) && typeof(ExtEnum<>).IsAssignableFrom(fieldType.BaseType.GetGenericTypeDefinition()))
+            if ((fieldType.BaseType?.IsGenericType ?? false) && typeof(ExtEnum<>).IsAssignableFrom(fieldType.BaseType.GetGenericTypeDefinition())) // todo array/list of this will be a headache
             {
                 return typeof(Serializer).GetMethods().Single(m =>
                 m.Name == "SerializeExtEnum" && m.IsGenericMethod).MakeGenericMethod(fieldType);
-            }
+            } 
             
             if (!fieldType.IsValueType && fieldType != typeof(string))
             {

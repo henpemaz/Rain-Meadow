@@ -11,9 +11,24 @@ namespace RainMeadow
     {
         public class CreatureCustomization
         {
-            public MeadowProgression.SkinData skinData;
+            public MeadowProgression.Skin skin;
+            private MeadowProgression.SkinData skinData;
+            private MeadowProgression.CharacterData characterData;
             public Color tint;
             public float tintAmount;
+
+            public CreatureCustomization(MeadowProgression.Skin skin, Color tint, float tintAmount)
+            {
+                this.skin = skin;
+                this.skinData = MeadowProgression.skinData[skin];
+                this.characterData = MeadowProgression.characterData[skinData.character];
+                this.tint = new(tint.r, tint.g, tint.b);
+                this.tintAmount = tintAmount * skinData.tintFactor;
+            }
+
+            internal string EmoteAtlas => skinData.emoteAtlasOverride ?? characterData.emoteAtlas;
+            internal string EmotePrefix => skinData.emotePrefixOverride ?? characterData.emotePrefix;
+            internal Color EmoteTileColor => Color.Lerp(skinData.emoteTileColorOverride ?? characterData.emoteTileColor, tint, tintAmount);
 
             internal void ModifyBodyColor(ref Color originalBodyColor)
             {
@@ -30,15 +45,29 @@ namespace RainMeadow
 
         public static ConditionalWeakTable<Creature, CreatureCustomization> creatureCustomizations = new();
 
-        internal static void Customize(Creature creature, OnlinePhysicalObject oe)
+        internal static void Customize(Creature creature, OnlineCreature oc)
         {
-            if (OnlineManager.lobby.entities.Values.Select(em => em.entity).FirstOrDefault(e => e is PersonaSettingsEntity settings && settings.target == oe.id) is PersonaSettingsEntity settings)
+            if (MeadowAvatarSettings.map.TryGetValue(oc.owner, out MeadowAvatarSettings mas))
             {
-                settings.ApplyCustomizations(creature, oe);
+                RainMeadow.Debug($"Customizing avatar {creature} for {oc.owner}");
+                var mcc = MeadowCustomization.creatureCustomizations.GetValue(creature, (c) => mas.MakeCustomization());
+                if (oc.gameModeData is MeadowCreatureData mcd)
+                {
+                    EmoteDisplayer.map.GetValue(creature, (c) => new EmoteDisplayer(creature, oc, mcd, mcc));
+                }
+                else
+                {
+                    RainMeadow.Error("missing mcd?? " + oc);
+                }
+            }
+            else
+            {
+                RainMeadow.Error("missing mas?? " + oc);
             }
 
-            if(oe.isMine && !oe.isTransferable) // persona, wish there was a better flag
+            if(oc.isMine && !oc.isTransferable) // persona, wish there was a better flag
             {
+                // playable creatures
                 CreatureController.BindCreature(creature);
             }
         }

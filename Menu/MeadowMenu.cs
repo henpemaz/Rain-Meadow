@@ -181,7 +181,7 @@ namespace RainMeadow
 
         private void BindSettings()
         {
-            this.personaSettings = (MeadowPersonaSettings)OnlineManager.lobby.gameMode.personaSettings;
+            this.personaSettings = (MeadowAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
             personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][skinIndex];
             personaSettings.tint = colorpicker.valuecolor;
             personaSettings.tintAmount = this.tintAmount;
@@ -210,7 +210,7 @@ namespace RainMeadow
         }
 
         int skinIndex;
-        private MeadowPersonaSettings personaSettings;
+        private MeadowAvatarSettings personaSettings;
         private OpTinyColorPicker colorpicker;
 
         public int GetCurrentlySelectedOfSeries(string series) // SelectOneButton.SelectOneButtonOwner

@@ -305,6 +305,21 @@ namespace RainMeadow.Generics
             }
         }
     }
+    public class AddRemoveSortedExtEnums<T> : AddRemoveSortedList<T, AddRemoveSortedExtEnums<T>> where T : ExtEnum<T>
+    {
+        public AddRemoveSortedExtEnums() { }
+        public AddRemoveSortedExtEnums(List<T> list) : base(list) { }
+
+        public override void CustomSerialize(Serializer serializer)
+        {
+            serializer.SerializeExtEnums<T>(ref list);
+            if (serializer.IsDelta)
+            {
+                serializer.Serialize(ref listIndexes);
+                serializer.Serialize(ref removedIndexes);
+            }
+        }
+    }
 
     public class AddRemoveSortedPlayerIDs : AddRemoveSortedList<MeadowPlayerId, AddRemoveSortedPlayerIDs>
     {

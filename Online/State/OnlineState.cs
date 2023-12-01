@@ -59,12 +59,17 @@ namespace RainMeadow
             public static readonly StateType RealizedSpearState = new("RealizedSpearState", typeof(RealizedSpearState));
             public static readonly StateType CreatureStateState = new("CreatureStateState", typeof(CreatureStateState));
             public static readonly StateType CreatureHealthStateState = new("CreatureHealthStateState", typeof(CreatureHealthStateState));
+
             public static readonly StateType RainCycleDataState = new("RainCycleDataState", typeof(RainCycleData));
-            public static readonly StateType MeadowPersonaSettingsState = new("MeadowPersonaSettingsState", typeof(MeadowPersonaSettings.MeadowPersonaSettingsState));
+
+            public static readonly StateType MeadowPersonaSettingsState = new("MeadowPersonaSettingsState", typeof(MeadowAvatarSettings.MeadowAvatarSettingsState));
+            //public static readonly StateType GamemodeDataState = new("GamemodeDataState", typeof(GamemodeDataState));
+            public static readonly StateType MeadowCreatureDataState = new("MeadowCreatureDataState", typeof(MeadowCreatureDataState));
 
             public static readonly StateType OnlinePhysicalObjectDefinition = new("OnlinePhysicalObjectDefinition", typeof(OnlinePhysicalObjectDefinition));
             public static readonly StateType OnlineCreatureDefinition = new("OnlineCreatureDefinition", typeof(OnlineCreatureDefinition));
             public static readonly StateType NewMeadowPersonaSettingsEvent = new("NewMeadowPersonaSettingsEvent", typeof(MeadowPersonaSettingsDefinition));
+
         }
 
         public static OnlineState ParsePolymorph(Serializer serializer)
@@ -165,6 +170,16 @@ namespace RainMeadow
             public virtual Expression ComparisonMethod(FieldInfo f, MemberExpression currentField, MemberExpression baselineField)
             {
                 return Expression.Equal(currentField, baselineField);
+            }
+        }
+
+        public class OnlineFieldHalf : OnlineFieldAttribute
+        {
+
+            public OnlineFieldHalf(string group = "default", bool nullable = false, bool polymorphic = false, bool always = false) : base(group, nullable, polymorphic, always) { }
+            public override Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
+            {
+                return Expression.Call(serializerRef, typeof(Serializer).GetMethods().First(m => m.Name == nameof(Serializer.SerializeHalf) && m.GetParameters()[0].ParameterType == typeof(float).MakeByRefType()), fieldRef);
             }
         }
 

@@ -1,5 +1,4 @@
 ﻿using RainMeadow.Generics;
-using UnityEngine;
 
 namespace RainMeadow
 {
@@ -9,14 +8,20 @@ namespace RainMeadow
         // if sent inside another delta, doesn't
         [OnlineField(always:true)]
         public OnlineEntity.EntityId entityId;
+        [OnlineField(nullable:true, polymorphic:true)]
+        public EntityDataState gamemodeDataState;
         public OnlineEntity.EntityId ID => entityId;
 
         protected EntityState() : base() { }
-        protected EntityState(OnlineEntity onlineEntity, uint ts) : base(ts)
+        protected EntityState(OnlineEntity onlineEntity, OnlineResource inResource, uint ts) : base(ts)
         {
             this.entityId = onlineEntity.id;
+            this.gamemodeDataState = onlineEntity.gameModeData?.MakeState(inResource);
         }
 
-        public abstract void ReadTo(OnlineEntity onlineEntity);
+        public virtual void ReadTo(OnlineEntity onlineEntity)
+        {
+            gamemodeDataState?.ReadTo(onlineEntity);
+        }
     }
 }

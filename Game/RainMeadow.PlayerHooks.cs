@@ -2,7 +2,7 @@ namespace RainMeadow;
 
 public partial class RainMeadow
 {
-    public static bool sSpawningPersonas;
+    public static bool sSpawningAvatar;
     public void PlayerHooks()
     {
         On.RainWorldGame.SpawnPlayers_bool_bool_bool_bool_WorldCoordinate += RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate; // Personas are set as non-transferable
@@ -61,19 +61,21 @@ public partial class RainMeadow
         }
     }
 
-    // Personas are set as non-transferable
+    // Avatars are set as non-transferable
     private AbstractCreature RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate(On.RainWorldGame.orig_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate orig, RainWorldGame self, bool player1, bool player2, bool player3, bool player4, WorldCoordinate location)
     {
         if (OnlineManager.lobby != null)
         {
-            sSpawningPersonas = true;
-            AbstractCreature ac = OnlineManager.lobby.gameMode.SpawnPersona(self, location);
+            sSpawningAvatar = true;
+            AbstractCreature ac = OnlineManager.lobby.gameMode.SpawnAvatar(self, location);
             if (ac == null) ac = orig(self, player1, player2, player3, player4, location);
-            sSpawningPersonas = false;
-            if (OnlineManager.lobby.gameMode.personaSettings != null && OnlineCreature.map.TryGetValue(ac, out var onlinePersona))
+            sSpawningAvatar = false;
+
+            if(OnlineCreature.map.TryGetValue(ac, out var onlineCreature))
             {
-                OnlineManager.lobby.gameMode.personaSettings.BindEntity(onlinePersona);
+                OnlineManager.lobby.gameMode.SetAvatar(onlineCreature as OnlineCreature);
             }
+
             return ac;
         }
         return orig(self, player1, player2, player3, player4, location);

@@ -9,10 +9,10 @@
 
         private void Lobby_OnLobbyAvailable()
         {
-            RainMeadow.Debug("Added persona settings!");
-            var def = new MeadowPersonaSettingsDefinition(new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, PersonaSettingsEntity.personaID), OnlineManager.mePlayer, false);
-            personaSettings = new MeadowPersonaSettings(def);
-            personaSettings.EnterResource(lobby);
+            RainMeadow.Debug("Adding persona settings!");
+            var def = new MeadowPersonaSettingsDefinition(new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.unique, 0), OnlineManager.mePlayer, false);
+            avatarSettings = new MeadowAvatarSettings(def);
+            avatarSettings.EnterResource(lobby);
         }
 
         public override ProcessManager.ProcessID MenuProcessId()
@@ -20,9 +20,24 @@
             return RainMeadow.Ext_ProcessID.MeadowMenu;
         }
 
-        public override AbstractCreature SpawnPersona(RainWorldGame game, WorldCoordinate location)
+        internal override void NewEntity(OnlineEntity oe)
         {
-            var settings = (personaSettings as MeadowPersonaSettings);
+            base.NewEntity(oe);
+            if(oe is OnlineCreature oc)
+            {
+                oe.gameModeData = new MeadowCreatureData(oc);
+            }
+        }
+
+        internal override void SetAvatar(OnlineCreature onlineCreature)
+        {
+            base.SetAvatar(onlineCreature);
+            new EmoteHandler(avatar);
+        }
+
+        public override AbstractCreature SpawnAvatar(RainWorldGame game, WorldCoordinate location)
+        {
+            var settings = (avatarSettings as MeadowAvatarSettings);
             var skinData = MeadowProgression.skinData[settings.skin];
             var abstractCreature = new AbstractCreature(game.world, StaticWorld.GetCreatureTemplate(skinData.creatureType), null, location, new EntityID(-1, 0));
             if(skinData.creatureType == CreatureTemplate.Type.Slugcat)
@@ -32,22 +47,6 @@
             }
             game.world.GetAbstractRoom(abstractCreature.pos.room).AddEntity(abstractCreature);
             return abstractCreature;
-
-            //if (false)//personaType == PersonaType.Slugcat)
-            //{
-            //    var abstractCreature = new AbstractCreature(game.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, location, new EntityID(-1, 0));
-            //    abstractCreature.state = new PlayerState(abstractCreature, 0, game.GetStorySession.saveState.saveStateNumber, false);
-            //    game.world.GetAbstractRoom(abstractCreature.pos.room).AddEntity(abstractCreature);
-            //    game.session.AddPlayer(abstractCreature);
-            //    return abstractCreature;
-
-            //}
-            //else if (true)//personaType == PersonaType.Squidcicada)
-            //{
-            //    var abstractCreature = new AbstractCreature(game.world, StaticWorld.GetCreatureTemplate(CreatureTemplate.Type.CicadaA), null, location, new EntityID(-1, 0));
-            //    game.world.GetAbstractRoom(abstractCreature.pos.room).AddEntity(abstractCreature);
-            //    return abstractCreature;
-            //}
         }
     }
 }

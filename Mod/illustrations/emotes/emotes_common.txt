@@ -1,0 +1,95 @@
+{
+	"frames": {
+		"emote_background.png": {
+			"frame": {
+				"x": 1,
+				"y": 1,
+				"w": 380,
+				"h": 380
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 380,
+				"h": 380
+			},
+			"sourceSize": {
+				"w": 380,
+				"h": 380
+			}
+		},
+		"symbolno.png": {
+			"frame": {
+				"x": 383,
+				"y": 1,
+				"w": 512,
+				"h": 512
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 512,
+				"h": 512
+			},
+			"sourceSize": {
+				"w": 512,
+				"h": 512
+			}
+		},
+		"symbolquestion.png": {
+			"frame": {
+				"x": 897,
+				"y": 1,
+				"w": 512,
+				"h": 512
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 512,
+				"h": 512
+			},
+			"sourceSize": {
+				"w": 512,
+				"h": 512
+			}
+		},
+		"symbolyes.png": {
+			"frame": {
+				"x": 1,
+				"y": 515,
+				"w": 512,
+				"h": 512
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 512,
+				"h": 512
+			},
+			"sourceSize": {
+				"w": 512,
+				"h": 512
+			}
+		}
+	},
+	"meta": {
+		"app": "http://www.codeandweb.com/texturepacker",
+		"version": "1.0",
+		"image": "spritesheet.png",
+		"format": "RGBA8888",
+		"size": {
+			"w": 1410,
+			"h": 1028
+		},
+		"scale": "1"
+	}
+}

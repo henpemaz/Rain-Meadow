@@ -1,5 +1,6 @@
 ﻿using Mono.Cecil;
 using System;
+using System.ComponentModel;
 using System.Text;
 
 namespace RainMeadow
@@ -14,8 +15,18 @@ namespace RainMeadow
         public RealizedPhysicalObjectState realizedObjectState;
 
         public PhysicalObjectEntityState() : base() { }
-        public PhysicalObjectEntityState(OnlinePhysicalObject onlineEntity, uint ts, bool realizedState) : base(onlineEntity, ts)
+        public PhysicalObjectEntityState(OnlinePhysicalObject onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
         {
+            if (inResource is WorldSession ws && !OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, onlineEntity.apo)) throw new InvalidOperationException("asked for world state, not synched");
+            if (inResource is RoomSession rs && !OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, onlineEntity.apo)) throw new InvalidOperationException("asked for room state, not synched");
+            var realizedState = inResource is RoomSession;
+            if (realizedState && onlineEntity.isMine && onlineEntity.apo.realizedObject != null && !onlineEntity.realized) { RainMeadow.Error($"have realized object, but not entity not marked as realized??: {onlineEntity} in resource {inResource}"); }
+            if (realizedState && onlineEntity.isMine && !onlineEntity.realized)
+            {
+                //RainMeadow.Error($"asked for realized state, not realized: {this} in resource {inResource}");
+                realizedState = false;
+            }
+
             this.pos = onlineEntity.apo.pos;
             this.realized = onlineEntity.realized; // now now, oe.realized means its realized in the owners world
                                                    // not necessarily whether we're getting a real state or not
@@ -33,6 +44,7 @@ namespace RainMeadow
 
         public override void ReadTo(OnlineEntity onlineEntity)
         {
+            base.ReadTo(onlineEntity);
             var onlineObject = onlineEntity as OnlinePhysicalObject;
             onlineObject.beingMoved = true;
             var wasPos = onlineObject.apo.pos;

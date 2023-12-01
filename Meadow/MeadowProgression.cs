@@ -35,6 +35,9 @@ namespace RainMeadow
         public class CharacterData
         {
             public string displayName;
+            public string emotePrefix;
+            public string emoteAtlas;
+            public Color emoteTileColor;
             public List<Skin> skins = new();
         }
 
@@ -48,15 +51,31 @@ namespace RainMeadow
                 }
             }
 
-            public static Character Slugcat = new("Slugcat", true, new() { displayName = "SLUGCAT" });
-            public static Character Cicada = new("Cicada", true, new() { displayName = "CICADA" });
-            public static Character Lizard = new("Lizard", true, new() { displayName = "LIZARD" });
+            public static Character Slugcat = new("Slugcat", true, new() {
+                displayName = "SLUGCAT",
+                emotePrefix = "sc_",
+                emoteAtlas = "emotes_slugcat",
+                emoteTileColor = new Color(80f, 120f, 120f, 255f) / 255f,
+            });
+            public static Character Cicada = new("Cicada", true, new() { 
+                displayName = "CICADA", 
+                emotePrefix = "cada_",
+                emoteAtlas = "emotes_cicada",
+                emoteTileColor = new Color(120f, 80f, 120f, 255f) / 255f,
+            });
+            public static Character Lizard = new("Lizard", true, new() { 
+                displayName = "LIZARD", 
+                emotePrefix = "liz_",
+                emoteAtlas = "emotes_lizard",
+                emoteTileColor = new Color(120f, 120f, 160f, 255f) / 255f,
+            });
         }
 
         public static Dictionary<Skin, SkinData> skinData = new();
 
         public class SkinData
         {
+            public Character character;
             public string displayName;
             public CreatureTemplate.Type creatureType;
             public SlugcatStats.Name statsName; // curently only used for color
@@ -64,63 +83,74 @@ namespace RainMeadow
             public Color? eyeColor;
             public Color? effectColor;
             public float tintFactor = 0.3f;
+            public string emoteAtlasOverride;
+            public string emotePrefixOverride;
+            public Color? emoteTileColorOverride;
         }
 
         public class Skin : ExtEnum<Skin>
         {
-            public Skin(string value, bool register = false, Character character = null, SkinData skinDataEntry = null) : base(value, register)
+            public Skin(string value, bool register = false, SkinData skinDataEntry = null) : base(value, register)
             {
                 if (register)
                 {
                     skinData[this] = skinDataEntry;
-                    characterData[character].skins.Add(this);
+                    characterData[skinDataEntry.character].skins.Add(this);
                 }
             }
 
-            public static Skin Slugcat_Survivor = new("Slugcat_Survivor", true, Character.Slugcat, new() {
+            public static Skin Slugcat_Survivor = new("Slugcat_Survivor", true, new() {
+                character = Character.Slugcat,
                 displayName = "Survivor",
                 creatureType = CreatureTemplate.Type.Slugcat,
                 statsName = SlugcatStats.Name.White,
             });
-            public static Skin Slugcat_Monk = new("Slugcat_Monk", true, Character.Slugcat, new()
+            public static Skin Slugcat_Monk = new("Slugcat_Monk", true, new()
             {
+                character = Character.Slugcat,
                 displayName = "Monk",
                 creatureType = CreatureTemplate.Type.Slugcat,
                 statsName = SlugcatStats.Name.Yellow,
             });
-            public static Skin Slugcat_Hunter = new("Slugcat_Hunter", true, Character.Slugcat, new()
+            public static Skin Slugcat_Hunter = new("Slugcat_Hunter", true, new()
             {
+                character = Character.Slugcat,
                 displayName = "Hunter",
                 creatureType = CreatureTemplate.Type.Slugcat,
                 statsName = SlugcatStats.Name.Red,
             });
-            public static Skin Slugcat_Fluffy = new("Slugcat_Fluffy", true, Character.Slugcat, new()
+            public static Skin Slugcat_Fluffy = new("Slugcat_Fluffy", true, new()
             {
+                character = Character.Slugcat,
                 displayName = "Fluffy",
                 creatureType = CreatureTemplate.Type.Slugcat,
                 statsName = SlugcatStats.Name.White,
                 baseColor = new Color(111, 216, 255, 255)/255f
             });
 
-            public static Skin Cicada_White = new("Cicada_White", true, Character.Cicada, new()
+            public static Skin Cicada_White = new("Cicada_White", true, new()
             {
+                character = Character.Cicada,
                 displayName = "White",
                 creatureType = CreatureTemplate.Type.CicadaA,
             });
-            public static Skin Cicada_Dark = new("Cicada_Dark", true, Character.Cicada, new()
+            public static Skin Cicada_Dark = new("Cicada_Dark", true,  new()
             {
+                character = Character.Cicada,
                 displayName = "Dark",
                 creatureType = CreatureTemplate.Type.CicadaB,
             });
 
-            public static Skin Lizard_Pink = new("Lizard_Pink", true, Character.Lizard, new()
+            public static Skin Lizard_Pink = new("Lizard_Pink", true, new()
             {
+                character = Character.Lizard,
                 displayName = "Pink",
                 creatureType = CreatureTemplate.Type.PinkLizard,
                 tintFactor = 0.5f,
             });
-            public static Skin Lizard_Blue = new("Lizard_Blue", true, Character.Lizard, new()
+            public static Skin Lizard_Blue = new("Lizard_Blue", true, new()
             {
+                character = Character.Lizard,
                 displayName = "Blue",
                 creatureType = CreatureTemplate.Type.BlueLizard,
                 tintFactor = 0.5f,
@@ -129,7 +159,7 @@ namespace RainMeadow
 
         public static bool SkinAvailable(Skin skin)
         {
-            return true;
+            return true; // todo progression system
         }
 
         public static List<Skin> AllAvailableSkins(Character character)

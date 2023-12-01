@@ -11,6 +11,8 @@ namespace RainMeadow
         public readonly EntityId id;
         public readonly bool isTransferable;
 
+        internal EntityData gameModeData;
+
         public bool isMine => owner.isMe;
 
         public List<OnlineResource> joinedResources = new(); // used like a stack

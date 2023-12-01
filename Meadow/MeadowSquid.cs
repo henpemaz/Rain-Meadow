@@ -40,7 +40,7 @@ namespace RainMeadow
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldloca, 0);
-                c.EmitDelegate((CicadaGraphics self, ref Color origColor) => // squiddy don't
+                c.EmitDelegate((CicadaGraphics self, ref Color origColor) =>
                 {
                     if (creatureCustomizations.TryGetValue(self.cicada, out var c))
                     {
