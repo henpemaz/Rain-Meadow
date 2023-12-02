@@ -29,12 +29,6 @@
             }
         }
 
-        internal override void SetAvatar(OnlineCreature onlineCreature)
-        {
-            base.SetAvatar(onlineCreature);
-            new EmoteHandler(avatar);
-        }
-
         public override AbstractCreature SpawnAvatar(RainWorldGame game, WorldCoordinate location)
         {
             var settings = (avatarSettings as MeadowAvatarSettings);

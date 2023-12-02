@@ -13,8 +13,8 @@ namespace RainMeadow
         public MeadowCustomization.CreatureCustomization customization;
         private RainWorldGame game;
 
-        private int maxEmoteCount = 4;
-        private float initialLifetime = 4; // seconds
+        public const int maxEmoteCount = 4;
+        public const float initialLifetime = 4; // seconds
 
         public int startInGameClock;
         public float timeToLive;
@@ -152,10 +152,13 @@ namespace RainMeadow
             RainMeadow.Debug("Added");
         }
 
-        const float emoteSize = 75f;
+        public const float emoteSize = 60f;
+        public const float emoteSourceSize = 380f;
+        public const float gap = 5f;
+
         static Vector2 mainOffset = new Vector2(0, 30 + emoteSize / 2f);
-        static Vector2 halfHeight = new Vector2(0, emoteSize / 2f);
-        static Vector2 halfWidth = new Vector2(emoteSize / 2f, 0);
+        static Vector2 halfHeight = new Vector2(0, (emoteSize + gap) / 2f);
+        static Vector2 halfWidth = new Vector2((emoteSize + gap) / 2f, 0);
 
         internal Vector2 GetPos(int index)
         {
@@ -209,7 +212,12 @@ namespace RainMeadow
                 sLeaser.sprites = new FSprite[2];
                 sLeaser.sprites[0] = new FSprite("emote_background");
                 sLeaser.sprites[0].color = holder.customization.EmoteTileColor;
-                sLeaser.sprites[1] = new FSprite((emote.value.StartsWith("emote") ? holder.customization.EmotePrefix + emote.value : emote.value).ToLowerInvariant());
+                sLeaser.sprites[1] = new FSprite(holder.customization.GetEmote(emote));
+
+                for (int i = 0; i < sLeaser.sprites.Length; i++)
+                {
+                    sLeaser.sprites[i].scale = emoteSize / emoteSourceSize;
+                }
 
                 var container = rCam.ReturnFContainer("HUD");
                 for (int i = 0; i < sLeaser.sprites.Length; i++)
@@ -228,10 +236,8 @@ namespace RainMeadow
                 var newAlpha = Mathf.Lerp(alpha, lastAlpha, timeStacker);
                 for (int i = 0; i < sLeaser.sprites.Length; i++)
                 {
-
                     sLeaser.sprites[i].SetPosition(newPos);
                     sLeaser.sprites[i].alpha = newAlpha;
-                    sLeaser.sprites[i].scale = 70f / 380f;
                 }
                 if (base.slatedForDeletetion || this.room != rCam.room)
                 {

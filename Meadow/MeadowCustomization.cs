@@ -41,6 +41,11 @@ namespace RainMeadow
             {
                 if (skinData.eyeColor.HasValue) originalEyeColor = skinData.eyeColor.Value;
             }
+
+            internal string GetEmote(EmoteType emote)
+            {
+                return (emote.value.StartsWith("emote") ? EmotePrefix + emote.value : emote.value).ToLowerInvariant();
+            }
         }
 
         public static ConditionalWeakTable<Creature, CreatureCustomization> creatureCustomizations = new();
@@ -70,6 +75,14 @@ namespace RainMeadow
                 // playable creatures
                 CreatureController.BindCreature(creature);
             }
+        }
+
+        internal static void InitMeadowHud(RoomCamera camera)
+        {
+            var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
+            camera.hud.AddPart(new HUD.TextPrompt(camera.hud)); // game assumes this never null
+            camera.hud.AddPart(new HUD.Map(camera.hud, new HUD.Map.MapData(camera.room.world, camera.room.game.rainWorld))); // game assumes this too :/
+            camera.hud.AddPart(new EmoteHandler(camera.hud, mgm.avatar, creatureCustomizations.GetValue(mgm.avatar.realizedCreature, (c) => throw new InvalidProgrammerException("Creature doesn't have customization"))));
         }
     }
 }

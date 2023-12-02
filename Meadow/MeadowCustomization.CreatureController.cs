@@ -3,13 +3,16 @@ using UnityEngine;
 using RWCustom;
 using System.Runtime.CompilerServices;
 using System.Linq;
+using HUD;
+using Steamworks;
 
 namespace RainMeadow
 {
     public partial class MeadowCustomization
     {
         public static ConditionalWeakTable<AbstractCreature, CreatureController> creatureController = new();
-        public abstract class CreatureController
+
+        public abstract class CreatureController : IOwnAHUD
         {
             public DebugDestinationVisualizer debugDestinationVisualizer;
 
@@ -58,6 +61,18 @@ namespace RainMeadow
             public int flipDirection;
             public Vector2 inputDir;
             public Vector2 inputLastDir;
+
+            public int CurrentFood => throw new NotImplementedException();
+
+            public Player.InputPackage MapInput => throw new NotImplementedException();
+
+            public bool RevealMap => throw new NotImplementedException();
+
+            public Vector2 MapOwnerInRoomPosition => throw new NotImplementedException();
+
+            public bool MapDiscoveryActive => throw new NotImplementedException();
+
+            public int MapOwnerRoom => throw new NotImplementedException();
 
             public void checkInput()
             {
@@ -588,6 +603,21 @@ namespace RainMeadow
                 ai.pathFinder.Update(); // basic movement uses this
                 ai.tracker.Update(); // creature looker uses this
                 ai.timeInRoom++;
+            }
+
+            public HUD.HUD.OwnerType GetOwnerType()
+            {
+                throw new NotImplementedException();
+            }
+
+            public void PlayHUDSound(SoundID soundID)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void FoodCountDownDone()
+            {
+                throw new NotImplementedException();
             }
         }
     }

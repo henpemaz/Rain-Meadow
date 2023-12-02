@@ -43,7 +43,7 @@ namespace RainMeadow
             }
             if(OnlineManager.lobby.gameMode is MeadowGameMode && EmoteDisplayer.map.TryGetValue(self, out var displayer))
             {
-                displayer.OnUpdate();
+                displayer.OnUpdate(); // so this only updates while the creature is in-room, what about creatures in pipes though
             }
             if (onlineCreature.isMine && self.grasps != null)
             {
