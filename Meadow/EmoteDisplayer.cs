@@ -1,138 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using static RainMeadow.MeadowCustomization;
 
 namespace RainMeadow
 {
-    public class EmoteType : ExtEnum<EmoteType>
-    {
-        public EmoteType(string value, bool register = false) : base(value, register) { }
-
-        public static EmoteType emoteHello = new EmoteType("emoteHello", true);
-        public static EmoteType emoteHappy = new EmoteType("emoteHappy", true);
-        public static EmoteType emoteSad = new EmoteType("emoteSad", true);
-        public static EmoteType emoteConfused = new EmoteType("emoteConfused", true);
-        public static EmoteType emoteGoofy = new EmoteType("emoteGoofy", true);
-        public static EmoteType emoteDead = new EmoteType("emoteDead", true);
-        public static EmoteType emoteAmazed = new EmoteType("emoteAmazed", true);
-        public static EmoteType emoteShrug = new EmoteType("emoteShrug", true);
-        public static EmoteType emoteHug = new EmoteType("emoteHug", true);
-        public static EmoteType emoteAngry = new EmoteType("emoteAngry", true);
-        public static EmoteType emoteWink = new EmoteType("emoteWink", true);
-        public static EmoteType emoteMischievous = new EmoteType("emoteMischievous", true);
-
-        public static EmoteType symbolYes = new EmoteType("symbolYes", true);
-        public static EmoteType symbolNo = new EmoteType("symbolNo", true);
-        public static EmoteType symbolQuestion = new EmoteType("symbolQuestion", true);
-        // todo
-    }
-
-    class EmoteHandler
-    {
-        private InputScheme currentInputScheme;
-
-        static KeyCode[] alphaRow = new[] { KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3, KeyCode.Alpha4, KeyCode.Alpha5, KeyCode.Alpha6, KeyCode.Alpha7, KeyCode.Alpha8, KeyCode.Alpha9, KeyCode.Alpha0, KeyCode.Minus, KeyCode.Equals };
-
-        static EmoteType[][] keyboardMappingRows = new[]{
-            new EmoteType[12]{
-                EmoteType.emoteHello,
-                EmoteType.emoteHappy,
-                EmoteType.emoteSad,
-                EmoteType.emoteConfused,
-                EmoteType.emoteGoofy,
-                EmoteType.emoteDead,
-                EmoteType.emoteAmazed,
-                EmoteType.emoteShrug,
-                EmoteType.emoteHug,
-                EmoteType.emoteAngry,
-                EmoteType.emoteWink,
-                EmoteType.emoteMischievous,
-            },new EmoteType[12]{
-                EmoteType.symbolYes,
-                EmoteType.symbolNo,
-                EmoteType.symbolQuestion,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-            },new EmoteType[12]{
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-            }
-        };
-        private int currentKeyboardRow;
-
-        enum InputScheme
-        {
-            none,
-            keyboard,
-            mouse,
-            controller
-        }
-
-        public void RawUpdate()
-        {
-            if(currentInputScheme == InputScheme.keyboard)
-            {
-                for (int i = 0; i < alphaRow.Length; i++)
-                {
-                    if (Input.GetKeyDown(alphaRow[i]))
-                    {
-                        EmotePressed(keyboardMappingRows[currentKeyboardRow][i]);
-                    }
-                }
-                if (Input.GetKeyDown(KeyCode.Tab))
-                {
-                    currentKeyboardRow = (currentKeyboardRow + 1) % 3;
-                }
-            }
-        }
-
-        public static EmoteHandler instance;
-        private readonly OnlineCreature avatar;
-
-        public EmoteHandler(OnlineCreature avatar)
-        {
-            RainMeadow.Debug($"EmoteHandler created for {avatar}");
-            instance = this;
-            currentInputScheme = InputScheme.keyboard;
-            this.avatar = avatar;
-        }
-
-        private void EmotePressed(EmoteType emoteType)
-        {
-            RainMeadow.Debug(emoteType);
-            if (!EmoteDisplayer.map.TryGetValue(avatar.realizedCreature, out var displayer))
-            {
-                RainMeadow.Debug("holder not found");
-                return;
-            }
-            if (displayer.AddEmoteLocal(emoteType)) {
-                RainMeadow.Debug("emote added");
-                // todo play local input sound
-            }
-        }
-    }
-
     public class EmoteDisplayer
     {
         public Creature owner;
@@ -146,6 +18,13 @@ namespace RainMeadow
 
         public int startInGameClock;
         public float timeToLive;
+
+        public Vector2 pos;
+        public float time;
+        public float alpha;
+        public static ConditionalWeakTable<Creature, EmoteDisplayer> map = new();
+        private List<EmoteTile> tiles = new();
+        private byte localVersion;
 
         public EmoteDisplayer(Creature owner, OnlineCreature ownerEntity, MeadowCreatureData creatureData, MeadowCustomization.CreatureCustomization customization)
         {
@@ -193,37 +72,24 @@ namespace RainMeadow
                 Mathf.InverseLerp(timeToLive, timeToLive - 1f, time) // fade out
                 );
 
-            if(ownerEntity.isMine && tiles.Count > 0 && time > timeToLive) { Clear(); }
-        }
-
-        private void AddEmoteRemote(EmoteType emoteType)
-        {
-            RainMeadow.Debug(emoteType);
-            if (ownerEntity.isMine) throw new InvalidProgrammerException("mine");
-            if (tiles.Any(t => t.emote == emoteType)) return;
-            if (tiles.Count >= maxEmoteCount) return;
-            if (owner.abstractPhysicalObject.realizedObject == null) return;
-            if (owner.abstractPhysicalObject.Room.realizedRoom == null) return;
-            
-            var tile = new EmoteTile(emoteType, this.tiles.Count, this);
-            owner.abstractPhysicalObject.Room.realizedRoom.AddObject(tile);
-            this.tiles.Add(tile);
-
-            RainMeadow.Debug("Added");
-        }
-
-        public void OnNewRoom()
-        {
-            for (int i = 0; i < tiles.Count; i++)
+            if(ownerEntity.isMine && tiles.Count > 0 && time > timeToLive)
             {
-                tiles[i].Destroy();
+                Clear();
+                this.creatureData.emotes.Clear();
+                this.creatureData.emotesVersion++;
             }
-            tiles.Clear();
+        }
+
+        public void ChangeRooms(WorldCoordinate newRoom)
+        {
+            Clear();
+            var room = game.world.GetAbstractRoom(newRoom)?.realizedRoom;
+            if (room == null) return;
             for (int i = 0; i < this.creatureData.emotes.Count; i++)
             {
                 var emote = this.creatureData.emotes[i];
                 var tile = new EmoteTile(emote, i, this);
-                owner.abstractPhysicalObject.Room.realizedRoom.AddObject(tile);
+                room.AddObject(tile);
                 this.tiles.Add(tile);
             }
         }
@@ -235,11 +101,6 @@ namespace RainMeadow
                 tiles[i].Destroy();
             }
             tiles.Clear();
-            if (ownerEntity.isMine)
-            {
-                this.creatureData.emotes.Clear();
-                this.creatureData.emotesVersion++;
-            }
         }
 
         // maybe move this logic to the data thing?
@@ -275,17 +136,26 @@ namespace RainMeadow
             return true;
         }
 
+        private void AddEmoteRemote(EmoteType emoteType)
+        {
+            RainMeadow.Debug(emoteType);
+            if (ownerEntity.isMine) throw new InvalidProgrammerException("mine");
+            if (tiles.Any(t => t.emote == emoteType)) return;
+            if (tiles.Count >= maxEmoteCount) return;
+            if (owner.abstractPhysicalObject.realizedObject == null) return;
+            if (owner.abstractPhysicalObject.Room.realizedRoom == null) return;
+
+            var tile = new EmoteTile(emoteType, this.tiles.Count, this);
+            owner.abstractPhysicalObject.Room.realizedRoom.AddObject(tile);
+            this.tiles.Add(tile);
+
+            RainMeadow.Debug("Added");
+        }
+
         const float emoteSize = 75f;
         static Vector2 mainOffset = new Vector2(0, 30 + emoteSize / 2f);
         static Vector2 halfHeight = new Vector2(0, emoteSize / 2f);
         static Vector2 halfWidth = new Vector2(emoteSize / 2f, 0);
-
-        public Vector2 pos;
-        public float time;
-        public float alpha;
-        public static ConditionalWeakTable<Creature, EmoteDisplayer> map = new();
-        private List<EmoteTile> tiles = new();
-        private byte localVersion;
 
         internal Vector2 GetPos(int index)
         {
