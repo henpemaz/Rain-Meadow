@@ -18,7 +18,7 @@ namespace RainMeadow
 
         public int startInGameClock;
         public float timeToLive;
-
+        private int lastClock;
         public Vector2 pos;
         public float time;
         public float alpha;
@@ -46,24 +46,36 @@ namespace RainMeadow
             }
         }
 
-        public void OnUpdate()
+        public void ProcessRemoteData()
         {
+            if (localVersion != this.creatureData.emotesVersion)
+            {
+                RainMeadow.Debug("new version");
+                Clear();
+                localVersion = creatureData.emotesVersion;
+                startInGameClock = (int)(game.clock - ((ownerEntity.owner.tick - creatureData.emotesTick) / (float)OnlineManager.instance.framesPerSecond) * (float)game.framesPerSecond);
+            }
+            this.timeToLive = this.creatureData.emotesLife;
+            foreach (var e in creatureData.emotes.Except(tiles.Select(t => t.emote)))
+            {
+                AddEmoteRemote(e);
+            }
+        }
+
+        public void OnUpdate() // this update is called from creature.update and the individual tiles, so that stuff keeps updating even on shortcuts
+        {
+            if (game.clock == lastClock) return;
+            lastClock = game.clock;
+
             this.pos = owner.firstChunk.pos;
+            if((owner.inShortcut || owner.room == null) && game.shortcuts.OnScreenPositionOfInShortCutCreature(owner.abstractPhysicalObject.Room.realizedRoom, owner) is Vector2 inShortcutPos)
+            {
+                this.pos = inShortcutPos;
+            }
 
             if (!ownerEntity.isMine)
             {
-                if (localVersion != this.creatureData.emotesVersion)
-                {
-                    RainMeadow.Debug("new version");
-                    Clear();
-                    localVersion = creatureData.emotesVersion;
-                    startInGameClock = (int)(game.clock - ((ownerEntity.owner.tick - creatureData.emotesTick) / (float)OnlineManager.instance.framesPerSecond) * (float)game.framesPerSecond);
-                }
-                this.timeToLive = this.creatureData.emotesLife;
-                foreach(var e in creatureData.emotes.Except(tiles.Select(t => t.emote)))
-                {
-                    AddEmoteRemote(e);
-                }
+                ProcessRemoteData();
             }
 
             time = (game.clock - startInGameClock) / (float)game.framesPerSecond;
@@ -87,8 +99,7 @@ namespace RainMeadow
             if (room == null) return;
             for (int i = 0; i < this.creatureData.emotes.Count; i++)
             {
-                var emote = this.creatureData.emotes[i];
-                var tile = new EmoteTile(emote, i, this);
+                var tile = new EmoteTile(this.creatureData.emotes[i], i, this);
                 room.AddObject(tile);
                 this.tiles.Add(tile);
             }
@@ -199,11 +210,12 @@ namespace RainMeadow
 
             public override void Update(bool eu)
             {
+                holder.OnUpdate();
                 this.lastPos = this.pos;
                 this.pos = holder.GetPos(index);
                 lastAlpha = alpha;
                 alpha = holder.alpha;
-                if (holder.owner.room != this.room) { RainMeadow.Debug("EmoteTile destroyed"); Destroy(); }
+                if (holder.owner.abstractPhysicalObject.Room.realizedRoom != this.room) { RainMeadow.Debug("EmoteTile destroyed"); Destroy(); }
                 base.Update(eu);
             }
 

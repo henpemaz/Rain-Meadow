@@ -62,17 +62,42 @@ namespace RainMeadow
             public Vector2 inputDir;
             public Vector2 inputLastDir;
 
-            public int CurrentFood => throw new NotImplementedException();
+            public int CurrentFood => 0;
 
-            public Player.InputPackage MapInput => throw new NotImplementedException();
+            public Player.InputPackage MapInput => input[0];
 
-            public bool RevealMap => throw new NotImplementedException();
+            public bool RevealMap => input[0].mp;
 
-            public Vector2 MapOwnerInRoomPosition => throw new NotImplementedException();
+            public Vector2 MapOwnerInRoomPosition {
+                get
+                {
+                    if (this.creature.room == null && this.creature.inShortcut && this.creature.abstractCreature.Room.realizedRoom != null)
 
-            public bool MapDiscoveryActive => throw new NotImplementedException();
+                    {
+                        Vector2? vector = this.creature.abstractCreature.Room.realizedRoom.game.shortcuts.OnScreenPositionOfInShortCutCreature(this.creature.abstractCreature.Room.realizedRoom, this.creature);
+                        if (vector != null)
+                        {
+                            return vector.Value;
+                        }
+                    }
+                    return this.creature.mainBodyChunk.pos;
+                }
+            }
 
-            public int MapOwnerRoom => throw new NotImplementedException();
+            public bool MapDiscoveryActive => this.creature.Consious && this.creature.room != null && !this.creature.room.world.singleRoomWorld && this.creature.abstractCreature.Room.realizedRoom != null && this.creature.mainBodyChunk.pos.x > 0f && this.creature.mainBodyChunk.pos.x < this.creature.abstractCreature.Room.realizedRoom.PixelWidth && this.creature.mainBodyChunk.pos.y > 0f && this.creature.mainBodyChunk.pos.y < this.creature.abstractCreature.Room.realizedRoom.PixelHeight; // optimize me
+
+            public int MapOwnerRoom => this.creature.abstractPhysicalObject.pos.room;
+
+            public void PlayHUDSound(SoundID soundID)
+            {
+                this.creature.abstractCreature.world.game.cameras[0].virtualMicrophone.PlaySound(soundID, 0f, 1f, 1f);
+            }
+
+            public void FoodCountDownDone() { }
+
+
+            public static HUD.HUD.OwnerType controlledCreatureHudOwner = new("MeadowControlledCreature", true);
+            public HUD.HUD.OwnerType GetOwnerType() => controlledCreatureHudOwner;
 
             public void checkInput()
             {
@@ -603,21 +628,6 @@ namespace RainMeadow
                 ai.pathFinder.Update(); // basic movement uses this
                 ai.tracker.Update(); // creature looker uses this
                 ai.timeInRoom++;
-            }
-
-            public HUD.HUD.OwnerType GetOwnerType()
-            {
-                throw new NotImplementedException();
-            }
-
-            public void PlayHUDSound(SoundID soundID)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void FoodCountDownDone()
-            {
-                throw new NotImplementedException();
             }
         }
     }

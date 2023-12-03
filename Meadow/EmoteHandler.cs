@@ -148,14 +148,6 @@ namespace RainMeadow
             }
         }
 
-        public void UpdateDisplayers()
-        {
-            for (int i = 0; i < emoteDisplayers.Length; i++)
-            {
-                emoteDisplayers[i].element = Futile.atlasManager.GetElementWithName(customization.GetEmote(keyboardMappingRows[currentKeyboardRow, i]));
-            }
-        }
-
         public override void Draw(float timeStacker)
         {
             InputUpdate(); // here because 60fps for key events
@@ -167,15 +159,9 @@ namespace RainMeadow
             base.Update();
         }
 
-        public override void ClearSprites()
-        {
-            base.ClearSprites();
-            // todo
-        }
-
         public void InputUpdate()
         {
-            if(currentInputScheme == InputScheme.keyboard)
+            if (currentInputScheme == InputScheme.keyboard)
             {
                 for (int i = 0; i < alphaRow.Length; i++)
                 {
@@ -189,6 +175,33 @@ namespace RainMeadow
                     currentKeyboardRow = (currentKeyboardRow + 1) % keyboardMappingRows.GetLength(0);
                     UpdateDisplayers();
                 }
+            }
+        }
+
+        public void UpdateDisplayers()
+        {
+            for (int i = 0; i < emoteDisplayers.Length; i++)
+            {
+                emoteDisplayers[i].element = Futile.atlasManager.GetElementWithName(customization.GetEmote(keyboardMappingRows[currentKeyboardRow, i]));
+            }
+        }
+
+        public override void ClearSprites()
+        {
+            base.ClearSprites();
+            for (int i = 0; i < emoteDisplayers.Length; i++)
+            {
+                emoteDisplayers[i].RemoveFromContainer();
+            }
+
+            for (int i = 0; i < inputLabels.Length; i++)
+            {
+                inputLabels[i].RemoveFromContainer();
+            }
+
+            for (int i = 0; i < emoteSeparators.Length; i++)
+            {
+                emoteSeparators[i].RemoveFromContainer();
             }
         }
 
