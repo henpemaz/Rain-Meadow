@@ -115,7 +115,7 @@ namespace RainMeadow
                 LobbyVisibility.FriendsOnly => ELobbyType.k_ELobbyTypeFriendsOnly,
                 _ => throw new ArgumentException()
             };
-            m_CreateLobbyCall.Set(SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypePublic, 16));
+            m_CreateLobbyCall.Set(SteamMatchmaking.CreateLobby(eLobbyTypeeLobbyType, 16));
         }
 
         public override void JoinLobby(LobbyInfo lobby)

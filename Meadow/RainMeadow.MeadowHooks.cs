@@ -18,6 +18,27 @@ namespace RainMeadow
 
             IL.HUD.Map.ctor += Map_OwnerFixup;
             IL.HUD.Map.CreateDiscoveryTextureFromVisitedRooms += Map_OwnerFixup;
+
+            On.RainWorldGame.AllowRainCounterToTick += RainWorldGame_AllowRainCounterToTick;
+            On.ShelterDoor.Close += ShelterDoor_Close;
+        }
+
+        private void ShelterDoor_Close(On.ShelterDoor.orig_Close orig, ShelterDoor self)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                return;
+            }
+            orig(self);
+        }
+
+        private bool RainWorldGame_AllowRainCounterToTick(On.RainWorldGame.orig_AllowRainCounterToTick orig, RainWorldGame self)
+        {
+            if(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                return false;
+            }
+            return orig(self);
         }
 
         private void Map_OwnerFixup(ILContext il)
