@@ -29,12 +29,6 @@
             }
         }
 
-        internal override void SetAvatar(OnlineCreature onlineCreature)
-        {
-            base.SetAvatar(onlineCreature);
-            new EmoteHandler(avatar);
-        }
-
         public override AbstractCreature SpawnAvatar(RainWorldGame game, WorldCoordinate location)
         {
             var settings = (avatarSettings as MeadowAvatarSettings);
@@ -45,7 +39,13 @@
                 abstractCreature.state = new PlayerState(abstractCreature, 0, skinData.statsName, false);
                 game.session.AddPlayer(abstractCreature);
             }
+            else
+            {
+                game.GetStorySession.playerSessionRecords[0] = new PlayerSessionRecord(0);
+                game.GetStorySession.playerSessionRecords[0].wokeUpInRegion = game.world.region.name;
+            }
             game.world.GetAbstractRoom(abstractCreature.pos.room).AddEntity(abstractCreature);
+
             return abstractCreature;
         }
     }

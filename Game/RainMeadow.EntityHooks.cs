@@ -20,6 +20,8 @@ namespace RainMeadow
             On.AbstractCreature.Realize += AbstractCreature_Realize; // get real
             On.AbstractPhysicalObject.Realize += AbstractPhysicalObject_Realize; // get real
 
+            On.AbstractCreature.ChangeRooms += AbstractCreature_ChangeRooms;
+
             On.AbstractPhysicalObject.Update += AbstractPhysicalObject_Update; // Don't think
             On.AbstractCreature.Update += AbstractCreature_Update; // Don't think
             On.AbstractCreature.OpportunityToEnterDen += AbstractCreature_OpportunityToEnterDen; // Don't think
@@ -108,6 +110,18 @@ namespace RainMeadow
                 }
             }
             orig(self, time);
+        }
+
+        private void AbstractCreature_ChangeRooms(On.AbstractCreature.orig_ChangeRooms orig, AbstractCreature self, WorldCoordinate newCoord)
+        {
+            orig(self, newCoord);
+            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
+            {
+                if (OnlineManager.lobby.gameMode is MeadowGameMode && self.realizedCreature is Creature c && EmoteDisplayer.map.TryGetValue(c, out var displayer))
+                {
+                    displayer.ChangeRooms(newCoord);
+                }
+            }
         }
 
 

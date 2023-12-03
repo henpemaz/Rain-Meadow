@@ -15,6 +15,7 @@ namespace RainMeadow
         public MeadowAvatarSettings(EntityDefinition entityDefinition) : base(entityDefinition)
         {
             RainMeadow.Debug(this);
+            map.Remove(owner);
             map.Add(owner, this);
         }
 

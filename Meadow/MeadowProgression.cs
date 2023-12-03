@@ -59,14 +59,14 @@ namespace RainMeadow
             });
             public static Character Cicada = new("Cicada", true, new() { 
                 displayName = "CICADA", 
-                emotePrefix = "cada_",
-                emoteAtlas = "emotes_cicada",
+                emotePrefix = "sc_", //"cada_",
+                emoteAtlas = "emotes_slugcat", //"emotes_cicada",
                 emoteTileColor = new Color(120f, 80f, 120f, 255f) / 255f,
             });
             public static Character Lizard = new("Lizard", true, new() { 
                 displayName = "LIZARD", 
-                emotePrefix = "liz_",
-                emoteAtlas = "emotes_lizard",
+                emotePrefix = "sc_", //"liz_",
+                emoteAtlas = "emotes_slugcat", //"emotes_lizard",
                 emoteTileColor = new Color(120f, 120f, 160f, 255f) / 255f,
             });
         }

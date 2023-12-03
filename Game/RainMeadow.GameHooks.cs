@@ -86,13 +86,6 @@ namespace RainMeadow
 
         private void RainWorldGame_RawUpdate(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
         {
-            if (OnlineManager.lobby != null)
-            {
-                if(EmoteHandler.instance != null)
-                {
-                    EmoteHandler.instance.RawUpdate();
-                }
-            }
             orig(self, dt);
             if(OnlineManager.lobby != null)
             {

@@ -3,13 +3,16 @@ using UnityEngine;
 using RWCustom;
 using System.Runtime.CompilerServices;
 using System.Linq;
+using HUD;
+using Steamworks;
 
 namespace RainMeadow
 {
     public partial class MeadowCustomization
     {
         public static ConditionalWeakTable<AbstractCreature, CreatureController> creatureController = new();
-        public abstract class CreatureController
+
+        public abstract class CreatureController : IOwnAHUD
         {
             public DebugDestinationVisualizer debugDestinationVisualizer;
 
@@ -58,6 +61,43 @@ namespace RainMeadow
             public int flipDirection;
             public Vector2 inputDir;
             public Vector2 inputLastDir;
+
+            public int CurrentFood => 0;
+
+            public Player.InputPackage MapInput => input[0];
+
+            public bool RevealMap => input[0].mp;
+
+            public Vector2 MapOwnerInRoomPosition {
+                get
+                {
+                    if (this.creature.room == null && this.creature.inShortcut && this.creature.abstractCreature.Room.realizedRoom != null)
+
+                    {
+                        Vector2? vector = this.creature.abstractCreature.Room.realizedRoom.game.shortcuts.OnScreenPositionOfInShortCutCreature(this.creature.abstractCreature.Room.realizedRoom, this.creature);
+                        if (vector != null)
+                        {
+                            return vector.Value;
+                        }
+                    }
+                    return this.creature.mainBodyChunk.pos;
+                }
+            }
+
+            public bool MapDiscoveryActive => this.creature.Consious && this.creature.room != null && !this.creature.room.world.singleRoomWorld && this.creature.abstractCreature.Room.realizedRoom != null && this.creature.mainBodyChunk.pos.x > 0f && this.creature.mainBodyChunk.pos.x < this.creature.abstractCreature.Room.realizedRoom.PixelWidth && this.creature.mainBodyChunk.pos.y > 0f && this.creature.mainBodyChunk.pos.y < this.creature.abstractCreature.Room.realizedRoom.PixelHeight; // optimize me
+
+            public int MapOwnerRoom => this.creature.abstractPhysicalObject.pos.room;
+
+            public void PlayHUDSound(SoundID soundID)
+            {
+                this.creature.abstractCreature.world.game.cameras[0].virtualMicrophone.PlaySound(soundID, 0f, 1f, 1f);
+            }
+
+            public void FoodCountDownDone() { }
+
+
+            public static HUD.HUD.OwnerType controlledCreatureHudOwner = new("MeadowControlledCreature", true);
+            public HUD.HUD.OwnerType GetOwnerType() => controlledCreatureHudOwner;
 
             public void checkInput()
             {
