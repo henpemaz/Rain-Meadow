@@ -62,6 +62,9 @@ namespace RainMeadow
         {
             orig.Invoke(self, manager);
 
+            //Arena mode, etc... won't have Meadow Music, so no point checking the files
+            if (!self.IsStorySession) return;
+
             if (!filesChecked)
             {
                 string[] dirs = AssetManager.ListDirectory("world", true, true);
