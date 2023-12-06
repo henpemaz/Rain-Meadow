@@ -19,7 +19,7 @@ namespace RainMeadow
             map.Add(owner, this);
         }
 
-        public static MeadowAvatarSettings FromDefinition(MeadowPersonaSettingsDefinition meadowPersonaSettingsDefinition , OnlineResource inResource)
+        public static MeadowAvatarSettings FromDefinition(MeadowPersonaSettingsDefinition meadowPersonaSettingsDefinition, OnlineResource inResource)
         {
             RainMeadow.Debug(meadowPersonaSettingsDefinition);
             return new MeadowAvatarSettings(meadowPersonaSettingsDefinition);
@@ -66,9 +66,7 @@ namespace RainMeadow
                 var meadowAvatarSettings = (MeadowAvatarSettings)onlineEntity;
                 meadowAvatarSettings.skin = new MeadowProgression.Skin(MeadowProgression.Skin.values.GetEntry(skin));
                 meadowAvatarSettings.tintAmount = tintAmount / 255f;
-                meadowAvatarSettings.tint.r = tintR / 255f;
-                meadowAvatarSettings.tint.g = tintG / 255f;
-                meadowAvatarSettings.tint.b = tintB / 255f;
+                meadowAvatarSettings.tint = new(tintR / 255f, tintG / 255f, tintB / 255f);
             }
         }
     }

@@ -7,14 +7,15 @@ namespace RainMeadow
     public class MeadowCreatureData : EntityData
     {
         public OnlineCreature owner;
-        internal uint emotesTick;
-        internal float emotesLife;
+        internal TickReference emotesTick; // tick of primary resource owner
+        internal float emotesLife; // seconds
         internal List<EmoteType> emotes = new();
         internal byte emotesVersion;
 
         public MeadowCreatureData(OnlineCreature owner)
         {
             this.owner = owner;
+            this.emotesTick = new TickReference(OnlineManager.lobby.owner);
         }
 
         internal override EntityDataState MakeState(OnlineResource inResource)
@@ -48,7 +49,7 @@ namespace RainMeadow
         [OnlineField(nullable=true)]
         public Generics.AddRemoveSortedExtEnums<EmoteType> emotes;
         [OnlineField]
-        internal uint emotesTick;
+        internal TickReference emotesTick;
         [OnlineFieldHalf]
         internal float emotesLife;
         [OnlineField]
@@ -71,6 +72,10 @@ namespace RainMeadow
                 mcd.emotesVersion = emotesVersion;
                 mcd.emotesLife = emotesLife;
                 mcd.emotesTick = emotesTick;
+            }
+            else
+            {
+                RainMeadow.Error("Failed to read MeadowCreatureDataState into " + onlineEntity);
             }
         }
     }

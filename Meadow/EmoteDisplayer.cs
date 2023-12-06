@@ -53,7 +53,8 @@ namespace RainMeadow
                 RainMeadow.Debug("new version");
                 Clear();
                 localVersion = creatureData.emotesVersion;
-                startInGameClock = (int)(game.clock - ((ownerEntity.owner.tick - creatureData.emotesTick) / (float)OnlineManager.instance.framesPerSecond) * (float)game.framesPerSecond);
+                RainMeadow.Debug("Time since tick is: " + creatureData.emotesTick.TimeSinceTick());
+                startInGameClock = (int)(game.clock - creatureData.emotesTick.TimeSinceTick() * game.framesPerSecond);
             }
             this.timeToLive = this.creatureData.emotesLife;
             foreach (var e in creatureData.emotes.Except(tiles.Select(t => t.emote)))
@@ -129,7 +130,7 @@ namespace RainMeadow
                 startInGameClock = owner.abstractPhysicalObject.world.game.clock;
                 timeToLive = initialLifetime;
                 this.creatureData.emotesVersion++;
-                this.creatureData.emotesTick = OnlineManager.mePlayer.tick;
+                this.creatureData.emotesTick = new TickReference(ownerEntity.primaryResource.owner);
                 this.creatureData.emotesLife = timeToLive;
             }
             else
@@ -164,7 +165,7 @@ namespace RainMeadow
         }
 
         public const float emoteSize = 60f;
-        public const float emoteSourceSize = 380f;
+        public const float emoteSourceSize = 240f;
         public const float gap = 5f;
 
         static Vector2 mainOffset = new Vector2(0, 30 + emoteSize / 2f);
@@ -222,9 +223,10 @@ namespace RainMeadow
             public void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
             {
                 sLeaser.sprites = new FSprite[2];
-                sLeaser.sprites[0] = new FSprite("emote_background");
-                sLeaser.sprites[0].color = holder.customization.EmoteTileColor;
+                sLeaser.sprites[0] = new FSprite(holder.customization.GetBackground(emote));
+                sLeaser.sprites[0].color = holder.customization.EmoteBackgroundColor(emote);
                 sLeaser.sprites[1] = new FSprite(holder.customization.GetEmote(emote));
+                sLeaser.sprites[1].color = holder.customization.EmoteColor(emote);
 
                 for (int i = 0; i < sLeaser.sprites.Length; i++)
                 {
