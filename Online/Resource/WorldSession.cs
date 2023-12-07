@@ -102,7 +102,18 @@ namespace RainMeadow
                         foreach (var index in realizedRooms.list)
                         {
                             var abstractRoom = ws.world.GetAbstractRoom(index);
-                            abstractRoom.firstTimeRealized = false;
+                            if (abstractRoom != null)
+                                abstractRoom.firstTimeRealized = false;
+                            else
+                            {
+                                if (!ws.alreadyLogged.Contains(index))
+                                {
+                                    RainMeadow.Error($"Room not found in region: {index} in {ws}");
+                                    RainMeadow.Error($"Region spans indexes: {ws.world.firstRoomIndex} to {ws.world.firstRoomIndex + ws.world.NumberOfRooms}");
+
+                                    ws.alreadyLogged.Add(index);
+                                }
+                            }
                         }
                     }
                 }
@@ -110,6 +121,7 @@ namespace RainMeadow
                 base.ReadTo(resource);
             }
         }
+        HashSet<int> alreadyLogged = new();
 
         public override string ToString()
         {

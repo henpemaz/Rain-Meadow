@@ -13,8 +13,30 @@ public partial class RainMeadow
         On.Player.AddFood += Player_AddFood;
         On.Player.AddQuarterFood += Player_AddQuarterFood;
 
+        On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites1;
+
         On.SlugcatStats.ctor += SlugcatStatsOnctor;
         On.AbstractCreature.ctor += AbstractCreature_ctor;
+    }
+
+    private void PlayerGraphics_DrawSprites1(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
+    {
+        if(OnlineManager.lobby != null)
+        {
+            try
+            {
+                orig(self, sLeaser, rCam, timeStacker, camPos);
+            }
+            catch (System.Exception e)
+            {
+                RainMeadow.Error(e);
+            }
+        }
+        else
+        {
+            orig(self, sLeaser, rCam, timeStacker, camPos);
+        }
+        
     }
 
     private void Player_AddQuarterFood(On.Player.orig_AddQuarterFood orig, Player self)
