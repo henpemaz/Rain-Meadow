@@ -147,6 +147,7 @@ namespace RainMeadow
         // get real
         private void AbstractCreature_Realize(On.AbstractCreature.orig_Realize orig, AbstractCreature self)
         {
+            var wasCreature = self.realizedCreature;
             orig(self);
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
@@ -161,7 +162,7 @@ namespace RainMeadow
                 {
                     oe.realized = self.realizedObject != null;
                 }
-                if (OnlineManager.lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Meadow && self.realizedCreature != null && oe is OnlineCreature oc)
+                if (OnlineManager.lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Meadow && self.realizedCreature != null && self.realizedCreature != wasCreature && oe is OnlineCreature oc)
                 {
                     MeadowCustomization.Customize(self.realizedCreature, oc);
                 }

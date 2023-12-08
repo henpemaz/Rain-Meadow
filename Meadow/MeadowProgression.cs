@@ -37,7 +37,7 @@ namespace RainMeadow
             public string displayName;
             public string emotePrefix;
             public string emoteAtlas;
-            public Color emoteTileColor;
+            public Color emoteColor;
             public List<Skin> skins = new();
         }
 
@@ -55,19 +55,19 @@ namespace RainMeadow
                 displayName = "SLUGCAT",
                 emotePrefix = "sc_",
                 emoteAtlas = "emotes_slugcat",
-                emoteTileColor = new Color(80f, 120f, 120f, 255f) / 255f,
+                emoteColor = new Color(85f, 120f, 120f, 255f) / 255f,
             });
             public static Character Cicada = new("Cicada", true, new() { 
                 displayName = "CICADA", 
                 emotePrefix = "sc_", //"cada_",
                 emoteAtlas = "emotes_slugcat", //"emotes_cicada",
-                emoteTileColor = new Color(120f, 80f, 120f, 255f) / 255f,
+                emoteColor = new Color(120f, 80f, 120f, 255f) / 255f,
             });
             public static Character Lizard = new("Lizard", true, new() { 
                 displayName = "LIZARD", 
-                emotePrefix = "sc_", //"liz_",
-                emoteAtlas = "emotes_slugcat", //"emotes_lizard",
-                emoteTileColor = new Color(120f, 120f, 160f, 255f) / 255f,
+                emotePrefix = "liz_",
+                emoteAtlas = "emotes_lizard",
+                emoteColor = new Color(197, 220, 232, 255f) / 255f,
             });
         }
 
@@ -85,7 +85,7 @@ namespace RainMeadow
             public float tintFactor = 0.3f;
             public string emoteAtlasOverride;
             public string emotePrefixOverride;
-            public Color? emoteTileColorOverride;
+            public Color? emoteColorOverride;
         }
 
         public class Skin : ExtEnum<Skin>

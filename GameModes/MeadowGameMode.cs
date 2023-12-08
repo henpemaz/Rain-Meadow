@@ -25,6 +25,7 @@
             base.NewEntity(oe);
             if(oe is OnlineCreature oc)
             {
+                RainMeadow.Debug("Registering new creature: " + oc);
                 oe.gameModeData = new MeadowCreatureData(oc);
             }
         }

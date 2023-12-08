@@ -12,7 +12,7 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.0.45";
+        public const string MeadowVersionStr = "0.0.47";
         public static RainMeadow instance;
         private bool init;
 
@@ -114,14 +114,14 @@ namespace RainMeadow
                 MeadowProgression.InitializeBuiltinTypes();
                 sw.Stop();
                 RainMeadow.Debug($"MeadowProgression.InitializeBuiltinTypes: {sw.Elapsed}");
-                
+
+                EmoteHandler.InitializeBuiltinTypes();
+
+
                 sw = Stopwatch.StartNew();
                 RPCManager.SetupRPCs();
                 sw.Stop();
-                RainMeadow.Debug($"MeadowProgression.InitializeBuiltinTypes: {sw.Elapsed}");
-
-
-                self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
+                RainMeadow.Debug($"RPCManager.SetupRPCs: {sw.Elapsed}");
 
                 MenuHooks();
                 GameHooks();
@@ -131,7 +131,8 @@ namespace RainMeadow
                 PlayerHooks();
                 CustomizationHooks();
                 MeadowHooks();
-                
+
+                self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
             }
             catch (Exception e)
             {
