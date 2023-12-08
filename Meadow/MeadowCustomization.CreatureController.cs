@@ -40,6 +40,11 @@ namespace RainMeadow
                 input = new Player.InputPackage[10];
                 rainWorld = creature.abstractCreature.world.game.rainWorld;
 
+                if (creatureControllers.TryGetValue(creature.abstractCreature, out _))
+                {
+                    RainMeadow.Error($"Creature was already bound to a controller! {creature} {oc}");
+                    creatureControllers.Remove(creature.abstractCreature);
+                }
                 creatureControllers.Add(creature.abstractCreature, this);
 
                 //creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
