@@ -124,6 +124,7 @@ namespace RainMeadow
             if (this.creatureData.emotes.Count >= maxEmoteCount) return false;
             if (owner.abstractPhysicalObject.realizedObject == null) return false;
             if (owner.abstractPhysicalObject.Room.realizedRoom == null) return false;
+            if (this.creatureData.emotes.Count > 0 && (timeToLive < this.creatureData.emotes.Count)) return false;
 
             if (this.creatureData.emotes.Count == 0)
             {

@@ -65,9 +65,9 @@ namespace RainMeadow
             });
             public static Character Lizard = new("Lizard", true, new() { 
                 displayName = "LIZARD", 
-                emotePrefix = "sc_", //"liz_",
-                emoteAtlas = "emotes_slugcat", //"emotes_lizard",
-                emoteColor = new Color(120f, 120f, 160f, 255f) / 255f,
+                emotePrefix = "liz_",
+                emoteAtlas = "emotes_lizard",
+                emoteColor = new Color(197, 220, 232, 255f) / 255f,
             });
         }
 

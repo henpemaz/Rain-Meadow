@@ -95,11 +95,8 @@ namespace RainMeadow
                 RainMeadow.Error("missing mas?? " + oc);
             }
 
-            if(oc.isMine && !oc.isTransferable) // persona, wish there was a better flag
-            {
-                // playable creatures
-                CreatureController.BindCreature(creature);
-            }
+            // playable creatures
+            CreatureController.BindCreature(creature, oc);
         }
 
         internal static void InitMeadowHud(RoomCamera camera)

@@ -10,35 +10,37 @@ namespace RainMeadow
 {
     public partial class MeadowCustomization
     {
-        public static ConditionalWeakTable<AbstractCreature, CreatureController> creatureController = new();
+        public static ConditionalWeakTable<AbstractCreature, CreatureController> creatureControllers = new();
 
         public abstract class CreatureController : IOwnAHUD
         {
             public DebugDestinationVisualizer debugDestinationVisualizer;
 
-            internal static void BindCreature(Creature creature)
+            internal static void BindCreature(Creature creature, OnlineCreature oc)
             {
                 if (creature is Cicada cada)
                 {
-                    var controller = new CicadaController(cada, 0);
-                    creatureController.Add(cada.abstractCreature, controller);
+                    new CicadaController(cada, oc, 0);
                 }
                 else if (creature is Lizard liz)
                 {
-                    var controller = new LizardController(liz, 0);
-                    creatureController.Add(liz.abstractCreature, controller);
+                    new LizardController(liz, oc, 0);
                 }
         }
 
             public Creature creature;
+            public OnlineCreature onlineCreature;
 
-            public CreatureController(Creature creature, int playerNumber)
+            public CreatureController(Creature creature, OnlineCreature oc, int playerNumber)
             {
                 this.creature = creature;
+                this.onlineCreature = oc;
                 this.playerNumber = playerNumber;
 
                 input = new Player.InputPackage[10];
                 rainWorld = creature.abstractCreature.world.game.rainWorld;
+
+                creatureControllers.Add(creature.abstractCreature, this);
 
                 //creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
                 //debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);
@@ -106,14 +108,38 @@ namespace RainMeadow
                     this.input[i] = this.input[i - 1];
                 }
 
-                if (creature.stun == 0 && !creature.dead)
+                if(onlineCreature.isMine)
                 {
-                    this.input[0] = RWInput.PlayerInput(playerNumber, creature.room.game.rainWorld);
+                    if (creature.stun == 0 && !creature.dead)
+                    {
+                        this.input[0] = RWInput.PlayerInput(playerNumber, rainWorld);
+                    }
+                    else
+                    {
+                        this.input[0] = new Player.InputPackage(rainWorld.options.controls[playerNumber].gamePad, rainWorld.options.controls[playerNumber].GetActivePreset(), 0, 0, false, false, false, false, false);
+                    }
+
+                    if (onlineCreature.gameModeData is MeadowCreatureData mcd)
+                    {
+                        mcd.input = this.input[0];
+                    }
+                    else
+                    {
+                        RainMeadow.Error("Missing mcd on send");
+                    }
                 }
                 else
                 {
-                    this.input[0] = new Player.InputPackage(rainWorld.options.controls[playerNumber].gamePad, rainWorld.options.controls[playerNumber].GetActivePreset(), 0, 0, false, false, false, false, false);
+                    if (onlineCreature.gameModeData is MeadowCreatureData mcd)
+                    {
+                        this.input[0] = mcd.input;
+                    }
+                    else
+                    {
+                        RainMeadow.Error("Missing mcd on receive");
+                    }
                 }
+                
                 //this.mapInput = this.input[0];
                 //if ((this.standStillOnMapButton && this.input[0].mp) || this.Sleeping)
                 //{
