@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Threading.Tasks;
-using UnityEngine;
 
 namespace RainMeadow
 {
     public partial class RainMeadow
     {
+        // Track entities joining/leaving resources
+        // customization stuff reused some hooks
         private void EntityHooks()
         {
             On.OverWorld.WorldLoaded += OverWorld_WorldLoaded; // creature moving between WORLDS
@@ -17,20 +17,11 @@ namespace RainMeadow
 
             On.AbstractCreature.Abstractize += AbstractCreature_Abstractize; // get real
             On.AbstractPhysicalObject.Abstractize += AbstractPhysicalObject_Abstractize; // get real
-            On.AbstractCreature.Realize += AbstractCreature_Realize; // get real
+            On.AbstractCreature.Realize += AbstractCreature_Realize; // get real, also customization happens here
             On.AbstractPhysicalObject.Realize += AbstractPhysicalObject_Realize; // get real
-
-            On.AbstractCreature.ChangeRooms += AbstractCreature_ChangeRooms;
-
-            On.AbstractPhysicalObject.Update += AbstractPhysicalObject_Update; // Don't think
-            On.AbstractCreature.Update += AbstractCreature_Update; // Don't think
-            On.AbstractCreature.OpportunityToEnterDen += AbstractCreature_OpportunityToEnterDen; // Don't think
 
             On.AbstractCreature.Move += AbstractCreature_Move; // I'm watching your every step
             On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // I'm watching your every step
-
-            On.OverseerAI.UpdateTempHoverPosition += OverseerAI_UpdateTempHoverPosition; // no teleporting
-            On.OverseerAI.Update += OverseerAI_Update; // please look at what i tell you to
         }
 
         // I'm watching your every step
@@ -72,59 +63,6 @@ namespace RainMeadow
             orig(self, newCoord);
         }
 
-        // Don't think
-        private void AbstractCreature_OpportunityToEnterDen(On.AbstractCreature.orig_OpportunityToEnterDen orig, AbstractCreature self, WorldCoordinate den)
-        {
-            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
-            {
-                if (!oe.isMine && !oe.beingMoved)
-                {
-                    Error($"Remote entity trying to move: {oe} at {oe.roomSession} {Environment.StackTrace}");
-                    return;
-                }
-            }
-            orig(self, den);
-        }
-
-        // Don't think
-        private void AbstractCreature_Update(On.AbstractCreature.orig_Update orig, AbstractCreature self, int time)
-        {
-            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
-            {
-                if (!oe.isMine && !oe.beingMoved)
-                {
-                    return;
-                }
-            }
-            orig(self, time);
-        }
-
-        // Don't think
-        private void AbstractPhysicalObject_Update(On.AbstractPhysicalObject.orig_Update orig, AbstractPhysicalObject self, int time)
-        {
-            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
-            {
-                if (!oe.isMine && !oe.beingMoved)
-                {
-                    return;
-                }
-            }
-            orig(self, time);
-        }
-
-        private void AbstractCreature_ChangeRooms(On.AbstractCreature.orig_ChangeRooms orig, AbstractCreature self, WorldCoordinate newCoord)
-        {
-            orig(self, newCoord);
-            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
-            {
-                if (OnlineManager.lobby.gameMode is MeadowGameMode && self.realizedCreature is Creature c && EmoteDisplayer.map.TryGetValue(c, out var displayer))
-                {
-                    displayer.ChangeRooms(newCoord);
-                }
-            }
-        }
-
-
         private void AbstractPhysicalObject_Realize(On.AbstractPhysicalObject.orig_Realize orig, AbstractPhysicalObject self)
         {
             orig(self);
@@ -144,7 +82,7 @@ namespace RainMeadow
             }
         }
 
-        // get real
+        // get real, and customize
         private void AbstractCreature_Realize(On.AbstractCreature.orig_Realize orig, AbstractCreature self)
         {
             var wasCreature = self.realizedCreature;
@@ -368,39 +306,6 @@ namespace RainMeadow
             {
                 orig(self);
             }
-        }
-
-        // overseers determine what they look at based on:
-        // Random.range/value calls, a ton of state that would be a waste to sync,
-        // who player 1 is (i think), and the location of stars in the sky.
-        // so lets not let them choose for themselves.
-        private void OverseerAI_Update(On.OverseerAI.orig_Update orig, OverseerAI self)
-        {
-            if (OnlineManager.lobby != null)
-            {
-                if (OnlinePhysicalObject.map.TryGetValue(self.overseer.abstractCreature, out var oe) && !oe.isMine)
-                {
-                    Vector2 tempLookAt = self.lookAt;
-                    orig(self);
-                    self.lookAt = tempLookAt;
-                    return;
-                }
-            }
-            orig(self);
-        }
-
-        // remote overseers have gotten their zipping permissions revoked.
-        // we might also need to block ziptoposition, but i havent been able to test if thats an issue.
-        private void OverseerAI_UpdateTempHoverPosition(On.OverseerAI.orig_UpdateTempHoverPosition orig, OverseerAI self)
-        {
-            if (OnlineManager.lobby != null)
-            {
-                if (OnlinePhysicalObject.map.TryGetValue(self.overseer.abstractCreature, out var oe) && !oe.isMine)
-                {
-                    return;
-                }
-            }
-            orig(self);
         }
     }
 }

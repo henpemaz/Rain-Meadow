@@ -1,5 +1,6 @@
 ﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using RWCustom;
 using System;
 
 namespace RainMeadow
@@ -12,6 +13,8 @@ namespace RainMeadow
 
             IL.ShortcutHandler.Update += ShortcutHandler_Update; // cleanup of deleted entities in shortcut system
             On.ShortcutHandler.VesselAllowedInRoom += ShortcutHandlerOnVesselAllowedInRoom; // Prevent creatures from entering a room if their online counterpart has not yet entered!
+
+            On.Creature.SuckedIntoShortCut += CreatureSuckedIntoShortCut;
         }
 
         // adds to entities already so no need to hook it!
@@ -96,6 +99,41 @@ namespace RainMeadow
 
             if (result == false) Debug($"OnlineEntity {onlineEntity.id} not yet in destination room, keeping hostage...");
             return result;
+        }
+
+        // event driven shortcutting for remotes
+        private void CreatureSuckedIntoShortCut(On.Creature.orig_SuckedIntoShortCut orig, Creature self, IntVector2 entrancePos, bool carriedByOther)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self, entrancePos, carriedByOther);
+                return;
+            }
+
+            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var onlineEntity))
+            {
+                Error($"Entity {self} - {self.abstractCreature.ID} doesn't exist in online space!");
+                orig(self, entrancePos, carriedByOther);
+                return;
+            }
+
+            var onlineCreature = (OnlineCreature)onlineEntity;
+
+            if (onlineCreature.enteringShortCut) // If this call was from a processing event
+            {
+                orig(self, entrancePos, carriedByOther);
+                onlineCreature.enteringShortCut = false;
+            }
+            else if (onlineCreature.isMine)
+            {
+                // tell everyone that I am about to enter a shortcut!
+                onlineCreature.BroadcastSuckedIntoShortCut(entrancePos, carriedByOther);
+            }
+            else
+            {
+                // Clear shortcut that it was meant to enter
+                self.enteringShortCut = null;
+            }
         }
 
     }

@@ -9,7 +9,7 @@ namespace RainMeadow
         [OnlineField(always:true)]
         public OnlineEntity.EntityId entityId;
         [OnlineField(nullable:true, polymorphic:true)]
-        public EntityDataState gamemodeDataState;
+        public EntityDataState gamemodeDataState; // todo make non-null array
         public OnlineEntity.EntityId ID => entityId;
 
         protected EntityState() : base() { }

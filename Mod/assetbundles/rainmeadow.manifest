@@ -1,0 +1,17 @@
+ManifestFileVersion: 0
+CRC: 314117226
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: d0f95553d9af5ef3a1a8a3b2eb0e9019
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 68c985bf88fecc38b460cdb825182138
+HashAppended: 0
+ClassTypes:
+- Class: 48
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/rainmeadow/RM_LeveIltem.shader
+Dependencies: []

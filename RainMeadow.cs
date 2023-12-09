@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Reflection;
 using System.Security.Permissions;
+using UnityEngine;
 
 [assembly: AssemblyVersion(RainMeadow.RainMeadow.MeadowVersionStr)]
 #pragma warning disable CS0618
@@ -117,20 +118,46 @@ namespace RainMeadow
 
                 EmoteHandler.InitializeBuiltinTypes();
 
-
                 sw = Stopwatch.StartNew();
                 RPCManager.SetupRPCs();
                 sw.Stop();
                 RainMeadow.Debug($"RPCManager.SetupRPCs: {sw.Elapsed}");
 
+                AssetBundle bundle = AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("assetbundles/rainmeadow"));
+                Shader[] newShaders = bundle.LoadAllAssets<Shader>();
+                foreach (Shader shader in newShaders)
+                {
+                    RainMeadow.Debug("found shader " + shader.name);
+                    var found = false;
+                    foreach (FShader oldshader in self.Shaders.Values)
+                    {
+                        if (oldshader.shader.name == shader.name)
+                        {
+                            RainMeadow.Debug("replaced existing shader");
+                            oldshader.shader = shader;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if(!found)
+                    {
+                        RainMeadow.Debug("registered as new shader");
+                        self.Shaders[shader.name] = FShader.CreateShader(shader.name, shader);
+                    }
+                }
+
                 MenuHooks();
                 GameHooks();
+                CreatureHooks();
                 EntityHooks();
                 ShortcutHooks();
                 GameplayHooks();
                 PlayerHooks();
                 CustomizationHooks();
                 MeadowHooks();
+                LoadingHooks();
+
+                MeadowMusic.EnableMusic();
 
                 self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
             }

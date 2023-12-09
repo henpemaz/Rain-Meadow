@@ -22,6 +22,21 @@ namespace RainMeadow
             On.RainWorldGame.AllowRainCounterToTick += RainWorldGame_AllowRainCounterToTick;
             On.ShelterDoor.Close += ShelterDoor_Close;
             On.OverWorld.LoadFirstWorld += OverWorld_LoadFirstWorld;
+
+            On.AbstractCreature.ChangeRooms += AbstractCreature_ChangeRooms; // displayer follow creature
+        }
+
+
+        private void AbstractCreature_ChangeRooms(On.AbstractCreature.orig_ChangeRooms orig, AbstractCreature self, WorldCoordinate newCoord)
+        {
+            orig(self, newCoord);
+            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
+            {
+                if (OnlineManager.lobby.gameMode is MeadowGameMode && self.realizedCreature is Creature c && EmoteDisplayer.map.TryGetValue(c, out var displayer))
+                {
+                    displayer.ChangeRooms(newCoord);
+                }
+            }
         }
 
         private void OverWorld_LoadFirstWorld(On.OverWorld.orig_LoadFirstWorld orig, OverWorld self)
