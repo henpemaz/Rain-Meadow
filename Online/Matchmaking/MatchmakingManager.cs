@@ -25,12 +25,17 @@ namespace RainMeadow
 
         public enum LobbyVisibility
         {
+#if LOCAL_P2P
+            [Description("LAN")]
+            LAN = 1,
+#else
             [Description("Public")]
             Public = 1,
             [Description("Friends Only")]
             FriendsOnly,
             [Description("Private")]
             Private
+#endif
         }
 
         public abstract event LobbyListReceived_t OnLobbyListReceived;

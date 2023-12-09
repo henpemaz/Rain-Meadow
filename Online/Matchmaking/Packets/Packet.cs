@@ -9,9 +9,11 @@ namespace RainMeadow
         {
             None,
             RequestJoin,
+            RequestLeave,
             JoinLobby,
             ModifyPlayerList,
             Session,
+            SessionEnd
         }
 
         public abstract Type type { get; }
@@ -51,6 +53,8 @@ namespace RainMeadow
                 Type.ModifyPlayerList => new ModifyPlayerListPacket(),
                 Type.JoinLobby => new JoinLobbyPacket(),
                 Type.Session => new SessionPacket(),
+                Type.RequestLeave => new RequestLeavePacket(),
+                Type.SessionEnd => new SessionEndPacket(),
                 _ => null
             };
 

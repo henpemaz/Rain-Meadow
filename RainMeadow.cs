@@ -131,7 +131,7 @@ namespace RainMeadow
                 PlayerHooks();
                 CustomizationHooks();
                 MeadowHooks();
-                
+                StoryHooks();
             }
             catch (Exception e)
             {

@@ -40,5 +40,10 @@
         {
             ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].realizedCreature as Player).AddQuarterFood();
         }
+
+        [RPCMethod]
+        public static void ReadyPlayer(ushort player) { 
+            
+        }
     }
 }
