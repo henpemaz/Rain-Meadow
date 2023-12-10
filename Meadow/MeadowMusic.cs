@@ -63,7 +63,7 @@ namespace RainMeadow
             orig.Invoke(self, manager);
 
             //Arena mode, etc... won't have Meadow Music, so no point checking the files
-            if (OnlineManager.lobby.gameMode is not MeadowGameMode) return;
+            if (!self.IsStorySession) return;
 
             if (!filesChecked)
             {
