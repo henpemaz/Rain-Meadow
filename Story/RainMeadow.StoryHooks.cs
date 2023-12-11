@@ -23,8 +23,15 @@ namespace RainMeadow
                 //fetch the online entity and check if it is mine. 
                 //If it is mine run the below code
                 //If not, update from the lobby state
-
                 //self.readyForWin = OnlineMAnager.lobby.playerid === fetch if this is ours. 
+
+                if (OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe)) {
+                    if (!oe.isMine) {
+                        self.readyForWin = OnlineManager.lobby.readyForWinPlayers.Contains(oe.owner.inLobbyId);
+                        return;
+                    }
+                }
+                
                 if (self.readyForWin)
                 {
                     if (!OnlineManager.lobby.readyForWinPlayers.Contains(OnlineManager.mePlayer.inLobbyId))
