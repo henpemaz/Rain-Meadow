@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -9,6 +10,56 @@ namespace RainMeadow
         {
             On.Menu.SleepAndDeathScreen.ctor += SleepAndDeathScreen_ctor;
             On.Menu.SleepAndDeathScreen.Update += SleepAndDeathScreen_Update;
+
+            On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
+
+            On.Player.Update += Player_Update;
+        }
+
+        private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
+        {
+            orig(self, eu);
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode storyGameMode) {
+                //fetch the online entity and check if it is mine. 
+                //If it is mine run the below code
+                //If not, update from the lobby state
+
+                //self.readyForWin = OnlineMAnager.lobby.playerid === fetch if this is ours. 
+                if (self.readyForWin)
+                {
+                    if (!OnlineManager.lobby.readyForWinPlayers.Contains(OnlineManager.mePlayer.inLobbyId))
+                    {
+                        if (!(OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.AddReadyToWinPlayer))))
+                        {
+                            OnlineManager.lobby.owner.InvokeRPC(RPCs.AddReadyToWinPlayer);
+                        }
+                    }
+                }
+                else
+                {
+                    if (OnlineManager.lobby.readyForWinPlayers.Contains(OnlineManager.mePlayer.inLobbyId))
+                    {
+                        if (!(OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.RemoveReadyToWinPlayer))))
+                        {
+                            OnlineManager.lobby.owner.InvokeRPC(RPCs.RemoveReadyToWinPlayer);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void KarmaLadderScreen_Singal(On.Menu.KarmaLadderScreen.orig_Singal orig, Menu.KarmaLadderScreen self, Menu.MenuObject sender, string message)
+        {
+            if (OnlineManager.lobby != null 
+                && OnlineManager.lobby.gameMode is StoryGameMode storyGameMode
+                && OnlineManager.lobby.isOwner)
+            {
+                if (message == "CONTINUE")
+                {
+                    //do savestate syncing stuff
+                }
+            }
+            orig(self,sender,message);
         }
 
         private void SleepAndDeathScreen_Update(On.Menu.SleepAndDeathScreen.orig_Update orig, Menu.SleepAndDeathScreen self)
@@ -20,6 +71,7 @@ namespace RainMeadow
 
         private void SleepAndDeathScreen_ctor(On.Menu.SleepAndDeathScreen.orig_ctor orig, Menu.SleepAndDeathScreen self, ProcessManager manager, ProcessManager.ProcessID ID)
         {
+            RainMeadow.Debug("In SleepAndDeath Screen");
             orig(self, manager, ID);
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode storyGameMode) {
                 //Create the READY button
@@ -41,7 +93,7 @@ namespace RainMeadow
         private void ReadyButton_OnClick(SimplerButton obj)
         {
             //OnlineManager.mePlayer
-            //enableContinueButton = true;
+            enableContinueButton = true;
         }
     }
 }

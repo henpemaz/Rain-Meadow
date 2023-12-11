@@ -52,7 +52,7 @@ namespace RainMeadow
 
         private static void LizardAI_Update(On.LizardAI.orig_Update orig, LizardAI self)
         {
-            if (creatureController.TryGetValue(self.creature, out var p))
+            if (creatureControllers.TryGetValue(self.creature, out var p))
             {
                 p.AIUpdate(self);
             }
@@ -65,7 +65,7 @@ namespace RainMeadow
         // might need a new hookpoint between movement planing and movement acting
         private static void Lizard_Act(On.Lizard.orig_Act orig, Lizard self)
         {
-            if (creatureController.TryGetValue(self.abstractCreature, out var p))
+            if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
             {
                 p.ConsciousUpdate();
 
@@ -173,7 +173,7 @@ namespace RainMeadow
 
         private static MovementConnection LizardPather_FollowPath(On.LizardPather.orig_FollowPath orig, LizardPather self, WorldCoordinate originPos, int? bodyDirection, bool actuallyFollowingThisPath)
         {
-            if (creatureController.TryGetValue(self.creature, out var p))
+            if (creatureControllers.TryGetValue(self.creature, out var p))
             {
                 // path will be null if calculating from an inaccessible tile
                 // lizard has code to "pick a nearby accessible tile to calculate from"
@@ -195,7 +195,7 @@ namespace RainMeadow
 
         private static void Lizard_Update(On.Lizard.orig_Update orig, Lizard self, bool eu)
         {
-            if (creatureController.TryGetValue(self.abstractCreature, out var p))
+            if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
             {
                 p.Update(eu);
             }
@@ -205,7 +205,7 @@ namespace RainMeadow
 
         class LizardController : CreatureController
         {
-            public LizardController(Lizard creature, int playerNumber) : base(creature, playerNumber) { }
+            public LizardController(Lizard creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber) { }
 
             public Lizard lizard => creature as Lizard;
 

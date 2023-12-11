@@ -10,7 +10,7 @@ namespace RainMeadow
         public OnlineGameMode gameMode;
         public OnlineGameMode.OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
-
+        public List<ushort> readyForWinPlayers = new List<ushort>();
         public override World World => throw new NotSupportedException(); // Lobby can't add world entities
 
         public event Action OnLobbyAvailable; // for menus
@@ -98,7 +98,7 @@ namespace RainMeadow
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedPlayerIDs players;
             [OnlineField(nullable = true)]
-            public Generics.AddRemoveSortedUshorts readyPlayers;
+            public Generics.AddRemoveSortedUshorts winReadyPlayers;
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedUshorts inLobbyIds;
             [OnlineField]
@@ -111,8 +111,9 @@ namespace RainMeadow
                 nextId = lobby.nextId;
                 players = new(lobby.participants.Keys.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
-
-                if(lobby.gameModeType != OnlineGameMode.OnlineGameModeType.Meadow)
+                winReadyPlayers = new(lobby.readyForWinPlayers.ToList());
+                
+                if (lobby.gameModeType != OnlineGameMode.OnlineGameModeType.Meadow)
                 {
                     food = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
                     quarterfood = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
@@ -145,6 +146,8 @@ namespace RainMeadow
                         playerstate.quarterFoodPoints = quarterfood;
                     }
                 }
+                lobby.readyForWinPlayers = winReadyPlayers.list;
+
                 base.ReadTo(resource);
             }
         }

@@ -21,6 +21,16 @@ namespace RainMeadow
 
             On.RainWorldGame.AllowRainCounterToTick += RainWorldGame_AllowRainCounterToTick;
             On.ShelterDoor.Close += ShelterDoor_Close;
+            On.OverWorld.LoadFirstWorld += OverWorld_LoadFirstWorld;
+        }
+
+        private void OverWorld_LoadFirstWorld(On.OverWorld.orig_LoadFirstWorld orig, OverWorld self)
+        {
+            orig(self);
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                self.activeWorld.rainCycle.timer = 800;
+            }
         }
 
         private void ShelterDoor_Close(On.ShelterDoor.orig_Close orig, ShelterDoor self)
@@ -98,7 +108,7 @@ namespace RainMeadow
                     {
                         self.ReturnFContainer("HUD"),
                         self.ReturnFContainer("HUD2")
-                    }, self.room.game.rainWorld, owner is Player player? player : MeadowCustomization.creatureController.TryGetValue(owner.abstractCreature, out var controller) ? controller : throw new InvalidProgrammerException("Not player nor controlled creature"));
+                    }, self.room.game.rainWorld, owner is Player player? player : MeadowCustomization.creatureControllers.TryGetValue(owner.abstractCreature, out var controller) ? controller : throw new InvalidProgrammerException("Not player nor controlled creature"));
 
                     MeadowCustomization.InitMeadowHud(self);
                 }

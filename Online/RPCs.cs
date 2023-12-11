@@ -42,8 +42,14 @@
         }
 
         [RPCMethod]
-        public static void ReadyPlayer(ushort player) { 
-            
+        public static void AddReadyToWinPlayer(RPCEvent rpcEvent) { 
+            OnlineManager.lobby.readyForWinPlayers.Add(rpcEvent.from.inLobbyId);
+        }
+
+        [RPCMethod]
+        public static void RemoveReadyToWinPlayer(RPCEvent rpcEvent)
+        {
+            OnlineManager.lobby.readyForWinPlayers.Remove(rpcEvent.from.inLobbyId);
         }
     }
 }
