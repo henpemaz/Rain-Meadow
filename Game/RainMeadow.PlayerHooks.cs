@@ -67,7 +67,7 @@ public partial class RainMeadow
 
             if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                OnlineManager.lobby.owner.InvokeRPC(RPCs.AddFood, add);
+                OnlineManager.lobby.owner.InvokeRPC(RPCs.AddFood, (short)add);
             }
         }
     }
