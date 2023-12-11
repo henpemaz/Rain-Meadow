@@ -31,8 +31,10 @@ namespace RainMeadow
                         return;
                     }
                 }
-                
-                if (self.readyForWin)
+
+                if (self.readyForWin 
+                    && self.touchedNoInputCounter > (ModManager.MMF ? 40 : 20)
+                    && RWCustom.Custom.ManhattanDistance(self.abstractCreature.pos.Tile, self.room.shortcuts[0].StartTile) > 3)
                 {
                     if (!OnlineManager.lobby.readyForWinPlayers.Contains(OnlineManager.mePlayer.inLobbyId))
                     {
