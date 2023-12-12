@@ -4,6 +4,7 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using System;
 using System.Linq;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -24,8 +25,18 @@ namespace RainMeadow
             On.OverWorld.LoadFirstWorld += OverWorld_LoadFirstWorld;
 
             On.AbstractCreature.ChangeRooms += AbstractCreature_ChangeRooms; // displayer follow creature
+
+            On.Creature.Update += Creature_Update;
         }
 
+        private void Creature_Update(On.Creature.orig_Update orig, Creature self, bool eu)
+        {
+            orig(self, eu);
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                self.room.AddObject(new PlantPickup(self.firstChunk.pos));
+            }
+        }
 
         private void AbstractCreature_ChangeRooms(On.AbstractCreature.orig_ChangeRooms orig, AbstractCreature self, WorldCoordinate newCoord)
         {
