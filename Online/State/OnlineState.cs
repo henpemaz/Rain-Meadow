@@ -65,6 +65,8 @@ namespace RainMeadow
             public static readonly StateType MeadowPersonaSettingsState = new("MeadowPersonaSettingsState", typeof(MeadowAvatarSettings.MeadowAvatarSettingsState));
             //public static readonly StateType GamemodeDataState = new("GamemodeDataState", typeof(GamemodeDataState));
             public static readonly StateType MeadowCreatureDataState = new("MeadowCreatureDataState", typeof(MeadowCreatureDataState));
+            public static readonly StateType MeadowLobbyState = new("MeadowLobbyState", typeof(MeadowLobbyData.MeadowLobbyState));
+            public static readonly StateType MeadowWorldState = new("MeadowWorldState", typeof(MeadowWorldData.MeadowWorldState));
 
             public static readonly StateType OnlinePhysicalObjectDefinition = new("OnlinePhysicalObjectDefinition", typeof(OnlinePhysicalObjectDefinition));
             public static readonly StateType OnlineCreatureDefinition = new("OnlineCreatureDefinition", typeof(OnlineCreatureDefinition));

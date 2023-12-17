@@ -25,5 +25,10 @@ namespace RainMeadow
             internal static MenuScene.SceneID Slugcat_MeadowSquidcicada = new("Slugcat_MeadowSquidcicada", true);
             internal static MenuScene.SceneID Slugcat_MeadowLizard = new("Slugcat_MeadowLizard", true);
         }
+
+        public class Ext_PhysicalObjectType
+        {
+            public static AbstractPhysicalObject.AbstractObjectType MeadowPlant = new("MeadowPlant", true);
+        }
     }
 }

@@ -27,6 +27,7 @@ namespace RainMeadow
             if (owner == null) throw new Exception("No lobby owner");
             NewOwner(owner);
 
+            activateOnAvailable = true;
             if (isOwner)
             {
                 Available();
@@ -50,16 +51,17 @@ namespace RainMeadow
             {
                 foreach (var r in Region.LoadAllRegions(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer))
                 {
+                    RainMeadow.Debug(r.name);
                     var ws = new WorldSession(r, this);
                     worldSessions.Add(r.name, ws);
                     subresources.Add(ws);
                 }
+                RainMeadow.Debug(subresources.Count);
             }
         }
 
         protected override void AvailableImpl()
         {
-            Activate();
             OnLobbyAvailable?.Invoke();
             OnLobbyAvailable = null;
         }

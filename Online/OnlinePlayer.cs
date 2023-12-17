@@ -142,6 +142,10 @@ namespace RainMeadow
             bytesOut[nextSnapshotIndex] = 0;
             bytesSnapIndex = nextSnapshotIndex;
         }
+        internal TickReference MakeTickReference()
+        {
+            return new TickReference(this);
+        }
 
         public override string ToString()
         {

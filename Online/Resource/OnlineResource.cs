@@ -48,6 +48,10 @@ namespace RainMeadow
             isAvailable = true;
 
             AvailableImpl();
+
+            OnlineManager.lobby.gameMode.ResourceAvailable(this);
+
+            if (this.activateOnAvailable) Activate();
         }
 
         protected abstract void ActivateImpl();
@@ -74,11 +78,14 @@ namespace RainMeadow
                 RainMeadow.Error($"Active but no state available! {this}");
             }
 
+            OnlineManager.lobby.gameMode.ResourceActive(this);
+
             if (releaseWhenPossible) FullyReleaseResource(); // my bad I don't want it anymore
             else if (owner.hasLeft) OnPlayerDisconnect(owner); // I might be late to the party but if I'm the only one here I can claim it now
         }
 
         public bool deactivateOnRelease = true; // hmm turns out we always do this
+        public bool activateOnAvailable;
         public bool releaseWhenPossible;
 
         protected virtual void UnavailableImpl() { }
