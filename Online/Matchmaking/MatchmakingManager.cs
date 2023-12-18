@@ -64,5 +64,7 @@ namespace RainMeadow
         }
 
         public abstract MeadowPlayerId GetEmptyId();
+
+        public abstract string GetLobbyID();
     }
 }

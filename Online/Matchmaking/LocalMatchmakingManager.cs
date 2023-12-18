@@ -203,5 +203,10 @@ namespace RainMeadow
             }
             OnPlayerListReceived?.Invoke(playersinfo.ToArray());
         }
+
+        public override string GetLobbyID()
+        {
+            return "some_id";
+        }
     }
 }
