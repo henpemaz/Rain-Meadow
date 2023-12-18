@@ -5,21 +5,25 @@ namespace RainMeadow
 {
     public partial class RainMeadow
     {
-        private bool enableContinueButton = false;
+        private bool isPlayerReady = false;
+        private bool isStoryMode()
+        {
+            return OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode;
+        }
+
         private void StoryHooks()
         {
             On.Menu.SleepAndDeathScreen.ctor += SleepAndDeathScreen_ctor;
             On.Menu.SleepAndDeathScreen.Update += SleepAndDeathScreen_Update;
 
-            On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
-
             On.Player.Update += Player_Update;
         }
+
 
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {
             orig(self, eu);
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode storyGameMode) {
+            if (isStoryMode()) {
                 //fetch the online entity and check if it is mine. 
                 //If it is mine run the below code
                 //If not, update from the lobby state
@@ -57,25 +61,12 @@ namespace RainMeadow
             }
         }
 
-        private void KarmaLadderScreen_Singal(On.Menu.KarmaLadderScreen.orig_Singal orig, Menu.KarmaLadderScreen self, Menu.MenuObject sender, string message)
-        {
-            if (OnlineManager.lobby != null 
-                && OnlineManager.lobby.gameMode is StoryGameMode storyGameMode
-                && OnlineManager.lobby.isOwner)
-            {
-                if (message == "CONTINUE")
-                {
-                    //do savestate syncing stuff
-                }
-            }
-            orig(self,sender,message);
-        }
-
         private void SleepAndDeathScreen_Update(On.Menu.SleepAndDeathScreen.orig_Update orig, Menu.SleepAndDeathScreen self)
         {
             orig(self);
 
-            self.continueButton.buttonBehav.greyedOut = !enableContinueButton;
+            //if OnlineManager.lobby.onlineStorySaveState isReady
+            self.continueButton.buttonBehav.greyedOut = !isPlayerReady;
         }
 
         private void SleepAndDeathScreen_ctor(On.Menu.SleepAndDeathScreen.orig_ctor orig, Menu.SleepAndDeathScreen self, ProcessManager manager, ProcessManager.ProcessID ID)
@@ -102,7 +93,7 @@ namespace RainMeadow
         private void ReadyButton_OnClick(SimplerButton obj)
         {
             //OnlineManager.mePlayer
-            enableContinueButton = true;
+            isPlayerReady = true;
         }
     }
 }
