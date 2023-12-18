@@ -203,7 +203,7 @@ namespace RainMeadow
 
                         modApplyer.OnFinish += (ModApplyer modApplyer) =>
                         {
-                            Utils.Restart($"+connect_lobby {lobby.Id()}");
+                            Utils.Restart($"+connect_lobby {MatchmakingManager.instance.GetLobbyID()}");
                         };
                     }
 
