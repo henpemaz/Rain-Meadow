@@ -16,7 +16,32 @@ namespace RainMeadow
             On.Menu.SleepAndDeathScreen.ctor += SleepAndDeathScreen_ctor;
             On.Menu.SleepAndDeathScreen.Update += SleepAndDeathScreen_Update;
 
+            On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
+
+            On.SaveState.SessionEnded += SaveState_SessionEnded;
             On.Player.Update += Player_Update;
+        }
+
+        private void KarmaLadderScreen_Singal(On.Menu.KarmaLadderScreen.orig_Singal orig, Menu.KarmaLadderScreen self, Menu.MenuObject sender, string message)
+        {
+            if (isStoryMode()) {
+                if (message == "CONTINUE" && !OnlineManager.lobby.isOwner) {
+                    if (!OnlineManager.lobby.isReadyForNextCycle) {
+                        return;
+                    }
+                }
+            }
+            orig(self, sender, message);
+        }
+
+        private void SaveState_SessionEnded(On.SaveState.orig_SessionEnded orig, SaveState self, RainWorldGame game, bool survived, bool newMalnourished)
+        {
+            if (isStoryMode() && OnlineManager.lobby.isOwner)
+            {
+                OnlineManager.lobby.isReadyForNextCycle = false;
+            }
+            orig(self, game, survived, newMalnourished);
+
         }
 
 
@@ -71,6 +96,8 @@ namespace RainMeadow
 
         private void SleepAndDeathScreen_ctor(On.Menu.SleepAndDeathScreen.orig_ctor orig, Menu.SleepAndDeathScreen self, ProcessManager manager, ProcessManager.ProcessID ID)
         {
+            isPlayerReady = false;
+
             RainMeadow.Debug("In SleepAndDeath Screen");
             orig(self, manager, ID);
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode storyGameMode) {

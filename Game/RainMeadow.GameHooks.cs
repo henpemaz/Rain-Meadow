@@ -12,6 +12,7 @@ namespace RainMeadow
         private void GameHooks()
         {
             On.StoryGameSession.ctor += StoryGameSession_ctor;
+            On.RainWorldGame.ctor += RainWorldGame_ctor;
             On.RainWorldGame.RawUpdate += RainWorldGame_RawUpdate;
             On.RainWorldGame.ShutDownProcess += RainWorldGame_ShutDownProcess;
 
@@ -38,6 +39,13 @@ namespace RainMeadow
 
             //Rain Meadow Music
             MeadowMusic.EnableMusic();
+        }
+
+        private void RainWorldGame_ctor(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
+        {
+            orig(self, manager);
+            if(OnlineManager.lobby != null && OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+                OnlineManager.lobby.isReadyForNextCycle = true;
         }
 
         private void Room_PlaceQuantifiedCreaturesInRoom(On.Room.orig_PlaceQuantifiedCreaturesInRoom orig, Room self, CreatureTemplate.Type critType)

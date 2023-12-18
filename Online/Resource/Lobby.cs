@@ -12,6 +12,8 @@ namespace RainMeadow
         public OnlineGameMode.OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
         public List<ushort> readyForWinPlayers = new List<ushort>();
+        public bool isReadyForNextCycle;
+
         public string[] mods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().ConvertAll(mod => mod.id.ToString()).ToArray();
         public static bool checkingMods;
 
@@ -106,6 +108,8 @@ namespace RainMeadow
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedUshorts inLobbyIds;
             [OnlineField]
+            public bool readyForNextCycle;
+            [OnlineField]
             public int food;
             [OnlineField]
             public int quarterfood;
@@ -119,8 +123,8 @@ namespace RainMeadow
                 inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
                 winReadyPlayers = new(lobby.readyForWinPlayers.ToList());        
                 mods = lobby.mods;
-
-                if(lobby.gameModeType != OnlineGameMode.OnlineGameModeType.Meadow)
+                readyForNextCycle = lobby.isReadyForNextCycle;
+                if (lobby.gameModeType != OnlineGameMode.OnlineGameModeType.Meadow)
                 {
                     food = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
                     quarterfood = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
@@ -131,6 +135,7 @@ namespace RainMeadow
             {
                 var lobby = (Lobby)resource;
                 lobby.nextId = nextId;
+                lobby.isReadyForNextCycle = readyForNextCycle;
                 for (int i = 0; i < players.list.Count; i++)
                 {
                     if (MatchmakingManager.instance.GetPlayer(players.list[i]) is OnlinePlayer p)
@@ -155,7 +160,7 @@ namespace RainMeadow
                 }
                 lobby.readyForWinPlayers = winReadyPlayers.list;
 
-                Menu.Menu menu = (Menu.Menu)RWCustom.Custom.rainWorld.processManager.currentMainLoop;
+                Menu.Menu? menu = RWCustom.Custom.rainWorld.processManager.currentMainLoop as Menu.Menu;
 
                 if (!checkingMods && (menu is MeadowMenu || menu is LobbyMenu))
                 {
