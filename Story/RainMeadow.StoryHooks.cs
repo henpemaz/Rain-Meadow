@@ -36,7 +36,7 @@ namespace RainMeadow
 
         private void SaveState_SessionEnded(On.SaveState.orig_SessionEnded orig, SaveState self, RainWorldGame game, bool survived, bool newMalnourished)
         {
-            if (isStoryMode())
+            if (isStoryMode() && OnlineManager.lobby.isOwner)
             {
                 OnlineManager.lobby.isReadyForNextCycle = false;
             }
@@ -96,6 +96,8 @@ namespace RainMeadow
 
         private void SleepAndDeathScreen_ctor(On.Menu.SleepAndDeathScreen.orig_ctor orig, Menu.SleepAndDeathScreen self, ProcessManager manager, ProcessManager.ProcessID ID)
         {
+            isPlayerReady = false;
+
             RainMeadow.Debug("In SleepAndDeath Screen");
             orig(self, manager, ID);
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode storyGameMode) {

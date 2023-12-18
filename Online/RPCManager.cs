@@ -221,13 +221,17 @@ namespace RainMeadow
                 newArgs.Insert(handler.eventArgIndex, this);
                 args = newArgs.ToArray();
             }
+            try {
+                var nout = from.OutgoingEvents.Count;
+                var result = handler.method.Invoke(target, args);
+                if (from.OutgoingEvents.Count != nout && from.OutgoingEvents.Any(e => e is GenericResult gr && gr.referencedEvent == this)) return;
 
-            var nout = from.OutgoingEvents.Count;
-            var result = handler.method.Invoke(target, args);
-            if (from.OutgoingEvents.Count != nout && from.OutgoingEvents.Any(e => e is GenericResult gr && gr.referencedEvent == this)) return;
-
-            if (result is GenericResult res) from.QueueEvent(res);
-            else from.QueueEvent(new GenericResult.Ok(this));
+                if (result is GenericResult res) from.QueueEvent(res);
+                else from.QueueEvent(new GenericResult.Ok(this));
+            }
+            catch {
+                from.QueueEvent(new GenericResult.Error(this));
+            }
         }
 
         public event Action<GenericResult> OnResolve;

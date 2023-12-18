@@ -14,7 +14,7 @@ namespace RainMeadow
     {
         public static float simulatedLoss = 0.05f;
         public static float simulatedChainLoss = 0.4f;
-        public static float simulatedLatency = 0; //80   turns on delay;
+        public static float simulatedLatency = 80; //80   turns on delay;
         public static float simulatedJitter = 100;
         public static float simulatedJitterPower = 2;
 

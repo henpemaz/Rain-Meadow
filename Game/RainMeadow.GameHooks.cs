@@ -44,7 +44,7 @@ namespace RainMeadow
         private void RainWorldGame_ctor(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
         {
             orig(self, manager);
-            if(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
+            if(OnlineManager.lobby != null && OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
                 OnlineManager.lobby.isReadyForNextCycle = true;
         }
 
