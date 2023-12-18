@@ -387,5 +387,10 @@ namespace RainMeadow
         {
             return OnlineManager.players.FirstOrDefault(p => (p.id as SteamPlayerId).steamID.m_SteamID == steamID);
         }
+
+        public override string GetLobbyID()
+        {
+            return lobbyID.ToString();
+        }
     }
 }
