@@ -25,10 +25,23 @@ namespace RainMeadow
                 return;
             }
 
-            var scug = self.room.game.Players.First(); //needs to be changed if we want to support Jolly
-            var realizedScug = (Player)scug.realizedCreature;
-            if (realizedScug == null || !self.room.PlayersInRoom.Contains(realizedScug)) return;
-            if (!realizedScug.readyForWin) return;
+            if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
+            {
+                //for now force all players to be in the shelter to close the door.
+                var playerIDs = OnlineManager.lobby.participants.Keys.Select(p => p.inLobbyId).ToList();
+                var readyWinPlayers = OnlineManager.lobby.readyForWinPlayers.ToList();
+
+                foreach (var playerID in playerIDs) {
+                    if (!readyWinPlayers.Contains(playerID)) return;
+                }
+
+            }
+            else {
+                var scug = self.room.game.Players.First(); //needs to be changed if we want to support Jolly
+                var realizedScug = (Player)scug.realizedCreature;
+                if (realizedScug == null || !self.room.PlayersInRoom.Contains(realizedScug)) return;
+                if (!realizedScug.readyForWin) return;
+            }
             orig(self);
         }
 

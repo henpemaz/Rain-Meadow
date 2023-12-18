@@ -131,6 +131,7 @@ namespace RainMeadow
                 PlayerHooks();
                 CustomizationHooks();
                 MeadowHooks();
+                StoryHooks();
 
                 self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
             }

@@ -40,5 +40,16 @@
         {
             ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].realizedCreature as Player).AddQuarterFood();
         }
+
+        [RPCMethod]
+        public static void AddReadyToWinPlayer(RPCEvent rpcEvent) { 
+            OnlineManager.lobby.readyForWinPlayers.Add(rpcEvent.from.inLobbyId);
+        }
+
+        [RPCMethod]
+        public static void RemoveReadyToWinPlayer(RPCEvent rpcEvent)
+        {
+            OnlineManager.lobby.readyForWinPlayers.Remove(rpcEvent.from.inLobbyId);
+        }
     }
 }

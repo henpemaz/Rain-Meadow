@@ -11,6 +11,7 @@ namespace RainMeadow
         public OnlineGameMode gameMode;
         public OnlineGameMode.OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
+        public List<ushort> readyForWinPlayers = new List<ushort>();
         public string[] mods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().ConvertAll(mod => mod.id.ToString()).ToArray();
         public static bool checkingMods;
 
@@ -101,6 +102,8 @@ namespace RainMeadow
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedPlayerIDs players;
             [OnlineField(nullable = true)]
+            public Generics.AddRemoveSortedUshorts winReadyPlayers;
+            [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedUshorts inLobbyIds;
             [OnlineField]
             public int food;
@@ -114,6 +117,7 @@ namespace RainMeadow
                 nextId = lobby.nextId;
                 players = new(lobby.participants.Keys.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
+                winReadyPlayers = new(lobby.readyForWinPlayers.ToList());        
                 mods = lobby.mods;
 
                 if(lobby.gameModeType != OnlineGameMode.OnlineGameModeType.Meadow)
@@ -149,6 +153,7 @@ namespace RainMeadow
                         playerstate.quarterFoodPoints = quarterfood;
                     }
                 }
+                lobby.readyForWinPlayers = winReadyPlayers.list;
 
                 Menu.Menu menu = (Menu.Menu)RWCustom.Custom.rainWorld.processManager.currentMainLoop;
 
