@@ -11,7 +11,7 @@ namespace RainMeadow
 {
     internal static class Utils
     {
-        public static void Restart() {
+        public static void Restart(string args = "") {
             Process currentProcess = Process.GetCurrentProcess();
             string text = "\"" + currentProcess.MainModule.FileName + "\"";
             IDictionary environmentVariables = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);
@@ -37,6 +37,7 @@ namespace RainMeadow
             }
             processStartInfo.UseShellExecute = false;
             processStartInfo.FileName = text;
+            processStartInfo.Arguments = args;
             Process.Start(processStartInfo);
             Application.Quit();
         }
