@@ -162,7 +162,7 @@ namespace RainMeadow
 
                 Menu.Menu? menu = RWCustom.Custom.rainWorld.processManager.currentMainLoop as Menu.Menu;
 
-                if (!checkingMods && (menu is MeadowMenu || menu is LobbyMenu))
+                if (!checkingMods && (menu is MeadowMenu || menu is LobbyMenu || menu is ArenaLobbyMenu))
                 {
                     checkingMods = true;
                     if (Enumerable.SequenceEqual(lobby.mods, this.mods))
