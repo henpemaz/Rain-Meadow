@@ -20,6 +20,7 @@ namespace RainMeadow
         public override World World => throw new NotSupportedException(); // Lobby can't add world entities
 
         public event Action OnLobbyAvailable; // for menus
+        public event Action<OnlinePlayer> OnPlayerEntered;
 
         public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner)
         {
@@ -47,7 +48,7 @@ namespace RainMeadow
         {
             if(gameModeType == OnlineGameMode.OnlineGameModeType.ArenaCompetitive) // Arena
             {
-                var nr = new Region("arena", 0, -1, null);
+                var nr = new Region("arena", 0, 0, null);
                 var ns = new WorldSession(nr, this);
                 worldSessions.Add(nr.name, ns);
                 subresources.Add(ns);
@@ -124,7 +125,7 @@ namespace RainMeadow
                 winReadyPlayers = new(lobby.readyForWinPlayers.ToList());        
                 mods = lobby.mods;
                 readyForNextCycle = lobby.isReadyForNextCycle;
-                if (lobby.gameModeType != OnlineGameMode.OnlineGameModeType.Meadow)
+                if (lobby.gameModeType != OnlineGameMode.OnlineGameModeType.Meadow && lobby.gameModeType != OnlineGameMode.OnlineGameModeType.ArenaCompetitive)
                 {
                     food = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
                     quarterfood = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
@@ -149,20 +150,20 @@ namespace RainMeadow
                     }
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
-                if (lobby.gameModeType != OnlineGameMode.OnlineGameModeType.Meadow)
-                {
-                    var playerstate = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState);
-                    if (playerstate != null)
-                    {
-                        playerstate.foodInStomach = food;
-                        playerstate.quarterFoodPoints = quarterfood;
-                    }
-                }
+                //if (lobby.gameModeType != OnlineGameMode.OnlineGameModeType.Meadow)
+                //{
+                //    var playerstate = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState);
+                //    if (playerstate != null)
+                //    {
+                //        playerstate.foodInStomach = food;
+                //        playerstate.quarterFoodPoints = quarterfood;
+                //    }
+                //}
                 lobby.readyForWinPlayers = winReadyPlayers.list;
 
                 Menu.Menu? menu = RWCustom.Custom.rainWorld.processManager.currentMainLoop as Menu.Menu;
 
-                if (!checkingMods && (menu is MeadowMenu || menu is LobbyMenu || menu is ArenaLobbyMenu))
+                if (!checkingMods && (menu is MeadowMenu || menu is LobbyMenu))
                 {
                     checkingMods = true;
                     if (Enumerable.SequenceEqual(lobby.mods, this.mods))
@@ -256,6 +257,7 @@ namespace RainMeadow
             {
                 player.inLobbyId = nextId;
                 RainMeadow.Debug($"Assigned inLobbyId of {nextId} to player {player}");
+                OnPlayerEntered?.Invoke(player);
                 nextId++;
                 // todo overflows and repeats (unrealistic but it's a ushort)
             }

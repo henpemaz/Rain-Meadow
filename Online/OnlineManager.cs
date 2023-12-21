@@ -272,6 +272,16 @@ namespace RainMeadow
                 if (rid == ".") return lobby;
                 if (rid.Length == 2 && lobby.worldSessions.TryGetValue(rid, out var r)) return r;
                 if (rid.Length > 2 && lobby.worldSessions.TryGetValue(rid.Substring(0, 2), out var r2) && r2.roomSessions.TryGetValue(rid.Substring(2), out var room)) return room;
+                if (rid.StartsWith("arena")) // "arena" + room.name
+                {
+                    var ws = lobby.worldSessions.First().Value;
+
+                    if (rid == "arena") return ws;
+
+                    RainMeadow.Debug(string.Join(" | ", ws.roomSessions.Keys));
+
+                    return ws.roomSessions[rid.Replace("arena", "")];
+                }
             }
             RainMeadow.Error("resource not found : " + rid);
             return null;

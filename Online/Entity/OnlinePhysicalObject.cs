@@ -26,7 +26,8 @@ namespace RainMeadow
         {
             if (apo is AbstractCreature ac)
             {
-                var def = new OnlineCreatureDefinition(apo.ID.RandomSeed, apo.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number), OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+                var acString = OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode ? SaveState.AbstractCreatureToStringSingleRoomWorld(ac) : SaveState.AbstractCreatureToStringStoryWorld(ac);
+                var def = new OnlineCreatureDefinition(apo.ID.RandomSeed, apo.realizedObject != null, acString, new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number), OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 return new OnlineCreature(def, ac);
             }
             else

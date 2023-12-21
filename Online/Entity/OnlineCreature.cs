@@ -1,5 +1,6 @@
 ﻿using RWCustom;
 using System;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace RainMeadow
@@ -20,11 +21,26 @@ namespace RainMeadow
             EntityID id = world.game.GetNewID();
             id.altSeed = newCreatureEvent.seed;
 
-            RainMeadow.Debug("serializedObject: " + newCreatureEvent.serializedObject);
-            AbstractCreature ac = SaveState.AbstractCreatureFromString(inResource.World, newCreatureEvent.serializedObject, false);
-            ac.ID = id;
+            if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode)
+            {
+                string[] array = Regex.Split(newCreatureEvent.serializedObject, "<cA>");
+                EntityID entityID = EntityID.FromString(array[1]);
 
-            return new OnlineCreature(newCreatureEvent, ac);
+                CreatureTemplate.Type type = new CreatureTemplate.Type(array[0], false);
+                RainMeadow.Debug("serializedObject: " + newCreatureEvent.serializedObject);
+                AbstractCreature ac = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, new WorldCoordinate(0, -1, -1, -1), entityID);
+                ac.ID = id;
+
+                return new OnlineCreature(newCreatureEvent, ac);
+            } else
+            {
+
+                RainMeadow.Debug("serializedObject: " + newCreatureEvent.serializedObject);
+                AbstractCreature ac = SaveState.AbstractCreatureFromString(inResource.World, newCreatureEvent.serializedObject, false);
+                ac.ID = id;
+
+                return new OnlineCreature(newCreatureEvent, ac);
+            }
         }
 
         protected override EntityState MakeState(uint tick, OnlineResource inResource)
