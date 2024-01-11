@@ -36,10 +36,10 @@ namespace RainMeadow
                 if (playerIDs.Count == readytoProceedPlayers.Count) // All players present
                 {
                     Console.WriteLine("All players present");
-                    self.Update(eu); // Update calls all required methods to manage gate, which iterates through all players in PlayersInZone. 
+                    orig(self, eu); // Update calls all required methods to manage gate, which iterates through all players in PlayersInZone. 
                 } else
                 {
-                    self.Update(eu); // Needs testing, base code seems to support notifying players that aren't at gate.
+                   orig(self, eu); // Needs testing, base code seems to support notifying players that aren't at gate.
                 }
 
                 
