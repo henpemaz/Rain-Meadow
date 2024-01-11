@@ -15,6 +15,36 @@ namespace RainMeadow
             On.Creature.Grasp.ctor += GraspOnctor;
             On.PhysicalObject.Grabbed += PhysicalObjectOnGrabbed;
             On.Creature.SuckedIntoShortCut += CreatureSuckedIntoShortCut;
+            On.RegionGate.Update += RegionGateTransition;
+        }
+
+        private void RegionGateTransition(On.RegionGate.orig_Update orig,  RegionGate self, bool eu)
+        {
+            // If lobby was empty or not story, ignore the custom hook
+            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not StoryGameMode)
+            {
+                orig(self, eu);
+                return;
+            }
+            // If we have an online game, run the hook.
+            if (OnlineManager.lobby.gameMode is StoryGameMode)
+
+            {
+                var playerIDs = OnlineManager.lobby.participants.Keys.Select(p => p.inLobbyId).ToList();
+                var readytoProceedPlayers = self.room.game.PlayersToProgressOrWin.ToList();
+
+                if (playerIDs.Count == readytoProceedPlayers.Count) // All players present
+                {
+                    Console.WriteLine("All players present");
+                    self.Update(eu); // Update calls all required methods to manage gate, which iterates through all players in PlayersInZone. 
+                } else
+                {
+                    self.Update(eu); // Needs testing, base code seems to support notifying players that aren't at gate.
+                }
+
+                
+            }
+
         }
 
         private void ShelterDoorOnClose(On.ShelterDoor.orig_Close orig, ShelterDoor self)
