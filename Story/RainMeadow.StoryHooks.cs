@@ -20,13 +20,18 @@ namespace RainMeadow
 
             On.SaveState.SessionEnded += SaveState_SessionEnded;
             On.Player.Update += Player_Update;
+            On.RegionGate.Update += RegionGateTransition;
+
         }
 
         private void KarmaLadderScreen_Singal(On.Menu.KarmaLadderScreen.orig_Singal orig, Menu.KarmaLadderScreen self, Menu.MenuObject sender, string message)
         {
-            if (isStoryMode()) {
-                if (message == "CONTINUE" && !OnlineManager.lobby.isOwner) {
-                    if (!OnlineManager.lobby.isReadyForNextCycle) {
+            if (isStoryMode())
+            {
+                if (message == "CONTINUE" && !OnlineManager.lobby.isOwner)
+                {
+                    if (!OnlineManager.lobby.isReadyForNextCycle)
+                    {
                         return;
                     }
                 }
@@ -48,20 +53,23 @@ namespace RainMeadow
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {
             orig(self, eu);
-            if (isStoryMode()) {
+            if (isStoryMode())
+            {
                 //fetch the online entity and check if it is mine. 
                 //If it is mine run the below code
                 //If not, update from the lobby state
                 //self.readyForWin = OnlineMAnager.lobby.playerid === fetch if this is ours. 
 
-                if (OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe)) {
-                    if (!oe.isMine) {
+                if (OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe))
+                {
+                    if (!oe.isMine)
+                    {
                         self.readyForWin = OnlineManager.lobby.readyForWinPlayers.Contains(oe.owner.inLobbyId);
                         return;
                     }
                 }
 
-                if (self.readyForWin 
+                if (self.readyForWin
                     && self.touchedNoInputCounter > (ModManager.MMF ? 40 : 20)
                     && RWCustom.Custom.ManhattanDistance(self.abstractCreature.pos.Tile, self.room.shortcuts[0].StartTile) > 3)
                 {
@@ -100,12 +108,13 @@ namespace RainMeadow
 
             RainMeadow.Debug("In SleepAndDeath Screen");
             orig(self, manager, ID);
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode storyGameMode) {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
+            {
                 //Create the READY button
                 var buttonPosX = self.ContinueAndExitButtonsXPos - 180f - self.manager.rainWorld.options.SafeScreenOffset.x;
                 var buttonPosY = Mathf.Max(self.manager.rainWorld.options.SafeScreenOffset.y, 53f);
-                var readyButton = new SimplerButton(self, self.pages[0], "READY", 
-                    new Vector2(buttonPosX, buttonPosY), 
+                var readyButton = new SimplerButton(self, self.pages[0], "READY",
+                    new Vector2(buttonPosX, buttonPosY),
                     new Vector2(110f, 30f));
 
                 readyButton.OnClick += ReadyButton_OnClick;
@@ -121,6 +130,36 @@ namespace RainMeadow
         {
             //OnlineManager.mePlayer
             isPlayerReady = true;
+        }
+
+        private void RegionGateTransition(On.RegionGate.orig_Update orig, RegionGate self, bool eu)
+        {
+            // If lobby was empty or not story, ignore the custom hook
+            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not StoryGameMode)
+            {
+                orig(self, eu);
+                return;
+            }
+            // If we have an online game, run the hook.
+            if (OnlineManager.lobby.gameMode is StoryGameMode)
+
+            {
+                var playerIDs = OnlineManager.lobby.participants.Keys.Select(p => p.inLobbyId).ToList();
+                var readytoProceedPlayers = self.room.game.PlayersToProgressOrWin.ToList();
+
+                if (playerIDs.Count == readytoProceedPlayers.Count) // All players present
+                {
+                    Console.WriteLine("All players present");
+                    orig(self, eu); // Update calls all required methods to manage gate, which iterates through all players in PlayersInZone. 
+                }
+                else
+                {
+                    orig(self, eu); // Needs testing, base code seems to support notifying players that aren't at gate.
+                }
+
+
+            }
+
         }
     }
 }
