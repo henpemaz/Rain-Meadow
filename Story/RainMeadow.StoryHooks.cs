@@ -134,32 +134,23 @@ namespace RainMeadow
 
         private void RegionGateTransition(On.RegionGate.orig_Update orig, RegionGate self, bool eu)
         {
-            // If lobby was empty or not story, ignore the custom hook
-            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not StoryGameMode)
+            if (OnlineManager.lobby == null || !(OnlineManager.lobby.gameMode is StoryGameMode))
             {
                 orig(self, eu);
                 return;
             }
-            // If we have an online game, run the hook.
-            if (OnlineManager.lobby.gameMode is StoryGameMode)
 
+            var playerIDs = OnlineManager.lobby.participants.Keys.Select(p => p.inLobbyId).ToList();
+            var readytoProceedPlayers = self.room.game.PlayersToProgressOrWin.ToList();
+
+            if (playerIDs.Count == readytoProceedPlayers.Count) // All players present
             {
-                var playerIDs = OnlineManager.lobby.participants.Keys.Select(p => p.inLobbyId).ToList();
-                var readytoProceedPlayers = self.room.game.PlayersToProgressOrWin.ToList();
-
-                if (playerIDs.Count == readytoProceedPlayers.Count) // All players present
-                {
-                    Console.WriteLine("All players present");
-                    orig(self, eu); // Update calls all required methods to manage gate, which iterates through all players in PlayersInZone. 
-                }
-                else
-                {
-                    orig(self, eu); // Needs testing, base code seems to support notifying players that aren't at gate.
-                }
-
-
+                orig(self, eu); // Update calls all required methods to manage gate, which iterates through all players in PlayersInZone. 
             }
-
+            else
+            {
+                orig(self, eu); //TODO: Handle this?. 
+            }
         }
     }
 }
