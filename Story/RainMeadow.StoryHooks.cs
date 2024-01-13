@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -140,17 +141,17 @@ namespace RainMeadow
                 return;
             }
 
-            var playerIDs = OnlineManager.lobby.participants.Keys.Select(p => p.inLobbyId).ToList();
-            var readytoProceedPlayers = self.room.game.PlayersToProgressOrWin.ToList();
+            //var playerIDs = OnlineManager.lobby.participants.Keys.Select(p => p.inLobbyId).ToList();
+            //var readytoProceedPlayers = self.room.game.PlayersToProgressOrWin.ToList();
 
-            if (playerIDs.Count == readytoProceedPlayers.Count) // All players present
-            {
-                orig(self, eu); // Update calls all required methods to manage gate, which iterates through all players in PlayersInZone. 
+            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars) {
+                if (playerAvatar.Value.realizedCreature.room != self.room) {
+                    //playerAvatar.Value.realizedCreature.abstractCreature;    //to get the player abstractCreature
+                    return;
+                }
             }
-            else
-            {
-                orig(self, eu); //TODO: Handle this?. 
-            }
+
+            orig(self, eu);
         }
     }
 }

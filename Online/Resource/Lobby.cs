@@ -11,6 +11,7 @@ namespace RainMeadow
         public OnlineGameMode gameMode;
         public OnlineGameMode.OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
+        public Dictionary<ushort, OnlineCreature> playerAvatars = new(); //key:lobbyID | Value:slugcat AbstractCreature
         public List<ushort> readyForWinPlayers = new List<ushort>();
         public bool isReadyForNextCycle;
 
