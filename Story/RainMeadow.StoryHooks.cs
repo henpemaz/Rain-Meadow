@@ -22,6 +22,8 @@ namespace RainMeadow
             On.SaveState.SessionEnded += SaveState_SessionEnded;
             On.Player.Update += Player_Update;
             On.RegionGate.Update += RegionGateTransition;
+            On.RegionGate.AllPlayersThroughToOtherSide += AllPlayersThroughtoOtherSide;
+            On.RegionGate.PlayersStandingStill += PlayersStandingStill;
 
         }
 
@@ -135,23 +137,121 @@ namespace RainMeadow
 
         private void RegionGateTransition(On.RegionGate.orig_Update orig, RegionGate self, bool eu)
         {
-            if (OnlineManager.lobby == null || !(OnlineManager.lobby.gameMode is StoryGameMode))
+            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not StoryGameMode)
             {
                 orig(self, eu);
                 return;
             }
 
-            //var playerIDs = OnlineManager.lobby.participants.Keys.Select(p => p.inLobbyId).ToList();
-            //var readytoProceedPlayers = self.room.game.PlayersToProgressOrWin.ToList();
-
-            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars) {
-                if (playerAvatar.Value.realizedCreature.room != self.room) {
-                    //playerAvatar.Value.realizedCreature.abstractCreature;    //to get the player abstractCreature
+            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
+            {
+                if (playerAvatar.Value.realizedCreature.room != self.room)
+                {
                     return;
                 }
             }
 
             orig(self, eu);
         }
-    }
+        private bool AllPlayersThroughtoOtherSide(On.RegionGate.orig_AllPlayersThroughToOtherSide orig, RegionGate self)
+        {
+
+            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not StoryGameMode)
+            {
+                orig(self);
+                return true;
+            }
+
+
+            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
+            {
+                if (playerAvatar.Value.realizedCreature.room.abstractRoom.index == self.room.abstractRoom.index && (playerAvatar.Value.apo.pos.x < self.room.TileWidth / 2 + 3) && (playerAvatar.Value.apo.pos.x > self.room.TileWidth / 2 - 4))
+                {
+                    return false;
+                }
+            }
+            return true;
+
+            // Do not call original method. 
+            // TODO: Can we access abstractCreature pos through .apo safely?
+        }
+
+        private bool PlayersStandingStill(On.RegionGate.orig_PlayersStandingStill orig, RegionGate self)
+        {
+
+            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not StoryGameMode)
+            {
+                orig(self);
+                return false;
+            }
+
+            // 1.Two lists of type AbstractCreature are created to check if anyone's not at the room.
+            // 2. If a player is not currently in the RegionGate room, notify
+            // 3. Need a way to access AbstractCreature if OnlineCreature does not suffice;
+
+            List<OnlineCreature> playersInRegionGateRoomList = new List<OnlineCreature>();
+            List<OnlineCreature> playersInGameRoomList = new List<OnlineCreature>();
+
+            bool flag = false;
+
+
+            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
+            { 
+
+                if (playerAvatar.Value.realizedCreature == null)
+                {
+                    continue;
+                }
+
+                
+                if (playerAvatar.Value.realizedCreature.room != self.room)
+                {
+                    playersInGameRoomList.Add(playerAvatar.Value); // List of everyone not present
+
+                }
+                playersInRegionGateRoomList.Add(playerAvatar.Value); // List of everyone present in RegionGate
+
+                if (!playersInGameRoomList.Contains(playerAvatar.Value)) // if playerAvatar is not an AbstractCreature, the List will need to be updated to contain an AbstractCreature
+                {
+
+                    // TODO:
+                    // 1. Do we have a HUD Controller?
+                    // 2. Do we have on-screen notifier?
+
+
+/*                    int playerNumber = (playerAvatar.state as PlayerState).playerNumber;
+                    JollyCustom.Log("Player " + playerNumber + " not in gate " + playersInGameRoomList.Count);
+                    try
+                    {
+                        playerAvatar.Value.realizedCreature.room.game.cameras[0].hud.jollyMeter.customFade = 20f;
+                        playerAvatar.Value.realizedCreature.room.game.cameras[0].hud.jollyMeter.playerIcons[playerNumber].blinkRed = 20;
+                    }
+                    catch
+                    {
+                        // No catch, very cool
+                    }*/
+                    flag = true;
+                }
+                if ((playerAvatar.Value.realizedCreature as Player).touchedNoInputCounter < 20 && ((playerAvatar.Value.realizedCreature as Player).onBack == null)) // Unsafe
+                {
+                    flag = true;
+                }
+            }
+            if (flag)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        }
+   
+
 }
+
+
+
+
+
+
