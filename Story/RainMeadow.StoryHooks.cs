@@ -6,8 +6,7 @@ using MonoMod.Cil;
 using System;
 using Mono.Cecil.Cil;
 using HUD;
-using static Sony.PS4.SaveData.Dialogs;
-using UnityEngine.Android;
+
 
 namespace RainMeadow
 {
@@ -200,7 +199,7 @@ namespace RainMeadow
 
                 if (playerAvatar.Value.realizedCreature.room != self.room)
                 {
-
+                    print("NOT IN ROOM");
                     break;
                 }
 
@@ -209,6 +208,7 @@ namespace RainMeadow
                     num = num2;
                     continue;
                 }
+                print("NOT IN ZONE");
                 num = -1;
                 break;
 
@@ -224,8 +224,7 @@ namespace RainMeadow
                     {
                         try
                         {
-                            // TODO: HUD
-                            print("REGIONGATE - PlayersInZone Not all players in zone");
+                            // TODO: HUD notification
                         }
                         catch (Exception ex)
                         {
@@ -267,18 +266,21 @@ namespace RainMeadow
                 if (playerAvatar.Value.realizedCreature.room != self.room)
                 {
                     playersInGameRoomList.Add(playerAvatar.Value.realizedCreature.abstractCreature); // List of everyone not present
+                    print($"Adding ID: {playerAvatar.Value.id} to NOT HERE list");
 
                 }
                 playersInRegionGateRoomList.Add(playerAvatar.Value.realizedCreature.abstractCreature); // List of everyone present in RegionGate
+                print($"Adding ID: {playerAvatar.Value.id} to PRESENT list");
+
 
                 if (!playersInGameRoomList.Contains(playerAvatar.Value.realizedCreature.abstractCreature))
                 {
-                  print("REGIONGATE - PlayersStandingStill: Not everyone is here");
-
+     
                     try
                     {
                         // TODO: ILHook into  HUD of players not present for blink red
                         // TODO: Custom HUD for multiplayer showing 4 slug cat sprites?
+                        
                     }
                     catch (Exception ex)
                     {
@@ -287,7 +289,7 @@ namespace RainMeadow
                     notifyKeepDoorShut = true;
                 }
 
-                // TODO: Access player inputs to see if standing still
+                // TODO: Do we want to force all players to stand still or just assume StandingInZone is good enough?
 /*                if ()
                 {
 
