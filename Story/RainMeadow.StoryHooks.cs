@@ -1,6 +1,13 @@
 ﻿using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
+using static RainMeadow.MeadowCustomization;
+using MonoMod.Cil;
+using System;
+using Mono.Cecil.Cil;
+using HUD;
+using static Sony.PS4.SaveData.Dialogs;
+using UnityEngine.Android;
 
 namespace RainMeadow
 {
@@ -24,6 +31,8 @@ namespace RainMeadow
             On.RegionGate.Update += RegionGateTransition;
             On.RegionGate.AllPlayersThroughToOtherSide += AllPlayersThroughtoOtherSide;
             On.RegionGate.PlayersStandingStill += PlayersStandingStill;
+            On.RegionGate.PlayersInZone += PlayersInZone;
+            IL.HUD.KarmaMeter.UpdateGraphic += HUDILKarmaBlinkRed;
 
         }
 
@@ -145,7 +154,7 @@ namespace RainMeadow
 
             foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
             {
-                if (playerAvatar.Value.realizedCreature.room != self.room)
+                if (playerAvatar.Value.realizedCreature.room != self.room) // Everyone must be present
                 {
                     return;
                 }
@@ -171,9 +180,71 @@ namespace RainMeadow
                 }
             }
             return true;
-
             // Do not call original method. 
-            // TODO: Can we access abstractCreature pos through .apo safely?
+        }
+
+
+        public int PlayersInZone(On.RegionGate.orig_PlayersInZone orig, RegionGate self)
+        {
+
+            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not StoryGameMode)
+            {
+                orig(self);
+                return -1;
+
+            }
+
+            int num = -1;
+            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
+            {
+
+                int num2 = self.DetectZone(playerAvatar.Value); // wants an AbstractCreature
+
+                if (playerAvatar.Value.realizedCreature.room != self.room)
+                {
+                    break;
+                }
+
+                if (num2 != num || num != -1)
+                {
+                    num = -1;
+                    break;
+                }
+
+                num = num2;
+
+            }
+
+
+            if (num < 0 && self.room.BeingViewed)
+            {
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
+                {
+
+                    if (self.DetectZone(playerAvatar.Value) == -1)
+                    {
+                        try
+                        {
+                            // TODO: HUD
+
+                            // self.room.game.cameras[0].hud.jollyMeter.customFade = 20f;
+                            // self.room.game.cameras[0].hud.jollyMeter.playerIcons[(item2.state as PlayerState).playerNumber].blinkRed = 20;*/
+                        }
+                        catch
+                        {
+                            // No catch, very cool
+                        }
+                    }
+
+                }
+
+
+                return num;
+            }
+
+            return num;
+
+
         }
 
         private bool PlayersStandingStill(On.RegionGate.orig_PlayersStandingStill orig, RegionGate self)
@@ -185,9 +256,6 @@ namespace RainMeadow
                 return false;
             }
 
-            // 1.Two lists of type AbstractCreature are created to check if anyone's not at the room.
-            // 2. If a player is not currently in the RegionGate room, notify
-            // 3. Need a way to access AbstractCreature if OnlineCreature does not suffice;
 
             List<OnlineCreature> playersInRegionGateRoomList = new List<OnlineCreature>();
             List<OnlineCreature> playersInGameRoomList = new List<OnlineCreature>();
@@ -196,14 +264,14 @@ namespace RainMeadow
 
 
             foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
-            { 
+            {
 
                 if (playerAvatar.Value.realizedCreature == null)
                 {
                     continue;
                 }
 
-                
+
                 if (playerAvatar.Value.realizedCreature.room != self.room)
                 {
                     playersInGameRoomList.Add(playerAvatar.Value); // List of everyone not present
@@ -211,31 +279,30 @@ namespace RainMeadow
                 }
                 playersInRegionGateRoomList.Add(playerAvatar.Value); // List of everyone present in RegionGate
 
-                if (!playersInGameRoomList.Contains(playerAvatar.Value)) // if playerAvatar is not an AbstractCreature, the List will need to be updated to contain an AbstractCreature
+                if (!playersInGameRoomList.Contains(playerAvatar.Value))
                 {
 
-                    // TODO:
-                    // 1. Do we have a HUD Controller?
-                    // 2. Do we have on-screen notifier?
-
-
-/*                    int playerNumber = (playerAvatar.state as PlayerState).playerNumber;
-                    JollyCustom.Log("Player " + playerNumber + " not in gate " + playersInGameRoomList.Count);
+                    print("Player " + playerAvatar.Value.id + " not in gate " + playersInGameRoomList.Count);
                     try
                     {
-                        playerAvatar.Value.realizedCreature.room.game.cameras[0].hud.jollyMeter.customFade = 20f;
-                        playerAvatar.Value.realizedCreature.room.game.cameras[0].hud.jollyMeter.playerIcons[playerNumber].blinkRed = 20;
+                        // TODO: ILHook into  HUD of players not present for blink red
+                        // TODO: Custom HUD for multiplayer showing 4 slug cat sprites?
                     }
                     catch
                     {
                         // No catch, very cool
-                    }*/
+                    }
                     flag = true;
                 }
-                if ((playerAvatar.Value.realizedCreature as Player).touchedNoInputCounter < 20 && ((playerAvatar.Value.realizedCreature as Player).onBack == null)) // Unsafe
+
+
+                // TODO: Access player inputs to see if standing still?
+                // if ()
+
                 {
                     flag = true;
                 }
+
             }
             if (flag)
             {
@@ -245,8 +312,28 @@ namespace RainMeadow
             return true;
         }
 
+
+
+
+        private static void HUDILKarmaBlinkRed(ILContext il) // TODO: Build out HUD and rewrite this
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((KarmaMeter self) =>
+                {
+                    self.blinkRed = true;
+                });
+            }
+            catch (Exception ex)
+            {
+                print("ILHook failed - HUDKarmaBlinkRed");
+                print(ex);
+            }
         }
-   
+
+    }
 
 }
 
