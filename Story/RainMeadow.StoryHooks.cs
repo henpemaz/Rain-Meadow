@@ -91,7 +91,10 @@ namespace RainMeadow
             orig(self);
 
             //if OnlineManager.lobby.onlineStorySaveState isReady
-            self.continueButton.buttonBehav.greyedOut = !isPlayerReady;
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
+            {
+                self.continueButton.buttonBehav.greyedOut = !isPlayerReady;
+            }
         }
 
         private void SleepAndDeathScreen_ctor(On.Menu.SleepAndDeathScreen.orig_ctor orig, Menu.SleepAndDeathScreen self, ProcessManager manager, ProcessManager.ProcessID ID)
