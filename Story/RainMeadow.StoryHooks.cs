@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace RainMeadow
 {
@@ -13,6 +14,8 @@ namespace RainMeadow
 
         private void StoryHooks()
         {
+            On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
+            On.PlayerProgression.GetProgLinesFromMemory += PlayerProgression_GetProgLinesFromMemory;
             On.Menu.SleepAndDeathScreen.ctor += SleepAndDeathScreen_ctor;
             On.Menu.SleepAndDeathScreen.Update += SleepAndDeathScreen_Update;
 
@@ -20,6 +23,31 @@ namespace RainMeadow
 
             On.SaveState.SessionEnded += SaveState_SessionEnded;
             On.Player.Update += Player_Update;
+        }
+
+        private string[] PlayerProgression_GetProgLinesFromMemory(On.PlayerProgression.orig_GetProgLinesFromMemory orig, PlayerProgression self)
+        {
+            var saveStateArr = orig(self);
+            if (isStoryMode() && OnlineManager.lobby.isOwner) {
+                if (saveStateArr != null) {
+                    for (int i = 0; i < saveStateArr.Length; i++) {
+                        string[] progressStringArr = Regex.Split(saveStateArr[i], "<progDivB>");
+                        if (progressStringArr.Length == 2 && progressStringArr[0] == "SAVE STATE") { 
+                            OnlineManager.lobby.saveStateProgressString = progressStringArr[1];
+                        }
+                    }
+                }
+            }
+            return saveStateArr;
+        }
+
+        private SaveState PlayerProgression_GetOrInitiateSaveState(On.PlayerProgression.orig_GetOrInitiateSaveState orig, PlayerProgression self, SlugcatStats.Name saveStateNumber, RainWorldGame game, ProcessManager.MenuSetup setup, bool saveAsDeathOrQuit)
+        {
+            if (isStoryMode() && !OnlineManager.lobby.isOwner && OnlineManager.lobby.saveStateProgressString != null) {
+                self.currentSaveState.LoadGame(OnlineManager.lobby.saveStateProgressString, game); //pretty sure we can just stuff the string here
+                return self.currentSaveState;
+            }
+            return orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit); ;
         }
 
         private void KarmaLadderScreen_Singal(On.Menu.KarmaLadderScreen.orig_Singal orig, Menu.KarmaLadderScreen self, Menu.MenuObject sender, string message)

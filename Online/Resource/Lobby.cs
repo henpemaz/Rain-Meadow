@@ -13,6 +13,7 @@ namespace RainMeadow
         public Dictionary<string, WorldSession> worldSessions = new();
         public List<ushort> readyForWinPlayers = new List<ushort>();
         public bool isReadyForNextCycle;
+        public string? saveStateProgressString = null;
 
         public string[] mods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().ConvertAll(mod => mod.id.ToString()).ToArray();
         public static bool checkingMods;
