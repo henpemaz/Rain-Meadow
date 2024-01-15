@@ -43,11 +43,12 @@ namespace RainMeadow
 
         private SaveState PlayerProgression_GetOrInitiateSaveState(On.PlayerProgression.orig_GetOrInitiateSaveState orig, PlayerProgression self, SlugcatStats.Name saveStateNumber, RainWorldGame game, ProcessManager.MenuSetup setup, bool saveAsDeathOrQuit)
         {
+            var origSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
             if (isStoryMode() && !OnlineManager.lobby.isOwner && OnlineManager.lobby.saveStateProgressString != null) {
                 self.currentSaveState.LoadGame(OnlineManager.lobby.saveStateProgressString, game); //pretty sure we can just stuff the string here
                 return self.currentSaveState;
             }
-            return orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit); ;
+            return origSaveState;
         }
 
         private void KarmaLadderScreen_Singal(On.Menu.KarmaLadderScreen.orig_Singal orig, Menu.KarmaLadderScreen self, Menu.MenuObject sender, string message)

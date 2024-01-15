@@ -116,6 +116,8 @@ namespace RainMeadow
             public int quarterfood;
             [OnlineField]
             public string[] mods;
+            [OnlineField(nullable = true)]
+            public string? playerProgressSaveState;
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
@@ -125,8 +127,9 @@ namespace RainMeadow
                 winReadyPlayers = new(lobby.readyForWinPlayers.ToList());        
                 mods = lobby.mods;
                 readyForNextCycle = lobby.isReadyForNextCycle;
-                if (lobby.gameModeType != OnlineGameMode.OnlineGameModeType.Meadow)
+                if (lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Story)
                 {
+                    playerProgressSaveState = lobby.saveStateProgressString;
                     food = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
                     quarterfood = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
                 }
@@ -160,7 +163,7 @@ namespace RainMeadow
                     }
                 }
                 lobby.readyForWinPlayers = winReadyPlayers.list;
-
+                lobby.saveStateProgressString = playerProgressSaveState;
                 Menu.Menu? menu = RWCustom.Custom.rainWorld.processManager.currentMainLoop as Menu.Menu;
 
                 if (!checkingMods && (menu is MeadowMenu || menu is LobbyMenu || menu is ArenaLobbyMenu))
