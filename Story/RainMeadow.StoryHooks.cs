@@ -32,7 +32,6 @@ namespace RainMeadow
             On.RegionGate.AllPlayersThroughToOtherSide += AllPlayersThroughtoOtherSide;
             On.RegionGate.PlayersStandingStill += PlayersStandingStill;
             On.RegionGate.PlayersInZone += PlayersInZone;
-            IL.HUD.KarmaMeter.UpdateGraphic += HUDILKarmaBlinkRed;
 
         }
 
@@ -171,10 +170,9 @@ namespace RainMeadow
                 return true;
             }
 
-
             foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
             {
-                if (playerAvatar.Value.realizedCreature.room.abstractRoom.index == self.room.abstractRoom.index && (playerAvatar.Value.apo.pos.x < self.room.TileWidth / 2 + 3) && (playerAvatar.Value.apo.pos.x > self.room.TileWidth / 2 - 4))
+                if (playerAvatar.Value.apo.pos.room == self.room.abstractRoom.index && (playerAvatar.Value.apo.pos.x < self.room.TileWidth / 2 + 3) && (playerAvatar.Value.apo.pos.x > self.room.TileWidth / 2 - 4))
                 {
                     return false;
                 }
@@ -184,34 +182,35 @@ namespace RainMeadow
         }
 
 
-        public int PlayersInZone(On.RegionGate.orig_PlayersInZone orig, RegionGate self)
+        private int PlayersInZone(On.RegionGate.orig_PlayersInZone orig, RegionGate self)
         {
+            int num = -1;
 
             if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not StoryGameMode)
             {
                 orig(self);
-                return -1;
+                return num;
 
             }
 
-            int num = -1;
             foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
             {
 
-                int num2 = self.DetectZone(playerAvatar.Value); // wants an AbstractCreature
+                int num2 = self.DetectZone(playerAvatar.Value.realizedCreature.abstractCreature);
 
                 if (playerAvatar.Value.realizedCreature.room != self.room)
                 {
+
                     break;
                 }
 
-                if (num2 != num || num != -1)
+                if (num2 == num || num == -1)
                 {
-                    num = -1;
-                    break;
+                    num = num2;
+                    continue;
                 }
-
-                num = num2;
+                num = -1;
+                break;
 
             }
 
@@ -221,52 +220,45 @@ namespace RainMeadow
                 foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
                 {
 
-                    if (self.DetectZone(playerAvatar.Value) == -1)
+                    if (self.DetectZone(playerAvatar.Value.realizedCreature.abstractCreature) == -1)
                     {
                         try
                         {
                             // TODO: HUD
-
-                            // self.room.game.cameras[0].hud.jollyMeter.customFade = 20f;
-                            // self.room.game.cameras[0].hud.jollyMeter.playerIcons[(item2.state as PlayerState).playerNumber].blinkRed = 20;*/
+                            print("REGIONGATE - PlayersInZone Not all players in zone");
                         }
-                        catch
+                        catch (Exception ex)
                         {
-                            // No catch, very cool
+                            Error(ex);
                         }
                     }
 
                 }
-
-
                 return num;
             }
-
+            print($"PLAYERS IN ZONE: {num}");
             return num;
-
-
+            // Do not call the original method
         }
 
         private bool PlayersStandingStill(On.RegionGate.orig_PlayersStandingStill orig, RegionGate self)
         {
+            bool notifyKeepDoorShut = false;
 
             if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not StoryGameMode)
             {
                 orig(self);
-                return false;
+                return notifyKeepDoorShut;
             }
 
 
-            List<OnlineCreature> playersInRegionGateRoomList = new List<OnlineCreature>();
-            List<OnlineCreature> playersInGameRoomList = new List<OnlineCreature>();
-
-            bool flag = false;
-
+            List<AbstractCreature> playersInRegionGateRoomList = new List<AbstractCreature>();
+            List<AbstractCreature> playersInGameRoomList = new List<AbstractCreature>();
 
             foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
             {
 
-                if (playerAvatar.Value.realizedCreature == null)
+                if (playerAvatar.Value.realizedCreature.abstractCreature == null)
                 {
                     continue;
                 }
@@ -274,63 +266,40 @@ namespace RainMeadow
 
                 if (playerAvatar.Value.realizedCreature.room != self.room)
                 {
-                    playersInGameRoomList.Add(playerAvatar.Value); // List of everyone not present
+                    playersInGameRoomList.Add(playerAvatar.Value.realizedCreature.abstractCreature); // List of everyone not present
 
                 }
-                playersInRegionGateRoomList.Add(playerAvatar.Value); // List of everyone present in RegionGate
+                playersInRegionGateRoomList.Add(playerAvatar.Value.realizedCreature.abstractCreature); // List of everyone present in RegionGate
 
-                if (!playersInGameRoomList.Contains(playerAvatar.Value))
+                if (!playersInGameRoomList.Contains(playerAvatar.Value.realizedCreature.abstractCreature))
                 {
+                  print("REGIONGATE - PlayersStandingStill: Not everyone is here");
 
-                    print("Player " + playerAvatar.Value.id + " not in gate " + playersInGameRoomList.Count);
                     try
                     {
                         // TODO: ILHook into  HUD of players not present for blink red
                         // TODO: Custom HUD for multiplayer showing 4 slug cat sprites?
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // No catch, very cool
+                        Error(ex);
                     }
-                    flag = true;
+                    notifyKeepDoorShut = true;
                 }
 
-
-                // TODO: Access player inputs to see if standing still?
-                // if ()
-
+                // TODO: Access player inputs to see if standing still
+/*                if ()
                 {
-                    flag = true;
-                }
+
+                }*/
 
             }
-            if (flag)
+            if (notifyKeepDoorShut)
             {
                 return false;
             }
-
             return true;
-        }
-
-
-
-
-        private static void HUDILKarmaBlinkRed(ILContext il) // TODO: Build out HUD and rewrite this
-        {
-            try
-            {
-                var c = new ILCursor(il);
-                c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((KarmaMeter self) =>
-                {
-                    self.blinkRed = true;
-                });
-            }
-            catch (Exception ex)
-            {
-                print("ILHook failed - HUDKarmaBlinkRed");
-                print(ex);
-            }
+            // Do not call the original method
         }
 
     }
