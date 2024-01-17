@@ -237,19 +237,15 @@ namespace RainMeadow
             }
 
             foreach (var kv in OnlineManager.lobby.playerAvatars) {
-                if (kv.Value.realizedCreature.abstractCreature.Room == self.room.abstractRoom)
+                if (kv.Value.realizedCreature.abstractCreature.Room != self.room.abstractRoom
+                    || (kv.Value.realizedCreature as Player).touchedNoInputCounter < (ModManager.MMF ? 40 : 20))
                 {
-                    if ((kv.Value.realizedCreature as Player).touchedNoInputCounter >= 20)
-                    {
-                        return true;
-                    }
-                }
-                else {
                     RainMeadow.Debug("Player(s) missing in region gate location");
+                    return false;
                 }
             }
 
-            return false;
+            return true;
         }
 
     }
