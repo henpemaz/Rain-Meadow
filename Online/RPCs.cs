@@ -53,15 +53,44 @@
         }
 
         [RPCMethod]
-        public static void AddPlayersInZone(RPCEvent rpcEvent)
-        {
-            OnlineManager.lobby.playersInZone.Add(rpcEvent.from.inLobbyId);
+        public static void RequestPlayerAvatar(RPCEvent rpcEvent, ushort inLobbyId) {
+            rpcEvent.from.InvokeRPC(RPCs.AddPlayerAvatar, inLobbyId, OnlineManager.lobby.playerAvatars[inLobbyId]);
         }
 
         [RPCMethod]
-        public static void RemovePlayersInZone(RPCEvent rpcEvent)
+        public static void AddPlayerAvatar(RPCEvent rpcEvent, ushort inLobbyId, OnlineCreature avatar)
         {
-            OnlineManager.lobby.playersInZone.Remove(rpcEvent.from.inLobbyId);
+            if (avatar == null) {
+                rpcEvent.from.InvokeRPC(RPCs.RequestPlayerAvatar, inLobbyId);
+                return;
+            }
+            OnlineManager.lobby.playerAvatars[inLobbyId] = avatar;
+
+            if (OnlineManager.lobby.isOwner) {
+                foreach (var player in OnlineManager.players) {
+                    if (player != OnlineManager.lobby.owner) {
+                        player.InvokeRPC(RPCs.AddPlayerAvatar, inLobbyId, avatar);
+                    }
+                }
+            }
+
+        }
+
+        [RPCMethod]
+        public static void RemovePlayerAvatar(RPCEvent rpcEvent, ushort inLobbyId)
+        {
+            OnlineManager.lobby.playerAvatars.Remove(inLobbyId);
+
+            if (OnlineManager.lobby.isOwner)
+            {
+                foreach (var player in OnlineManager.players)
+                {
+                    if (player != OnlineManager.lobby.owner)
+                    {
+                        player.InvokeRPC(RPCs.RemovePlayerAvatar, inLobbyId);
+                    }
+                }
+            }
         }
     }
 }

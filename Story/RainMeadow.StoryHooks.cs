@@ -26,6 +26,7 @@ namespace RainMeadow
 
             On.SaveState.SessionEnded += SaveState_SessionEnded;
             On.Player.Update += Player_Update;
+
             On.RegionGate.Update += RegionGateTransition;
             On.RegionGate.AllPlayersThroughToOtherSide += AllPlayersThroughtoOtherSide;
             On.RegionGate.PlayersStandingStill += PlayersStandingStill;
@@ -182,62 +183,27 @@ namespace RainMeadow
 
         private int PlayersInZone(On.RegionGate.orig_PlayersInZone orig, RegionGate self)
         {
-            int num = -1;
-
             if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not StoryGameMode)
             {
-                orig(self);
-                return num;
-
+                return orig(self);
             }
-
+            int regionGateZone = -1;
             foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
             {
-
-                int num2 = self.DetectZone(playerAvatar.Value.realizedCreature.abstractCreature);
-
-                if (playerAvatar.Value.realizedCreature.room != self.room)
+                var abstractCreature = playerAvatar.Value.realizedCreature.abstractCreature;
+                if (abstractCreature.Room == self.room.abstractRoom)
                 {
-                    break; // Really not necessary to iterate right now, but just leaving it
-                }
-
-                if (num2 == num || num == -1)
-                {
-                    num = num2;
-
-                    if (OnlinePhysicalObject.map.TryGetValue(playerAvatar.Value.realizedCreature.abstractCreature, out var oe)) // The lobby will hold data. What data does not-me need? // 
-                    {
-                        if (!oe.isMine) 
-                        {
-                            self.dontOpen = !OnlineManager.lobby.playersInZone.Contains(oe.owner.inLobbyId);
-                            
-                        }
+                    int zone = self.DetectZone(abstractCreature);
+                    if (zone != regionGateZone && regionGateZone != -1) {
+                        return -1;
                     }
-
-                    if (!OnlineManager.lobby.playersInZone.Contains(OnlineManager.mePlayer.inLobbyId))
-                    {
-                        if (!(OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.AddPlayersInZone))))
-                        {
-                            OnlineManager.lobby.owner.InvokeRPC(RPCs.AddPlayersInZone);
-                        }
-                    }
-                    continue;
+                    regionGateZone = zone;
                 }
-
-                // If not in Zone
-                if (OnlineManager.lobby.playersInZone.Contains(OnlineManager.mePlayer.inLobbyId))
-                {
-                    if (!(OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.RemovePlayersInZone))))
-                    {
-                        OnlineManager.lobby.owner.InvokeRPC(RPCs.RemovePlayersInZone);
-                    }
-                }
-                num = -1;
-                break;
-
             }
+
+            return regionGateZone;
             // TODO: HUD stuff
-/*            if (num < 0 && self.room.BeingViewed)
+            /* if (num < 0 && self.room.BeingViewed)
             {
                 foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
                 {
@@ -258,8 +224,7 @@ namespace RainMeadow
                 }
                 return num;
             }*/
-            print($"PLAYERS IN ZONE: {OnlineManager.lobby.playersInZone.Count} ");
-            return OnlineManager.lobby.playersInZone.Count;
+            //RainMeadow.Debug($"PLAYERS IN ZONE: {OnlineManager.lobby.playersInZone.Count} ");
             // Do not call the original method
         }
 
@@ -268,17 +233,24 @@ namespace RainMeadow
 
             if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not StoryGameMode)
             {
-                orig(self);
+                return orig(self);
             }
-            if (self.PlayersInZone() == OnlineManager.lobby.participants.Count) // TODO: Maybe add some fake delay to protect users from being locked out
-            {
-                return true;
+
+            foreach (var kv in OnlineManager.lobby.playerAvatars) {
+                if (kv.Value.realizedCreature.abstractCreature.Room == self.room.abstractRoom)
+                {
+                    if ((kv.Value.realizedCreature as Player).touchedNoInputCounter >= 20)
+                    {
+                        return true;
+                    }
+                }
+                else {
+                    RainMeadow.Debug("Player(s) missing in region gate location");
+                }
             }
 
             return false;
         }
-
-
 
     }
 
