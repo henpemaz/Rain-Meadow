@@ -1,4 +1,6 @@
-﻿namespace RainMeadow
+﻿using System.Linq;
+
+namespace RainMeadow
 {
     public static class RPCs
     {
@@ -54,7 +56,10 @@
 
         [RPCMethod]
         public static void RequestPlayerAvatar(RPCEvent rpcEvent, ushort inLobbyId) {
-            rpcEvent.from.InvokeRPC(RPCs.AddPlayerAvatar, inLobbyId, OnlineManager.lobby.playerAvatars[inLobbyId]);
+            if (!(rpcEvent.from.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.AddPlayerAvatar, inLobbyId, OnlineManager.lobby.playerAvatars[inLobbyId]))))
+            {
+                rpcEvent.from.InvokeRPC(RPCs.AddPlayerAvatar, inLobbyId, OnlineManager.lobby.playerAvatars[inLobbyId]);
+            }
         }
 
         [RPCMethod]
@@ -69,7 +74,10 @@
             if (OnlineManager.lobby.isOwner) {
                 foreach (var player in OnlineManager.players) {
                     if (player != OnlineManager.lobby.owner) {
-                        player.InvokeRPC(RPCs.AddPlayerAvatar, inLobbyId, avatar);
+                        if (!(player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.AddPlayerAvatar, inLobbyId, avatar))))
+                        {
+                            player.InvokeRPC(RPCs.AddPlayerAvatar, inLobbyId, avatar);
+                        }
                     }
                 }
             }
