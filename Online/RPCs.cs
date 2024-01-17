@@ -51,5 +51,17 @@
         {
             OnlineManager.lobby.readyForWinPlayers.Remove(rpcEvent.from.inLobbyId);
         }
+
+        [RPCMethod]
+        public static void AddPlayersInZone(RPCEvent rpcEvent)
+        {
+            OnlineManager.lobby.playersInZone.Add(rpcEvent.from.inLobbyId);
+        }
+
+        [RPCMethod]
+        public static void RemovePlayersInZone(RPCEvent rpcEvent)
+        {
+            OnlineManager.lobby.playersInZone.Remove(rpcEvent.from.inLobbyId);
+        }
     }
 }

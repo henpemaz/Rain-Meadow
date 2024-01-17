@@ -7,7 +7,6 @@ using System;
 using Mono.Cecil.Cil;
 using HUD;
 
-
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -199,23 +198,46 @@ namespace RainMeadow
 
                 if (playerAvatar.Value.realizedCreature.room != self.room)
                 {
-                    print("NOT IN ROOM");
-                    break;
+                    break; // Really not necessary to iterate right now, but just leaving it
                 }
 
                 if (num2 == num || num == -1)
                 {
                     num = num2;
+
+                    if (OnlinePhysicalObject.map.TryGetValue(playerAvatar.Value.realizedCreature.abstractCreature, out var oe)) // The lobby will hold data. What data does not-me need? // 
+                    {
+                        if (!oe.isMine) 
+                        {
+                            self.dontOpen = !OnlineManager.lobby.playersInZone.Contains(oe.owner.inLobbyId);
+                            
+                        }
+                    }
+
+                    if (!OnlineManager.lobby.playersInZone.Contains(OnlineManager.mePlayer.inLobbyId))
+                    {
+                        if (!(OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.AddPlayersInZone))))
+                        {
+                            OnlineManager.lobby.owner.InvokeRPC(RPCs.AddPlayersInZone);
+                        }
+                    }
                     continue;
                 }
-                print("NOT IN ZONE");
+
+                // If not in Zone
+                if (OnlineManager.lobby.playersInZone.Contains(OnlineManager.mePlayer.inLobbyId))
+                {
+                    if (!(OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.RemovePlayersInZone))))
+                    {
+                        OnlineManager.lobby.owner.InvokeRPC(RPCs.RemovePlayersInZone);
+                    }
+                }
                 num = -1;
                 break;
 
             }
-
-
-            if (num < 0 && self.room.BeingViewed)
+            // TODO: HUD stuff
+/*            if (num < 0 && self.room.BeingViewed)
             {
                 foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
                 {
@@ -224,6 +246,7 @@ namespace RainMeadow
                     {
                         try
                         {
+                            print("A HUD Notificatino should occur here");
                             // TODO: HUD notification
                         }
                         catch (Exception ex)
@@ -234,75 +257,28 @@ namespace RainMeadow
 
                 }
                 return num;
-            }
-            print($"PLAYERS IN ZONE: {num}");
-            return num;
+            }*/
+            print($"PLAYERS IN ZONE: {OnlineManager.lobby.playersInZone.Count} ");
+            return OnlineManager.lobby.playersInZone.Count;
             // Do not call the original method
         }
 
         private bool PlayersStandingStill(On.RegionGate.orig_PlayersStandingStill orig, RegionGate self)
         {
-            bool notifyKeepDoorShut = false;
 
             if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not StoryGameMode)
             {
                 orig(self);
-                return notifyKeepDoorShut;
             }
-
-
-            List<AbstractCreature> playersInRegionGateRoomList = new List<AbstractCreature>();
-            List<AbstractCreature> playersInGameRoomList = new List<AbstractCreature>();
-
-            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
+            if (self.PlayersInZone() == OnlineManager.lobby.participants.Count) // TODO: Maybe add some fake delay to protect users from being locked out
             {
-
-                if (playerAvatar.Value.realizedCreature.abstractCreature == null)
-                {
-                    continue;
-                }
-
-
-                if (playerAvatar.Value.realizedCreature.room != self.room)
-                {
-                    playersInGameRoomList.Add(playerAvatar.Value.realizedCreature.abstractCreature); // List of everyone not present
-                    print($"Adding ID: {playerAvatar.Value.id} to NOT HERE list");
-
-                }
-                playersInRegionGateRoomList.Add(playerAvatar.Value.realizedCreature.abstractCreature); // List of everyone present in RegionGate
-                print($"Adding ID: {playerAvatar.Value.id} to PRESENT list");
-
-
-                if (!playersInGameRoomList.Contains(playerAvatar.Value.realizedCreature.abstractCreature))
-                {
-     
-                    try
-                    {
-                        // TODO: ILHook into  HUD of players not present for blink red
-                        // TODO: Custom HUD for multiplayer showing 4 slug cat sprites?
-                        
-                    }
-                    catch (Exception ex)
-                    {
-                        Error(ex);
-                    }
-                    notifyKeepDoorShut = true;
-                }
-
-                // TODO: Do we want to force all players to stand still or just assume StandingInZone is good enough?
-/*                if ()
-                {
-
-                }*/
-
+                return true;
             }
-            if (notifyKeepDoorShut)
-            {
-                return false;
-            }
-            return true;
-            // Do not call the original method
+
+            return false;
         }
+
+
 
     }
 
