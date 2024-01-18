@@ -177,7 +177,6 @@ namespace RainMeadow
                 }
             }
             return true;
-            // Do not call original method. 
         }
 
 
@@ -194,7 +193,8 @@ namespace RainMeadow
                 if (abstractCreature.Room == self.room.abstractRoom)
                 {
                     int zone = self.DetectZone(abstractCreature);
-                    if (zone != regionGateZone && regionGateZone != -1) {
+                    if (zone != regionGateZone && regionGateZone != -1)
+                    {
                         return -1;
                     }
                     regionGateZone = zone;
@@ -203,29 +203,7 @@ namespace RainMeadow
 
             return regionGateZone;
             // TODO: HUD stuff
-            /* if (num < 0 && self.room.BeingViewed)
-            {
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
-                {
 
-                    if (self.DetectZone(playerAvatar.Value.realizedCreature.abstractCreature) == -1)
-                    {
-                        try
-                        {
-                            print("A HUD Notificatino should occur here");
-                            // TODO: HUD notification
-                        }
-                        catch (Exception ex)
-                        {
-                            Error(ex);
-                        }
-                    }
-
-                }
-                return num;
-            }*/
-            //RainMeadow.Debug($"PLAYERS IN ZONE: {OnlineManager.lobby.playersInZone.Count} ");
-            // Do not call the original method
         }
 
         private bool PlayersStandingStill(On.RegionGate.orig_PlayersStandingStill orig, RegionGate self)
@@ -236,7 +214,8 @@ namespace RainMeadow
                 return orig(self);
             }
 
-            foreach (var kv in OnlineManager.lobby.playerAvatars) {
+            foreach (var kv in OnlineManager.lobby.playerAvatars)
+            {
                 if (kv.Value.realizedCreature.abstractCreature.Room != self.room.abstractRoom
                     || (kv.Value.realizedCreature as Player).touchedNoInputCounter < (ModManager.MMF ? 40 : 20))
                 {

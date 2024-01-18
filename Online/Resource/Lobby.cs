@@ -13,7 +13,6 @@ namespace RainMeadow
         public Dictionary<string, WorldSession> worldSessions = new();
         public Dictionary<ushort, OnlineCreature> playerAvatars = new(); //key:lobbyID | Value:slugcat AbstractCreature
         public List<ushort> readyForWinPlayers = new List<ushort>();
-        public List<ushort> playersInZone = new List<ushort>();
         public bool isReadyForNextCycle;
 
         public string[] mods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().ConvertAll(mod => mod.id.ToString()).ToArray();
@@ -47,7 +46,7 @@ namespace RainMeadow
 
         protected override void ActivateImpl()
         {
-            if(gameModeType == OnlineGameMode.OnlineGameModeType.ArenaCompetitive) // Arena
+            if (gameModeType == OnlineGameMode.OnlineGameModeType.ArenaCompetitive) // Arena
             {
                 var nr = new Region("arena", 0, -1, null);
                 var ns = new WorldSession(nr, this);
@@ -107,8 +106,7 @@ namespace RainMeadow
             public Generics.AddRemoveSortedPlayerIDs players;
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedUshorts winReadyPlayers;
-            [OnlineField(nullable = true)]
-            public Generics.AddRemoveSortedUshorts playersInZone;
+
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedUshorts inLobbyIds;
             [OnlineField]
@@ -125,8 +123,7 @@ namespace RainMeadow
                 nextId = lobby.nextId;
                 players = new(lobby.participants.Keys.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
-                winReadyPlayers = new(lobby.readyForWinPlayers.ToList()); 
-                playersInZone = new(lobby.playersInZone.ToList());
+                winReadyPlayers = new(lobby.readyForWinPlayers.ToList());
                 mods = lobby.mods;
                 readyForNextCycle = lobby.isReadyForNextCycle;
                 if (lobby.gameModeType != OnlineGameMode.OnlineGameModeType.Meadow)
@@ -164,7 +161,6 @@ namespace RainMeadow
                     }
                 }
                 lobby.readyForWinPlayers = winReadyPlayers.list;
-                lobby.playersInZone = playersInZone.list;
 
                 Menu.Menu? menu = RWCustom.Custom.rainWorld.processManager.currentMainLoop as Menu.Menu;
 
@@ -174,7 +170,8 @@ namespace RainMeadow
                     if (Enumerable.SequenceEqual(lobby.mods, this.mods))
                     {
                         RainMeadow.Debug("Same mod set !");
-                    } else
+                    }
+                    else
                     {
                         RainMeadow.Debug("Mismatching mod set");
 
