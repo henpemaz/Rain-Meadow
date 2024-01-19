@@ -122,6 +122,23 @@ namespace RainMeadow
                         self.slugcatDepth = 3.1000001f;
                     }
                 }
+                else if (self.slugcatNumber == RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer && self is StoryCharacterSelectPage story)
+                {
+                    if (story.character == SkinSelection.Character.Slugcat)
+                    {
+                        sceneID = Menu.MenuScene.SceneID.Slugcat_White;
+                        self.sceneOffset = new Vector2(-10f, 100f);
+                        self.slugcatDepth = 3.1000001f;
+                    }
+                    
+                        if (story.character == SkinSelection.Character.Slugcat)
+                        {
+                            sceneID = Menu.MenuScene.SceneID.Slugcat_Red;
+                            self.sceneOffset = new Vector2(-10f, 100f);
+                            self.slugcatDepth = 3.1000001f;
+                        }
+
+                    }
             });
         }
 
@@ -142,6 +159,11 @@ namespace RainMeadow
             if (ID == Ext_ProcessID.LobbyMenu)
             {
                 self.currentMainLoop = new LobbyMenu(self);
+            }
+
+            if (ID == Ext_ProcessID.StoryMenu)
+            {
+                self.currentMainLoop = new StoryMenu(self);
             }
 
 #if !LOCAL_P2P
