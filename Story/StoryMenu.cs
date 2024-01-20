@@ -103,10 +103,10 @@ namespace RainMeadow
 
             colorpicker = new OpTinyColorPicker(this, new Vector2(800, 60), "FFFFFF"); // todo read stored
             var wrapper = new UIelementWrapper(this.tabWrapper, colorpicker);
-            tabWrapper._tab.AddItems(colorpicker.colorPicker); // so much work for a nested object man...
-            colorpicker.colorPicker.wrapper = wrapper;
+            tabWrapper._tab.AddItems(colorpicker.colorPicker);
+/*          colorpicker.colorPicker.wrapper = wrapper;
             colorpicker.colorPicker.Hide();
-            colorpicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
+            colorpicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;*/
             // todo update a preview of some sort for the resulting tinted color!
 
             var label = new MenuLabel(this, mainPage, this.Translate("Tint color"), new Vector2(845, 60), new(0, 30), false);
@@ -129,7 +129,7 @@ namespace RainMeadow
             }
         }
 
-        private void Colorpicker_OnValueChangedEvent()
+/*        private void Colorpicker_OnValueChangedEvent()
         {
             if (personaSettings != null) personaSettings.tint = colorpicker.valuecolor;
         }
@@ -143,7 +143,7 @@ namespace RainMeadow
         public override float ValueOfSlider(Slider slider)
         {
             return tintAmount;
-        }
+        }*/
 
         private void UpdateCharacterUI()
         {
@@ -196,14 +196,14 @@ namespace RainMeadow
 
         }
 
-        private void BindSettings()
+/*        private void BindSettings()
         {
             this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
             //personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][skinIndex];
             personaSettings.tint = colorpicker.valuecolor;
             personaSettings.tintAmount = this.tintAmount;
 
-        }
+        }*/
 
     private void StartGame()
     {
@@ -227,7 +227,7 @@ namespace RainMeadow
     }
 
     int skinIndex;
-    private StoryAvatarSettings personaSettings;
+    //private StoryAvatarSettings personaSettings;
     private OpTinyColorPicker colorpicker;
 
     public int GetCurrentlySelectedOfSeries(string series) // SelectOneButton.SelectOneButtonOwner

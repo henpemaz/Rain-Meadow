@@ -70,17 +70,17 @@ namespace RainMeadow
             return "";
         }
 
-/*        public string GetCharacterName()
-        {
-            if (character == SkinSelection.Character.Slugcat)
-            {
-                return "SLUGCAT";
-            }
+        /*        public string GetCharacterName()
+                {
+                    if (character == SkinSelection.Character.Slugcat)
+                    {
+                        return "SLUGCAT";
+                    }
 
-            RainMeadow.Error("no name string for " + this.character);
-            return "";
-        }
-*/
+                    RainMeadow.Error("no name string for " + this.character);
+                    return "";
+                }
+        */
         public override void GrafUpdate(float timeStacker)
         {
             base.GrafUpdate(timeStacker);
