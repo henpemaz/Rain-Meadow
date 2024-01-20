@@ -7,9 +7,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    // Progression is the content unlock system
     // Characters, skins, emotes are listed here
-    // Saving loading what's unlocked is handled here
     public static class CharacterSelection
     {
 
@@ -78,7 +76,7 @@ namespace RainMeadow
         }
 
 
-        public class Skin : ExtEnum<Skin>
+        public class Skin : ExtEnum<Skin> // Does nothing for now
         {
             public Skin(string value, bool register = false, SkinData skinDataEntry = null) : base(value, register)
             {
@@ -101,7 +99,7 @@ namespace RainMeadow
         public static List<SlugcatStats.Name> AllAvailableCharacters()
         {
             
-            return SlugcatStats.Name.values.entries.Select(s => new SlugcatStats.Name(s)).ToList();
+            return SlugcatStats.Name.values.entries.Select(s => new SlugcatStats.Name(s)).ToList(); 
         }
     }
 }

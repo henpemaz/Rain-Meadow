@@ -45,22 +45,14 @@ namespace RainMeadow
             playableCharacters = CharacterSelection.AllAvailableCharacters();
             characterSkins = new();
 
-            // TODO: Hook original slugcat selection menu?
-
-
             for (int j = 0; j < this.playableCharacters.Count; j++)
             {
 
                 this.characterPages.Add(new StoryCharacterSelectPage(this, ssm, 1 + j, this.playableCharacters[j]));
                 if (characterPages[j].sceneOffset.y == 0) characterPages[0].sceneOffset = new Vector2(-10f, 100f);
                 this.pages.Add(this.characterPages[j]);
-                /*
-                                var skins = CharacterSelection.AllAvailableSkins(this.playableCharacters[j]);
-                                RainMeadow.Debug(skins);
-                                RainMeadow.Debug(skins.Select(s => s.ToString()).Aggregate((a, b) => (a + b)));
-                                characterSkins[playableCharacters[j]] = skins;*/
+ 
             }
-
 
             this.startButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
             this.startButton.OnClick += (_) => { StartGame(); };
@@ -101,20 +93,7 @@ namespace RainMeadow
             }
             this.players = players.ToArray();
 
-            colorpicker = new OpTinyColorPicker(this, new Vector2(800, 60), "FFFFFF"); // todo read stored
-            var wrapper = new UIelementWrapper(this.tabWrapper, colorpicker);
-            tabWrapper._tab.AddItems(colorpicker.colorPicker);
-/*          colorpicker.colorPicker.wrapper = wrapper;
-            colorpicker.colorPicker.Hide();
-            colorpicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;*/
-            // todo update a preview of some sort for the resulting tinted color!
-
-            var label = new MenuLabel(this, mainPage, this.Translate("Tint color"), new Vector2(845, 60), new(0, 30), false);
-            label.label.alignment = FLabelAlignment.Left;
-            this.pages[0].subObjects.Add(label);
-
-            var slider = new SubtleSlider2(this, mainPage, "Tint amount", new Vector2(800, 30), new Vector2(100, 30));
-            this.pages[0].subObjects.Add(slider);
+            // TODO: Skin + Eye customization
 
             UpdateCharacterUI();
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
@@ -128,22 +107,6 @@ namespace RainMeadow
                 OnlineManager.lobby.OnLobbyAvailable += OnLobbyAvailable;
             }
         }
-
-/*        private void Colorpicker_OnValueChangedEvent()
-        {
-            if (personaSettings != null) personaSettings.tint = colorpicker.valuecolor;
-        }
-
-        float tintAmount;
-        public override void SliderSetValue(Slider slider, float f)
-        {
-            tintAmount = f;
-            if (personaSettings != null) personaSettings.tintAmount = f;
-        }
-        public override float ValueOfSlider(Slider slider)
-        {
-            return tintAmount;
-        }*/
 
         private void UpdateCharacterUI()
         {
@@ -179,8 +142,6 @@ namespace RainMeadow
                     var sign = (int)Mathf.Sign(ssm.quedSideInput);
                     ssm.slugcatPageIndex += sign;
                     ssm.slugcatPageIndex = (ssm.slugcatPageIndex + ssm.slugcatPages.Count) % ssm.slugcatPages.Count;
-                    /*                    skinIndex = Mathf.Min(skinIndex, characterSkins[playableCharacters[ssm.slugcatPageIndex]].Count);
-                                        if (personaSettings != null) personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][skinIndex];*/
                     ssm.scroll = -sign;
                     ssm.lastScroll = -sign;
                     ssm.quedSideInput -= sign;
@@ -192,18 +153,8 @@ namespace RainMeadow
         private void OnLobbyAvailable()
         {
             startButton.buttonBehav.greyedOut = false;
-            // BindSettings(); //Null Ref at the moment, probably Emotes HUD
 
         }
-
-/*        private void BindSettings()
-        {
-            this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
-            //personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][skinIndex];
-            personaSettings.tint = colorpicker.valuecolor;
-            personaSettings.tintAmount = this.tintAmount;
-
-        }*/
 
     private void StartGame()
     {
@@ -227,7 +178,6 @@ namespace RainMeadow
     }
 
     int skinIndex;
-    //private StoryAvatarSettings personaSettings;
     private OpTinyColorPicker colorpicker;
 
     public int GetCurrentlySelectedOfSeries(string series) // SelectOneButton.SelectOneButtonOwner
@@ -238,7 +188,6 @@ namespace RainMeadow
     public void SetCurrentlySelectedOfSeries(string series, int to) // SelectOneButton.SelectOneButtonOwner
     {
         skinIndex = to;
-        /*if (personaSettings != null) personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][to];*/
     }
 
     private void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)

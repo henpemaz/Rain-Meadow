@@ -52,6 +52,11 @@ namespace RainMeadow
                 return "Four Pebbles";
             }
 
+            if (character == SlugcatStats.Name.Yellow)
+            {
+                return "Fluffy stuff";
+            }
+
 
             RainMeadow.Error("no status string for " + this.slugcatNumber);
             return "";
@@ -63,6 +68,11 @@ namespace RainMeadow
             if (character == SlugcatStats.Name.White)
             {
                 return "2h37";
+            }
+
+            if (character == SlugcatStats.Name.Red)
+            {
+                return "0 cycles left";
             }
 
 
