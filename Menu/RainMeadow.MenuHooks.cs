@@ -6,6 +6,8 @@ using System.IO;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using Menu;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -79,7 +81,7 @@ namespace RainMeadow
             if (File.Exists(path2))
             {
                 string[] array3 = File.ReadAllLines(path2);
-                
+
                 for (int num3 = 0; num3 < array3.Length && num3 < self.depthIllustrations.Count; num3++)
                 {
                     self.depthIllustrations[num3].pos.x = float.Parse(Regex.Split(RWCustom.Custom.ValidateSpacedDelimiter(array3[num3], ","), ", ")[0], NumberStyles.Any, CultureInfo.InvariantCulture);
@@ -91,6 +93,7 @@ namespace RainMeadow
 
         private void SlugcatPage_AddImage(ILContext il)
         {
+            var SlugData = new List<SlugcatStats.Name>();
             var c = new ILCursor(il);
             c.Index = il.Instrs.Count - 1;
             c.GotoPrev(MoveType.Before,
@@ -100,7 +103,8 @@ namespace RainMeadow
             c.MoveAfterLabels();
             c.Emit(OpCodes.Ldarg_0);
             c.Emit(OpCodes.Ldloca, 0);
-            c.EmitDelegate((SlugcatSelectMenu.SlugcatPage self, ref MenuScene.SceneID sceneID) => {
+            c.EmitDelegate((SlugcatSelectMenu.SlugcatPage self, ref MenuScene.SceneID sceneID) =>
+            {
                 if (self.slugcatNumber == RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer && self is MeadowCharacterSelectPage mcsp)
                 {
                     if (mcsp.character == MeadowProgression.Character.Slugcat)
@@ -122,23 +126,35 @@ namespace RainMeadow
                         self.slugcatDepth = 3.1000001f;
                     }
                 }
-                else if (self.slugcatNumber == RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer && self is StoryCharacterSelectPage story)
+                if (self.slugcatNumber == RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer && self is StoryCharacterSelectPage story)
                 {
-                    if (story.character == SkinSelection.Character.Slugcat)
+                    // TODO: Find a better way to pull the existing image data so I don't have to manually type this out.
+
                     {
-                        sceneID = Menu.MenuScene.SceneID.Slugcat_White;
-                        self.sceneOffset = new Vector2(-10f, 100f);
-                        self.slugcatDepth = 3.1000001f;
-                    }
-                    
-                        if (story.character == SkinSelection.Character.Slugcat)
+                        if (story.character == SlugcatStats.Name.White)
+                        {
+                            sceneID = Menu.MenuScene.SceneID.Slugcat_White;
+
+                            self.sceneOffset = new Vector2(-10f, 100f);
+                            self.slugcatDepth = 3.1000001f;
+                        }
+
+                        if (story.character == SlugcatStats.Name.Red)
                         {
                             sceneID = Menu.MenuScene.SceneID.Slugcat_Red;
                             self.sceneOffset = new Vector2(-10f, 100f);
                             self.slugcatDepth = 3.1000001f;
                         }
 
+
+                        if (story.character == SlugcatStats.Name.Yellow)
+                        {
+                            sceneID = Menu.MenuScene.SceneID.Slugcat_Yellow;
+                            self.sceneOffset = new Vector2(-10f, 100f);
+                            self.slugcatDepth = 3.1000001f;
+                        }
                     }
+                }
             });
         }
 
@@ -158,7 +174,7 @@ namespace RainMeadow
             }
             if (ID == Ext_ProcessID.LobbyMenu)
             {
-                self.currentMainLoop = new LobbyMenu(self);
+                self.currentMainLoop = new StoryMenu(self);
             }
 
             if (ID == Ext_ProcessID.StoryMenu)

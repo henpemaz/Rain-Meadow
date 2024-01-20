@@ -23,7 +23,7 @@ namespace RainMeadow
         private EventfulSelectOneButton[] playerButtons;
 
         private List<SlugcatStats.Name> playableCharacters;
-        private Dictionary<SkinSelection.Character, List<SkinSelection.Skin>> characterSkins;
+        private Dictionary<CharacterSelection.Character, List<CharacterSelection.Skin>> characterSkins;
 
         public override MenuScene.SceneID GetScene => null;
         public StoryMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.StoryMenu)
@@ -42,18 +42,23 @@ namespace RainMeadow
             ssm.manager = manager;
             ssm.pages = pages;
 
-            playableCharacters = SkinSelection.AllAvailableCharacters();
+            playableCharacters = CharacterSelection.AllAvailableCharacters();
             characterSkins = new();
+
+            // TODO: Hook original slugcat selection menu?
+
+
             for (int j = 0; j < this.playableCharacters.Count; j++)
             {
+
                 this.characterPages.Add(new StoryCharacterSelectPage(this, ssm, 1 + j, this.playableCharacters[j]));
                 if (characterPages[j].sceneOffset.y == 0) characterPages[0].sceneOffset = new Vector2(-10f, 100f);
                 this.pages.Add(this.characterPages[j]);
-
-/*                var skins = SkinSelection.AllAvailableSkins(this.playableCharacters[j]);
-                RainMeadow.Debug(skins);
-                RainMeadow.Debug(skins.Select(s => s.ToString()).Aggregate((a, b) => (a + b)));
-                characterSkins[playableCharacters[j]] = skins;*/
+                /*
+                                var skins = CharacterSelection.AllAvailableSkins(this.playableCharacters[j]);
+                                RainMeadow.Debug(skins);
+                                RainMeadow.Debug(skins.Select(s => s.ToString()).Aggregate((a, b) => (a + b)));
+                                characterSkins[playableCharacters[j]] = skins;*/
             }
 
 
@@ -112,6 +117,7 @@ namespace RainMeadow
             this.pages[0].subObjects.Add(slider);
 
             UpdateCharacterUI();
+            MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
 
             if (OnlineManager.lobby.isAvailable)
             {
@@ -166,74 +172,81 @@ namespace RainMeadow
             {
                 this.UpdateCharacterUI();
             }
-/*            if (ssm.scroll == 0f && ssm.lastScroll == 0f)
+            if (ssm.scroll == 0f && ssm.lastScroll == 0f)
             {
                 if (ssm.quedSideInput != 0)
                 {
                     var sign = (int)Mathf.Sign(ssm.quedSideInput);
                     ssm.slugcatPageIndex += sign;
                     ssm.slugcatPageIndex = (ssm.slugcatPageIndex + ssm.slugcatPages.Count) % ssm.slugcatPages.Count;
-                    skinIndex = Mathf.Min(skinIndex, characterSkins[playableCharacters[ssm.slugcatPageIndex]].Count);
-                    if (personaSettings != null) personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][skinIndex];
+                    /*                    skinIndex = Mathf.Min(skinIndex, characterSkins[playableCharacters[ssm.slugcatPageIndex]].Count);
+                                        if (personaSettings != null) personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][skinIndex];*/
                     ssm.scroll = -sign;
                     ssm.lastScroll = -sign;
                     ssm.quedSideInput -= sign;
                     return;
                 }
-            }*/
+            }
         }
 
         private void OnLobbyAvailable()
         {
             startButton.buttonBehav.greyedOut = false;
-            /*            BindSettings();
-            *//*
+            // BindSettings(); //Null Ref at the moment, probably Emotes HUD
+
         }
 
-        *//*        private void BindSettings()
-                {
-        *//*            this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
-                    personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][skinIndex];
-                    personaSettings.tint = colorpicker.valuecolor;
-                    personaSettings.tintAmount = this.tintAmount;*//*
-
-                }*/
-        }
-
-        private void StartGame()
+        private void BindSettings()
         {
-            RainMeadow.DebugMe();
-            if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
-            manager.arenaSitting = null;
-            manager.rainWorld.progression.ClearOutSaveStateFromMemory();
-            manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
-            manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
+            this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
+            //personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][skinIndex];
+            personaSettings.tint = colorpicker.valuecolor;
+            personaSettings.tintAmount = this.tintAmount;
+
         }
 
-        public override void ShutDownProcess()
-        {
-            RainMeadow.DebugMe();
-            if (OnlineManager.lobby != null) OnlineManager.lobby.OnLobbyAvailable -= OnLobbyAvailable;
-            if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
-            {
-                MatchmakingManager.instance.LeaveLobby();
-            }
-            base.ShutDownProcess();
-        }
-
-        int skinIndex;
-        private StoryAvatarSettings personaSettings;
-        private OpTinyColorPicker colorpicker;
-
-        public int GetCurrentlySelectedOfSeries(string series) // SelectOneButton.SelectOneButtonOwner
-        {
-            return skinIndex;
-        }
-
-        public void SetCurrentlySelectedOfSeries(string series, int to) // SelectOneButton.SelectOneButtonOwner
-        {
-            skinIndex = to;
-            /*if (personaSettings != null) personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][to];*/
-        }
+    private void StartGame()
+    {
+        RainMeadow.DebugMe();
+        if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
+        manager.arenaSitting = null;
+        manager.rainWorld.progression.ClearOutSaveStateFromMemory();
+        manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
+        manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
     }
+
+    public override void ShutDownProcess()
+    {
+        RainMeadow.DebugMe();
+        if (OnlineManager.lobby != null) OnlineManager.lobby.OnLobbyAvailable -= OnLobbyAvailable;
+        if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
+        {
+            MatchmakingManager.instance.LeaveLobby();
+        }
+        base.ShutDownProcess();
+    }
+
+    int skinIndex;
+    private StoryAvatarSettings personaSettings;
+    private OpTinyColorPicker colorpicker;
+
+    public int GetCurrentlySelectedOfSeries(string series) // SelectOneButton.SelectOneButtonOwner
+    {
+        return skinIndex;
+    }
+
+    public void SetCurrentlySelectedOfSeries(string series, int to) // SelectOneButton.SelectOneButtonOwner
+    {
+        skinIndex = to;
+        /*if (personaSettings != null) personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][to];*/
+    }
+
+    private void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
+    {
+        this.players = players;
+        UpdateCharacterUI();
+    }
+
+
+}
 }
