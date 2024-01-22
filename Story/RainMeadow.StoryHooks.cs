@@ -27,7 +27,7 @@ namespace RainMeadow
             On.SaveState.SessionEnded += SaveState_SessionEnded;
             On.Player.Update += Player_Update;
 
-            On.RegionGate.Update += RegionGateTransition;
+            On.RegionGate.Update += RegionGate_Update;
             On.RegionGate.AllPlayersThroughToOtherSide += AllPlayersThroughtoOtherSide;
             On.RegionGate.PlayersStandingStill += PlayersStandingStill;
             On.RegionGate.PlayersInZone += PlayersInZone;
@@ -142,7 +142,7 @@ namespace RainMeadow
             isPlayerReady = true;
         }
 
-        private void RegionGateTransition(On.RegionGate.orig_Update orig, RegionGate self, bool eu)
+        private void RegionGate_Update(On.RegionGate.orig_Update orig, RegionGate self, bool eu)
         {
             if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not StoryGameMode)
             {
