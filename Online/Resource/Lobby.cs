@@ -12,7 +12,6 @@ namespace RainMeadow
         public OnlineGameMode.OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
         public List<ushort> readyForWinPlayers = new List<ushort>();
-        public bool isReadyForNextCycle;
         public string myDenPos = "SU_C04"; //Default we're just assuming story: survivor starting pos
         public string? saveStateProgressString = null;
 
@@ -110,8 +109,6 @@ namespace RainMeadow
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedUshorts inLobbyIds;
             [OnlineField]
-            public bool readyForNextCycle;
-            [OnlineField]
             public int food;
             [OnlineField]
             public int quarterfood;
@@ -127,7 +124,6 @@ namespace RainMeadow
                 inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
                 winReadyPlayers = new(lobby.readyForWinPlayers.ToList());        
                 mods = lobby.mods;
-                readyForNextCycle = lobby.isReadyForNextCycle;
                 if (lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Story)
                 {
                     playerProgressSaveState = lobby.saveStateProgressString;
@@ -140,7 +136,6 @@ namespace RainMeadow
             {
                 var lobby = (Lobby)resource;
                 lobby.nextId = nextId;
-                lobby.isReadyForNextCycle = readyForNextCycle;
                 for (int i = 0; i < players.list.Count; i++)
                 {
                     if (MatchmakingManager.instance.GetPlayer(players.list[i]) is OnlinePlayer p)

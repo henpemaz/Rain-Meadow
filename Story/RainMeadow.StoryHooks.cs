@@ -22,7 +22,6 @@ namespace RainMeadow
 
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
 
-            On.SaveState.SessionEnded += SaveState_SessionEnded;
             On.Player.Update += Player_Update;
         }
 
@@ -56,23 +55,11 @@ namespace RainMeadow
         private void KarmaLadderScreen_Singal(On.Menu.KarmaLadderScreen.orig_Singal orig, Menu.KarmaLadderScreen self, Menu.MenuObject sender, string message)
         {
             if (isStoryMode()) {
-                if (message == "CONTINUE" && !OnlineManager.lobby.isOwner) {
-                    if (OnlineManager.lobby.isReadyForNextCycle) {
-                        return;
-                    }
+                if (message == "CONTINUE") {
+                    //place holder hook on the continue button
                 }
             }
             orig(self, sender, message);
-        }
-
-        private void SaveState_SessionEnded(On.SaveState.orig_SessionEnded orig, SaveState self, RainWorldGame game, bool survived, bool newMalnourished)
-        {
-            if (isStoryMode() && OnlineManager.lobby.isOwner)
-            {
-                OnlineManager.lobby.isReadyForNextCycle = false;
-            }
-            orig(self, game, survived, newMalnourished);
-
         }
 
 
@@ -121,7 +108,6 @@ namespace RainMeadow
         {
             orig(self);
 
-            //if OnlineManager.lobby.onlineStorySaveState isReady
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
             {
                 self.continueButton.buttonBehav.greyedOut = !isPlayerReady;
