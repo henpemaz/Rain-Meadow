@@ -76,35 +76,6 @@ namespace RainMeadow
                 return;
             }
             OnlineManager.lobby.playerAvatars[inLobbyId] = avatar;
-
-            if (OnlineManager.lobby.isOwner) {
-                foreach (var player in OnlineManager.players) {
-                    if (player != OnlineManager.lobby.owner) {
-                        if (!(player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.AddPlayerAvatar, inLobbyId, avatar))))
-                        {
-                            player.InvokeRPC(RPCs.AddPlayerAvatar, inLobbyId, avatar);
-                        }
-                    }
-                }
-            }
-
-        }
-
-        [RPCMethod]
-        public static void RemovePlayerAvatar(RPCEvent rpcEvent, ushort inLobbyId)
-        {
-            OnlineManager.lobby.playerAvatars.Remove(inLobbyId);
-
-            if (OnlineManager.lobby.isOwner)
-            {
-                foreach (var player in OnlineManager.players)
-                {
-                    if (player != OnlineManager.lobby.owner)
-                    {
-                        player.InvokeRPC(RPCs.RemovePlayerAvatar, inLobbyId);
-                    }
-                }
-            }
         }
     }
 }

@@ -76,6 +76,18 @@ namespace RainMeadow
             throw new InvalidOperationException("cant deactivate");
         }
 
+        public override void OnPlayerDisconnect(OnlinePlayer player)
+        {
+            base.OnPlayerDisconnect(player);
+
+            // todo move this to gamemode api
+            if(isOwner) playerAvatars.Remove(player.inLobbyId);
+            if(player == owner && gameMode is StoryGameMode)
+            {
+                OnlineManager.instance.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
+            }
+        }
+
         protected override ResourceState MakeState(uint ts)
         {
             return new LobbyState(this, ts);
@@ -105,6 +117,8 @@ namespace RainMeadow
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedPlayerIDs players;
             [OnlineField(nullable = true)]
+            public Generics.AddRemoveSortedEntityIDs avatars;
+            [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedUshorts winReadyPlayers;
 
             [OnlineField(nullable = true)]
@@ -122,7 +136,8 @@ namespace RainMeadow
             {
                 nextId = lobby.nextId;
                 players = new(lobby.participants.Keys.Select(p => p.id).ToList());
-                inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());      
+                inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
+                avatars = new(lobby.participants.Keys.Select(p => lobby.playerAvatars.TryGetValue(p.inLobbyId, out var c) ? c.id : new OnlineEntity.EntityId()).ToList());
                 mods = lobby.mods;
                 if (lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Story)
                 {
@@ -148,6 +163,11 @@ namespace RainMeadow
                     {
                         RainMeadow.Error("Player not found! " + players.list[i]);
                     }
+                }
+                lobby.playerAvatars.Clear();
+                for (int i = 0; i < avatars.list.Count; i++)
+                {
+                    lobby.playerAvatars[inLobbyIds.list[i]] = avatars.list[i].FindEntity() as OnlineCreature;
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
                 if (lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Story)

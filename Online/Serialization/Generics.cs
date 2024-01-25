@@ -337,6 +337,22 @@ namespace RainMeadow.Generics
         }
     }
 
+    public class AddRemoveSortedEntityIDs : AddRemoveSortedList<OnlineEntity.EntityId, AddRemoveSortedEntityIDs>
+    {
+        public AddRemoveSortedEntityIDs() { }
+        public AddRemoveSortedEntityIDs(List<OnlineEntity.EntityId> list) : base(list) { }
+
+        public override void CustomSerialize(Serializer serializer)
+        {
+            serializer.Serialize(ref list);
+            if (serializer.IsDelta)
+            {
+                serializer.Serialize(ref listIndexes);
+                serializer.Serialize(ref removedIndexes);
+            }
+        }
+    }
+
     public class AddRemoveSortedEvents<T> : AddRemoveSortedList<T, AddRemoveSortedEvents<T>> where T : OnlineEvent
     {
         public AddRemoveSortedEvents() { }
