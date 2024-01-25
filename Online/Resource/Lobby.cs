@@ -165,9 +165,11 @@ namespace RainMeadow
                     }
                 }
                 lobby.playerAvatars.Clear();
-                for (int i = 0; i < avatars.list.Count; i++)
+                for (int i = 0; i < inLobbyIds.list.Count; i++)
                 {
                     lobby.playerAvatars[inLobbyIds.list[i]] = avatars.list[i].FindEntity() as OnlineCreature;
+                    //TODO: Avatars.list is getting extra values due to Generics not handling duplicate values. 
+                    // Either create a dictionary generic serliazer or allow for duplicates.
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
                 if (lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Story)

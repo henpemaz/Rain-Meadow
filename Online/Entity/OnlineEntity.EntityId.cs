@@ -27,6 +27,7 @@
 
             public OnlineEntity FindEntity()
             {
+                if (type == (byte)IdType.none) return null;
                 if (OnlineManager.recentEntities.TryGetValue(this, out var entity)) return entity;
                 RainMeadow.Error("Entity not found: " + this);
                 return null;
@@ -49,7 +50,7 @@
             {
                 return other != null && id == other.id && type == other.type && originalOwner == other.originalOwner;
             }
-            public override int GetHashCode() => id.GetHashCode() + type.GetHashCode() + originalOwner.GetHashCode();
+            public override int GetHashCode() => id.GetHashCode()*1024 + type.GetHashCode()*1024*1024 + originalOwner.GetHashCode();
 
             public static bool operator ==(EntityId lhs, EntityId rhs)
             {
