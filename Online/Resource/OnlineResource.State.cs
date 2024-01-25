@@ -68,6 +68,23 @@ namespace RainMeadow
             }
         }
 
+        public ResourceData resourceData;
+
+        public abstract class ResourceData
+        {
+            protected ResourceData() { }
+
+            internal abstract ResourceDataState MakeState(OnlineResource inResource);
+        }
+
+        [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
+        public abstract class ResourceDataState : OnlineState
+        {
+            public ResourceDataState() { }
+
+            internal abstract void ReadTo(OnlineResource onlineResource);
+        }
+
         public abstract class ResourceState : RootDeltaState
         {
             [OnlineField]
@@ -78,6 +95,8 @@ namespace RainMeadow
             public DeltaStates<EntityDefinition, OnlineState, OnlineEntity.EntityId> registeredEntities;
             [OnlineField(nullable = true)]
             public DeltaStates<EntityState, OnlineState, OnlineEntity.EntityId> entityStates;
+            [OnlineField(nullable = true, polymorphic =true)]
+            public ResourceDataState resourceDataState;
 
             protected ResourceState() : base() { }
             protected ResourceState(OnlineResource resource, uint ts) : base(ts)
@@ -86,6 +105,7 @@ namespace RainMeadow
                 entitiesJoined = new(resource.entities.Keys.ToList());
                 registeredEntities = new(resource.registeredEntities.Values.Select(def => def.Clone() as EntityDefinition).ToList());
                 entityStates = new(resource.entities.Select(e => e.Value.entity.GetState(ts, resource)).ToList());
+                resourceDataState = resource.resourceData?.MakeState(resource);
             }
             public virtual void ReadTo(OnlineResource resource)
             {
@@ -162,6 +182,7 @@ namespace RainMeadow
                         }
                     }
                 }
+                resourceDataState?.ReadTo(resource);
             }
         }
 

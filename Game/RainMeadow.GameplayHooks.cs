@@ -14,7 +14,6 @@ namespace RainMeadow
             On.Creature.Violence += CreatureOnViolence;
             On.Creature.Grasp.ctor += GraspOnctor;
             On.PhysicalObject.Grabbed += PhysicalObjectOnGrabbed;
-            On.Creature.SuckedIntoShortCut += CreatureSuckedIntoShortCut;
         }
 
         private void ShelterDoorOnClose(On.ShelterDoor.orig_Close orig, ShelterDoor self)
@@ -167,40 +166,6 @@ namespace RainMeadow
                 {
                     onlineGrabber.Request(); // If I've been grabbed and I'm not transferrable, but my grabber is, request him
                 }
-            }
-        }
-
-        private void CreatureSuckedIntoShortCut(On.Creature.orig_SuckedIntoShortCut orig, Creature self, IntVector2 entrancePos, bool carriedByOther)
-        {
-            if (OnlineManager.lobby == null)
-            {
-                orig(self, entrancePos, carriedByOther);
-                return;
-            }
-
-            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var onlineEntity))
-            {
-                Error($"Entity {self} - {self.abstractCreature.ID} doesn't exist in online space!");
-                orig(self, entrancePos, carriedByOther);
-                return;
-            }
-
-            var onlineCreature = (OnlineCreature)onlineEntity;
-
-            if (onlineCreature.enteringShortCut) // If this call was from a processing event
-            {
-                orig(self, entrancePos, carriedByOther);
-                onlineCreature.enteringShortCut = false;
-            }
-            else if (onlineCreature.isMine)
-            {
-                // tell everyone that I am about to enter a shortcut!
-                onlineCreature.BroadcastSuckedIntoShortCut(entrancePos, carriedByOther);
-            }
-            else
-            {
-                // Clear shortcut that it was meant to enter
-                self.enteringShortCut = null;
             }
         }
     }
