@@ -1,0 +1,38 @@
+on emote already expiring shouldn't be able to emote more
+ + or instead should replace the old emotes, start new group
+ 
+"wish I could "stop" an emote block and start a new one, instead of having to wait out the fade"
+	maybe pressing backspace? should it clear or not clear the current group?
+
+spear embeds = really inconsistent
+
+spears/items spam terrain collision sounds sometimes?
+
+coming out of pipe + lag = stuck "pipe entering"
+come out of shortcut = bugged af doesn't clear shortcut pointer
+
+mapping going to 0 - = is a bit weird
+	- = don't work on most euro layouts
+
+instinct was to click the emotes
+
+not seeing all emotes at once is a bit of a hinger
+	takes time to find them switching pages
+	time means you lose the combo
+
+lizard still bites cicada
+
+player grabbing cicada = laggy physics
+
+lizard on first load doesn't get colors assigned
+
+going through gate blew up
+
+creatures still can't go through gates
+
+karma in gates
+
+"sometimes can't use emotes" - SleepyCup
+	either bug or unintuitive lock
+
+can still drown/die in several ways

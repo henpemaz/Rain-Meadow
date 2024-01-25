@@ -1,10 +1,8 @@
-﻿using HUD;
-using Mono.Cecil;
+﻿using Mono.Cecil;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using System;
 using System.Linq;
-using UnityEngine;
 
 namespace RainMeadow
 {
@@ -15,27 +13,16 @@ namespace RainMeadow
             MeadowCustomization.EnableCicada();
             MeadowCustomization.EnableLizard();
 
-            On.RoomCamera.Update += RoomCamera_Update;
+            On.RoomCamera.Update += RoomCamera_Update; // init meadow hud
 
-            IL.HUD.Map.ctor += Map_OwnerFixup;
-            IL.HUD.Map.CreateDiscoveryTextureFromVisitedRooms += Map_OwnerFixup;
+            IL.HUD.Map.ctor += Map_OwnerFixup; // support non-slug owner
+            IL.HUD.Map.CreateDiscoveryTextureFromVisitedRooms += Map_OwnerFixup; // support non-slug owner
 
-            On.RainWorldGame.AllowRainCounterToTick += RainWorldGame_AllowRainCounterToTick;
-            On.ShelterDoor.Close += ShelterDoor_Close;
-            On.OverWorld.LoadFirstWorld += OverWorld_LoadFirstWorld;
+            On.RainWorldGame.AllowRainCounterToTick += RainWorldGame_AllowRainCounterToTick; // timer stuck
+            On.ShelterDoor.Close += ShelterDoor_Close; // door stuck
+            On.OverWorld.LoadFirstWorld += OverWorld_LoadFirstWorld; // timer stuck past cycle start
 
             On.AbstractCreature.ChangeRooms += AbstractCreature_ChangeRooms; // displayer follow creature
-
-            On.Creature.Update += Creature_Update;
-        }
-
-        private void Creature_Update(On.Creature.orig_Update orig, Creature self, bool eu)
-        {
-            orig(self, eu);
-            if (Input.GetKeyDown(KeyCode.E))
-            {
-                self.room.AddObject(new PlantPickup(self.firstChunk.pos));
-            }
         }
 
         private void AbstractCreature_ChangeRooms(On.AbstractCreature.orig_ChangeRooms orig, AbstractCreature self, WorldCoordinate newCoord)
