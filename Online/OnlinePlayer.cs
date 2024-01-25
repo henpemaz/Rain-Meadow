@@ -28,7 +28,6 @@ namespace RainMeadow
 
         public bool isMe;
         public bool hasLeft;
-
         
         // For Debug Overlay
         public int ping; // rtt

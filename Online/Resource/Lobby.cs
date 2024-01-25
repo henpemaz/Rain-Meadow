@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace RainMeadow
@@ -10,6 +11,9 @@ namespace RainMeadow
         public OnlineGameMode gameMode;
         public OnlineGameMode.OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
+
+        public string[] mods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().ConvertAll(mod => mod.id.ToString()).ToArray();
+        public static bool checkingMods;
 
         public override World World => throw new NotSupportedException(); // Lobby can't add world entities
 
@@ -100,20 +104,28 @@ namespace RainMeadow
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedPlayerIDs players;
             [OnlineField(nullable = true)]
+            public Generics.AddRemoveSortedUshorts winReadyPlayers;
+            [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedUshorts inLobbyIds;
             [OnlineField]
             public int food;
             [OnlineField]
             public int quarterfood;
+            [OnlineField]
+            public string[] mods;
+            [OnlineField(nullable = true)]
+            public string? playerProgressSaveState;
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
                 nextId = lobby.nextId;
                 players = new(lobby.participants.Keys.Select(p => p.id).ToList());
-                inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
-
-                if(lobby.gameModeType != OnlineGameMode.OnlineGameModeType.Meadow)
+                inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());      
+                mods = lobby.mods;
+                if (lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Story)
                 {
+                    winReadyPlayers = new((lobby.gameMode as StoryGameMode).readyForWinPlayers.ToList());
+                    playerProgressSaveState = (lobby.gameMode as StoryGameMode)?.saveStateProgressString;
                     food = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
                     quarterfood = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
                 }
@@ -136,7 +148,7 @@ namespace RainMeadow
                     }
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
-                if (lobby.gameModeType != OnlineGameMode.OnlineGameModeType.Meadow)
+                if (lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Story)
                 {
                     var playerstate = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState);
                     if (playerstate != null)
@@ -144,10 +156,87 @@ namespace RainMeadow
                         playerstate.foodInStomach = food;
                         playerstate.quarterFoodPoints = quarterfood;
                     }
+                    (lobby.gameMode as StoryGameMode).saveStateProgressString = playerProgressSaveState;
+                    (lobby.gameMode as StoryGameMode).readyForWinPlayers = winReadyPlayers.list;
                 }
+                Menu.Menu? menu = RWCustom.Custom.rainWorld.processManager.currentMainLoop as Menu.Menu;
+
+                if (!checkingMods && (menu is MeadowMenu || menu is LobbyMenu || menu is ArenaLobbyMenu))
+                {
+                    checkingMods = true;
+                    if (Enumerable.SequenceEqual(lobby.mods, this.mods))
+                    {
+                        RainMeadow.Debug("Same mod set !");
+                    } else
+                    {
+                        RainMeadow.Debug("Mismatching mod set");
+
+                        var (MissingMods, ExcessiveMods) = CompareModSets(this.mods, lobby.mods);
+
+                        bool[] mods = ModManager.InstalledMods.ConvertAll(mod => mod.enabled).ToArray();
+
+                        List<int> loadOrder = ModManager.InstalledMods.ConvertAll(mod => mod.loadOrder);
+
+                        List<string> unknownMods = new();
+                        List<ModManager.Mod> modsToEnable = new();
+                        List<ModManager.Mod> modsToDisable = new();
+
+                        foreach (var id in MissingMods)
+                        {
+                            int index = ModManager.InstalledMods.FindIndex(_mod => _mod.id == id);
+
+                            if (index >= 0)
+                            {
+                                mods[index] = true;
+                                modsToEnable.Add(ModManager.InstalledMods[index]);
+                            }
+                            else
+                            {
+                                RainMeadow.Debug("Unknown mod: " + id);
+                                unknownMods.Add(id);
+                            }
+                        }
+
+                        foreach (var id in ExcessiveMods)
+                        {
+                            int index = ModManager.InstalledMods.FindIndex(_mod => _mod.id == id);
+
+                            mods[index] = false;
+
+                            modsToDisable.Add(ModManager.InstalledMods[index]);
+                        }
+
+                        ModApplyer modApplyer = new(RWCustom.Custom.rainWorld.processManager, mods.ToList(), loadOrder);
+
+                        modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
+
+                        modApplyer.OnFinish += (ModApplyer modApplyer) =>
+                        {
+                            Utils.Restart($"+connect_lobby {MatchmakingManager.instance.GetLobbyID()}");
+                        };
+                    }
+
+                }
+
                 base.ReadTo(resource);
             }
         }
+
+        private static (List<string> MissingMods, List<string> ExcessiveMods) CompareModSets(string[] arr1, string[] arr2)
+        {
+            // Find missing strings in arr2
+            var missingStrings = arr1.Except(arr2).ToList();
+
+            // Find excessive strings in arr2
+            var excessiveStrings = arr2
+                .GroupBy(item => item)
+                .Where(group => group.Count() > arr1.Count(item => item == group.Key))
+                .Select(group => group.Key)
+                .ToList();
+
+            return (missingStrings, excessiveStrings);
+        }
+
         public override string ToString()
         {
             return "Lobby";

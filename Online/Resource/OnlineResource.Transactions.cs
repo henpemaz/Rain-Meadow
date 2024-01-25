@@ -148,8 +148,8 @@ namespace RainMeadow
             }
             else if (releaseResult is GenericResult.Error) // I should retry
             {
-                // todo retry logic
                 RainMeadow.Error("released failed for " + this);
+                Release();
             }
         }
 

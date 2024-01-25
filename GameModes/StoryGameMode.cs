@@ -1,7 +1,13 @@
-﻿namespace RainMeadow
+﻿using System.Collections.Generic;
+
+namespace RainMeadow
 {
     public class StoryGameMode : OnlineGameMode
     {
+        public string myDenPos = "SU_C04";
+        public string? saveStateProgressString = null;
+        public List<ushort> readyForWinPlayers = new List<ushort>();
+
         public StoryGameMode(Lobby lobby) : base(lobby)
         {
         }

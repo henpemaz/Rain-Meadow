@@ -111,6 +111,7 @@ namespace RainMeadow
             OnlineManager.RemoveFeeds(this);
             entities.Clear();
             entities = null;
+            latestState = null;
 
             if (deactivateOnRelease)
             {

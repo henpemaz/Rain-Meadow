@@ -31,6 +31,7 @@ namespace RainMeadow
             FriendsOnly,
             [Description("Private")]
             Private
+
         }
 
         public abstract event LobbyListReceived_t OnLobbyListReceived;
@@ -63,5 +64,7 @@ namespace RainMeadow
         }
 
         public abstract MeadowPlayerId GetEmptyId();
+
+        public abstract string GetLobbyID();
     }
 }

@@ -219,7 +219,7 @@ namespace RainMeadow
             }
             else if (entityLeaveResult is GenericResult.Error) // retry
             {
-                // todo retry
+                LocalEntityLeft(oe);
             }
         }
 

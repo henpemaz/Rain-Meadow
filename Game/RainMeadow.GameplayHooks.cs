@@ -24,10 +24,24 @@ namespace RainMeadow
                 return;
             }
 
-            var scug = self.room.game.Players.First(); //needs to be changed if we want to support Jolly
-            var realizedScug = (Player)scug.realizedCreature;
-            if (realizedScug == null || !self.room.PlayersInRoom.Contains(realizedScug)) return;
-            if (!realizedScug.readyForWin) return;
+            if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
+            {
+                //for now force all players to be in the shelter to close the door.
+                var playerIDs = OnlineManager.lobby.participants.Keys.Select(p => p.inLobbyId).ToList();
+                var readyWinPlayers = storyGameMode.readyForWinPlayers.ToList();
+
+                foreach (var playerID in playerIDs) {
+                    if (!readyWinPlayers.Contains(playerID)) return;
+                }
+                storyGameMode.myDenPos = self.room.abstractRoom.name;
+
+            }
+            else {
+                var scug = self.room.game.Players.First(); //needs to be changed if we want to support Jolly
+                var realizedScug = (Player)scug.realizedCreature;
+                if (realizedScug == null || !self.room.PlayersInRoom.Contains(realizedScug)) return;
+                if (!realizedScug.readyForWin) return;
+            }
             orig(self);
         }
 
@@ -86,13 +100,13 @@ namespace RainMeadow
                 orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
                 return;
             }
-            if (!OnlinePhysicalObject.map.TryGetValue(hitchunk.owner.abstractPhysicalObject, out var onlineVictim) || onlineVictim is not OnlineCreature)
+            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineVictim) || onlineVictim is not OnlineCreature)
             {
-                Error($"Chunk owner {hitchunk.owner} - {hitchunk.owner.abstractPhysicalObject.ID} doesn't exist in online space!");
+                Error($"Chunk owner {self} - {self.abstractPhysicalObject.ID} doesn't exist in online space!");
                 orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
                 return;
             }
-            var room = hitchunk.owner.room;
+            var room = self.room;
             if (room != null && room.updateIndex <= room.updateList.Count)
             {
                 PhysicalObject trueVillain = null;

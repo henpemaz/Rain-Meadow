@@ -110,7 +110,7 @@ namespace RainMeadow
             }
         }
 
-        static Serializer mock = new Serializer(10000);
+        static Serializer mock = new Serializer(32000);
         public long EstimatedSize(Serializer serializer)
         {
             mock.BeginWrite(OnlineManager.mePlayer);

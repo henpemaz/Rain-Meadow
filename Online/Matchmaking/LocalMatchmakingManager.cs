@@ -11,7 +11,7 @@ namespace RainMeadow
         public class LocalPlayerId : MeadowPlayerId
         {
             public int id;
-            public IPEndPoint endPoint;
+            public IPEndPoint? endPoint;
             public bool isHost;
 
             public LocalPlayerId() { }
@@ -20,6 +20,12 @@ namespace RainMeadow
                 this.id = id;
                 this.endPoint = endPoint;
                 this.isHost = isHost;
+            }
+
+            public void reset() {
+                this.id = default;
+                this.endPoint = default;
+                this.isHost = default;
             }
 
             public override void CustomSerialize(Serializer serializer)
@@ -43,7 +49,8 @@ namespace RainMeadow
             return new LocalPlayerId();
         }
 
-        private int me;
+        private int me = -1;
+        private IPEndPoint currentLobbyHost = null;
 #if ARENAP2P
         private string localGameMode = "ArenaCompetitive";
 #elif STORYP2P
@@ -54,10 +61,7 @@ namespace RainMeadow
 
         public LocalMatchmakingManager()
         {
-            RainMeadow.DebugMe();
-            UdpPeer.Startup();
-            me = UdpPeer.port;
-            OnlineManager.mePlayer = new OnlinePlayer(new LocalPlayerId(me, UdpPeer.ownAddress, UdpPeer.isHost)) { isMe = true };
+            OnlineManager.mePlayer = new OnlinePlayer(new LocalPlayerId(me, null, false)) { isMe = true };
         }
 
         public override event LobbyListReceived_t OnLobbyListReceived;
@@ -67,32 +71,57 @@ namespace RainMeadow
         public override void RequestLobbyList()
         {
             RainMeadow.DebugMe();
-            OnLobbyListReceived?.Invoke(true, UdpPeer.isHost ? new LobbyInfo[0] { } : new LobbyInfo[1] { new LobbyInfo(default, "local", localGameMode, 0) });
+            //OnLobbyListReceived?.Invoke(true, new LobbyInfo[0] { });
+            // Create the proper list
+            var fakeEndpoint = new IPEndPoint(IPAddress.Loopback, UdpPeer.STARTING_PORT);
+            OnLobbyListReceived?.Invoke(true, new LobbyInfo[1] { new LobbyInfo(fakeEndpoint, "local", localGameMode, 1) });
+        }
+
+        public void sessionSetup(bool isHost){
+            RainMeadow.DebugMe();
+            UdpPeer.Startup();
+            me = UdpPeer.port;
+
+            var thisPlayer = (LocalPlayerId)OnlineManager.mePlayer.id;
+            thisPlayer.name = $"local:{me}";
+            thisPlayer.isHost = isHost;
+            thisPlayer.id = me;
+            thisPlayer.endPoint = UdpPeer.ownEndPoint;
+        }
+
+        public void sessionShutdown() {
+            UdpPeer.Shutdown();
+
+            var thisPlayer = (LocalPlayerId)OnlineManager.mePlayer.id;
+            thisPlayer.reset();
         }
 
         public override void CreateLobby(LobbyVisibility visibility, string gameMode)
         {
-            if (!UdpPeer.isHost)
-            {
-                OnLobbyJoined?.Invoke(false);
-                return;
-            }
+            sessionSetup(true);
             OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer);
             OnLobbyJoined?.Invoke(true);
         }
 
         public override void JoinLobby(LobbyInfo lobby)
         {
+            sessionSetup(false);
             RainMeadow.Debug("Joining local game...");
+            if (lobby.ipEndpoint == null) {
+                RainMeadow.Debug("Failed to join local game...");
+                return;
+            } 
             var memory = new MemoryStream(16);
             var writer = new BinaryWriter(memory);
             Packet.Encode(new RequestJoinPacket(), writer, null);
-            UdpPeer.Send(new IPEndPoint(IPAddress.Loopback, UdpPeer.STARTING_PORT), memory.GetBuffer(), (int)memory.Position, UdpPeer.PacketType.Reliable);
+            UdpPeer.Send(lobby.ipEndpoint, memory.GetBuffer(), (int)memory.Position, UdpPeer.PacketType.Reliable);
         }
 
         public void LobbyJoined()
         {
             OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), GetLobbyOwner());
+            var lobbyOwner = (LocalPlayerId)OnlineManager.lobby.owner.id;
+            currentLobbyHost = lobbyOwner.endPoint;
             OnLobbyJoined?.Invoke(true);
         }
 
@@ -100,16 +129,20 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
-                var memory = new MemoryStream(16);
-                var writer = new BinaryWriter(memory);
-                Packet.Encode(new RequestJoinPacket(), writer, null);
-                UdpPeer.Send(new IPEndPoint(IPAddress.Loopback, UdpPeer.STARTING_PORT), memory.GetBuffer(), (int)memory.Position, UdpPeer.PacketType.Termination);
-                OnlineManager.lobby = null;
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    var memory = new MemoryStream(16);
+                    var writer = new BinaryWriter(memory);
+                    Packet.Encode(new RequestLeavePacket(), writer, null);
+                    UdpPeer.Send(currentLobbyHost, memory.GetBuffer(), (int)memory.Position, UdpPeer.PacketType.Reliable);
+                    OnlineManager.lobby = null;
+                }
             }
         }
 
         public override OnlinePlayer GetLobbyOwner()
         {
+            //fix this
             return OnlineManager.players.First(p => (p.id as LocalPlayerId).isHost);
         }
 
@@ -166,10 +199,14 @@ namespace RainMeadow
             List<PlayerInfo> playersinfo = new List<PlayerInfo>();
             foreach (OnlinePlayer player in OnlineManager.players)
             {
-                if (!player.isMe)
-                    playersinfo.Add(new PlayerInfo(default, player.id.name));
+                playersinfo.Add(new PlayerInfo(default, player.id.name));
             }
             OnPlayerListReceived?.Invoke(playersinfo.ToArray());
+        }
+
+        public override string GetLobbyID()
+        {
+            return "some_id";
         }
     }
 }
