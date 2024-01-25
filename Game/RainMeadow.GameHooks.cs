@@ -83,7 +83,7 @@ namespace RainMeadow
             }
             orig(self, saveStateNumber, game);
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode && !OnlineManager.lobby.isOwner) {
-                OnlineManager.lobby.saveStateProgressString = null;
+                (OnlineManager.lobby.gameMode as StoryGameMode).saveStateProgressString = null;
             }
         }
 

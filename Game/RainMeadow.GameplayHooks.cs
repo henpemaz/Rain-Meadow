@@ -29,12 +29,12 @@ namespace RainMeadow
             {
                 //for now force all players to be in the shelter to close the door.
                 var playerIDs = OnlineManager.lobby.participants.Keys.Select(p => p.inLobbyId).ToList();
-                var readyWinPlayers = OnlineManager.lobby.readyForWinPlayers.ToList();
+                var readyWinPlayers = storyGameMode.readyForWinPlayers.ToList();
 
                 foreach (var playerID in playerIDs) {
                     if (!readyWinPlayers.Contains(playerID)) return;
                 }
-                OnlineManager.lobby.myDenPos = self.room.abstractRoom.name;
+                storyGameMode.myDenPos = self.room.abstractRoom.name;
 
             }
             else {

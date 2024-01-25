@@ -11,9 +11,6 @@ namespace RainMeadow
         public OnlineGameMode gameMode;
         public OnlineGameMode.OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
-        public List<ushort> readyForWinPlayers = new List<ushort>();
-        public string myDenPos = "SU_C04"; //Default we're just assuming story: survivor starting pos
-        public string? saveStateProgressString = null;
 
         public string[] mods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().ConvertAll(mod => mod.id.ToString()).ToArray();
         public static bool checkingMods;
@@ -121,12 +118,12 @@ namespace RainMeadow
             {
                 nextId = lobby.nextId;
                 players = new(lobby.participants.Keys.Select(p => p.id).ToList());
-                inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
-                winReadyPlayers = new(lobby.readyForWinPlayers.ToList());        
+                inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());      
                 mods = lobby.mods;
                 if (lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Story)
                 {
-                    playerProgressSaveState = lobby.saveStateProgressString;
+                    winReadyPlayers = new((lobby.gameMode as StoryGameMode).readyForWinPlayers.ToList());
+                    playerProgressSaveState = (lobby.gameMode as StoryGameMode)?.saveStateProgressString;
                     food = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
                     quarterfood = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
                 }
@@ -149,7 +146,7 @@ namespace RainMeadow
                     }
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
-                if (lobby.gameModeType != OnlineGameMode.OnlineGameModeType.Meadow)
+                if (lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Story)
                 {
                     var playerstate = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState);
                     if (playerstate != null)
@@ -157,9 +154,9 @@ namespace RainMeadow
                         playerstate.foodInStomach = food;
                         playerstate.quarterFoodPoints = quarterfood;
                     }
+                    (lobby.gameMode as StoryGameMode).saveStateProgressString = playerProgressSaveState;
+                    (lobby.gameMode as StoryGameMode).readyForWinPlayers = winReadyPlayers.list;
                 }
-                lobby.readyForWinPlayers = winReadyPlayers.list;
-                lobby.saveStateProgressString = playerProgressSaveState;
                 Menu.Menu? menu = RWCustom.Custom.rainWorld.processManager.currentMainLoop as Menu.Menu;
 
                 if (!checkingMods && (menu is MeadowMenu || menu is LobbyMenu || menu is ArenaLobbyMenu))

@@ -7,9 +7,14 @@ namespace RainMeadow
     public partial class RainMeadow
     {
         private bool isPlayerReady = false;
-        private bool isStoryMode()
+        public static bool isStoryMode(out StoryGameMode? gameMode)
         {
-            return OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode;
+            gameMode = null;
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode) {
+                gameMode = OnlineManager.lobby.gameMode as StoryGameMode;
+                return true;
+            }
+            return false;
         }
 
         private void StoryHooks()
@@ -28,12 +33,12 @@ namespace RainMeadow
         private string[] PlayerProgression_GetProgLinesFromMemory(On.PlayerProgression.orig_GetProgLinesFromMemory orig, PlayerProgression self)
         {
             var saveStateArr = orig(self);
-            if (isStoryMode() && OnlineManager.lobby.isOwner) {
+            if (isStoryMode(out var gameMode) && OnlineManager.lobby.isOwner) {
                 if (saveStateArr != null) {
                     for (int i = 0; i < saveStateArr.Length; i++) {
                         string[] progressStringArr = Regex.Split(saveStateArr[i], "<progDivB>");
                         if (progressStringArr.Length == 2 && progressStringArr[0] == "SAVE STATE") { 
-                            OnlineManager.lobby.saveStateProgressString = progressStringArr[1];
+                            gameMode.saveStateProgressString = progressStringArr[1];
                         }
                     }
                 }
@@ -44,9 +49,9 @@ namespace RainMeadow
         private SaveState PlayerProgression_GetOrInitiateSaveState(On.PlayerProgression.orig_GetOrInitiateSaveState orig, PlayerProgression self, SlugcatStats.Name saveStateNumber, RainWorldGame game, ProcessManager.MenuSetup setup, bool saveAsDeathOrQuit)
         {
             var origSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
-            if (isStoryMode() && !OnlineManager.lobby.isOwner && OnlineManager.lobby.saveStateProgressString != null) {
-                self.currentSaveState.LoadGame(OnlineManager.lobby.saveStateProgressString, game); //pretty sure we can just stuff the string here
-                self.currentSaveState.denPosition = OnlineManager.lobby.myDenPos;
+            if (isStoryMode(out var gameMode) && !OnlineManager.lobby.isOwner && gameMode.saveStateProgressString != null) {
+                self.currentSaveState.LoadGame(gameMode.saveStateProgressString, game); //pretty sure we can just stuff the string here
+                self.currentSaveState.denPosition = gameMode?.myDenPos;
                 return self.currentSaveState;
             }
             return origSaveState;
@@ -54,7 +59,7 @@ namespace RainMeadow
 
         private void KarmaLadderScreen_Singal(On.Menu.KarmaLadderScreen.orig_Singal orig, Menu.KarmaLadderScreen self, Menu.MenuObject sender, string message)
         {
-            if (isStoryMode()) {
+            if (isStoryMode(out var gameMode)) {
                 if (message == "CONTINUE") {
                     //place holder hook on the continue button
                 }
@@ -66,15 +71,16 @@ namespace RainMeadow
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {
             orig(self, eu);
-            if (isStoryMode()) {
+            if (isStoryMode(out var gameMode)) {
                 //fetch the online entity and check if it is mine. 
                 //If it is mine run the below code
                 //If not, update from the lobby state
                 //self.readyForWin = OnlineMAnager.lobby.playerid === fetch if this is ours. 
 
                 if (OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe)) {
-                    if (!oe.isMine) {
-                        self.readyForWin = OnlineManager.lobby.readyForWinPlayers.Contains(oe.owner.inLobbyId);
+                    if (!oe.isMine) 
+                    {
+                        self.readyForWin = gameMode.readyForWinPlayers.Contains(oe.owner.inLobbyId);
                         return;
                     }
                 }
@@ -83,7 +89,7 @@ namespace RainMeadow
                     && self.touchedNoInputCounter > (ModManager.MMF ? 40 : 20)
                     && RWCustom.Custom.ManhattanDistance(self.abstractCreature.pos.Tile, self.room.shortcuts[0].StartTile) > 3)
                 {
-                    if (!OnlineManager.lobby.readyForWinPlayers.Contains(OnlineManager.mePlayer.inLobbyId))
+                    if (!gameMode.readyForWinPlayers.Contains(OnlineManager.mePlayer.inLobbyId))
                     {
                         if (!(OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.AddReadyToWinPlayer))))
                         {
@@ -93,7 +99,7 @@ namespace RainMeadow
                 }
                 else
                 {
-                    if (OnlineManager.lobby.readyForWinPlayers.Contains(OnlineManager.mePlayer.inLobbyId))
+                    if (gameMode.readyForWinPlayers.Contains(OnlineManager.mePlayer.inLobbyId))
                     {
                         if (!(OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.RemoveReadyToWinPlayer))))
                         {
@@ -140,7 +146,7 @@ namespace RainMeadow
 
         private void ReadyButton_OnClick(SimplerButton obj)
         {
-            if (OnlineManager.lobby.saveStateProgressString != null) {
+            if (isStoryMode(out var gameMode) && gameMode.saveStateProgressString != null){
                 isPlayerReady = true;
             }
         }
