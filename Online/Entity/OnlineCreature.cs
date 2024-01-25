@@ -50,7 +50,7 @@ namespace RainMeadow
         {
             var grabber = (Creature)this.apo.realizedObject;
             var grabbedThing = onlineGrabbed.apo.realizedObject;
-
+            
             if (grabber.grasps[graspUsed] != null)
             {
                 if (grabber.grasps[graspUsed].grabbed == grabbedThing) return;
@@ -58,6 +58,7 @@ namespace RainMeadow
             }
             // Will I need to also include the shareability conflict here, too? Idk.
             grabber.grasps[graspUsed] = new Creature.Grasp(grabber, grabbedThing, graspUsed, chunkGrabbed, shareability, dominance, pacifying);
+            grabbedThing.room = grabber.room;
             grabbedThing.Grabbed(grabber.grasps[graspUsed]);
             new AbstractPhysicalObject.CreatureGripStick(grabber.abstractCreature, grabbedThing.abstractPhysicalObject, graspUsed, pacifying || grabbedThing.TotalMass < grabber.TotalMass);
         }
