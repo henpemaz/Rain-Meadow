@@ -29,11 +29,12 @@ namespace RainMeadow
             {
                 //for now force all players to be in the shelter to close the door.
                 var playerIDs = OnlineManager.lobby.participants.Keys.Select(p => p.inLobbyId).ToList();
-                var readyWinPlayers = OnlineManager.lobby.readyForWinPlayers.ToList();
+                var readyWinPlayers = storyGameMode.readyForWinPlayers.ToList();
 
                 foreach (var playerID in playerIDs) {
                     if (!readyWinPlayers.Contains(playerID)) return;
                 }
+                storyGameMode.myDenPos = self.room.abstractRoom.name;
 
             }
             else {
@@ -100,13 +101,13 @@ namespace RainMeadow
                 orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
                 return;
             }
-            if (!OnlinePhysicalObject.map.TryGetValue(hitchunk.owner.abstractPhysicalObject, out var onlineVictim) || onlineVictim is not OnlineCreature)
+            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineVictim) || onlineVictim is not OnlineCreature)
             {
-                Error($"Chunk owner {hitchunk.owner} - {hitchunk.owner.abstractPhysicalObject.ID} doesn't exist in online space!");
+                Error($"Chunk owner {self} - {self.abstractPhysicalObject.ID} doesn't exist in online space!");
                 orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
                 return;
             }
-            var room = hitchunk.owner.room;
+            var room = self.room;
             if (room != null && room.updateIndex <= room.updateList.Count)
             {
                 PhysicalObject trueVillain = null;
