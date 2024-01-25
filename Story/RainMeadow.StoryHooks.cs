@@ -16,6 +16,7 @@ namespace RainMeadow
         {
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
             On.PlayerProgression.GetProgLinesFromMemory += PlayerProgression_GetProgLinesFromMemory;
+
             On.Menu.SleepAndDeathScreen.ctor += SleepAndDeathScreen_ctor;
             On.Menu.SleepAndDeathScreen.Update += SleepAndDeathScreen_Update;
 
@@ -46,6 +47,7 @@ namespace RainMeadow
             var origSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
             if (isStoryMode() && !OnlineManager.lobby.isOwner && OnlineManager.lobby.saveStateProgressString != null) {
                 self.currentSaveState.LoadGame(OnlineManager.lobby.saveStateProgressString, game); //pretty sure we can just stuff the string here
+                self.currentSaveState.denPosition = OnlineManager.lobby.myDenPos;
                 return self.currentSaveState;
             }
             return origSaveState;
@@ -55,7 +57,7 @@ namespace RainMeadow
         {
             if (isStoryMode()) {
                 if (message == "CONTINUE" && !OnlineManager.lobby.isOwner) {
-                    if (!OnlineManager.lobby.isReadyForNextCycle) {
+                    if (OnlineManager.lobby.isReadyForNextCycle) {
                         return;
                     }
                 }
@@ -128,11 +130,12 @@ namespace RainMeadow
 
         private void SleepAndDeathScreen_ctor(On.Menu.SleepAndDeathScreen.orig_ctor orig, Menu.SleepAndDeathScreen self, ProcessManager manager, ProcessManager.ProcessID ID)
         {
-            isPlayerReady = false;
 
             RainMeadow.Debug("In SleepAndDeath Screen");
             orig(self, manager, ID);
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode storyGameMode) {
+                isPlayerReady = false;
+
                 //Create the READY button
                 var buttonPosX = self.ContinueAndExitButtonsXPos - 180f - self.manager.rainWorld.options.SafeScreenOffset.x;
                 var buttonPosY = Mathf.Max(self.manager.rainWorld.options.SafeScreenOffset.y, 53f);
@@ -151,8 +154,9 @@ namespace RainMeadow
 
         private void ReadyButton_OnClick(SimplerButton obj)
         {
-            //OnlineManager.mePlayer
-            isPlayerReady = true;
+            if (OnlineManager.lobby.saveStateProgressString != null) {
+                isPlayerReady = true;
+            }
         }
     }
 }

@@ -34,6 +34,7 @@ namespace RainMeadow
                 foreach (var playerID in playerIDs) {
                     if (!readyWinPlayers.Contains(playerID)) return;
                 }
+                OnlineManager.lobby.myDenPos = self.room.abstractRoom.name;
 
             }
             else {
