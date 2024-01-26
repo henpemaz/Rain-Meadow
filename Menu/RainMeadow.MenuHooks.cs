@@ -125,35 +125,7 @@ namespace RainMeadow
                         self.sceneOffset = new Vector2(-10f, 100f);
                         self.slugcatDepth = 3.1000001f;
                     }
-                }
-                if (self.slugcatNumber == RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer && self is StoryCharacterSelectPage story)
-                {
-                    // TODO: Find a better way to pull the existing image data so I don't have to manually type this out.
 
-                    {
-                        if (story.character == SlugcatStats.Name.White)
-                        {
-                            sceneID = Menu.MenuScene.SceneID.Slugcat_White;
-
-                            self.sceneOffset = new Vector2(-10f, 100f);
-                            self.slugcatDepth = 3.1000001f;
-                        }
-
-                        if (story.character == SlugcatStats.Name.Red)
-                        {
-                            sceneID = Menu.MenuScene.SceneID.Slugcat_Red;
-                            self.sceneOffset = new Vector2(-10f, 100f);
-                            self.slugcatDepth = 3.1000001f;
-                        }
-
-
-                        if (story.character == SlugcatStats.Name.Yellow)
-                        {
-                            sceneID = Menu.MenuScene.SceneID.Slugcat_Yellow;
-                            self.sceneOffset = new Vector2(-10f, 100f);
-                            self.slugcatDepth = 3.1000001f;
-                        }
-                    }
                 }
             });
         }
@@ -185,7 +157,8 @@ namespace RainMeadow
                 {
                     if (args[i] == "+connect_lobby")
                     {
-                        if (args.Length > i + 1 && ulong.TryParse(args[i + 1], out var id)) {
+                        if (args.Length > i + 1 && ulong.TryParse(args[i + 1], out var id))
+                        {
                             Debug($"joining lobby with id {id} from the command line");
                             MatchmakingManager.instance.JoinLobby(new LobbyInfo(new CSteamID(id), "", "", 0));
                         }
