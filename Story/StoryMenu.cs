@@ -22,9 +22,6 @@ namespace RainMeadow
         private List<SlugcatSelectMenu.SlugcatPage> characterPages;
         private EventfulSelectOneButton[] playerButtons;
 
-        private List<SlugcatStats.Name> playableCharacters;
-        private Dictionary<CharacterSelection.Character, List<CharacterSelection.Skin>> characterSkins;
-
         public override MenuScene.SceneID GetScene => null;
         public StoryMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.StoryMenu)
         {
@@ -32,7 +29,8 @@ namespace RainMeadow
             this.rainEffect = new RainEffect(this, this.pages[0]);
             this.pages[0].subObjects.Add(this.rainEffect);
             this.rainEffect.rainFade = 0.3f;
-            this.characterPages = new List<SlugcatSelectMenu.SlugcatPage>();
+            
+
 
             ssm = (SlugcatSelectMenu)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(SlugcatSelectMenu));
             ssm.container = container;
@@ -41,18 +39,16 @@ namespace RainMeadow
             ssm.cursorContainer = cursorContainer;
             ssm.manager = manager;
             ssm.pages = pages;
+            
+            ssm.slugcatColorOrder = AllAvailableCharacters();
 
-            playableCharacters = CharacterSelection.AllAvailableCharacters();
-            characterSkins = new();
-
-            for (int j = 0; j < this.playableCharacters.Count; j++)
+            for (int j = 0; j < ssm.slugcatColorOrder.Count; j++)
             {
 
-                this.characterPages.Add(new StoryCharacterSelectPage(this, ssm, 1 + j, this.playableCharacters[j]));
-                if (characterPages[j].sceneOffset.y == 0) characterPages[0].sceneOffset = new Vector2(-10f, 100f);
-                this.pages.Add(this.characterPages[j]);
- 
+                // TODO: Background images
+
             }
+
 
             this.startButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
             this.startButton.OnClick += (_) => { StartGame(); };
@@ -74,6 +70,7 @@ namespace RainMeadow
             };
             this.pages[0].subObjects.Add(this.nextButton);
             this.mySoundLoopID = SoundID.MENU_Main_Menu_LOOP;
+
 
             this.pages[0].subObjects.Add(new MenuLabel(this, mainPage, this.Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true));
 
@@ -156,46 +153,49 @@ namespace RainMeadow
 
         }
 
-    private void StartGame()
-    {
-        RainMeadow.DebugMe();
-        if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
-        manager.arenaSitting = null;
-        manager.rainWorld.progression.ClearOutSaveStateFromMemory();
-        manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
-        manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
-    }
-
-    public override void ShutDownProcess()
-    {
-        RainMeadow.DebugMe();
-        if (OnlineManager.lobby != null) OnlineManager.lobby.OnLobbyAvailable -= OnLobbyAvailable;
-        if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
+        private void StartGame()
         {
-            MatchmakingManager.instance.LeaveLobby();
+            RainMeadow.DebugMe();
+            manager.arenaSitting = null;
+            manager.rainWorld.progression.ClearOutSaveStateFromMemory();
+            manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
+            manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
-        base.ShutDownProcess();
+
+        public override void ShutDownProcess()
+        {
+            RainMeadow.DebugMe();
+            if (OnlineManager.lobby != null) OnlineManager.lobby.OnLobbyAvailable -= OnLobbyAvailable;
+            if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
+            {
+                MatchmakingManager.instance.LeaveLobby();
+            }
+            base.ShutDownProcess();
+        }
+
+        int skinIndex;
+        private OpTinyColorPicker colorpicker;
+
+        public int GetCurrentlySelectedOfSeries(string series) // SelectOneButton.SelectOneButtonOwner
+        {
+            return skinIndex;
+        }
+
+        public void SetCurrentlySelectedOfSeries(string series, int to) // SelectOneButton.SelectOneButtonOwner
+        {
+            skinIndex = to;
+        }
+
+        private void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
+        {
+            this.players = players;
+            UpdateCharacterUI();
+        }
+
+        public static List<SlugcatStats.Name> AllAvailableCharacters()
+        {
+
+            return SlugcatStats.Name.values.entries.Select(s => new SlugcatStats.Name(s)).ToList();
+        }
     }
-
-    int skinIndex;
-    private OpTinyColorPicker colorpicker;
-
-    public int GetCurrentlySelectedOfSeries(string series) // SelectOneButton.SelectOneButtonOwner
-    {
-        return skinIndex;
-    }
-
-    public void SetCurrentlySelectedOfSeries(string series, int to) // SelectOneButton.SelectOneButtonOwner
-    {
-        skinIndex = to;
-    }
-
-    private void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
-    {
-        this.players = players;
-        UpdateCharacterUI();
-    }
-
-
-}
 }
