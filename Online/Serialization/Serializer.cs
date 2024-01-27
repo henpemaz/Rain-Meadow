@@ -87,7 +87,10 @@ namespace RainMeadow
 
         private bool CanFit(OnlineState state)
         {
-            return Position + state.EstimatedSize(this) + margin < capacity;
+            var estimate = state.EstimatedSize(this);
+            if (Position + estimate + margin < capacity) return true;
+            RainMeadow.Error($"can't fit state {state}, would take {estimate} but only {capacity - (Position + margin)} free");
+            return false;
         }
 
         private void BeginWriteEvents()
@@ -256,13 +259,24 @@ namespace RainMeadow
 
             BeginWriteStates();
             toPlayer.statesWritten = toPlayer.OutgoingStates.Count > 0; // something is being written, record for debug
-            //RainMeadow.Debug($"Writing {toPlayer.OutgoingStates.Count} states");
-            while (toPlayer.OutgoingStates.Count > 0 && CanFit(toPlayer.OutgoingStates.Peek()))
+
+            RainMeadow.Trace($"Writing {toPlayer.OutgoingStates.Count} states");
+
+            while (toPlayer.OutgoingStates.Count > 0)
             {
                 var s = toPlayer.OutgoingStates.Dequeue();
-                WriteState(s);
+                if (CanFit(s.state))
+                {
+                    WriteState(s.state);
+                    s.Sent();
+                }
+                else
+                {
+                    RainMeadow.Error($"State overflow writing to player {toPlayer}, {s.state} not sent");
+                    s.Failed();
+                }
             }
-            // todo handle states overflow, planing a packet for maximum size and least stale states
+
             EndWriteStates();
 
             EndWrite();

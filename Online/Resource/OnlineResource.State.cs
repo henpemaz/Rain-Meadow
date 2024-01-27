@@ -38,16 +38,17 @@ namespace RainMeadow
             // this has a flaw when there's multiple players talking to me.
             if (newState.isDelta)
             {
-                //RainMeadow.Debug($"received delta state from {newState.from} for tick {newState.tick} referencing baseline {newState.Baseline}");
+                RainMeadow.Trace($"received delta state from {newState.from} for tick {newState.tick} referencing baseline {newState.Baseline}");
                 while (incomingState.Count > 0 && (owner != incomingState.Peek().from || NetIO.IsNewer(newState.baseline, incomingState.Peek().tick)))
                 {
                     var discarded = incomingState.Dequeue();
-                    //RainMeadow.Debug("discarding old state from tick " + discarded.tick);
+                    RainMeadow.Trace("discarding old state from tick " + discarded.tick);
                 }
                 if (incomingState.Count == 0 || newState.baseline != incomingState.Peek().tick)
                 {
                     RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.baseline}");
-                    if(!newState.from.OutgoingEvents.Any(e=>e is RPCEvent rpc && rpc.IsIdentical(RPCs.DeltaReset, this, null)))
+                    RainMeadow.Error($"Available ticks are: [{string.Join(", ", incomingState.Where(s => s.from == newState.from).Select(s => s.tick))}]");
+                    if (!newState.from.OutgoingEvents.Any(e=>e is RPCEvent rpc && rpc.IsIdentical(RPCs.DeltaReset, this, null)))
                     {
                         newState.from.InvokeRPC(RPCs.DeltaReset, this, null);
                     }
@@ -57,7 +58,7 @@ namespace RainMeadow
             }
             else
             {
-                //RainMeadow.Debug($"received absolute state from {newState.from} for tick " + newState.tick);
+                RainMeadow.Trace($"received absolute state from {newState.from} for tick " + newState.tick);
             }
             incomingState.Enqueue(newState);
             if (newState.from == owner)

@@ -111,7 +111,7 @@ namespace RainMeadow
 #endif
                 foreach (OnlinePlayer player in players)
                 {
-                    player.Updade();
+                    player.Update();
                 }
 
                 mePlayer.tick++;
@@ -133,9 +133,9 @@ namespace RainMeadow
                 {
                     SendData(player);
                 }
-#if TRACING
+//#if TRACING
                 RainMeadow.tracing = false; // cleanup
-#endif
+//#endif
             }
         }
 
@@ -144,7 +144,7 @@ namespace RainMeadow
             if (toPlayer.isMe)
                 return;
 
-            if (toPlayer.needsAck || toPlayer.OutgoingEvents.Any() || toPlayer.OutgoingStates.Any())
+            if (toPlayer.needsAck || toPlayer.OutgoingEvents.Count > 0 || toPlayer.OutgoingStates.Count > 0)
             {
                 NetIO.SendSessionData(toPlayer);
             }
