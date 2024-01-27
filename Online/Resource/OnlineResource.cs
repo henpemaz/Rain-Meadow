@@ -69,7 +69,7 @@ namespace RainMeadow
 
             ActivateImpl();
 
-            if (latestState != null)
+            if (latestState != null && !isOwner)
             {
                 latestState.ReadTo(this);
             }

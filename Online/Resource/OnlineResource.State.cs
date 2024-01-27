@@ -64,7 +64,7 @@ namespace RainMeadow
             if (newState.from == owner)
             {
                 latestState = newState;
-                newState.ReadTo(this);
+                if (isWaitingForState || isAvailable) newState.ReadTo(this);
                 if(isWaitingForState) { Available(); }
             }
         }

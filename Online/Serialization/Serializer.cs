@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
-using System.Text;
-using UnityEngine;
 
 namespace RainMeadow
 {
@@ -26,7 +23,7 @@ namespace RainMeadow
         private long eventHeader;
         private uint stateCount;
         private long stateHeader;
-        private bool warnOnSizeMissmatch = false; // to the brave soul that will fix/implement the estimates for obj sizes, good luck
+        public int zipTreshold = 600;
 
         static Serializer scratchpad;
         public Serializer(long bufferCapacity, bool scratch = false)
@@ -139,7 +136,7 @@ namespace RainMeadow
             state.WritePolymorph(scratchpad);
             scratchpad.WrappedSerialize(state);
             bool fits = scratchpad.Position < (capacity - Position - margin);
-            if ((scratchpad.Position > 1024 || !fits) && state is not DeflateState)
+            if ((scratchpad.Position > zipTreshold || !fits) && state is not DeflateState)
             {
                 return WriteZippedState(state);
             }
