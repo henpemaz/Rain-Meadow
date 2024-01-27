@@ -19,6 +19,8 @@ namespace RainMeadow
         private PlayerInfo[] players;
 
         private SlugcatSelectMenu ssm;
+        private SlugcatSelectMenu.SlugcatPage sp;
+
         private List<SlugcatSelectMenu.SlugcatPage> characterPages;
         private EventfulSelectOneButton[] playerButtons;
 
@@ -29,26 +31,64 @@ namespace RainMeadow
             this.rainEffect = new RainEffect(this, this.pages[0]);
             this.pages[0].subObjects.Add(this.rainEffect);
             this.rainEffect.rainFade = 0.3f;
-            
+
 
 
             ssm = (SlugcatSelectMenu)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(SlugcatSelectMenu));
+            sp = (SlugcatSelectMenu.SlugcatPageNewGame)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(SlugcatSelectMenu.SlugcatPageNewGame));
+
             ssm.container = container;
             ssm.slugcatPages = characterPages;
             ssm.ID = ProcessManager.ProcessID.MultiplayerMenu;
             ssm.cursorContainer = cursorContainer;
             ssm.manager = manager;
             ssm.pages = pages;
-            
-            ssm.slugcatColorOrder = AllAvailableCharacters();
 
+            MenuScene.SceneID sceneID = MenuScene.SceneID.Slugcat_White;
+
+            ssm.slugcatColorOrder = AllAvailableCharacters();
+            sp.slugcatImage = new InteractiveMenuScene(this, this.pages[0], sceneID);
+            string text = ""; // Character name
+            string s = ""; // subtitle
+            sp.imagePos = new Vector2(483f, 484f);
             for (int j = 0; j < ssm.slugcatColorOrder.Count; j++)
             {
+                sp.slugcatNumber = ssm.slugcatColorOrder[j];
 
                 // TODO: Background images
+                if (sp.slugcatNumber == SlugcatStats.Name.White)
+                {
+                    sceneID = MenuScene.SceneID.Slugcat_White;
+                    sp.sceneOffset = new Vector2(-10f, 100f);
+                    sp.slugcatDepth = 3.1000001f;
+                    sp.markOffset = new Vector2(-15f, -2f);
+                    sp.glowOffset = new Vector2(-30f, -50f);
 
+                }
+
+                this.pages[0].subObjects.Add(sp.slugcatImage);
             }
 
+            // TODO: Alignment issues.
+
+            /*            s = RWCustom.Custom.ReplaceLineDelimeters(s);
+            int num = s.Count((char f) => f == '\n');
+            float num2 = 0f;
+            if (num > 1)
+            {
+                num2 = 30f;
+            }
+                        var characterName = new MenuLabel(this, pages[0], text, new Vector2(sp.imagePos.x, sp.imagePos.y -400f), new Vector2(200f, 30f), bigText: true);
+                        characterName.label.alignment = FLabelAlignment.Center;
+                        this.pages[0].subObjects.Add(characterName);
+
+                        var infoLabel = new MenuLabel(this, pages[0], s, new Vector2(-1000f, sp.imagePos.y - 249f - 60f + num2 / 2f), new Vector2(400f, 60f), bigText: true);
+                        infoLabel.label.alignment = FLabelAlignment.Center;
+                        this.pages[0].subObjects.Add(infoLabel);*/
+
+            /*            characterName.label.color = MenuRGB(MenuColors.MediumGrey);
+                        infoLabel.label.color = MenuRGB(MenuColors.DarkGrey);
+            */
 
             this.startButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
             this.startButton.OnClick += (_) => { StartGame(); };
@@ -58,13 +98,17 @@ namespace RainMeadow
             this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
             this.prevButton.OnClick += (_) =>
             {
+                return; // Protect the users until all characters are fixed
                 ssm.quedSideInput = Math.Max(-3, ssm.quedSideInput - 1);
                 base.PlaySound(SoundID.MENU_Next_Slugcat);
             };
+
+            // TODO: Manage multiple characters, clean this file up.
             this.pages[0].subObjects.Add(this.prevButton);
             this.nextButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(985f, 50f), 1);
             this.nextButton.OnClick += (_) =>
             {
+                return;
                 ssm.quedSideInput = Math.Min(3, ssm.quedSideInput + 1);
                 base.PlaySound(SoundID.MENU_Next_Slugcat);
             };
@@ -103,6 +147,7 @@ namespace RainMeadow
             {
                 OnlineManager.lobby.OnLobbyAvailable += OnLobbyAvailable;
             }
+
         }
 
         private void UpdateCharacterUI()
@@ -115,7 +160,14 @@ namespace RainMeadow
                 var btn = new EventfulSelectOneButton(this, mainPage, player.name, "playerButtons", new Vector2(194, 515) - i * new Vector2(0, 38), new(110, 30), playerButtons, i);
                 mainPage.subObjects.Add(btn);
                 playerButtons[i] = btn;
+                btn.OnClick+= (_) => {
+                    string url = $"https://steamcommunity.com/profiles/{player.id}";
+                    SteamFriends.ActivateGameOverlayToWebPage(url);
+                };
+
             }
+
+
         }
 
         public override void Update()
@@ -197,5 +249,7 @@ namespace RainMeadow
 
             return SlugcatStats.Name.values.entries.Select(s => new SlugcatStats.Name(s)).ToList();
         }
+
+
     }
 }
