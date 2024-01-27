@@ -104,9 +104,10 @@ namespace RainMeadow
                 ssm.quedSideInput = Math.Max(-3, ssm.quedSideInput - 1);
                 base.PlaySound(SoundID.MENU_Next_Slugcat);
             };
-
-            // TODO: Manage multiple characters, clean this file up.
             this.pages[0].subObjects.Add(this.prevButton);
+
+
+
             this.nextButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(985f, 50f), 1);
             this.nextButton.OnClick += (_) =>
             {
@@ -115,6 +116,17 @@ namespace RainMeadow
                 base.PlaySound(SoundID.MENU_Next_Slugcat);
             };
             this.pages[0].subObjects.Add(this.nextButton);
+
+
+            this.nextButton.OnClick += (_) =>
+            {
+                return;
+                ssm.quedSideInput = Math.Min(3, ssm.quedSideInput + 1);
+                base.PlaySound(SoundID.MENU_Next_Slugcat);
+            };
+            this.pages[0].subObjects.Add(this.nextButton);
+
+ 
             this.mySoundLoopID = SoundID.MENU_Main_Menu_LOOP;
 
 
@@ -135,6 +147,14 @@ namespace RainMeadow
                 players.Add(new PlayerInfo(playerId, player.id.name));
             }
             this.players = players.ToArray();
+
+            var friendsList = new EventfulSelectOneButton[1];
+            friendsList[0] = new EventfulSelectOneButton(this, mainPage, Translate("Invite Friends"), "friendsList", new(1150f, 50f), new(110, 50), friendsList, 0);
+            this.pages[0].subObjects.Add(friendsList[0]);
+            friendsList[0].OnClick += (_) =>
+            {
+                SteamFriends.ActivateGameOverlay("friends");
+            };
 
             // TODO: Skin + Eye customization
 
