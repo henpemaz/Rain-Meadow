@@ -15,11 +15,11 @@ namespace RainMeadow
             return $"{eventId}:{eventType}";
         }
 
-        public virtual long EstimatedSize { get => sizeof(ushort); }
-
         public virtual void CustomSerialize(Serializer serializer)
         {
+            long wasPos = serializer.Position;
             serializer.Serialize(ref eventId);
+            RainMeadow.Trace($"{this} took {serializer.Position - wasPos}");
         }
 
         public virtual bool CanBeProcessed() // I've been received but I might be early

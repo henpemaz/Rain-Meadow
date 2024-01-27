@@ -5,6 +5,7 @@
         [RPCMethod]
         public static void DeltaReset(RPCEvent rpcEvent, OnlineResource onlineResource, OnlineEntity.EntityId entity)
         {
+            RainMeadow.Debug($"from {rpcEvent.from} resource {onlineResource} entity {entity}");
             if (entity != null)
             {
                 foreach (var feed in OnlineManager.feeds)

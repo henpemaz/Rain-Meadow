@@ -11,6 +11,9 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write((byte)extEnum.Index);
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
             }
             if (IsReading)
             {
@@ -23,6 +26,9 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write((byte)extEnum.Length);
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
                 for (int i = 0; i < extEnum.Length; i++)
                 {
                     writer.Write((byte)extEnum[i].Index);
@@ -43,6 +49,9 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write((byte)extEnum.Count);
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
                 for (int i = 0; i < extEnum.Count; i++)
                 {
                     writer.Write((byte)extEnum[i].Index);
