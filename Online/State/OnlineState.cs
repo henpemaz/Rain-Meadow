@@ -102,13 +102,9 @@ namespace RainMeadow
         {
             try
             {
-#if TRACING
                 long wasPos = serializer.Position;
                 handler.serialize(this, serializer);
-                if (serializer != mock) RainMeadow.Trace($"{this} (delta?:{isDelta}) took {serializer.Position - wasPos}");
-#else
-                handler.serialize(this, serializer);
-#endif
+                RainMeadow.Trace($"{this} (delta?:{isDelta}) took {serializer.Position - wasPos}");
             }
             catch (Exception e)
             {
@@ -116,16 +112,6 @@ namespace RainMeadow
                 RainMeadow.Error(e);
                 throw;
             }
-        }
-
-        static Serializer mock = new Serializer(32000);
-
-        public long EstimatedSize(Serializer serializer)
-        {
-            mock.BeginWrite(OnlineManager.mePlayer);
-            CustomSerialize(mock);
-            mock.EndWrite();
-            return mock.Position;
         }
 
         public virtual OnlineState Delta(OnlineState baseline)

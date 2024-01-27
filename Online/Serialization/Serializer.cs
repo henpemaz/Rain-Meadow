@@ -21,20 +21,22 @@ namespace RainMeadow
         public BinaryReader reader;
         public OnlinePlayer currPlayer;
         private uint eventCount;
-        private StringBuilder eventLog;
         private long eventHeader;
         private uint stateCount;
         private long stateHeader;
         private bool warnOnSizeMissmatch = false; // to the brave soul that will fix/implement the estimates for obj sizes, good luck
 
-        public Serializer(long bufferCapacity)
+        static Serializer scratchpad;
+        public Serializer(long bufferCapacity, bool scratch = false)
         {
             this.capacity = bufferCapacity;
-            margin = (long)(bufferCapacity * 0.25f);
+            margin = 16;
             buffer = new byte[bufferCapacity];
             stream = new(buffer);
             writer = new(stream);
             reader = new(stream);
+
+            if (!scratch) scratchpad = new Serializer(this.capacity, true);
         }
 
         private void PlayerHeaders()
@@ -78,40 +80,28 @@ namespace RainMeadow
             IsDelta = false;
             Aborted = false;
             stream.Seek(0, SeekOrigin.Begin);
-        }
-
-        private bool CanFit(OnlineEvent playerEvent)
-        {
-            return Position + playerEvent.EstimatedSize + margin < capacity;
-        }
-
-        private bool CanFit(OnlineState state)
-        {
-            var estimate = state.EstimatedSize(this);
-            if (Position + estimate + margin < capacity) return true;
-            RainMeadow.Error($"can't fit state {state}, would take {estimate} but only {capacity - (Position + margin)} free");
-            return false;
+            scratchpad.IsWriting = true;
         }
 
         private void BeginWriteEvents()
         {
             eventCount = 0;
-            eventLog = new(64);
             eventHeader = stream.Position;
             writer.Write(eventCount); // fake write, we'll overwrite this later
         }
 
-        private void WriteEvent(OnlineEvent playerEvent)
+        private bool WriteEvent(OnlineEvent playerEvent)
         {
-            eventCount++;
-            long prevPos = (int)Position;
-            writer.Write((byte)playerEvent.eventType);
-            playerEvent.CustomSerialize(this);
-            eventLog.AppendLine(playerEvent.ToString());
-            long effectiveSize = Position - prevPos;
-            string msg = $"size:{effectiveSize} est:{playerEvent.EstimatedSize}";
-            if (warnOnSizeMissmatch && (effectiveSize != playerEvent.EstimatedSize)) RainMeadow.Error(msg);
-            eventLog.AppendLine(msg);
+            scratchpad.stream.Seek(0, SeekOrigin.Begin);
+            playerEvent.CustomSerialize(scratchpad);
+            if(scratchpad.Position < (capacity - Position - margin))
+            {
+                writer.Write((byte)playerEvent.eventType);
+                writer.Write(scratchpad.buffer, 0, (int)scratchpad.Position);
+                eventCount++;
+                return true;
+            }
+            return false;
         }
 
         private void EndWriteEvents()
@@ -129,11 +119,18 @@ namespace RainMeadow
             writer.Write(stateCount);
         }
 
-        private void WriteState(OnlineState state)
+        private bool WriteState(OnlineState state)
         {
-            stateCount++;
-            state.WritePolymorph(this);
-            WrappedSerialize(state);
+            scratchpad.stream.Seek(0, SeekOrigin.Begin);
+            scratchpad.WrappedSerialize(state);
+            if (scratchpad.Position < (capacity - Position - margin))
+            {
+                state.WritePolymorph(this);
+                writer.Write(scratchpad.buffer, 0, (int)scratchpad.Position);
+                stateCount++;
+                return true;
+            }
+            return false;
         }
 
         private void EndWriteStates()
@@ -151,6 +148,7 @@ namespace RainMeadow
             if (!IsWriting) throw new InvalidOperationException("not writing");
             IsWriting = false;
             writer.Flush();
+            scratchpad.IsWriting = false;
         }
 
         private void BeginRead(OnlinePlayer fromPlayer)
@@ -160,6 +158,7 @@ namespace RainMeadow
             IsReading = true;
             Aborted = false;
             stream.Seek(0, SeekOrigin.Begin);
+            scratchpad.IsReading = true;
         }
 
         private uint BeginReadEvents()
@@ -198,6 +197,7 @@ namespace RainMeadow
         {
             currPlayer = null;
             IsReading = false;
+            scratchpad.IsReading = false;
         }
 
         public void ReadData(OnlinePlayer fromPlayer, long size)
@@ -243,15 +243,14 @@ namespace RainMeadow
             //RainMeadow.Debug($"Writing {toPlayer.OutgoingEvents.Count} events to player {toPlayer}");
             foreach (var e in toPlayer.OutgoingEvents)
             {
-                if (CanFit(e))
+                if (WriteEvent(e))
                 {
-                    WriteEvent(e);
-                    //RainMeadow.Debug($"Wrote {e}");
+                    RainMeadow.Trace($"Wrote {e}");
                 }
                 else
                 {
-                    RainMeadow.Error("no buffer space for events");
-                    RainMeadow.Error(eventLog.ToString());
+                    RainMeadow.Error($"WriteEvent failed for {e}");
+                    RainMeadow.Error("no space for events");
                     break;
                 }
             }
@@ -264,9 +263,8 @@ namespace RainMeadow
             while (toPlayer.OutgoingStates.Count > 0)
             {
                 var s = toPlayer.OutgoingStates.Dequeue();
-                if (CanFit(s.state))
+                if (WriteState(s.state))
                 {
-                    WriteState(s.state);
                     RainMeadow.Trace($"{s.state} sent");
                     s.Sent();
                 }
