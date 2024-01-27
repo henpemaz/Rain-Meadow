@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -26,6 +27,15 @@ namespace RainMeadow
         public static void Error(object data, [CallerFilePath] string callerFile = "", [CallerMemberName] string callerName = "")
         {
             instance.Logger.LogError($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}:{data}");
+        }
+
+        public static bool tracing;
+        public static void Trace(object data, [CallerFilePath] string callerFile = "")
+        {
+            if (tracing)
+            {
+                instance.Logger.LogInfo($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{new StackFrame(1, false).GetMethod().ToString()}:{data}");
+            }
         }
     }
 }

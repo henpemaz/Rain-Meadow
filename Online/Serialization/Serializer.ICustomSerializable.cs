@@ -24,6 +24,7 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write(customSerializable != null);
+                if (IsWriting) RainMeadow.Trace(1);
                 if (customSerializable != null)
                 {
                     customSerializable.CustomSerialize(this);
@@ -51,6 +52,7 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write((byte)listOfSerializables.Count);
+                if (IsWriting) RainMeadow.Trace(1);
                 for (int i = 0; i < listOfSerializables.Count; i++)
                 {
                     listOfSerializables[i].CustomSerialize(this);
@@ -74,6 +76,7 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write((byte)arrayOfSerializables.Length);
+                if (IsWriting) RainMeadow.Trace(1);
                 for (int i = 0; i < arrayOfSerializables.Length; i++)
                 {
                     arrayOfSerializables[i].CustomSerialize(this);

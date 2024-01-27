@@ -274,6 +274,7 @@ namespace RainMeadow
         // serializes resource.id and finds reference
         public void SerializeResourceByReference<T>(ref T onlineResource) where T : OnlineResource
         {
+            long wasPos = this.Position;
             if (IsWriting)
             {
                 writer.Write(onlineResource.Id());
@@ -283,6 +284,7 @@ namespace RainMeadow
                 string r = reader.ReadString();
                 onlineResource = (T)OnlineManager.ResourceFromIdentifier(r);
             }
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
         }
 
         // serializes resource.id and finds reference
@@ -333,6 +335,7 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write(nullableState != null);
+                if (IsWriting) RainMeadow.Trace(1);
                 if (nullableState != null)
                 {
                     SerializePolyState(ref nullableState);
@@ -354,6 +357,7 @@ namespace RainMeadow
                 // TODO dynamic length
                 if (states.Length > 255) throw new OverflowException("too many states");
                 writer.Write((byte)states.Length);
+                if (IsWriting) RainMeadow.Trace(1);
                 foreach (var state in states)
                 {
                     state.WritePolymorph(this);
@@ -385,6 +389,7 @@ namespace RainMeadow
                 // TODO dynamic length
                 if (states.Count > 255) throw new OverflowException("too many states");
                 writer.Write((byte)states.Count);
+                if (IsWriting) RainMeadow.Trace(1);
                 foreach (var state in states)
                 {
                     state.WritePolymorph(this);
@@ -433,6 +438,7 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write(nullableState != null);
+                if (IsWriting) RainMeadow.Trace(1);
                 if (nullableState != null)
                 {
                     SerializeStaticState(ref nullableState);
@@ -454,6 +460,7 @@ namespace RainMeadow
                 // TODO dynamic length
                 if (states.Length > 255) throw new OverflowException("too many states");
                 writer.Write((byte)states.Length);
+                if (IsWriting) RainMeadow.Trace(1);
                 foreach (var state in states)
                 {
                     WrappedSerialize(state);
@@ -482,6 +489,7 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write((byte)ids.Count);
+                if (IsWriting) RainMeadow.Trace(1);
                 foreach (var id in ids)
                 {
                     id.CustomSerialize(this);
@@ -505,6 +513,7 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write(player.inLobbyId);
+                if (IsWriting) RainMeadow.Trace(2);
             }
             if (IsReading)
             {
@@ -520,6 +529,7 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write(referencedEvent.eventId);
+                if (IsWriting) RainMeadow.Trace(2);
             }
             if (IsReading)
             {
@@ -532,6 +542,7 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write((byte)playerEvent.eventType);
+                if (IsWriting) RainMeadow.Trace(1);
                 playerEvent.CustomSerialize(this);
             }
             if (IsReading)
@@ -550,9 +561,11 @@ namespace RainMeadow
                 // TODO dynamic length
                 if (events.Count > 255) throw new OverflowException("too many events");
                 writer.Write((byte)events.Count);
+                if (IsWriting) RainMeadow.Trace(1);
                 foreach (var playerEvent in events)
                 {
                     writer.Write((byte)playerEvent.eventType);
+                    if (IsWriting) RainMeadow.Trace(1);
                     playerEvent.CustomSerialize(this);
                 }
             }

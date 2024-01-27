@@ -87,15 +87,15 @@ namespace RainMeadow
 
         public abstract class ResourceState : RootDeltaState
         {
-            [OnlineField]
+            [OnlineField(always = true)]
             public OnlineResource resource;
-            [OnlineField(nullable = true)]
+            [OnlineField(nullable = true, group = "entitydefs")]
             public Generics.AddRemoveSortedCustomSerializables<OnlineEntity.EntityId> entitiesJoined;
-            [OnlineField(nullable = true)]
+            [OnlineField(nullable = true, group = "entitydefs")]
             public DeltaStates<EntityDefinition, OnlineState, OnlineEntity.EntityId> registeredEntities;
-            [OnlineField(nullable = true)]
+            [OnlineField(nullable = true, group = "entities")]
             public DeltaStates<EntityState, OnlineState, OnlineEntity.EntityId> entityStates;
-            [OnlineField(nullable = true, polymorphic =true)]
+            [OnlineField(nullable = true, polymorphic = true)]
             public ResourceDataState resourceDataState;
 
             protected ResourceState() : base() { }
