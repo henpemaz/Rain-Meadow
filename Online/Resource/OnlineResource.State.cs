@@ -38,7 +38,7 @@ namespace RainMeadow
             // this has a flaw when there's multiple players talking to me.
             if (newState.isDelta)
             {
-                RainMeadow.Trace($"received delta state from {newState.from} for tick {newState.tick} referencing baseline {newState.Baseline}");
+                RainMeadow.Trace($"received delta state from {newState.from} for tick {newState.tick} referencing baseline {newState.baseline}");
                 while (incomingState.Count > 0 && (owner != incomingState.Peek().from || NetIO.IsNewer(newState.baseline, incomingState.Peek().tick)))
                 {
                     var discarded = incomingState.Dequeue();

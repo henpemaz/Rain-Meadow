@@ -56,7 +56,7 @@ namespace RainMeadow
 #elif STORYP2P
         private string localGameMode = "Story";
 #else
-        private string localGameMode = "FreeRoam";
+        private string localGameMode = "Meadow";
 #endif
 
         public LocalMatchmakingManager()

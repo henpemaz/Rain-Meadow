@@ -261,13 +261,13 @@ namespace RainMeadow
             toPlayer.statesWritten = toPlayer.OutgoingStates.Count > 0; // something is being written, record for debug
 
             RainMeadow.Trace($"Writing {toPlayer.OutgoingStates.Count} states");
-
             while (toPlayer.OutgoingStates.Count > 0)
             {
                 var s = toPlayer.OutgoingStates.Dequeue();
                 if (CanFit(s.state))
                 {
                     WriteState(s.state);
+                    RainMeadow.Trace($"{s.state} sent");
                     s.Sent();
                 }
                 else
@@ -289,9 +289,7 @@ namespace RainMeadow
         public void SerializeResourceByReference<T>(ref T onlineResource) where T : OnlineResource
         {
 #if TRACING
-            #if TRACING
             long wasPos = this.Position;
-#endif
 #endif
             if (IsWriting)
             {
