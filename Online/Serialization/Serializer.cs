@@ -274,7 +274,11 @@ namespace RainMeadow
         // serializes resource.id and finds reference
         public void SerializeResourceByReference<T>(ref T onlineResource) where T : OnlineResource
         {
+#if TRACING
+            #if TRACING
             long wasPos = this.Position;
+#endif
+#endif
             if (IsWriting)
             {
                 writer.Write(onlineResource.Id());
@@ -284,7 +288,9 @@ namespace RainMeadow
                 string r = reader.ReadString();
                 onlineResource = (T)OnlineManager.ResourceFromIdentifier(r);
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         // serializes resource.id and finds reference
@@ -335,7 +341,9 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write(nullableState != null);
+#if TRACING
                 if (IsWriting) RainMeadow.Trace(1);
+#endif
                 if (nullableState != null)
                 {
                     SerializePolyState(ref nullableState);
@@ -357,7 +365,9 @@ namespace RainMeadow
                 // TODO dynamic length
                 if (states.Length > 255) throw new OverflowException("too many states");
                 writer.Write((byte)states.Length);
+#if TRACING
                 if (IsWriting) RainMeadow.Trace(1);
+#endif
                 foreach (var state in states)
                 {
                     state.WritePolymorph(this);
@@ -389,7 +399,9 @@ namespace RainMeadow
                 // TODO dynamic length
                 if (states.Count > 255) throw new OverflowException("too many states");
                 writer.Write((byte)states.Count);
+#if TRACING
                 if (IsWriting) RainMeadow.Trace(1);
+#endif
                 foreach (var state in states)
                 {
                     state.WritePolymorph(this);
@@ -438,7 +450,9 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write(nullableState != null);
+#if TRACING
                 if (IsWriting) RainMeadow.Trace(1);
+#endif
                 if (nullableState != null)
                 {
                     SerializeStaticState(ref nullableState);
@@ -460,7 +474,9 @@ namespace RainMeadow
                 // TODO dynamic length
                 if (states.Length > 255) throw new OverflowException("too many states");
                 writer.Write((byte)states.Length);
+#if TRACING
                 if (IsWriting) RainMeadow.Trace(1);
+#endif
                 foreach (var state in states)
                 {
                     WrappedSerialize(state);
@@ -489,7 +505,9 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write((byte)ids.Count);
+#if TRACING
                 if (IsWriting) RainMeadow.Trace(1);
+#endif
                 foreach (var id in ids)
                 {
                     id.CustomSerialize(this);
@@ -513,7 +531,9 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write(player.inLobbyId);
+#if TRACING
                 if (IsWriting) RainMeadow.Trace(2);
+#endif
             }
             if (IsReading)
             {
@@ -529,7 +549,9 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write(referencedEvent.eventId);
+#if TRACING
                 if (IsWriting) RainMeadow.Trace(2);
+#endif
             }
             if (IsReading)
             {
@@ -542,7 +564,9 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write((byte)playerEvent.eventType);
+#if TRACING
                 if (IsWriting) RainMeadow.Trace(1);
+#endif
                 playerEvent.CustomSerialize(this);
             }
             if (IsReading)
@@ -561,11 +585,15 @@ namespace RainMeadow
                 // TODO dynamic length
                 if (events.Count > 255) throw new OverflowException("too many events");
                 writer.Write((byte)events.Count);
+#if TRACING
                 if (IsWriting) RainMeadow.Trace(1);
+#endif
                 foreach (var playerEvent in events)
                 {
                     writer.Write((byte)playerEvent.eventType);
-                    if (IsWriting) RainMeadow.Trace(1);
+    #if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
                     playerEvent.CustomSerialize(this);
                 }
             }

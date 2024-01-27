@@ -18,12 +18,5 @@ namespace RainMeadow
             var healthState = (HealthState)abstractCreature.state;
             healthState.health = this.health;
         }
-
-        public override OnlineState Delta(OnlineState baseline)
-        {
-            var delta = base.Delta(baseline);
-            RainMeadow.Trace($"d?{delta.isDelta} ed?{delta.IsEmptyDelta} al?{valueFlags.Length} a0?{valueFlags[0]}");
-            return delta;
-        }
     }
 }

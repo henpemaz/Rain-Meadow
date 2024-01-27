@@ -102,9 +102,13 @@ namespace RainMeadow
         {
             try
             {
+#if TRACING
                 long wasPos = serializer.Position;
                 handler.serialize(this, serializer);
-                RainMeadow.Trace($"{this} (delta?:{isDelta}) took {serializer.Position - wasPos}");
+                if (serializer != mock) RainMeadow.Trace($"{this} (delta?:{isDelta}) took {serializer.Position - wasPos}");
+#else
+                handler.serialize(this, serializer);
+#endif
             }
             catch (Exception e)
             {
@@ -118,12 +122,9 @@ namespace RainMeadow
 
         public long EstimatedSize(Serializer serializer)
         {
-            bool wasTrace = RainMeadow.tracing;
-            RainMeadow.tracing = false;
             mock.BeginWrite(OnlineManager.mePlayer);
             CustomSerialize(mock);
             mock.EndWrite();
-            RainMeadow.tracing = wasTrace;
             return mock.Position;
         }
 
@@ -275,12 +276,15 @@ namespace RainMeadow
                             ).Where(e => e != null)));
                             break;
                         case DeltaSupport.FollowsContainer:
+                            // Main delta-aware serialization logic here
+
                             // for each group
                             //      if (serializer.IsDelta) serializer.Serialize(ref hasGroupValue[n]);
                             //      if (!serializer.IsDelta || hasGroupValue[n])
                             //      {
                             //          serializer.Serialize(ref fieldInGroup);
                             //      }
+
                             // always send
                             if (keys.Count > 0)
                             {
@@ -299,12 +303,23 @@ namespace RainMeadow
                                 var deltagroupname = deltaGroups.Keys.ToList()[i];
                                 expressions.Add(Expression.IfThen(Expression.OrElse(Expression.Not(serializerIsDelta),
                                         Expression.ArrayAccess(Expression.Field(selfConverted, valueFlagsAcessor), Expression.Constant(i))),
-                                    Expression.Block(Expression.Invoke(Expression.Constant((Serializer s) => { if (s.IsWriting) RainMeadow.Trace("sending " + deltagroupname); }), serializer)
-                                        , Expression.Block(deltaGroups[deltaGroups.Keys.ToList()[i]].Select(
-                                        f => Expression.Block(f.GetCustomAttribute<OnlineFieldAttribute>().SerializerCallMethod(f, serializer, Expression.Field(selfConverted, f)),
-                                        Expression.Invoke(Expression.Constant((Serializer s) => { if (s.IsWriting) RainMeadow.Trace(f.Name); }), serializer)
+#if TRACING
+                                    Expression.Block(Expression.Invoke(Expression.Constant((Serializer s) => { if (s.IsWriting) RainMeadow.Trace("sending " + deltagroupname); }), serializer),
+#endif                                   
+                                    Expression.Block(deltaGroups[deltaGroups.Keys.ToList()[i]].Select(
+                                        f =>
+#if TRACING
+                                            Expression.Block(Expression.Invoke(Expression.Constant((Serializer s) => { if (s.IsWriting) RainMeadow.Trace(f.Name); }), serializer),
+#endif
+                                            f.GetCustomAttribute<OnlineFieldAttribute>().SerializerCallMethod(f, serializer, Expression.Field(selfConverted, f))
+#if TRACING
                                         )
-                                    ).Where(e => e != null)))));
+#endif
+                                    ).Where(e => e != null))
+#if TRACING
+                                    )
+#endif
+                                    ));
 
                             }
                             break;
@@ -414,7 +429,7 @@ namespace RainMeadow
                                             )
                                     ).Where(e => e != null).ToArray())
                                 ));
-
+#if TRACING
                             expressions.Add(Expression.Block(
                                 deltaGroups[deltaGroups.Keys.ToList()[i]].Select(
                                         f => Expression.Invoke(Expression.Constant((string n, bool v) =>
@@ -441,6 +456,7 @@ namespace RainMeadow
                             {
                                 RainMeadow.Trace(deltagroupname + " has value?: " + v);
                             }), Expression.ArrayAccess(Expression.Field(output, valueFlagsAcessor), Expression.Constant(i))));
+#endif
                         }
 
                         expressions.Add(output); // return

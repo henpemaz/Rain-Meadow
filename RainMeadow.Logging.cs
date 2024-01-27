@@ -29,6 +29,7 @@ namespace RainMeadow
             instance.Logger.LogError($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}:{data}");
         }
 
+#if TRACING
         public static bool tracing;
         public static void Trace(object data, [CallerFilePath] string callerFile = "")
         {
@@ -37,5 +38,6 @@ namespace RainMeadow
                 instance.Logger.LogInfo($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{new StackFrame(1, false).GetMethod().ToString()}:{data}");
             }
         }
+#endif
     }
 }

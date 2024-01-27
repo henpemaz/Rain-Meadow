@@ -99,15 +99,16 @@ namespace RainMeadow
         {
             if (lobby != null)
             {
-                //if(RainMeadow.tracing)
-                //{
-                //    var ls0 = lobby.GetState(0);
-                //    var ls1 = lobby.GetState(1);
-                //    var ds = ls1.Delta(ls0);
-                //    mePlayer.OutgoingStates.Enqueue(ds);
-                //    serializer.WriteData(mePlayer);
-                //}
-
+#if TRACING
+                if (RainMeadow.tracing && players.Count == 1)
+                {
+                    var ls0 = lobby.GetState(0);
+                    var ls1 = lobby.GetState(1);
+                    var ds = ls1.Delta(ls0);
+                    mePlayer.OutgoingStates.Enqueue(ds);
+                    serializer.WriteData(mePlayer);
+                }
+#endif
                 foreach (OnlinePlayer player in players)
                 {
                     player.Updade();
@@ -132,7 +133,9 @@ namespace RainMeadow
                 {
                     SendData(player);
                 }
+#if TRACING
                 RainMeadow.tracing = false; // cleanup
+#endif
             }
         }
 

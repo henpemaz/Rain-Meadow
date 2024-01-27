@@ -9,15 +9,21 @@ namespace RainMeadow
 
         public void Serialize(ref byte data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting) writer.Write(data);
             if (IsReading) data = reader.ReadByte();
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref byte[] data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Length);
@@ -34,12 +40,16 @@ namespace RainMeadow
                     data[i] = reader.ReadByte();
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref List<byte> data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Count);
@@ -57,20 +67,28 @@ namespace RainMeadow
                     data.Add(reader.ReadByte());
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref sbyte data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting) writer.Write(data);
             if (IsReading) data = reader.ReadSByte();
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref sbyte[] data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Length);
@@ -87,12 +105,16 @@ namespace RainMeadow
                     data[i] = reader.ReadSByte();
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref List<sbyte> data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Count);
@@ -110,20 +132,28 @@ namespace RainMeadow
                     data.Add(reader.ReadSByte());
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref ushort data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting) writer.Write(data);
             if (IsReading) data = reader.ReadUInt16();
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref ushort[] data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Length);
@@ -140,12 +170,16 @@ namespace RainMeadow
                     data[i] = reader.ReadUInt16();
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref List<ushort> data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Count);
@@ -163,20 +197,28 @@ namespace RainMeadow
                     data.Add(reader.ReadUInt16());
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref short data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting) writer.Write(data);
             if (IsReading) data = reader.ReadInt16();
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref short[] data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Length);
@@ -193,12 +235,16 @@ namespace RainMeadow
                     data[i] = reader.ReadInt16();
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref List<short> data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Count);
@@ -216,20 +262,28 @@ namespace RainMeadow
                     data.Add(reader.ReadInt16());
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref int data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting) writer.Write(data);
             if (IsReading) data = reader.ReadInt32();
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref int[] data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Length);
@@ -246,12 +300,16 @@ namespace RainMeadow
                     data[i] = reader.ReadInt32();
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref List<int> data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Count);
@@ -269,20 +327,28 @@ namespace RainMeadow
                     data.Add(reader.ReadInt32());
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref uint data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting) writer.Write(data);
             if (IsReading) data = reader.ReadUInt32();
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref uint[] data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Length);
@@ -299,12 +365,16 @@ namespace RainMeadow
                     data[i] = reader.ReadUInt32();
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref List<uint> data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Count);
@@ -322,21 +392,28 @@ namespace RainMeadow
                     data.Add(reader.ReadUInt32());
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref bool data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting) writer.Write(data);
             if (IsReading) data = reader.ReadBoolean();
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref bool[] data)
         {
-            if (IsWriting) RainMeadow.Trace("bools!");
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Length);
@@ -353,12 +430,16 @@ namespace RainMeadow
                     data[i] = reader.ReadBoolean();
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref List<bool> data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Count);
@@ -376,20 +457,28 @@ namespace RainMeadow
                     data.Add(reader.ReadBoolean());
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref ulong data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting) writer.Write(data);
             if (IsReading) data = reader.ReadUInt64();
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref ulong[] data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Length);
@@ -406,12 +495,16 @@ namespace RainMeadow
                     data[i] = reader.ReadUInt64();
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref List<ulong> data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Count);
@@ -429,20 +522,28 @@ namespace RainMeadow
                     data.Add(reader.ReadUInt64());
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref float data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting) writer.Write(data);
             if (IsReading) data = reader.ReadSingle();
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref float[] data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Length);
@@ -459,12 +560,16 @@ namespace RainMeadow
                     data[i] = reader.ReadSingle();
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref List<float> data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Count);
@@ -482,20 +587,28 @@ namespace RainMeadow
                     data.Add(reader.ReadSingle());
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void SerializeHalf(ref float data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting) writer.Write(Mathf.FloatToHalf(data));
             if (IsReading) data = Mathf.HalfToFloat(reader.ReadUInt16());
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void SerializeHalf(ref float[] data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Length);
@@ -512,12 +625,16 @@ namespace RainMeadow
                     data[i] = Mathf.HalfToFloat(reader.ReadUInt16());
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void SerializeHalf(ref List<float> data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Count);
@@ -535,19 +652,27 @@ namespace RainMeadow
                     data.Add(Mathf.HalfToFloat(reader.ReadUInt16()));
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref string data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting) writer.Write(data);
             if (IsReading) data = reader.ReadString();
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void SerializeNullable(ref string data) {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write(data != null);
@@ -563,12 +688,16 @@ namespace RainMeadow
                     data = reader.ReadString();
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref string[] data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Length);
@@ -585,12 +714,16 @@ namespace RainMeadow
                     data[i] = reader.ReadString();
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref List<string> data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((byte)data.Count);
@@ -608,12 +741,16 @@ namespace RainMeadow
                     data.Add(reader.ReadString());
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void SerializeNullable(ref List<string> data) 
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write(data != null);
@@ -638,14 +775,18 @@ namespace RainMeadow
                     }
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
 
         // Todo make Half version for these as well see SerializeHalf(float)
         public void Serialize(ref Vector2 data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write(data.x);
@@ -656,12 +797,16 @@ namespace RainMeadow
                 data.x = reader.ReadSingle();
                 data.y = reader.ReadSingle();
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void SerializeNullable(ref Vector2? data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write(data.HasValue);
@@ -678,7 +823,9 @@ namespace RainMeadow
                     data = new Vector2(reader.ReadSingle(), reader.ReadSingle());
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         // We cast to shorts as we assume that
@@ -686,7 +833,9 @@ namespace RainMeadow
         // Sorry if this caused a bug, yell at DevLope and Henpemaz.
         public void Serialize(ref IntVector2 data)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((short)data.x);
@@ -697,12 +846,16 @@ namespace RainMeadow
                 data.x = reader.ReadInt16();
                 data.y = reader.ReadInt16();
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void Serialize(ref WorldCoordinate pos)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write((short)pos.room);
@@ -720,12 +873,16 @@ namespace RainMeadow
                     abstractNode = reader.ReadInt16(),
                 };
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         public void SerializeNullable(ref WorldCoordinate? pos)
         {
+#if TRACING
             long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write(pos.HasValue);
@@ -750,7 +907,9 @@ namespace RainMeadow
                     };
                 }
             }
+#if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
     }
 }
