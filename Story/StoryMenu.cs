@@ -48,9 +48,11 @@ namespace RainMeadow
 
             ssm.slugcatColorOrder = AllAvailableCharacters();
             sp.slugcatImage = new InteractiveMenuScene(this, this.pages[0], sceneID);
-            string text = ""; // Character name
-            string s = ""; // subtitle
-            sp.imagePos = new Vector2(483f, 484f);
+            string characterName = ""; // Character name
+            string subtitle = ""; // subtitle
+            sp.imagePos = new Vector2(683f, 484f);
+
+            // TODO: Multiple Characters
             for (int j = 0; j < ssm.slugcatColorOrder.Count; j++)
             {
                 sp.slugcatNumber = ssm.slugcatColorOrder[j];
@@ -66,29 +68,29 @@ namespace RainMeadow
 
                 }
 
-                this.pages[0].subObjects.Add(sp.slugcatImage);
             }
+            this.pages[0].subObjects.Add(sp.slugcatImage);
 
             // TODO: Alignment issues.
 
             /*            s = RWCustom.Custom.ReplaceLineDelimeters(s);
-            int num = s.Count((char f) => f == '\n');
-            float num2 = 0f;
-            if (num > 1)
-            {
-                num2 = 30f;
-            }
-                        var characterName = new MenuLabel(this, pages[0], text, new Vector2(sp.imagePos.x, sp.imagePos.y -400f), new Vector2(200f, 30f), bigText: true);
+                        int num = s.Count((char f) => f == '\n');
+                        float num2 = 0f;
+                        if (num > 1)
+                        {
+                            num2 = 30f;
+                        }
+                        var characterName = new MenuLabel(this, pages[0], text, new Vector2(sp.imagePos.x, sp.imagePos.y - 400f), new Vector2(200f, 30f), bigText: true);
                         characterName.label.alignment = FLabelAlignment.Center;
                         this.pages[0].subObjects.Add(characterName);
 
                         var infoLabel = new MenuLabel(this, pages[0], s, new Vector2(-1000f, sp.imagePos.y - 249f - 60f + num2 / 2f), new Vector2(400f, 60f), bigText: true);
                         infoLabel.label.alignment = FLabelAlignment.Center;
-                        this.pages[0].subObjects.Add(infoLabel);*/
+                        this.pages[0].subObjects.Add(infoLabel);
 
-            /*            characterName.label.color = MenuRGB(MenuColors.MediumGrey);
-                        infoLabel.label.color = MenuRGB(MenuColors.DarkGrey);
-            */
+                        *//*            characterName.label.color = MenuRGB(MenuColors.MediumGrey);
+                                    infoLabel.label.color = MenuRGB(MenuColors.DarkGrey);
+                        */
 
             this.startButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
             this.startButton.OnClick += (_) => { StartGame(); };
