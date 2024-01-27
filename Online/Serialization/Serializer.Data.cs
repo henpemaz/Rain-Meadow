@@ -27,18 +27,30 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write((byte)data.Length);
-                for (int i = 0; i < data.Length; i++)
-                {
-                    writer.Write(data[i]);
-                }
+                writer.Write(data);
             }
             if (IsReading)
             {
-                data = new byte[reader.ReadByte()];
-                for (int i = 0; i < data.Length; i++)
-                {
-                    data[i] = reader.ReadByte();
-                }
+                data = reader.ReadBytes(reader.ReadByte());
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
+        public void SerializeLongArray(ref byte[] data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write((ushort)data.Length);
+                writer.Write(data);
+            }
+            if (IsReading)
+            {
+                data = reader.ReadBytes(reader.ReadUInt16());
             }
 #if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);

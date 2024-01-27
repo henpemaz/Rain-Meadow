@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Text;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -70,6 +72,8 @@ namespace RainMeadow
             IsReading = false;
             IsDelta = false;
             Aborted = true;
+            scratchpad.currPlayer = null;
+            scratchpad.IsReading = false;
         }
 
         public void BeginWrite(OnlinePlayer toPlayer)
@@ -80,6 +84,7 @@ namespace RainMeadow
             IsDelta = false;
             Aborted = false;
             stream.Seek(0, SeekOrigin.Begin);
+            scratchpad.currPlayer = toPlayer;
             scratchpad.IsWriting = true;
         }
 
@@ -119,13 +124,27 @@ namespace RainMeadow
             writer.Write(stateCount);
         }
 
+        private bool WriteZippedState(OnlineState state)
+        {
+            var pos = (int)scratchpad.Position;
+            scratchpad.stream.Seek(0, SeekOrigin.Begin);
+            var zippedState = new DeflateState(scratchpad.stream, pos);
+            RainMeadow.Debug($"zipping state {state}, was {pos} became ~{zippedState.bytes.Length}");
+            return WriteState(zippedState);
+        }
+
         private bool WriteState(OnlineState state)
         {
             scratchpad.stream.Seek(0, SeekOrigin.Begin);
+            state.WritePolymorph(scratchpad);
             scratchpad.WrappedSerialize(state);
-            if (scratchpad.Position < (capacity - Position - margin))
+            bool fits = scratchpad.Position < (capacity - Position - margin);
+            if ((scratchpad.Position > 1024 || !fits) && state is not DeflateState)
             {
-                state.WritePolymorph(this);
+                return WriteZippedState(state);
+            }
+            else if (fits)
+            {
                 writer.Write(scratchpad.buffer, 0, (int)scratchpad.Position);
                 stateCount++;
                 return true;
@@ -148,6 +167,7 @@ namespace RainMeadow
             if (!IsWriting) throw new InvalidOperationException("not writing");
             IsWriting = false;
             writer.Flush();
+            scratchpad.currPlayer = null;
             scratchpad.IsWriting = false;
         }
 
@@ -158,6 +178,7 @@ namespace RainMeadow
             IsReading = true;
             Aborted = false;
             stream.Seek(0, SeekOrigin.Begin);
+            scratchpad.currPlayer = fromPlayer;
             scratchpad.IsReading = true;
         }
 
@@ -190,6 +211,15 @@ namespace RainMeadow
             }
             
             WrappedSerialize(s);
+
+            if(s is DeflateState ds)
+            {
+                scratchpad.stream.Seek(0, SeekOrigin.Begin);
+                ds.Decompress(scratchpad.stream);
+                scratchpad.stream.Seek(0, SeekOrigin.Begin);
+                s = scratchpad.ReadState();
+            }
+
             return s;
         }
 
@@ -197,6 +227,7 @@ namespace RainMeadow
         {
             currPlayer = null;
             IsReading = false;
+            scratchpad.currPlayer = null;
             scratchpad.IsReading = false;
         }
 
