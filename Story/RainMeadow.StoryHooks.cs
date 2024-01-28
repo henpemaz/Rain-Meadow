@@ -36,7 +36,6 @@ namespace RainMeadow
 
             On.Player.Update += Player_Update;
 
-            On.RegionGate.Update += RegionGate_Update;
             On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide; ;
             On.RegionGate.PlayersStandingStill += PlayersStandingStill;
             On.RegionGate.PlayersInZone += RegionGate_PlayersInZone; ;
@@ -167,20 +166,6 @@ namespace RainMeadow
             }
         }
 
-        private void RegionGate_Update(On.RegionGate.orig_Update orig, RegionGate self, bool eu)
-        {
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
-            {
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
-                {
-                    if ((playerAvatar.Value.apo as AbstractCreature).Room != self.room.abstractRoom) // Everyone must be present
-                    {
-                        return;
-                    }
-                }
-            }
-            orig(self, eu);
-        }
         private bool RegionGate_AllPlayersThroughToOtherSide(On.RegionGate.orig_AllPlayersThroughToOtherSide orig, RegionGate self)
         {
 
@@ -232,7 +217,6 @@ namespace RainMeadow
                     if (kv.Value.realizedCreature.abstractCreature.Room != self.room.abstractRoom
                         || (kv.Value.realizedCreature as Player).touchedNoInputCounter < (ModManager.MMF ? 40 : 20))
                     {
-                        RainMeadow.Debug("Player(s) missing in region gate location");
                         return false;
                     }
                 }
