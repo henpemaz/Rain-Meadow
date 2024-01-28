@@ -37,11 +37,12 @@ namespace RainMeadow
             On.Player.Update += Player_Update;
 
             On.RegionGate.Update += RegionGate_Update;
-            On.RegionGate.AllPlayersThroughToOtherSide += AllPlayersThroughtoOtherSide;
+            On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide; ;
             On.RegionGate.PlayersStandingStill += PlayersStandingStill;
-            On.RegionGate.PlayersInZone += PlayersInZone;
+            On.RegionGate.PlayersInZone += RegionGate_PlayersInZone; ;
 
         }
+
 
         private string[] PlayerProgression_GetProgLinesFromMemory(On.PlayerProgression.orig_GetProgLinesFromMemory orig, PlayerProgression self)
         {
@@ -168,87 +169,77 @@ namespace RainMeadow
 
         private void RegionGate_Update(On.RegionGate.orig_Update orig, RegionGate self, bool eu)
         {
-            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not StoryGameMode)
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                orig(self, eu);
-                return;
-            }
-
-            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
-            {
-                if (playerAvatar.Value.realizedCreature.room != self.room) // Everyone must be present
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
                 {
-                    return;
+                    if ((playerAvatar.Value.apo as AbstractCreature).Room != self.room.abstractRoom) // Everyone must be present
+                    {
+                        return;
+                    }
                 }
             }
-
             orig(self, eu);
         }
-        private bool AllPlayersThroughtoOtherSide(On.RegionGate.orig_AllPlayersThroughToOtherSide orig, RegionGate self)
+        private bool RegionGate_AllPlayersThroughToOtherSide(On.RegionGate.orig_AllPlayersThroughToOtherSide orig, RegionGate self)
         {
 
-            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not StoryGameMode)
-            {
-                orig(self);
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode) {
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
+                {
+                    var ac = (playerAvatar.Value.apo as AbstractCreature);
+                    if (ac.pos.room == self.room.abstractRoom.index && (!self.letThroughDir || ac.pos.x < self.room.TileWidth / 2 + 3) && (self.letThroughDir || ac.pos.x > self.room.TileWidth / 2 - 4))
+                    {
+                        return false;
+                    }
+                }
                 return true;
             }
+            return orig(self);
 
-            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
-            {
-                if (playerAvatar.Value.apo.pos.room == self.room.abstractRoom.index && (playerAvatar.Value.apo.pos.x < self.room.TileWidth / 2 + 3) && (playerAvatar.Value.apo.pos.x > self.room.TileWidth / 2 - 4))
-                {
-                    return false;
-                }
-            }
-            return true;
         }
 
 
-        private int PlayersInZone(On.RegionGate.orig_PlayersInZone orig, RegionGate self)
+        private int RegionGate_PlayersInZone(On.RegionGate.orig_PlayersInZone orig, RegionGate self)
         {
-            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not StoryGameMode)
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                return orig(self);
-            }
-            int regionGateZone = -1;
-            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
-            {
-                var abstractCreature = playerAvatar.Value.realizedCreature.abstractCreature;
-                if (abstractCreature.Room == self.room.abstractRoom)
+                int regionGateZone = -1;
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
                 {
-                    int zone = self.DetectZone(abstractCreature);
-                    if (zone != regionGateZone && regionGateZone != -1)
+                    var abstractCreature = playerAvatar.Value.apo as AbstractCreature;
+                    if (abstractCreature.Room == self.room.abstractRoom)
                     {
-                        return -1;
+                        int zone = self.DetectZone(abstractCreature);
+                        if (zone != regionGateZone && regionGateZone != -1)
+                        {
+                            return -1;
+                        }
+                        regionGateZone = zone;
                     }
-                    regionGateZone = zone;
                 }
+
+                return regionGateZone;
             }
-
-            return regionGateZone;
-            // TODO: HUD stuff
-
+            return orig(self);
         }
 
         private bool PlayersStandingStill(On.RegionGate.orig_PlayersStandingStill orig, RegionGate self)
         {
-
-            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not StoryGameMode)
-            {
-                return orig(self);
-            }
-
-            foreach (var kv in OnlineManager.lobby.playerAvatars)
-            {
-                if (kv.Value.realizedCreature.abstractCreature.Room != self.room.abstractRoom
-                    || (kv.Value.realizedCreature as Player).touchedNoInputCounter < (ModManager.MMF ? 40 : 20))
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode) {
+                foreach (var kv in OnlineManager.lobby.playerAvatars)
                 {
-                    RainMeadow.Debug("Player(s) missing in region gate location");
-                    return false;
+                    if (kv.Value.realizedCreature.abstractCreature.Room != self.room.abstractRoom
+                        || (kv.Value.realizedCreature as Player).touchedNoInputCounter < (ModManager.MMF ? 40 : 20))
+                    {
+                        RainMeadow.Debug("Player(s) missing in region gate location");
+                        return false;
+                    }
                 }
-            }
 
-            return true;
+                return true;
+            }
+            return orig(self);
         }
 
     }
