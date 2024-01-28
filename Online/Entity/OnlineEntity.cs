@@ -183,15 +183,16 @@ namespace RainMeadow
             var stateQueue = incomingState[inResource];
             if (newState.isDelta)
             {
-                //RainMeadow.Debug($"received delta state for tick {newState.tick} referencing baseline {newState.Baseline}");
+                RainMeadow.Trace($"received delta state for tick {newState.tick} referencing baseline {newState.baseline}");
                 while (stateQueue.Count > 0 && (newState.from != stateQueue.Peek().from || NetIO.IsNewer(newState.baseline, stateQueue.Peek().tick)))
                 {
                     var discarded = stateQueue.Dequeue();
-                    //RainMeadow.Debug("discarding old event from tick " + discarded.tick);
+                    RainMeadow.Trace("discarding old event from tick " + discarded.tick);
                 }
                 if (stateQueue.Count == 0 || newState.baseline != stateQueue.Peek().tick)
                 {
                     RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.baseline}");
+                    RainMeadow.Error($"Available ticks are: [{string.Join(", ", stateQueue.Where(s => s.from == newState.from).Select(s => s.tick))}]");
                     if (!newState.from.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.DeltaReset, inResource, this.id)))
                     {
                         newState.from.InvokeRPC(RPCs.DeltaReset, inResource, this.id);
@@ -202,7 +203,7 @@ namespace RainMeadow
             }
             else
             {
-                //RainMeadow.Debug("received absolute state for tick " + newState.tick);
+                RainMeadow.Trace("received absolute state for tick " + newState.tick);
             }
             stateQueue.Enqueue(newState);
             if(newState.from == owner)

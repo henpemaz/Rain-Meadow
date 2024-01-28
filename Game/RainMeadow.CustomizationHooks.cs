@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
+    // Support character customization (WIP)
     public partial class RainMeadow
     {
         public void CustomizationHooks()

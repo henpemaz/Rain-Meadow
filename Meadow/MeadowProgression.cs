@@ -60,7 +60,7 @@ namespace RainMeadow
                 displayName = "CICADA", 
                 emotePrefix = "sc_", //"cada_",
                 emoteAtlas = "emotes_slugcat", //"emotes_cicada",
-                emoteColor = new Color(120f, 80f, 120f, 255f) / 255f,
+                emoteColor = new Color(81f, 81f, 81f, 255f) / 255f,
             });
             public static Character Lizard = new("Lizard", true, new() { 
                 displayName = "LIZARD", 

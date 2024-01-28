@@ -73,7 +73,7 @@ namespace RainMeadow
         {
             //PlacedObject.Type.FlareBomb,
             //PlacedObject.Type.PuffBall,
-            //PlacedObject.Type.DangleFruit, //still causes a lot of crashes
+            PlacedObject.Type.DangleFruit, //still causes a lot of crashes
             //PlacedObject.Type.DataPearl,
             //PlacedObject.Type.UniqueDataPearl,
             //PlacedObject.Type.SeedCob,

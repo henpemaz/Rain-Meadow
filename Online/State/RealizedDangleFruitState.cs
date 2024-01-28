@@ -19,7 +19,7 @@ namespace RainMeadow
             var fruit = (DangleFruit)onlineEntity.apo.realizedObject;
 
             this.bites = (byte)fruit.bites;
-            if (fruit.stalk.ropeLength > 0f)
+            if (fruit.stalk?.ropeLength > 0f)
             {
                 this.hasStalk = true;
             }
