@@ -80,7 +80,12 @@
             {
                 if (!ws0.isAvailable)
                 {
-                    self.requestCreateWorld = false;
+                    lock (self) {
+                        self.requestCreateWorld = false;
+                        orig(self);
+                    }
+                    OnlineManager.ForceLoadUpdate();
+                    return;
                 }
                 else if(self.requestCreateWorld)
                 {

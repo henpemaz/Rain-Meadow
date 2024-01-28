@@ -133,7 +133,7 @@ namespace RainMeadow
             }
             else if (requestResult is GenericResult.Error) // I should retry
             {
-                // todo retry logic
+                Request();
                 RainMeadow.Error("request failed for " + this);
             }
         }

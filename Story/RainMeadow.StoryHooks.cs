@@ -172,11 +172,15 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode) {
                 foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
                 {
-                    var ac = (playerAvatar.Value.apo as AbstractCreature);
-                    if (ac.pos.room == self.room.abstractRoom.index && (!self.letThroughDir || ac.pos.x < self.room.TileWidth / 2 + 3) && (self.letThroughDir || ac.pos.x > self.room.TileWidth / 2 - 4))
-                    {
-                        return false;
+                    if(playerAvatar.Value?.apo is AbstractCreature ac){
+                        if (ac.pos.room == self.room.abstractRoom.index && (!self.letThroughDir || ac.pos.x < self.room.TileWidth / 2 + 3)
+                            && (self.letThroughDir || ac.pos.x > self.room.TileWidth / 2 - 4))
+                        {
+                            return false;
+                        }
                     }
+                    //todo we need to think a bit more b/c avatars are destroyed when regions transfer
+
                 }
                 return true;
             }

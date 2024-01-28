@@ -297,6 +297,7 @@ namespace RainMeadow
                             {
                                 if (oe.isMine)
                                 {
+                                    //TODO add player scug back in to lobby dictionary.
                                     Debug("readding entity to world" + oe);
                                     roomSession2.worldSession.LocalEntityEntered(oe);
                                 }

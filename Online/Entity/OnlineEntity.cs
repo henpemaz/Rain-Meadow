@@ -53,7 +53,7 @@ namespace RainMeadow
             RainMeadow.Debug($"{this} left {resource}");
             if (resource != currentlyEnteredResource)
             {
-                RainMeadow.Error($"Not the right resource {this} - {resource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
+                //RainMeadow.Error($"Not the right resource {this} - {resource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
             }
             enteredResources.Remove(resource);
             if (isMine) JoinOrLeavePending();
