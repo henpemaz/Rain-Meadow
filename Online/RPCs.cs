@@ -78,5 +78,11 @@ namespace RainMeadow
             }
             OnlineManager.lobby.playerAvatars[inLobbyId] = avatar;
         }
+
+        [RPCMethod]
+        public static void SetReadyForNextRegion(RPCEvent rpcEvent)
+        {
+            OnlineManager.lobby.isReadyForNextRegion = true;
+        }
     }
 }
