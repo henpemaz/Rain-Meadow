@@ -42,9 +42,12 @@ namespace RainMeadow
                 if (isFree)
                 {
                     // Leased to player
-                    request.from.QueueEvent(new GenericResult.Ok(request));
-                    NewOwner(request.from);
-                    return;
+                    if (OnlineManager.lobby.gameMode.PlayerCanOwnResource(request.from, this))
+                    {
+                        request.from.QueueEvent(new GenericResult.Ok(request));
+                        NewOwner(request.from);
+                        return;
+                    }
                 }
                 else
                 {

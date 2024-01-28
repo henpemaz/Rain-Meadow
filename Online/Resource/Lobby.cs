@@ -13,7 +13,6 @@ namespace RainMeadow
         public Dictionary<string, WorldSession> worldSessions = new();
 
         public Dictionary<ushort, OnlineCreature> playerAvatars = new(); //key:lobbyID | Value:slugcat AbstractCreature
-        public bool isReadyForNextRegion = false;
 
         public string[] mods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().ConvertAll(mod => mod.id.ToString()).ToArray();
         public static bool checkingMods;

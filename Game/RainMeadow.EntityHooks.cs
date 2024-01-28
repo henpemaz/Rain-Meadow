@@ -243,7 +243,7 @@ namespace RainMeadow
                 var newWorld = self.worldLoader.world;
                 Room room = null;
 
-                if (OnlineManager.lobby.gameMode is MeadowGameMode)
+                if (true)
                 {
                     // Regular gate switch
                     // pre: remove remote entities
@@ -260,9 +260,14 @@ namespace RainMeadow
                                 // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
                                 if (!oe.isMine)
                                 {
-                                    Debug("removing remote entity " + oe);
-                                    roomSession.entities.Remove(oe.id);
-                                    oe.OnLeftResource(roomSession);
+                                    if (oe.isTransferable && roomSession.worldSession.isOwner) {
+                                        roomSession.worldSession.EntityTransfered(oe, OnlineManager.mePlayer);
+                                    }
+                                    else {
+                                        Debug("removing remote entity " + oe);
+                                        roomSession.entities.Remove(oe.id);
+                                        oe.OnLeftResource(roomSession);
+                                    }
                                 }
                                 else // mine leave the old online world
                                 {
@@ -304,7 +309,7 @@ namespace RainMeadow
                         roomSession2.Activate(); // adds entities that are already in the room
                     }
                 }
-                else if (OnlineManager.lobby.gameMode is StoryGameMode) 
+                else if (false) 
                 {
                     RoomSession? oldRoom = null;
 
@@ -313,7 +318,7 @@ namespace RainMeadow
                         oldRoom = roomSession;
                         room = self.reportBackToGate.room;
 
-                        if (oldRoom.isOwner)
+                        if (oldRoom.worldSession.isOwner)
                         {
                             // Grab Ownership of everything. We'll sort things out after the room merge
                         }
@@ -323,7 +328,6 @@ namespace RainMeadow
                              * Release Ownership of everything 
                              * Empty out room
                              */
-                            while (!OnlineManager.lobby.isReadyForNextRegion) { }
                             var entities = room.abstractRoom.entities;
                             for (int i = entities.Count - 1; i >= 0; i--)
                             {
@@ -369,25 +373,16 @@ namespace RainMeadow
                                     oe.LeaveResource(oldRoom.worldSession);
                                 }
                             }
-                            oldRoom.worldSession.FullyReleaseResource();
+                            //oldRoom.worldSession.FullyReleaseResource();
                             newRoom.Activate();
-                            foreach (var player in OnlineManager.players) 
-                            {
-                                if (OnlineManager.lobby.owner != player) 
-                                {
-                                    player.InvokeRPC(RPCs.SetReadyForNextRegion);
-                                }
-                            }
                         }
                         else 
                         { 
                             /* Repopulate
-                             * Request ownership of Avatar
                              *
                              */
                         }
                     }
-                    OnlineManager.lobby.isReadyForNextRegion = false;
                 }
             }
             else
