@@ -293,17 +293,25 @@ namespace RainMeadow
                         var entities = room.abstractRoom.entities;
                         for (int i = entities.Count - 1; i >= 0; i--)
                         {
-                            if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+                            if (entities[i] is AbstractPhysicalObject apo)
                             {
-                                if (oe.isMine)
+                                if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
                                 {
-                                    //TODO add player scug back in to lobby dictionary.
-                                    Debug("readding entity to world" + oe);
-                                    roomSession2.worldSession.LocalEntityEntered(oe);
+                                    if (oe.isMine)
+                                    {
+                                        //TODO add player scug back in to lobby dictionary.
+                                        Debug("readding entity to world" + oe);
+                                        //oe.EnterResource(roomSession2.worldSession);
+                                        roomSession2.worldSession.LocalEntityEntered(oe);
+                                    }
+                                    else // what happened here
+                                    {
+                                        Error("an entity that came through the gate wasnt mine: " + oe);
+                                    }
                                 }
-                                else // what happened here
-                                {
-                                    Error("an entity that came through the gate wasnt mine: " + oe);
+                                else {
+                                    Debug("SKIPPING");
+                                    roomSession2.worldSession.ApoEnteringWorld(apo);
                                 }
                             }
                         }

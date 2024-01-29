@@ -72,7 +72,8 @@ namespace RainMeadow
                 return;
             }
             // any resources to join
-            pending = enteredResources.FirstOrDefault(r => !r.entities.ContainsKey(this.id));
+            pending = enteredResources.FirstOrDefault(r => !joinedResources.Contains(r));
+            //pending = enteredResources.FirstOrDefault(r => !r.entities.ContainsKey(this.id));
             if (pending != null)
             {
                 pending.LocalEntityEntered(this);
