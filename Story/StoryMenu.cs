@@ -7,13 +7,17 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+
 namespace RainMeadow
 {
     public class StoryMenu : SmartMenu, SelectOneButton.SelectOneButtonOwner
     {
         private RainEffect rainEffect;
 
-        private EventfulHoldButton startButton;
+        private EventfulHoldButton hostStartButton;
+        private EventfulHoldButton clientWaitingButton;
+
+
         private EventfulBigArrowButton prevButton;
         private EventfulBigArrowButton nextButton;
         private PlayerInfo[] players;
@@ -44,10 +48,28 @@ namespace RainMeadow
             ssm.manager = manager;
             ssm.pages = pages;
 
-            MenuScene.SceneID sceneID = MenuScene.SceneID.Slugcat_White;
+            MenuScene.SceneID HostSceneID = MenuScene.SceneID.Slugcat_White;
+            MenuScene.SceneID ClientSceneID = MenuScene.SceneID.Slugcat_Red;
+
+            if (OnlineManager.lobby.isOwner)
+            {
+                sp.slugcatImage = new InteractiveMenuScene(this, this.pages[0], HostSceneID);
+
+                this.pages[0].subObjects.Add(sp.slugcatImage);
+
+            }
+            else
+            {
+                sp.slugcatImage = new InteractiveMenuScene(this, this.pages[0], ClientSceneID);
+
+                this.pages[0].subObjects.Add(sp.slugcatImage);
+
+            }
+
 
             ssm.slugcatColorOrder = AllAvailableCharacters();
-            sp.slugcatImage = new InteractiveMenuScene(this, this.pages[0], sceneID);
+
+
             string characterName = ""; // Character name
             string subtitle = ""; // subtitle
             sp.imagePos = new Vector2(683f, 484f);
@@ -60,7 +82,7 @@ namespace RainMeadow
                 // TODO: Background images
                 if (sp.slugcatNumber == SlugcatStats.Name.White)
                 {
-                    sceneID = MenuScene.SceneID.Slugcat_White;
+                    HostSceneID = MenuScene.SceneID.Slugcat_White;
                     sp.sceneOffset = new Vector2(-10f, 100f);
                     sp.slugcatDepth = 3.1000001f;
                     sp.markOffset = new Vector2(-15f, -2f);
@@ -69,7 +91,7 @@ namespace RainMeadow
                 }
 
             }
-            this.pages[0].subObjects.Add(sp.slugcatImage);
+
 
             // TODO: Alignment issues.
 
@@ -92,11 +114,34 @@ namespace RainMeadow
                                     infoLabel.label.color = MenuRGB(MenuColors.DarkGrey);
                         */
 
-            this.startButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
-            this.startButton.OnClick += (_) => { StartGame(); };
-            startButton.buttonBehav.greyedOut = !OnlineManager.lobby.isAvailable;
 
-            this.pages[0].subObjects.Add(this.startButton);
+            // IF HOST, Add Start button
+
+            this.hostStartButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
+            this.hostStartButton.OnClick += (_) => { StartGame(); };
+            hostStartButton.buttonBehav.greyedOut = false;
+
+            this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
+            this.clientWaitingButton.OnClick += (_) => { StartGame(); };
+            clientWaitingButton.buttonBehav.greyedOut = !OnlineManager.lobby.didStartGame;
+
+            if (OnlineManager.lobby.isOwner)
+            {
+                this.pages[0].subObjects.Add(this.hostStartButton);
+
+
+            }
+
+            if (!OnlineManager.lobby.isOwner)
+            {
+                this.pages[0].subObjects.Add(this.clientWaitingButton);
+
+
+            }
+
+
+
+
             this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
             this.prevButton.OnClick += (_) =>
             {
@@ -126,7 +171,7 @@ namespace RainMeadow
             };
             this.pages[0].subObjects.Add(this.nextButton);
 
- 
+
             this.mySoundLoopID = SoundID.MENU_Main_Menu_LOOP;
 
 
@@ -159,6 +204,7 @@ namespace RainMeadow
             // TODO: Skin + Eye customization
 
             UpdateCharacterUI();
+
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
 
             if (OnlineManager.lobby.isAvailable)
@@ -182,12 +228,15 @@ namespace RainMeadow
                 var btn = new EventfulSelectOneButton(this, mainPage, player.name, "playerButtons", new Vector2(194, 515) - i * new Vector2(0, 38), new(110, 30), playerButtons, i);
                 mainPage.subObjects.Add(btn);
                 playerButtons[i] = btn;
-                btn.OnClick+= (_) => {
+                btn.OnClick += (_) =>
+                {
                     string url = $"https://steamcommunity.com/profiles/{player.id}";
                     SteamFriends.ActivateGameOverlayToWebPage(url);
                 };
 
             }
+
+
 
 
         }
@@ -206,6 +255,9 @@ namespace RainMeadow
             {
                 this.UpdateCharacterUI();
             }
+
+            this.clientWaitingButton.buttonBehav.greyedOut = !OnlineManager.lobby.didStartGame;
+
             if (ssm.scroll == 0f && ssm.lastScroll == 0f)
             {
                 if (ssm.quedSideInput != 0)
@@ -219,17 +271,27 @@ namespace RainMeadow
                     return;
                 }
             }
+
+
+
+
         }
 
         private void OnLobbyAvailable()
         {
-            startButton.buttonBehav.greyedOut = false;
+            hostStartButton.buttonBehav.greyedOut = false;
+
 
         }
 
         private void StartGame()
         {
             RainMeadow.DebugMe();
+            if (!(OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.DidStartGame))))
+            {
+                OnlineManager.lobby.owner.InvokeRPC(RPCs.DidStartGame);
+
+            }
             manager.arenaSitting = null;
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
@@ -271,7 +333,6 @@ namespace RainMeadow
 
             return SlugcatStats.Name.values.entries.Select(s => new SlugcatStats.Name(s)).ToList();
         }
-
 
     }
 }

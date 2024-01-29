@@ -12,6 +12,7 @@ namespace RainMeadow
         public OnlineGameMode.OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
         public List<ushort> readyForWinPlayers = new List<ushort>();
+        public bool didStartGame = false;
         public bool isReadyForNextCycle;
 
         public string[] mods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().ConvertAll(mod => mod.id.ToString()).ToArray();
@@ -110,6 +111,9 @@ namespace RainMeadow
             [OnlineField]
             public bool readyForNextCycle;
             [OnlineField]
+            public bool didStartGame;
+
+            [OnlineField]
             public int food;
             [OnlineField]
             public int quarterfood;
@@ -121,7 +125,8 @@ namespace RainMeadow
                 nextId = lobby.nextId;
                 players = new(lobby.participants.Keys.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
-                winReadyPlayers = new(lobby.readyForWinPlayers.ToList());        
+                winReadyPlayers = new(lobby.readyForWinPlayers.ToList());
+                didStartGame = lobby.didStartGame;
                 mods = lobby.mods;
                 readyForNextCycle = lobby.isReadyForNextCycle;
                 if (lobby.gameModeType != OnlineGameMode.OnlineGameModeType.Meadow)
@@ -136,6 +141,8 @@ namespace RainMeadow
                 var lobby = (Lobby)resource;
                 lobby.nextId = nextId;
                 lobby.isReadyForNextCycle = readyForNextCycle;
+                lobby.didStartGame = didStartGame;
+
                 for (int i = 0; i < players.list.Count; i++)
                 {
                     if (MatchmakingManager.instance.GetPlayer(players.list[i]) is OnlinePlayer p)
@@ -159,6 +166,7 @@ namespace RainMeadow
                     }
                 }
                 lobby.readyForWinPlayers = winReadyPlayers.list;
+
 
                 Menu.Menu? menu = RWCustom.Custom.rainWorld.processManager.currentMainLoop as Menu.Menu;
 
