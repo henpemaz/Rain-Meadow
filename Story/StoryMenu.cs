@@ -123,7 +123,7 @@ namespace RainMeadow
             this.hostStartButton.OnClick += (_) => { StartGame(); };
             hostStartButton.buttonBehav.greyedOut = false;
 
-            this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(715f, 85f), 40f);
+            this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(720f, 87f), 40f);
             this.clientWaitingButton.OnClick += (_) => { StartGame(); };
             clientWaitingButton.buttonBehav.greyedOut = !OnlineManager.lobby.didStartGame; // True to begin with
 
