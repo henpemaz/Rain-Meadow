@@ -10,7 +10,7 @@ namespace RainMeadow
     public class OnlineManager : MainLoopProcess
     {
         public static OnlineManager instance;
-        public static Serializer serializer = new Serializer(16000);
+        public static Serializer serializer = new Serializer(32000);
         public static List<ResourceSubscription> subscriptions;
         public static List<EntityFeed> feeds;
         public static Dictionary<OnlineEntity.EntityId, OnlineEntity> recentEntities;
@@ -100,9 +100,19 @@ namespace RainMeadow
         {
             if (lobby != null)
             {
+#if TRACING
+                if (RainMeadow.tracing && players.Count == 1)
+                {
+                    var ls0 = lobby.GetState(0);
+                    var ls1 = lobby.GetState(1);
+                    var ds = ls1.Delta(ls0);
+                    mePlayer.OutgoingStates.Enqueue(ds);
+                    serializer.WriteData(mePlayer);
+                }
+#endif
                 foreach (OnlinePlayer player in players)
                 {
-                    player.Updade();
+                    player.Update();
                 }
 
                 mePlayer.tick++;
@@ -124,6 +134,9 @@ namespace RainMeadow
                 {
                     SendData(player);
                 }
+//#if TRACING
+                RainMeadow.tracing = false; // cleanup
+//#endif
             }
         }
 
@@ -132,7 +145,7 @@ namespace RainMeadow
             if (toPlayer.isMe)
                 return;
 
-            if (toPlayer.needsAck || toPlayer.OutgoingEvents.Any() || toPlayer.OutgoingStates.Any())
+            if (toPlayer.needsAck || toPlayer.OutgoingEvents.Count > 0 || toPlayer.OutgoingStates.Count > 0)
             {
                 NetIO.SendSessionData(toPlayer);
             }
@@ -206,7 +219,7 @@ namespace RainMeadow
         {
             try
             {
-                if (state is OnlineResource.ResourceState resourceState && resourceState.resource != null && (resourceState.resource.isAvailable || resourceState.resource.isWaitingForState))
+                if (state is OnlineResource.ResourceState resourceState && resourceState.resource != null && (resourceState.resource.isAvailable || resourceState.resource.isWaitingForState || resourceState.resource.isPending))
                 {
                     //RainMeadow.Debug($"Processing {resourceState} for {resourceState.resource}");
                     resourceState.resource.ReadState(resourceState);

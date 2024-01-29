@@ -14,7 +14,6 @@ namespace RainMeadow
             On.Creature.Violence += CreatureOnViolence;
             On.Creature.Grasp.ctor += GraspOnctor;
             On.PhysicalObject.Grabbed += PhysicalObjectOnGrabbed;
-            On.Creature.SuckedIntoShortCut += CreatureSuckedIntoShortCut;
         }
 
         private void ShelterDoorOnClose(On.ShelterDoor.orig_Close orig, ShelterDoor self)
@@ -29,11 +28,12 @@ namespace RainMeadow
             {
                 //for now force all players to be in the shelter to close the door.
                 var playerIDs = OnlineManager.lobby.participants.Keys.Select(p => p.inLobbyId).ToList();
-                var readyWinPlayers = OnlineManager.lobby.readyForWinPlayers.ToList();
+                var readyWinPlayers = storyGameMode.readyForWinPlayers.ToList();
 
                 foreach (var playerID in playerIDs) {
                     if (!readyWinPlayers.Contains(playerID)) return;
                 }
+                storyGameMode.myDenPos = self.room.abstractRoom.name;
 
             }
             else {
@@ -100,13 +100,13 @@ namespace RainMeadow
                 orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
                 return;
             }
-            if (!OnlinePhysicalObject.map.TryGetValue(hitchunk.owner.abstractPhysicalObject, out var onlineVictim) || onlineVictim is not OnlineCreature)
+            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineVictim) || onlineVictim is not OnlineCreature)
             {
-                Error($"Chunk owner {hitchunk.owner} - {hitchunk.owner.abstractPhysicalObject.ID} doesn't exist in online space!");
+                Error($"Chunk owner {self} - {self.abstractPhysicalObject.ID} doesn't exist in online space!");
                 orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
                 return;
             }
-            var room = hitchunk.owner.room;
+            var room = self.room;
             if (room != null && room.updateIndex <= room.updateList.Count)
             {
                 PhysicalObject trueVillain = null;
@@ -166,40 +166,6 @@ namespace RainMeadow
                 {
                     onlineGrabber.Request(); // If I've been grabbed and I'm not transferrable, but my grabber is, request him
                 }
-            }
-        }
-
-        private void CreatureSuckedIntoShortCut(On.Creature.orig_SuckedIntoShortCut orig, Creature self, IntVector2 entrancePos, bool carriedByOther)
-        {
-            if (OnlineManager.lobby == null)
-            {
-                orig(self, entrancePos, carriedByOther);
-                return;
-            }
-
-            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var onlineEntity))
-            {
-                Error($"Entity {self} - {self.abstractCreature.ID} doesn't exist in online space!");
-                orig(self, entrancePos, carriedByOther);
-                return;
-            }
-
-            var onlineCreature = (OnlineCreature)onlineEntity;
-
-            if (onlineCreature.enteringShortCut) // If this call was from a processing event
-            {
-                orig(self, entrancePos, carriedByOther);
-                onlineCreature.enteringShortCut = false;
-            }
-            else if (onlineCreature.isMine)
-            {
-                // tell everyone that I am about to enter a shortcut!
-                onlineCreature.BroadcastSuckedIntoShortCut(entrancePos, carriedByOther);
-            }
-            else
-            {
-                // Clear shortcut that it was meant to enter
-                self.enteringShortCut = null;
             }
         }
     }

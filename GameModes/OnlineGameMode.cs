@@ -129,5 +129,15 @@ namespace RainMeadow
         {
             this.avatar = onlineCreature;
         }
+
+        internal virtual void ResourceAvailable(OnlineResource onlineResource)
+        {
+            
+        }
+
+        internal virtual void ResourceActive(OnlineResource onlineResource)
+        {
+
+        }
     }
 }
