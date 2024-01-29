@@ -39,8 +39,6 @@ namespace RainMeadow
             this.pages[0].subObjects.Add(this.rainEffect);
             this.rainEffect.rainFade = 0.3f;
 
-
-
             ssm = (SlugcatSelectMenu)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(SlugcatSelectMenu));
             sp = (SlugcatSelectMenu.SlugcatPageNewGame)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(SlugcatSelectMenu.SlugcatPageNewGame));
 
@@ -71,10 +69,6 @@ namespace RainMeadow
 
 
             ssm.slugcatColorOrder = AllAvailableCharacters();
-
-
-            string characterName = ""; // Character name
-            string subtitle = ""; // subtitle
             sp.imagePos = new Vector2(683f, 484f);
 
             // TODO: Multiple Characters
@@ -85,7 +79,7 @@ namespace RainMeadow
                 // TODO: Background images
                 if (sp.slugcatNumber == SlugcatStats.Name.White)
                 {
-                    HostSceneID = MenuScene.SceneID.Slugcat_White;
+                    //HostSceneID = MenuScene.SceneID.Slugcat_White;
                     sp.sceneOffset = new Vector2(-10f, 100f);
                     sp.slugcatDepth = 3.1000001f;
                     sp.markOffset = new Vector2(-15f, -2f);
@@ -117,20 +111,19 @@ namespace RainMeadow
                                     infoLabel.label.color = MenuRGB(MenuColors.DarkGrey);
                         */
 
-
-
-            this.hostStartButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
+            this.hostStartButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER (host)"), new Vector2(683f, 85f), 40f);
             this.hostStartButton.OnClick += (_) => { StartGame(); };
             hostStartButton.buttonBehav.greyedOut = false;
 
-            this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(720f, 87f), 40f);
+            // TODO: clientWaitingButton needs to not require x/y shift to function. Look into .Remove() on subObjects.
+            this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER (client)"), new Vector2(720f, 87f), 40f);
             this.clientWaitingButton.OnClick += (_) => { StartGame(); };
             clientWaitingButton.buttonBehav.greyedOut = !OnlineManager.lobby.didStartGame; // True to begin
 
             if (OnlineManager.lobby.isOwner)
             {
 
-                
+
                 this.pages[0].subObjects.Add(this.hostStartButton);
 
 
@@ -149,7 +142,7 @@ namespace RainMeadow
             this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
             this.prevButton.OnClick += (_) =>
             {
-                return; // Protect the users until all characters are fixed
+                return; // TODO: Protect the users until all characters are fixed
                 ssm.quedSideInput = Math.Max(-3, ssm.quedSideInput - 1);
                 base.PlaySound(SoundID.MENU_Next_Slugcat);
             };
@@ -167,18 +160,9 @@ namespace RainMeadow
             this.pages[0].subObjects.Add(this.nextButton);
 
 
-            this.nextButton.OnClick += (_) =>
-            {
-                return;
-                ssm.quedSideInput = Math.Min(3, ssm.quedSideInput + 1);
-                base.PlaySound(SoundID.MENU_Next_Slugcat);
-            };
-            this.pages[0].subObjects.Add(this.nextButton);
-
-
             this.mySoundLoopID = SoundID.MENU_Main_Menu_LOOP;
 
-
+            
             this.pages[0].subObjects.Add(new MenuLabel(this, mainPage, this.Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true));
 
             List<PlayerInfo> players = new List<PlayerInfo>();
@@ -298,15 +282,16 @@ namespace RainMeadow
             base.ShutDownProcess();
         }
 
+        // TODO: Skin / Eye customization
         int skinIndex;
         private OpTinyColorPicker colorpicker;
 
-        public int GetCurrentlySelectedOfSeries(string series) // SelectOneButton.SelectOneButtonOwner
+        public int GetCurrentlySelectedOfSeries(string series)
         {
             return skinIndex;
         }
 
-        public void SetCurrentlySelectedOfSeries(string series, int to) // SelectOneButton.SelectOneButtonOwner
+        public void SetCurrentlySelectedOfSeries(string series, int to)
         {
             skinIndex = to;
         }
