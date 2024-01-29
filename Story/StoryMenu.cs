@@ -28,6 +28,9 @@ namespace RainMeadow
         private List<SlugcatSelectMenu.SlugcatPage> characterPages;
         private EventfulSelectOneButton[] playerButtons;
 
+        private bool didCheckStartGame = false;
+        private MenuDialogBox popupDialog;
+
         public override MenuScene.SceneID GetScene => null;
         public StoryMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.StoryMenu)
         {
@@ -49,7 +52,7 @@ namespace RainMeadow
             ssm.pages = pages;
 
             MenuScene.SceneID HostSceneID = MenuScene.SceneID.Slugcat_White;
-            MenuScene.SceneID ClientSceneID = MenuScene.SceneID.Slugcat_Red;
+            MenuScene.SceneID ClientSceneID = MenuScene.SceneID.Landscape_SU;
 
             if (OnlineManager.lobby.isOwner)
             {
@@ -115,18 +118,19 @@ namespace RainMeadow
                         */
 
 
-            // IF HOST, Add Start button
 
             this.hostStartButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
             this.hostStartButton.OnClick += (_) => { StartGame(); };
             hostStartButton.buttonBehav.greyedOut = false;
 
-            this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
+            this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(715f, 85f), 40f);
             this.clientWaitingButton.OnClick += (_) => { StartGame(); };
-            clientWaitingButton.buttonBehav.greyedOut = !OnlineManager.lobby.didStartGame;
+            clientWaitingButton.buttonBehav.greyedOut = !OnlineManager.lobby.didStartGame; // True to begin with
 
             if (OnlineManager.lobby.isOwner)
             {
+
+                
                 this.pages[0].subObjects.Add(this.hostStartButton);
 
 
@@ -134,10 +138,14 @@ namespace RainMeadow
 
             if (!OnlineManager.lobby.isOwner)
             {
+
+
                 this.pages[0].subObjects.Add(this.clientWaitingButton);
 
 
             }
+
+
 
 
 
@@ -207,14 +215,6 @@ namespace RainMeadow
 
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
 
-            if (OnlineManager.lobby.isAvailable)
-            {
-                OnLobbyAvailable();
-            }
-            else
-            {
-                OnlineManager.lobby.OnLobbyAvailable += OnLobbyAvailable;
-            }
 
         }
 
@@ -277,12 +277,6 @@ namespace RainMeadow
 
         }
 
-        private void OnLobbyAvailable()
-        {
-            hostStartButton.buttonBehav.greyedOut = false;
-
-
-        }
 
         private void StartGame()
         {
@@ -301,7 +295,6 @@ namespace RainMeadow
         public override void ShutDownProcess()
         {
             RainMeadow.DebugMe();
-            if (OnlineManager.lobby != null) OnlineManager.lobby.OnLobbyAvailable -= OnLobbyAvailable;
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
                 MatchmakingManager.instance.LeaveLobby();
