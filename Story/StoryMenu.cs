@@ -39,6 +39,8 @@ namespace RainMeadow
             this.pages[0].subObjects.Add(this.rainEffect);
             this.rainEffect.rainFade = 0.3f;
 
+
+            // Initial setup for slugcat menu & pages
             ssm = (SlugcatSelectMenu)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(SlugcatSelectMenu));
             sp = (SlugcatSelectMenu.SlugcatPageNewGame)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(SlugcatSelectMenu.SlugcatPageNewGame));
 
@@ -52,6 +54,8 @@ namespace RainMeadow
             MenuScene.SceneID HostSceneID = MenuScene.SceneID.Slugcat_White;
             MenuScene.SceneID ClientSceneID = MenuScene.SceneID.Landscape_SU;
 
+
+            // Custom images for host vs clients
             if (OnlineManager.lobby.isOwner)
             {
                 sp.slugcatImage = new InteractiveMenuScene(this, this.pages[0], HostSceneID);
@@ -111,14 +115,9 @@ namespace RainMeadow
                                     infoLabel.label.color = MenuRGB(MenuColors.DarkGrey);
                         */
 
-            this.hostStartButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER (host)"), new Vector2(683f, 85f), 40f);
-            this.hostStartButton.OnClick += (_) => { StartGame(); };
-            hostStartButton.buttonBehav.greyedOut = false;
 
-            // TODO: clientWaitingButton needs to not require x/y shift to function. Look into .Remove() on subObjects.
-            this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER (client)"), new Vector2(720f, 87f), 40f);
-            this.clientWaitingButton.OnClick += (_) => { StartGame(); };
-            clientWaitingButton.buttonBehav.greyedOut = !OnlineManager.lobby.didStartGame; // True to begin
+            // Setup host / client buttons & general view
+            SetupMenuItems();
 
             if (OnlineManager.lobby.isOwner)
             {
@@ -139,55 +138,8 @@ namespace RainMeadow
             }
 
 
-            this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
-            this.prevButton.OnClick += (_) =>
-            {
-                return; // TODO: Protect the users until all characters are fixed
-                ssm.quedSideInput = Math.Max(-3, ssm.quedSideInput - 1);
-                base.PlaySound(SoundID.MENU_Next_Slugcat);
-            };
-            this.pages[0].subObjects.Add(this.prevButton);
 
-
-
-            this.nextButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(985f, 50f), 1);
-            this.nextButton.OnClick += (_) =>
-            {
-                return;
-                ssm.quedSideInput = Math.Min(3, ssm.quedSideInput + 1);
-                base.PlaySound(SoundID.MENU_Next_Slugcat);
-            };
-            this.pages[0].subObjects.Add(this.nextButton);
-
-
-            this.mySoundLoopID = SoundID.MENU_Main_Menu_LOOP;
-
-            
-            this.pages[0].subObjects.Add(new MenuLabel(this, mainPage, this.Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true));
-
-            List<PlayerInfo> players = new List<PlayerInfo>();
-            foreach (OnlinePlayer player in OnlineManager.players)
-            {
-                CSteamID playerId;
-                if (player.id is LocalMatchmakingManager.LocalPlayerId)
-                {
-                    playerId = default;
-                }
-                else
-                {
-                    playerId = (player.id as SteamMatchmakingManager.SteamPlayerId).steamID;
-                }
-                players.Add(new PlayerInfo(playerId, player.id.name));
-            }
-            this.players = players.ToArray();
-
-            var friendsList = new EventfulSelectOneButton[1];
-            friendsList[0] = new EventfulSelectOneButton(this, mainPage, Translate("Invite Friends"), "friendsList", new(1150f, 50f), new(110, 50), friendsList, 0);
-            this.pages[0].subObjects.Add(friendsList[0]);
-            friendsList[0].OnClick += (_) =>
-            {
-                SteamFriends.ActivateGameOverlay("friends");
-            };
+            SteamSetup();
 
             // TODO: Skin + Eye customization
 
@@ -280,6 +232,77 @@ namespace RainMeadow
                 MatchmakingManager.instance.LeaveLobby();
             }
             base.ShutDownProcess();
+        }
+
+        private void SetupMenuItems()
+        {
+
+            // Host button
+            this.hostStartButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER (host)"), new Vector2(683f, 85f), 40f);
+            this.hostStartButton.OnClick += (_) => { StartGame(); };
+            hostStartButton.buttonBehav.greyedOut = false;
+
+            // TODO: clientWaitingButton needs to not require x/y shift to function. Look into .Remove() on subObjects.
+            this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER (client)"), new Vector2(720f, 87f), 40f);
+            this.clientWaitingButton.OnClick += (_) => { StartGame(); };
+            clientWaitingButton.buttonBehav.greyedOut = !OnlineManager.lobby.didStartGame; // True to begin
+
+
+            // Previous / Next
+            this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
+            this.prevButton.OnClick += (_) =>
+            {
+                return; // TODO: Protect the users until all characters are fixed
+                ssm.quedSideInput = Math.Max(-3, ssm.quedSideInput - 1);
+                base.PlaySound(SoundID.MENU_Next_Slugcat);
+            };
+            this.pages[0].subObjects.Add(this.prevButton);
+
+
+
+            this.nextButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(985f, 50f), 1);
+            this.nextButton.OnClick += (_) =>
+            {
+                return;
+                ssm.quedSideInput = Math.Min(3, ssm.quedSideInput + 1);
+                base.PlaySound(SoundID.MENU_Next_Slugcat);
+            };
+            this.pages[0].subObjects.Add(this.nextButton);
+
+            // Music
+            this.mySoundLoopID = SoundID.MENU_Main_Menu_LOOP;
+
+            // Player lobby label
+            this.pages[0].subObjects.Add(new MenuLabel(this, mainPage, this.Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true));
+        }
+
+        private void SteamSetup()
+        {
+
+            List<PlayerInfo> players = new List<PlayerInfo>();
+            foreach (OnlinePlayer player in OnlineManager.players)
+            {
+                CSteamID playerId;
+                if (player.id is LocalMatchmakingManager.LocalPlayerId)
+                {
+                    playerId = default;
+                }
+                else
+                {
+                    playerId = (player.id as SteamMatchmakingManager.SteamPlayerId).steamID;
+                }
+                players.Add(new PlayerInfo(playerId, player.id.name));
+            }
+            this.players = players.ToArray();
+
+            var friendsList = new EventfulSelectOneButton[1];
+            friendsList[0] = new EventfulSelectOneButton(this, mainPage, Translate("Invite Friends"), "friendsList", new(1150f, 50f), new(110, 50), friendsList, 0);
+            this.pages[0].subObjects.Add(friendsList[0]);
+            friendsList[0].OnClick += (_) =>
+            {
+                SteamFriends.ActivateGameOverlay("friends");
+            };
+
         }
 
         // TODO: Skin / Eye customization
