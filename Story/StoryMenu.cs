@@ -125,7 +125,7 @@ namespace RainMeadow
 
             this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(720f, 87f), 40f);
             this.clientWaitingButton.OnClick += (_) => { StartGame(); };
-            clientWaitingButton.buttonBehav.greyedOut = !OnlineManager.lobby.didStartGame; // True to begin with
+            clientWaitingButton.buttonBehav.greyedOut = !OnlineManager.lobby.didStartGame; // True to begin
 
             if (OnlineManager.lobby.isOwner)
             {
@@ -144,10 +144,6 @@ namespace RainMeadow
 
 
             }
-
-
-
-
 
 
             this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
