@@ -26,7 +26,7 @@ namespace RainMeadow
                 {
                     new LizardController(liz, oc, 0);
                 }
-        }
+            }
 
             public Creature creature;
             public OnlineCreature onlineCreature;
@@ -75,7 +75,8 @@ namespace RainMeadow
 
             public bool RevealMap => input[0].mp;
 
-            public Vector2 MapOwnerInRoomPosition {
+            public Vector2 MapOwnerInRoomPosition
+            {
                 get
                 {
                     if (this.creature.room == null && this.creature.inShortcut && this.creature.abstractCreature.Room.realizedRoom != null)
@@ -113,7 +114,7 @@ namespace RainMeadow
                     this.input[i] = this.input[i - 1];
                 }
 
-                if(onlineCreature.isMine)
+                if (onlineCreature.isMine)
                 {
                     if (creature.stun == 0 && !creature.dead)
                     {
@@ -124,7 +125,7 @@ namespace RainMeadow
                         this.input[0] = new Player.InputPackage(rainWorld.options.controls[playerNumber].gamePad, rainWorld.options.controls[playerNumber].GetActivePreset(), 0, 0, false, false, false, false, false);
                     }
 
-                    if (onlineCreature.gameModeData is MeadowCreatureData mcd)
+                    if (onlineCreature.TryGetData<MeadowCreatureData>(out var mcd))
                     {
                         mcd.input = this.input[0];
                     }
@@ -135,7 +136,7 @@ namespace RainMeadow
                 }
                 else
                 {
-                    if (onlineCreature.gameModeData is MeadowCreatureData mcd)
+                    if (onlineCreature.TryGetData<MeadowCreatureData>(out var mcd))
                     {
                         this.input[0] = mcd.input;
                     }
@@ -144,7 +145,7 @@ namespace RainMeadow
                         RainMeadow.Error("Missing mcd on receive");
                     }
                 }
-                
+
                 //this.mapInput = this.input[0];
                 //if ((this.standStillOnMapButton && this.input[0].mp) || this.Sleeping)
                 //{

@@ -66,11 +66,11 @@
         // Room request
         private void RoomPreparer_ctor(On.RoomPreparer.orig_ctor orig, RoomPreparer self, Room room, bool loadAiHeatMaps, bool falseBake, bool shortcutsOnly)
         {
+            orig(self, room, loadAiHeatMaps, falseBake, shortcutsOnly);
             if (!shortcutsOnly && room.game != null && OnlineManager.lobby != null && RoomSession.map.TryGetValue(room.abstractRoom, out var rs))
             {
                 rs.Request();
             }
-            orig(self, room, loadAiHeatMaps, falseBake, shortcutsOnly);
         }
 
         // World wait, activate

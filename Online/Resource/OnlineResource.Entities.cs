@@ -49,7 +49,7 @@ namespace RainMeadow
 
         // as owner, from other
         [RPCMethod]
-        public void OnEntityRegisterRequest(RPCEvent rpcEvent, EntityDefinition newEntityEvent, EntityState initialState)
+        public void OnEntityRegisterRequest(RPCEvent rpcEvent, EntityDefinition newEntityEvent, OnlineEntity.EntityState initialState)
         {
             RainMeadow.Debug(this);
             if (isOwner && isActive)
@@ -82,7 +82,7 @@ namespace RainMeadow
         }
 
         // recreate from event
-        public void OnNewRemoteEntity(EntityDefinition entityDefinition, EntityState initialState)
+        public void OnNewRemoteEntity(EntityDefinition entityDefinition, OnlineEntity.EntityState initialState)
         {
             RainMeadow.Debug(this);
             OnlineEntity oe = OnlineManager.lobby.PlayerFromId(entityDefinition.owner).isMe ? entityDefinition.entityId.FindEntity() : entityDefinition.MakeEntity(this);
@@ -91,7 +91,7 @@ namespace RainMeadow
         }
 
         // registering new entity
-        private void EntityRegisteredInResource(OnlineEntity oe, EntityDefinition newEntityEvent, EntityState initialState)
+        private void EntityRegisteredInResource(OnlineEntity oe, EntityDefinition newEntityEvent, OnlineEntity.EntityState initialState)
         {
             RainMeadow.Debug(this);
             registeredEntities.Add(newEntityEvent.entityId, newEntityEvent);
@@ -125,7 +125,7 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public void OnEntityJoinRequest(RPCEvent rpcEvent, OnlineEntity oe, EntityState initialState)
+        public void OnEntityJoinRequest(RPCEvent rpcEvent, OnlineEntity oe, OnlineEntity.EntityState initialState)
         {
             RainMeadow.Debug(this);
             if (isOwner && isActive)
@@ -156,7 +156,7 @@ namespace RainMeadow
         }
 
         // existing entity joins
-        private void EntityJoinedResource(OnlineEntity oe, EntityState initialState)
+        private void EntityJoinedResource(OnlineEntity oe, OnlineEntity.EntityState initialState)
         {
             RainMeadow.Debug(this);
             entities.Add(oe.id, new EntityMembership(oe, this));

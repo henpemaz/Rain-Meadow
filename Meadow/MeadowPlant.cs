@@ -5,7 +5,7 @@ namespace RainMeadow
 {
     public class MeadowPlant : MeadowCollectible
     {
-        private float consumed;
+        private float popping;
         private float rad = 10f;
 
         public MeadowPlant(AbstractPhysicalObject abstractPhysicalObject) : base(abstractPhysicalObject)
@@ -26,18 +26,23 @@ namespace RainMeadow
         {
             base.Update(eu);
 
-            if (this.consumed > 0f)
+            if (abstractCollectible.Expired)
             {
-                this.consumed += 0.033333335f;
-                if (this.consumed >= 1f)
+                this.Destroy();
+            }
+
+            if (this.popping > 0f)
+            {
+                this.popping += 0.033333335f;
+                if (this.popping >= 1f)
                 {
-                    this.consumed = 1f;
+                    this.popping = 1f;
                 }
             }
             else
             {
                 int num5 = 0;
-                while (num5 < this.room.game.Players.Count && this.consumed == 0f)
+                while (num5 < this.room.game.Players.Count && this.popping == 0f)
                 {
                     if (this.room.game.Players[num5].realizedCreature != null && this.room.game.Players[num5].realizedCreature.room == this.room)
                     {
@@ -45,8 +50,8 @@ namespace RainMeadow
                         {
                             if (RWCustom.Custom.DistLess(this.room.game.Players[num5].realizedCreature.bodyChunks[num6].pos, this.firstChunk.pos, this.room.game.Players[num5].realizedCreature.bodyChunks[num6].rad + this.rad))
                             {
-                                this.consumed = 0.01f;
                                 this.abstractCollectible.Collect();
+                                this.popping = 0.01f;
                                 break;
                             }
                         }
@@ -54,7 +59,6 @@ namespace RainMeadow
                     num5++;
                 }
             }
-
         }
 
         public class MeadowPlantGraphics : GraphicsModule
@@ -120,6 +124,10 @@ namespace RainMeadow
             {
                 base.DrawSprites(sLeaser, rCam, timeStacker, camPos);
                 Vector2 newPos = this.pos - camPos;
+                float scale = 1f - plant.popping;
+                sLeaser.sprites[0].scale = scale;
+                sLeaser.sprites[1].scale = scale * 75f / 16f;
+                sLeaser.sprites[2].scale = scale * 75f / 16f;
                 sLeaser.sprites[0].SetPosition(newPos);
                 sLeaser.sprites[1].SetPosition(newPos);
                 sLeaser.sprites[2].SetPosition(newPos);

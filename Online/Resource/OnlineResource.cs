@@ -174,8 +174,8 @@ namespace RainMeadow
 
         protected virtual void ClearIncommingBuffers()
         {
-            //incomingEntityEvents = new();
             incomingState = new(32);
+            resourceData = new();
         }
 
         protected void NewOwner(OnlinePlayer newOwner)

@@ -1,14 +1,11 @@
-﻿namespace RainMeadow
+﻿using System;
+using System.Linq;
+
+namespace RainMeadow
 {
     internal class MeadowLobbyData : OnlineResource.ResourceData
     {
-        public Lobby lobby;
         public ushort[] itemsPerRegion;
-
-        public MeadowLobbyData(Lobby lobby)
-        {
-            this.lobby = lobby;
-        }
 
         internal override OnlineResource.ResourceDataState MakeState(OnlineResource inResource)
         {
@@ -18,16 +15,16 @@
         internal class MeadowLobbyState : OnlineResource.ResourceDataState
         {
             [OnlineField]
-            bool placeholder;
+            Generics.AddRemoveSortedUshorts itemsPerRegion;
             public MeadowLobbyState() { }
             public MeadowLobbyState(MeadowLobbyData meadowLobbyData)
             {
-
+                itemsPerRegion = new(meadowLobbyData.itemsPerRegion.ToList());
             }
 
             internal override void ReadTo(OnlineResource onlineResource)
             {
-
+                onlineResource.GetData<MeadowLobbyData>().itemsPerRegion = itemsPerRegion.list.ToArray();
             }
         }
     }

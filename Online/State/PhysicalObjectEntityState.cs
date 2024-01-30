@@ -5,7 +5,7 @@ using System.Text;
 
 namespace RainMeadow
 {
-    public class PhysicalObjectEntityState : EntityState
+    public class PhysicalObjectEntityState : OnlineEntity.EntityState
     {
         [OnlineField]
         public WorldCoordinate pos;
