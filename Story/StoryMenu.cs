@@ -131,6 +131,7 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner)
             {
 
+                this.pages[0].RemoveSubObject(hostStartButton);
 
                 this.pages[0].subObjects.Add(this.clientWaitingButton);
 
@@ -238,12 +239,12 @@ namespace RainMeadow
         {
 
             // Host button
-            this.hostStartButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER (host)"), new Vector2(683f, 85f), 40f);
+            this.hostStartButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
             this.hostStartButton.OnClick += (_) => { StartGame(); };
             hostStartButton.buttonBehav.greyedOut = false;
 
             // TODO: clientWaitingButton needs to not require x/y shift to function. Look into .Remove() on subObjects.
-            this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER (client)"), new Vector2(720f, 87f), 40f);
+            this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER (wait for host)"), new Vector2(683f, 85f), 40f);
             this.clientWaitingButton.OnClick += (_) => { StartGame(); };
             clientWaitingButton.buttonBehav.greyedOut = !OnlineManager.lobby.didStartGame; // True to begin
 
