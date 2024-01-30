@@ -81,7 +81,7 @@ namespace RainMeadow
             {
                 RainMeadow.Debug($"Customizing avatar {creature} for {oc.owner}");
                 var mcc = MeadowCustomization.creatureCustomizations.GetValue(creature, (c) => mas.MakeCustomization());
-                if (oc.gameModeData is MeadowCreatureData mcd)
+                if (oc.TryGetData<MeadowCreatureData>(out var mcd))
                 {
                     EmoteDisplayer.map.GetValue(creature, (c) => new EmoteDisplayer(creature, oc, mcd, mcc));
                 }

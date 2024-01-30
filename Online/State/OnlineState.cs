@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using UnityEngine;
 using static RainMeadow.Lobby;
+using static RainMeadow.MeadowCreatureData;
 using static RainMeadow.RoomSession;
 using static RainMeadow.WorldSession;
 
@@ -66,9 +67,10 @@ namespace RainMeadow
 
             public static readonly StateType MeadowPersonaSettingsState = new("MeadowPersonaSettingsState", typeof(MeadowAvatarSettings.MeadowAvatarSettingsState));
             //public static readonly StateType GamemodeDataState = new("GamemodeDataState", typeof(GamemodeDataState));
-            public static readonly StateType MeadowCreatureDataState = new("MeadowCreatureDataState", typeof(MeadowCreatureDataState));
+            public static readonly StateType MeadowCreatureDataState = new("MeadowCreatureDataState", typeof(MeadowCreatureData.MeadowCreatureDataState));
             public static readonly StateType MeadowLobbyState = new("MeadowLobbyState", typeof(MeadowLobbyData.MeadowLobbyState));
             public static readonly StateType MeadowWorldState = new("MeadowWorldState", typeof(MeadowWorldData.MeadowWorldState));
+            public static readonly StateType MeadowRoomState = new("MeadowRoomState", typeof(MeadowRoomData.MeadowRoomState));
 
             public static readonly StateType OnlinePhysicalObjectDefinition = new("OnlinePhysicalObjectDefinition", typeof(OnlinePhysicalObjectDefinition));
             public static readonly StateType OnlineCreatureDefinition = new("OnlineCreatureDefinition", typeof(OnlineCreatureDefinition));

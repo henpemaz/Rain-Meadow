@@ -2,9 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Text;
 
 namespace RainMeadow
 {
@@ -69,7 +66,65 @@ namespace RainMeadow
             }
         }
 
-        public ResourceData resourceData;
+        private List<ResourceData> resourceData = new();
+
+        internal T AddData<T>() where T : ResourceData, new()
+        {
+            for (int i = 0; i < resourceData.Count; i++)
+            {
+                if (resourceData[i].GetType() == typeof(T)) throw new ArgumentException("type already in data");
+            }
+            var v = new T();
+            resourceData.Add(v);
+            return v;
+        }
+
+        internal T AddData<T>(T toAdd) where T : ResourceData
+        {
+            for (int i = 0; i < resourceData.Count; i++)
+            {
+                if (resourceData[i].GetType() == typeof(T)) throw new ArgumentException("type already in data");
+            }
+            resourceData.Add(toAdd);
+            return toAdd;
+        }
+
+        internal bool TryGetData<T>(out T d, bool addIfMissing = false) where T : ResourceData
+        {
+            for (int i = 0; i < resourceData.Count; i++)
+            {
+                if (resourceData[i].GetType() == typeof(T))
+                {
+                    d = (T)resourceData[i];
+                    return true;
+                }
+            }
+            if (addIfMissing)
+            {
+                d = Activator.CreateInstance<T>();
+                resourceData.Add(d);
+                return true;
+            }
+            d = null;
+            return false;
+        }
+
+        internal T GetData<T>(bool addIfMissing = false) where T : ResourceData
+        {
+            if(!TryGetData<T>(out var d, addIfMissing)) throw new KeyNotFoundException();
+            return d;
+        }
+
+        internal void RemoveData<T>() where T : ResourceData
+        {
+            for (int i = 0; i < resourceData.Count; i++)
+            {
+                if (resourceData[i].GetType() == typeof(T))
+                {
+                    resourceData.RemoveAt(i);
+                }
+            }
+        }
 
         public abstract class ResourceData
         {
@@ -95,9 +150,9 @@ namespace RainMeadow
             [OnlineField(nullable = true, group = "entitydefs")]
             public DeltaStates<EntityDefinition, OnlineState, OnlineEntity.EntityId> registeredEntities;
             [OnlineField(nullable = true, group = "entities")]
-            public DeltaStates<EntityState, OnlineState, OnlineEntity.EntityId> entityStates;
+            public DeltaStates<OnlineEntity.EntityState, OnlineState, OnlineEntity.EntityId> entityStates;
             [OnlineField(nullable = true, polymorphic = true)]
-            public ResourceDataState resourceDataState;
+            public AddRemoveSortedStates<ResourceDataState> resourceDataStates;
 
             protected ResourceState() : base() { }
             protected ResourceState(OnlineResource resource, uint ts) : base(ts)
@@ -106,7 +161,7 @@ namespace RainMeadow
                 entitiesJoined = new(resource.entities.Keys.ToList());
                 registeredEntities = new(resource.registeredEntities.Values.Select(def => def.Clone() as EntityDefinition).ToList());
                 entityStates = new(resource.entities.Select(e => e.Value.entity.GetState(ts, resource)).ToList());
-                resourceDataState = resource.resourceData?.MakeState(resource);
+                resourceDataStates = new(resource.resourceData.Select(d=>d.MakeState(resource)).ToList());
             }
             public virtual void ReadTo(OnlineResource resource)
             {
@@ -183,7 +238,7 @@ namespace RainMeadow
                         }
                     }
                 }
-                resourceDataState?.ReadTo(resource);
+                resourceDataStates.list.ForEach(d => d.ReadTo(resource));
             }
         }
 

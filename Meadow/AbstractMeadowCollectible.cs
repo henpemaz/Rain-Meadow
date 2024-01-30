@@ -2,23 +2,33 @@
 {
     public class AbstractMeadowCollectible : AbstractPhysicalObject
     {
-        bool collectedLocally;
         bool collected;
+        bool collectedLocally;
         int collectedAt;
         TickReference collectedTR;
-        public AbstractMeadowCollectible(World world, AbstractObjectType type, WorldCoordinate pos, EntityID ID) : base(world, type, null, pos, ID)
-        {
+        const int duration = 40 * 30;
+        public bool placed;
 
+        internal bool Expired => collected && world.game.clock > collectedAt + duration;
+
+        public AbstractMeadowCollectible(World world, AbstractObjectType type, WorldCoordinate pos, EntityID ID, bool placed) : base(world, type, null, pos, ID)
+        {
+            this.placed = placed;
         }
 
         public override void Update(int time)
         {
             base.Update(time);
-            // todo expire
+            
+            if (Expired && OnlinePhysicalObject.map.TryGetValue(this, out var entity) && entity.isMine)
+            {
+                this.Destroy();
+            }
         }
 
         public void Collect()
         {
+            collectedLocally = true;
             if(collected) { return; }
             collected = true;
             collectedAt = world.game.clock;
@@ -35,6 +45,11 @@
             {
                 this.realizedObject = new MeadowPlant(this);
             }
+        }
+
+        public override void RealizeInRoom()
+        {
+            base.RealizeInRoom();
         }
     }
 }

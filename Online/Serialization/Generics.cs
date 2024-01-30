@@ -353,6 +353,22 @@ namespace RainMeadow.Generics
         }
     }
 
+    public class AddRemoveSortedStates<T> : AddRemoveSortedList<T, AddRemoveSortedStates<T>> where T : OnlineState
+    {
+        public AddRemoveSortedStates() { }
+        public AddRemoveSortedStates(List<T> list) : base(list) { }
+
+        public override void CustomSerialize(Serializer serializer)
+        {
+            serializer.SerializePolyStates(ref list);
+            if (serializer.IsDelta)
+            {
+                serializer.Serialize(ref listIndexes);
+                serializer.Serialize(ref removedIndexes);
+            }
+        }
+    }
+
     public class AddRemoveSortedStrings : AddRemoveSortedList<string, AddRemoveSortedStrings>
     {
         public AddRemoveSortedStrings() { }

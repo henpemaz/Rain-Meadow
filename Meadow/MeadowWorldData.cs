@@ -2,34 +2,27 @@
 {
     internal class MeadowWorldData : OnlineResource.ResourceData
     {
-        internal int spawnedItems;
-        internal ushort[] itemsPerRoom;
-        private WorldSession ws;
-        ushort itemsInRegion;
-
-        public MeadowWorldData(WorldSession ws)
-        {
-            this.ws = ws;
-        }
+        internal ushort spawnedItems;
 
         internal override OnlineResource.ResourceDataState MakeState(OnlineResource inResource)
         {
-            return new MeadowWorldState(ws);
+            return new MeadowWorldState(this);
         }
 
         internal class MeadowWorldState : OnlineResource.ResourceDataState
         {
             [OnlineField]
-            bool placeholder;
-            public MeadowWorldState() { }
-            public MeadowWorldState(WorldSession ws)
-            {
+            ushort spawnedItems;
 
+            public MeadowWorldState() { }
+            public MeadowWorldState(MeadowWorldData meadowWorldData)
+            {
+                spawnedItems = meadowWorldData.spawnedItems;
             }
 
             internal override void ReadTo(OnlineResource onlineResource)
             {
-
+                onlineResource.GetData<MeadowWorldData>().spawnedItems = spawnedItems;
             }
         }
     }

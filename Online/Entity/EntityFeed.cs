@@ -9,8 +9,8 @@ namespace RainMeadow
         public OnlineResource resource;
         public OnlineEntity entity;
         public OnlinePlayer player;
-        public Queue<EntityState> OutgoingStates = new(32);
-        public EntityState lastAcknoledgedState;
+        public Queue<OnlineEntity.EntityState> OutgoingStates = new(32);
+        public OnlineEntity.EntityState lastAcknoledgedState;
 
         public EntityFeed(OnlineResource resource, OnlineEntity oe)
         {
@@ -55,7 +55,7 @@ namespace RainMeadow
             if (lastAcknoledgedState != null)
             {
                 RainMeadow.Trace($"sending delta for tick {newState.tick} from reference {lastAcknoledgedState.tick} ");
-                var delta = (EntityState)newState.Delta(lastAcknoledgedState);
+                var delta = (OnlineEntity.EntityState)newState.Delta(lastAcknoledgedState);
                 //RainMeadow.Trace("Sending delta:\n" + delta.DebugPrint(0));
                 player.QueueStateMessage(new OnlineStateMessage(new EntityFeedState(delta, resource), this));
                 //player.OutgoingStates.Enqueue(new EntityFeedState(delta, resource));
@@ -73,7 +73,7 @@ namespace RainMeadow
         public void ResetDeltas()
         {
             RainMeadow.Debug($"delta reset for {entity} in {resource} -> {player}");
-            OutgoingStates = new Queue<EntityState>(OutgoingStates.Where(x => !x.isDelta && x.tick > player.latestTickAck));
+            OutgoingStates = new Queue<OnlineEntity.EntityState>(OutgoingStates.Where(x => !x.isDelta && x.tick > player.latestTickAck));
         }
 
         public void Sent(OnlineState state)
