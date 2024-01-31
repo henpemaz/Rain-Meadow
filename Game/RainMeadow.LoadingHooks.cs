@@ -51,16 +51,10 @@
                         OnlineManager.ForceLoadUpdate();
                     }
                     if (!rs.isAvailable) return;
+                    if (!rs.isActive) rs.Activate();
                 }
             }
             orig(self);
-            if (!self.shortcutsOnly && self.room.game != null && OnlineManager.lobby != null)
-            {
-                if (RoomSession.map.TryGetValue(self.room.abstractRoom, out RoomSession rs))
-                {
-                    if (!rs.isActive && self.room.shortCutsReady) rs.Activate();
-                }
-            }
         }
 
         // Room request

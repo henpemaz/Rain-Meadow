@@ -25,11 +25,11 @@
                 this.id = id;
             }
 
-            public OnlineEntity FindEntity()
+            public OnlineEntity FindEntity(bool quiet=false)
             {
                 if (type == (byte)IdType.none) return null;
                 if (OnlineManager.recentEntities.TryGetValue(this, out var entity)) return entity;
-                RainMeadow.Error("Entity not found: " + this);
+                if (!quiet) RainMeadow.Error("Entity not found: " + this);
                 return null;
             }
 

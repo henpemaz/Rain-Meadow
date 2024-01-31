@@ -285,9 +285,6 @@ namespace RainMeadow
                     // post: we add our entities to the new world
                     if (room != null && RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession2))
                     {
-                        // Don't reuse entities left from previous region
-                        OnlineManager.recentEntities.Clear();
-
                         // we go over all APOs in the room
                         Debug("Gate switchery 2");
                         var entities = room.abstractRoom.entities;

@@ -31,7 +31,7 @@ namespace RainMeadow
             this.id = entityDefinition.entityId;
             this.isTransferable = entityDefinition.isTransferable;
 
-            OnlineManager.recentEntities.Add(id, this);
+            OnlineManager.recentEntities[id] = this;
         }
 
         public void EnterResource(OnlineResource resource)
@@ -164,6 +164,7 @@ namespace RainMeadow
         public virtual void ReadState(EntityState entityState, OnlineResource inResource)
         {
             if (entityState == null) throw new InvalidProgrammerException("state is null");
+            if (entityState.isDelta) throw new InvalidProgrammerException("state delta");
             lastStates[inResource] = entityState;
             if (inResource != currentlyEnteredResource)
             {
@@ -312,8 +313,6 @@ namespace RainMeadow
 
         public abstract class EntityState : RootDeltaState, IIdentifiable<OnlineEntity.EntityId>
         {
-            // if sent "standalone" tracks Baseline
-            // if sent inside another delta, doesn't
             [OnlineField(always: true)]
             public OnlineEntity.EntityId entityId;
             [OnlineField(nullable: true, polymorphic: true)]

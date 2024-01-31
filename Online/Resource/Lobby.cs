@@ -138,7 +138,7 @@ namespace RainMeadow
                 nextId = lobby.nextId;
                 players = new(lobby.participants.Keys.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
-                avatars = new(lobby.participants.Keys.Select(p => lobby.playerAvatars.TryGetValue(p.inLobbyId, out var c) ? c.id : new OnlineEntity.EntityId()).ToList());
+                avatars = new(lobby.participants.Keys.Select(p => lobby.playerAvatars.TryGetValue(p.inLobbyId, out var c) ? c.id : new OnlineEntity.EntityId(p.inLobbyId, OnlineEntity.EntityId.IdType.none, 0)).ToList());
                 mods = lobby.mods;
                 if (lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Story)
                 {
@@ -168,9 +168,7 @@ namespace RainMeadow
                 lobby.playerAvatars.Clear();
                 for (int i = 0; i < inLobbyIds.list.Count; i++)
                 {
-                    lobby.playerAvatars[inLobbyIds.list[i]] = avatars.list[i].FindEntity() as OnlineCreature;
-                    //TODO: Avatars.list is getting extra values due to Generics not handling duplicate values. 
-                    // Either create a dictionary generic serliazer or allow for duplicates.
+                    lobby.playerAvatars[inLobbyIds.list[i]] = avatars.list[i].FindEntity(quiet: true) as OnlineCreature;
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
                 if (lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Story)
