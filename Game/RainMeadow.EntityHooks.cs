@@ -265,7 +265,6 @@ namespace RainMeadow
                                     }
                                     else {
                                         Debug("removing remote entity " + oe);
-                                        roomSession.entities.Remove(oe.id);
                                         oe.OnLeftResource(roomSession);
                                     }
                                 }
