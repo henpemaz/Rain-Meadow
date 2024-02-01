@@ -123,8 +123,7 @@ namespace RainMeadow
             orig(self, coord);
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out oe))
             {
-                if (oe.primaryResource is RoomSession) return;
-                if (oe.realized && oe.isTransferable && oe.isMine)
+                if (oe.realized && oe.isTransferable && oe.isMine && !oe.isPending)
                 {
                     oe.Release();
                 }
@@ -149,8 +148,7 @@ namespace RainMeadow
             orig(self, coord);
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out oe))
             {
-                if (oe.primaryResource is RoomSession) return;
-                if (oe.realized && oe.isTransferable && oe.isMine)
+                if (oe.realized && oe.isTransferable && oe.isMine && !oe.isPending)
                 {
                     oe.Release();
                 }
