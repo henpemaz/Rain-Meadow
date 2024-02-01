@@ -91,6 +91,9 @@ namespace RainMeadow
             }
             else if (inResource is RoomSession newRoom)
             {
+                beingMoved = true;
+                newRoom.World.GetAbstractRoom(this.apo.pos).AddEntity(apo);
+                beingMoved = false;
                 if (apo is not AbstractCreature creature)
                 {
                     if (newRoom.absroom.realizedRoom is Room realizedRoom)

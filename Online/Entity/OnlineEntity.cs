@@ -1,4 +1,5 @@
-﻿using RainMeadow.Generics;
+﻿using Mono.Cecil;
+using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -97,6 +98,12 @@ namespace RainMeadow
         public virtual void OnJoinedResource(OnlineResource inResource)
         {
             RainMeadow.Debug(this);
+            if (inResource == currentlyJoinedResource) return;
+            if (joinedResources.Contains(inResource))
+            {
+                RainMeadow.Error($"Not the right resource {this} - {inResource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
+                return;
+            }
             if (!isMine && this.currentlyJoinedResource != null && currentlyJoinedResource.IsSibling(inResource))
             {
                 currentlyJoinedResource.EntityLeftResource(this);
@@ -117,6 +124,10 @@ namespace RainMeadow
             {
                 RainMeadow.Debug($"Entity already left: {this} {inResource}");
                 return;
+            }
+            if (inResource != currentlyJoinedResource)
+            {
+                RainMeadow.Debug($"Entity leaving resource in wrong order: {this} was in {currentlyJoinedResource} wants to leave {inResource}");
             }
 
             while (currentlyJoinedResource != inResource) currentlyJoinedResource.EntityLeftResource(this);

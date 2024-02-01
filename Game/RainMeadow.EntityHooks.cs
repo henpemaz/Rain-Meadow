@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -42,6 +43,7 @@ namespace RainMeadow
             {
                 // leaving room is handled in absroom.removeentity
                 // adding to room is handled here so the position is updated properly
+                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, self)) ws.ApoEnteringWorld(self);
                 if (RoomSession.map.TryGetValue(self.world.GetAbstractRoom(newCoord.room), out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, self))
                 {
                     rs.ApoEnteringRoom(self, newCoord);
@@ -121,6 +123,7 @@ namespace RainMeadow
             orig(self, coord);
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out oe))
             {
+                if (oe.primaryResource is RoomSession) return;
                 if (oe.realized && oe.isTransferable && oe.isMine)
                 {
                     oe.Release();
@@ -146,6 +149,7 @@ namespace RainMeadow
             orig(self, coord);
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out oe))
             {
+                if (oe.primaryResource is RoomSession) return;
                 if (oe.realized && oe.isTransferable && oe.isMine)
                 {
                     oe.Release();
@@ -239,8 +243,11 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
-                var oldWorld = self.activeWorld;
-                var newWorld = self.worldLoader.world;
+                AbstractRoom oldAbsroom = self.reportBackToGate.room.abstractRoom;
+                AbstractRoom newAbsroom = self.worldLoader.world.GetAbstractRoom(oldAbsroom.name);
+                List<AbstractWorldEntity> entitiesFromNewRoom = newAbsroom.entities; // these get ovewritten and need handling
+                List<AbstractCreature> creaturesFromNewRoom = newAbsroom.creatures;
+
                 Room room = null;
 
                 if (true)
@@ -260,17 +267,22 @@ namespace RainMeadow
                                 // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
                                 if (!oe.isMine)
                                 {
-                                    if (oe.isTransferable && roomSession.worldSession.isOwner) {
-                                        roomSession.worldSession.EntityTransfered(oe, OnlineManager.mePlayer);
+                                    // not-online-aware removal
+                                    Debug("removing remote entity from game " + oe);
+                                    oe.beingMoved = true;
+                                    if (oe.apo.realizedObject is Creature c && c.inShortcut)
+                                    {
+                                        if (c.RemoveFromShortcuts()) c.inShortcut = false;
                                     }
-                                    else {
-                                        Debug("removing remote entity " + oe);
-                                        oe.OnLeftResource(roomSession);
-                                    }
+                                    entities.Remove(oe.apo);
+                                    room.abstractRoom.creatures.Remove(oe.apo as AbstractCreature);
+                                    room.RemoveObject(oe.apo.realizedObject);
+                                    room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                                    oe.beingMoved = false;
                                 }
-                                else // mine leave the old online world
+                                else // mine leave the old online world elegantly
                                 {
-                                    Debug("removing my entity " + oe);
+                                    Debug("removing my entity from online " + oe);
                                     oe.LeaveResource(roomSession);
                                     oe.LeaveResource(roomSession.worldSession);
                                 }
@@ -279,39 +291,22 @@ namespace RainMeadow
                         roomSession.worldSession.FullyReleaseResource();
                     }
 
-                    orig(self);
+                    orig(self); // this replace the list of entities in new world with that from old world
 
                     // post: we add our entities to the new world
                     if (room != null && RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession2))
                     {
-                        // we go over all APOs in the room
-                        Debug("Gate switchery 2");
-                        var entities = room.abstractRoom.entities;
-                        for (int i = entities.Count - 1; i >= 0; i--)
+                        roomSession2.Activate(); // adds entities that are already in the room as mine
+                        room.abstractRoom.entities.AddRange(entitiesFromNewRoom); // re-add overwritten entities
+                        room.abstractRoom.creatures.AddRange(creaturesFromNewRoom);
+                        // room never "loaded" so we handle as entities joining a loaded room
+                        for (int i = 0; i < entitiesFromNewRoom.Count; i++)
                         {
-                            if (entities[i] is AbstractPhysicalObject apo)
+                            if (entitiesFromNewRoom[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
                             {
-                                if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
-                                {
-                                    if (oe.isMine)
-                                    {
-                                        //TODO add player scug back in to lobby dictionary.
-                                        Debug("readding entity to world" + oe);
-                                        //oe.EnterResource(roomSession2.worldSession);
-                                        roomSession2.worldSession.LocalEntityEntered(oe);
-                                    }
-                                    else // what happened here
-                                    {
-                                        Error("an entity that came through the gate wasnt mine: " + oe);
-                                    }
-                                }
-                                else {
-                                    Debug("SKIPPING");
-                                    roomSession2.worldSession.ApoEnteringWorld(apo);
-                                }
+                                oe.OnJoinedResource(roomSession2);
                             }
                         }
-                        roomSession2.Activate(); // adds entities that are already in the room
                     }
                 }
                 else if (false) 
