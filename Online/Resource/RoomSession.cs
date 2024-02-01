@@ -40,7 +40,7 @@ namespace RainMeadow
                 if (ent is AbstractPhysicalObject apo)
                 {
                     if (OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(worldSession, apo)) worldSession.ApoEnteringWorld(apo);
-                    ApoEnteringRoom(apo, apo.pos);
+                    if (OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(this, apo)) ApoEnteringRoom(apo, apo.pos);
                 }
             }
         }
