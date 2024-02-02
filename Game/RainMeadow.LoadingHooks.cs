@@ -105,6 +105,12 @@
                     return;
                 }
 
+                //bad check, need to improve. Just testing
+                if (OnlineManager.lobby.isOwner && OnlineManager.lobby.didStartGame == false)
+                {
+                    OnlineManager.lobby.didStartGame = true;
+                }
+
                 // if there is a gate, the gate's room will be reused, it needs to be made available
                 if (self.game.overWorld?.reportBackToGate is RegionGate gate)
                 {
