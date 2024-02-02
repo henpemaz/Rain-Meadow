@@ -63,50 +63,6 @@ namespace RainMeadow
             else if (res is RoomSession rs)
             {
                 rs.AddData<MeadowRoomData>();
-                var mrd = rs.GetData<MeadowRoomData>();
-
-                RainMeadow.Debug("Registering places in room " + rs);
-                var self = rs.absroom.realizedRoom;
-                var line5 = RainMeadow.line5.GetValue(self, (r) => throw new Exception());
-                RainMeadow.line5.Remove(self);
-                string[] array4 = line5.Split(new char[] { '|' });
-                for (int j = 0; j < array4.Length - 1; j++)
-                {
-                    var parts = array4[j].Split(new char[] { ',' }).Select(s => Convert.ToInt32(s, CultureInfo.InvariantCulture)).ToArray();
-                    var x = parts[1] - 1;
-                    var y = self.Height - parts[2];
-                    bool rare = parts[0] == 1;
-
-                    mrd.AddItemPlacement(x, y, rare);
-                }
-                var density = Mathf.Min(self.roomSettings.RandomItemDensity, 0.2f);
-                UnityEngine.Random.State state = UnityEngine.Random.state;
-                UnityEngine.Random.InitState(self.abstractRoom.index);
-                //for (int num16 = (int)((float)self.TileWidth * (float)self.TileHeight * Mathf.Pow(density, 2f) / 5f); num16 >= 0; num16--)
-                while(mrd.NumberOfPlaces < self.abstractRoom.nodes.Length)
-                {
-                    IntVector2 intVector = self.RandomTile();
-                    if (!self.GetTile(intVector).Solid)
-                    {
-                        bool flag5 = true;
-                        if (self.roomSettings.GetEffectAmount(RoomSettings.RoomEffect.Type.ZeroG) < 1f || self.roomSettings.GetEffectAmount(RoomSettings.RoomEffect.Type.BrokenZeroG) > 0f)
-                        {
-                            for (int num17 = -1; num17 < 2; num17++)
-                            {
-                                if (!self.GetTile(intVector + new IntVector2(num17, -1)).Solid)
-                                {
-                                    flag5 = false;
-                                    break;
-                                }
-                            }
-                        }
-                        if (flag5)
-                        {
-                            mrd.AddItemPlacement(intVector.x, intVector.y, UnityEngine.Random.value < SlugcatStats.SpearSpawnModifier(self.game.StoryCharacter, density));
-                        }
-                    }
-                }
-                UnityEngine.Random.state = state;
             }
         }
 
@@ -163,7 +119,50 @@ namespace RainMeadow
             }
             else if (res is RoomSession rs)
             {
-                
+                var mrd = rs.GetData<MeadowRoomData>();
+
+                RainMeadow.Debug("Registering places in room " + rs);
+                var self = rs.absroom.realizedRoom;
+                var line5 = RainMeadow.line5.GetValue(self, (r) => throw new Exception());
+                //RainMeadow.line5.Remove(self); this breaks in gates, reuses same room activates twice
+                string[] array4 = line5.Split(new char[] { '|' });
+                for (int j = 0; j < array4.Length - 1; j++)
+                {
+                    var parts = array4[j].Split(new char[] { ',' }).Select(s => Convert.ToInt32(s, CultureInfo.InvariantCulture)).ToArray();
+                    var x = parts[1] - 1;
+                    var y = self.Height - parts[2];
+                    bool rare = parts[0] == 1;
+
+                    mrd.AddItemPlacement(x, y, rare);
+                }
+                var density = Mathf.Min(self.roomSettings.RandomItemDensity, 0.2f);
+                UnityEngine.Random.State state = UnityEngine.Random.state;
+                UnityEngine.Random.InitState(self.abstractRoom.index);
+                //for (int num16 = (int)((float)self.TileWidth * (float)self.TileHeight * Mathf.Pow(density, 2f) / 5f); num16 >= 0; num16--)
+                while (mrd.NumberOfPlaces < self.abstractRoom.nodes.Length)
+                {
+                    IntVector2 intVector = self.RandomTile();
+                    if (!self.GetTile(intVector).Solid)
+                    {
+                        bool flag5 = true;
+                        if (self.roomSettings.GetEffectAmount(RoomSettings.RoomEffect.Type.ZeroG) < 1f || self.roomSettings.GetEffectAmount(RoomSettings.RoomEffect.Type.BrokenZeroG) > 0f)
+                        {
+                            for (int num17 = -1; num17 < 2; num17++)
+                            {
+                                if (!self.GetTile(intVector + new IntVector2(num17, -1)).Solid)
+                                {
+                                    flag5 = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (flag5)
+                        {
+                            mrd.AddItemPlacement(intVector.x, intVector.y, UnityEngine.Random.value < SlugcatStats.SpearSpawnModifier(self.game.StoryCharacter, density));
+                        }
+                    }
+                }
+                UnityEngine.Random.state = state;
             }
         }
     }
