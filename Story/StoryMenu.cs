@@ -214,11 +214,10 @@ namespace RainMeadow
         private void StartGame()
         {
             RainMeadow.DebugMe();
-            if (!(OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.DidStartGame))))
-            {
-                OnlineManager.lobby.owner.InvokeRPC(RPCs.DidStartGame);
-
-            }
+            //if (!(OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.DidStartGame))))
+            //{
+            //    OnlineManager.lobby.owner.InvokeRPC(RPCs.DidStartGame);
+            //}
             manager.arenaSitting = null;
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;

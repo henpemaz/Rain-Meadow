@@ -75,6 +75,11 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode && !OnlineManager.lobby.isOwner) {
                 (OnlineManager.lobby.gameMode as StoryGameMode).saveStateProgressString = null;
             }
+
+            if (OnlineManager.lobby.isOwner && OnlineManager.lobby.didStartGame == false) {
+                OnlineManager.lobby.didStartGame = true;
+            }
+
         }
 
         private void RainWorldGame_RawUpdate(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
