@@ -1,5 +1,5 @@
 ﻿using System;
-
+using UnityEngine;
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -22,8 +22,18 @@ namespace RainMeadow
 
             On.AbstractCreature.Move += AbstractCreature_Move; // I'm watching your every step
             On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // I'm watching your every step
+
+            On.FirecrackerPlant.Update += FirecrackerPlant_Update;
         }
 
+        private void FirecrackerPlant_Update(On.FirecrackerPlant.orig_Update orig, FirecrackerPlant self, bool eu)
+        {
+            //if (self.growPos == null && RWCustom.Custom.DistLess(self.firstChunk.pos, self.room.roomSettings.placedObjects[self.AbstrConsumable.placedObjectIndex].pos, 10f)) {
+            //    RWCustom.IntVector2 tilePosition = self.room.GetTilePosition(self.room.roomSettings.placedObjects[self.AbstrConsumable.placedObjectIndex].pos);
+            //    self.growPos = new Vector2?(self.room.MiddleOfTile(tilePosition) + new Vector2(0f, -10f));
+            //} BAD FIX, BUT DOES PLACE FIRECRACKER PROPER
+            orig(self, eu);
+        }
         // I'm watching your every step
         // remotes that aren't being moved can only move if going into the right roomSession
         private void AbstractPhysicalObject_Move(On.AbstractPhysicalObject.orig_Move orig, AbstractPhysicalObject self, WorldCoordinate newCoord)

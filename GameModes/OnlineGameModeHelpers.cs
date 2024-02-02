@@ -74,28 +74,28 @@ namespace RainMeadow
             //PlacedObject.Type.FlareBomb,
             //PlacedObject.Type.PuffBall,
             PlacedObject.Type.DangleFruit, //still causes a lot of crashes
-            //PlacedObject.Type.DataPearl,
-            //PlacedObject.Type.UniqueDataPearl,
+            //PlacedObject.Type.DataPearl,          //TODO
+            //PlacedObject.Type.UniqueDataPearl,    //TODO
             //PlacedObject.Type.SeedCob,
             //PlacedObject.Type.DeadSeedCob,
             //PlacedObject.Type.WaterNut,
             //PlacedObject.Type.JellyFish,
             //PlacedObject.Type.KarmaFlower,
-            //PlacedObject.Type.Mushroom,
+            //PlacedObject.Type.Mushroom,           //TODO
             //PlacedObject.Type.SlimeMold,
-            //PlacedObject.Type.FlyLure,
-            //PlacedObject.Type.FirecrackerPlant,
+            //PlacedObject.Type.FlyLure,            //TODO
+            PlacedObject.Type.FirecrackerPlant,
             //PlacedObject.Type.VultureGrub,
             //PlacedObject.Type.DeadVultureGrub,
             //PlacedObject.Type.MultiplayerItem,
             //PlacedObject.Type.SporePlant,
-            //PlacedObject.Type.ReliableSpear,
+            //PlacedObject.Type.ReliableSpear,      //TODO
             //PlacedObject.Type.NeedleEgg,
             //PlacedObject.Type.BubbleGrass,
             //PlacedObject.Type.Hazer,
             //PlacedObject.Type.DeadHazer,
             //PlacedObject.Type.VultureMask,
-            //PlacedObject.Type.HangingPearls,
+            //PlacedObject.Type.HangingPearls,      //TODO?
             //PlacedObject.Type.Lantern,
         };
     }
