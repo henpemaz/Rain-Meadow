@@ -121,9 +121,13 @@ namespace RainMeadow
         public virtual OnlineState Delta(OnlineState baseline)
         {
             if (baseline == null) throw new ArgumentNullException();
+            if (baseline.isDelta) throw new InvalidProgrammerException("baseline is delta");
+            if (isDelta) throw new InvalidProgrammerException("self is delta");
             try
             {
-                return handler.delta(this, baseline);
+                var result = handler.delta(this, baseline);
+                if (!result.isDelta) throw new InvalidProgrammerException("did not produce a delta");
+                return result;
             }
             catch (Exception e)
             {
@@ -136,9 +140,13 @@ namespace RainMeadow
         public virtual OnlineState ApplyDelta(OnlineState incoming)
         {
             if (incoming == null) throw new ArgumentNullException();
+            if (!incoming.isDelta) throw new InvalidProgrammerException("incoming not delta");
+            if (isDelta) throw new InvalidProgrammerException("self is delta");
             try
             {
-                return handler.applydelta(this, incoming);
+                var result = handler.applydelta(this, incoming);
+                if (result.isDelta) throw new InvalidProgrammerException("produced a delta");
+                return result;
             }
             catch (Exception e)
             {
@@ -274,6 +282,8 @@ namespace RainMeadow
                             //      {
                             //          serializer.Serialize(ref fieldInGroup);
                             //      }
+
+                            expressions.Add(Expression.Assign(selfIsDelta, serializerIsDelta));
 
                             // always send
                             if (keys.Count > 0)
@@ -457,7 +467,7 @@ namespace RainMeadow
 
                         ParameterExpression incoming = Expression.Parameter(typeof(OnlineState));
                         ParameterExpression incomingConverted = Expression.Variable(type);
-
+                        // self is baseline
                         // if (incoming == null) throw new InvalidProgrammerException("incoming is null");
                         // **if (!incoming.IsDelta) throw new InvalidProgrammerException("incoming not delta");
                         // var result = DeepClone();

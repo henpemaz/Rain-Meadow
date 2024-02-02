@@ -8,6 +8,16 @@ namespace RainMeadow
 {
     public class LocalMatchmakingManager : MatchmakingManager
     {
+#if ARENAP2P
+        private string localGameMode = "ArenaCompetitive";
+#elif STORYP2P
+        private string localGameMode = "Story";
+#elif FREEROAMP2P
+        private string localGameMode = "FreeRoam";
+#else
+        private string localGameMode = "Meadow";
+#endif
+
         public class LocalPlayerId : MeadowPlayerId
         {
             public int id;
@@ -51,13 +61,6 @@ namespace RainMeadow
 
         private int me = -1;
         private IPEndPoint currentLobbyHost = null;
-#if ARENAP2P
-        private string localGameMode = "ArenaCompetitive";
-#elif STORYP2P
-        private string localGameMode = "Story";
-#else
-        private string localGameMode = "Meadow";
-#endif
 
         public LocalMatchmakingManager()
         {

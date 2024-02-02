@@ -1,4 +1,5 @@
-﻿using RainMeadow.Generics;
+﻿using Mono.Cecil;
+using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,14 +9,20 @@ namespace RainMeadow
     public abstract partial class OnlineEntity
     {
         public OnlinePlayer owner;
-        public EntityDefinition definition;
+        public readonly EntityDefinition definition;
         public readonly EntityId id;
         public readonly bool isTransferable;
 
         public bool isMine => owner.isMe;
 
+        /// <summary>
+        /// stack of resources this entity has entered locally, updated imediately, kept in sync for remote entities
+        /// </summary>
+        public List<OnlineResource> enteredResources = new();
+        /// <summary>
+        /// stack of resources this entity has joined in online space, updated by callbacks
+        /// </summary>
         public List<OnlineResource> joinedResources = new(); // used like a stack
-        public List<OnlineResource> enteredResources = new(); // used like a stack
 
         public OnlineResource primaryResource => joinedResources.Count != 0 ? joinedResources[0] : null;
         public OnlineResource currentlyJoinedResource => joinedResources.Count != 0 ? joinedResources[joinedResources.Count - 1] : null;
@@ -31,24 +38,33 @@ namespace RainMeadow
             this.id = entityDefinition.entityId;
             this.isTransferable = entityDefinition.isTransferable;
 
-            OnlineManager.recentEntities.Add(id, this);
+            OnlineManager.recentEntities[id] = this;
         }
 
+        /// <summary>
+        /// enter a resource locally, will automatically join in online space
+        /// </summary>
+        /// <param name="resource"></param>
         public void EnterResource(OnlineResource resource)
         {
+            if (enteredResources.Contains(resource)) { return; }
             RainMeadow.Debug($"{this} entered {resource}");
             if (enteredResources.Count != 0 && resource.super != currentlyEnteredResource)
             {
-                if(resource == currentlyEnteredResource) { return; }
-                RainMeadow.Error($"Not the right resource {this} - {resource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
                 if(resource.IsSibling(currentlyEnteredResource)) { LeaveResource(currentlyEnteredResource); }
+                else RainMeadow.Error($"Not the right resource {this} - {resource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
             }
             enteredResources.Add(resource);
             if (isMine) JoinOrLeavePending();
         }
 
+        /// <summary>
+        /// leave a resource locally, will automatically leave in online space
+        /// </summary>
+        /// <param name="resource"></param>
         public void LeaveResource(OnlineResource resource)
         {
+            if (!enteredResources.Contains(resource)) { return; }
             RainMeadow.Debug($"{this} left {resource}");
             if (resource != currentlyEnteredResource)
             {
@@ -60,9 +76,9 @@ namespace RainMeadow
 
         private void JoinOrLeavePending()
         {
-            //RainMeadow.Debug(this);
             if (!isMine) { throw new InvalidProgrammerException("not owner"); }
             if (isPending) { return; } // still pending
+            RainMeadow.Debug(this);
             // any resources to leave
             var pending = joinedResources.Except(enteredResources).FirstOrDefault(r => r.entities.ContainsKey(this.id));
             if (pending != null)
@@ -71,9 +87,7 @@ namespace RainMeadow
                 return;
             }
             // any resources to join
-            // todo me, check shouldn't this be
-            //pending = enteredResources.FirstOrDefault(r => !joinedResources.Contains(r));
-            pending = enteredResources.FirstOrDefault(r => !r.entities.ContainsKey(this.id));
+            pending = enteredResources.FirstOrDefault(r => !joinedResources.Contains(r));
             if (pending != null)
             {
                 pending.LocalEntityEntered(this);
@@ -84,11 +98,18 @@ namespace RainMeadow
         public virtual void OnJoinedResource(OnlineResource inResource)
         {
             RainMeadow.Debug(this);
+            if (inResource == currentlyJoinedResource) return;
+            if (joinedResources.Contains(inResource))
+            {
+                RainMeadow.Error($"Not the right resource {this} - {inResource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
+                return;
+            }
             if (!isMine && this.currentlyJoinedResource != null && currentlyJoinedResource.IsSibling(inResource))
             {
                 currentlyJoinedResource.EntityLeftResource(this);
             }
             joinedResources.Add(inResource);
+            incomingState.Add(inResource, new Queue<EntityState>());
             if (isMine)
             {
                 if (!inResource.isOwner)
@@ -104,6 +125,10 @@ namespace RainMeadow
             {
                 RainMeadow.Debug($"Entity already left: {this} {inResource}");
                 return;
+            }
+            if (inResource != currentlyJoinedResource)
+            {
+                RainMeadow.Debug($"Entity leaving resource in wrong order: {this} was in {currentlyJoinedResource} wants to leave {inResource}");
             }
 
             while (currentlyJoinedResource != inResource) currentlyJoinedResource.EntityLeftResource(this);
@@ -164,6 +189,7 @@ namespace RainMeadow
         public virtual void ReadState(EntityState entityState, OnlineResource inResource)
         {
             if (entityState == null) throw new InvalidProgrammerException("state is null");
+            if (entityState.isDelta) throw new InvalidProgrammerException("state delta");
             lastStates[inResource] = entityState;
             if (inResource != currentlyEnteredResource)
             {
@@ -180,7 +206,11 @@ namespace RainMeadow
         {
             var newState = entityFeedState.entityState;
             var inResource = entityFeedState.inResource;
-            if (!incomingState.ContainsKey(inResource)) incomingState.Add(inResource, new Queue<EntityState>());
+            if (!incomingState.ContainsKey(inResource))
+            {
+                RainMeadow.Debug($"Received state for resource the entity isn't in {this} {inResource}, currently in {this.currentlyJoinedResource}");
+                return;
+            }
             var stateQueue = incomingState[inResource];
             if (newState.isDelta)
             {
@@ -192,7 +222,7 @@ namespace RainMeadow
                 }
                 if (stateQueue.Count == 0 || newState.baseline != stateQueue.Peek().tick)
                 {
-                    RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.baseline}");
+                    RainMeadow.Error($"Received unprocessable delta for {this} in {entityFeedState.inResource} from {newState.from}, tick {newState.tick} referencing baseline {newState.baseline}");
                     RainMeadow.Error($"Available ticks are: [{string.Join(", ", stateQueue.Where(s => s.from == newState.from).Select(s => s.tick))}]");
                     if (!newState.from.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.DeltaReset, inResource, this.id)))
                     {
@@ -312,8 +342,6 @@ namespace RainMeadow
 
         public abstract class EntityState : RootDeltaState, IIdentifiable<OnlineEntity.EntityId>
         {
-            // if sent "standalone" tracks Baseline
-            // if sent inside another delta, doesn't
             [OnlineField(always: true)]
             public OnlineEntity.EntityId entityId;
             [OnlineField(nullable: true, polymorphic: true)]

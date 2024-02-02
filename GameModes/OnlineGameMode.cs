@@ -140,9 +140,9 @@ namespace RainMeadow
 
         }
 
-        public  virtual void LobbyReadyCheck()
+        public virtual bool PlayerCanOwnResource(OnlinePlayer from, OnlineResource onlineResource)
         {
-            
+            return true;
         }
     }
 }

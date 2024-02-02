@@ -339,7 +339,7 @@ namespace RainMeadow
             }
         }
 
-        public void OnPlayerDisconnect(OnlinePlayer player)
+        public virtual void OnPlayerDisconnect(OnlinePlayer player)
         {
             //RainMeadow.Debug(this);
             if (this is Lobby lobby && owner == player) // lobby owner has left

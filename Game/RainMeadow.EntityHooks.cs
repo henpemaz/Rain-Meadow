@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -42,6 +43,7 @@ namespace RainMeadow
             {
                 // leaving room is handled in absroom.removeentity
                 // adding to room is handled here so the position is updated properly
+                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, self)) ws.ApoEnteringWorld(self);
                 if (RoomSession.map.TryGetValue(self.world.GetAbstractRoom(newCoord.room), out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, self))
                 {
                     rs.ApoEnteringRoom(self, newCoord);
@@ -121,7 +123,7 @@ namespace RainMeadow
             orig(self, coord);
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out oe))
             {
-                if (oe.realized && oe.isTransferable && oe.isMine)
+                if (oe.realized && oe.isTransferable && oe.isMine && !oe.isPending)
                 {
                     oe.Release();
                 }
@@ -146,7 +148,7 @@ namespace RainMeadow
             orig(self, coord);
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out oe))
             {
-                if (oe.realized && oe.isTransferable && oe.isMine)
+                if (oe.realized && oe.isTransferable && oe.isMine && !oe.isPending)
                 {
                     oe.Release();
                 }
@@ -239,67 +241,146 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
-                var oldWorld = self.activeWorld;
-                var newWorld = self.worldLoader.world;
+                AbstractRoom oldAbsroom = self.reportBackToGate.room.abstractRoom;
+                AbstractRoom newAbsroom = self.worldLoader.world.GetAbstractRoom(oldAbsroom.name);
+                List<AbstractWorldEntity> entitiesFromNewRoom = newAbsroom.entities; // these get ovewritten and need handling
+                List<AbstractCreature> creaturesFromNewRoom = newAbsroom.creatures;
+
                 Room room = null;
 
-                // Regular gate switch
-                // pre: remove remote entities
-                if (self.reportBackToGate != null && RoomSession.map.TryGetValue(self.reportBackToGate.room.abstractRoom, out var roomSession))
+                if (true)
                 {
-                    // we go over all APOs in the room
-                    Debug("Gate switchery 1");
-                    room = self.reportBackToGate.room;
-                    var entities = room.abstractRoom.entities;
-                    for (int i = entities.Count - 1; i >= 0; i--)
+                    // Regular gate switch
+                    // pre: remove remote entities
+                    if (self.reportBackToGate != null && RoomSession.map.TryGetValue(self.reportBackToGate.room.abstractRoom, out var roomSession))
                     {
-                        if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+                        // we go over all APOs in the room
+                        Debug("Gate switchery 1");
+                        room = self.reportBackToGate.room;
+                        var entities = room.abstractRoom.entities;
+                        for (int i = entities.Count - 1; i >= 0; i--)
                         {
-                            // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
-                            if (!oe.isMine)
+                            if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
                             {
-                                Debug("removing remote entity " + oe);
-                                roomSession.entities.Remove(oe.id);
-                                oe.OnLeftResource(roomSession);
+                                // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
+                                if (!oe.isMine)
+                                {
+                                    // not-online-aware removal
+                                    Debug("removing remote entity from game " + oe);
+                                    oe.beingMoved = true;
+                                    if (oe.apo.realizedObject is Creature c && c.inShortcut)
+                                    {
+                                        if (c.RemoveFromShortcuts()) c.inShortcut = false;
+                                    }
+                                    entities.Remove(oe.apo);
+                                    room.abstractRoom.creatures.Remove(oe.apo as AbstractCreature);
+                                    room.RemoveObject(oe.apo.realizedObject);
+                                    room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                                    oe.beingMoved = false;
+                                }
+                                else // mine leave the old online world elegantly
+                                {
+                                    Debug("removing my entity from online " + oe);
+                                    oe.LeaveResource(roomSession);
+                                    oe.LeaveResource(roomSession.worldSession);
+                                }
                             }
-                            else // mine leave the old online world
+                        }
+                        roomSession.worldSession.FullyReleaseResource();
+                    }
+
+                    orig(self); // this replace the list of entities in new world with that from old world
+
+                    // post: we add our entities to the new world
+                    if (room != null && RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession2))
+                    {
+                        roomSession2.Activate(); // adds entities that are already in the room as mine
+                        room.abstractRoom.entities.AddRange(entitiesFromNewRoom); // re-add overwritten entities
+                        room.abstractRoom.creatures.AddRange(creaturesFromNewRoom);
+                        // room never "loaded" so we handle as entities joining a loaded room
+                        for (int i = 0; i < entitiesFromNewRoom.Count; i++)
+                        {
+                            if (entitiesFromNewRoom[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
                             {
-                                Debug("removing my entity " + oe);
-                                oe.LeaveResource(roomSession);
-                                oe.LeaveResource(roomSession.worldSession);
+                                oe.OnJoinedResource(roomSession2);
                             }
                         }
                     }
-                    roomSession.worldSession.FullyReleaseResource();
                 }
-
-                orig(self);
-
-                // post: we add our entities to the new world
-                if (room != null && RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession2))
+                else if (false) 
                 {
-                    // Don't reuse entities left from previous region
-                    OnlineManager.recentEntities.Clear();
+                    RoomSession? oldRoom = null;
 
-                    // we go over all APOs in the room
-                    Debug("Gate switchery 2");
-                    var entities = room.abstractRoom.entities;
-                    for (int i = entities.Count - 1; i >= 0; i--)
+                    if (self.reportBackToGate != null && RoomSession.map.TryGetValue(self.reportBackToGate.room.abstractRoom, out var roomSession))
                     {
-                        if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+                        oldRoom = roomSession;
+                        room = self.reportBackToGate.room;
+
+                        if (oldRoom.worldSession.isOwner)
                         {
-                            if (oe.isMine)
+                            // Grab Ownership of everything. We'll sort things out after the room merge
+                        }
+                        else 
+                        {
+                            /* wait for OK from roomSession owner
+                             * Release Ownership of everything 
+                             * Empty out room
+                             */
+                            var entities = room.abstractRoom.entities;
+                            for (int i = entities.Count - 1; i >= 0; i--)
                             {
-                                Debug("readding entity to world" + oe);
-                                roomSession2.worldSession.LocalEntityEntered(oe);
+                                if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+                                {
+                                    // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
+                                    if (!oe.isMine)
+                                    {
+                                        Debug("removing remote entity " + oe);
+                                        roomSession.entities.Remove(oe.id);
+                                        oe.OnLeftResource(roomSession);
+                                    }
+                                    else // mine leave the old online world
+                                    {
+                                        Debug("removing my entity " + oe);
+                                        oe.LeaveResource(roomSession);
+                                        oe.LeaveResource(roomSession.worldSession);
+                                    }
+                                }
                             }
-                            else // what happened here
-                            {
-                                Error("an entity that came through the gate wasnt mine: " + oe);
-                            }
+                            oldRoom.worldSession.FullyReleaseResource();
                         }
                     }
-                    roomSession2.Activate(); // adds entities that are already in the room
+                    Debug("before region merge");
+                    orig(self);
+                    Debug("after region merge");
+                    if (room != null && RoomSession.map.TryGetValue(room.abstractRoom, out var newRoom))
+                    { 
+                        if (newRoom.isOwner)
+                        {
+                            /* Release everything in the previous region
+                             * Repopulate the current region
+                             * Send OK to other players
+                             */
+                            var entities = room.abstractRoom.entities;
+                            for (int i = entities.Count - 1; i >= 0; i--)
+                            {
+                                if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+                                {
+                                    // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
+                                    Debug("removing my entity " + oe);
+                                    oe.LeaveResource(oldRoom);
+                                    oe.LeaveResource(oldRoom.worldSession);
+                                }
+                            }
+                            //oldRoom.worldSession.FullyReleaseResource();
+                            newRoom.Activate();
+                        }
+                        else 
+                        { 
+                            /* Repopulate
+                             *
+                             */
+                        }
+                    }
                 }
             }
             else

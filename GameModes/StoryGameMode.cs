@@ -41,12 +41,11 @@ namespace RainMeadow
             return true;
         }
 
-        public override void LobbyReadyCheck()
-        {
-            if (OnlineManager.lobby.isOwner && OnlineManager.lobby.didStartGame == false)
-            {
-                OnlineManager.lobby.didStartGame = true;
+        public override bool PlayerCanOwnResource(OnlinePlayer from, OnlineResource onlineResource) {
+            if (onlineResource is WorldSession) {
+                return lobby.owner == from;
             }
+            return true;
         }
     }
 }

@@ -5,7 +5,6 @@ using System.Linq;
 namespace RainMeadow.Generics
 {
     // Welcome to generics hell
-    // how do we manage returning null on empty delta, vs supporting override of delta?
 
     /// <summary>
     /// Object that tracks/serializes whether it's a delta
@@ -108,7 +107,7 @@ namespace RainMeadow.Generics
 
             Imp delta = new();
             delta.list = list.Except(other.list).ToList();
-            delta.listIndexes = list.Except(other.list).Select(e => (byte)list.IndexOf(e)).ToList();
+            delta.listIndexes = delta.list.Select(e => (byte)list.IndexOf(e)).ToList();
             delta.removedIndexes = other.list.Except(list).Select(e => (byte)other.list.IndexOf(e)).ToList();
 
             return (delta.list.Count == 0 && delta.removedIndexes.Count == 0) ? null : delta;
@@ -191,7 +190,11 @@ namespace RainMeadow.Generics
         public virtual Imp ApplyDelta(Imp other)
         {
             Imp result = new();
-            result.list = other == null ? list : list.Where(e => other.list.FirstOrDefault(o => e.ID.Equals(o.ID)) != null).Select(e => (T)e.ApplyDelta(other.list.FirstOrDefault(o => e.ID.Equals(o.ID)))).Concat(other.list.Where(o => list.FirstOrDefault(e => e.ID.Equals(o.ID)) == null)).ToList();
+            result.list = other == null ? list :
+                list.Where(e => !other.removed.Contains(e.ID))
+                    .Select(e => other.list.FirstOrDefault(o => e.ID.Equals(o.ID)) is T b ? (T)e.ApplyDelta(b) : e)
+                    .Concat(other.list.Where(o => list.FirstOrDefault(e => e.ID.Equals(o.ID)) == null))
+                    .ToList();
             return result;
         }
 
@@ -211,19 +214,25 @@ namespace RainMeadow.Generics
             this.list = list;
         }
 
-        public virtual Imp Delta(Imp other)
+        public virtual Imp Delta(Imp baseline)
         {
-            if (other == null) { return (Imp)this; }
+            if (baseline == null) { return (Imp)this; }
             Imp delta = new();
-            delta.list = list.Select(sl => other.list.FirstOrDefault(osl => osl.ID.Equals(sl.ID)) is T so ? (T)sl.Delta(so) : sl).Where(sl => !sl.IsEmptyDelta).ToList();
-            delta.removed = other.list.Except(list, new IdentityComparer<T, U>()).Select(e => e.ID).ToList();
+            delta.list = list.Select(newstate => 
+                baseline.list.FirstOrDefault(basestate => basestate.ID.Equals(newstate.ID)) is T basestate ? (T)newstate.Delta(basestate) : newstate
+            ).Where(sl => !sl.IsEmptyDelta).ToList();
+            delta.removed = baseline.list.Except(list, new IdentityComparer<T, U>()).Select(e => e.ID).ToList();
             return (delta.list.Count == 0 && delta.removed.Count == 0) ? null : delta;
         }
 
-        public virtual Imp ApplyDelta(Imp other)
+        public virtual Imp ApplyDelta(Imp incoming)
         {
             Imp result = new();
-            result.list = other == null ? list : list.Where(e => other.list.FirstOrDefault(o => e.ID.Equals(o.ID)) != null).Select(e => (T)e.ApplyDelta(other.list.FirstOrDefault(o => e.ID.Equals(o.ID)))).Concat(other.list.Where(o => list.FirstOrDefault(e => e.ID.Equals(o.ID)) == null)).ToList();
+            result.list = incoming == null ? list : 
+                list.Where(e => !incoming.removed.Contains(e.ID)) // remove
+                    .Select(e => incoming.list.FirstOrDefault(o => e.ID.Equals(o.ID)) is T o ? (T)e.ApplyDelta(o) : e) // keep or update
+                    .Concat(incoming.list.Where(o => list.FirstOrDefault(e => e.ID.Equals(o.ID)) == null)) // add new
+                    .ToList();
             return result;
         }
 
@@ -329,6 +338,22 @@ namespace RainMeadow.Generics
         public override void CustomSerialize(Serializer serializer)
         {
             serializer.SerializePlayerIds(ref list);
+            if (serializer.IsDelta)
+            {
+                serializer.Serialize(ref listIndexes);
+                serializer.Serialize(ref removedIndexes);
+            }
+        }
+    }
+
+    public class AddRemoveSortedEntityIDs : AddRemoveSortedList<OnlineEntity.EntityId, AddRemoveSortedEntityIDs>
+    {
+        public AddRemoveSortedEntityIDs() { }
+        public AddRemoveSortedEntityIDs(List<OnlineEntity.EntityId> list) : base(list) { }
+
+        public override void CustomSerialize(Serializer serializer)
+        {
+            serializer.Serialize(ref list);
             if (serializer.IsDelta)
             {
                 serializer.Serialize(ref listIndexes);

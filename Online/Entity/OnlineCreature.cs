@@ -1,5 +1,7 @@
 ﻿using RWCustom;
 using System;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace RainMeadow
@@ -14,6 +16,47 @@ namespace RainMeadow
             // ? anything special?
         }
 
+        public static AbstractCreature AbstractCreatureFromString(World world, string creatureString)
+        {
+            string[] array = Regex.Split(creatureString, "<cA>");
+            CreatureTemplate.Type type = new CreatureTemplate.Type(array[0], false);
+            if (type.Index == -1)
+            {
+                RainMeadow.Debug("Unknown creature: " + array[0] + " creature not spawning");
+                return null;
+            }
+            string[] array2 = array[2].Split(new char[]
+            {
+            '.'
+            });
+            EntityID id = EntityID.FromString(array[1]);
+            int? num = BackwardsCompatibilityRemix.ParseRoomIndex(array2[0]);
+            if(num == null || !world.IsRoomInRegion(num.Value))
+            {
+                num = world.GetAbstractRoom(array2[0]).index;
+            }
+            WorldCoordinate den = new WorldCoordinate(num.Value, -1, -1, int.Parse(array2[1], NumberStyles.Any, CultureInfo.InvariantCulture));
+            AbstractCreature abstractCreature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, den, id);
+            if (world != null)
+            {
+                abstractCreature.state.LoadFromString(Regex.Split(array[3], "<cB>"));
+                if (abstractCreature.Room == null)
+                {
+                    RainMeadow.Debug(string.Concat(new string[]
+                        {
+                        "Spawn room does not exist: ",
+                        array2[0],
+                        " ~ ",
+                        id.spawner.ToString(),
+                        " creature not spawning"
+                        }));
+                    return null;
+                }
+                abstractCreature.setCustomFlags();
+            }
+            return abstractCreature;
+        }
+
         public static OnlineEntity FromDefinition(OnlineCreatureDefinition newCreatureEvent, OnlineResource inResource)
         {
             World world = inResource.World;
@@ -21,7 +64,7 @@ namespace RainMeadow
             id.altSeed = newCreatureEvent.seed;
 
             RainMeadow.Debug("serializedObject: " + newCreatureEvent.serializedObject);
-            AbstractCreature ac = SaveState.AbstractCreatureFromString(inResource.World, newCreatureEvent.serializedObject, false);
+            AbstractCreature ac = AbstractCreatureFromString(inResource.World, newCreatureEvent.serializedObject);
             ac.ID = id;
 
             return new OnlineCreature(newCreatureEvent, ac);
