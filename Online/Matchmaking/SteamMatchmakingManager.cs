@@ -213,8 +213,7 @@ namespace RainMeadow
                 List<PlayerInfo> playersinfo = new List<PlayerInfo>();
                 foreach (CSteamID player in newplayers)
                 {
-                    if (player.m_SteamID != me.m_SteamID)
-                        playersinfo.Add(new PlayerInfo(player, SteamFriends.GetFriendPersonaName(player)));
+                    playersinfo.Add(new PlayerInfo(player, SteamFriends.GetFriendPersonaName(player)));
                 }
                 OnPlayerListReceived?.Invoke(playersinfo.ToArray());
             }

@@ -168,10 +168,6 @@ namespace RainMeadow
                 };
 
             }
-
-
-
-
         }
 
         public override void Update()
