@@ -12,7 +12,7 @@ namespace RainMeadow
 {
     public class StoryMenu : SmartMenu, SelectOneButton.SelectOneButtonOwner
     {
-        private RainEffect rainEffect;
+        private readonly RainEffect rainEffect;
 
         private EventfulHoldButton hostStartButton;
         private EventfulHoldButton clientWaitingButton;
@@ -20,6 +20,7 @@ namespace RainMeadow
 
         private EventfulBigArrowButton prevButton;
         private EventfulBigArrowButton nextButton;
+        private SimplerButton backButton;
         private PlayerInfo[] players;
 
         private SlugcatSelectMenu ssm;
@@ -27,9 +28,6 @@ namespace RainMeadow
 
         private List<SlugcatSelectMenu.SlugcatPage> characterPages;
         private EventfulSelectOneButton[] playerButtons;
-
-        private bool didCheckStartGame = false;
-        private MenuDialogBox popupDialog;
 
         public override MenuScene.SceneID GetScene => null;
         public StoryMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.StoryMenu)
@@ -132,6 +130,7 @@ namespace RainMeadow
             {
 
                 this.pages[0].RemoveSubObject(hostStartButton);
+                this.pages[0].subObjects.Add(this.backButton);
 
                 this.pages[0].subObjects.Add(this.clientWaitingButton);
 
@@ -240,7 +239,7 @@ namespace RainMeadow
             clientWaitingButton.buttonBehav.greyedOut = !OnlineManager.lobby.didStartGame; // True to begin
 
 
-            // Previous / Next
+            // Previous
             this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
             this.prevButton.OnClick += (_) =>
             {
@@ -251,7 +250,7 @@ namespace RainMeadow
             this.pages[0].subObjects.Add(this.prevButton);
 
 
-
+             // Next
             this.nextButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(985f, 50f), 1);
             this.nextButton.OnClick += (_) =>
             {
@@ -261,11 +260,22 @@ namespace RainMeadow
             };
             this.pages[0].subObjects.Add(this.nextButton);
 
+            
+            // Back button doesn't highlight?
+            this.backButton = new SimplerButton(this, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f));
+            this.backButton.OnClick += (_) =>
+            {
+                manager.RequestMainProcessSwitch(this.backTarget);
+            };
+
+
             // Music
             this.mySoundLoopID = SoundID.MENU_Main_Menu_LOOP;
 
             // Player lobby label
             this.pages[0].subObjects.Add(new MenuLabel(this, mainPage, this.Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true));
+
+
         }
 
         private void SteamSetup()
