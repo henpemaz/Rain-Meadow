@@ -51,8 +51,8 @@ namespace RainMeadow
             RainMeadow.Debug($"{this} entered {resource}");
             if (enteredResources.Count != 0 && resource.super != currentlyEnteredResource)
             {
-                RainMeadow.Error($"Not the right resource {this} - {resource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
                 if(resource.IsSibling(currentlyEnteredResource)) { LeaveResource(currentlyEnteredResource); }
+                else RainMeadow.Error($"Not the right resource {this} - {resource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
             }
             enteredResources.Add(resource);
             if (isMine) JoinOrLeavePending();
@@ -109,6 +109,7 @@ namespace RainMeadow
                 currentlyJoinedResource.EntityLeftResource(this);
             }
             joinedResources.Add(inResource);
+            incomingState.Add(inResource, new Queue<EntityState>());
             if (isMine)
             {
                 if (!inResource.isOwner)
@@ -205,7 +206,11 @@ namespace RainMeadow
         {
             var newState = entityFeedState.entityState;
             var inResource = entityFeedState.inResource;
-            if (!incomingState.ContainsKey(inResource)) incomingState.Add(inResource, new Queue<EntityState>());
+            if (!incomingState.ContainsKey(inResource))
+            {
+                RainMeadow.Debug($"Received state for resource the entity isn't in {this} {inResource}, currently in {this.currentlyJoinedResource}");
+                return;
+            }
             var stateQueue = incomingState[inResource];
             if (newState.isDelta)
             {
@@ -217,7 +222,7 @@ namespace RainMeadow
                 }
                 if (stateQueue.Count == 0 || newState.baseline != stateQueue.Peek().tick)
                 {
-                    RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.baseline}");
+                    RainMeadow.Error($"Received unprocessable delta for {this} in {entityFeedState.inResource} from {newState.from}, tick {newState.tick} referencing baseline {newState.baseline}");
                     RainMeadow.Error($"Available ticks are: [{string.Join(", ", stateQueue.Where(s => s.from == newState.from).Select(s => s.tick))}]");
                     if (!newState.from.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.DeltaReset, inResource, this.id)))
                     {

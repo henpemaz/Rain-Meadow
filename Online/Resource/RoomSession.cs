@@ -49,7 +49,23 @@ namespace RainMeadow
         {
             if (abstractOnDeactivate)
             {
+                for (int i = 0; i < absroom.entities.Count; i++)
+                {
+                    AbstractWorldEntity? item = absroom.entities[i];
+                    if(item is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var ent))
+                    {
+                        ent.beingMoved = true;
+                    }
+                }
                 absroom.Abstractize();
+                for (int i = 0; i < absroom.entities.Count; i++)
+                {
+                    AbstractWorldEntity? item = absroom.entities[i];
+                    if (item is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var ent))
+                    {
+                        ent.beingMoved = false;
+                    }
+                }
                 abstractOnDeactivate = false;
             }
         }
