@@ -23,16 +23,18 @@ namespace RainMeadow
             On.AbstractCreature.Move += AbstractCreature_Move; // I'm watching your every step
             On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // I'm watching your every step
 
-            On.FirecrackerPlant.Update += FirecrackerPlant_Update;
+            On.FirecrackerPlant.PlaceInRoom += FirecrackerPlant_PlaceInRoom;
         }
 
-        private void FirecrackerPlant_Update(On.FirecrackerPlant.orig_Update orig, FirecrackerPlant self, bool eu)
+        private void FirecrackerPlant_PlaceInRoom(On.FirecrackerPlant.orig_PlaceInRoom orig, FirecrackerPlant self, Room placeRoom)
         {
-            //if (self.growPos == null && RWCustom.Custom.DistLess(self.firstChunk.pos, self.room.roomSettings.placedObjects[self.AbstrConsumable.placedObjectIndex].pos, 10f)) {
-            //    RWCustom.IntVector2 tilePosition = self.room.GetTilePosition(self.room.roomSettings.placedObjects[self.AbstrConsumable.placedObjectIndex].pos);
-            //    self.growPos = new Vector2?(self.room.MiddleOfTile(tilePosition) + new Vector2(0f, -10f));
-            //} BAD FIX, BUT DOES PLACE FIRECRACKER PROPER
-            orig(self, eu);
+            orig(self, placeRoom);
+            //Game is not setting growPos for non-owners. This might break if players spawn firecrackers, but that's a risk i'm willing to take.
+            if (self.growPos == null && (RWCustom.Custom.DistLess(self.firstChunk.pos, self.room.roomSettings.placedObjects[self.AbstrConsumable.placedObjectIndex].pos, 50f)))
+            {
+                RWCustom.IntVector2 tilePosition = self.room.GetTilePosition(self.room.roomSettings.placedObjects[self.AbstrConsumable.placedObjectIndex].pos);
+                self.growPos = new Vector2?(self.room.MiddleOfTile(tilePosition) + new Vector2(0f, -10f));
+            }
         }
         // I'm watching your every step
         // remotes that aren't being moved can only move if going into the right roomSession
