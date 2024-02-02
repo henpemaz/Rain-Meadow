@@ -58,11 +58,5 @@
                 gameMode.readyForWinPlayers.Remove(rpcEvent.from.inLobbyId);
             }
         }
-
-        [RPCMethod]
-        public static void DidStartGame(RPCEvent rpcEvent)
-        {
-            OnlineManager.lobby.didStartGame = true;
-        }
     }
 }

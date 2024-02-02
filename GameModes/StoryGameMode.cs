@@ -40,5 +40,13 @@ namespace RainMeadow
         {
             return true;
         }
+
+        public override void LobbyReadyCheck()
+        {
+            if (OnlineManager.lobby.isOwner && OnlineManager.lobby.didStartGame == false)
+            {
+                OnlineManager.lobby.didStartGame = true;
+            }
+        }
     }
 }

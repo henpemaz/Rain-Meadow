@@ -139,5 +139,10 @@ namespace RainMeadow
         {
 
         }
+
+        public  virtual void LobbyReadyCheck()
+        {
+            
+        }
     }
 }
