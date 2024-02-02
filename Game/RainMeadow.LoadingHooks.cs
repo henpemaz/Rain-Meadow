@@ -105,6 +105,9 @@
                     return;
                 }
 
+                // Check if we need to allow others to join
+                OnlineManager.lobby.gameMode.LobbyReadyCheck();
+
                 // if there is a gate, the gate's room will be reused, it needs to be made available
                 if (self.game.overWorld?.reportBackToGate is RegionGate gate)
                 {
@@ -151,9 +154,6 @@
                 ws.Request();
                 ws.BindWorld(self.world);
                 self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);
-
-                //bad check, need to improve. Just testing
-                OnlineManager.lobby.gameMode.LobbyReadyCheck();
             }
         }
     }
