@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RainMeadow.Generics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,8 +11,6 @@ namespace RainMeadow
         public EntityDefinition definition;
         public readonly EntityId id;
         public readonly bool isTransferable;
-
-        internal EntityData gameModeData;
 
         public bool isMine => owner.isMe;
 
@@ -72,6 +71,8 @@ namespace RainMeadow
                 return;
             }
             // any resources to join
+            // todo me, check shouldn't this be
+            //pending = enteredResources.FirstOrDefault(r => !joinedResources.Contains(r));
             pending = enteredResources.FirstOrDefault(r => !r.entities.ContainsKey(this.id));
             if (pending != null)
             {
@@ -233,6 +234,105 @@ namespace RainMeadow
             if (lastState == null) throw new InvalidProgrammerException("state is null");
             return lastState;
         }
+
+        private List<EntityData> entityData = new();
+
+        internal T AddData<T>() where T : EntityData, new()
+        {
+            for (int i = 0; i < entityData.Count; i++)
+            {
+                if (entityData[i].GetType() == typeof(T)) throw new ArgumentException("type already in data");
+            }
+            var v = new T();
+            entityData.Add(v);
+            return v;
+        }
+
+        internal T AddData<T>(T toAdd) where T : EntityData
+        {
+            for (int i = 0; i < entityData.Count; i++)
+            {
+                if (entityData[i].GetType() == typeof(T)) throw new ArgumentException("type already in data");
+            }
+            entityData.Add(toAdd);
+            return toAdd;
+        }
+
+        internal bool TryGetData<T>(out T d, bool addIfMissing = false) where T : EntityData
+        {
+            for (int i = 0; i < entityData.Count; i++)
+            {
+                if (entityData[i].GetType() == typeof(T))
+                {
+                    d = (T)entityData[i];
+                    return true;
+                }
+            }
+            if (addIfMissing)
+            {
+                d = Activator.CreateInstance<T>();
+                entityData.Add(d);
+                return true;
+            }
+            d = null;
+            return false;
+        }
+
+        internal T GetData<T>(bool addIfMissing = false) where T : EntityData
+        {
+            if (!TryGetData<T>(out var d, addIfMissing)) throw new KeyNotFoundException();
+            return d;
+        }
+
+        internal void RemoveData<T>() where T : EntityData
+        {
+            for (int i = 0; i < entityData.Count; i++)
+            {
+                if (entityData[i].GetType() == typeof(T))
+                {
+                    entityData.RemoveAt(i);
+                }
+            }
+        }
+
+        public abstract class EntityData
+        {
+            protected EntityData() { }
+
+            internal abstract EntityDataState MakeState(OnlineResource inResource);
+
+            [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
+            public abstract class EntityDataState : OnlineState
+            {
+                protected EntityDataState() { }
+
+                internal abstract void ReadTo(OnlineEntity onlineEntity);
+            }
+        }
+
+        public abstract class EntityState : RootDeltaState, IIdentifiable<OnlineEntity.EntityId>
+        {
+            // if sent "standalone" tracks Baseline
+            // if sent inside another delta, doesn't
+            [OnlineField(always: true)]
+            public OnlineEntity.EntityId entityId;
+            [OnlineField(nullable: true, polymorphic: true)]
+            public AddRemoveSortedStates<OnlineEntity.EntityData.EntityDataState> entityDataStates;
+            public OnlineEntity.EntityId ID => entityId;
+
+            protected EntityState() : base() { }
+            protected EntityState(OnlineEntity onlineEntity, OnlineResource inResource, uint ts) : base(ts)
+            {
+                this.entityId = onlineEntity.id;
+                this.entityDataStates = new(onlineEntity.entityData.Select(d => d.MakeState(inResource)).ToList());
+            }
+
+            public virtual void ReadTo(OnlineEntity onlineEntity)
+            {
+                entityDataStates.list.ForEach(d => d.ReadTo(onlineEntity));
+            }
+        }
+
 
         public override string ToString()
         {

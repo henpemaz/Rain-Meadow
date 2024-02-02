@@ -3,12 +3,12 @@
     public class EntityFeedState : OnlineState
     {
         [OnlineField(polymorphic = true)]
-        public EntityState entityState;
+        public OnlineEntity.EntityState entityState;
         [OnlineField]
         public OnlineResource inResource;
 
         public EntityFeedState() { }
-        public EntityFeedState(EntityState entityState, OnlineResource inResource) : base()
+        public EntityFeedState(OnlineEntity.EntityState entityState, OnlineResource inResource) : base()
         {
             this.entityState = entityState;
             this.inResource = inResource;
