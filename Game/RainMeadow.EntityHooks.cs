@@ -26,6 +26,23 @@ namespace RainMeadow
 
             On.FirecrackerPlant.PlaceInRoom += FirecrackerPlant_PlaceInRoom;
             On.DangleFruit.PlaceInRoom += DangleFruit_PlaceInRoom;
+
+            On.Mushroom.PlaceInRoom += Mushroom_PlaceInRoom;
+            On.Mushroom.BitByPlayer += Mushroom_BitByPlayer;
+        }
+
+        private void Mushroom_BitByPlayer(On.Mushroom.orig_BitByPlayer orig, Mushroom self, Creature.Grasp grasp, bool eu)
+        {
+            orig(self, grasp, eu);
+            if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                OnlineManager.lobby.owner.InvokeRPC(RPCs.AddMushroomCounter);
+            }
+        }
+
+        private void Mushroom_PlaceInRoom(On.Mushroom.orig_PlaceInRoom orig, Mushroom self, Room placeRoom)
+        {
+            orig(self, placeRoom);
         }
 
         private void DangleFruit_PlaceInRoom(On.DangleFruit.orig_PlaceInRoom orig, DangleFruit self, Room placeRoom)
