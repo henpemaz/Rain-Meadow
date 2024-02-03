@@ -149,6 +149,7 @@ namespace RainMeadow
                 {
                     winReadyPlayers = new((lobby.gameMode as StoryGameMode).readyForWinPlayers.ToList());
                     playerProgressSaveState = (lobby.gameMode as StoryGameMode)?.saveStateProgressString;
+                    didStartGame = (lobby.gameMode as StoryGameMode).didStartGame;
                     food = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
                     quarterfood = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
                 }
@@ -158,8 +159,6 @@ namespace RainMeadow
             {
                 var lobby = (Lobby)resource;
                 lobby.nextId = nextId;
-                lobby.isReadyForNextCycle = readyForNextCycle;
-                lobby.didStartGame = didStartGame;
 
                 for (int i = 0; i < players.list.Count; i++)
                 {
@@ -189,8 +188,9 @@ namespace RainMeadow
                     }
                     (lobby.gameMode as StoryGameMode).saveStateProgressString = playerProgressSaveState;
                     (lobby.gameMode as StoryGameMode).readyForWinPlayers = winReadyPlayers.list;
+                    (lobby.gameMode as StoryGameMode).didStartGame = didStartGame;
+
                 }
-                lobby.readyForWinPlayers = winReadyPlayers.list;
 
 
                 Menu.Menu? menu = RWCustom.Custom.rainWorld.processManager.currentMainLoop as Menu.Menu;
