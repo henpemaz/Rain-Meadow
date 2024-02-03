@@ -50,6 +50,7 @@ namespace RainMeadow
             public static readonly StateType EntityFeedState = new("EntityFeedState", typeof(EntityFeedState));
 
             public static readonly StateType PhysicalObjectEntityState = new("PhysicalObjectEntityState", typeof(PhysicalObjectEntityState));
+            public static readonly StateType OnlineConsumableState = new("OnlineConsumableState", typeof(OnlineConsumableState));
             public static readonly StateType PlayerStateState = new("PlayerStateState", typeof(PlayerStateState));
             public static readonly StateType AbstractCreatureState = new("AbstractCreatureState", typeof(AbstractCreatureState));
             public static readonly StateType RealizedFlyState = new("RealizedFlyState", typeof(RealizedFlyState));
@@ -74,9 +75,9 @@ namespace RainMeadow
             public static readonly StateType MeadowRoomState = new("MeadowRoomState", typeof(MeadowRoomData.MeadowRoomState));
 
             public static readonly StateType OnlinePhysicalObjectDefinition = new("OnlinePhysicalObjectDefinition", typeof(OnlinePhysicalObjectDefinition));
+            public static readonly StateType OnlineConsumableDefinition = new("OnlineConsumableDefinition", typeof(OnlineConsumableDefinition));
             public static readonly StateType OnlineCreatureDefinition = new("OnlineCreatureDefinition", typeof(OnlineCreatureDefinition));
             public static readonly StateType NewMeadowPersonaSettingsEvent = new("NewMeadowPersonaSettingsEvent", typeof(MeadowPersonaSettingsDefinition));
-
 
             public static readonly StateType DeflateState = new("DeflateState", typeof(DeflateState)); // used in serializer for wrapping large states
         }

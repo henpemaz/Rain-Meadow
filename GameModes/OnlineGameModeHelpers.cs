@@ -81,7 +81,7 @@ namespace RainMeadow
             //PlacedObject.Type.WaterNut,           //FOOD
             //PlacedObject.Type.JellyFish,          //FOOD
             //PlacedObject.Type.KarmaFlower,        //TODO
-            //PlacedObject.Type.Mushroom,           //TODO
+            PlacedObject.Type.Mushroom,           //TODO
             //PlacedObject.Type.SlimeMold,          //FOOD
             //PlacedObject.Type.FlyLure,            //TODO
             PlacedObject.Type.FirecrackerPlant,

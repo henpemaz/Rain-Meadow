@@ -29,6 +29,12 @@ namespace RainMeadow
                 var def = new OnlineCreatureDefinition(apo.ID.RandomSeed, apo.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number), OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 return new OnlineCreature(def, ac);
             }
+            if (apo is AbstractConsumable acm)
+            {
+                var def = new OnlineConsumableDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number), OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar,
+                    (short)acm.originRoom, (sbyte)acm.placedObjectIndex, acm.isConsumed);
+                return new OnlineConsumable(def, acm);
+            }
             else
             {
                 var def = new OnlinePhysicalObjectDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number), OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
