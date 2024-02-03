@@ -100,7 +100,14 @@ namespace RainMeadow
                     {
                         if (apo.realizedObject != null && realizedRoom.updateList.Contains(apo.realizedObject))
                         {
-                            RainMeadow.Debug($"Entity {apo.ID} already in the room {newRoom.absroom.name}, not adding!");
+                            RainMeadow.Debug($"Entity {this} already in the room {newRoom.absroom.name}, not adding!");
+                            return;
+                        }
+
+                        // todo carried by other won't pick up if entering from abstract, how fix?
+                        if(apo.realizedObject != null && apo.realizedObject.grabbedBy.Count > 0)
+                        {
+                            RainMeadow.Debug($"Entity {this} carried by other, not adding!");
                             return;
                         }
 
@@ -119,6 +126,10 @@ namespace RainMeadow
                         RainMeadow.Debug($"Creature {creature.ID} already in the room {newRoom.absroom.name}, not adding!");
                         return;
                     }
+
+                    // TODO creature carrying objects should marks objects as being moved so they run move code
+                    //  right now this spits more errors than it should
+                    // TODO creature spawning from abstract needs grasp data available to do the object-carrying
 
                     RainMeadow.Debug("spawning creature " + creature);
                     if (apo.pos.TileDefined)

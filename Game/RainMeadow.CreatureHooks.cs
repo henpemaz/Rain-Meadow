@@ -14,6 +14,20 @@ namespace RainMeadow
             On.AbstractPhysicalObject.Update += AbstractPhysicalObject_Update; // Don't think
             On.AbstractCreature.Update += AbstractCreature_Update; // Don't think
             On.AbstractCreature.OpportunityToEnterDen += AbstractCreature_OpportunityToEnterDen; // Don't think
+            On.AbstractCreature.InDenUpdate += AbstractCreature_InDenUpdate; // Don't think
+        }
+
+        // Don't think
+        private void AbstractCreature_InDenUpdate(On.AbstractCreature.orig_InDenUpdate orig, AbstractCreature self, int time)
+        {
+            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
+            {
+                if (!oe.isMine && !oe.beingMoved)
+                {
+                    return;
+                }
+            }
+            orig(self, time);
         }
 
         // Don't think
