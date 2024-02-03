@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -24,32 +25,42 @@ namespace RainMeadow
             On.AbstractCreature.Move += AbstractCreature_Move; // I'm watching your every step
             On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // I'm watching your every step
 
+            //These need to be ILHooks IMO - turtle
             On.FirecrackerPlant.PlaceInRoom += FirecrackerPlant_PlaceInRoom;
             On.DangleFruit.PlaceInRoom += DangleFruit_PlaceInRoom;
-
             On.Mushroom.PlaceInRoom += Mushroom_PlaceInRoom;
-            On.Mushroom.BitByPlayer += Mushroom_BitByPlayer;
-        }
-
-        private void Mushroom_BitByPlayer(On.Mushroom.orig_BitByPlayer orig, Mushroom self, Creature.Grasp grasp, bool eu)
-        {
-            orig(self, grasp, eu);
-            if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
-            {
-                OnlineManager.lobby.owner.InvokeRPC(RPCs.AddMushroomCounter);
-            }
         }
 
         private void Mushroom_PlaceInRoom(On.Mushroom.orig_PlaceInRoom orig, Mushroom self, Room placeRoom)
         {
             orig(self, placeRoom);
+            if (self.growPos == null && self.AbstrConsumable.placedObjectIndex >= 0)
+            {
+                int x = placeRoom.GetTilePosition(self.firstChunk.pos).x;
+                for (int i = placeRoom.GetTilePosition(self.firstChunk.pos).y; i >= 0; i--)
+                {
+                    if (i < placeRoom.GetTilePosition(self.firstChunk.pos).y - 4)
+                    {
+                        break;
+                    }
+                    if (!placeRoom.GetTile(x, i).Solid && placeRoom.GetTile(x, i - 1).Solid)
+                    {
+                        self.growPos = new Vector2?(new Vector2(placeRoom.MiddleOfTile(x, i).x + Mathf.Lerp(-9f, 9f, placeRoom.game.SeededRandom((int)self.firstChunk.pos.x + (int)self.firstChunk.pos.y)), placeRoom.MiddleOfTile(x, i).y - 10f));
+                        self.hoverPos = new Vector2(self.growPos.Value.x + Mathf.Lerp(-7f, 7f, placeRoom.game.SeededRandom((int)self.firstChunk.pos.x - (int)self.firstChunk.pos.y)), self.growPos.Value.y + Mathf.Lerp(18f, 36f, placeRoom.game.SeededRandom((int)self.firstChunk.pos.y - (int)self.firstChunk.pos.x)));
+                        self.hoverDirAdd = Mathf.Lerp(-25f, 25f, placeRoom.game.SeededRandom((int)self.firstChunk.pos.x));
+                        self.firstChunk.HardSetPosition(self.hoverPos);
+                    }
+                }
+            }
         }
 
         private void DangleFruit_PlaceInRoom(On.DangleFruit.orig_PlaceInRoom orig, DangleFruit self, Room placeRoom)
         {
             orig(self, placeRoom);
-            if (self.stalk == null) {
-                if (self.AbstrConsumable.placedObjectIndex != -1) {
+            if (self.stalk == null) 
+            {
+                if (self.AbstrConsumable.placedObjectIndex != -1) 
+                {
                     self.firstChunk.HardSetPosition(placeRoom.roomSettings.placedObjects[self.AbstrConsumable.placedObjectIndex].pos);
                     self.stalk = new DangleFruit.Stalk(self, placeRoom, self.firstChunk.pos);
                     placeRoom.AddObject(self.stalk);
