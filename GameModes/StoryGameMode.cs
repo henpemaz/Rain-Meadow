@@ -7,7 +7,7 @@ namespace RainMeadow
         public string myDenPos = "SU_C04";
         public string? saveStateProgressString = null;
         public List<ushort> readyForWinPlayers = new List<ushort>();
-
+        public bool didStartGame = false;
         public StoryGameMode(Lobby lobby) : base(lobby)
         {
         }
@@ -46,6 +46,13 @@ namespace RainMeadow
                 return lobby.owner == from;
             }
             return true;
+        }
+
+        public override void LobbyReadyCheck()
+        {
+            if (OnlineManager.lobby.isOwner && !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame) {
+                (OnlineManager.lobby.gameMode as StoryGameMode).didStartGame = true;
+            }
         }
     }
 }
