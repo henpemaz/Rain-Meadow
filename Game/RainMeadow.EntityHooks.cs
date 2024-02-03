@@ -23,8 +23,36 @@ namespace RainMeadow
 
             On.AbstractCreature.Move += AbstractCreature_Move; // I'm watching your every step
             On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // I'm watching your every step
+
+            On.FirecrackerPlant.PlaceInRoom += FirecrackerPlant_PlaceInRoom;
+            On.DangleFruit.PlaceInRoom += DangleFruit_PlaceInRoom;
         }
 
+        private void DangleFruit_PlaceInRoom(On.DangleFruit.orig_PlaceInRoom orig, DangleFruit self, Room placeRoom)
+        {
+            orig(self, placeRoom);
+            if (self.stalk == null) {
+                if (self.AbstrConsumable.placedObjectIndex != -1) {
+                    self.firstChunk.HardSetPosition(placeRoom.roomSettings.placedObjects[self.AbstrConsumable.placedObjectIndex].pos);
+                    self.stalk = new DangleFruit.Stalk(self, placeRoom, self.firstChunk.pos);
+                    placeRoom.AddObject(self.stalk);
+                }
+            }
+        }
+
+        private void FirecrackerPlant_PlaceInRoom(On.FirecrackerPlant.orig_PlaceInRoom orig, FirecrackerPlant self, Room placeRoom)
+        {
+            orig(self, placeRoom);
+            //Game is not setting growPos for non-owners. This might break if players spawn firecrackers, but that's a risk i'm willing to take.
+            if (self.growPos == null && (RWCustom.Custom.DistLess(self.firstChunk.pos, self.room.roomSettings.placedObjects[self.AbstrConsumable.placedObjectIndex].pos, 50f)))
+            {
+                if (self.AbstrConsumable.placedObjectIndex != -1)
+                {
+                    RWCustom.IntVector2 tilePosition = self.room.GetTilePosition(self.room.roomSettings.placedObjects[self.AbstrConsumable.placedObjectIndex].pos);
+                    self.growPos = new UnityEngine.Vector2?(self.room.MiddleOfTile(tilePosition) + new UnityEngine.Vector2(0f, -10f));
+                }
+            }
+        }
         // I'm watching your every step
         // remotes that aren't being moved can only move if going into the right roomSession
         private void AbstractPhysicalObject_Move(On.AbstractPhysicalObject.orig_Move orig, AbstractPhysicalObject self, WorldCoordinate newCoord)
