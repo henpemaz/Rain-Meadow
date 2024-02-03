@@ -226,6 +226,8 @@ namespace RainMeadow
         public void EntityLeftResource(OnlineEntity oe)
         {
             RainMeadow.Debug(this);
+            if (oe.primaryResource == this && !registeredEntities.ContainsKey(oe.id)) throw new InvalidProgrammerException("wasn't registered in resource");
+            if (!entities.ContainsKey(oe.id)) throw new InvalidProgrammerException("wasn't joined in resource");
             registeredEntities.Remove(oe.id);
             entities.Remove(oe.id);
             if (!oe.isMine) oe.LeaveResource(this);

@@ -51,16 +51,10 @@
                         OnlineManager.ForceLoadUpdate();
                     }
                     if (!rs.isAvailable) return;
+                    if (!rs.isActive) rs.Activate();
                 }
             }
             orig(self);
-            if (!self.shortcutsOnly && self.room.game != null && OnlineManager.lobby != null)
-            {
-                if (RoomSession.map.TryGetValue(self.room.abstractRoom, out RoomSession rs))
-                {
-                    if (!rs.isActive && self.room.shortCutsReady) rs.Activate();
-                }
-            }
         }
 
         // Room request
@@ -76,6 +70,23 @@
         // World wait, activate
         private void WorldLoader_Update(On.WorldLoader.orig_Update orig, WorldLoader self)
         {
+            if (OnlineManager.lobby != null && WorldSession.map.TryGetValue(self.world, out var ws0))
+            {
+                if (!ws0.isAvailable)
+                {
+                    lock (self) {
+                        self.requestCreateWorld = false;
+                        orig(self);
+                    }
+                    OnlineManager.ForceLoadUpdate();
+                    return;
+                }
+                else if(self.requestCreateWorld)
+                {
+                    self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws0);
+                    Debug($"world loading creating new world, worldCreaturesSpawn? {self.setupValues.worldCreaturesSpawn}");
+                }
+            }
             orig(self);
             if (OnlineManager.lobby != null && WorldSession.map.TryGetValue(self.world, out var ws))
             {
@@ -83,26 +94,26 @@
                 {
                     OnlineManager.ForceLoadUpdate();
                 }
+
                 // wait until new world state available
-                if (!ws.isAvailable)
+                if (self.Finished && !ws.isAvailable)
                 {
+                    RainMeadow.Error("Region loading finished before online resource is available");
                     self.Finished = false;
                     return;
-                }
-
-                self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);
-
-                // activate the new world
-                if (self.Finished && !ws.isActive)
-                {
-                    Debug("world loading activating new world");
-                    ws.Activate();
                 }
 
                 // now we need to wait for it before further actions
                 if (!self.Finished)
                 {
                     return;
+                }
+
+                // activate the new world
+                if (self.Finished && !ws.isActive)
+                {
+                    Debug("world loading activating new world");
+                    ws.Activate();
                 }
 
                 // if there is a gate, the gate's room will be reused, it needs to be made available
@@ -114,7 +125,7 @@
                     {
                         if (!newRoom.isPending)
                         {
-                            Debug("world loading requesting new room");
+                            Debug("world loading requesting new room in next region");
                             newRoom.Request();
                         }
                         self.Finished = false;

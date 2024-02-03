@@ -40,5 +40,12 @@ namespace RainMeadow
         {
             return true;
         }
+
+        public override bool PlayerCanOwnResource(OnlinePlayer from, OnlineResource onlineResource) {
+            if (onlineResource is WorldSession) {
+                return lobby.owner == from;
+            }
+            return true;
+        }
     }
 }

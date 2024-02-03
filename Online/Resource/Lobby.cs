@@ -12,6 +12,8 @@ namespace RainMeadow
         public OnlineGameMode.OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
 
+        public Dictionary<ushort, OnlineCreature> playerAvatars = new(); //key:lobbyID | Value:slugcat AbstractCreature
+
         public string[] mods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().ConvertAll(mod => mod.id.ToString()).ToArray();
         public static bool checkingMods;
 
@@ -44,7 +46,7 @@ namespace RainMeadow
 
         protected override void ActivateImpl()
         {
-            if(gameModeType == OnlineGameMode.OnlineGameModeType.ArenaCompetitive) // Arena
+            if (gameModeType == OnlineGameMode.OnlineGameModeType.ArenaCompetitive) // Arena
             {
                 var nr = new Region("arena", 0, -1, null);
                 var ns = new WorldSession(nr, this);
@@ -73,6 +75,18 @@ namespace RainMeadow
         protected override void DeactivateImpl()
         {
             throw new InvalidOperationException("cant deactivate");
+        }
+
+        public override void OnPlayerDisconnect(OnlinePlayer player)
+        {
+            base.OnPlayerDisconnect(player);
+
+            // todo move this to gamemode api
+            if(isOwner) playerAvatars.Remove(player.inLobbyId);
+            if(player == owner && gameMode is StoryGameMode)
+            {
+                OnlineManager.instance.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
+            }
         }
 
         protected override ResourceState MakeState(uint ts)
@@ -104,7 +118,10 @@ namespace RainMeadow
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedPlayerIDs players;
             [OnlineField(nullable = true)]
+            public Generics.AddRemoveSortedEntityIDs avatars;
+            [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedUshorts winReadyPlayers;
+
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedUshorts inLobbyIds;
             [OnlineField]
@@ -120,7 +137,8 @@ namespace RainMeadow
             {
                 nextId = lobby.nextId;
                 players = new(lobby.participants.Keys.Select(p => p.id).ToList());
-                inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());      
+                inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
+                avatars = new(lobby.participants.Keys.Select(p => lobby.playerAvatars.TryGetValue(p.inLobbyId, out var c) ? c.id : new OnlineEntity.EntityId(p.inLobbyId, OnlineEntity.EntityId.IdType.none, 0)).ToList());
                 mods = lobby.mods;
                 if (lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Story)
                 {
@@ -147,6 +165,11 @@ namespace RainMeadow
                         RainMeadow.Error("Player not found! " + players.list[i]);
                     }
                 }
+                lobby.playerAvatars.Clear();
+                for (int i = 0; i < inLobbyIds.list.Count; i++)
+                {
+                    lobby.playerAvatars[inLobbyIds.list[i]] = avatars.list[i].FindEntity(quiet: true) as OnlineCreature;
+                }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
                 if (lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Story)
                 {
@@ -167,7 +190,8 @@ namespace RainMeadow
                     if (Enumerable.SequenceEqual(lobby.mods, this.mods))
                     {
                         RainMeadow.Debug("Same mod set !");
-                    } else
+                    }
+                    else
                     {
                         RainMeadow.Debug("Mismatching mod set");
 

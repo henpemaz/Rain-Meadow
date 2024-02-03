@@ -69,7 +69,7 @@
             RainMeadow.Debug(this);
             if (!isMine) throw new InvalidProgrammerException("not mine");
             if (!isTransferable) throw new InvalidProgrammerException("cannot be transfered");
-            //if (isPending && pendingRequest is not EntityLeaveRequest) throw new InvalidProgrammerException("this entity has a pending request");
+            if (isPending) throw new InvalidProgrammerException("this entity has a pending request");
             if (primaryResource is null) return; // deactivated
 
             if (primaryResource.isOwner)

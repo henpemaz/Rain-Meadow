@@ -8,7 +8,7 @@ namespace RainMeadow
     {
         public OnlineResource resource;
         public OnlinePlayer player;
-        public Queue<OnlineResource.ResourceState> OutgoingStates = new(32);
+        public Queue<OnlineStateMessage> OutgoingStates = new(32);
         public OnlineResource.ResourceState lastAcknoledgedState;
 
         public ResourceSubscription(OnlineResource resource, OnlinePlayer player)
@@ -33,7 +33,7 @@ namespace RainMeadow
             if (player.recentlyAckdTicks.Count > 0) while (OutgoingStates.Count > 0 && player.recentlyAckdTicks.Contains(OutgoingStates.Peek().tick))
                 {
                     RainMeadow.Trace("Considering candidate:" + OutgoingStates.Peek().tick);
-                    lastAcknoledgedState = OutgoingStates.Dequeue(); // use most recent available
+                    lastAcknoledgedState = (OnlineResource.ResourceState)OutgoingStates.Dequeue().sourceState; // use most recent available
                 }
             if (lastAcknoledgedState != null && !player.recentlyAckdTicks.Contains(lastAcknoledgedState.tick))
             {
@@ -44,37 +44,34 @@ namespace RainMeadow
             var newState = resource.GetState(tick);
             if (lastAcknoledgedState != null)
             {
-                RainMeadow.Trace($"sending delta for tick {newState.tick} from reference {lastAcknoledgedState.tick} ");
-                var delta = newState.Delta(lastAcknoledgedState);
+                RainMeadow.Trace($"sending delta for tick {newState.tick} from reference {lastAcknoledgedState.tick}");
+                var delta = (OnlineResource.ResourceState)newState.Delta(lastAcknoledgedState);
                 //RainMeadow.Trace("Sending delta:\n" + delta.DebugPrint(0));
-                player.QueueStateMessage(new OnlineStateMessage(delta, this));
-                //player.OutgoingStates.Enqueue(delta);
+                OutgoingStates.Enqueue(player.QueueStateMessage(new OnlineStateMessage(delta, newState, this, true, tick, delta.baseline)));
             }
             else
             {
                 RainMeadow.Trace($"sending absolute state for tick {newState.tick}");
                 //RainMeadow.Trace("Sending full:\n" + newState.DebugPrint(0));
-                player.QueueStateMessage(new OnlineStateMessage(newState, this));
-                //player.OutgoingStates.Enqueue(newState);
+                OutgoingStates.Enqueue(player.QueueStateMessage(new OnlineStateMessage(newState, newState, this, false, tick, 0)));
             }
-            OutgoingStates.Enqueue(newState);
         }
 
         public void ResetDeltas()
         {
             RainMeadow.Debug($"delta reset for {resource} -> {player}");
-            OutgoingStates = new Queue<OnlineResource.ResourceState>(OutgoingStates.Where(x => !x.isDelta && x.tick > player.latestTickAck));
+            RainMeadow.Debug($"recent states were [{string.Join(", ", OutgoingStates.Select(s => s.sentAsDelta ? $"{s.tick}d{s.baseline}" : $"{s.tick}"))}]");
+            OutgoingStates = new Queue<OnlineStateMessage>(OutgoingStates.Where(x => !x.sentAsDelta && x.tick > player.latestTickAck));
         }
 
-        public void Sent(OnlineState state)
+        public void Sent(OnlineStateMessage state)
         {
             // no op
         }
 
-        public void Failed(OnlineState state)
+        public void Failed(OnlineStateMessage state)
         {
-            var failedTick = (state as OnlineResource.ResourceState).tick;
-            OutgoingStates = new(OutgoingStates.Where(e => e.tick != failedTick));
+            OutgoingStates = new(OutgoingStates.Where(e => e.tick != state.tick));
         }
     }
 }

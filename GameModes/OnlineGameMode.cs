@@ -139,5 +139,10 @@ namespace RainMeadow
         {
 
         }
+
+        public virtual bool PlayerCanOwnResource(OnlinePlayer from, OnlineResource onlineResource)
+        {
+            return true;
+        }
     }
 }

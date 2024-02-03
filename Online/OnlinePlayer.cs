@@ -55,9 +55,10 @@ namespace RainMeadow
             return e;
         }
 
-        public void QueueStateMessage(OnlineStateMessage stateMessage)
+        public OnlineStateMessage QueueStateMessage(OnlineStateMessage stateMessage)
         {
             OutgoingStates.Enqueue(stateMessage);
+            return stateMessage;
         }
 
         public OnlineEvent GetRecentEvent(ushort id)

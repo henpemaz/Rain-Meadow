@@ -83,6 +83,8 @@ gamemode: meadow: stays in game, infinite cycle, no ways to die or sleep, quits 
 				- check dnspy I guess
 			- sleeping in a shelter plays a short animation
 				- saves your spawn position
+				- from a shelter you can teleport to any other shelter that you know
+					- need full food
 				- doesn't close the shelter and doesn't end the game
 		
 gamemode: online coop story mode : juuuust like couch coop

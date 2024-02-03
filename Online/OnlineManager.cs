@@ -243,6 +243,19 @@ namespace RainMeadow
             }
             catch (Exception e)
             {
+                RainMeadow.Error($"Error reading state {state}");
+                if (state is OnlineResource.ResourceState resourceState && resourceState.resource != null && (resourceState.resource.isAvailable || resourceState.resource.isWaitingForState || resourceState.resource.isPending))
+                {
+                    RainMeadow.Error(resourceState.resource);
+                }
+                else if (state is EntityFeedState entityFeedState && entityFeedState.inResource != null && entityFeedState.inResource.isAvailable)
+                {
+                    var ent = entityFeedState.entityState.entityId.FindEntity();
+                    RainMeadow.Error(entityFeedState.inResource);
+                    RainMeadow.Error(entityFeedState.entityState);
+                    RainMeadow.Error(entityFeedState.entityState.entityId);
+                    RainMeadow.Error(ent);
+                }
                 RainMeadow.Error(e);
             }
         }
