@@ -108,7 +108,11 @@ namespace RainMeadow
         public void ForceGrab(GraspRef graspRef)
         {
             var castShareability = new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(graspRef.Shareability));
-            ForceGrab(graspRef.OnlineGrabbed.FindEntity() as OnlinePhysicalObject, graspRef.GraspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
+            var other = graspRef.OnlineGrabbed.FindEntity(quiet: true) as OnlinePhysicalObject;
+            if(other != null)
+            {
+                ForceGrab(other, graspRef.GraspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
+            }
         }
 
         public void BroadcastSuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
