@@ -24,7 +24,7 @@ namespace RainMeadow
 
             internal override void ReadTo(OnlineResource onlineResource)
             {
-                onlineResource.GetData<MeadowLobbyData>().itemsPerRegion = itemsPerRegion.list.ToArray();
+                onlineResource.GetData<MeadowLobbyData>(true).itemsPerRegion = itemsPerRegion.list.ToArray();
             }
         }
     }

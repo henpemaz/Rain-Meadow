@@ -22,7 +22,7 @@
 
             internal override void ReadTo(OnlineResource onlineResource)
             {
-                onlineResource.GetData<MeadowWorldData>().spawnedItems = spawnedItems;
+                onlineResource.GetData<MeadowWorldData>(true).spawnedItems = spawnedItems;
             }
         }
     }

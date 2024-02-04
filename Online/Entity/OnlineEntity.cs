@@ -352,7 +352,7 @@ namespace RainMeadow
             protected EntityState(OnlineEntity onlineEntity, OnlineResource inResource, uint ts) : base(ts)
             {
                 this.entityId = onlineEntity.id;
-                this.entityDataStates = new(onlineEntity.entityData.Select(d => d.MakeState(inResource)).ToList());
+                this.entityDataStates = new(onlineEntity.entityData.Select(d => d.MakeState(inResource)).Where(s => s != null).ToList());
             }
 
             public virtual void ReadTo(OnlineEntity onlineEntity)

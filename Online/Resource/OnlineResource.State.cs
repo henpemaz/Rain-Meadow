@@ -68,22 +68,27 @@ namespace RainMeadow
 
         private List<ResourceData> resourceData = new();
 
-        internal T AddData<T>() where T : ResourceData, new()
+        internal T AddData<T>(bool ignoreDuplicate = false) where T : ResourceData, new()
         {
             for (int i = 0; i < resourceData.Count; i++)
             {
-                if (resourceData[i].GetType() == typeof(T)) throw new ArgumentException("type already in data");
+                if (resourceData[i].GetType() == typeof(T))
+                {
+                    if (ignoreDuplicate) return (T)resourceData[i];
+                    throw new ArgumentException("type already in data");
+                }
             }
             var v = new T();
             resourceData.Add(v);
             return v;
         }
 
-        internal T AddData<T>(T toAdd) where T : ResourceData
+        internal T AddData<T>(T toAdd, bool ignoreDuplicate = false) where T : ResourceData
         {
             for (int i = 0; i < resourceData.Count; i++)
             {
-                if (resourceData[i].GetType() == typeof(T)) throw new ArgumentException("type already in data");
+                if (ignoreDuplicate) return (T)resourceData[i];
+                throw new ArgumentException("type already in data");
             }
             resourceData.Add(toAdd);
             return toAdd;

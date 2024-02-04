@@ -54,15 +54,15 @@ namespace RainMeadow
             base.ResourceAvailable(res);
             if (res is Lobby lobby)
             {
-                lobby.AddData<MeadowLobbyData>();
+                lobby.AddData<MeadowLobbyData>(true);
             }
             else if (res is WorldSession ws)
             {
-                ws.AddData<MeadowWorldData>();
+                ws.AddData<MeadowWorldData>(true);
             }
             else if (res is RoomSession rs)
             {
-                rs.AddData<MeadowRoomData>();
+                rs.AddData<MeadowRoomData>(true);
             }
         }
 
@@ -77,11 +77,10 @@ namespace RainMeadow
                 avatarSettings.EnterResource(lobby);
 
                 MeadowLobbyData data = lobby.GetData<MeadowLobbyData>();
-                RainMeadow.Debug(lobby.subresources.Count);
-                data.itemsPerRegion = new ushort[lobby.subresources.Count]; // count available here
-
                 if (lobby.isOwner)
                 {
+                    RainMeadow.Debug(lobby.subresources.Count);
+                    data.itemsPerRegion = new ushort[lobby.subresources.Count]; // count available here
                     for (int i = 0; i < lobby.subresources.Count; i++)
                     {
                         data.itemsPerRegion[i] = 200;
