@@ -97,6 +97,10 @@ namespace RainMeadow
 
         private void AbstractPhysicalObject_Realize(On.AbstractPhysicalObject.orig_Realize orig, AbstractPhysicalObject self)
         {
+            if(OnlineManager.lobby != null)
+            {
+                UnityEngine.Random.seed = self.ID.RandomSeed;
+            }
             orig(self);
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
