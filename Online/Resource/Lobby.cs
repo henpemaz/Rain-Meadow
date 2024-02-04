@@ -124,12 +124,15 @@ namespace RainMeadow
 
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedUshorts inLobbyIds;
+
             [OnlineField]
             public bool readyForNextCycle;
             [OnlineField]
             public bool didStartGame;
             [OnlineField]
             public bool didStartCycle;
+            [OnlineField]
+            public int karma;
 
             [OnlineField]
             public int food;
@@ -139,10 +142,6 @@ namespace RainMeadow
             public int mushroomCounter;
             [OnlineField]
             public string[] mods;
-            [OnlineField(nullable = true)]
-            public string? playerProgressSaveState;
-            [OnlineField]
-            public int karma;
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
