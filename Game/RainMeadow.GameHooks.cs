@@ -82,9 +82,6 @@ namespace RainMeadow
                 saveStateNumber = OnlineManager.lobby.gameMode.GetStorySessionPlayer(game);
             }
             orig(self, saveStateNumber, game);
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode && !OnlineManager.lobby.isOwner) {
-                (OnlineManager.lobby.gameMode as StoryGameMode).saveStateProgressString = null;
-            }
         }
 
         private void RainWorldGame_RawUpdate(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)

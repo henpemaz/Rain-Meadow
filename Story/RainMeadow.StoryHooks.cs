@@ -46,16 +46,16 @@ namespace RainMeadow
         private string[] PlayerProgression_GetProgLinesFromMemory(On.PlayerProgression.orig_GetProgLinesFromMemory orig, PlayerProgression self)
         {
             var saveStateArr = orig(self);
-            if (isStoryMode(out var gameMode) && OnlineManager.lobby.isOwner) {
-                if (saveStateArr != null) {
-                    for (int i = 0; i < saveStateArr.Length; i++) {
-                        string[] progressStringArr = Regex.Split(saveStateArr[i], "<progDivB>");
-                        if (progressStringArr.Length == 2 && progressStringArr[0] == "SAVE STATE") { 
-                            gameMode.saveStateProgressString = progressStringArr[1];
-                        }
-                    }
-                }
-            }
+            //if (isStoryMode(out var gameMode) && OnlineManager.lobby.isOwner) {
+            //    if (saveStateArr != null) {
+            //        for (int i = 0; i < saveStateArr.Length; i++) {
+            //            string[] progressStringArr = Regex.Split(saveStateArr[i], "<progDivB>");
+            //            if (progressStringArr.Length == 2 && progressStringArr[0] == "SAVE STATE") { 
+            //                gameMode.saveStateProgressString = progressStringArr[1];
+            //            }
+            //        }
+            //    }
+            //}
             return saveStateArr;
         }
 
@@ -75,7 +75,10 @@ namespace RainMeadow
         {
             if (isStoryMode(out var gameMode)) {
                 if (message == "CONTINUE") {
-                    //place holder hook on the continue button
+
+                    if (OnlineManager.lobby.isOwner) {
+                        gameMode.didStartCycle = true;
+                    }
                 }
             }
             orig(self, sender, message);
@@ -143,7 +146,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
             { 
                 isPlayerReady = false;
-
+                storyGameMode.didStartCycle = false;
                 //Create the READY button
                 var buttonPosX = self.ContinueAndExitButtonsXPos - 180f - self.manager.rainWorld.options.SafeScreenOffset.x;
                 var buttonPosY = Mathf.Max(self.manager.rainWorld.options.SafeScreenOffset.y, 53f);
@@ -162,8 +165,7 @@ namespace RainMeadow
 
         private void ReadyButton_OnClick(SimplerButton obj)
         {
-            isPlayerReady = true;
-            if (isStoryMode(out var gameMode) && gameMode.saveStateProgressString != null){
+            if ((isStoryMode(out var gameMode) && gameMode.didStartCycle == true) || OnlineManager.lobby.isOwner){
                 isPlayerReady = true;
             }
         }

@@ -128,6 +128,8 @@ namespace RainMeadow
             public bool readyForNextCycle;
             [OnlineField]
             public bool didStartGame;
+            [OnlineField]
+            public bool didStartCycle;
 
             [OnlineField]
             public int food;
@@ -156,6 +158,7 @@ namespace RainMeadow
                     winReadyPlayers = new((storyGameMode.readyForWinPlayers.ToList()));
 
                     didStartGame = storyGameMode.didStartGame;
+                    didStartCycle = storyGameMode.didStartCycle;
                     if (currentGameState?.session is StoryGameSession storySession) {
                         karma = storySession.saveState.deathPersistentSaveData.karma;
                     }
@@ -209,6 +212,7 @@ namespace RainMeadow
                     //(lobby.gameMode as StoryGameMode).saveStateProgressString = playerProgressSaveState;
                     (lobby.gameMode as StoryGameMode).readyForWinPlayers = winReadyPlayers.list;
                     (lobby.gameMode as StoryGameMode).didStartGame = didStartGame;
+                    (lobby.gameMode as StoryGameMode).didStartCycle = didStartCycle;
 
                 }
 
