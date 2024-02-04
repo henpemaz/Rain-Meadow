@@ -5,6 +5,7 @@ namespace RainMeadow
     public class StoryGameMode : OnlineGameMode
     {
         public string myDenPos = "SU_C04";
+        public ushort karma;
         public string? saveStateProgressString = null;
         public List<ushort> readyForWinPlayers = new List<ushort>();
         public bool didStartGame = false;

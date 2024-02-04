@@ -139,6 +139,8 @@ namespace RainMeadow
             public string[] mods;
             [OnlineField(nullable = true)]
             public string? playerProgressSaveState;
+            [OnlineField]
+            public int karma;
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
@@ -149,12 +151,18 @@ namespace RainMeadow
                 mods = lobby.mods;
                 if (lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Story)
                 {
-                    winReadyPlayers = new((lobby.gameMode as StoryGameMode).readyForWinPlayers.ToList());
-                    playerProgressSaveState = (lobby.gameMode as StoryGameMode)?.saveStateProgressString;
-                    didStartGame = (lobby.gameMode as StoryGameMode).didStartGame;
+                    StoryGameMode storyGameMode = lobby.gameMode as StoryGameMode;
+                    RainWorldGame currentGameState = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
+                    winReadyPlayers = new((storyGameMode.readyForWinPlayers.ToList()));
+
+                    didStartGame = storyGameMode.didStartGame;
+                    if (currentGameState?.session is StoryGameSession storySession) {
+                        karma = storySession.saveState.deathPersistentSaveData.karma;
+                    }
+
                     food = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
-                    quarterfood = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
-                    mushroomCounter = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].realizedCreature as Player)?.mushroomCounter ?? 0;
+                    quarterfood = (currentGameState?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
+                    mushroomCounter = (currentGameState?.Players[0].realizedCreature as Player)?.mushroomCounter ?? 0;
                 }
             }
 
@@ -183,16 +191,22 @@ namespace RainMeadow
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
                 if (lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Story)
                 {
-                    var playerstate = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState);
+                    RainWorldGame currentGameState = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
+                    var playerstate = (currentGameState?.Players[0].state as PlayerState);
                     if (playerstate != null)
                     {
                         playerstate.foodInStomach = food;
                         playerstate.quarterFoodPoints = quarterfood;
                     }
-                    if (((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].realizedCreature is Player player)) { 
+                    if ((currentGameState?.Players[0].realizedCreature is Player player)) { 
                         player.mushroomCounter = mushroomCounter;
                     }
-                    (lobby.gameMode as StoryGameMode).saveStateProgressString = playerProgressSaveState;
+
+                    if (currentGameState?.session is StoryGameSession storySession)
+                    {
+                        storySession.saveState.deathPersistentSaveData.karma = karma;
+                    }
+                    //(lobby.gameMode as StoryGameMode).saveStateProgressString = playerProgressSaveState;
                     (lobby.gameMode as StoryGameMode).readyForWinPlayers = winReadyPlayers.list;
                     (lobby.gameMode as StoryGameMode).didStartGame = didStartGame;
 

@@ -62,10 +62,11 @@ namespace RainMeadow
         private SaveState PlayerProgression_GetOrInitiateSaveState(On.PlayerProgression.orig_GetOrInitiateSaveState orig, PlayerProgression self, SlugcatStats.Name saveStateNumber, RainWorldGame game, ProcessManager.MenuSetup setup, bool saveAsDeathOrQuit)
         {
             var origSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
-            if (isStoryMode(out var gameMode) && !OnlineManager.lobby.isOwner && gameMode.saveStateProgressString != null) {
-                self.currentSaveState.LoadGame(gameMode.saveStateProgressString, game); //pretty sure we can just stuff the string here
-                self.currentSaveState.denPosition = gameMode?.myDenPos;
-                return self.currentSaveState;
+            if (isStoryMode(out var gameMode) && !OnlineManager.lobby.isOwner) {
+                //self.currentSaveState.LoadGame(gameMode.saveStateProgressString, game); //pretty sure we can just stuff the string here
+                origSaveState.denPosition = gameMode?.myDenPos;
+                origSaveState.deathPersistentSaveData.karma = 0;
+                return origSaveState;
             }
             return origSaveState;
         }
@@ -161,6 +162,7 @@ namespace RainMeadow
 
         private void ReadyButton_OnClick(SimplerButton obj)
         {
+            isPlayerReady = true;
             if (isStoryMode(out var gameMode) && gameMode.saveStateProgressString != null){
                 isPlayerReady = true;
             }
