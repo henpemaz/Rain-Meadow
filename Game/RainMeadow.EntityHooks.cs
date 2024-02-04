@@ -27,62 +27,6 @@ namespace RainMeadow
 
             On.AbstractCreature.Move += AbstractCreature_Move; // I'm watching your every step
             On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // I'm watching your every step
-
-            //These need to be ILHooks IMO - turtle
-            On.FirecrackerPlant.PlaceInRoom += FirecrackerPlant_PlaceInRoom;
-            On.DangleFruit.PlaceInRoom += DangleFruit_PlaceInRoom;
-            On.Mushroom.PlaceInRoom += Mushroom_PlaceInRoom;
-        }
-
-        private void Mushroom_PlaceInRoom(On.Mushroom.orig_PlaceInRoom orig, Mushroom self, Room placeRoom)
-        {
-            orig(self, placeRoom);
-            if (self.growPos == null && self.AbstrConsumable.placedObjectIndex >= 0)
-            {
-                int x = placeRoom.GetTilePosition(self.firstChunk.pos).x;
-                for (int i = placeRoom.GetTilePosition(self.firstChunk.pos).y; i >= 0; i--)
-                {
-                    if (i < placeRoom.GetTilePosition(self.firstChunk.pos).y - 4)
-                    {
-                        break;
-                    }
-                    if (!placeRoom.GetTile(x, i).Solid && placeRoom.GetTile(x, i - 1).Solid)
-                    {
-                        self.growPos = new Vector2?(new Vector2(placeRoom.MiddleOfTile(x, i).x + Mathf.Lerp(-9f, 9f, placeRoom.game.SeededRandom((int)self.firstChunk.pos.x + (int)self.firstChunk.pos.y)), placeRoom.MiddleOfTile(x, i).y - 10f));
-                        self.hoverPos = new Vector2(self.growPos.Value.x + Mathf.Lerp(-7f, 7f, placeRoom.game.SeededRandom((int)self.firstChunk.pos.x - (int)self.firstChunk.pos.y)), self.growPos.Value.y + Mathf.Lerp(18f, 36f, placeRoom.game.SeededRandom((int)self.firstChunk.pos.y - (int)self.firstChunk.pos.x)));
-                        self.hoverDirAdd = Mathf.Lerp(-25f, 25f, placeRoom.game.SeededRandom((int)self.firstChunk.pos.x));
-                        self.firstChunk.HardSetPosition(self.hoverPos);
-                    }
-                }
-            }
-        }
-
-        private void DangleFruit_PlaceInRoom(On.DangleFruit.orig_PlaceInRoom orig, DangleFruit self, Room placeRoom)
-        {
-            orig(self, placeRoom);
-            if (self.stalk == null) 
-            {
-                if (self.AbstrConsumable.placedObjectIndex != -1) 
-                {
-                    self.firstChunk.HardSetPosition(placeRoom.roomSettings.placedObjects[self.AbstrConsumable.placedObjectIndex].pos);
-                    self.stalk = new DangleFruit.Stalk(self, placeRoom, self.firstChunk.pos);
-                    placeRoom.AddObject(self.stalk);
-                }
-            }
-        }
-
-        private void FirecrackerPlant_PlaceInRoom(On.FirecrackerPlant.orig_PlaceInRoom orig, FirecrackerPlant self, Room placeRoom)
-        {
-            orig(self, placeRoom);
-            //Game is not setting growPos for non-owners. This might break if players spawn firecrackers, but that's a risk i'm willing to take.
-            if (self.growPos == null && (RWCustom.Custom.DistLess(self.firstChunk.pos, self.room.roomSettings.placedObjects[self.AbstrConsumable.placedObjectIndex].pos, 50f)))
-            {
-                if (self.AbstrConsumable.placedObjectIndex != -1)
-                {
-                    RWCustom.IntVector2 tilePosition = self.room.GetTilePosition(self.room.roomSettings.placedObjects[self.AbstrConsumable.placedObjectIndex].pos);
-                    self.growPos = new UnityEngine.Vector2?(self.room.MiddleOfTile(tilePosition) + new UnityEngine.Vector2(0f, -10f));
-                }
-            }
         }
 
         private void AbstractCreature_ChangeRooms1(On.AbstractCreature.orig_ChangeRooms orig, AbstractCreature self, WorldCoordinate newCoord)
