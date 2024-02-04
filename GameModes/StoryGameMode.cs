@@ -5,9 +5,10 @@ namespace RainMeadow
     public class StoryGameMode : OnlineGameMode
     {
         public string myDenPos = "SU_C04";
-        public string? saveStateProgressString = null;
+        public ushort karma;
         public List<ushort> readyForWinPlayers = new List<ushort>();
         public bool didStartGame = false;
+        public bool didStartCycle = false;
         public StoryGameMode(Lobby lobby) : base(lobby)
         {
         }
