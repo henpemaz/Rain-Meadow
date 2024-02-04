@@ -13,6 +13,7 @@ namespace RainMeadow
         public RealizedFirecrackerPlantState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
             var plant = (FirecrackerPlant)onlineEntity.apo.realizedObject;
+            //TODO we need to sync lumps
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)

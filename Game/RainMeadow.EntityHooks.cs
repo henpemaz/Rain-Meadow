@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -26,35 +27,6 @@ namespace RainMeadow
 
             On.AbstractCreature.Move += AbstractCreature_Move; // I'm watching your every step
             On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // I'm watching your every step
-
-            On.FirecrackerPlant.PlaceInRoom += FirecrackerPlant_PlaceInRoom;
-            On.DangleFruit.PlaceInRoom += DangleFruit_PlaceInRoom;
-        }
-
-        private void DangleFruit_PlaceInRoom(On.DangleFruit.orig_PlaceInRoom orig, DangleFruit self, Room placeRoom)
-        {
-            orig(self, placeRoom);
-            if (self.stalk == null) {
-                if (self.AbstrConsumable.placedObjectIndex != -1) {
-                    self.firstChunk.HardSetPosition(placeRoom.roomSettings.placedObjects[self.AbstrConsumable.placedObjectIndex].pos);
-                    self.stalk = new DangleFruit.Stalk(self, placeRoom, self.firstChunk.pos);
-                    placeRoom.AddObject(self.stalk);
-                }
-            }
-        }
-
-        private void FirecrackerPlant_PlaceInRoom(On.FirecrackerPlant.orig_PlaceInRoom orig, FirecrackerPlant self, Room placeRoom)
-        {
-            orig(self, placeRoom);
-            //Game is not setting growPos for non-owners. This might break if players spawn firecrackers, but that's a risk i'm willing to take.
-            if (self.growPos == null && (RWCustom.Custom.DistLess(self.firstChunk.pos, self.room.roomSettings.placedObjects[self.AbstrConsumable.placedObjectIndex].pos, 50f)))
-            {
-                if (self.AbstrConsumable.placedObjectIndex != -1)
-                {
-                    RWCustom.IntVector2 tilePosition = self.room.GetTilePosition(self.room.roomSettings.placedObjects[self.AbstrConsumable.placedObjectIndex].pos);
-                    self.growPos = new UnityEngine.Vector2?(self.room.MiddleOfTile(tilePosition) + new UnityEngine.Vector2(0f, -10f));
-                }
-            }
         }
 
         private void AbstractCreature_ChangeRooms1(On.AbstractCreature.orig_ChangeRooms orig, AbstractCreature self, WorldCoordinate newCoord)
@@ -125,6 +97,10 @@ namespace RainMeadow
 
         private void AbstractPhysicalObject_Realize(On.AbstractPhysicalObject.orig_Realize orig, AbstractPhysicalObject self)
         {
+            if(OnlineManager.lobby != null)
+            {
+                UnityEngine.Random.seed = self.ID.RandomSeed;
+            }
             orig(self);
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
             {
