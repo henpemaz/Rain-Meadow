@@ -17,6 +17,9 @@ namespace RainMeadow
             On.AbstractRoom.RemoveEntity_AbstractWorldEntity += AbstractRoom_RemoveEntity; // creature moving between rooms
             On.AbstractRoom.AddEntity += AbstractRoom_AddEntity; // creature moving between rooms
 
+            On.AbstractPhysicalObject.ChangeRooms += AbstractPhysicalObject_ChangeRooms;
+            On.AbstractCreature.ChangeRooms += AbstractCreature_ChangeRooms1;
+
             On.AbstractCreature.Abstractize += AbstractCreature_Abstractize; // get real
             On.AbstractPhysicalObject.Abstractize += AbstractPhysicalObject_Abstractize; // get real
             On.AbstractCreature.Realize += AbstractCreature_Realize; // get real, also customization happens here
@@ -81,6 +84,33 @@ namespace RainMeadow
                 }
             }
         }
+
+        private void AbstractCreature_ChangeRooms1(On.AbstractCreature.orig_ChangeRooms orig, AbstractCreature self, WorldCoordinate newCoord)
+        {
+            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
+            {
+                if (!oe.isMine && !oe.beingMoved && !(oe.roomSession != null && oe.roomSession.absroom.index == newCoord.room))
+                {
+                    Error($"Remote entity trying to move: {oe} at {oe.roomSession} {Environment.StackTrace}");
+                    return;
+                }
+            }
+            orig(self, newCoord);
+        }
+
+        private void AbstractPhysicalObject_ChangeRooms(On.AbstractPhysicalObject.orig_ChangeRooms orig, AbstractPhysicalObject self, WorldCoordinate newCoord)
+        {
+            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
+            {
+                if (!oe.isMine && !oe.beingMoved && !(oe.roomSession != null && oe.roomSession.absroom.index == newCoord.room))
+                {
+                    Error($"Remote entity trying to move: {oe} at {oe.roomSession} {Environment.StackTrace}");
+                    return;
+                }
+            }
+            orig(self, newCoord);
+        }
+
         // I'm watching your every step
         // remotes that aren't being moved can only move if going into the right roomSession
         private void AbstractPhysicalObject_Move(On.AbstractPhysicalObject.orig_Move orig, AbstractPhysicalObject self, WorldCoordinate newCoord)
@@ -158,7 +188,9 @@ namespace RainMeadow
                 {
                     oe.realized = self.realizedObject != null;
                 }
-                if (OnlineManager.lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Meadow && self.realizedCreature != null && self.realizedCreature != wasCreature && oe is OnlineCreature oc)
+                if (OnlineManager.lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Meadow 
+                    && self.realizedCreature != null && self.realizedCreature != wasCreature 
+                    && oe is OnlineCreature oc)
                 {
                     MeadowCustomization.Customize(self.realizedCreature, oc);
                 }

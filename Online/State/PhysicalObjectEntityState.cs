@@ -23,9 +23,10 @@ namespace RainMeadow
             if (realizedState && onlineEntity.isMine && onlineEntity.apo.realizedObject != null && !onlineEntity.realized) { RainMeadow.Error($"have realized object, but not entity not marked as realized??: {onlineEntity} in resource {inResource}"); }
             if (realizedState && onlineEntity.isMine && !onlineEntity.realized)
             {
-                //RainMeadow.Error($"asked for realized state, not realized: {this} in resource {inResource}");
+                //RainMeadow.Error($"asked for realized state, not realized: {onlineEntity} in resource {inResource}");
                 realizedState = false;
             }
+            RainMeadow.Trace($"{onlineEntity} sending realized state? {realizedState} entity realized ? {onlineEntity.realized}");
 
             this.pos = onlineEntity.apo.pos;
             this.realized = onlineEntity.realized; // now now, oe.realized means its realized in the owners world
@@ -46,7 +47,11 @@ namespace RainMeadow
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
+            if (onlineEntity.owner.isMe || onlineEntity.isPending) { RainMeadow.Debug($"not syncing {this} because mine?{onlineEntity.owner.isMe} pending?{onlineEntity.isPending}"); return; }; // Don't sync if pending, reduces visibility and effect of lag
+
             var onlineObject = onlineEntity as OnlinePhysicalObject;
+            RainMeadow.Trace($"{onlineEntity} received realized state? {realizedObjectState != null} entity realized?{onlineObject.realized}");
+
             onlineObject.beingMoved = true;
             var wasPos = onlineObject.apo.pos;
             try
@@ -55,7 +60,7 @@ namespace RainMeadow
             }
             catch (Exception e)
             {
-                RainMeadow.Error($"failed to move from {wasPos} to {pos}: " + e);
+                RainMeadow.Error($"{onlineEntity} failed to move from {wasPos} to {pos}: " + e);
                 //throw;
             }
             
@@ -64,6 +69,7 @@ namespace RainMeadow
             onlineObject.realized = this.realized;
             if (onlineObject.apo.realizedObject != null)
             {
+                RainMeadow.Trace($"{onlineEntity} realized target exists");
                 realizedObjectState?.ReadTo(onlineEntity);
             }
         }

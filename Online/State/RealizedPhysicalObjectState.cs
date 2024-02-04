@@ -22,16 +22,9 @@ namespace RainMeadow
             collisionLayer = (byte)onlineEntity.apo.realizedObject.collisionLayer;
         }
 
-        public override void CustomSerialize(Serializer serializer)
-        {
-            base.CustomSerialize(serializer);
-            if (chunkStates == null)
-                RainMeadow.Debug($"Null reading ?{serializer.IsReading} isDelta?{isDelta} ");
-        }
-
         public virtual void ReadTo(OnlineEntity onlineEntity)
         {
-            if (onlineEntity.owner.isMe || onlineEntity.isPending) return; // Don't sync if pending, reduces visibility and effect of lag
+            if (onlineEntity.owner.isMe || onlineEntity.isPending) { RainMeadow.Debug($"not syncing {this} because mine?{onlineEntity.owner.isMe} pending?{onlineEntity.isPending}");return; }; // Don't sync if pending, reduces visibility and effect of lag
             var po = (onlineEntity as OnlinePhysicalObject).apo.realizedObject;
             if (chunkStates.Length == po.bodyChunks.Length)
             {
