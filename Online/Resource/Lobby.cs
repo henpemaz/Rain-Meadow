@@ -134,6 +134,8 @@ namespace RainMeadow
             [OnlineField]
             public int quarterfood;
             [OnlineField]
+            public int mushroomCounter;
+            [OnlineField]
             public string[] mods;
             [OnlineField(nullable = true)]
             public string? playerProgressSaveState;
@@ -152,6 +154,7 @@ namespace RainMeadow
                     didStartGame = (lobby.gameMode as StoryGameMode).didStartGame;
                     food = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
                     quarterfood = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
+                    mushroomCounter = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].realizedCreature as Player)?.mushroomCounter ?? 0;
                 }
             }
 
@@ -185,6 +188,9 @@ namespace RainMeadow
                     {
                         playerstate.foodInStomach = food;
                         playerstate.quarterFoodPoints = quarterfood;
+                    }
+                    if (((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].realizedCreature is Player player)) { 
+                        player.mushroomCounter = mushroomCounter;
                     }
                     (lobby.gameMode as StoryGameMode).saveStateProgressString = playerProgressSaveState;
                     (lobby.gameMode as StoryGameMode).readyForWinPlayers = winReadyPlayers.list;

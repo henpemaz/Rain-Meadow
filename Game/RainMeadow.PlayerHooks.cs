@@ -15,6 +15,7 @@ public partial class RainMeadow
         On.Player.Grabability += PlayerOnGrabability;
         On.Player.AddFood += Player_AddFood;
         On.Player.AddQuarterFood += Player_AddQuarterFood;
+        On.Mushroom.BitByPlayer += Mushroom_BitByPlayer;
 
         On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites1;
 
@@ -162,6 +163,15 @@ public partial class RainMeadow
             {
                 OnlineManager.lobby.owner.InvokeRPC(RPCs.AddFood, (short)add);
             }
+        }
+    }
+
+    private void Mushroom_BitByPlayer(On.Mushroom.orig_BitByPlayer orig, Mushroom self, Creature.Grasp grasp, bool eu)
+    {
+        orig(self, grasp, eu);
+        if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+        {
+            OnlineManager.lobby.owner.InvokeRPC(RPCs.AddMushroomCounter);
         }
     }
 
