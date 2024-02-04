@@ -72,31 +72,31 @@ namespace RainMeadow
         public static HashSet<PlacedObject.Type> PlayerGrablableItems = new()
         {
             //PlacedObject.Type.FlareBomb,          
-            //PlacedObject.Type.PuffBall,          //EDIBLE NOT FOOD
-            PlacedObject.Type.DangleFruit, //still causes a lot of crashes
-            //PlacedObject.Type.DataPearl,          
-            //PlacedObject.Type.UniqueDataPearl,    
+            //PlacedObject.Type.PuffBall,           //EDIBLE NOT FOOD
+            PlacedObject.Type.DangleFruit,
+            PlacedObject.Type.DataPearl,          
+            PlacedObject.Type.UniqueDataPearl,    
             //PlacedObject.Type.SeedCob,            //FOOD
-            //PlacedObject.Type.DeadSeedCob,        //Saint only food
-            //PlacedObject.Type.WaterNut,           //FOOD
-            //PlacedObject.Type.JellyFish,          //FOOD
-            //PlacedObject.Type.KarmaFlower,        //TODO
-            PlacedObject.Type.Mushroom,           //TODO
-            //PlacedObject.Type.SlimeMold,          //FOOD
-            //PlacedObject.Type.FlyLure,            //TODO
+            //PlacedObject.Type.DeadSeedCob,        //After Seedcob
+            //PlacedObject.Type.WaterNut,           //HARD
+            //PlacedObject.Type.JellyFish,          //MEDIUM
+            //PlacedObject.Type.KarmaFlower,        //MEDIUM TODO
+            PlacedObject.Type.Mushroom,
+            //PlacedObject.Type.SlimeMold,          //EASY
+            PlacedObject.Type.FlyLure,
             PlacedObject.Type.FirecrackerPlant,
             //PlacedObject.Type.VultureGrub,        //PREREQ
             //PlacedObject.Type.DeadVultureGrub,    //FOOD
             //PlacedObject.Type.MultiplayerItem,
-            //PlacedObject.Type.SporePlant,         //bee granade
+            //PlacedObject.Type.SporePlant,         //HARD bee granade
             //PlacedObject.Type.ReliableSpear,
-            //PlacedObject.Type.NeedleEgg,          //Noodle egg DANGER SYNC
-            //PlacedObject.Type.BubbleGrass,
+            //PlacedObject.Type.NeedleEgg,          //HELL Noodle egg DANGER SYNC
+            //PlacedObject.Type.BubbleGrass,        //MEDIUM
             //PlacedObject.Type.Hazer,              //PREREQ
             //PlacedObject.Type.DeadHazer,          //FOOD
-            //PlacedObject.Type.VultureMask,
-            //PlacedObject.Type.HangingPearls,      //TODO?
-            //PlacedObject.Type.Lantern,
+            //PlacedObject.Type.VultureMask,        //EASY?
+            //PlacedObject.Type.HangingPearls,      //MSC - SUPER HELL
+            //PlacedObject.Type.Lantern,            //EASY
         };
     }
 }
