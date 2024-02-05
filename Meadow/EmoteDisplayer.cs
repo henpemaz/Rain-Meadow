@@ -10,7 +10,7 @@ namespace RainMeadow
         public Creature owner;
         private readonly OnlineCreature ownerEntity;
         private readonly MeadowCreatureData creatureData;
-        public MeadowCustomization.CreatureCustomization customization;
+        public MeadowAvatarCustomization customization;
         private RainWorldGame game;
 
         public const int maxEmoteCount = 4;
@@ -26,7 +26,7 @@ namespace RainMeadow
         private List<EmoteTile> tiles = new();
         private byte localVersion;
 
-        public EmoteDisplayer(Creature owner, OnlineCreature ownerEntity, MeadowCreatureData creatureData, MeadowCustomization.CreatureCustomization customization)
+        public EmoteDisplayer(Creature owner, OnlineCreature ownerEntity, MeadowCreatureData creatureData, MeadowAvatarCustomization customization)
         {
             RainMeadow.Debug($"EmoteDisplayer created for {owner}");
             this.owner = owner;

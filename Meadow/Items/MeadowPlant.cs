@@ -82,7 +82,7 @@ namespace RainMeadow
                 string str = AssetManager.ResolveFilePath("illustrations" + Path.DirectorySeparatorChar.ToString() + fileName + ".png");
                 Texture2D texture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
                 AssetManager.SafeWWWLoadTexture(ref texture, "file:///" + str, true, true);
-                HeavyTexturesCache.LoadAndCacheAtlasFromTexture(fileName, texture, false); // todo this becomes a spritesheet
+                HeavyTexturesCache.LoadAndCacheAtlasFromTexture(fileName, texture, false);
             }
 
             public override void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)

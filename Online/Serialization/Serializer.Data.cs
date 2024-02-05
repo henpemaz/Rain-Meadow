@@ -863,6 +863,28 @@ namespace RainMeadow
 #endif
         }
 
+        public void SerializeRGB(ref Color data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write((byte)(data.r * 255));
+                writer.Write((byte)(data.g * 255));
+                writer.Write((byte)(data.b * 255));
+            }
+            if (IsReading)
+            {
+                data.r = reader.ReadByte() / 255f;
+                data.g = reader.ReadByte() / 255f;
+                data.b = reader.ReadByte() / 255f;
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
         public void Serialize(ref WorldCoordinate pos)
         {
 #if TRACING

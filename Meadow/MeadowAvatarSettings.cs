@@ -4,22 +4,32 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class MeadowAvatarSettings : AvatarSettingsEntity
+    public class MeadowAvatarSettings : AvatarSettings
     {
+        new public class Definition : AvatarSettings.Definition
+        {
+            public Definition() : base() { }
+            public Definition(OnlineEntity.EntityId entityId, OnlinePlayer owner) : base(entityId, owner) { }
+
+            public override OnlineEntity MakeEntity(OnlineResource inResource)
+            {
+                return MeadowAvatarSettings.FromDefinition(this, inResource);
+            }
+        }
+
+        // this could as well be in an EntityData bound to the entity, rather than at lobby level
+        // however this limits displaying that data to when we're in a world with the creature in question
+        // ie no lobby list with player colors
         internal MeadowProgression.Skin skin;
         internal Color tint;
         internal float tintAmount;
 
-        public static ConditionalWeakTable<OnlinePlayer, MeadowAvatarSettings> map = new();
-
         public MeadowAvatarSettings(EntityDefinition entityDefinition) : base(entityDefinition)
         {
             RainMeadow.Debug(this);
-            map.Remove(owner);
-            map.Add(owner, this);
         }
 
-        public static MeadowAvatarSettings FromDefinition(MeadowPersonaSettingsDefinition meadowPersonaSettingsDefinition, OnlineResource inResource)
+        public static MeadowAvatarSettings FromDefinition(Definition meadowPersonaSettingsDefinition, OnlineResource inResource)
         {
             RainMeadow.Debug(meadowPersonaSettingsDefinition);
             return new MeadowAvatarSettings(meadowPersonaSettingsDefinition);
@@ -27,37 +37,30 @@ namespace RainMeadow
 
         protected override EntityState MakeState(uint tick, OnlineResource inResource)
         {
-            return new MeadowAvatarSettingsState(this, inResource, tick);
+            return new State(this, inResource, tick);
         }
 
-        internal MeadowCustomization.CreatureCustomization MakeCustomization()
+        internal override AvatarCustomization MakeCustomization()
         {
-            return new MeadowCustomization.CreatureCustomization(skin, tint, tintAmount);
+            return new MeadowAvatarCustomization(skin, tint, tintAmount);
         }
 
-        public class MeadowAvatarSettingsState : AvatarSettingsState
+        public class State : AvatarSettings.State
         {
             [OnlineField]
             public short skin;
             [OnlineField]
             public byte tintAmount;
-            [OnlineField]
-            public byte tintR;
-            [OnlineField]
-            public byte tintG;
-            [OnlineField]
-            public byte tintB;
+            [OnlineFieldColorRgb]
+            public Color tint;
 
-            public MeadowAvatarSettingsState() : base() { }
+            public State() : base() { }
 
-            public MeadowAvatarSettingsState(OnlineEntity onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
+            public State(MeadowAvatarSettings onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
             {
-                var meadowAvatarSettings = (MeadowAvatarSettings)onlineEntity;
-                skin = (short)(meadowAvatarSettings.skin?.Index ?? -1);
-                tintAmount = (byte)(meadowAvatarSettings.tintAmount * 255);
-                tintR = (byte)(meadowAvatarSettings.tint.r * 255);
-                tintG = (byte)(meadowAvatarSettings.tint.g * 255);
-                tintB = (byte)(meadowAvatarSettings.tint.b * 255);
+                skin = (short)(onlineEntity.skin?.Index ?? -1);
+                tintAmount = (byte)(onlineEntity.tintAmount * 255);
+                tint = onlineEntity.tint;
             }
 
             public override void ReadTo(OnlineEntity onlineEntity)
@@ -66,7 +69,7 @@ namespace RainMeadow
                 var meadowAvatarSettings = (MeadowAvatarSettings)onlineEntity;
                 meadowAvatarSettings.skin = new MeadowProgression.Skin(MeadowProgression.Skin.values.GetEntry(skin));
                 meadowAvatarSettings.tintAmount = tintAmount / 255f;
-                meadowAvatarSettings.tint = new(tintR / 255f, tintG / 255f, tintB / 255f);
+                meadowAvatarSettings.tint = tint;
             }
         }
     }

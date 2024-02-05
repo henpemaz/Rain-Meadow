@@ -5,18 +5,18 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    internal class ModApplyer : ModManager.ModApplyer
+    internal class ModApplier : ModManager.ModApplyer
     {
         public DialogAsyncWait dialogBox;
         public DialogNotify requiresRestartDialog;
         private readonly Menu.Menu menu;
 
-        public event Action<ModApplyer> OnFinish;
+        public event Action<ModApplier> OnFinish;
 
-        public ModApplyer(ProcessManager manager, List<bool> pendingEnabled, List<int> pendingLoadOrder) : base(manager, pendingEnabled, pendingLoadOrder)
+        public ModApplier(ProcessManager manager, List<bool> pendingEnabled, List<int> pendingLoadOrder) : base(manager, pendingEnabled, pendingLoadOrder)
         {
             On.RainWorld.Update += RainWorld_Update;
-            menu = (Menu.Menu)UnityEngine.Object.FindObjectOfType<RainWorld>().processManager.currentMainLoop;
+            menu = (Menu.Menu)manager.currentMainLoop;
         }
 
         private void RainWorld_Update(On.RainWorld.orig_Update orig, RainWorld self)

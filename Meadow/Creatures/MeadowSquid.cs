@@ -10,8 +10,17 @@ using Mono.Cecil.Cil;
 
 namespace RainMeadow
 {
-    public partial class MeadowCustomization
+    class CicadaController : CreatureController
     {
+        public CicadaController(Cicada creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber) { }
+
+        public Cicada cicada => creature as Cicada;
+
+        public override bool GrabImpl(PhysicalObject pickUpCandidate)
+        {
+            return cicada.TryToGrabPrey(pickUpCandidate);
+        }
+
         public static void EnableCicada()
         {
             On.Cicada.Update += Cicada_Update; // input, sync, player things
@@ -42,7 +51,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldloca, 0);
                 c.EmitDelegate((CicadaGraphics self, ref Color origColor) =>
                 {
-                    if (creatureCustomizations.TryGetValue(self.cicada, out var c))
+                    if (RainMeadow.creatureCustomizations.TryGetValue(self.cicada, out var c))
                     {
                         c.ModifyBodyColor(ref origColor);
                         // todo eyecolor? does it matter if not customizable?
@@ -53,18 +62,6 @@ namespace RainMeadow
             {
                 RainMeadow.Error(e);
                 throw;
-            }
-        }
-
-        class CicadaController : CreatureController
-        {
-            public CicadaController(Cicada creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber) { }
-
-            public Cicada cicada => creature as Cicada;
-
-            public override bool GrabImpl(PhysicalObject pickUpCandidate)
-            {
-                return cicada.TryToGrabPrey(pickUpCandidate);
             }
         }
 

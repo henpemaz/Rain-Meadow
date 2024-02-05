@@ -23,13 +23,13 @@ namespace RainMeadow
         {
             if(inResource is RoomSession)
             {
-                return new MeadowCreatureDataState(this);
+                return new State(this);
             }
             return null;
         }
 
 
-        public class MeadowCreatureDataState : EntityDataState
+        public class State : EntityDataState
         {
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedExtEnums<EmoteType> emotes;
@@ -46,8 +46,8 @@ namespace RainMeadow
             [OnlineFieldHalf(group = "inputs")]
             public float analogInputY;
 
-            public MeadowCreatureDataState() { }
-            public MeadowCreatureDataState(MeadowCreatureData meadowCreatureData)
+            public State() { }
+            public State(MeadowCreatureData meadowCreatureData)
             {
                 emotes = new(meadowCreatureData.emotes.ToList());
                 emotesVersion = meadowCreatureData.emotesVersion;

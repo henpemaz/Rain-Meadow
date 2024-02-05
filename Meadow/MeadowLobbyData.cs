@@ -7,24 +7,28 @@ namespace RainMeadow
     {
         public ushort[] itemsPerRegion;
 
-        internal override OnlineResource.ResourceDataState MakeState(OnlineResource inResource)
+        public MeadowLobbyData(OnlineResource resource) : base(resource) { }
+
+        internal override ResourceDataState MakeState()
         {
-            return new MeadowLobbyState(this);
+            return new State(this);
         }
 
-        internal class MeadowLobbyState : OnlineResource.ResourceDataState
+        internal class State : ResourceDataState
         {
             [OnlineField]
             Generics.AddRemoveSortedUshorts itemsPerRegion;
-            public MeadowLobbyState() { }
-            public MeadowLobbyState(MeadowLobbyData meadowLobbyData)
+            public State() { }
+            public State(MeadowLobbyData meadowLobbyData)
             {
                 itemsPerRegion = new(meadowLobbyData.itemsPerRegion.ToList());
             }
 
-            internal override void ReadTo(OnlineResource onlineResource)
+            internal override Type GetDataType() => typeof(MeadowLobbyData);
+
+            internal override void ReadTo(OnlineResource.ResourceData data)
             {
-                onlineResource.GetData<MeadowLobbyData>(true).itemsPerRegion = itemsPerRegion.list.ToArray();
+                (data as MeadowLobbyData).itemsPerRegion = itemsPerRegion.list.ToArray();
             }
         }
     }

@@ -10,8 +10,8 @@ namespace RainMeadow
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class RealizedPhysicalObjectState : OnlineState
     {
-        [OnlineField]
-        private ChunkState[] chunkStates;
+        [OnlineField] // todo field that does sequenceequals or type that handles these better
+        private ChunkState[] chunkStates; // pretty sure these get sent every time because the array comparison doesn't do sequenceequal but does referenceequal instead
         [OnlineField]
         private byte collisionLayer;
 

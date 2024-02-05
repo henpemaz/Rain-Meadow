@@ -37,6 +37,7 @@
 
         public override void Realize()
         {
+            base.Realize(); // important for hooks!
             if (this.realizedObject != null)
             {
                 return;

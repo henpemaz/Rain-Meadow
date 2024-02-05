@@ -110,6 +110,7 @@ namespace RainMeadow
                     serializer.WriteData(mePlayer);
                 }
 #endif
+
                 foreach (OnlinePlayer player in players)
                 {
                     player.Update();
@@ -117,6 +118,11 @@ namespace RainMeadow
 
                 mePlayer.tick++;
                 ProcessSelfEvents();
+
+                if (lobby.isActive)
+                {
+                    lobby.Tick(mePlayer.tick);
+                }
 
                 // Prepare outgoing messages
                 foreach (var subscription in subscriptions)

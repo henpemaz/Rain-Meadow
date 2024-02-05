@@ -61,7 +61,7 @@ namespace RainMeadow
 
         public static OnlineEntity FromDefinition(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource)
         {
-            World world = inResource.World;
+            World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
             EntityID id = world.game.GetNewID();
             id.altSeed = newObjectEvent.seed;
 

@@ -6,7 +6,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using UnityEngine;
 using static RainMeadow.Lobby;
-using static RainMeadow.MeadowCreatureData;
 using static RainMeadow.RoomSession;
 using static RainMeadow.WorldSession;
 
@@ -34,6 +33,7 @@ namespace RainMeadow
             return e;
         }
 
+        // todo register these automatically I'm tired of typing new ones in here
         // todo figure out how to handle indexes for modded stuff (so doesn't depend on load-order and so forth)
         public class StateType : ExtEnum<StateType>
         {
@@ -67,17 +67,21 @@ namespace RainMeadow
 
             public static readonly StateType RainCycleDataState = new("RainCycleDataState", typeof(RainCycleData));
 
-            public static readonly StateType MeadowPersonaSettingsState = new("MeadowPersonaSettingsState", typeof(MeadowAvatarSettings.MeadowAvatarSettingsState));
+            public static readonly StateType MeadowPersonaSettingsState = new("MeadowPersonaSettings.State", typeof(MeadowAvatarSettings.State));
+            public static readonly StateType SlugcatAvatarSettingsState = new("SlugcatAvatarSettings.State", typeof(StoryAvatarSettings.State));
             //public static readonly StateType GamemodeDataState = new("GamemodeDataState", typeof(GamemodeDataState));
-            public static readonly StateType MeadowCreatureDataState = new("MeadowCreatureDataState", typeof(MeadowCreatureData.MeadowCreatureDataState));
-            public static readonly StateType MeadowLobbyState = new("MeadowLobbyState", typeof(MeadowLobbyData.MeadowLobbyState));
-            public static readonly StateType MeadowWorldState = new("MeadowWorldState", typeof(MeadowWorldData.MeadowWorldState));
-            public static readonly StateType MeadowRoomState = new("MeadowRoomState", typeof(MeadowRoomData.MeadowRoomState));
+            public static readonly StateType MeadowCreatureDataState = new("MeadowCreatureDataState", typeof(MeadowCreatureData.State));
+            public static readonly StateType MeadowLobbyState = new("MeadowLobbyState", typeof(MeadowLobbyData.State));
+            public static readonly StateType MeadowWorldState = new("MeadowWorldState", typeof(MeadowWorldData.State));
+            public static readonly StateType MeadowRoomState = new("MeadowRoomState", typeof(MeadowRoomData.State));
+
+            public static readonly StateType StoryLobbyDataState = new("StoryLobbyDataState", typeof(StoryLobbyData.State));
 
             public static readonly StateType OnlinePhysicalObjectDefinition = new("OnlinePhysicalObjectDefinition", typeof(OnlinePhysicalObjectDefinition));
             public static readonly StateType OnlineConsumableDefinition = new("OnlineConsumableDefinition", typeof(OnlineConsumableDefinition));
             public static readonly StateType OnlineCreatureDefinition = new("OnlineCreatureDefinition", typeof(OnlineCreatureDefinition));
-            public static readonly StateType NewMeadowPersonaSettingsEvent = new("NewMeadowPersonaSettingsEvent", typeof(MeadowPersonaSettingsDefinition));
+            public static readonly StateType MeadowAvatarSettingsDefinition = new ("MeadowAvatarSettings.Definition", typeof(MeadowAvatarSettings.Definition));
+            public static readonly StateType SlugcatAvatarSettingsDefinition = new ("SlugcatAvatarSettings.Definition", typeof(StoryAvatarSettings.Definition));
 
             public static readonly StateType DeflateState = new("DeflateState", typeof(DeflateState)); // used in serializer for wrapping large states
         }
@@ -191,6 +195,14 @@ namespace RainMeadow
             public override Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
             {
                 return Expression.Call(serializerRef, typeof(Serializer).GetMethods().First(m => m.Name == nameof(Serializer.SerializeHalf) && m.GetParameters()[0].ParameterType == typeof(float).MakeByRefType()), fieldRef);
+            }
+        }
+        public class OnlineFieldColorRgbAttribute : OnlineFieldAttribute
+        {
+            public OnlineFieldColorRgbAttribute(string group = "default", bool nullable = false, bool polymorphic = false, bool always = false) : base(group, nullable, polymorphic, always) { }
+            public override Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
+            {
+                return Expression.Call(serializerRef, typeof(Serializer).GetMethods().First(m => m.Name == nameof(Serializer.SerializeRGB) && m.GetParameters()[0].ParameterType == typeof(Color).MakeByRefType()), fieldRef);
             }
         }
 
