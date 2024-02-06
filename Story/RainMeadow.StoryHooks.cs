@@ -90,6 +90,10 @@ namespace RainMeadow
             orig(self, sender, message);
         }
 
+        //On Static hook class
+
+
+
 
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {

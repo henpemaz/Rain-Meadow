@@ -154,7 +154,8 @@ namespace RainMeadow
             bodyLabel.label.alignment = FLabelAlignment.Right;
             this.pages[0].subObjects.Add(bodyLabel);
 
-            var eyeLabebl = new MenuLabel(this, mainPage, this.Translate("Eye color"), new Vector2(1183, 500), new(0, 30), false);
+
+            var eyeLabebl = new MenuLabel(this, mainPage, this.Translate("Eye color"), new Vector2(1181, 500), new(0, 30), false);
             eyeLabebl.label.alignment = FLabelAlignment.Right;
             this.pages[0].subObjects.Add(eyeLabebl);
 
