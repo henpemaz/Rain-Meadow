@@ -4,9 +4,10 @@ using Menu.Remix.MixedUI;
 using Steamworks;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using UnityEngine;
-
+using UnityEngine.UIElements;
 
 namespace RainMeadow
 {
@@ -25,10 +26,22 @@ namespace RainMeadow
 
         private SlugcatSelectMenu ssm;
         private SlugcatSelectMenu.SlugcatPage sp;
+        private StoryAvatarSettings personaSettings;
+
+        public interface IOwnCheckBox
+        {
+            bool GetChecked(CheckBox box);
+
+            void SetChecked(CheckBox box, bool c);
+        }
 
         private List<SlugcatSelectMenu.SlugcatPage> characterPages;
         private EventfulSelectOneButton[] playerButtons;
-
+        private IOwnCheckBox reportTo;
+        int skinIndex;
+        private OpTinyColorPicker colorpicker;
+        private OpTinyColorPicker colorpicker2;
+        private bool iWantColors = false;
         public override MenuScene.SceneID GetScene => null;
         public StoryMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.StoryMenu)
         {
@@ -41,7 +54,6 @@ namespace RainMeadow
             // Initial setup for slugcat menu & pages
             ssm = (SlugcatSelectMenu)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(SlugcatSelectMenu));
             sp = (SlugcatSelectMenu.SlugcatPageNewGame)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(SlugcatSelectMenu.SlugcatPageNewGame));
-
             ssm.container = container;
             ssm.slugcatPages = characterPages;
             ssm.ID = ProcessManager.ProcessID.MultiplayerMenu;
@@ -136,38 +148,62 @@ namespace RainMeadow
 
 
             }
-
-
-
             SteamSetup();
 
+            var bodyLabel = new MenuLabel(this, mainPage, this.Translate("Body color"), new Vector2(1190, 553), new(0, 30), false);
+            bodyLabel.label.alignment = FLabelAlignment.Right;
+            this.pages[0].subObjects.Add(bodyLabel);
+
+            var eyeLabebl = new MenuLabel(this, mainPage, this.Translate("Eye color"), new Vector2(1183, 500), new(0, 30), false);
+            eyeLabebl.label.alignment = FLabelAlignment.Right;
+            this.pages[0].subObjects.Add(eyeLabebl);
+
+            colorpicker = new OpTinyColorPicker(this, new Vector2(1094, 553), "FFFFFF");
+            var wrapper = new UIelementWrapper(this.tabWrapper, colorpicker);
+            tabWrapper._tab.AddItems(colorpicker.colorPicker); 
+            colorpicker.colorPicker.wrapper = wrapper;
+            colorpicker.colorPicker.Hide();
+            colorpicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
+
+            colorpicker2 = new OpTinyColorPicker(this, new Vector2(1094, 500), "FFFFFF"); 
+            var wrapper2 = new UIelementWrapper(this.tabWrapper, colorpicker2);
+            tabWrapper._tab.AddItems(colorpicker2.colorPicker);
+            colorpicker2.colorPicker.wrapper = wrapper2;
+            colorpicker2.colorPicker.Hide();
+            colorpicker2.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
+            
             // TODO: Skin + Eye customization
 
             UpdateCharacterUI();
+
+            
+
+
+            if (OnlineManager.lobby.isAvailable)
+            {
+                OnLobbyAvailable();
+            }
+            else
+            {
+                OnlineManager.lobby.OnLobbyAvailable += OnLobbyAvailable;
+            }
+
 
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
 
 
         }
 
-        private void UpdateCharacterUI()
+
+        private void StartGame()
         {
-
-            playerButtons = new EventfulSelectOneButton[players.Length];
-            for (int i = 0; i < players.Length; i++)
-            {
-                var player = players[i];
-                var btn = new EventfulSelectOneButton(this, mainPage, player.name, "playerButtons", new Vector2(194, 515) - i * new Vector2(0, 38), new(110, 30), playerButtons, i);
-                mainPage.subObjects.Add(btn);
-                playerButtons[i] = btn;
-                btn.OnClick += (_) =>
-                {
-                    string url = $"https://steamcommunity.com/profiles/{player.id}";
-                    SteamFriends.ActivateGameOverlayToWebPage(url);
-                };
-
-            }
+            RainMeadow.DebugMe();
+            manager.arenaSitting = null;
+            manager.rainWorld.progression.ClearOutSaveStateFromMemory();
+            manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
+            manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
+
 
         public override void Update()
         {
@@ -176,6 +212,8 @@ namespace RainMeadow
             {
                 this.rainEffect.rainFade = Mathf.Min(0.3f, this.rainEffect.rainFade + 0.006f);
             }
+
+
 
             ssm.lastScroll = ssm.scroll;
             ssm.scroll = ssm.NextScroll;
@@ -204,20 +242,31 @@ namespace RainMeadow
 
 
         }
-
-
-        private void StartGame()
+        private void UpdateCharacterUI()
         {
-            RainMeadow.DebugMe();
-            manager.arenaSitting = null;
-            manager.rainWorld.progression.ClearOutSaveStateFromMemory();
-            manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
-            manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
+
+            playerButtons = new EventfulSelectOneButton[players.Length];
+            for (int i = 0; i < players.Length; i++)
+            {
+                var player = players[i];
+                var btn = new EventfulSelectOneButton(this, mainPage, player.name, "playerButtons", new Vector2(194, 515) - i * new Vector2(0, 38), new(110, 30), playerButtons, i);
+                mainPage.subObjects.Add(btn);
+                playerButtons[i] = btn;
+                btn.OnClick += (_) =>
+                {
+                    string url = $"https://steamcommunity.com/profiles/{player.id}";
+                    SteamFriends.ActivateGameOverlayToWebPage(url);
+                };
+
+            }
         }
 
         public override void ShutDownProcess()
         {
             RainMeadow.DebugMe();
+
+            if (OnlineManager.lobby != null) OnlineManager.lobby.OnLobbyAvailable -= OnLobbyAvailable;
+
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
                 MatchmakingManager.instance.LeaveLobby();
@@ -250,7 +299,7 @@ namespace RainMeadow
             this.pages[0].subObjects.Add(this.prevButton);
 
 
-             // Next
+            // Next
             this.nextButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(985f, 50f), 1);
             this.nextButton.OnClick += (_) =>
             {
@@ -260,7 +309,7 @@ namespace RainMeadow
             };
             this.pages[0].subObjects.Add(this.nextButton);
 
-            
+
             // Back button doesn't highlight?
             this.backButton = new SimplerButton(this, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f));
             this.backButton.OnClick += (_) =>
@@ -275,6 +324,7 @@ namespace RainMeadow
             // Player lobby label
             this.pages[0].subObjects.Add(new MenuLabel(this, mainPage, this.Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true));
 
+            // Checkbox
 
         }
 
@@ -300,16 +350,24 @@ namespace RainMeadow
             var friendsList = new EventfulSelectOneButton[1];
             friendsList[0] = new EventfulSelectOneButton(this, mainPage, Translate("Invite Friends"), "friendsList", new(1150f, 50f), new(110, 50), friendsList, 0);
             this.pages[0].subObjects.Add(friendsList[0]);
+
+            // TODO: Add Friend's list back when I'm done testing
+
             friendsList[0].OnClick += (_) =>
             {
                 SteamFriends.ActivateGameOverlay("friends");
+
             };
+
+
 
         }
 
+
+
+
         // TODO: Skin / Eye customization
-        int skinIndex;
-        private OpTinyColorPicker colorpicker;
+
 
         public int GetCurrentlySelectedOfSeries(string series)
         {
@@ -331,6 +389,28 @@ namespace RainMeadow
         {
 
             return SlugcatStats.Name.values.entries.Select(s => new SlugcatStats.Name(s)).ToList();
+        }
+
+        private void BindSettings()
+        {
+            this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
+            personaSettings.playingAs = SlugcatStats.Name.Red;
+            personaSettings.bodyColor = Color.magenta;
+            personaSettings.eyeColor = Color.white;
+
+        }
+
+        private void OnLobbyAvailable()
+        {
+            BindSettings();
+
+        }
+
+        private void Colorpicker_OnValueChangedEvent()
+        {
+            if (personaSettings != null) personaSettings.bodyColor = colorpicker.valuecolor;
+            if (personaSettings != null) personaSettings.eyeColor = colorpicker2.valuecolor;
+
         }
 
     }

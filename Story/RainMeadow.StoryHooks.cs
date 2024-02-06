@@ -32,6 +32,8 @@ namespace RainMeadow
             On.Menu.SleepAndDeathScreen.ctor += SleepAndDeathScreen_ctor;
             On.Menu.SleepAndDeathScreen.Update += SleepAndDeathScreen_Update;
 
+            
+
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
 
             On.Player.Update += Player_Update;
