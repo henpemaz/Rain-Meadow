@@ -18,6 +18,10 @@ namespace RainMeadow
         {
 
         }
+        public override ProcessManager.ProcessID MenuProcessId()
+        {
+            return RainMeadow.Ext_ProcessID.StoryMenu;
+        }
         public override bool AllowedInMode(PlacedObject item)
         {
             return base.AllowedInMode(item) || OnlineGameModeHelpers.PlayerGrablableItems.Contains(item.type);
