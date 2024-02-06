@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
-using static RainMeadow.MeadowCustomization;
 using MonoMod.Cil;
 using System;
 using Mono.Cecil.Cil;
@@ -17,7 +16,8 @@ namespace RainMeadow
         public static bool isStoryMode(out StoryGameMode? gameMode)
         {
             gameMode = null;
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode) {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
                 gameMode = OnlineManager.lobby.gameMode as StoryGameMode;
                 return true;
             }
@@ -62,7 +62,8 @@ namespace RainMeadow
         private SaveState PlayerProgression_GetOrInitiateSaveState(On.PlayerProgression.orig_GetOrInitiateSaveState orig, PlayerProgression self, SlugcatStats.Name saveStateNumber, RainWorldGame game, ProcessManager.MenuSetup setup, bool saveAsDeathOrQuit)
         {
             var origSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
-            if (isStoryMode(out var gameMode) && !OnlineManager.lobby.isOwner) {
+            if (isStoryMode(out var gameMode) && !OnlineManager.lobby.isOwner)
+            {
                 //self.currentSaveState.LoadGame(gameMode.saveStateProgressString, game); //pretty sure we can just stuff the string here
                 origSaveState.denPosition = gameMode?.myDenPos;
                 origSaveState.deathPersistentSaveData.karma = 0;
@@ -73,10 +74,13 @@ namespace RainMeadow
 
         private void KarmaLadderScreen_Singal(On.Menu.KarmaLadderScreen.orig_Singal orig, Menu.KarmaLadderScreen self, Menu.MenuObject sender, string message)
         {
-            if (isStoryMode(out var gameMode)) {
-                if (message == "CONTINUE") {
+            if (isStoryMode(out var gameMode))
+            {
+                if (message == "CONTINUE")
+                {
 
-                    if (OnlineManager.lobby.isOwner) {
+                    if (OnlineManager.lobby.isOwner)
+                    {
                         gameMode.didStartCycle = true;
                     }
                 }
@@ -88,14 +92,16 @@ namespace RainMeadow
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {
             orig(self, eu);
-            if (isStoryMode(out var gameMode)) {
+            if (isStoryMode(out var gameMode))
+            {
                 //fetch the online entity and check if it is mine. 
                 //If it is mine run the below code
                 //If not, update from the lobby state
                 //self.readyForWin = OnlineMAnager.lobby.playerid === fetch if this is ours. 
 
-                if (OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe)) {
-                    if (!oe.isMine) 
+                if (OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe))
+                {
+                    if (!oe.isMine)
                     {
                         self.readyForWin = gameMode.readyForWinPlayers.Contains(oe.owner.inLobbyId);
                         return;
@@ -106,23 +112,11 @@ namespace RainMeadow
                     && self.touchedNoInputCounter > (ModManager.MMF ? 40 : 20)
                     && RWCustom.Custom.ManhattanDistance(self.abstractCreature.pos.Tile, self.room.shortcuts[0].StartTile) > 3)
                 {
-                    if (!gameMode.readyForWinPlayers.Contains(OnlineManager.mePlayer.inLobbyId))
-                    {
-                        if (!(OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.AddReadyToWinPlayer))))
-                        {
-                            OnlineManager.lobby.owner.InvokeRPC(RPCs.AddReadyToWinPlayer);
-                        }
-                    }
+                    gameMode.storyAvatarSettings.readyForWin = true;
                 }
                 else
                 {
-                    if (gameMode.readyForWinPlayers.Contains(OnlineManager.mePlayer.inLobbyId))
-                    {
-                        if (!(OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.RemoveReadyToWinPlayer))))
-                        {
-                            OnlineManager.lobby.owner.InvokeRPC(RPCs.RemoveReadyToWinPlayer);
-                        }
-                    }
+                    gameMode.storyAvatarSettings.readyForWin = false;
                 }
             }
         }
@@ -144,7 +138,7 @@ namespace RainMeadow
             orig(self, manager, ID);
 
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
-            { 
+            {
                 isPlayerReady = false;
                 storyGameMode.didStartCycle = false;
                 //Create the READY button
@@ -165,7 +159,8 @@ namespace RainMeadow
 
         private void ReadyButton_OnClick(SimplerButton obj)
         {
-            if ((isStoryMode(out var gameMode) && gameMode.didStartCycle == true) || OnlineManager.lobby.isOwner){
+            if ((isStoryMode(out var gameMode) && gameMode.didStartCycle == true) || OnlineManager.lobby.isOwner)
+            {
                 isPlayerReady = true;
             }
         }
@@ -173,18 +168,23 @@ namespace RainMeadow
         private bool RegionGate_AllPlayersThroughToOtherSide(On.RegionGate.orig_AllPlayersThroughToOtherSide orig, RegionGate self)
         {
 
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode) {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
                 foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
                 {
-                    if(playerAvatar.Value?.apo is AbstractCreature ac){
+                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                    {
                         if (ac.pos.room == self.room.abstractRoom.index && (!self.letThroughDir || ac.pos.x < self.room.TileWidth / 2 + 3)
                             && (self.letThroughDir || ac.pos.x > self.room.TileWidth / 2 - 4))
                         {
                             return false;
                         }
                     }
-                    //todo we need to think a bit more b/c avatars are destroyed when regions transfer
-
+                    else
+                    {
+                        return false; // not loaded
+                    }
                 }
                 return true;
             }
@@ -200,15 +200,22 @@ namespace RainMeadow
                 int regionGateZone = -1;
                 foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
                 {
-                    var abstractCreature = playerAvatar.Value.apo as AbstractCreature;
-                    if (abstractCreature.Room == self.room.abstractRoom)
+                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
                     {
-                        int zone = self.DetectZone(abstractCreature);
-                        if (zone != regionGateZone && regionGateZone != -1)
+                        if (ac.Room == self.room.abstractRoom)
                         {
-                            return -1;
+                            int zone = self.DetectZone(ac);
+                            if (zone != regionGateZone && regionGateZone != -1)
+                            {
+                                return -1;
+                            }
+                            regionGateZone = zone;
                         }
-                        regionGateZone = zone;
+                    }
+                    else
+                    {
+                        return -1; // not loaded
                     }
                 }
 
@@ -219,23 +226,29 @@ namespace RainMeadow
 
         private bool PlayersStandingStill(On.RegionGate.orig_PlayersStandingStill orig, RegionGate self)
         {
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode) {
-                foreach (var kv in OnlineManager.lobby.playerAvatars)
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
                 {
-                    if (kv.Value.realizedCreature.abstractCreature.Room != self.room.abstractRoom
-                        || (kv.Value.realizedCreature as Player).touchedNoInputCounter < (ModManager.MMF ? 40 : 20))
+                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
                     {
-                        return false;
+                        if (ac.Room != self.room.abstractRoom
+                        || (ac.realizedCreature as Player).touchedNoInputCounter < (ModManager.MMF ? 40 : 20))
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        return false; // not loaded
                     }
                 }
-
                 return true;
             }
             return orig(self);
         }
-
     }
-
 }
 
 

@@ -14,8 +14,8 @@ namespace RainMeadow
     {
         private void MeadowHooks()
         {
-            MeadowCustomization.EnableCicada();
-            MeadowCustomization.EnableLizard();
+            CicadaController.EnableCicada();
+            LizardController.EnableLizard();
 
             On.RoomCamera.Update += RoomCamera_Update; // init meadow hud
 
@@ -108,7 +108,7 @@ namespace RainMeadow
                     i => i.MatchBrfalse(out skipToEnd)
                     );
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((HUD.Map map) => map.hud.owner.GetOwnerType() != MeadowCustomization.CreatureController.controlledCreatureHudOwner);
+                c.EmitDelegate((HUD.Map map) => map.hud.owner.GetOwnerType() != CreatureController.controlledCreatureHudOwner);
                 c.Emit(OpCodes.Brtrue, vanilla);
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit<HUD.HudPart>(OpCodes.Ldfld, "hud");
@@ -137,9 +137,12 @@ namespace RainMeadow
                     {
                         self.ReturnFContainer("HUD"),
                         self.ReturnFContainer("HUD2")
-                    }, self.room.game.rainWorld, owner is Player player? player : MeadowCustomization.creatureControllers.TryGetValue(owner.abstractCreature, out var controller) ? controller : throw new InvalidProgrammerException("Not player nor controlled creature"));
+                    }, self.room.game.rainWorld, owner is Player player? player : CreatureController.creatureControllers.TryGetValue(owner.abstractCreature, out var controller) ? controller : throw new InvalidProgrammerException("Not player nor controlled creature"));
 
-                    MeadowCustomization.InitMeadowHud(self);
+                    var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
+                    self.hud.AddPart(new HUD.TextPrompt(self.hud)); // game assumes this never null
+                    self.hud.AddPart(new HUD.Map(self.hud, new HUD.Map.MapData(self.room.world, self.room.game.rainWorld))); // game assumes this too :/
+                    self.hud.AddPart(new EmoteHandler(self.hud, mgm.avatar, (MeadowAvatarCustomization)RainMeadow.creatureCustomizations.GetValue(mgm.avatar.realizedCreature, (c) => throw new InvalidProgrammerException("Creature doesn't have customization"))));
                 }
             }
             orig(self);

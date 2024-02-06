@@ -9,6 +9,8 @@ namespace RainMeadow
     {
         private List<Place> places = new();
 
+        public MeadowRoomData(OnlineResource resource) : base(resource) { }
+
         public int NumberOfPlaces => places.Count;
 
         internal void AddItemPlacement(int x, int y, bool rare)
@@ -26,25 +28,21 @@ namespace RainMeadow
             return places[index].pos;
         }
 
-        internal override OnlineResource.ResourceDataState MakeState(OnlineResource inResource)
+        internal override ResourceDataState MakeState()
         {
-            return new MeadowRoomState(this);
+            return new State(this);
         }
 
-        internal class MeadowRoomState : OnlineResource.ResourceDataState
+        internal class State : ResourceDataState
         {
             [OnlineField]
             bool dummy;
-            public MeadowRoomState() { }
-            public MeadowRoomState(MeadowRoomData meadowRoomData)
-            {
+            public State() { }
+            public State(MeadowRoomData meadowRoomData) { }
 
-            }
+            internal override Type GetDataType() => typeof(MeadowRoomData);
 
-            internal override void ReadTo(OnlineResource onlineResource)
-            {
-                
-            }
+            internal override void ReadTo(OnlineResource.ResourceData data) { }
         }
 
         private class Place

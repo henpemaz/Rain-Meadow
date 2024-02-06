@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using static RainMeadow.MeadowCustomization;
 
 namespace RainMeadow
 {
@@ -117,7 +116,7 @@ namespace RainMeadow
 
         public static EmoteHandler instance;
         private readonly OnlineCreature avatar;
-        private readonly CreatureCustomization customization;
+        private readonly MeadowAvatarCustomization customization;
         private readonly FSprite[] emoteDisplayers;
         private FLabel[] inputLabels;
         private readonly FSprite[] emoteSeparators;
@@ -127,7 +126,7 @@ namespace RainMeadow
         public const int emotePreviewSpacing = 8;
         public const float emotePreviewOpacity = 0.6f;
 
-        public EmoteHandler(HUD.HUD hud, OnlineCreature avatar, CreatureCustomization customization) : base(hud)
+        public EmoteHandler(HUD.HUD hud, OnlineCreature avatar, MeadowAvatarCustomization customization) : base(hud)
         {
             RainMeadow.Debug($"EmoteHandler created for {avatar}");
             instance = this;

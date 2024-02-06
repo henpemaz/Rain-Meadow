@@ -59,12 +59,12 @@ namespace RainMeadow
 
         public static OnlineEntity FromDefinition(OnlineCreatureDefinition newCreatureEvent, OnlineResource inResource)
         {
-            World world = inResource.World;
+            World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
             EntityID id = world.game.GetNewID();
             id.altSeed = newCreatureEvent.seed;
 
             RainMeadow.Debug("serializedObject: " + newCreatureEvent.serializedObject);
-            AbstractCreature ac = AbstractCreatureFromString(inResource.World, newCreatureEvent.serializedObject);
+            AbstractCreature ac = AbstractCreatureFromString(world, newCreatureEvent.serializedObject);
             ac.ID = id;
 
             return new OnlineCreature(newCreatureEvent, ac);

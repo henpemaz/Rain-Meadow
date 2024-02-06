@@ -9,7 +9,7 @@ namespace RainMeadow
         public static ConditionalWeakTable<AbstractRoom, RoomSession> map = new();
 
         public WorldSession worldSession => super as WorldSession;
-        public override World World => worldSession.world;
+        public World World => worldSession.world;
 
         public RoomSession(WorldSession ws, AbstractRoom absroom)
         {

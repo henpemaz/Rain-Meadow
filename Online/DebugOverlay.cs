@@ -341,7 +341,7 @@ namespace RainMeadow
                 {
                     return comp;
                 }
-                comp = (x is AvatarSettingsEntity ? -1 : 0) + (y is AvatarSettingsEntity ? 1 : 0);
+                comp = (x is AvatarSettings ? -1 : 0) + (y is AvatarSettings ? 1 : 0);
                 if (comp != 0)
                 {
                     return comp;

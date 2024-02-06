@@ -66,20 +66,25 @@ namespace RainMeadow
             }
         }
 
+        internal override void AddAvatarSettings()
+        {
+            RainMeadow.Debug("Adding avatar settings!");
+            avatarSettings = new MeadowAvatarSettings(
+                new MeadowAvatarSettings.Definition(
+                    new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0)
+                    , OnlineManager.mePlayer));
+            avatarSettings.EnterResource(lobby);
+        }
+
         internal override void ResourceActive(OnlineResource res)
         {
             base.ResourceActive(res);
             if (res is Lobby lobby)
             {
-                RainMeadow.Debug("Adding persona settings!");
-                var def = new MeadowPersonaSettingsDefinition(new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.unique, 0), OnlineManager.mePlayer, false);
-                avatarSettings = new MeadowAvatarSettings(def);
-                avatarSettings.EnterResource(lobby);
-
                 MeadowLobbyData data = lobby.GetData<MeadowLobbyData>();
                 if (lobby.isOwner)
                 {
-                    RainMeadow.Debug(lobby.subresources.Count);
+                    RainMeadow.Debug("Processing lobby data");
                     data.itemsPerRegion = new ushort[lobby.subresources.Count]; // count available here
                     for (int i = 0; i < lobby.subresources.Count; i++)
                     {
@@ -92,6 +97,7 @@ namespace RainMeadow
                 MeadowWorldData data = ws.GetData<MeadowWorldData>();
                 if (ws.isOwner)
                 {
+                    RainMeadow.Debug("Processing world data");
                     RainMeadow.Debug("Region index: " + ws.ShortId());
                     var toSpawn = (ws.super as Lobby).GetData<MeadowLobbyData>().itemsPerRegion[ws.ShortId()];
                     RainMeadow.Debug("Region items: " + toSpawn);
@@ -100,6 +106,7 @@ namespace RainMeadow
                     var validRooms = ws.world.abstractRooms.Where(r => !shelters.Contains(r.index) && !gates.Contains(r.index)).ToArray();
                     var perNode = toSpawn / (double)validRooms.Select(r => r.nodes.Length).Sum();
                     var stacker = 0d;
+                    // todo use half weight on nodes, it's creating too much discrepancy
                     for (int i = 0; i < validRooms.Length; i++)
                     {
                         var r = validRooms[i];
@@ -138,6 +145,8 @@ namespace RainMeadow
                 UnityEngine.Random.State state = UnityEngine.Random.state;
                 UnityEngine.Random.InitState(self.abstractRoom.index);
                 //for (int num16 = (int)((float)self.TileWidth * (float)self.TileHeight * Mathf.Pow(density, 2f) / 5f); num16 >= 0; num16--)
+
+                // todo improve this
                 while (mrd.NumberOfPlaces < self.abstractRoom.nodes.Length)
                 {
                     IntVector2 intVector = self.RandomTile();
@@ -162,6 +171,32 @@ namespace RainMeadow
                     }
                 }
                 UnityEngine.Random.state = state;
+            }
+        }
+
+        internal override void Customize(Creature creature, OnlineCreature oc)
+        {
+            if (lobby.playerAvatars.Any(a => a == oc.id)) // little cache
+            {
+                RainMeadow.Debug($"Customizing avatar {creature} for {oc.owner}");
+                var settings = lobby.entities.Values.First(em => em.entity is AvatarSettings avs && avs.target == oc.id).entity as MeadowAvatarSettings;
+
+                var mcc = (MeadowAvatarCustomization)RainMeadow.creatureCustomizations.GetValue(creature, (c) => settings.MakeCustomization());
+
+                if (oc.TryGetData<MeadowCreatureData>(out var mcd))
+                {
+                    EmoteDisplayer.map.GetValue(creature, (c) => new EmoteDisplayer(creature, oc, mcd, mcc));
+                }
+                else
+                {
+                    RainMeadow.Error("missing mcd?? " + oc);
+                }
+                // playable creatures
+                CreatureController.BindAvatar(creature, oc);
+            }
+            else
+            {
+                RainMeadow.Error("missing mas?? " + oc);
             }
         }
     }

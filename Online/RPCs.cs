@@ -49,40 +49,5 @@ namespace RainMeadow
         {
             ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].realizedCreature as Player).mushroomCounter += 320;
         }
-
-        [RPCMethod]
-        public static void AddReadyToWinPlayer(RPCEvent rpcEvent) {
-            if (RainMeadow.isStoryMode(out var gameMode)) 
-            { 
-                gameMode.readyForWinPlayers.Add(rpcEvent.from.inLobbyId);
-            }
-        }
-
-        [RPCMethod]
-        public static void RemoveReadyToWinPlayer(RPCEvent rpcEvent)
-        {
-            if (RainMeadow.isStoryMode(out var gameMode))
-            {
-                gameMode.readyForWinPlayers.Remove(rpcEvent.from.inLobbyId);
-            }
-        }
-
-        [RPCMethod]
-        public static void RequestPlayerAvatar(RPCEvent rpcEvent, ushort inLobbyId) {
-            if (!(rpcEvent.from.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.AddPlayerAvatar, inLobbyId, OnlineManager.lobby.playerAvatars[inLobbyId]))))
-            {
-                rpcEvent.from.InvokeRPC(RPCs.AddPlayerAvatar, inLobbyId, OnlineManager.lobby.playerAvatars[inLobbyId]);
-            }
-        }
-
-        [RPCMethod]
-        public static void AddPlayerAvatar(RPCEvent rpcEvent, ushort inLobbyId, OnlineCreature avatar)
-        {
-            if (avatar == null) {
-                rpcEvent.from.InvokeRPC(RPCs.RequestPlayerAvatar, inLobbyId);
-                return;
-            }
-            OnlineManager.lobby.playerAvatars[inLobbyId] = avatar;
-        }
     }
 }

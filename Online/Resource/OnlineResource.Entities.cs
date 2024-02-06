@@ -5,7 +5,6 @@ namespace RainMeadow
 {
     public abstract partial class OnlineResource
     {
-        public abstract World World { get; }
         public Dictionary<OnlineEntity.EntityId, EntityDefinition> registeredEntities;
         public Dictionary<OnlineEntity.EntityId, EntityMembership> entities;
 

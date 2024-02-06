@@ -200,11 +200,11 @@ public partial class RainMeadow
 
             if(OnlineCreature.map.TryGetValue(ac, out var onlineCreature))
             {
-                if (!(OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.AddPlayerAvatar, OnlineManager.mePlayer.inLobbyId, (onlineCreature as OnlineCreature)))))
-                {
-                    OnlineManager.lobby.owner.InvokeRPC(RPCs.AddPlayerAvatar, OnlineManager.mePlayer.inLobbyId, (onlineCreature as OnlineCreature));
-                }
                 OnlineManager.lobby.gameMode.SetAvatar(onlineCreature as OnlineCreature);
+            }
+            else
+            {
+                throw new InvalidProgrammerException($"Can't find OnlineCreature for {ac}");
             }
 
             return ac;

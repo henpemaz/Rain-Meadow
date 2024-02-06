@@ -5,7 +5,7 @@ namespace RainMeadow
 {
     public partial class Serializer
     {
-        // todo make this load-order independent. How? map strings to indexes somewhere else don't rely on the .Index
+        // todo make this load-order independent. How? map strings to indexes at lobby level don't rely on the .Index
         public void SerializeExtEnum<T>(ref T extEnum) where T : ExtEnum<T>
         {
             if (IsWriting)

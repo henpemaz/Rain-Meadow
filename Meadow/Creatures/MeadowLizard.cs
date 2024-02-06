@@ -4,8 +4,45 @@ using RWCustom;
 
 namespace RainMeadow
 {
-    public partial class MeadowCustomization
+    class LizardController : CreatureController
     {
+        public LizardController(Lizard creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber) { }
+
+        public Lizard lizard => creature as Lizard;
+
+        public override bool GrabImpl(PhysicalObject pickUpCandidate)
+        {
+            foreach (BodyChunk chunk in creature.bodyChunks)
+            {
+                if (Custom.DistLess(creature.mainBodyChunk.pos + Custom.DirVec(creature.bodyChunks[1].pos, creature.mainBodyChunk.pos) * lizard.lizardParams.biteInFront, chunk.pos, chunk.rad + lizard.lizardParams.biteRadBonus))
+                {
+                    lizard.biteControlReset = false;
+                    lizard.JawOpen = 0f;
+                    lizard.lastJawOpen = 0f;
+
+
+                    chunk.vel += creature.mainBodyChunk.vel * Mathf.Lerp(creature.mainBodyChunk.mass, 1.1f, 0.5f) / Mathf.Max(1f, chunk.mass);
+                    creature.Grab(chunk.owner, 0, chunk.index, Creature.Grasp.Shareability.CanOnlyShareWithNonExclusive, lizard.lizardParams.biteDominance * UnityEngine.Random.value, overrideEquallyDominant: true, pacifying: true);
+
+                    if (creature.graphicsModule != null)
+                    {
+                        if (chunk.owner is IDrawable)
+                        {
+                            creature.graphicsModule.AddObjectToInternalContainer(chunk.owner as IDrawable, 0);
+                        }
+                        else if (chunk.owner.graphicsModule != null)
+                        {
+                            creature.graphicsModule.AddObjectToInternalContainer(chunk.owner.graphicsModule, 0);
+                        }
+                    }
+
+                    creature.room.PlaySound(SoundID.Lizard_Jaws_Grab_NPC, creature.mainBodyChunk);
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public static void EnableLizard()
         {
             On.Lizard.Update += Lizard_Update;
@@ -24,7 +61,7 @@ namespace RainMeadow
         private static void LizardGraphics_ctor(On.LizardGraphics.orig_ctor orig, LizardGraphics self, PhysicalObject ow)
         {
             orig(self, ow);
-            if(creatureCustomizations.TryGetValue(ow as Creature, out var c))
+            if (RainMeadow.creatureCustomizations.TryGetValue(ow as Creature, out var c))
             {
                 var col = self.lizard.effectColor;
                 c.ModifyBodyColor(ref col);
@@ -96,7 +133,7 @@ namespace RainMeadow
                             if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("up");
                             toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(0, 1));
                         }
-                        else if(!solidAhead && !room.aimap.TileAccessibleToCreature(toPos.Tile, self.Template) && room.aimap.TileAccessibleToCreature(toPos.Tile + new IntVector2(0, -1), self.Template)) // try down
+                        else if (!solidAhead && !room.aimap.TileAccessibleToCreature(toPos.Tile, self.Template) && room.aimap.TileAccessibleToCreature(toPos.Tile + new IntVector2(0, -1), self.Template)) // try down
                         {
                             if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("down");
                             toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(0, -1));
@@ -125,13 +162,13 @@ namespace RainMeadow
                     }
                     else
                     {
-                        if(!room.GetTile(toPos).Solid) // ahead unblocked
+                        if (!room.GetTile(toPos).Solid) // ahead unblocked
                         {
                             toPos = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(p.inputDir * 2.2f));
                         }
                     }
 
-                    if((self.graphicsModule as LizardGraphics)?.frontLegsGrabbing > 0 && room.aimap.TileAccessibleToCreature(toPos.Tile, self.Template))
+                    if ((self.graphicsModule as LizardGraphics)?.frontLegsGrabbing > 0 && room.aimap.TileAccessibleToCreature(toPos.Tile, self.Template))
                     {
                         var inDirection = Vector2.Dot(self.mainBodyChunk.vel, p.inputDir);
                         if (inDirection < 2)
@@ -192,7 +229,6 @@ namespace RainMeadow
             return orig(self, originPos, bodyDirection, actuallyFollowingThisPath);
         }
 
-
         private static void Lizard_Update(On.Lizard.orig_Update orig, Lizard self, bool eu)
         {
             if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
@@ -201,46 +237,6 @@ namespace RainMeadow
             }
 
             orig(self, eu);
-        }
-
-        class LizardController : CreatureController
-        {
-            public LizardController(Lizard creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber) { }
-
-            public Lizard lizard => creature as Lizard;
-
-            public override bool GrabImpl(PhysicalObject pickUpCandidate)
-            {
-                foreach (BodyChunk chunk in creature.bodyChunks)
-                {
-                    if (Custom.DistLess(creature.mainBodyChunk.pos + Custom.DirVec(creature.bodyChunks[1].pos, creature.mainBodyChunk.pos) * lizard.lizardParams.biteInFront, chunk.pos, chunk.rad + lizard.lizardParams.biteRadBonus))
-                    {
-                        lizard.biteControlReset = false;
-                        lizard.JawOpen = 0f;
-                        lizard.lastJawOpen = 0f;
-
-
-                        chunk.vel += creature.mainBodyChunk.vel * Mathf.Lerp(creature.mainBodyChunk.mass, 1.1f, 0.5f) / Mathf.Max(1f, chunk.mass);
-                        creature.Grab(chunk.owner, 0, chunk.index, Creature.Grasp.Shareability.CanOnlyShareWithNonExclusive, lizard.lizardParams.biteDominance * UnityEngine.Random.value, overrideEquallyDominant: true, pacifying: true);
-
-                        if (creature.graphicsModule != null)
-                        {
-                            if (chunk.owner is IDrawable)
-                            {
-                                creature.graphicsModule.AddObjectToInternalContainer(chunk.owner as IDrawable, 0);
-                            }
-                            else if (chunk.owner.graphicsModule != null)
-                            {
-                                creature.graphicsModule.AddObjectToInternalContainer(chunk.owner.graphicsModule, 0);
-                            }
-                        }
-
-                        creature.room.PlaySound(SoundID.Lizard_Jaws_Grab_NPC, creature.mainBodyChunk);
-                        return true;
-                    }
-                }
-                return false;
-            }
         }
     }
 }

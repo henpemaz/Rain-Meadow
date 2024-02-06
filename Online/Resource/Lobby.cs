@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace RainMeadow
@@ -11,13 +10,10 @@ namespace RainMeadow
         public OnlineGameMode gameMode;
         public OnlineGameMode.OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
+        public List<OnlineEntity.EntityId> playerAvatars = new(); // should maybe be in GameMode
 
-        public Dictionary<ushort, OnlineCreature> playerAvatars = new(); //key:lobbyID | Value:slugcat AbstractCreature
-
-        public string[] mods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().ConvertAll(mod => mod.id.ToString()).ToArray();
-        public static bool checkingMods;
-
-        public override World World => throw new NotSupportedException(); // Lobby can't add world entities
+        public string[] mods = RainMeadowModManager.GetActiveMods();
+        public static bool modsChecked;
 
         public event Action OnLobbyAvailable; // for menus
 
@@ -42,6 +38,13 @@ namespace RainMeadow
             {
                 Request(); // Everyone auto-subscribes this resource
             }
+        }
+
+        internal override void Tick(uint tick)
+        {
+            playerAvatars = entities.Values.Where(em => em.entity is AvatarSettings).Select(em => (em.entity as AvatarSettings).target).ToList();
+            gameMode.LobbyTick(tick);
+            base.Tick(tick);
         }
 
         protected override void ActivateImpl()
@@ -77,18 +80,6 @@ namespace RainMeadow
             throw new InvalidOperationException("cant deactivate");
         }
 
-        public override void OnPlayerDisconnect(OnlinePlayer player)
-        {
-            base.OnPlayerDisconnect(player);
-
-            // todo move this to gamemode api
-            if(isOwner) playerAvatars.Remove(player.inLobbyId);
-            if(player == owner && gameMode is StoryGameMode)
-            {
-                OnlineManager.instance.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
-            }
-        }
-
         protected override ResourceState MakeState(uint ts)
         {
             return new LobbyState(this, ts);
@@ -117,29 +108,11 @@ namespace RainMeadow
             public ushort nextId;
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedPlayerIDs players;
-            [OnlineField(nullable = true)]
-            public Generics.AddRemoveSortedEntityIDs avatars;
-            [OnlineField(nullable = true)]
-            public Generics.AddRemoveSortedUshorts winReadyPlayers;
 
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedUshorts inLobbyIds;
 
-            [OnlineField]
-            public bool readyForNextCycle;
-            [OnlineField]
-            public bool didStartGame;
-            [OnlineField]
-            public bool didStartCycle;
-            [OnlineField]
-            public int karma;
 
-            [OnlineField]
-            public int food;
-            [OnlineField]
-            public int quarterfood;
-            [OnlineField]
-            public int mushroomCounter;
             [OnlineField]
             public string[] mods;
             public LobbyState() : base() { }
@@ -148,24 +121,7 @@ namespace RainMeadow
                 nextId = lobby.nextId;
                 players = new(lobby.participants.Keys.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
-                avatars = new(lobby.participants.Keys.Select(p => lobby.playerAvatars.TryGetValue(p.inLobbyId, out var c) ? c.id : new OnlineEntity.EntityId(p.inLobbyId, OnlineEntity.EntityId.IdType.none, 0)).ToList());
                 mods = lobby.mods;
-                if (lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Story)
-                {
-                    StoryGameMode storyGameMode = lobby.gameMode as StoryGameMode;
-                    RainWorldGame currentGameState = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
-                    winReadyPlayers = new((storyGameMode.readyForWinPlayers.ToList()));
-
-                    didStartGame = storyGameMode.didStartGame;
-                    didStartCycle = storyGameMode.didStartCycle;
-                    if (currentGameState?.session is StoryGameSession storySession) {
-                        karma = storySession.saveState.deathPersistentSaveData.karma;
-                    }
-
-                    food = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
-                    quarterfood = (currentGameState?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
-                    mushroomCounter = (currentGameState?.Players[0].realizedCreature as Player)?.mushroomCounter ?? 0;
-                }
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -185,114 +141,16 @@ namespace RainMeadow
                         RainMeadow.Error("Player not found! " + players.list[i]);
                     }
                 }
-                lobby.playerAvatars.Clear();
-                for (int i = 0; i < inLobbyIds.list.Count; i++)
-                {
-                    lobby.playerAvatars[inLobbyIds.list[i]] = avatars.list[i].FindEntity(quiet: true) as OnlineCreature;
-                }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
-                if (lobby.gameModeType == OnlineGameMode.OnlineGameModeType.Story)
+
+                if (!modsChecked)
                 {
-                    RainWorldGame currentGameState = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
-                    var playerstate = (currentGameState?.Players[0].state as PlayerState);
-                    if (playerstate != null)
-                    {
-                        playerstate.foodInStomach = food;
-                        playerstate.quarterFoodPoints = quarterfood;
-                    }
-                    if ((currentGameState?.Players[0].realizedCreature is Player player)) { 
-                        player.mushroomCounter = mushroomCounter;
-                    }
-
-                    if (currentGameState?.session is StoryGameSession storySession)
-                    {
-                        storySession.saveState.deathPersistentSaveData.karma = karma;
-                    }
-                    //(lobby.gameMode as StoryGameMode).saveStateProgressString = playerProgressSaveState;
-                    (lobby.gameMode as StoryGameMode).readyForWinPlayers = winReadyPlayers.list;
-                    (lobby.gameMode as StoryGameMode).didStartGame = didStartGame;
-                    (lobby.gameMode as StoryGameMode).didStartCycle = didStartCycle;
-
-                }
-
-
-                Menu.Menu? menu = RWCustom.Custom.rainWorld.processManager.currentMainLoop as Menu.Menu;
-
-                if (!checkingMods && (menu is MeadowMenu || menu is LobbyMenu || menu is ArenaLobbyMenu))
-                {
-                    checkingMods = true;
-                    if (Enumerable.SequenceEqual(lobby.mods, this.mods))
-                    {
-                        RainMeadow.Debug("Same mod set !");
-                    }
-                    else
-                    {
-                        RainMeadow.Debug("Mismatching mod set");
-
-                        var (MissingMods, ExcessiveMods) = CompareModSets(this.mods, lobby.mods);
-
-                        bool[] mods = ModManager.InstalledMods.ConvertAll(mod => mod.enabled).ToArray();
-
-                        List<int> loadOrder = ModManager.InstalledMods.ConvertAll(mod => mod.loadOrder);
-
-                        List<string> unknownMods = new();
-                        List<ModManager.Mod> modsToEnable = new();
-                        List<ModManager.Mod> modsToDisable = new();
-
-                        foreach (var id in MissingMods)
-                        {
-                            int index = ModManager.InstalledMods.FindIndex(_mod => _mod.id == id);
-
-                            if (index >= 0)
-                            {
-                                mods[index] = true;
-                                modsToEnable.Add(ModManager.InstalledMods[index]);
-                            }
-                            else
-                            {
-                                RainMeadow.Debug("Unknown mod: " + id);
-                                unknownMods.Add(id);
-                            }
-                        }
-
-                        foreach (var id in ExcessiveMods)
-                        {
-                            int index = ModManager.InstalledMods.FindIndex(_mod => _mod.id == id);
-
-                            mods[index] = false;
-
-                            modsToDisable.Add(ModManager.InstalledMods[index]);
-                        }
-
-                        ModApplyer modApplyer = new(RWCustom.Custom.rainWorld.processManager, mods.ToList(), loadOrder);
-
-                        modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
-
-                        modApplyer.OnFinish += (ModApplyer modApplyer) =>
-                        {
-                            Utils.Restart($"+connect_lobby {MatchmakingManager.instance.GetLobbyID()}");
-                        };
-                    }
-
+                    modsChecked = true;
+                    RainMeadowModManager.CheckMods(this.mods, lobby.mods);
                 }
 
                 base.ReadTo(resource);
             }
-        }
-
-        private static (List<string> MissingMods, List<string> ExcessiveMods) CompareModSets(string[] arr1, string[] arr2)
-        {
-            // Find missing strings in arr2
-            var missingStrings = arr1.Except(arr2).ToList();
-
-            // Find excessive strings in arr2
-            var excessiveStrings = arr2
-                .GroupBy(item => item)
-                .Where(group => group.Count() > arr1.Count(item => item == group.Key))
-                .Select(group => group.Key)
-                .ToList();
-
-            return (missingStrings, excessiveStrings);
         }
 
         public override string ToString()
@@ -308,7 +166,6 @@ namespace RainMeadow
 
         protected override void NewParticipantImpl(OnlinePlayer player)
         {
-            base.NewParticipantImpl(player);
             if (isOwner)
             {
                 player.inLobbyId = nextId;
@@ -316,6 +173,14 @@ namespace RainMeadow
                 nextId++;
                 // todo overflows and repeats (unrealistic but it's a ushort)
             }
+            base.NewParticipantImpl(player);
+            gameMode.NewPlayerInLobby(player);
+        }
+
+        protected override void ParticipantLeftImpl(OnlinePlayer player)
+        {
+            base.ParticipantLeftImpl(player);
+            gameMode.PlayerLeftLobby(player);
         }
     }
 }

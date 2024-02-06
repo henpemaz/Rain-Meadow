@@ -27,6 +27,14 @@ namespace RainMeadow
         public bool isPending => pendingRequest != null || isWaitingForState;
         public bool canRelease => !isPending && isActive && !subresources.Any(s => s.isAvailable);
 
+        internal virtual void Tick(uint tick)
+        {
+            foreach (var subresource in subresources)
+            {
+                if (subresource.isActive) subresource.Tick(tick);
+            }
+        }
+
         // The online resource has been leased
         public void WaitingForState()
         {

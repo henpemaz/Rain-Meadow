@@ -7,7 +7,7 @@
             public enum IdType : byte
             {
                 none,
-                unique,
+                settings,
                 apo,
                 uad,
                 custom,
@@ -37,8 +37,7 @@
             {
                 serializer.Serialize(ref originalOwner);
                 serializer.Serialize(ref type);
-                if ((IdType)type != IdType.unique)
-                    serializer.Serialize(ref id);
+                serializer.Serialize(ref id);
             }
 
             public override string ToString()

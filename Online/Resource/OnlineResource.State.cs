@@ -64,11 +64,15 @@ namespace RainMeadow
                 if (isWaitingForState || isAvailable) newState.ReadTo(this);
                 if(isWaitingForState) { Available(); }
             }
+            else
+            {
+                RainMeadow.Trace($"received state from {newState.from} but owner is {owner}");
+            }
         }
 
         private List<ResourceData> resourceData = new();
 
-        internal T AddData<T>(bool ignoreDuplicate = false) where T : ResourceData, new()
+        internal T AddData<T>(bool ignoreDuplicate = false) where T : ResourceData
         {
             for (int i = 0; i < resourceData.Count; i++)
             {
@@ -78,7 +82,7 @@ namespace RainMeadow
                     throw new ArgumentException("type already in data");
                 }
             }
-            var v = new T();
+            var v = (T)Activator.CreateInstance(typeof(T), new[] { this });
             resourceData.Add(v);
             return v;
         }
@@ -106,7 +110,27 @@ namespace RainMeadow
             }
             if (addIfMissing)
             {
-                d = Activator.CreateInstance<T>();
+                d = (T)Activator.CreateInstance(typeof(T), new[] { this });
+                resourceData.Add(d);
+                return true;
+            }
+            d = null;
+            return false;
+        }
+
+        internal bool TryGetData(Type T, out ResourceData d, bool addIfMissing = false)
+        {
+            for (int i = 0; i < resourceData.Count; i++)
+            {
+                if (resourceData[i].GetType() == T)
+                {
+                    d = resourceData[i];
+                    return true;
+                }
+            }
+            if (addIfMissing)
+            {
+                d = (ResourceData)Activator.CreateInstance(T, new[] { this });
                 resourceData.Add(d);
                 return true;
             }
@@ -116,34 +140,40 @@ namespace RainMeadow
 
         internal T GetData<T>(bool addIfMissing = false) where T : ResourceData
         {
-            if(!TryGetData<T>(out var d, addIfMissing)) throw new KeyNotFoundException();
+            if (!TryGetData<T>(out var d, addIfMissing)) throw new KeyNotFoundException();
             return d;
         }
 
-        internal void RemoveData<T>() where T : ResourceData
+
+        internal ResourceData GetData(Type T, bool addIfMissing = false)
         {
-            for (int i = 0; i < resourceData.Count; i++)
-            {
-                if (resourceData[i].GetType() == typeof(T))
-                {
-                    resourceData.RemoveAt(i);
-                }
-            }
+            if (!TryGetData(T, out var d, addIfMissing)) throw new KeyNotFoundException();
+            return d;
         }
 
+        /// <summary>
+        /// Gamemode-specific data for a resource.
+        /// Must have ctor(OnlineResource)
+        /// </summary>
         public abstract class ResourceData
         {
-            protected ResourceData() { }
+            public readonly OnlineResource resource;
 
-            internal abstract ResourceDataState MakeState(OnlineResource inResource);
-        }
+            public ResourceData(OnlineResource resource) // required constructor signature
+            {
+                this.resource = resource;
+            }
 
-        [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
-        public abstract class ResourceDataState : OnlineState
-        {
-            public ResourceDataState() { }
+            internal abstract ResourceDataState MakeState();
 
-            internal abstract void ReadTo(OnlineResource onlineResource);
+            [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
+            public abstract class ResourceDataState : OnlineState
+            {
+                public ResourceDataState() { }
+
+                internal abstract void ReadTo(ResourceData data);
+                internal abstract Type GetDataType();
+            }
         }
 
         public abstract class ResourceState : RootDeltaState
@@ -151,13 +181,13 @@ namespace RainMeadow
             [OnlineField(always = true)]
             public OnlineResource resource;
             [OnlineField(nullable = true, group = "entitydefs")]
-            public Generics.AddRemoveSortedCustomSerializables<OnlineEntity.EntityId> entitiesJoined;
+            public AddRemoveSortedCustomSerializables<OnlineEntity.EntityId> entitiesJoined;
             [OnlineField(nullable = true, group = "entitydefs")]
             public DeltaStates<EntityDefinition, OnlineState, OnlineEntity.EntityId> registeredEntities;
             [OnlineField(nullable = true, group = "entities")]
             public DeltaStates<OnlineEntity.EntityState, OnlineState, OnlineEntity.EntityId> entityStates;
-            [OnlineField(nullable = true, polymorphic = true)]
-            public AddRemoveSortedStates<ResourceDataState> resourceDataStates;
+            [OnlineField(nullable = true, group = "data")]
+            public AddRemoveSortedStates<ResourceData.ResourceDataState> resourceDataStates;
 
             protected ResourceState() : base() { }
             protected ResourceState(OnlineResource resource, uint ts) : base(ts)
@@ -166,7 +196,7 @@ namespace RainMeadow
                 entitiesJoined = new(resource.entities.Keys.ToList());
                 registeredEntities = new(resource.registeredEntities.Values.Select(def => def.Clone() as EntityDefinition).ToList());
                 entityStates = new(resource.entities.Select(e => e.Value.entity.GetState(ts, resource)).ToList());
-                resourceDataStates = new(resource.resourceData.Select(d=>d.MakeState(resource)).ToList());
+                resourceDataStates = new(resource.resourceData.Select(d=>d.MakeState()).ToList());
             }
             public virtual void ReadTo(OnlineResource resource)
             {
@@ -243,7 +273,7 @@ namespace RainMeadow
                         }
                     }
                 }
-                resourceDataStates.list.ForEach(d => d.ReadTo(resource));
+                resourceDataStates.list.ForEach(d => d.ReadTo(resource.GetData(d.GetDataType(), true)));
             }
         }
 
