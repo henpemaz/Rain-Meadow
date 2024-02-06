@@ -68,7 +68,7 @@ namespace RainMeadow
                     if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
                     if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
                     {
-                        if (!ac.realizedCreature.dead) return;
+                        if (ac.state.alive) return;
                     }
                 }
                 //INITIATE DEATH
