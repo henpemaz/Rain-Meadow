@@ -21,13 +21,15 @@ namespace RainMeadow
         public Color eyeColor; // unused
         public SlugcatStats.Name playingAs; // not implemented
         public bool readyForWin;
+        public string myLastDenPos;
 
         public StoryAvatarSettings(Definition entityDefinition) : base(entityDefinition)
         {
             RainMeadow.Debug(this);
             // todo de-dummy
             // I'm accessible through gamemode.avatarsettings change me
-            playingAs = SlugcatStats.Name.Yellow;
+            playingAs = SlugcatStats.Name.White;
+            myLastDenPos = "SU_C04";
             bodyColor = entityDefinition.owner == 2 ? Color.cyan : PlayerGraphics.DefaultSlugcatColor(playingAs);
             eyeColor = Color.black;
         }

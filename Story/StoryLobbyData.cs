@@ -5,6 +5,7 @@ using static RainMeadow.OnlineResource;
 
 namespace RainMeadow
 {
+    //playerSessionData - passage
     internal class StoryLobbyData : OnlineResource.ResourceData
     {
         public StoryLobbyData(OnlineResource resource) : base(resource) { }
@@ -16,13 +17,16 @@ namespace RainMeadow
 
         public class State : ResourceDataState
         {
+            [OnlineField(nullable =true)]
+            public string? defaultDenPos;
             [OnlineField]
             public bool didStartGame;
             [OnlineField]
             public bool didStartCycle;
             [OnlineField]
             public int karma;
-
+            [OnlineField]
+            public bool theGlow;
             [OnlineField]
             public int food;
             [OnlineField]
@@ -42,6 +46,8 @@ namespace RainMeadow
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
                     karma = storySession.saveState.deathPersistentSaveData.karma;
+                    theGlow = storySession.saveState.theGlow;
+                    defaultDenPos = storySession.saveState.denPosition;
                 }
 
                 food = (currentGameState?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
@@ -55,6 +61,8 @@ namespace RainMeadow
             {
                 RainWorldGame currentGameState = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
                 var playerstate = (currentGameState?.Players[0].state as PlayerState);
+                var lobby = (data.resource as Lobby);
+
                 if (playerstate != null)
                 {
                     playerstate.foodInStomach = food;
@@ -68,8 +76,9 @@ namespace RainMeadow
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
                     storySession.saveState.deathPersistentSaveData.karma = karma;
+                    storySession.saveState.theGlow = theGlow;
+                    (lobby.gameMode as StoryGameMode).defaultDenPos = defaultDenPos;
                 }
-                var lobby = (data.resource as Lobby);
                 (lobby.gameMode as StoryGameMode).didStartGame = didStartGame;
                 (lobby.gameMode as StoryGameMode).didStartCycle = didStartCycle;
             }

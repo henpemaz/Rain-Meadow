@@ -36,7 +36,8 @@ namespace RainMeadow
         {
             orig(self, slugcatNumber, abstractRoomsList, swarmRooms, shelters, gates);
             // Check if we need to allow others to join
-            OnlineManager.lobby.gameMode.LobbyReadyCheck();
+            if(OnlineManager.lobby != null)
+                OnlineManager.lobby.gameMode.LobbyReadyCheck();
         }
 
         private void Room_PlaceQuantifiedCreaturesInRoom(On.Room.orig_PlaceQuantifiedCreaturesInRoom orig, Room self, CreatureTemplate.Type critType)
