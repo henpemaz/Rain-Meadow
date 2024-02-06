@@ -30,6 +30,8 @@ namespace RainMeadow
             On.Menu.SleepAndDeathScreen.ctor += SleepAndDeathScreen_ctor;
             On.Menu.SleepAndDeathScreen.Update += SleepAndDeathScreen_Update;
 
+            
+
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
 
             On.Player.Update += Player_Update;
@@ -115,6 +117,10 @@ namespace RainMeadow
             }
             orig(self, sender, message);
         }
+
+        //On Static hook class
+
+
 
 
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)

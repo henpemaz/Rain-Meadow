@@ -90,7 +90,8 @@ namespace RainMeadow
 
             internal override void ModifyEyeColor(ref Color eyeColor)
             {
-                // no op
+                eyeColor = settings.eyeColor;
+
             }
         }
     }
