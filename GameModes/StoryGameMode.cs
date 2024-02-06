@@ -5,18 +5,22 @@ namespace RainMeadow
 {
     public class StoryGameMode : OnlineGameMode
     {
-        public string myDenPos = "SU_C04";
         public List<ushort> readyForWinPlayers = new List<ushort>();
+
         // these are synced by StoryLobbyData
-        public ushort karma;
         public bool didStartGame = false;
         public bool didStartCycle = false;
+        public string defaultDenPos;
 
         public StoryAvatarSettings storyAvatarSettings => avatarSettings as StoryAvatarSettings;
 
         public StoryGameMode(Lobby lobby) : base(lobby)
         {
 
+        }
+        public override ProcessManager.ProcessID MenuProcessId()
+        {
+            return RainMeadow.Ext_ProcessID.StoryMenu;
         }
         public override bool AllowedInMode(PlacedObject item)
         {

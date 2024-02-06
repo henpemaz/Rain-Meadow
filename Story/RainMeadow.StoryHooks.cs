@@ -27,8 +27,6 @@ namespace RainMeadow
         private void StoryHooks()
         {
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
-            On.PlayerProgression.GetProgLinesFromMemory += PlayerProgression_GetProgLinesFromMemory;
-
             On.Menu.SleepAndDeathScreen.ctor += SleepAndDeathScreen_ctor;
             On.Menu.SleepAndDeathScreen.Update += SleepAndDeathScreen_Update;
 
@@ -42,33 +40,64 @@ namespace RainMeadow
             On.RegionGate.PlayersStandingStill += PlayersStandingStill;
             On.RegionGate.PlayersInZone += RegionGate_PlayersInZone; ;
 
+            On.RainWorldGame.GameOver += RainWorldGame_GameOver;
+            On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
         }
 
-
-        private string[] PlayerProgression_GetProgLinesFromMemory(On.PlayerProgression.orig_GetProgLinesFromMemory orig, PlayerProgression self)
+        private void RainWorldGame_GoToDeathScreen(On.RainWorldGame.orig_GoToDeathScreen orig, RainWorldGame self)
         {
-            var saveStateArr = orig(self);
-            //if (isStoryMode(out var gameMode) && OnlineManager.lobby.isOwner) {
-            //    if (saveStateArr != null) {
-            //        for (int i = 0; i < saveStateArr.Length; i++) {
-            //            string[] progressStringArr = Regex.Split(saveStateArr[i], "<progDivB>");
-            //            if (progressStringArr.Length == 2 && progressStringArr[0] == "SAVE STATE") { 
-            //                gameMode.saveStateProgressString = progressStringArr[1];
-            //            }
-            //        }
-            //    }
-            //}
-            return saveStateArr;
+            if(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToDeathScreen);
+                }
+                else {
+                    RPCs.MovePlayersToDeathScreen();
+                }
+            }
+            else{
+                orig(self);
+            }
+        }
+
+        private void RainWorldGame_GameOver(On.RainWorldGame.orig_GameOver orig, RainWorldGame self, Creature.Grasp dependentOnGrasp)
+        {
+            if (isStoryMode(out var gameMode))
+            {
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
+                {
+                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                    {
+                        if (ac.state.alive) return;
+                    }
+                }
+                //INITIATE DEATH
+                foreach (OnlinePlayer player in OnlineManager.players)
+                {
+                    if (!player.isMe)
+                    {
+                        player.InvokeRPC(RPCs.InitGameOver);
+                    }
+                    else {
+                        orig(self, dependentOnGrasp);
+                    }
+                }
+            }
+            else {
+                orig(self, dependentOnGrasp);
+            }
         }
 
         private SaveState PlayerProgression_GetOrInitiateSaveState(On.PlayerProgression.orig_GetOrInitiateSaveState orig, PlayerProgression self, SlugcatStats.Name saveStateNumber, RainWorldGame game, ProcessManager.MenuSetup setup, bool saveAsDeathOrQuit)
         {
             var origSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
-            if (isStoryMode(out var gameMode) && !OnlineManager.lobby.isOwner)
+            if (isStoryMode(out var gameMode))
             {
                 //self.currentSaveState.LoadGame(gameMode.saveStateProgressString, game); //pretty sure we can just stuff the string here
-                origSaveState.denPosition = gameMode?.myDenPos;
-                origSaveState.deathPersistentSaveData.karma = 0;
+                var storyAvatarSettings = gameMode.avatarSettings as StoryAvatarSettings;
+                origSaveState.denPosition = storyAvatarSettings.myLastDenPos;
                 return origSaveState;
             }
             return origSaveState;
@@ -80,7 +109,6 @@ namespace RainMeadow
             {
                 if (message == "CONTINUE")
                 {
-
                     if (OnlineManager.lobby.isOwner)
                     {
                         gameMode.didStartCycle = true;

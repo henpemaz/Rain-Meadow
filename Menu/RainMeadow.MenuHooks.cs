@@ -147,9 +147,13 @@ namespace RainMeadow
             {
                 self.currentMainLoop = new MeadowMenu(self);
             }
-            if (ID == Ext_ProcessID.LobbyMenu)
+            if (ID == Ext_ProcessID.StoryMenu) 
             {
                 self.currentMainLoop = new StoryMenu(self);
+            }
+            if (ID == Ext_ProcessID.LobbyMenu)
+            {
+                self.currentMainLoop = new LobbyMenu(self);
             }
 
 #if !LOCAL_P2P
