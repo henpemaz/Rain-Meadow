@@ -28,20 +28,13 @@ namespace RainMeadow
         private SlugcatSelectMenu.SlugcatPage sp;
         private StoryAvatarSettings personaSettings;
 
-        public interface IOwnCheckBox
-        {
-            bool GetChecked(CheckBox box);
-
-            void SetChecked(CheckBox box, bool c);
-        }
-
         private List<SlugcatSelectMenu.SlugcatPage> characterPages;
         private EventfulSelectOneButton[] playerButtons;
         private IOwnCheckBox reportTo;
         int skinIndex;
         private OpTinyColorPicker colorpicker;
         private OpTinyColorPicker colorpicker2;
-        private bool iWantColors = false;
+
         public override MenuScene.SceneID GetScene => null;
         public StoryMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.StoryMenu)
         {
