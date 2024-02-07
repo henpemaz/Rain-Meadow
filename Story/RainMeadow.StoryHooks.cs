@@ -13,6 +13,7 @@ namespace RainMeadow
     public partial class RainMeadow
     {
         private bool isPlayerReady = false;
+        private StoryAvatarSettings personaSettings;
         public static bool isStoryMode(out StoryGameMode? gameMode)
         {
             gameMode = null;
@@ -128,6 +129,14 @@ namespace RainMeadow
             orig(self, eu);
             if (isStoryMode(out var gameMode))
             {
+
+                
+                if (Input.GetKeyDown(options.FriendsListKey.Value))
+                {
+
+                    Debug("Placeholder for displaying usernames");
+
+                }
                 //fetch the online entity and check if it is mine. 
                 //If it is mine run the below code
                 //If not, update from the lobby state

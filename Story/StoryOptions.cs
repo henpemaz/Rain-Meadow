@@ -13,10 +13,12 @@ public class RainMeadowOptions : OptionInterface
 
     private UIelement[] UIArrPlayerOptions;
 
-    // TODO: Controller support
     public RainMeadowOptions(global::RainMeadow.RainMeadow instance)
     {
-        FriendsListKey = config.Bind("OpenMenuKey", KeyCode.F11);
+        // TODO: Controller support
+        // TODO: Add the ability for users to select a custom color or default to white
+        // TODO: Maybe as shadow or box?
+        FriendsListKey = config.Bind("OpenMenuKey", KeyCode.O);
     }
 
     public override void Initialize()
