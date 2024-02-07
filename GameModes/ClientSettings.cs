@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public abstract class AvatarSettings : OnlineEntity
+    public abstract class ClientSettings : OnlineEntity
     {
         public abstract class Definition : EntityDefinition
         {
@@ -16,11 +16,11 @@ namespace RainMeadow
         /// <summary>
         /// the real avatar of the player
         /// </summary>
-        public OnlineEntity.EntityId target;
+        public OnlineEntity.EntityId avatarId;
 
-        public AvatarSettings(EntityDefinition entityDefinition) : base(entityDefinition)
+        public ClientSettings(EntityDefinition entityDefinition) : base(entityDefinition)
         {
-            target = new OnlineEntity.EntityId(entityDefinition.owner, OnlineEntity.EntityId.IdType.none, 0);
+            avatarId = new OnlineEntity.EntityId(entityDefinition.owner, OnlineEntity.EntityId.IdType.none, 0);
         }
 
         internal abstract AvatarCustomization MakeCustomization();
@@ -35,19 +35,19 @@ namespace RainMeadow
         public abstract class State : EntityState
         {
             [OnlineField(nullable:true)]
-            private EntityId target;
+            private EntityId avatarId;
 
             protected State() { }
 
-            protected State(AvatarSettings onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
+            protected State(ClientSettings clientSettings, OnlineResource inResource, uint ts) : base(clientSettings, inResource, ts)
             {
-                this.target = onlineEntity.target;
+                this.avatarId = clientSettings.avatarId;
             }
 
             public override void ReadTo(OnlineEntity onlineEntity)
             {
                 base.ReadTo(onlineEntity);
-                (onlineEntity as AvatarSettings).target = target;
+                (onlineEntity as ClientSettings).avatarId = avatarId;
             }
         }
     }

@@ -100,20 +100,10 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 DebugOverlay.RemoveOverlay(self);
-                // Don't leak entities from last session
-                OnlineManager.recentEntities.Clear();
+                // some cleanup CAN be done
+                OnlineManager.recentEntities = OnlineManager.recentEntities.Where(kvp => !(kvp.Value is OnlinePhysicalObject)).ToDictionary();
 
                 if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
-                var entities = ws.entities.Values.Select(em => em.entity).ToList();
-                for (int i = ws.entities.Count - 1; i >= 0; i--)
-                {
-                    var ent = entities[i];
-                    if (ent.isMine && !ent.isTransferable && ent is OnlinePhysicalObject opo)
-                    {
-                        if (opo.roomSession != null) opo.LeaveResource(opo.roomSession);
-                        opo.LeaveResource(ws);
-                    }
-                }
                 ws.FullyReleaseResource();
             }
         }

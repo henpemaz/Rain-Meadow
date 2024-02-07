@@ -59,7 +59,7 @@ namespace RainMeadow
 
         // todo support jolly or other forms of local co-op
         public OnlineCreature avatar;
-        public AvatarSettings avatarSettings;
+        public ClientSettings avatarSettings;
 
         public virtual void FilterItems(Room room)
         {
@@ -140,7 +140,7 @@ namespace RainMeadow
         internal virtual void SetAvatar(OnlineCreature onlineCreature)
         {
             this.avatar = onlineCreature;
-            this.avatarSettings.target = onlineCreature.id;
+            this.avatarSettings.avatarId = onlineCreature.id;
         }
 
         internal virtual void ResourceAvailable(OnlineResource onlineResource)
@@ -186,7 +186,7 @@ namespace RainMeadow
             if (lobby.playerAvatars.Any(a=>a == oc.id))
             {
                 RainMeadow.Debug($"Customizing avatar {creature} for {oc.owner}");
-                var settings = lobby.entities.Values.First(em => em.entity is AvatarSettings avs && avs.target == oc.id).entity as AvatarSettings;
+                var settings = lobby.entities.Values.First(em => em.entity is ClientSettings avs && avs.avatarId == oc.id).entity as ClientSettings;
 
                 // this adds the entry in the CWT
                 var mcc = RainMeadow.creatureCustomizations.GetValue(creature, (c) => settings.MakeCustomization());

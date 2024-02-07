@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class MeadowAvatarSettings : AvatarSettings
+    public class MeadowAvatarSettings : ClientSettings
     {
-        new public class Definition : AvatarSettings.Definition
+        new public class Definition : ClientSettings.Definition
         {
             public Definition() : base() { }
             public Definition(OnlineEntity.EntityId entityId, OnlinePlayer owner) : base(entityId, owner) { }
@@ -45,7 +45,7 @@ namespace RainMeadow
             return new MeadowAvatarCustomization(skin, tint, tintAmount);
         }
 
-        public class State : AvatarSettings.State
+        public class State : ClientSettings.State
         {
             [OnlineField]
             public short skin;

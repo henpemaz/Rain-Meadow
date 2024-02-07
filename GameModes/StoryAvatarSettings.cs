@@ -3,9 +3,9 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class StoryAvatarSettings : AvatarSettings
+    public class StoryAvatarSettings : ClientSettings
     {
-        public class Definition : AvatarSettings.Definition
+        public class Definition : ClientSettings.Definition
         {
             public Definition() { }
 
@@ -44,7 +44,7 @@ namespace RainMeadow
             return new State(this, inResource, tick);
         }
 
-        public class State : AvatarSettings.State
+        public class State : ClientSettings.State
         {
             [OnlineFieldColorRgb]
             public Color bodyColor;

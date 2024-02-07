@@ -10,7 +10,7 @@ namespace RainMeadow
     // Support character customization (WIP)
     public partial class RainMeadow
     {
-        public static ConditionalWeakTable<Creature, AvatarSettings.AvatarCustomization> creatureCustomizations = new();
+        public static ConditionalWeakTable<Creature, ClientSettings.AvatarCustomization> creatureCustomizations = new();
 
         public void CustomizationHooks()
         {

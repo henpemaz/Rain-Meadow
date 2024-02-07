@@ -193,6 +193,7 @@ public partial class RainMeadow
     {
         if (OnlineManager.lobby != null)
         {
+            // this could probably be reworked to be a single callback to gamemode, instead of 2
             sSpawningAvatar = true;
             AbstractCreature ac = OnlineManager.lobby.gameMode.SpawnAvatar(self, location);
             if (ac == null) ac = orig(self, player1, player2, player3, player4, location);
