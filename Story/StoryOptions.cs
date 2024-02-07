@@ -7,14 +7,14 @@ using Menu.Remix.MixedUI;
 using UnityEngine;
 using RainMeadow;
 
-public class FriendsToggleOption : OptionInterface
+public class RainMeadowOptions : OptionInterface
 {
     public readonly Configurable<KeyCode> FriendsListKey;
 
     private UIelement[] UIArrPlayerOptions;
 
     // TODO: Controller support
-    public FriendsToggleOption(global::RainMeadow.RainMeadow instance)
+    public RainMeadowOptions(global::RainMeadow.RainMeadow instance)
     {
         FriendsListKey = config.Bind("OpenMenuKey", KeyCode.F11);
     }

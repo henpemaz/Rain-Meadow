@@ -16,13 +16,13 @@ namespace RainMeadow
     {
         public const string MeadowVersionStr = "0.0.52";
         public static RainMeadow instance;
-        private FriendsToggleOption options;
+        private RainMeadowOptions options;
         private bool init;
 
         public void OnEnable()
         {
             instance = this;
-            options = new FriendsToggleOption(this);
+            options = new RainMeadowOptions(this);
             On.RainWorld.OnModsInit += RainWorld_OnModsInit;
             On.RainWorld.Update += RainWorld_Update;
             On.WorldLoader.UpdateThread += WorldLoader_UpdateThread;
