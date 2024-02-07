@@ -30,7 +30,6 @@ namespace RainMeadow
 
         private List<SlugcatSelectMenu.SlugcatPage> characterPages;
         private EventfulSelectOneButton[] playerButtons;
-        private IOwnCheckBox reportTo;
         int skinIndex;
         private OpTinyColorPicker colorpicker;
         private OpTinyColorPicker colorpicker2;

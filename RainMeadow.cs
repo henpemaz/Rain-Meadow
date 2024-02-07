@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using IL.Menu;
 using System;
 using System.Diagnostics;
 using System.Reflection;
@@ -15,11 +16,13 @@ namespace RainMeadow
     {
         public const string MeadowVersionStr = "0.0.52";
         public static RainMeadow instance;
+        private FriendsToggleOption options;
         private bool init;
 
         public void OnEnable()
         {
             instance = this;
+            options = new FriendsToggleOption(this);
             On.RainWorld.OnModsInit += RainWorld_OnModsInit;
             On.RainWorld.Update += RainWorld_Update;
             On.WorldLoader.UpdateThread += WorldLoader_UpdateThread;
@@ -128,6 +131,16 @@ namespace RainMeadow
 
                 AssetBundle bundle = AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("assetbundles/rainmeadow"));
                 Shader[] newShaders = bundle.LoadAllAssets<Shader>();
+
+                try
+                {
+                    MachineConnector.SetRegisteredOI("henpemaz_rainmeadow", options);
+                }
+                catch (Exception ex)
+                {
+                    RainMeadow.Debug("Error setting up RainMeadow Option Interface:" + ex);
+                }
+
                 foreach (Shader shader in newShaders)
                 {
                     RainMeadow.Debug("found shader " + shader.name);
