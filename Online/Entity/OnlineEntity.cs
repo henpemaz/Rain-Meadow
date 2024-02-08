@@ -390,7 +390,7 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return $"{id} from {owner.id} instance {GetHashCode()}";
+            return $"{id} from {owner.id}";
         }
     }
 }
