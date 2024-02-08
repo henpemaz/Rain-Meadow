@@ -25,13 +25,27 @@ namespace RainMeadow
         public bool isAvailable { get; protected set; } // The resource state is available
         public bool isWaitingForState { get; protected set; } // The resource was leased or subscribed to
         public bool isPending => pendingRequest != null || isWaitingForState;
-        public bool canRelease => !isPending && isActive && !subresources.Any(s => s.isAvailable || s.isPending);
+        public bool canRelease => !isPending // no ongoing transaction
+            && isActive && !subresources.Any(s => s.isAvailable || s.isPending) // no subresource available or pending
+            && (!isOwner || participants.Keys.All(p => p.isMe || p.recentlyAckdTicks.Any(rt => NetIO.IsNewer(rt, lastModified)))); // state broadcasted
+
+        public uint lastModified; // local tick used locally only
+        // if it were to be sync'd for 'versioning' then instead should be a tickref (player+tick)
 
         internal virtual void Tick(uint tick)
         {
             foreach (var subresource in subresources)
             {
                 if (subresource.isActive) subresource.Tick(tick);
+            }
+            if (releaseWhenPossible && canRelease)
+            {
+                Release();
+                releaseWhenPossible = false;
+            }
+            if(releaseWhenPossible && !canRelease)
+            {
+                RainMeadow.Trace($"Can't release {this} from {owner}, reasons: {!isPending} {isActive} {!subresources.Any(s => s.isAvailable || s.isPending)} {(!isOwner || participants.Keys.All(p => p.isMe || p.recentlyAckdTicks.Any(rt => NetIO.IsNewer(rt, lastModified))))}");
             }
         }
 
@@ -159,10 +173,10 @@ namespace RainMeadow
                     if (sub.isPending) { sub.releaseWhenPossible = true; }
                     if (sub.isAvailable) sub.FullyReleaseResource();
                 }
-                foreach (var entm in entities.Values.ToArray())
-                {
-                    entm.entity.Deactivated(this);
-                }
+                //foreach (var entm in entities.Values.ToArray())
+                //{
+                //    entm.entity.Deactivated(this);
+                //}
             }
 
             if (canRelease) { Release(); releaseWhenPossible = false; }
@@ -218,6 +232,8 @@ namespace RainMeadow
                     if (res.isAvailable) res.NewSupervisor(owner);
                 }
             }
+
+            if (isOwner) lastModified = OnlineManager.mePlayer.tick;
 
             if (isOwner) // do not send data to myself
             {

@@ -226,7 +226,7 @@ namespace RainMeadow
             var inResource = entityFeedState.inResource;
             if (!incomingState.ContainsKey(inResource))
             {
-                RainMeadow.Debug($"Received state for resource the entity isn't in {this} {inResource}, currently in {this.currentlyJoinedResource}");
+                RainMeadow.Trace($"Received state for resource the entity isn't in {this} {inResource}, currently in {this.currentlyJoinedResource}");
                 return;
             }
             var stateQueue = incomingState[inResource];

@@ -107,7 +107,7 @@ namespace RainMeadow
                 return;
             }
 
-            RainMeadow.Debug($"Transfer error : {isAvailable} {isActive} {request.from == supervisor}");
+            RainMeadow.Error($"Transfer error : {isAvailable} {isActive} {request.from == supervisor}");
             request.from.QueueEvent(new GenericResult.Error(request)); // super should retry with someone else
         }
 
@@ -116,7 +116,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (requestResult.referencedEvent == pendingRequest) pendingRequest = null;
-            else RainMeadow.Debug($"Weird event situation, pending is {pendingRequest} and referenced is {requestResult.referencedEvent}");
+            else RainMeadow.Error($"Weird event situation, pending is {pendingRequest} and referenced is {requestResult.referencedEvent}");
 
             if (requestResult is GenericResult.Ok)
             {
@@ -150,7 +150,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (pendingRequest == releaseResult.referencedEvent) pendingRequest = null;
-            else RainMeadow.Debug($"Weird event situation, pending is {pendingRequest} and referenced is {releaseResult.referencedEvent}");
+            else RainMeadow.Error($"Weird event situation, pending is {pendingRequest} and referenced is {releaseResult.referencedEvent}");
 
             if (releaseResult is GenericResult.Ok) // I've let go
             {
@@ -168,7 +168,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (pendingRequest == transferResult.referencedEvent) pendingRequest = null;
-            else RainMeadow.Debug($"Weird event situation, pending is {pendingRequest} and referenced is {transferResult.referencedEvent}");
+            else RainMeadow.Error($"Weird event situation, pending is {pendingRequest} and referenced is {transferResult.referencedEvent}");
 
             if (transferResult is GenericResult.Ok) // New owner accepted it
             {

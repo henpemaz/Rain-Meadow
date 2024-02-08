@@ -159,7 +159,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug($"{oe} : {this}");
             entities.Add(oe.id, new EntityMembership(oe, this));
-
+            if (isOwner) lastModified = OnlineManager.mePlayer.tick;
             if (!oe.isMine)
             {
                 oe.EnterResource(this);
@@ -239,6 +239,7 @@ namespace RainMeadow
             if (!entities.ContainsKey(oe.id)) throw new InvalidProgrammerException("wasn't joined in resource");
             registeredEntities.Remove(oe.id);
             entities.Remove(oe.id);
+            if (isOwner) lastModified = OnlineManager.mePlayer.tick;
             if (!oe.isMine) oe.LeaveResource(this);
             oe.OnLeftResource(this);
         }
@@ -302,6 +303,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug($"{oe} : {this} : to {to}");
             oe.NewOwner(to);
+            if (isOwner) lastModified = OnlineManager.mePlayer.tick;
         }
     }
 }
