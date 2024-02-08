@@ -92,13 +92,13 @@ namespace RainMeadow
 
             UpdateCharacterUI();
 
-            if (OnlineManager.lobby.isAvailable)
+            if (OnlineManager.lobby.isActive)
             {
-                OnLobbyAvailable();
+                OnLobbyActive();
             }
             else
             {
-                OnlineManager.lobby.OnLobbyAvailable += OnLobbyAvailable;
+                OnlineManager.lobby.OnLobbyActive += OnLobbyActive;
             }
         }
 
@@ -173,7 +173,7 @@ namespace RainMeadow
             }
         }
 
-        private void OnLobbyAvailable()
+        private void OnLobbyActive()
         {
             startButton.buttonBehav.greyedOut = false;
             BindSettings();
@@ -201,7 +201,7 @@ namespace RainMeadow
         public override void ShutDownProcess()
         {
             RainMeadow.DebugMe();
-            if (OnlineManager.lobby != null) OnlineManager.lobby.OnLobbyAvailable -= OnLobbyAvailable;
+            if (OnlineManager.lobby != null) OnlineManager.lobby.OnLobbyActive -= OnLobbyActive;
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
                 MatchmakingManager.instance.LeaveLobby();

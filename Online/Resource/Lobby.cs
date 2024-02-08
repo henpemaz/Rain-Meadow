@@ -15,7 +15,7 @@ namespace RainMeadow
         public string[] mods = RainMeadowModManager.GetActiveMods();
         public static bool modsChecked;
 
-        public event Action OnLobbyAvailable; // for menus
+        public event Action OnLobbyActive; // for menus
 
         public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner)
         {
@@ -67,12 +67,14 @@ namespace RainMeadow
                 }
                 RainMeadow.Debug(subresources.Count);
             }
+
+            OnLobbyActive?.Invoke();
+            OnLobbyActive = null;
         }
 
         protected override void AvailableImpl()
         {
-            OnLobbyAvailable?.Invoke();
-            OnLobbyAvailable = null;
+            
         }
 
         protected override void DeactivateImpl()
