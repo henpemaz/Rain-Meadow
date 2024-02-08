@@ -61,6 +61,8 @@ namespace RainMeadow
         public OnlineCreature avatar;
         public ClientSettings avatarSettings;
 
+        public event Action OnLobbyActive;
+
         public virtual void FilterItems(Room room)
         {
             foreach (var item in room.roomSettings.placedObjects)
@@ -151,9 +153,11 @@ namespace RainMeadow
 
         internal virtual void ResourceActive(OnlineResource onlineResource)
         {
-            if(onlineResource is Lobby)
+            if(onlineResource is Lobby lobby)
             {
                 AddAvatarSettings();
+
+                OnLobbyActive?.Invoke();
             }
         }
 

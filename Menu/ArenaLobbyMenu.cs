@@ -37,7 +37,7 @@ namespace RainMeadow
             }
             else
             {
-                OnlineManager.lobby.OnLobbyActive += OnLobbyActive;
+                OnlineManager.lobby.gameMode.OnLobbyActive += OnLobbyActive;
             }
         }
 
@@ -453,7 +453,7 @@ namespace RainMeadow
         {
             // Rain Meadow
             RainMeadow.DebugMe();
-            if (OnlineManager.lobby != null) OnlineManager.lobby.OnLobbyActive -= OnLobbyActive;
+            if (OnlineManager.lobby != null) OnlineManager.lobby.gameMode.OnLobbyActive -= OnLobbyActive;
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
                 MatchmakingManager.instance.LeaveLobby();

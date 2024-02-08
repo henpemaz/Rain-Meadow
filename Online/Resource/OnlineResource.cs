@@ -69,8 +69,9 @@ namespace RainMeadow
             isWaitingForState = false;
             isAvailable = true;
 
-            OnlineManager.lobby.gameMode.ResourceAvailable(this);
             AvailableImpl();
+
+            OnlineManager.lobby.gameMode.ResourceAvailable(this);
 
             if (this.activateOnAvailable) Activate();
         }

@@ -70,7 +70,7 @@ namespace RainMeadow
             }
             else
             {
-                OnlineManager.lobby.OnLobbyActive += OnLobbyActive;
+                OnlineManager.lobby.gameMode.OnLobbyActive += OnLobbyActive;
             }
 
         }
@@ -153,7 +153,7 @@ namespace RainMeadow
         public override void ShutDownProcess()
         {
             RainMeadow.DebugMe();
-            if (OnlineManager.lobby != null) OnlineManager.lobby.OnLobbyActive -= OnLobbyActive;
+            if (OnlineManager.lobby != null) OnlineManager.lobby.gameMode.OnLobbyActive -= OnLobbyActive;
             MatchmakingManager.instance.OnPlayerListReceived -= OnlineManager_OnPlayerListReceived;
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
