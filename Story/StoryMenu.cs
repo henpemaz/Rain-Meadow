@@ -158,7 +158,7 @@ namespace RainMeadow
             colorpicker.colorPicker.Hide();
             colorpicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
 
-            colorpicker2 = new OpTinyColorPicker(this, new Vector2(1094, 500), "FFFFFF"); 
+            colorpicker2 = new OpTinyColorPicker(this, new Vector2(1094, 500), "010101"); 
             var wrapper2 = new UIelementWrapper(this.tabWrapper, colorpicker2);
             tabWrapper._tab.AddItems(colorpicker2.colorPicker);
             colorpicker2.colorPicker.wrapper = wrapper2;
@@ -384,10 +384,9 @@ namespace RainMeadow
         private void BindSettings()
         {
             this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
-            personaSettings.playingAs = SlugcatStats.Name.Red;
-            personaSettings.bodyColor = Color.magenta;
-            personaSettings.eyeColor = Color.white;
-
+            personaSettings.playingAs = SlugcatStats.Name.White;
+            personaSettings.bodyColor = colorpicker.valuecolor;
+            personaSettings.eyeColor = colorpicker2.valuecolor;
         }
 
         private void OnLobbyActive()
