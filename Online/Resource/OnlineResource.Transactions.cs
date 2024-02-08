@@ -126,9 +126,16 @@ namespace RainMeadow
                 }
                 else
                 {
-                    RainMeadow.Debug("Claimed free resource");
                     WaitingForState();
-                    if (isOwner) Available();
+                    if (isOwner)
+                    {
+                        RainMeadow.Debug("Claimed resource");
+                        Available();
+                    }
+                    else
+                    {
+                        RainMeadow.Debug("Joined resource");
+                    }
                 }
             }
             else if (requestResult is GenericResult.Error) // I should retry

@@ -262,7 +262,7 @@ namespace RainMeadow
                     if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
                     {
                         if (ac.Room != self.room.abstractRoom
-                        || (ac.realizedCreature as Player).touchedNoInputCounter < (ModManager.MMF ? 40 : 20))
+                        || ((ac.realizedCreature as Player)?.touchedNoInputCounter ?? 0) < (ModManager.MMF ? 40 : 20))
                         {
                             return false;
                         }

@@ -82,22 +82,37 @@ namespace RainMeadow
             if (OnlineManager.lobby == null) return result;
 
             var absCrit = vessel.creature.abstractCreature;
-            OnlinePhysicalObject.map.TryGetValue(absCrit, out var onlineEntity);
+            if(!OnlinePhysicalObject.map.TryGetValue(absCrit, out var onlineEntity))
+            {
+                RainMeadow.Error($"Untracked entity: " + absCrit);
+                return result;
+            }
             if (onlineEntity.isMine) return result; // If entity is ours, game handles it normally.
-
-            if (onlineEntity.roomSession?.absroom != vessel.room) result = false; // If OnlineEntity is not yet in the room, keep waiting.
+            if (onlineEntity.roomSession?.absroom != vessel.room)
+            {
+                Debug($"Denied because in wrong room: vessel at {vessel.room.name}:{vessel.room.index} entity at:{onlineEntity.roomSession?.absroom.name ?? "null"}{onlineEntity.roomSession?.absroom.index.ToString() ?? "null"}");
+                result = false; // If OnlineEntity is not yet in the room, keep waiting.
+            }
 
             var connectedObjects = vessel.creature.abstractCreature.GetAllConnectedObjects();
             foreach (var apo in connectedObjects)
             {
-                if (apo is AbstractCreature crit)
+                if (OnlinePhysicalObject.map.TryGetValue(apo, out var innerOnlineEntity))
                 {
-                    OnlinePhysicalObject.map.TryGetValue(crit, out var innerOnlineEntity);
-                    if (innerOnlineEntity.roomSession?.absroom != vessel.room) result = false; // Same for all connected entities
+                    if (innerOnlineEntity.roomSession?.absroom != vessel.room)
+                    {
+                        Debug($"Denied because of connected object: {innerOnlineEntity}");
+                        result = false; // Same for all connected entities
+                    }
+                }
+                else
+                {
+                    RainMeadow.Error($"Untracked entity: " + apo);
+                    RainMeadow.Error($"connected to: {absCrit} {onlineEntity}");
                 }
             }
 
-            if (result == false) Debug($"OnlineEntity {onlineEntity.id} not yet in destination room, keeping hostage...");
+            if (result == false) Debug($"OnlineEntity {onlineEntity} not yet in destination room, keeping hostage...");
             return result;
         }
 

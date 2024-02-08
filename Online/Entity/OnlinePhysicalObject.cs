@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 namespace RainMeadow
 {
@@ -24,20 +25,32 @@ namespace RainMeadow
 
         public static OnlinePhysicalObject NewFromApo(AbstractPhysicalObject apo)
         {
+            EntityId entityId = new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number);
+            if (OnlineManager.recentEntities.ContainsKey(entityId))
+            {
+                RainMeadow.Error($"entity with repeated ID: {entityId}");
+                var origid = apo.ID;
+                var newid = apo.world.game.GetNewID();
+                newid.spawner = origid.spawner;
+                newid.altSeed = origid.RandomSeed;
+                apo.ID = newid;
+                entityId = new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number);
+                RainMeadow.Error($"set as: {entityId}");
+            }
             if (apo is AbstractCreature ac)
             {
-                var def = new OnlineCreatureDefinition(apo.ID.RandomSeed, apo.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number), OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+                var def = new OnlineCreatureDefinition(apo.ID.RandomSeed, apo.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 return new OnlineCreature(def, ac);
             }
             if (apo is AbstractConsumable acm)
             {
-                var def = new OnlineConsumableDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number), OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar,
+                var def = new OnlineConsumableDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar,
                     (short)acm.originRoom, (sbyte)acm.placedObjectIndex, acm.isConsumed);
                 return new OnlineConsumable(def, acm);
             }
             else
             {
-                var def = new OnlinePhysicalObjectDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number), OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+                var def = new OnlinePhysicalObjectDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 return new OnlinePhysicalObject(def, apo);
             }
         }
@@ -66,8 +79,29 @@ namespace RainMeadow
             id.altSeed = newObjectEvent.seed;
 
             RainMeadow.Debug("serializedObject: " + newObjectEvent.serializedObject);
+
             var apo = SaveState.AbstractPhysicalObjectFromString(world, newObjectEvent.serializedObject);
             apo.ID = id;
+            if (!world.IsRoomInRegion(apo.pos.room))
+            {
+                RainMeadow.Debug("Room not in region: " + apo.pos.room);
+                // most common cause is gates which are ambiguous room names, solve for current region instead of global
+                string[] obarray = Regex.Split(newObjectEvent.serializedObject, "<oA>");
+                string[] wcarray = obarray[2].Split('.');
+                AbstractRoom room = world.GetAbstractRoom(wcarray[0]);
+                if (room != null)
+                {
+                    RainMeadow.Debug($"fixing room index -> {room.index}");
+                    apo.pos.room = room.index;
+                }
+                else
+                {
+                    RainMeadow.Error("Couldn't find room in region: " + wcarray[0]);
+                }
+            }
+
+            RainMeadow.Debug($"room index -> {apo.pos.room} in region? {world.IsRoomInRegion(apo.pos.room)}");
+            
 
             return new OnlinePhysicalObject(newObjectEvent, apo);
         }
@@ -218,17 +252,19 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("Removing entity from game: " + this);
                     beingMoved = true;
-                    apo.Destroy();
+                    //apo.Destroy();
+                    apo.LoseAllStuckObjects();
                     apo.Room?.RemoveEntity(apo);
                     beingMoved = false;
                 }
             }
-            if (primaryResource == null)
-            {
-                RainMeadow.Debug("Removing entity from OnlinePhysicalObject.map: " + this);
+        }
 
-                map.Remove(apo);
-            }
+        public override void Deregister()
+        {
+            base.Deregister();
+            RainMeadow.Debug("Removing entity from OnlinePhysicalObject.map: " + this);
+            map.Remove(apo);
         }
 
         public override string ToString()

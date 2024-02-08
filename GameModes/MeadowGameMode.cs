@@ -19,9 +19,9 @@ namespace RainMeadow
             return RainMeadow.Ext_ProcessID.MeadowMenu;
         }
 
-        internal override void NewEntity(OnlineEntity oe)
+        internal override void NewEntity(OnlineEntity oe, OnlineResource inResource)
         {
-            base.NewEntity(oe);
+            base.NewEntity(oe, inResource);
             if (oe is OnlineCreature oc)
             {
                 RainMeadow.Debug("Registering new creature: " + oc);

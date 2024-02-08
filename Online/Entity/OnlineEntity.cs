@@ -1,4 +1,4 @@
-﻿using Mono.Cecil;
+﻿using HarmonyLib;
 using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
@@ -38,7 +38,7 @@ namespace RainMeadow
             this.id = entityDefinition.entityId;
             this.isTransferable = entityDefinition.isTransferable;
 
-            OnlineManager.recentEntities[id] = this;
+            OnlineManager.recentEntities.Add(id, this);
         }
 
         /// <summary>
@@ -74,13 +74,17 @@ namespace RainMeadow
             if (isMine) JoinOrLeavePending();
         }
 
-        private void JoinOrLeavePending()
+        public void JoinOrLeavePending()
         {
             if (!isMine) { throw new InvalidProgrammerException("not owner"); }
             if (isPending) { return; } // still pending
             RainMeadow.Debug(this);
+
+            enteredResources.RemoveAll(r => !r.isActive);
+            joinedResources.RemoveAll(r => !r.isAvailable || !r.entities.ContainsKey(this.id));
+
             // any resources to leave
-            var pending = joinedResources.Except(enteredResources).FirstOrDefault(r => r.entities.ContainsKey(this.id));
+            var pending = joinedResources.LastOrDefault(r => !enteredResources.Contains(r));
             if (pending != null)
             {
                 pending.LocalEntityLeft(this);
@@ -120,18 +124,20 @@ namespace RainMeadow
 
         public virtual void OnLeftResource(OnlineResource inResource)
         {
-            RainMeadow.Debug(this);
+            RainMeadow.Debug($"{this} left {inResource}");
             if (!joinedResources.Contains(inResource))
             {
                 RainMeadow.Debug($"Entity already left: {this} {inResource}");
                 return;
             }
+
             if (inResource != currentlyJoinedResource)
             {
                 RainMeadow.Debug($"Entity leaving resource in wrong order: {this} was in {currentlyJoinedResource} wants to leave {inResource}");
             }
 
-            while (currentlyJoinedResource != inResource) currentlyJoinedResource.EntityLeftResource(this);
+            joinedResources.ToArray().Do(r => { if (r.IsSubresourceOf(inResource)) r.EntityLeftResource(this); });
+            //while (currentlyJoinedResource != inResource) currentlyJoinedResource.EntityLeftResource(this);
 
             joinedResources.Remove(inResource);
             lastStates.Remove(inResource);
@@ -140,24 +146,26 @@ namespace RainMeadow
             {
                 OnlineManager.RemoveFeed(inResource, this);
                 JoinOrLeavePending();
-                if (!isTransferable)
-                    inResource.SubresourcesUnloaded(); // maybe you can release now
             }
-            if (primaryResource == null)
+            if (primaryResource == null && !isPending)
             {
-                RainMeadow.Debug("Removing entity from recentEntities: " + this);
-                OnlineManager.recentEntities.Remove(id);
+                Deregister();
             }
+        }
+
+        public virtual void Deregister()
+        {
+            RainMeadow.Debug("Removing entity from recentEntities: " + this);
+            OnlineManager.recentEntities.Remove(id);
         }
 
         public virtual void NewOwner(OnlinePlayer newOwner)
         {
-            RainMeadow.Debug(this);
+            RainMeadow.Debug($"{this} assigned to {newOwner}");
             var wasOwner = owner;
             if (wasOwner == newOwner) return;
             owner = newOwner;
             definition.owner = newOwner.inLobbyId;
-            RainMeadow.Debug(this);
 
             if (wasOwner.isMe)
             {
@@ -179,11 +187,21 @@ namespace RainMeadow
         // I was in a resource and I was left behind as the resource was released
         public virtual void Deactivated(OnlineResource onlineResource)
         {
-            RainMeadow.Debug(this);
+            if (!joinedResources.Contains(onlineResource)) return;
+            RainMeadow.Debug($"{this} in {onlineResource}");
             enteredResources.Remove(onlineResource);
             joinedResources.Remove(onlineResource);
             incomingState.Remove(onlineResource);
-            if (isMine) OnlineManager.RemoveFeed(onlineResource, this);
+            if (pendingRequest is RPCEvent rpc && rpc.target == onlineResource) pendingRequest = null;
+            if (isMine)
+            {
+                OnlineManager.RemoveFeed(onlineResource, this);
+                JoinOrLeavePending();
+            }
+            if (primaryResource == null && !isPending)
+            {
+                Deregister();
+            }
         }
 
         public virtual void ReadState(EntityState entityState, OnlineResource inResource)
@@ -267,22 +285,30 @@ namespace RainMeadow
 
         private List<EntityData> entityData = new();
 
-        internal T AddData<T>() where T : EntityData, new()
+        internal T AddData<T>(bool ignoreDuplicate = false) where T : EntityData, new()
         {
             for (int i = 0; i < entityData.Count; i++)
             {
-                if (entityData[i].GetType() == typeof(T)) throw new ArgumentException("type already in data");
+                if (entityData[i].GetType() == typeof(T))
+                {
+                    if (ignoreDuplicate) return (T)entityData[i];
+                    throw new ArgumentException("type already in data");
+                }
             }
             var v = new T();
             entityData.Add(v);
             return v;
         }
 
-        internal T AddData<T>(T toAdd) where T : EntityData
+        internal T AddData<T>(T toAdd, bool ignoreDuplicate = false) where T : EntityData
         {
             for (int i = 0; i < entityData.Count; i++)
             {
-                if (entityData[i].GetType() == typeof(T)) throw new ArgumentException("type already in data");
+                if (entityData[i].GetType() == typeof(T))
+                {
+                    if (ignoreDuplicate) return (T)entityData[i];
+                    throw new ArgumentException("type already in data");
+                }
             }
             entityData.Add(toAdd);
             return toAdd;
@@ -364,7 +390,7 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return $"{id} from {owner.id}";
+            return $"{id} from {owner.id} instance {GetHashCode()}";
         }
     }
 }

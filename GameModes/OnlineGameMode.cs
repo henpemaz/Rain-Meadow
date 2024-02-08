@@ -122,7 +122,7 @@ namespace RainMeadow
             return null; // game runs default code
         }
 
-        internal virtual void NewEntity(OnlineEntity oe)
+        internal virtual void NewEntity(OnlineEntity oe, OnlineResource inResource)
         {
             
         }
@@ -139,6 +139,7 @@ namespace RainMeadow
 
         internal virtual void SetAvatar(OnlineCreature onlineCreature)
         {
+            RainMeadow.Debug(onlineCreature);
             this.avatar = onlineCreature;
             this.avatarSettings.avatarId = onlineCreature.id;
         }

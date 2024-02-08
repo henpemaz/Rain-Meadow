@@ -25,7 +25,7 @@ namespace RainMeadow
         public bool isAvailable { get; protected set; } // The resource state is available
         public bool isWaitingForState { get; protected set; } // The resource was leased or subscribed to
         public bool isPending => pendingRequest != null || isWaitingForState;
-        public bool canRelease => !isPending && isActive && !subresources.Any(s => s.isAvailable);
+        public bool canRelease => !isPending && isActive && !subresources.Any(s => s.isAvailable || s.isPending);
 
         internal virtual void Tick(uint tick)
         {
@@ -114,6 +114,7 @@ namespace RainMeadow
 
             foreach (var ent in entities)
             {
+                // I added another deact call on fullyrelease and this is bugging out by deregistering
                 ent.Value.entity.Deactivated(this);
             }
             OnlineManager.RemoveFeeds(this);
@@ -125,6 +126,7 @@ namespace RainMeadow
             {
                 Deactivate();
             }
+            releaseWhenPossible = false;
             super.SubresourcesUnloaded(); // I've released, notify super if super is waiting
         }
 
@@ -154,16 +156,12 @@ namespace RainMeadow
             {
                 foreach (var sub in subresources)
                 {
+                    if (sub.isPending) { sub.releaseWhenPossible = true; }
                     if (sub.isAvailable) sub.FullyReleaseResource();
                 }
                 foreach (var entm in entities.Values.ToArray())
                 {
-                    var ent = entm.entity;
-                    if (!ent.isTransferable && ent.isMine)
-                    {
-                        RainMeadow.Debug($"Foce-remove entity {ent} from resource {this}");
-                        EntityLeftResource(ent); // force remove
-                    }
+                    entm.entity.Deactivated(this);
                 }
             }
 
@@ -182,7 +180,7 @@ namespace RainMeadow
 
         protected virtual void ClearIncommingBuffers()
         {
-            incomingState = new(32);
+            incomingState = new(8);
             resourceData = new();
         }
 
@@ -207,7 +205,7 @@ namespace RainMeadow
                 ClaimAbandonedEntitiesAndResources();
             }
 
-            if(isWaitingForState) // I am the authority for the state of this
+            if(isWaitingForState && isOwner) // I am the authority for the state of this
             {
                 Available();
             }
@@ -285,7 +283,7 @@ namespace RainMeadow
         {
             if (!participants.ContainsKey(participant)) return;
             RainMeadow.Debug($"{this}-{participant}");
-            if (isActive && isOwner)
+            if (isActive)
             {
                 foreach (var resource in subresources)
                 {
@@ -297,6 +295,12 @@ namespace RainMeadow
             {
                 Unsubscribed(participant);
                 if (isActive) ClaimAbandonedEntitiesAndResources();
+
+                // so im thinking, make entity leaving figure out "x is subsubsubresource of y" autoleave correctly
+                // needs resource.issubresource(parent)
+
+                // claiming ent/res works better top down because claiming res makes us able to claim subres as well
+                // claiming/kicking ent should technically be bottom up but we can improve it
             }
             ParticipantLeftImpl(participant);
         }
@@ -306,6 +310,14 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             if (!isActive) throw new InvalidOperationException("not active");
             if (!isOwner) throw new InvalidOperationException("not owner");
+            foreach (var resource in subresources)
+            {
+                if (resource.owner != null && ((resource.owner.hasLeft) || !participants.ContainsKey(resource.owner))) // abandoned
+                {
+                    RainMeadow.Debug($"Abandoned resource: {resource}");
+                    resource.ParticipantLeft(resource.owner);
+                }
+            }
             var entities = this.entities.Values.Select(em => em.entity).ToList();
             for (int i = entities.Count - 1; i >= 0; i--)
             {
@@ -337,17 +349,9 @@ namespace RainMeadow
                     }
                 }
             }
-            foreach(var resource in subresources)
-            {
-                if (resource.owner != null && ((resource.owner.hasLeft) || !participants.ContainsKey(resource.owner))) // abandoned
-                {
-                    RainMeadow.Debug($"Abandoned resource: {resource}");
-                    resource.ParticipantLeft(resource.owner);
-                }
-            }
         }
 
-        public virtual void OnPlayerDisconnect(OnlinePlayer player)
+        public void OnPlayerDisconnect(OnlinePlayer player)
         {
             //RainMeadow.Debug(this);
             if (this is Lobby lobby && owner == player) // lobby owner has left
@@ -427,6 +431,13 @@ namespace RainMeadow
         public bool IsSibling(OnlineResource other)
         {
             return other == this || (this is not Lobby && other is not Lobby && this.super == other.super);
+        }
+
+        public bool IsSubresourceOf(OnlineResource other)
+        {
+            if (this == super) return false;
+            if (other == super) return true;
+            return super.IsSubresourceOf(other);
         }
 
         public abstract OnlineResource SubresourceFromShortId(ushort shortId);
