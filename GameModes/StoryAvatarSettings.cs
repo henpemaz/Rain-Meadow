@@ -85,12 +85,12 @@ namespace RainMeadow
 
             internal override void ModifyBodyColor(ref Color bodyColor)
             {
-                bodyColor = new Color(Mathf.Clamp(settings.bodyColor.r, 0.01f, 0.99f), Mathf.Clamp(settings.bodyColor.g, 0.01f, 0.99f), Mathf.Clamp(settings.bodyColor.b, 0.01f, 0.99f));
+                bodyColor = new Color(Mathf.Clamp(settings.bodyColor.r, 0.004f, 0.996f), Mathf.Clamp(settings.bodyColor.g, 0.004f, 0.996f), Mathf.Clamp(settings.bodyColor.b, 0.004f, 0.996f));
             }
 
             internal override void ModifyEyeColor(ref Color eyeColor)
             {
-                eyeColor = new Color(Mathf.Clamp(settings.eyeColor.r, 0.01f, 0.99f), Mathf.Clamp(settings.eyeColor.g, 0.01f, 0.99f), Mathf.Clamp(settings.eyeColor.b, 0.01f, 0.99f));
+                eyeColor = new Color(Mathf.Clamp(settings.eyeColor.r, 0.004f, 0.996f), Mathf.Clamp(settings.eyeColor.g, 0.004f, 0.996f), Mathf.Clamp(settings.eyeColor.b, 0.004f, 0.996f));
             }
         }
     }
