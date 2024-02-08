@@ -16,10 +16,13 @@ namespace RainMeadow
         private void MenuHooks()
         {
             On.Menu.MainMenu.ctor += MainMenu_ctor;
+            //On.Menu.InputOptionsMenu.ctor += InputOptionsMenu_ctor;
+
             On.ProcessManager.PostSwitchMainProcess += ProcessManager_PostSwitchMainProcess;
 
             IL.Menu.SlugcatSelectMenu.SlugcatPage.AddImage += SlugcatPage_AddImage;
             On.Menu.MenuScene.BuildScene += MenuScene_BuildScene;
+            
         }
 
         private void MenuScene_BuildScene(On.Menu.MenuScene.orig_BuildScene orig, MenuScene self)
@@ -177,6 +180,21 @@ namespace RainMeadow
 #endif
             orig(self, ID);
         }
+
+/*        private void InputOptionsMenu_ctor(On.Menu.InputOptionsMenu.orig_ctor orig, InputOptionsMenu self, ProcessManager manager)
+        {
+
+            List<string> inputLabelTextsList = new List<string>(new string[9] { "Pause", "Map", "Pick up / Eat", "Jump", "Throw", "Left", "Up", "Right", "Down" });
+            inputLabelTextsList.Add("View Friends");
+            string[] inputLabelTexts = inputLabelTextsList.ToArray();
+           
+            self.inputLabelTexts = inputLabelTexts;
+
+
+            orig(self, manager);
+
+        }*/
+
 
         private void MainMenu_ctor(On.Menu.MainMenu.orig_ctor orig, MainMenu self, ProcessManager manager, bool showRegionSpecificBkg)
         {
