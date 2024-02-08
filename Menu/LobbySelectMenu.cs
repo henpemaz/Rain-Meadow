@@ -221,13 +221,13 @@ namespace RainMeadow
             }
             if (currentlySelectedCard == 0)
             {
-                RequestLobbyCreate();
                 ShowLoadingDialog("Creating lobby...");
+                RequestLobbyCreate();
             }
             else
             {
-                RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo);
                 ShowLoadingDialog("Joining lobby...");
+                RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo);
             }
             
         }

@@ -225,22 +225,36 @@ namespace RainMeadow
         {
             try
             {
-                if (state is OnlineResource.ResourceState resourceState && resourceState.resource != null && (resourceState.resource.isAvailable || resourceState.resource.isWaitingForState || resourceState.resource.isPending))
+                if (state is OnlineResource.ResourceState resourceState)
                 {
-                    //RainMeadow.Debug($"Processing {resourceState} for {resourceState.resource}");
-                    resourceState.resource.ReadState(resourceState);
-                }
-                else if (state is EntityFeedState entityFeedState && entityFeedState.inResource != null && entityFeedState.inResource.isAvailable)
-                {
-                    var ent = entityFeedState.entityState.entityId.FindEntity();
-                    if(ent != null)
+                    if (resourceState.resource != null && (resourceState.resource.isAvailable || resourceState.resource.isWaitingForState || resourceState.resource.isPending))
                     {
-                        //RainMeadow.Debug($"Processing {entityFeedState} for {ent}");
-                        ent.ReadState(entityFeedState);
+                        RainMeadow.Trace($"Processing {resourceState} for {resourceState.resource}");
+                        resourceState.resource.ReadState(resourceState);
                     }
-                    else
+                    else // resource unloaded or not available
                     {
-                        RainMeadow.Error($"Entity {entityFeedState.entityState.entityId} not found for incoming state from {entityFeedState.entityState.from} in {entityFeedState.inResource}");
+                        RainMeadow.Trace($"Couldn't process {resourceState} for {resourceState.resource?.ToString() ?? "null"}");
+                    }
+                }
+                else if (state is EntityFeedState entityFeedState)
+                {
+                    if (entityFeedState.inResource != null && entityFeedState.inResource.isAvailable)
+                    {
+                        var ent = entityFeedState.entityState.entityId.FindEntity();
+                        if (ent != null)
+                        {
+                            RainMeadow.Trace($"Processing {entityFeedState} for {ent}");
+                            ent.ReadState(entityFeedState);
+                        }
+                        else
+                        {
+                            RainMeadow.Error($"Entity {entityFeedState.entityState.entityId} not found for incoming state from {entityFeedState.entityState.from} in {entityFeedState.inResource}");
+                        }
+                    }
+                    else // resource unloaded or not available
+                    {
+                        RainMeadow.Trace($"Couldn't process {entityFeedState} for {entityFeedState.inResource?.ToString() ?? "null"}");
                     }
                 }
                 else

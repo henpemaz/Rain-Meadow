@@ -5,7 +5,7 @@ namespace RainMeadow
     /// <summary>
     /// Limited skin-and-tint customization, meadow-specific
     /// </summary>
-    public class MeadowAvatarCustomization : AvatarSettings.AvatarCustomization
+    public class MeadowAvatarCustomization : ClientSettings.AvatarCustomization
     {
         public MeadowProgression.Skin skin;
         private MeadowProgression.SkinData skinData;

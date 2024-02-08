@@ -42,7 +42,7 @@ namespace RainMeadow
 
         internal override void Tick(uint tick)
         {
-            playerAvatars = entities.Values.Where(em => em.entity is AvatarSettings).Select(em => (em.entity as AvatarSettings).target).ToList();
+            playerAvatars = entities.Values.Where(em => em.entity is ClientSettings).Select(em => (em.entity as ClientSettings).avatarId).ToList();
             gameMode.LobbyTick(tick);
             base.Tick(tick);
         }
@@ -108,11 +108,8 @@ namespace RainMeadow
             public ushort nextId;
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedPlayerIDs players;
-
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedUshorts inLobbyIds;
-
-
             [OnlineField]
             public string[] mods;
             public LobbyState() : base() { }

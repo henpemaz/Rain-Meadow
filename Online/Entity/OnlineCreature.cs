@@ -89,29 +89,25 @@ namespace RainMeadow
             creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, creature.bodyChunks[victimChunkIndex], victimAppendage, damageType, damage, stunBonus);
         }
 
-        public void ForceGrab(OnlinePhysicalObject onlineGrabbed, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool pacifying)
-        {
-            var grabber = (Creature)this.apo.realizedObject;
-            var grabbedThing = onlineGrabbed.apo.realizedObject;
-            
-            if (grabber.grasps[graspUsed] != null)
-            {
-                if (grabber.grasps[graspUsed].grabbed == grabbedThing) return;
-                grabber.grasps[graspUsed].Release();
-            }
-            // Will I need to also include the shareability conflict here, too? Idk.
-            grabber.grasps[graspUsed] = new Creature.Grasp(grabber, grabbedThing, graspUsed, chunkGrabbed, shareability, dominance, pacifying);
-            grabbedThing.room = grabber.room;
-            grabbedThing.Grabbed(grabber.grasps[graspUsed]);
-            new AbstractPhysicalObject.CreatureGripStick(grabber.abstractCreature, grabbedThing.abstractPhysicalObject, graspUsed, pacifying || grabbedThing.TotalMass < grabber.TotalMass);
-        }
         public void ForceGrab(GraspRef graspRef)
         {
             var castShareability = new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(graspRef.Shareability));
             var other = graspRef.OnlineGrabbed.FindEntity(quiet: true) as OnlinePhysicalObject;
-            if(other != null)
+            if(other != null && other.apo.realizedObject != null)
             {
-                ForceGrab(other, graspRef.GraspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
+                var grabber = (Creature)this.apo.realizedObject;
+                var grabbedThing = other.apo.realizedObject;
+                var graspUsed = graspRef.GraspUsed;
+
+                if (grabber.grasps[graspUsed] != null)
+                {
+                    if (grabber.grasps[graspUsed].grabbed == grabbedThing) return;
+                    grabber.grasps[graspUsed].Release();
+                }
+                grabber.grasps[graspUsed] = new Creature.Grasp(grabber, grabbedThing, graspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
+                grabbedThing.room = grabber.room;
+                grabbedThing.Grabbed(grabber.grasps[graspUsed]);
+                new AbstractPhysicalObject.CreatureGripStick(grabber.abstractCreature, grabbedThing.abstractPhysicalObject, graspUsed, graspRef.Pacifying || grabbedThing.TotalMass < grabber.TotalMass);
             }
         }
 

@@ -277,6 +277,8 @@ namespace RainMeadow
             {
                 AbstractRoom oldAbsroom = self.reportBackToGate.room.abstractRoom;
                 AbstractRoom newAbsroom = self.worldLoader.world.GetAbstractRoom(oldAbsroom.name);
+                WorldSession oldWorldSession = WorldSession.map.GetValue(oldAbsroom.world, (w) => throw new KeyNotFoundException());
+                WorldSession newWorldSession = WorldSession.map.GetValue(newAbsroom.world, (w) => throw new KeyNotFoundException());
                 List<AbstractWorldEntity> entitiesFromNewRoom = newAbsroom.entities; // these get ovewritten and need handling
                 List<AbstractCreature> creaturesFromNewRoom = newAbsroom.creatures;
 
@@ -297,7 +299,8 @@ namespace RainMeadow
                             if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
                             {
                                 // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
-                                if (!oe.isMine)
+                                // if they're the overseer and it isn't the host moving it, that's bad as well
+                                if (!oe.isMine || (apo is AbstractCreature ac && ac.creatureTemplate.type == CreatureTemplate.Type.Overseer && !newWorldSession.isOwner))
                                 {
                                     // not-online-aware removal
                                     Debug("removing remote entity from game " + oe);
@@ -328,6 +331,27 @@ namespace RainMeadow
                     // post: we add our entities to the new world
                     if (room != null && RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession2))
                     {
+                        // update definitions
+                        foreach (var ent in room.abstractRoom.entities)
+                        {
+                            if (ent is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+                            {
+                                // should these be some sort of OnlinePhisicalObject api?
+                                if (apo is AbstractCreature ac)
+                                {
+                                    (oe.definition as OnlineCreatureDefinition).serializedObject = SaveState.AbstractCreatureToStringStoryWorld(ac);
+                                }
+                                else
+                                {
+                                    (oe.definition as OnlinePhysicalObjectDefinition).serializedObject = apo.ToString();
+                                }
+                            }
+                            else
+                            {
+                                RainMeadow.Error("unhandled entity in gate post switch: " + ent);
+                            }
+                        }
+
                         roomSession2.Activate(); // adds entities that are already in the room as mine
                         room.abstractRoom.entities.AddRange(entitiesFromNewRoom); // re-add overwritten entities
                         room.abstractRoom.creatures.AddRange(creaturesFromNewRoom);

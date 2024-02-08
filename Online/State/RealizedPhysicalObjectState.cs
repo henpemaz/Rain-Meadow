@@ -26,22 +26,9 @@ namespace RainMeadow
         {
             if (onlineEntity.owner.isMe || onlineEntity.isPending) { RainMeadow.Debug($"not syncing {this} because mine?{onlineEntity.owner.isMe} pending?{onlineEntity.isPending}");return; }; // Don't sync if pending, reduces visibility and effect of lag
             var po = (onlineEntity as OnlinePhysicalObject).apo.realizedObject;
-            if (chunkStates.Length == po.bodyChunks.Length)
+            for (int i = 0; i < chunkStates.Length; i++) //sync bodychunk positions
             {
-                float diffAverage = 0;
-                for (int i = 0; i < chunkStates.Length; i++)
-                {
-                    var couldReasonablyReach = chunkStates[i].vel.magnitude;
-                    diffAverage += Math.Max(0, (chunkStates[i].pos - po.bodyChunks[i].pos).magnitude - couldReasonablyReach);
-                }
-                diffAverage /= chunkStates.Length; //a rating of how different the two states are, more forgiving the
-                if (diffAverage > 3)               //higher the object's velocity
-                {
-                    for (int i = 0; i < chunkStates.Length; i++) //sync bodychunk positions
-                    {
-                        chunkStates[i].ReadTo(po.bodyChunks[i]);
-                    }
-                }
+                chunkStates[i].ReadTo(po.bodyChunks[i]);
             }
             po.collisionLayer = collisionLayer;
         }

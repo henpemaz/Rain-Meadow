@@ -84,7 +84,7 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             UdpPeer.Startup();
             me = UdpPeer.port;
-
+            isHost = me == UdpPeer.STARTING_PORT;
             var thisPlayer = (LocalPlayerId)OnlineManager.mePlayer.id;
             thisPlayer.name = $"local:{me}";
             thisPlayer.isHost = isHost;
@@ -102,6 +102,11 @@ namespace RainMeadow
         public override void CreateLobby(LobbyVisibility visibility, string gameMode)
         {
             sessionSetup(true);
+            if (!((LocalPlayerId)OnlineManager.mePlayer.id).isHost)
+            {
+                OnLobbyJoined?.Invoke(false, "use the host");
+                return;
+            }
             OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer);
             OnLobbyJoined?.Invoke(true);
         }
@@ -109,6 +114,11 @@ namespace RainMeadow
         public override void JoinLobby(LobbyInfo lobby)
         {
             sessionSetup(false);
+            if (((LocalPlayerId)OnlineManager.mePlayer.id).isHost)
+            {
+                OnLobbyJoined?.Invoke(false, "use the client");
+                return;
+            }
             RainMeadow.Debug("Joining local game...");
             if (lobby.ipEndpoint == null) {
                 RainMeadow.Debug("Failed to join local game...");

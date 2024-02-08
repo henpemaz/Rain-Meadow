@@ -221,7 +221,8 @@ namespace RainMeadow
                 newArgs.Insert(handler.eventArgIndex, this);
                 args = newArgs.ToArray();
             }
-            try {
+            try
+            {
                 var nout = from.OutgoingEvents.Count;
                 var result = handler.method.Invoke(target, args);
                 if (from.OutgoingEvents.Count != nout && from.OutgoingEvents.Any(e => e is GenericResult gr && gr.referencedEvent == this)) return;
@@ -229,7 +230,9 @@ namespace RainMeadow
                 if (result is GenericResult res) from.QueueEvent(res);
                 else from.QueueEvent(new GenericResult.Ok(this));
             }
-            catch {
+            catch (Exception e)
+            {
+                RainMeadow.Error($"Error handing RPC {handler.method.Name} {e}");
                 from.QueueEvent(new GenericResult.Error(this));
             }
         }

@@ -24,5 +24,10 @@ namespace RainMeadow
         public abstract OnlineEntity MakeEntity(OnlineResource inResource);
 
         public OnlineEntity.EntityId ID => entityId;
+
+        public override string ToString()
+        {
+            return base.ToString() + ":" + entityId;
+        }
     }
 }
