@@ -165,8 +165,6 @@ namespace RainMeadow
             colorpicker2.colorPicker.Hide();
             colorpicker2.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
             
-            // TODO: Skin + Eye customization
-
             UpdateCharacterUI();
 
             
