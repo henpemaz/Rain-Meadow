@@ -16,11 +16,12 @@ namespace RainMeadow
 
         internal static void InitializeBuiltinTypes()
         {
-            // todo load
+            // todo load progression
             try
             {
                 _ = Character.Slugcat;
                 _ = Skin.Slugcat_Survivor;
+                currentTestSkin = Skin.Lizard_Pink;
             }
             catch (Exception e)
             {
@@ -71,6 +72,7 @@ namespace RainMeadow
         }
 
         public static Dictionary<Skin, SkinData> skinData = new();
+        internal static Skin currentTestSkin;
 
         public class SkinData
         {

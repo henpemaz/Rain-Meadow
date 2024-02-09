@@ -214,6 +214,13 @@ namespace RainMeadow
 
         public override void Process()
         {
+            if(!handler.isStatic && target == null)
+            {
+                RainMeadow.Error($"Target of RPC not found for " + handler.summary);
+                from.QueueEvent(new GenericResult.Error(this));
+                return;
+            }
+
             RainMeadow.Debug($"Processing RPC: {handler.summary}");
             if (handler.eventArgIndex > -1)
             {

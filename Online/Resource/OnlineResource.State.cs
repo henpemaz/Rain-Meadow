@@ -310,7 +310,7 @@ namespace RainMeadow
                         var subresource = resource.SubresourceFromShortId(item.resourceId);
                         var itemOwner = OnlineManager.lobby.PlayerFromId(item.owner);
                         if (subresource.owner != itemOwner) subresource.NewOwner(itemOwner);
-                        subresource.UpdateParticipants(item.participants.list.Select(u => OnlineManager.lobby.PlayerFromId(u)).ToList());
+                        subresource.UpdateParticipants(item.participants.list.Select(OnlineManager.lobby.PlayerFromId).Where(p => p != null).ToList());
                     }
                 }
             }

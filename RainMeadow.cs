@@ -164,6 +164,13 @@ namespace RainMeadow
                 MeadowMusic.EnableMusic();
 
                 self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
+
+#if LOCAL_P2P
+                if (!self.setup.startScreen)
+                {
+                    OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(LocalMatchmakingManager.localGameMode), OnlineManager.mePlayer);
+                }
+#endif
             }
             catch (Exception e)
             {

@@ -69,6 +69,7 @@ namespace RainMeadow
             var oe = nee.entityId.FindEntity();
             RainMeadow.Debug($"{oe} : {this}");
             if (oe.pendingRequest == registerResult.referencedEvent) oe.pendingRequest = null;
+            else RainMeadow.Error($"Weird event situation, pending is {oe.pendingRequest} and referenced is {registerResult.referencedEvent}");
 
             if (registerResult is GenericResult.Ok) // success
             {
@@ -143,6 +144,7 @@ namespace RainMeadow
             var oe = ((entityJoinResult.referencedEvent as RPCEvent).args[0] as OnlineEntity);
             RainMeadow.Debug($"{oe} : {this}");
             if (oe.pendingRequest == entityJoinResult.referencedEvent) oe.pendingRequest = null;
+            else RainMeadow.Error($"Weird event situation, pending is {oe.pendingRequest} and referenced is {entityJoinResult.referencedEvent}");
 
             if (entityJoinResult is GenericResult.Ok) // success
             {
@@ -211,6 +213,7 @@ namespace RainMeadow
             var oe = (entityLeaveResult.referencedEvent as RPCEvent).args[0] as OnlineEntity;
             RainMeadow.Debug($"{oe} : {this}");
             if (oe.pendingRequest == entityLeaveResult.referencedEvent) oe.pendingRequest = null;
+            else RainMeadow.Error($"Weird event situation, pending is {oe.pendingRequest} and referenced is {entityLeaveResult.referencedEvent}");
 
             if (entityLeaveResult is GenericResult.Ok) // success
             {
@@ -265,7 +268,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug($"{oe} : {this} : to {to}");
             if (oe.isPending) throw new InvalidOperationException("can't trandfer if pending");
-            owner.InvokeRPC(this.OnEntityTransferRequest, oe, to).Then(this.ResolveTransfer);
+            oe.pendingRequest = owner.InvokeRPC(this.OnEntityTransferRequest, oe, to).Then(this.OnEntityTransferResolve);
         }
 
         [RPCMethod]
@@ -288,6 +291,7 @@ namespace RainMeadow
             var oe = (entityTransferResult.referencedEvent as RPCEvent).args[0] as OnlineEntity;
             RainMeadow.Debug($"{oe} : {this}");
             if (oe.pendingRequest == entityTransferResult.referencedEvent) oe.pendingRequest = null;
+            else RainMeadow.Error($"Weird event situation, pending is {oe.pendingRequest} and referenced is {entityTransferResult.referencedEvent}");
 
             if (entityTransferResult is GenericResult.Ok) // success
             {

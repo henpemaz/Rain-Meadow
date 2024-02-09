@@ -9,13 +9,13 @@ namespace RainMeadow
     public class LocalMatchmakingManager : MatchmakingManager
     {
 #if ARENAP2P
-        private string localGameMode = "ArenaCompetitive";
+        public static string localGameMode = "ArenaCompetitive";
 #elif STORYP2P
-        private string localGameMode = "Story";
+        public static string localGameMode = "Story";
 #elif FREEROAMP2P
-        private string localGameMode = "FreeRoam";
+        public static string localGameMode = "FreeRoam";
 #else
-        private string localGameMode = "Meadow";
+        public static string localGameMode = "Meadow";
 #endif
 
         public class LocalPlayerId : MeadowPlayerId

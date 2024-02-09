@@ -69,10 +69,15 @@ namespace RainMeadow
         internal override void AddAvatarSettings()
         {
             RainMeadow.Debug("Adding avatar settings!");
-            avatarSettings = new MeadowAvatarSettings(
-                new MeadowAvatarSettings.Definition(
-                    new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0)
-                    , OnlineManager.mePlayer));
+            MeadowAvatarSettings meadowAvatarSettings = new MeadowAvatarSettings(
+                            new MeadowAvatarSettings.Definition(
+                                new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0)
+                                , OnlineManager.mePlayer));
+            avatarSettings = meadowAvatarSettings;
+            if (!RWCustom.Custom.rainWorld.setup.startScreen) // skipping all menus
+            {
+                meadowAvatarSettings.skin = MeadowProgression.currentTestSkin;
+            }
             avatarSettings.EnterResource(lobby);
         }
 
