@@ -274,7 +274,7 @@ namespace RainMeadow
             hostStartButton.buttonBehav.greyedOut = false;
 
             // TODO: clientWaitingButton needs to not require x/y shift to function. Look into .Remove() on subObjects.
-            this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER (wait for host)"), new Vector2(683f, 85f), 40f);
+            this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
             this.clientWaitingButton.OnClick += (_) => { StartGame(); };
             clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame; // True to begin
 

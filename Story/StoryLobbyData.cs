@@ -61,12 +61,14 @@ namespace RainMeadow
             {
                 RainWorldGame currentGameState = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
                 var playerstate = (currentGameState?.Players[0].state as PlayerState);
+
                 var lobby = (data.resource as Lobby);
 
                 if (playerstate != null)
                 {
                     playerstate.foodInStomach = food;
                     playerstate.quarterFoodPoints = quarterfood;
+                    
                 }
                 if ((currentGameState?.Players[0].realizedCreature is Player player))
                 {

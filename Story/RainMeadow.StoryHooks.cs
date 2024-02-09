@@ -1,13 +1,16 @@
-﻿using UnityEngine;
-using System.Linq;
-using System.Collections.Generic;
-using MonoMod.Cil;
+﻿using HUD;
+using UnityEngine;
+using JollyCoop.JollyHUD;
+using System.Security.AccessControl;
+using Menu;
+using Menu.Remix;
+using Menu.Remix.MixedUI;
+using Steamworks;
 using System;
-using Mono.Cecil.Cil;
-using HUD;
-using System.Text.RegularExpressions;
-
-
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using UnityEngine.UIElements;
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -30,8 +33,9 @@ namespace RainMeadow
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
             On.Menu.SleepAndDeathScreen.ctor += SleepAndDeathScreen_ctor;
             On.Menu.SleepAndDeathScreen.Update += SleepAndDeathScreen_Update;
+            On.JollyCoop.JollyHUD.JollyMeter.ctor += JollyMeter_ctor;
 
-            
+
 
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
 
@@ -45,19 +49,56 @@ namespace RainMeadow
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
         }
 
+
+        // WORKS!
+        private void JollyMeter_ctor(On.JollyCoop.JollyHUD.JollyMeter.orig_ctor orig, JollyMeter self, HUD.HUD hud, FContainer fContainer)
+        {
+            self.meterPos = new Vector2(RWCustom.Custom.rainWorld.options.ScreenSize.x - 90f, 100f);
+            self.meterLastPos = self.meterPos;
+            List<AbstractCreature> players = new List<AbstractCreature>();
+
+            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
+            {
+                if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                {
+                    players.Add(ac);
+                }
+            }
+            self.playerIcons = new Dictionary<int, JollyMeter.PlayerIcon>();
+            self.hud = hud;
+            self.fContainer = fContainer;
+            for (int i = 0; i < players.Count; i++)
+            {
+                Color color = PlayerGraphics.SlugcatColor((players[i].state as PlayerState).slugcatCharacter);
+                JollyMeter.PlayerIcon value = new JollyMeter.PlayerIcon(self, players[i], color);
+                self.playerIcons.Add(i, value);
+            }
+
+            self.fade = 0f;
+            self.lastFade = 0f;
+            self.customFade = 0f;
+            self.cameraArrowSprite = new FSprite("Multiplayer_Arrow");
+            fContainer.AddChild(self.cameraArrowSprite);
+        }
+
+
+
         private void RainWorldGame_GoToDeathScreen(On.RainWorldGame.orig_GoToDeathScreen orig, RainWorldGame self)
         {
-            if(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 if (!OnlineManager.lobby.isOwner)
                 {
                     OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToDeathScreen);
                 }
-                else {
+                else
+                {
                     RPCs.MovePlayersToDeathScreen();
                 }
             }
-            else{
+            else
+            {
                 orig(self);
             }
         }
@@ -81,12 +122,14 @@ namespace RainMeadow
                     {
                         player.InvokeRPC(RPCs.InitGameOver);
                     }
-                    else {
+                    else
+                    {
                         orig(self, dependentOnGrasp);
                     }
                 }
             }
-            else {
+            else
+            {
                 orig(self, dependentOnGrasp);
             }
         }
@@ -130,11 +173,12 @@ namespace RainMeadow
             if (isStoryMode(out var gameMode))
             {
 
-                
+
                 if (Input.GetKeyDown(options.FriendsListKey.Value))
                 {
+                    Debug($"LIFE IS PAINAAANANAANANAN");
 
-                    Debug("Placeholder for displaying usernames");
+
 
                 }
                 //fetch the online entity and check if it is mine. 
@@ -199,6 +243,7 @@ namespace RainMeadow
 
             }
         }
+
 
         private void ReadyButton_OnClick(SimplerButton obj)
         {
