@@ -4,7 +4,6 @@ using RWCustom;
 using System.Runtime.CompilerServices;
 using System.Linq;
 using HUD;
-using Steamworks;
 
 namespace RainMeadow
 {
@@ -31,12 +30,13 @@ namespace RainMeadow
             }
             else
             {
-                throw new NotImplementedException(creature.ToString());
+                throw new InvalidProgrammerException("You need to implement " + creature.ToString());
             }
         }
 
         public Creature creature;
         public OnlineCreature onlineCreature;
+        public RainWorld rainWorld;
 
         public CreatureController(Creature creature, OnlineCreature oc, int playerNumber)
         {
@@ -44,7 +44,6 @@ namespace RainMeadow
             this.onlineCreature = oc;
             this.playerNumber = playerNumber;
 
-            input = new Player.InputPackage[10];
             rainWorld = creature.abstractCreature.world.game.rainWorld;
 
             if (creatureControllers.TryGetValue(creature.abstractCreature, out _))
@@ -52,37 +51,44 @@ namespace RainMeadow
                 RainMeadow.Error($"Creature was already bound to a controller! {creature} {oc}");
                 creatureControllers.Remove(creature.abstractCreature);
             }
-
             creatureControllers.Add(creature.abstractCreature, this);
+
+            standStillOnMapButton = creature.abstractCreature.world.game.IsStorySession;
 
             //creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
             //debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);
         }
 
         public int playerNumber = 0;
-
-        public Player.InputPackage[] input;
-
-        private RainWorld rainWorld;
-        public int wantToJump;
-        public int wantToPickUp;
-        public int dontEatExternalFoodSourceCounter;
-        public int eatExternalFoodSourceCounter;
-        public int touchedNoInputCounter;
-        public bool readyForWin;
-        public PhysicalObject pickUpCandidate;
-        public int dontGrabStuff;
-        public int eatCounter;
-        public int flipDirection;
+        public Player.InputPackage[] input = new Player.InputPackage[10];
         public Vector2 inputDir;
         public Vector2 inputLastDir;
 
+        public int wantToJump;
+        public int wantToPickUp;
+        public int wantToThrow;
+
+        public int superLaunchJump;
+        public int flipDirection;
+        public int sleepCounter;
+
+        public int touchedNoInputCounter;
+        public bool standStillOnMapButton;
+        public bool readyForWin;
+
+        public PhysicalObject pickUpCandidate;
+        public int dontGrabStuff;
+        public int eatCounter;
+        public int dontEatExternalFoodSourceCounter;
+        public int eatExternalFoodSourceCounter;
+
+        // IOwnAHUD
         public int CurrentFood => 0;
-
+        // IOwnAHUD
         public Player.InputPackage MapInput => input[0];
-
+        // IOwnAHUD
         public bool RevealMap => input[0].mp;
-
+        // IOwnAHUD
         public Vector2 MapOwnerInRoomPosition
         {
             get
@@ -99,23 +105,24 @@ namespace RainMeadow
                 return this.creature.mainBodyChunk.pos;
             }
         }
-
+        // IOwnAHUD
         public bool MapDiscoveryActive => this.creature.Consious && this.creature.room != null && !this.creature.room.world.singleRoomWorld && this.creature.abstractCreature.Room.realizedRoom != null && this.creature.mainBodyChunk.pos.x > 0f && this.creature.mainBodyChunk.pos.x < this.creature.abstractCreature.Room.realizedRoom.PixelWidth && this.creature.mainBodyChunk.pos.y > 0f && this.creature.mainBodyChunk.pos.y < this.creature.abstractCreature.Room.realizedRoom.PixelHeight; // optimize me
-
+        // IOwnAHUD
         public int MapOwnerRoom => this.creature.abstractPhysicalObject.pos.room;
-
+        // IOwnAHUD
         public void PlayHUDSound(SoundID soundID)
         {
             this.creature.abstractCreature.world.game.cameras[0].virtualMicrophone.PlaySound(soundID, 0f, 1f, 1f);
         }
-
+        // IOwnAHUD
         public void FoodCountDownDone() { }
-
-
+        // IOwnAHUD
         public static HUD.HUD.OwnerType controlledCreatureHudOwner = new("MeadowControlledCreature", true);
+        private int blink;
+
         public HUD.HUD.OwnerType GetOwnerType() => controlledCreatureHudOwner;
 
-        public void checkInput()
+        public void CheckInput()
         {
             for (int i = this.input.Length - 1; i > 0; i--)
             {
@@ -154,19 +161,20 @@ namespace RainMeadow
                 }
             }
 
-            //this.mapInput = this.input[0];
-            //if ((this.standStillOnMapButton && this.input[0].mp) || this.Sleeping)
-            //{
-            //    this.input[0].x = 0;
-            //    this.input[0].y = 0;
-            //    Player.InputPackage[] input = this.input;
-            //    int num2 = 0;
-            //    input[num2].analogueDir = input[num2].analogueDir * 0f;
-            //    this.input[0].jmp = false;
-            //    this.input[0].thrw = false;
-            //    this.input[0].pckp = false;
-            //    this.Blink(5);
-            //}
+            if ((this.standStillOnMapButton && this.input[0].mp) || this.sleepCounter != 0)
+            {
+                this.input[0].x = 0;
+                this.input[0].y = 0;
+                this.input[0].analogueDir = default;
+                this.input[0].jmp = false;
+                this.input[0].thrw = false;
+                this.input[0].pckp = false;
+                this.Blink(5);
+            }
+            if (this.superLaunchJump > 10 && this.input[0].jmp && this.input[1].jmp && this.input[2].jmp && this.input[0].y < 1)
+            {
+                this.input[0].x = 0;
+            }
 
             inputDir = input[0].analogueDir.magnitude > 0.2f ? input[0].analogueDir
                 : input[0].IntVec.ToVector2().magnitude > 0.2 ? input[0].IntVec.ToVector2().normalized
@@ -176,14 +184,25 @@ namespace RainMeadow
                 : input[1].IntVec.ToVector2().magnitude > 0.2 ? input[1].IntVec.ToVector2().normalized
                 : Vector2.zero;
         }
+
+        private void Blink(int blink)
+        {
+            if (this.blink < blink)
+            {
+                this.blink = blink;
+            }
+        }
+
         internal virtual void Update(bool eu)
         {
             // Input
-            this.checkInput();
+            this.CheckInput();
 
             // a lot of things copypasted from from p.update
             if (this.wantToJump > 0) this.wantToJump--;
             if (this.wantToPickUp > 0) this.wantToPickUp--;
+            if (this.wantToThrow > 0) this.wantToThrow--;
+
 
             // eat popcorn
             if (this.dontEatExternalFoodSourceCounter > 0)
@@ -211,6 +230,7 @@ namespace RainMeadow
                 this.touchedNoInputCounter = 0;
             }
 
+            // relevant to story
             //// shelter activation
             //this.readyForWin = false;
             //if (this.room.abstractRoom.shelter && this.room.game.IsStorySession && !this.dead && !this.Sleeping && this.room.shelterDoor != null && !this.room.shelterDoor.Broken)
@@ -247,6 +267,7 @@ namespace RainMeadow
             //    }
             //}
 
+            // relevant to story
             //// karma flower placement
             //if (this.room.game.IsStorySession)
             //{
@@ -260,6 +281,7 @@ namespace RainMeadow
             //    }
             //}
 
+            // relevant to story
             //// SHROOMIES
             //if (this.mushroomCounter > 0)
             //{
@@ -286,6 +308,7 @@ namespace RainMeadow
             //    }
             //}
 
+            // relevant to story
             //// death grasp
             //// this is from vanilla but could be reworked into a more flexible system.
             //if (this.dangerGrasp == null)
@@ -313,6 +336,7 @@ namespace RainMeadow
             //    }
             //}
 
+            // relevant to story AND meadow?
             //// map progression specifics
             //if (this.MapDiscoveryActive && this.coord != this.lastCoord)
             //{
@@ -365,6 +389,7 @@ namespace RainMeadow
             // cheats
             if (creature.room != null && creature.room.game.devToolsActive)
             {
+                // relevant to story
                 //if (Input.GetKey("q") && !this.FLYEATBUTTON)
                 //{
                 //    this.AddFood(1);
@@ -435,15 +460,14 @@ namespace RainMeadow
 
         public bool CanIPickThisUp(PhysicalObject obj)
         {
-            if (this.Grabability(obj) == Player.ObjectGrabability.CantGrab)
+            var grabblt = this.Grabability(obj);
+            if (grabblt == Player.ObjectGrabability.CantGrab)
             {
                 return false;
             }
-
-            int num = (int)this.Grabability(obj);
-            if (num == 2)
+            if (grabblt == Player.ObjectGrabability.BigOneHand)
             {
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < creature.grasps.Length; i++)
                 {
                     if (creature.grasps[i] != null && this.Grabability(creature.grasps[i].grabbed) > Player.ObjectGrabability.OneHand)
                     {
@@ -451,9 +475,8 @@ namespace RainMeadow
                     }
                 }
             }
-
-            int num2 = 0;
-            for (int l = 0; l < 2; l++)
+            int bigthings = 0;
+            for (int l = 0; l < creature.grasps.Length; l++)
             {
                 if (creature.grasps[l] != null)
                 {
@@ -463,11 +486,11 @@ namespace RainMeadow
                     }
                     if (this.Grabability(creature.grasps[l].grabbed) > Player.ObjectGrabability.OneHand)
                     {
-                        num2++;
+                        bigthings++;
                     }
                 }
             }
-            return num2 != 2 && (num2 <= 0 || num <= 2);
+            return (bigthings <= 0 || grabblt <= Player.ObjectGrabability.BigOneHand);
         }
 
         private Player.ObjectGrabability Grabability(PhysicalObject obj)

@@ -1,17 +1,6 @@
 ﻿Rain Meadow
-Manage missing regions:
-	right now nullrefs because missing referenced resource
-	if by transfer someone who is missing things becomes the owner then some resources will be unmanageable
-	The more definitive solution seems to be sync/force mod-lists on join
-
 Entities entities entities
-	Entity Join/leave should be handshaked, owner can change inbetween
-		the "ent-owner-to-room-owner" one, not the owner-to-others broadcast
-
-	handle entities entering shortcuts
-	entering/leaving shorcuts should be a room-level event with the coordinate of the damned thing
-		could do suckedintoshortcuts and spitoutofshortcut as events and bypass the whole vanilla thing
-
+	
 	handle entities entering dens
 		could also be event-based
 		would maybe also have to handle the whole switchcase at "the end of the shortcut" when the creature then either enters a den or leaves the room or whatever
@@ -37,12 +26,13 @@ Entities entities entities
 Mod auto installing / auto disabling
 	biggest issue: different region list
 		scenario: host that has ABC, guests have AB, BC and CA, host leaves nobody can take over hosting
-	oh my
+	enforced mod-sync on join lobby
+		anything that changes world folders
+		plus weird world-state changing chings like expedition/remix?
 	could use a whitelist maybe
-	apply automatically, re-launch and re-join the lobby in question
-		arg from the command line to join lobby, also needed for steam's Join feature thing
-	bruteforce
-	disable all other mods temporarily, store old enabledlist, relaunch with no mods
+	could automate it some:
+		apply automatically, re-launch and re-join the lobby in question
+		disable all other mods temporarily, store old enabledlist, relaunch with right mods
 
 
 Imediate todo:
@@ -50,41 +40,3 @@ Imediate todo:
 on sleep
 	should wait release before enabling the start button
 
-other loaded player dying gameovers
-
-wakeup -> shelter close imediatelly -> starve issue
-	solved by other players not triggering?
-
-wakeup -> slow load -> sprite issue
-	solved by waiting release?
-
-on load, non-owner still loads saved creatures
-	this will be very specific per game mode wont it?
-	
-sleep screen
-	its picking the wrong scug?
-	seems to not be happening anymore
-
-On join world, join room
-	if entity enter world message arrives after entity enter room message, could this cause a problem?
-
-shortcuts.suckincreature
-	IL hook so that player check doesn't trigger for remote
-	maybe trigger when playing as other creatures
-
-only list lobbies of supported game type
-
-since moved from hook on ctor for stuff added to world, initial populations isn't picking up
-	might need to think through the "on den" situation and related hooks
-	
-on room load
-	we dont know who owner is going to be, can't decide who's the host
-
-world entity hookery correctness
-	
-debug why lease messages so big, make it print out size and isdelta
-
-on p2 talking to p1 about a resource that p1 has fully unloaded, p1 nullrefs and doesn't give p2 any answers.
-	p1 should answer total failure
-	or p2 should timeout the request
-	or request from p2 should detect it was ackd but not answered

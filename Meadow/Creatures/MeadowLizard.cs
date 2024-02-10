@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System;
 using RWCustom;
+using MonoMod.Cil;
+using Mono.Cecil.Cil;
 
 namespace RainMeadow
 {
@@ -12,34 +14,31 @@ namespace RainMeadow
 
         public override bool GrabImpl(PhysicalObject pickUpCandidate)
         {
-            foreach (BodyChunk chunk in creature.bodyChunks)
+            var chunk = pickUpCandidate.bodyChunks[0];
+            lizard.biteControlReset = false;
+            lizard.JawOpen = 0f;
+            lizard.lastJawOpen = 0f;
+
+            chunk.vel += creature.mainBodyChunk.vel * Mathf.Lerp(creature.mainBodyChunk.mass, 1.1f, 0.5f) / Mathf.Max(1f, chunk.mass);
+            if(creature.Grab(chunk.owner, 0, chunk.index, Creature.Grasp.Shareability.CanOnlyShareWithNonExclusive, lizard.lizardParams.biteDominance * UnityEngine.Random.value, overrideEquallyDominant: true, pacifying: true))
             {
-                if (Custom.DistLess(creature.mainBodyChunk.pos + Custom.DirVec(creature.bodyChunks[1].pos, creature.mainBodyChunk.pos) * lizard.lizardParams.biteInFront, chunk.pos, chunk.rad + lizard.lizardParams.biteRadBonus))
+                if (creature.graphicsModule != null)
                 {
-                    lizard.biteControlReset = false;
-                    lizard.JawOpen = 0f;
-                    lizard.lastJawOpen = 0f;
-
-
-                    chunk.vel += creature.mainBodyChunk.vel * Mathf.Lerp(creature.mainBodyChunk.mass, 1.1f, 0.5f) / Mathf.Max(1f, chunk.mass);
-                    creature.Grab(chunk.owner, 0, chunk.index, Creature.Grasp.Shareability.CanOnlyShareWithNonExclusive, lizard.lizardParams.biteDominance * UnityEngine.Random.value, overrideEquallyDominant: true, pacifying: true);
-
-                    if (creature.graphicsModule != null)
+                    if (chunk.owner is IDrawable)
                     {
-                        if (chunk.owner is IDrawable)
-                        {
-                            creature.graphicsModule.AddObjectToInternalContainer(chunk.owner as IDrawable, 0);
-                        }
-                        else if (chunk.owner.graphicsModule != null)
-                        {
-                            creature.graphicsModule.AddObjectToInternalContainer(chunk.owner.graphicsModule, 0);
-                        }
+                        creature.graphicsModule.AddObjectToInternalContainer(chunk.owner as IDrawable, 0);
                     }
-
-                    creature.room.PlaySound(SoundID.Lizard_Jaws_Grab_NPC, creature.mainBodyChunk);
-                    return true;
+                    else if (chunk.owner.graphicsModule != null)
+                    {
+                        creature.graphicsModule.AddObjectToInternalContainer(chunk.owner.graphicsModule, 0);
+                    }
                 }
+
+                creature.room.PlaySound(SoundID.Lizard_Jaws_Grab_NPC, creature.mainBodyChunk);
+                return true;
             }
+
+            creature.room.PlaySound(SoundID.Lizard_Jaws_Shut_Miss_Creature, creature.mainBodyChunk);
             return false;
         }
 
@@ -54,8 +53,42 @@ namespace RainMeadow
             On.Lizard.SwimBehavior += Lizard_SwimBehavior;
             On.Lizard.FollowConnection += Lizard_FollowConnection;
 
+            IL.Lizard.CarryObject += Lizard_CarryObject1;
+
             // color
             On.LizardGraphics.ctor += LizardGraphics_ctor;
+        }
+
+        private static void Lizard_CarryObject1(ILContext il)
+        {
+            var c = new ILCursor(il);
+            ILLabel dorun = null;
+            ILLabel dontrun = null;
+            try
+            {
+                c.GotoNext(MoveType.AfterLabel,
+                i => i.MatchIsinst<Creature>(),
+                i => i.MatchBrfalse(out dorun));
+                c.GotoPrev(MoveType.After,
+                i => i.MatchBgeUn(out dontrun));
+
+                c.MoveAfterLabels();
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate<Func<Lizard, bool>>((self) => // lizard don't
+                {
+                    if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+                    {
+                        return true;
+                    }
+                    return false;
+                });
+                c.Emit(OpCodes.Brtrue, dontrun); // dont run if lizard
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                throw;
+            }
         }
 
         private static void LizardGraphics_ctor(On.LizardGraphics.orig_ctor orig, LizardGraphics self, PhysicalObject ow)
@@ -168,12 +201,13 @@ namespace RainMeadow
                         }
                     }
 
-                    if ((self.graphicsModule as LizardGraphics)?.frontLegsGrabbing > 0 && room.aimap.TileAccessibleToCreature(toPos.Tile, self.Template))
+                    // minimun speed
+                    if ((self.graphicsModule as LizardGraphics)?.frontLegsGrabbing > 0)
                     {
                         var inDirection = Vector2.Dot(self.mainBodyChunk.vel, p.inputDir);
-                        if (inDirection < 2)
+                        if (inDirection < 1)
                         {
-                            self.mainBodyChunk.vel += p.inputDir * (2 - inDirection);
+                            self.mainBodyChunk.vel += p.inputDir * (1 - inDirection);
                         }
                     }
 

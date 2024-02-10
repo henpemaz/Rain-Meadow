@@ -161,4 +161,3 @@ region-owner receives the event, recreates entity, does nothing with it? places 
 		what if received as non-owner? how can we detect the mistake?
 		"Join with Entity" that only owner can process
 
-
