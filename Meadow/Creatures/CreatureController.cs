@@ -54,6 +54,7 @@ namespace RainMeadow
             creatureControllers.Add(creature.abstractCreature, this);
 
             standStillOnMapButton = creature.abstractCreature.world.game.IsStorySession;
+            flipDirection = 1;
 
             //creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
             //debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);
@@ -71,6 +72,8 @@ namespace RainMeadow
         public int superLaunchJump;
         public int flipDirection;
         public int sleepCounter;
+        public int blink;
+        public int forceBoost;
 
         public int touchedNoInputCounter;
         public bool standStillOnMapButton;
@@ -106,7 +109,7 @@ namespace RainMeadow
             }
         }
         // IOwnAHUD
-        public bool MapDiscoveryActive => this.creature.Consious && this.creature.room != null && !this.creature.room.world.singleRoomWorld && this.creature.abstractCreature.Room.realizedRoom != null && this.creature.mainBodyChunk.pos.x > 0f && this.creature.mainBodyChunk.pos.x < this.creature.abstractCreature.Room.realizedRoom.PixelWidth && this.creature.mainBodyChunk.pos.y > 0f && this.creature.mainBodyChunk.pos.y < this.creature.abstractCreature.Room.realizedRoom.PixelHeight; // optimize me
+        public bool MapDiscoveryActive => this.creature.Consious && this.creature.room != null && !this.creature.room.world.singleRoomWorld && this.creature.mainBodyChunk.pos.x > 0f && this.creature.mainBodyChunk.pos.x < this.creature.room.PixelWidth && this.creature.mainBodyChunk.pos.y > 0f && this.creature.mainBodyChunk.pos.y < this.creature.room.PixelHeight;
         // IOwnAHUD
         public int MapOwnerRoom => this.creature.abstractPhysicalObject.pos.room;
         // IOwnAHUD
@@ -118,7 +121,6 @@ namespace RainMeadow
         public void FoodCountDownDone() { }
         // IOwnAHUD
         public static HUD.HUD.OwnerType controlledCreatureHudOwner = new("MeadowControlledCreature", true);
-        private int blink;
 
         public HUD.HUD.OwnerType GetOwnerType() => controlledCreatureHudOwner;
 
@@ -171,9 +173,26 @@ namespace RainMeadow
                 this.input[0].pckp = false;
                 this.Blink(5);
             }
-            if (this.superLaunchJump > 10 && this.input[0].jmp && this.input[1].jmp && this.input[2].jmp && this.input[0].y < 1)
+
+            if (this.superLaunchJump > 10 && this.input[0].jmp && this.input[1].jmp && this.input[0].y < 1)
             {
                 this.input[0].x = 0;
+                this.input[0].analogueDir.x *= 0;
+            }
+            else if (this.superLaunchJump >= 20)
+            {
+                this.input[0].x = 0;
+                this.input[0].analogueDir.x *= 0;
+            }
+
+            // no input
+            if (this.input[0].x == 0 && this.input[0].y == 0 && !this.input[0].jmp && !this.input[0].thrw && !this.input[0].pckp)
+            {
+                this.touchedNoInputCounter++;
+            }
+            else
+            {
+                this.touchedNoInputCounter = 0;
             }
 
             inputDir = input[0].analogueDir.magnitude > 0.2f ? input[0].analogueDir
@@ -187,10 +206,7 @@ namespace RainMeadow
 
         private void Blink(int blink)
         {
-            if (this.blink < blink)
-            {
-                this.blink = blink;
-            }
+            blink = Mathf.Max(this.blink, blink);
         }
 
         internal virtual void Update(bool eu)
@@ -203,33 +219,13 @@ namespace RainMeadow
             if (this.wantToPickUp > 0) this.wantToPickUp--;
             if (this.wantToThrow > 0) this.wantToThrow--;
 
+            if (this.input[0].jmp && !this.input[1].jmp) wantToJump = 5;
+            if (this.input[0].pckp && !this.input[1].pckp) wantToPickUp = 5;
+            if (this.input[0].thrw && !this.input[1].thrw) wantToThrow = 5;
 
-            // eat popcorn
-            if (this.dontEatExternalFoodSourceCounter > 0)
-            {
-                this.dontEatExternalFoodSourceCounter--;
-            }
-            if (creature.Consious && this.eatExternalFoodSourceCounter > 0)
-            {
-                this.eatExternalFoodSourceCounter--;
-                if (this.eatExternalFoodSourceCounter < 1)
-                {
-                    if (creature.grasps[0]?.grabbed is SeedCob) creature.grasps[0].Release();
-                    this.dontEatExternalFoodSourceCounter = 45;
-                    creature.room.PlaySound(SoundID.Slugcat_Bite_Fly, creature.mainBodyChunk);
-                }
-            }
+            if (this.forceBoost > 0) this.forceBoost--;
 
-            // no input
-            if (this.input[0].x == 0 && this.input[0].y == 0 && !this.input[0].jmp && !this.input[0].thrw && !this.input[0].pckp)
-            {
-                this.touchedNoInputCounter++;
-            }
-            else
-            {
-                this.touchedNoInputCounter = 0;
-            }
-
+            // bunch of unimplemented story things
             // relevant to story
             //// shelter activation
             //this.readyForWin = false;
@@ -503,9 +499,11 @@ namespace RainMeadow
                 case Mushroom:
                 case Lantern:
                     return Player.ObjectGrabability.OneHand;
+                case Creature:
+                    return Player.ObjectGrabability.CantGrab;
             }
 
-            return Player.ObjectGrabability.CantGrab;
+            return Player.ObjectGrabability.OneHand;
         }
 
         internal void BiteEdibleObject(Creature.Grasp edible, bool eu)
@@ -517,7 +515,7 @@ namespace RainMeadow
             catch (Exception e)
             {
                 RainMeadow.Error(e);
-                throw;
+                //throw;
             }
         }
 
@@ -535,6 +533,23 @@ namespace RainMeadow
             bool still = (inputDir == Vector2.zero && !input[0].thrw && !input[0].jmp && creature.Submersion < 0.5f);
             bool eating = false;
             bool swallow = false;
+
+            // eat popcorn
+            if (this.dontEatExternalFoodSourceCounter > 0)
+            {
+                this.dontEatExternalFoodSourceCounter--;
+            }
+            if (this.eatExternalFoodSourceCounter > 0)
+            {
+                this.eatExternalFoodSourceCounter--;
+                if (this.eatExternalFoodSourceCounter < 1)
+                {
+                    if (creature.grasps[0]?.grabbed is SeedCob) creature.grasps[0].Release();
+                    this.dontEatExternalFoodSourceCounter = 45;
+                    creature.room.PlaySound(SoundID.Slugcat_Bite_Fly, creature.mainBodyChunk);
+                }
+            }
+
             if (still)
             {
                 Creature.Grasp edible = grasps.FirstOrDefault(g => g != null && g.grabbed is IPlayerEdible ipe && ipe.Edible);
@@ -577,8 +592,6 @@ namespace RainMeadow
             foreach (var grasp in grasps) if (grasp != null && grasp.grabbed.slatedForDeletetion) creature.ReleaseGrasp(grasp.graspUsed);
 
             // pickup updage
-            if (input[0].pckp && !input[1].pckp) wantToPickUp = 5;
-
             PhysicalObject physicalObject = (dontGrabStuff >= 1) ? null : PickupCandidate(8f);
             if (pickUpCandidate != physicalObject && physicalObject != null && physicalObject is PlayerCarryableItem)
             {

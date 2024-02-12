@@ -39,7 +39,18 @@ lizard todo
 - maybe seed could be a setting for the most special skin? any skin?
 lizard still bites cicada
 lizard on first load doesn't get colors assigned
+creature pipes behavior undefined
+	picks closest? random?
+	in room to drainage impossible to get up?
+	
+clear animation on jump
+standing jump
+jump from pole
 
+test blue lizard jump
+	shouldn't re-grip unless input up?
+
+blue lizard make it prefer ground
 
 playable scav
 
