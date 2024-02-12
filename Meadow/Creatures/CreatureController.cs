@@ -56,8 +56,8 @@ namespace RainMeadow
             standStillOnMapButton = creature.abstractCreature.world.game.IsStorySession;
             flipDirection = 1;
 
-            //creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
-            //debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);
+            creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
+            debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);
         }
 
         public int playerNumber = 0;
@@ -409,6 +409,7 @@ namespace RainMeadow
 
             if (this.debugDestinationVisualizer != null)
             {
+                if (debugDestinationVisualizer.room != creature.room) debugDestinationVisualizer.ChangeRooms(creature.room);
                 this.debugDestinationVisualizer.Update();
             }
         }
