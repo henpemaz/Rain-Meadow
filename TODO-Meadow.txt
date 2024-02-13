@@ -29,10 +29,9 @@ player grabbing cicada = laggy physics
 on wackamole pipe, game picks randomly I think, maybe should be player-chosen
 
 lizard todo
-- walking off ledge
+- walking off ledge /done
 - charge
-- pounce
-- slide and roll ??
+- pounce / done
 - head rotation should really prefer unrotated
 - head blinking seems a bit much, how control?
 - find a good seed for our buddies
@@ -43,12 +42,13 @@ creature pipes behavior undefined
 	picks closest? random?
 	in room to drainage impossible to get up?
 	
-clear animation on jump
-standing jump
-jump from pole
+clear animation on jump / done
+standing jump / done
+jump from pole / done
 
 test blue lizard jump
-	shouldn't re-grip unless input up?
+	shouldn't re-grip unless input up? / done
+	
 
 blue lizard make it prefer ground
 

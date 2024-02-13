@@ -21,7 +21,7 @@ namespace RainMeadow
             {
                 _ = Character.Slugcat;
                 _ = Skin.Slugcat_Survivor;
-                currentTestSkin = Skin.Lizard_Pink;
+                currentTestSkin = Skin.Lizard_Blue;
             }
             catch (Exception e)
             {

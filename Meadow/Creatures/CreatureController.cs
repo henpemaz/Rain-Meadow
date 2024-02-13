@@ -56,8 +56,8 @@ namespace RainMeadow
             standStillOnMapButton = creature.abstractCreature.world.game.IsStorySession;
             flipDirection = 1;
 
-            creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
-            debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);
+            //creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
+            //debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);
         }
 
         public int playerNumber = 0;
@@ -206,7 +206,7 @@ namespace RainMeadow
 
         private void Blink(int blink)
         {
-            blink = Mathf.Max(this.blink, blink);
+            this.blink = Mathf.Max(this.blink, blink);
         }
 
         internal virtual void Update(bool eu)
@@ -667,31 +667,11 @@ namespace RainMeadow
             {
                 for (int n = 0; n < nc; n++)
                 {
-                    if (room.GetTile(chunks[n].pos + input[0].IntVec.ToVector2() * 40f).Terrain == Room.Tile.TerrainType.ShortcutEntrance)
+                    if (room.GetTile(chunks[n].pos + input[0].IntVec.ToVector2() * 40f).Terrain == Room.Tile.TerrainType.ShortcutEntrance
+                        || room.GetTile(chunks[n].pos + input[0].IntVec.ToVector2() * 20f).Terrain == Room.Tile.TerrainType.ShortcutEntrance)
                     {
                         chunks[n].vel += (room.MiddleOfTile(chunks[n].pos + new Vector2(20f * (float)input[0].x, 20f * (float)input[0].y)) - chunks[n].pos) / 10f;
                         break;
-                    }
-                }
-            }
-
-            // from player movementupdate code, entering a shortcut
-            if (creature.shortcutDelay < 1)
-            {
-                for (int i = 0; i < nc; i++)
-                {
-                    if (creature.enteringShortCut == null && room.GetTile(chunks[i].pos).Terrain == Room.Tile.TerrainType.ShortcutEntrance)
-                    {
-                        var sctype = room.shortcutData(room.GetTilePosition(chunks[i].pos)).shortCutType;
-                        if (sctype != ShortcutData.Type.DeadEnd
-                        && sctype != ShortcutData.Type.NPCTransportation)
-                        {
-                            IntVector2 intVector = room.ShorcutEntranceHoleDirection(room.GetTilePosition(chunks[i].pos));
-                            if (input[0].x == -intVector.x && input[0].y == -intVector.y)
-                            {
-                                creature.enteringShortCut = new IntVector2?(room.GetTilePosition(chunks[i].pos));
-                            }
-                        }
                     }
                 }
             }

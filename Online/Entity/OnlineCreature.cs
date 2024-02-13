@@ -116,7 +116,10 @@ namespace RainMeadow
             if (currentlyJoinedResource == null) return;
             foreach (var participant in currentlyJoinedResource.participants)
             {
-                participant.Key.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
+                if (!participant.Key.isMe)
+                {
+                    participant.Key.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
+                }
             }
         }
 
@@ -125,6 +128,7 @@ namespace RainMeadow
         {
             enteringShortCut = true;
             (apo.realizedObject as Creature)?.SuckedIntoShortCut(entrancePos, carriedByOther);
+            enteringShortCut = false;
         }
 
         public override string ToString()

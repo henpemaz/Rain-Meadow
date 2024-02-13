@@ -133,6 +133,10 @@ namespace RainMeadow
             }
 
             var onlineCreature = (OnlineCreature)onlineEntity;
+            if (self.inShortcut)
+            {
+                RainMeadow.Error($"{onlineCreature} was already in shortcuts");
+            }
 
             if (onlineCreature.enteringShortCut) // If this call was from a processing event
             {
@@ -141,15 +145,17 @@ namespace RainMeadow
             }
             else if (onlineCreature.isMine)
             {
-                // tell everyone that I am about to enter a shortcut!
+                // tell everyone else that I am about to enter a shortcut!
+                RainMeadow.Debug($"{onlineCreature} sucked into shortcut");
                 onlineCreature.BroadcastSuckedIntoShortCut(entrancePos, carriedByOther);
+                orig(self, entrancePos, carriedByOther);
             }
             else
             {
+                // Don't run
                 // Clear shortcut that it was meant to enter
                 self.enteringShortCut = null;
             }
         }
-
     }
 }

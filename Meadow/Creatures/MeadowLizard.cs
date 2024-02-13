@@ -4,6 +4,8 @@ using RWCustom;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
 using static MonoMod.InlineRT.MonoModRule;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -14,6 +16,7 @@ namespace RainMeadow
         private int canGroundJump;
         private int canPoleJump;
         private int canClimbJump;
+        private IntVector2? lastEnteringShortcut;
 
         public LizardController(Lizard creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber) { }
 
@@ -225,7 +228,7 @@ namespace RainMeadow
                 lizard.inAllowedTerrainCounter = 0;
                 lizard.gripPoint = null;
                 this.jumpBoost = 3f;
-                var jumpdir = (cs[1].pos - cs[0].pos).normalized + inputDir;
+                var jumpdir = (cs[0].pos - cs[1].pos).normalized + inputDir;
                 for (int i = 0; i < cs.Length; i++)
                 {
                     BodyChunk chunk = cs[i];
@@ -256,7 +259,6 @@ namespace RainMeadow
             {
                 l.ConsciousUpdate();
 
-                // todo JUMP
                 var room = self.room;
                 var chunks = self.bodyChunks;
                 var nc = chunks.Length;
@@ -329,6 +331,7 @@ namespace RainMeadow
                     l.jumpBoost = 0f;
                 }
 
+                // facing
                 if (Mathf.Abs(Vector2.Dot(Vector2.right, chunks[0].pos - chunks[1].pos)) > 0.5f)
                 {
                     l.flipDirection = (chunks[0].pos.x > chunks[1].pos.x) ? 1 : -1;
@@ -336,6 +339,15 @@ namespace RainMeadow
                 else if (Mathf.Abs(l.inputDir.x) > 0.5f)
                 {
                     l.flipDirection = l.inputDir.x > 0 ? 1 : -1;
+                }
+
+                // lost footing doesn't auto-recover
+                if (self.inAllowedTerrainCounter < 10)
+                {
+                    if (l.input[0].y < 1 && !(chunks[0].contactPoint.y == -1 || chunks[1].contactPoint.y == -1 || self.IsTileSolid(1, 0, -1) || self.IsTileSolid(0, 0, -1)))
+                    {
+                        self.inAllowedTerrainCounter = 0;
+                    }
                 }
 
                 // move
@@ -355,13 +367,22 @@ namespace RainMeadow
                     if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"moving towards {toPos.Tile}");
                     if (l.forceJump > 0) // jumping
                     {
-                        if(self.commitedToDropConnection == null) self.commitedToDropConnection = new MovementConnection(MovementConnection.MovementType.Standard, basecoord, toPos, 2);
+                        if (self.commitedToDropConnection == null) self.commitedToDropConnection = new MovementConnection(MovementConnection.MovementType.Standard, basecoord, toPos, 2);
                         reachable = false;
                         keeplooking = false;
                     }
-                    else
+                    else if (self.inAllowedTerrainCounter > 10)
                     {
-                        if (l.inputDir.y > 0) // climbing has priority
+                        if (tile0.Terrain == Room.Tile.TerrainType.ShortcutEntrance)
+                        {
+                            //return new MovementConnection()
+                            var scdata = self.realizedRoom.shortcutData(originPos.Tile);
+                            if (scdata.shortCutType == ShortcutData.Type.NPCTransportation)
+                            {
+
+                            }
+                        }
+                        if (keeplooking && l.inputDir.y > 0) // climbing has priority
                         {
                             for (int i = 0; i < 3; i++)
                             {
@@ -481,7 +502,7 @@ namespace RainMeadow
                         self.gripPoint = room.MiddleOfTile(tile0.X, tile0.Y);
                     }
 
-                    // minimun speed
+                    // minimun directional speed
                     if (reachable && (self.graphicsModule as LizardGraphics)?.frontLegsGrabbing > 0)
                     {
                         var inDirection = Vector2.Dot(self.mainBodyChunk.vel, l.inputDir);
@@ -491,6 +512,20 @@ namespace RainMeadow
                             self.mainBodyChunk.vel += l.inputDir * (minSpeed - inDirection);
                         }
                     }
+
+                    // fake extra airfriction in gravity mode
+                    if (self.applyGravity && room.aimap.TileAccessibleToCreature(tile0.X, tile0.Y, self.Template))
+                    {
+                        for (int i = 0; i < nc; i++)
+                        {
+                            BodyChunk bodyChunk = self.bodyChunks[i];
+                            if (bodyChunk.submersion < 0.5f)
+                            {
+                                bodyChunk.vel.x *= 0.95f;
+                            }
+                        }
+                    }
+
 
                     if (reachable && toPos != self.abstractCreature.abstractAI.destination)
                     {
@@ -506,7 +541,7 @@ namespace RainMeadow
                     self.AI.excitement = Custom.LerpAndTick(self.AI.excitement, 0.2f, 0.1f, 0.05f);
                     self.commitedToDropConnection = null;
 
-                    // pull down
+                    // pull towards floor
                     for (int i = 0; i < nc; i++)
                     {
                         if (self.IsTileSolid(i, 0, -1))
@@ -523,6 +558,34 @@ namespace RainMeadow
                     }
                 }
                 if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"current AI destination {l.creature.abstractCreature.abstractAI.destination}");
+
+                // shortcut cycler
+                if (self.followingConnection != null)
+                {
+                    if (self.followingConnection.type == MovementConnection.MovementType.NPCTransportation)
+                    {
+                        self.NPCTransportationDestination = self.followingConnection.destinationCoord;
+                        var whackamoles = self.room.shortcuts.Where(s => s.shortCutType == ShortcutData.Type.NPCTransportation).ToList();
+                        var index = whackamoles.IndexOf(self.room.shortcuts.FirstOrDefault(s => s.StartTile == self.followingConnection.StartTile));
+                        if (index > -1 && whackamoles.Count > 0)
+                        {
+                            index = (index + 1) % whackamoles.Count;
+                            self.NPCTransportationDestination = whackamoles[index].startCoord;
+                            //RainMeadow.Debug($"creature shortcut mapped to " + self.NPCTransportationDestination);
+                        }
+
+                        self.commitedToDropConnection = null;
+                    }
+                }
+
+                if(l.lastEnteringShortcut != self.enteringShortCut)
+                {
+                    RainMeadow.Debug($"shortcut was {l.lastEnteringShortcut} is {self.enteringShortCut}");
+                    RainMeadow.Debug($"followingConnection {self.followingConnection} is {self.followingConnection?.type}");
+                    RainMeadow.Debug($"commitedToDropConnection {self.commitedToDropConnection} is {self.commitedToDropConnection?.type}");
+                }
+
+                l.lastEnteringShortcut = self.enteringShortCut;
             }
             orig(self);
         }
@@ -536,12 +599,23 @@ namespace RainMeadow
                 // path will be always a path "out" of the current cell, even if current cell is destination
                 // should be fine as long as runspeed = 0, just gotta not fall for it here
 
-                if (!actuallyFollowingThisPath && self.destination == originPos) return null; // prevent bad followups
+                //if (!actuallyFollowingThisPath && self.destination == originPos) return null; // prevent bad followups
                 if (actuallyFollowingThisPath)
                 {
+                    var tile = self.realizedRoom.GetTile(originPos);
+                    if (tile.Terrain == Room.Tile.TerrainType.ShortcutEntrance)
+                    {
+                        //return new MovementConnection()
+                        var scdata = self.realizedRoom.shortcutData(originPos.Tile);
+                        if (scdata.shortCutType == ShortcutData.Type.NPCTransportation)
+                        {
+
+                        }
+                    }
                     bool needOverride = false;
-                    if (self.destination == originPos && originPos != self.creature.pos) { if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("bad originPos override"); originPos = self.creature.pos; }
-                    if (self.destination == originPos) { if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("at destination"); return null; }
+                    // creature pos never updated after spit out of shortcut and would imediately re-enter
+                    //if (self.destination == originPos && originPos != self.creature.pos) { if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("bad originPos override"); originPos = self.creature.pos; }
+                    //if (self.destination == originPos) { if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("at destination"); return null; }
                     return orig(self, originPos, bodyDirection, actuallyFollowingThisPath);
                 }
             }
