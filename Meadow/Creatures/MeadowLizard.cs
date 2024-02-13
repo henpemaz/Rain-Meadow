@@ -373,12 +373,9 @@ namespace RainMeadow
                                                 var index = whackamoles.IndexOf(self.room.shortcuts.FirstOrDefault(s => s.StartTile == scdata.StartTile));
                                                 if (index > -1 && whackamoles.Count > 0)
                                                 {
-                                                    RainMeadow.Debug($"creature entered at " + index);
-                                                    index = (index + 1) % whackamoles.Count;
-                                                    RainMeadow.Debug($"creature will exit at " + index);
-                                                    self.NPCTransportationDestination = whackamoles[index].startCoord;
-                                                    RainMeadow.Debug($"creature shortcut mapped to " + self.NPCTransportationDestination);
-
+                                                    var newindex = (index + 1) % whackamoles.Count;
+                                                    RainMeadow.Debug($"creature entered at {index} will exit at {newindex} mapped to {self.NPCTransportationDestination}");
+                                                    self.NPCTransportationDestination = whackamoles[newindex].startCoord;
                                                     // needs to be set as destination as well otherwise might be overriden
                                                     toPos = self.NPCTransportationDestination;
                                                     reachable = true;
