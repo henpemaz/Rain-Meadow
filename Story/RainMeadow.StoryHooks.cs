@@ -1,12 +1,6 @@
 ﻿using UnityEngine;
-using System.Linq;
-using System.Collections.Generic;
-using MonoMod.Cil;
-using System;
-using Mono.Cecil.Cil;
-using HUD;
-using System.Text.RegularExpressions;
-
+using RainMeadow;
+using IL.Menu;
 
 namespace RainMeadow
 {
@@ -29,6 +23,7 @@ namespace RainMeadow
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
             On.Menu.SleepAndDeathScreen.ctor += SleepAndDeathScreen_ctor;
             On.Menu.SleepAndDeathScreen.Update += SleepAndDeathScreen_Update;
+            On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
 
             
 
@@ -42,6 +37,13 @@ namespace RainMeadow
 
             On.RainWorldGame.GameOver += RainWorldGame_GameOver;
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
+        }
+
+        private void HUD_InitSinglePlayerHud(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam)
+        {
+
+            self.AddPart(new OnlineStoryHud(self, self.fContainers[1]));
+
         }
 
         private void RainWorldGame_GoToDeathScreen(On.RainWorldGame.orig_GoToDeathScreen orig, RainWorldGame self)
@@ -128,6 +130,17 @@ namespace RainMeadow
             orig(self, eu);
             if (isStoryMode(out var gameMode))
             {
+
+/*                if (Input.GetKeyDown(RainMeadowOptions.FriendsList.Value))
+                {
+
+                    Debug("Placeholder for displaying usernames");
+
+                }*/
+
+
+
+
                 //fetch the online entity and check if it is mine. 
                 //If it is mine run the below code
                 //If not, update from the lobby state
