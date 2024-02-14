@@ -37,7 +37,7 @@ Hooks are incredibly useful for injecting your custom code into the game. Use th
 Keeping your method or function's parameters set to primitives can greatly boost its re-usability across the project space. It may be more difficult to do so given some instructions you want to run, but consider this a reminder to stay vigilant in developing simplicity. 
 
 ### 3. We cannot teach you programming
-Some developers are more advanced than others and this is expected. However, pinging developers for questions that you can research yourself is disrespectful to their time and to your intelligence. The expectation is that by the time you've asked a question, you have exhausted your extracurricular resources, reviewed the game code and need context on the Meadow's design itself.
+Some developers are more advanced than others and this is expected. However, pinging developers for questions that you can research yourself is disrespectful to their time and to your intelligence. The expectation is that by the time you've asked a question, you have exhausted your extracurricular resources, reviewed the game code and need context on Meadow's design itself.
 
 ### 4. It's easier to modify than to write
 Everyone wants a perfect Pull Request. But if you're going to make a PR, please put in the work to test your  changes, attempt debugging, and write an executive summary in your PR's description rather than relying on the devs to contextualize themselves with the code you've written. 
