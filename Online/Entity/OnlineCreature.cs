@@ -87,14 +87,9 @@ namespace RainMeadow
             var victimAppendage = victimAppendageRef?.GetAppendagePos(this);
             var creature = (this.apo.realizedObject as Creature);
             if (creature == null) return;
-            if (creature is PoleMimic)
-            {
-                creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, null, victimAppendage, damageType, damage, stunBonus);
-            }
-            else 
-            {
-                creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, creature.bodyChunks[victimChunkIndex], victimAppendage, damageType, damage, stunBonus);
-            }
+
+            BodyChunk? hitChunk = victimChunkIndex > 0 ? creature.bodyChunks[victimChunkIndex] : null;
+            creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, hitChunk, victimAppendage, damageType, damage, stunBonus);
         }
 
         public void ForceGrab(GraspRef graspRef)
