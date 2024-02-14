@@ -45,16 +45,18 @@ namespace RainMeadow
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
         }
 
-
-        private void HUD_InitSinglePlayerHud(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam)
+        // Useing the SinglePlayerHUD for OnlineStory because that's the only entry point besides hooking the Arena data, which I don't want. 
+        private void HUD_InitSinglePlayerHud(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam) 
         {
-
-            self.AddPart(new OnlineStoryHud(self, self.fContainers[1]));
-            for (int j = 0; j < cam.room.game.session.Players.Count; j++)
+            if (isStoryMode(out var gameMode)) // Don't touch anybody else's stuff
             {
-                OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], cam.room.game.session.Players[j]);
-              
-                self.AddPart(part);
+                self.AddPart(new OnlineStoryHud(self, self.fContainers[1]));
+                for (int j = 0; j < cam.room.game.session.Players.Count; j++) // TODO
+                {
+                    OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], cam.room.game.session.Players[j]);
+
+                    self.AddPart(part);
+                }
             }
 
             orig(self, cam);
