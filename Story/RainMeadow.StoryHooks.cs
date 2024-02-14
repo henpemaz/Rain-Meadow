@@ -1,12 +1,18 @@
 ﻿using UnityEngine;
 using RainMeadow;
 using IL.Menu;
+using System.Collections.Generic;
+using JollyCoop.JollyHUD;
+using HUD;
+using System.Linq;
 
 namespace RainMeadow
 {
     public partial class RainMeadow
     {
         private bool isPlayerReady = false;
+        private StoryAvatarSettings personaSettings;
+
         public static bool isStoryMode(out StoryGameMode? gameMode)
         {
             gameMode = null;
@@ -39,10 +45,19 @@ namespace RainMeadow
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
         }
 
+
         private void HUD_InitSinglePlayerHud(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam)
         {
 
             self.AddPart(new OnlineStoryHud(self, self.fContainers[1]));
+            for (int j = 0; j < cam.room.game.session.Players.Count; j++)
+            {
+                OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], cam.room.game.session.Players[j]);
+              
+                self.AddPart(part);
+            }
+
+            orig(self, cam);
 
         }
 

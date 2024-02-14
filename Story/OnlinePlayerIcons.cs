@@ -141,6 +141,8 @@ public class OnlineStoryHud : HudPart
 
     public Dictionary<int, OnlinePlayerIcon> playerIcons;
 
+    public List<AbstractCreature> onlinePlayers = new List<AbstractCreature>();
+
     public float fade;
 
     public float lastFade;
@@ -174,12 +176,22 @@ public class OnlineStoryHud : HudPart
         meterPos = new Vector2(RWCustom.Custom.rainWorld.options.ScreenSize.x - 90f, 100f);
         meterLastPos = meterPos;
         List<AbstractCreature> players = (base.hud.owner as Player).abstractCreature.world.game.session.Players;
+/*        foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
+        {
+            if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+            if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+            {
+                onlinePlayers.Add(ac);
+                RainMeadow.RainMeadow.Debug($"COUNT OF PLAYERS INIT: {onlinePlayers.Count}");
+
+            }
+        }*/
         playerIcons = new Dictionary<int, OnlinePlayerIcon>();
         base.hud = hud;
         this.fContainer = fContainer;
         for (int i = 0; i < players.Count; i++)
         {
-            Color color = personaSettings.bodyColor; //PlayerGraphics.SlugcatColor((players[i].state as PlayerState).slugcatCharacter)
+            Color color = personaSettings.bodyColor;
             OnlinePlayerIcon value = new OnlinePlayerIcon(this, players[i], color);
             playerIcons.Add(i, value);
         }
@@ -219,7 +231,7 @@ public class OnlineStoryHud : HudPart
         {
             iconOffsetIndex = playerStateFocusedByCamera.playerNumber;
             cameraArrowSprite.y = DrawPos(timeStacker).y + 15f + (float)(flag ? 5 : 0) + (float)(cutscene ? 5 : 0);
-            cameraArrowSprite.color = PlayerGraphics.SlugcatColor(playerStateFocusedByCamera.slugcatCharacter);
+            cameraArrowSprite.color = personaSettings.bodyColor;
         }
 
         if (num != iconOffsetIndex)
