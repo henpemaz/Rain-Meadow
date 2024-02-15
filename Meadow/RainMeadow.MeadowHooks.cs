@@ -16,6 +16,7 @@ namespace RainMeadow
         {
             CicadaController.EnableCicada();
             LizardController.EnableLizard();
+            ScavengerController.EnableScavenger();
 
             On.RoomCamera.Update += RoomCamera_Update; // init meadow hud
 

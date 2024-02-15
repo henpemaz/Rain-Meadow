@@ -35,7 +35,7 @@ namespace RainMeadow
         {
             var settings = (avatarSettings as MeadowAvatarSettings);
             var skinData = MeadowProgression.skinData[settings.skin];
-            var abstractCreature = new AbstractCreature(game.world, StaticWorld.GetCreatureTemplate(skinData.creatureType), null, location, new EntityID(-1, 0));
+            var abstractCreature = new AbstractCreature(game.world, StaticWorld.GetCreatureTemplate(skinData.creatureType), null, location, new EntityID(-1, 0) { altSeed = skinData.randomSeed });
             if (skinData.creatureType == CreatureTemplate.Type.Slugcat)
             {
                 abstractCreature.state = new PlayerState(abstractCreature, 0, skinData.statsName, false);

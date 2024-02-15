@@ -21,6 +21,10 @@ namespace RainMeadow
             {
                 new LizardController(liz, oc, 0);
             }
+            else if (creature is Scavenger scav)
+            {
+                new ScavengerController(scav, oc, 0);
+            }
             else if (creature is Player player)
             {
                 if (!oc.owner.isMe)

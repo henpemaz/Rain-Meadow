@@ -21,7 +21,7 @@ namespace RainMeadow
             {
                 _ = Character.Slugcat;
                 _ = Skin.Slugcat_Survivor;
-                currentTestSkin = Skin.Lizard_Blue;
+                currentTestSkin = Skin.Scavenger_Twigs;
             }
             catch (Exception e)
             {
@@ -45,29 +45,39 @@ namespace RainMeadow
         {
             public Character(string value, bool register = false, CharacterData characterDataEntry = null) : base(value, register)
             {
-                if(register)
+                if (register)
                 {
                     characterData[this] = characterDataEntry;
                 }
             }
 
-            public static Character Slugcat = new("Slugcat", true, new() {
+            public static Character Slugcat = new("Slugcat", true, new()
+            {
                 displayName = "SLUGCAT",
                 emotePrefix = "sc_",
                 emoteAtlas = "emotes_slugcat",
                 emoteColor = new Color(85f, 120f, 120f, 255f) / 255f,
             });
-            public static Character Cicada = new("Cicada", true, new() { 
-                displayName = "CICADA", 
+            public static Character Cicada = new("Cicada", true, new()
+            {
+                displayName = "CICADA",
                 emotePrefix = "sc_", //"cada_",
                 emoteAtlas = "emotes_slugcat", //"emotes_cicada",
                 emoteColor = new Color(81f, 81f, 81f, 255f) / 255f,
             });
-            public static Character Lizard = new("Lizard", true, new() { 
-                displayName = "LIZARD", 
+            public static Character Lizard = new("Lizard", true, new()
+            {
+                displayName = "LIZARD",
                 emotePrefix = "liz_",
                 emoteAtlas = "emotes_lizard",
                 emoteColor = new Color(197, 220, 232, 255f) / 255f,
+            });
+            public static Character Scavenger = new("Scavenger", true, new()
+            {
+                displayName = "SCAVENGER",
+                emotePrefix = "sc_", // "scav_"
+                emoteAtlas = "emotes_slugcat",//"emotes_scav",
+                emoteColor = new Color(232, 187, 200, 255f) / 255f,
             });
         }
 
@@ -80,6 +90,7 @@ namespace RainMeadow
             public string displayName;
             public CreatureTemplate.Type creatureType;
             public SlugcatStats.Name statsName; // curently only used for color
+            public int randomSeed;
             public Color? baseColor;
             public Color? eyeColor;
             public Color? effectColor;
@@ -100,7 +111,8 @@ namespace RainMeadow
                 }
             }
 
-            public static Skin Slugcat_Survivor = new("Slugcat_Survivor", true, new() {
+            public static Skin Slugcat_Survivor = new("Slugcat_Survivor", true, new()
+            {
                 character = Character.Slugcat,
                 displayName = "Survivor",
                 creatureType = CreatureTemplate.Type.Slugcat,
@@ -126,7 +138,7 @@ namespace RainMeadow
                 displayName = "Fluffy",
                 creatureType = CreatureTemplate.Type.Slugcat,
                 statsName = SlugcatStats.Name.White,
-                baseColor = new Color(111, 216, 255, 255)/255f
+                baseColor = new Color(111, 216, 255, 255) / 255f
             });
 
             public static Skin Cicada_White = new("Cicada_White", true, new()
@@ -135,7 +147,7 @@ namespace RainMeadow
                 displayName = "White",
                 creatureType = CreatureTemplate.Type.CicadaA,
             });
-            public static Skin Cicada_Dark = new("Cicada_Dark", true,  new()
+            public static Skin Cicada_Dark = new("Cicada_Dark", true, new()
             {
                 character = Character.Cicada,
                 displayName = "Dark",
@@ -156,6 +168,93 @@ namespace RainMeadow
                 creatureType = CreatureTemplate.Type.BlueLizard,
                 tintFactor = 0.5f,
             });
+            public static Skin Lizard_Yellow = new("Lizard_Yellow", true, new()
+            {
+                character = Character.Lizard,
+                displayName = "Yellow",
+                creatureType = CreatureTemplate.Type.YellowLizard,
+                randomSeed = 1366,
+                tintFactor = 0.5f,
+            });
+            public static Skin Lizard_Cyan = new("Lizard_Cyan", true, new()
+            {
+                character = Character.Lizard,
+                displayName = "Cyan",
+                creatureType = CreatureTemplate.Type.CyanLizard,
+                randomSeed = 1366,
+                tintFactor = 0.5f,
+            });
+
+            public static Skin Scavenger_Twigs = new("Scavenger_Twigs", true, new()
+            {
+                character = Character.Scavenger,
+                displayName = "Twigs",
+                creatureType = CreatureTemplate.Type.Scavenger,
+                randomSeed = 4481,
+            });
+            public static Skin Scavenger_Acorn = new("Scavenger_Acorn", true, new()
+            {
+                character = Character.Scavenger,
+                displayName = "Acorn",
+                creatureType = CreatureTemplate.Type.Scavenger,
+                randomSeed = 1213,
+            });
+            public static Skin Scavenger_Oak = new("Scavenger_Oak", true, new()
+            {
+                character = Character.Scavenger,
+                displayName = "Oak",
+                creatureType = CreatureTemplate.Type.Scavenger,
+                randomSeed = 9503,
+            });
+            public static Skin Scavenger_Shrub = new("Scavenger_Shrub", true, new()
+            {
+                character = Character.Scavenger,
+                displayName = "Shrub",
+                creatureType = CreatureTemplate.Type.Scavenger,
+                randomSeed = 1139,
+            });
+            public static Skin Scavenger_Branches = new("Scavenger_Branches", true, new()
+            {
+                character = Character.Scavenger,
+                displayName = "Branches",
+                creatureType = CreatureTemplate.Type.Scavenger,
+                randomSeed = 1503,
+            });
+            public static Skin Scavenger_Sage = new("Scavenger_Sage", true, new()
+            {
+                character = Character.Scavenger,
+                displayName = "Sage",
+                creatureType = CreatureTemplate.Type.Scavenger,
+                randomSeed = 1184,
+            });
+            public static Skin Scavenger_Cherry = new("Scavenger_Cherry", true, new()
+            {
+                character = Character.Scavenger,
+                displayName = "Cherry",
+                creatureType = CreatureTemplate.Type.Scavenger,
+                randomSeed = 9464,
+            });
+            public static Skin Scavenger_Lavender = new("Scavenger_Lavender", true, new()
+            {
+                character = Character.Scavenger,
+                displayName = "Lavender",
+                creatureType = CreatureTemplate.Type.Scavenger,
+                randomSeed = 8201,
+            });
+            public static Skin Scavenger_Peppermint = new("Scavenger_Peppermint", true, new()
+            {
+                character = Character.Scavenger,
+                displayName = "Peppermint",
+                creatureType = CreatureTemplate.Type.Scavenger,
+                randomSeed = 8750,
+            });
+            public static Skin Scavenger_Juniper = new("Scavenger_Juniper", true, new()
+            {
+                character = Character.Scavenger,
+                displayName = "Juniper",
+                creatureType = CreatureTemplate.Type.Scavenger,
+                randomSeed = 4566,
+            });
         }
 
         public static bool SkinAvailable(Skin skin)
@@ -170,7 +269,7 @@ namespace RainMeadow
 
         public static List<Character> AllAvailableCharacters()
         {
-            return Character.values.entries.Select(s => new Character(s)).ToList();
+            return characterData.Keys.ToList();
         }
     }
 }

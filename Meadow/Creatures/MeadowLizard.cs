@@ -3,8 +3,6 @@ using System;
 using RWCustom;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
-using static MonoMod.InlineRT.MonoModRule;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace RainMeadow
@@ -146,6 +144,10 @@ namespace RainMeadow
             var mainBodyChunk = creature.mainBodyChunk;
             var tile = creature.room.aimap.getAItile(mainBodyChunk.pos);
 
+            // todo if jump module use that instead
+
+            // todo take body factors into factor. blue liz jump too stronk
+
             if (canGroundJump > 0 && superLaunchJump >= 20)
             {
                 RainMeadow.Debug("lizard super jump");
@@ -266,6 +268,7 @@ namespace RainMeadow
                 {
                     if (l.input[0].jmp)
                     {
+                        // todo if jumpmodule animate
                         l.wantToJump = 0;
                         if (l.superLaunchJump < 20)
                         {
@@ -429,7 +432,6 @@ namespace RainMeadow
                             if (l.inputDir.x != 0) // to sides
                             {
                                 if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("sides");
-                                var solidAhead = room.GetTile(toPos).Solid; // ahead blocked
                                 if (reachable)
                                 {
                                     if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("ahead");
