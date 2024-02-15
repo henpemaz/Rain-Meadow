@@ -302,7 +302,7 @@ public class OnlineStoryHud : HudPart
                 }
             }
 
-            // Remove icons for players who have left
+            // Remove icons for players who have left -- Currently doesn't work
             List<int> keysToRemove = new List<int>();
             foreach (var kvp in playerIcons)
             {

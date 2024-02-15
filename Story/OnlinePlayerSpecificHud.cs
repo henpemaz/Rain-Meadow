@@ -272,58 +272,75 @@ namespace JollyCoop.JollyHUD
                     return;
                 }
 
-                if (jollyHud.RealizedPlayer != null)
-                {
-                    playerPos = jollyHud.abstractPlayer.world.RoomToWorldPos(jollyHud.RealizedPlayer.mainBodyChunk.pos, jollyHud.abstractPlayer.Room.index);
-                    roomPos = jollyHud.abstractPlayer.world.RoomToWorldPos(jollyHud.camPos, jollyHud.Camera.room.abstractRoom.index);
-                }
+                // This is for the golden slugcat symbol (ie. missing slugcat)
+                var players = OnlineManager.lobby.playerAvatars
+                                 .Where(avatar => avatar.type != (byte)OnlineEntity.EntityId.IdType.none)
+                                 .Select(avatar => avatar.FindEntity(true))
+                                 .OfType<OnlinePhysicalObject>()
+                                 .Select(opo => opo.apo)
+                                 .OfType<AbstractCreature>()
+                                 .ToList();
 
-                lastDrawPos = drawPos;
-                drawPos = playerPos - roomPos;
-                float num = Mathf.Abs(Vector2.Distance(drawPos, middleScreen));
-                scale = Mathf.Lerp(0.65f, 1.65f, Mathf.Pow(diagScale / num, 1.2f));
-                float num2 = middleScreen.x - rectangleSize.x / 2f;
-                float num3 = middleScreen.x + rectangleSize.x / 2f;
-                float num4 = middleScreen.y - rectangleSize.y / 2f;
-                float num5 = middleScreen.y + rectangleSize.y / 2f;
-                if (num2 < drawPos.x && drawPos.x < num3 && num4 < drawPos.y && drawPos.y < num5)
-                {
-                    float b = Mathf.Abs(drawPos.x - num2);
-                    float num6 = Mathf.Abs(drawPos.x - num3);
-                    float num7 = Mathf.Abs(drawPos.y - num4);
-                    float d = Mathf.Abs(drawPos.y - num5);
-                    float smallestNumber = GetSmallestNumber(num7, b, num6, d);
-                    if (AreClose(smallestNumber, b))
-                    {
-                        drawPos.x = num2;
-                    }
-                    else if (AreClose(smallestNumber, num6))
-                    {
-                        drawPos.x = num3;
-                    }
-                    else if (AreClose(smallestNumber, num7))
-                    {
-                        drawPos.y = num4;
-                    }
-                    else
-                    {
-                        drawPos.y = num5;
-                    }
-                }
+                for (int i = 0; i < players.Count; i++)
 
-                drawPos.x = Mathf.Clamp(drawPos.x, screenEdge, screenSizeX - (float)screenEdge);
-                drawPos.y = Mathf.Clamp(drawPos.y, screenEdge, screenSizeY - (float)screenEdge);
-                if (jollyHud.PlayerRoomBeingViewed || jollyHud.inShortcut || !knownPos || forceHide)
                 {
-                    hidden = true;
-                }
-                else if (hidden)
-                {
-                    hidden = false;
+                    if (players[i].realizedCreature != null && (!OnlineManager.players[i].isMe))
+                    {
+                        playerPos = players[i].world.RoomToWorldPos(players[i].realizedCreature.mainBodyChunk.pos, players[i].Room.index);
+                        roomPos = players[i].world.RoomToWorldPos(jollyHud.camPos, jollyHud.Camera.room.abstractRoom.index);
+                    }
+
+                    RainMeadow.RainMeadow.Debug("CURRENT PLAYER POS:" + playerPos);
+                    RainMeadow.RainMeadow.Debug("CURRENT ROOM POS:" + roomPos);
+
+
                     lastDrawPos = drawPos;
-                }
+                    drawPos = playerPos - roomPos;
+                    float num = Mathf.Abs(Vector2.Distance(drawPos, middleScreen));
+                    scale = Mathf.Lerp(0.65f, 1.65f, Mathf.Pow(diagScale / num, 1.2f));
+                    float num2 = middleScreen.x - rectangleSize.x / 2f;
+                    float num3 = middleScreen.x + rectangleSize.x / 2f;
+                    float num4 = middleScreen.y - rectangleSize.y / 2f;
+                    float num5 = middleScreen.y + rectangleSize.y / 2f;
+                    if (num2 < drawPos.x && drawPos.x < num3 && num4 < drawPos.y && drawPos.y < num5)
+                    {
+                        float b = Mathf.Abs(drawPos.x - num2);
+                        float num6 = Mathf.Abs(drawPos.x - num3);
+                        float num7 = Mathf.Abs(drawPos.y - num4);
+                        float d = Mathf.Abs(drawPos.y - num5);
+                        float smallestNumber = GetSmallestNumber(num7, b, num6, d);
+                        if (AreClose(smallestNumber, b))
+                        {
+                            drawPos.x = num2;
+                        }
+                        else if (AreClose(smallestNumber, num6))
+                        {
+                            drawPos.x = num3;
+                        }
+                        else if (AreClose(smallestNumber, num7))
+                        {
+                            drawPos.y = num4;
+                        }
+                        else
+                        {
+                            drawPos.y = num5;
+                        }
+                    }
 
-                alpha = ((!hidden) ? 0.85f : 0f);
+                    drawPos.x = Mathf.Clamp(drawPos.x, screenEdge, screenSizeX - (float)screenEdge);
+                    drawPos.y = Mathf.Clamp(drawPos.y, screenEdge, screenSizeY - (float)screenEdge);
+                    if (jollyHud.PlayerRoomBeingViewed || jollyHud.inShortcut || !knownPos || forceHide)
+                    {
+                        hidden = true;
+                    }
+                    else if (hidden)
+                    {
+                        hidden = false;
+                        lastDrawPos = drawPos;
+                    }
+
+                    alpha = ((!hidden) ? 0.85f : 0f);
+                }
             }
 
             public override void Draw(float timeStacker)
@@ -458,7 +475,7 @@ namespace JollyCoop.JollyHUD
 
                 if (playerName == string.Empty)
                 {
-                    playerName = "pain";
+                    playerName = "I was never given a name";
                     label.text = playerName;
                     size.x = 5 * playerName.Length;
                 }
@@ -692,16 +709,20 @@ namespace JollyCoop.JollyHUD
             public JollyPointer(OnlinePlayerSpecificHud jollyHud)
                 : base(jollyHud)
             {
+
+
                 size = new IntVector2(30, 20);
                 targetPos = bodyPos;
                 pointerPositions = new Dictionary<JollyPointer, Vector2>();
+
+
             }
 
             public override void Update()
             {
                 base.Update();
-                
-                
+
+
                 knownPos = false;
                 forceHide = false;
                 lastBodyPos = bodyPos;

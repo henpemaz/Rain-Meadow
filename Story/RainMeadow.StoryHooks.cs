@@ -51,12 +51,23 @@ namespace RainMeadow
             if (isStoryMode(out var gameMode)) // Don't touch anybody else's stuff
             {
                 self.AddPart(new OnlineStoryHud(self, self.fContainers[1], gameMode));
-/*
+
                 this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
 
-                OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], cam.room.game.session.Players[0], OnlineManager.players[0].id.name, personaSettings.bodyColor); // unique for each player
+                var players = OnlineManager.lobby.playerAvatars
+                        .Where(avatar => avatar.type != (byte)OnlineEntity.EntityId.IdType.none)
+                        .Select(avatar => avatar.FindEntity(true))
+                        .OfType<OnlinePhysicalObject>()
+                        .Select(opo => opo.apo as AbstractCreature)
+                        .ToList();
 
-                self.AddPart(part);*/
+                for (int i = 0; i < players.Count; i++)
+                {
+
+                    OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], players[i], OnlineManager.players[i].id.name, personaSettings.bodyColor); // unique for each player
+
+                    self.AddPart(part);
+                }
 
             }
 
