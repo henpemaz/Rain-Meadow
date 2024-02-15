@@ -6,6 +6,8 @@ using static OnlineStoryHud;
 using static Sony.NP.ActivityFeed;
 using UnityEngine.UI;
 using RainMeadow;
+using HarmonyLib;
+using System.Linq;
 
 public class OnlineStoryHud : HudPart
 {
@@ -88,7 +90,7 @@ public class OnlineStoryHud : HudPart
             iconSprite.x = DrawPos(timeStacker).x;
             iconSprite.y = DrawPos(timeStacker).y + (float)(dead ? 7 : 0);
             // gradient.x = iconSprite.x;
-             // gradient.y = iconSprite.y;
+            // gradient.y = iconSprite.y;
             if (meter.counter % 6 < 2 && lastBlink > 0f)
             {
                 color = Color.Lerp(color, RWCustom.Custom.HSL2RGB(RWCustom.Custom.RGB2HSL(color).x, RWCustom.Custom.RGB2HSL(color).y, RWCustom.Custom.RGB2HSL(color).z + 0.2f), Mathf.InverseLerp(0f, 0.5f, Mathf.Lerp(lastBlink, blink, timeStacker)));
@@ -135,13 +137,15 @@ public class OnlineStoryHud : HudPart
 
     public Vector2 meterPos;
 
+    public List<AbstractCreature> players;
+
     public StoryAvatarSettings personaSettings;
+
+    public AbstractCreature ac;
 
     public Vector2 meterLastPos;
 
     public Dictionary<int, OnlinePlayerIcon> playerIcons;
-
-    public List<AbstractCreature> onlinePlayers = new List<AbstractCreature>();
 
     public float fade;
 
@@ -157,6 +161,7 @@ public class OnlineStoryHud : HudPart
 
     public bool cutscene;
 
+
     public FContainer fContainer;
 
     public FSprite cameraArrowSprite;
@@ -168,31 +173,32 @@ public class OnlineStoryHud : HudPart
         return Vector2.Lerp(meterLastPos, meterPos, timeStacker);
     }
 
-    public OnlineStoryHud(global::HUD.HUD hud, FContainer fContainer)
+    public OnlineStoryHud(global::HUD.HUD hud, FContainer fContainer, StoryGameMode gameMode)
                 : base(hud)
     {
         personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
-
         meterPos = new Vector2(RWCustom.Custom.rainWorld.options.ScreenSize.x - 90f, 100f);
         meterLastPos = meterPos;
-        List<AbstractCreature> players = (base.hud.owner as Player).abstractCreature.world.game.session.Players;
-/*        foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
-        {
-            if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-            if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-            {
-                onlinePlayers.Add(ac);
-                RainMeadow.RainMeadow.Debug($"COUNT OF PLAYERS INIT: {onlinePlayers.Count}");
 
-            }
-        }*/
+        players = new List<AbstractCreature>();
+
+
+        players = gameMode.lobby.playerAvatars
+                                     .Where(avatar => avatar.type != (byte)OnlineEntity.EntityId.IdType.none)
+                                     .Select(avatar => avatar.FindEntity(true))
+                                     .OfType<OnlinePhysicalObject>()
+                                     .Select(opo => opo.apo)
+                                     .OfType<AbstractCreature>()
+                                     .ToList();
+
+
         playerIcons = new Dictionary<int, OnlinePlayerIcon>();
         base.hud = hud;
         this.fContainer = fContainer;
         for (int i = 0; i < players.Count; i++)
         {
             Color color = personaSettings.bodyColor;
-            OnlinePlayerIcon value = new OnlinePlayerIcon(this, players[i], color);
+            OnlinePlayerIcon value = new OnlinePlayerIcon(this, players[i], color); // TODO: The most recent player overrides the colors, and P1 is never notified someone else is added. Make a function to handle this
             playerIcons.Add(i, value);
         }
 
@@ -202,6 +208,7 @@ public class OnlineStoryHud : HudPart
         cameraArrowSprite = new FSprite("Multiplayer_Arrow");
         fContainer.AddChild(cameraArrowSprite);
     }
+
 
     public override void ClearSprites()
     {
@@ -270,16 +277,61 @@ public class OnlineStoryHud : HudPart
             counter = 0;
         }
 
+
+
+
+        players = OnlineManager.lobby.playerAvatars
+                             .Where(avatar => avatar.type != (byte)OnlineEntity.EntityId.IdType.none)
+                             .Select(avatar => avatar.FindEntity(true))
+                             .OfType<OnlinePhysicalObject>()
+                             .Select(opo => opo.apo)
+                             .OfType<AbstractCreature>()
+                             .ToList();
+
+
+
+        if (players.Count != playerIcons.Count)
+        {
+            // Create new player icons for new players
+            for (int i = 0; i < players.Count; i++)
+            {
+                // Only create new icons if there isn't already one for this player
+                if (!playerIcons.ContainsKey(i))
+                {
+                    Color color = personaSettings.bodyColor;
+                    OnlinePlayerIcon value = new OnlinePlayerIcon(this, players[i], color);
+                    playerIcons.Add(i, value);
+                }
+            }
+
+            // Remove icons for players who have left
+            List<int> keysToRemove = new List<int>();
+            foreach (var kvp in playerIcons)
+            {
+                if (!players.Exists(p => p == kvp.Value.player))
+                {
+                    keysToRemove.Add(kvp.Key);
+                }
+            }
+            foreach (int key in keysToRemove)
+            {
+                playerIcons.Remove(key);
+            }
+        }
+
         foreach (KeyValuePair<int, OnlinePlayerIcon> playerIcon in playerIcons)
         {
             playerIcon.Value.Update(); // PlayerIcon is probabyl null
             playerIcon.Value.pos = meterPos + new Vector2((float)playerIcon.Key * 30f, 0f);
         }
 
+
         Player player = hud.owner as Player;
         if (player != null && player.room != null)
         {
             AbstractCreature followAbstractCreature = player.room.game.cameras[0].followAbstractCreature;
+
+
             playerStateFocusedByCamera = ((followAbstractCreature != null) ? (followAbstractCreature.state as PlayerState) : null);
             cutscene = player.room.game.cameras[0].InCutscene;
         }
@@ -291,13 +343,3 @@ public class OnlineStoryHud : HudPart
         cameraArrowSprite.element = Futile.atlasManager.GetElementWithName(cutscene ? "Jolly_Lock_1" : "Multiplayer_Arrow");
     }
 }
-
-/*
-[Error: Unity Log] NullReferenceException: Object reference not set to an instance of an object
-Stack trace:
-OnlineStoryHud + OnlinePlayerIcon.Update()(at C:/ Users / lol / source / repos / Rain - Meadow / Story / Pain2.cs:109)
-OnlineStoryHud.Update()(at C:/ Users / lol / source / repos / Rain - Meadow / Story / Pain2.cs:251)
-HUD.HUD.Update()(at < 1014ff9a5d9941ab9e645d4f5c9384a5 >:0)*/
-
-// 112
-//254

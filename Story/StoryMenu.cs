@@ -382,7 +382,7 @@ namespace RainMeadow
         {
             this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
             personaSettings.playingAs = SlugcatStats.Name.White;
-            personaSettings.bodyColor = Color.magenta;
+            personaSettings.bodyColor = Color.white;
             personaSettings.eyeColor = Color.black;
 
         }

@@ -31,7 +31,7 @@ namespace RainMeadow
             On.Menu.SleepAndDeathScreen.Update += SleepAndDeathScreen_Update;
             On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
 
-            
+
 
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
 
@@ -46,17 +46,25 @@ namespace RainMeadow
         }
 
         // Useing the SinglePlayerHUD for OnlineStory because that's the only entry point besides hooking the Arena data, which I don't want. 
-        private void HUD_InitSinglePlayerHud(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam) 
+        private void HUD_InitSinglePlayerHud(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam)
         {
             if (isStoryMode(out var gameMode)) // Don't touch anybody else's stuff
             {
-                self.AddPart(new OnlineStoryHud(self, self.fContainers[1]));
-                for (int j = 0; j < cam.room.game.session.Players.Count; j++) // TODO
-                {
-                    OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], cam.room.game.session.Players[j]);
 
-                    self.AddPart(part);
-                }
+                var didAddHud = false;
+
+
+                self.AddPart(new OnlineStoryHud(self, self.fContainers[1], gameMode));
+
+
+                // TODO: OnlineSpecificHud
+
+                /*                for (int j = 0; j < gameMode.lobby.participants.Count; j++) // TODO
+                                {
+                                    OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], cam.room.game.session.Players[j]);
+
+                                    self.AddPart(part);
+                                }*/
             }
 
             orig(self, cam);
@@ -65,17 +73,19 @@ namespace RainMeadow
 
         private void RainWorldGame_GoToDeathScreen(On.RainWorldGame.orig_GoToDeathScreen orig, RainWorldGame self)
         {
-            if(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 if (!OnlineManager.lobby.isOwner)
                 {
                     OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToDeathScreen);
                 }
-                else {
+                else
+                {
                     RPCs.MovePlayersToDeathScreen();
                 }
             }
-            else{
+            else
+            {
                 orig(self);
             }
         }
@@ -99,12 +109,14 @@ namespace RainMeadow
                     {
                         player.InvokeRPC(RPCs.InitGameOver);
                     }
-                    else {
+                    else
+                    {
                         orig(self, dependentOnGrasp);
                     }
                 }
             }
-            else {
+            else
+            {
                 orig(self, dependentOnGrasp);
             }
         }
@@ -148,12 +160,12 @@ namespace RainMeadow
             if (isStoryMode(out var gameMode))
             {
 
-/*                if (Input.GetKeyDown(RainMeadowOptions.FriendsList.Value))
-                {
+                /*                if (Input.GetKeyDown(RainMeadowOptions.FriendsList.Value))
+                                {
 
-                    Debug("Placeholder for displaying usernames");
+                                    Debug("Placeholder for displaying usernames");
 
-                }*/
+                                }*/
 
 
 
