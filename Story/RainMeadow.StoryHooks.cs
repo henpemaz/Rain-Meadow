@@ -50,21 +50,14 @@ namespace RainMeadow
         {
             if (isStoryMode(out var gameMode)) // Don't touch anybody else's stuff
             {
-
-                var didAddHud = false;
-
-
                 self.AddPart(new OnlineStoryHud(self, self.fContainers[1], gameMode));
+/*
+                this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
 
+                OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], cam.room.game.session.Players[0], OnlineManager.players[0].id.name, personaSettings.bodyColor); // unique for each player
 
-                // TODO: OnlineSpecificHud
+                self.AddPart(part);*/
 
-                /*                for (int j = 0; j < gameMode.lobby.participants.Count; j++) // TODO
-                                {
-                                    OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], cam.room.game.session.Players[j]);
-
-                                    self.AddPart(part);
-                                }*/
             }
 
             orig(self, cam);
@@ -160,12 +153,12 @@ namespace RainMeadow
             if (isStoryMode(out var gameMode))
             {
 
-                /*                if (Input.GetKeyDown(RainMeadowOptions.FriendsList.Value))
-                                {
+                if (Input.GetKeyDown(rainMeadowOptions.FriendsListKey.Value))
+                {
 
-                                    Debug("Placeholder for displaying usernames");
+                    Debug("Placeholder for displaying usernames");
 
-                                }*/
+                }
 
 
 

@@ -16,10 +16,14 @@ namespace RainMeadow
         public const string MeadowVersionStr = "0.0.53";
         public static RainMeadow instance;
         private bool init;
+        private RainMeadowOptions rainMeadowOptions;
+
 
         public void OnEnable()
         {
             instance = this;
+            rainMeadowOptions = new RainMeadowOptions(this);
+
             On.RainWorld.OnModsInit += RainWorld_OnModsInit;
             On.RainWorld.Update += RainWorld_Update;
             On.WorldLoader.UpdateThread += WorldLoader_UpdateThread;
@@ -84,9 +88,9 @@ namespace RainMeadow
         {
             try
             {
-//#if TRACING
+                //#if TRACING
                 tracing |= Input.GetKeyDown("l");
-//#endif
+                //#endif
                 orig(self);
             }
             catch (Exception e)
@@ -104,6 +108,10 @@ namespace RainMeadow
 
             try
             {
+
+
+                MachineConnector.SetRegisteredOI("henpemaz_rainmeadow", rainMeadowOptions);
+
                 var sw = Stopwatch.StartNew();
                 OnlineState.InitializeBuiltinTypes();
                 sw.Stop();
@@ -142,7 +150,7 @@ namespace RainMeadow
                             break;
                         }
                     }
-                    if(!found)
+                    if (!found)
                     {
                         RainMeadow.Debug("registered as new shader");
                         self.Shaders[shader.name] = FShader.CreateShader(shader.name, shader);
@@ -160,7 +168,7 @@ namespace RainMeadow
                 MeadowHooks();
                 LoadingHooks();
                 StoryHooks();
-                
+
                 MeadowMusic.EnableMusic();
 
                 self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));

@@ -180,16 +180,17 @@ public class OnlineStoryHud : HudPart
         meterPos = new Vector2(RWCustom.Custom.rainWorld.options.ScreenSize.x - 90f, 100f);
         meterLastPos = meterPos;
 
-        players = new List<AbstractCreature>();
+        /*players = new List<AbstractCreature>();*/
+
 
 
         players = gameMode.lobby.playerAvatars
-                                     .Where(avatar => avatar.type != (byte)OnlineEntity.EntityId.IdType.none)
-                                     .Select(avatar => avatar.FindEntity(true))
-                                     .OfType<OnlinePhysicalObject>()
-                                     .Select(opo => opo.apo)
-                                     .OfType<AbstractCreature>()
-                                     .ToList();
+                         .Where(avatar => avatar.type != (byte)OnlineEntity.EntityId.IdType.none)
+                         .Select(avatar => avatar.FindEntity(true))
+                         .OfType<OnlinePhysicalObject>()
+                         .Select(opo => opo.apo)
+                         .OfType<AbstractCreature>()
+                         .ToList();
 
 
         playerIcons = new Dictionary<int, OnlinePlayerIcon>();
@@ -198,7 +199,7 @@ public class OnlineStoryHud : HudPart
         for (int i = 0; i < players.Count; i++)
         {
             Color color = personaSettings.bodyColor;
-            OnlinePlayerIcon value = new OnlinePlayerIcon(this, players[i], color); // TODO: The most recent player overrides the colors, and P1 is never notified someone else is added. Make a function to handle this
+            OnlinePlayerIcon value = new OnlinePlayerIcon(this, players[i], color); // TODO: Each HUD user dictates the color; make a function to handle the add / leave
             playerIcons.Add(i, value);
         }
 
@@ -277,16 +278,13 @@ public class OnlineStoryHud : HudPart
             counter = 0;
         }
 
-
-
-
         players = OnlineManager.lobby.playerAvatars
-                             .Where(avatar => avatar.type != (byte)OnlineEntity.EntityId.IdType.none)
-                             .Select(avatar => avatar.FindEntity(true))
-                             .OfType<OnlinePhysicalObject>()
-                             .Select(opo => opo.apo)
-                             .OfType<AbstractCreature>()
-                             .ToList();
+                     .Where(avatar => avatar.type != (byte)OnlineEntity.EntityId.IdType.none)
+                     .Select(avatar => avatar.FindEntity(true))
+                     .OfType<OnlinePhysicalObject>()
+                     .Select(opo => opo.apo)
+                     .OfType<AbstractCreature>()
+                     .ToList();
 
 
 
@@ -298,7 +296,7 @@ public class OnlineStoryHud : HudPart
                 // Only create new icons if there isn't already one for this player
                 if (!playerIcons.ContainsKey(i))
                 {
-                    Color color = personaSettings.bodyColor;
+                    Color color = personaSettings.bodyColor; // TODO
                     OnlinePlayerIcon value = new OnlinePlayerIcon(this, players[i], color);
                     playerIcons.Add(i, value);
                 }

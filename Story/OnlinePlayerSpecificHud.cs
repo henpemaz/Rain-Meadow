@@ -26,6 +26,8 @@ namespace JollyCoop.JollyHUD
 
             public float lastBlink;
 
+            public StoryAvatarSettings personaSettings;
+
             public bool removeAsap;
 
             public Vector2 pingPosition;
@@ -62,6 +64,8 @@ namespace JollyCoop.JollyHUD
                 : base(jollyHud)
             {
                 base.jollyHud = jollyHud;
+                this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
+
                 SetPosToPlayer();
                 gradient = new FSprite("Futile_White");
                 gradient.shader = jollyHud.hud.rainWorld.Shaders["FlatLight"];
@@ -74,7 +78,7 @@ namespace JollyCoop.JollyHUD
                 gradient.alpha = 0f;
                 gradient.x = -1000f;
                 symbolSprite = new FSprite("Multiplayer_Death");
-                symbolSprite.color = PlayerGraphics.DefaultSlugcatColor((jollyHud.abstractPlayer.state as PlayerState).slugcatCharacter);
+                symbolSprite.color = personaSettings.bodyColor;
                 jollyHud.hud.fContainers[0].AddChild(symbolSprite);
                 symbolSprite.alpha = 0f;
                 symbolSprite.x = -1000f;
@@ -88,6 +92,7 @@ namespace JollyCoop.JollyHUD
             public override void Update()
             {
                 base.Update();
+
                 lastAlpha = alpha;
                 lastBlink = blink;
                 lastPingPosition = pingPosition;
@@ -159,6 +164,8 @@ namespace JollyCoop.JollyHUD
 
             public override void Draw(float timeStacker)
             {
+                this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
+
                 Vector2 vector = Vector2.Lerp(lastPingPosition, pingPosition, timeStacker) + new Vector2(0.01f, 0.01f);
                 float num = Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(lastAlpha, alpha, timeStacker)), 0.7f);
                 gradient.x = vector.x;
@@ -167,10 +174,10 @@ namespace JollyCoop.JollyHUD
                 gradient.alpha = 0.17f * Mathf.Pow(num, 2f);
                 symbolSprite.x = vector.x;
                 symbolSprite.y = Mathf.Min(vector.y + Custom.SCurve(Mathf.InverseLerp(40f, 130f, (float)counter + timeStacker), 0.8f) * 80f, jollyHud.Camera.sSize.y - 30f);
-                Color color = jollyHud.playerColor;
+                Color color = personaSettings.bodyColor;
                 if (counter % 6 < 2 && lastBlink > 0f)
                 {
-                    color = ((!((jollyHud.abstractPlayer.state as PlayerState).slugcatCharacter == SlugcatStats.Name.White)) ? Color.Lerp(color, new Color(1f, 1f, 1f), Mathf.InverseLerp(0f, 0.5f, Mathf.Lerp(lastBlink, blink, timeStacker))) : Color.Lerp(color, new Color(0.9f, 0.9f, 0.9f), Mathf.InverseLerp(0f, 0.5f, Mathf.Lerp(lastBlink, blink, timeStacker))));
+                    color = Color.red;
                 }
 
                 symbolSprite.color = color;
@@ -190,6 +197,8 @@ namespace JollyCoop.JollyHUD
             public List<FSprite> sprites;
 
             public Vector2 localPos;
+
+            public StoryAvatarSettings personaSettings;
 
             public Vector2 playerPos;
 
@@ -218,6 +227,7 @@ namespace JollyCoop.JollyHUD
             public JollyOffRoom(OnlinePlayerSpecificHud jollyHud)
                 : base(jollyHud)
             {
+
                 hidden = true;
                 sprites = new List<FSprite>();
                 timer = 0;
@@ -232,6 +242,8 @@ namespace JollyCoop.JollyHUD
 
             public void InitiateSprites()
             {
+                this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
+
                 sprites.Add(new FSprite("GuidanceSlugcat")
                 {
                     shader = jollyHud.hud.rainWorld.Shaders["Hologram"],
@@ -245,7 +257,7 @@ namespace JollyCoop.JollyHUD
                 });
                 for (int i = 0; i < sprites.Count; i++)
                 {
-                    sprites[i].color = jollyHud.playerColor;
+                    sprites[i].color = personaSettings.bodyColor;
                     sprites[i].alpha = 0.1f;
                     jollyHud.fContainer.AddChild(sprites[i]);
                 }
@@ -317,6 +329,8 @@ namespace JollyCoop.JollyHUD
             public override void Draw(float timeStacker)
             {
                 base.Draw(timeStacker);
+                this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
+
                 if (hidden)
                 {
                     sprites[0].isVisible = false;
@@ -342,7 +356,7 @@ namespace JollyCoop.JollyHUD
                     sprites[j].x = vector.x;
                     sprites[j].y = vector.y;
                     sprites[j].scale = scale;
-                    sprites[j].color = jollyHud.playerColor;
+                    sprites[j].color = personaSettings.bodyColor;
                 }
 
                 sprites[1].scale = Mathf.Lerp(80f, 110f, 1f) / 16f;
@@ -399,7 +413,7 @@ namespace JollyCoop.JollyHUD
 
             public StoryAvatarSettings personaSettings;
 
-            public JollyPlayerArrow(OnlinePlayerSpecificHud jollyHud)
+            public JollyPlayerArrow(OnlinePlayerSpecificHud jollyHud, string name)
                 : base(jollyHud)
             {
                 this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
@@ -407,7 +421,7 @@ namespace JollyCoop.JollyHUD
                 bodyPos = new Vector2(0f, 0f);
                 lastBodyPos = bodyPos;
                 blink = 1f;
-                playerName = OnlineManager.players[0].id.name;
+                playerName = name;
                 mainColor = personaSettings.bodyColor;
                 inverColor = JollyCustom.GenerateClippedInverseColor(mainColor);
                 gradient = new FSprite("Futile_White")
@@ -814,17 +828,17 @@ namespace JollyCoop.JollyHUD
 
         public Player RealizedPlayer => abstractPlayer.realizedCreature as Player;
 
-        public OnlinePlayerSpecificHud(global::HUD.HUD hud, FContainer fContainer, AbstractCreature player)
+        public OnlinePlayerSpecificHud(global::HUD.HUD hud, FContainer fContainer, AbstractCreature player, string name, Color bodyColor)
             : base(hud)
         {
             abstractPlayer = player;
             playerNumber = PlayerState.playerNumber;
             inShortcut = false;
             inShortcutLast = inShortcut;
-            playerColor = PlayerGraphics.SlugcatColor(PlayerState.slugcatCharacter);
+            playerColor = bodyColor;
             this.fContainer = fContainer;
             parts = new List<JollyPart>();
-            playerArrow = new JollyPlayerArrow(this);
+            playerArrow = new JollyPlayerArrow(this, name);
             parts.Add(playerArrow);
             offRoom = new JollyOffRoom(this);
             parts.Add(offRoom);
