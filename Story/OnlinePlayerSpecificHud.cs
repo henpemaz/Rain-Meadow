@@ -873,8 +873,8 @@ using static RainMeadow.OnlineState;
             parts = new List<JollyPart>();
             playerArrow = new JollyPlayerArrow(this, playerName);
             parts.Add(playerArrow);
-            offRoom = new JollyOffRoom(this);
-            parts.Add(offRoom);
+/*            offRoom = new JollyOffRoom(this); // TODO: Offroom
+            parts.Add(offRoom);*/
             addedDeathBumpThisSession = false;
             playersWithArrows.Add(playerName);
 
@@ -935,8 +935,9 @@ using static RainMeadow.OnlineState;
                         parts = new List<JollyPart>();
                         playerArrow = new JollyPlayerArrow(this, players[i].id.name);
                         parts.Add(playerArrow);
-                        offRoom = new JollyOffRoom(this);
-                        parts.Add(offRoom);
+
+/*                        offRoom = new JollyOffRoom(this);
+                        parts.Add(offRoom);*/
                         playersWithArrows.Add(players[i].id.name);
 
                     }
