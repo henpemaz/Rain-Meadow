@@ -424,8 +424,6 @@ namespace JollyCoop.JollyHUD
 
             public int frequency;
 
-            public bool viewFriends = false;
-
             public StoryAvatarSettings personaSettings;
 
             public JollyPlayerArrow(OnlinePlayerSpecificHud jollyHud, string name)
@@ -519,27 +517,9 @@ namespace JollyCoop.JollyHUD
                     fadeAwayCounter = 0;
                     timer = 0;
                 }
-                if (Input.GetKeyDown(KeyCode.J))
-                { // TODO: Fix custom input
-                  // viewFriends Keeps the arrow around
-                    viewFriends = !viewFriends;
 
-                }
 
-                if (viewFriends)
-                {
-                    blink = 1f;
-                    fadeAwayCounter = 0;
-                    timer = 0;
-                }
-
-                else
-                {
-                    fadeAwayCounter++;
-
-                }
-
-/*                if ((jollyHud.RealizedPlayer.RevealMap || jollyHud.RealizedPlayer.showKarmaFoodRainTime > 0 || nearEdge || jollyHud.RealizedPlayer.inShortcut) && timer > 20) 
+                if ((jollyHud.RealizedPlayer.RevealMap || jollyHud.RealizedPlayer.showKarmaFoodRainTime > 0 || nearEdge || jollyHud.RealizedPlayer.inShortcut) && timer > 20 || Input.GetKeyDown(KeyCode.J))
                 {
                     // Keeps the arrow around
                     blink = 1f;
@@ -555,7 +535,7 @@ namespace JollyCoop.JollyHUD
                 if (fadeAwayCounter > 0)
                 {
                     fadeAwayCounter++;
-                }*/
+                }
 
 
 
@@ -863,6 +843,9 @@ namespace JollyCoop.JollyHUD
 
         public FContainer fContainer;
 
+        public List<string> playersWithArrows;
+
+
         public List<JollyPart> parts;
 
         public bool addedDeathBumpThisSession;
@@ -875,9 +858,15 @@ namespace JollyCoop.JollyHUD
 
         public Player RealizedPlayer => abstractPlayer.realizedCreature as Player;
 
+
         public OnlinePlayerSpecificHud(global::HUD.HUD hud, FContainer fContainer, AbstractCreature player, string name, Color bodyColor)
             : base(hud)
         {
+/*            playersWithArrows = new List<string>();
+
+            List<OnlinePlayer> players = OnlineManager.players;*/
+
+
             abstractPlayer = player;
             playerName = name;
             playerNumber = PlayerState.playerNumber;
@@ -892,6 +881,12 @@ namespace JollyCoop.JollyHUD
             parts.Add(offRoom);
             addedDeathBumpThisSession = false;
 
+ /*           for (int i = 0; i < players.Count; i++)
+            {
+
+                playersWithArrows.Add(players[i].id.name);
+
+            }*/
         }
 
         public override void ClearSprites()
@@ -932,7 +927,31 @@ namespace JollyCoop.JollyHUD
         {
             base.Update();
 
-            List<OnlinePlayer> players = OnlineManager.players;
+
+/*            List<OnlinePlayer> players = OnlineManager.players;
+
+            if (playersWithArrows.Count != players.Count)
+            {
+
+                for (int i = 0; i < players.Count; i++)
+                {
+                    RainMeadow.RainMeadow.Debug("Current list" + players[i].id.name);
+
+                    if (!players[i].isMe && !playersWithArrows.Contains(players[i].id.name))
+                    {
+                        RainMeadow.RainMeadow.Debug("NOT ME" + players[i].id.name);
+                        parts = new List<JollyPart>();
+                        playerArrow = new JollyPlayerArrow(this, players[i].id.name);
+                        parts.Add(playerArrow);
+                        offRoom = new JollyOffRoom(this);
+                        parts.Add(offRoom);
+                        playersWithArrows.Add(players[i].id.name);
+
+                    }
+
+                }
+            }*/
+            
 
             inShortcutLast = inShortcut;
             camPos = Camera.pos;
@@ -986,7 +1005,7 @@ Resolve: 'netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ff
 Found single assembly: 'netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51'
 Load from: 'C:\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\Managed\netstandard.dll'
 ------------------
-Resolve: 'UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null'
+Resolve: 'UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null'f
 Found single assembly: 'UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null'
 Load from: 'C:\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\Managed\UnityEngine.CoreModule.dll'
 ------------------

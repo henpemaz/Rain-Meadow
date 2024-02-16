@@ -52,24 +52,28 @@ namespace RainMeadow
             {
                 self.AddPart(new OnlineStoryHud(self, self.fContainers[1], gameMode));
 
-                this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
+                this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings; // player Color
 
-                var players = OnlineManager.lobby.playerAvatars
+                var playersWithNames = OnlineManager.lobby.playerAvatars
                         .Where(avatar => avatar.type != (byte)OnlineEntity.EntityId.IdType.none)
                         .Select(avatar => avatar.FindEntity(true))
                         .OfType<OnlinePhysicalObject>()
                         .Select(opo => opo.apo as AbstractCreature)
+                        .Zip(OnlineManager.players, (creature, player) => new { AbstractCreature = creature, PlayerName = player.id.name })
                         .ToList();
 
-                for (int i = 0; i < players.Count; i++)
+
+                for (int i = 0; i < playersWithNames.Count; i++)
                 {
 
-                    // TODO: Player 1 needs an update when someone joins
-                    // TODO: the names are wrong. I don't think I should be iterating here
 
-                    OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], players[i], OnlineManager.players[i].id.name, personaSettings.bodyColor); // unique for each player
+                    // TODO: Names are getting mixed up
+                    // TODO: Player 1 needs an update when someone joins
+
+                    OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].AbstractCreature, playersWithNames[i].PlayerName, personaSettings.bodyColor); // unique for each player
 
                     self.AddPart(part);
+
 
                 }
 
