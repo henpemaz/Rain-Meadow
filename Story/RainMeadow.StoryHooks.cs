@@ -12,6 +12,7 @@ namespace RainMeadow
     {
         private bool isPlayerReady = false;
         private StoryAvatarSettings personaSettings;
+        public List<string> playersWithArrows;
 
         public static bool isStoryMode(out StoryGameMode? gameMode)
         {
@@ -31,25 +32,25 @@ namespace RainMeadow
             On.Menu.SleepAndDeathScreen.Update += SleepAndDeathScreen_Update;
             On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
 
-
-
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
 
             On.Player.Update += Player_Update;
 
             On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide; ;
             On.RegionGate.PlayersStandingStill += PlayersStandingStill;
-            On.RegionGate.PlayersInZone += RegionGate_PlayersInZone; ;
+            On.RegionGate.PlayersInZone += RegionGate_PlayersInZone;
 
             On.RainWorldGame.GameOver += RainWorldGame_GameOver;
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
         }
 
-        // Useing the SinglePlayerHUD for OnlineStory because that's the only entry point besides hooking the Arena data, which I don't want. 
+
+        // Using the SinglePlayerHUD for OnlineStory because that's the only entry point besides hooking the Arena data, which I don't want. 
         private void HUD_InitSinglePlayerHud(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam)
         {
             if (isStoryMode(out var gameMode))
             {
+
                 self.AddPart(new OnlineStoryHud(self, self.fContainers[1], gameMode));
 
                 this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings; // player Color
@@ -65,15 +66,14 @@ namespace RainMeadow
 
                 for (int i = 0; i < playersWithNames.Count; i++)
                 {
+                    
+                        // TODO: Names are getting mixed up when P2 joins
+                        // TODO: Player 1 needs an update when someone joins
 
+                        OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].AbstractCreature, playersWithNames[i].PlayerName, Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f)); // unique for each player
 
-                    // TODO: Names are getting mixed up
-                    // TODO: Player 1 needs an update when someone joins
-
-                    OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].AbstractCreature, playersWithNames[i].PlayerName, personaSettings.bodyColor); // unique for each player
-
-                    self.AddPart(part);
-
+                        self.AddPart(part);
+                    
 
                 }
 

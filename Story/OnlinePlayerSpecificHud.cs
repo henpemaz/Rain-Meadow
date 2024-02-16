@@ -12,8 +12,7 @@ using RWCustom;
 using UnityEngine;
 using static RainMeadow.OnlineState;
 
-namespace JollyCoop.JollyHUD
-{
+
     public class OnlinePlayerSpecificHud : HudPart
     {
         public class JollyDeathBump : JollyPointer
@@ -390,7 +389,7 @@ namespace JollyCoop.JollyHUD
             public override void ClearSprites()
             {
                 base.ClearSprites();
-                JollyCustom.Log("JollyOfscreen: Clearing sprites");
+                RainMeadow.RainMeadow.Debug("JollyOfscreen: Clearing sprites");
                 for (int i = 0; i < sprites.Count; i++)
                 {
                     sprites[i].RemoveFromContainer();
@@ -431,13 +430,13 @@ namespace JollyCoop.JollyHUD
             {
                 this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
 
-                JollyCustom.Log("Adding Player pointer to " + base.PlayerState.playerNumber);
+                RainMeadow.RainMeadow.Debug("Adding Player pointer to " + base.PlayerState.playerNumber);
                 bodyPos = new Vector2(0f, 0f);
                 lastBodyPos = bodyPos;
                 blink = 1f;
                 playerName = name;
                 mainColor = personaSettings.bodyColor;
-                inverColor = JollyCustom.GenerateClippedInverseColor(mainColor);
+                inverColor = Color.white; //TODO
                 gradient = new FSprite("Futile_White")
                 {
                     shader = base.jollyHud.hud.rainWorld.Shaders["FlatLight"],
@@ -562,7 +561,7 @@ namespace JollyCoop.JollyHUD
                 }
                 catch (Exception ex)
                 {
-                    JollyCustom.Log(ex.ToString());
+                    RainMeadow.RainMeadow.Debug(ex.ToString());
                 }
 
                 hidden = Mathf.Abs(alpha) - 0.05f < 0f;
@@ -613,7 +612,7 @@ namespace JollyCoop.JollyHUD
                     float num3 = Mathf.Max(0f, Mathf.Pow(Mathf.Lerp(17f, 4f, t), 1.2f));
                     float t2 = 0.5f * (0.8f + Mathf.Sin(num3 * num2));
                     float t3 = Mathf.Lerp(0.01f, 0.6f, t2);
-                    mainColor = Color.Lerp(jollyHud.playerColor, JollyCustom.GenerateClippedInverseColor(jollyHud.playerColor), t3);
+                    mainColor = Color.Lerp(jollyHud.playerColor, Color.white, t3); // TODO
                 }
 
                 gradient.x = input.x;
@@ -990,4 +989,3 @@ namespace JollyCoop.JollyHUD
             }
         }
     }
-}
