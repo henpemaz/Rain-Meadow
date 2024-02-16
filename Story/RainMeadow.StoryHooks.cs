@@ -13,6 +13,7 @@ namespace RainMeadow
         private bool isPlayerReady = false;
         private StoryAvatarSettings personaSettings;
         public List<string> playersWithArrows;
+        public StoryAvatarSettings playerArrowBodyColor;
 
         public static bool isStoryMode(out StoryGameMode? gameMode)
         {
@@ -53,27 +54,30 @@ namespace RainMeadow
 
                 self.AddPart(new OnlineStoryHud(self, self.fContainers[1], gameMode));
 
-                this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings; // player Color
-
                 var playersWithNames = OnlineManager.lobby.playerAvatars
                         .Where(avatar => avatar.type != (byte)OnlineEntity.EntityId.IdType.none)
                         .Select(avatar => avatar.FindEntity(true))
                         .OfType<OnlinePhysicalObject>()
                         .Select(opo => opo.apo as AbstractCreature)
-                        .Zip(OnlineManager.players, (creature, player) => new { AbstractCreature = creature, PlayerName = player.id.name })
+                        .Zip(OnlineManager.players, (creature, player) => new { AbstractCreature = creature, PlayerName = player })
                         .ToList();
 
 
-                for (int i = 0; i < playersWithNames.Count; i++)
+                    for (int i = 0; i < playersWithNames.Count; i++)
                 {
-                    
-                        // TODO: Names are getting mixed up when P2 joins
-                        // TODO: Player 1 needs an update when someone joins
 
-                        OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].AbstractCreature, playersWithNames[i].PlayerName, Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f)); // unique for each player
+/*                    if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(playersWithNames[i].AbstractCreature, out var oe))
+                    {
+                        playerArrowBodyColor = OnlineManager.lobby.entities.Values.First(em => em.entity is ClientSettings avs && avs.avatarId == oe.id).entity as StoryAvatarSettings;*/
+                       
 
-                        self.AddPart(part);
-                    
+                    // TODO: Names are getting mixed up when P2 joins
+                    // TODO: Player 1 needs an update when someone joins
+
+                    OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].AbstractCreature, playersWithNames[i].PlayerName.id.name, Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f)); // unique for each player for now
+
+                    self.AddPart(part);
+                    // }
 
                 }
 
