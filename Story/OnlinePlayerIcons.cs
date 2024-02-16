@@ -8,6 +8,7 @@ using UnityEngine.UI;
 using RainMeadow;
 using HarmonyLib;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 
 public class OnlineStoryHud : HudPart
 {
@@ -300,26 +301,20 @@ public class OnlineStoryHud : HudPart
                     OnlinePlayerIcon value = new OnlinePlayerIcon(this, players[i], color);
                     playerIcons.Add(i, value);
                 }
-            }
 
-            // Remove icons for players who have left -- TODO: Currently doesn't work
-            List<int> keysToRemove = new List<int>();
-            foreach (var kvp in playerIcons)
-            {
-                if (!players.Exists(p => p == kvp.Value.player))
+                if (playerIcons.Count > players.Count)
                 {
-                    keysToRemove.Add(kvp.Key);
+
+                    playerIcons.Remove(i); // TODO: Not good, but
+
+
                 }
-            }
-            foreach (int key in keysToRemove)
-            {
-                playerIcons.Remove(key);
             }
         }
 
         foreach (KeyValuePair<int, OnlinePlayerIcon> playerIcon in playerIcons)
         {
-            playerIcon.Value.Update(); // PlayerIcon is probabyl null
+            playerIcon.Value.Update(); 
             playerIcon.Value.pos = meterPos + new Vector2((float)playerIcon.Key * 30f, 0f);
         }
 
