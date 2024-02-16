@@ -48,7 +48,7 @@ namespace RainMeadow
         // Useing the SinglePlayerHUD for OnlineStory because that's the only entry point besides hooking the Arena data, which I don't want. 
         private void HUD_InitSinglePlayerHud(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam)
         {
-            if (isStoryMode(out var gameMode)) // Don't touch anybody else's stuff
+            if (isStoryMode(out var gameMode))
             {
                 self.AddPart(new OnlineStoryHud(self, self.fContainers[1], gameMode));
 
@@ -63,12 +63,14 @@ namespace RainMeadow
 
                 for (int i = 0; i < players.Count; i++)
                 {
+
                     // TODO: Player 1 needs an update when someone joins
-                    // TODO: Players can see each other when the other person toggles food, NOT when the owning player does. 
-                    // This will likely create issues where if Player 1 wants to see Player 2, he will, but then player 2 will also see it. 
+                    // TODO: the names are wrong. I don't think I should be iterating here
+
                     OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], players[i], OnlineManager.players[i].id.name, personaSettings.bodyColor); // unique for each player
 
                     self.AddPart(part);
+
                 }
 
             }
@@ -165,16 +167,6 @@ namespace RainMeadow
             orig(self, eu);
             if (isStoryMode(out var gameMode))
             {
-
-                if (Input.GetKeyDown(rainMeadowOptions.FriendsListKey.Value))
-                {
-
-                    Debug("Placeholder for displaying usernames");
-
-                }
-
-
-
 
                 //fetch the online entity and check if it is mine. 
                 //If it is mine run the below code

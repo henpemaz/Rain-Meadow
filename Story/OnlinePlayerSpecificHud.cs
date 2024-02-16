@@ -177,7 +177,7 @@ namespace JollyCoop.JollyHUD
                 Color color = personaSettings.bodyColor;
                 if (counter % 6 < 2 && lastBlink > 0f)
                 {
-                    color = Color.red;
+                    color = Color.red; // Think this is for notifying when a slugcat is missing at Gate
                 }
 
                 symbolSprite.color = color;
@@ -289,10 +289,6 @@ namespace JollyCoop.JollyHUD
                         playerPos = players[i].world.RoomToWorldPos(players[i].realizedCreature.mainBodyChunk.pos, players[i].Room.index);
                         roomPos = players[i].world.RoomToWorldPos(jollyHud.camPos, jollyHud.Camera.room.abstractRoom.index);
                     }
-
-                    RainMeadow.RainMeadow.Debug("CURRENT PLAYER POS:" + playerPos);
-                    RainMeadow.RainMeadow.Debug("CURRENT ROOM POS:" + roomPos);
-
 
                     lastDrawPos = drawPos;
                     drawPos = playerPos - roomPos;
@@ -428,12 +424,15 @@ namespace JollyCoop.JollyHUD
 
             public int frequency;
 
+            public bool viewFriends = false;
+
             public StoryAvatarSettings personaSettings;
 
             public JollyPlayerArrow(OnlinePlayerSpecificHud jollyHud, string name)
                 : base(jollyHud)
             {
                 this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
+
                 JollyCustom.Log("Adding Player pointer to " + base.PlayerState.playerNumber);
                 bodyPos = new Vector2(0f, 0f);
                 lastBodyPos = bodyPos;
@@ -456,11 +455,13 @@ namespace JollyCoop.JollyHUD
                 initialWaitTime = Player.InitialShortcutWaitTime;
             }
 
-            public override void Update()
+            public override void Update() 
             {
                 base.Update();
                 blink = Mathf.Max(0f, blink - 0.0125f);
                 alpha = Custom.LerpAndTick(alpha, Mathf.InverseLerp(80f, 20f, fadeAwayCounter), 0.08f, 71f / (678f * (float)Math.PI));
+                mainColor = jollyHud.playerColor;
+
                 if (jollyHud.Camera.room == null)
                 {
                     hide = true;
@@ -480,7 +481,7 @@ namespace JollyCoop.JollyHUD
                     size.x = 5 * playerName.Length;
                 }
 
-                mainColor = jollyHud.playerColor;
+                
                 if (!jollyHud.PlayerRoomBeingViewed || forceHide || !knownPos)
                 {
                     hide = true;
@@ -518,9 +519,29 @@ namespace JollyCoop.JollyHUD
                     fadeAwayCounter = 0;
                     timer = 0;
                 }
+                if (Input.GetKeyDown(KeyCode.J))
+                { // TODO: Fix custom input
+                  // viewFriends Keeps the arrow around
+                    viewFriends = !viewFriends;
 
-                if ((jollyHud.RealizedPlayer.RevealMap || jollyHud.RealizedPlayer.showKarmaFoodRainTime > 0 || nearEdge || jollyHud.RealizedPlayer.inShortcut) && timer > 20)
+                }
+
+                if (viewFriends)
                 {
+                    blink = 1f;
+                    fadeAwayCounter = 0;
+                    timer = 0;
+                }
+
+                else
+                {
+                    fadeAwayCounter++;
+
+                }
+
+/*                if ((jollyHud.RealizedPlayer.RevealMap || jollyHud.RealizedPlayer.showKarmaFoodRainTime > 0 || nearEdge || jollyHud.RealizedPlayer.inShortcut) && timer > 20) 
+                {
+                    // Keeps the arrow around
                     blink = 1f;
                     fadeAwayCounter = 0;
                     timer = 0;
@@ -534,7 +555,9 @@ namespace JollyCoop.JollyHUD
                 if (fadeAwayCounter > 0)
                 {
                     fadeAwayCounter++;
-                }
+                }*/
+
+
 
                 timer++;
                 frequency++;
@@ -575,6 +598,7 @@ namespace JollyCoop.JollyHUD
             public override void Draw(float timeStacker)
             {
                 base.Draw(timeStacker);
+
                 Vector2 input = Vector2.Lerp(lastBodyPos, bodyPos, timeStacker) + new Vector2(0.01f, 40f);
                 Vector2 input2 = Vector2.Lerp(lastTargetPos, targetPos, timeStacker) + new Vector2(0.01f, 40f);
                 input = ClampScreenEdge(input);
@@ -867,6 +891,7 @@ namespace JollyCoop.JollyHUD
             offRoom = new JollyOffRoom(this);
             parts.Add(offRoom);
             addedDeathBumpThisSession = false;
+
         }
 
         public override void ClearSprites()
@@ -906,6 +931,8 @@ namespace JollyCoop.JollyHUD
         public override void Update()
         {
             base.Update();
+
+            List<OnlinePlayer> players = OnlineManager.players;
 
             inShortcutLast = inShortcut;
             camPos = Camera.pos;
