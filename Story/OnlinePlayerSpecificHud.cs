@@ -918,8 +918,10 @@ using static RainMeadow.OnlineState;
         {
             base.Update();
 
+        
 
-/*            List<OnlinePlayer> players = OnlineManager.players;
+
+            List<OnlinePlayer> players = OnlineManager.players;
 
             if (playersWithArrows.Count != players.Count)
             {
@@ -935,15 +937,15 @@ using static RainMeadow.OnlineState;
                         parts = new List<JollyPart>();
                         playerArrow = new JollyPlayerArrow(this, players[i].id.name);
                         parts.Add(playerArrow);
-
-*//*                        offRoom = new JollyOffRoom(this);
-                        parts.Add(offRoom);*//*
+/*
+                        offRoom = new JollyOffRoom(this);
+                        parts.Add(offRoom);*/
                         playersWithArrows.Add(players[i].id.name);
 
                     }
 
                 }
-            } */
+            } 
 
 
             inShortcutLast = inShortcut;
