@@ -862,10 +862,7 @@ namespace JollyCoop.JollyHUD
         public OnlinePlayerSpecificHud(global::HUD.HUD hud, FContainer fContainer, AbstractCreature player, string name, Color bodyColor)
             : base(hud)
         {
-/*            playersWithArrows = new List<string>();
-
-            List<OnlinePlayer> players = OnlineManager.players;*/
-
+            playersWithArrows = new List<string>();
 
             abstractPlayer = player;
             playerName = name;
@@ -880,13 +877,8 @@ namespace JollyCoop.JollyHUD
             offRoom = new JollyOffRoom(this);
             parts.Add(offRoom);
             addedDeathBumpThisSession = false;
+            playersWithArrows.Add(playerName);
 
- /*           for (int i = 0; i < players.Count; i++)
-            {
-
-                playersWithArrows.Add(players[i].id.name);
-
-            }*/
         }
 
         public override void ClearSprites()
@@ -928,18 +920,19 @@ namespace JollyCoop.JollyHUD
             base.Update();
 
 
-/*            List<OnlinePlayer> players = OnlineManager.players;
+            List<OnlinePlayer> players = OnlineManager.players;
 
             if (playersWithArrows.Count != players.Count)
             {
+                RainMeadow.RainMeadow.Debug("CURRENT PlAYERS COUNT FOR ME " + players.Count);
+                RainMeadow.RainMeadow.Debug("CURRENT ARROWS COUNT FOR ME " + playersWithArrows.Count);
+
 
                 for (int i = 0; i < players.Count; i++)
                 {
-                    RainMeadow.RainMeadow.Debug("Current list" + players[i].id.name);
 
-                    if (!players[i].isMe && !playersWithArrows.Contains(players[i].id.name))
+                    if (!playersWithArrows.Contains(players[i].id.name))
                     {
-                        RainMeadow.RainMeadow.Debug("NOT ME" + players[i].id.name);
                         parts = new List<JollyPart>();
                         playerArrow = new JollyPlayerArrow(this, players[i].id.name);
                         parts.Add(playerArrow);
@@ -950,8 +943,8 @@ namespace JollyCoop.JollyHUD
                     }
 
                 }
-            }*/
-            
+            } 
+
 
             inShortcutLast = inShortcut;
             camPos = Camera.pos;
