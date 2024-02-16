@@ -425,6 +425,8 @@ namespace RainMeadow
             absAI.SetDestination(coord);
             // pathfinder has some "optimizations" that need bypassing
             realAI.pathFinder.nextDestination = null;
+            realAI.pathFinder.currentlyFollowingDestination = coord;
+            realAI.pathFinder.AbortCurrentGenerationPathFinding();
             realAI.pathFinder.AssignNewDestination(coord);
         }
 

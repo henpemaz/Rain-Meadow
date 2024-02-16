@@ -30,6 +30,7 @@ on wackamole pipe, game picks randomly I think, maybe should be player-chosen
 
 lizard todo
 - walking off ledge /done
+- go through floors
 - charge
 - pounce / done
 - head rotation should really prefer unrotated
@@ -53,4 +54,4 @@ test blue lizard jump
 blue lizard make it prefer ground
 
 playable scav
-
+- go through floors
