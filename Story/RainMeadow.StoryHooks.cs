@@ -63,7 +63,9 @@ namespace RainMeadow
 
                 for (int i = 0; i < players.Count; i++)
                 {
-
+                    // TODO: Player 1 needs an update when someone joins
+                    // TODO: Players can see each other when the other person toggles food, NOT when the owning player does. 
+                    // This will likely create issues where if Player 1 wants to see Player 2, he will, but then player 2 will also see it. 
                     OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], players[i], OnlineManager.players[i].id.name, personaSettings.bodyColor); // unique for each player
 
                     self.AddPart(part);

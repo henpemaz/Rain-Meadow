@@ -827,6 +827,8 @@ namespace JollyCoop.JollyHUD
 
         public int playerNumber;
 
+        public string playerName; 
+
         public bool inShortcutLast;
 
         public bool inShortcut;
@@ -853,13 +855,14 @@ namespace JollyCoop.JollyHUD
             : base(hud)
         {
             abstractPlayer = player;
+            playerName = name;
             playerNumber = PlayerState.playerNumber;
             inShortcut = false;
             inShortcutLast = inShortcut;
             playerColor = bodyColor;
             this.fContainer = fContainer;
             parts = new List<JollyPart>();
-            playerArrow = new JollyPlayerArrow(this, name);
+            playerArrow = new JollyPlayerArrow(this, playerName);
             parts.Add(playerArrow);
             offRoom = new JollyOffRoom(this);
             parts.Add(offRoom);
@@ -903,6 +906,7 @@ namespace JollyCoop.JollyHUD
         public override void Update()
         {
             base.Update();
+
             inShortcutLast = inShortcut;
             camPos = Camera.pos;
             if (RealizedPlayer != null)
