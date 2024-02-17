@@ -62,6 +62,27 @@ namespace RainMeadow
             On.LizardGraphics.ctor += LizardGraphics_ctor;
 
             On.LizardGraphics.Update += LizardGraphics_Update;
+
+            On.Lizard.AttemptBite += Lizard_AttemptBite;
+            On.Lizard.DamageAttack += Lizard_DamageAttack;
+        }
+
+        private static void Lizard_DamageAttack(On.Lizard.orig_DamageAttack orig, Lizard self, BodyChunk chunk, float dmgFac)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                return;
+            }
+            orig(self, chunk, dmgFac);
+        }
+
+        private static void Lizard_AttemptBite(On.Lizard.orig_AttemptBite orig, Lizard self, Creature creature)
+        {
+            if(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                return;
+            }
+            orig(self, creature);
         }
 
         private static void LizardGraphics_Update(On.LizardGraphics.orig_Update orig, LizardGraphics self)

@@ -1,6 +1,7 @@
 ﻿using Mono.Cecil;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using RWCustom;
 using System;
 using System.Globalization;
@@ -23,13 +24,88 @@ namespace RainMeadow
             IL.HUD.Map.ctor += Map_OwnerFixup; // support non-slug owner
             IL.HUD.Map.CreateDiscoveryTextureFromVisitedRooms += Map_OwnerFixup; // support non-slug owner
 
+            On.RegionGate.ctor += RegionGate_ctor;
+            On.RegionGate.PlayersInZone += RegionGate_PlayersInZone1;
+            On.RegionGate.PlayersStandingStill += RegionGate_PlayersStandingStill;
+            On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide1;
+
             On.RainWorldGame.AllowRainCounterToTick += RainWorldGame_AllowRainCounterToTick; // timer stuck
             On.ShelterDoor.Close += ShelterDoor_Close; // door stuck
             On.OverWorld.LoadFirstWorld += OverWorld_LoadFirstWorld; // timer stuck past cycle start
 
             On.AbstractCreature.ChangeRooms += AbstractCreature_ChangeRooms; // displayer follow creature
 
-            On.Room.LoadFromDataString += Room_LoadFromDataString1;
+            On.Room.LoadFromDataString += Room_LoadFromDataString1; // places of spawning items
+
+            new Hook(typeof(RegionGate).GetProperty("MeetRequirement").GetGetMethod(), this.RegionGate_MeetRequirement);
+            new Hook(typeof(WaterGate).GetProperty("EnergyEnoughToOpen").GetGetMethod(), this.RegionGate_EnergyEnoughToOpen);
+            new Hook(typeof(ElectricGate).GetProperty("EnergyEnoughToOpen").GetGetMethod(), this.RegionGate_EnergyEnoughToOpen);
+        }
+
+        public delegate bool orig_RegionGateBool(RegionGate self);
+        public bool RegionGate_MeetRequirement(orig_RegionGateBool orig, RegionGate self)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                return true;
+            }
+            return orig(self);
+        }
+
+        public bool RegionGate_EnergyEnoughToOpen(orig_RegionGateBool orig, RegionGate self)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                return true;
+            }
+            return orig(self);
+        }
+
+
+        private void RegionGate_ctor(On.RegionGate.orig_ctor orig, RegionGate self, Room room)
+        {
+            orig(self, room);
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                self.unlocked = true;
+            }
+        }
+
+        private bool RegionGate_AllPlayersThroughToOtherSide1(On.RegionGate.orig_AllPlayersThroughToOtherSide orig, RegionGate self)
+        {
+            if(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+            {
+                if (mgm.avatar.creature.pos.room == self.room.abstractRoom.index && (!self.letThroughDir || mgm.avatar.creature.pos.x < self.room.TileWidth / 2 + 3) && (self.letThroughDir || mgm.avatar.creature.pos.x > self.room.TileWidth / 2 - 4))
+                {
+                    return false;
+                }
+                return true;
+            }
+            return orig(self);
+        }
+
+        private bool RegionGate_PlayersStandingStill(On.RegionGate.orig_PlayersStandingStill orig, RegionGate self)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+            {
+                if(CreatureController.creatureControllers.TryGetValue(mgm.avatar.creature, out var c))
+                {
+                    return c.touchedNoInputCounter > 20;
+                }
+            }
+            return orig(self);
+        }
+
+        private int RegionGate_PlayersInZone1(On.RegionGate.orig_PlayersInZone orig, RegionGate self)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+            {
+                if (CreatureController.creatureControllers.TryGetValue(mgm.avatar.creature, out var c))
+                {
+                    return self.DetectZone(c.creature.abstractCreature);
+                }
+            }
+            return orig(self);
         }
 
         public static ConditionalWeakTable<Room, string> line5 = new();

@@ -28,6 +28,15 @@ namespace RainMeadow
             {
                 RainMeadow.Debug("Registering new creature: " + oc);
                 oe.AddData(new MeadowCreatureData(oc));
+                if (oc.realizedCreature != null && EmoteDisplayer.map.TryGetValue(oc.realizedCreature, out var d))
+                {
+                    d.ownerEntity = oc;
+                    d.creatureData = oe.GetData<MeadowCreatureData>();
+                }
+                if (CreatureController.creatureControllers.TryGetValue(oc.creature, out var cc))
+                {
+                    cc.onlineCreature = oc;
+                }
             }
         }
 

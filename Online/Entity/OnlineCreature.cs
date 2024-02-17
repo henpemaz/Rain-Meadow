@@ -9,6 +9,7 @@ namespace RainMeadow
     public class OnlineCreature : OnlinePhysicalObject
     {
         public bool enteringShortCut;
+        internal AbstractCreature creature => apo as AbstractCreature;
         internal Creature realizedCreature => apo.realizedObject as Creature;
 
         public OnlineCreature(OnlineCreatureDefinition def, AbstractCreature ac) : base(def, ac)
