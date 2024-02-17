@@ -427,6 +427,7 @@ public class OnlinePlayerSpecificHud : HudPart
         public bool friendsViewToggle = false;
 
         public StoryAvatarSettings personaSettings;
+        public int maxAttempts = 1;
 
         public List<string> playersWithArrows;
 
@@ -434,7 +435,6 @@ public class OnlinePlayerSpecificHud : HudPart
             : base(jollyHud)
         {
             this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
-            playersWithArrows = new List<string>();
 
             RainMeadow.RainMeadow.Debug("Adding Player pointer to " + base.PlayerState.playerNumber);
             bodyPos = new Vector2(0f, 0f);
@@ -456,7 +456,6 @@ public class OnlinePlayerSpecificHud : HudPart
             label = new FLabel(Custom.GetFont(), playerName);
             jollyHud.fContainer.AddChild(label);
             initialWaitTime = Player.InitialShortcutWaitTime;
-            playersWithArrows.Add(this.playerName);
         }
 
         // TODO: Every character should get an arrow
@@ -469,7 +468,7 @@ public class OnlinePlayerSpecificHud : HudPart
             mainColor = jollyHud.playerColor;
 
 
-            var players = OnlineManager.lobby.playerAvatars
+/*            var players = OnlineManager.lobby.playerAvatars
                     .Where(avatar => avatar.type != (byte)OnlineEntity.EntityId.IdType.none)
                     .Select(avatar => avatar.FindEntity(true))
                     .OfType<OnlinePhysicalObject>()
@@ -480,19 +479,26 @@ public class OnlinePlayerSpecificHud : HudPart
             if (playersWithArrows.Count != players.Count)
             {
 
+                RainMeadow.RainMeadow.Debug("Adding extra HUD to players who just joined");
                 for (int i = 0; i < players.Count; i++)
                 {
+
+                    if (maxAttempts <= 0)
+                    {
+                        break; // Break out of the loop if maxAttempts is reached
+                    }
                     // Right now I'm giving up my arrow over to Player 2, need to fix that.
+                    // Infinte loop due to my list
                     if (!playersWithArrows.Contains(players[i].PlayerName.id.name))
                     {
-
-                        jollyHud.abstractPlayer = players[i].AbstractCreature;
+                        OnlinePlayerSpecificHud otherPlayerJollyHud = new OnlinePlayerSpecificHud(this.jollyHud.hud, this.jollyHud.fContainer, players[i].AbstractCreature, players[i].PlayerName.id.name, Color.white);
+                        this.jollyHud.hud.parts.Add(otherPlayerJollyHud);
                         playersWithArrows.Add(players[i].PlayerName.id.name);
-
+                        maxAttempts--;
 
                     }
                 }
-            }
+            }*/
 
 
             if (jollyHud.Camera.room == null)
@@ -897,9 +903,6 @@ public class OnlinePlayerSpecificHud : HudPart
 
     public FContainer fContainer;
 
-    public List<string> playersWithArrows;
-
-
     public List<JollyPart> parts;
 
     public bool addedDeathBumpThisSession;
@@ -911,6 +914,7 @@ public class OnlinePlayerSpecificHud : HudPart
     public bool PlayerRoomBeingViewed => abstractPlayer.Room == Camera.room?.abstractRoom;
 
     public Player RealizedPlayer => abstractPlayer.realizedCreature as Player;
+
 
 
     public OnlinePlayerSpecificHud(global::HUD.HUD hud, FContainer fContainer, AbstractCreature player, string name, Color bodyColor)
@@ -970,6 +974,34 @@ public class OnlinePlayerSpecificHud : HudPart
     public override void Update()
     {
         base.Update();
+        var players = OnlineManager.lobby.playerAvatars
+        .Where(avatar => avatar.type != (byte)OnlineEntity.EntityId.IdType.none)
+        .Select(avatar => avatar.FindEntity(true))
+        .OfType<OnlinePhysicalObject>()
+        .Select(opo => opo.apo as AbstractCreature)
+        .Zip(OnlineManager.players, (creature, player) => new { AbstractCreature = creature, PlayerName = player })
+        .ToList();
+
+
+        if (RainMeadow.RainMeadow.playersWithArrows.Count != players.Count)
+        {
+
+            RainMeadow.RainMeadow.Debug("Adding extra HUD to players who just joined");
+            for (int i = 0; i < players.Count; i++)
+            {
+
+                // Right now I'm giving up my arrow over to Player 2, need to fix that.
+                // Infinte loop due to my list
+                if (!RainMeadow.RainMeadow.playersWithArrows.Contains(players[i].PlayerName.id.name))
+                {
+                    
+                    OnlinePlayerSpecificHud otherPlayerJollyHud = new OnlinePlayerSpecificHud(this.hud, this.fContainer, players[i].AbstractCreature, players[i].PlayerName.id.name, Color.white);
+                    this.hud.parts.Add(otherPlayerJollyHud);
+                    RainMeadow.RainMeadow.playersWithArrows.Add(players[i].PlayerName.id.name);
+
+                }
+            }
+        }
 
         inShortcutLast = inShortcut;
         camPos = Camera.pos;

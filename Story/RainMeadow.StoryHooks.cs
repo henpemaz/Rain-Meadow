@@ -12,7 +12,7 @@ namespace RainMeadow
     {
         private bool isPlayerReady = false;
         private StoryAvatarSettings personaSettings;
-        public List<string> playersWithArrows;
+        public static List<string> playersWithArrows;
         public StoryAvatarSettings playerArrowBodyColor;
 
         public static bool isStoryMode(out StoryGameMode? gameMode)
@@ -54,7 +54,7 @@ namespace RainMeadow
             {
 
                 self.AddPart(new OnlineStoryHud(self, self.fContainers[1], gameMode));
-
+                playersWithArrows = new List<string>();
                 var playersWithNames = OnlineManager.lobby.playerAvatars
                         .Where(avatar => avatar.type != (byte)OnlineEntity.EntityId.IdType.none)
                         .Select(avatar => avatar.FindEntity(true))
@@ -72,7 +72,7 @@ namespace RainMeadow
                     OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].AbstractCreature, playersWithNames[i].PlayerName.id.name, Color.red); // unique for each player for now
 
                     self.AddPart(part);
-                  
+                    playersWithArrows.Add(playersWithNames[i].PlayerName.id.name);
 
                 }
 
