@@ -33,6 +33,7 @@ namespace RainMeadow
             On.Menu.SleepAndDeathScreen.Update += SleepAndDeathScreen_Update;
             On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
 
+
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
 
             On.Player.Update += Player_Update;
@@ -63,23 +64,21 @@ namespace RainMeadow
                         .ToList();
 
 
-                    for (int i = 0; i < playersWithNames.Count; i++)
+                for (int i = 0; i < playersWithNames.Count; i++)
                 {
-
-/*                    if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(playersWithNames[i].AbstractCreature, out var oe))
-                    {
-                        playerArrowBodyColor = OnlineManager.lobby.entities.Values.First(em => em.entity is ClientSettings avs && avs.avatarId == oe.id).entity as StoryAvatarSettings;*/
-                       
-
                     // TODO: Names are getting mixed up when P2 joins
-                    // TODO: Player 1 needs an update when someone joins
+                    // TODO: Player 1 needs an update when someone joins to register arrows on them
 
-                    OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].AbstractCreature, playersWithNames[i].PlayerName.id.name, Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f)); // unique for each player for now
+                    OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].AbstractCreature, playersWithNames[i].PlayerName.id.name, personaSettings.bodyColor); // unique for each player for now
 
                     self.AddPart(part);
-                    // }
+                  
 
                 }
+
+                /* if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(playersWithNames[i].AbstractCreature, out var oe))
+                 {
+                 playerArrowBodyColor = OnlineManager.lobby.entities.Values.First(em => em.entity is ClientSettings avs && avs.avatarId == oe.id).entity as StoryAvatarSettings;*/
 
             }
 
