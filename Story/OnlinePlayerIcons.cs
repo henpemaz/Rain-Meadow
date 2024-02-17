@@ -9,7 +9,6 @@ using RainMeadow;
 using HarmonyLib;
 using System.Linq;
 using Newtonsoft.Json.Linq;
-
 public class OnlineStoryHud : HudPart
 {
     public class OnlinePlayerIcon
