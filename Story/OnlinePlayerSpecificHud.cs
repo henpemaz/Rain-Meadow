@@ -428,10 +428,13 @@ public class OnlinePlayerSpecificHud : HudPart
 
         public StoryAvatarSettings personaSettings;
 
+        public List<string> playersWithArrows;
+
         public JollyPlayerArrow(OnlinePlayerSpecificHud jollyHud, string name)
             : base(jollyHud)
         {
             this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
+            playersWithArrows = new List<string>();
 
             RainMeadow.RainMeadow.Debug("Adding Player pointer to " + base.PlayerState.playerNumber);
             bodyPos = new Vector2(0f, 0f);
@@ -453,7 +456,10 @@ public class OnlinePlayerSpecificHud : HudPart
             label = new FLabel(Custom.GetFont(), playerName);
             jollyHud.fContainer.AddChild(label);
             initialWaitTime = Player.InitialShortcutWaitTime;
+            playersWithArrows.Add(this.playerName);
         }
+
+        // TODO: Every character should get an arrow
 
         public override void Update()
         {
@@ -461,6 +467,32 @@ public class OnlinePlayerSpecificHud : HudPart
             blink = Mathf.Max(0f, blink - 0.0125f);
             alpha = Custom.LerpAndTick(alpha, Mathf.InverseLerp(80f, 20f, fadeAwayCounter), 0.08f, 71f / (678f * (float)Math.PI));
             mainColor = jollyHud.playerColor;
+
+
+            var players = OnlineManager.lobby.playerAvatars
+                    .Where(avatar => avatar.type != (byte)OnlineEntity.EntityId.IdType.none)
+                    .Select(avatar => avatar.FindEntity(true))
+                    .OfType<OnlinePhysicalObject>()
+                    .Select(opo => opo.apo as AbstractCreature)
+                    .Zip(OnlineManager.players, (creature, player) => new { AbstractCreature = creature, PlayerName = player })
+                    .ToList();
+
+            if (playersWithArrows.Count != players.Count)
+            {
+
+                for (int i = 0; i < players.Count; i++)
+                {
+                    if (!playersWithArrows.Contains(players[i].PlayerName.id.name))
+                    {
+
+                        jollyHud.abstractPlayer = players[i].AbstractCreature;
+                        playersWithArrows.Add(players[i].PlayerName.id.name);
+
+
+                    }
+                }
+            }
+
 
             if (jollyHud.Camera.room == null)
             {
@@ -883,7 +915,6 @@ public class OnlinePlayerSpecificHud : HudPart
     public OnlinePlayerSpecificHud(global::HUD.HUD hud, FContainer fContainer, AbstractCreature player, string name, Color bodyColor)
         : base(hud)
     {
-        playersWithArrows = new List<string>();
 
         abstractPlayer = player;
         playerName = name;
@@ -898,7 +929,6 @@ public class OnlinePlayerSpecificHud : HudPart
         /*            offRoom = new JollyOffRoom(this); // TODO: Offroom
                     parts.Add(offRoom);*/
         addedDeathBumpThisSession = false;
-        playersWithArrows.Add(playerName);
 
     }
 
@@ -939,37 +969,6 @@ public class OnlinePlayerSpecificHud : HudPart
     public override void Update()
     {
         base.Update();
-
-
-        // The problem is that there's no abstract creature to link this data to. Go higher up
-
-
-/*        List<OnlinePlayer> players = OnlineManager.players;
-
-        if (playersWithArrows.Count != players.Count)
-        {
-            RainMeadow.RainMeadow.Debug("CURRENT PlAYERS COUNT FOR ME " + players.Count);
-            RainMeadow.RainMeadow.Debug("CURRENT ARROWS COUNT FOR ME " + playersWithArrows.Count);
-
-
-            for (int i = 0; i < players.Count; i++)
-            {
-
-                if (!players[i].isMe) // If you're not me but the list has grown, add arrows
-                {
-                    parts = new List<JollyPart>();
-                    playerArrow = new JollyPlayerArrow(this, this.playerName);
-                    parts.Add(playerArrow);
-                    *//*
-                                            offRoom = new JollyOffRoom(this);
-                                            parts.Add(offRoom);*//*
-                    // playersWithArrows.Add(this.playerName);
-
-                }
-
-            }
-        }*/
-
 
         inShortcutLast = inShortcut;
         camPos = Camera.pos;
