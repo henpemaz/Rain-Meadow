@@ -9,6 +9,7 @@ namespace RainMeadow
     public class OnlineCreature : OnlinePhysicalObject
     {
         public bool enteringShortCut;
+        internal AbstractCreature creature => apo as AbstractCreature;
         internal Creature realizedCreature => apo.realizedObject as Creature;
 
         public OnlineCreature(OnlineCreatureDefinition def, AbstractCreature ac) : base(def, ac)
@@ -116,7 +117,10 @@ namespace RainMeadow
             if (currentlyJoinedResource == null) return;
             foreach (var participant in currentlyJoinedResource.participants)
             {
-                participant.Key.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
+                if (!participant.Key.isMe)
+                {
+                    participant.Key.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
+                }
             }
         }
 
@@ -125,6 +129,7 @@ namespace RainMeadow
         {
             enteringShortCut = true;
             (apo.realizedObject as Creature)?.SuckedIntoShortCut(entrancePos, carriedByOther);
+            enteringShortCut = false;
         }
 
         public override string ToString()

@@ -178,17 +178,60 @@ namespace RainMeadow
                 if (p.inputDir != Vector2.zero || self.Charging)
                 {
                     self.AI.behavior = CicadaAI.Behavior.GetUnstuck; // helps with sitting behavior
-                    var dest = basepos + p.inputDir * 20f;
-                    if (self.flying) dest.y -= 12f; // nose up goes funny
-                    if (Mathf.Abs(p.inputDir.y) < 0.1f) // trying to move horizontally, compensate for momentum a bit
+
+                    if (self.enteringShortCut == null && self.shortcutDelay < 1)
                     {
-                        dest.y -= self.mainBodyChunk.vel.y * 1.3f;
+                        for (int i = 0; i < nc; i++)
+                        {
+                            if (room.GetTile(chunks[i].pos).Terrain == Room.Tile.TerrainType.ShortcutEntrance)
+                            {
+                                var scdata = room.shortcutData(room.GetTilePosition(chunks[i].pos));
+                                if (scdata.shortCutType != ShortcutData.Type.DeadEnd)
+                                {
+                                    IntVector2 intVector = room.ShorcutEntranceHoleDirection(room.GetTilePosition(chunks[i].pos));
+                                    if (p.input[0].x == -intVector.x && p.input[0].y == -intVector.y)
+                                    {
+                                        RainMeadow.Debug("creature entering shortcut");
+                                        self.enteringShortCut = new IntVector2?(room.GetTilePosition(chunks[i].pos));
+
+                                        if (scdata.shortCutType == ShortcutData.Type.NPCTransportation)
+                                        {
+                                            var whackamoles = room.shortcuts.Where(s => s.shortCutType == ShortcutData.Type.NPCTransportation).ToList();
+                                            var index = whackamoles.IndexOf(self.room.shortcuts.FirstOrDefault(s => s.StartTile == scdata.StartTile));
+                                            if (index > -1 && whackamoles.Count > 0)
+                                            {
+                                                var newindex = (index + 1) % whackamoles.Count;
+                                                RainMeadow.Debug($"creature entered at {index} will exit at {newindex} mapped to {self.NPCTransportationDestination}");
+                                                self.NPCTransportationDestination = whackamoles[newindex].startCoord;
+                                                // needs to be set as destination as well otherwise might be overriden
+                                                self.AI.pathFinder.AbortCurrentGenerationPathFinding(); // ignore previous dest
+                                                self.abstractCreature.abstractAI.SetDestination(self.NPCTransportationDestination);
+                                            }
+                                            else
+                                            {
+                                                RainMeadow.Error("shortcut issue");
+                                            }
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
-                    var destCoord = self.room.GetWorldCoordinate(dest);
-                    if (destCoord != self.abstractCreature.abstractAI.destination)
+                    if(self.enteringShortCut == null)
                     {
-                        self.AI.pathFinder.AbortCurrentGenerationPathFinding(); // ignore previous dest
-                        self.abstractCreature.abstractAI.SetDestination(self.room.GetWorldCoordinate(dest));
+                        var dest = basepos + p.inputDir * 20f;
+                        if (self.flying) dest.y -= 12f; // nose up goes funny
+                        if (Mathf.Abs(p.inputDir.y) < 0.1f) // trying to move horizontally, compensate for momentum a bit
+                        {
+                            dest.y -= self.mainBodyChunk.vel.y * 1.3f;
+                        }
+                        var destCoord = self.room.GetWorldCoordinate(dest);
+                        if (destCoord != self.abstractCreature.abstractAI.destination)
+                        {
+                            self.AI.pathFinder.AbortCurrentGenerationPathFinding(); // ignore previous dest
+                            self.abstractCreature.abstractAI.SetDestination(self.room.GetWorldCoordinate(dest));
+                        }
                     }
                 }
                 else

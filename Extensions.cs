@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using RWCustom;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace RainMeadow
@@ -90,6 +91,12 @@ namespace RainMeadow
         public static bool CloseEnough(this Vector2 a, Vector2 b, float tolerance)
         {
             return a == b || (a - b).sqrMagnitude < tolerance * tolerance;
+        }
+
+        public static HSLColor ToHSL(this Color c)
+        {
+            var cv = Custom.RGB2HSL(c);
+            return new HSLColor(cv[0], cv[1], cv[2]);
         }
     }
 }

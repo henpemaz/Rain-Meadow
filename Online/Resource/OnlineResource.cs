@@ -282,7 +282,7 @@ namespace RainMeadow
         {
             if (participants.ContainsKey(newParticipant)) return;
             RainMeadow.Debug($"{this}-{newParticipant}");
-            if(super != this && super.isActive && super.isOwner)
+            if(super != this)
             {
                 super.NewParticipant(newParticipant);
             }
@@ -307,6 +307,10 @@ namespace RainMeadow
                 }
             }
             participants.Remove(participant);
+            if(isSupervisor && participant == owner && participants.Count > 0)
+            {
+                PickNewOwner();
+            }
             if (isAvailable && isOwner && !participant.isMe)
             {
                 Unsubscribed(participant);
@@ -328,7 +332,7 @@ namespace RainMeadow
             if (!isOwner) throw new InvalidOperationException("not owner");
             foreach (var resource in subresources)
             {
-                if (resource.owner != null && ((resource.owner.hasLeft) || !participants.ContainsKey(resource.owner))) // abandoned
+                if (resource.owner != null && resource.owner.hasLeft) // abandoned
                 {
                     RainMeadow.Debug($"Abandoned resource: {resource}");
                     resource.ParticipantLeft(resource.owner);
@@ -376,39 +380,44 @@ namespace RainMeadow
                 NewOwner(MatchmakingManager.instance.GetLobbyOwner());
             }
 
-            if (participants.ContainsKey(player))
-            {
-                RainMeadow.Debug($"Member was in resource {this}");
-                if (isSupervisor)
-                {
-                    RainMeadow.Debug($"Kicking out member");
-                    ParticipantLeft(player);
-                    if (owner == player) // Ooops we'll need a new host
-                    {
-                        RainMeadow.Debug($"Member was the owner");
-                        var newOwner = MatchmakingManager.instance.BestTransferCandidate(this, participants);
+            // first transfer recursivelly, then remove recursivelly
 
-                        if (newOwner != null && !isPending)
-                        {
-                            NewOwner(newOwner); // This notifies all users, if the new owner is active they'll restore the state
-                            newOwner.InvokeRPC(this.Transfered);
-                        }
-                        else
-                        {
-                            if (newOwner != null) RainMeadow.Error("Can't assign because pending");
-                            else NewOwner(null);
-                        }
-                    }
-                }
+            // transfer this resource if possible
+            if (isSupervisor && owner != null && owner.hasLeft)
+            {
+                RainMeadow.Debug($"Transfering abandoned resource {this}");
+                PickNewOwner();
             }
 
-            if (isActive && subresources.Count > 0 && owner != null && !owner.hasLeft) // has subresources, check when this one is sorted
+            // transfer subresources after (we might be super and it might be easier)
+            if (isActive && subresources.Count > 0) // has subresources, check when this one is sorted
             {
                 RainMeadow.Debug($"Checking subresources for {this}");
                 for (int i = 0; i < subresources.Count; i++)
                 {
                     subresources[i].OnPlayerDisconnect(player);
                 }
+            }
+
+            if (this is Lobby) // topmost resource, removes recursivelly
+            {
+                ParticipantLeft(player);
+            }
+        }
+
+        private void PickNewOwner()
+        {
+            if (!isSupervisor) throw new InvalidProgrammerException("not supervisor");
+            var newOwner = MatchmakingManager.instance.BestTransferCandidate(this, participants);
+            NewOwner(newOwner);
+            if (newOwner != null && !isPending)
+            {
+                newOwner.InvokeRPC(this.Transfered);
+            }
+            else if (newOwner != null)
+            {
+                // there's a small chance this left the resource in an invalid state
+                RainMeadow.Error("Can't assign because pending");
             }
         }
 
