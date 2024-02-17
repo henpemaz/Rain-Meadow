@@ -482,6 +482,7 @@ public class OnlinePlayerSpecificHud : HudPart
 
                 for (int i = 0; i < players.Count; i++)
                 {
+                    // Right now I'm giving up my arrow over to Player 2, need to fix that.
                     if (!playersWithArrows.Contains(players[i].PlayerName.id.name))
                     {
 
