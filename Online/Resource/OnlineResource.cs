@@ -383,14 +383,14 @@ namespace RainMeadow
             // first transfer recursivelly, then remove recursivelly
 
             // transfer this resource if possible
-            if (isSupervisor && owner.hasLeft)
+            if (isSupervisor && owner != null && owner.hasLeft)
             {
                 RainMeadow.Debug($"Transfering abandoned resource {this}");
                 PickNewOwner();
             }
 
             // transfer subresources after (we might be super and it might be easier)
-            if (isActive && subresources.Count > 0 && owner != null && !owner.hasLeft) // has subresources, check when this one is sorted
+            if (isActive && subresources.Count > 0) // has subresources, check when this one is sorted
             {
                 RainMeadow.Debug($"Checking subresources for {this}");
                 for (int i = 0; i < subresources.Count; i++)
