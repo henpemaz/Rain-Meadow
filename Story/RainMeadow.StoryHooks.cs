@@ -66,7 +66,7 @@ namespace RainMeadow
                 {
                     // TODO: Names are getting mixed up when P2 joins, need to test online
 
-                    OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].AbstractCreature, playersWithNames[i].PlayerName.id.name, Color.white); // unique for each player for now
+                    OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].AbstractCreature, playersWithNames[i].PlayerName.id.name, Color.red); // unique for each player for now
 
                     self.AddPart(part);
                     playersWithArrows.Add(playersWithNames[i].PlayerName.id.name);
