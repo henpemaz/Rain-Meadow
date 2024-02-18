@@ -16,7 +16,7 @@ namespace RainMeadow
         public const string MeadowVersionStr = "0.0.53";
         public static RainMeadow instance;
         private bool init;
-        private RainMeadowOptions rainMeadowOptions;
+        public static RainMeadowOptions rainMeadowOptions;
 
 
         public void OnEnable()

@@ -64,9 +64,8 @@ namespace RainMeadow
 
                 for (int i = 0; i < playersWithNames.Count; i++)
                 {
-                    // TODO: Names are getting mixed up when P2 joins, need to test online
-
-                    OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].AbstractCreature, playersWithNames[i].PlayerName.id.name, Color.red); // unique for each player for now
+                    // TODO: Names are getting mixed up when P2 joins, need to associate player names in ClientSettings
+                    OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].AbstractCreature, "", Color.white); 
 
                     self.AddPart(part);
                     playersWithArrows.Add(playersWithNames[i].PlayerName.id.name);
@@ -108,6 +107,7 @@ namespace RainMeadow
             {
                 foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
                 {
+                    
                     if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
                     if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
                     {
@@ -176,7 +176,7 @@ namespace RainMeadow
                 //If it is mine run the below code
                 //If not, update from the lobby state
                 //self.readyForWin = OnlineMAnager.lobby.playerid === fetch if this is ours. 
-
+                
                 if (OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe))
                 {
                     if (!oe.isMine)

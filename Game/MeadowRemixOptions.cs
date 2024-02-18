@@ -16,7 +16,7 @@ public class RainMeadowOptions : OptionInterface
         // TODO: Controller support
         // TODO: Add the ability for users to select a custom color or default to white
         // TODO: Maybe as shadow or box?
-        FriendsListKey = config.Bind("OpenMenuKey", KeyCode.O);
+        FriendsListKey = config.Bind("OpenMenuKey", KeyCode.J);
     }
 
     public override void Initialize()
