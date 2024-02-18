@@ -8,23 +8,22 @@ using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using HUD;
-using RainMeadow;
 using RWCustom;
 using UnityEngine;
-using RainMeadow;
+using RainMeadow.Story.OnlineUIComponents;
 
 namespace RainMeadow
 {
-   public partial class OnlinePlayerSpecificHud : HudPart
+    public partial class OnlinePlayerSpecificHud : HudPart
     {
 
         public AbstractCreature abstractPlayer;
 
-        public JollyPlayerArrow playerArrow;
+        public OnlinePlayerArrow playerArrow;
 
-        public JollyDeathBump deathBump;
+        public OnlineDeathBump deathBump;
 
-        public JollyOffRoom offRoom;
+        public OnlineAwayFromRoom offRoom;
 
         public int playerNumber;
 
@@ -40,7 +39,7 @@ namespace RainMeadow
 
         public FContainer fContainer;
 
-        public List<JollyPart> parts;
+        public List<OnlinePlayerHudPart> parts;
 
         public bool addedDeathBumpThisSession;
 
@@ -65,8 +64,8 @@ namespace RainMeadow
             inShortcutLast = inShortcut;
             playerColor = bodyColor;
             this.fContainer = fContainer;
-            parts = new List<JollyPart>();
-            playerArrow = new JollyPlayerArrow(this, playerName);
+            parts = new List<OnlinePlayerHudPart>();
+            playerArrow = new OnlinePlayerArrow(this, playerName);
             parts.Add(playerArrow);
             /*            offRoom = new JollyOffRoom(this); // TODO: Offroom
                         parts.Add(offRoom);*/
@@ -96,7 +95,7 @@ namespace RainMeadow
         {
             if (PlayerRoomBeingViewed && abstractPlayer.realizedCreature != null)
             {
-                deathBump = new JollyDeathBump(this);
+                deathBump = new OnlineDeathBump(this);
                 parts.Add(deathBump);
             }
             else

@@ -17,7 +17,7 @@ namespace RainMeadow
 {
     public partial class OnlinePlayerSpecificHud
     {
-        public partial class JollyPlayerArrow : JollyPointer
+        public partial class OnlinePlayerArrow : OnlinePointer
         {
             public bool pointing;
 
@@ -50,7 +50,7 @@ namespace RainMeadow
 
             public List<string> playersWithArrows;
 
-            public JollyPlayerArrow(OnlinePlayerSpecificHud jollyHud, string name)
+            public OnlinePlayerArrow(OnlinePlayerSpecificHud jollyHud, string name)
                 : base(jollyHud)
             {
                 this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
@@ -77,48 +77,12 @@ namespace RainMeadow
                 initialWaitTime = Player.InitialShortcutWaitTime;
             }
 
-            // TODO: Every character should get an arrow
-
             public override void Update()
             {
                 base.Update();
                 blink = Mathf.Max(0f, blink - 0.0125f);
                 alpha = Custom.LerpAndTick(alpha, Mathf.InverseLerp(80f, 20f, fadeAwayCounter), 0.08f, 71f / (678f * (float)Math.PI));
                 mainColor = jollyHud.playerColor;
-
-
-                /*            var players = OnlineManager.lobby.playerAvatars
-                                    .Where(avatar => avatar.type != (byte)OnlineEntity.EntityId.IdType.none)
-                                    .Select(avatar => avatar.FindEntity(true))
-                                    .OfType<OnlinePhysicalObject>()
-                                    .Select(opo => opo.apo as AbstractCreature)
-                                    .Zip(OnlineManager.players, (creature, player) => new { AbstractCreature = creature, PlayerName = player })
-                                    .ToList();
-
-                            if (playersWithArrows.Count != players.Count)
-                            {
-
-                                RainMeadow.Debug("Adding extra HUD to players who just joined");
-                                for (int i = 0; i < players.Count; i++)
-                                {
-
-                                    if (maxAttempts <= 0)
-                                    {
-                                        break; // Break out of the loop if maxAttempts is reached
-                                    }
-                                    // Right now I'm giving up my arrow over to Player 2, need to fix that.
-                                    // Infinte loop due to my list
-                                    if (!playersWithArrows.Contains(players[i].PlayerName.id.name))
-                                    {
-                                        OnlinePlayerSpecificHud otherPlayerJollyHud = new OnlinePlayerSpecificHud(this.jollyHud.hud, this.jollyHud.fContainer, players[i].AbstractCreature, players[i].PlayerName.id.name, Color.white);
-                                        this.jollyHud.hud.parts.Add(otherPlayerJollyHud);
-                                        playersWithArrows.Add(players[i].PlayerName.id.name);
-                                        maxAttempts--;
-
-                                    }
-                                }
-                            }*/
-
 
                 if (jollyHud.Camera.room == null)
                 {

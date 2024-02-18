@@ -9,7 +9,7 @@ namespace RainMeadow
 {
     public partial class OnlinePlayerSpecificHud
     {
-        public partial class JollyOffRoom : JollyPointer
+        public partial class OnlineAwayFromRoom : OnlinePointer
         {
             public List<FSprite> sprites;
 
@@ -41,7 +41,7 @@ namespace RainMeadow
 
             public float uAlpha;
 
-            public JollyOffRoom(OnlinePlayerSpecificHud jollyHud)
+            public OnlineAwayFromRoom(OnlinePlayerSpecificHud jollyHud)
                 : base(jollyHud)
             {
 

@@ -18,7 +18,7 @@ namespace RainMeadow
 {
     public partial class OnlinePlayerSpecificHud
     {
-        public partial class JollyDeathBump : JollyPointer
+        public partial class OnlineDeathBump : OnlinePointer
         {
             public FSprite symbolSprite;
 
@@ -62,7 +62,7 @@ namespace RainMeadow
                 }
             }
 
-            public JollyDeathBump(OnlinePlayerSpecificHud jollyHud)
+            public OnlineDeathBump(OnlinePlayerSpecificHud jollyHud)
                 : base(jollyHud)
             {
                 base.jollyHud = jollyHud;

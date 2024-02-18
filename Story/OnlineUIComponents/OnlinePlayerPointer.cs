@@ -9,24 +9,22 @@ using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using HUD;
-using RainMeadow;
 using RWCustom;
 using UnityEngine;
-using RainMeadow;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using HUD;
-using RainMeadow;
 using RWCustom;
 using UnityEngine;
-using RainMeadow;
+using RainMeadow.Story.OnlineUIComponents;
+
 namespace RainMeadow
 {
     public partial class OnlinePlayerSpecificHud : HudPart
     {
-        public abstract partial class JollyPointer : JollyPart
+        public abstract partial class OnlinePointer : OnlinePlayerHudPart
         {
             public FSprite gradient;
 
@@ -57,17 +55,17 @@ namespace RainMeadow
             public bool nearYEdgeU;
 
             public bool nearYEdgeB;
-            public Dictionary<OnlinePlayerSpecificHud.JollyPointer, Vector2> pointerPositions;
+            public Dictionary<OnlinePlayerSpecificHud.OnlinePointer, Vector2> pointerPositions;
             public PlayerState PlayerState => jollyHud.PlayerState;
 
-            public JollyPointer(OnlinePlayerSpecificHud jollyHud)
+            public OnlinePointer(OnlinePlayerSpecificHud jollyHud)
                 : base(jollyHud)
             {
 
 
                 size = new IntVector2(30, 20);
                 targetPos = bodyPos;
-                pointerPositions = new Dictionary<JollyPointer, Vector2>();
+                pointerPositions = new Dictionary<OnlinePointer, Vector2>();
 
 
             }
@@ -99,7 +97,7 @@ namespace RainMeadow
                 }
                 else
                 {
-                    if (this is JollyPlayerArrow && jollyHud.RealizedPlayer.objectPointed != null && jollyHud.RealizedPlayer.objectPointed.jollyBeingPointedCounter > 35)
+                    if (this is OnlinePlayerArrow && jollyHud.RealizedPlayer.objectPointed != null && jollyHud.RealizedPlayer.objectPointed.jollyBeingPointedCounter > 35)
                     {
                         bodyPos = jollyHud.RealizedPlayer.objectPointed.bodyChunks[0].pos - jollyHud.Camera.pos;
                     }
@@ -125,12 +123,12 @@ namespace RainMeadow
                     return;
                 }
 
-                List<KeyValuePair<OnlinePlayerSpecificHud.JollyPointer, Vector2>> list = pointerPositions.Where((KeyValuePair<JollyPointer, Vector2> e) => !e.Key.Equals(this)).ToList();
+                List<KeyValuePair<OnlinePlayerSpecificHud.OnlinePointer, Vector2>> list = pointerPositions.Where((KeyValuePair<OnlinePointer, Vector2> e) => !e.Key.Equals(this)).ToList();
                 float num = bodyPos.y;
                 bool flag = false;
-                foreach (KeyValuePair<JollyPointer, Vector2> item in list)
+                foreach (KeyValuePair<OnlinePointer, Vector2> item in list)
                 {
-                    JollyPointer key = item.Key;
+                    OnlinePointer key = item.Key;
                     Vector2 value = item.Value;
                     if (key.hidden)
                     {

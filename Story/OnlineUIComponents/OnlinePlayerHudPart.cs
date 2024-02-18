@@ -5,10 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace RainMeadow
+namespace RainMeadow.Story.OnlineUIComponents
 {
 
-    public abstract partial class JollyPart
+    public abstract partial class OnlinePlayerHudPart
     {
         public OnlinePlayerSpecificHud jollyHud;
 
@@ -30,7 +30,7 @@ namespace RainMeadow
 
         public bool knownPos;
 
-        public JollyPart(OnlinePlayerSpecificHud jollyHud)
+        public OnlinePlayerHudPart(OnlinePlayerSpecificHud jollyHud)
         {
             this.jollyHud = jollyHud;
         }
