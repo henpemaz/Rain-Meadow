@@ -12,7 +12,6 @@ namespace RainMeadow
     {
         private bool isPlayerReady = false;
         public static List<string> playersWithArrows;
-        public StoryAvatarSettings playerArrowBodyColor;
 
         public static bool isStoryMode(out StoryGameMode? gameMode)
         {
