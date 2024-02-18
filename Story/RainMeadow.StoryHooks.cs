@@ -66,8 +66,7 @@ namespace RainMeadow
 
                 for (int i = 0; i < playersWithNames.Count; i++)
                 {
-                    // TODO: Names are getting mixed up when P2 joins
-                    // TODO: Player 1 needs an update when someone joins to register arrows on them
+                    // TODO: Names are getting mixed up when P2 joins, need to test online
 
                     OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].AbstractCreature, playersWithNames[i].PlayerName.id.name, Color.white); // unique for each player for now
 
