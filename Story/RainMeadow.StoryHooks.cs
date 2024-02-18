@@ -11,7 +11,6 @@ namespace RainMeadow
     public partial class RainMeadow
     {
         private bool isPlayerReady = false;
-        private StoryAvatarSettings personaSettings;
         public static List<string> playersWithArrows;
         public StoryAvatarSettings playerArrowBodyColor;
 
