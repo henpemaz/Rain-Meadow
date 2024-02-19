@@ -1,6 +1,10 @@
 plants todo
-- sync timer
-- respawn
+- sync timer and collected (so can be transfered)
+- respawn a plant on plant expired
+
+- more items
+	copy the arena unlocks
+
 
 emotes todo
 on emote already expiring shouldn't be able to emote more
@@ -19,14 +23,18 @@ not seeing all emotes at once is a bit of a hinger
 
 creature todo
 - shelter activation
-- gate activation
+- gate activation / done
 - other story-mode things?
 - can still drown/die in several ways
 coming out of pipe + lag = stuck "pipe entering"
 come out of shortcut = bugged af doesn't clear shortcut pointer
-karma in gates
 player grabbing cicada = laggy physics
-on wackamole pipe, game picks randomly I think, maybe should be player-chosen
+on wackamole pipe, game picks randomly I think, maybe should be player-chosen / done, cycles
+
+tint color doesnt work on controller
+lis from pole jump too weak
+checking "any y" controller picks pole when it shouldn't
+really hard to enter pipe sometimes
 
 lizard todo
 - walking off ledge /done
@@ -39,9 +47,6 @@ lizard todo
 - maybe seed could be a setting for the most special skin? any skin?
 lizard still bites cicada
 lizard on first load doesn't get colors assigned
-creature pipes behavior undefined
-	picks closest? random?
-	in room to drainage impossible to get up?
 	
 clear animation on jump / done
 standing jump / done

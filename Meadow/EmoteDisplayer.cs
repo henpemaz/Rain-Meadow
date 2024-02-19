@@ -26,6 +26,7 @@ namespace RainMeadow
         private List<EmoteTile> tiles = new();
         private byte localVersion;
 
+        // this weird thing isn't a uad, it sort of follows the creature and gets updated when the creature updates
         public EmoteDisplayer(Creature owner, OnlineCreature ownerEntity, MeadowCreatureData creatureData, MeadowAvatarCustomization customization)
         {
             RainMeadow.Debug($"EmoteDisplayer created for {owner}");
@@ -48,6 +49,7 @@ namespace RainMeadow
 
         public void ProcessRemoteData()
         {
+            OnUpdate();
             if (localVersion != this.creatureData.emotesVersion)
             {
                 RainMeadow.Debug("new version");

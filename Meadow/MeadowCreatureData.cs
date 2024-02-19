@@ -94,6 +94,11 @@ namespace RainMeadow
                     i.analogueDir.x = analogInputX;
                     i.analogueDir.y = analogInputY;
                     mcd.input = i;
+
+                    if(oc.realizedCreature is Creature c && EmoteDisplayer.map.TryGetValue(c, out var displayer))
+                    {
+                        displayer.ProcessRemoteData();
+                    }
                 }
                 else
                 {
