@@ -64,11 +64,14 @@ namespace RainMeadow
 
                 for (int i = 0; i < playersWithNames.Count; i++)
                 {
-                    OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].apo as AbstractCreature, playersWithNames[i].id.userName, Color.white); 
+                    if (OnlinePhysicalObject.map.TryGetValue(playersWithNames[i].apo as AbstractCreature, out var oe))
+                    {
+                        OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].apo as AbstractCreature, oe.owner.id.name, Color.white);
 
-                    self.AddPart(part);
-                    playersWithArrows.Add(playersWithNames[i].id.userName);
+                        self.AddPart(part);
+                        playersWithArrows.Add(oe.owner.id.name);
 
+                    }
                 }
 
                 /* if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(playersWithNames[i].AbstractCreature, out var oe))
