@@ -77,24 +77,24 @@ namespace RainMeadow
 
             ssm.slugcatColorOrder = AllAvailableCharacters();
             sp.imagePos = new Vector2(683f, 484f);
-/*
-            // TODO: Multiple Characters
-            for (int j = 0; j < ssm.slugcatColorOrder.Count; j++)
-            {
-                sp.slugcatNumber = ssm.slugcatColorOrder[j];
+            /*
+                        // TODO: Multiple Characters
+                        for (int j = 0; j < ssm.slugcatColorOrder.Count; j++)
+                        {
+                            sp.slugcatNumber = ssm.slugcatColorOrder[j];
 
-                // TODO: Background images
-                if (sp.slugcatNumber == SlugcatStats.Name.White)
-                {
-                    //HostSceneID = MenuScene.SceneID.Slugcat_White;
-                    sp.sceneOffset = new Vector2(-10f, 100f);
-                    sp.slugcatDepth = 3.1000001f;
-                    sp.markOffset = new Vector2(-15f, -2f);
-                    sp.glowOffset = new Vector2(-30f, -50f);
+                            // TODO: Background images
+                            if (sp.slugcatNumber == SlugcatStats.Name.White)
+                            {
+                                //HostSceneID = MenuScene.SceneID.Slugcat_White;
+                                sp.sceneOffset = new Vector2(-10f, 100f);
+                                sp.slugcatDepth = 3.1000001f;
+                                sp.markOffset = new Vector2(-15f, -2f);
+                                sp.glowOffset = new Vector2(-30f, -50f);
 
-                }
+                            }
 
-            }*/
+                        }*/
 
 
             // TODO: Alignment issues.
@@ -126,7 +126,9 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
 
-
+                this.hostStartButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
+                this.hostStartButton.OnClick += (_) => { StartGame(); };
+                hostStartButton.buttonBehav.greyedOut = false;
                 this.pages[0].subObjects.Add(this.hostStartButton);
 
 
@@ -135,8 +137,11 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner)
             {
 
-                this.pages[0].RemoveSubObject(hostStartButton);
                 this.pages[0].subObjects.Add(this.backButton);
+
+                this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
+                this.clientWaitingButton.OnClick += (_) => { StartGame(); };
+                clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame; // True to begin
 
                 this.pages[0].subObjects.Add(this.clientWaitingButton);
 
@@ -145,7 +150,7 @@ namespace RainMeadow
             SteamSetup();
             SetupCharacterCustomization();
             UpdateCharacterUI();
-            
+
 
 
             if (OnlineManager.lobby.isAvailable)
@@ -191,8 +196,10 @@ namespace RainMeadow
                 this.UpdateCharacterUI();
             }
 
-            this.clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame;
-
+            if (!OnlineManager.lobby.isOwner)
+            {
+                this.clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame;
+            }
             if (ssm.scroll == 0f && ssm.lastScroll == 0f)
             {
                 if (ssm.quedSideInput != 0)
@@ -270,17 +277,6 @@ namespace RainMeadow
         }
         private void SetupMenuItems()
         {
-
-            // Host button
-            this.hostStartButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
-            this.hostStartButton.OnClick += (_) => { StartGame(); };
-            hostStartButton.buttonBehav.greyedOut = false;
-
-            // Client button
-            this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
-            this.clientWaitingButton.OnClick += (_) => { StartGame(); };
-            clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame; // True to begin
-
 
             // Previous
             this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
