@@ -16,6 +16,7 @@
             public ushort originalOwner;
             public byte type;
             public int id;
+            public string userName;
 
             public EntityId() { }
             public EntityId(ushort originalOwner, IdType type, int id)
@@ -23,6 +24,7 @@
                 this.originalOwner = originalOwner;
                 this.type = (byte)type;
                 this.id = id;
+                this.userName = OnlineManager.mePlayer.id.name;
             }
 
             public OnlineEntity FindEntity(bool quiet=false)
@@ -38,6 +40,8 @@
                 serializer.Serialize(ref originalOwner);
                 serializer.Serialize(ref type);
                 serializer.Serialize(ref id);
+                serializer.Serialize(ref userName);
+
             }
 
             public override string ToString()

@@ -114,9 +114,8 @@ namespace RainMeadow
             .Where(avatar => avatar.type != (byte)OnlineEntity.EntityId.IdType.none)
             .Select(avatar => avatar.FindEntity(true))
             .OfType<OnlinePhysicalObject>()
-            .Select(opo => opo.apo as AbstractCreature)
-            .Zip(OnlineManager.players, (creature, player) => new { AbstractCreature = creature, PlayerName = player })
             .ToList();
+
 
 
             if (RainMeadow.playersWithArrows.Count != players.Count)
@@ -126,12 +125,12 @@ namespace RainMeadow
                 for (int i = 0; i < players.Count; i++)
                 {
 
-                    if (!RainMeadow.playersWithArrows.Contains(players[i].PlayerName.id.name))
+                    if (!RainMeadow.playersWithArrows.Contains(players[i].id.userName))
                     {
 
-                        OnlinePlayerSpecificHud otherPlayerJollyHud = new OnlinePlayerSpecificHud(this.hud, this.fContainer, players[i].AbstractCreature, "", Color.white);
+                        OnlinePlayerSpecificHud otherPlayerJollyHud = new OnlinePlayerSpecificHud(this.hud, this.fContainer, players[i].apo as AbstractCreature, players[i].id.userName, Color.white);
                         this.hud.parts.Add(otherPlayerJollyHud);
-                        RainMeadow.playersWithArrows.Add(players[i].PlayerName.id.name);
+                        RainMeadow.playersWithArrows.Add(players[i].id.userName);
 
 
                     }

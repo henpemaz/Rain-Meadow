@@ -53,22 +53,21 @@ namespace RainMeadow
 
                 self.AddPart(new OnlineStoryHud(self, self.fContainers[1], gameMode));
                 playersWithArrows = new List<string>();
+
+
                 var playersWithNames = OnlineManager.lobby.playerAvatars
-                        .Where(avatar => avatar.type != (byte)OnlineEntity.EntityId.IdType.none)
-                        .Select(avatar => avatar.FindEntity(true))
-                        .OfType<OnlinePhysicalObject>()
-                        .Select(opo => opo.apo as AbstractCreature)
-                        .Zip(OnlineManager.players, (creature, player) => new { AbstractCreature = creature, PlayerName = player })
-                        .ToList();
+                .Where(avatar => avatar.type != (byte)OnlineEntity.EntityId.IdType.none)
+                .Select(avatar => avatar.FindEntity(true))
+                .OfType<OnlinePhysicalObject>()
+                .ToList();
 
 
                 for (int i = 0; i < playersWithNames.Count; i++)
                 {
-                    // TODO: Names are getting mixed up when P2 joins, need to associate player names in ClientSettings
-                    OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].AbstractCreature, "", Color.white); 
+                    OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].apo as AbstractCreature, playersWithNames[i].id.userName, Color.white); 
 
                     self.AddPart(part);
-                    playersWithArrows.Add(playersWithNames[i].PlayerName.id.name);
+                    playersWithArrows.Add(playersWithNames[i].id.userName);
 
                 }
 
