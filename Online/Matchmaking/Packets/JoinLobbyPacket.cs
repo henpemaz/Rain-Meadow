@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace RainMeadow
 {
     public class JoinLobbyPacket : Packet

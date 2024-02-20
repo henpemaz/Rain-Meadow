@@ -105,7 +105,7 @@ namespace RainMeadow
             }
         }
 
-        public override void CreateLobby(LobbyVisibility visibility, string gameMode)
+        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string password)
         {
             creatingWithMode = gameMode;
             ELobbyType eLobbyTypeeLobbyType = visibility switch

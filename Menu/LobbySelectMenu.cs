@@ -20,6 +20,7 @@ namespace RainMeadow
         private float scrollTo;
         private int currentlySelectedCard;
         private OpComboBox visibilityDropDown;
+        private OpTextBox passwordInputBox;
         private SimplerButton playButton;
         private SimplerButton refreshButton;
         private OpComboBox2 modeDropDown;
@@ -81,8 +82,13 @@ namespace RainMeadow
             var visibilityLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Visibility:"), where, new Vector2(200, 20f), false, null);
             mainPage.subObjects.Add(visibilityLabel);
             where.x += 80;
-            visibilityDropDown = new OpComboBox(new Configurable<MatchmakingManager.LobbyVisibility>(MatchmakingManager.LobbyVisibility.Public), where, 160, OpResourceSelector.GetEnumNames(null, typeof(MatchmakingManager.LobbyVisibility)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
+            visibilityDropDown = new OpComboBox2(new Configurable<MatchmakingManager.LobbyVisibility>(MatchmakingManager.LobbyVisibility.Public), where, 160, OpResourceSelector.GetEnumNames(null, typeof(MatchmakingManager.LobbyVisibility)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
+            visibilityDropDown.OnChange += UpdatePasswordBoxVisiblity;
             new UIelementWrapper(this.tabWrapper, visibilityDropDown);
+
+            // password setting
+            where.x += 160 + 20;
+            passwordInputBox = new OpTextBox(new Configurable<string>("Password"), where, 160f);
 
             // left lobby selector
             // bg
@@ -123,6 +129,23 @@ namespace RainMeadow
             SteamNetworkingUtils.InitRelayNetworkAccess();
 #endif
             MatchmakingManager.instance.RequestLobbyList();
+        }
+
+        private void UpdatePasswordBoxVisiblity()
+        {
+            Enum.TryParse<MatchmakingManager.LobbyVisibility>(visibilityDropDown.value, out var selectedVisibility);
+            if (selectedVisibility == MatchmakingManager.LobbyVisibility.Private)
+            {
+                new UIelementWrapper(this.tabWrapper, passwordInputBox);
+            }
+            else 
+            {
+                if (this.tabWrapper.wrappers.ContainsKey(passwordInputBox))
+                {
+                    OpTab.RemoveItemsFromTab(new UIelement[]{passwordInputBox});
+                    this.tabWrapper.wrappers.Remove(passwordInputBox);
+                }
+            }
         }
 
         private void UpdateModeDescription()
@@ -241,7 +264,7 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
             Enum.TryParse<MatchmakingManager.LobbyVisibility>(visibilityDropDown.value, out var value);
-            MatchmakingManager.instance.CreateLobby(value, modeDropDown.value);
+            MatchmakingManager.instance.CreateLobby(value, modeDropDown.value, passwordInputBox.value);
         }
 
         private void RequestLobbyJoin(LobbyInfo lobby)

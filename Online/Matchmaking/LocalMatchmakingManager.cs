@@ -99,7 +99,7 @@ namespace RainMeadow
             thisPlayer.reset();
         }
 
-        public override void CreateLobby(LobbyVisibility visibility, string gameMode)
+        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string password)
         {
             sessionSetup(true);
             if (!((LocalPlayerId)OnlineManager.mePlayer.id).isHost)
@@ -107,7 +107,15 @@ namespace RainMeadow
                 OnLobbyJoined?.Invoke(false, "use the host");
                 return;
             }
-            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer);
+            switch (visibility) {
+                case LobbyVisibility.Private:
+                    OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer);
+                    OnlineManager.lobby.lobbyPassword = password;
+                    break;
+                default:
+                    OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer); 
+                    break;
+            }
             OnLobbyJoined?.Invoke(true);
         }
 
@@ -119,17 +127,21 @@ namespace RainMeadow
                 OnLobbyJoined?.Invoke(false, "use the client");
                 return;
             }
-            RainMeadow.Debug("Joining local game...");
+            RainMeadow.Debug("Trying to join local game...");
             if (lobby.ipEndpoint == null) {
                 RainMeadow.Debug("Failed to join local game...");
                 return;
             } 
             var memory = new MemoryStream(16);
             var writer = new BinaryWriter(memory);
-            Packet.Encode(new RequestJoinPacket(), writer, null);
+            //TODO: Actually grab a password from user input
+            Packet.Encode(new RequestJoinPacket("Password"), writer, null);
             UdpPeer.Send(lobby.ipEndpoint, memory.GetBuffer(), (int)memory.Position, UdpPeer.PacketType.Reliable);
         }
-
+        public void FailedJoinLobby() {
+            RainMeadow.Debug("Failed to join local game. Wrong Password");
+            OnLobbyJoined?.Invoke(false, "Wrong password!");
+        }
         public void LobbyJoined()
         {
             OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), GetLobbyOwner());

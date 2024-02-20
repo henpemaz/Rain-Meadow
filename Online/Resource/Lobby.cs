@@ -15,6 +15,7 @@ namespace RainMeadow
         public string[] mods = RainMeadowModManager.GetActiveMods();
         public static bool modsChecked;
 
+        public string lobbyPassword = "";
         public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner)
         {
             this.super = this;
