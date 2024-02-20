@@ -1,5 +1,6 @@
 ﻿using RWCustom;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace RainMeadow
@@ -125,6 +126,7 @@ namespace RainMeadow
         private int nr;
         private int ne;
         private IntVector2 hoverPos;
+        private EmoteDisplayer displayer;
         public const int emotePreviewSize = 40;
         public const int emotePreviewSpacing = 8;
         public const float emotePreviewOpacityActive = 0.8f;
@@ -138,6 +140,7 @@ namespace RainMeadow
             hud.fContainers[1].AddChild(hotbarContainer);
             this.roomCamera = roomCamera;
             this.avatar = avatar;
+            this.displayer = EmoteDisplayer.map.GetValue(avatar, (c) => throw new KeyNotFoundException());
             this.customization = customization;
 
             if (!Futile.atlasManager.DoesContainAtlas("emotes_common"))
@@ -213,7 +216,6 @@ namespace RainMeadow
 
         private void NewRoom(Room room)
         {
-
             this.lastRoom = room;
         }
 
@@ -232,6 +234,10 @@ namespace RainMeadow
                 {
                     currentKeyboardRow = (currentKeyboardRow + 1) % keyboardMappingRows.GetLength(0);
                     UpdateDisplayers();
+                }
+                if (Input.GetKeyDown(KeyCode.Backspace))
+                {
+                    ClearEmotes();
                 }
             }
 
@@ -284,16 +290,16 @@ namespace RainMeadow
         private void EmotePressed(EmoteType emoteType)
         {
             RainMeadow.Debug(emoteType);
-            if (!EmoteDisplayer.map.TryGetValue(avatar, out var displayer))
-            {
-                RainMeadow.Error("holder not found");
-                return;
-            }
             if (displayer.AddEmoteLocal(emoteType))
             {
                 RainMeadow.Debug("emote added");
                 // todo play local input sound
             }
+        }
+
+        private void ClearEmotes()
+        {
+            displayer.ClearEmotes();
         }
     }
 }
