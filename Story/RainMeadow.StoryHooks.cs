@@ -82,10 +82,6 @@ namespace RainMeadow
                     }
                 }
 
-                /* if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(playersWithNames[i].AbstractCreature, out var oe))
-                 {
-                 playerArrowBodyColor = OnlineManager.lobby.entities.Values.First(em => em.entity is ClientSettings avs && avs.avatarId == oe.id).entity as StoryAvatarSettings;*/
-
             }
 
             orig(self, cam);
