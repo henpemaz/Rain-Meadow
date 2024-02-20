@@ -153,7 +153,7 @@ namespace RainMeadow
 
 
 
-            if (OnlineManager.lobby.isAvailable)
+            if (OnlineManager.lobby.isActive)
             {
                 OnLobbyActive();
             }
