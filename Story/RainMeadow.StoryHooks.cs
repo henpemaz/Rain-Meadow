@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using JollyCoop.JollyHUD;
 using HUD;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace RainMeadow
 {
@@ -66,6 +67,13 @@ namespace RainMeadow
                 {
                     if (OnlinePhysicalObject.map.TryGetValue(playersWithNames[i].apo as AbstractCreature, out var oe))
                     {
+                        var creature = (playersWithNames[i].apo as AbstractCreature).realizedCreature;
+                  
+
+/*                        RainMeadow.creatureCustomizations.TryGetValue(creature, out var avatarCustomization);
+                        var pain = (avatarCustomization as StoryAvatarSettings.SlugcatCustomization).settings.bodyColor;*/
+                        // There are some issues with retrieving color data from characters. 
+
                         OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].apo as AbstractCreature, oe.owner.id.name, Color.white);
 
                         self.AddPart(part);

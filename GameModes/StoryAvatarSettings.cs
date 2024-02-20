@@ -76,7 +76,7 @@ namespace RainMeadow
         }
         public class SlugcatCustomization : AvatarCustomization
         {
-            private readonly StoryAvatarSettings settings;
+            public readonly StoryAvatarSettings settings;
 
             public SlugcatCustomization(StoryAvatarSettings slugcatAvatarSettings)
             {
