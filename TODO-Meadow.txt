@@ -19,6 +19,9 @@ not seeing all emotes at once is a bit of a hinger
 	time means you lose the combo
 "sometimes can't use emotes" - SleepyCup
 	either bug or unintuitive timer lock
+radial menu
+	shoulders to swap pages seems like what most games do
+	some games have the "button to bring up + release to commit", some have you press a confirm/select
 
 
 creature todo
