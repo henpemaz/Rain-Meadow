@@ -120,12 +120,13 @@ namespace RainMeadow
 
             if (RainMeadow.playersWithArrows.Count != players.Count)
             {
+
                 RainMeadow.Debug("Adding extra HUD to players who just joined");
                 for (int i = 0; i < players.Count; i++)
                 {
-
                     if (OnlinePhysicalObject.map.TryGetValue(players[i].apo as AbstractCreature, out var oe) && (!RainMeadow.playersWithArrows.Contains(oe.owner.id.name)))
                     {
+
 
                         OnlinePlayerSpecificHud otherPlayerJollyHud = new OnlinePlayerSpecificHud(this.hud, this.fContainer, players[i].apo as AbstractCreature, oe.owner.id.name, Color.white);
                         this.hud.parts.Add(otherPlayerJollyHud);
