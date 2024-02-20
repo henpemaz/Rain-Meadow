@@ -74,13 +74,14 @@ namespace RainMeadow
                         // There are some issues with retrieving color data from characters. 
 
 
-                        OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].apo as AbstractCreature, oe.owner.id.name, Color.white); // No custom colors for now
+                        OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].apo as AbstractCreature, oe.owner.id.name, Color.white);
 
                         self.AddPart(part);
                         playersWithArrows.Add(oe.owner.id.name);
 
                     }
                 }
+
 
             }
 
