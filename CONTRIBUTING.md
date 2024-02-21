@@ -24,11 +24,15 @@ You will need to add the following references at minimum to your VS project for 
 * RainWorld_Data/Managed/UnityEngine.dll
 * RainWorld_Data/Managed/UnityEngine.CoreModule.dll
 * RainWorld_Data/Managed/Assembly.csharp.firstpass
+* com.rlabrecque.steamworks.net
 
 > Note that certain mods may need more functionality from Unity. In the RainWorld_Data/Managed folder you will find DLL files prefixed with UnityEngine. - these are different parts of the Unity engine that allow doing different things, such as UnityEngine.AssetBundleModule for loading asset bundles built in the Unity editor. 
 
 ## Guidelines
 ###### Advice for development
+
+### 0. Change your assemblies "copy local" option to false
+This will cut down on build times and reduce the bloat of plugins in your plugins/ folder.
 
 ### 1.  Be sympathetic to the game's design -- Use Hooks
 Hooks are incredibly useful for injecting your custom code into the game. Use those entrypoints. However, keep in mind that you may encounter trade-offs -- Hooking might remove a higher degree of flexibility that you needed for your code. If you want to make a custom menu, do you hook into where slugcat image are added or does your process manager reroute to a new instance of a menu that you've customized? Is your customized menu truly re-usable or are you copy-pasting code? These are questions whose answers need to be articulated by the time the PR is made.
@@ -43,8 +47,16 @@ Some developers are more advanced than others and this is expected. However, pin
 Everyone wants a perfect Pull Request. But if you're going to make a PR, please put in the work to test your  changes, attempt debugging, and write an executive summary in your PR's description rather than relying on the devs to contextualize themselves with the code you've written. 
 
 ### 5. Don't go rogue
-Rain Meadow is a cool mod. We want to keep it that way. Conform to the vision the team has for its game modes, not use them as an excuse to push your own content. This is Rain World, not Doom 64. We love the creativity of the fan base, and the best way to harness that creativity for this mod is to tackle existing GitHub issues or reach out to the team on Discord for what needs to be worked on next if no issues are remaining.  
+Rain Meadow is a cool mod. We want to keep it that way. Conform to the vision the team has for its game modes, not use them as an excuse to push your own content. This is Rain World, not Doom 64. We love the creativity of the fan base, and the best way to harness that creativity for this mod is to tackle existing GitHub issues or reach out to the team on Discord for what needs to be worked on next if no issues are remaining.
 
 ### 6. Who do I assign for a review?
 * Meadow: @henpemaz
 * Story: @Chrometurtle
+
+### Testing
+###### Advice for testing
+1. Symlink the plugins/ folder from your project to the Rain World modding directory
+
+2. Add the Rain World.exe shortcut to your taskbar
+
+3. After a successful build, simply click to start Rain World
