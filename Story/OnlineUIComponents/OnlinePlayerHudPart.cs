@@ -5,12 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace RainMeadow.Story.OnlineUIComponents
+namespace RainMeadow
 {
 
-    public abstract partial class OnlinePlayerHudPart
+    internal abstract class OnlinePlayerHudPart
     {
-        public OnlinePlayerSpecificHud jollyHud;
+        public OnlinePlayerIndicator indicator;
 
         public Vector2 bodyPos;
 
@@ -30,9 +30,9 @@ namespace RainMeadow.Story.OnlineUIComponents
 
         public bool knownPos;
 
-        public OnlinePlayerHudPart(OnlinePlayerSpecificHud jollyHud)
+        public OnlinePlayerHudPart(OnlinePlayerIndicator indicator)
         {
-            this.jollyHud = jollyHud;
+            this.indicator = indicator;
         }
 
         public virtual void Update()

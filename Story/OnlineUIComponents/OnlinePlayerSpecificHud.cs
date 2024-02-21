@@ -1,20 +1,10 @@
-﻿#region Assembly Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-// C:\Users\lol\Downloads\stripped-assembly-csharp.dll
-// Decompiled with ICSharpCode.Decompiler 7.1.0.6543
-#endregion
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using HarmonyLib;
+﻿using System.Collections.Generic;
 using HUD;
-using RWCustom;
 using UnityEngine;
-using RainMeadow.Story.OnlineUIComponents;
 
 namespace RainMeadow
 {
-    public partial class OnlinePlayerSpecificHud : HudPart
+    public class OnlinePlayerIndicator : HudPart
     {
 
         public AbstractCreature abstractPlayer;
@@ -25,7 +15,7 @@ namespace RainMeadow
 
         public OnlineAwayFromRoom offRoom;
 
-        public int playerNumber;
+        //public int playerNumber;
 
         public string playerName;
 
@@ -42,6 +32,7 @@ namespace RainMeadow
         public List<OnlinePlayerHudPart> parts;
 
         public bool addedDeathBumpThisSession;
+        public StoryClientSettings clientSettings;
 
         public PlayerState PlayerState => abstractPlayer.state as PlayerState;
 
@@ -53,7 +44,7 @@ namespace RainMeadow
 
 
 
-        public OnlinePlayerSpecificHud(global::HUD.HUD hud, FContainer fContainer, AbstractCreature player, string name, Color bodyColor)
+        public OnlinePlayerIndicator(global::HUD.HUD hud, FContainer fContainer, AbstractCreature player, string name, Color bodyColor)
             : base(hud)
         {
 
@@ -71,6 +62,11 @@ namespace RainMeadow
                         parts.Add(offRoom);*/
             addedDeathBumpThisSession = false;
 
+        }
+
+        public OnlinePlayerIndicator(HUD.HUD hud, FContainer fContainer, ClientSettings clientSettings) : base(hud)
+        {
+            this.clientSettings = clientSettings;
         }
 
         public override void ClearSprites()
@@ -110,34 +106,7 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
-            var players = OnlineManager.lobby.playerAvatars
-            .Where(avatar => avatar.type != (byte)OnlineEntity.EntityId.IdType.none)
-            .Select(avatar => avatar.FindEntity(true))
-            .OfType<OnlinePhysicalObject>()
-            .ToList();
-
-
-
-            if (RainMeadow.playersWithArrows.Count != players.Count)
-            {
-
-                RainMeadow.Debug("Adding extra HUD to players who just joined");
-                for (int i = 0; i < players.Count; i++)
-                {
-                    if (OnlinePhysicalObject.map.TryGetValue(players[i].apo as AbstractCreature, out var oe) && (!RainMeadow.playersWithArrows.Contains(oe.owner.id.name)))
-                    {
-
-
-                        OnlinePlayerSpecificHud otherPlayerJollyHud = new OnlinePlayerSpecificHud(this.hud, this.fContainer, players[i].apo as AbstractCreature, oe.owner.id.name, Color.white);
-                        this.hud.parts.Add(otherPlayerJollyHud);
-                        RainMeadow.playersWithArrows.Add(oe.owner.id.name);
-
-
-
-                    }
-                }
-            }
-
+            
             inShortcutLast = inShortcut;
             camPos = Camera.pos;
             if (RealizedPlayer != null)

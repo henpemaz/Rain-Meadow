@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class StoryAvatarSettings : ClientSettings
+    public class StoryClientSettings : ClientSettings
     {
         public class Definition : ClientSettings.Definition
         {
@@ -13,7 +13,7 @@ namespace RainMeadow
 
             public override OnlineEntity MakeEntity(OnlineResource inResource)
             {
-                return new StoryAvatarSettings(this);
+                return new StoryClientSettings(this);
             }
         }
 
@@ -23,7 +23,7 @@ namespace RainMeadow
         public bool readyForWin;
         public string myLastDenPos;
 
-        public StoryAvatarSettings(Definition entityDefinition) : base(entityDefinition)
+        public StoryClientSettings(Definition entityDefinition) : base(entityDefinition)
         {
             RainMeadow.Debug(this);
             // todo de-dummy
@@ -56,7 +56,7 @@ namespace RainMeadow
             public bool readyForWin;
 
             public State() { }
-            public State(StoryAvatarSettings onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
+            public State(StoryClientSettings onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
             {
                 bodyColor = onlineEntity.bodyColor;
                 eyeColor = onlineEntity.eyeColor;
@@ -67,7 +67,7 @@ namespace RainMeadow
             public override void ReadTo(OnlineEntity onlineEntity)
             {
                 base.ReadTo(onlineEntity);
-                var avatarSettings = (StoryAvatarSettings)onlineEntity;
+                var avatarSettings = (StoryClientSettings)onlineEntity;
                 avatarSettings.bodyColor = bodyColor;
                 avatarSettings.eyeColor = eyeColor;
                 avatarSettings.playingAs = playingAs;
@@ -76,9 +76,9 @@ namespace RainMeadow
         }
         public class SlugcatCustomization : AvatarCustomization
         {
-            public readonly StoryAvatarSettings settings;
+            public readonly StoryClientSettings settings;
 
-            public SlugcatCustomization(StoryAvatarSettings slugcatAvatarSettings)
+            public SlugcatCustomization(StoryClientSettings slugcatAvatarSettings)
             {
                 this.settings = slugcatAvatarSettings;
             }

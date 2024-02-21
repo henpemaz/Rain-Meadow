@@ -1,25 +1,21 @@
 ﻿using UnityEngine;
-using RainMeadow;
-using IL.Menu;
 using System.Collections.Generic;
-using JollyCoop.JollyHUD;
 using HUD;
 using System.Linq;
-using System.Security.Cryptography;
 
 namespace RainMeadow
 {
     public partial class RainMeadow
     {
         private bool isPlayerReady = false;
-        public static List<string> playersWithArrows;
+        //public static List<string> playersWithArrows;
 
-        public static bool isStoryMode(out StoryGameMode? gameMode)
+        public static bool isStoryMode(out StoryGameMode gameMode)
         {
             gameMode = null;
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode sgm)
             {
-                gameMode = OnlineManager.lobby.gameMode as StoryGameMode;
+                gameMode = sgm;
                 return true;
             }
             return false;
@@ -51,42 +47,10 @@ namespace RainMeadow
         {
             if (isStoryMode(out var gameMode))
             {
-
                 self.AddPart(new OnlineStoryHud(self, self.fContainers[1], gameMode));
-                playersWithArrows = new List<string>();
-
-
-                var playersWithNames = OnlineManager.lobby.playerAvatars
-                .Where(avatar => avatar.type != (byte)OnlineEntity.EntityId.IdType.none)
-                .Select(avatar => avatar.FindEntity(true))
-                .OfType<OnlinePhysicalObject>()
-                .ToList();
-
-
-                for (int i = 0; i < playersWithNames.Count; i++)
-                {
-                    if (OnlinePhysicalObject.map.TryGetValue(playersWithNames[i].apo as AbstractCreature, out var oe))
-                    {
-
-                        // var creature = (playersWithNames[i].apo as AbstractCreature).realizedCreature;
-                        /*                        RainMeadow.creatureCustomizations.TryGetValue(creature, out var avatarCustomization);
-                                                var pain = (avatarCustomization as StoryAvatarSettings.SlugcatCustomization).settings.bodyColor;*/
-                        // There are some issues with retrieving color data from characters. 
-
-
-                        OnlinePlayerSpecificHud part = new OnlinePlayerSpecificHud(self, self.fContainers[1], playersWithNames[i].apo as AbstractCreature, oe.owner.id.name, Color.white);
-
-                        self.AddPart(part);
-                        playersWithArrows.Add(oe.owner.id.name);
-
-                    }
-                }
-
-
             }
 
             orig(self, cam);
-
         }
 
         private void RainWorldGame_GoToDeathScreen(On.RainWorldGame.orig_GoToDeathScreen orig, RainWorldGame self)
@@ -146,7 +110,7 @@ namespace RainMeadow
             if (isStoryMode(out var gameMode))
             {
                 //self.currentSaveState.LoadGame(gameMode.saveStateProgressString, game); //pretty sure we can just stuff the string here
-                var storyAvatarSettings = gameMode.avatarSettings as StoryAvatarSettings;
+                var storyAvatarSettings = gameMode.clientSettings as StoryClientSettings;
                 origSaveState.denPosition = storyAvatarSettings.myLastDenPos;
                 return origSaveState;
             }

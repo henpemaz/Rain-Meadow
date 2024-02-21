@@ -31,7 +31,7 @@ namespace RainMeadow
 
         public override AbstractCreature SpawnAvatar(RainWorldGame game, WorldCoordinate location)
         {
-            var settings = (avatarSettings as MeadowAvatarSettings);
+            var settings = (clientSettings as MeadowAvatarSettings);
             var skinData = MeadowProgression.skinData[settings.skin];
             var abstractCreature = new AbstractCreature(game.world, StaticWorld.GetCreatureTemplate(skinData.creatureType), null, location, new EntityID(-1, 0));
             if (skinData.creatureType == CreatureTemplate.Type.Slugcat)
@@ -73,12 +73,12 @@ namespace RainMeadow
                             new MeadowAvatarSettings.Definition(
                                 new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0)
                                 , OnlineManager.mePlayer));
-            avatarSettings = meadowAvatarSettings;
+            clientSettings = meadowAvatarSettings;
             if (!RWCustom.Custom.rainWorld.setup.startScreen) // skipping all menus
             {
                 meadowAvatarSettings.skin = MeadowProgression.currentTestSkin;
             }
-            avatarSettings.EnterResource(lobby);
+            clientSettings.EnterResource(lobby);
         }
 
         internal override void ResourceActive(OnlineResource res)

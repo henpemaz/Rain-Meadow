@@ -16,182 +16,179 @@ using RainMeadow;
 
 namespace RainMeadow
 {
-    public partial class OnlinePlayerSpecificHud
+    public class OnlineDeathBump : OnlinePointer
     {
-        public partial class OnlineDeathBump : OnlinePointer
+        public FSprite symbolSprite;
+
+        public int counter = -20;
+
+        public float blink;
+
+        public float lastBlink;
+
+        public StoryClientSettings personaSettings;
+
+        public bool removeAsap;
+
+        public Vector2 pingPosition;
+
+        public Vector2 lastPingPosition;
+
+        public bool PlayerHasExplosiveSpearInThem
         {
-            public FSprite symbolSprite;
-
-            public int counter = -20;
-
-            public float blink;
-
-            public float lastBlink;
-
-            public StoryAvatarSettings personaSettings;
-
-            public bool removeAsap;
-
-            public Vector2 pingPosition;
-
-            public Vector2 lastPingPosition;
-
-            public bool PlayerHasExplosiveSpearInThem
+            get
             {
-                get
+                if (indicator.RealizedPlayer == null)
                 {
-                    if (jollyHud.RealizedPlayer == null)
-                    {
-                        return false;
-                    }
-
-                    if (jollyHud.RealizedPlayer.abstractCreature.stuckObjects.Count == 0)
-                    {
-                        return false;
-                    }
-
-                    for (int i = 0; i < jollyHud.RealizedPlayer.abstractCreature.stuckObjects.Count; i++)
-                    {
-                        if (jollyHud.RealizedPlayer.abstractCreature.stuckObjects[i].A is AbstractSpear && (jollyHud.RealizedPlayer.abstractCreature.stuckObjects[i].A as AbstractSpear).explosive)
-                        {
-                            return true;
-                        }
-                    }
-
                     return false;
                 }
+
+                if (indicator.RealizedPlayer.abstractCreature.stuckObjects.Count == 0)
+                {
+                    return false;
+                }
+
+                for (int i = 0; i < indicator.RealizedPlayer.abstractCreature.stuckObjects.Count; i++)
+                {
+                    if (indicator.RealizedPlayer.abstractCreature.stuckObjects[i].A is AbstractSpear && (indicator.RealizedPlayer.abstractCreature.stuckObjects[i].A as AbstractSpear).explosive)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        public OnlineDeathBump(OnlinePlayerIndicator jollyHud)
+            : base(jollyHud)
+        {
+            base.indicator = jollyHud;
+            this.personaSettings = (StoryClientSettings)OnlineManager.lobby.gameMode.clientSettings;
+
+            SetPosToPlayer();
+            gradient = new FSprite("Futile_White");
+            gradient.shader = jollyHud.hud.rainWorld.Shaders["FlatLight"];
+            if ((jollyHud.abstractPlayer.state as PlayerState).slugcatCharacter != SlugcatStats.Name.Night)
+            {
+                gradient.color = new Color(0f, 0f, 0f);
             }
 
-            public OnlineDeathBump(OnlinePlayerSpecificHud jollyHud)
-                : base(jollyHud)
-            {
-                base.jollyHud = jollyHud;
-                this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
+            jollyHud.hud.fContainers[0].AddChild(gradient);
+            gradient.alpha = 0f;
+            gradient.x = -1000f;
+            symbolSprite = new FSprite("Multiplayer_Death");
+            symbolSprite.color = personaSettings.bodyColor;
+            jollyHud.hud.fContainers[0].AddChild(symbolSprite);
+            symbolSprite.alpha = 0f;
+            symbolSprite.x = -1000f;
+        }
 
+        public void SetPosToPlayer()
+        {
+            lastPingPosition = pingPosition;
+        }
+
+        public override void Update()
+        {
+            base.Update();
+
+            lastAlpha = alpha;
+            lastBlink = blink;
+            lastPingPosition = pingPosition;
+            pingPosition = bodyPos + new Vector2(0f, 10f);
+            if (!indicator.PlayerRoomBeingViewed)
+            {
+                slatedForDeletion = true;
+            }
+
+            if (counter < 0)
+            {
                 SetPosToPlayer();
-                gradient = new FSprite("Futile_White");
-                gradient.shader = jollyHud.hud.rainWorld.Shaders["FlatLight"];
-                if ((jollyHud.abstractPlayer.state as PlayerState).slugcatCharacter != SlugcatStats.Name.Night)
+                if (indicator.RealizedPlayer == null || indicator.RealizedPlayer.room == null || !indicator.RealizedPlayer.room.ViewedByAnyCamera(indicator.RealizedPlayer.mainBodyChunk.pos, 200f) || removeAsap || indicator.RealizedPlayer.grabbedBy.Count > 0)
                 {
-                    gradient.color = new Color(0f, 0f, 0f);
+                    counter = 0;
+                    removeAsap = true;
+                    indicator.hud.PlaySound(SoundID.UI_Multiplayer_Player_Dead_A);
+                    indicator.hud.PlaySound(SoundID.UI_Multiplayer_Player_Dead_B);
                 }
-
-                jollyHud.hud.fContainers[0].AddChild(gradient);
-                gradient.alpha = 0f;
-                gradient.x = -1000f;
-                symbolSprite = new FSprite("Multiplayer_Death");
-                symbolSprite.color = personaSettings.bodyColor;
-                jollyHud.hud.fContainers[0].AddChild(symbolSprite);
-                symbolSprite.alpha = 0f;
-                symbolSprite.x = -1000f;
+                else if (Custom.DistLess(indicator.RealizedPlayer.bodyChunks[0].pos, indicator.RealizedPlayer.bodyChunks[0].lastLastPos, 6f) && Custom.DistLess(indicator.RealizedPlayer.bodyChunks[1].pos, indicator.RealizedPlayer.bodyChunks[1].lastLastPos, 6f) && !PlayerHasExplosiveSpearInThem)
+                {
+                    counter++;
+                }
             }
 
-            public void SetPosToPlayer()
+            counter++;
+            if (removeAsap)
             {
-                lastPingPosition = pingPosition;
+                counter += 10;
             }
 
-            public override void Update()
+            if (counter < 40)
             {
-                base.Update();
-
-                lastAlpha = alpha;
-                lastBlink = blink;
-                lastPingPosition = pingPosition;
-                pingPosition = bodyPos + new Vector2(0f, 10f);
-                if (!jollyHud.PlayerRoomBeingViewed)
-                {
-                    slatedForDeletion = true;
-                }
-
-                if (counter < 0)
-                {
-                    SetPosToPlayer();
-                    if (jollyHud.RealizedPlayer == null || jollyHud.RealizedPlayer.room == null || !jollyHud.RealizedPlayer.room.ViewedByAnyCamera(jollyHud.RealizedPlayer.mainBodyChunk.pos, 200f) || removeAsap || jollyHud.RealizedPlayer.grabbedBy.Count > 0)
-                    {
-                        counter = 0;
-                        removeAsap = true;
-                        jollyHud.hud.PlaySound(SoundID.UI_Multiplayer_Player_Dead_A);
-                        jollyHud.hud.PlaySound(SoundID.UI_Multiplayer_Player_Dead_B);
-                    }
-                    else if (Custom.DistLess(jollyHud.RealizedPlayer.bodyChunks[0].pos, jollyHud.RealizedPlayer.bodyChunks[0].lastLastPos, 6f) && Custom.DistLess(jollyHud.RealizedPlayer.bodyChunks[1].pos, jollyHud.RealizedPlayer.bodyChunks[1].lastLastPos, 6f) && !PlayerHasExplosiveSpearInThem)
-                    {
-                        counter++;
-                    }
-                }
-
-                counter++;
-                if (removeAsap)
-                {
-                    counter += 10;
-                }
-
-                if (counter < 40)
-                {
-                    alpha = Mathf.Sin(Mathf.InverseLerp(0f, 40f, counter) * (float)Math.PI);
-                    blink = Custom.LerpAndTick(blink, 1f, 0.07f, 71f / (678f * (float)Math.PI));
-                    if (counter == 5)
-                    {
-                        if (!removeAsap)
-                        {
-                            jollyHud.hud.fadeCircles.Add(new FadeCircle(jollyHud.hud, 10f, 10f, 0.82f, 30f, 4f, bodyPos, jollyHud.hud.fContainers[1]));
-                        }
-
-                        jollyHud.hud.PlaySound(SoundID.UI_Multiplayer_Player_Dead_A);
-                    }
-                }
-                else if (counter == 40)
+                alpha = Mathf.Sin(Mathf.InverseLerp(0f, 40f, counter) * (float)Math.PI);
+                blink = Custom.LerpAndTick(blink, 1f, 0.07f, 71f / (678f * (float)Math.PI));
+                if (counter == 5)
                 {
                     if (!removeAsap)
                     {
-                        FadeCircle fadeCircle = new FadeCircle(jollyHud.hud, 20f, 30f, 0.94f, 60f, 4f, bodyPos, jollyHud.hud.fContainers[1]);
-                        fadeCircle.alphaMultiply = 0.5f;
-                        fadeCircle.fadeThickness = false;
-                        jollyHud.hud.fadeCircles.Add(fadeCircle);
-                        alpha = 1f;
-                        blink = 0f;
+                        indicator.hud.fadeCircles.Add(new FadeCircle(indicator.hud, 10f, 10f, 0.82f, 30f, 4f, bodyPos, indicator.hud.fContainers[1]));
                     }
 
-                    jollyHud.hud.PlaySound(SoundID.UI_Multiplayer_Player_Dead_B);
-                }
-                else if (counter <= 220)
-                {
-                    alpha = Mathf.InverseLerp(220f, 110f, counter);
-                }
-                else if (counter > 220)
-                {
-                    slatedForDeletion = true;
+                    indicator.hud.PlaySound(SoundID.UI_Multiplayer_Player_Dead_A);
                 }
             }
-
-            public override void Draw(float timeStacker)
+            else if (counter == 40)
             {
-                this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
-
-                Vector2 vector = Vector2.Lerp(lastPingPosition, pingPosition, timeStacker) + new Vector2(0.01f, 0.01f);
-                float num = Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(lastAlpha, alpha, timeStacker)), 0.7f);
-                gradient.x = vector.x;
-                gradient.y = vector.y + 10f;
-                gradient.scale = Mathf.Lerp(80f, 110f, num) / 16f;
-                gradient.alpha = 0.17f * Mathf.Pow(num, 2f);
-                symbolSprite.x = vector.x;
-                symbolSprite.y = Mathf.Min(vector.y + Custom.SCurve(Mathf.InverseLerp(40f, 130f, (float)counter + timeStacker), 0.8f) * 80f, jollyHud.Camera.sSize.y - 30f);
-                Color color = personaSettings.bodyColor;
-                if (counter % 6 < 2 && lastBlink > 0f)
+                if (!removeAsap)
                 {
-                    color = Color.red; // Think this is for notifying when a slugcat is missing at Gate
+                    FadeCircle fadeCircle = new FadeCircle(indicator.hud, 20f, 30f, 0.94f, 60f, 4f, bodyPos, indicator.hud.fContainers[1]);
+                    fadeCircle.alphaMultiply = 0.5f;
+                    fadeCircle.fadeThickness = false;
+                    indicator.hud.fadeCircles.Add(fadeCircle);
+                    alpha = 1f;
+                    blink = 0f;
                 }
 
-                symbolSprite.color = color;
-                symbolSprite.alpha = num;
+                indicator.hud.PlaySound(SoundID.UI_Multiplayer_Player_Dead_B);
+            }
+            else if (counter <= 220)
+            {
+                alpha = Mathf.InverseLerp(220f, 110f, counter);
+            }
+            else if (counter > 220)
+            {
+                slatedForDeletion = true;
+            }
+        }
+
+        public override void Draw(float timeStacker)
+        {
+            this.personaSettings = (StoryClientSettings)OnlineManager.lobby.gameMode.clientSettings;
+
+            Vector2 vector = Vector2.Lerp(lastPingPosition, pingPosition, timeStacker) + new Vector2(0.01f, 0.01f);
+            float num = Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(lastAlpha, alpha, timeStacker)), 0.7f);
+            gradient.x = vector.x;
+            gradient.y = vector.y + 10f;
+            gradient.scale = Mathf.Lerp(80f, 110f, num) / 16f;
+            gradient.alpha = 0.17f * Mathf.Pow(num, 2f);
+            symbolSprite.x = vector.x;
+            symbolSprite.y = Mathf.Min(vector.y + Custom.SCurve(Mathf.InverseLerp(40f, 130f, (float)counter + timeStacker), 0.8f) * 80f, indicator.Camera.sSize.y - 30f);
+            Color color = personaSettings.bodyColor;
+            if (counter % 6 < 2 && lastBlink > 0f)
+            {
+                color = Color.red; // Think this is for notifying when a slugcat is missing at Gate
             }
 
-            public override void ClearSprites()
-            {
-                base.ClearSprites();
-                gradient.RemoveFromContainer();
-                symbolSprite.RemoveFromContainer();
-            }
+            symbolSprite.color = color;
+            symbolSprite.alpha = num;
+        }
+
+        public override void ClearSprites()
+        {
+            base.ClearSprites();
+            gradient.RemoveFromContainer();
+            symbolSprite.RemoveFromContainer();
         }
     }
 }

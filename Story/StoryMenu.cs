@@ -25,7 +25,7 @@ namespace RainMeadow
 
         private SlugcatSelectMenu ssm;
         private SlugcatSelectMenu.SlugcatPage sp;
-        private StoryAvatarSettings personaSettings;
+        private StoryClientSettings personaSettings;
 
         private List<SlugcatSelectMenu.SlugcatPage> characterPages;
         private EventfulSelectOneButton[] playerButtons;
@@ -378,7 +378,7 @@ namespace RainMeadow
 
         private void BindSettings()
         {
-            this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
+            this.personaSettings = (StoryClientSettings)OnlineManager.lobby.gameMode.clientSettings;
             personaSettings.playingAs = SlugcatStats.Name.White;
             personaSettings.bodyColor = Color.white;
             personaSettings.eyeColor = Color.black;
