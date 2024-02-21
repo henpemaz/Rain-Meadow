@@ -49,6 +49,9 @@ Everyone wants a perfect Pull Request. But if you're going to make a PR, please 
 ### 5. Don't go rogue
 Rain Meadow is a cool mod. We want to keep it that way. Conform to the vision the team has for its game modes, not use them as an excuse to push your own content. This is Rain World, not Doom 64. We love the creativity of the fan base, and the best way to harness that creativity for this mod is to tackle existing GitHub issues or reach out to the team on Discord for what needs to be worked on next if no issues are remaining.
 
+### 5.1 Don't go rogue (cont.)
+Decompiling the game to review its implementation of certain features is ok. Copy and pasting code is not ok, and certainly do not copy and paste code from content that is locked behind a paid-expansion check (ie: Jolly Coop / More Slugcats, etc.). Rain Meadow will not require any external expansions, and as a result all assets must be used directly available through purchase of the vanilla game itself, or custom created. 
+
 ### 6. Who do I assign for a review?
 * Meadow: @henpemaz
 * Story: @Chrometurtle
