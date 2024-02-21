@@ -99,7 +99,7 @@ namespace RainMeadow
             thisPlayer.reset();
         }
 
-        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string password)
+        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password)
         {
             sessionSetup(true);
             if (!((LocalPlayerId)OnlineManager.mePlayer.id).isHost)
@@ -107,14 +107,9 @@ namespace RainMeadow
                 OnLobbyJoined?.Invoke(false, "use the host");
                 return;
             }
-            switch (visibility) {
-                case LobbyVisibility.Private:
-                    OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer);
-                    OnlineManager.lobby.lobbyPassword = password;
-                    break;
-                default:
-                    OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer); 
-                    break;
+            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer);
+            if (password != null) {
+                OnlineManager.lobby.lobbyPassword = password;
             }
             OnLobbyJoined?.Invoke(true);
         }

@@ -105,9 +105,10 @@ namespace RainMeadow
             }
         }
 
-        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string password)
+        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password)
         {
             creatingWithMode = gameMode;
+            creatingWithPassword = password;
             ELobbyType eLobbyTypeeLobbyType = visibility switch
             {
                 LobbyVisibility.Private => ELobbyType.k_ELobbyTypePrivate,
@@ -124,6 +125,7 @@ namespace RainMeadow
         }
 
         private static string creatingWithMode;
+        private static string? creatingWithPassword;
         private void LobbyCreated(LobbyCreated_t param, bool bIOFailure)
         {
             try
@@ -137,6 +139,7 @@ namespace RainMeadow
                     SteamMatchmaking.SetLobbyData(lobbyID, NAME_KEY, SteamFriends.GetPersonaName() + "'s Lobby");
                     SteamMatchmaking.SetLobbyData(lobbyID, MODE_KEY, creatingWithMode);
                     OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(creatingWithMode), OnlineManager.mePlayer);
+
                     SteamFriends.SetRichPresence("connect", lobbyID.ToString());
                     OnLobbyJoined?.Invoke(true);
                 }

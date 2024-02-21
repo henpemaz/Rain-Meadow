@@ -43,7 +43,7 @@ namespace RainMeadow
 
         public abstract void RequestLobbyList();
 
-        public abstract void CreateLobby(LobbyVisibility visibility, string gameMode, string password);
+        public abstract void CreateLobby(LobbyVisibility visibility, string gameMode, string? password);
 
         public abstract void JoinLobby(LobbyInfo lobby);
 

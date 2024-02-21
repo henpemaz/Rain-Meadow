@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class LobbySelectMenu : SmartMenu, SelectOneButton.SelectOneButtonOwner
+    public class LobbySelectMenu : SmartMenu, SelectOneButton.SelectOneButtonOwner, CheckBox.IOwnCheckBox
     {
         private List<FSprite> sprites;
         private EventfulSelectOneButton[] lobbyButtons;
@@ -20,13 +20,13 @@ namespace RainMeadow
         private float scrollTo;
         private int currentlySelectedCard;
         private OpComboBox visibilityDropDown;
-        private OpTextBox passwordInputBox;
         private SimplerButton playButton;
         private SimplerButton refreshButton;
         private OpComboBox2 modeDropDown;
         private ProperlyAlignedMenuLabel modeDescriptionLabel;
         private MenuDialogBox popupDialog;
-
+        private bool setpassword;
+        private OpTextBox passwordInputBox;
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
         {
@@ -83,11 +83,14 @@ namespace RainMeadow
             mainPage.subObjects.Add(visibilityLabel);
             where.x += 80;
             visibilityDropDown = new OpComboBox2(new Configurable<MatchmakingManager.LobbyVisibility>(MatchmakingManager.LobbyVisibility.Public), where, 160, OpResourceSelector.GetEnumNames(null, typeof(MatchmakingManager.LobbyVisibility)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
-            visibilityDropDown.OnChange += UpdatePasswordBoxVisiblity;
             new UIelementWrapper(this.tabWrapper, visibilityDropDown);
+            where.x -= 80;
 
+            where.y -= 45;
+            var enablePasswordCheckbox = new CheckBox(this,mainPage,this,where,60f, Translate("Enable Password:"),"SETPASSWORD",true);
+            mainPage.subObjects.Add(enablePasswordCheckbox);
             // password setting
-            where.x += 160 + 20;
+            where.x += 160;
             passwordInputBox = new OpTextBox(new Configurable<string>("Password"), where, 160f);
 
             // left lobby selector
@@ -131,10 +134,9 @@ namespace RainMeadow
             MatchmakingManager.instance.RequestLobbyList();
         }
 
-        private void UpdatePasswordBoxVisiblity()
+        private void UpdatePasswordBoxVisiblity(bool visible)
         {
-            Enum.TryParse<MatchmakingManager.LobbyVisibility>(visibilityDropDown.value, out var selectedVisibility);
-            if (selectedVisibility == MatchmakingManager.LobbyVisibility.Private)
+            if (visible)
             {
                 new UIelementWrapper(this.tabWrapper, passwordInputBox);
             }
@@ -264,7 +266,7 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
             Enum.TryParse<MatchmakingManager.LobbyVisibility>(visibilityDropDown.value, out var value);
-            MatchmakingManager.instance.CreateLobby(value, modeDropDown.value, passwordInputBox.value);
+            MatchmakingManager.instance.CreateLobby(value, modeDropDown.value, setpassword ? passwordInputBox.value : null);
         }
 
         private void RequestLobbyJoin(LobbyInfo lobby)
@@ -344,6 +346,28 @@ namespace RainMeadow
                 case "HIDE_DIALOG":
                     HideDialog();
                     break;
+            }
+        }
+
+        public bool GetChecked(CheckBox box) {
+            string idstring = box.IDString;
+            if (idstring != null) {
+                if (idstring == "SETPASSWORD") {
+                    return setpassword;
+                }
+            }
+            return false;
+        }
+        public void SetChecked(CheckBox box, bool c)
+        {
+            string idstring = box.IDString;
+            if (idstring != null)
+            {
+                if (idstring == "SETPASSWORD")
+                {
+                    setpassword = !setpassword;
+                    UpdatePasswordBoxVisiblity(setpassword);
+                }
             }
         }
     }
