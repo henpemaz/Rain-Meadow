@@ -159,6 +159,39 @@ namespace RainMeadow
                     }
 
                 }
+
+                if (self.slugcatNumber == RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer && self is SlugcatCustomSelection slug)
+                {
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        if (slug.slug == SlugcatStats.Name.White)
+                        {
+                            sceneID = Menu.MenuScene.SceneID.Slugcat_White; 
+                            self.sceneOffset = new Vector2(-10f, 100f);
+                            self.slugcatDepth = 3.1000001f;
+                        }
+
+                        if (slug.slug == SlugcatStats.Name.Red)
+                        {
+                            sceneID = Menu.MenuScene.SceneID.Slugcat_Red;
+                            self.sceneOffset = new Vector2(-10f, 100f);
+                            self.slugcatDepth = 3.1000001f;
+                        }
+                        else
+                        {
+                            sceneID = Menu.MenuScene.SceneID.NewDeath;
+                            self.sceneOffset = new Vector2(-10f, 100f);
+                            self.slugcatDepth = 3.1000001f;
+                        }
+                    } else // Client
+                    {
+                        sceneID = Menu.MenuScene.SceneID.Landscape_SU;
+                        self.sceneOffset = new Vector2(-10f, 100f);
+                        self.slugcatDepth = 3.1000001f;
+                    }
+
+                }
+
             });
         }
 

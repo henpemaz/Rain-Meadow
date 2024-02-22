@@ -40,6 +40,7 @@ namespace RainMeadow
             this.rainEffect = new RainEffect(this, this.pages[0]);
             this.pages[0].subObjects.Add(this.rainEffect);
             this.rainEffect.rainFade = 0.3f;
+            this.characterPages = new List<SlugcatSelectMenu.SlugcatPage>();
 
 
             // Initial setup for slugcat menu & pages
@@ -57,7 +58,7 @@ namespace RainMeadow
 
 
             // Custom images for host vs clients
-            if (OnlineManager.lobby.isOwner)
+/*            if (OnlineManager.lobby.isOwner)
             {
                 sp.slugcatImage = new InteractiveMenuScene(this, this.pages[0], HostSceneID);
 
@@ -70,7 +71,7 @@ namespace RainMeadow
 
                 this.pages[0].subObjects.Add(sp.slugcatImage);
 
-            }
+            }*/
 
 
             ssm.slugcatColorOrder = AllAvailableCharacters();
@@ -79,18 +80,10 @@ namespace RainMeadow
             // TODO: Multiple Characters
             for (int j = 0; j < ssm.slugcatColorOrder.Count; j++)
             {
-                sp.slugcatNumber = ssm.slugcatColorOrder[j];
-
-                // TODO: Background images
-                if (sp.slugcatNumber == SlugcatStats.Name.White)
-                {
-                    //HostSceneID = MenuScene.SceneID.Slugcat_White;
-                    sp.sceneOffset = new Vector2(-10f, 100f);
-                    sp.slugcatDepth = 3.1000001f;
-                    sp.markOffset = new Vector2(-15f, -2f);
-                    sp.glowOffset = new Vector2(-30f, -50f);
-
-                }
+                this.characterPages.Add(new SlugcatCustomSelection(this, ssm, 1 + j, ssm.slugcatColorOrder[j]));
+                /*                if (characterPages[j].sceneOffset.y == 0) characterPages[0].sceneOffset = new Vector2(-10f, 100f);
+                */
+                this.pages.Add(this.characterPages[j]);
 
             }
 
@@ -283,7 +276,6 @@ namespace RainMeadow
             this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
             this.prevButton.OnClick += (_) =>
             {
-                return; // TODO: Protect the users until all characters are fixed
                 ssm.quedSideInput = Math.Max(-3, ssm.quedSideInput - 1);
                 base.PlaySound(SoundID.MENU_Next_Slugcat);
             };
@@ -294,7 +286,6 @@ namespace RainMeadow
             this.nextButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(985f, 50f), 1);
             this.nextButton.OnClick += (_) =>
             {
-                return;
                 ssm.quedSideInput = Math.Min(3, ssm.quedSideInput + 1);
                 base.PlaySound(SoundID.MENU_Next_Slugcat);
             };
