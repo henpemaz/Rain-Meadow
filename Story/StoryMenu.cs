@@ -53,61 +53,16 @@ namespace RainMeadow
             ssm.manager = manager;
             ssm.pages = pages;
 
-            MenuScene.SceneID HostSceneID = MenuScene.SceneID.Slugcat_White;
-            MenuScene.SceneID ClientSceneID = MenuScene.SceneID.Landscape_SU;
 
-
-            // Custom images for host vs clients
-/*            if (OnlineManager.lobby.isOwner)
-            {
-                sp.slugcatImage = new InteractiveMenuScene(this, this.pages[0], HostSceneID);
-
-                this.pages[0].subObjects.Add(sp.slugcatImage);
-
-            }
-            else
-            {
-                sp.slugcatImage = new InteractiveMenuScene(this, this.pages[0], ClientSceneID);
-
-                this.pages[0].subObjects.Add(sp.slugcatImage);
-
-            }*/
-
-
-            ssm.slugcatColorOrder = AllAvailableCharacters();
+            ssm.slugcatColorOrder = AllSlugcats();
             sp.imagePos = new Vector2(683f, 484f);
 
-            // TODO: Multiple Characters
             for (int j = 0; j < ssm.slugcatColorOrder.Count; j++)
             {
-                this.characterPages.Add(new SlugcatCustomSelection(this, ssm, 1 + j, ssm.slugcatColorOrder[j]));
-                /*                if (characterPages[j].sceneOffset.y == 0) characterPages[0].sceneOffset = new Vector2(-10f, 100f);
-                */
+                this.characterPages.Add(new SlugcatCustomSelection(this, ssm, 1 + j, ssm.slugcatColorOrder[j]));  
                 this.pages.Add(this.characterPages[j]);
 
             }
-
-
-            // TODO: Alignment issues.
-
-            /*            s = RWCustom.Custom.ReplaceLineDelimeters(s);
-                        int num = s.Count((char f) => f == '\n');
-                        float num2 = 0f;
-                        if (num > 1)
-                        {
-                            num2 = 30f;
-                        }
-                        var characterName = new MenuLabel(this, pages[0], text, new Vector2(sp.imagePos.x, sp.imagePos.y - 400f), new Vector2(200f, 30f), bigText: true);
-                        characterName.label.alignment = FLabelAlignment.Center;
-                        this.pages[0].subObjects.Add(characterName);
-
-                        var infoLabel = new MenuLabel(this, pages[0], s, new Vector2(-1000f, sp.imagePos.y - 249f - 60f + num2 / 2f), new Vector2(400f, 60f), bigText: true);
-                        infoLabel.label.alignment = FLabelAlignment.Center;
-                        this.pages[0].subObjects.Add(infoLabel);
-
-                        *//*            characterName.label.color = MenuRGB(MenuColors.MediumGrey);
-                                    infoLabel.label.color = MenuRGB(MenuColors.DarkGrey);
-                        */
 
 
             // Setup host / client buttons & general view
@@ -120,6 +75,24 @@ namespace RainMeadow
                 this.pages[0].subObjects.Add(this.hostStartButton);
 
 
+                // Previous
+                this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
+                this.prevButton.OnClick += (_) =>
+                {
+                    ssm.quedSideInput = Math.Max(-3, ssm.quedSideInput - 1);
+                    base.PlaySound(SoundID.MENU_Next_Slugcat);
+                };
+                this.pages[0].subObjects.Add(this.prevButton);
+
+
+                // Next
+                this.nextButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(985f, 50f), 1);
+                this.nextButton.OnClick += (_) =>
+                {
+                    ssm.quedSideInput = Math.Min(3, ssm.quedSideInput + 1);
+                    base.PlaySound(SoundID.MENU_Next_Slugcat);
+                };
+                this.pages[0].subObjects.Add(this.nextButton);
             }
 
             if (!OnlineManager.lobby.isOwner)
@@ -272,24 +245,6 @@ namespace RainMeadow
             clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame; // True to begin
 
 
-            // Previous
-            this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
-            this.prevButton.OnClick += (_) =>
-            {
-                ssm.quedSideInput = Math.Max(-3, ssm.quedSideInput - 1);
-                base.PlaySound(SoundID.MENU_Next_Slugcat);
-            };
-            this.pages[0].subObjects.Add(this.prevButton);
-
-
-            // Next
-            this.nextButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(985f, 50f), 1);
-            this.nextButton.OnClick += (_) =>
-            {
-                ssm.quedSideInput = Math.Min(3, ssm.quedSideInput + 1);
-                base.PlaySound(SoundID.MENU_Next_Slugcat);
-            };
-            this.pages[0].subObjects.Add(this.nextButton);
 
 
             // Back button doesn't highlight?
@@ -363,7 +318,7 @@ namespace RainMeadow
             UpdateCharacterUI();
         }
 
-        public static List<SlugcatStats.Name> AllAvailableCharacters()
+        public static List<SlugcatStats.Name> AllSlugcats()
         {
 
             return SlugcatStats.Name.values.entries.Select(s => new SlugcatStats.Name(s)).ToList();

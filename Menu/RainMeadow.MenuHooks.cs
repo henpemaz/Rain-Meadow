@@ -164,6 +164,10 @@ namespace RainMeadow
                 {
                     if (OnlineManager.lobby.isOwner)
                     {
+
+                        self.slugcatNumber = slug.slug;
+                        
+
                         if (slug.slug == SlugcatStats.Name.White)
                         {
                             sceneID = Menu.MenuScene.SceneID.Slugcat_White; 
@@ -171,7 +175,14 @@ namespace RainMeadow
                             self.slugcatDepth = 3.1000001f;
                         }
 
-                        if (slug.slug == SlugcatStats.Name.Red)
+                        else if (slug.slug == SlugcatStats.Name.Yellow)
+                        {
+                            sceneID = Menu.MenuScene.SceneID.Slugcat_Yellow;
+                            self.sceneOffset = new Vector2(-10f, 100f);
+                            self.slugcatDepth = 3.1000001f;
+                        }
+
+                        else if (slug.slug == SlugcatStats.Name.Red)
                         {
                             sceneID = Menu.MenuScene.SceneID.Slugcat_Red;
                             self.sceneOffset = new Vector2(-10f, 100f);
@@ -188,6 +199,7 @@ namespace RainMeadow
                         sceneID = Menu.MenuScene.SceneID.Landscape_SU;
                         self.sceneOffset = new Vector2(-10f, 100f);
                         self.slugcatDepth = 3.1000001f;
+                        
                     }
 
                 }

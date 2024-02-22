@@ -1,18 +1,20 @@
 ﻿using Menu;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace RainMeadow
 {
-    public class SlugcatCustomSelection : SlugcatSelectMenu.SlugcatPage
+    public partial class SlugcatCustomSelection : SlugcatSelectMenu.SlugcatPage
     {
         public StoryMenu storyCustomMenu;
         public SlugcatStats.Name slug;
         public MenuLabel mainLabel;
         public MenuLabel infoLabel;
-        private string main;
-        private string info;
+        public string text;
+        public string subText;
+        public ValueTuple<string, string> slugDesc;
         public float flashSin;
-        public (SlugcatStats.Name Name, string DisplayName, string Description)[] slugcatDesc;
 
         public SlugcatCustomSelection(StoryMenu storyCustomMenu, SlugcatSelectMenu unusedMenu, int pageIndex, SlugcatStats.Name slug) : base(unusedMenu, null, pageIndex, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer)
         {
@@ -20,17 +22,20 @@ namespace RainMeadow
             this.slug = slug;
             base.AddImage(false);
             this.slugcatImage.menu = storyCustomMenu;
+            
 
-            main = "pain";
-            info = GetDescription();
+            text = "WIP";
+            subText = "WIP";
+            this.slugcatNumber = slug;
+            slugDesc = GetDescription();
+            
 
 
-
-            this.mainLabel = new MenuLabel(storyCustomMenu, this, main, new Vector2(-1000f, this.imagePos.y - 268f), new Vector2(200f, 30f), true, null);
+            this.mainLabel = new MenuLabel(storyCustomMenu, this, slugDesc.Item1, new Vector2(-1000f, this.imagePos.y - 268f), new Vector2(200f, 30f), true, null);
             this.mainLabel.label.alignment = FLabelAlignment.Center;
             this.subObjects.Add(this.mainLabel);
 
-            this.infoLabel = new MenuLabel(storyCustomMenu, this, info, new Vector2(-1000f, this.imagePos.y - 268f - 30f), new Vector2(200f, 30f), true, null);
+            this.infoLabel = new MenuLabel(storyCustomMenu, this, slugDesc.Item2, new Vector2(-1000f, this.imagePos.y - 268f - 40f), new Vector2(200f, 30f), true, null);
             this.infoLabel.label.alignment = FLabelAlignment.Center;
             this.subObjects.Add(this.infoLabel);
 
@@ -56,20 +61,6 @@ namespace RainMeadow
 
         }
 
-        public string GetDescription()
-        {
-            if (slug == SlugcatStats.Name.White)
-            {
-                info = "pain2";
-                return info;
-
-            }
-            if (slug == SlugcatStats.Name.Red)
-            {
-                info = "pain4";
-                return info;
-            }
-            return "";
-        }
     }
+
 }
