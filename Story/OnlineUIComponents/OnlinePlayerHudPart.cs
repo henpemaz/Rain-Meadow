@@ -1,50 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace RainMeadow
 {
-
-    internal abstract class OnlinePlayerHudPart
+    public abstract class OnlinePlayerHudPart
     {
-        public OnlinePlayerIndicator indicator;
-
-        public Vector2 bodyPos;
-
-        public Vector2 lastBodyPos;
-
-        public Vector2 targetPos;
-
-        public Vector2 lastTargetPos;
-
+        public PlayerSpecificOnlineHud owner;
+        public Vector2 pos;
+        public Vector2 lastPos;
         public bool slatedForDeletion;
 
-        public bool hidden;
-
-        public bool lastHidden;
-
-        public bool forceHide;
-
-        public bool knownPos;
-
-        public OnlinePlayerHudPart(OnlinePlayerIndicator indicator)
+        public OnlinePlayerHudPart(PlayerSpecificOnlineHud owner)
         {
-            this.indicator = indicator;
+            this.owner = owner;
         }
 
         public virtual void Update()
         {
+            this.lastPos = this.pos;
         }
 
         public virtual void Draw(float timeStacker)
         {
+
         }
 
         public virtual void ClearSprites()
         {
+
         }
     }
 }

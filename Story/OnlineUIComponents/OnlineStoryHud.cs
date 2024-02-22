@@ -8,11 +8,13 @@ namespace RainMeadow
 {
     public class OnlineStoryHud : HudPart
     {
-        private List<OnlinePlayerIndicator> indicators;
+        private List<PlayerSpecificOnlineHud> indicators;
+        private readonly StoryGameMode storyGameMode;
 
-        public OnlineStoryHud(HUD.HUD hud) : base(hud)
+        public OnlineStoryHud(HUD.HUD hud, StoryGameMode storyGameMode) : base(hud)
         {
             UpdatePlayers();
+            this.storyGameMode = storyGameMode;
         }
 
         public void UpdatePlayers()
@@ -25,7 +27,7 @@ namespace RainMeadow
 
         public void PlayerAdded(StoryClientSettings clientSettings)
         {
-            OnlinePlayerIndicator indicator = new OnlinePlayerIndicator(hud, hud.fContainers[1], clientSettings);
+            PlayerSpecificOnlineHud indicator = new PlayerSpecificOnlineHud(hud, storyGameMode, clientSettings);
             this.indicators.Add(indicator);
             hud.AddPart(indicator);
         }

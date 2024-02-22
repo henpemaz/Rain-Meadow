@@ -47,7 +47,7 @@ namespace RainMeadow
         {
             if (isStoryMode(out var gameMode))
             {
-                self.AddPart(new OnlineStoryHud(self, self.fContainers[1], gameMode));
+                self.AddPart(new OnlineStoryHud(self, gameMode));
             }
 
             orig(self, cam);

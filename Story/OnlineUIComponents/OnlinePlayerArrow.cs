@@ -1,285 +1,130 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using RWCustom;
 using UnityEngine;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using HarmonyLib;
-using HUD;
-using RainMeadow;
-using RWCustom;
-using UnityEngine;
-using RainMeadow;
+
 namespace RainMeadow
 {
-    public class OnlinePlayerArrow : OnlinePointer
+    public class OnlinePlayerArrow : OnlinePlayerHudPart
     {
-        public bool pointing;
-
-        public float blink;
-
-        public int fadeAwayCounter;
-
-        public bool hide;
-
+        public FSprite arrowSprite;
+        public FSprite gradient;
         public FLabel label;
+        public int counter;
+        public int fadeAwayCounter;
+        public float alpha;
+        public float lastAlpha;
+        public float blink;
+        public float lastBlink;
 
-        public int lastRoom = -1;
-
-        public string playerName;
-
-        public int shortcutWaitTime;
-
-        public int initialWaitTime;
-
-        public Color mainColor;
-
-        public Color inverColor;
-
-        public int frequency;
-
-        public bool friendsViewToggle = false;
-
-        public StoryClientSettings personaSettings;
-        public int maxAttempts = 1;
-
-        public List<string> playersWithArrows;
-
-        public OnlinePlayerArrow(OnlinePlayerIndicator jollyHud, string name)
-            : base(jollyHud)
+        public OnlinePlayerArrow(PlayerSpecificOnlineHud owner) : base(owner)
         {
-            this.personaSettings = (StoryClientSettings)OnlineManager.lobby.gameMode.clientSettings;
-
-            RainMeadow.Debug("Adding Player pointer to " + base.PlayerState.playerNumber);
-            bodyPos = new Vector2(0f, 0f);
-            lastBodyPos = bodyPos;
-            blink = 1f;
-            playerName = name;
-            mainColor = personaSettings.bodyColor;
-            inverColor = Color.white; //TODO
-            gradient = new FSprite("Futile_White")
-            {
-                shader = base.indicator.hud.rainWorld.Shaders["FlatLight"],
-                alpha = 0f,
-                x = -1000f,
-                color = inverColor
-            };
-            jollyHud.fContainer.AddChild(gradient);
-            mainSprite = new FSprite("Multiplayer_Arrow");
-            jollyHud.fContainer.AddChild(mainSprite);
-            label = new FLabel(Custom.GetFont(), playerName);
-            jollyHud.fContainer.AddChild(label);
-            initialWaitTime = Player.InitialShortcutWaitTime;
+            this.owner = owner;
+            this.pos = new Vector2(-1000f, -1000f);
+            this.lastPos = this.pos;
+            this.gradient = new FSprite("Futile_White", true);
+            this.gradient.shader = owner.hud.rainWorld.Shaders["FlatLight"];
+            this.gradient.color = new Color(0f, 0f, 0f);
+            owner.hud.fContainers[0].AddChild(this.gradient);
+            this.gradient.alpha = 0f;
+            this.gradient.x = -1000f;
+            this.label = new FLabel(Custom.GetFont(), owner.clientSettings.owner.id.name);
+            this.label.color = owner.clientSettings.SlugcatColor();
+            owner.hud.fContainers[0].AddChild(this.label);
+            this.label.alpha = 0f;
+            this.label.x = -1000f;
+            this.arrowSprite = new FSprite("Multiplayer_Arrow", true);
+            this.arrowSprite.color = owner.clientSettings.SlugcatColor();
+            owner.hud.fContainers[0].AddChild(this.arrowSprite);
+            this.arrowSprite.alpha = 0f;
+            this.arrowSprite.x = -1000f;
+            this.blink = 1f;
         }
 
         public override void Update()
         {
             base.Update();
-            blink = Mathf.Max(0f, blink - 0.0125f);
-            alpha = Custom.LerpAndTick(alpha, Mathf.InverseLerp(80f, 20f, fadeAwayCounter), 0.08f, 71f / (678f * (float)Math.PI));
-            mainColor = indicator.playerColor;
+            this.lastAlpha = this.alpha;
+            this.lastBlink = this.blink;
+            this.blink = Mathf.Max(0f, this.blink - 0.0125f);
 
-            if (indicator.Camera.room == null)
+            if (this.owner.abstractPlayer == null || this.owner.camera.room == null || this.owner.abstractPlayer.Room != this.owner.camera.room.abstractRoom || this.owner.RealizedPlayer == null)
             {
-                hide = true;
-            }
-
-            lastRoom = indicator.Camera.cameraNumber;
-            if (base.PlayerState.permaDead)
-            {
-                slatedForDeletion = true;
-                hide = true;
-            }
-
-            if (playerName == string.Empty)
-            {
-                playerName = "";
-
-                label.text = playerName;
-                size.x = 5 * playerName.Length;
-            }
-
-
-            if (!indicator.PlayerRoomBeingViewed || forceHide || !knownPos)
-            {
-                hide = true;
-            }
-            else
-            {
-                hide = false;
-            }
-
-            if (hide)
-            {
-                alpha = 0f;
-                lastAlpha = 0f;
-                mainColor = indicator.playerColor;
-            }
-
-            pointing = false;
-            if (indicator.RealizedPlayer == null)
-            {
+                this.pos = new Vector2(-1000f, -1000f);
+                this.lastPos = this.pos;
                 return;
             }
 
-            PhysicalObject objectPointed = indicator.RealizedPlayer.objectPointed;
-            if (objectPointed != null && objectPointed.jollyBeingPointedCounter > 35)
+            if (this.owner.RealizedPlayer.room == null)
             {
-                blink = 1f;
-                fadeAwayCounter = 0;
-                timer = 0;
-                pointing = true;
-            }
-
-            if (pointing && timer < 20)
-            {
-                blink = 1f;
-                fadeAwayCounter = 0;
-                timer = 0;
-            }
-
-            if (Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value) || nearEdge || indicator.RealizedPlayer.inShortcut)
-            {
-                friendsViewToggle = true;
-
-            }
-
-            else
-            {
-                friendsViewToggle = false;
-            }
-
-            if (friendsViewToggle)
-            {
-                blink = 1f;
-                fadeAwayCounter = 0;
-                timer = 0;
-            }
-            else
-            {
-                fadeAwayCounter++;
-
-
-            }
-            /*
-
-                        if ((jollyHud.RealizedPlayer.RevealMap || jollyHud.RealizedPlayer.showKarmaFoodRainTime > 0 || nearEdge || jollyHud.RealizedPlayer.inShortcut) && timer > 20)
-                            {
-                                // Keeps the arrow around
-                                blink = 1f;
-                                fadeAwayCounter = 0;
-                                timer = 0;
-                            }
-
-                            if (timer > 10 && !Custom.DistLess(jollyHud.RealizedPlayer.firstChunk.lastPos, jollyHud.RealizedPlayer.firstChunk.pos, 3f))
-                            {
-                                fadeAwayCounter++;
-                            }
-
-                            if (fadeAwayCounter > 0)
-                            {
-                                fadeAwayCounter++;
-                            }
-            */
-
-
-            timer++;
-            frequency++;
-            frequency %= 40;
-            if (timer > 100)
-            {
-                timer = 100;
-            }
-
-            if (fadeAwayCounter > 100)
-            {
-                fadeAwayCounter = 100;
-            }
-
-            try
-            {
-                ShortcutHandler.ShortCutVessel shortCutVessel = indicator.Camera.game.shortcuts?.transportVessels?.FirstOrDefault((ShortcutHandler.ShortCutVessel x) => x.creature == indicator.RealizedPlayer);
-                if (shortCutVessel != null)
+                Vector2? vector = this.owner.camera.game.shortcuts.OnScreenPositionOfInShortCutCreature(this.owner.camera.room, this.owner.RealizedPlayer);
+                if (vector != null)
                 {
-                    shortcutWaitTime = shortCutVessel.wait;
+                    this.pos = vector.Value - this.owner.camera.pos;
                 }
             }
-            catch (Exception ex)
+            else
             {
-                RainMeadow.Debug(ex.ToString());
+                this.pos = Vector2.Lerp(this.owner.RealizedPlayer.bodyChunks[0].pos, this.owner.RealizedPlayer.bodyChunks[1].pos, 0.33333334f) + new Vector2(0f, 60f) - this.owner.camera.pos;
             }
-
-            hidden = Mathf.Abs(alpha) - 0.05f < 0f;
-        }
-
-        public Vector2 ClampScreenEdge(Vector2 input)
-        {
-            input.x = Mathf.Clamp(input.x, screenEdge, indicator.hud.rainWorld.options.ScreenSize.x - (float)screenEdge);
-            input.y = Mathf.Clamp(input.y, screenEdge, indicator.hud.rainWorld.options.ScreenSize.y - (float)screenEdge);
-            return input;
+            this.alpha = Custom.LerpAndTick(this.alpha, Mathf.InverseLerp(80f, 20f, (float)this.fadeAwayCounter), 0.08f, 0.033333335f);
+            if (this.owner.RealizedPlayer.input[0].x != 0 || this.owner.RealizedPlayer.input[0].y != 0 || this.owner.RealizedPlayer.input[0].jmp || this.owner.RealizedPlayer.input[0].thrw || this.owner.RealizedPlayer.input[0].pckp)
+            {
+                this.fadeAwayCounter++;
+            }
+            if (this.counter > 10 && !Custom.DistLess(this.owner.RealizedPlayer.firstChunk.lastPos, this.owner.RealizedPlayer.firstChunk.pos, 3f))
+            {
+                this.fadeAwayCounter++;
+            }
+            if (this.fadeAwayCounter > 0)
+            {
+                this.fadeAwayCounter++;
+                if (this.fadeAwayCounter > 120 && this.alpha == 0f && this.lastAlpha == 0f)
+                {
+                    this.slatedForDeletion = true;
+                }
+            }
+            else if (this.counter > 200)
+            {
+                this.fadeAwayCounter++;
+            }
+            this.counter++;
         }
 
         public override void Draw(float timeStacker)
         {
-            base.Draw(timeStacker);
-
-            Vector2 input = Vector2.Lerp(lastBodyPos, bodyPos, timeStacker) + new Vector2(0.01f, 40f);
-            Vector2 input2 = Vector2.Lerp(lastTargetPos, targetPos, timeStacker) + new Vector2(0.01f, 40f);
-            input = ClampScreenEdge(input);
-            input2 = ClampScreenEdge(input2);
-            float rotation = 0f;
-            if (Custom.Dist(bodyPos, input) > 20f)
+            Vector2 vector = Vector2.Lerp(this.lastPos, this.pos, timeStacker) + new Vector2(0.01f, 0.01f);
+            float num = Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(this.lastAlpha, this.alpha, timeStacker)), 0.7f);
+            this.gradient.x = vector.x;
+            this.gradient.y = vector.y + 10f;
+            this.gradient.scale = Mathf.Lerp(80f, 110f, num) / 16f;
+            this.gradient.alpha = 0.17f * Mathf.Pow(num, 2f);
+            this.arrowSprite.x = vector.x;
+            this.arrowSprite.y = vector.y;
+            this.label.x = vector.x;
+            this.label.y = vector.y + 20f;
+            Color color = owner.clientSettings.SlugcatColor();
+            if (this.counter % 6 < 2 && this.lastBlink > 0f)
             {
-                rotation = Custom.AimFromOneVectorToAnother(bodyPos, input);
-                rotation = Mathf.Round(rotation / 90f) * 90f;
+                if (((Vector3)(Vector4)color).magnitude > 1.56f)
+                {
+                    color = Color.Lerp(color, new Color(0.9f, 0.9f, 0.9f), Mathf.InverseLerp(0f, 0.5f, Mathf.Lerp(this.lastBlink, this.blink, timeStacker)));
+                }
+                else
+                {
+                    color = Color.Lerp(color, new Color(1f, 1f, 1f), Mathf.InverseLerp(0f, 0.5f, Mathf.Lerp(this.lastBlink, this.blink, timeStacker)));
+                }
             }
-
-            if (mainSprite != null)
-            {
-                mainSprite.x = input.x;
-                mainSprite.y = input.y;
-                mainSprite.rotation = rotation;
-            }
-
-            if (label != null)
-            {
-                label.x = input.x;
-                label.y = input2.y + 20f;
-            }
-
-            float num = Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(lastAlpha, alpha, timeStacker)), 0.7f);
-            if (shortcutWaitTime > 0 && !hide)
-            {
-                num = 1f;
-                alpha = 1f;
-                float num2 = (float)frequency / 40f;
-                float t = (float)shortcutWaitTime / (float)initialWaitTime;
-                float num3 = Mathf.Max(0f, Mathf.Pow(Mathf.Lerp(17f, 4f, t), 1.2f));
-                float t2 = 0.5f * (0.8f + Mathf.Sin(num3 * num2));
-                float t3 = Mathf.Lerp(0.01f, 0.6f, t2);
-                mainColor = Color.Lerp(indicator.playerColor, Color.white, t3); // TODO
-            }
-
-            gradient.x = input.x;
-            gradient.y = input.y + 10f;
-            gradient.y = input.y;
-            gradient.scale = Mathf.Lerp(80f, 110f, num) / 16f;
-            gradient.alpha = 0.17f * Mathf.Pow(num, 2f);
-            label.color = mainColor;
-            mainSprite.color = mainColor;
-            label.alpha = (pointing ? 0f : num);
-            mainSprite.alpha = num;
+            this.label.color = color;
+            this.arrowSprite.color = color;
+            this.label.alpha = num;
+            this.arrowSprite.alpha = num;
         }
 
         public override void ClearSprites()
         {
             base.ClearSprites();
-            label.RemoveFromContainer();
-            mainSprite.RemoveFromContainer();
-            gradient.RemoveFromContainer();
+            this.gradient.RemoveFromContainer();
+            this.arrowSprite.RemoveFromContainer();
+            this.label.RemoveFromContainer();
         }
     }
 }

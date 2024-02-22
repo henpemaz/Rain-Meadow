@@ -22,6 +22,8 @@ namespace RainMeadow
         public SlugcatStats.Name playingAs; // not implemented
         public bool readyForWin;
         public string myLastDenPos;
+        internal bool inGame;
+        internal bool isDead;
 
         public StoryClientSettings(Definition entityDefinition) : base(entityDefinition)
         {
@@ -42,6 +44,11 @@ namespace RainMeadow
         protected override EntityState MakeState(uint tick, OnlineResource inResource)
         {
             return new State(this, inResource, tick);
+        }
+
+        internal Color SlugcatColor()
+        {
+            throw new NotImplementedException();
         }
 
         public class State : ClientSettings.State
