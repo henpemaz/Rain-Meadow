@@ -16,7 +16,6 @@ namespace RainMeadow
 
         private EventfulHoldButton hostStartButton;
         private EventfulHoldButton clientWaitingButton;
-        private SlugcatStats.Name playingAs;
 
         private EventfulBigArrowButton prevButton;
         private EventfulBigArrowButton nextButton;
@@ -36,14 +35,11 @@ namespace RainMeadow
         public override MenuScene.SceneID GetScene => null;
         public StoryMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.StoryMenu)
         {
-
-            // TODO: Find the source of the little white half circle on the bottom right
             RainMeadow.DebugMe();
             this.rainEffect = new RainEffect(this, this.pages[0]);
             this.pages[0].subObjects.Add(this.rainEffect);
             this.rainEffect.rainFade = 0.3f;
             this.characterPages = new List<SlugcatSelectMenu.SlugcatPage>();
-
 
             // Initial setup for slugcat menu & pages
             ssm = (SlugcatSelectMenu)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(SlugcatSelectMenu));
@@ -157,9 +153,6 @@ namespace RainMeadow
                 this.rainEffect.rainFade = Mathf.Min(0.3f, this.rainEffect.rainFade + 0.006f);
             }
             personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
-
-            RainMeadow.Debug($"PLAYING AS : {ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber}  ");
-
 
             ssm.lastScroll = ssm.scroll;
             ssm.scroll = ssm.NextScroll;
@@ -332,6 +325,7 @@ namespace RainMeadow
                 .Where(s => !namesToExclude.Contains(s))
                 .Select(s => new SlugcatStats.Name(s))
                 .ToList();
+
 
             return filteredList;
         }
