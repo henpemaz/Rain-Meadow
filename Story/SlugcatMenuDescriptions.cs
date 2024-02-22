@@ -33,7 +33,7 @@ namespace RainMeadow
              else
             {
                 text = "Host is choosing campaign...";
-                subText = $"Please wait until host is ready";
+                subText = "This button becomes available when the host is ready";
             }
             return (text, subText);
 
