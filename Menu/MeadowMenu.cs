@@ -100,6 +100,11 @@ namespace RainMeadow
             {
                 OnlineManager.lobby.gameMode.OnLobbyActive += OnLobbyActive;
             }
+
+            if(manager.musicPlayer != null)
+            {
+                manager.musicPlayer.MenuRequestsSong("me",1,2);
+            }
         }
 
         private void Colorpicker_OnValueChangedEvent()

@@ -78,12 +78,6 @@ namespace RainMeadow
                 {
                     request.from.QueueEvent(new GenericResult.Ok(request)); // this notifies the old owner that the release was a success
                     ParticipantLeft(request.from);
-                    var newOwner = MatchmakingManager.instance.BestTransferCandidate(this, participants);
-                    NewOwner(newOwner); // This notifies all users, if the new owner is active they'll restore the state
-                    if (newOwner != null)
-                    {
-                        newOwner.InvokeRPC(this.Transfered);
-                    }
                     return;
                 }
                 else

@@ -56,7 +56,7 @@ namespace RainMeadow
             }
             if (character == MeadowProgression.Character.Lizard)
             {
-                return "";
+                return "Industrial Complex";
             }
             RainMeadow.Error("no status string for " + this.slugcatNumber);
             return "";
@@ -75,7 +75,7 @@ namespace RainMeadow
             }
             if (character == MeadowProgression.Character.Lizard)
             {
-                return "";
+                return "4h46";
             }
             RainMeadow.Error("no status string for " + this.character);
             return "";
@@ -83,20 +83,7 @@ namespace RainMeadow
 
         public string GetCharacterName()
         {
-            if (character == MeadowProgression.Character.Slugcat)
-            {
-                return "SLUGCAT";
-            }
-            if (character == MeadowProgression.Character.Cicada)
-            {
-                return "SQUIDCADA";
-            }
-            if (character == MeadowProgression.Character.Lizard)
-            {
-                return "LIZARD";
-            }
-            RainMeadow.Error("no name string for " + this.character);
-            return "";
+            return MeadowProgression.characterData[character].displayName;
         }
 
         public override void GrafUpdate(float timeStacker)
