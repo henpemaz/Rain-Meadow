@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using UnityEngine;
+using MoreSlugcats;
 using static RainMeadow.RainMeadow;
 
 namespace RainMeadow
@@ -322,14 +323,42 @@ namespace RainMeadow
         public static List<SlugcatStats.Name> AllSlugcats()
         {
             List<string> namesToExclude = new List<string> { "Night", "MeadowOnline", "MeadowOnlineRemote" }; // TODO: follow up on these
-            var filteredList = SlugcatStats.Name.values.entries
-                .Where(s => !namesToExclude.Contains(s))
-                .Select(s => new SlugcatStats.Name(s))
-                .ToList();
+            var filteredList = new List<SlugcatStats.Name>();
 
 
+            if (!ModManager.MSC)
+            {
+                filteredList = SlugcatStats.Name.values.entries
+                    .Where(s => !namesToExclude.Contains(s))
+                    .Select(s => new SlugcatStats.Name(s))
+                    .ToList();
+
+            }
+            else // I have more slugs for you
+            {
+                filteredList.Add(SlugcatStats.Name.White);
+                filteredList.Add(SlugcatStats.Name.Red);
+                filteredList.Add(SlugcatStats.Name.Yellow);
+
+                // TODO: MSC isUnlocked check
+
+/*              filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Spear);
+ *              
+                filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Artificer);
+
+                filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Gourmand);
+
+                filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Rivulet);
+
+                filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Spear);*/
+
+                // filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Saint);
+
+            }
             return filteredList;
+
         }
+
 
         private void BindSettings()
         {
