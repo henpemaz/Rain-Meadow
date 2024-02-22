@@ -44,7 +44,7 @@ namespace RainMeadow
 
         public override SlugcatStats.Name LoadWorldAs(RainWorldGame game)
         {
-            return SlugcatStats.Name.White;
+            return storyAvatarSettings.playingAs;
         }
 
         public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)

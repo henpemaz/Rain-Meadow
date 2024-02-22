@@ -162,7 +162,7 @@ namespace RainMeadow
 
                 if (self.slugcatNumber == RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer && self is SlugcatCustomSelection slug)
                 {
-                    if (OnlineManager.lobby.isOwner)
+                    if (OnlineManager.lobby.isOwner) // Host
                     {
 
                         self.slugcatNumber = slug.slug;
@@ -188,6 +188,8 @@ namespace RainMeadow
                             self.sceneOffset = new Vector2(-10f, 100f);
                             self.slugcatDepth = 3.1000001f;
                         }
+
+
                         else
                         {
                             sceneID = Menu.MenuScene.SceneID.NewDeath;
@@ -196,7 +198,7 @@ namespace RainMeadow
                         }
                     } else // Client
                     {
-                        sceneID = Menu.MenuScene.SceneID.Landscape_SU;
+                        sceneID = Menu.MenuScene.SceneID.Landscape_SU; // TODO: Retrieve current save's region
                         self.sceneOffset = new Vector2(-10f, 100f);
                         self.slugcatDepth = 3.1000001f;
                         

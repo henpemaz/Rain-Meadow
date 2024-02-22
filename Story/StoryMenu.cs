@@ -16,7 +16,7 @@ namespace RainMeadow
 
         private EventfulHoldButton hostStartButton;
         private EventfulHoldButton clientWaitingButton;
-
+        private SlugcatStats.Name playingAs;
 
         private EventfulBigArrowButton prevButton;
         private EventfulBigArrowButton nextButton;
@@ -30,12 +30,14 @@ namespace RainMeadow
         private List<SlugcatSelectMenu.SlugcatPage> characterPages;
         private EventfulSelectOneButton[] playerButtons;
         int skinIndex;
-        private OpTinyColorPicker colorpicker;
-        private OpTinyColorPicker colorpicker2;
+        private OpTinyColorPicker bodyColorPicker;
+        private OpTinyColorPicker eyeColorPicker;
 
         public override MenuScene.SceneID GetScene => null;
         public StoryMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.StoryMenu)
         {
+
+            // TODO: Find the source of the little white half circle on the bottom right
             RainMeadow.DebugMe();
             this.rainEffect = new RainEffect(this, this.pages[0]);
             this.pages[0].subObjects.Add(this.rainEffect);
@@ -54,24 +56,30 @@ namespace RainMeadow
             ssm.pages = pages;
 
 
+
             ssm.slugcatColorOrder = AllSlugcats();
             sp.imagePos = new Vector2(683f, 484f);
 
+
+
             for (int j = 0; j < ssm.slugcatColorOrder.Count; j++)
             {
-                this.characterPages.Add(new SlugcatCustomSelection(this, ssm, 1 + j, ssm.slugcatColorOrder[j]));  
+                this.characterPages.Add(new SlugcatCustomSelection(this, ssm, 1 + j, ssm.slugcatColorOrder[j]));
                 this.pages.Add(this.characterPages[j]);
 
             }
 
 
             // Setup host / client buttons & general view
+
             SetupMenuItems();
 
             if (OnlineManager.lobby.isOwner)
             {
 
-
+                this.hostStartButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
+                this.hostStartButton.OnClick += (_) => { StartGame(); };
+                hostStartButton.buttonBehav.greyedOut = false;
                 this.pages[0].subObjects.Add(this.hostStartButton);
 
 
@@ -93,13 +101,17 @@ namespace RainMeadow
                     base.PlaySound(SoundID.MENU_Next_Slugcat);
                 };
                 this.pages[0].subObjects.Add(this.nextButton);
+
             }
 
             if (!OnlineManager.lobby.isOwner)
             {
 
-                this.pages[0].RemoveSubObject(hostStartButton);
                 this.pages[0].subObjects.Add(this.backButton);
+
+                this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
+                this.clientWaitingButton.OnClick += (_) => { StartGame(); };
+                clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame; // True to begin
 
                 this.pages[0].subObjects.Add(this.clientWaitingButton);
 
@@ -108,10 +120,10 @@ namespace RainMeadow
             SteamSetup();
             SetupCharacterCustomization();
             UpdateCharacterUI();
-            
 
 
-            if (OnlineManager.lobby.isAvailable)
+
+            if (OnlineManager.lobby.isActive)
             {
                 OnLobbyActive();
             }
@@ -144,7 +156,9 @@ namespace RainMeadow
             {
                 this.rainEffect.rainFade = Mathf.Min(0.3f, this.rainEffect.rainFade + 0.006f);
             }
+            personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
 
+            RainMeadow.Debug($"PLAYING AS : {ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber}  ");
 
 
             ssm.lastScroll = ssm.scroll;
@@ -154,7 +168,11 @@ namespace RainMeadow
                 this.UpdateCharacterUI();
             }
 
-            this.clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame;
+            if (!OnlineManager.lobby.isOwner)
+            {
+                this.clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame;
+            }
+
 
             if (ssm.scroll == 0f && ssm.lastScroll == 0f)
             {
@@ -213,36 +231,26 @@ namespace RainMeadow
             this.pages[0].subObjects.Add(bodyLabel);
 
 
-            var eyeLabebl = new MenuLabel(this, mainPage, this.Translate("Eye color"), new Vector2(1181, 500), new(0, 30), false);
-            eyeLabebl.label.alignment = FLabelAlignment.Right;
-            this.pages[0].subObjects.Add(eyeLabebl);
+            var eyeLabel = new MenuLabel(this, mainPage, this.Translate("Eye color"), new Vector2(1181, 500), new(0, 30), false);
+            eyeLabel.label.alignment = FLabelAlignment.Right;
+            this.pages[0].subObjects.Add(eyeLabel);
 
-            colorpicker = new OpTinyColorPicker(this, new Vector2(1094, 553), "FFFFFF");
-            var wrapper = new UIelementWrapper(this.tabWrapper, colorpicker);
-            tabWrapper._tab.AddItems(colorpicker.colorPicker);
-            colorpicker.colorPicker.wrapper = wrapper;
-            colorpicker.colorPicker.Hide();
-            colorpicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
+            bodyColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 553), "FFFFFF");
+            var wrapper = new UIelementWrapper(this.tabWrapper, bodyColorPicker);
+            tabWrapper._tab.AddItems(bodyColorPicker.colorPicker);
+            bodyColorPicker.colorPicker.wrapper = wrapper;
+            bodyColorPicker.colorPicker.Hide();
+            bodyColorPicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
 
-            colorpicker2 = new OpTinyColorPicker(this, new Vector2(1094, 500), "FFFFFF");
-            var wrapper2 = new UIelementWrapper(this.tabWrapper, colorpicker2);
-            tabWrapper._tab.AddItems(colorpicker2.colorPicker);
-            colorpicker2.colorPicker.wrapper = wrapper2;
-            colorpicker2.colorPicker.Hide();
-            colorpicker2.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
+            eyeColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 500), "000000");
+            var wrapper2 = new UIelementWrapper(this.tabWrapper, eyeColorPicker);
+            tabWrapper._tab.AddItems(eyeColorPicker.colorPicker);
+            eyeColorPicker.colorPicker.wrapper = wrapper2;
+            eyeColorPicker.colorPicker.Hide();
+            eyeColorPicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
         }
         private void SetupMenuItems()
         {
-
-            // Host button
-            this.hostStartButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
-            this.hostStartButton.OnClick += (_) => { StartGame(); };
-            hostStartButton.buttonBehav.greyedOut = false;
-
-            // TODO: clientWaitingButton needs to not require x/y shift to function. Look into .Remove() on subObjects.
-            this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
-            this.clientWaitingButton.OnClick += (_) => { StartGame(); };
-            clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame; // True to begin
 
 
 
@@ -261,7 +269,6 @@ namespace RainMeadow
             // Player lobby label
             this.pages[0].subObjects.Add(new MenuLabel(this, mainPage, this.Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true));
 
-            // Checkbox
 
         }
 
@@ -320,15 +327,20 @@ namespace RainMeadow
 
         public static List<SlugcatStats.Name> AllSlugcats()
         {
+            List<string> namesToExclude = new List<string> { "Night", "MeadowOnline", "MeadowOnlineRemote" }; // TODO: follow up on these
+            var filteredList = SlugcatStats.Name.values.entries
+                .Where(s => !namesToExclude.Contains(s))
+                .Select(s => new SlugcatStats.Name(s))
+                .ToList();
 
-            return SlugcatStats.Name.values.entries.Select(s => new SlugcatStats.Name(s)).ToList();
+            return filteredList;
         }
 
         private void BindSettings()
         {
             this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
-            personaSettings.playingAs = SlugcatStats.Name.White;
-            personaSettings.bodyColor = Color.magenta;
+            personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
+            personaSettings.bodyColor = Color.white;
             personaSettings.eyeColor = Color.black;
 
         }
@@ -340,8 +352,8 @@ namespace RainMeadow
 
         private void Colorpicker_OnValueChangedEvent()
         {
-            if (personaSettings != null) personaSettings.bodyColor = colorpicker.valuecolor;
-            if (personaSettings != null) personaSettings.eyeColor = colorpicker2.valuecolor;
+            if (personaSettings != null) personaSettings.bodyColor = bodyColorPicker.valuecolor;
+            if (personaSettings != null) personaSettings.eyeColor = eyeColorPicker.valuecolor;
 
         }
 
