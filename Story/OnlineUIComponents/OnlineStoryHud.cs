@@ -8,18 +8,22 @@ namespace RainMeadow
 {
     public class OnlineStoryHud : HudPart
     {
-        private List<PlayerSpecificOnlineHud> indicators;
+        private List<PlayerSpecificOnlineHud> indicators = new();
+        private RoomCamera camera;
         private readonly StoryGameMode storyGameMode;
 
-        public OnlineStoryHud(HUD.HUD hud, StoryGameMode storyGameMode) : base(hud)
+        public OnlineStoryHud(HUD.HUD hud, RoomCamera camera, StoryGameMode storyGameMode) : base(hud)
         {
-            UpdatePlayers();
+            this.camera = camera;
             this.storyGameMode = storyGameMode;
+            UpdatePlayers();
+
+            // todo display icons near foodbar
         }
 
         public void UpdatePlayers()
         {
-            List<StoryClientSettings> clientSettings = OnlineManager.lobby.entities.OfType<StoryClientSettings>().ToList();
+            List<StoryClientSettings> clientSettings = OnlineManager.lobby.clientSettings.Values.OfType<StoryClientSettings>().ToList();
             var currentSettings = indicators.Select(i => i.clientSettings);
             clientSettings.Except(currentSettings).Do(PlayerAdded);
             currentSettings.Except(clientSettings).Do(PlayerRemoved);
@@ -27,13 +31,15 @@ namespace RainMeadow
 
         public void PlayerAdded(StoryClientSettings clientSettings)
         {
-            PlayerSpecificOnlineHud indicator = new PlayerSpecificOnlineHud(hud, storyGameMode, clientSettings);
+            RainMeadow.DebugMe();
+            PlayerSpecificOnlineHud indicator = new PlayerSpecificOnlineHud(hud, camera, storyGameMode, clientSettings);
             this.indicators.Add(indicator);
             hud.AddPart(indicator);
         }
 
         public void PlayerRemoved(StoryClientSettings clientSettings)
         {
+            RainMeadow.DebugMe();
             var indicator = this.indicators.First(i => i.clientSettings == clientSettings);
             this.indicators.Remove(indicator);
             indicator.slatedForDeletion = true;

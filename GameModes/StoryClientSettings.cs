@@ -22,8 +22,8 @@ namespace RainMeadow
         public SlugcatStats.Name playingAs; // not implemented
         public bool readyForWin;
         public string myLastDenPos;
-        internal bool inGame;
-        internal bool isDead;
+        public bool inGame;
+        public bool isDead;
 
         public StoryClientSettings(Definition entityDefinition) : base(entityDefinition)
         {
@@ -48,7 +48,7 @@ namespace RainMeadow
 
         internal Color SlugcatColor()
         {
-            throw new NotImplementedException();
+            return bodyColor;
         }
 
         public class State : ClientSettings.State
@@ -59,8 +59,12 @@ namespace RainMeadow
             public Color eyeColor;
             [OnlineField]
             public SlugcatStats.Name playingAs;
-            [OnlineField(group ="win")]
+            [OnlineField(group = "game")]
             public bool readyForWin;
+            [OnlineField(group = "game")]
+            public bool inGame;
+            [OnlineField(group = "game")]
+            public bool isDead;
 
             public State() { }
             public State(StoryClientSettings onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
@@ -69,6 +73,8 @@ namespace RainMeadow
                 eyeColor = onlineEntity.eyeColor;
                 playingAs = onlineEntity.playingAs;
                 readyForWin = onlineEntity.readyForWin;
+                inGame = onlineEntity.inGame;
+                isDead = onlineEntity.isDead;
             }
 
             public override void ReadTo(OnlineEntity onlineEntity)
@@ -79,6 +85,8 @@ namespace RainMeadow
                 avatarSettings.eyeColor = eyeColor;
                 avatarSettings.playingAs = playingAs;
                 avatarSettings.readyForWin = readyForWin;
+                avatarSettings.inGame = inGame;
+                avatarSettings.isDead = isDead;
             }
         }
         public class SlugcatCustomization : AvatarCustomization

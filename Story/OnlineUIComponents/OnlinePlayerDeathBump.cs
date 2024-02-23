@@ -15,6 +15,15 @@ namespace RainMeadow
 {
     public class OnlinePlayerDeathBump : OnlinePlayerHudPart
     {
+        public FSprite symbolSprite;
+        public FSprite gradient;
+        public float alpha;
+        public float lastAlpha;
+        public int counter = -20;
+        private float blink;
+        private float lastBlink;
+        public bool removeAsap;
+
         public bool PlayerHasExplosiveSpearInThem
         {
             get
@@ -40,10 +49,7 @@ namespace RainMeadow
 
         public void SetPosToPlayer()
         {
-            if (this.owner.RealizedPlayer != null)
-            {
-                this.pos = Vector2.Lerp(this.owner.RealizedPlayer.mainBodyChunk.pos, this.owner.RealizedPlayer.bodyChunks[1].pos, 0.2f) - this.owner.camera.pos + new Vector2(0f, 30f);
-            }
+            this.pos = owner.drawpos + new Vector2(0, 30f);
             this.pos.x = Mathf.Clamp(this.pos.x, 30f, this.owner.camera.sSize.x - 30f);
             this.pos.y = Mathf.Clamp(this.pos.y, 30f, this.owner.camera.sSize.y - 30f);
             this.lastPos = this.pos;
@@ -52,7 +58,6 @@ namespace RainMeadow
         public OnlinePlayerDeathBump(PlayerSpecificOnlineHud owner) : base(owner)
         {
             this.owner = owner;
-            this.pos = owner.cornerPos + new Vector2(40f * (float)owner.flip, 2f);
             this.SetPosToPlayer();
             this.gradient = new FSprite("Futile_White", true);
             this.gradient.shader = owner.hud.rainWorld.Shaders["FlatLight"];
@@ -164,21 +169,5 @@ namespace RainMeadow
             this.gradient.RemoveFromContainer();
             this.symbolSprite.RemoveFromContainer();
         }
-
-        public FSprite symbolSprite;
-
-        public FSprite gradient;
-
-        public float alpha;
-
-        public float lastAlpha;
-
-        public int counter = -20;
-
-        private float blink;
-
-        private float lastBlink;
-
-        public bool removeAsap;
     }
 }

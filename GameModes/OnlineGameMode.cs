@@ -188,7 +188,7 @@ namespace RainMeadow
 
         internal virtual void Customize(Creature creature, OnlineCreature oc)
         {
-            if (lobby.playerAvatars.Any(a=>a == oc.id))
+            if (lobby.playerAvatars.Any(a=>a.Value == oc.id))
             {
                 RainMeadow.Debug($"Customizing avatar {creature} for {oc.owner}");
                 var settings = lobby.entities.Values.First(em => em.entity is ClientSettings avs && avs.avatarId == oc.id).entity as ClientSettings;

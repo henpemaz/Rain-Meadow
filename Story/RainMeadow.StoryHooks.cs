@@ -45,12 +45,11 @@ namespace RainMeadow
         // Using the SinglePlayerHUD for OnlineStory because that's the only entry point besides hooking the Arena data, which I don't want. 
         private void HUD_InitSinglePlayerHud(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam)
         {
+            orig(self, cam);
             if (isStoryMode(out var gameMode))
             {
-                self.AddPart(new OnlineStoryHud(self, gameMode));
+                self.AddPart(new OnlineStoryHud(self, cam, gameMode));
             }
-
-            orig(self, cam);
         }
 
         private void RainWorldGame_GoToDeathScreen(On.RainWorldGame.orig_GoToDeathScreen orig, RainWorldGame self)
@@ -76,7 +75,7 @@ namespace RainMeadow
         {
             if (isStoryMode(out var gameMode))
             {
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
                 {
                     
                     if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
@@ -219,7 +218,7 @@ namespace RainMeadow
 
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
                 {
                     if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
                     if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
@@ -247,7 +246,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 int regionGateZone = -1;
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
                 {
                     if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
                     if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
@@ -277,7 +276,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars)
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
                 {
                     if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
                     if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)

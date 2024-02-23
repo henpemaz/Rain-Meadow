@@ -46,46 +46,9 @@ namespace RainMeadow
             this.lastBlink = this.blink;
             this.blink = Mathf.Max(0f, this.blink - 0.0125f);
 
-            if (this.owner.abstractPlayer == null || this.owner.camera.room == null || this.owner.abstractPlayer.Room != this.owner.camera.room.abstractRoom || this.owner.RealizedPlayer == null)
-            {
-                this.pos = new Vector2(-1000f, -1000f);
-                this.lastPos = this.pos;
-                return;
-            }
+            this.pos = owner.drawpos + new Vector2(0f, 60f);
+            this.alpha = Custom.LerpAndTick(this.alpha, owner.needed ? 1 : 0, 0.08f, 0.033333335f);
 
-            if (this.owner.RealizedPlayer.room == null)
-            {
-                Vector2? vector = this.owner.camera.game.shortcuts.OnScreenPositionOfInShortCutCreature(this.owner.camera.room, this.owner.RealizedPlayer);
-                if (vector != null)
-                {
-                    this.pos = vector.Value - this.owner.camera.pos;
-                }
-            }
-            else
-            {
-                this.pos = Vector2.Lerp(this.owner.RealizedPlayer.bodyChunks[0].pos, this.owner.RealizedPlayer.bodyChunks[1].pos, 0.33333334f) + new Vector2(0f, 60f) - this.owner.camera.pos;
-            }
-            this.alpha = Custom.LerpAndTick(this.alpha, Mathf.InverseLerp(80f, 20f, (float)this.fadeAwayCounter), 0.08f, 0.033333335f);
-            if (this.owner.RealizedPlayer.input[0].x != 0 || this.owner.RealizedPlayer.input[0].y != 0 || this.owner.RealizedPlayer.input[0].jmp || this.owner.RealizedPlayer.input[0].thrw || this.owner.RealizedPlayer.input[0].pckp)
-            {
-                this.fadeAwayCounter++;
-            }
-            if (this.counter > 10 && !Custom.DistLess(this.owner.RealizedPlayer.firstChunk.lastPos, this.owner.RealizedPlayer.firstChunk.pos, 3f))
-            {
-                this.fadeAwayCounter++;
-            }
-            if (this.fadeAwayCounter > 0)
-            {
-                this.fadeAwayCounter++;
-                if (this.fadeAwayCounter > 120 && this.alpha == 0f && this.lastAlpha == 0f)
-                {
-                    this.slatedForDeletion = true;
-                }
-            }
-            else if (this.counter > 200)
-            {
-                this.fadeAwayCounter++;
-            }
             this.counter++;
         }
 

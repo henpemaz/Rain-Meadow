@@ -10,6 +10,7 @@ namespace RainMeadow
     {
         public bool enteringShortCut;
         internal Creature realizedCreature => apo.realizedObject as Creature;
+        public AbstractCreature abstractCreature => apo as AbstractCreature;
 
         public OnlineCreature(OnlineCreatureDefinition def, AbstractCreature ac) : base(def, ac)
         {
