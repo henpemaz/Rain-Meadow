@@ -140,6 +140,8 @@ namespace RainMeadow
         private void StartGame()
         {
             RainMeadow.DebugMe();
+            personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
+            RainMeadow.Debug("PLAYING AS: " + personaSettings.playingAs);
             manager.arenaSitting = null;
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
@@ -154,7 +156,6 @@ namespace RainMeadow
             {
                 this.rainEffect.rainFade = Mathf.Min(0.3f, this.rainEffect.rainFade + 0.006f);
             }
-            personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
 
             ssm.lastScroll = ssm.scroll;
             ssm.scroll = ssm.NextScroll;
