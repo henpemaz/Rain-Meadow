@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Menu;
 
 
@@ -6,9 +7,12 @@ namespace RainMeadow
 {
     public partial class SlugcatCustomSelection : SlugcatSelectMenu.SlugcatPage
 
-    {     
+    {
+
         private ValueTuple<string, string> GetDescription()
         {
+
+
             if (OnlineManager.lobby.isOwner)
             {
                 if (slugcatNumber == SlugcatStats.Name.White)
@@ -30,13 +34,14 @@ namespace RainMeadow
                 }
                 subText = RWCustom.Custom.ReplaceLineDelimeters(subText);
             }
-             else
+            else
             {
-                text = "Host is choosing campaign...";
-                subText = "This button becomes available when the host is ready";
+                text = menu.Translate($"Current host: {OnlineManager.lobby.owner.id.name} ");
+                subText = menu.Translate($"This button becomes available when {OnlineManager.lobby.owner.id.name} is ready");
             }
             return (text, subText);
 
         }
+
     }
 }
