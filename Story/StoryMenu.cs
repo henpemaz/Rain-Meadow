@@ -92,6 +92,7 @@ namespace RainMeadow
 
 
                 // Next
+
                 this.nextButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(985f, 50f), 1);
                 this.nextButton.OnClick += (_) =>
                 {
@@ -105,6 +106,13 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner)
             {
 
+
+                // Back button doesn't highlight?
+                this.backButton = new SimplerButton(this, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f));
+                this.backButton.OnClick += (_) =>
+                {
+                    manager.RequestMainProcessSwitch(this.backTarget);
+                };
                 this.pages[0].subObjects.Add(this.backButton);
 
                 this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
@@ -141,6 +149,7 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
             personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
+            Ext_SlugcatStatsName.OnlineSessionPlayer = personaSettings.playingAs;
             RainMeadow.Debug("PLAYING AS: " + personaSettings.playingAs);
             manager.arenaSitting = null;
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
@@ -249,16 +258,6 @@ namespace RainMeadow
         {
 
 
-
-
-            // Back button doesn't highlight?
-            this.backButton = new SimplerButton(this, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f));
-            this.backButton.OnClick += (_) =>
-            {
-                manager.RequestMainProcessSwitch(this.backTarget);
-            };
-
-
             // Music
             this.mySoundLoopID = SoundID.MENU_Main_Menu_LOOP;
 
@@ -291,8 +290,6 @@ namespace RainMeadow
             friendsList[0] = new EventfulSelectOneButton(this, mainPage, Translate("Invite Friends"), "friendsList", new(1150f, 50f), new(110, 50), friendsList, 0);
             this.pages[0].subObjects.Add(friendsList[0]);
 
-            // TODO: Add Friend's list back when I'm done testing
-
             friendsList[0].OnClick += (_) =>
             {
                 SteamFriends.ActivateGameOverlay("friends");
@@ -323,17 +320,15 @@ namespace RainMeadow
 
         public static List<SlugcatStats.Name> AllSlugcats()
         {
-            List<string> namesToExclude = new List<string> { "Night", "MeadowOnline", "MeadowOnlineRemote" }; // TODO: follow up on these
+          // List<string> namesToExclude = new List<string> { "Night", "MeadowOnline", "MeadowOnlineRemote" }; // TODO: follow up on these
             var filteredList = new List<SlugcatStats.Name>();
 
 
             if (!ModManager.MSC)
             {
-                filteredList = SlugcatStats.Name.values.entries
-                    .Where(s => !namesToExclude.Contains(s))
-                    .Select(s => new SlugcatStats.Name(s))
-                    .ToList();
-
+                filteredList.Add(SlugcatStats.Name.White);
+                filteredList.Add(SlugcatStats.Name.Yellow);// TODO: The most recent entry in the list is what the player becomes despite selecting another slugcat
+                filteredList.Add(SlugcatStats.Name.Red);
             }
             else // I have more slugs for you
             {

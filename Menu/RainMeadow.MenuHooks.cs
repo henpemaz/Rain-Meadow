@@ -21,9 +21,11 @@ namespace RainMeadow
             On.ProcessManager.PostSwitchMainProcess += ProcessManager_PostSwitchMainProcess;
 
             IL.Menu.SlugcatSelectMenu.SlugcatPage.AddImage += SlugcatPage_AddImage;
+
             On.Menu.MenuScene.BuildScene += MenuScene_BuildScene;
 
         }
+
 
         private void MenuScene_BuildScene(On.Menu.MenuScene.orig_BuildScene orig, MenuScene self)
         {
@@ -115,7 +117,6 @@ namespace RainMeadow
 
         private void SlugcatPage_AddImage(ILContext il)
         {
-            var SlugData = new List<SlugcatStats.Name>();
             var c = new ILCursor(il);
             c.Index = il.Instrs.Count - 1;
             c.GotoPrev(MoveType.Before,
@@ -160,29 +161,27 @@ namespace RainMeadow
 
                 }
 
-                if (self.slugcatNumber == RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer && self is SlugcatCustomSelection slug)
+                if (self.slugcatNumber == RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer && self is SlugcatCustomSelection slugcatCustom)
                 {
                     if (OnlineManager.lobby.isOwner) // Host
                     {
 
-                        self.slugcatNumber = slug.slug;
-
-
-                        if (slug.slug == SlugcatStats.Name.White)
+                        if (slugcatCustom.slug == SlugcatStats.Name.White)
                         {
                             sceneID = Menu.MenuScene.SceneID.Slugcat_White;
                             self.sceneOffset = new Vector2(-10f, 100f);
                             self.slugcatDepth = 3.1000001f;
+                            
                         }
 
-                        else if (slug.slug == SlugcatStats.Name.Yellow)
+                        else if (slugcatCustom.slug == SlugcatStats.Name.Yellow)
                         {
                             sceneID = Menu.MenuScene.SceneID.Slugcat_Yellow;
                             self.sceneOffset = new Vector2(-10f, 100f);
                             self.slugcatDepth = 3.1000001f;
                         }
 
-                        else if (slug.slug == SlugcatStats.Name.Red)
+                        else if (slugcatCustom.slug == SlugcatStats.Name.Red)
                         {
                             sceneID = Menu.MenuScene.SceneID.Slugcat_Red;
                             self.sceneOffset = new Vector2(-10f, 100f);
@@ -191,21 +190,21 @@ namespace RainMeadow
                         else if (ModManager.MSC)
                         {
 
-                            if (slug.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet)
+                            if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet)
                             {
 
                                 sceneID = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID.Slugcat_Rivulet;
                                 self.sceneOffset = new Vector2(-10f, 100f);
                                 self.slugcatDepth = 3.1000001f;
                             }
-                            else if (slug.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer)
+                            else if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer)
                             {
 
                                 sceneID = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID.Slugcat_Artificer;
                                 self.sceneOffset = new Vector2(-10f, 100f);
                                 self.slugcatDepth = 3.1000001f;
                             }
-                            else if (slug.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
+                            else if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
                             {
 
                                 sceneID = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID.Slugcat_Saint;
@@ -213,7 +212,7 @@ namespace RainMeadow
                                 self.slugcatDepth = 3.1000001f;
                             }
 
-                            else if (slug.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear)
+                            else if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear)
                             {
 
                                 sceneID = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID.Slugcat_Spear;
@@ -228,6 +227,7 @@ namespace RainMeadow
                                 self.slugcatDepth = 3.1000001f;
                             }
                         }
+                       
                     }
                     else // Client
                     {

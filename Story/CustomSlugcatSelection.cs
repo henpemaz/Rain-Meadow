@@ -17,18 +17,18 @@ namespace RainMeadow
         public ValueTuple<string, string> slugDesc;
         public float flashSin;
 
-
         public SlugcatCustomSelection(StoryMenu storyCustomMenu, SlugcatSelectMenu unusedMenu, int pageIndex, SlugcatStats.Name slug) : base(unusedMenu, null, pageIndex, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer)
         {
             this.storyCustomMenu = storyCustomMenu;
             this.slug = slug;
             base.AddImage(false);
             this.slugcatImage.menu = storyCustomMenu;
-
             text = "WIP";
             subText = "WIP";
+
             this.slugcatNumber = slug;
-            Ext_SlugcatStatsName.OnlineSessionPlayer = this.slugcatNumber;
+
+            // Ext_SlugcatStatsName.OnlineSessionPlayer = personaSettings.playingAs; 
 
             slugDesc = GetDescription();
             
