@@ -337,20 +337,21 @@ namespace RainMeadow
             else // I have more slugs for you
             {
                 filteredList.Add(SlugcatStats.Name.White);
-                filteredList.Add(SlugcatStats.Name.Red);
                 filteredList.Add(SlugcatStats.Name.Yellow);
+                filteredList.Add(SlugcatStats.Name.Red);
+
 
                 // TODO: MSC isUnlocked check
 
-/*              filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Spear);
- *              
-                filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Artificer);
+                /*              filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Spear);
+                 *              
+                                filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Artificer);
 
-                filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Gourmand);
+                                filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Gourmand);
 
-                filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Rivulet);
+                                filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Rivulet);
 
-                filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Spear);*/
+                                filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Spear);*/
 
                 // filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Saint);
 
