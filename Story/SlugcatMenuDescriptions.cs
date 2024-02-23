@@ -36,12 +36,15 @@ namespace RainMeadow
             }
             else
             {
-                text = menu.Translate($"Current host: {OnlineManager.lobby.owner.id.name} ");
-                subText = menu.Translate($"This button becomes available when {OnlineManager.lobby.owner.id.name} is ready");
+                text = menu.Translate($"Current campaign:  ");
+                subText = menu.Translate($"This button becomes available when the host {OnlineManager.lobby.owner.id.name} is ready");
             }
             return (text, subText);
 
         }
+
+
+
 
     }
 }
