@@ -22,7 +22,7 @@ namespace RainMeadow
         public RoomCamera camera;
         public Vector2 drawpos;
         public bool found;
-        private Vector2 pointDir;
+        public Vector2 pointDir;
         internal bool needed;
 
         public float DeadFade
@@ -121,12 +121,21 @@ namespace RainMeadow
                     }
                     else
                     {
-                        Vector2? shortcutpos = camera.game.shortcuts.OnScreenPositionOfInShortCutCreature(camera.room, player) - camera.pos;
+                        Vector2? shortcutpos = camera.game.shortcuts.OnScreenPositionOfInShortCutCreature(camera.room, player);
                         if (shortcutpos != null)
                         {
                             found = true;
                             rawPos = shortcutpos.Value - camera.pos;
                         }
+                    }
+                }
+
+                if (found)
+                {
+                    this.drawpos = new Vector2(Mathf.Clamp(rawPos.x, 30f, this.camera.sSize.x - 30f), Mathf.Clamp(rawPos.y, 30f, this.camera.sSize.y - 30f));
+                    if (drawpos != rawPos)
+                    {
+                        pointDir = (rawPos - drawpos).normalized;
                     }
                 }
             }
@@ -138,16 +147,27 @@ namespace RainMeadow
                     if(abstractPlayer.pos.room == connections[i])
                     {
                         found = true;
-                        rawPos = camera.room.MiddleOfTile(camera.room.LocalCoordinateOfNode(i)) - camera.pos;
+                        var shortcutpos = camera.room.LocalCoordinateOfNode(i);
+                        rawPos = camera.room.MiddleOfTile(shortcutpos) - camera.pos;
+                        this.drawpos = new Vector2(Mathf.Clamp(rawPos.x, 30f, this.camera.sSize.x - 30f), Mathf.Clamp(rawPos.y, 30f, this.camera.sSize.y - 30f));
+                        pointDir = camera.room.ShorcutEntranceHoleDirection(shortcutpos.Tile).ToVector2() * -1;
                         break;
                     }
                 }
                 // not found, do not render?
                 // todo use worldpos OR find shortcut that least to room player is in with pathfinding
+
+                if (found)
+                {
+                    this.drawpos = new Vector2(Mathf.Clamp(rawPos.x, 30f, this.camera.sSize.x - 30f), Mathf.Clamp(rawPos.y, 30f, this.camera.sSize.y - 30f));
+                    if (drawpos != rawPos)
+                    {
+                        pointDir = (rawPos - drawpos).normalized;
+                    }
+                }
             }
 
-            this.drawpos = new Vector2(Mathf.Clamp(rawPos.x, 30f, this.camera.sSize.x - 30f), Mathf.Clamp(rawPos.y, 30f, this.camera.sSize.y - 30f));
-
+            
 
             if (this.antiDeathBumpFlicker > 0)
             {

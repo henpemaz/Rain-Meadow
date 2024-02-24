@@ -62,6 +62,7 @@ namespace RainMeadow
             this.gradient.alpha = 0.17f * Mathf.Pow(num, 2f);
             this.arrowSprite.x = vector.x;
             this.arrowSprite.y = vector.y;
+            this.arrowSprite.rotation = RWCustom.Custom.VecToDeg(owner.pointDir * -1);
             this.label.x = vector.x;
             this.label.y = vector.y + 20f;
             Color color = owner.clientSettings.SlugcatColor();
