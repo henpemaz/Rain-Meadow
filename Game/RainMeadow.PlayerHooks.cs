@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+
 namespace RainMeadow;
 
 public partial class RainMeadow
@@ -12,9 +15,124 @@ public partial class RainMeadow
         On.Player.Grabability += PlayerOnGrabability;
         On.Player.AddFood += Player_AddFood;
         On.Player.AddQuarterFood += Player_AddQuarterFood;
+        On.Mushroom.BitByPlayer += Mushroom_BitByPlayer;
+
+        On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites1;
 
         On.SlugcatStats.ctor += SlugcatStatsOnctor;
         On.AbstractCreature.ctor += AbstractCreature_ctor;
+
+        On.Player.Update += Player_Update1;
+    }
+
+    private void Player_Update1(On.Player.orig_Update orig, Player self, bool eu)
+    {
+        if (OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
+        {
+            if (RainMeadow.tracing && oe.id.originalOwner == 2)
+            {
+
+                RainMeadow.Trace($"player debug 1 {oe}");
+                RainMeadow.Trace($"{oe.id}");
+                RainMeadow.Trace($"{oe.owner}");
+                RainMeadow.Trace($"{oe.owner.inLobbyId}");
+                RainMeadow.Trace($"animation: {self.animation}");
+                RainMeadow.Trace($"animationFrame: {self.animationFrame}");
+                RainMeadow.Trace($"bodyMode: {self.bodyMode}");
+                RainMeadow.Trace($"CollideWithObjects: {self.CollideWithObjects}");
+                RainMeadow.Trace($"CollideWithSlopes: {self.CollideWithSlopes}");
+                RainMeadow.Trace($"CollideWithTerrain: {self.CollideWithTerrain}");
+                RainMeadow.Trace($"collisionLayer: {self.collisionLayer}");
+                RainMeadow.Trace($"corridorDrop: {self.corridorDrop}");
+                RainMeadow.Trace($"diveForce: {self.diveForce}");
+                RainMeadow.Trace($"goIntoCorridorClimb: {self.goIntoCorridorClimb}");
+                RainMeadow.Trace($"gravity: {self.gravity}");
+                RainMeadow.Trace($"initSlideCounter: {self.initSlideCounter}");
+                RainMeadow.Trace($"input: {self.input[0].x}");
+                RainMeadow.Trace($"input: {self.input[0].y}");
+                RainMeadow.Trace($"rollCounter: {self.rollCounter}");
+                RainMeadow.Trace($"shootUpCounter: {self.shootUpCounter}");
+                RainMeadow.Trace($"slideCounter: {self.slideCounter}");
+                RainMeadow.Trace($"standing: {self.standing}");
+                RainMeadow.Trace($"stopRollingCounter: {self.stopRollingCounter}");
+                RainMeadow.Trace($"straightUpOnHorizontalBeam: {self.straightUpOnHorizontalBeam}");
+                RainMeadow.Trace($"timeSinceInCorridorMode: {self.timeSinceInCorridorMode}");
+                RainMeadow.Trace($"upperBodyFramesOffGround: {self.upperBodyFramesOffGround}");
+                RainMeadow.Trace($"upperBodyFramesOnGround: {self.upperBodyFramesOnGround}");
+                RainMeadow.Trace($"verticalCorridorSlideCounter: {self.verticalCorridorSlideCounter}");
+                RainMeadow.Trace($"wallSlideCounter: {self.wallSlideCounter}");
+                RainMeadow.Trace($"wantToJump: {self.wantToJump}");
+                RainMeadow.Trace($"WANTTOSTAND: {self.WANTTOSTAND}");
+                RainMeadow.Trace($"enteringShortCut.HasValue: {self.enteringShortCut.HasValue}");
+                RainMeadow.Trace($"enteringShortCut.Value: {(self.enteringShortCut.HasValue ? self.enteringShortCut : "null")}");
+                RainMeadow.Trace($"stun: {self.stun}");
+                RainMeadow.Trace($"dead: {self.dead}");
+                RainMeadow.Trace($"inShortcut: {self.inShortcut}");
+            }
+        }
+        orig(self, eu);
+
+        if (OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe2))
+        {
+            if (RainMeadow.tracing && oe2.id.originalOwner == 2)
+            {
+                RainMeadow.Trace($"player debug 2 {oe}");
+                RainMeadow.Trace($"animation: {self.animation}");
+                RainMeadow.Trace($"animationFrame: {self.animationFrame}");
+                RainMeadow.Trace($"bodyMode: {self.bodyMode}");
+                RainMeadow.Trace($"CollideWithObjects: {self.CollideWithObjects}");
+                RainMeadow.Trace($"CollideWithSlopes: {self.CollideWithSlopes}");
+                RainMeadow.Trace($"CollideWithTerrain: {self.CollideWithTerrain}");
+                RainMeadow.Trace($"collisionLayer: {self.collisionLayer}");
+                RainMeadow.Trace($"corridorDrop: {self.corridorDrop}");
+                RainMeadow.Trace($"diveForce: {self.diveForce}");
+                RainMeadow.Trace($"goIntoCorridorClimb: {self.goIntoCorridorClimb}");
+                RainMeadow.Trace($"gravity: {self.gravity}");
+                RainMeadow.Trace($"initSlideCounter: {self.initSlideCounter}");
+                RainMeadow.Trace($"input: {self.input[0].x}");
+                RainMeadow.Trace($"input: {self.input[0].y}");
+                RainMeadow.Trace($"rollCounter: {self.rollCounter}");
+                RainMeadow.Trace($"shootUpCounter: {self.shootUpCounter}");
+                RainMeadow.Trace($"slideCounter: {self.slideCounter}");
+                RainMeadow.Trace($"standing: {self.standing}");
+                RainMeadow.Trace($"stopRollingCounter: {self.stopRollingCounter}");
+                RainMeadow.Trace($"straightUpOnHorizontalBeam: {self.straightUpOnHorizontalBeam}");
+                RainMeadow.Trace($"timeSinceInCorridorMode: {self.timeSinceInCorridorMode}");
+                RainMeadow.Trace($"upperBodyFramesOffGround: {self.upperBodyFramesOffGround}");
+                RainMeadow.Trace($"upperBodyFramesOnGround: {self.upperBodyFramesOnGround}");
+                RainMeadow.Trace($"verticalCorridorSlideCounter: {self.verticalCorridorSlideCounter}");
+                RainMeadow.Trace($"wallSlideCounter: {self.wallSlideCounter}");
+                RainMeadow.Trace($"wantToJump: {self.wantToJump}");
+                RainMeadow.Trace($"WANTTOSTAND: {self.WANTTOSTAND}");
+                RainMeadow.Trace($"enteringShortCut.HasValue: {self.enteringShortCut.HasValue}");
+                RainMeadow.Trace($"enteringShortCut.Value: {(self.enteringShortCut.HasValue ? self.enteringShortCut : "null")}");
+                RainMeadow.Trace($"stun: {self.stun}");
+                RainMeadow.Trace($"dead: {self.dead}");
+                RainMeadow.Trace($"inShortcut: {self.inShortcut}");
+
+                RainMeadow.Trace(Environment.StackTrace);
+            }
+        }
+    }
+
+    private void PlayerGraphics_DrawSprites1(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
+    {
+        if(OnlineManager.lobby != null)
+        {
+            try
+            {
+                orig(self, sLeaser, rCam, timeStacker, camPos);
+            }
+            catch (System.Exception e)
+            {
+                RainMeadow.Error(e);
+            }
+        }
+        else
+        {
+            orig(self, sLeaser, rCam, timeStacker, camPos);
+        }
+        
     }
 
     private void Player_AddQuarterFood(On.Player.orig_AddQuarterFood orig, Player self)
@@ -43,8 +161,17 @@ public partial class RainMeadow
 
             if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                OnlineManager.lobby.owner.InvokeRPC(RPCs.AddFood, add);
+                OnlineManager.lobby.owner.InvokeRPC(RPCs.AddFood, (short)add);
             }
+        }
+    }
+
+    private void Mushroom_BitByPlayer(On.Mushroom.orig_BitByPlayer orig, Mushroom self, Creature.Grasp grasp, bool eu)
+    {
+        orig(self, grasp, eu);
+        if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+        {
+            OnlineManager.lobby.owner.InvokeRPC(RPCs.AddMushroomCounter);
         }
     }
 
@@ -66,6 +193,7 @@ public partial class RainMeadow
     {
         if (OnlineManager.lobby != null)
         {
+            // this could probably be reworked to be a single callback to gamemode, instead of 2
             sSpawningAvatar = true;
             AbstractCreature ac = OnlineManager.lobby.gameMode.SpawnAvatar(self, location);
             if (ac == null) ac = orig(self, player1, player2, player3, player4, location);
@@ -74,6 +202,10 @@ public partial class RainMeadow
             if(OnlineCreature.map.TryGetValue(ac, out var onlineCreature))
             {
                 OnlineManager.lobby.gameMode.SetAvatar(onlineCreature as OnlineCreature);
+            }
+            else
+            {
+                throw new InvalidProgrammerException($"Can't find OnlineCreature for {ac}");
             }
 
             return ac;

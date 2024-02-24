@@ -1,9 +1,13 @@
-﻿using HUD;
-using Mono.Cecil;
+﻿using Mono.Cecil;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
+using RWCustom;
 using System;
+using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -11,16 +15,128 @@ namespace RainMeadow
     {
         private void MeadowHooks()
         {
-            MeadowCustomization.EnableCicada();
-            MeadowCustomization.EnableLizard();
+            CicadaController.EnableCicada();
+            LizardController.EnableLizard();
+            ScavengerController.EnableScavenger();
 
-            On.RoomCamera.Update += RoomCamera_Update;
+            On.RoomCamera.Update += RoomCamera_Update; // init meadow hud
 
-            IL.HUD.Map.ctor += Map_OwnerFixup;
-            IL.HUD.Map.CreateDiscoveryTextureFromVisitedRooms += Map_OwnerFixup;
+            IL.HUD.Map.ctor += Map_OwnerFixup; // support non-slug owner
+            IL.HUD.Map.CreateDiscoveryTextureFromVisitedRooms += Map_OwnerFixup; // support non-slug owner
 
-            On.RainWorldGame.AllowRainCounterToTick += RainWorldGame_AllowRainCounterToTick;
-            On.ShelterDoor.Close += ShelterDoor_Close;
+            On.RegionGate.ctor += RegionGate_ctor;
+            On.RegionGate.PlayersInZone += RegionGate_PlayersInZone1;
+            On.RegionGate.PlayersStandingStill += RegionGate_PlayersStandingStill;
+            On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide1;
+
+            On.RainWorldGame.AllowRainCounterToTick += RainWorldGame_AllowRainCounterToTick; // timer stuck
+            On.ShelterDoor.Close += ShelterDoor_Close; // door stuck
+            On.OverWorld.LoadFirstWorld += OverWorld_LoadFirstWorld; // timer stuck past cycle start
+
+            On.AbstractCreature.ChangeRooms += AbstractCreature_ChangeRooms; // displayer follow creature
+
+            On.Room.LoadFromDataString += Room_LoadFromDataString1; // places of spawning items
+
+            new Hook(typeof(RegionGate).GetProperty("MeetRequirement").GetGetMethod(), this.RegionGate_MeetRequirement);
+            new Hook(typeof(WaterGate).GetProperty("EnergyEnoughToOpen").GetGetMethod(), this.RegionGate_EnergyEnoughToOpen);
+            new Hook(typeof(ElectricGate).GetProperty("EnergyEnoughToOpen").GetGetMethod(), this.RegionGate_EnergyEnoughToOpen);
+        }
+
+        public delegate bool orig_RegionGateBool(RegionGate self);
+        public bool RegionGate_MeetRequirement(orig_RegionGateBool orig, RegionGate self)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                return true;
+            }
+            return orig(self);
+        }
+
+        public bool RegionGate_EnergyEnoughToOpen(orig_RegionGateBool orig, RegionGate self)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                return true;
+            }
+            return orig(self);
+        }
+
+
+        private void RegionGate_ctor(On.RegionGate.orig_ctor orig, RegionGate self, Room room)
+        {
+            orig(self, room);
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                self.unlocked = true;
+            }
+        }
+
+        private bool RegionGate_AllPlayersThroughToOtherSide1(On.RegionGate.orig_AllPlayersThroughToOtherSide orig, RegionGate self)
+        {
+            if(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+            {
+                if (mgm.avatar.creature.pos.room == self.room.abstractRoom.index && (!self.letThroughDir || mgm.avatar.creature.pos.x < self.room.TileWidth / 2 + 3) && (self.letThroughDir || mgm.avatar.creature.pos.x > self.room.TileWidth / 2 - 4))
+                {
+                    return false;
+                }
+                return true;
+            }
+            return orig(self);
+        }
+
+        private bool RegionGate_PlayersStandingStill(On.RegionGate.orig_PlayersStandingStill orig, RegionGate self)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+            {
+                if(CreatureController.creatureControllers.TryGetValue(mgm.avatar.creature, out var c))
+                {
+                    return c.touchedNoInputCounter > 20;
+                }
+            }
+            return orig(self);
+        }
+
+        private int RegionGate_PlayersInZone1(On.RegionGate.orig_PlayersInZone orig, RegionGate self)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+            {
+                if (CreatureController.creatureControllers.TryGetValue(mgm.avatar.creature, out var c))
+                {
+                    return self.DetectZone(c.creature.abstractCreature);
+                }
+            }
+            return orig(self);
+        }
+
+        public static ConditionalWeakTable<Room, string> line5 = new();
+        private void Room_LoadFromDataString1(On.Room.orig_LoadFromDataString orig, Room self, string[] lines)
+        {
+            orig(self, lines);
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm && RoomSession.map.TryGetValue(self.abstractRoom, out var rs))
+            {
+                line5.Add(self, lines[5]);
+            }
+        }
+
+        private void AbstractCreature_ChangeRooms(On.AbstractCreature.orig_ChangeRooms orig, AbstractCreature self, WorldCoordinate newCoord)
+        {
+            orig(self, newCoord);
+            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
+            {
+                if (OnlineManager.lobby.gameMode is MeadowGameMode && self.realizedCreature is Creature c && EmoteDisplayer.map.TryGetValue(c, out var displayer))
+                {
+                    displayer.ChangeRooms(newCoord);
+                }
+            }
+        }
+
+        private void OverWorld_LoadFirstWorld(On.OverWorld.orig_LoadFirstWorld orig, OverWorld self)
+        {
+            orig(self);
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                self.activeWorld.rainCycle.timer = 800;
+            }
         }
 
         private void ShelterDoor_Close(On.ShelterDoor.orig_Close orig, ShelterDoor self)
@@ -69,7 +185,7 @@ namespace RainMeadow
                     i => i.MatchBrfalse(out skipToEnd)
                     );
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((HUD.Map map) => map.hud.owner.GetOwnerType() != MeadowCustomization.CreatureController.controlledCreatureHudOwner);
+                c.EmitDelegate((HUD.Map map) => map.hud.owner.GetOwnerType() != CreatureController.controlledCreatureHudOwner);
                 c.Emit(OpCodes.Brtrue, vanilla);
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit<HUD.HudPart>(OpCodes.Ldfld, "hud");
@@ -98,9 +214,12 @@ namespace RainMeadow
                     {
                         self.ReturnFContainer("HUD"),
                         self.ReturnFContainer("HUD2")
-                    }, self.room.game.rainWorld, owner is Player player? player : MeadowCustomization.creatureController.TryGetValue(owner.abstractCreature, out var controller) ? controller : throw new InvalidProgrammerException("Not player nor controlled creature"));
+                    }, self.room.game.rainWorld, owner is Player player? player : CreatureController.creatureControllers.TryGetValue(owner.abstractCreature, out var controller) ? controller : throw new InvalidProgrammerException("Not player nor controlled creature"));
 
-                    MeadowCustomization.InitMeadowHud(self);
+                    var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
+                    self.hud.AddPart(new HUD.TextPrompt(self.hud)); // game assumes this never null
+                    self.hud.AddPart(new HUD.Map(self.hud, new HUD.Map.MapData(self.room.world, self.room.game.rainWorld))); // game assumes this too :/
+                    self.hud.AddPart(new EmoteHandler(self.hud, mgm.avatar, (MeadowAvatarCustomization)RainMeadow.creatureCustomizations.GetValue(mgm.avatar.realizedCreature, (c) => throw new InvalidProgrammerException("Creature doesn't have customization"))));
                 }
             }
             orig(self);

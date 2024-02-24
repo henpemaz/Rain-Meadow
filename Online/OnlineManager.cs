@@ -10,7 +10,7 @@ namespace RainMeadow
     public class OnlineManager : MainLoopProcess
     {
         public static OnlineManager instance;
-        public static Serializer serializer = new Serializer(16000);
+        public static Serializer serializer = new Serializer(32000);
         public static List<ResourceSubscription> subscriptions;
         public static List<EntityFeed> feeds;
         public static Dictionary<OnlineEntity.EntityId, OnlineEntity> recentEntities;
@@ -20,6 +20,7 @@ namespace RainMeadow
         public static OnlinePlayer mePlayer;
         public static List<OnlinePlayer> players;
         public static Lobby lobby;
+
         public static LobbyInfo currentlyJoiningLobby;
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
@@ -99,13 +100,29 @@ namespace RainMeadow
         {
             if (lobby != null)
             {
+#if TRACING
+                if (RainMeadow.tracing && players.Count == 1)
+                {
+                    var ls0 = lobby.GetState(0);
+                    var ls1 = lobby.GetState(1);
+                    var ds = ls1.Delta(ls0);
+                    mePlayer.OutgoingStates.Enqueue(ds);
+                    serializer.WriteData(mePlayer);
+                }
+#endif
+
                 foreach (OnlinePlayer player in players)
                 {
-                    player.Updade();
+                    player.Update();
                 }
 
                 mePlayer.tick++;
                 ProcessSelfEvents();
+
+                if (lobby.isActive)
+                {
+                    lobby.Tick(mePlayer.tick);
+                }
 
                 // Prepare outgoing messages
                 foreach (var subscription in subscriptions)
@@ -123,6 +140,9 @@ namespace RainMeadow
                 {
                     SendData(player);
                 }
+//#if TRACING
+                RainMeadow.tracing = false; // cleanup
+//#endif
             }
         }
 
@@ -131,7 +151,7 @@ namespace RainMeadow
             if (toPlayer.isMe)
                 return;
 
-            if (toPlayer.needsAck || toPlayer.OutgoingEvents.Any() || toPlayer.OutgoingStates.Any())
+            if (toPlayer.needsAck || toPlayer.OutgoingEvents.Count > 0 || toPlayer.OutgoingStates.Count > 0)
             {
                 NetIO.SendSessionData(toPlayer);
             }
@@ -205,22 +225,36 @@ namespace RainMeadow
         {
             try
             {
-                if (state is OnlineResource.ResourceState resourceState && resourceState.resource != null && (resourceState.resource.isAvailable || resourceState.resource.isWaitingForState))
+                if (state is OnlineResource.ResourceState resourceState)
                 {
-                    //RainMeadow.Debug($"Processing {resourceState} for {resourceState.resource}");
-                    resourceState.resource.ReadState(resourceState);
-                }
-                else if (state is EntityFeedState entityFeedState && entityFeedState.inResource != null && entityFeedState.inResource.isAvailable)
-                {
-                    var ent = entityFeedState.entityState.entityId.FindEntity();
-                    if(ent != null)
+                    if (resourceState.resource != null && (resourceState.resource.isAvailable || resourceState.resource.isWaitingForState || resourceState.resource.isPending))
                     {
-                        //RainMeadow.Debug($"Processing {entityFeedState} for {ent}");
-                        ent.ReadState(entityFeedState);
+                        RainMeadow.Trace($"Processing {resourceState} for {resourceState.resource}");
+                        resourceState.resource.ReadState(resourceState);
                     }
-                    else
+                    else // resource unloaded or not available
                     {
-                        RainMeadow.Error($"Entity {entityFeedState.entityState.entityId} not found for incoming state from {entityFeedState.entityState.from} in {entityFeedState.inResource}");
+                        RainMeadow.Trace($"Couldn't process {resourceState} for {resourceState.resource?.ToString() ?? "null"}");
+                    }
+                }
+                else if (state is EntityFeedState entityFeedState)
+                {
+                    if (entityFeedState.inResource != null && entityFeedState.inResource.isAvailable)
+                    {
+                        var ent = entityFeedState.entityState.entityId.FindEntity();
+                        if (ent != null)
+                        {
+                            RainMeadow.Trace($"Processing {entityFeedState} for {ent}");
+                            ent.ReadState(entityFeedState);
+                        }
+                        else
+                        {
+                            RainMeadow.Error($"Entity {entityFeedState.entityState.entityId} not found for incoming state from {entityFeedState.entityState.from} in {entityFeedState.inResource}");
+                        }
+                    }
+                    else // resource unloaded or not available
+                    {
+                        RainMeadow.Trace($"Couldn't process {entityFeedState} for {entityFeedState.inResource?.ToString() ?? "null"}");
                     }
                 }
                 else
@@ -230,6 +264,19 @@ namespace RainMeadow
             }
             catch (Exception e)
             {
+                RainMeadow.Error($"Error reading state {state}");
+                if (state is OnlineResource.ResourceState resourceState && resourceState.resource != null && (resourceState.resource.isAvailable || resourceState.resource.isWaitingForState || resourceState.resource.isPending))
+                {
+                    RainMeadow.Error(resourceState.resource);
+                }
+                else if (state is EntityFeedState entityFeedState && entityFeedState.inResource != null && entityFeedState.inResource.isAvailable)
+                {
+                    var ent = entityFeedState.entityState.entityId.FindEntity();
+                    RainMeadow.Error(entityFeedState.inResource);
+                    RainMeadow.Error(entityFeedState.entityState);
+                    RainMeadow.Error(entityFeedState.entityState.entityId);
+                    RainMeadow.Error(ent);
+                }
                 RainMeadow.Error(e);
             }
         }

@@ -214,6 +214,13 @@ namespace RainMeadow
 
         public override void Process()
         {
+            if(!handler.isStatic && target == null)
+            {
+                RainMeadow.Error($"Target of RPC not found for " + handler.summary);
+                from.QueueEvent(new GenericResult.Error(this));
+                return;
+            }
+
             RainMeadow.Debug($"Processing RPC: {handler.summary}");
             if (handler.eventArgIndex > -1)
             {
@@ -221,13 +228,20 @@ namespace RainMeadow
                 newArgs.Insert(handler.eventArgIndex, this);
                 args = newArgs.ToArray();
             }
+            try
+            {
+                var nout = from.OutgoingEvents.Count;
+                var result = handler.method.Invoke(target, args);
+                if (from.OutgoingEvents.Count != nout && from.OutgoingEvents.Any(e => e is GenericResult gr && gr.referencedEvent == this)) return;
 
-            var nout = from.OutgoingEvents.Count;
-            var result = handler.method.Invoke(target, args);
-            if (from.OutgoingEvents.Count != nout && from.OutgoingEvents.Any(e => e is GenericResult gr && gr.referencedEvent == this)) return;
-
-            if (result is GenericResult res) from.QueueEvent(res);
-            else from.QueueEvent(new GenericResult.Ok(this));
+                if (result is GenericResult res) from.QueueEvent(res);
+                else from.QueueEvent(new GenericResult.Ok(this));
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error($"Error handing RPC {handler.method.Name} {e}");
+                from.QueueEvent(new GenericResult.Error(this));
+            }
         }
 
         public event Action<GenericResult> OnResolve;

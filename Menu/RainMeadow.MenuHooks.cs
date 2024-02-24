@@ -6,6 +6,8 @@ using System.IO;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using Menu;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -14,10 +16,13 @@ namespace RainMeadow
         private void MenuHooks()
         {
             On.Menu.MainMenu.ctor += MainMenu_ctor;
+            //On.Menu.InputOptionsMenu.ctor += InputOptionsMenu_ctor;
+
             On.ProcessManager.PostSwitchMainProcess += ProcessManager_PostSwitchMainProcess;
 
             IL.Menu.SlugcatSelectMenu.SlugcatPage.AddImage += SlugcatPage_AddImage;
             On.Menu.MenuScene.BuildScene += MenuScene_BuildScene;
+            
         }
 
         private void MenuScene_BuildScene(On.Menu.MenuScene.orig_BuildScene orig, MenuScene self)
@@ -36,9 +41,9 @@ namespace RainMeadow
                 }
                 else
                 {
-                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "bkg", new Vector2(0f, 0f), 3.8f, MenuDepthIllustration.MenuShader.Normal));
-                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "mg", new Vector2(0f, 0f), 2.9f, MenuDepthIllustration.MenuShader.Normal));
-                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "squit", new Vector2(0f, 0f), 2.1f, MenuDepthIllustration.MenuShader.LightEdges));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmsquid bg", new Vector2(0f, 0f), 3.8f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmsquid mg", new Vector2(0f, 0f), 2.9f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmsquid squit", new Vector2(0f, 0f), 2.1f, MenuDepthIllustration.MenuShader.LightEdges));
                     (self as InteractiveMenuScene).idleDepths.Add(3.2f);
                     (self as InteractiveMenuScene).idleDepths.Add(2.2f);
                     (self as InteractiveMenuScene).idleDepths.Add(2.1f);
@@ -55,10 +60,29 @@ namespace RainMeadow
                 }
                 else
                 {
-                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "bg", new Vector2(0f, 0f), 3.5f, MenuDepthIllustration.MenuShader.Normal));
-                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "liz2", new Vector2(0f, 0f), 2.4f, MenuDepthIllustration.MenuShader.Normal));
-                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "liz1", new Vector2(0f, 0f), 2.2f, MenuDepthIllustration.MenuShader.Normal));
-                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "fgplants", new Vector2(0f, 0f), 2.1f, MenuDepthIllustration.MenuShader.LightEdges));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmliz bg", new Vector2(0f, 0f), 3.5f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmliz liz2", new Vector2(0f, 0f), 2.4f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmliz liz1", new Vector2(0f, 0f), 2.2f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmliz fgplants", new Vector2(0f, 0f), 2.1f, MenuDepthIllustration.MenuShader.LightEdges));
+                    (self as InteractiveMenuScene).idleDepths.Add(3.2f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.2f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.1f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.0f);
+                    (self as InteractiveMenuScene).idleDepths.Add(1.5f);
+                }
+            }
+            if (self.sceneID == RainMeadow.Ext_SceneID.Slugcat_MeadowScav)
+            {
+                self.sceneFolder = "Scenes" + Path.DirectorySeparatorChar.ToString() + "meadow - scav";
+                if (self.flatMode)
+                {
+                    self.AddIllustration(new MenuIllustration(self.menu, self, self.sceneFolder, "MeadowScav - Flat", new Vector2(683f, 384f), false, true));
+                }
+                else
+                {
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmscav bg", new Vector2(0f, 0f), 3.5f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmscav scav", new Vector2(0f, 0f), 2.2f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmscav fg", new Vector2(0f, 0f), 2.1f, MenuDepthIllustration.MenuShader.LightEdges));
                     (self as InteractiveMenuScene).idleDepths.Add(3.2f);
                     (self as InteractiveMenuScene).idleDepths.Add(2.2f);
                     (self as InteractiveMenuScene).idleDepths.Add(2.1f);
@@ -79,7 +103,7 @@ namespace RainMeadow
             if (File.Exists(path2))
             {
                 string[] array3 = File.ReadAllLines(path2);
-                
+
                 for (int num3 = 0; num3 < array3.Length && num3 < self.depthIllustrations.Count; num3++)
                 {
                     self.depthIllustrations[num3].pos.x = float.Parse(Regex.Split(RWCustom.Custom.ValidateSpacedDelimiter(array3[num3], ","), ", ")[0], NumberStyles.Any, CultureInfo.InvariantCulture);
@@ -91,6 +115,7 @@ namespace RainMeadow
 
         private void SlugcatPage_AddImage(ILContext il)
         {
+            var SlugData = new List<SlugcatStats.Name>();
             var c = new ILCursor(il);
             c.Index = il.Instrs.Count - 1;
             c.GotoPrev(MoveType.Before,
@@ -100,7 +125,8 @@ namespace RainMeadow
             c.MoveAfterLabels();
             c.Emit(OpCodes.Ldarg_0);
             c.Emit(OpCodes.Ldloca, 0);
-            c.EmitDelegate((SlugcatSelectMenu.SlugcatPage self, ref MenuScene.SceneID sceneID) => {
+            c.EmitDelegate((SlugcatSelectMenu.SlugcatPage self, ref MenuScene.SceneID sceneID) =>
+            {
                 if (self.slugcatNumber == RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer && self is MeadowCharacterSelectPage mcsp)
                 {
                     if (mcsp.character == MeadowProgression.Character.Slugcat)
@@ -109,18 +135,29 @@ namespace RainMeadow
                         self.sceneOffset = new Vector2(-10f, 100f);
                         self.slugcatDepth = 3.1000001f;
                     }
-                    if (mcsp.character == MeadowProgression.Character.Cicada)
+                    else if (mcsp.character == MeadowProgression.Character.Cicada)
                     {
                         sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowSquidcicada;
                         self.sceneOffset = new Vector2(-10f, 100f);
                         self.slugcatDepth = 3.1000001f;
                     }
-                    if (mcsp.character == MeadowProgression.Character.Lizard)
+                    else if (mcsp.character == MeadowProgression.Character.Lizard)
                     {
                         sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowLizard;
                         self.sceneOffset = new Vector2(-10f, 100f);
                         self.slugcatDepth = 3.1000001f;
                     }
+                    else if (mcsp.character == MeadowProgression.Character.Scavenger)
+                    {
+                        sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowScav;
+                        self.sceneOffset = new Vector2(-10f, 100f);
+                        self.slugcatDepth = 3.1000001f;
+                    }
+                    else
+                    {
+                        throw new InvalidProgrammerException("implement me");
+                    }
+
                 }
             });
         }
@@ -139,6 +176,10 @@ namespace RainMeadow
             {
                 self.currentMainLoop = new MeadowMenu(self);
             }
+            if (ID == Ext_ProcessID.StoryMenu) 
+            {
+                self.currentMainLoop = new StoryMenu(self);
+            }
             if (ID == Ext_ProcessID.LobbyMenu)
             {
                 self.currentMainLoop = new LobbyMenu(self);
@@ -152,7 +193,8 @@ namespace RainMeadow
                 {
                     if (args[i] == "+connect_lobby")
                     {
-                        if (args.Length > i + 1 && ulong.TryParse(args[i + 1], out var id)) {
+                        if (args.Length > i + 1 && ulong.TryParse(args[i + 1], out var id))
+                        {
                             Debug($"joining lobby with id {id} from the command line");
                             MatchmakingManager.instance.JoinLobby(new LobbyInfo(new CSteamID(id), "", "", 0));
                         }
@@ -167,6 +209,21 @@ namespace RainMeadow
 #endif
             orig(self, ID);
         }
+
+/*        private void InputOptionsMenu_ctor(On.Menu.InputOptionsMenu.orig_ctor orig, InputOptionsMenu self, ProcessManager manager)
+        {
+
+            List<string> inputLabelTextsList = new List<string>(new string[9] { "Pause", "Map", "Pick up / Eat", "Jump", "Throw", "Left", "Up", "Right", "Down" });
+            inputLabelTextsList.Add("View Friends");
+            string[] inputLabelTexts = inputLabelTextsList.ToArray();
+           
+            self.inputLabelTexts = inputLabelTexts;
+
+
+            orig(self, manager);
+
+        }*/
+
 
         private void MainMenu_ctor(On.Menu.MainMenu.orig_ctor orig, MainMenu self, ProcessManager manager, bool showRegionSpecificBkg)
         {

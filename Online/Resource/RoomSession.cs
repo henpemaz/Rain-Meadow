@@ -9,7 +9,7 @@ namespace RainMeadow
         public static ConditionalWeakTable<AbstractRoom, RoomSession> map = new();
 
         public WorldSession worldSession => super as WorldSession;
-        public override World World => worldSession.world;
+        public World World => worldSession.world;
 
         public RoomSession(WorldSession ws, AbstractRoom absroom)
         {
@@ -39,7 +39,8 @@ namespace RainMeadow
             {
                 if (ent is AbstractPhysicalObject apo)
                 {
-                    ApoEnteringRoom(apo, apo.pos);
+                    if (OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(worldSession, apo)) worldSession.ApoEnteringWorld(apo);
+                    if (OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(this, apo)) ApoEnteringRoom(apo, apo.pos);
                 }
             }
         }
@@ -48,7 +49,23 @@ namespace RainMeadow
         {
             if (abstractOnDeactivate)
             {
+                for (int i = 0; i < absroom.entities.Count; i++)
+                {
+                    AbstractWorldEntity? item = absroom.entities[i];
+                    if(item is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var ent))
+                    {
+                        ent.beingMoved = true;
+                    }
+                }
                 absroom.Abstractize();
+                for (int i = 0; i < absroom.entities.Count; i++)
+                {
+                    AbstractWorldEntity? item = absroom.entities[i];
+                    if (item is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var ent))
+                    {
+                        ent.beingMoved = false;
+                    }
+                }
                 abstractOnDeactivate = false;
             }
         }

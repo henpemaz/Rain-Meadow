@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Reflection;
 using System.Security.Permissions;
+using UnityEngine;
 
 [assembly: AssemblyVersion(RainMeadow.RainMeadow.MeadowVersionStr)]
 #pragma warning disable CS0618
@@ -12,7 +13,7 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.0.45";
+        public const string MeadowVersionStr = "0.0.55";
         public static RainMeadow instance;
         private bool init;
 
@@ -83,6 +84,9 @@ namespace RainMeadow
         {
             try
             {
+//#if TRACING
+                tracing |= Input.GetKeyDown("l");
+//#endif
                 orig(self);
             }
             catch (Exception e)
@@ -114,24 +118,59 @@ namespace RainMeadow
                 MeadowProgression.InitializeBuiltinTypes();
                 sw.Stop();
                 RainMeadow.Debug($"MeadowProgression.InitializeBuiltinTypes: {sw.Elapsed}");
-                
+
+                EmoteHandler.InitializeBuiltinTypes();
+
                 sw = Stopwatch.StartNew();
                 RPCManager.SetupRPCs();
                 sw.Stop();
-                RainMeadow.Debug($"MeadowProgression.InitializeBuiltinTypes: {sw.Elapsed}");
+                RainMeadow.Debug($"RPCManager.SetupRPCs: {sw.Elapsed}");
 
-
-                self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
+                AssetBundle bundle = AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("assetbundles/rainmeadow"));
+                Shader[] newShaders = bundle.LoadAllAssets<Shader>();
+                foreach (Shader shader in newShaders)
+                {
+                    RainMeadow.Debug("found shader " + shader.name);
+                    var found = false;
+                    foreach (FShader oldshader in self.Shaders.Values)
+                    {
+                        if (oldshader.shader.name == shader.name)
+                        {
+                            RainMeadow.Debug("replaced existing shader");
+                            oldshader.shader = shader;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if(!found)
+                    {
+                        RainMeadow.Debug("registered as new shader");
+                        self.Shaders[shader.name] = FShader.CreateShader(shader.name, shader);
+                    }
+                }
 
                 MenuHooks();
                 GameHooks();
+                CreatureHooks();
                 EntityHooks();
                 ShortcutHooks();
                 GameplayHooks();
                 PlayerHooks();
                 CustomizationHooks();
                 MeadowHooks();
+                LoadingHooks();
+                StoryHooks();
                 
+                MeadowMusic.EnableMusic();
+
+                self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
+
+#if LOCAL_P2P
+                if (!self.setup.startScreen)
+                {
+                    OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(LocalMatchmakingManager.localGameMode), OnlineManager.mePlayer);
+                }
+#endif
             }
             catch (Exception e)
             {

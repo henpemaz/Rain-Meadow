@@ -20,8 +20,6 @@
                 {
                     return rps.GetInput();
                 }
-                //RainMeadow.Error($"no state for player {ent}");
-                //RainMeadow.Error($"reasons: {latestState is AbstractCreatureState} {latestState is AbstractCreatureState ces2 && ces2.realizedObjectState is RealizedPlayerState}");
             }
             else
             {

@@ -20,7 +20,7 @@ namespace RainMeadow
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
-            if (onlineEntity.owner.isMe || onlineEntity.isPending) return; // Don't sync if pending, reduces visibility and effect of lag
+            if (onlineEntity.owner.isMe || onlineEntity.isPending) { RainMeadow.Debug($"not syncing {this} because mine?{onlineEntity.owner.isMe} pending?{onlineEntity.isPending}"); return; }; // Don't sync if pending, reduces visibility and effect of lag
             if (onlineEntity is not OnlineCreature onlineCreature) return;
             if (onlineCreature.apo.realizedObject is not Creature creature) return;
 

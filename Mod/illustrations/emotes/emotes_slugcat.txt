@@ -4,240 +4,240 @@
 			"frame": {
 				"x": 1,
 				"y": 1,
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			},
 			"sourceSize": {
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			}
 		},
 		"sc_emoteangry.png": {
 			"frame": {
-				"x": 383,
+				"x": 243,
 				"y": 1,
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			},
 			"sourceSize": {
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			}
 		},
 		"sc_emoteconfused.png": {
 			"frame": {
-				"x": 765,
+				"x": 485,
 				"y": 1,
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			},
 			"sourceSize": {
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			}
 		},
 		"sc_emotedead.png": {
 			"frame": {
 				"x": 1,
-				"y": 383,
-				"w": 380,
-				"h": 380
+				"y": 243,
+				"w": 240,
+				"h": 240
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			},
 			"sourceSize": {
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			}
 		},
 		"sc_emotegoofy.png": {
 			"frame": {
-				"x": 383,
-				"y": 383,
-				"w": 380,
-				"h": 380
+				"x": 243,
+				"y": 243,
+				"w": 240,
+				"h": 240
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			},
 			"sourceSize": {
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			}
 		},
 		"sc_emotehappy.png": {
 			"frame": {
-				"x": 765,
-				"y": 383,
-				"w": 380,
-				"h": 380
+				"x": 485,
+				"y": 243,
+				"w": 240,
+				"h": 240
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			},
 			"sourceSize": {
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			}
 		},
 		"sc_emotehello.png": {
 			"frame": {
 				"x": 1,
-				"y": 765,
-				"w": 380,
-				"h": 380
+				"y": 485,
+				"w": 240,
+				"h": 240
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			},
 			"sourceSize": {
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			}
 		},
 		"sc_emotehug.png": {
 			"frame": {
-				"x": 383,
-				"y": 765,
-				"w": 380,
-				"h": 380
+				"x": 243,
+				"y": 485,
+				"w": 240,
+				"h": 240
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			},
 			"sourceSize": {
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			}
 		},
 		"sc_emotemischievous.png": {
 			"frame": {
-				"x": 765,
-				"y": 765,
-				"w": 380,
-				"h": 380
+				"x": 485,
+				"y": 485,
+				"w": 240,
+				"h": 240
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			},
 			"sourceSize": {
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			}
 		},
 		"sc_emotesad.png": {
 			"frame": {
-				"x": 1147,
+				"x": 727,
 				"y": 1,
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			},
 			"sourceSize": {
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			}
 		},
 		"sc_emoteshrug.png": {
 			"frame": {
-				"x": 1147,
-				"y": 383,
-				"w": 380,
-				"h": 380
+				"x": 727,
+				"y": 243,
+				"w": 240,
+				"h": 240
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			},
 			"sourceSize": {
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			}
 		},
 		"sc_emotewink.png": {
 			"frame": {
-				"x": 1147,
-				"y": 765,
-				"w": 380,
-				"h": 380
+				"x": 727,
+				"y": 485,
+				"w": 240,
+				"h": 240
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			},
 			"sourceSize": {
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			}
 		}
 	},
@@ -247,8 +247,8 @@
 		"image": "spritesheet.png",
 		"format": "RGBA8888",
 		"size": {
-			"w": 1528,
-			"h": 1146
+			"w": 968,
+			"h": 726
 		},
 		"scale": "1"
 	}

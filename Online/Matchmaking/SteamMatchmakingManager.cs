@@ -213,8 +213,7 @@ namespace RainMeadow
                 List<PlayerInfo> playersinfo = new List<PlayerInfo>();
                 foreach (CSteamID player in newplayers)
                 {
-                    if (player.m_SteamID != me.m_SteamID)
-                        playersinfo.Add(new PlayerInfo(player, SteamFriends.GetFriendPersonaName(player)));
+                    playersinfo.Add(new PlayerInfo(player, SteamFriends.GetFriendPersonaName(player)));
                 }
                 OnPlayerListReceived?.Invoke(playersinfo.ToArray());
             }
@@ -386,6 +385,11 @@ namespace RainMeadow
         public OnlinePlayer GetPlayerSteam(ulong steamID)
         {
             return OnlineManager.players.FirstOrDefault(p => (p.id as SteamPlayerId).steamID.m_SteamID == steamID);
+        }
+
+        public override string GetLobbyID()
+        {
+            return lobbyID.ToString();
         }
     }
 }

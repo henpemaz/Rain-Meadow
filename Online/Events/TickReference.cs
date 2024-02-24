@@ -30,6 +30,13 @@ namespace RainMeadow
             return !Invalid() && NetIO.IsNewerOrEqual(OnlineManager.lobby.PlayerFromId(fromPlayer).tick, tick);
         }
 
+        public float TimeSinceTick()
+        {
+            var player = OnlineManager.lobby.PlayerFromId(fromPlayer);
+            if(player == null) { RainMeadow.Error("Player not found: " + fromPlayer); return -1; }
+            return (player.tick - tick) / (float) OnlineManager.instance.framesPerSecond;
+        }
+
         public void CustomSerialize(Serializer serializer)
         {
             serializer.Serialize(ref fromPlayer);

@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using static RainMeadow.MeadowCustomization;
 
 namespace RainMeadow
 {
@@ -7,6 +6,7 @@ namespace RainMeadow
     {
         public EmoteType(string value, bool register = false) : base(value, register) { }
 
+        // emotions
         public static EmoteType emoteHello = new EmoteType("emoteHello", true);
         public static EmoteType emoteHappy = new EmoteType("emoteHappy", true);
         public static EmoteType emoteSad = new EmoteType("emoteSad", true);
@@ -20,14 +20,44 @@ namespace RainMeadow
         public static EmoteType emoteWink = new EmoteType("emoteWink", true);
         public static EmoteType emoteMischievous = new EmoteType("emoteMischievous", true);
 
+        // ideas
         public static EmoteType symbolYes = new EmoteType("symbolYes", true);
         public static EmoteType symbolNo = new EmoteType("symbolNo", true);
         public static EmoteType symbolQuestion = new EmoteType("symbolQuestion", true);
+        public static EmoteType symbolTime = new EmoteType("symbolTime", true);
+        public static EmoteType symbolSurvivor = new EmoteType("symbolSurvivor", true);
+        public static EmoteType symbolFriends = new EmoteType("symbolFriends", true);
+        public static EmoteType symbolGroup = new EmoteType("symbolGroup", true);
+        public static EmoteType symbolKnoledge = new EmoteType("symbolKnoledge", true);
+        public static EmoteType symbolTravel = new EmoteType("symbolTravel", true);
+        public static EmoteType symbolMartyr = new EmoteType("symbolMartyr", true);
+
+
+
+        // things
+        public static EmoteType symbolCollectible = new EmoteType("symbolCollectible", true);
+        public static EmoteType symbolFood = new EmoteType("symbolFood", true);
+        public static EmoteType symbolLight = new EmoteType("symbolLight", true);
+        public static EmoteType symbolShelter = new EmoteType("symbolShelter", true);
+        public static EmoteType symbolGate = new EmoteType("symbolGate", true);
+        public static EmoteType symbolEcho = new EmoteType("symbolEcho", true);
+        public static EmoteType symbolPointOfInterest = new EmoteType("symbolPointOfInterest", true);
+        public static EmoteType symbolTree = new EmoteType("symbolTree", true);
+        public static EmoteType symbolIterator = new EmoteType("symbolIterator", true);
+        
+
+        // verbs
         // todo
     }
 
     class EmoteHandler : HUD.HudPart
     {
+        public static void InitializeBuiltinTypes()
+        {
+            _ = EmoteType.emoteHappy;
+            RainMeadow.Debug($"{ExtEnum<EmoteType>.values.entries.Count} emotes loaded");
+        }
+
         private InputScheme currentInputScheme;
 
         static KeyCode[] alphaRow = new[] { KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3, KeyCode.Alpha4, KeyCode.Alpha5, KeyCode.Alpha6, KeyCode.Alpha7, KeyCode.Alpha8, KeyCode.Alpha9, KeyCode.Alpha0, KeyCode.Minus, KeyCode.Equals };
@@ -51,25 +81,25 @@ namespace RainMeadow
                 EmoteType.symbolYes,
                 EmoteType.symbolNo,
                 EmoteType.symbolQuestion,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
+                EmoteType.symbolTime,
+                EmoteType.symbolSurvivor,
+                EmoteType.symbolFriends,
+                EmoteType.symbolGroup,
+                EmoteType.symbolKnoledge,
+                EmoteType.symbolTravel,
+                EmoteType.symbolMartyr,
                 EmoteType.symbolNo,
                 EmoteType.symbolNo,
             },{
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
+                EmoteType.symbolCollectible,
+                EmoteType.symbolFood,
+                EmoteType.symbolLight,
+                EmoteType.symbolShelter,
+                EmoteType.symbolGate,
+                EmoteType.symbolEcho,
+                EmoteType.symbolPointOfInterest,
+                EmoteType.symbolTree,
+                EmoteType.symbolIterator,
                 EmoteType.symbolNo,
                 EmoteType.symbolNo,
                 EmoteType.symbolNo,
@@ -86,7 +116,7 @@ namespace RainMeadow
 
         public static EmoteHandler instance;
         private readonly OnlineCreature avatar;
-        private readonly CreatureCustomization customization;
+        private readonly MeadowAvatarCustomization customization;
         private readonly FSprite[] emoteDisplayers;
         private FLabel[] inputLabels;
         private readonly FSprite[] emoteSeparators;
@@ -96,7 +126,7 @@ namespace RainMeadow
         public const int emotePreviewSpacing = 8;
         public const float emotePreviewOpacity = 0.6f;
 
-        public EmoteHandler(HUD.HUD hud, OnlineCreature avatar, CreatureCustomization customization) : base(hud)
+        public EmoteHandler(HUD.HUD hud, OnlineCreature avatar, MeadowAvatarCustomization customization) : base(hud)
         {
             RainMeadow.Debug($"EmoteHandler created for {avatar}");
             instance = this;

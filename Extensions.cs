@@ -1,10 +1,30 @@
-﻿using System.Collections.Generic;
+﻿using RWCustom;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace RainMeadow
 {
     public static class Extensions
     {
+        public static WorldSession GetResource(this World world)
+        {
+            return WorldSession.map.GetValue(world, (w) => throw new KeyNotFoundException($"World {w.name} not found"));
+        }
+
+        public static RoomSession GetResource(this AbstractRoom room)
+        {
+            return RoomSession.map.GetValue(room, (r) => throw new KeyNotFoundException($"Room {r.name} not found"));
+        }
+
+        public static OnlinePhysicalObject GetOnlineObject(this AbstractPhysicalObject apo)
+        {
+            return OnlinePhysicalObject.map.GetValue(apo, (apo) => throw new KeyNotFoundException($"Object {apo} not found"));
+        }
+
+        public static OnlineCreature GetOnlineCreature(this AbstractCreature ac)
+        {
+            return (OnlineCreature)OnlineCreature.map.GetValue(ac, (ac) => throw new KeyNotFoundException($"Creature{ac} not found"));
+        }
 
         public static bool RemoveFromShortcuts(this Creature creature)
         {
@@ -71,6 +91,12 @@ namespace RainMeadow
         public static bool CloseEnough(this Vector2 a, Vector2 b, float tolerance)
         {
             return a == b || (a - b).sqrMagnitude < tolerance * tolerance;
+        }
+
+        public static HSLColor ToHSL(this Color c)
+        {
+            var cv = Custom.RGB2HSL(c);
+            return new HSLColor(cv[0], cv[1], cv[2]);
         }
     }
 }

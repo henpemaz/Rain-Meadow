@@ -1,5 +1,7 @@
 ﻿using RWCustom;
 using System;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace RainMeadow
@@ -7,6 +9,7 @@ namespace RainMeadow
     public class OnlineCreature : OnlinePhysicalObject
     {
         public bool enteringShortCut;
+        internal AbstractCreature creature => apo as AbstractCreature;
         internal Creature realizedCreature => apo.realizedObject as Creature;
 
         public OnlineCreature(OnlineCreatureDefinition def, AbstractCreature ac) : base(def, ac)
@@ -14,14 +17,55 @@ namespace RainMeadow
             // ? anything special?
         }
 
+        public static AbstractCreature AbstractCreatureFromString(World world, string creatureString)
+        {
+            string[] array = Regex.Split(creatureString, "<cA>");
+            CreatureTemplate.Type type = new CreatureTemplate.Type(array[0], false);
+            if (type.Index == -1)
+            {
+                RainMeadow.Debug("Unknown creature: " + array[0] + " creature not spawning");
+                return null;
+            }
+            string[] array2 = array[2].Split(new char[]
+            {
+            '.'
+            });
+            EntityID id = EntityID.FromString(array[1]);
+            int? num = BackwardsCompatibilityRemix.ParseRoomIndex(array2[0]);
+            if(num == null || !world.IsRoomInRegion(num.Value))
+            {
+                num = world.GetAbstractRoom(array2[0]).index;
+            }
+            WorldCoordinate den = new WorldCoordinate(num.Value, -1, -1, int.Parse(array2[1], NumberStyles.Any, CultureInfo.InvariantCulture));
+            AbstractCreature abstractCreature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, den, id);
+            if (world != null)
+            {
+                abstractCreature.state.LoadFromString(Regex.Split(array[3], "<cB>"));
+                if (abstractCreature.Room == null)
+                {
+                    RainMeadow.Debug(string.Concat(new string[]
+                        {
+                        "Spawn room does not exist: ",
+                        array2[0],
+                        " ~ ",
+                        id.spawner.ToString(),
+                        " creature not spawning"
+                        }));
+                    return null;
+                }
+                abstractCreature.setCustomFlags();
+            }
+            return abstractCreature;
+        }
+
         public static OnlineEntity FromDefinition(OnlineCreatureDefinition newCreatureEvent, OnlineResource inResource)
         {
-            World world = inResource.World;
+            World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
             EntityID id = world.game.GetNewID();
             id.altSeed = newCreatureEvent.seed;
 
             RainMeadow.Debug("serializedObject: " + newCreatureEvent.serializedObject);
-            AbstractCreature ac = SaveState.AbstractCreatureFromString(inResource.World, newCreatureEvent.serializedObject, false);
+            AbstractCreature ac = AbstractCreatureFromString(world, newCreatureEvent.serializedObject);
             ac.ID = id;
 
             return new OnlineCreature(newCreatureEvent, ac);
@@ -32,9 +76,10 @@ namespace RainMeadow
             return new AbstractCreatureState(this, inResource, tick);
         }
 
-        public void RPCCreatureViolence(OnlinePhysicalObject onlineVillain, int hitchunkIndex, PhysicalObject.Appendage.Pos hitappendage, Vector2? directionandmomentum, Creature.DamageType type, float damage, float stunbonus)
+        public void RPCCreatureViolence(OnlinePhysicalObject onlineVillain, int? hitchunkIndex, PhysicalObject.Appendage.Pos hitappendage, Vector2? directionandmomentum, Creature.DamageType type, float damage, float stunbonus)
         {
-            this.owner.InvokeRPC(this.CreatureViolence, onlineVillain, (byte)hitchunkIndex, hitappendage == null ? null : new AppendageRef(hitappendage), directionandmomentum, type, damage, stunbonus);
+            byte chunkIndex = (byte)(hitchunkIndex ?? 255);
+            this.owner.InvokeRPC(this.CreatureViolence, onlineVillain, chunkIndex, hitappendage == null ? null : new AppendageRef(hitappendage), directionandmomentum, type, damage, stunbonus);
         }
 
         [RPCMethod]
@@ -43,28 +88,31 @@ namespace RainMeadow
             var victimAppendage = victimAppendageRef?.GetAppendagePos(this);
             var creature = (this.apo.realizedObject as Creature);
             if (creature == null) return;
-            creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, creature.bodyChunks[victimChunkIndex], victimAppendage, damageType, damage, stunBonus);
+
+            BodyChunk? hitChunk = victimChunkIndex < 255 ? creature.bodyChunks[victimChunkIndex] : null;
+            creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, hitChunk, victimAppendage, damageType, damage, stunBonus);
         }
 
-        public void ForceGrab(OnlinePhysicalObject onlineGrabbed, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool pacifying)
-        {
-            var grabber = (Creature)this.apo.realizedObject;
-            var grabbedThing = onlineGrabbed.apo.realizedObject;
-
-            if (grabber.grasps[graspUsed] != null)
-            {
-                if (grabber.grasps[graspUsed].grabbed == grabbedThing) return;
-                grabber.grasps[graspUsed].Release();
-            }
-            // Will I need to also include the shareability conflict here, too? Idk.
-            grabber.grasps[graspUsed] = new Creature.Grasp(grabber, grabbedThing, graspUsed, chunkGrabbed, shareability, dominance, pacifying);
-            grabbedThing.Grabbed(grabber.grasps[graspUsed]);
-            new AbstractPhysicalObject.CreatureGripStick(grabber.abstractCreature, grabbedThing.abstractPhysicalObject, graspUsed, pacifying || grabbedThing.TotalMass < grabber.TotalMass);
-        }
         public void ForceGrab(GraspRef graspRef)
         {
             var castShareability = new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(graspRef.Shareability));
-            ForceGrab(graspRef.OnlineGrabbed.FindEntity() as OnlinePhysicalObject, graspRef.GraspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
+            var other = graspRef.OnlineGrabbed.FindEntity(quiet: true) as OnlinePhysicalObject;
+            if(other != null && other.apo.realizedObject != null)
+            {
+                var grabber = (Creature)this.apo.realizedObject;
+                var grabbedThing = other.apo.realizedObject;
+                var graspUsed = graspRef.GraspUsed;
+
+                if (grabber.grasps[graspUsed] != null)
+                {
+                    if (grabber.grasps[graspUsed].grabbed == grabbedThing) return;
+                    grabber.grasps[graspUsed].Release();
+                }
+                grabber.grasps[graspUsed] = new Creature.Grasp(grabber, grabbedThing, graspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
+                grabbedThing.room = grabber.room;
+                grabbedThing.Grabbed(grabber.grasps[graspUsed]);
+                new AbstractPhysicalObject.CreatureGripStick(grabber.abstractCreature, grabbedThing.abstractPhysicalObject, graspUsed, graspRef.Pacifying || grabbedThing.TotalMass < grabber.TotalMass);
+            }
         }
 
         public void BroadcastSuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
@@ -72,7 +120,10 @@ namespace RainMeadow
             if (currentlyJoinedResource == null) return;
             foreach (var participant in currentlyJoinedResource.participants)
             {
-                participant.Key.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
+                if (!participant.Key.isMe)
+                {
+                    participant.Key.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
+                }
             }
         }
 
@@ -81,6 +132,7 @@ namespace RainMeadow
         {
             enteringShortCut = true;
             (apo.realizedObject as Creature)?.SuckedIntoShortCut(entrancePos, carriedByOther);
+            enteringShortCut = false;
         }
 
         public override string ToString()

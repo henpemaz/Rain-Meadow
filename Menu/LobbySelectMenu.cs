@@ -213,15 +213,21 @@ namespace RainMeadow
 
         private void Play(SimplerButton obj)
         {
+            if (ModManager.JollyCoop)
+            {
+                ShowErrorDialog("Please disable JollyCoop before playing Online");
+                return;
+
+            }
             if (currentlySelectedCard == 0)
             {
-                RequestLobbyCreate();
                 ShowLoadingDialog("Creating lobby...");
+                RequestLobbyCreate();
             }
             else
             {
-                RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo);
                 ShowLoadingDialog("Joining lobby...");
+                RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo);
             }
             
         }
