@@ -20,10 +20,14 @@ namespace RainMeadow
         public Player RealizedPlayer => this.abstractPlayer.realizedCreature as Player;
 
         public RoomCamera camera;
+        private Rect camrect;
         public Vector2 drawpos;
         public bool found;
         public Vector2 pointDir;
         internal bool needed;
+        private WorldCoordinate lastWorldPos;
+        private int lastCameraPos;
+        private int lastAbstractRoom;
 
         public float DeadFade
         {
@@ -39,6 +43,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug("Adding PlayerSpecificOnlineHud for " + clientSettings.owner);
             this.camera = camera;
+            camrect = new Rect(Vector2.zero, this.camera.sSize).CloneWithExpansion(-30f);
             this.storyGameMode = storyGameMode;
             this.clientSettings = clientSettings;
             this.playerArrow = new OnlinePlayerArrow(this);
@@ -106,7 +111,7 @@ namespace RainMeadow
 
             // tracking
             this.found = false;
-            this.pointDir = Vector2.down;
+            
             Vector2 rawPos = new();
             // in this room
             if (abstractPlayer.Room == camera.room.abstractRoom)
@@ -118,6 +123,7 @@ namespace RainMeadow
                     {
                         found = true;
                         rawPos = Vector2.Lerp(player.bodyChunks[0].pos, player.bodyChunks[1].pos, 0.33333334f) - camera.pos;
+                        this.pointDir = Vector2.down;
                     }
                     else
                     {
@@ -126,21 +132,23 @@ namespace RainMeadow
                         {
                             found = true;
                             rawPos = shortcutpos.Value - camera.pos;
+                            this.pointDir = Vector2.down;
                         }
                     }
                 }
 
                 if (found)
                 {
-                    this.drawpos = new Vector2(Mathf.Clamp(rawPos.x, 30f, this.camera.sSize.x - 30f), Mathf.Clamp(rawPos.y, 30f, this.camera.sSize.y - 30f));
+                    this.drawpos = camrect.GetClosestInteriorPoint(rawPos); // gives straight arrows
                     if (drawpos != rawPos)
                     {
                         pointDir = (rawPos - drawpos).normalized;
                     }
                 }
             }
-            else // neighbor room
+            else // different room
             {
+                // neighbor
                 var connections = camera.room.abstractRoom.connections;
                 for (int i = 0; i < connections.Length; i++)
                 {
@@ -149,25 +157,42 @@ namespace RainMeadow
                         found = true;
                         var shortcutpos = camera.room.LocalCoordinateOfNode(i);
                         rawPos = camera.room.MiddleOfTile(shortcutpos) - camera.pos;
-                        this.drawpos = new Vector2(Mathf.Clamp(rawPos.x, 30f, this.camera.sSize.x - 30f), Mathf.Clamp(rawPos.y, 30f, this.camera.sSize.y - 30f));
                         pointDir = camera.room.ShorcutEntranceHoleDirection(shortcutpos.Tile).ToVector2() * -1;
                         break;
                     }
                 }
-                // not found, do not render?
-                // todo use worldpos OR find shortcut that least to room player is in with pathfinding
-
                 if (found)
                 {
-                    this.drawpos = new Vector2(Mathf.Clamp(rawPos.x, 30f, this.camera.sSize.x - 30f), Mathf.Clamp(rawPos.y, 30f, this.camera.sSize.y - 30f));
+                    this.drawpos = camrect.GetClosestInteriorPoint(rawPos);
                     if (drawpos != rawPos)
                     {
                         pointDir = (rawPos - drawpos).normalized;
                     }
                 }
+                else // elsewhere, use world pos
+                {
+                    var world = camera.game.world;
+                    if(world.GetAbstractRoom(abstractPlayer.pos.room) is AbstractRoom abstractRoom) // room in region
+                    {
+                        found = true;
+                        if (abstractPlayer.pos != lastWorldPos || camera.currentCameraPosition != lastCameraPos || camera.room.abstractRoom.index != lastAbstractRoom) // cache these maths
+                        {
+                            var worldpos = (abstractRoom.mapPos / 3f + new Vector2(10f, 10f)) * 20f;
+                            if (this.abstractPlayer.realizedCreature is Creature creature) worldpos += creature.mainBodyChunk.pos - abstractRoom.size.ToVector2() * 20f / 2f;
+                            else if (abstractPlayer.pos.TileDefined) worldpos += abstractPlayer.pos.Tile.ToVector2() * 20f - abstractRoom.size.ToVector2() * 20f / 2f;
+
+                            var viewpos = (camera.room.abstractRoom.mapPos / 3f + new Vector2(10f, 10f)) * 20f + camera.pos + this.camera.sSize / 2f - camera.room.abstractRoom.size.ToVector2() * 20f / 2f;
+
+                            pointDir = (worldpos - viewpos).normalized;
+                            drawpos = camrect.GetClosestInteriorPointAlongLineFromCenter(this.camera.sSize / 2f + pointDir * 2048f); // gives angled arrows
+                        }
+                    }
+                }
             }
 
-            
+            lastWorldPos = abstractPlayer.pos;
+            lastCameraPos = camera.currentCameraPosition;
+            lastAbstractRoom = camera.room.abstractRoom.index;
 
             if (this.antiDeathBumpFlicker > 0)
             {

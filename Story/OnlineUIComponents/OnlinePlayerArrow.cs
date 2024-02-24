@@ -45,8 +45,16 @@ namespace RainMeadow
             this.lastAlpha = this.alpha;
             this.lastBlink = this.blink;
             this.blink = Mathf.Max(0f, this.blink - 0.0125f);
-
-            this.pos = owner.drawpos + new Vector2(0f, 60f);
+            if (owner.found)
+            {
+                this.pos = owner.drawpos;
+                if (owner.pointDir == Vector2.down) pos += new Vector2(0f, 60f);
+            }
+            else
+            {
+                pos.x = -1000;
+            }
+            
             this.alpha = Custom.LerpAndTick(this.alpha, owner.needed ? 1 : 0, 0.08f, 0.033333335f);
 
             this.counter++;
