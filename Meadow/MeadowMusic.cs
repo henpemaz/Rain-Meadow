@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using Music;
 using System.Linq;
 
+//TODO list:
+//look up method to hook that gets called on region switch precisely OverWorld.WorldLoaded?
+
 namespace RainMeadow
 {
     public partial class MeadowMusic
@@ -32,6 +35,8 @@ namespace RainMeadow
 
         static ActiveZone? activeZone = null;
 
+        static float? vibeIntensity = null;
+
         struct VibeZone
         {
             public VibeZone(string room, float radius, string songName)
@@ -46,6 +51,8 @@ namespace RainMeadow
             public string songName;
         }
 
+        //An ActiveZone is just a VibeZone without the room name string, because the room id is used as a key in the ActiveZones dict
+        //I could really just use VibeZones in that dict but efficiency brain go brrrrrrr
         struct ActiveZone
         {
             public ActiveZone(float radius, string songName)
@@ -176,36 +183,53 @@ namespace RainMeadow
 
             if (musicPlayer != null && musicPlayer.song != null && activeZonesDict != null)
             {
+                //TODO: probably a better way to do all this
+
+                //activezonedict has the room ids of each vibe zone's room as keys
                 int[] rooms = activeZonesDict.Keys.ToArray();
                 float[] dists = new float[rooms.Length];
+                //this for loop populates the dist array with the distances of the player to each of the vibe zone rooms
                 for (int i = 0; i < rooms.Length; i++)
                 {
+                    //yoink the coordinates of the player's current room
                     Vector2 v1 = room.world.RoomToWorldPos(Vector2.zero, room.abstractRoom.index);
+                    //yoink the coordinates of the vibe zone room
                     Vector2 v2 = room.world.RoomToWorldPos(Vector2.zero, rooms[i]);
+                    //calculate the flat distance between these two vectors
                     dists[i] = Mathf.Abs(Vector2.Distance(v1, v2));
                 }
                 float minDist = Mathf.Min(dists);
+                //we now have the smallest of all the distances, aka the one closest to the player. grab this smallest distance's corresponding room id
                 int closestVibe = rooms[dists.ToList().IndexOf(minDist)];
+                //and just grab its corresponding activezone from the dict
                 ActiveZone az = activeZonesDict[closestVibe];
+                //if this active zone's song is currently playing, and we are beyond the zone's radius
                 if (musicPlayer.song.name == az.songName && minDist > az.radius)
                 {
                     Debug.Log("Meadow Music:  Fading echo song...");
                     musicPlayer.song.FadeOut(40f);
                     activeZone = null;
+                    vibeIntensity = null;
                 }
+                //if this active zone's song is not currently playing, and we are within its radius
                 else if (musicPlayer.song.name != az.songName && minDist < az.radius)
                 {
                     Debug.Log("Meadow Music:  Fading ambience song...");
                     musicPlayer.song.FadeOut(40f);
                     activeZone = az;
                 }
+                //if this active zone's song is currently playing (we can assume this at this point) and are within its radius
                 else if (minDist < az.radius)
                 {
+                    //this mathematical formula given by the glorious Bee
+                    //TODO: wtf is this
+                    vibeIntensity = (1 - minDist) / (2 * az.radius);
                     musicPlayer.song.volume = (1 - minDist) / (2 * az.radius);
                 }
             }
         }
 
+        //TODO: there must be a better way to do this
         static string GetFolderName(string path)
         {
             string[] arr = path.Split(Path.DirectorySeparatorChar);
