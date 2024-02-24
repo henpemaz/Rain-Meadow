@@ -9,6 +9,8 @@ namespace RainMeadow
 {
     public class MeadowGameMode : OnlineGameMode
     {
+        public bool spawnPlants = false;
+
         public MeadowGameMode(Lobby lobby) : base(lobby)
         {
             
@@ -26,6 +28,15 @@ namespace RainMeadow
             {
                 RainMeadow.Debug("Registering new creature: " + oc);
                 oe.AddData(new MeadowCreatureData(oc));
+                if (oc.realizedCreature != null && EmoteDisplayer.map.TryGetValue(oc.realizedCreature, out var d))
+                {
+                    d.ownerEntity = oc;
+                    d.creatureData = oe.GetData<MeadowCreatureData>();
+                }
+                if (CreatureController.creatureControllers.TryGetValue(oc.creature, out var cc))
+                {
+                    cc.onlineCreature = oc;
+                }
             }
         }
 
@@ -33,7 +44,7 @@ namespace RainMeadow
         {
             var settings = (clientSettings as MeadowAvatarSettings);
             var skinData = MeadowProgression.skinData[settings.skin];
-            var abstractCreature = new AbstractCreature(game.world, StaticWorld.GetCreatureTemplate(skinData.creatureType), null, location, new EntityID(-1, 0));
+            var abstractCreature = new AbstractCreature(game.world, StaticWorld.GetCreatureTemplate(skinData.creatureType), null, location, new EntityID(-1, 0) { altSeed = skinData.randomSeed });
             if (skinData.creatureType == CreatureTemplate.Type.Slugcat)
             {
                 abstractCreature.state = new PlayerState(abstractCreature, 0, skinData.statsName, false);
@@ -111,20 +122,24 @@ namespace RainMeadow
                     var validRooms = ws.world.abstractRooms.Where(r => !shelters.Contains(r.index) && !gates.Contains(r.index)).ToArray();
                     var perNode = toSpawn / (double)validRooms.Select(r => r.nodes.Length).Sum();
                     var stacker = 0d;
-                    // todo use half weight on nodes, it's creating too much discrepancy
-                    for (int i = 0; i < validRooms.Length; i++)
+                    if (spawnPlants)
                     {
-                        var r = validRooms[i];
-                        stacker += perNode * r.nodes.Length;
-                        var n = (ushort)stacker;
-                        for (int k = 0; k < n; k++)
+                        // todo use half weight on nodes, it's creating too much discrepancy
+                        for (int i = 0; i < validRooms.Length; i++)
                         {
-                            var e = new AbstractMeadowCollectible(r.world, RainMeadow.Ext_PhysicalObjectType.MeadowPlant, new WorldCoordinate(r.index, -1, -1, 0), r.world.game.GetNewID(), false);
-                            r.AddEntity(e);
-                            data.spawnedItems += 1;
+                            var r = validRooms[i];
+                            stacker += perNode * r.nodes.Length;
+                            var n = (ushort)stacker;
+                            for (int k = 0; k < n; k++)
+                            {
+                                var e = new AbstractMeadowCollectible(r.world, RainMeadow.Ext_PhysicalObjectType.MeadowPlant, new WorldCoordinate(r.index, -1, -1, 0), r.world.game.GetNewID(), false);
+                                r.AddEntity(e);
+                                data.spawnedItems += 1;
+                            }
+                            stacker -= (ushort)stacker;
                         }
-                        stacker -= (ushort)stacker;
                     }
+                    
                     RainMeadow.Debug($"Region items: {toSpawn} spawned {data.spawnedItems}");
                 }
             }

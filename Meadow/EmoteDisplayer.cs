@@ -8,8 +8,8 @@ namespace RainMeadow
     public class EmoteDisplayer
     {
         public Creature owner;
-        private readonly OnlineCreature ownerEntity;
-        private readonly MeadowCreatureData creatureData;
+        public OnlineCreature ownerEntity;
+        public MeadowCreatureData creatureData;
         public MeadowAvatarCustomization customization;
         private RainWorldGame game;
 

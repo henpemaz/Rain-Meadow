@@ -9,6 +9,7 @@ namespace RainMeadow
     public class OnlineCreature : OnlinePhysicalObject
     {
         public bool enteringShortCut;
+        internal AbstractCreature creature => apo as AbstractCreature;
         internal Creature realizedCreature => apo.realizedObject as Creature;
         public AbstractCreature abstractCreature => apo as AbstractCreature;
 
@@ -76,9 +77,10 @@ namespace RainMeadow
             return new AbstractCreatureState(this, inResource, tick);
         }
 
-        public void RPCCreatureViolence(OnlinePhysicalObject onlineVillain, int hitchunkIndex, PhysicalObject.Appendage.Pos hitappendage, Vector2? directionandmomentum, Creature.DamageType type, float damage, float stunbonus)
+        public void RPCCreatureViolence(OnlinePhysicalObject onlineVillain, int? hitchunkIndex, PhysicalObject.Appendage.Pos hitappendage, Vector2? directionandmomentum, Creature.DamageType type, float damage, float stunbonus)
         {
-            this.owner.InvokeRPC(this.CreatureViolence, onlineVillain, (byte)hitchunkIndex, hitappendage == null ? null : new AppendageRef(hitappendage), directionandmomentum, type, damage, stunbonus);
+            byte chunkIndex = (byte)(hitchunkIndex ?? 255);
+            this.owner.InvokeRPC(this.CreatureViolence, onlineVillain, chunkIndex, hitappendage == null ? null : new AppendageRef(hitappendage), directionandmomentum, type, damage, stunbonus);
         }
 
         [RPCMethod]
@@ -87,7 +89,9 @@ namespace RainMeadow
             var victimAppendage = victimAppendageRef?.GetAppendagePos(this);
             var creature = (this.apo.realizedObject as Creature);
             if (creature == null) return;
-            creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, creature.bodyChunks[victimChunkIndex], victimAppendage, damageType, damage, stunBonus);
+
+            BodyChunk? hitChunk = victimChunkIndex < 255 ? creature.bodyChunks[victimChunkIndex] : null;
+            creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, hitChunk, victimAppendage, damageType, damage, stunBonus);
         }
 
         public void ForceGrab(GraspRef graspRef)
@@ -117,7 +121,10 @@ namespace RainMeadow
             if (currentlyJoinedResource == null) return;
             foreach (var participant in currentlyJoinedResource.participants)
             {
-                participant.Key.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
+                if (!participant.Key.isMe)
+                {
+                    participant.Key.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
+                }
             }
         }
 
@@ -126,6 +133,7 @@ namespace RainMeadow
         {
             enteringShortCut = true;
             (apo.realizedObject as Creature)?.SuckedIntoShortCut(entrancePos, carriedByOther);
+            enteringShortCut = false;
         }
 
         public override string ToString()

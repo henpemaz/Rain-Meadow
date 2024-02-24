@@ -1,38 +1,57 @@
+plants todo
+- sync timer
+- respawn
+
+emotes todo
 on emote already expiring shouldn't be able to emote more
  + or instead should replace the old emotes, start new group
- 
 "wish I could "stop" an emote block and start a new one, instead of having to wait out the fade"
 	maybe pressing backspace? should it clear or not clear the current group?
-
-spear embeds = really inconsistent
-
-spears/items spam terrain collision sounds sometimes?
-
-coming out of pipe + lag = stuck "pipe entering"
-come out of shortcut = bugged af doesn't clear shortcut pointer
-
 mapping going to 0 - = is a bit weird
 	- = don't work on most euro layouts
-
 instinct was to click the emotes
-
 not seeing all emotes at once is a bit of a hinger
 	takes time to find them switching pages
 	time means you lose the combo
-
-lizard still bites cicada
-
-player grabbing cicada = laggy physics
-
-lizard on first load doesn't get colors assigned
-
-going through gate blew up
-
-creatures still can't go through gates
-
-karma in gates
-
 "sometimes can't use emotes" - SleepyCup
-	either bug or unintuitive lock
+	either bug or unintuitive timer lock
 
-can still drown/die in several ways
+
+creature todo
+- shelter activation
+- gate activation
+- other story-mode things?
+- can still drown/die in several ways
+coming out of pipe + lag = stuck "pipe entering"
+come out of shortcut = bugged af doesn't clear shortcut pointer
+karma in gates
+player grabbing cicada = laggy physics
+on wackamole pipe, game picks randomly I think, maybe should be player-chosen
+
+lizard todo
+- walking off ledge /done
+- go through floors
+- charge
+- pounce / done
+- head rotation should really prefer unrotated
+- head blinking seems a bit much, how control?
+- find a good seed for our buddies
+- maybe seed could be a setting for the most special skin? any skin?
+lizard still bites cicada
+lizard on first load doesn't get colors assigned
+creature pipes behavior undefined
+	picks closest? random?
+	in room to drainage impossible to get up?
+	
+clear animation on jump / done
+standing jump / done
+jump from pole / done
+
+test blue lizard jump
+	shouldn't re-grip unless input up? / done
+	
+
+blue lizard make it prefer ground
+
+playable scav
+- go through floors

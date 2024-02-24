@@ -41,9 +41,9 @@ namespace RainMeadow
                 }
                 else
                 {
-                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "bkg", new Vector2(0f, 0f), 3.8f, MenuDepthIllustration.MenuShader.Normal));
-                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "mg", new Vector2(0f, 0f), 2.9f, MenuDepthIllustration.MenuShader.Normal));
-                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "squit", new Vector2(0f, 0f), 2.1f, MenuDepthIllustration.MenuShader.LightEdges));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmsquid bg", new Vector2(0f, 0f), 3.8f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmsquid mg", new Vector2(0f, 0f), 2.9f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmsquid squit", new Vector2(0f, 0f), 2.1f, MenuDepthIllustration.MenuShader.LightEdges));
                     (self as InteractiveMenuScene).idleDepths.Add(3.2f);
                     (self as InteractiveMenuScene).idleDepths.Add(2.2f);
                     (self as InteractiveMenuScene).idleDepths.Add(2.1f);
@@ -60,10 +60,29 @@ namespace RainMeadow
                 }
                 else
                 {
-                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "bg", new Vector2(0f, 0f), 3.5f, MenuDepthIllustration.MenuShader.Normal));
-                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "liz2", new Vector2(0f, 0f), 2.4f, MenuDepthIllustration.MenuShader.Normal));
-                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "liz1", new Vector2(0f, 0f), 2.2f, MenuDepthIllustration.MenuShader.Normal));
-                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "fgplants", new Vector2(0f, 0f), 2.1f, MenuDepthIllustration.MenuShader.LightEdges));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmliz bg", new Vector2(0f, 0f), 3.5f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmliz liz2", new Vector2(0f, 0f), 2.4f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmliz liz1", new Vector2(0f, 0f), 2.2f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmliz fgplants", new Vector2(0f, 0f), 2.1f, MenuDepthIllustration.MenuShader.LightEdges));
+                    (self as InteractiveMenuScene).idleDepths.Add(3.2f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.2f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.1f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.0f);
+                    (self as InteractiveMenuScene).idleDepths.Add(1.5f);
+                }
+            }
+            if (self.sceneID == RainMeadow.Ext_SceneID.Slugcat_MeadowScav)
+            {
+                self.sceneFolder = "Scenes" + Path.DirectorySeparatorChar.ToString() + "meadow - scav";
+                if (self.flatMode)
+                {
+                    self.AddIllustration(new MenuIllustration(self.menu, self, self.sceneFolder, "MeadowScav - Flat", new Vector2(683f, 384f), false, true));
+                }
+                else
+                {
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmscav bg", new Vector2(0f, 0f), 3.5f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmscav scav", new Vector2(0f, 0f), 2.2f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmscav fg", new Vector2(0f, 0f), 2.1f, MenuDepthIllustration.MenuShader.LightEdges));
                     (self as InteractiveMenuScene).idleDepths.Add(3.2f);
                     (self as InteractiveMenuScene).idleDepths.Add(2.2f);
                     (self as InteractiveMenuScene).idleDepths.Add(2.1f);
@@ -116,17 +135,27 @@ namespace RainMeadow
                         self.sceneOffset = new Vector2(-10f, 100f);
                         self.slugcatDepth = 3.1000001f;
                     }
-                    if (mcsp.character == MeadowProgression.Character.Cicada)
+                    else if (mcsp.character == MeadowProgression.Character.Cicada)
                     {
                         sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowSquidcicada;
                         self.sceneOffset = new Vector2(-10f, 100f);
                         self.slugcatDepth = 3.1000001f;
                     }
-                    if (mcsp.character == MeadowProgression.Character.Lizard)
+                    else if (mcsp.character == MeadowProgression.Character.Lizard)
                     {
                         sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowLizard;
                         self.sceneOffset = new Vector2(-10f, 100f);
                         self.slugcatDepth = 3.1000001f;
+                    }
+                    else if (mcsp.character == MeadowProgression.Character.Scavenger)
+                    {
+                        sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowScav;
+                        self.sceneOffset = new Vector2(-10f, 100f);
+                        self.slugcatDepth = 3.1000001f;
+                    }
+                    else
+                    {
+                        throw new InvalidProgrammerException("implement me");
                     }
 
                 }
