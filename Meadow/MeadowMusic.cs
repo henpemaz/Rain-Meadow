@@ -77,7 +77,7 @@ namespace RainMeadow
                 string[] dirs = AssetManager.ListDirectory("world", true, true);
                 foreach (string dir in dirs)
                 {
-                    string regName = GetFolderName(dir).ToUpper();
+                    string regName = new DirectoryInfo(dir).Name.ToUpper();
                     string path = dir + Path.DirectorySeparatorChar + "playlist.txt";
                     if (regName.Length == 2 && File.Exists(path) && !ambientDict.ContainsKey(regName))
                     {
@@ -227,13 +227,6 @@ namespace RainMeadow
                     musicPlayer.song.volume = (1 - minDist) / (2 * az.radius);
                 }
             }
-        }
-
-        //TODO: there must be a better way to do this
-        static string GetFolderName(string path)
-        {
-            string[] arr = path.Split(Path.DirectorySeparatorChar);
-            return arr[arr.Length - 1];
         }
 
         static void AnalyzeRegion(World world)
