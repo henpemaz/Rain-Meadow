@@ -36,7 +36,7 @@ namespace RainMeadow
             }
             else
             {
-                text = menu.Translate($"Current campaign:  ");
+                // text = menu.Translate($"Current campaign:  {StoryMenu.GetCampaignName()}");
                 subText = menu.Translate($"This button becomes available when the host {OnlineManager.lobby.owner.id.name} is ready");
             }
             return (text, subText);

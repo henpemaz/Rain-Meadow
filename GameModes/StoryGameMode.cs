@@ -11,6 +11,7 @@ namespace RainMeadow
         public bool didStartGame = false;
         public bool didStartCycle = false;
         public string defaultDenPos;
+        public SlugcatStats.Name currentCampaign = SlugcatStats.Name.White;
 
         public StoryAvatarSettings storyAvatarSettings => avatarSettings as StoryAvatarSettings;
 
@@ -66,6 +67,7 @@ namespace RainMeadow
             if (lobby.isOwner && !didStartGame)
             {
                 didStartGame = true;
+                currentCampaign = storyAvatarSettings.playingAs;
             }
         }
 

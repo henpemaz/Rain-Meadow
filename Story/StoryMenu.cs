@@ -33,6 +33,11 @@ namespace RainMeadow
         int skinIndex;
         private OpTinyColorPicker bodyColorPicker;
         private OpTinyColorPicker eyeColorPicker;
+        private SlugcatStats.Name currentCampaign;
+        private string currentCampaignName = "";
+        private MenuLabel campaignContainer;
+
+
 
         public override MenuScene.SceneID GetScene => null;
         public StoryMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.StoryMenu)
@@ -85,8 +90,11 @@ namespace RainMeadow
                 this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
                 this.prevButton.OnClick += (_) =>
                 {
+                    (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
+
                     ssm.quedSideInput = Math.Max(-3, ssm.quedSideInput - 1);
                     base.PlaySound(SoundID.MENU_Next_Slugcat);
+
                 };
                 this.pages[0].subObjects.Add(this.prevButton);
 
@@ -96,6 +104,7 @@ namespace RainMeadow
                 this.nextButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(985f, 50f), 1);
                 this.nextButton.OnClick += (_) =>
                 {
+                    (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
                     ssm.quedSideInput = Math.Min(3, ssm.quedSideInput + 1);
                     base.PlaySound(SoundID.MENU_Next_Slugcat);
                 };
@@ -105,6 +114,9 @@ namespace RainMeadow
 
             if (!OnlineManager.lobby.isOwner)
             {
+                campaignContainer = new MenuLabel(this, mainPage, this.Translate(currentCampaignName), new Vector2(583f, sp.imagePos.y - 268f), new Vector2(200f, 30f), true);
+
+                this.pages[0].subObjects.Add(campaignContainer);
 
 
                 // Back button doesn't highlight?
@@ -150,6 +162,7 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
             Ext_SlugcatStatsName.OnlineSessionPlayer = personaSettings.playingAs;
+
             RainMeadow.Debug("PLAYING AS: " + personaSettings.playingAs);
             manager.arenaSitting = null;
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
@@ -176,8 +189,9 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner)
             {
                 this.clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame;
+                currentCampaign = (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign ?? SlugcatStats.Name.White;
+                campaignContainer.text = GetCampaignName(currentCampaign);
             }
-
 
             if (ssm.scroll == 0f && ssm.lastScroll == 0f)
             {
@@ -320,7 +334,7 @@ namespace RainMeadow
 
         public static List<SlugcatStats.Name> AllSlugcats()
         {
-          // List<string> namesToExclude = new List<string> { "Night", "MeadowOnline", "MeadowOnlineRemote" }; // TODO: follow up on these
+            // List<string> namesToExclude = new List<string> { "Night", "MeadowOnline", "MeadowOnlineRemote" }; // TODO: follow up on these
             var filteredList = new List<SlugcatStats.Name>();
 
 
@@ -376,6 +390,30 @@ namespace RainMeadow
             if (personaSettings != null) personaSettings.bodyColor = bodyColorPicker.valuecolor;
             if (personaSettings != null) personaSettings.eyeColor = eyeColorPicker.valuecolor;
 
+        }
+
+        public  string GetCampaignName(SlugcatStats.Name name)
+        {
+            this.currentCampaignName = "";
+            if (name == SlugcatStats.Name.White)
+            {
+
+                currentCampaignName =  "SURVIVOR";
+            }
+            else if (name == SlugcatStats.Name.Yellow)
+            {
+                currentCampaignName = "MONK";
+            }
+            else if (name == SlugcatStats.Name.Red)
+            {
+                currentCampaignName = "HUNTER";
+            }
+            else
+            {
+                currentCampaignName  = "";
+            }
+
+            return $"Current Campaign: {currentCampaignName}";
         }
 
     }
