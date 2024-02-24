@@ -6,6 +6,7 @@ using Steamworks;
 #endif
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using UnityEngine;
 
@@ -54,6 +55,7 @@ namespace RainMeadow
             // misc buttons on topright
             Vector2 where = new Vector2(1056f, 552f);
             var aboutButton = new SimplerButton(this, mainPage, Translate("ABOUT"), where, new Vector2(110f, 30f));
+           
             mainPage.subObjects.Add(aboutButton);
             where.y -= 35;
             var statsButton = new SimplerButton(this, mainPage, Translate("STATS"), where, new Vector2(110f, 30f));
@@ -120,10 +122,10 @@ namespace RainMeadow
             CreateLobbyCards();
             // waiting for lobby data!
 
-            if (OnlineManager.currentlyJoiningLobby != default)
+/*            if (OnlineManager.currentlyJoiningLobby != default)
             {
                 ShowLoadingDialog("Joining lobby...");
-            }
+            }*/
 
             // Lobby machine go!
             MatchmakingManager.instance.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
@@ -251,7 +253,7 @@ namespace RainMeadow
             }
             else
             {
-                ShowLoadingDialog("Joining lobby...");
+                // ShowLoadingDialog("Joining lobby...");
                 RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo);
             }
             
@@ -272,7 +274,17 @@ namespace RainMeadow
         private void RequestLobbyJoin(LobbyInfo lobby)
         {
             RainMeadow.DebugMe();
-            MatchmakingManager.instance.JoinLobby(lobby);
+            var clientPromptPassword = "Password";
+            var pos = new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f);
+
+            var passwordOutputBox = new OpTextBox(new Configurable<string>(clientPromptPassword), new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), 30f);
+
+
+            var pain = new UIelementWrapper(this.tabWrapper, passwordOutputBox);
+            popupDialog = new CustomDialogBoxForPassword(pain, this, mainPage, "Please input a password", "HIDE_DIALOG", pos, new Vector2(480f, 320f));
+            popupDialog.subObjects.Add(pain);
+
+            // MatchmakingManager.instance.JoinLobby(lobby);
         }
 
         private void OnlineManager_OnLobbyListReceived(bool ok, LobbyInfo[] lobbies)
