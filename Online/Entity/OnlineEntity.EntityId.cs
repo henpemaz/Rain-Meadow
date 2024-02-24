@@ -38,7 +38,6 @@
                 serializer.Serialize(ref originalOwner);
                 serializer.Serialize(ref type);
                 serializer.Serialize(ref id);
-
             }
 
             public override string ToString()
