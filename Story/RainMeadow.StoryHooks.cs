@@ -109,8 +109,8 @@ namespace RainMeadow
             if (isStoryMode(out var gameMode))
             {
                 //self.currentSaveState.LoadGame(gameMode.saveStateProgressString, game); //pretty sure we can just stuff the string here
-                var storyAvatarSettings = gameMode.clientSettings as StoryClientSettings;
-                origSaveState.denPosition = storyAvatarSettings.myLastDenPos;
+                var storyClientSettings = gameMode.clientSettings as StoryClientSettings;
+                origSaveState.denPosition = storyClientSettings.myLastDenPos;
                 return origSaveState;
             }
             return origSaveState;
@@ -160,11 +160,11 @@ namespace RainMeadow
                     && self.touchedNoInputCounter > (ModManager.MMF ? 40 : 20)
                     && RWCustom.Custom.ManhattanDistance(self.abstractCreature.pos.Tile, self.room.shortcuts[0].StartTile) > 3)
                 {
-                    gameMode.storyAvatarSettings.readyForWin = true;
+                    gameMode.storyClientSettings.readyForWin = true;
                 }
                 else
                 {
-                    gameMode.storyAvatarSettings.readyForWin = false;
+                    gameMode.storyClientSettings.readyForWin = false;
                 }
             }
         }

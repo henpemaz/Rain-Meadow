@@ -245,7 +245,7 @@ public partial class RainMeadow
         if (!onlineEntity.isMine) return;
         if (isStoryMode(out var story))
         {
-            story.storyAvatarSettings.isDead = true;
+            story.storyClientSettings.isDead = true;
         }
         orig(self);
     }

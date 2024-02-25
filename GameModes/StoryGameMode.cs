@@ -13,7 +13,7 @@ namespace RainMeadow
         public string defaultDenPos;
         public SlugcatStats.Name currentCampaign = SlugcatStats.Name.White;
 
-        public StoryClientSettings storyAvatarSettings => clientSettings as StoryClientSettings;
+        public StoryClientSettings storyClientSettings => clientSettings as StoryClientSettings;
 
         public StoryGameMode(Lobby lobby) : base(lobby)
         {
@@ -45,7 +45,7 @@ namespace RainMeadow
 
         public override SlugcatStats.Name LoadWorldAs(RainWorldGame game)
         {
-            return storyAvatarSettings.playingAs;
+            return storyClientSettings.playingAs;
         }
 
         public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
@@ -67,7 +67,7 @@ namespace RainMeadow
             if (lobby.isOwner && !didStartGame)
             {
                 didStartGame = true;
-                currentCampaign = storyAvatarSettings.playingAs;
+                currentCampaign = storyClientSettings.playingAs;
             }
         }
 

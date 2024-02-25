@@ -83,8 +83,8 @@ namespace RainMeadow
                 saveStateNumber = OnlineManager.lobby.gameMode.GetStorySessionPlayer(game);
                 if (isStoryMode(out var story))
                 {
-                    story.storyAvatarSettings.inGame = true;
-                    story.storyAvatarSettings.isDead = false;
+                    story.storyClientSettings.inGame = true;
+                    story.storyClientSettings.isDead = false;
                 }
             }
             orig(self, saveStateNumber, game);
@@ -110,7 +110,7 @@ namespace RainMeadow
 
                 if(isStoryMode(out var story))
                 {
-                    story.storyAvatarSettings.inGame = false;
+                    story.storyClientSettings.inGame = false;
                 }
 
                 if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;

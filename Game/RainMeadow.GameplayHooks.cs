@@ -33,8 +33,8 @@ namespace RainMeadow
                 foreach (var playerID in playerIDs) {
                     if (!readyWinPlayers.Contains(playerID)) return;
                 }
-                var storyAvatarSettings = storyGameMode.clientSettings as StoryClientSettings;
-                storyAvatarSettings.myLastDenPos = self.room.abstractRoom.name;
+                var storyClientSettings = storyGameMode.clientSettings as StoryClientSettings;
+                storyClientSettings.myLastDenPos = self.room.abstractRoom.name;
 
             }
             else {
