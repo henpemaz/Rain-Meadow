@@ -23,13 +23,13 @@ namespace RainMeadow
         static readonly Dictionary<string, string[]> ambientDict = new();
         static readonly Dictionary<string, VibeZone[]> vibeZonesDict = new();
 
-        static Dictionary<int, ActiveZone> activeZonesDict = null;
+        static Dictionary<int, VibeZone> activeZonesDict = null;
         static string[] ambienceSongArray = null;
 
         static float time = 0f;
         static bool timerStopped = true;
 
-        static ActiveZone? activeZone = null;
+        static VibeZone? activeZone = null;
 
         static float? vibeIntensity = null;
 
@@ -43,20 +43,6 @@ namespace RainMeadow
             }
 
             public string room;
-            public float radius;
-            public string songName;
-        }
-
-        //An ActiveZone is just a VibeZone without the room name string, because the room id is used as a key in the ActiveZones dict
-        //I could really just use VibeZones in that dict but efficiency brain go brrrrrrr
-        struct ActiveZone
-        {
-            public ActiveZone(float radius, string songName)
-            {
-                this.radius = radius;
-                this.songName = songName;
-            }
-
             public float radius;
             public string songName;
         }
@@ -137,7 +123,7 @@ namespace RainMeadow
                     else
                     {
                         Debug.Log("Meadow Music:  Playing vibe song...");
-                        Song song = new Song(musicPlayer, ((ActiveZone)activeZone).songName, MusicPlayer.MusicContext.StoryMode)
+                        Song song = new Song(musicPlayer, ((VibeZone)activeZone).songName, MusicPlayer.MusicContext.StoryMode)
                         {
                             playWhenReady = true,
                             volume = 1,
@@ -192,7 +178,7 @@ namespace RainMeadow
                 //we now have the smallest of all the distances, aka the one closest to the player. grab this smallest distance's corresponding room id
                 int closestVibe = rooms[dists.ToList().IndexOf(minDist)];
                 //and just grab its corresponding activezone from the dict
-                ActiveZone az = activeZonesDict[closestVibe];
+                VibeZone az = activeZonesDict[closestVibe];
                 //if this active zone's song is currently playing, and we are beyond the zone's radius
                 if (musicPlayer.song.name == az.songName && minDist > az.radius)
                 {
@@ -225,14 +211,14 @@ namespace RainMeadow
             activeZonesDict = null;
             if (vibeZonesDict.TryGetValue(world.region.name, out vzArray))
             {
-                activeZonesDict = new Dictionary<int, ActiveZone>();
+                activeZonesDict = new Dictionary<int, VibeZone>();
                 foreach(VibeZone vz in vzArray)
                 {
                     foreach (AbstractRoom room in world.abstractRooms)
                     {
                         if (room.name == vz.room)
                         {
-                            activeZonesDict.Add(room.index, new ActiveZone(vz.radius, vz.songName));
+                            activeZonesDict.Add(room.index, vz);
                             break;
                         }
                     }
