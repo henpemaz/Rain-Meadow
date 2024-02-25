@@ -37,7 +37,6 @@ namespace RainMeadow
         private string currentCampaignName = "";
         private MenuLabel campaignContainer;
 
-        private bool fakeOptionForCustomSlugcatChoice = false; // ADD REMIX OPTION HERE
 
         private SlugcatStats.Name customSelectedSlugcat = SlugcatStats.Name.White;
 
@@ -46,8 +45,6 @@ namespace RainMeadow
         public override MenuScene.SceneID GetScene => null;
         public StoryMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.StoryMenu)
         {
-
-            // TODO: Find the source of the little white half circle on the bottom right
             RainMeadow.DebugMe();
             this.rainEffect = new RainEffect(this, this.pages[0]);
             this.pages[0].subObjects.Add(this.rainEffect);
@@ -81,15 +78,11 @@ namespace RainMeadow
 
             // Setup host / client buttons & general view
 
-
             SetupMenuItems();
 
             if (OnlineManager.lobby.isOwner)
             {
 
-                this.hostStartButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
-                this.hostStartButton.OnClick += (_) => { StartGame(); };
-                hostStartButton.buttonBehav.greyedOut = false;
                 this.hostStartButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
                 this.hostStartButton.OnClick += (_) => { StartGame(); };
                 hostStartButton.buttonBehav.greyedOut = false;
@@ -139,10 +132,6 @@ namespace RainMeadow
                 this.clientWaitingButton.OnClick += (_) => { StartGame(); };
                 clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame; // True to begin
 
-                this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
-                this.clientWaitingButton.OnClick += (_) => { StartGame(); };
-                clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame; // True to begin
-
                 this.pages[0].subObjects.Add(this.clientWaitingButton);
 
 
@@ -151,14 +140,13 @@ namespace RainMeadow
             SetupCharacterCustomization();
             UpdateCharacterUI();
 
-            if (!OnlineManager.lobby.isOwner && fakeOptionForCustomSlugcatChoice)
+            if (!OnlineManager.lobby.isOwner && rainMeadowOptions.SlugcatCustomToggle.Value)
             {
                 CustomSlugcatSetup();
             }
 
 
 
-            if (OnlineManager.lobby.isActive)
             if (OnlineManager.lobby.isActive)
             {
                 OnLobbyActive();
@@ -180,7 +168,7 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             if (!OnlineManager.lobby.isOwner) // I'm a client
             {
-                if (!fakeOptionForCustomSlugcatChoice) // I'm a client and I want to match the hosts
+                if (!rainMeadowOptions.SlugcatCustomToggle.Value) // I'm a client and I want to match the hosts
                 {
 
                     personaSettings.playingAs = (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign;
@@ -287,9 +275,6 @@ namespace RainMeadow
             var eyeLabel = new MenuLabel(this, mainPage, this.Translate("Eye color"), new Vector2(1181, 500), new(0, 30), false);
             eyeLabel.label.alignment = FLabelAlignment.Right;
             this.pages[0].subObjects.Add(eyeLabel);
-            var eyeLabel = new MenuLabel(this, mainPage, this.Translate("Eye color"), new Vector2(1181, 500), new(0, 30), false);
-            eyeLabel.label.alignment = FLabelAlignment.Right;
-            this.pages[0].subObjects.Add(eyeLabel);
 
             bodyColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 553), "FFFFFF");
             var wrapper = new UIelementWrapper(this.tabWrapper, bodyColorPicker);
@@ -297,19 +282,7 @@ namespace RainMeadow
             bodyColorPicker.colorPicker.wrapper = wrapper;
             bodyColorPicker.colorPicker.Hide();
             bodyColorPicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
-            bodyColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 553), "FFFFFF");
-            var wrapper = new UIelementWrapper(this.tabWrapper, bodyColorPicker);
-            tabWrapper._tab.AddItems(bodyColorPicker.colorPicker);
-            bodyColorPicker.colorPicker.wrapper = wrapper;
-            bodyColorPicker.colorPicker.Hide();
-            bodyColorPicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
 
-            eyeColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 500), "000000");
-            var wrapper2 = new UIelementWrapper(this.tabWrapper, eyeColorPicker);
-            tabWrapper._tab.AddItems(eyeColorPicker.colorPicker);
-            eyeColorPicker.colorPicker.wrapper = wrapper2;
-            eyeColorPicker.colorPicker.Hide();
-            eyeColorPicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
             eyeColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 500), "000000");
             var wrapper2 = new UIelementWrapper(this.tabWrapper, eyeColorPicker);
             tabWrapper._tab.AddItems(eyeColorPicker.colorPicker);
@@ -327,7 +300,7 @@ namespace RainMeadow
             // Player lobby label
             this.pages[0].subObjects.Add(new MenuLabel(this, mainPage, this.Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true));
 
-            if (fakeOptionForCustomSlugcatChoice && !OnlineManager.lobby.isOwner)
+            if (rainMeadowOptions.SlugcatCustomToggle.Value && !OnlineManager.lobby.isOwner)
             {
                 this.pages[0].subObjects.Add(new MenuLabel(this, mainPage, this.Translate("Slugcat Select"), new Vector2(394, 553), new(110, 30), true));
             }
@@ -369,8 +342,8 @@ namespace RainMeadow
         }
         private void CustomSlugcatSetup()
         {
-           var slugList = AllSlugcats();
-           var slugButtons = new EventfulSelectOneButton[slugList.Count];
+            var slugList = AllSlugcats();
+            var slugButtons = new EventfulSelectOneButton[slugList.Count];
             for (int i = 0; i < slugButtons.Length; i++)
             {
                 var slug = slugList[i];
@@ -381,7 +354,6 @@ namespace RainMeadow
                 btn.OnClick += (_) =>
                 {
                     customSelectedSlugcat = slug;
-                    RainMeadow.Debug(customSelectedSlugcat);
                 };
 
             }
@@ -446,7 +418,7 @@ namespace RainMeadow
 
         private void BindSettings()
         {
-            this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
+            this.personaSettings = (StoryClientSettings)OnlineManager.lobby.gameMode.clientSettings;
             personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
             personaSettings.bodyColor = Color.white;
             personaSettings.eyeColor = Color.black;
@@ -462,18 +434,16 @@ namespace RainMeadow
         {
             if (personaSettings != null) personaSettings.bodyColor = bodyColorPicker.valuecolor;
             if (personaSettings != null) personaSettings.eyeColor = eyeColorPicker.valuecolor;
-            if (personaSettings != null) personaSettings.bodyColor = bodyColorPicker.valuecolor;
-            if (personaSettings != null) personaSettings.eyeColor = eyeColorPicker.valuecolor;
 
         }
 
-        public  string GetCampaignName(SlugcatStats.Name name)
+        public string GetCampaignName(SlugcatStats.Name name)
         {
             this.currentCampaignName = "";
             if (name == SlugcatStats.Name.White)
             {
 
-                currentCampaignName =  "SURVIVOR";
+                currentCampaignName = "SURVIVOR";
             }
             else if (name == SlugcatStats.Name.Yellow)
             {
@@ -485,7 +455,7 @@ namespace RainMeadow
             }
             else
             {
-                currentCampaignName  = "";
+                currentCampaignName = "";
             }
 
             return currentCampaignName;

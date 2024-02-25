@@ -48,7 +48,7 @@ namespace RainMeadow
             if (owner.found)
             {
                 this.pos = owner.drawpos;
-                if (owner.pointDir == Vector2.down) pos += new Vector2(0f, 60f);
+                if (owner.pointDir == Vector2.down) pos += new Vector2(0f, 35f);
             }
             else
             {
