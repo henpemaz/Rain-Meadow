@@ -4,9 +4,6 @@ using System.Collections.Generic;
 using Music;
 using System.Linq;
 
-//TODO list:
-//look up method to hook that gets called on region switch precisely OverWorld.WorldLoaded?
-
 namespace RainMeadow
 {
     public partial class MeadowMusic
@@ -15,14 +12,13 @@ namespace RainMeadow
         {
             On.RainWorldGame.ctor += GameCtorPatch;
             On.RainWorldGame.RawUpdate += RawUpdatePatch;
-            On.RegionGate.Update += GateUpdatePatch;
+            On.OverWorld.WorldLoaded += WorldLoadedPatch;
             On.VirtualMicrophone.NewRoom += NewRoomPatch;
         }
 
         const int waitSecs = 5;
 
         static bool filesChecked = false;
-        static bool gateOpen = false;
 
         static readonly Dictionary<string, string[]> ambientDict = new();
         static readonly Dictionary<string, VibeZone[]> vibeZonesDict = new();
@@ -158,19 +154,13 @@ namespace RainMeadow
             }
         }
 
-        static void GateUpdatePatch(On.RegionGate.orig_Update orig, RegionGate self, bool eu)
+        static void WorldLoadedPatch(On.OverWorld.orig_WorldLoaded orig, OverWorld self)
         {
-            orig.Invoke(self, eu);
+            orig.Invoke(self);
 
             if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode) return;
 
-            //TODO: incompatible with unintended methods to switch regions such as Warp Mod
-            if (!gateOpen && self.mode == RegionGate.Mode.MiddleOpen)
-            {
-                AnalyzeRegion(self.room.world);
-                gateOpen = true;
-            }
-            else if (gateOpen && self.mode != RegionGate.Mode.MiddleOpen) gateOpen = false;
+            AnalyzeRegion(self.activeWorld);
         }
 
         static void NewRoomPatch(On.VirtualMicrophone.orig_NewRoom orig, VirtualMicrophone self, Room room)
