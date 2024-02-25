@@ -38,7 +38,7 @@ namespace RainMeadow
         private MenuLabel campaignContainer;
 
 
-        private SlugcatStats.Name customSelectedSlugcat = SlugcatStats.Name.White;
+        private SlugcatStats.Name customSelectedSlugcat = Ext_SlugcatStatsName.OnlineStoryWhite;
 
 
 
@@ -218,7 +218,7 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner)
             {
                 this.clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame;
-                currentCampaign = (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign ?? SlugcatStats.Name.White;
+                currentCampaign = (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign ?? Ext_SlugcatStatsName.OnlineStoryWhite;
                 campaignContainer.text = $"Current Campaign: {GetCampaignName(currentCampaign)}";
             }
 
@@ -393,15 +393,15 @@ namespace RainMeadow
 
             if (!ModManager.MSC)
             {
-                filteredList.Add(SlugcatStats.Name.White);
-                filteredList.Add(SlugcatStats.Name.Yellow);// TODO: The most recent entry in the list is what the player becomes despite selecting another slugcat
-                filteredList.Add(SlugcatStats.Name.Red);
+                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryWhite);
+                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryYellow); 
+                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryRed);
             }
             else // I have more slugs for you
             {
-                filteredList.Add(SlugcatStats.Name.White);
-                filteredList.Add(SlugcatStats.Name.Yellow);
-                filteredList.Add(SlugcatStats.Name.Red);
+                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryWhite);
+                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryYellow);
+                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryRed);
 
 
                 // TODO: MSC isUnlocked check
@@ -448,16 +448,16 @@ namespace RainMeadow
         public string GetCampaignName(SlugcatStats.Name name)
         {
             this.currentCampaignName = "";
-            if (name == SlugcatStats.Name.White)
+            if (name == Ext_SlugcatStatsName.OnlineStoryWhite)
             {
 
                 currentCampaignName = "SURVIVOR";
             }
-            else if (name == SlugcatStats.Name.Yellow)
+            else if (name == Ext_SlugcatStatsName.OnlineStoryYellow)
             {
                 currentCampaignName = "MONK";
             }
-            else if (name == SlugcatStats.Name.Red)
+            else if (name == Ext_SlugcatStatsName.OnlineStoryRed)
             {
                 currentCampaignName = "HUNTER";
             }

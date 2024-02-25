@@ -166,7 +166,7 @@ namespace RainMeadow
                     if (OnlineManager.lobby.isOwner) // Host
                     {
 
-                        if (slugcatCustom.slug == SlugcatStats.Name.White)
+                        if (slugcatCustom.slug == Ext_SlugcatStatsName.OnlineStoryWhite)
                         {
                             sceneID = Menu.MenuScene.SceneID.Slugcat_White;
                             self.sceneOffset = new Vector2(-10f, 100f);
@@ -174,14 +174,14 @@ namespace RainMeadow
                             
                         }
 
-                        else if (slugcatCustom.slug == SlugcatStats.Name.Yellow)
+                        else if (slugcatCustom.slug == Ext_SlugcatStatsName.OnlineStoryYellow)
                         {
                             sceneID = Menu.MenuScene.SceneID.Slugcat_Yellow;
                             self.sceneOffset = new Vector2(-10f, 100f);
                             self.slugcatDepth = 3.1000001f;
                         }
 
-                        else if (slugcatCustom.slug == SlugcatStats.Name.Red)
+                        else if (slugcatCustom.slug == Ext_SlugcatStatsName.OnlineStoryRed)
                         {
                             sceneID = Menu.MenuScene.SceneID.Slugcat_Red;
                             self.sceneOffset = new Vector2(-10f, 100f);
