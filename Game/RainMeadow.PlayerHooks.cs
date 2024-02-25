@@ -218,10 +218,17 @@ public partial class RainMeadow
         orig(self, abstractCreature, world);
         if (OnlineManager.lobby != null)
         {
-            // remote player
-            if (OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var ent) && self.playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer)
+            if(OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var ent))
             {
-                self.controller = new OnlineController(ent, self);
+                // remote player
+                if (!ent.isMine)
+                {
+                    self.controller = new OnlineController(ent, self);
+                }
+            }
+            else
+            {
+                RainMeadow.Error("player entity not found for " + self + " " + self.abstractCreature);
             }
         }
     }
@@ -236,6 +243,10 @@ public partial class RainMeadow
 
         if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
         if (!onlineEntity.isMine) return;
+        if (isStoryMode(out var story))
+        {
+            story.storyAvatarSettings.isDead = true;
+        }
         orig(self);
     }
 
