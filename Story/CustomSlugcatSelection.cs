@@ -1,8 +1,10 @@
 ﻿using Menu;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using UnityEngine;
 using static RainMeadow.RainMeadow;
+using System.Drawing;
 
 namespace RainMeadow
 {
@@ -28,8 +30,6 @@ namespace RainMeadow
 
             this.slugcatNumber = slug;
 
-            // Ext_SlugcatStatsName.OnlineSessionPlayer = personaSettings.playingAs; 
-
             slugDesc = GetDescription();
 
 
@@ -41,7 +41,8 @@ namespace RainMeadow
                 this.mainLabel.label.color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.MediumGrey);
 
             }
-
+            var pain = new Rectangle();
+           
             this.infoLabel = new MenuLabel(storyCustomMenu, this, slugDesc.Item2, new Vector2(-1000f, this.imagePos.y - 268f - 40f), new Vector2(200f, 30f), true, null);
             this.infoLabel.label.alignment = FLabelAlignment.Center;
             this.subObjects.Add(this.infoLabel);

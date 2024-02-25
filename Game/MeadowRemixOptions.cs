@@ -33,7 +33,7 @@ public class RainMeadowOptions : OptionInterface
             {
                 new OpLabel(10f, 550f, "Options", bigText: true),
                 new OpKeyBinder(FriendsListKey, new Vector2(10f, 480f), new Vector2(150f, 30f)),
-                new OpLabel(166f, 480f, "Key used for viewing friends usernames")
+                new OpLabel(166f, 480f, "Key used for viewing friends usernames (not implemented)")
                 {
                     verticalAlignment = OpLabel.LabelVAlignment.Center
                 },
@@ -44,7 +44,7 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10f, 185f, "Custom Story Slugcat", bigText: false),
 
                 new OpCheckBox(SlugcatCustomToggle, new Vector2(10f, 160f)),
-                new OpLabel(40f, 160f, "If selected, clients can choose their own Slugcats inside a Story campaign")
+                new OpLabel(40f, 160f, RWCustom.Custom.ReplaceLineDelimeters("If selected, hosts can choose slugcat campaigns that are unstable. <LINE>Clients can choose their own Slugcats inside a host's Story campaign"))
                 {
                     verticalAlignment = OpLabel.LabelVAlignment.Center
                 }

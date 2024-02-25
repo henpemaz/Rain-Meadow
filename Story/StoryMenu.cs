@@ -93,6 +93,9 @@ namespace RainMeadow
                 this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
                 this.prevButton.OnClick += (_) =>
                 {
+                    if (!rainMeadowOptions.SlugcatCustomToggle.Value) { // I don't want to choose unstable slugcats
+                        return;
+                    }
 
                     ssm.quedSideInput = Math.Max(-3, ssm.quedSideInput - 1);
                     base.PlaySound(SoundID.MENU_Next_Slugcat);
@@ -106,6 +109,10 @@ namespace RainMeadow
                 this.nextButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(985f, 50f), 1);
                 this.nextButton.OnClick += (_) =>
                 {
+                    if (!rainMeadowOptions.SlugcatCustomToggle.Value)
+                    {
+                        return;
+                    }
                     ssm.quedSideInput = Math.Min(3, ssm.quedSideInput + 1);
                     base.PlaySound(SoundID.MENU_Next_Slugcat);
                 };
@@ -237,6 +244,7 @@ namespace RainMeadow
         {
 
             playerButtons = new EventfulSelectOneButton[players.Length];
+            
             for (int i = 0; i < players.Length; i++)
             {
                 var player = players[i];
