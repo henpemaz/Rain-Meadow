@@ -98,5 +98,32 @@ namespace RainMeadow
             var cv = Custom.RGB2HSL(c);
             return new HSLColor(cv[0], cv[1], cv[2]);
         }
+
+        // copied from futile but tweaked for accurate result on non-zero-centered rect
+        public static Vector2 GetClosestInteriorPointAlongLineFromCenter(this Rect rect, Vector2 targetPoint)
+        {
+            //if it's inside the rect, don't do anything
+            if (targetPoint.x >= rect.xMin &&
+                targetPoint.x <= rect.xMax &&
+                targetPoint.y >= rect.yMin &&
+                targetPoint.y <= rect.yMax) return targetPoint;
+
+            float halfWidth = rect.width * 0.5f;
+            float halfHeight = rect.height * 0.5f;
+            targetPoint -= rect.center; // from center
+            targetPoint.Normalize();
+
+            float absX = Mathf.Abs(targetPoint.x);
+            float absY = Mathf.Abs(targetPoint.y);
+
+            if (halfWidth * absY <= halfHeight * absX)
+            {
+                return targetPoint * halfWidth / absX + rect.center;
+            }
+            else
+            {
+                return targetPoint * halfHeight / absY + rect.center;
+            }
+        }
     }
 }

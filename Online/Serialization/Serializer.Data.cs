@@ -879,6 +879,7 @@ namespace RainMeadow
                 data.r = reader.ReadByte() / 255f;
                 data.g = reader.ReadByte() / 255f;
                 data.b = reader.ReadByte() / 255f;
+                data.a = 1f;
             }
 #if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);

@@ -13,7 +13,7 @@ namespace RainMeadow
         public string defaultDenPos;
         public SlugcatStats.Name currentCampaign = SlugcatStats.Name.White;
 
-        public StoryAvatarSettings storyAvatarSettings => avatarSettings as StoryAvatarSettings;
+        public StoryClientSettings storyAvatarSettings => clientSettings as StoryClientSettings;
 
         public StoryGameMode(Lobby lobby) : base(lobby)
         {
@@ -92,7 +92,7 @@ namespace RainMeadow
         internal override void LobbyTick(uint tick)
         {
             base.LobbyTick(tick);
-            readyForWinPlayers = lobby.entities.Values.Where(e => e.entity is StoryAvatarSettings sas && sas.readyForWin).Select(e => e.entity.owner.inLobbyId).ToList();
+            readyForWinPlayers = lobby.entities.Values.Where(e => e.entity is StoryClientSettings sas && sas.readyForWin).Select(e => e.entity.owner.inLobbyId).ToList();
         }
     }
 }

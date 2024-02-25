@@ -186,7 +186,7 @@ namespace RainMeadow
 
         private void BindSettings()
         {
-            this.personaSettings = (MeadowAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
+            this.personaSettings = (MeadowAvatarSettings)OnlineManager.lobby.gameMode.clientSettings;
             personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][skinIndex];
             personaSettings.tint = colorpicker.valuecolor;
             personaSettings.tintAmount = this.tintAmount;
