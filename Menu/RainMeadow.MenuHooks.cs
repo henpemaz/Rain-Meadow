@@ -290,21 +290,6 @@ namespace RainMeadow
             orig(self, ID);
         }
 
-        /*        private void InputOptionsMenu_ctor(On.Menu.InputOptionsMenu.orig_ctor orig, InputOptionsMenu self, ProcessManager manager)
-                {
-
-                    List<string> inputLabelTextsList = new List<string>(new string[9] { "Pause", "Map", "Pick up / Eat", "Jump", "Throw", "Left", "Up", "Right", "Down" });
-                    inputLabelTextsList.Add("View Friends");
-                    string[] inputLabelTexts = inputLabelTextsList.ToArray();
-
-                    self.inputLabelTexts = inputLabelTexts;
-
-
-                    orig(self, manager);
-
-                }*/
-
-
         private void MainMenu_ctor(On.Menu.MainMenu.orig_ctor orig, MainMenu self, ProcessManager manager, bool showRegionSpecificBkg)
         {
             orig(self, manager, showRegionSpecificBkg);
