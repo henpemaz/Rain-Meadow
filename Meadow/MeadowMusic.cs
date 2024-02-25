@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using Music;
 using System.Linq;
+using RWCustom;
 
 namespace RainMeadow
 {
@@ -177,7 +178,7 @@ namespace RainMeadow
                 float minDist = Mathf.Min(dists);
                 //we now have the smallest of all the distances, aka the one closest to the player. grab this smallest distance's corresponding room id
                 int closestVibe = rooms[dists.ToList().IndexOf(minDist)];
-                //and just grab its corresponding activezone from the dict
+                //and just grab its corresponding vibezone from the dict
                 VibeZone az = activeZonesDict[closestVibe];
                 //if this active zone's song is currently playing, and we are beyond the zone's radius
                 if (musicPlayer.song.name == az.songName && minDist > az.radius)
@@ -197,10 +198,8 @@ namespace RainMeadow
                 //if this active zone's song is currently playing (we can assume this at this point) and are within its radius
                 else if (minDist < az.radius)
                 {
-                    //this mathematical formula given by the glorious Bee
-                    //TODO: wtf is this
-                    vibeIntensity = (1 - minDist) / (2 * az.radius);
-                    musicPlayer.song.volume = (1 - minDist) / (2 * az.radius);
+                    vibeIntensity = Custom.LerpMap(minDist, az.radius, 0, 0.5f, 1);
+                    musicPlayer.song.volume = Custom.LerpMap(minDist, az.radius, 0, 0.5f, 1);
                 }
             }
         }
