@@ -48,6 +48,11 @@ namespace RainMeadow
 
         private int SlugcatStats_NourishmentOfObjectEaten(On.SlugcatStats.orig_NourishmentOfObjectEaten orig, SlugcatStats.Name slugcatIndex, IPlayerEdible eatenobject)
         {
+
+            if (!isStoryMode(out var _))
+            {
+                return orig(slugcatIndex, eatenobject);
+            }
             int pip = 0;
 
             if (slugcatIndex == Ext_SlugcatStatsName.OnlineStoryRed) // TODO: MSC Support one day
