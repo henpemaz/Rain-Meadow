@@ -74,26 +74,23 @@ namespace RainMeadow
 
         private RWCustom.IntVector2 SlugcatStats_SlugcatFoodMeter(On.SlugcatStats.orig_SlugcatFoodMeter orig, SlugcatStats.Name slugcat)
         {
-            if (!isStoryMode(out var _))
+            if (isStoryMode(out var storyGameMode))
             {
-                return orig(slugcat);
-            }
-
-            if (slugcat == Ext_SlugcatStatsName.OnlineStoryWhite)
-            {
-                return new RWCustom.IntVector2(7, 4);
-            }
-
-            if (slugcat == Ext_SlugcatStatsName.OnlineStoryYellow)
-            {
-                return new RWCustom.IntVector2(5, 3);
-            }
-
-            if (slugcat == Ext_SlugcatStatsName.OnlineStoryRed)
-            {
-                return new RWCustom.IntVector2(9, 6);
+                if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryWhite)
+                {
+                    return new RWCustom.IntVector2(7, 4);
+                }
+                if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryYellow)
+                {
+                    return new RWCustom.IntVector2(5, 3);
+                }
+                if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryRed)
+                {
+                    return new RWCustom.IntVector2(9, 6);
+                }
             }
             return orig(slugcat);
+
         }
 
         private void SlugcatStats_ctor(On.SlugcatStats.orig_ctor orig, SlugcatStats self, SlugcatStats.Name slugcat, bool malnourished)
