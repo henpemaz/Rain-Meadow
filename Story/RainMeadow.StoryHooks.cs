@@ -125,7 +125,7 @@ namespace RainMeadow
                 self.throwingSkill = 0;
             }
 
-            // orig(self, slugcat, malnourished);
+            // orig(self, slugcat, malnourished); Scary
 
         }
 
