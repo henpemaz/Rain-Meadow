@@ -11,7 +11,7 @@ namespace RainMeadow
         public bool didStartGame = false;
         public bool didStartCycle = false;
         public string defaultDenPos;
-        public SlugcatStats.Name currentCampaign = SlugcatStats.Name.White;
+        public SlugcatStats.Name currentCampaign;
 
         public StoryClientSettings storyClientSettings => clientSettings as StoryClientSettings;
 

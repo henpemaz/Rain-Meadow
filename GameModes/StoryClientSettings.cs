@@ -28,9 +28,8 @@ namespace RainMeadow
         public StoryClientSettings(Definition entityDefinition) : base(entityDefinition)
         {
             RainMeadow.Debug(this);
-            // todo de-dummy
-            // I'm accessible through gamemode.avatarsettings change me
-            playingAs = SlugcatStats.Name.White;
+     
+            playingAs = RainMeadow.Ext_SlugcatStatsName.OnlineStoryWhite; // Placeholder, overriden in StoryMenu on Start()
             myLastDenPos = "SU_C04";
             bodyColor = entityDefinition.owner == 2 ? Color.cyan : PlayerGraphics.DefaultSlugcatColor(playingAs);
             eyeColor = Color.black;

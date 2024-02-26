@@ -9,8 +9,6 @@ namespace RainMeadow
     public partial class RainMeadow
     {
         private bool isPlayerReady = false;
-        //public static List<string> playersWithArrows;
-
         public static bool isStoryMode(out StoryGameMode gameMode)
         {
             gameMode = null;
