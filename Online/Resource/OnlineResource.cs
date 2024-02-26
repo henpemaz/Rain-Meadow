@@ -307,7 +307,7 @@ namespace RainMeadow
                 }
             }
             participants.Remove(participant);
-            if(isSupervisor && participant == owner && participants.Count > 0)
+            if(isSupervisor && participant == owner)
             {
                 PickNewOwner();
             }
