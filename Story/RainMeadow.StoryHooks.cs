@@ -36,7 +36,7 @@ namespace RainMeadow
             On.SlugcatStats.ctor += SlugcatStats_ctor;
             On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
 
-            On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide; 
+            On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide;
             On.RegionGate.PlayersStandingStill += PlayersStandingStill;
             On.RegionGate.PlayersInZone += RegionGate_PlayersInZone;
 
@@ -75,7 +75,7 @@ namespace RainMeadow
                 orig(self, slugcat, malnourished);
             }
 
-           
+
 
             if (slugcat == Ext_SlugcatStatsName.OnlineStoryWhite)
             {
@@ -118,6 +118,15 @@ namespace RainMeadow
                 self.name = slugcat;
                 self.foodToHibernate = 6;
 
+
+            }
+            else
+            {
+
+                self.bodyWeightFac = Mathf.Min(self.bodyWeightFac, 0.9f);
+                self.runspeedFac = 0.875f;
+                self.poleClimbSpeedFac = 0.8f;
+                self.corridorClimbSpeedFac = 0.86f;
 
             }
             if (malnourished)
