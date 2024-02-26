@@ -45,7 +45,22 @@ namespace RainMeadow
 
         public override SlugcatStats.Name LoadWorldAs(RainWorldGame game)
         {
-            return storyClientSettings.playingAs;
+            if (currentCampaign == RainMeadow.Ext_SlugcatStatsName.OnlineStoryYellow) 
+            {
+                return SlugcatStats.Name.Yellow;
+            }
+            else if (currentCampaign == RainMeadow.Ext_SlugcatStatsName.OnlineStoryWhite) 
+            {
+                return SlugcatStats.Name.White;
+            }
+            else if (currentCampaign == RainMeadow.Ext_SlugcatStatsName.OnlineStoryRed) 
+            {
+                return SlugcatStats.Name.Red;
+            }
+            else
+            {
+                return SlugcatStats.Name.White;
+            }
         }
 
         public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
