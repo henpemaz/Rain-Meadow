@@ -94,7 +94,8 @@ namespace RainMeadow
                 this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
                 this.prevButton.OnClick += (_) =>
                 {
-                    if (!rainMeadowOptions.SlugcatCustomToggle.Value) { // I don't want to choose unstable slugcats
+                    if (!rainMeadowOptions.SlugcatCustomToggle.Value)
+                    { // I don't want to choose unstable slugcats
                         return;
                     }
 
@@ -221,9 +222,12 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner)
             {
                 this.clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame;
-                currentCampaign = (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign ?? Ext_SlugcatStatsName.OnlineStoryWhite;
-                campaignContainer.text = $"Current Campaign: {GetCampaignName(currentCampaign)}";
-            }           
+                if ((OnlineManager.lobby.gameMode as StoryGameMode).didStartGame)
+                {
+                    currentCampaign = (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign ?? Ext_SlugcatStatsName.OnlineStoryWhite;
+                    campaignContainer.text = $"Current Campaign: {GetCampaignName(currentCampaign)}";
+                }
+            }
 
             if (ssm.scroll == 0f && ssm.lastScroll == 0f)
             {
@@ -247,7 +251,7 @@ namespace RainMeadow
         {
 
             playerButtons = new EventfulSelectOneButton[players.Length];
-            
+
             for (int i = 0; i < players.Length; i++)
             {
                 var player = players[i];
@@ -388,7 +392,7 @@ namespace RainMeadow
             UpdateCharacterUI();
         }
 
-       
+
 
         public static List<SlugcatStats.Name> AllSlugcats()
         {
@@ -399,7 +403,7 @@ namespace RainMeadow
             if (!ModManager.MSC)
             {
                 filteredList.Add(Ext_SlugcatStatsName.OnlineStoryWhite);
-                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryYellow); 
+                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryYellow);
                 filteredList.Add(Ext_SlugcatStatsName.OnlineStoryRed);
             }
             else // I have more slugs for you

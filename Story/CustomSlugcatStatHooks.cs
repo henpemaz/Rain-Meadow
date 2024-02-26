@@ -20,15 +20,14 @@ namespace RainMeadow
         private int SlugcatStats_NourishmentOfObjectEaten(On.SlugcatStats.orig_NourishmentOfObjectEaten orig, SlugcatStats.Name slugcatIndex, IPlayerEdible eatenobject)
         {
 
-            if (!isStoryMode(out var _))
+            if (isStoryMode(out var storyGameMode))
             {
-                return orig(slugcatIndex, eatenobject);
-            }
+            
             int pip = 0;
 
-            if (slugcatIndex == Ext_SlugcatStatsName.OnlineStoryRed) // TODO: MSC Support one day
-            {
-                bool flag = true;
+                if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryRed)
+                {
+                    bool flag = true;
                 if (eatenobject is Centipede || eatenobject is VultureGrub || eatenobject is Hazer || eatenobject is EggBugEgg || eatenobject is SmallNeedleWorm || eatenobject is JellyFish)
                 {
                     flag = false;
@@ -36,11 +35,15 @@ namespace RainMeadow
 
                 pip = ((!flag) ? (pip + 4 * eatenobject.FoodPoints) : (pip + eatenobject.FoodPoints));
             }
-            else if (slugcatIndex == Ext_SlugcatStatsName.OnlineStoryWhite || slugcatIndex == Ext_SlugcatStatsName.OnlineStoryYellow) // TODO: MSC Support one day
+            else if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryWhite || storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryYellow) // TODO: MSC Support one day
             {
                 pip = (!ModManager.MSC ? (pip + 4 * eatenobject.FoodPoints) : (pip + 2));
             }
             return pip;
+        }
+
+            return orig(slugcatIndex, eatenobject);
+
         }
 
         private RWCustom.IntVector2 SlugcatStats_SlugcatFoodMeter(On.SlugcatStats.orig_SlugcatFoodMeter orig, SlugcatStats.Name slugcat)
@@ -66,75 +69,80 @@ namespace RainMeadow
 
         private void SlugcatStats_ctor(On.SlugcatStats.orig_ctor orig, SlugcatStats self, SlugcatStats.Name slugcat, bool malnourished)
         {
-            if (!isStoryMode(out var _))
-            {
-                orig(self, slugcat, malnourished);
-            }
-
-
-            if (OnlineManager.lobby == null) return;
 
             if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode)
             {
                 self.throwingSkill = 1;
             }
 
-
-            if (slugcat == Ext_SlugcatStatsName.OnlineStoryWhite)
+            if (isStoryMode(out var storyGameMode))
             {
 
-                self.throwingSkill = 1;
-                self.maxFood = 7;
-                self.name = slugcat;
-                self.foodToHibernate = 4;
-
-            }
-
-            if (slugcat == Ext_SlugcatStatsName.OnlineStoryYellow)
-            {
-
-                self.bodyWeightFac = 0.95f;
-                self.generalVisibilityBonus = -0.1f;
-                self.visualStealthInSneakMode = 0.6f;
-                self.loudnessFac = 0.75f;
-                self.lungsFac = 1.2f;
-                self.throwingSkill = 0;
-                self.maxFood = 5;
-                self.name = slugcat;
-                self.foodToHibernate = 3;
-
-            }
+                if (OnlineManager.lobby == null) return;
 
 
-            if (slugcat == Ext_SlugcatStatsName.OnlineStoryRed)
-            {
+                if (slugcat == Ext_SlugcatStatsName.OnlineStoryWhite) // Don't tell Turtle I did this...
+                {
 
-                self.runspeedFac = 1.2f;
-                self.bodyWeightFac = 1.12f;
-                self.generalVisibilityBonus = 0.1f;
-                self.visualStealthInSneakMode = 0.3f;
-                self.loudnessFac = 1.35f;
-                self.throwingSkill = 2;
-                self.poleClimbSpeedFac = 1.25f;
-                self.corridorClimbSpeedFac = 1.2f;
-                self.maxFood = 9;
-                self.name = slugcat;
-                self.foodToHibernate = 6;
+                    self.throwingSkill = 1;
+                    self.maxFood = 7;
+                    self.name = slugcat;
+                    self.foodToHibernate = 4;
 
 
+                }
+
+                if (slugcat == Ext_SlugcatStatsName.OnlineStoryYellow)
+                {
+
+                    self.bodyWeightFac = 0.95f;
+                    self.generalVisibilityBonus = -0.1f;
+                    self.visualStealthInSneakMode = 0.6f;
+                    self.loudnessFac = 0.75f;
+                    self.lungsFac = 1.2f;
+                    self.throwingSkill = 0;
+                    self.maxFood = 5;
+                    self.name = slugcat;
+                    self.foodToHibernate = 3;
+
+
+                }
+
+
+                if (slugcat == Ext_SlugcatStatsName.OnlineStoryRed)
+                {
+
+                    self.runspeedFac = 1.2f;
+                    self.bodyWeightFac = 1.12f;
+                    self.generalVisibilityBonus = 0.1f;
+                    self.visualStealthInSneakMode = 0.3f;
+                    self.loudnessFac = 1.35f;
+                    self.throwingSkill = 2;
+                    self.poleClimbSpeedFac = 1.25f;
+                    self.corridorClimbSpeedFac = 1.2f;
+                    self.maxFood = 9;
+                    self.name = slugcat;
+                    self.foodToHibernate = 6;
+
+
+                }
+                else
+                {
+
+                    self.bodyWeightFac = Mathf.Min(self.bodyWeightFac, 0.9f);
+                    self.runspeedFac = 0.875f;
+                    self.poleClimbSpeedFac = 0.8f;
+                    self.corridorClimbSpeedFac = 0.86f;
+
+                }
+                if (malnourished)
+                {
+                    self.throwingSkill = 0;
+                }
             }
             else
             {
-
-                self.bodyWeightFac = Mathf.Min(self.bodyWeightFac, 0.9f);
-                self.runspeedFac = 0.875f;
-                self.poleClimbSpeedFac = 0.8f;
-                self.corridorClimbSpeedFac = 0.86f;
-
-            }
-            if (malnourished)
-            {
-                self.throwingSkill = 0;
+                orig(self, slugcat, malnourished);
             }
 
         }
