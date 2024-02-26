@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using HUD;
 using System.Linq;
+using System;
 
 namespace RainMeadow
 {
@@ -35,6 +36,7 @@ namespace RainMeadow
 
             On.SlugcatStats.ctor += SlugcatStats_ctor;
             On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
+            On.SlugcatStats.NourishmentOfObjectEaten += SlugcatStats_NourishmentOfObjectEaten;
 
             On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide;
             On.RegionGate.PlayersStandingStill += PlayersStandingStill;
@@ -42,6 +44,27 @@ namespace RainMeadow
 
             On.RainWorldGame.GameOver += RainWorldGame_GameOver;
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
+        }
+
+        private int SlugcatStats_NourishmentOfObjectEaten(On.SlugcatStats.orig_NourishmentOfObjectEaten orig, SlugcatStats.Name slugcatIndex, IPlayerEdible eatenobject)
+        {
+            int pip = 0;
+
+            if (slugcatIndex == Ext_SlugcatStatsName.OnlineStoryRed) // TODO: MSC Support one day
+            {
+                bool flag = true;
+                if (eatenobject is Centipede || eatenobject is VultureGrub || eatenobject is Hazer || eatenobject is EggBugEgg || eatenobject is SmallNeedleWorm || eatenobject is JellyFish)
+                {
+                    flag = false;
+                }
+
+                pip = ((!flag) ? (pip + 4 * eatenobject.FoodPoints) : (pip + eatenobject.FoodPoints));
+            }
+            else if (slugcatIndex == Ext_SlugcatStatsName.OnlineStoryWhite || slugcatIndex == Ext_SlugcatStatsName.OnlineStoryYellow) // TODO: MSC Support one day
+            {
+                pip = (!ModManager.MSC ? (pip + 4 * eatenobject.FoodPoints) : (pip + 2));
+            }
+            return pip;
         }
 
         private RWCustom.IntVector2 SlugcatStats_SlugcatFoodMeter(On.SlugcatStats.orig_SlugcatFoodMeter orig, SlugcatStats.Name slugcat)
