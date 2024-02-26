@@ -33,7 +33,10 @@ namespace RainMeadow
 
             On.Player.Update += Player_Update;
 
-            On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide; ;
+            On.SlugcatStats.ctor += SlugcatStats_ctor;
+            On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
+
+            On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide; 
             On.RegionGate.PlayersStandingStill += PlayersStandingStill;
             On.RegionGate.PlayersInZone += RegionGate_PlayersInZone;
 
@@ -41,8 +44,92 @@ namespace RainMeadow
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
         }
 
+        private RWCustom.IntVector2 SlugcatStats_SlugcatFoodMeter(On.SlugcatStats.orig_SlugcatFoodMeter orig, SlugcatStats.Name slugcat)
+        {
+            if (!isStoryMode(out var _))
+            {
+                return orig(slugcat);
+            }
 
-        // Using the SinglePlayerHUD for OnlineStory because that's the only entry point besides hooking the Arena data, which I don't want. 
+            if (slugcat == Ext_SlugcatStatsName.OnlineStoryWhite)
+            {
+                return new RWCustom.IntVector2(7, 4);
+            }
+
+            if (slugcat == Ext_SlugcatStatsName.OnlineStoryYellow)
+            {
+                return new RWCustom.IntVector2(5, 3);
+            }
+
+            if (slugcat == Ext_SlugcatStatsName.OnlineStoryRed)
+            {
+                return new RWCustom.IntVector2(9, 6);
+            }
+            return orig(slugcat);
+        }
+
+        private void SlugcatStats_ctor(On.SlugcatStats.orig_ctor orig, SlugcatStats self, SlugcatStats.Name slugcat, bool malnourished)
+        {
+            if (!isStoryMode(out var _))
+            {
+                orig(self, slugcat, malnourished);
+            }
+
+           
+
+            if (slugcat == Ext_SlugcatStatsName.OnlineStoryWhite)
+            {
+
+                self.throwingSkill = 1;
+                self.maxFood = 7;
+                self.name = slugcat;
+                self.foodToHibernate = 4;
+
+            }
+
+            if (slugcat == Ext_SlugcatStatsName.OnlineStoryYellow)
+            {
+
+                self.bodyWeightFac = 0.95f;
+                self.generalVisibilityBonus = -0.1f;
+                self.visualStealthInSneakMode = 0.6f;
+                self.loudnessFac = 0.75f;
+                self.lungsFac = 1.2f;
+                self.throwingSkill = 0;
+                self.maxFood = 5;
+                self.name = slugcat;
+                self.foodToHibernate = 3;
+
+            }
+
+
+            if (slugcat == Ext_SlugcatStatsName.OnlineStoryRed)
+            {
+
+                self.runspeedFac = 1.2f;
+                self.bodyWeightFac = 1.12f;
+                self.generalVisibilityBonus = 0.1f;
+                self.visualStealthInSneakMode = 0.3f;
+                self.loudnessFac = 1.35f;
+                self.throwingSkill = 2;
+                self.poleClimbSpeedFac = 1.25f;
+                self.corridorClimbSpeedFac = 1.2f;
+                self.maxFood = 9;
+                self.name = slugcat;
+                self.foodToHibernate = 6;
+
+
+            }
+            if (malnourished)
+            {
+                self.throwingSkill = 0;
+            }
+
+            // orig(self, slugcat, malnourished);
+
+        }
+
+
         private void HUD_InitSinglePlayerHud(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam)
         {
             orig(self, cam);
@@ -77,7 +164,7 @@ namespace RainMeadow
             {
                 foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
                 {
-                    
+
                     if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
                     if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
                     {
@@ -141,12 +228,13 @@ namespace RainMeadow
             orig(self, eu);
             if (isStoryMode(out var gameMode))
             {
+                RainMeadow.Debug("PLAYING AS:" + self.slugcatStats.name);
+                RainMeadow.Debug("THROWING SKILL:" + self.slugcatStats.throwingSkill);
 
                 //fetch the online entity and check if it is mine. 
                 //If it is mine run the below code
                 //If not, update from the lobby state
                 //self.readyForWin = OnlineMAnager.lobby.playerid === fetch if this is ours. 
-                
                 if (OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe))
                 {
                     if (!oe.isMine)

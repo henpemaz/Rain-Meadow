@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using UnityEngine;
 using MoreSlugcats;
+using RWCustom;
 using static RainMeadow.RainMeadow;
 
 namespace RainMeadow
@@ -192,7 +193,9 @@ namespace RainMeadow
                 (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber; // I decide the campaign
             }
             Ext_SlugcatStatsName.OnlineSessionPlayer = personaSettings.playingAs;
+
             RainMeadow.Debug("PLAYING AS: " + personaSettings.playingAs);
+
             manager.arenaSitting = null;
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
@@ -221,6 +224,9 @@ namespace RainMeadow
                 currentCampaign = (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign ?? Ext_SlugcatStatsName.OnlineStoryWhite;
                 campaignContainer.text = $"Current Campaign: {GetCampaignName(currentCampaign)}";
             }
+            RainMeadow.Debug("PLAYING AS: " + ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber);
+           
+
 
             if (ssm.scroll == 0f && ssm.lastScroll == 0f)
             {
@@ -385,6 +391,8 @@ namespace RainMeadow
             UpdateCharacterUI();
         }
 
+       
+
         public static List<SlugcatStats.Name> AllSlugcats()
         {
             // List<string> namesToExclude = new List<string> { "Night", "MeadowOnline", "MeadowOnlineRemote" }; // TODO: follow up on these
@@ -419,9 +427,11 @@ namespace RainMeadow
                 // filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Saint);
 
             }
+
             return filteredList;
 
         }
+
 
 
         private void BindSettings()
