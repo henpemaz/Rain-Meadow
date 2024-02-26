@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using static RainMeadow.RainMeadow;
 
 namespace RainMeadow
 {
@@ -45,7 +46,22 @@ namespace RainMeadow
 
         public override SlugcatStats.Name LoadWorldAs(RainWorldGame game)
         {
-            return storyClientSettings.playingAs;
+            if (currentCampaign == Ext_SlugcatStatsName.OnlineStoryYellow) 
+            {
+                return SlugcatStats.Name.Yellow;
+            }
+            else if (currentCampaign == Ext_SlugcatStatsName.OnlineStoryWhite) 
+            {
+                return SlugcatStats.Name.White;
+            }
+            else if (currentCampaign == Ext_SlugcatStatsName.OnlineStoryRed) 
+            {
+                return SlugcatStats.Name.Red;
+            }
+            else
+            {
+                return SlugcatStats.Name.White;
+            }
         }
 
         public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
