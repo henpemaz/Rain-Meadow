@@ -19,7 +19,6 @@ public partial class RainMeadow
 
         On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites1;
 
-        On.SlugcatStats.ctor += SlugcatStatsOnctor;
         On.AbstractCreature.ctor += AbstractCreature_ctor;
 
         On.Player.Update += Player_Update1;
@@ -260,18 +259,5 @@ public partial class RainMeadow
             }
         }
         return orig(self, obj);
-    }
-
-    private void SlugcatStatsOnctor(On.SlugcatStats.orig_ctor orig, SlugcatStats self, SlugcatStats.Name slugcat, bool malnourished)
-    {
-        orig(self, slugcat, malnourished);
-
-        if (OnlineManager.lobby == null) return;
-        if (slugcat != Ext_SlugcatStatsName.OnlineSessionPlayer && slugcat != Ext_SlugcatStatsName.OnlineSessionRemotePlayer) return;
-
-        if (OnlineManager.lobby.gameMode is StoryGameMode or ArenaCompetitiveGameMode or FreeRoamGameMode)
-        {
-            self.throwingSkill = 1;
-        }
     }
 }

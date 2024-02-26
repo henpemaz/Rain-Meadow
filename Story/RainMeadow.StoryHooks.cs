@@ -99,6 +99,13 @@ namespace RainMeadow
             }
 
 
+            if (OnlineManager.lobby == null) return;
+
+            if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode)
+            {
+                self.throwingSkill = 1;
+            }
+
 
             if (slugcat == Ext_SlugcatStatsName.OnlineStoryWhite)
             {
@@ -156,8 +163,6 @@ namespace RainMeadow
             {
                 self.throwingSkill = 0;
             }
-
-            // orig(self, slugcat, malnourished); Scary
 
         }
 
