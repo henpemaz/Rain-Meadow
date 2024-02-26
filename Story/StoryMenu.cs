@@ -223,10 +223,7 @@ namespace RainMeadow
                 this.clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame;
                 currentCampaign = (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign ?? Ext_SlugcatStatsName.OnlineStoryWhite;
                 campaignContainer.text = $"Current Campaign: {GetCampaignName(currentCampaign)}";
-            }
-            RainMeadow.Debug("PLAYING AS: " + ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber);
-           
-
+            }           
 
             if (ssm.scroll == 0f && ssm.lastScroll == 0f)
             {
