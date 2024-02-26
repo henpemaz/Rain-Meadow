@@ -76,6 +76,11 @@ namespace RainMeadow
             mainPage.subObjects.Add(modeDescriptionLabel);
             UpdateModeDescription();
 
+            // display version
+            where = new Vector2(0f, 0f);
+            var meadowVer = new ProperlyAlignedMenuLabel(this, mainPage, Translate($"Rain Meadow Version {RainMeadow.MeadowVersionStr}"), where, new Vector2(0f, 20f), false, null);
+            mainPage.subObjects.Add(meadowVer);
+
             // center-low settings
             where.y -= 45;
             var visibilityLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Visibility:"), where, new Vector2(200, 20f), false, null);
