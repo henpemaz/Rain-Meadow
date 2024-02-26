@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using static RainMeadow.RainMeadow;
 
 namespace RainMeadow
 {
@@ -46,15 +45,15 @@ namespace RainMeadow
 
         public override SlugcatStats.Name LoadWorldAs(RainWorldGame game)
         {
-            if (currentCampaign == Ext_SlugcatStatsName.OnlineStoryYellow) 
+            if (currentCampaign == RainMeadow.Ext_SlugcatStatsName.OnlineStoryYellow) 
             {
                 return SlugcatStats.Name.Yellow;
             }
-            else if (currentCampaign == Ext_SlugcatStatsName.OnlineStoryWhite) 
+            else if (currentCampaign == RainMeadow.Ext_SlugcatStatsName.OnlineStoryWhite) 
             {
                 return SlugcatStats.Name.White;
             }
-            else if (currentCampaign == Ext_SlugcatStatsName.OnlineStoryRed) 
+            else if (currentCampaign == RainMeadow.Ext_SlugcatStatsName.OnlineStoryRed) 
             {
                 return SlugcatStats.Name.Red;
             }
