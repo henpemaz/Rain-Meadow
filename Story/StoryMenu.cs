@@ -1,4 +1,4 @@
-﻿using Menu;
+using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 using Steamworks;
@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Linq;
 using UnityEngine;
 using MoreSlugcats;
-using RWCustom;
 using static RainMeadow.RainMeadow;
 
 namespace RainMeadow
@@ -27,7 +26,7 @@ namespace RainMeadow
 
         private SlugcatSelectMenu ssm;
         private SlugcatSelectMenu.SlugcatPage sp;
-        private StoryClientSettings personaSettings;
+        private StoryAvatarSettings personaSettings;
 
         private List<SlugcatSelectMenu.SlugcatPage> characterPages;
         private EventfulSelectOneButton[] playerButtons;
@@ -38,6 +37,7 @@ namespace RainMeadow
         private string currentCampaignName = "";
         private MenuLabel campaignContainer;
 
+        private bool fakeOptionForCustomSlugcatChoice = false; // ADD REMIX OPTION HERE
 
         private SlugcatStats.Name customSelectedSlugcat = Ext_SlugcatStatsName.OnlineStoryWhite;
 
@@ -194,9 +194,7 @@ namespace RainMeadow
                 (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber; // I decide the campaign
             }
             Ext_SlugcatStatsName.OnlineSessionPlayer = personaSettings.playingAs;
-
             RainMeadow.Debug("PLAYING AS: " + personaSettings.playingAs);
-
             manager.arenaSitting = null;
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
@@ -251,7 +249,6 @@ namespace RainMeadow
         {
 
             playerButtons = new EventfulSelectOneButton[players.Length];
-
             for (int i = 0; i < players.Length; i++)
             {
                 var player = players[i];
@@ -392,8 +389,6 @@ namespace RainMeadow
             UpdateCharacterUI();
         }
 
-
-
         public static List<SlugcatStats.Name> AllSlugcats()
         {
             // List<string> namesToExclude = new List<string> { "Night", "MeadowOnline", "MeadowOnlineRemote" }; // TODO: follow up on these
@@ -402,15 +397,15 @@ namespace RainMeadow
 
             if (!ModManager.MSC)
             {
-                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryWhite);
-                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryYellow);
-                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryRed);
+                filteredList.Add(SlugcatStats.Name.White);
+                filteredList.Add(SlugcatStats.Name.Yellow);// TODO: The most recent entry in the list is what the player becomes despite selecting another slugcat
+                filteredList.Add(SlugcatStats.Name.Red);
             }
             else // I have more slugs for you
             {
-                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryWhite);
-                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryYellow);
-                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryRed);
+                filteredList.Add(SlugcatStats.Name.White);
+                filteredList.Add(SlugcatStats.Name.Yellow);
+                filteredList.Add(SlugcatStats.Name.Red);
 
 
                 // TODO: MSC isUnlocked check
@@ -428,16 +423,14 @@ namespace RainMeadow
                 // filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Saint);
 
             }
-
             return filteredList;
 
         }
 
 
-
         private void BindSettings()
         {
-            this.personaSettings = (StoryClientSettings)OnlineManager.lobby.gameMode.clientSettings;
+            this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
             personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
             personaSettings.bodyColor = Color.white;
             personaSettings.eyeColor = Color.black;
@@ -456,25 +449,25 @@ namespace RainMeadow
 
         }
 
-        public string GetCampaignName(SlugcatStats.Name name)
+        public  string GetCampaignName(SlugcatStats.Name name)
         {
             this.currentCampaignName = "";
-            if (name == Ext_SlugcatStatsName.OnlineStoryWhite)
+            if (name == SlugcatStats.Name.White)
             {
 
-                currentCampaignName = "SURVIVOR";
+                currentCampaignName =  "SURVIVOR";
             }
-            else if (name == Ext_SlugcatStatsName.OnlineStoryYellow)
+            else if (name == SlugcatStats.Name.Yellow)
             {
                 currentCampaignName = "MONK";
             }
-            else if (name == Ext_SlugcatStatsName.OnlineStoryRed)
+            else if (name == SlugcatStats.Name.Red)
             {
                 currentCampaignName = "HUNTER";
             }
             else
             {
-                currentCampaignName = "";
+                currentCampaignName  = "";
             }
 
             return currentCampaignName;
