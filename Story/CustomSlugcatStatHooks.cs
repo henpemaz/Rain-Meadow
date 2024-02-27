@@ -11,12 +11,7 @@ namespace RainMeadow
     public partial class RainMeadow
     {
 
-        public void CustomSlugcatStatSetup()
-        {
-            On.SlugcatStats.ctor += SlugcatStats_ctor;
-            On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
-            On.SlugcatStats.NourishmentOfObjectEaten += SlugcatStats_NourishmentOfObjectEaten;
-        }
+     
         private int SlugcatStats_NourishmentOfObjectEaten(On.SlugcatStats.orig_NourishmentOfObjectEaten orig, SlugcatStats.Name slugcatIndex, IPlayerEdible eatenobject)
         {
 
@@ -69,6 +64,8 @@ namespace RainMeadow
 
         private void SlugcatStats_ctor(On.SlugcatStats.orig_ctor orig, SlugcatStats self, SlugcatStats.Name slugcat, bool malnourished)
         {
+
+            orig(self, slugcat, malnourished);
 
             if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode)
             {
@@ -151,10 +148,6 @@ namespace RainMeadow
                 {
                     self.throwingSkill = 0;
                 }
-            }
-            else
-            {
-                orig(self, slugcat, malnourished);
             }
 
         }

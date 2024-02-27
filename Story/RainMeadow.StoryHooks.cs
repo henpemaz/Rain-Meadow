@@ -32,7 +32,9 @@ namespace RainMeadow
 
             On.Player.Update += Player_Update;
 
-            CustomSlugcatStatSetup();
+            On.SlugcatStats.ctor += SlugcatStats_ctor;
+            On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
+            On.SlugcatStats.NourishmentOfObjectEaten += SlugcatStats_NourishmentOfObjectEaten;
 
 
             On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide;
