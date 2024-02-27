@@ -39,6 +39,9 @@ namespace RainMeadow
         private MenuLabel campaignContainer;
 
 
+        private SlugcatStats.Name customSelectedSlugcat = Ext_SlugcatStatsName.OnlineStoryWhite;
+
+
 
         public override MenuScene.SceneID GetScene => null;
         public StoryMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.StoryMenu)
@@ -91,7 +94,10 @@ namespace RainMeadow
                 this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
                 this.prevButton.OnClick += (_) =>
                 {
-                    (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
+                    if (!rainMeadowOptions.SlugcatCustomToggle.Value)
+                    { // I don't want to choose unstable slugcats
+                        return;
+                    }
 
                     ssm.quedSideInput = Math.Max(-3, ssm.quedSideInput - 1);
                     base.PlaySound(SoundID.MENU_Next_Slugcat);
@@ -105,7 +111,10 @@ namespace RainMeadow
                 this.nextButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(985f, 50f), 1);
                 this.nextButton.OnClick += (_) =>
                 {
-                    (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
+                    if (!rainMeadowOptions.SlugcatCustomToggle.Value)
+                    {
+                        return;
+                    }
                     ssm.quedSideInput = Math.Min(3, ssm.quedSideInput + 1);
                     base.PlaySound(SoundID.MENU_Next_Slugcat);
                 };
@@ -140,6 +149,11 @@ namespace RainMeadow
             SetupCharacterCustomization();
             UpdateCharacterUI();
 
+            if (!OnlineManager.lobby.isOwner && rainMeadowOptions.SlugcatCustomToggle.Value)
+            {
+                CustomSlugcatSetup();
+            }
+
 
 
             if (OnlineManager.lobby.isActive)
@@ -161,7 +175,24 @@ namespace RainMeadow
         private void StartGame()
         {
             RainMeadow.DebugMe();
-            personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
+            if (!OnlineManager.lobby.isOwner) // I'm a client
+            {
+                if (!rainMeadowOptions.SlugcatCustomToggle.Value) // I'm a client and I want to match the hosts
+                {
+
+                    personaSettings.playingAs = (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign;
+                }
+                else // I'm a client and I want my own Slugcat
+                {
+                    personaSettings.playingAs = customSelectedSlugcat;
+
+                }
+            }
+            else //I'm the host
+            {
+                personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
+                (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber; // I decide the campaign
+            }
             Ext_SlugcatStatsName.OnlineSessionPlayer = personaSettings.playingAs;
 
             RainMeadow.Debug("PLAYING AS: " + personaSettings.playingAs);
@@ -191,8 +222,11 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner)
             {
                 this.clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame;
-                currentCampaign = (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign ?? SlugcatStats.Name.White;
-                campaignContainer.text = GetCampaignName(currentCampaign);
+                if ((OnlineManager.lobby.gameMode as StoryGameMode).didStartGame)
+                {
+                    currentCampaign = (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign ?? Ext_SlugcatStatsName.OnlineStoryWhite;
+                    campaignContainer.text = $"Current Campaign: {GetCampaignName(currentCampaign)}";
+                }
             }
 
             if (ssm.scroll == 0f && ssm.lastScroll == 0f)
@@ -281,6 +315,11 @@ namespace RainMeadow
             // Player lobby label
             this.pages[0].subObjects.Add(new MenuLabel(this, mainPage, this.Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true));
 
+            if (rainMeadowOptions.SlugcatCustomToggle.Value && !OnlineManager.lobby.isOwner)
+            {
+                this.pages[0].subObjects.Add(new MenuLabel(this, mainPage, this.Translate("Slugcat Select"), new Vector2(394, 553), new(110, 30), true));
+            }
+
 
         }
 
@@ -315,6 +354,24 @@ namespace RainMeadow
 
 
 
+        }
+        private void CustomSlugcatSetup()
+        {
+            var slugList = AllSlugcats();
+            var slugButtons = new EventfulSelectOneButton[slugList.Count];
+            for (int i = 0; i < slugButtons.Length; i++)
+            {
+                var slug = slugList[i];
+                var slugStringName = GetCampaignName(slugList[i]);
+                var btn = new EventfulSelectOneButton(this, mainPage, slugStringName, "slugButtons", new Vector2(394, 515) - i * new Vector2(0, 38), new(110, 30), slugButtons, i);
+                mainPage.subObjects.Add(btn);
+                slugButtons[i] = btn;
+                btn.OnClick += (_) =>
+                {
+                    customSelectedSlugcat = slug;
+                };
+
+            }
         }
 
 
@@ -420,7 +477,7 @@ namespace RainMeadow
                 currentCampaignName = "";
             }
 
-            return $"Current Campaign: {currentCampaignName}";
+            return currentCampaignName;
         }
 
     }
