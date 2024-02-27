@@ -22,25 +22,25 @@ namespace RainMeadow
 
             if (isStoryMode(out var storyGameMode))
             {
-            
-            int pip = 0;
 
-                if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryRed)
+                int pip = 0;
+
+                if (slugcatIndex == Ext_SlugcatStatsName.OnlineStoryRed)
                 {
                     bool flag = true;
-                if (eatenobject is Centipede || eatenobject is VultureGrub || eatenobject is Hazer || eatenobject is EggBugEgg || eatenobject is SmallNeedleWorm || eatenobject is JellyFish)
-                {
-                    flag = false;
-                }
+                    if (eatenobject is Centipede || eatenobject is VultureGrub || eatenobject is Hazer || eatenobject is EggBugEgg || eatenobject is SmallNeedleWorm || eatenobject is JellyFish)
+                    {
+                        flag = false;
+                    }
 
-                pip = ((!flag) ? (pip + 4 * eatenobject.FoodPoints) : (pip + eatenobject.FoodPoints));
+                    pip = ((!flag) ? (pip + 4 * eatenobject.FoodPoints) : (pip + eatenobject.FoodPoints));
+                }
+                else if (slugcatIndex == Ext_SlugcatStatsName.OnlineStoryWhite || slugcatIndex == Ext_SlugcatStatsName.OnlineStoryYellow) // TODO: MSC Support one day
+                {
+                    pip = (!ModManager.MSC ? (pip + 4 * eatenobject.FoodPoints) : (pip + 2));
+                }
+                return pip;
             }
-            else if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryWhite || storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryYellow) // TODO: MSC Support one day
-            {
-                pip = (!ModManager.MSC ? (pip + 4 * eatenobject.FoodPoints) : (pip + 2));
-            }
-            return pip;
-        }
 
             return orig(slugcatIndex, eatenobject);
 
@@ -85,9 +85,7 @@ namespace RainMeadow
                 {
 
                     self.throwingSkill = 1;
-                    self.maxFood = 7;
                     self.name = slugcat;
-                    self.foodToHibernate = 4;
 
 
                 }
@@ -101,9 +99,7 @@ namespace RainMeadow
                     self.loudnessFac = 0.75f;
                     self.lungsFac = 1.2f;
                     self.throwingSkill = 0;
-                    self.maxFood = 5;
                     self.name = slugcat;
-                    self.foodToHibernate = 3;
 
 
                 }
@@ -120,12 +116,28 @@ namespace RainMeadow
                     self.throwingSkill = 2;
                     self.poleClimbSpeedFac = 1.25f;
                     self.corridorClimbSpeedFac = 1.2f;
-                    self.maxFood = 9;
                     self.name = slugcat;
-                    self.foodToHibernate = 6;
 
 
                 }
+
+                if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryWhite)
+                {
+                    self.maxFood = 7;
+                    self.foodToHibernate = 4;
+                }
+                else if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryYellow)
+                {
+                    self.maxFood = 5;
+                    self.foodToHibernate = 3;
+                }
+                else if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryRed)
+                {
+                    self.maxFood = 9;
+                    self.foodToHibernate = 6;
+                }
+
+
                 else
                 {
 
