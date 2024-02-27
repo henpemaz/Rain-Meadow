@@ -199,6 +199,7 @@ namespace RainMeadow
 
         internal void ClearEmotes()
         {
+            Clear();
             this.creatureData.emotesVersion++;
             this.creatureData.emotes.Clear();
         }

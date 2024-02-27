@@ -92,7 +92,8 @@ namespace RainMeadow
         // IOwnAHUD
         public int CurrentFood => 0;
         // IOwnAHUD
-        public Player.InputPackage MapInput => input[0];
+        public Player.InputPackage MapInput => mapInput;
+        private Player.InputPackage mapInput;
         // IOwnAHUD
         public bool RevealMap => input[0].mp;
         // IOwnAHUD
@@ -167,6 +168,7 @@ namespace RainMeadow
                 }
             }
 
+            mapInput = this.input[0];
             if ((this.standStillOnMapButton && this.input[0].mp) || this.sleepCounter != 0)
             {
                 this.input[0].x = 0;
