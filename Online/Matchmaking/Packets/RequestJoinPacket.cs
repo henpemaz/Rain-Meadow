@@ -24,8 +24,8 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
-                if (OnlineManager.lobby.lobbyPassword.Length > 0) {
-                    if (OnlineManager.lobby.lobbyPassword != password) {
+                if ((MatchmakingManager.instance as LocalMatchmakingManager).lobbyPassword.Length > 0) {
+                    if ((MatchmakingManager.instance as LocalMatchmakingManager).lobbyPassword != password) {
                         NetIO.SendP2P(processingPlayer, new FailedJoinLobbyPacket(), NetIO.SendType.Reliable);
                         return;
                     }

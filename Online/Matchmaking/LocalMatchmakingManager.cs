@@ -57,7 +57,10 @@ namespace RainMeadow
         public override MeadowPlayerId GetEmptyId()
         {
             return new LocalPlayerId();
+        
         }
+
+        public string lobbyPassword = "";
 
         private int me = -1;
         private IPEndPoint currentLobbyHost = null;
@@ -109,12 +112,12 @@ namespace RainMeadow
             }
             OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer);
             if (password != null) {
-                OnlineManager.lobby.lobbyPassword = password;
+                lobbyPassword = password;
             }
             OnLobbyJoined?.Invoke(true);
         }
 
-        public override void JoinLobby(LobbyInfo lobby)
+        public override void JoinLobby(LobbyInfo lobby, string? password)
         {
             sessionSetup(false);
             if (((LocalPlayerId)OnlineManager.mePlayer.id).isHost)
@@ -130,7 +133,7 @@ namespace RainMeadow
             var memory = new MemoryStream(16);
             var writer = new BinaryWriter(memory);
             //TODO: Actually grab a password from user input
-            Packet.Encode(new RequestJoinPacket("Password"), writer, null);
+            Packet.Encode(new RequestJoinPacket(password), writer, null);
             UdpPeer.Send(lobby.ipEndpoint, memory.GetBuffer(), (int)memory.Position, UdpPeer.PacketType.Reliable);
         }
         public void FailedJoinLobby() {

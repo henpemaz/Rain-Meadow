@@ -119,13 +119,15 @@ namespace RainMeadow
             m_CreateLobbyCall.Set(SteamMatchmaking.CreateLobby(eLobbyTypeeLobbyType, 16));
         }
 
-        public override void JoinLobby(LobbyInfo lobby)
+        public override void JoinLobby(LobbyInfo lobby, string? password)
         {
+            joiningWithPassowrd = password;
             m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(lobby.id));
         }
 
         private static string creatingWithMode;
         private static string? creatingWithPassword;
+        private static string? joiningWithPassowrd;
         private void LobbyCreated(LobbyCreated_t param, bool bIOFailure)
         {
             try
@@ -139,7 +141,10 @@ namespace RainMeadow
                     SteamMatchmaking.SetLobbyData(lobbyID, NAME_KEY, SteamFriends.GetPersonaName() + "'s Lobby");
                     SteamMatchmaking.SetLobbyData(lobbyID, MODE_KEY, creatingWithMode);
                     OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(creatingWithMode), OnlineManager.mePlayer);
-
+                    if (creatingWithPassword != null)
+                    {
+                        SteamMatchmaking.SetLobbyData(lobbyID, PASSWORD_KEY, creatingWithPassword);
+                    }
                     SteamFriends.SetRichPresence("connect", lobbyID.ToString());
                     OnLobbyJoined?.Invoke(true);
                 }
@@ -173,6 +178,13 @@ namespace RainMeadow
                     {
                         SteamMatchmaking.SetLobbyData(lobbyID, CLIENT_KEY, CLIENT_VAL);
                         SteamMatchmaking.SetLobbyData(lobbyID, NAME_KEY, SteamFriends.GetPersonaName() + "'s Lobby");
+                    }
+                    else 
+                    {
+                        var password = SteamMatchmaking.GetLobbyData(lobbyID,PASSWORD_KEY);
+                        if (password != joiningWithPassowrd) {
+                            OnLobbyJoined?.Invoke(false, "wrong password!");
+                        }
                     }
                     SteamFriends.SetRichPresence("connect", lobbyID.ToString());
 

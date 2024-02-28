@@ -272,7 +272,7 @@ namespace RainMeadow
         private void RequestLobbyJoin(LobbyInfo lobby)
         {
             RainMeadow.DebugMe();
-            MatchmakingManager.instance.JoinLobby(lobby);
+            MatchmakingManager.instance.JoinLobby(lobby, "Password");
         }
 
         private void OnlineManager_OnLobbyListReceived(bool ok, LobbyInfo[] lobbies)
