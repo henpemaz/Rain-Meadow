@@ -1,6 +1,8 @@
 ﻿using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
+using Rewired.UI.ControlMapper;
+
 #if !LOCAL_P2P
 using Steamworks;
 #endif
@@ -25,6 +27,8 @@ namespace RainMeadow
         private OpComboBox2 modeDropDown;
         private ProperlyAlignedMenuLabel modeDescriptionLabel;
         private MenuDialogBox popupDialog;
+        private int maxStoryPlayers = 4;
+        private LobbyInfo lobbyInfo;
 
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
@@ -234,7 +238,7 @@ namespace RainMeadow
                 ShowLoadingDialog("Joining lobby...");
                 RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo);
             }
-            
+
         }
 
         private void RefreshLobbyList(SimplerButton obj)
@@ -268,6 +272,16 @@ namespace RainMeadow
         private void OnlineManager_OnLobbyJoined(bool ok, string error)
         {
             RainMeadow.Debug(ok);
+            if (OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                if (lobbyInfo.playerCount >= maxStoryPlayers)
+                {
+                    RainMeadow.Debug("Player attempted to join, but the lobby was full");
+                    ok = false;
+                    error = "The lobby is full";
+                    return;
+                }
+            }
             if (!ok)
             {
                 ShowErrorDialog($"Failed to join lobby.<LINE>{error}");
