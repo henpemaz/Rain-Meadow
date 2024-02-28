@@ -1,7 +1,6 @@
 ﻿using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
-using Rewired.UI.ControlMapper;
 
 #if !LOCAL_P2P
 using Steamworks;
