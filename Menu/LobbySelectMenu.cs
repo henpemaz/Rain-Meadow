@@ -270,7 +270,6 @@ namespace RainMeadow
         
         private void OnlineManager_OnLobbyJoined(bool ok, string error)
         {
-            RainMeadow.Debug(ok);
             if (OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 if (lobbyInfo.playerCount >= maxStoryPlayers)
@@ -281,6 +280,7 @@ namespace RainMeadow
                     return;
                 }
             }
+            RainMeadow.Debug(ok);
             if (!ok)
             {
                 ShowErrorDialog($"Failed to join lobby.<LINE>{error}");
