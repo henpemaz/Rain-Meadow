@@ -9,6 +9,7 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		ArenaP2P|Any CPU = ArenaP2P|Any CPU
 		Debug|Any CPU = Debug|Any CPU
+		FreeRoamP2P|Any CPU = FreeRoamP2P|Any CPU
 		LocalP2P|Any CPU = LocalP2P|Any CPU
 		Release|Any CPU = Release|Any CPU
 		StoryP2P|Any CPU = StoryP2P|Any CPU
@@ -18,6 +19,8 @@ Global
 		{32046812-711A-42BB-8ED1-633A0F67014F}.ArenaP2P|Any CPU.Build.0 = ArenaP2P|Any CPU
 		{32046812-711A-42BB-8ED1-633A0F67014F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{32046812-711A-42BB-8ED1-633A0F67014F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32046812-711A-42BB-8ED1-633A0F67014F}.FreeRoamP2P|Any CPU.ActiveCfg = FreeRoamP2P|Any CPU
+		{32046812-711A-42BB-8ED1-633A0F67014F}.FreeRoamP2P|Any CPU.Build.0 = FreeRoamP2P|Any CPU
 		{32046812-711A-42BB-8ED1-633A0F67014F}.LocalP2P|Any CPU.ActiveCfg = LocalP2P|Any CPU
 		{32046812-711A-42BB-8ED1-633A0F67014F}.LocalP2P|Any CPU.Build.0 = LocalP2P|Any CPU
 		{32046812-711A-42BB-8ED1-633A0F67014F}.Release|Any CPU.ActiveCfg = Release|Any CPU

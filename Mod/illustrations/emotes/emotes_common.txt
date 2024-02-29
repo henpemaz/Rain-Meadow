@@ -4,80 +4,420 @@
 			"frame": {
 				"x": 1,
 				"y": 1,
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
 			},
 			"sourceSize": {
-				"w": 380,
-				"h": 380
+				"w": 240,
+				"h": 240
+			}
+		},
+		"symbolcollectible.png": {
+			"frame": {
+				"x": 243,
+				"y": 1,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"symbolecho.png": {
+			"frame": {
+				"x": 485,
+				"y": 1,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"symbolfood.png": {
+			"frame": {
+				"x": 727,
+				"y": 1,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"symbolfriends.png": {
+			"frame": {
+				"x": 1,
+				"y": 243,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"symbolgate.png": {
+			"frame": {
+				"x": 243,
+				"y": 243,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"symbolgroup.png": {
+			"frame": {
+				"x": 485,
+				"y": 243,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"symboliterator.png": {
+			"frame": {
+				"x": 727,
+				"y": 243,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"symbolknoledge.png": {
+			"frame": {
+				"x": 1,
+				"y": 485,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"symbollight.png": {
+			"frame": {
+				"x": 243,
+				"y": 485,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"symbolmartyr.png": {
+			"frame": {
+				"x": 485,
+				"y": 485,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
 			}
 		},
 		"symbolno.png": {
 			"frame": {
-				"x": 383,
-				"y": 1,
-				"w": 512,
-				"h": 512
+				"x": 727,
+				"y": 485,
+				"w": 240,
+				"h": 240
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 512,
-				"h": 512
+				"w": 240,
+				"h": 240
 			},
 			"sourceSize": {
-				"w": 512,
-				"h": 512
+				"w": 240,
+				"h": 240
+			}
+		},
+		"symbolpointofinterest.png": {
+			"frame": {
+				"x": 1,
+				"y": 727,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
 			}
 		},
 		"symbolquestion.png": {
 			"frame": {
-				"x": 897,
-				"y": 1,
-				"w": 512,
-				"h": 512
+				"x": 243,
+				"y": 727,
+				"w": 240,
+				"h": 240
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 512,
-				"h": 512
+				"w": 240,
+				"h": 240
 			},
 			"sourceSize": {
-				"w": 512,
-				"h": 512
+				"w": 240,
+				"h": 240
+			}
+		},
+		"symbolshelter.png": {
+			"frame": {
+				"x": 485,
+				"y": 727,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"symbolsurvivor.png": {
+			"frame": {
+				"x": 727,
+				"y": 727,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"symboltime.png": {
+			"frame": {
+				"x": 969,
+				"y": 1,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"symboltravel.png": {
+			"frame": {
+				"x": 969,
+				"y": 243,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"symboltree.png": {
+			"frame": {
+				"x": 969,
+				"y": 485,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
 			}
 		},
 		"symbolyes.png": {
 			"frame": {
-				"x": 1,
-				"y": 515,
-				"w": 512,
-				"h": 512
+				"x": 969,
+				"y": 727,
+				"w": 240,
+				"h": 240
 			},
 			"rotated": false,
 			"trimmed": false,
 			"spriteSourceSize": {
 				"x": 0,
 				"y": 0,
-				"w": 512,
-				"h": 512
+				"w": 240,
+				"h": 240
 			},
 			"sourceSize": {
-				"w": 512,
-				"h": 512
+				"w": 240,
+				"h": 240
+			}
+		},
+		"symbols_background.png": {
+			"frame": {
+				"x": 1,
+				"y": 969,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
 			}
 		}
 	},
@@ -87,8 +427,8 @@
 		"image": "spritesheet.png",
 		"format": "RGBA8888",
 		"size": {
-			"w": 1410,
-			"h": 1028
+			"w": 1210,
+			"h": 1210
 		},
 		"scale": "1"
 	}

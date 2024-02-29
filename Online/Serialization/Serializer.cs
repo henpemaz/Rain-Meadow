@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace RainMeadow
 {
@@ -21,20 +20,22 @@ namespace RainMeadow
         public BinaryReader reader;
         public OnlinePlayer currPlayer;
         private uint eventCount;
-        private StringBuilder eventLog;
         private long eventHeader;
         private uint stateCount;
         private long stateHeader;
-        private bool warnOnSizeMissmatch = false; // to the brave soul that will fix/implement the estimates for obj sizes, good luck
+        public int zipTreshold = 4000;
 
-        public Serializer(long bufferCapacity)
+        static Serializer scratchpad;
+        public Serializer(long bufferCapacity, bool scratch = false)
         {
             this.capacity = bufferCapacity;
-            margin = (long)(bufferCapacity * 0.25f);
+            margin = 16;
             buffer = new byte[bufferCapacity];
             stream = new(buffer);
             writer = new(stream);
             reader = new(stream);
+
+            if (!scratch) scratchpad = new Serializer(this.capacity, true);
         }
 
         private void PlayerHeaders()
@@ -68,6 +69,8 @@ namespace RainMeadow
             IsReading = false;
             IsDelta = false;
             Aborted = true;
+            scratchpad.currPlayer = null;
+            scratchpad.IsReading = false;
         }
 
         public void BeginWrite(OnlinePlayer toPlayer)
@@ -78,37 +81,29 @@ namespace RainMeadow
             IsDelta = false;
             Aborted = false;
             stream.Seek(0, SeekOrigin.Begin);
-        }
-
-        private bool CanFit(OnlineEvent playerEvent)
-        {
-            return Position + playerEvent.EstimatedSize + margin < capacity;
-        }
-
-        private bool CanFit(OnlineState state)
-        {
-            return Position + state.EstimatedSize(this) + margin < capacity;
+            scratchpad.currPlayer = toPlayer;
+            scratchpad.IsWriting = true;
         }
 
         private void BeginWriteEvents()
         {
             eventCount = 0;
-            eventLog = new(64);
             eventHeader = stream.Position;
             writer.Write(eventCount); // fake write, we'll overwrite this later
         }
 
-        private void WriteEvent(OnlineEvent playerEvent)
+        private bool WriteEvent(OnlineEvent playerEvent)
         {
-            eventCount++;
-            long prevPos = (int)Position;
-            writer.Write((byte)playerEvent.eventType);
-            playerEvent.CustomSerialize(this);
-            eventLog.AppendLine(playerEvent.ToString());
-            long effectiveSize = Position - prevPos;
-            string msg = $"size:{effectiveSize} est:{playerEvent.EstimatedSize}";
-            if (warnOnSizeMissmatch && (effectiveSize != playerEvent.EstimatedSize)) RainMeadow.Error(msg);
-            eventLog.AppendLine(msg);
+            scratchpad.stream.Seek(0, SeekOrigin.Begin);
+            playerEvent.CustomSerialize(scratchpad);
+            if(scratchpad.Position < (capacity - Position - margin))
+            {
+                writer.Write((byte)playerEvent.eventType);
+                writer.Write(scratchpad.buffer, 0, (int)scratchpad.Position);
+                eventCount++;
+                return true;
+            }
+            return false;
         }
 
         private void EndWriteEvents()
@@ -126,11 +121,32 @@ namespace RainMeadow
             writer.Write(stateCount);
         }
 
-        private void WriteState(OnlineState state)
+        private bool WriteZippedState(OnlineState state)
         {
-            stateCount++;
-            state.WritePolymorph(this);
-            WrappedSerialize(state);
+            var pos = (int)scratchpad.Position;
+            scratchpad.stream.Seek(0, SeekOrigin.Begin);
+            var zippedState = new DeflateState(scratchpad.stream, pos);
+            RainMeadow.Debug($"zipping state {state}, was {pos} became ~{zippedState.bytes.Length}");
+            return WriteState(zippedState);
+        }
+
+        private bool WriteState(OnlineState state)
+        {
+            scratchpad.stream.Seek(0, SeekOrigin.Begin);
+            state.WritePolymorph(scratchpad);
+            scratchpad.WrappedSerialize(state);
+            bool fits = scratchpad.Position < (capacity - Position - margin);
+            if ((scratchpad.Position > zipTreshold || !fits) && state is not DeflateState)
+            {
+                return WriteZippedState(state);
+            }
+            else if (fits)
+            {
+                writer.Write(scratchpad.buffer, 0, (int)scratchpad.Position);
+                stateCount++;
+                return true;
+            }
+            return false;
         }
 
         private void EndWriteStates()
@@ -148,6 +164,8 @@ namespace RainMeadow
             if (!IsWriting) throw new InvalidOperationException("not writing");
             IsWriting = false;
             writer.Flush();
+            scratchpad.currPlayer = null;
+            scratchpad.IsWriting = false;
         }
 
         private void BeginRead(OnlinePlayer fromPlayer)
@@ -157,6 +175,8 @@ namespace RainMeadow
             IsReading = true;
             Aborted = false;
             stream.Seek(0, SeekOrigin.Begin);
+            scratchpad.currPlayer = fromPlayer;
+            scratchpad.IsReading = true;
         }
 
         private uint BeginReadEvents()
@@ -188,6 +208,15 @@ namespace RainMeadow
             }
             
             WrappedSerialize(s);
+
+            if(s is DeflateState ds)
+            {
+                scratchpad.stream.Seek(0, SeekOrigin.Begin);
+                ds.Decompress(scratchpad.stream);
+                scratchpad.stream.Seek(0, SeekOrigin.Begin);
+                s = scratchpad.ReadState();
+            }
+
             return s;
         }
 
@@ -195,6 +224,8 @@ namespace RainMeadow
         {
             currPlayer = null;
             IsReading = false;
+            scratchpad.currPlayer = null;
+            scratchpad.IsReading = false;
         }
 
         public void ReadData(OnlinePlayer fromPlayer, long size)
@@ -240,15 +271,14 @@ namespace RainMeadow
             //RainMeadow.Debug($"Writing {toPlayer.OutgoingEvents.Count} events to player {toPlayer}");
             foreach (var e in toPlayer.OutgoingEvents)
             {
-                if (CanFit(e))
+                if (WriteEvent(e))
                 {
-                    WriteEvent(e);
-                    //RainMeadow.Debug($"Wrote {e}");
+                    RainMeadow.Trace($"Wrote {e}");
                 }
                 else
                 {
-                    RainMeadow.Error("no buffer space for events");
-                    RainMeadow.Error(eventLog.ToString());
+                    RainMeadow.Error($"WriteEvent failed for {e}");
+                    RainMeadow.Error("no space for events");
                     break;
                 }
             }
@@ -256,13 +286,23 @@ namespace RainMeadow
 
             BeginWriteStates();
             toPlayer.statesWritten = toPlayer.OutgoingStates.Count > 0; // something is being written, record for debug
-            //RainMeadow.Debug($"Writing {toPlayer.OutgoingStates.Count} states");
-            while (toPlayer.OutgoingStates.Count > 0 && CanFit(toPlayer.OutgoingStates.Peek()))
+
+            RainMeadow.Trace($"Writing {toPlayer.OutgoingStates.Count} states");
+            while (toPlayer.OutgoingStates.Count > 0)
             {
                 var s = toPlayer.OutgoingStates.Dequeue();
-                WriteState(s);
+                if (WriteState(s.state))
+                {
+                    RainMeadow.Trace($"{s.state} sent");
+                    s.Sent();
+                }
+                else
+                {
+                    RainMeadow.Error($"State overflow writing to player {toPlayer}, {s.state} not sent");
+                    s.Failed();
+                }
             }
-            // todo handle states overflow, planing a packet for maximum size and least stale states
+
             EndWriteStates();
 
             EndWrite();
@@ -274,6 +314,9 @@ namespace RainMeadow
         // serializes resource.id and finds reference
         public void SerializeResourceByReference<T>(ref T onlineResource) where T : OnlineResource
         {
+#if TRACING
+            long wasPos = this.Position;
+#endif
             if (IsWriting)
             {
                 writer.Write(onlineResource.Id());
@@ -283,6 +326,9 @@ namespace RainMeadow
                 string r = reader.ReadString();
                 onlineResource = (T)OnlineManager.ResourceFromIdentifier(r);
             }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
         }
 
         // serializes resource.id and finds reference
@@ -333,6 +379,9 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write(nullableState != null);
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
                 if (nullableState != null)
                 {
                     SerializePolyState(ref nullableState);
@@ -354,6 +403,9 @@ namespace RainMeadow
                 // TODO dynamic length
                 if (states.Length > 255) throw new OverflowException("too many states");
                 writer.Write((byte)states.Length);
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
                 foreach (var state in states)
                 {
                     state.WritePolymorph(this);
@@ -385,6 +437,9 @@ namespace RainMeadow
                 // TODO dynamic length
                 if (states.Count > 255) throw new OverflowException("too many states");
                 writer.Write((byte)states.Count);
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
                 foreach (var state in states)
                 {
                     state.WritePolymorph(this);
@@ -433,6 +488,9 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write(nullableState != null);
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
                 if (nullableState != null)
                 {
                     SerializeStaticState(ref nullableState);
@@ -454,6 +512,9 @@ namespace RainMeadow
                 // TODO dynamic length
                 if (states.Length > 255) throw new OverflowException("too many states");
                 writer.Write((byte)states.Length);
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
                 foreach (var state in states)
                 {
                     WrappedSerialize(state);
@@ -482,6 +543,9 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write((byte)ids.Count);
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
                 foreach (var id in ids)
                 {
                     id.CustomSerialize(this);
@@ -505,6 +569,9 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write(player.inLobbyId);
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(2);
+#endif
             }
             if (IsReading)
             {
@@ -520,6 +587,9 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write(referencedEvent.eventId);
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(2);
+#endif
             }
             if (IsReading)
             {
@@ -532,6 +602,9 @@ namespace RainMeadow
             if (IsWriting)
             {
                 writer.Write((byte)playerEvent.eventType);
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
                 playerEvent.CustomSerialize(this);
             }
             if (IsReading)
@@ -550,9 +623,15 @@ namespace RainMeadow
                 // TODO dynamic length
                 if (events.Count > 255) throw new OverflowException("too many events");
                 writer.Write((byte)events.Count);
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
                 foreach (var playerEvent in events)
                 {
                     writer.Write((byte)playerEvent.eventType);
+    #if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
                     playerEvent.CustomSerialize(this);
                 }
             }

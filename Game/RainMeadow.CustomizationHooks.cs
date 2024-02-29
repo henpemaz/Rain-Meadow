@@ -2,12 +2,16 @@
 using MonoMod.Cil;
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace RainMeadow
 {
+    // Support character customization (WIP)
     public partial class RainMeadow
     {
+        public static ConditionalWeakTable<Creature, ClientSettings.AvatarCustomization> creatureCustomizations = new();
+
         public void CustomizationHooks()
         {
             IL.PlayerGraphics.ApplyPalette += PlayerGraphics_ApplyPalette;
@@ -38,7 +42,7 @@ namespace RainMeadow
                     c.Emit(OpCodes.Ldarg_0);
                     c.Emit(OpCodes.Ldloca, colorVar.Index);
                     c.EmitDelegate((PlayerGraphics self, ref Color originalEyeColor) => {
-                        if (MeadowCustomization.creatureCustomizations.TryGetValue(self.player, out var customization))
+                        if (RainMeadow.creatureCustomizations.TryGetValue(self.player, out var customization))
                         {
                             customization.ModifyEyeColor(ref originalEyeColor);
                         }
@@ -64,7 +68,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldloca, 0);
                 c.EmitDelegate((PlayerGraphics self, ref Color originalBodyColor) => {
-                    if (MeadowCustomization.creatureCustomizations.TryGetValue(self.player, out var customization))
+                    if (RainMeadow.creatureCustomizations.TryGetValue(self.player, out var customization))
                     {
                         customization.ModifyBodyColor(ref originalBodyColor);
                     }

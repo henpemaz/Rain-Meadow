@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 namespace RainMeadow
 {
@@ -24,14 +25,32 @@ namespace RainMeadow
 
         public static OnlinePhysicalObject NewFromApo(AbstractPhysicalObject apo)
         {
+            EntityId entityId = new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number);
+            if (OnlineManager.recentEntities.ContainsKey(entityId))
+            {
+                RainMeadow.Error($"entity with repeated ID: {entityId}");
+                var origid = apo.ID;
+                var newid = apo.world.game.GetNewID();
+                newid.spawner = origid.spawner;
+                newid.altSeed = origid.RandomSeed;
+                apo.ID = newid;
+                entityId = new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number);
+                RainMeadow.Error($"set as: {entityId}");
+            }
             if (apo is AbstractCreature ac)
             {
-                var def = new OnlineCreatureDefinition(apo.ID.RandomSeed, apo.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number), OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+                var def = new OnlineCreatureDefinition(apo.ID.RandomSeed, apo.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 return new OnlineCreature(def, ac);
+            }
+            if (apo is AbstractConsumable acm)
+            {
+                var def = new OnlineConsumableDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar,
+                    (short)acm.originRoom, (sbyte)acm.placedObjectIndex, acm.isConsumed);
+                return new OnlineConsumable(def, acm);
             }
             else
             {
-                var def = new OnlinePhysicalObjectDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number), OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+                var def = new OnlinePhysicalObjectDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 return new OnlinePhysicalObject(def, apo);
             }
         }
@@ -55,13 +74,34 @@ namespace RainMeadow
 
         public static OnlineEntity FromDefinition(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource)
         {
-            World world = inResource.World;
+            World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
             EntityID id = world.game.GetNewID();
             id.altSeed = newObjectEvent.seed;
 
             RainMeadow.Debug("serializedObject: " + newObjectEvent.serializedObject);
+
             var apo = SaveState.AbstractPhysicalObjectFromString(world, newObjectEvent.serializedObject);
             apo.ID = id;
+            if (!world.IsRoomInRegion(apo.pos.room))
+            {
+                RainMeadow.Debug("Room not in region: " + apo.pos.room);
+                // most common cause is gates which are ambiguous room names, solve for current region instead of global
+                string[] obarray = Regex.Split(newObjectEvent.serializedObject, "<oA>");
+                string[] wcarray = obarray[2].Split('.');
+                AbstractRoom room = world.GetAbstractRoom(wcarray[0]);
+                if (room != null)
+                {
+                    RainMeadow.Debug($"fixing room index -> {room.index}");
+                    apo.pos.room = room.index;
+                }
+                else
+                {
+                    RainMeadow.Error("Couldn't find room in region: " + wcarray[0]);
+                }
+            }
+
+            RainMeadow.Debug($"room index -> {apo.pos.room} in region? {world.IsRoomInRegion(apo.pos.room)}");
+            
 
             return new OnlinePhysicalObject(newObjectEvent, apo);
         }
@@ -91,13 +131,23 @@ namespace RainMeadow
             }
             else if (inResource is RoomSession newRoom)
             {
+                beingMoved = true;
+                newRoom.World.GetAbstractRoom(this.apo.pos).AddEntity(apo);
+                beingMoved = false;
                 if (apo is not AbstractCreature creature)
                 {
-                    if (newRoom.absroom.realizedRoom is Room realizedRoom)
+                    if (newRoom.absroom.realizedRoom is Room realizedRoom && realizedRoom.shortCutsReady)
                     {
                         if (apo.realizedObject != null && realizedRoom.updateList.Contains(apo.realizedObject))
                         {
-                            RainMeadow.Debug($"Entity {apo.ID} already in the room {newRoom.absroom.name}, not adding!");
+                            RainMeadow.Debug($"Entity {this} already in the room {newRoom.absroom.name}, not adding!");
+                            return;
+                        }
+
+                        // todo carried by other won't pick up if entering from abstract, how fix?
+                        if(apo.realizedObject != null && apo.realizedObject.grabbedBy.Count > 0)
+                        {
+                            RainMeadow.Debug($"Entity {this} carried by other, not adding!");
                             return;
                         }
 
@@ -116,6 +166,10 @@ namespace RainMeadow
                         RainMeadow.Debug($"Creature {creature.ID} already in the room {newRoom.absroom.name}, not adding!");
                         return;
                     }
+
+                    // TODO creature carrying objects should marks objects as being moved so they run move code
+                    //  right now this spits more errors than it should
+                    // TODO creature spawning from abstract needs grasp data available to do the object-carrying
 
                     RainMeadow.Debug("spawning creature " + creature);
                     if (apo.pos.TileDefined)
@@ -198,17 +252,19 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("Removing entity from game: " + this);
                     beingMoved = true;
-                    apo.Destroy();
+                    //apo.Destroy();
+                    apo.LoseAllStuckObjects();
                     apo.Room?.RemoveEntity(apo);
                     beingMoved = false;
                 }
             }
-            if (primaryResource == null)
-            {
-                RainMeadow.Debug("Removing entity from OnlinePhysicalObject.map: " + this);
+        }
 
-                map.Remove(apo);
-            }
+        public override void Deregister()
+        {
+            base.Deregister();
+            RainMeadow.Debug("Removing entity from OnlinePhysicalObject.map: " + this);
+            map.Remove(apo);
         }
 
         public override string ToString()

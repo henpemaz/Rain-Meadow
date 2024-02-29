@@ -11,6 +11,7 @@ namespace RainMeadow
             public static ProcessManager.ProcessID LobbyMenu = new("MeadowLobbyMenu", true);
             public static ProcessManager.ProcessID ArenaLobbyMenu = new("MeadowArenaLobbyMenu", true);
             public static ProcessManager.ProcessID MeadowMenu = new("MeadowMenu", true);
+            public static ProcessManager.ProcessID StoryMenu = new("StoryMenu", true);
         }
 
         public class Ext_SlugcatStatsName
@@ -24,6 +25,12 @@ namespace RainMeadow
             // MeadowSlugcat => Slugcat_White
             internal static MenuScene.SceneID Slugcat_MeadowSquidcicada = new("Slugcat_MeadowSquidcicada", true);
             internal static MenuScene.SceneID Slugcat_MeadowLizard = new("Slugcat_MeadowLizard", true);
+            internal static MenuScene.SceneID Slugcat_MeadowScav = new("Slugcat_MeadowScav", true);
+        }
+
+        public class Ext_PhysicalObjectType
+        {
+            public static AbstractPhysicalObject.AbstractObjectType MeadowPlant = new("MeadowPlant", true);
         }
     }
 }

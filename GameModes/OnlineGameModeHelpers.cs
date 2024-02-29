@@ -32,7 +32,7 @@ namespace RainMeadow
             PlacedObject.Type.CosmeticSlimeMold,
             PlacedObject.Type.CosmeticSlimeMold2,
             PlacedObject.Type.VoidSpawnEgg,
-            //PlacedObject.Type.SuperJumpInstruction,
+            //PlacedObject.Type.SuperJumpInstruction,       //Charge pounce tutorial
             PlacedObject.Type.ProjectedImagePosition,
             PlacedObject.Type.ExitSymbolShelter,
             PlacedObject.Type.ExitSymbolHidden,
@@ -71,32 +71,32 @@ namespace RainMeadow
          };
         public static HashSet<PlacedObject.Type> PlayerGrablableItems = new()
         {
-            //PlacedObject.Type.FlareBomb,
-            //PlacedObject.Type.PuffBall,
+            //PlacedObject.Type.FlareBomb,          
+            //PlacedObject.Type.PuffBall,           //EDIBLE NOT FOOD
             PlacedObject.Type.DangleFruit,
-            //PlacedObject.Type.DataPearl,
-            //PlacedObject.Type.UniqueDataPearl,
-            //PlacedObject.Type.SeedCob,
-            //PlacedObject.Type.DeadSeedCob,
-            //PlacedObject.Type.WaterNut,
-            //PlacedObject.Type.JellyFish,
-            //PlacedObject.Type.KarmaFlower,
-            //PlacedObject.Type.Mushroom,
-            //PlacedObject.Type.SlimeMold,
-            //PlacedObject.Type.FlyLure,
-            //PlacedObject.Type.FirecrackerPlant,
-            //PlacedObject.Type.VultureGrub,
-            //PlacedObject.Type.DeadVultureGrub,
+            PlacedObject.Type.DataPearl,          
+            PlacedObject.Type.UniqueDataPearl,    
+            //PlacedObject.Type.SeedCob,            //FOOD
+            //PlacedObject.Type.DeadSeedCob,        //After Seedcob
+            //PlacedObject.Type.WaterNut,           //HARD
+            //PlacedObject.Type.JellyFish,          //MEDIUM
+            PlacedObject.Type.KarmaFlower,
+            PlacedObject.Type.Mushroom,
+            //PlacedObject.Type.SlimeMold,          //EASY
+            PlacedObject.Type.FlyLure,
+            PlacedObject.Type.FirecrackerPlant,
+            //PlacedObject.Type.VultureGrub,        //PREREQ
+            //PlacedObject.Type.DeadVultureGrub,    //FOOD
             //PlacedObject.Type.MultiplayerItem,
-            //PlacedObject.Type.SporePlant,
+            //PlacedObject.Type.SporePlant,         //HARD bee granade
             //PlacedObject.Type.ReliableSpear,
-            //PlacedObject.Type.NeedleEgg,
-            //PlacedObject.Type.BubbleGrass,
-            //PlacedObject.Type.Hazer,
-            //PlacedObject.Type.DeadHazer,
-            //PlacedObject.Type.VultureMask,
-            //PlacedObject.Type.HangingPearls,
-            //PlacedObject.Type.Lantern,
+            //PlacedObject.Type.NeedleEgg,          //HELL Noodle egg DANGER SYNC
+            //PlacedObject.Type.BubbleGrass,        //MEDIUM
+            //PlacedObject.Type.Hazer,              //PREREQ
+            //PlacedObject.Type.DeadHazer,          //FOOD
+            //PlacedObject.Type.VultureMask,        //EASY?
+            //PlacedObject.Type.HangingPearls,      //
+            //PlacedObject.Type.Lantern,            //EASY
         };
     }
 }

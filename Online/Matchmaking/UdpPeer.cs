@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Reflection;
 using UnityEngine;
 
 namespace RainMeadow
@@ -13,16 +14,15 @@ namespace RainMeadow
     {
         public static float simulatedLoss = 0.05f;
         public static float simulatedChainLoss = 0.4f;
-        public static float simulatedLatency = 80;
+        public static float simulatedLatency = 80; //80   turns on delay;
         public static float simulatedJitter = 100;
         public static float simulatedJitterPower = 2;
 
         public static System.Random random = new System.Random();
 
-        public static UdpClient debugClient;
+        public static UdpClient udpClient;
         public static int port;
-        public static bool isHost;
-        public static IPEndPoint ownAddress;
+        public static IPEndPoint ownEndPoint;
 
         public enum PacketType : byte
         {
@@ -84,7 +84,7 @@ namespace RainMeadow
 
         //
 
-        public const int STARTING_PORT = 5061;
+        public const int STARTING_PORT = 8720;
 
         private class DelayedPacket
         {
@@ -103,7 +103,7 @@ namespace RainMeadow
 
             public void Send()
             {
-                debugClient.Send(packet, packet.Length, destination);
+                udpClient.Send(packet, packet.Length, destination);
                 //RainMeadow.Debug("Sent: " + packet.Length);
             }
         }
@@ -112,14 +112,14 @@ namespace RainMeadow
 
         public static void Startup()
         {
-            if (debugClient != null)
+            if (udpClient != null)
                 return;
 
-            // Create debugging client for local connection
-            debugClient = new UdpClient();
+            // Create udp client for local connection
+            udpClient = new UdpClient();
 
             // With this set, it will be truely connectionless
-            debugClient.Client.IOControl(
+            udpClient.Client.IOControl(
                 (IOControlCode)(-1744830452), // SIO_UDP_CONNRESET
                 new byte[] { 0, 0, 0, 0 },
                 null
@@ -136,9 +136,9 @@ namespace RainMeadow
 
                 port++;
             }
-            if (port == STARTING_PORT) isHost = true;
-            ownAddress = new IPEndPoint(IPAddress.Any, port);
-            debugClient.Client.Bind(ownAddress);
+
+            ownEndPoint = new IPEndPoint(IPAddress.Any, port);
+            udpClient.Client.Bind(ownEndPoint);
             peers = new Dictionary<IPEndPoint, RemotePeer>();
             delayedPackets = new Queue<DelayedPacket>();
         }
@@ -151,12 +151,12 @@ namespace RainMeadow
 
         private static void CleanUp()
         {
-            if (!debugClient.Client.Connected || peers.Any(peer => peer.Value.outgoingPackets.Count > 0))
+            if (!udpClient.Client.Connected || peers.Any(peer => peer.Value.outgoingPackets.Count > 0))
                 return;
 
             RainMeadow.DebugMe();
-            debugClient.Client.Shutdown(SocketShutdown.Both);
-            debugClient = null;
+            udpClient.Client.Shutdown(SocketShutdown.Both);
+            udpClient = null;
             peers = null;
             delayedPackets = null;
             waitingForTermination = false;
@@ -164,7 +164,7 @@ namespace RainMeadow
 
         public static void Update()
         {
-            if (debugClient == null)
+            if (udpClient == null)
                 return;
 
             while (delayedPackets.Count > 0 && delayedPackets.Peek().willSend)
@@ -224,7 +224,7 @@ namespace RainMeadow
         public static bool Read(out BinaryReader netReader, out IPEndPoint remoteEndpoint)
         {
             remoteEndpoint = new IPEndPoint(IPAddress.Any, 0);
-            MemoryStream netStream = new MemoryStream(debugClient.Receive(ref remoteEndpoint));
+            MemoryStream netStream = new MemoryStream(udpClient.Receive(ref remoteEndpoint));
             netReader = new BinaryReader(netStream);
 
             PacketType type = (PacketType)netReader.ReadByte();
@@ -323,12 +323,12 @@ namespace RainMeadow
 
         public static bool IsPacketAvailable()
         {
-            return debugClient != null && debugClient.Available > 0;
+            return udpClient != null && udpClient.Available > 0;
         }
 
         public static void Send(IPEndPoint remoteEndpoint, byte[] data, int length, PacketType packetType)
         {
-            if (debugClient == null || waitingForTermination)
+            if (udpClient == null || waitingForTermination)
                 return;
 
             if (!peers.TryGetValue(remoteEndpoint, out RemotePeer peerData))
@@ -369,8 +369,8 @@ namespace RainMeadow
 
                     WriteUnreliableOrderedHeader(writer, ++peerData.unreliablePacketIndex);
                     writer.Write(data, 0, length);
-
                     break;
+                default: throw new ArgumentException("UNHANDLED PACKETTYPE");
             }
 
             if (buffer == null)
@@ -387,7 +387,7 @@ namespace RainMeadow
             }
             else
             {
-                debugClient.Send(packet, packet.Length, endPoint);
+                udpClient.Send(packet, packet.Length, endPoint);
                 //RainMeadow.Debug("sent: " + packet.Length);
             }
         }
@@ -401,6 +401,18 @@ namespace RainMeadow
             BinaryWriter writer = new BinaryWriter(stream);
 
             WriteAcknowledge(writer, index);
+            Send(buffer, remoteEndpoint);
+        }
+
+        private static void SendTerminationHeader(IPEndPoint remoteEndpoint, ulong index)
+        {
+            RainMeadow.Debug($"Sending acknowledge for packet #{index}");
+
+            byte[] buffer = new byte[9];
+            MemoryStream stream = new MemoryStream(buffer);
+            BinaryWriter writer = new BinaryWriter(stream);
+
+            WriteTerminationHeader(writer, index);
             Send(buffer, remoteEndpoint);
         }
 

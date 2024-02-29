@@ -42,9 +42,12 @@ namespace RainMeadow
                 if (isFree)
                 {
                     // Leased to player
-                    request.from.QueueEvent(new GenericResult.Ok(request));
-                    NewOwner(request.from);
-                    return;
+                    if (OnlineManager.lobby.gameMode.PlayerCanOwnResource(request.from, this))
+                    {
+                        request.from.QueueEvent(new GenericResult.Ok(request));
+                        NewOwner(request.from);
+                        return;
+                    }
                 }
                 else
                 {
@@ -75,12 +78,6 @@ namespace RainMeadow
                 {
                     request.from.QueueEvent(new GenericResult.Ok(request)); // this notifies the old owner that the release was a success
                     ParticipantLeft(request.from);
-                    var newOwner = MatchmakingManager.instance.BestTransferCandidate(this, participants);
-                    NewOwner(newOwner); // This notifies all users, if the new owner is active they'll restore the state
-                    if (newOwner != null)
-                    {
-                        newOwner.InvokeRPC(this.Transfered);
-                    }
                     return;
                 }
                 else
@@ -104,7 +101,7 @@ namespace RainMeadow
                 return;
             }
 
-            RainMeadow.Debug($"Transfer error : {isAvailable} {isActive} {request.from == supervisor}");
+            RainMeadow.Error($"Transfer error : {isAvailable} {isActive} {request.from == supervisor}");
             request.from.QueueEvent(new GenericResult.Error(request)); // super should retry with someone else
         }
 
@@ -113,7 +110,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (requestResult.referencedEvent == pendingRequest) pendingRequest = null;
-            else RainMeadow.Debug($"Weird event situation, pending is {pendingRequest} and referenced is {requestResult.referencedEvent}");
+            else RainMeadow.Error($"Weird event situation, pending is {pendingRequest} and referenced is {requestResult.referencedEvent}");
 
             if (requestResult is GenericResult.Ok)
             {
@@ -123,14 +120,21 @@ namespace RainMeadow
                 }
                 else
                 {
-                    RainMeadow.Debug("Claimed free resource");
                     WaitingForState();
-                    if (isOwner) Available();
+                    if (isOwner)
+                    {
+                        RainMeadow.Debug("Claimed resource");
+                        Available();
+                    }
+                    else
+                    {
+                        RainMeadow.Debug("Joined resource");
+                    }
                 }
             }
             else if (requestResult is GenericResult.Error) // I should retry
             {
-                // todo retry logic
+                Request();
                 RainMeadow.Error("request failed for " + this);
             }
         }
@@ -140,7 +144,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (pendingRequest == releaseResult.referencedEvent) pendingRequest = null;
-            else RainMeadow.Debug($"Weird event situation, pending is {pendingRequest} and referenced is {releaseResult.referencedEvent}");
+            else RainMeadow.Error($"Weird event situation, pending is {pendingRequest} and referenced is {releaseResult.referencedEvent}");
 
             if (releaseResult is GenericResult.Ok) // I've let go
             {
@@ -148,8 +152,8 @@ namespace RainMeadow
             }
             else if (releaseResult is GenericResult.Error) // I should retry
             {
-                // todo retry logic
                 RainMeadow.Error("released failed for " + this);
+                Release();
             }
         }
 
@@ -158,7 +162,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (pendingRequest == transferResult.referencedEvent) pendingRequest = null;
-            else RainMeadow.Debug($"Weird event situation, pending is {pendingRequest} and referenced is {transferResult.referencedEvent}");
+            else RainMeadow.Error($"Weird event situation, pending is {pendingRequest} and referenced is {transferResult.referencedEvent}");
 
             if (transferResult is GenericResult.Ok) // New owner accepted it
             {

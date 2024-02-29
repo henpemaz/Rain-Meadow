@@ -14,9 +14,9 @@ namespace RainMeadow
         private bool standing;
         [OnlineField(group = "inputs")]
         private ushort inputs;
-        [OnlineField(group = "inputs")]
+        [OnlineFieldHalf(group = "inputs")]
         private float analogInputX;
-        [OnlineField(group = "inputs")]
+        [OnlineFieldHalf(group = "inputs")]
         private float analogInputY;
 
         public RealizedPlayerState() { }

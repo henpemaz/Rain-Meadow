@@ -92,13 +92,18 @@ namespace RainMeadow
 
             UpdateCharacterUI();
 
-            if (OnlineManager.lobby.isAvailable)
+            if (OnlineManager.lobby.isActive)
             {
-                OnLobbyAvailable();
+                OnLobbyActive();
             }
             else
             {
-                OnlineManager.lobby.OnLobbyAvailable += OnLobbyAvailable;
+                OnlineManager.lobby.gameMode.OnLobbyActive += OnLobbyActive;
+            }
+
+            if(manager.musicPlayer != null)
+            {
+                manager.musicPlayer.MenuRequestsSong("me",1,2);
             }
         }
 
@@ -173,7 +178,7 @@ namespace RainMeadow
             }
         }
 
-        private void OnLobbyAvailable()
+        private void OnLobbyActive()
         {
             startButton.buttonBehav.greyedOut = false;
             BindSettings();
@@ -181,7 +186,7 @@ namespace RainMeadow
 
         private void BindSettings()
         {
-            this.personaSettings = (MeadowAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
+            this.personaSettings = (MeadowAvatarSettings)OnlineManager.lobby.gameMode.clientSettings;
             personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][skinIndex];
             personaSettings.tint = colorpicker.valuecolor;
             personaSettings.tintAmount = this.tintAmount;
@@ -201,7 +206,7 @@ namespace RainMeadow
         public override void ShutDownProcess()
         {
             RainMeadow.DebugMe();
-            if (OnlineManager.lobby != null) OnlineManager.lobby.OnLobbyAvailable -= OnLobbyAvailable;
+            if (OnlineManager.lobby != null) OnlineManager.lobby.gameMode.OnLobbyActive -= OnLobbyActive;
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
                 MatchmakingManager.instance.LeaveLobby();

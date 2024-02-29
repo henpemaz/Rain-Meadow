@@ -31,6 +31,7 @@ namespace RainMeadow
             FriendsOnly,
             [Description("Private")]
             Private
+
         }
 
         public abstract event LobbyListReceived_t OnLobbyListReceived;
@@ -59,9 +60,11 @@ namespace RainMeadow
         {
             if (subscribers.Keys.Contains(OnlineManager.mePlayer)) return OnlineManager.mePlayer;
             if (subscribers.Count < 1) return null;
-            return subscribers.First().Key;
+            return subscribers.FirstOrDefault(p => !p.Key.hasLeft).Key;
         }
 
         public abstract MeadowPlayerId GetEmptyId();
+
+        public abstract string GetLobbyID();
     }
 }

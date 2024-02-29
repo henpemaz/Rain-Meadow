@@ -10,10 +10,11 @@ namespace RainMeadow
         public OnlineGameMode gameMode;
         public OnlineGameMode.OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
+        public Dictionary<OnlinePlayer, ClientSettings> clientSettings = new();
+        public Dictionary<OnlinePlayer, OnlineEntity.EntityId> playerAvatars = new(); // should maybe be in GameMode
 
-        public override World World => throw new NotSupportedException(); // Lobby can't add world entities
-
-        public event Action OnLobbyAvailable; // for menus
+        public string[] mods = RainMeadowModManager.GetActiveMods();
+        public static bool modsChecked;
 
         public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner)
         {
@@ -27,6 +28,7 @@ namespace RainMeadow
             if (owner == null) throw new Exception("No lobby owner");
             NewOwner(owner);
 
+            activateOnAvailable = true;
             if (isOwner)
             {
                 Available();
@@ -37,9 +39,17 @@ namespace RainMeadow
             }
         }
 
+        internal override void Tick(uint tick)
+        {
+            clientSettings = entities.Values.Where(em => em.entity is ClientSettings).ToDictionary(e => e.entity.owner, e=> e.entity as ClientSettings);
+            playerAvatars = clientSettings.ToDictionary(e => e.Key, e => e.Value.avatarId);
+            gameMode.LobbyTick(tick);
+            base.Tick(tick);
+        }
+
         protected override void ActivateImpl()
         {
-            if(gameModeType == OnlineGameMode.OnlineGameModeType.ArenaCompetitive) // Arena
+            if (gameModeType == OnlineGameMode.OnlineGameModeType.ArenaCompetitive) // Arena
             {
                 var nr = new Region("arena", 0, -1, null);
                 var ns = new WorldSession(nr, this);
@@ -50,18 +60,18 @@ namespace RainMeadow
             {
                 foreach (var r in Region.LoadAllRegions(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer))
                 {
+                    RainMeadow.Debug(r.name);
                     var ws = new WorldSession(r, this);
                     worldSessions.Add(r.name, ws);
                     subresources.Add(ws);
                 }
+                RainMeadow.Debug(subresources.Count);
             }
         }
 
         protected override void AvailableImpl()
         {
-            Activate();
-            OnLobbyAvailable?.Invoke();
-            OnLobbyAvailable = null;
+            
         }
 
         protected override void DeactivateImpl()
@@ -100,27 +110,21 @@ namespace RainMeadow
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedUshorts inLobbyIds;
             [OnlineField]
-            public int food;
-            [OnlineField]
-            public int quarterfood;
+            public string[] mods;
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
                 nextId = lobby.nextId;
                 players = new(lobby.participants.Keys.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
-
-                if(lobby.gameModeType != OnlineGameMode.OnlineGameModeType.Meadow)
-                {
-                    food = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
-                    quarterfood = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
-                }
+                mods = lobby.mods;
             }
 
             public override void ReadTo(OnlineResource resource)
             {
                 var lobby = (Lobby)resource;
                 lobby.nextId = nextId;
+
                 for (int i = 0; i < players.list.Count; i++)
                 {
                     if (MatchmakingManager.instance.GetPlayer(players.list[i]) is OnlinePlayer p)
@@ -134,18 +138,17 @@ namespace RainMeadow
                     }
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
-                if (lobby.gameModeType != OnlineGameMode.OnlineGameModeType.Meadow)
+
+                if (!modsChecked)
                 {
-                    var playerstate = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].state as PlayerState);
-                    if (playerstate != null)
-                    {
-                        playerstate.foodInStomach = food;
-                        playerstate.quarterFoodPoints = quarterfood;
-                    }
+                    modsChecked = true;
+                    RainMeadowModManager.CheckMods(this.mods, lobby.mods);
                 }
+
                 base.ReadTo(resource);
             }
         }
+
         public override string ToString()
         {
             return "Lobby";
@@ -159,7 +162,6 @@ namespace RainMeadow
 
         protected override void NewParticipantImpl(OnlinePlayer player)
         {
-            base.NewParticipantImpl(player);
             if (isOwner)
             {
                 player.inLobbyId = nextId;
@@ -167,6 +169,14 @@ namespace RainMeadow
                 nextId++;
                 // todo overflows and repeats (unrealistic but it's a ushort)
             }
+            base.NewParticipantImpl(player);
+            gameMode.NewPlayerInLobby(player);
+        }
+
+        protected override void ParticipantLeftImpl(OnlinePlayer player)
+        {
+            base.ParticipantLeftImpl(player);
+            gameMode.PlayerLeftLobby(player);
         }
     }
 }

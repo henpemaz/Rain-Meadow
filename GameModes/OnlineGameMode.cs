@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -56,8 +57,11 @@ namespace RainMeadow
             this.lobby = lobby;
         }
 
+        // todo support jolly or other forms of local co-op
         public OnlineCreature avatar;
-        public AvatarSettingsEntity avatarSettings;
+        public ClientSettings clientSettings;
+
+        public event Action OnLobbyActive;
 
         public virtual void FilterItems(Room room)
         {
@@ -117,17 +121,96 @@ namespace RainMeadow
 
         public virtual AbstractCreature SpawnAvatar(RainWorldGame self, WorldCoordinate location)
         {
-            return null;
+            return null; // game runs default code
         }
 
-        internal virtual void NewEntity(OnlineEntity oe)
+        internal virtual void NewEntity(OnlineEntity oe, OnlineResource inResource)
         {
             
         }
 
+        internal virtual void AddAvatarSettings()
+        {
+            RainMeadow.Debug("Adding avatar settings!");
+            clientSettings = new StoryClientSettings(
+                new StoryClientSettings.Definition(
+                    new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0)
+                    , OnlineManager.mePlayer));
+            clientSettings.EnterResource(lobby);
+        }
+
         internal virtual void SetAvatar(OnlineCreature onlineCreature)
         {
+            RainMeadow.Debug(onlineCreature);
             this.avatar = onlineCreature;
+            this.clientSettings.avatarId = onlineCreature.id;
+        }
+
+        internal virtual void ResourceAvailable(OnlineResource onlineResource)
+        {
+            
+        }
+
+        internal virtual void ResourceActive(OnlineResource onlineResource)
+        {
+            if(onlineResource is Lobby lobby)
+            {
+                AddAvatarSettings();
+
+                OnLobbyActive?.Invoke();
+            }
+        }
+
+        public virtual bool PlayerCanOwnResource(OnlinePlayer from, OnlineResource onlineResource)
+        {
+            return true;
+        }
+
+        public virtual void LobbyReadyCheck() 
+        { 
+            
+        }
+
+        internal virtual void PlayerLeftLobby(OnlinePlayer player)
+        {
+            
+        }
+
+        internal virtual void NewPlayerInLobby(OnlinePlayer player)
+        {
+
+        }
+
+        internal virtual void LobbyTick(uint tick)
+        {
+            
+        }
+
+        internal virtual void Customize(Creature creature, OnlineCreature oc)
+        {
+            if (lobby.playerAvatars.Any(a=>a.Value == oc.id))
+            {
+                RainMeadow.Debug($"Customizing avatar {creature} for {oc.owner}");
+                var settings = lobby.entities.Values.First(em => em.entity is ClientSettings avs && avs.avatarId == oc.id).entity as ClientSettings;
+
+                // this adds the entry in the CWT
+                var mcc = RainMeadow.creatureCustomizations.GetValue(creature, (c) => settings.MakeCustomization());
+
+                if(creature is Player player && !oc.isMine)
+                {
+                    player.controller = new OnlineController(oc, player);
+                }
+
+                // todo one day come back to making emote support universal
+                //if (oc.TryGetData<MeadowCreatureData>(out var mcd))
+                //{
+                //    EmoteDisplayer.map.GetValue(creature, (c) => new EmoteDisplayer(creature, oc, mcd, mcc));
+                //}
+                //else
+                //{
+                //    RainMeadow.Error("missing mcd?? " + oc);
+                //}
+            }
         }
     }
 }

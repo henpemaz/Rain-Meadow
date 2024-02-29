@@ -76,6 +76,11 @@ namespace RainMeadow
             mainPage.subObjects.Add(modeDescriptionLabel);
             UpdateModeDescription();
 
+            // display version
+            where = new Vector2(0f, 0f);
+            var meadowVer = new ProperlyAlignedMenuLabel(this, mainPage, Translate($"Rain Meadow Version {RainMeadow.MeadowVersionStr}"), where, new Vector2(0f, 20f), false, null);
+            mainPage.subObjects.Add(meadowVer);
+
             // center-low settings
             where.y -= 45;
             var visibilityLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Visibility:"), where, new Vector2(200, 20f), false, null);
@@ -213,15 +218,21 @@ namespace RainMeadow
 
         private void Play(SimplerButton obj)
         {
+            if (ModManager.JollyCoop)
+            {
+                ShowErrorDialog("Please disable JollyCoop before playing Online");
+                return;
+
+            }
             if (currentlySelectedCard == 0)
             {
-                RequestLobbyCreate();
                 ShowLoadingDialog("Creating lobby...");
+                RequestLobbyCreate();
             }
             else
             {
-                RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo);
                 ShowLoadingDialog("Joining lobby...");
+                RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo);
             }
             
         }

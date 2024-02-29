@@ -19,7 +19,6 @@ namespace RainMeadow
             RainMeadow.DebugMe();
 
             if (OnlineManager.lobby == null) throw new InvalidOperationException("lobby is null");
-            OnlineManager.lobby.OnLobbyAvailable += OnLobbyAvailable;
 
             manager.arenaSetup = new ArenaSetup(manager)
             {
@@ -31,6 +30,15 @@ namespace RainMeadow
             UninitializeInheritedScene();
 
             BuildLayout();
+
+            if (OnlineManager.lobby.isActive)
+            {
+                OnLobbyActive();
+            }
+            else
+            {
+                OnlineManager.lobby.gameMode.OnLobbyActive += OnLobbyActive;
+            }
         }
 
         void UninitializeInheritedScene()
@@ -211,7 +219,7 @@ namespace RainMeadow
         }
 
         List<SimplerButton> enableOnLobbyAvailable = new();
-        private void OnLobbyAvailable()
+        private void OnLobbyActive()
         {
             foreach (var b in enableOnLobbyAvailable)
             {
@@ -445,7 +453,7 @@ namespace RainMeadow
         {
             // Rain Meadow
             RainMeadow.DebugMe();
-            if (OnlineManager.lobby != null) OnlineManager.lobby.OnLobbyAvailable -= OnLobbyAvailable;
+            if (OnlineManager.lobby != null) OnlineManager.lobby.gameMode.OnLobbyActive -= OnLobbyActive;
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
                 MatchmakingManager.instance.LeaveLobby();

@@ -12,7 +12,7 @@ namespace RainMeadow
         public Queue<OnlineEvent> OutgoingEvents = new(8);
         public List<OnlineEvent> recentlyAckedEvents = new(4);
         public List<OnlineEvent> abortedEvents = new(8);
-        public Queue<OnlineState> OutgoingStates = new(16);
+        public Queue<OnlineStateMessage> OutgoingStates = new(16);
 
         public ushort nextOutgoingEvent = 1; // outgoing, event id
         public ushort lastEventFromRemote; // incoming, the last event I've received from them, I'll write it back on headers as an ack
@@ -28,7 +28,6 @@ namespace RainMeadow
 
         public bool isMe;
         public bool hasLeft;
-
         
         // For Debug Overlay
         public int ping; // rtt
@@ -54,6 +53,12 @@ namespace RainMeadow
             nextOutgoingEvent++;
             OutgoingEvents.Enqueue(e);
             return e;
+        }
+
+        public OnlineStateMessage QueueStateMessage(OnlineStateMessage stateMessage)
+        {
+            OutgoingStates.Enqueue(stateMessage);
+            return stateMessage;
         }
 
         public OnlineEvent GetRecentEvent(ushort id)
@@ -134,13 +139,17 @@ namespace RainMeadow
             return (RPCEvent)this.QueueEvent(RPCManager.BuildRPC(del, args));
         }
 
-        internal void Updade()
+        internal void Update()
         {
             // Update snapshot cycle for debug overlay and reset for snapshot frame
             var nextSnapshotIndex = (bytesSnapIndex + 1) % 40;
             bytesIn[nextSnapshotIndex] = 0;
             bytesOut[nextSnapshotIndex] = 0;
             bytesSnapIndex = nextSnapshotIndex;
+        }
+        internal TickReference MakeTickReference()
+        {
+            return new TickReference(this);
         }
 
         public override string ToString()
