@@ -8,7 +8,7 @@ namespace RainMeadow
 
         public override void Process()
         {
-            (MatchmakingManager.instance as LocalMatchmakingManager).FailedJoinLobby();
+            (MatchmakingManager.instance as LocalMatchmakingManager).JoinLobby(false);
         }
     }
 }

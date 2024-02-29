@@ -15,8 +15,7 @@ namespace RainMeadow
         public string[] mods = RainMeadowModManager.GetActiveMods();
         public static bool modsChecked;
 
-        public string lobbyPassword = "";
-        public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner)
+        public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password)
         {
             this.super = this;
             OnlineManager.lobby = this; // needed for early entity processing
@@ -31,11 +30,13 @@ namespace RainMeadow
             activateOnAvailable = true;
             if (isOwner)
             {
+                this.resourceLock = password;
                 Available();
             }
             else
             {
-                Request(); // Everyone auto-subscribes this resource
+                //Request(); // Everyone auto-subscribes this resource
+                RequestLobby(password);
             }
         }
 

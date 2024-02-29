@@ -12,7 +12,7 @@ namespace RainMeadow
         public static string CLIENT_VAL = "Meadow_" + RainMeadow.MeadowVersionStr;
         public static string NAME_KEY = "name";
         public static string MODE_KEY = "mode";
-
+        public static string PASSWORD_KEY = "password";
 
         public static void InitLobbyManager()
         {
@@ -45,7 +45,8 @@ namespace RainMeadow
 
         public abstract void CreateLobby(LobbyVisibility visibility, string gameMode, string? password);
 
-        public abstract void JoinLobby(LobbyInfo lobby);
+        public abstract void RequestJoinLobby(LobbyInfo lobby, string? password);
+        public abstract void JoinLobby(bool success);
 
         public abstract void LeaveLobby();
 

@@ -60,7 +60,7 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             m_RequestLobbyListCall = CallResult<LobbyMatchList_t>.Create(LobbyListReceived);
             m_CreateLobbyCall = CallResult<LobbyCreated_t>.Create(LobbyCreated);
-            m_JoinLobbyCall = CallResult<LobbyEnter_t>.Create(LobbyJoined);
+            m_JoinLobbyCall = CallResult<LobbyEnter_t>.Create(LobbyConnected);
             m_LobbyDataUpdate = Callback<LobbyDataUpdate_t>.Create(LobbyUpdated);
             m_LobbyChatUpdate = Callback<LobbyChatUpdate_t>.Create(LobbyChatUpdated);
             m_SessionRequest = Callback<SteamNetworkingMessagesSessionRequest_t>.Create(SessionRequest);
@@ -108,7 +108,7 @@ namespace RainMeadow
         public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password)
         {
             creatingWithMode = gameMode;
-            creatingWithPassword = password;
+            lobbyPassword = password;
             ELobbyType eLobbyTypeeLobbyType = visibility switch
             {
                 LobbyVisibility.Private => ELobbyType.k_ELobbyTypePrivate,
@@ -119,13 +119,28 @@ namespace RainMeadow
             m_CreateLobbyCall.Set(SteamMatchmaking.CreateLobby(eLobbyTypeeLobbyType, 16));
         }
 
-        public override void JoinLobby(LobbyInfo lobby)
+        public override void RequestJoinLobby(LobbyInfo lobby, string? password)
         {
+            lobbyPassword = password;
             m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(lobby.id));
         }
 
+        public override void JoinLobby(bool success)
+        {
+            if (success)
+            {
+                OnLobbyJoined?.Invoke(true);
+            }
+            else
+            {
+                LeaveLobby();
+                RainMeadow.Debug("Failed to join local game. Wrong Password");
+                OnLobbyJoined?.Invoke(false, "Wrong password!");
+            }
+        }
+
         private static string creatingWithMode;
-        private static string? creatingWithPassword;
+        private static string? lobbyPassword;
         private void LobbyCreated(LobbyCreated_t param, bool bIOFailure)
         {
             try
@@ -138,8 +153,11 @@ namespace RainMeadow
                     SteamMatchmaking.SetLobbyData(lobbyID, CLIENT_KEY, CLIENT_VAL);
                     SteamMatchmaking.SetLobbyData(lobbyID, NAME_KEY, SteamFriends.GetPersonaName() + "'s Lobby");
                     SteamMatchmaking.SetLobbyData(lobbyID, MODE_KEY, creatingWithMode);
-                    OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(creatingWithMode), OnlineManager.mePlayer);
-
+                    if (lobbyPassword != null)
+                    {
+                        SteamMatchmaking.SetLobbyData(lobbyID, PASSWORD_KEY, "true");
+                    }
+                    OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(creatingWithMode), OnlineManager.mePlayer, lobbyPassword);
                     SteamFriends.SetRichPresence("connect", lobbyID.ToString());
                     OnLobbyJoined?.Invoke(true);
                 }
@@ -158,7 +176,7 @@ namespace RainMeadow
             }
         }
 
-        private void LobbyJoined(LobbyEnter_t param, bool bIOFailure)
+        private void LobbyConnected(LobbyEnter_t param, bool bIOFailure)
         {
             try
             {
@@ -176,8 +194,7 @@ namespace RainMeadow
                     }
                     SteamFriends.SetRichPresence("connect", lobbyID.ToString());
 
-                    OnlineManager.lobby = new Lobby(mode, owner);
-                    OnLobbyJoined?.Invoke(true);
+                    OnlineManager.lobby = new Lobby(mode, owner, lobbyPassword);
                 }
                 else
                 {
