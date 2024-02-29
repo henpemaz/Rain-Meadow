@@ -28,7 +28,7 @@ namespace RainMeadow
         private StoryAvatarSettings personaSettings;
 
         private List<SlugcatSelectMenu.SlugcatPage> characterPages;
-        private EventfulSelectOneButton[] playerButtons;
+        private EventfulSelectOneButton[] playerButtons = new EventfulSelectOneButton[0];
 
         int skinIndex;
         private OpTinyColorPicker colorpicker;
@@ -234,7 +234,11 @@ namespace RainMeadow
         }
         private void UpdateCharacterUI()
         {
-
+            for (int i = 0; i < playerButtons.Length; i++) { 
+                var playerbtn = playerButtons[i];
+                playerbtn.RemoveSprites();
+                mainPage.RemoveSubObject(playerbtn);
+            }
             playerButtons = new EventfulSelectOneButton[players.Length];
             for (int i = 0; i < players.Length; i++)
             {
@@ -304,6 +308,7 @@ namespace RainMeadow
             this.backButton = new SimplerButton(this, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f));
             this.backButton.OnClick += (_) =>
             {
+
                 manager.RequestMainProcessSwitch(this.backTarget);
             };
 
