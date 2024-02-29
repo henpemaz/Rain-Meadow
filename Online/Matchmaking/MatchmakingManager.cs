@@ -45,7 +45,8 @@ namespace RainMeadow
 
         public abstract void CreateLobby(LobbyVisibility visibility, string gameMode, string? password);
 
-        public abstract void JoinLobby(LobbyInfo lobby, string? password);
+        public abstract void RequestJoinLobby(LobbyInfo lobby, string? password);
+        public abstract void JoinLobby(bool success);
 
         public abstract void LeaveLobby();
 

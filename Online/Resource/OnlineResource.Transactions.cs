@@ -15,6 +15,15 @@ namespace RainMeadow
             pendingRequest = supervisor.InvokeRPC(this.Requested).Then(this.ResolveRequest);
         }
 
+        public void RequestLobby(string? key)
+        {
+            RainMeadow.Debug(this);
+            if (isPending) throw new InvalidOperationException("pending");
+            if (isAvailable) throw new InvalidOperationException("available");
+            ClearIncommingBuffers();
+            pendingRequest = supervisor.InvokeRPC(this.RequestedLobby, key).Then(this.ResolveLobbyRequest);
+        }
+
         // I no longer need this resource, supervisor can coordinate its transfer if needed
         private void Release()
         {
@@ -60,7 +69,18 @@ namespace RainMeadow
 
             request.from.QueueEvent(new GenericResult.Error(request));
         }
-
+        [RPCMethod]
+        public void RequestedLobby(RPCEvent request, string? key) {
+            if (this.hasLock) 
+            {
+                if (this.resourceLock != key) 
+                {
+                    request.from.QueueEvent(new GenericResult.Fail(request));
+                    return;
+                }
+            }
+            Requested(request);
+        }
         // Someone is trying to release this resource, if I supervise it, I'll handle it
         [RPCMethod]
         public void Released(RPCEvent request)
@@ -131,6 +151,32 @@ namespace RainMeadow
                         RainMeadow.Debug("Joined resource");
                     }
                 }
+            }
+            else if (requestResult is GenericResult.Error) // I should retry
+            {
+                Request();
+                RainMeadow.Error("request failed for " + this);
+            }
+        }
+
+        public void ResolveLobbyRequest(GenericResult requestResult) 
+        {
+            if (requestResult is GenericResult.Ok)
+            {
+                MatchmakingManager.instance.JoinLobby(true);
+                if (!isAvailable) // this was transfered to me because the previous owner left
+                {
+                    WaitingForState();
+                    if (isOwner)
+                    {
+                        Available();
+                    }
+                }
+            }
+            else if (requestResult is GenericResult.Fail) // I didn't have the right key for this resource
+            {
+                RainMeadow.Error("locked request for " + this);
+                MatchmakingManager.instance.JoinLobby(false);
             }
             else if (requestResult is GenericResult.Error) // I should retry
             {

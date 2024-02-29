@@ -60,7 +60,7 @@ namespace RainMeadow
         
         }
 
-        public string lobbyPassword = "";
+        public string? lobbyPassword;
 
         private int me = -1;
         private IPEndPoint currentLobbyHost = null;
@@ -110,14 +110,12 @@ namespace RainMeadow
                 OnLobbyJoined?.Invoke(false, "use the host");
                 return;
             }
-            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer);
-            if (password != null) {
-                lobbyPassword = password;
-            }
+
+            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer, password);
             OnLobbyJoined?.Invoke(true);
         }
 
-        public override void JoinLobby(LobbyInfo lobby, string? password)
+        public override void RequestJoinLobby(LobbyInfo lobby, string? password)
         {
             sessionSetup(false);
             if (((LocalPlayerId)OnlineManager.mePlayer.id).isHost)
@@ -130,22 +128,31 @@ namespace RainMeadow
                 RainMeadow.Debug("Failed to join local game...");
                 return;
             } 
+            //TODO: Actually grab a password from user input
+            lobbyPassword = password;
             var memory = new MemoryStream(16);
             var writer = new BinaryWriter(memory);
-            //TODO: Actually grab a password from user input
-            Packet.Encode(new RequestJoinPacket(password), writer, null);
+            Packet.Encode(new RequestJoinPacket(), writer, null);
             UdpPeer.Send(lobby.ipEndpoint, memory.GetBuffer(), (int)memory.Position, UdpPeer.PacketType.Reliable);
-        }
-        public void FailedJoinLobby() {
-            RainMeadow.Debug("Failed to join local game. Wrong Password");
-            OnLobbyJoined?.Invoke(false, "Wrong password!");
         }
         public void LobbyJoined()
         {
-            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), GetLobbyOwner());
+            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), GetLobbyOwner(), lobbyPassword);
             var lobbyOwner = (LocalPlayerId)OnlineManager.lobby.owner.id;
             currentLobbyHost = lobbyOwner.endPoint;
-            OnLobbyJoined?.Invoke(true);
+        }
+        public override void JoinLobby(bool success)
+        {
+            if (success)
+            {
+                OnLobbyJoined?.Invoke(true);
+            }
+            else
+            {
+                LeaveLobby();
+                RainMeadow.Debug("Failed to join local game. Wrong Password");
+                OnLobbyJoined?.Invoke(false, "Wrong password!");
+            }
         }
 
         public override void LeaveLobby()
