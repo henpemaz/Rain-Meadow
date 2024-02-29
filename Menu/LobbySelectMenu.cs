@@ -92,7 +92,7 @@ namespace RainMeadow
             // password setting
             where.x += 160;
             passwordInputBox = new OpTextBox(new Configurable<string>("Password"), where, 160f);
-
+            new UIelementWrapper(this.tabWrapper, passwordInputBox);
             // left lobby selector
             // bg
             sprites = new();
@@ -132,22 +132,6 @@ namespace RainMeadow
             SteamNetworkingUtils.InitRelayNetworkAccess();
 #endif
             MatchmakingManager.instance.RequestLobbyList();
-        }
-
-        private void UpdatePasswordBoxVisiblity(bool visible)
-        {
-            if (visible)
-            {
-                new UIelementWrapper(this.tabWrapper, passwordInputBox);
-            }
-            else 
-            {
-                if (this.tabWrapper.wrappers.ContainsKey(passwordInputBox))
-                {
-                    OpTab.RemoveItemsFromTab(new UIelement[]{passwordInputBox});
-                    this.tabWrapper.wrappers.Remove(passwordInputBox);
-                }
-            }
         }
 
         private void UpdateModeDescription()
@@ -366,7 +350,6 @@ namespace RainMeadow
                 if (idstring == "SETPASSWORD")
                 {
                     setpassword = !setpassword;
-                    UpdatePasswordBoxVisiblity(setpassword);
                 }
             }
         }
