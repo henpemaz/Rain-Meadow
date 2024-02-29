@@ -193,7 +193,6 @@ namespace RainMeadow
                 personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
                 (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber; // I decide the campaign
             }
-            Ext_SlugcatStatsName.OnlineSessionPlayer = personaSettings.playingAs;
 
             RainMeadow.Debug("PLAYING AS: " + personaSettings.playingAs);
 
