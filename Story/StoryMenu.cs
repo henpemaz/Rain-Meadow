@@ -194,7 +194,7 @@ namespace RainMeadow
                 (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber; // I decide the campaign
             }
 
-            RainMeadow.Debug("PLAYING AS: " + personaSettings.playingAs);
+            RainMeadow.Debug("STORY MENU PLAYING AS: " + personaSettings.playingAs);
 
             manager.arenaSitting = null;
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
