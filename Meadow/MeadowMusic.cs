@@ -173,7 +173,7 @@ namespace RainMeadow
                     //yoink the coordinates of the vibe zone room
                     Vector2 v2 = room.world.RoomToWorldPos(Vector2.zero, rooms[i]);
                     //calculate the flat distance between these two vectors
-                    dists[i] = Mathf.Abs(Vector2.Distance(v1, v2));
+                    dists[i] = (v2 - v1).magnitude;
                 }
                 float minDist = Mathf.Min(dists);
                 //we now have the smallest of all the distances, aka the one closest to the player. grab this smallest distance's corresponding room id
@@ -199,7 +199,7 @@ namespace RainMeadow
                 else if (minDist < az.radius)
                 {
                     vibeIntensity = Custom.LerpMap(minDist, az.radius, 0, 0.5f, 1);
-                    musicPlayer.song.volume = Custom.LerpMap(minDist, az.radius, 0, 0.5f, 1);
+                    musicPlayer.song.baseVolume = Custom.LerpMap(minDist, az.radius, 0, 0.5f, 1) * 0.3f;
                 }
             }
         }
