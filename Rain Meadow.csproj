@@ -226,4 +226,7 @@
     </Reference>
   </ItemGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy /b/v/y &quot;$(OutDir)*&quot; &quot;$(ProjectDir)Mod\plugins&quot;" />
+  </Target>
 </Project>
