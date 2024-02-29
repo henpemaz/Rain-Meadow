@@ -26,8 +26,6 @@ namespace RainMeadow
         private OpComboBox2 modeDropDown;
         private ProperlyAlignedMenuLabel modeDescriptionLabel;
         private MenuDialogBox popupDialog;
-        private int maxStoryPlayers = 4;
-        private LobbyInfo lobbyInfo;
 
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
@@ -256,6 +254,11 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
             MatchmakingManager.instance.JoinLobby(lobby);
+            if (SteamMatchmakingManager.isStoryLobbyFull)
+            {
+                ShowErrorDialog($"Failed to join lobby.<LINE>Lobby is full");
+                return;
+            }
         }
 
         private void OnlineManager_OnLobbyListReceived(bool ok, LobbyInfo[] lobbies)
@@ -270,16 +273,6 @@ namespace RainMeadow
         
         private void OnlineManager_OnLobbyJoined(bool ok, string error)
         {
-            if (OnlineManager.lobby.gameMode is StoryGameMode)
-            {
-                if (lobbyInfo.playerCount >= maxStoryPlayers)
-                {
-                    RainMeadow.Debug("Player attempted to join, but the lobby was full");
-                    ok = false;
-                    error = "The lobby is full";
-                    return;
-                }
-            }
             RainMeadow.Debug(ok);
             if (!ok)
             {
