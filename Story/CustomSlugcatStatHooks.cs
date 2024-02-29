@@ -78,7 +78,7 @@ namespace RainMeadow
                 if (OnlineManager.lobby == null) return;
 
 
-                if (slugcat == Ext_SlugcatStatsName.OnlineStoryWhite) // Don't tell Turtle I did this...
+                if (slugcat == Ext_SlugcatStatsName.OnlineStoryWhite) 
                 {
 
                     self.throwingSkill = 1;
