@@ -30,7 +30,7 @@ namespace RainMeadow
         private StoryClientSettings personaSettings;
 
         private List<SlugcatSelectMenu.SlugcatPage> characterPages;
-        private EventfulSelectOneButton[] playerButtons;
+        private EventfulSelectOneButton[] playerButtons = new EventfulSelectOneButton[0];
         int skinIndex;
         private OpTinyColorPicker bodyColorPicker;
         private OpTinyColorPicker eyeColorPicker;
@@ -249,6 +249,12 @@ namespace RainMeadow
         }
         private void UpdateCharacterUI()
         {
+            for (int i = 0; i < playerButtons.Length; i++)
+            {
+                var playerbtn = playerButtons[i];
+                playerbtn.RemoveSprites();
+                mainPage.RemoveSubObject(playerbtn);
+            }
 
             playerButtons = new EventfulSelectOneButton[players.Length];
 
