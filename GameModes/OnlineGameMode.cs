@@ -59,7 +59,7 @@ namespace RainMeadow
 
         // todo support jolly or other forms of local co-op
         public OnlineCreature avatar;
-        public ClientSettings avatarSettings;
+        public ClientSettings clientSettings;
 
         public event Action OnLobbyActive;
 
@@ -132,18 +132,18 @@ namespace RainMeadow
         internal virtual void AddAvatarSettings()
         {
             RainMeadow.Debug("Adding avatar settings!");
-            avatarSettings = new StoryAvatarSettings(
-                new StoryAvatarSettings.Definition(
+            clientSettings = new StoryClientSettings(
+                new StoryClientSettings.Definition(
                     new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0)
                     , OnlineManager.mePlayer));
-            avatarSettings.EnterResource(lobby);
+            clientSettings.EnterResource(lobby);
         }
 
         internal virtual void SetAvatar(OnlineCreature onlineCreature)
         {
             RainMeadow.Debug(onlineCreature);
             this.avatar = onlineCreature;
-            this.avatarSettings.avatarId = onlineCreature.id;
+            this.clientSettings.avatarId = onlineCreature.id;
         }
 
         internal virtual void ResourceAvailable(OnlineResource onlineResource)
@@ -188,7 +188,7 @@ namespace RainMeadow
 
         internal virtual void Customize(Creature creature, OnlineCreature oc)
         {
-            if (lobby.playerAvatars.Any(a=>a == oc.id))
+            if (lobby.playerAvatars.Any(a=>a.Value == oc.id))
             {
                 RainMeadow.Debug($"Customizing avatar {creature} for {oc.owner}");
                 var settings = lobby.entities.Values.First(em => em.entity is ClientSettings avs && avs.avatarId == oc.id).entity as ClientSettings;

@@ -80,7 +80,7 @@ namespace RainMeadow
             //PlacedObject.Type.DeadSeedCob,        //After Seedcob
             //PlacedObject.Type.WaterNut,           //HARD
             //PlacedObject.Type.JellyFish,          //MEDIUM
-            //PlacedObject.Type.KarmaFlower,        //MEDIUM TODO
+            PlacedObject.Type.KarmaFlower,
             PlacedObject.Type.Mushroom,
             //PlacedObject.Type.SlimeMold,          //EASY
             PlacedObject.Type.FlyLure,
@@ -95,7 +95,7 @@ namespace RainMeadow
             //PlacedObject.Type.Hazer,              //PREREQ
             //PlacedObject.Type.DeadHazer,          //FOOD
             //PlacedObject.Type.VultureMask,        //EASY?
-            //PlacedObject.Type.HangingPearls,      //MSC - SUPER HELL
+            //PlacedObject.Type.HangingPearls,      //
             //PlacedObject.Type.Lantern,            //EASY
         };
     }

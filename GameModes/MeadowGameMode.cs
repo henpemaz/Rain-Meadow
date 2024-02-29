@@ -42,7 +42,7 @@ namespace RainMeadow
 
         public override AbstractCreature SpawnAvatar(RainWorldGame game, WorldCoordinate location)
         {
-            var settings = (avatarSettings as MeadowAvatarSettings);
+            var settings = (clientSettings as MeadowAvatarSettings);
             var skinData = MeadowProgression.skinData[settings.skin];
             var abstractCreature = new AbstractCreature(game.world, StaticWorld.GetCreatureTemplate(skinData.creatureType), null, location, new EntityID(-1, 0) { altSeed = skinData.randomSeed });
             if (skinData.creatureType == CreatureTemplate.Type.Slugcat)
@@ -84,12 +84,12 @@ namespace RainMeadow
                             new MeadowAvatarSettings.Definition(
                                 new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0)
                                 , OnlineManager.mePlayer));
-            avatarSettings = meadowAvatarSettings;
+            clientSettings = meadowAvatarSettings;
             if (!RWCustom.Custom.rainWorld.setup.startScreen) // skipping all menus
             {
                 meadowAvatarSettings.skin = MeadowProgression.currentTestSkin;
             }
-            avatarSettings.EnterResource(lobby);
+            clientSettings.EnterResource(lobby);
         }
 
         internal override void ResourceActive(OnlineResource res)
@@ -196,7 +196,7 @@ namespace RainMeadow
 
         internal override void Customize(Creature creature, OnlineCreature oc)
         {
-            if (lobby.playerAvatars.Any(a => a == oc.id)) // little cache
+            if (lobby.playerAvatars.Any(a => a.Value == oc.id)) // little cache
             {
                 RainMeadow.Debug($"Customizing avatar {creature} for {oc.owner}");
                 var settings = lobby.entities.Values.First(em => em.entity is ClientSettings avs && avs.avatarId == oc.id).entity as MeadowAvatarSettings;
