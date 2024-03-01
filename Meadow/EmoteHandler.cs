@@ -1,11 +1,8 @@
-﻿using RWCustom;
+﻿using HarmonyLib;
+using RWCustom;
 using System;
 using System.Collections.Generic;
-using System.Drawing.Drawing2D;
-using System.Linq;
-using System.Runtime.ConstrainedExecution;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 namespace RainMeadow
 {
@@ -63,10 +60,7 @@ namespace RainMeadow
             RainMeadow.Debug($"{ExtEnum<EmoteType>.values.entries.Count} emotes loaded");
         }
 
-        private InputScheme currentInputScheme;
-
-
-
+        private InputScheme currentInputScheme; // todo
         enum InputScheme
         {
             none,
@@ -81,7 +75,7 @@ namespace RainMeadow
         private EmoteRowsMenu kbmInput;
         private EmoteRadialMenu[] controllerInput;
 
-        public EmoteHandler(HUD.HUD hud, RoomCamera roomCamera, Creature avatar, MeadowAvatarCustomization customization) : base(hud)
+        public EmoteHandler(HUD.HUD hud, RoomCamera roomCamera, Creature avatar) : base(hud)
         {
             RainMeadow.Debug($"EmoteHandler created for {avatar}");
             currentInputScheme = InputScheme.kbm; // todo
@@ -89,7 +83,7 @@ namespace RainMeadow
             this.roomCamera = roomCamera;
             this.avatar = avatar;
             this.displayer = EmoteDisplayer.map.GetValue(avatar, (c) => throw new KeyNotFoundException());
-            this.customization = customization;
+            this.customization = (MeadowAvatarCustomization)RainMeadow.creatureCustomizations.GetValue(avatar, (c) => throw new KeyNotFoundException());
 
             if (!Futile.atlasManager.DoesContainAtlas("emotes_common"))
             {
@@ -105,13 +99,12 @@ namespace RainMeadow
             InitControllerInput();
 
             InitKeyboardInput();
-
-
         }
 
         private void InitKeyboardInput()
         {
             this.kbmInput = new EmoteRowsMenu(hud, customization, this);
+            hud.AddPart(this.kbmInput);
         }
 
         private void InitControllerInput()
@@ -119,10 +112,11 @@ namespace RainMeadow
             var forthwidth = hud.rainWorld.screenSize.x / 4f;
             var halfheight = hud.rainWorld.screenSize.y / 2f;
             this.controllerInput = new[] {
-                new EmoteRadialMenu(hud, customization, false, new Vector2(forthwidth, halfheight)),
-                new EmoteRadialMenu(hud, customization, true, new Vector2(2 * forthwidth, halfheight)),
-                new EmoteRadialMenu(hud, customization, false, new Vector2(3 * forthwidth, halfheight))
+                new EmoteRadialMenu(hud, customization, false, -1, new Vector2(forthwidth, halfheight)),
+                new EmoteRadialMenu(hud, customization, true, 0, new Vector2(2 * forthwidth, halfheight)),
+                new EmoteRadialMenu(hud, customization, false, 1, new Vector2(3 * forthwidth, halfheight))
             };
+            this.controllerInput.Do(c => hud.AddPart(c));
         }
 
         public void EmotePressed(EmoteType emoteType)
@@ -211,7 +205,6 @@ namespace RainMeadow
         public EmoteRowsMenu(HUD.HUD hud, MeadowAvatarCustomization customization, EmoteHandler owner) : base(hud)
         {
             this.container = new FContainer();
-
 
             nr = keyboardMappingRows.GetLength(0);
             ne = keyboardMappingRows.GetLength(1);
@@ -340,8 +333,59 @@ namespace RainMeadow
 
     public class EmoteRadialMenu : HUD.HudPart
     {
-        //private readonly EmoteType[] emotes;
-        private readonly MeadowAvatarCustomization customization;
+
+        static EmoteType[][] radialMappingPages = new EmoteType[][]{
+            new[]{
+                EmoteType.emoteHello,
+                EmoteType.emoteHappy,
+                EmoteType.emoteSad,
+                EmoteType.emoteConfused,
+                EmoteType.emoteGoofy,
+                EmoteType.emoteDead,
+                EmoteType.emoteAmazed,
+                EmoteType.emoteShrug,
+            },new[]{
+                EmoteType.emoteHug,
+                EmoteType.emoteAngry,
+                EmoteType.emoteWink,
+                EmoteType.emoteMischievous,
+                EmoteType.none,
+                EmoteType.none,
+                EmoteType.none,
+                EmoteType.none,
+            },new[]{
+                EmoteType.symbolYes,
+                EmoteType.symbolNo,
+                EmoteType.symbolQuestion,
+                EmoteType.symbolTime,
+                EmoteType.symbolSurvivor,
+                EmoteType.symbolFriends,
+                EmoteType.symbolGroup,
+                EmoteType.symbolKnoledge,
+            },new[]{
+                EmoteType.symbolTravel,
+                EmoteType.symbolMartyr,
+                EmoteType.symbolNo,
+                EmoteType.symbolNo,
+                EmoteType.symbolCollectible,
+                EmoteType.symbolFood,
+                EmoteType.symbolLight,
+                EmoteType.symbolShelter,
+            },new[]{
+                EmoteType.symbolGate,
+                EmoteType.symbolEcho,
+                EmoteType.symbolPointOfInterest,
+                EmoteType.symbolTree,
+                EmoteType.symbolIterator,
+                EmoteType.symbolNo,
+                EmoteType.symbolNo,
+                EmoteType.symbolNo,
+            }
+        };
+        static int npages = radialMappingPages.Length;
+
+        private EmoteType[] emotes;
+        private MeadowAvatarCustomization customization;
         private readonly bool isMain;
         private FContainer container;
         private TriangleMesh[] meshes;
@@ -365,10 +409,13 @@ namespace RainMeadow
         float outterRadius;
         float emoteRadius;
         private FLabel cancelLabel;
+        private int currentPage;
 
-        public EmoteRadialMenu(HUD.HUD hud, MeadowAvatarCustomization customization, bool isMain, Vector2 pos) : base(hud)
+
+        // maybe these are visual-only parts and there's a containing class that handles the input logic?
+        // or if(ismain) all the way down?
+        public EmoteRadialMenu(HUD.HUD hud, MeadowAvatarCustomization customization, bool isMain, int page, Vector2 pos) : base(hud)
         {
-            //this.emotes = emotes;
             this.customization = customization;
             this.isMain = isMain;
             this.container = new FContainer();
@@ -407,6 +454,8 @@ namespace RainMeadow
                 centerMesh.vertices[i + 1] = dira * innerRadius;
             }
 
+            SetEmotesPage(page);
+
             if (isMain)
             {
                 this.knobSprite = new FSprite("Circle20", true);
@@ -421,11 +470,21 @@ namespace RainMeadow
             this.container.SetPosition(pos);
         }
 
-        public void SetEmotes(EmoteType[] emotes)
+        public void SetEmotesPage(int page)
         {
+            currentPage = page;
+            this.emotes = radialMappingPages[(page + npages) % npages];
             for (int i = 0; i < icons.Length; i++)
             {
-                icons[i].SetElementByName(customization.GetEmote(emotes[i]));
+                if (emotes[i] != EmoteType.none)
+                {
+                    icons[i].SetElementByName(customization.GetEmote(emotes[i]));
+                    icons[i].alpha = 0.6f;
+                }
+                else
+                {
+                    icons[i].alpha = 0f;
+                }
             }
         }
 
@@ -480,6 +539,7 @@ namespace RainMeadow
 
         public override void Draw(float timeStacker)
         {
+            InputUpdate(); // here because 60fps for key events
 
             if (isMain)
             {
@@ -496,6 +556,14 @@ namespace RainMeadow
                     }
                     if (selected > -1) meshes[selected].color = colorSelected; else centerMesh.color = colorSelected;
                 }
+            }
+        }
+
+        public void InputUpdate()
+        {
+            if (Input.GetKeyDown(KeyCode.Tab))
+            {
+                SetEmotesPage((currentPage + 1) % radialMappingPages.GetLength(0));
             }
         }
     }

@@ -219,7 +219,7 @@ namespace RainMeadow
                     var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
                     self.hud.AddPart(new HUD.TextPrompt(self.hud)); // game assumes this never null
                     self.hud.AddPart(new HUD.Map(self.hud, new HUD.Map.MapData(self.room.world, self.room.game.rainWorld))); // game assumes this too :/
-                    self.hud.AddPart(new EmoteHandler(self.hud, self, owner, (MeadowAvatarCustomization)RainMeadow.creatureCustomizations.GetValue(mgm.avatar.realizedCreature, (c) => throw new InvalidProgrammerException("Creature doesn't have customization"))));
+                    self.hud.AddPart(new EmoteHandler(self.hud, self, owner));
                 }
             }
             orig(self);
