@@ -98,7 +98,10 @@ namespace RainMeadow
             mainPage.subObjects.Add(enablePasswordCheckbox);
             // password setting
             where.x += 160;
-            passwordInputBox = new OpTextBox(new Configurable<string>("Password"), where, 160f);
+            passwordInputBox = new OpTextBox(new Configurable<string>(""), where, 160f);
+            passwordInputBox.accept = OpTextBox.Accept.StringASCII;
+            passwordInputBox.description = "Lobby Password";
+            passwordInputBox.label.text = "Password";
             new UIelementWrapper(this.tabWrapper, passwordInputBox);
             // left lobby selector
             // bg
@@ -148,12 +151,6 @@ namespace RainMeadow
 
         public override void Update()
         {
-            if (popupDialog is DialogBoxAsyncWait)
-            {
-                popupDialog.Update();
-                return;
-            }
-            
             base.Update();
             int extraItems = Mathf.Max(lobbies.Length - 4, 0);
             scrollTo = Mathf.Clamp(scrollTo, -0.5f, extraItems + 0.5f);
@@ -165,7 +162,6 @@ namespace RainMeadow
             visibilityDropDown.greyedOut = this.currentlySelectedCard != 0;
             passwordInputBox.greyedOut = !setpassword || this.currentlySelectedCard != 0;
             enablePasswordCheckbox.buttonBehav.greyedOut = this.currentlySelectedCard != 0;
-            popupDialog?.Update();
         }
 
         private void BumpPlayButton(EventfulSelectOneButton obj)
@@ -321,14 +317,16 @@ namespace RainMeadow
         public void ShowPasswordRequestDialog() {
             if (popupDialog != null) HideDialog();
 
-            popupDialog = new CustomInputDialogueBox(this, mainPage, "Password Required", "HIDE_PASSWORD", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
+            popupDialog = new CustomInputDialogueBox(this, mainPage, "Password Required", "HIDE_PASSWORD", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f, 224f), new Vector2(480f, 320f));
+            mainPage.subObjects.Add(popupDialog);
         }
 
         public void ShowLoadingDialog(string text)
         {
             if (popupDialog != null) HideDialog();
 
-            popupDialog = new LoadingDialogueBox(this, mainPage, text, new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
+            popupDialog = new DialogBoxAsyncWait(this, mainPage, text, new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
+            mainPage.subObjects.Add(popupDialog);
         }
 
         public void ShowErrorDialog(string error)
@@ -336,6 +334,7 @@ namespace RainMeadow
             if (popupDialog != null) HideDialog();
             
             popupDialog = new DialogBoxNotify(this, mainPage, error, "HIDE_DIALOG", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
+            mainPage.subObjects.Add(popupDialog);
         }
 
         public void HideDialog()
@@ -344,6 +343,7 @@ namespace RainMeadow
 
             mainPage.RemoveSubObject(popupDialog);
             popupDialog.RemoveSprites();
+            popupDialog = null;
         }
 
         public override void Singal(MenuObject sender, string message)
