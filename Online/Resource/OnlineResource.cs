@@ -17,8 +17,6 @@ namespace RainMeadow
 
         public OnlineEvent pendingRequest; // should this maybe be a list/queue? Will it be any more manageable if multiple events can cohexist?
 
-        public string? resourceLock;
-
         public bool isFree => owner == null || owner.hasLeft;
         public bool isOwner => owner != null && owner.isMe;
         public bool isSupervisor => super.isOwner;
@@ -27,7 +25,6 @@ namespace RainMeadow
         public bool isAvailable { get; protected set; } // The resource state is available
         public bool isWaitingForState { get; protected set; } // The resource was leased or subscribed to
         public bool isPending => pendingRequest != null || isWaitingForState;
-        public bool hasLock => resourceLock != null;
         public bool canRelease => !isPending // no ongoing transaction
             && isActive && !subresources.Any(s => s.isAvailable || s.isPending) // no subresource available or pending
             && (!isOwner || participants.Keys.All(p => p.isMe || p.recentlyAckdTicks.Any(rt => NetIO.IsNewer(rt, lastModified)))); // state broadcasted
