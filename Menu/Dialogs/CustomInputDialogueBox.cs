@@ -14,11 +14,11 @@ namespace RainMeadow
     {
         protected MenuTabWrapper tabWrapper;
 
-        public SimplerButton continueButton;
+        public SimpleButton continueButton;
         public OpTextBox textBox;
         public UIelementWrapper textBoxWrapper;
 
-        public CustomInputDialogueBox(Menu.Menu menu, MenuObject owner, string text, Vector2 pos, Vector2 size, bool forceWrapping = false)
+        public CustomInputDialogueBox(Menu.Menu menu, MenuObject owner, string text, string signalText, Vector2 pos, Vector2 size, bool forceWrapping = false)
             : base(menu, owner, text, pos, size, forceWrapping)
         {
             owner.subObjects.Add(this.tabWrapper = new MenuTabWrapper(menu, owner));
@@ -32,7 +32,7 @@ namespace RainMeadow
 
             Vector2 where = new Vector2((pos.x + size.x / 2f - 55f),(pos.y + 20f));
 
-            continueButton = new SimplerButton(menu, owner, menu.Translate("CONFIRM"), where, new Vector2(110f, 30f));
+            continueButton = new SimpleButton(menu, owner, menu.Translate("CONFIRM"),signalText, where, new Vector2(110f, 30f));
             owner.subObjects.Add(continueButton);
 
         }
@@ -51,24 +51,6 @@ namespace RainMeadow
 
             menu.selectedObject = null;
             base.page.lastSelectedObject = null;
-        }
-
-        public static Vector2 CalculateDialogBoxSize(string displayText, bool dialogUsesWordWrapping = true)
-        {
-            string text = Custom.ReplaceWordWrapLineDelimeters(displayText).Replace("\r\n", "\n");
-            float num = Mathf.Clamp(LabelTest.GetWidth(text) + 44f, 200f, 600f);
-            if (dialogUsesWordWrapping)
-            {
-                text = displayText.WrapText(bigText: false, num, forceWrapping: true);
-            }
-
-            float num2 = LabelTest.LineHeight(bigText: false);
-            if (InGameTranslator.LanguageID.UsesLargeFont(Custom.rainWorld.inGameTranslator.currentLanguage))
-            {
-                num2 *= 2f;
-            }
-
-            return new Vector2(num, Mathf.Max(num2 * (float)text.Split('\n').Length + 100f, 120f));
         }
     }
 }

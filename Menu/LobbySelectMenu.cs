@@ -210,6 +210,10 @@ namespace RainMeadow
                 this.RemoveSubObject(menuLabel);
                 this.menuLabel = new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.name, new(5, 30), new(10, 50), true);
                 this.subObjects.Add(this.menuLabel);
+                if (lobbyInfo.hasPassword) 
+                {
+                    this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, "Private", new(260, 20), new(10, 50), false));
+                }
                 this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.mode, new(5, 20), new(10, 50), false));
                 this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.playerCount + " player" + (lobbyInfo.playerCount == 1 ? "" : "s"), new(5, 5), new(10, 50), false));
             }
@@ -312,14 +316,7 @@ namespace RainMeadow
         public void ShowPasswordRequestDialog() {
             if (popupDialog != null) HideDialog();
 
-            var requestDialogue = new CustomInputDialogueBox(this, mainPage, "Password Required", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
-            requestDialogue.continueButton.OnClick += (_) => 
-                {
-                    var password = requestDialogue.textBox.value;
-                    ShowLoadingDialog("Joining lobby...");
-                    RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo, password);
-                };
-            popupDialog = requestDialogue;
+            popupDialog = new CustomInputDialogueBox(this, mainPage, "Password Required", "HIDE_PASSWORD", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
         }
 
         public void ShowLoadingDialog(string text)
@@ -352,6 +349,11 @@ namespace RainMeadow
             {
                 case "HIDE_DIALOG":
                     HideDialog();
+                    break;
+                case "HIDE_PASSWORD":
+                    var password = (popupDialog as CustomInputDialogueBox).textBox.value;
+                    ShowLoadingDialog("Joining lobby...");
+                    RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo, password);
                     break;
             }
         }
