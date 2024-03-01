@@ -97,7 +97,7 @@ namespace RainMeadow
             where.y += 5; 
 
             // display version
-            var versionPos = new Vector2(0f, 0f);
+            var versionPos = new Vector2(5f, 0f);
             var meadowVer = new ProperlyAlignedMenuLabel(this, mainPage, Translate($"Rain Meadow Version {RainMeadow.MeadowVersionStr}"), versionPos, new Vector2(0f, 20f), false, null);
             mainPage.subObjects.Add(meadowVer);
 
