@@ -21,19 +21,18 @@ namespace RainMeadow
         public CustomInputDialogueBox(Menu.Menu menu, MenuObject owner, string text, string signalText, Vector2 pos, Vector2 size, bool forceWrapping = false)
             : base(menu, owner, text, pos, size, forceWrapping)
         {
-            owner.subObjects.Add(this.tabWrapper = new MenuTabWrapper(menu, owner));
+            this.tabWrapper = new MenuTabWrapper(menu, this);
+            subObjects.Add(tabWrapper);
 
-            Vector2 center = new Vector2((pos.x + size.x / 2f), (pos.y + size.y / 2f));
-            var placePos = center;
-            placePos.x -= 80f;
-            placePos.y -= 15f;
-            textBox = new OpTextBox(new Configurable<string>(""), placePos, 160f);
+            Vector2 center = size / 2f;
+            textBox = new OpTextBox(new Configurable<string>(""), center + new Vector2(-80f, -15f), 160f);
+            textBox.accept = OpTextBox.Accept.StringASCII;
             textBoxWrapper = new UIelementWrapper(this.tabWrapper, textBox);
 
-            Vector2 where = new Vector2((pos.x + size.x / 2f - 55f),(pos.y + 20f));
+            Vector2 where = new Vector2((center.x - 55f), 20f);
 
-            continueButton = new SimpleButton(menu, owner, menu.Translate("CONFIRM"),signalText, where, new Vector2(110f, 30f));
-            owner.subObjects.Add(continueButton);
+            continueButton = new SimpleButton(menu, this, menu.Translate("CONFIRM"), signalText, where, new Vector2(110f, 30f));
+            subObjects.Add(continueButton);
 
         }
         public override void RemoveSprites()
@@ -41,16 +40,6 @@ namespace RainMeadow
             base.RemoveSprites();
             tabWrapper.RemoveSprites();
             continueButton.RemoveSprites();
-
-            owner.subObjects.Remove(tabWrapper);
-            owner.subObjects.Remove(continueButton);
-            while (base.page.selectables.Contains(continueButton))
-            {
-                base.page.selectables.Remove(continueButton);
-            }
-
-            menu.selectedObject = null;
-            base.page.lastSelectedObject = null;
         }
     }
 }
