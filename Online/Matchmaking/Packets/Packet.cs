@@ -11,7 +11,6 @@ namespace RainMeadow
             RequestJoin,
             RequestLeave,
             JoinLobby,
-            FailedJoinLobby,
             ModifyPlayerList,
             Session,
             SessionEnd
@@ -53,7 +52,6 @@ namespace RainMeadow
                 Type.RequestJoin => new RequestJoinPacket(),
                 Type.ModifyPlayerList => new ModifyPlayerListPacket(),
                 Type.JoinLobby => new JoinLobbyPacket(),
-                Type.FailedJoinLobby => new FailedJoinLobbyPacket(),
                 Type.Session => new SessionPacket(),
                 Type.RequestLeave => new RequestLeavePacket(),
                 Type.SessionEnd => new SessionEndPacket(),
