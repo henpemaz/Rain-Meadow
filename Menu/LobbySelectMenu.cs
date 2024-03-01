@@ -30,7 +30,7 @@ namespace RainMeadow
         private bool setpassword;
         private OpTextBox passwordInputBox;
         private CheckBox enablePasswordCheckbox;
-        private int maxPlayerLimit = 4;
+        private int maxPlayerCount = 4;
         
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
@@ -102,13 +102,16 @@ namespace RainMeadow
             passwordInputBox.description = "Lobby Password";
             passwordInputBox.label.text = "Password";
             new UIelementWrapper(this.tabWrapper, passwordInputBox);
-            
+
             // textbox lobby limit option
+            where.x -= 160;
             where.y -= 45;
             var limitNumberLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Player max:"), where, new Vector2(400, 20f), false, null);
             mainPage.subObjects.Add(limitNumberLabel);
+            where.x += 80;
             where.y -= 5;
-            lobbyLimitNumberTextBox = new OpTextBox(new Configurable<int>(maxPlayerLimit), where, 160f);
+            lobbyLimitNumberTextBox = new OpTextBox(new Configurable<int>(maxPlayerCount), where, 160f);
+            lobbyLimitNumberTextBox.accept = OpTextBox.Accept.Int;
             new UIelementWrapper(this.tabWrapper, lobbyLimitNumberTextBox);
             where.y += 5; 
 
@@ -116,6 +119,7 @@ namespace RainMeadow
             var versionPos = new Vector2(5f, 0f);
             var meadowVer = new ProperlyAlignedMenuLabel(this, mainPage, Translate($"Rain Meadow Version {RainMeadow.MeadowVersionStr}"), versionPos, new Vector2(0f, 20f), false, null);
             mainPage.subObjects.Add(meadowVer);
+
             // left lobby selector
             // bg
             sprites = new();
@@ -175,6 +179,7 @@ namespace RainMeadow
             visibilityDropDown.greyedOut = this.currentlySelectedCard != 0;
             passwordInputBox.greyedOut = !setpassword || this.currentlySelectedCard != 0;
             enablePasswordCheckbox.buttonBehav.greyedOut = this.currentlySelectedCard != 0;
+            lobbyLimitNumberTextBox.greyedOut = this.currentlySelectedCard != 0;
         }
 
         private void BumpPlayButton(EventfulSelectOneButton obj)
@@ -278,13 +283,13 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
             Enum.TryParse<MatchmakingManager.LobbyVisibility>(visibilityDropDown.value, out var value);
-            MatchmakingManager.instance.CreateLobby(value, modeDropDown.value, setpassword ? passwordInputBox.value : null);
+            MatchmakingManager.instance.CreateLobby(value, modeDropDown.value, setpassword ? passwordInputBox.value : null, maxPlayerCount);
         }
 
         private void RequestLobbyJoin(LobbyInfo lobby, string? password = null)
         {
             RainMeadow.DebugMe();
-            MatchmakingManager.instance.RequestJoinLobby(lobby, password);
+            MatchmakingManager.instance.RequestJoinLobby(lobby, password, maxPlayerCount);
         }
 
         private void OnlineManager_OnLobbyListReceived(bool ok, LobbyInfo[] lobbies)

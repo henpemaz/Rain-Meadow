@@ -13,6 +13,7 @@ namespace RainMeadow
         public static string NAME_KEY = "name";
         public static string MODE_KEY = "mode";
         public static string PASSWORD_KEY = "password";
+        public static int MAX_LOBBY = 4;
 
         public static void InitLobbyManager()
         {
@@ -43,9 +44,9 @@ namespace RainMeadow
 
         public abstract void RequestLobbyList();
 
-        public abstract void CreateLobby(LobbyVisibility visibility, string gameMode, string? password);
+        public abstract void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount);
 
-        public abstract void RequestJoinLobby(LobbyInfo lobby, string? password);
+        public abstract void RequestJoinLobby(LobbyInfo lobby, string? password, int? maxPlayerCount);
         public abstract void JoinLobby(bool success);
 
         public abstract void LeaveLobby();
