@@ -374,7 +374,6 @@ namespace RainMeadow
                 mainPage.subObjects.Add(btn);
                 btn.OnClick += (_) =>
                 {
-                    RainMeadow.Debug(customSelectedSlugcat);
                     customSelectedSlugcat = slug;
                 };
 
