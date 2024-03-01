@@ -6,10 +6,8 @@ using Steamworks;
 #endif
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using UnityEngine;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace RainMeadow
 {
