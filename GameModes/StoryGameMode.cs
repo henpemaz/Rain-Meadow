@@ -43,6 +43,9 @@ namespace RainMeadow
             return true;
         }
 
+        public override SlugcatStats.Name GetStorySessionPlayer(RainWorldGame self) {
+            return currentCampaign;
+        }
         public override SlugcatStats.Name LoadWorldAs(RainWorldGame game)
         {
             if (currentCampaign == RainMeadow.Ext_SlugcatStatsName.OnlineStoryYellow) 
