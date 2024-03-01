@@ -32,6 +32,8 @@ namespace RainMeadow
 
             On.Player.Update += Player_Update;
 
+            On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass;
+
             On.SlugcatStats.ctor += SlugcatStats_ctor;
             On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
             On.SlugcatStats.NourishmentOfObjectEaten += SlugcatStats_NourishmentOfObjectEaten;
@@ -44,6 +46,27 @@ namespace RainMeadow
             On.RainWorldGame.GameOver += RainWorldGame_GameOver;
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
 
+        }
+
+        private void Player_GetInitialSlugcatClass(On.Player.orig_GetInitialSlugcatClass orig, Player self)
+        {
+            orig(self);
+            if (isStoryMode(out var storyGameMode))
+            {
+                SlugcatStats.Name slugcatClass;
+                if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryWhite)
+                {
+                    self.SlugCatClass = SlugcatStats.Name.White;
+                }
+                else if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryYellow)
+                {
+                    self.SlugCatClass = SlugcatStats.Name.Yellow;
+                }
+                else if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryRed)
+                {
+                    self.SlugCatClass = SlugcatStats.Name.Red;
+                }
+            }
         }
 
         private void HUD_InitSinglePlayerHud(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam)
