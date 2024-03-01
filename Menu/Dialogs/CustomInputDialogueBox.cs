@@ -17,7 +17,6 @@ namespace RainMeadow
         public SimplerButton continueButton;
         public OpTextBox textBox;
         public UIelementWrapper textBoxWrapper;
-        public float timeOut = 1f;
 
         public CustomInputDialogueBox(Menu.Menu menu, MenuObject owner, string text, Vector2 pos, Vector2 size, bool forceWrapping = false)
             : base(menu, owner, text, pos, size, forceWrapping)
@@ -52,17 +51,6 @@ namespace RainMeadow
 
             menu.selectedObject = null;
             base.page.lastSelectedObject = null;
-        }
-
-        public override void Update()
-        {
-            base.Update();
-            timeOut -= 0.025f;
-            if (timeOut < 0f)
-            {
-                timeOut = 0f;
-                continueButton.buttonBehav.greyedOut = false;
-            }
         }
 
         public static Vector2 CalculateDialogBoxSize(string displayText, bool dialogUsesWordWrapping = true)
