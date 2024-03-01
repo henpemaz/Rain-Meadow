@@ -169,6 +169,8 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
+            if (maxPlayerCount > 32) maxPlayerCount = 32;
+            if (maxPlayerCount < 1) maxPlayerCount = 1;
             int extraItems = Mathf.Max(lobbies.Length - 4, 0);
             scrollTo = Mathf.Clamp(scrollTo, -0.5f, extraItems + 0.5f);
             if (scrollTo < 0) scrollTo = RWCustom.Custom.LerpAndTick(scrollTo, 0, 0.1f, 0.1f);
