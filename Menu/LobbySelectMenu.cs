@@ -29,6 +29,7 @@ namespace RainMeadow
         private MenuDialogBox popupDialog;
         private bool setpassword;
         private OpTextBox passwordInputBox;
+        private CheckBox enablePasswordCheckbox;
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
         {
@@ -90,7 +91,7 @@ namespace RainMeadow
             where.x -= 80;
 
             where.y -= 45;
-            var enablePasswordCheckbox = new CheckBox(this,mainPage,this,where,60f, Translate("Enable Password:"),"SETPASSWORD",true);
+            enablePasswordCheckbox = new CheckBox(this,mainPage,this,where,60f, Translate("Enable Password:"),"SETPASSWORD",true);
             mainPage.subObjects.Add(enablePasswordCheckbox);
             // password setting
             where.x += 160;
@@ -159,6 +160,7 @@ namespace RainMeadow
 
             modeDropDown.greyedOut = this.currentlySelectedCard != 0;
             visibilityDropDown.greyedOut = this.currentlySelectedCard != 0;
+            passwordInputBox.greyedOut = !setpassword;
 
             popupDialog?.Update();
         }
