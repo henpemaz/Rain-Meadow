@@ -68,7 +68,6 @@ namespace RainMeadow
             if (isActive) { throw new InvalidOperationException("Resource is already active"); }
             isWaitingForState = false;
             isAvailable = true;
-
             AvailableImpl();
 
             OnlineManager.lobby.gameMode.ResourceAvailable(this);

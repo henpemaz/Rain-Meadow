@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class LobbySelectMenu : SmartMenu, SelectOneButton.SelectOneButtonOwner
+    public class LobbySelectMenu : SmartMenu, SelectOneButton.SelectOneButtonOwner, CheckBox.IOwnCheckBox
     {
         private List<FSprite> sprites;
         private EventfulSelectOneButton[] lobbyButtons;
@@ -27,8 +27,10 @@ namespace RainMeadow
         private OpComboBox2 modeDropDown;
         private ProperlyAlignedMenuLabel modeDescriptionLabel;
         private MenuDialogBox popupDialog;
-        private int maxPlayerLimit = 4;
-
+        private bool setpassword;
+        private OpTextBox passwordInputBox;
+        private CheckBox enablePasswordCheckbox;
+        
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
         {
@@ -56,6 +58,7 @@ namespace RainMeadow
             // misc buttons on topright
             Vector2 where = new Vector2(1056f, 552f);
             var aboutButton = new SimplerButton(this, mainPage, Translate("ABOUT"), where, new Vector2(110f, 30f));
+           
             mainPage.subObjects.Add(aboutButton);
             where.y -= 35;
             var statsButton = new SimplerButton(this, mainPage, Translate("STATS"), where, new Vector2(110f, 30f));
@@ -84,9 +87,22 @@ namespace RainMeadow
             var visibilityLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Visibility:"), where, new Vector2(200, 20f), false, null);
             mainPage.subObjects.Add(visibilityLabel);
             where.x += 80;
-            visibilityDropDown = new OpComboBox(new Configurable<MatchmakingManager.LobbyVisibility>(MatchmakingManager.LobbyVisibility.Public), where, 160, OpResourceSelector.GetEnumNames(null, typeof(MatchmakingManager.LobbyVisibility)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
+            visibilityDropDown = new OpComboBox2(new Configurable<MatchmakingManager.LobbyVisibility>(MatchmakingManager.LobbyVisibility.Public), where, 160, OpResourceSelector.GetEnumNames(null, typeof(MatchmakingManager.LobbyVisibility)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
             new UIelementWrapper(this.tabWrapper, visibilityDropDown);
+            where.x -= 80;
 
+            where.y -= 45;
+            enablePasswordCheckbox = new CheckBox(this,mainPage,this,where,60f, Translate("Enable Password:"),"SETPASSWORD",true);
+            mainPage.subObjects.Add(enablePasswordCheckbox);
+            // password setting
+            where.x += 160;
+            passwordInputBox = new OpTextBox(new Configurable<string>(""), where, 160f);
+            passwordInputBox.accept = OpTextBox.Accept.StringASCII;
+            passwordInputBox.description = "Lobby Password";
+            passwordInputBox.label.text = "Password";
+            new UIelementWrapper(this.tabWrapper, passwordInputBox);
+            
+            <<<<<<< story-lobby-limit
             // textbox lobby limit option
             where.y -= 45;
             var limitNumberLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Player max:"), where, new Vector2(400, 20f), false, null);
@@ -100,7 +116,6 @@ namespace RainMeadow
             var versionPos = new Vector2(5f, 0f);
             var meadowVer = new ProperlyAlignedMenuLabel(this, mainPage, Translate($"Rain Meadow Version {RainMeadow.MeadowVersionStr}"), versionPos, new Vector2(0f, 20f), false, null);
             mainPage.subObjects.Add(meadowVer);
-
             // left lobby selector
             // bg
             sprites = new();
@@ -149,12 +164,6 @@ namespace RainMeadow
 
         public override void Update()
         {
-            if (popupDialog is DialogBoxAsyncWait)
-            {
-                popupDialog.Update();
-                return;
-            }
-            
             base.Update();
             int extraItems = Mathf.Max(lobbies.Length - 4, 0);
             scrollTo = Mathf.Clamp(scrollTo, -0.5f, extraItems + 0.5f);
@@ -164,8 +173,8 @@ namespace RainMeadow
 
             modeDropDown.greyedOut = this.currentlySelectedCard != 0;
             visibilityDropDown.greyedOut = this.currentlySelectedCard != 0;
-
-            popupDialog?.Update();
+            passwordInputBox.greyedOut = !setpassword || this.currentlySelectedCard != 0;
+            enablePasswordCheckbox.buttonBehav.greyedOut = this.currentlySelectedCard != 0;
         }
 
         private void BumpPlayButton(EventfulSelectOneButton obj)
@@ -215,6 +224,10 @@ namespace RainMeadow
                 this.RemoveSubObject(menuLabel);
                 this.menuLabel = new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.name, new(5, 30), new(10, 50), true);
                 this.subObjects.Add(this.menuLabel);
+                if (lobbyInfo.hasPassword) 
+                {
+                    this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, "Private", new(260, 20), new(10, 50), false));
+                }
                 this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.mode, new(5, 20), new(10, 50), false));
                 this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.playerCount + " player" + (lobbyInfo.playerCount == 1 ? "" : "s"), new(5, 5), new(10, 50), false));
             }
@@ -243,8 +256,15 @@ namespace RainMeadow
             }
             else
             {
-                ShowLoadingDialog("Joining lobby...");
-                RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo);
+                var lobbyInfo = (lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo;
+                if (lobbyInfo.hasPassword) {
+                    ShowPasswordRequestDialog();
+                }
+                else
+                {
+                    ShowLoadingDialog("Joining lobby...");
+                    RequestLobbyJoin(lobbyInfo);
+                }
             }
 
         }
@@ -258,19 +278,13 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
             Enum.TryParse<MatchmakingManager.LobbyVisibility>(visibilityDropDown.value, out var value);
-            MatchmakingManager.instance.CreateLobby(value, modeDropDown.value);
+            MatchmakingManager.instance.CreateLobby(value, modeDropDown.value, setpassword ? passwordInputBox.value : null);
         }
 
-        private void RequestLobbyJoin(LobbyInfo lobby)
+        private void RequestLobbyJoin(LobbyInfo lobby, string? password = null)
         {
             RainMeadow.DebugMe();
-            MatchmakingManager.instance.JoinLobby(lobby);
-            if (SteamMatchmakingManager.isLobbyFull)
-            {
-                ShowErrorDialog($"Failed to join lobby.<LINE>Lobby is full");
-                SteamMatchmakingManager.isLobbyFull = false; // so the player can try again
-                return;
-            }
+            MatchmakingManager.instance.RequestJoinLobby(lobby, password);
         }
 
         private void OnlineManager_OnLobbyListReceived(bool ok, LobbyInfo[] lobbies)
@@ -312,12 +326,20 @@ namespace RainMeadow
             if (series == "lobbyCards") currentlySelectedCard = to;
             return;
         }
-    
+
+        public void ShowPasswordRequestDialog() {
+            if (popupDialog != null) HideDialog();
+
+            popupDialog = new CustomInputDialogueBox(this, mainPage, "Password Required", "HIDE_PASSWORD", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f, 224f), new Vector2(480f, 320f));
+            mainPage.subObjects.Add(popupDialog);
+        }
+
         public void ShowLoadingDialog(string text)
         {
             if (popupDialog != null) HideDialog();
 
             popupDialog = new DialogBoxAsyncWait(this, mainPage, text, new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
+            mainPage.subObjects.Add(popupDialog);
         }
 
         public void ShowErrorDialog(string error)
@@ -325,6 +347,7 @@ namespace RainMeadow
             if (popupDialog != null) HideDialog();
             
             popupDialog = new DialogBoxNotify(this, mainPage, error, "HIDE_DIALOG", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
+            mainPage.subObjects.Add(popupDialog);
         }
 
         public void HideDialog()
@@ -333,6 +356,7 @@ namespace RainMeadow
 
             mainPage.RemoveSubObject(popupDialog);
             popupDialog.RemoveSprites();
+            popupDialog = null;
         }
 
         public override void Singal(MenuObject sender, string message)
@@ -344,6 +368,32 @@ namespace RainMeadow
                 case "HIDE_DIALOG":
                     HideDialog();
                     break;
+                case "HIDE_PASSWORD":
+                    var password = (popupDialog as CustomInputDialogueBox).textBox.value;
+                    ShowLoadingDialog("Joining lobby...");
+                    RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo, password);
+                    break;
+            }
+        }
+
+        public bool GetChecked(CheckBox box) {
+            string idstring = box.IDString;
+            if (idstring != null) {
+                if (idstring == "SETPASSWORD") {
+                    return setpassword;
+                }
+            }
+            return false;
+        }
+        public void SetChecked(CheckBox box, bool c)
+        {
+            string idstring = box.IDString;
+            if (idstring != null)
+            {
+                if (idstring == "SETPASSWORD")
+                {
+                    setpassword = !setpassword;
+                }
             }
         }
     }

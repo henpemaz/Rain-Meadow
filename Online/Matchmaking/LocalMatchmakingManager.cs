@@ -59,6 +59,8 @@ namespace RainMeadow
             return new LocalPlayerId();
         }
 
+        public string? lobbyPassword;
+
         private int me = -1;
         private IPEndPoint currentLobbyHost = null;
 
@@ -77,7 +79,7 @@ namespace RainMeadow
             //OnLobbyListReceived?.Invoke(true, new LobbyInfo[0] { });
             // Create the proper list
             var fakeEndpoint = new IPEndPoint(IPAddress.Loopback, UdpPeer.STARTING_PORT);
-            OnLobbyListReceived?.Invoke(true, new LobbyInfo[1] { new LobbyInfo(fakeEndpoint, "local", localGameMode, 1) });
+            OnLobbyListReceived?.Invoke(true, new LobbyInfo[2] { new LobbyInfo(fakeEndpoint, "local", localGameMode, 1,false), new LobbyInfo(fakeEndpoint, "local:HasPassword", localGameMode, 1, true) });
         }
 
         public void sessionSetup(bool isHost){
@@ -99,7 +101,7 @@ namespace RainMeadow
             thisPlayer.reset();
         }
 
-        public override void CreateLobby(LobbyVisibility visibility, string gameMode)
+        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password)
         {
             sessionSetup(true);
             if (!((LocalPlayerId)OnlineManager.mePlayer.id).isHost)
@@ -107,11 +109,12 @@ namespace RainMeadow
                 OnLobbyJoined?.Invoke(false, "use the host");
                 return;
             }
-            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer);
+
+            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer, password);
             OnLobbyJoined?.Invoke(true);
         }
 
-        public override void JoinLobby(LobbyInfo lobby)
+        public override void RequestJoinLobby(LobbyInfo lobby, string? password)
         {
             sessionSetup(false);
             if (((LocalPlayerId)OnlineManager.mePlayer.id).isHost)
@@ -119,23 +122,35 @@ namespace RainMeadow
                 OnLobbyJoined?.Invoke(false, "use the client");
                 return;
             }
-            RainMeadow.Debug("Joining local game...");
+            RainMeadow.Debug("Trying to join local game...");
             if (lobby.ipEndpoint == null) {
                 RainMeadow.Debug("Failed to join local game...");
                 return;
             } 
+            lobbyPassword = password;
             var memory = new MemoryStream(16);
             var writer = new BinaryWriter(memory);
             Packet.Encode(new RequestJoinPacket(), writer, null);
             UdpPeer.Send(lobby.ipEndpoint, memory.GetBuffer(), (int)memory.Position, UdpPeer.PacketType.Reliable);
         }
-
         public void LobbyJoined()
         {
-            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), GetLobbyOwner());
+            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), GetLobbyOwner(), lobbyPassword);
             var lobbyOwner = (LocalPlayerId)OnlineManager.lobby.owner.id;
             currentLobbyHost = lobbyOwner.endPoint;
-            OnLobbyJoined?.Invoke(true);
+        }
+        public override void JoinLobby(bool success)
+        {
+            if (success)
+            {
+                OnLobbyJoined?.Invoke(true);
+            }
+            else
+            {
+                LeaveLobby();
+                RainMeadow.Debug("Failed to join local game. Wrong Password");
+                OnLobbyJoined?.Invoke(false, "Wrong password!");
+            }
         }
 
         public override void LeaveLobby()
