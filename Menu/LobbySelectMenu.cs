@@ -77,8 +77,8 @@ namespace RainMeadow
             UpdateModeDescription();
 
             // display version
-            where = new Vector2(0f, 0f);
-            var meadowVer = new ProperlyAlignedMenuLabel(this, mainPage, Translate($"Rain Meadow Version {RainMeadow.MeadowVersionStr}"), where, new Vector2(0f, 20f), false, null);
+            var versionPos = new Vector2(5f, 0f);
+            var meadowVer = new ProperlyAlignedMenuLabel(this, mainPage, Translate($"Rain Meadow Version {RainMeadow.MeadowVersionStr}"), versionPos, new Vector2(0f, 20f), false, null);
             mainPage.subObjects.Add(meadowVer);
 
             // center-low settings
