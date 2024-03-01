@@ -231,7 +231,7 @@ namespace RainMeadow
                     }
                     else // Client
                     {
-                        sceneID = Menu.MenuScene.SceneID.Landscape_SU; // TODO: Retrieve current save's region
+                        sceneID = Menu.MenuScene.SceneID.Intro_6_7_Rain_Drop; // TODO: Retrieve current save's region
                         self.sceneOffset = new Vector2(-10f, 100f);
                         self.slugcatDepth = 3.1000001f;
 
