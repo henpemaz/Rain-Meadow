@@ -46,6 +46,7 @@ namespace RainMeadow
             None,
             GenericResultOk,
             GenericResultError,
+            GenericResultFail,
             NewObjectEvent,
             NewCreatureEvent,
             NewMeadowPersonaSettingsEvent,
@@ -62,6 +63,9 @@ namespace RainMeadow
                     break;
                 case EventTypeId.GenericResultOk:
                     e = new GenericResult.Ok();
+                    break;
+                case EventTypeId.GenericResultFail:
+                    e = new GenericResult.Fail();
                     break;
                 case EventTypeId.GenericResultError:
                     e = new GenericResult.Error();

@@ -23,6 +23,12 @@
 
             public override EventTypeId eventType => EventTypeId.GenericResultOk;
         }
+        public class Fail : GenericResult
+        {
+            public Fail() { }
+            public Fail(ResolvableEvent resolvableEvent) : base((OnlineEvent)resolvableEvent) { }
+            public override EventTypeId eventType => EventTypeId.GenericResultFail;
+        }
         public class Error : GenericResult
         {
             public Error() { }
