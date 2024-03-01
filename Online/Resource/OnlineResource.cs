@@ -68,7 +68,6 @@ namespace RainMeadow
             if (isActive) { throw new InvalidOperationException("Resource is already active"); }
             isWaitingForState = false;
             isAvailable = true;
-
             AvailableImpl();
 
             OnlineManager.lobby.gameMode.ResourceAvailable(this);
@@ -307,7 +306,7 @@ namespace RainMeadow
                 }
             }
             participants.Remove(participant);
-            if(isSupervisor && participant == owner && participants.Count > 0)
+            if(isSupervisor && participant == owner)
             {
                 PickNewOwner();
             }

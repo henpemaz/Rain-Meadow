@@ -17,12 +17,33 @@ public partial class RainMeadow
         On.Player.AddFood += Player_AddFood;
         On.Player.AddQuarterFood += Player_AddQuarterFood;
         On.Mushroom.BitByPlayer += Mushroom_BitByPlayer;
-
+        On.KarmaFlower.BitByPlayer += KarmaFlower_BitByPlayer;
         On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites1;
 
         On.AbstractCreature.ctor += AbstractCreature_ctor;
 
         On.Player.Update += Player_Update1;
+    }
+
+    private void KarmaFlower_BitByPlayer(On.KarmaFlower.orig_BitByPlayer orig, KarmaFlower self, Creature.Grasp grasp, bool eu)
+    {
+        orig(self, grasp, eu);
+        if (OnlineManager.lobby.gameMode is StoryGameMode)
+        {
+            if (self.bites < 1) {
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    OnlineManager.lobby.owner.InvokeRPC(RPCs.ReinforceKarma);
+                }
+                foreach (OnlinePlayer player in OnlineManager.players)
+                {
+                    if (!player.isMe)
+                    {
+                        player.InvokeRPC(RPCs.PlayReinforceKarmaAnimation);
+                    }
+                }
+            }
+        }
     }
 
     private void Player_Update1(On.Player.orig_Update orig, Player self, bool eu)
