@@ -322,7 +322,7 @@ namespace RainMeadow
 
             if (rainMeadowOptions.SlugcatCustomToggle.Value && !OnlineManager.lobby.isOwner)
             {
-                this.pages[0].subObjects.Add(new MenuLabel(this, mainPage, this.Translate("Slugcat Select"), new Vector2(394, 553), new(110, 30), true));
+                this.pages[0].subObjects.Add(new MenuLabel(this, mainPage, this.Translate("Slugcats"), new Vector2(394, 553), new(110, 30), true));
             }
 
 
