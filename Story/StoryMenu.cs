@@ -370,13 +370,28 @@ namespace RainMeadow
             {
                 var slug = slugList[i];
                 var slugStringName = GetCampaignName(slugList[i]);
-                var btn = new SimplerButton(this, mainPage, slugStringName, new Vector2(394, 515) - i * new Vector2(0, 38), new(110, 30));
+                var btn = new SimplerButton(this, mainPage, slugStringName, new Vector2(394, 515) - i * new Vector2(0, 38), new Vector2(110, 30));
+                btn.toggled = false;
                 mainPage.subObjects.Add(btn);
+
+                // Store the current button in a variable accessible by the lambda
+                var currentBtn = btn;
                 btn.OnClick += (_) =>
                 {
+                    // Set the clicked button to true
+                    currentBtn.toggled = !currentBtn.toggled;
                     customSelectedSlugcat = slug;
-                };
+                    RainMeadow.Debug("SLUG: " + customSelectedSlugcat);
 
+                    // Set all other buttons to false
+                    foreach (var otherBtn in mainPage.subObjects.OfType<SimplerButton>())
+                    {
+                        if (otherBtn != currentBtn)
+                        {
+                            otherBtn.toggled = false;
+                        }
+                    }
+                };
             }
         }
 
