@@ -160,8 +160,8 @@ namespace RainMeadow
 
             modeDropDown.greyedOut = this.currentlySelectedCard != 0;
             visibilityDropDown.greyedOut = this.currentlySelectedCard != 0;
-            passwordInputBox.greyedOut = !setpassword;
-
+            passwordInputBox.greyedOut = !setpassword || this.currentlySelectedCard != 0;
+            enablePasswordCheckbox.buttonBehav.greyedOut = this.currentlySelectedCard != 0;
             popupDialog?.Update();
         }
 
