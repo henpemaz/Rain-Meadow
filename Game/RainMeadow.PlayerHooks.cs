@@ -262,52 +262,6 @@ public partial class RainMeadow
         return orig(self, obj);
     }
 
-    private int SlugcatStats_NourishmentOfObjectEaten(On.SlugcatStats.orig_NourishmentOfObjectEaten orig, SlugcatStats.Name slugcatIndex, IPlayerEdible eatenobject)
-    {
-
-        if (isStoryMode(out var storyGameMode))
-        {
-            if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryWhite)
-            {
-                slugcatIndex = SlugcatStats.Name.White;
-            }
-            else if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryYellow)
-            {
-                slugcatIndex = SlugcatStats.Name.Yellow;
-            }
-            else if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryRed)
-            {
-                slugcatIndex = SlugcatStats.Name.Red;
-            }
-            return orig(slugcatIndex, eatenobject);
-
-        }
-
-        return orig(slugcatIndex, eatenobject);
-
-    }
-
-    private RWCustom.IntVector2 SlugcatStats_SlugcatFoodMeter(On.SlugcatStats.orig_SlugcatFoodMeter orig, SlugcatStats.Name slugcat)
-    {
-        if (isStoryMode(out var storyGameMode))
-        {
-            if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryWhite)
-            {
-                return new RWCustom.IntVector2(7, 4);
-            }
-            if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryYellow)
-            {
-                return new RWCustom.IntVector2(5, 3);
-            }
-            if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryRed)
-            {
-                return new RWCustom.IntVector2(9, 6);
-            }
-        }
-        return orig(slugcat);
-
-    }
-
     private void SlugcatStats_ctor(On.SlugcatStats.orig_ctor orig, SlugcatStats self, SlugcatStats.Name slugcat, bool malnourished)
     {
 

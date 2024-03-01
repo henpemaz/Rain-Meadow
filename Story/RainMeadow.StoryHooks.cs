@@ -36,7 +36,6 @@ namespace RainMeadow
 
             On.SlugcatStats.ctor += SlugcatStats_ctor;
             On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
-            On.SlugcatStats.NourishmentOfObjectEaten += SlugcatStats_NourishmentOfObjectEaten;
 
 
             On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide;
@@ -67,6 +66,27 @@ namespace RainMeadow
                     self.SlugCatClass = SlugcatStats.Name.Red;
                 }
             }
+        }
+
+        private RWCustom.IntVector2 SlugcatStats_SlugcatFoodMeter(On.SlugcatStats.orig_SlugcatFoodMeter orig, SlugcatStats.Name slugcat)
+        {
+            if (isStoryMode(out var storyGameMode))
+            {
+                if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryWhite)
+                {
+                    return new RWCustom.IntVector2(7, 4);
+                }
+                if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryYellow)
+                {
+                    return new RWCustom.IntVector2(5, 3);
+                }
+                if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryRed)
+                {
+                    return new RWCustom.IntVector2(9, 6);
+                }
+            }
+            return orig(slugcat);
+
         }
 
         private void HUD_InitSinglePlayerHud(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam)
@@ -172,6 +192,7 @@ namespace RainMeadow
                 //If it is mine run the below code
                 //If not, update from the lobby state
                 //self.readyForWin = OnlineMAnager.lobby.playerid === fetch if this is ours. 
+
                 if (OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe))
                 {
                     if (!oe.isMine)

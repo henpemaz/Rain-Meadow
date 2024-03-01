@@ -364,15 +364,17 @@ namespace RainMeadow
         {
             var slugList = AllSlugcats();
             var slugButtons = new EventfulSelectOneButton[slugList.Count];
+
+
             for (int i = 0; i < slugButtons.Length; i++)
             {
                 var slug = slugList[i];
                 var slugStringName = GetCampaignName(slugList[i]);
-                var btn = new EventfulSelectOneButton(this, mainPage, slugStringName, "slugButtons", new Vector2(394, 515) - i * new Vector2(0, 38), new(110, 30), slugButtons, i);
+                var btn = new SimplerButton(this, mainPage, slugStringName, new Vector2(394, 515) - i * new Vector2(0, 38), new(110, 30));
                 mainPage.subObjects.Add(btn);
-                slugButtons[i] = btn;
                 btn.OnClick += (_) =>
                 {
+                    RainMeadow.Debug(customSelectedSlugcat);
                     customSelectedSlugcat = slug;
                 };
 
