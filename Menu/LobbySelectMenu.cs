@@ -21,11 +21,13 @@ namespace RainMeadow
         private float scrollTo;
         private int currentlySelectedCard;
         private OpComboBox visibilityDropDown;
+        private OpTextBox lobbyLimitNumberTextBox;
         private SimplerButton playButton;
         private SimplerButton refreshButton;
         private OpComboBox2 modeDropDown;
         private ProperlyAlignedMenuLabel modeDescriptionLabel;
         private MenuDialogBox popupDialog;
+        private int maxPlayerLimit = 4;
 
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
@@ -77,11 +79,6 @@ namespace RainMeadow
             mainPage.subObjects.Add(modeDescriptionLabel);
             UpdateModeDescription();
 
-            // display version
-            where = new Vector2(0f, 0f);
-            var meadowVer = new ProperlyAlignedMenuLabel(this, mainPage, Translate($"Rain Meadow Version {RainMeadow.MeadowVersionStr}"), where, new Vector2(0f, 20f), false, null);
-            mainPage.subObjects.Add(meadowVer);
-
             // center-low settings
             where.y -= 45;
             var visibilityLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Visibility:"), where, new Vector2(200, 20f), false, null);
@@ -89,6 +86,20 @@ namespace RainMeadow
             where.x += 80;
             visibilityDropDown = new OpComboBox(new Configurable<MatchmakingManager.LobbyVisibility>(MatchmakingManager.LobbyVisibility.Public), where, 160, OpResourceSelector.GetEnumNames(null, typeof(MatchmakingManager.LobbyVisibility)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
             new UIelementWrapper(this.tabWrapper, visibilityDropDown);
+
+            // textbox lobby limit option
+            where.y -= 45;
+            var limitNumberLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Player max:"), where, new Vector2(400, 20f), false, null);
+            mainPage.subObjects.Add(limitNumberLabel);
+            where.y -= 5;
+            lobbyLimitNumberTextBox = new OpTextBox(new Configurable<int>(maxPlayerLimit), where, 160f);
+            new UIelementWrapper(this.tabWrapper, lobbyLimitNumberTextBox);
+            where.y += 5; 
+
+            // display version
+            where = new Vector2(0f, 0f);
+            var meadowVer = new ProperlyAlignedMenuLabel(this, mainPage, Translate($"Rain Meadow Version {RainMeadow.MeadowVersionStr}"), where, new Vector2(0f, 20f), false, null);
+            mainPage.subObjects.Add(meadowVer);
 
             // left lobby selector
             // bg
@@ -254,9 +265,10 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
             MatchmakingManager.instance.JoinLobby(lobby);
-            if (SteamMatchmakingManager.isStoryLobbyFull)
+            if (SteamMatchmakingManager.isLobbyFull)
             {
                 ShowErrorDialog($"Failed to join lobby.<LINE>Lobby is full");
+                SteamMatchmakingManager.isLobbyFull = false; // so the player can try again
                 return;
             }
         }

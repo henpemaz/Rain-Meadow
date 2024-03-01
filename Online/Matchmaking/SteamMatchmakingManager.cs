@@ -8,7 +8,8 @@ namespace RainMeadow
 {
     public class SteamMatchmakingManager : MatchmakingManager
     {
-        public static bool isStoryLobbyFull;
+        public static bool isLobbyFull;
+        public static int maxLobbyLimit = 1;
         public class SteamPlayerId : MeadowPlayerId
         {
             public CSteamID steamID;
@@ -121,19 +122,12 @@ namespace RainMeadow
 
         public override void JoinLobby(LobbyInfo lobby)
         {
-            if (lobby.mode == "Story")
+            if (lobby.playerCount >= maxLobbyLimit)
             {
-                if (lobby.playerCount > 1)
-                {
-                    RainMeadow.Debug("Maximum players for the lobby have been reached");
-                    isStoryLobbyFull = true;
-                    return;
-                }
-                else
-                {
-                    m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(lobby.id));
-                }
-
+                RainMeadow.Debug("Maximum players for the lobby have been reached");
+                isLobbyFull = true;
+                LeaveLobby();
+                return;
             }
             else
             {
