@@ -308,7 +308,6 @@ namespace RainMeadow
             this.backButton = new SimplerButton(this, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f));
             this.backButton.OnClick += (_) =>
             {
-
                 manager.RequestMainProcessSwitch(this.backTarget);
             };
 

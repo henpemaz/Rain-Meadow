@@ -57,7 +57,6 @@ namespace RainMeadow
         public override MeadowPlayerId GetEmptyId()
         {
             return new LocalPlayerId();
-        
         }
 
         public string? lobbyPassword;
@@ -128,7 +127,6 @@ namespace RainMeadow
                 RainMeadow.Debug("Failed to join local game...");
                 return;
             } 
-            //TODO: Actually grab a password from user input
             lobbyPassword = password;
             var memory = new MemoryStream(16);
             var writer = new BinaryWriter(memory);
