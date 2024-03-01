@@ -29,7 +29,6 @@ namespace RainMeadow
 
         private List<SlugcatSelectMenu.SlugcatPage> characterPages;
         private EventfulSelectOneButton[] playerButtons = new EventfulSelectOneButton[0];
-
         int skinIndex;
         private OpTinyColorPicker colorpicker;
         private OpTinyColorPicker colorpicker2;
