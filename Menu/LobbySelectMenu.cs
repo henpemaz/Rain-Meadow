@@ -330,7 +330,7 @@ namespace RainMeadow
         {
             if (popupDialog != null) HideDialog();
 
-            popupDialog = new DialogBoxAsyncWait(this, mainPage, text, new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
+            popupDialog = new LoadingDialogueBox(this, mainPage, text, new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
         }
 
         public void ShowErrorDialog(string error)
