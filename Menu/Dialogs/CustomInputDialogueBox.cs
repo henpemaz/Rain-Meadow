@@ -10,41 +10,40 @@ using Menu.Remix;
 using RWCustom;
 namespace RainMeadow
 {
-    public class CustomDialogBoxForPassword : MenuDialogBox
+    public class CustomInputDialogueBox : MenuDialogBox
     {
-        public SimpleButton continueButton;
-        public float timeOut = 1f;
-        public SimplerButton passwordInputConfirmation;
+        protected MenuTabWrapper tabWrapper;
 
-        public CustomDialogBoxForPassword(UIelementWrapper textWrap, Menu.Menu menu, MenuObject owner, string text, string signalText, Vector2 pos, Vector2 size, bool forceWrapping = false)
+        public SimplerButton continueButton;
+        public OpTextBox textBox;
+        public UIelementWrapper textBoxWrapper;
+        public float timeOut = 1f;
+
+        public CustomInputDialogueBox(Menu.Menu menu, MenuObject owner, string text, Vector2 pos, Vector2 size, bool forceWrapping = false)
             : base(menu, owner, text, pos, size, forceWrapping)
         {
-            continueButton = new SimpleButton(menu, owner, menu.Translate("CONFIRM"), signalText, new Vector2((int)(pos.x + size.x / 2f - 55f), (int)(pos.y + 20f)), new Vector2(110f, 30f));
+            owner.subObjects.Add(this.tabWrapper = new MenuTabWrapper(menu, owner));
 
-            passwordInputConfirmation.OnClick += (_) =>
-            {
-                RainMeadow.Debug("CLICKED");
-            };
+            Vector2 center = new Vector2((pos.x + size.x / 2f), (pos.y + size.y / 2f));
+            var placePos = center;
+            placePos.x -= 80f;
+            placePos.y -= 15f;
+            textBox = new OpTextBox(new Configurable<string>(""), placePos, 160f);
+            textBoxWrapper = new UIelementWrapper(this.tabWrapper, textBox);
 
+            Vector2 where = new Vector2((pos.x + size.x / 2f - 55f),(pos.y + 20f));
+
+            continueButton = new SimplerButton(menu, owner, menu.Translate("CONFIRM"), where, new Vector2(110f, 30f));
             owner.subObjects.Add(continueButton);
-            owner.subObjects.Add(textWrap);
-            owner.subObjects.Add(passwordInputConfirmation);
 
-            base.page.selectables.Add(continueButton);
-            for (int i = 0; i < 4; i++)
-            {
-                continueButton.nextSelectable[i] = continueButton;
-            }
-
-            menu.selectedObject = continueButton;
-            base.page.lastSelectedObject = continueButton;
-            continueButton.buttonBehav.greyedOut = true;
         }
-
         public override void RemoveSprites()
         {
             base.RemoveSprites();
+            tabWrapper.RemoveSprites();
             continueButton.RemoveSprites();
+
+            owner.subObjects.Remove(tabWrapper);
             owner.subObjects.Remove(continueButton);
             while (base.page.selectables.Contains(continueButton))
             {

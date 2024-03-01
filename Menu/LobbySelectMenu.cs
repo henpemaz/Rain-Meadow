@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using UnityEngine;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace RainMeadow
 {
@@ -237,8 +238,15 @@ namespace RainMeadow
             }
             else
             {
-                ShowLoadingDialog("Joining lobby...");
-                RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo);
+                var lobbyInfo = (lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo;
+                if (lobbyInfo.hasPassword) {
+                    ShowPasswordRequestDialog();
+                }
+                else
+                {
+                    ShowLoadingDialog("Joining lobby...");
+                    RequestLobbyJoin(lobbyInfo);
+                }
             }
             
         }
@@ -255,21 +263,10 @@ namespace RainMeadow
             MatchmakingManager.instance.CreateLobby(value, modeDropDown.value, setpassword ? passwordInputBox.value : null);
         }
 
-        private void RequestLobbyJoin(LobbyInfo lobby)
+        private void RequestLobbyJoin(LobbyInfo lobby, string? password = null)
         {
             RainMeadow.DebugMe();
-/*            var clientPromptPassword = "Password";
-            var pos = new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f);
-
-            var passwordOutputBox = new OpTextBox(new Configurable<string>(clientPromptPassword), new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), 30f);
-
-
-            var pain = new UIelementWrapper(this.tabWrapper, passwordOutputBox);
-            popupDialog = new CustomDialogBoxForPassword(pain, this, mainPage, "Please input a password", "HIDE_DIALOG", pos, new Vector2(480f, 320f));
-            popupDialog.subObjects.Add(pain);
-*/
-            MatchmakingManager.instance.RequestJoinLobby(lobby, "Password");
-
+            MatchmakingManager.instance.RequestJoinLobby(lobby, password);
         }
 
         private void OnlineManager_OnLobbyListReceived(bool ok, LobbyInfo[] lobbies)
@@ -311,7 +308,20 @@ namespace RainMeadow
             if (series == "lobbyCards") currentlySelectedCard = to;
             return;
         }
-    
+
+        public void ShowPasswordRequestDialog() {
+            if (popupDialog != null) HideDialog();
+
+            var requestDialogue = new CustomInputDialogueBox(this, mainPage, "Password Required", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
+            requestDialogue.continueButton.OnClick += (_) => 
+                {
+                    var password = requestDialogue.textBox.value;
+                    ShowLoadingDialog("Joining lobby...");
+                    RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo, password);
+                };
+            popupDialog = requestDialogue;
+        }
+
         public void ShowLoadingDialog(string text)
         {
             if (popupDialog != null) HideDialog();
