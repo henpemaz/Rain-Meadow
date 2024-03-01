@@ -30,6 +30,7 @@ namespace RainMeadow
         private bool setpassword;
         private OpTextBox passwordInputBox;
         private CheckBox enablePasswordCheckbox;
+        private int maxPlayerLimit = 4;
         
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
@@ -102,7 +103,6 @@ namespace RainMeadow
             passwordInputBox.label.text = "Password";
             new UIelementWrapper(this.tabWrapper, passwordInputBox);
             
-            <<<<<<< story-lobby-limit
             // textbox lobby limit option
             where.y -= 45;
             var limitNumberLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Player max:"), where, new Vector2(400, 20f), false, null);
