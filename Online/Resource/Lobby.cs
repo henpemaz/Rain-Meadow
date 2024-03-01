@@ -10,7 +10,8 @@ namespace RainMeadow
         public OnlineGameMode gameMode;
         public OnlineGameMode.OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
-        public List<OnlineEntity.EntityId> playerAvatars = new(); // should maybe be in GameMode
+        public Dictionary<OnlinePlayer, ClientSettings> clientSettings = new();
+        public Dictionary<OnlinePlayer, OnlineEntity.EntityId> playerAvatars = new(); // should maybe be in GameMode
 
         public string[] mods = RainMeadowModManager.GetActiveMods();
         public static bool modsChecked;
@@ -42,7 +43,8 @@ namespace RainMeadow
 
         internal override void Tick(uint tick)
         {
-            playerAvatars = entities.Values.Where(em => em.entity is ClientSettings).Select(em => (em.entity as ClientSettings).avatarId).ToList();
+            clientSettings = entities.Values.Where(em => em.entity is ClientSettings).ToDictionary(e => e.entity.owner, e=> e.entity as ClientSettings);
+            playerAvatars = clientSettings.ToDictionary(e => e.Key, e => e.Value.avatarId);
             gameMode.LobbyTick(tick);
             base.Tick(tick);
         }

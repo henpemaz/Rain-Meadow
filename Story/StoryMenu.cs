@@ -25,17 +25,19 @@ namespace RainMeadow
 
         private SlugcatSelectMenu ssm;
         private SlugcatSelectMenu.SlugcatPage sp;
-        private StoryAvatarSettings personaSettings;
+        private StoryClientSettings personaSettings;
 
         private List<SlugcatSelectMenu.SlugcatPage> characterPages;
         private EventfulSelectOneButton[] playerButtons = new EventfulSelectOneButton[0];
         int skinIndex;
-        private OpTinyColorPicker colorpicker;
-        private OpTinyColorPicker colorpicker2;
+        private OpTinyColorPicker bodyColorPicker;
+        private OpTinyColorPicker eyeColorPicker;
 
         public override MenuScene.SceneID GetScene => null;
         public StoryMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.StoryMenu)
         {
+
+            // TODO: Find the source of the little white half circle on the bottom right
             RainMeadow.DebugMe();
             this.rainEffect = new RainEffect(this, this.pages[0]);
             this.pages[0].subObjects.Add(this.rainEffect);
@@ -75,24 +77,24 @@ namespace RainMeadow
 
             ssm.slugcatColorOrder = AllAvailableCharacters();
             sp.imagePos = new Vector2(683f, 484f);
+            /*
+                        // TODO: Multiple Characters
+                        for (int j = 0; j < ssm.slugcatColorOrder.Count; j++)
+                        {
+                            sp.slugcatNumber = ssm.slugcatColorOrder[j];
 
-            // TODO: Multiple Characters
-            for (int j = 0; j < ssm.slugcatColorOrder.Count; j++)
-            {
-                sp.slugcatNumber = ssm.slugcatColorOrder[j];
+                            // TODO: Background images
+                            if (sp.slugcatNumber == SlugcatStats.Name.White)
+                            {
+                                //HostSceneID = MenuScene.SceneID.Slugcat_White;
+                                sp.sceneOffset = new Vector2(-10f, 100f);
+                                sp.slugcatDepth = 3.1000001f;
+                                sp.markOffset = new Vector2(-15f, -2f);
+                                sp.glowOffset = new Vector2(-30f, -50f);
 
-                // TODO: Background images
-                if (sp.slugcatNumber == SlugcatStats.Name.White)
-                {
-                    //HostSceneID = MenuScene.SceneID.Slugcat_White;
-                    sp.sceneOffset = new Vector2(-10f, 100f);
-                    sp.slugcatDepth = 3.1000001f;
-                    sp.markOffset = new Vector2(-15f, -2f);
-                    sp.glowOffset = new Vector2(-30f, -50f);
+                            }
 
-                }
-
-            }
+                        }*/
 
 
             // TODO: Alignment issues.
@@ -118,12 +120,15 @@ namespace RainMeadow
 
 
             // Setup host / client buttons & general view
+
             SetupMenuItems();
 
             if (OnlineManager.lobby.isOwner)
             {
 
-
+                this.hostStartButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
+                this.hostStartButton.OnClick += (_) => { StartGame(); };
+                hostStartButton.buttonBehav.greyedOut = false;
                 this.pages[0].subObjects.Add(this.hostStartButton);
 
 
@@ -132,41 +137,21 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner)
             {
 
-                this.pages[0].RemoveSubObject(hostStartButton);
                 this.pages[0].subObjects.Add(this.backButton);
+
+                this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
+                this.clientWaitingButton.OnClick += (_) => { StartGame(); };
+                clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame; // True to begin
 
                 this.pages[0].subObjects.Add(this.clientWaitingButton);
 
 
             }
             SteamSetup();
-
-            var bodyLabel = new MenuLabel(this, mainPage, this.Translate("Body color"), new Vector2(1190, 553), new(0, 30), false);
-            bodyLabel.label.alignment = FLabelAlignment.Right;
-            this.pages[0].subObjects.Add(bodyLabel);
-
-
-            var eyeLabebl = new MenuLabel(this, mainPage, this.Translate("Eye color"), new Vector2(1181, 500), new(0, 30), false);
-            eyeLabebl.label.alignment = FLabelAlignment.Right;
-            this.pages[0].subObjects.Add(eyeLabebl);
-
-            colorpicker = new OpTinyColorPicker(this, new Vector2(1094, 553), "FFFFFF");
-            var wrapper = new UIelementWrapper(this.tabWrapper, colorpicker);
-            tabWrapper._tab.AddItems(colorpicker.colorPicker); 
-            colorpicker.colorPicker.wrapper = wrapper;
-            colorpicker.colorPicker.Hide();
-            colorpicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
-
-            colorpicker2 = new OpTinyColorPicker(this, new Vector2(1094, 500), "010101"); 
-            var wrapper2 = new UIelementWrapper(this.tabWrapper, colorpicker2);
-            tabWrapper._tab.AddItems(colorpicker2.colorPicker);
-            colorpicker2.colorPicker.wrapper = wrapper2;
-            colorpicker2.colorPicker.Hide();
-            colorpicker2.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
-            
-            // TODO: Skin + Eye customization
-
+            SetupCharacterCustomization();
             UpdateCharacterUI();
+
+
 
             if (OnlineManager.lobby.isActive)
             {
@@ -211,8 +196,10 @@ namespace RainMeadow
                 this.UpdateCharacterUI();
             }
 
-            this.clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame;
-
+            if (!OnlineManager.lobby.isOwner)
+            {
+                this.clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame;
+            }
             if (ssm.scroll == 0f && ssm.lastScroll == 0f)
             {
                 if (ssm.quedSideInput != 0)
@@ -267,19 +254,33 @@ namespace RainMeadow
             base.ShutDownProcess();
         }
 
+        private void SetupCharacterCustomization()
+        {
+            var bodyLabel = new MenuLabel(this, mainPage, this.Translate("Body color"), new Vector2(1190, 553), new(0, 30), false);
+            bodyLabel.label.alignment = FLabelAlignment.Right;
+            this.pages[0].subObjects.Add(bodyLabel);
+
+
+            var eyeLabel = new MenuLabel(this, mainPage, this.Translate("Eye color"), new Vector2(1181, 500), new(0, 30), false);
+            eyeLabel.label.alignment = FLabelAlignment.Right;
+            this.pages[0].subObjects.Add(eyeLabel);
+
+            bodyColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 553), "FFFFFF");
+            var wrapper = new UIelementWrapper(this.tabWrapper, bodyColorPicker);
+            tabWrapper._tab.AddItems(bodyColorPicker.colorPicker);
+            bodyColorPicker.colorPicker.wrapper = wrapper;
+            bodyColorPicker.colorPicker.Hide();
+            bodyColorPicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
+
+            eyeColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 500), "000000");
+            var wrapper2 = new UIelementWrapper(this.tabWrapper, eyeColorPicker);
+            tabWrapper._tab.AddItems(eyeColorPicker.colorPicker);
+            eyeColorPicker.colorPicker.wrapper = wrapper2;
+            eyeColorPicker.colorPicker.Hide();
+            eyeColorPicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
+        }
         private void SetupMenuItems()
         {
-
-            // Host button
-            this.hostStartButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
-            this.hostStartButton.OnClick += (_) => { StartGame(); };
-            hostStartButton.buttonBehav.greyedOut = false;
-
-            // TODO: clientWaitingButton needs to not require x/y shift to function. Look into .Remove() on subObjects.
-            this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER (wait for host)"), new Vector2(683f, 85f), 40f);
-            this.clientWaitingButton.OnClick += (_) => { StartGame(); };
-            clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame; // True to begin
-
 
             // Previous
             this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
@@ -318,7 +319,6 @@ namespace RainMeadow
             // Player lobby label
             this.pages[0].subObjects.Add(new MenuLabel(this, mainPage, this.Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true));
 
-            // Checkbox
 
         }
 
@@ -359,10 +359,6 @@ namespace RainMeadow
 
 
 
-
-        // TODO: Skin / Eye customization
-
-
         public int GetCurrentlySelectedOfSeries(string series)
         {
             return skinIndex;
@@ -387,10 +383,11 @@ namespace RainMeadow
 
         private void BindSettings()
         {
-            this.personaSettings = (StoryAvatarSettings)OnlineManager.lobby.gameMode.avatarSettings;
+            this.personaSettings = (StoryClientSettings)OnlineManager.lobby.gameMode.clientSettings;
             personaSettings.playingAs = SlugcatStats.Name.White;
-            personaSettings.bodyColor = colorpicker.valuecolor;
-            personaSettings.eyeColor = colorpicker2.valuecolor;
+            personaSettings.bodyColor = Color.white;
+            personaSettings.eyeColor = Color.black;
+
         }
 
         private void OnLobbyActive()
@@ -400,8 +397,8 @@ namespace RainMeadow
 
         private void Colorpicker_OnValueChangedEvent()
         {
-            if (personaSettings != null) personaSettings.bodyColor = colorpicker.valuecolor;
-            if (personaSettings != null) personaSettings.eyeColor = colorpicker2.valuecolor;
+            if (personaSettings != null) personaSettings.bodyColor = bodyColorPicker.valuecolor;
+            if (personaSettings != null) personaSettings.eyeColor = eyeColorPicker.valuecolor;
 
         }
 

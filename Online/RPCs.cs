@@ -50,6 +50,16 @@ namespace RainMeadow
             ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].realizedCreature as Player).mushroomCounter += 320;
         }
         [RPCMethod]
+        public static void ReinforceKarma()
+        {
+            ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.session as StoryGameSession).saveState.deathPersistentSaveData.reinforcedKarma = true;
+        }
+        [RPCMethod]
+        public static void PlayReinforceKarmaAnimation() 
+        {
+            (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).cameras[0].hud.karmaMeter.reinforceAnimation = 0;
+        }
+        [RPCMethod]
         public static void InitGameOver()
         {
             var player = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0]);

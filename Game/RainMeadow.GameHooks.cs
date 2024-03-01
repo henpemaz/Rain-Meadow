@@ -88,6 +88,11 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 saveStateNumber = OnlineManager.lobby.gameMode.GetStorySessionPlayer(game);
+                if (isStoryMode(out var story))
+                {
+                    story.storyAvatarSettings.inGame = true;
+                    story.storyAvatarSettings.isDead = false;
+                }
             }
             orig(self, saveStateNumber, game);
         }
@@ -109,6 +114,11 @@ namespace RainMeadow
                 DebugOverlay.RemoveOverlay(self);
                 // some cleanup CAN be done
                 OnlineManager.recentEntities = OnlineManager.recentEntities.Where(kvp => !(kvp.Value is OnlinePhysicalObject)).ToDictionary();
+
+                if(isStoryMode(out var story))
+                {
+                    story.storyAvatarSettings.inGame = false;
+                }
 
                 if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
                 ws.FullyReleaseResource();
