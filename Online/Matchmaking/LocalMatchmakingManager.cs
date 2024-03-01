@@ -3,7 +3,6 @@ using System.Linq;
 using System.Net;
 using System.Collections.Generic;
 using static RainMeadow.NetIO;
-using System.Diagnostics.Eventing.Reader;
 
 namespace RainMeadow
 {
