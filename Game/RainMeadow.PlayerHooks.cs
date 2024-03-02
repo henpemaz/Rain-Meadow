@@ -1,6 +1,4 @@
 using System;
-using System.Linq;
-using UnityEngine;
 
 namespace RainMeadow;
 
@@ -10,6 +8,8 @@ public partial class RainMeadow
     public void PlayerHooks()
     {
         On.RainWorldGame.SpawnPlayers_bool_bool_bool_bool_WorldCoordinate += RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate; // Personas are set as non-transferable
+
+        On.SlugcatStats.ctor += SlugcatStats_ctor;
 
         On.Player.ctor += Player_ctor;
         On.Player.Die += PlayerOnDie;
@@ -288,7 +288,6 @@ public partial class RainMeadow
 
         if (isStoryMode(out var storyGameMode))
         {
-
             if (OnlineManager.lobby == null) return;
 
             if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryWhite)
@@ -303,40 +302,15 @@ public partial class RainMeadow
             {
                 slugcat = SlugcatStats.Name.Red;
             }
-
-            orig(self, slugcat, malnourished);
-
-            // Override for all players
-            if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryWhite)
-            {
-                self.maxFood = 7;
-                self.foodToHibernate = 4;
-            }
-            else if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryYellow)
-            {
-                self.maxFood = 5;
-                self.foodToHibernate = 3;
-            }
-            else if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryRed)
-            {
-                self.maxFood = 9;
-                self.foodToHibernate = 6;
-            }
-
-
         }
+        orig(self, slugcat, malnourished);
 
-        else
+        if (OnlineManager.lobby == null) return;
+        if (slugcat != Ext_SlugcatStatsName.OnlineSessionPlayer && slugcat != Ext_SlugcatStatsName.OnlineSessionRemotePlayer) return;
+
+        if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode or FreeRoamGameMode)
         {
-
-            orig(self, slugcat, malnourished);
-
-            if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode)
-            {
-                self.throwingSkill = 1;
-            }
+            self.throwingSkill = 1;
         }
-
-
     }
 }

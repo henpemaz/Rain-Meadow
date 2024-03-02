@@ -34,7 +34,6 @@ namespace RainMeadow
 
             On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass;
 
-            On.SlugcatStats.ctor += SlugcatStats_ctor;
             On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
 
 

@@ -194,8 +194,6 @@ namespace RainMeadow
                 (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber; // I decide the campaign
             }
 
-            RainMeadow.Debug("STORY MENU PLAYING AS: " + personaSettings.playingAs);
-
             manager.arenaSitting = null;
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
@@ -381,7 +379,6 @@ namespace RainMeadow
                     // Set the clicked button to true
                     currentBtn.toggled = !currentBtn.toggled;
                     customSelectedSlugcat = slug;
-                    RainMeadow.Debug("SLUG: " + customSelectedSlugcat);
 
                     // Set all other buttons to false
                     foreach (var otherBtn in mainPage.subObjects.OfType<SimplerButton>())
@@ -432,21 +429,6 @@ namespace RainMeadow
                 filteredList.Add(Ext_SlugcatStatsName.OnlineStoryWhite);
                 filteredList.Add(Ext_SlugcatStatsName.OnlineStoryYellow);
                 filteredList.Add(Ext_SlugcatStatsName.OnlineStoryRed);
-
-
-                // TODO: MSC isUnlocked check
-
-                /*              filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Spear);
-                 *              
-                                filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Artificer);
-
-                                filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Gourmand);
-
-                                filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Rivulet);
-
-                                filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Spear);*/
-
-                // filteredList.Add(MoreSlugcatsEnums.SlugcatStatsName.Saint);
 
             }
 
