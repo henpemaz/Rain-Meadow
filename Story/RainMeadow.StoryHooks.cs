@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using HUD;
 using System.Linq;
+using System;
 
 namespace RainMeadow
 {
     public partial class RainMeadow
     {
         private bool isPlayerReady = false;
-        //public static List<string> playersWithArrows;
-
         public static bool isStoryMode(out StoryGameMode gameMode)
         {
             gameMode = null;
@@ -33,16 +32,62 @@ namespace RainMeadow
 
             On.Player.Update += Player_Update;
 
-            On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide; ;
+            On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass;
+
+            On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
+
+
+            On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide;
             On.RegionGate.PlayersStandingStill += PlayersStandingStill;
             On.RegionGate.PlayersInZone += RegionGate_PlayersInZone;
 
             On.RainWorldGame.GameOver += RainWorldGame_GameOver;
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
+
         }
 
+        private void Player_GetInitialSlugcatClass(On.Player.orig_GetInitialSlugcatClass orig, Player self)
+        {
+            orig(self);
+            if (isStoryMode(out var storyGameMode))
+            {
+                SlugcatStats.Name slugcatClass;
+                if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryWhite)
+                {
+                    self.SlugCatClass = SlugcatStats.Name.White;
+                }
+                else if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryYellow)
+                {
+                    self.SlugCatClass = SlugcatStats.Name.Yellow;
+                }
+                else if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryRed)
+                {
+                    self.SlugCatClass = SlugcatStats.Name.Red;
+                }
+            }
+        }
 
-        // Using the SinglePlayerHUD for OnlineStory because that's the only entry point besides hooking the Arena data, which I don't want. 
+        private RWCustom.IntVector2 SlugcatStats_SlugcatFoodMeter(On.SlugcatStats.orig_SlugcatFoodMeter orig, SlugcatStats.Name slugcat)
+        {
+            if (isStoryMode(out var storyGameMode))
+            {
+                if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryWhite)
+                {
+                    return new RWCustom.IntVector2(7, 4);
+                }
+                if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryYellow)
+                {
+                    return new RWCustom.IntVector2(5, 3);
+                }
+                if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryRed)
+                {
+                    return new RWCustom.IntVector2(9, 6);
+                }
+            }
+            return orig(slugcat);
+
+        }
+
         private void HUD_InitSinglePlayerHud(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam)
         {
             orig(self, cam);
@@ -77,7 +122,7 @@ namespace RainMeadow
             {
                 foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
                 {
-                    
+
                     if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
                     if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
                     {
@@ -109,8 +154,8 @@ namespace RainMeadow
             if (isStoryMode(out var gameMode))
             {
                 //self.currentSaveState.LoadGame(gameMode.saveStateProgressString, game); //pretty sure we can just stuff the string here
-                var storyAvatarSettings = gameMode.clientSettings as StoryClientSettings;
-                origSaveState.denPosition = storyAvatarSettings.myLastDenPos;
+                var storyClientSettings = gameMode.clientSettings as StoryClientSettings;
+                origSaveState.denPosition = storyClientSettings.myLastDenPos;
                 return origSaveState;
             }
             return origSaveState;
@@ -146,7 +191,7 @@ namespace RainMeadow
                 //If it is mine run the below code
                 //If not, update from the lobby state
                 //self.readyForWin = OnlineMAnager.lobby.playerid === fetch if this is ours. 
-                
+
                 if (OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe))
                 {
                     if (!oe.isMine)
@@ -160,11 +205,11 @@ namespace RainMeadow
                     && self.touchedNoInputCounter > (ModManager.MMF ? 40 : 20)
                     && RWCustom.Custom.ManhattanDistance(self.abstractCreature.pos.Tile, self.room.shortcuts[0].StartTile) > 3)
                 {
-                    gameMode.storyAvatarSettings.readyForWin = true;
+                    gameMode.storyClientSettings.readyForWin = true;
                 }
                 else
                 {
-                    gameMode.storyAvatarSettings.readyForWin = false;
+                    gameMode.storyClientSettings.readyForWin = false;
                 }
             }
         }

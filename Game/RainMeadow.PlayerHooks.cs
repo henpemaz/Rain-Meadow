@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 
 namespace RainMeadow;
 
@@ -10,6 +9,8 @@ public partial class RainMeadow
     {
         On.RainWorldGame.SpawnPlayers_bool_bool_bool_bool_WorldCoordinate += RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate; // Personas are set as non-transferable
 
+        On.SlugcatStats.ctor += SlugcatStats_ctor;
+
         On.Player.ctor += Player_ctor;
         On.Player.Die += PlayerOnDie;
         On.Player.Grabability += PlayerOnGrabability;
@@ -19,7 +20,6 @@ public partial class RainMeadow
         On.KarmaFlower.BitByPlayer += KarmaFlower_BitByPlayer;
         On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites1;
 
-        On.SlugcatStats.ctor += SlugcatStatsOnctor;
         On.AbstractCreature.ctor += AbstractCreature_ctor;
 
         On.Player.Update += Player_Update1;
@@ -266,7 +266,7 @@ public partial class RainMeadow
         if (!onlineEntity.isMine) return;
         if (isStoryMode(out var story))
         {
-            story.storyAvatarSettings.isDead = true;
+            story.storyClientSettings.isDead = true;
         }
         orig(self);
     }
@@ -283,14 +283,32 @@ public partial class RainMeadow
         return orig(self, obj);
     }
 
-    private void SlugcatStatsOnctor(On.SlugcatStats.orig_ctor orig, SlugcatStats self, SlugcatStats.Name slugcat, bool malnourished)
+    private void SlugcatStats_ctor(On.SlugcatStats.orig_ctor orig, SlugcatStats self, SlugcatStats.Name slugcat, bool malnourished)
     {
+
+        if (isStoryMode(out var storyGameMode))
+        {
+            if (OnlineManager.lobby == null) return;
+
+            if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryWhite)
+            {
+                slugcat = SlugcatStats.Name.White;
+            }
+            else if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryYellow)
+            {
+                slugcat = SlugcatStats.Name.Yellow;
+            }
+            else if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryRed)
+            {
+                slugcat = SlugcatStats.Name.Red;
+            }
+        }
         orig(self, slugcat, malnourished);
 
         if (OnlineManager.lobby == null) return;
         if (slugcat != Ext_SlugcatStatsName.OnlineSessionPlayer && slugcat != Ext_SlugcatStatsName.OnlineSessionRemotePlayer) return;
 
-        if (OnlineManager.lobby.gameMode is StoryGameMode or ArenaCompetitiveGameMode or FreeRoamGameMode)
+        if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode or FreeRoamGameMode)
         {
             self.throwingSkill = 1;
         }

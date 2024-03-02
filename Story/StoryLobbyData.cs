@@ -22,6 +22,8 @@ namespace RainMeadow
             [OnlineField]
             public bool didStartGame;
             [OnlineField]
+            public SlugcatStats.Name currentCampaign;
+            [OnlineField]
             public bool didStartCycle;
             [OnlineField]
             public bool reinforcedKarma;
@@ -44,6 +46,7 @@ namespace RainMeadow
                 RainWorldGame currentGameState = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
 
                 didStartGame = storyGameMode.didStartGame;
+                currentCampaign = storyGameMode.currentCampaign;
                 didStartCycle = storyGameMode.didStartCycle;
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
@@ -84,6 +87,8 @@ namespace RainMeadow
                     (lobby.gameMode as StoryGameMode).defaultDenPos = defaultDenPos;
                 }
                 (lobby.gameMode as StoryGameMode).didStartGame = didStartGame;
+                (lobby.gameMode as StoryGameMode).currentCampaign = currentCampaign;
+
                 (lobby.gameMode as StoryGameMode).didStartCycle = didStartCycle;
             }
         }
