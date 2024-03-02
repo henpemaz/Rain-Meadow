@@ -30,8 +30,8 @@ namespace RainMeadow
         private bool setpassword;
         private OpTextBox passwordInputBox;
         private CheckBox enablePasswordCheckbox;
-        private int maxPlayerCount = 4;
-        
+        private int maxPlayerCount;
+
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
         {
@@ -59,7 +59,7 @@ namespace RainMeadow
             // misc buttons on topright
             Vector2 where = new Vector2(1056f, 552f);
             var aboutButton = new SimplerButton(this, mainPage, Translate("ABOUT"), where, new Vector2(110f, 30f));
-           
+
             mainPage.subObjects.Add(aboutButton);
             where.y -= 35;
             var statsButton = new SimplerButton(this, mainPage, Translate("STATS"), where, new Vector2(110f, 30f));
@@ -93,7 +93,7 @@ namespace RainMeadow
             where.x -= 80;
 
             where.y -= 45;
-            enablePasswordCheckbox = new CheckBox(this,mainPage,this,where,60f, Translate("Enable Password:"),"SETPASSWORD",true);
+            enablePasswordCheckbox = new CheckBox(this, mainPage, this, where, 60f, Translate("Enable Password:"), "SETPASSWORD", true);
             mainPage.subObjects.Add(enablePasswordCheckbox);
             // password setting
             where.x += 160;
@@ -110,10 +110,10 @@ namespace RainMeadow
             mainPage.subObjects.Add(limitNumberLabel);
             where.x += 80;
             where.y -= 5;
-            lobbyLimitNumberTextBox = new OpTextBox(new Configurable<int>(maxPlayerCount), where, 160f);
+            lobbyLimitNumberTextBox = new OpTextBox(new Configurable<int>(maxPlayerCount = 4), where, 160f);
             lobbyLimitNumberTextBox.accept = OpTextBox.Accept.Int;
             new UIelementWrapper(this.tabWrapper, lobbyLimitNumberTextBox);
-            where.y += 5; 
+            where.y += 5;
 
             // display version
             var versionPos = new Vector2(5f, 0f);
@@ -169,8 +169,6 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
-            if (maxPlayerCount > 32) maxPlayerCount = 32;
-            if (maxPlayerCount < 1) maxPlayerCount = 1;
             int extraItems = Mathf.Max(lobbies.Length - 4, 0);
             scrollTo = Mathf.Clamp(scrollTo, -0.5f, extraItems + 0.5f);
             if (scrollTo < 0) scrollTo = RWCustom.Custom.LerpAndTick(scrollTo, 0, 0.1f, 0.1f);
@@ -182,6 +180,12 @@ namespace RainMeadow
             passwordInputBox.greyedOut = !setpassword || this.currentlySelectedCard != 0;
             enablePasswordCheckbox.buttonBehav.greyedOut = this.currentlySelectedCard != 0;
             lobbyLimitNumberTextBox.greyedOut = this.currentlySelectedCard != 0;
+            if (lobbyLimitNumberTextBox.value != "")
+            {
+                maxPlayerCount = lobbyLimitNumberTextBox.valueInt;
+                if (lobbyLimitNumberTextBox.valueInt > 32) lobbyLimitNumberTextBox.valueInt = 32;
+                if (lobbyLimitNumberTextBox.valueInt < 1) lobbyLimitNumberTextBox.valueInt = 1;
+            }
         }
 
         private void BumpPlayButton(EventfulSelectOneButton obj)
@@ -235,6 +239,7 @@ namespace RainMeadow
                 {
                     this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, "Private", new(260, 20), new(10, 50), false));
                 }
+                this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, $"{lobbyInfo.maxPlayerCount} max", new(260, 0), new(10, 50), false));
                 this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.mode, new(5, 20), new(10, 50), false));
                 this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.playerCount + " player" + (lobbyInfo.playerCount == 1 ? "" : "s"), new(5, 5), new(10, 50), false));
             }
@@ -288,7 +293,7 @@ namespace RainMeadow
             MatchmakingManager.instance.CreateLobby(value, modeDropDown.value, setpassword ? passwordInputBox.value : null, maxPlayerCount);
         }
 
-        private void RequestLobbyJoin(LobbyInfo lobby, string? password = null)
+        private void RequestLobbyJoin(LobbyInfo lobby, string? password = null, int maxPlayerCount = 4)
         {
             RainMeadow.DebugMe();
             MatchmakingManager.instance.RequestJoinLobby(lobby, password, maxPlayerCount);

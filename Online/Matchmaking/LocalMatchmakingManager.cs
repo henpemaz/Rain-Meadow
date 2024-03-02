@@ -59,7 +59,7 @@ namespace RainMeadow
             return new LocalPlayerId();
         }
 
-        public int? maxLobbyCount = 4;
+        public int maxLobbyCount = 4;
         public string? lobbyPassword;
         public LobbyInfo lobbyInfo;
 
@@ -130,7 +130,7 @@ namespace RainMeadow
                 return;
             } 
             lobbyPassword = password;
-            maxLobbyCount = maxPlayerCount;
+            maxLobbyCount = (int)maxPlayerCount;
             var memory = new MemoryStream(16);
             var writer = new BinaryWriter(memory);
             Packet.Encode(new RequestJoinPacket(), writer, null);
