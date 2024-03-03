@@ -1751,9 +1751,9 @@ namespace PlopMachine
             var mic = self.cameras[0].virtualMicrophone;
             CurrentRegion = self.world.region.name;
             //Debug((int)(Math.Cos(UnityEngine.Mathf.PerlinNoise(debugtimer / 2000f, 7f + (debugtimer / 8000f)) * Math.PI) * 100));
-
-            PlayEntry(mic);
-            Dust.Update(mic, this);
+            Debug("hello");
+            //PlayEntry(mic);
+            //Dust.Update(mic, this);
 
             //Debug($"CurrentRegion is: {CurrentRegion}");
             if (CurrentRegion == null)
