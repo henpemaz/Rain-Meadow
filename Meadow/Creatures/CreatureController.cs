@@ -4,6 +4,7 @@ using RWCustom;
 using System.Runtime.CompilerServices;
 using System.Linq;
 using HUD;
+using Rewired;
 
 namespace RainMeadow
 {
@@ -126,6 +127,7 @@ namespace RainMeadow
         public void FoodCountDownDone() { }
         // IOwnAHUD
         public static HUD.HUD.OwnerType controlledCreatureHudOwner = new("MeadowControlledCreature", true);
+        public SpecialInput[] specialInput = new SpecialInput[2];
 
         public HUD.HUD.OwnerType GetOwnerType() => controlledCreatureHudOwner;
 
@@ -168,6 +170,38 @@ namespace RainMeadow
                 }
             }
 
+            for (int i = this.specialInput.Length - 1; i > 0; i--)
+            {
+                this.specialInput[i] = this.specialInput[i - 1];
+            }
+
+            if (onlineCreature.isMine)
+            {
+                this.specialInput[0] = GetSpecialInput(creature.DangerPos - creature.room.game.cameras[0].pos, playerNumber, rainWorld);
+
+                if (onlineCreature.TryGetData<MeadowCreatureData>(out var mcd))
+                {
+                    mcd.specialInput = this.specialInput[0];
+                }
+                else
+                {
+                    RainMeadow.Error("Missing mcd on send");
+                }
+            }
+            else
+            {
+                if (onlineCreature.TryGetData<MeadowCreatureData>(out var mcd))
+                {
+                    this.specialInput[0] = mcd.specialInput;
+                }
+                else
+                {
+                    RainMeadow.Error("Missing mcd on receive");
+                }
+            }
+
+
+
             mapInput = this.input[0];
             if ((this.standStillOnMapButton && this.input[0].mp) || this.sleepCounter != 0)
             {
@@ -208,6 +242,31 @@ namespace RainMeadow
             inputLastDir = input[1].analogueDir.magnitude > 0.2f ? input[1].analogueDir
                 : input[1].IntVec.ToVector2().magnitude > 0.2 ? input[1].IntVec.ToVector2().normalized
                 : Vector2.zero;
+        }
+
+        private SpecialInput GetSpecialInput(Vector2 referencePoint, int playerNumber, RainWorld rainWorld)
+        {
+            SpecialInput specialInput = default;
+            //var controllerPreset = rainWorld.options.controls[playerNumber].GetActivePreset();
+            var controller = rainWorld.options.controls[playerNumber].GetActiveController();
+            if(controller is Joystick joystick)
+            {
+                //if(controllerPreset == Options.ControlSetup.Preset.XBox)
+                specialInput.direction = new Vector2(joystick.GetAxis(2), joystick.GetAxis(3));
+            }
+            else
+            {
+                if(Input.GetMouseButton(0))
+                {
+                    specialInput.direction = ((Vector2)Futile.mousePosition) - referencePoint;
+                }
+            }
+            return specialInput;
+        }
+
+        public struct SpecialInput
+        {
+            public Vector2 direction;
         }
 
         private void Blink(int blink)

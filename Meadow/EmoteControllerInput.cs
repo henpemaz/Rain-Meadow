@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using RWCustom;
 using System;
+using static RainMeadow.CreatureController;
 
 namespace RainMeadow
 {
@@ -100,9 +101,11 @@ namespace RainMeadow
             this.knobPos += this.knobVel;
             this.knobVel *= 0.5f;
             var control = RWCustom.Custom.rainWorld.options.controls[0];
-            if (control.gamePad)
+            var controller = Custom.rainWorld.options.controls[0].GetActiveController();
+            if (controller is Rewired.Joystick joystick)
             {
-                var analogDir = new Vector2(Input.GetAxisRaw("Joy1Axis4"), -Input.GetAxisRaw("Joy1Axis5")); // yes it's hardcoded, no I can't get rewired to work
+                // maybe unify this with creaturecontroller getspecialinput
+                var analogDir = new Vector2(joystick.GetAxis(2), joystick.GetAxis(3));
                 this.knobVel += (analogDir - this.knobPos) / 8f;
                 this.knobPos += (analogDir - this.knobPos) / 4f;
             }

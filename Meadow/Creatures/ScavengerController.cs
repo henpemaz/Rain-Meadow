@@ -220,6 +220,11 @@ namespace RainMeadow
                 var tile0 = self.room.GetTile(chunks[0].pos);
                 var tile1 = self.room.GetTile(chunks[1].pos);
 
+                if (s.specialInput[0].direction != Vector2.zero)
+                {
+                    self.lookPoint = self.DangerPos + 500 * s.specialInput[0].direction;
+                }
+
                 if (self.movMode == Scavenger.MovementMode.Climb && self.swingPos != null && self.swingClimbCounter >= 2)
                 {
                     RainMeadow.Trace("can swing jump");

@@ -266,6 +266,11 @@ namespace RainMeadow
                 var aiTile0 = self.room.aimap.getAItile(chunks[0].pos);
                 var tile0 = self.room.GetTile(chunks[0].pos);
 
+                if (l.specialInput[0].direction != Vector2.zero)
+                {
+                    (self.graphicsModule as LizardGraphics).lookPos = self.DangerPos + 500 * l.specialInput[0].direction;
+                }
+
 
                 RainMeadow.Trace($"legs? {self.LegsGripping}");
 
