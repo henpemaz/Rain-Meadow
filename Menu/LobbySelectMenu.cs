@@ -30,7 +30,7 @@ namespace RainMeadow
         private bool setpassword;
         private OpTextBox passwordInputBox;
         private CheckBox enablePasswordCheckbox;
-        private int maxPlayerCount;
+        public static int maxPlayerCount;
 
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
@@ -239,7 +239,7 @@ namespace RainMeadow
                 {
                     this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, "Private", new(260, 20), new(10, 50), false));
                 }
-                this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, $"{lobbyInfo.maxPlayerCount} max", new(260, 0), new(10, 50), false));
+                this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, $"{lobbyInfo.maxPlayerCount} max", new(260, 5), new(10, 50), false));
                 this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.mode, new(5, 20), new(10, 50), false));
                 this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.playerCount + " player" + (lobbyInfo.playerCount == 1 ? "" : "s"), new(5, 5), new(10, 50), false));
             }
@@ -269,16 +269,24 @@ namespace RainMeadow
             else
             {
                 var lobbyInfo = (lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo;
-                if (lobbyInfo.hasPassword) {
-                    ShowPasswordRequestDialog();
+                RainMeadow.Debug($"{lobbyInfo.playerCount} test test test {lobbyInfo.maxPlayerCount}");
+                if (lobbyInfo.playerCount > lobbyInfo.maxPlayerCount)
+                {
+                    ShowErrorDialog("Failed to join lobby.<LINE> Lobby is full");
                 }
                 else
                 {
-                    ShowLoadingDialog("Joining lobby...");
-                    RequestLobbyJoin(lobbyInfo);
+                    if (lobbyInfo.hasPassword)
+                    {
+                        ShowPasswordRequestDialog();
+                    }
+                    else
+                    {
+                        ShowLoadingDialog("Joining lobby...");
+                        RequestLobbyJoin(lobbyInfo);
+                    }
                 }
             }
-
         }
 
         private void RefreshLobbyList(SimplerButton obj)
@@ -291,11 +299,14 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             Enum.TryParse<MatchmakingManager.LobbyVisibility>(visibilityDropDown.value, out var value);
             MatchmakingManager.instance.CreateLobby(value, modeDropDown.value, setpassword ? passwordInputBox.value : null, maxPlayerCount);
+            RainMeadow.Debug($"Creating a lobby with a max player limit of {maxPlayerCount}");
         }
 
-        private void RequestLobbyJoin(LobbyInfo lobby, string? password = null, int maxPlayerCount = 4)
+        private void RequestLobbyJoin(LobbyInfo lobby, string? password = null, int? maxPlayerCount = 4)
         {
+            var lobbyInfo = (lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo;
             RainMeadow.DebugMe();
+            maxPlayerCount = lobbyInfo.maxPlayerCount;
             MatchmakingManager.instance.RequestJoinLobby(lobby, password, maxPlayerCount);
         }
 
@@ -383,7 +394,7 @@ namespace RainMeadow
                 case "HIDE_PASSWORD":
                     var password = (popupDialog as CustomInputDialogueBox).textBox.value;
                     ShowLoadingDialog("Joining lobby...");
-                    RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo, password);
+                    RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo, password, maxPlayerCount);
                     break;
             }
         }

@@ -59,7 +59,7 @@ namespace RainMeadow
             return new LocalPlayerId();
         }
 
-        public int maxLobbyCount = 4;
+        public int maxPlayerCount;
         public string? lobbyPassword;
         public LobbyInfo lobbyInfo;
 
@@ -112,7 +112,7 @@ namespace RainMeadow
                 return;
             }
 
-            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer, password, maxLobbyCount);
+            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer, password, maxPlayerCount);
             OnLobbyJoined?.Invoke(true);
         }
 
@@ -130,7 +130,7 @@ namespace RainMeadow
                 return;
             } 
             lobbyPassword = password;
-            maxLobbyCount = (int)maxPlayerCount;
+            this.maxPlayerCount = (int)maxPlayerCount;
             var memory = new MemoryStream(16);
             var writer = new BinaryWriter(memory);
             Packet.Encode(new RequestJoinPacket(), writer, null);
@@ -138,7 +138,7 @@ namespace RainMeadow
         }
         public void LobbyJoined()
         {
-            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), GetLobbyOwner(), lobbyPassword, maxLobbyCount);
+            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), GetLobbyOwner(), lobbyPassword, maxPlayerCount);
             var lobbyOwner = (LocalPlayerId)OnlineManager.lobby.owner.id;
             currentLobbyHost = lobbyOwner.endPoint;
         }
@@ -146,16 +146,7 @@ namespace RainMeadow
         {
             if (success)
             {
-                if (OnlineManager.players.Count > maxLobbyCount)
-                {
-                    LeaveLobby();
-                    RainMeadow.Debug("Failed to join local game. Lobby is full");
-                    OnLobbyJoined?.Invoke(false, "Lobby is full");
-                }
-                else 
-                {
-                    OnLobbyJoined?.Invoke(true); 
-                }
+                OnLobbyJoined?.Invoke(true);
             }
             else
             {

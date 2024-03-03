@@ -8,8 +8,7 @@ namespace RainMeadow
 {
     public class SteamMatchmakingManager : MatchmakingManager
     {
-        public static bool isLobbyFull; // might not need it
-        private static int maxLobbyCount = 4;
+        private static int maxLobbyCount;
         public class SteamPlayerId : MeadowPlayerId
         {
             public CSteamID steamID;
@@ -132,7 +131,7 @@ namespace RainMeadow
         {
             if (success)
             {
-                if (OnlineManager.players.Count >= maxLobbyCount)
+                if (OnlineManager.currentlyJoiningLobby.playerCount > LobbySelectMenu.maxPlayerCount)
                 {
                     LeaveLobby();
                     RainMeadow.Debug("Failed to join local game. Lobby is full");
@@ -169,6 +168,7 @@ namespace RainMeadow
                     {
                         SteamMatchmaking.SetLobbyData(lobbyID, PASSWORD_KEY, "true");
                     }
+                    SteamMatchmaking.SetLobbyMemberLimit(lobbyID, MAX_LOBBY);
                     OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(creatingWithMode), OnlineManager.mePlayer, lobbyPassword, maxLobbyCount);
                     SteamFriends.SetRichPresence("connect", lobbyID.ToString());
                     OnLobbyJoined?.Invoke(true);
