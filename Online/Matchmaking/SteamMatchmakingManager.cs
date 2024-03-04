@@ -92,7 +92,8 @@ namespace RainMeadow
                     for (int i = 0; i < pCallback.m_nLobbiesMatching; i++)
                     {
                         CSteamID id = SteamMatchmaking.GetLobbyByIndex(i);
-                        lobbies[i] = new LobbyInfo(id, SteamMatchmaking.GetLobbyData(id, NAME_KEY), SteamMatchmaking.GetLobbyData(id, MODE_KEY), SteamMatchmaking.GetNumLobbyMembers(id), bool.Parse(SteamMatchmaking.GetLobbyData(id, PASSWORD_KEY)));
+                        string? passwordKeyStr = SteamMatchmaking.GetLobbyData(id, PASSWORD_KEY);
+                        lobbies[i] = new LobbyInfo(id, SteamMatchmaking.GetLobbyData(id, NAME_KEY), SteamMatchmaking.GetLobbyData(id, MODE_KEY), SteamMatchmaking.GetNumLobbyMembers(id), passwordKeyStr != null ? bool.Parse(passwordKeyStr) : false);
                     }
                 }
 
@@ -156,6 +157,9 @@ namespace RainMeadow
                     if (lobbyPassword != null)
                     {
                         SteamMatchmaking.SetLobbyData(lobbyID, PASSWORD_KEY, "true");
+                    }
+                    else {
+                        SteamMatchmaking.SetLobbyData(lobbyID, PASSWORD_KEY, "false");
                     }
                     OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(creatingWithMode), OnlineManager.mePlayer, lobbyPassword);
                     SteamFriends.SetRichPresence("connect", lobbyID.ToString());
