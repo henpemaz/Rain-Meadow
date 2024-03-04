@@ -38,8 +38,8 @@ namespace RainMeadow
         {
 
             iconSprite.alpha = Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(this.lastAlpha, this.alpha, timeStacker)), 0.7f);
-            iconSprite.y = owner.hud.foodMeter.pos.y;
-            iconSprite.x = pos.x;
+            iconSprite.y = owner.drawpos.y + 85f;
+            iconSprite.x = owner.drawpos.x;
             iconSprite.color = owner.clientSettings.SlugcatColor();
         }
 
