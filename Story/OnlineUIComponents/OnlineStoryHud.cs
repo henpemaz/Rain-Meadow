@@ -19,7 +19,7 @@ namespace RainMeadow
             this.storyGameMode = storyGameMode;
             UpdatePlayers();
 
-            // todo display icons near foodbar
+            // display icons are near foodbar, but incoming player is not adding in-game players to their list.
         }
 
         public void UpdatePlayers()
@@ -27,8 +27,9 @@ namespace RainMeadow
             List<StoryClientSettings> clientSettings = OnlineManager.lobby.clientSettings.Values.OfType<StoryClientSettings>().ToList();
             var currentSettings = indicators.Select(i => i.clientSettings);
 
-            clientSettings.Except(currentSettings).Do(PlayerAdded);
+            clientSettings.Except(currentSettings).Do(PlayerAdded); 
             currentSettings.Except(clientSettings).Do(PlayerRemoved);
+
         }
 
         public void PlayerAdded(StoryClientSettings clientSettings)

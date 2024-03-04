@@ -118,8 +118,6 @@ namespace RainMeadow
                 this.parts.Add(this.playerArrow);
             }
 
-
-
             if (this.playerIcons == null)
             {
                 RainMeadow.Debug("adding player icon for " + clientSettings.owner);

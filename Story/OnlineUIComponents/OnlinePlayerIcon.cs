@@ -61,7 +61,7 @@ namespace RainMeadow
         public override void Draw(float timeStacker)
         {
 
-            iconSprite.alpha = 1f;
+            iconSprite.alpha = Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(this.lastAlpha, this.alpha, timeStacker)), 0.7f);
             iconSprite.y = owner.hud.foodMeter.pos.y;
             iconSprite.x = DrawPos().x;
             iconSprite.color = owner.clientSettings.SlugcatColor();
@@ -69,7 +69,7 @@ namespace RainMeadow
 
         public override void Update()
         {
-
+            base.Update();
             if (Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
             {
                 this.lastAlpha = this.alpha;
@@ -82,7 +82,7 @@ namespace RainMeadow
                 this.lastAlpha = this.alpha;
 
             }
-            iconSprite.color = owner.clientSettings.SlugcatColor();
+            iconSprite.color = color;
 /*            if (RealizedPlayer.playerState.permaDead || (RealizedPlayer.playerState.dead))
             {
                 color = Color.gray;
