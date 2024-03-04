@@ -29,21 +29,16 @@ namespace RainMeadow
         public int blinkRed;
 
         public bool dead;
+        public AbstractCreature abstractPlayer;
+
+        public Player RealizedPlayer => this.abstractPlayer.realizedCreature as Player;
 
         public float lastBlink;
-
-
-
-        public AbstractCreature player;
-
         public float rad;
         public float alpha;
         public float lastAlpha;
         public int counter;
         public int fadeAwayCounter;
-
-
-        public PlayerState playerState => player.state as PlayerState;
 
         public Vector2 DrawPos()
         {
@@ -65,49 +60,41 @@ namespace RainMeadow
 
         public override void Draw(float timeStacker)
         {
-            //float num = RWCustom.Custom.LerpAndTick(this.alpha, owner.needed ? 1 : 0, 0.08f, 0.033333335f);
+
             iconSprite.alpha = 1f;
             iconSprite.y = owner.hud.foodMeter.pos.y;
-                // + (float)(dead ? 7 : 0);
-
             iconSprite.x = DrawPos().x;
-
-            
-/*            if (this.counter % 6 < 2 && this.lastBlink > 0f)
-            {
-                if (((Vector3)(Vector4)color).magnitude > 1.56f)
-                {
-                    color = Color.Lerp(color, new Color(0.9f, 0.9f, 0.9f), Mathf.InverseLerp(0f, 0.5f, Mathf.Lerp(this.lastBlink, this.blink, timeStacker)));
-                }
-                else
-                {
-                    color = Color.Lerp(color, new Color(1f, 1f, 1f), Mathf.InverseLerp(0f, 0.5f, Mathf.Lerp(this.lastBlink, this.blink, timeStacker)));
-                }
-            }*/
-
             iconSprite.color = owner.clientSettings.SlugcatColor();
         }
 
         public override void Update()
         {
-            iconSprite.color = owner.clientSettings.SlugcatColor();
 
-   /*         blink = Mathf.Max(0f, blink - 0.05f);
-            lastBlink = blink;
-            iconSprite.scale = 1f;*/
-            /*            if (playerState.permaDead || playerState.dead)
-                        {
-                            color = Color.gray;
-                            if (!dead)
-                            {
-                                iconSprite.RemoveFromContainer();
-                                iconSprite = new FSprite("Multiplayer_Death");
-                                iconSprite.scale *= 0.8f;
-                                owner.hud.fContainers[0].AddChild(iconSprite);
-                                dead = true;
-                                blink = 3f;
-                            }
-                        }*/
+            if (Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
+            {
+                this.alpha = RWCustom.Custom.LerpAndTick(this.alpha, owner.needed ? 1 : 0, 0.08f, 0.033333335f);
+
+            }
+            else
+            {
+                this.alpha = RWCustom.Custom.LerpAndTick(this.alpha, owner.needed ? 0 : 1, 0.08f, 0.033333335f);
+                this.lastAlpha = this.alpha;
+
+            }
+            iconSprite.color = owner.clientSettings.SlugcatColor();
+/*            if (RealizedPlayer.playerState.permaDead || (RealizedPlayer.playerState.dead))
+            {
+                color = Color.gray;
+                if (!dead)
+                {
+                    iconSprite.RemoveFromContainer();
+                    iconSprite = new FSprite("Multiplayer_Death");
+                    iconSprite.scale *= 0.8f;
+                    owner.hud.fContainers[0].AddChild(iconSprite);
+                    dead = true;
+                    blink = 3f;
+                }
+            }*/
 
         }
     }
