@@ -72,6 +72,7 @@ namespace RainMeadow
 
             if (Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
             {
+                this.lastAlpha = this.alpha;
                 this.alpha = RWCustom.Custom.LerpAndTick(this.alpha, owner.needed ? 1 : 0, 0.08f, 0.033333335f);
 
             }
