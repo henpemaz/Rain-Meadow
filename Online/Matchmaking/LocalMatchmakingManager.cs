@@ -59,7 +59,7 @@ namespace RainMeadow
             return new LocalPlayerId();
         }
 
-        public int maxPlayerCount;
+        public int maxLobbyCount;
         public string? lobbyPassword;
         public LobbyInfo lobbyInfo;
 
@@ -130,7 +130,7 @@ namespace RainMeadow
                 return;
             } 
             lobbyPassword = password;
-            this.maxPlayerCount = (int)maxPlayerCount;
+            maxLobbyCount = (int)maxPlayerCount;
             var memory = new MemoryStream(16);
             var writer = new BinaryWriter(memory);
             Packet.Encode(new RequestJoinPacket(), writer, null);
@@ -138,7 +138,7 @@ namespace RainMeadow
         }
         public void LobbyJoined()
         {
-            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), GetLobbyOwner(), lobbyPassword, maxPlayerCount);
+            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), GetLobbyOwner(), lobbyPassword, maxLobbyCount);
             var lobbyOwner = (LocalPlayerId)OnlineManager.lobby.owner.id;
             currentLobbyHost = lobbyOwner.endPoint;
         }

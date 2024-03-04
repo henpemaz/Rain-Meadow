@@ -32,7 +32,6 @@ namespace RainMeadow
             FriendsOnly,
             [Description("Private")]
             Private
-
         }
 
         public abstract event LobbyListReceived_t OnLobbyListReceived;

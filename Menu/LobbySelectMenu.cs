@@ -184,7 +184,7 @@ namespace RainMeadow
             {
                 maxPlayerCount = lobbyLimitNumberTextBox.valueInt;
                 if (lobbyLimitNumberTextBox.valueInt > 32) lobbyLimitNumberTextBox.valueInt = 32;
-                if (lobbyLimitNumberTextBox.valueInt < 1) lobbyLimitNumberTextBox.valueInt = 1;
+                if (lobbyLimitNumberTextBox.valueInt < 2) lobbyLimitNumberTextBox.valueInt = 2;
             }
         }
 
@@ -240,6 +240,7 @@ namespace RainMeadow
                     this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, "Private", new(260, 20), new(10, 50), false));
                 }
                 this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, $"{lobbyInfo.maxPlayerCount} max", new(260, 5), new(10, 50), false));
+                RainMeadow.Debug($"This card has {lobbyInfo.maxPlayerCount} max");
                 this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.mode, new(5, 20), new(10, 50), false));
                 this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.playerCount + " player" + (lobbyInfo.playerCount == 1 ? "" : "s"), new(5, 5), new(10, 50), false));
             }
@@ -269,7 +270,7 @@ namespace RainMeadow
             else
             {
                 var lobbyInfo = (lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo;
-                RainMeadow.Debug($"{lobbyInfo.playerCount} test test test {lobbyInfo.maxPlayerCount}");
+                MatchmakingManager.MAX_LOBBY = lobbyInfo.maxPlayerCount;
                 if (lobbyInfo.playerCount > lobbyInfo.maxPlayerCount)
                 {
                     ShowErrorDialog("Failed to join lobby.<LINE> Lobby is full");
