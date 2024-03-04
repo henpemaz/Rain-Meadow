@@ -21,9 +21,11 @@ namespace RainMeadow
             On.ProcessManager.PostSwitchMainProcess += ProcessManager_PostSwitchMainProcess;
 
             IL.Menu.SlugcatSelectMenu.SlugcatPage.AddImage += SlugcatPage_AddImage;
+
             On.Menu.MenuScene.BuildScene += MenuScene_BuildScene;
-            
+
         }
+
 
         private void MenuScene_BuildScene(On.Menu.MenuScene.orig_BuildScene orig, MenuScene self)
         {
@@ -115,7 +117,6 @@ namespace RainMeadow
 
         private void SlugcatPage_AddImage(ILContext il)
         {
-            var SlugData = new List<SlugcatStats.Name>();
             var c = new ILCursor(il);
             c.Index = il.Instrs.Count - 1;
             c.GotoPrev(MoveType.Before,
@@ -159,6 +160,85 @@ namespace RainMeadow
                     }
 
                 }
+
+                if (self.slugcatNumber == RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer && self is SlugcatCustomSelection slugcatCustom)
+                {
+                    if (OnlineManager.lobby.isOwner) // Host
+                    {
+
+                        if (slugcatCustom.slug == Ext_SlugcatStatsName.OnlineStoryWhite)
+                        {
+                            sceneID = Menu.MenuScene.SceneID.Slugcat_White;
+                            self.sceneOffset = new Vector2(-10f, 100f);
+                            self.slugcatDepth = 3.1000001f;
+                            
+                        }
+
+                        else if (slugcatCustom.slug == Ext_SlugcatStatsName.OnlineStoryYellow)
+                        {
+                            sceneID = Menu.MenuScene.SceneID.Slugcat_Yellow;
+                            self.sceneOffset = new Vector2(-10f, 100f);
+                            self.slugcatDepth = 3.1000001f;
+                        }
+
+                        else if (slugcatCustom.slug == Ext_SlugcatStatsName.OnlineStoryRed)
+                        {
+                            sceneID = Menu.MenuScene.SceneID.Slugcat_Red;
+                            self.sceneOffset = new Vector2(-10f, 100f);
+                            self.slugcatDepth = 3.1000001f;
+                        }
+                        else if (ModManager.MSC)
+                        {
+
+                            if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet)
+                            {
+
+                                sceneID = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID.Slugcat_Rivulet;
+                                self.sceneOffset = new Vector2(-10f, 100f);
+                                self.slugcatDepth = 3.1000001f;
+                            }
+                            else if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer)
+                            {
+
+                                sceneID = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID.Slugcat_Artificer;
+                                self.sceneOffset = new Vector2(-10f, 100f);
+                                self.slugcatDepth = 3.1000001f;
+                            }
+                            else if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
+                            {
+
+                                sceneID = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID.Slugcat_Saint;
+                                self.sceneOffset = new Vector2(-10f, 100f);
+                                self.slugcatDepth = 3.1000001f;
+                            }
+
+                            else if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear)
+                            {
+
+                                sceneID = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID.Slugcat_Spear;
+                                self.sceneOffset = new Vector2(-10f, 100f);
+                                self.slugcatDepth = 3.1000001f;
+                            }
+
+                            else
+                            {
+                                sceneID = Menu.MenuScene.SceneID.NewDeath;
+                                self.sceneOffset = new Vector2(-10f, 100f);
+                                self.slugcatDepth = 3.1000001f;
+                            }
+                        }
+                       
+                    }
+                    else // Client
+                    {
+                        sceneID = Menu.MenuScene.SceneID.Intro_6_7_Rain_Drop; // TODO: Retrieve current save's region
+                        self.sceneOffset = new Vector2(-10f, 100f);
+                        self.slugcatDepth = 3.1000001f;
+
+                    }
+
+                }
+
             });
         }
 
@@ -176,7 +256,7 @@ namespace RainMeadow
             {
                 self.currentMainLoop = new MeadowMenu(self);
             }
-            if (ID == Ext_ProcessID.StoryMenu) 
+            if (ID == Ext_ProcessID.StoryMenu)
             {
                 self.currentMainLoop = new StoryMenu(self);
             }
@@ -209,21 +289,6 @@ namespace RainMeadow
 #endif
             orig(self, ID);
         }
-
-/*        private void InputOptionsMenu_ctor(On.Menu.InputOptionsMenu.orig_ctor orig, InputOptionsMenu self, ProcessManager manager)
-        {
-
-            List<string> inputLabelTextsList = new List<string>(new string[9] { "Pause", "Map", "Pick up / Eat", "Jump", "Throw", "Left", "Up", "Right", "Down" });
-            inputLabelTextsList.Add("View Friends");
-            string[] inputLabelTexts = inputLabelTextsList.ToArray();
-           
-            self.inputLabelTexts = inputLabelTexts;
-
-
-            orig(self, manager);
-
-        }*/
-
 
         private void MainMenu_ctor(On.Menu.MainMenu.orig_ctor orig, MainMenu self, ProcessManager manager, bool showRegionSpecificBkg)
         {
