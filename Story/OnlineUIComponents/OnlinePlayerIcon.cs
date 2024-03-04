@@ -4,8 +4,6 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using HUD;
-using System.Security.AccessControl;
-
 namespace RainMeadow
 {
     public class OnlinePlayerIcon : OnlinePlayerHudPart
