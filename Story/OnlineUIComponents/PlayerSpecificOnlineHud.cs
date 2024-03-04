@@ -11,6 +11,7 @@ namespace RainMeadow
 
         public AbstractCreature abstractPlayer;
         public OnlinePlayerArrow playerArrow;
+        public OnlinePlayerIcon playerIcons;
         public OnlinePlayerDeathBump deathBump;
         public int deadCounter = -1;
         public int antiDeathBumpFlicker;
@@ -47,7 +48,10 @@ namespace RainMeadow
             this.storyGameMode = storyGameMode;
             this.clientSettings = clientSettings;
             this.playerArrow = new OnlinePlayerArrow(this);
+            this.playerIcons = new OnlinePlayerIcon(this);
+
             this.parts.Add(this.playerArrow);
+            this.parts.Add(this.playerIcons);
 
             needed = true;
         }
@@ -82,7 +86,11 @@ namespace RainMeadow
                     {
                         this.deathBump = null;
                     }
-                    this.parts[i].ClearSprites();
+                    else if (this.parts[i] == this.playerIcons)
+                    {
+                        this.playerIcons = null;
+                    }
+                        this.parts[i].ClearSprites();
                     this.parts.RemoveAt(i);
                 }
                 else
@@ -107,6 +115,13 @@ namespace RainMeadow
                 RainMeadow.Debug("adding player arrow for " + clientSettings.owner);
                 this.playerArrow = new OnlinePlayerArrow(this);
                 this.parts.Add(this.playerArrow);
+            }
+
+            if (this.playerIcons == null)
+            {
+                RainMeadow.Debug("adding player icon for " + clientSettings.owner);
+                this.playerIcons = new OnlinePlayerIcon(this);
+                this.parts.Add(this.playerIcons);
             }
 
             // tracking

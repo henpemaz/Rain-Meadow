@@ -9,6 +9,7 @@ namespace RainMeadow
     public class OnlineStoryHud : HudPart
     {
         private List<PlayerSpecificOnlineHud> indicators = new();
+
         private RoomCamera camera;
         private readonly StoryGameMode storyGameMode;
 
@@ -25,6 +26,7 @@ namespace RainMeadow
         {
             List<StoryClientSettings> clientSettings = OnlineManager.lobby.clientSettings.Values.OfType<StoryClientSettings>().ToList();
             var currentSettings = indicators.Select(i => i.clientSettings);
+
             clientSettings.Except(currentSettings).Do(PlayerAdded);
             currentSettings.Except(clientSettings).Do(PlayerRemoved);
         }
