@@ -30,7 +30,7 @@ namespace RainMeadow
         private bool setpassword;
         private OpTextBox passwordInputBox;
         private CheckBox enablePasswordCheckbox;
-        public static int maxPlayerCount;
+        private int maxPlayerCount;
 
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
