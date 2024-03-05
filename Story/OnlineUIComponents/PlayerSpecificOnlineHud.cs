@@ -10,8 +10,8 @@ namespace RainMeadow
         public StoryClientSettings clientSettings;
 
         public AbstractCreature abstractPlayer;
-        public OnlinePlayerArrow playerArrow;
-        public OnlinePlayerIcon playerIcons;
+        public OnlinePlayerDisplay playerDisplay;
+        // public OnlinePlayerIcon playerIcons;
         public OnlinePlayerDeathBump deathBump;
         public int deadCounter = -1;
         public int antiDeathBumpFlicker;
@@ -48,11 +48,9 @@ namespace RainMeadow
             this.storyGameMode = storyGameMode;
             this.clientSettings = clientSettings;
 
-            this.playerArrow = new OnlinePlayerArrow(this);
-            this.playerIcons = new OnlinePlayerIcon(this);
+            this.playerDisplay = new OnlinePlayerDisplay(this);
 
-            this.parts.Add(this.playerArrow);
-            this.parts.Add(this.playerIcons);
+            this.parts.Add(this.playerDisplay);
 
             needed = true;
         }
@@ -79,18 +77,15 @@ namespace RainMeadow
             {
                 if (this.parts[i].slatedForDeletion)
                 {
-                    if (this.parts[i] == this.playerArrow)
+                    if (this.parts[i] == this.playerDisplay)
                     {
-                        this.playerArrow = null;
+                        this.playerDisplay = null;
                     }
                     else if (this.parts[i] == this.deathBump)
                     {
                         this.deathBump = null;
                     }
-                    else if (this.parts[i] == this.playerIcons)
-                    {
-                        this.playerIcons = null;
-                    }
+
                     this.parts[i].ClearSprites();
                     this.parts.RemoveAt(i);
                 }
@@ -111,18 +106,11 @@ namespace RainMeadow
                 }
                 return;
             }
-            if (this.playerArrow == null)
+            if (this.playerDisplay == null)
             {
                 RainMeadow.Debug("adding player arrow for " + clientSettings.owner);
-                this.playerArrow = new OnlinePlayerArrow(this);
-                this.parts.Add(this.playerArrow);
-            }
-
-            if (this.playerIcons == null)
-            {
-                RainMeadow.Debug("adding player icon for " + clientSettings.owner);
-                this.playerIcons = new OnlinePlayerIcon(this);
-                this.parts.Add(this.playerIcons);
+                this.playerDisplay = new OnlinePlayerDisplay(this);
+                this.parts.Add(this.playerDisplay);
             }
 
 
