@@ -121,9 +121,11 @@ namespace RainMeadow
                     color = Color.Lerp(color, new Color(1f, 1f, 1f), Mathf.InverseLerp(0f, 0.5f, Mathf.Lerp(this.lastBlink, this.blink, timeStacker)));
                 }
             }
-            this.label.color = color;
-            this.arrowSprite.color = color;
-            this.slugIcon.color = color;
+            var lighter_color = color * 1.7f;
+
+            this.label.color = lighter_color;
+            this.arrowSprite.color = lighter_color;
+            this.slugIcon.color = lighter_color;
 
             this.label.alpha = num;
             this.arrowSprite.alpha = num;
