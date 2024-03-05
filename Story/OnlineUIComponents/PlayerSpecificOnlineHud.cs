@@ -11,7 +11,6 @@ namespace RainMeadow
 
         public AbstractCreature abstractPlayer;
         public OnlinePlayerDisplay playerDisplay;
-        // public OnlinePlayerIcon playerIcons;
         public OnlinePlayerDeathBump deathBump;
         public int deadCounter = -1;
         public int antiDeathBumpFlicker;
@@ -38,8 +37,6 @@ namespace RainMeadow
             }
         }
 
-
-        // todo tracking of player
         public PlayerSpecificOnlineHud(HUD.HUD hud, RoomCamera camera, StoryGameMode storyGameMode, StoryClientSettings clientSettings) : base(hud)
         {
             RainMeadow.Debug("Adding PlayerSpecificOnlineHud for " + clientSettings.owner);

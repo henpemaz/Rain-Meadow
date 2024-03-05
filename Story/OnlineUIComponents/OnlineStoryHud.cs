@@ -18,8 +18,6 @@ namespace RainMeadow
             this.camera = camera;
             this.storyGameMode = storyGameMode;
             UpdatePlayers();
-
-            // display icons are near foodbar, but incoming player is not adding in-game players to their list.
         }
 
         public void UpdatePlayers()
