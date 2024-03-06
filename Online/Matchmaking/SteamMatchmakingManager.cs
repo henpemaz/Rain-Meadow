@@ -8,7 +8,6 @@ namespace RainMeadow
 {
     public class SteamMatchmakingManager : MatchmakingManager
     {
-        public static int maxLobbyCount;
         public class SteamPlayerId : MeadowPlayerId
         {
             public CSteamID steamID;
@@ -111,7 +110,6 @@ namespace RainMeadow
         {
             creatingWithMode = gameMode;
             lobbyPassword = password;
-            maxLobbyCount = (int)maxPlayerCount;
             MAX_LOBBY = (int)maxPlayerCount;
             ELobbyType eLobbyTypeeLobbyType = visibility switch
             {
@@ -376,7 +374,7 @@ namespace RainMeadow
                     LeaveLobby();
                 }
 
-                OnlineManager.currentlyJoiningLobby = new LobbyInfo(param.m_steamIDLobby, "", "", 0,false, maxLobbyCount);
+                OnlineManager.currentlyJoiningLobby = new LobbyInfo(param.m_steamIDLobby, "", "", 0,false, MAX_LOBBY);
                 Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
 
                 m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(param.m_steamIDLobby));
