@@ -52,6 +52,7 @@ namespace RainMeadow
             public static readonly StateType PhysicalObjectEntityState = new("PhysicalObjectEntityState", typeof(PhysicalObjectEntityState));
             public static readonly StateType OnlineConsumableState = new("OnlineConsumableState", typeof(OnlineConsumableState));
             public static readonly StateType OnlineSeedCobState = new("OnlineSeedCobState", typeof(OnlineSeedCobState));
+            public static readonly StateType OnlineBubbleGrassState = new("OnlineBubbleGrassState", typeof(OnlineBubbleGrassState));
             public static readonly StateType PlayerStateState = new("PlayerStateState", typeof(PlayerStateState));
             public static readonly StateType AbstractCreatureState = new("AbstractCreatureState", typeof(AbstractCreatureState));
             public static readonly StateType RealizedFlyState = new("RealizedFlyState", typeof(RealizedFlyState));
@@ -82,7 +83,8 @@ namespace RainMeadow
 
             public static readonly StateType OnlinePhysicalObjectDefinition = new("OnlinePhysicalObjectDefinition", typeof(OnlinePhysicalObjectDefinition));
             public static readonly StateType OnlineConsumableDefinition = new("OnlineConsumableDefinition", typeof(OnlineConsumableDefinition));
-            public static readonly StateType OnlineSeedPodDefinition = new("OnlineSeedPodDefinition", typeof(OnlineSeedPodDefinition));
+            public static readonly StateType OnlineSeedCobDefinition = new("OnlineSeedCobDefinition", typeof(OnlineSeedCobDefinition));
+            public static readonly StateType OnlineBubbleGrassDefinition = new("OnlineBubbleGrassDefinition", typeof(OnlineBubbleGrassDefinition));
             public static readonly StateType OnlineCreatureDefinition = new("OnlineCreatureDefinition", typeof(OnlineCreatureDefinition));
             public static readonly StateType MeadowAvatarSettingsDefinition = new ("MeadowAvatarSettings.Definition", typeof(MeadowAvatarSettings.Definition));
             public static readonly StateType SlugcatAvatarSettingsDefinition = new ("SlugcatAvatarSettings.Definition", typeof(StoryClientSettings.Definition));

@@ -47,11 +47,11 @@ namespace RainMeadow
                 switch (acm) 
                 {
                     case BubbleGrass.AbstractBubbleGrass abg:
-                        RainMeadow.Debug("AbstractBubbleGrass not handled");
-                        return new OnlineConsumable(acmDef, abg);
+                        var abgDef = new OnlineBubbleGrassDefinition(acmDef, abg);
+                        return new OnlineBubbleGrass(abgDef, abg);
                     case SeedCob.AbstractSeedCob asc:
-                        var ascDef = new OnlineSeedPodDefinition(acmDef, asc);
-                        return new OnlineSeedPod(ascDef, asc);
+                        var ascDef = new OnlineSeedCobDefinition(acmDef, asc);
+                        return new OnlineSeedCob(ascDef, asc);
                     case SporePlant.AbstractSporePlant asp:
                         RainMeadow.Debug("AbstractSporePlant not handled");
                         return new OnlineConsumable(acmDef, asp);

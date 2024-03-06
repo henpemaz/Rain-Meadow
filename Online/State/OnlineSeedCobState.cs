@@ -1,6 +1,4 @@
-﻿using static RainMeadow.OnlineState;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     public class OnlineSeedCobState : PhysicalObjectEntityState
     {
@@ -11,7 +9,7 @@ namespace RainMeadow
 
         public OnlineSeedCobState() { }
 
-        public OnlineSeedCobState(OnlineSeedPod onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
+        public OnlineSeedCobState(OnlineSeedCob onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
         {
             isOpened = onlineEntity.AbstractSeedCob.opened;
             isDead = onlineEntity.AbstractSeedCob.dead;
@@ -20,7 +18,7 @@ namespace RainMeadow
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
-            var onlineSeedPod = onlineEntity as OnlineSeedPod;
+            var onlineSeedPod = onlineEntity as OnlineSeedCob;
             if (!onlineSeedPod.AbstractSeedCob.opened && isOpened)
             {
                 (onlineSeedPod.AbstractSeedCob.realizedObject as SeedCob).Open();

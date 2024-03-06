@@ -87,16 +87,16 @@ namespace RainMeadow
             PlacedObject.Type.FirecrackerPlant,
             PlacedObject.Type.VultureGrub,
             PlacedObject.Type.DeadVultureGrub,
-            //PlacedObject.Type.MultiplayerItem,
+            //PlacedObject.Type.MultiplayerItem,    //other spear types
             //PlacedObject.Type.SporePlant,         //abstractConsumable Child MEDIUM
             //PlacedObject.Type.ReliableSpear,      //AbstractPhysicalObject Child MEDIUM
-            //PlacedObject.Type.NeedleEgg,          //AbstractPhysicalObject EASY
-            //PlacedObject.Type.BubbleGrass,        //abstractConsumable Child  MEDIUM
-            //PlacedObject.Type.Hazer,              //AbstractCreature
-            //PlacedObject.Type.DeadHazer,          //AbstractCreature same as above
+            PlacedObject.Type.NeedleEgg,
+            PlacedObject.Type.BubbleGrass,
+            PlacedObject.Type.Hazer,
+            PlacedObject.Type.DeadHazer,
             //PlacedObject.Type.VultureMask,        //AbstractPhysicalObject Child MEDIUM
             //PlacedObject.Type.HangingPearls,      //MSC?
-            //PlacedObject.Type.Lantern,            //AbstractPhysicalObject EASY
+            PlacedObject.Type.Lantern,
         };
     }
 }

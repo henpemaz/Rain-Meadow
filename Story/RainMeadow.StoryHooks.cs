@@ -33,7 +33,6 @@ namespace RainMeadow
             On.Player.Update += Player_Update;
 
             On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass;
-
             On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
 
 
@@ -44,6 +43,23 @@ namespace RainMeadow
             On.RainWorldGame.GameOver += RainWorldGame_GameOver;
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
 
+            On.BubbleGrass.Update += BubbleGrass_Update;
+
+        }
+
+        private void BubbleGrass_Update(On.BubbleGrass.orig_Update orig, BubbleGrass self, bool eu)
+        {
+            var prevOxygenLevel = self.AbstrBubbleGrass.oxygenLeft;
+            orig(self, eu);
+            var currentOxygenLevel = self.AbstrBubbleGrass.oxygenLeft;
+
+            if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                if (prevOxygenLevel != currentOxygenLevel) {
+                    OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineBubbleGrass);
+                    OnlineManager.lobby.owner.InvokeRPC(ConsumableRPCs.SetOxygenLevel, onlineBubbleGrass, currentOxygenLevel);
+                }
+            }
         }
 
         private void Player_GetInitialSlugcatClass(On.Player.orig_GetInitialSlugcatClass orig, Player self)
