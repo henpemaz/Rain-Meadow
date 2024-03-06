@@ -13,7 +13,7 @@ namespace RainMeadow
             World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
 
             //TODO get from campaigne
-            RoomSettings roomsetting = new RoomSettings(newObjectEvent.roomName, world.region, false, false, SlugcatStats.Name.White);
+            RoomSettings roomsetting = new RoomSettings(newObjectEvent.roomName, world.region, false, false, OnlineManager.lobby.gameMode.LoadWorldAs(world.game));
             RainMeadow.Debug("serializedObject: " + newObjectEvent.serializedObject);
             var apo = SaveState.AbstractPhysicalObjectFromString(world, newObjectEvent.serializedObject);
             var asc = new SeedCob.AbstractSeedCob(world, apo.realizedObject, apo.pos, apo.ID, newObjectEvent.originRoom, newObjectEvent.placedObjectIndex, newObjectEvent.originallyDead,
