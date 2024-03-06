@@ -184,7 +184,7 @@ namespace RainMeadow
             {
                 maxPlayerCount = lobbyLimitNumberTextBox.valueInt;
                 if (lobbyLimitNumberTextBox.valueInt > 32) lobbyLimitNumberTextBox.valueInt = 32;
-                if (lobbyLimitNumberTextBox.valueInt < 2) lobbyLimitNumberTextBox.valueInt = 2;
+                if (lobbyLimitNumberTextBox.valueInt < 1) lobbyLimitNumberTextBox.valueInt = 1;
             }
         }
 
@@ -271,7 +271,7 @@ namespace RainMeadow
             {
                 var lobbyInfo = (lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo;
                 MatchmakingManager.MAX_LOBBY = lobbyInfo.maxPlayerCount;
-                if (lobbyInfo.playerCount > lobbyInfo.maxPlayerCount)
+                if (lobbyInfo.playerCount >= lobbyInfo.maxPlayerCount)
                 {
                     ShowErrorDialog("Failed to join lobby.<LINE> Lobby is full");
                 }
