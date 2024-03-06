@@ -165,7 +165,7 @@ namespace RainMeadow
                         SteamMatchmaking.SetLobbyData(lobbyID, PASSWORD_KEY, "false");
                     }
                     SteamMatchmaking.SetLobbyMemberLimit(lobbyID, MAX_LOBBY);
-                    OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(creatingWithMode), OnlineManager.mePlayer, lobbyPassword, maxLobbyCount);
+                    OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(creatingWithMode), OnlineManager.mePlayer, lobbyPassword);
                     SteamFriends.SetRichPresence("connect", lobbyID.ToString());
                     OnLobbyJoined?.Invoke(true);
                 }
@@ -202,7 +202,7 @@ namespace RainMeadow
                     }
                     SteamFriends.SetRichPresence("connect", lobbyID.ToString());
 
-                    OnlineManager.lobby = new Lobby(mode, owner, lobbyPassword, maxLobbyCount);
+                    OnlineManager.lobby = new Lobby(mode, owner, lobbyPassword);
                 }
                 else
                 {

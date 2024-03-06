@@ -303,7 +303,7 @@ namespace RainMeadow
             RainMeadow.Debug($"Creating a lobby with a max player limit of {maxPlayerCount}");
         }
 
-        private void RequestLobbyJoin(LobbyInfo lobby, string? password = null, int? maxPlayerCount = 4)
+        private void RequestLobbyJoin(LobbyInfo lobby, string? password = null)
         {
             var lobbyInfo = (lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo;
             RainMeadow.DebugMe();
@@ -395,7 +395,7 @@ namespace RainMeadow
                 case "HIDE_PASSWORD":
                     var password = (popupDialog as CustomInputDialogueBox).textBox.value;
                     ShowLoadingDialog("Joining lobby...");
-                    RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo, password, maxPlayerCount);
+                    RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo, password);
                     break;
             }
         }

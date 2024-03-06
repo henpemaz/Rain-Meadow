@@ -15,10 +15,9 @@ namespace RainMeadow
 
         public string[] mods = RainMeadowModManager.GetActiveMods();
         public static bool modsChecked;
-        public int maxPlayerCount;
         public string? password;
         public bool hasPassword => password != null;
-        public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password, int? maxPlayerCount)
+        public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password)
         {
             this.super = this;
             OnlineManager.lobby = this; // needed for early entity processing
@@ -40,8 +39,6 @@ namespace RainMeadow
             {
                 RequestLobby(password);
             }
-
-            this.maxPlayerCount = (int)maxPlayerCount;
         }
 
         public void RequestLobby(string? key)

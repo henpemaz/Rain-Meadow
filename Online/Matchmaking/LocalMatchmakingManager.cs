@@ -112,7 +112,7 @@ namespace RainMeadow
                 return;
             }
 
-            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer, password, maxPlayerCount);
+            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), OnlineManager.mePlayer, password);
             OnLobbyJoined?.Invoke(true);
         }
 
@@ -138,7 +138,7 @@ namespace RainMeadow
         }
         public void LobbyJoined()
         {
-            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), GetLobbyOwner(), lobbyPassword, maxLobbyCount);
+            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(localGameMode), GetLobbyOwner(), lobbyPassword);
             var lobbyOwner = (LocalPlayerId)OnlineManager.lobby.owner.id;
             currentLobbyHost = lobbyOwner.endPoint;
         }
