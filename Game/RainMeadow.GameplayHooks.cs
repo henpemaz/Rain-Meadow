@@ -2,7 +2,6 @@
 using System;
 using System.Linq;
 using UnityEngine;
-
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -14,6 +13,18 @@ namespace RainMeadow
             On.Creature.Violence += CreatureOnViolence;
             On.Creature.Grasp.ctor += GraspOnctor;
             On.PhysicalObject.Grabbed += PhysicalObjectOnGrabbed;
+            On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon; ;
+        }
+
+        private void PhysicalObject_HitByWeapon(On.PhysicalObject.orig_HitByWeapon orig, PhysicalObject self, Weapon weapon)
+        {
+            orig(self, weapon);
+            if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
+                OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var abstWeapon);
+                OnlineManager.lobby.owner.InvokeRPC(OnlinePhysicalObject.HitByWeapon, objectHit, abstWeapon);
+            }
         }
 
         private void ShelterDoorOnClose(On.ShelterDoor.orig_Close orig, ShelterDoor self)

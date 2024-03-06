@@ -42,6 +42,12 @@ namespace RainMeadow
                 var def = new OnlineCreatureDefinition(apo.ID.RandomSeed, apo.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 return new OnlineCreature(def, ac);
             }
+            if (apo is SeedCob.AbstractSeedCob asc) {
+                var def = new OnlineSeedPodDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar,
+                    (short)asc.originRoom, (sbyte)asc.placedObjectIndex, asc.isConsumed,
+                    apo.Room.name, asc.dead);
+                return new OnlineSeedPod(def, asc);
+            }
             if (apo is AbstractConsumable acm)
             {
                 var def = new OnlineConsumableDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar,
@@ -270,6 +276,12 @@ namespace RainMeadow
         public override string ToString()
         {
             return apo.ToString() + base.ToString();
+        }
+
+        [RPCMethod]
+        public static void HitByWeapon(OnlinePhysicalObject objectHit, OnlinePhysicalObject weapon)
+        {
+            objectHit?.apo.realizedObject.HitByWeapon(weapon.apo.realizedObject as Weapon);
         }
     }
 }

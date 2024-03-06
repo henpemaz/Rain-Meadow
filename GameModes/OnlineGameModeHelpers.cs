@@ -71,22 +71,22 @@ namespace RainMeadow
          };
         public static HashSet<PlacedObject.Type> PlayerGrablableItems = new()
         {
-            //PlacedObject.Type.FlareBomb,          
+            PlacedObject.Type.FlareBomb,
             //PlacedObject.Type.PuffBall,           //EDIBLE NOT FOOD
             PlacedObject.Type.DangleFruit,
-            PlacedObject.Type.DataPearl,          
-            PlacedObject.Type.UniqueDataPearl,    
-            //PlacedObject.Type.SeedCob,            //FOOD
-            //PlacedObject.Type.DeadSeedCob,        //After Seedcob
+            PlacedObject.Type.DataPearl,
+            PlacedObject.Type.UniqueDataPearl,
+            PlacedObject.Type.SeedCob,
+            PlacedObject.Type.DeadSeedCob,
             //PlacedObject.Type.WaterNut,           //HARD
             //PlacedObject.Type.JellyFish,          //MEDIUM
             PlacedObject.Type.KarmaFlower,
             PlacedObject.Type.Mushroom,
-            //PlacedObject.Type.SlimeMold,          //EASY
+            PlacedObject.Type.SlimeMold,          //EASY
             PlacedObject.Type.FlyLure,
             PlacedObject.Type.FirecrackerPlant,
-            //PlacedObject.Type.VultureGrub,        //PREREQ
-            //PlacedObject.Type.DeadVultureGrub,    //FOOD
+            PlacedObject.Type.VultureGrub,
+            PlacedObject.Type.DeadVultureGrub,    //FOOD
             //PlacedObject.Type.MultiplayerItem,
             //PlacedObject.Type.SporePlant,         //HARD bee granade
             //PlacedObject.Type.ReliableSpear,

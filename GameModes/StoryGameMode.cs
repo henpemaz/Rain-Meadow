@@ -29,7 +29,7 @@ namespace RainMeadow
         }
         public override bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)
         {
-            return worldSession.owner == null || worldSession.isOwner;
+            return false; // worldSession.owner == null || worldSession.isOwner;
         }
 
         public override bool ShouldSpawnRoomItems(RainWorldGame game, RoomSession roomSession)

@@ -840,6 +840,36 @@ namespace RainMeadow
 #endif
         }
 
+        public void Serialize(ref List<Vector2> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write((byte)data.Count);
+                for (int i = 0; i < data.Count; i++)
+                {
+                    writer.Write(data[i].x);
+                    writer.Write(data[i].y);
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadByte();
+                data = new(count);
+                for (int i = 0; i < count; i++)
+                {
+                    float x = reader.ReadSingle();
+                    float y = reader.ReadSingle();
+                    data.Add(new Vector2(x,y));
+                }
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
         // We cast to shorts as we assume that
         // all IntVector2 represent tile coordinates.
         // Sorry if this caused a bug, yell at DevLope and Henpemaz.
