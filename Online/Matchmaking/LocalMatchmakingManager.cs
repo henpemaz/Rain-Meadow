@@ -60,6 +60,7 @@ namespace RainMeadow
         }
 
         public string? lobbyPassword;
+        public LobbyInfo lobbyInfo;
 
         private int me = -1;
         private IPEndPoint currentLobbyHost = null;
@@ -79,7 +80,7 @@ namespace RainMeadow
             //OnLobbyListReceived?.Invoke(true, new LobbyInfo[0] { });
             // Create the proper list
             var fakeEndpoint = new IPEndPoint(IPAddress.Loopback, UdpPeer.STARTING_PORT);
-            OnLobbyListReceived?.Invoke(true, new LobbyInfo[2] { new LobbyInfo(fakeEndpoint, "local", localGameMode, 1,false), new LobbyInfo(fakeEndpoint, "local:HasPassword", localGameMode, 1, true) });
+            OnLobbyListReceived?.Invoke(true, new LobbyInfo[2] { new LobbyInfo(fakeEndpoint, "local", localGameMode, 1,false, MAX_LOBBY), new LobbyInfo(fakeEndpoint, "local:HasPassword", localGameMode, 1, true, MAX_LOBBY) });
         }
 
         public void sessionSetup(bool isHost){
@@ -101,7 +102,7 @@ namespace RainMeadow
             thisPlayer.reset();
         }
 
-        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password)
+        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount)
         {
             sessionSetup(true);
             if (!((LocalPlayerId)OnlineManager.mePlayer.id).isHost)
@@ -151,6 +152,7 @@ namespace RainMeadow
                 RainMeadow.Debug("Failed to join local game. Wrong Password");
                 OnLobbyJoined?.Invoke(false, "Wrong password!");
             }
+
         }
 
         public override void LeaveLobby()
