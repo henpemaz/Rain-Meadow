@@ -94,7 +94,7 @@ namespace RainMeadow
             PlacedObject.Type.BubbleGrass,
             PlacedObject.Type.Hazer,
             PlacedObject.Type.DeadHazer,
-            PlacedObject.Type.VultureMask,        //AbstractPhysicalObject Child MEDIUM
+            PlacedObject.Type.VultureMask,
             //PlacedObject.Type.HangingPearls,      //MSC?
             PlacedObject.Type.Lantern,
         };
