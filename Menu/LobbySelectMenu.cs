@@ -184,7 +184,7 @@ namespace RainMeadow
             {
                 maxPlayerCount = lobbyLimitNumberTextBox.valueInt;
                 if (lobbyLimitNumberTextBox.valueInt > 32) lobbyLimitNumberTextBox.valueInt = 32;
-                if (lobbyLimitNumberTextBox.valueInt < 1) lobbyLimitNumberTextBox.valueInt = 1;
+                if (lobbyLimitNumberTextBox.valueInt < 2) lobbyLimitNumberTextBox.valueInt = 2;
             }
         }
 
