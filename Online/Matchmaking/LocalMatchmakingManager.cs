@@ -59,7 +59,6 @@ namespace RainMeadow
             return new LocalPlayerId();
         }
 
-        public int maxLobbyCount;
         public string? lobbyPassword;
         public LobbyInfo lobbyInfo;
 
