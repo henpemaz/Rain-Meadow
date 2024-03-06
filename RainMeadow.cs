@@ -176,7 +176,7 @@ namespace RainMeadow
 #if LOCAL_P2P
                 if (!self.setup.startScreen)
                 {
-                    OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(LocalMatchmakingManager.localGameMode), OnlineManager.mePlayer, null, 4);
+                    OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(LocalMatchmakingManager.localGameMode), OnlineManager.mePlayer, null);
                 }
 #endif
             }
