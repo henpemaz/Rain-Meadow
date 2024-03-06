@@ -308,7 +308,7 @@ namespace RainMeadow
             var lobbyInfo = (lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo;
             RainMeadow.DebugMe();
             maxPlayerCount = lobbyInfo.maxPlayerCount;
-            MatchmakingManager.instance.RequestJoinLobby(lobby, password, maxPlayerCount);
+            MatchmakingManager.instance.RequestJoinLobby(lobby, password);
         }
 
         private void OnlineManager_OnLobbyListReceived(bool ok, LobbyInfo[] lobbies)

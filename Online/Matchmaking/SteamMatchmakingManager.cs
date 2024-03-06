@@ -123,7 +123,7 @@ namespace RainMeadow
             m_CreateLobbyCall.Set(SteamMatchmaking.CreateLobby(eLobbyTypeeLobbyType, 16));
         }
 
-        public override void RequestJoinLobby(LobbyInfo lobby, string? password, int? maxPlayerCount)
+        public override void RequestJoinLobby(LobbyInfo lobby, string? password)
         {
             lobbyPassword = password;
             m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(lobby.id));

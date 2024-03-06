@@ -116,7 +116,7 @@ namespace RainMeadow
             OnLobbyJoined?.Invoke(true);
         }
 
-        public override void RequestJoinLobby(LobbyInfo lobby, string? password, int? maxPlayerCount)
+        public override void RequestJoinLobby(LobbyInfo lobby, string? password)
         {
             sessionSetup(false);
             if (((LocalPlayerId)OnlineManager.mePlayer.id).isHost)
@@ -130,7 +130,6 @@ namespace RainMeadow
                 return;
             } 
             lobbyPassword = password;
-            maxLobbyCount = (int)maxPlayerCount;
             var memory = new MemoryStream(16);
             var writer = new BinaryWriter(memory);
             Packet.Encode(new RequestJoinPacket(), writer, null);
