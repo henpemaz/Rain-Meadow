@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using RWCustom;
 using System;
-using static RainMeadow.CreatureController;
 
 namespace RainMeadow
 {
@@ -58,17 +57,20 @@ namespace RainMeadow
         static int npages = radialMappingPages.Length;
 
         EmoteRadialPage[] pages;
+        private int currentPage;
         private MeadowAvatarCustomization customization;
         private EmoteHandler emoteHandler;
         private FContainer container;
 
         private FLabel cancelLabel;
         private FSprite knobSprite;
+        private bool lastActive;
         private Vector2 lastKnobPos;
         private Vector2 knobPos;
         private Vector2 knobVel;
         public int selected;
         private int lastSelected;
+        private bool active;
 
         public EmoteControllerInput(HUD.HUD hud, MeadowAvatarCustomization customization, EmoteHandler emoteHandler) : base(hud)
         {
@@ -84,6 +86,8 @@ namespace RainMeadow
                 new EmoteRadialPage(hud, this.container, customization, radialMappingPages[1], new Vector2(+forthwidth, 0), false)
             };
 
+            this.currentPage = 0;
+
             this.knobSprite = new FSprite("Circle20", true);
             knobSprite.alpha = 0.4f;
             this.container.AddChild(this.knobSprite);
@@ -97,10 +101,10 @@ namespace RainMeadow
 
         public override void Update()
         {
+            this.lastActive = active;
             this.lastKnobPos = this.knobPos;
             this.knobPos += this.knobVel;
             this.knobVel *= 0.5f;
-            var control = RWCustom.Custom.rainWorld.options.controls[0];
             var controller = Custom.rainWorld.options.controls[0].GetActiveController();
             if (controller is Rewired.Joystick joystick)
             {
@@ -108,9 +112,12 @@ namespace RainMeadow
                 var analogDir = new Vector2(joystick.GetAxis(2), joystick.GetAxis(3));
                 this.knobVel += (analogDir - this.knobPos) / 8f;
                 this.knobPos += (analogDir - this.knobPos) / 4f;
+                this.active = joystick.GetButton(12);
             }
             else
             {
+                var keyboard = controller as Rewired.Keyboard;
+                this.active = keyboard.GetKey(KeyCode.A); 
                 var package = RWInput.PlayerInput(0, RWCustom.Custom.rainWorld);
                 this.knobVel -= this.knobPos / 6f;
                 this.knobVel.x += (float)package.x * 0.3f;
@@ -134,10 +141,31 @@ namespace RainMeadow
             {
                 selected = -1;
             }
+
+            if(!active && lastActive && selected != -1)
+            {
+                var selectedEmote = radialMappingPages[currentPage][selected];
+                if (selectedEmote != EmoteType.none)
+                {
+                    emoteHandler.EmotePressed(selectedEmote);
+                }
+            }
+        }
+
+        private void FlipPage(int v)
+        {
+            currentPage = (currentPage + npages + v) % npages;
+            pages[0].SetEmotes(radialMappingPages[currentPage]);
+            pages[1].SetEmotes(radialMappingPages[(currentPage + npages - 1) % npages]);
+            pages[2].SetEmotes(radialMappingPages[(currentPage + 1) % npages]);
+
         }
 
         public override void Draw(float timeStacker)
         {
+            container.isVisible = active;
+            if (!active) return;
+            InputUpdate();
             var outterRadius = 1.975f * 80f;
             this.knobSprite.color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.MediumGrey);
             Vector2 vector2 = Vector2.Lerp(this.lastKnobPos, this.knobPos, timeStacker);
@@ -149,6 +177,21 @@ namespace RainMeadow
             }
         }
 
+        public void InputUpdate()
+        {
+            // need to be in draw for easy keydown events
+            var controller = Custom.rainWorld.options.controls[0].GetActiveController();
+            if (controller is Rewired.Joystick joystick)
+            {
+                if (joystick.GetButtonDown(11)) FlipPage(1);
+                if (joystick.GetButtonDown(13)) FlipPage(-1);
+            }
+            else
+            {
+                var keyboard = controller as Rewired.Keyboard;
+                if (keyboard.GetKeyDown(KeyCode.Tab)) FlipPage(keyboard.GetModifierKey(Rewired.ModifierKey.Shift) ? -1 : 1);
+            }
+        }
 
         public override void ClearSprites()
         {
@@ -246,7 +289,7 @@ namespace RainMeadow
                 {
                     meshes[i].color = colorUnselected;
                 }
-                if (selected > -1) meshes[selected].color = colorSelected; else centerMesh.color = colorSelected;
+                if (selected > -1 && emotes[selected] != EmoteType.none) meshes[selected].color = colorSelected; else centerMesh.color = colorSelected;
             }
         }
     }
