@@ -10,7 +10,18 @@
         public bool originallyConsumed;
 
         public OnlineConsumableDefinition() { }
-
+        public OnlineConsumableDefinition(OnlineConsumableDefinition ocd) : base(ocd)
+        { 
+            this.originRoom = ocd.originRoom;
+            this.placedObjectIndex = ocd.placedObjectIndex;
+            this.originallyConsumed = ocd.originallyConsumed;
+        }
+        public OnlineConsumableDefinition(OnlinePhysicalObjectDefinition opod, AbstractConsumable abstractConsumable) : base(opod)
+        {
+            this.originRoom = (short)abstractConsumable.originRoom;
+            this.placedObjectIndex = (sbyte)abstractConsumable.placedObjectIndex;
+            this.originallyConsumed = abstractConsumable.isConsumed;
+        }
         public OnlineConsumableDefinition(int seed, bool realized, string serializedObject, OnlineEntity.EntityId entityId, OnlinePlayer owner, bool isTransferable, short originRoom, sbyte placedObjectIndex, bool originallyConsumed) : base(seed, realized, serializedObject, entityId, owner, isTransferable)
         {
             this.originRoom = originRoom;

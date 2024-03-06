@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 
 namespace RainMeadow
@@ -37,27 +38,61 @@ namespace RainMeadow
                 entityId = new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number);
                 RainMeadow.Error($"set as: {entityId}");
             }
-            if (apo is AbstractCreature ac)
-            {
-                var def = new OnlineCreatureDefinition(apo.ID.RandomSeed, apo.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
-                return new OnlineCreature(def, ac);
-            }
-            if (apo is SeedCob.AbstractSeedCob asc) {
-                var def = new OnlineSeedPodDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar,
-                    (short)asc.originRoom, (sbyte)asc.placedObjectIndex, asc.isConsumed,
-                    apo.Room.name, asc.dead);
-                return new OnlineSeedPod(def, asc);
-            }
+
+            var opoDef = new OnlinePhysicalObjectDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+            
             if (apo is AbstractConsumable acm)
             {
-                var def = new OnlineConsumableDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar,
-                    (short)acm.originRoom, (sbyte)acm.placedObjectIndex, acm.isConsumed);
-                return new OnlineConsumable(def, acm);
+                var acmDef = new OnlineConsumableDefinition(opoDef, acm);
+                switch (acm) 
+                {
+                    case BubbleGrass.AbstractBubbleGrass abg:
+                        RainMeadow.Debug("AbstractBubbleGrass not handled");
+                        return new OnlineConsumable(acmDef, abg);
+                    case SeedCob.AbstractSeedCob asc:
+                        var ascDef = new OnlineSeedPodDefinition(acmDef, asc);
+                        return new OnlineSeedPod(ascDef, asc);
+                    case SporePlant.AbstractSporePlant asp:
+                        RainMeadow.Debug("AbstractSporePlant not handled");
+                        return new OnlineConsumable(acmDef, asp);
+                    case WaterNut.AbstractWaterNut awn:
+                        RainMeadow.Debug("AbstractWaterNut not handled");
+                        return new OnlineConsumable(acmDef, awn);
+                    case PebblesPearl.AbstractPebblesPearl app:
+                        //May have issues since AbstractPebblesPearl is an AbstractDataPearl
+                        RainMeadow.Debug("AbstractPebblesPearl not handled");
+                        return new OnlineConsumable(acmDef, app);
+                    case DataPearl.AbstractDataPearl adp:
+                        RainMeadow.Debug("AbstractDataPearl not handled");
+                        return new OnlineConsumable(acmDef, adp);
+                    default:
+                        return new OnlineConsumable(acmDef, acm);
+                    case null:
+                        throw new ArgumentNullException(nameof(acm));
+
+                }
             }
             else
-            {
-                var def = new OnlinePhysicalObjectDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
-                return new OnlinePhysicalObject(def, apo);
+            { 
+                switch (apo)
+                {
+                    case AbstractSpear abstractSpear:
+                        RainMeadow.Debug("AbstractSpear not handled");
+                        return new OnlinePhysicalObject(opoDef, abstractSpear);
+                    case VultureMask.AbstractVultureMask abstractVultureMask:
+                        RainMeadow.Debug("AbstractVultureMask not handled");
+                        return new OnlinePhysicalObject(opoDef, abstractVultureMask);
+                    case EggBugEgg.AbstractBugEgg abstractBugEgg:
+                        RainMeadow.Debug("AbstractBugEgg not handled");
+                        return new OnlinePhysicalObject(opoDef, abstractBugEgg);
+                    case AbstractCreature ac:
+                        var acDef = new OnlineCreatureDefinition(ac.ID.RandomSeed, ac.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+                        return new OnlineCreature(acDef, ac);
+                    default:
+                        return new OnlinePhysicalObject(opoDef, apo);
+                    case null:
+                        throw new ArgumentNullException(nameof(apo));
+                }
             }
         }
 

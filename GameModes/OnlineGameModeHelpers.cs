@@ -72,31 +72,31 @@ namespace RainMeadow
         public static HashSet<PlacedObject.Type> PlayerGrablableItems = new()
         {
             PlacedObject.Type.FlareBomb,
-            //PlacedObject.Type.PuffBall,           //EDIBLE NOT FOOD
+            PlacedObject.Type.PuffBall,
             PlacedObject.Type.DangleFruit,
             PlacedObject.Type.DataPearl,
             PlacedObject.Type.UniqueDataPearl,
             PlacedObject.Type.SeedCob,
             PlacedObject.Type.DeadSeedCob,
-            //PlacedObject.Type.WaterNut,           //HARD
-            //PlacedObject.Type.JellyFish,          //MEDIUM
+            //PlacedObject.Type.WaterNut,           //abstractConsumable Child HARD
+            PlacedObject.Type.JellyFish,
             PlacedObject.Type.KarmaFlower,
             PlacedObject.Type.Mushroom,
-            PlacedObject.Type.SlimeMold,          //EASY
+            PlacedObject.Type.SlimeMold,
             PlacedObject.Type.FlyLure,
             PlacedObject.Type.FirecrackerPlant,
             PlacedObject.Type.VultureGrub,
-            PlacedObject.Type.DeadVultureGrub,    //FOOD
+            PlacedObject.Type.DeadVultureGrub,
             //PlacedObject.Type.MultiplayerItem,
-            //PlacedObject.Type.SporePlant,         //HARD bee granade
-            //PlacedObject.Type.ReliableSpear,
-            //PlacedObject.Type.NeedleEgg,          //HELL Noodle egg DANGER SYNC
-            //PlacedObject.Type.BubbleGrass,        //MEDIUM
-            //PlacedObject.Type.Hazer,              //PREREQ
-            //PlacedObject.Type.DeadHazer,          //FOOD
-            //PlacedObject.Type.VultureMask,        //EASY?
-            //PlacedObject.Type.HangingPearls,      //
-            //PlacedObject.Type.Lantern,            //EASY
+            //PlacedObject.Type.SporePlant,         //abstractConsumable Child MEDIUM
+            //PlacedObject.Type.ReliableSpear,      //AbstractPhysicalObject Child MEDIUM
+            //PlacedObject.Type.NeedleEgg,          //AbstractPhysicalObject EASY
+            //PlacedObject.Type.BubbleGrass,        //abstractConsumable Child  MEDIUM
+            //PlacedObject.Type.Hazer,              //AbstractCreature
+            //PlacedObject.Type.DeadHazer,          //AbstractCreature same as above
+            //PlacedObject.Type.VultureMask,        //AbstractPhysicalObject Child MEDIUM
+            //PlacedObject.Type.HangingPearls,      //MSC?
+            //PlacedObject.Type.Lantern,            //AbstractPhysicalObject EASY
         };
     }
 }

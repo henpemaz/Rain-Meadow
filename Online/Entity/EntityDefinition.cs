@@ -14,6 +14,13 @@ namespace RainMeadow
 
         public EntityDefinition() : base() { }
 
+        public EntityDefinition(EntityDefinition ed) : base() 
+        { 
+            this.entityId = ed.entityId;
+            this.owner = ed.owner;
+            this.isTransferable = ed.isTransferable;
+        }
+
         protected EntityDefinition(OnlineEntity.EntityId entityId, OnlinePlayer owner, bool isTransferable)
         {
             this.entityId = entityId;
