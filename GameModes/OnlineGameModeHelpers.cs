@@ -77,7 +77,7 @@ namespace RainMeadow
             PlacedObject.Type.UniqueDataPearl,
             PlacedObject.Type.SeedCob,
             PlacedObject.Type.DeadSeedCob,
-            //PlacedObject.Type.WaterNut,           //abstractConsumable Child HARD
+            PlacedObject.Type.WaterNut,
             PlacedObject.Type.JellyFish,
             PlacedObject.Type.KarmaFlower,
             PlacedObject.Type.Mushroom,
