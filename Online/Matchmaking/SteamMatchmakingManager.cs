@@ -93,7 +93,7 @@ namespace RainMeadow
                     {
                         CSteamID id = SteamMatchmaking.GetLobbyByIndex(i);
                         string? passwordKeyStr = SteamMatchmaking.GetLobbyData(id, PASSWORD_KEY);
-                        lobbies[i] = new LobbyInfo(id, SteamMatchmaking.GetLobbyData(id, NAME_KEY), SteamMatchmaking.GetLobbyData(id, MODE_KEY), SteamMatchmaking.GetNumLobbyMembers(id), passwordKeyStr != null ? bool.Parse(passwordKeyStr) : false);
+                        lobbies[i] = new LobbyInfo(id, SteamMatchmaking.GetLobbyData(id, NAME_KEY), SteamMatchmaking.GetLobbyData(id, MODE_KEY), SteamMatchmaking.GetNumLobbyMembers(id), passwordKeyStr != null ? bool.Parse(passwordKeyStr) : false, SteamMatchmaking.GetLobbyMemberLimit(id));
                     }
                 }
 
@@ -106,10 +106,11 @@ namespace RainMeadow
             }
         }
 
-        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password)
+        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount)
         {
             creatingWithMode = gameMode;
             lobbyPassword = password;
+            MAX_LOBBY = (int)maxPlayerCount;
             ELobbyType eLobbyTypeeLobbyType = visibility switch
             {
                 LobbyVisibility.Private => ELobbyType.k_ELobbyTypePrivate,
@@ -161,6 +162,7 @@ namespace RainMeadow
                     else {
                         SteamMatchmaking.SetLobbyData(lobbyID, PASSWORD_KEY, "false");
                     }
+                    SteamMatchmaking.SetLobbyMemberLimit(lobbyID, MAX_LOBBY);
                     OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(creatingWithMode), OnlineManager.mePlayer, lobbyPassword);
                     SteamFriends.SetRichPresence("connect", lobbyID.ToString());
                     OnLobbyJoined?.Invoke(true);
@@ -372,7 +374,7 @@ namespace RainMeadow
                     LeaveLobby();
                 }
 
-                OnlineManager.currentlyJoiningLobby = new LobbyInfo(param.m_steamIDLobby, "", "", 0,false);
+                OnlineManager.currentlyJoiningLobby = new LobbyInfo(param.m_steamIDLobby, "", "", 0,false, MAX_LOBBY);
                 Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
 
                 m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(param.m_steamIDLobby));
