@@ -55,10 +55,24 @@ namespace RainMeadow
                 Error($"Creature {self} {self.abstractPhysicalObject.ID} doesn't exist in online space!");
                 return;
             }
-            if(OnlineManager.lobby.gameMode is MeadowGameMode && EmoteDisplayer.map.TryGetValue(self, out var displayer))
+            if (OnlineManager.lobby.gameMode is MeadowGameMode)
             {
-                displayer.OnUpdate(); // so this only updates while the creature is in-room, what about creatures in pipes though
+                if (EmoteDisplayer.map.TryGetValue(self, out var displayer))
+                {
+                    displayer.OnUpdate(); // so this only updates while the creature is in-room, what about creatures in pipes though
+                }
+                
+                if(self.room != null)
+                {
+                    // fall out of world handling
+                    float num = -self.bodyChunks[0].restrictInRoomRange + 1f;
+                    if (self.bodyChunks[0].pos.y < num && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) && (!self.Template.canFly || self.Stunned || self.dead) && (self is Player || !self.room.game.IsArenaSession || self.room.game.GetArenaGameSession.chMeta == null || !self.room.game.GetArenaGameSession.chMeta.oobProtect))
+                    {
+                        self.SpitOutOfShortCut(self.room.ShortcutLeadingToNode(self.coord.abstractNode).startCoord.Tile, self.room, true);
+                    }
+                }
             }
+
             if (onlineCreature.isMine && self.grasps != null)
             {
                 foreach (var grasp in self.grasps)

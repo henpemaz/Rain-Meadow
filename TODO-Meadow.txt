@@ -32,9 +32,16 @@ creature todo
 - shelter activation
 - gate activation / done
 - other story-mode things?
-- can still drown/die in several ways
-coming out of pipe + lag = stuck "pipe entering"
-come out of shortcut = bugged af doesn't clear shortcut pointer
+- can still die in several ways
+	fall /done
+	drown
+	zap
+- can get stuck
+	some rooms will get fixed
+	but maybe an unstuck button is in order?
+
+coming out of pipe + lag = stuck "pipe entering" / done
+come out of shortcut = bugged af doesn't clear shortcut pointer / done?
 player grabbing cicada = laggy physics
 on wackamole pipe, game picks randomly I think, maybe should be player-chosen / done, cycles
 
@@ -45,7 +52,7 @@ really hard to enter pipe sometimes
 
 lizard todo
 - walking off ledge /done
-- go through floors
+- go through floors / mostly already works?
 - charge
 - pounce / done
 - head rotation should really prefer unrotated
@@ -61,9 +68,9 @@ jump from pole / done
 
 test blue lizard jump
 	shouldn't re-grip unless input up? / done
-	
 
 blue lizard make it prefer ground
+	work as non-climber unless UP
 
 playable scav
 - go through floors
