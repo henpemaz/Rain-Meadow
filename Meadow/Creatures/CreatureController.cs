@@ -90,6 +90,8 @@ namespace RainMeadow
         public int dontEatExternalFoodSourceCounter;
         public int eatExternalFoodSourceCounter;
 
+        public SpecialInput[] specialInput = new SpecialInput[2];
+
         // IOwnAHUD
         public int CurrentFood => 0;
         // IOwnAHUD
@@ -127,7 +129,6 @@ namespace RainMeadow
         public void FoodCountDownDone() { }
         // IOwnAHUD
         public static HUD.HUD.OwnerType controlledCreatureHudOwner = new("MeadowControlledCreature", true);
-        public SpecialInput[] specialInput = new SpecialInput[2];
 
         public HUD.HUD.OwnerType GetOwnerType() => controlledCreatureHudOwner;
 
@@ -199,8 +200,6 @@ namespace RainMeadow
                     RainMeadow.Error("Missing mcd on receive");
                 }
             }
-
-
 
             mapInput = this.input[0];
             if ((this.standStillOnMapButton && this.input[0].mp) || this.sleepCounter != 0)

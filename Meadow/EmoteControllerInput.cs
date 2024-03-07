@@ -112,7 +112,7 @@ namespace RainMeadow
                 var analogDir = new Vector2(joystick.GetAxis(2), joystick.GetAxis(3));
                 this.knobVel += (analogDir - this.knobPos) / 8f;
                 this.knobPos += (analogDir - this.knobPos) / 4f;
-                this.active = joystick.GetButton(12);
+                this.active = joystick.GetAxis(4) > 0.5f;
             }
             else
             {
@@ -142,13 +142,19 @@ namespace RainMeadow
                 selected = -1;
             }
 
-            if(!active && lastActive && selected != -1)
+            if (selected != lastSelected)
+            {
+                pages[0].SetSelected(selected);
+            }
+
+            if (!active && lastActive && selected != -1)
             {
                 var selectedEmote = radialMappingPages[currentPage][selected];
                 if (selectedEmote != EmoteType.none)
                 {
                     emoteHandler.EmotePressed(selectedEmote);
                 }
+                selected = -1;
             }
         }
 
@@ -158,7 +164,6 @@ namespace RainMeadow
             pages[0].SetEmotes(radialMappingPages[currentPage]);
             pages[1].SetEmotes(radialMappingPages[(currentPage + npages - 1) % npages]);
             pages[2].SetEmotes(radialMappingPages[(currentPage + 1) % npages]);
-
         }
 
         public override void Draw(float timeStacker)
@@ -171,10 +176,6 @@ namespace RainMeadow
             Vector2 vector2 = Vector2.Lerp(this.lastKnobPos, this.knobPos, timeStacker);
             this.knobSprite.x = vector2.x * (outterRadius - 18f) + 0.01f;
             this.knobSprite.y = vector2.y * (outterRadius - 18f) + 0.01f;
-            if (selected != lastSelected)
-            {
-                pages[0].SetSelected(selected);
-            }
         }
 
         public void InputUpdate()
@@ -183,8 +184,8 @@ namespace RainMeadow
             var controller = Custom.rainWorld.options.controls[0].GetActiveController();
             if (controller is Rewired.Joystick joystick)
             {
-                if (joystick.GetButtonDown(11)) FlipPage(1);
-                if (joystick.GetButtonDown(13)) FlipPage(-1);
+                if (joystick.GetButtonDown(5)) FlipPage(1);
+                if (joystick.GetButtonDown(4)) FlipPage(-1);
             }
             else
             {

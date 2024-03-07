@@ -129,7 +129,7 @@ namespace RainMeadow
             if (this.creatureData.emotes.Count > 0 && timeToLive < 2 && timeToLive > 1) return false; // locked out
             if (this.creatureData.emotes.Count > 0 && timeToLive < 1)
             {
-                this.creatureData.emotes.Clear(); // flush
+                ClearEmotes();
             }
 
             if (this.creatureData.emotes.Contains(emoteType)) return false;
