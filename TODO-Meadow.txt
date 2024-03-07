@@ -16,16 +16,17 @@ mapping going to 0 - = is a bit weird
 		an alternative would be to skip unity and go straight to user32 key events that are virtualkey based
 		here's hoping that the next update has better unity version or even usephisicalkeys who knows
 	but but but 12 emotes...
+	rethink the whole thing damn it
 instinct was to click the emotes /ok
 not seeing all emotes at once is a bit of a hinger /ok
-	takes time to find them switching pages
-	time means you lose the combo
 "sometimes can't use emotes" - SleepyCup
 	either bug or unintuitive timer lock /ok
 radial menu
 	shoulders to swap pages seems like what most games do
 	some games have the "button to bring up + release to commit", some have you press a confirm/select
-
+	/ should be working on xbox
+	/ need to figure out dualshock mapping
+	/ need to swap between the two inputs as needed not have the two
 
 creature todo
 - shelter activation
@@ -66,3 +67,13 @@ blue lizard make it prefer ground
 
 playable scav
 - go through floors
+
+slugcat in meadow mode
+- lookdir input like the others
+
+
+
+
+
+
+
