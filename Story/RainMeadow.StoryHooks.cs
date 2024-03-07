@@ -44,7 +44,6 @@ namespace RainMeadow
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
 
             On.BubbleGrass.Update += BubbleGrass_Update;
-
         }
 
         private void BubbleGrass_Update(On.BubbleGrass.orig_Update orig, BubbleGrass self, bool eu)

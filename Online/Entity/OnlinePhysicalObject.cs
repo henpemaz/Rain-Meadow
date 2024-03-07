@@ -76,9 +76,8 @@ namespace RainMeadow
             { 
                 switch (apo)
                 {
-                    case AbstractSpear abstractSpear:
-                        RainMeadow.Debug("AbstractSpear not handled");
-                        return new OnlinePhysicalObject(opoDef, abstractSpear);
+                    case AbstractSpear:
+                        return new OnlinePhysicalObject(opoDef, apo);
                     case VultureMask.AbstractVultureMask abstractVultureMask:
                         RainMeadow.Debug("AbstractVultureMask not handled");
                         return new OnlinePhysicalObject(opoDef, abstractVultureMask);
@@ -317,6 +316,11 @@ namespace RainMeadow
         public static void HitByWeapon(OnlinePhysicalObject objectHit, OnlinePhysicalObject weapon)
         {
             objectHit?.apo.realizedObject.HitByWeapon(weapon.apo.realizedObject as Weapon);
+        }
+        [RPCMethod]
+        public static void HitByExplosion(OnlinePhysicalObject objectHit, float hitfac)
+        {
+            objectHit?.apo.realizedObject.HitByExplosion(hitfac,null,0);
         }
     }
 }

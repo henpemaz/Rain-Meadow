@@ -13,17 +13,49 @@ namespace RainMeadow
             On.Creature.Violence += CreatureOnViolence;
             On.Creature.Grasp.ctor += GraspOnctor;
             On.PhysicalObject.Grabbed += PhysicalObjectOnGrabbed;
-            On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon; ;
+
+            On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
+            On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
+        }
+
+        private void PhysicalObject_HitByExplosion(On.PhysicalObject.orig_HitByExplosion orig, PhysicalObject self, float hitFac, Explosion explosion, int hitChunk)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self,hitFac,explosion,hitChunk);
+                return;
+            }
+
+            if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
+                if (objectHit != null)
+                {
+                    OnlineManager.lobby.owner.InvokeRPC(OnlinePhysicalObject.HitByExplosion, objectHit, hitFac);
+                }
+            }
+
+            orig(self, hitFac, explosion, hitChunk);
+
         }
 
         private void PhysicalObject_HitByWeapon(On.PhysicalObject.orig_HitByWeapon orig, PhysicalObject self, Weapon weapon)
         {
-            orig(self, weapon);
+            if (OnlineManager.lobby == null)
+            {
+                orig(self,weapon);
+                return;
+            }
+
             if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
                 OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var abstWeapon);
                 OnlineManager.lobby.owner.InvokeRPC(OnlinePhysicalObject.HitByWeapon, objectHit, abstWeapon);
+            }
+            else 
+            {
+                orig(self, weapon);
             }
         }
 

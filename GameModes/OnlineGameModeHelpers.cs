@@ -40,7 +40,6 @@ namespace RainMeadow
             PlacedObject.Type.LanternOnStick,
             PlacedObject.Type.ScavengerOutpost,
             PlacedObject.Type.TradeOutpost,
-            //PlacedObject.Type.ScavengerTreasury,
             //PlacedObject.Type.ScavTradeInstruction,
             PlacedObject.Type.CustomDecal,
             PlacedObject.Type.InsectGroup,
@@ -87,9 +86,10 @@ namespace RainMeadow
             PlacedObject.Type.FirecrackerPlant,
             PlacedObject.Type.VultureGrub,
             PlacedObject.Type.DeadVultureGrub,
+            //PlacedObject.Type.ScavengerTreasury,  //Spear, Explosive spear, Scav bomb, Pearl, & Laterns
             //PlacedObject.Type.MultiplayerItem,    //other spear types
             //PlacedObject.Type.SporePlant,         //abstractConsumable Child MEDIUM
-            //PlacedObject.Type.ReliableSpear,      //AbstractPhysicalObject Child MEDIUM
+            PlacedObject.Type.ReliableSpear,
             PlacedObject.Type.NeedleEgg,
             PlacedObject.Type.BubbleGrass,
             PlacedObject.Type.Hazer,
