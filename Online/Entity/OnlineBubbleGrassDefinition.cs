@@ -1,4 +1,5 @@
-﻿namespace RainMeadow;
+﻿namespace RainMeadow
+{
     public class OnlineBubbleGrassDefinition : OnlineConsumableDefinition
     {
         [OnlineField]
