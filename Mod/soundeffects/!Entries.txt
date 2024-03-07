@@ -1,0 +1,28 @@
+Finga$Chord$L-4-3 L-4-5 L-4-7,L-3-4 L-3-5 L-3-6 L-2-1$Balaboo,100,120,5-3 4-7 4-5,+1|Balaboo,100,120,5-3 4-7 4-5,+1|Dtesthaha,30,40,4-2,0|Intermediary,50,60,5-1,0|Intermediary,50,60,5-1,0
+Balaboo$Chord$L-4-2 L-4-3 L-4-6,L-3-2 L-2-6 L-2-5$Triad,40,60,0,0|Heskotherelol,50,60,5-3 4-5,0
+Heyolol$Chord$L-5-4 L-5-1 L-4-3,L-3-2 L-2-3$Finga,40,70,4-4 4-7,0
+Triad$Chord$L-4-1 L-4-3 L-4-5,L-3-1 L-3-3 L-2-5 L-2-6 L-2-4$Triad2,30,50,4-1 4-3,0|Finga,50,70,4-5,+1|Uptwomore,30,60,5-3,0
+Triad2$Chord$L-4-1 L-4-3 L-4-5,L-3-1 L-3-3 L-2-5 L-2-6 L-2-4$Finga,50,70,4-5,0|Triad,50,70,4-6 3-7,0
+Heskotherelol$Riff$d=24,M-3-4,d/1.05,M-3-6,d/1.05,M-4-3,d/1.05,6loop6,M-4-4,d/1.05,M-4-6,d/1.05,M-5-3,d/1.05,6loop7,M-5-7,4,M-5-5,4,M-6-1,4,M-6-5,3,M-6-3,2,M-5-7,M-5-3,d*1.05,M-4-6,d*1.05,M-4-4,d*1.05,M-4-1,d*1.05,M-3-5,d*1.05,10loop5,10,L-3-3,60,!$Auto
+Auto$Chord$L-5-3 L-5-1 L-4-4,L-4-1 L-3-5$Uptwomore,48,60,0,0|TheFourthFinal,40,80,4-5,0
+MidOlora$Chord$L-5-5 L-5-2 L-4-6,L-4-3 L-3-6 L-3-2$Midlowhigh2,30,60,5-3 4-5,0
+MidOlora2$Chord$L-5-5 L-5-2 L-4-6,L-4-3 L-3-6 L-3-2$Susthing,60,80,3-3,0|Midlowhigh,80,100,4-5 3-7 4-1,+1
+Susthing$Chord$L-5-5 L-5-4 L-5-1,L-4-5 L-4-4 L-3-6$Uptwomore,50,60,4-3,0
+Midlowhigh$Chord$L-5-3 L-4-7 L-4-5,L-4-2 L-3-5 L-3-4$Midlowhigh2,40,60,4-4,0|Midlowhigh2,40,60,4-6,-2|Susthing2,40,70,4-1,0
+Uptwomore$Chord$L-5-5 L-5-3 L-4-6,L-4-4 L-4-3 L-3-6$MidOlora,50,70,0,0|TheFourthFinal,30,40,0,0
+TheFourthFinal$Chord$L-5-3 L-4-7,L-4-5 L-4-1 L-3-5$TwoThree,30,70,4-4,0
+TwoThree$Chord$L-5-3 L-5-1,L-4-6 L-4-3 L-3-6$Aeyyup,50,60,4-5,0|Aeyyup,50,60,4-3,-2
+SADNESS$Chord$L-4-6 L-4-4,L-4-1 L-3-6 L-3-2$Final,70,90,4-1 4-3,0
+Final$Chord$L-5-1 L-4-6 L-4-5,L-4-3 L-3-5 L-3-1$Actuallysadthough,100,130,4-3,0|Butheythere,80,100,0,0
+Actuallysadthough$Chord$L-4-7 L-4-3,L-4-1 L-3-6 L-3-2$butaftersadness,50,60,0,0|Midlowhigh2,30,50,0,+1
+Next high$Chord$L-5-6 L-5-4 L-5-2,L-4-4 L-4-1 L-3-5 L-3-2$Triad,49,70,4-4,0
+butaftersadness$Chord$L-5-3 L-5-1 L-4-4,L-4-1 L-3-6 L-3-4$Next high,69,100,5-5,0
+Butheythere$Chord$L-5-5 L-5-2 L-5-1,L-4-4 L-4-2 L-3-6$MidOlora3,30,70,0,0
+MidOlora3$Chord$L-5-5 L-5-2 L-4-6,L-4-3 L-3-6$Aeyyup,20,40,5-1,-1
+Dtesthaha$Riff$d=30,D-4-1,d/1.02,D-4-4,d/1.02,D-4-5,d/1.02,6loop6,D-5-1,90,M-5-4,M-5-5,!$Heyolol
+Midlowhigh2$Chord$L-5-3 L-4-7 L-4-5,L-4-2 L-3-5 L-3-4$Midlowhigh,40,60,5-1,0|MidOlora2,40,70,5-3,0
+Susthing2$Chord$L-5-5 L-5-4 L-5-1,L-4-5 L-4-4 L-3-6$Uptwomore,30,50,0,0
+Aeyyup$Chord$L-5-4 L-5-1 L-4-6,L-4-4 L-3-6$SADNESS,50,70,4-4,0|Triad2,40,50,4-5,0
+Intermediary$Chord$L-6-1 L-5-4 L-5-2,L-4-2 L-4-1 L-3-5 L-3-4$SADNESS,60,70,3-5,0
+Balaboofake$Chord$L-4-2 L-4-3 L-4-6,L-3-2 L-2-6 L-2-5$Fingafake,50,100,3-5 3-6 4-3 4-7 4-4,0
+Fingafake$Chord$L-4-3 L-4-5 L-4-7,L-3-4 L-3-5 L-3-6 L-2-1$Balaboofake,1500,2000,4-5 4-5 4-5 4-5 4-5,0

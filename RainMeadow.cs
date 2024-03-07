@@ -170,6 +170,7 @@ namespace RainMeadow
                 StoryHooks();
 
                 MeadowMusic.EnableMusic();
+                new PlopMachine().OnEnable();
 
                 self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
 

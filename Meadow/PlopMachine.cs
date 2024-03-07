@@ -1,26 +1,23 @@
-﻿using BepInEx;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Security.Permissions;
-using System.Security;
 using UnityEngine;
 using System.IO;
-using System.Runtime.CompilerServices;
 
-[module: UnverifiableCode]
-[assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
-
-namespace PlopMachine
+namespace RainMeadow
 {
-    [BepInPlugin("Intikus.plopmachine", "PlopMachine", "0.0.1")]
-    public class PlopMachine : BaseUnityPlugin
+    public class PlopMachine
     {
-
+        public void OnEnable()
+        {
+            On.RainWorldGame.Update += RainWorldGame_Update; //actually usefull
+            On.PlayerGraphics.DrawSprites += hehedrawsprites;
+            On.RainWorldGame.ctor += RainWorldGame_ctor; //actually usefull 
+        }
         readonly float magicnumber = 1.0594630776202568303519954093385f;
         int CurrentKey = 0;
         int QueuedModulation = 0;
         int debugtimer = 0;
-        
+
         readonly string[,] notesinkey =
         {
             {"Gb", "Ab", "Bb", "B" , "Db", "Eb", "F" , "Gb"}, //Gb  (the same as F#) 
@@ -37,7 +34,7 @@ namespace PlopMachine
             {"B" , "C#", "D#", "E" , "F#", "G#", "A#", "B" }, //B
             {"F#", "G#", "A#", "B" , "C#", "D#", "F" , "F#"}, //F#   (the same as Gb)
         };
-        public readonly int[,] intsinkey = 
+        public readonly int[,] intsinkey =
         {
             { 6  , 8  , 10 , 11 , 1  , 3  , 5  , 6  }, //Gb  (the same as F#) 
             { 1  , 3  , 5  , 6  , 8  , 10 , 0  , 1  }, //Db 
@@ -55,9 +52,8 @@ namespace PlopMachine
         };
         //major key, goes root +2 +2 +1 +2 +2 +2  
 
-
         //so the minor version of all of these are as follows:
-        public readonly int[,] intsinmkey = 
+        public readonly int[,] intsinmkey =
         {
             { 6  , 8  , 9  , 11 , 1  , 2  , 4  , 6  }, //Gb m (the same as F#) 
             { 1  , 3  , 4  , 6  , 8  , 9  , 11 , 1  }, //Db m
@@ -132,45 +128,20 @@ namespace PlopMachine
         }
         */
 
-        //enum ScaleType
-        //{
-        //
-        //}
         bool inmajorscale = true;
-
-        //https://www.ableton.com/en/manual/using-push-2/#playing-melodies-and-harmonies
-
-
-        //int lel = 27;
-        int lel2 = 0;
-        int lel3 = 0;
-        //int lel4 = 0;
-        bool yoyo = true;
-        bool yoyo2 = true;
-        bool yoyo3 = true;
-        bool yoyo4 = true;
-        bool yoyo5 = true;
-        bool yoyo6 = true;
-        bool yoyo7 = true;
-        bool yoyo8 = true;
-        bool yoyo9 = true;
-        //bool meme = false;
-
 
         bool EntryRequest = true;
 
         bool entrychord = false;
         bool entryriff = false;
-        bool entrysample = false;
 
         bool playingchord = false;
         bool playingriff = false;
-        bool playingsample = false;
 
         string chordnotes = "yosup";
         string chordleadups = "yosup";
 
-        string riffline = "the command line yo like [pow,pow]";
+        string riffline = "the command line yo like [pow][pow]";
         string riffleadups = "just the name of the chord";
 
         int chordstopwatch = 0;
@@ -179,25 +150,15 @@ namespace PlopMachine
         bool inwaitmode = false;
         int riffstopwatch = 0;
         string UpcomingEntry = "Balaboo";         //important to set a first one
-        string[] theline;
+        string[]? theline;
         int riffindex;
         int rifflength;
-        string riffcurrentvar;
+        string? riffcurrentvar;
         bool islooping;
         int tilestasked;
         int loopcountdown;
         float riffd;
         int upcomingdelay;
-
-
-        string sampleinfo = "hehe";
-        string sampleleadups = "lel";
-        string[] theinfo;
-        int indexofsample;
-        //int pitchofsample;
-        float speeedofsample = 1;
-        int sampletransposition;
-        int samplestopwatch;
 
         bool weplipping = true;
 
@@ -232,7 +193,7 @@ namespace PlopMachine
         float IntikusroomLF = 1f;
         */
         float[] RangeAdjs = new float[13];
-            //[0.1f, 0.2f, 0.5f, 1f, 2f, 5f, 10f, 50f, 100f, 500f, 1000f, 2000f, 5000f];
+        //[0.1f, 0.2f, 0.5f, 1f, 2f, 5f, 10f, 50f, 100f, 500f, 1000f, 2000f, 5000f];
         //float[] ack = [IntikusdecayHFRatio, IntikusdecayTime, Intikusdensity, Intikusdiffusion, IntikusdryLevel, IntikushfReference, IntikuslfReference, IntikusreflectionsDelay, IntikusreflectionsLevel, IntikusreverbDelay, IntikusreverbLevel, IntikusreverbPreset, Intikusroom, IntikusroomHF, IntikusroomLF]
 
         public static class EnumExt_AudioFilters
@@ -242,22 +203,9 @@ namespace PlopMachine
 #pragma warning restore 0649
         }
 
-        public void OnEnable()
-        {
-            On.Music.IntroRollMusic.ctor += IntroRollMusic_ctor;
-            On.RainWorldGame.Update += RainWorldGame_Update; //actually usefull
-            
-            On.AmbientSoundPlayer.TryInitiation += AmbientSoundPlayer_TryInitiation;
-            On.PlayerGraphics.DrawSprites += hehedrawsprites;
-
-            On.RainWorldGame.ctor += RainWorldGame_ctor; //actually usefull 
-        }
 
         bool fileshavebeenchecked = false;
         string[][] ChordInfos;
-        //{
-        // hellothere thinks making files are a cool idea (for the things (the mod)) (((instead of having htem all in the dll (this)))
-        //};
         static readonly Dictionary<string, VibeZone[]> vibeZonesDict = new();
         struct VibeZone
         {
@@ -267,7 +215,6 @@ namespace PlopMachine
                 this.radius = radius;
                 this.songName = songName;
             }
-
             public string room;
             public float radius;
             public string songName;
@@ -279,60 +226,57 @@ namespace PlopMachine
             {
                 if (!fileshavebeenchecked)
                 {
-                    Debug("Checking files");
+                    RainMeadow.Debug("Checking files");
                     string[] mydirs = AssetManager.ListDirectory("soundeffects", false, true);
-                    Debug("Printing all directories in soundeffects");
+                    RainMeadow.Debug("Printing all directories in soundeffects");
                     foreach (string dir in mydirs)
                     {
-                        //Debug(dir);
                         string filename = GetFolderName(dir);
-                        //Debug(filename);
-                        //C:/ Program Files(x86) / Steam / steamapps / common / Rain World - My Copy / RainWorld_Data / StreamingAssets\soundeffects\!Entries.txt
+                        RainMeadow.Debug(filename + " Is one of the things it sees, straight from " + dir);
                         if (filename == "!entries.txt")
                         {
-                            Debug("The file exists actually");
+                            RainMeadow.Debug("The file exists actually");
                             string[] lines = File.ReadAllLines(dir);
 
-                            Debug("it has read all its lines");
+                            RainMeadow.Debug("it has read all its lines");
                             List<string[]> listtho = new List<string[]>();
                             foreach (string line in lines)
                             {
                                 string[] chord = line.Split(new char[] { '$' });
-                                Debug("Plopmachine:  Registered Entry: " + line + " in ");
+                                RainMeadow.Debug("Plopmachine:  Registered Entry: " + line + " in ");
                                 listtho.Add(chord);
                             }
-                            Debug("it has added the thongs");
+                            RainMeadow.Debug("it has added the thongs");
                             ChordInfos = listtho.ToArray();
                         }
-                        //Debug("It got to this end");
                     }
-                    Debug("Yo it's done with sfx");
-                    string[] dirs = AssetManager.ListDirectory("world", true, true);
+                    RainMeadow.Debug("Yo it's done with sfx");
+                    string[] dirs = AssetManager.ListDirectory("2ndworld", true, true);
                     foreach (string dir in dirs)
                     {
                         string regName = GetFolderName(dir).ToUpper();
                         string path = dir + Path.DirectorySeparatorChar + "vibe_zones.txt";
                         if (File.Exists(path) && !vibeZonesDict.ContainsKey(regName))
                         {
-                            Debug($"It found the path for vibezone {regName} tho");
+                            RainMeadow.Debug($"It found the path for vibezone {regName} tho");
                             string[] lines = File.ReadAllLines(path);
                             VibeZone[] zones = new VibeZone[lines.Length];
                             for (int i = 0; i < lines.Length; i++)
                             {
                                 string[] arr = lines[i].Split(',');
                                 zones[i] = new VibeZone(arr[0], float.Parse(arr[1]), arr[2]);
-                                Debug($"{arr[0]}, {arr[1]}, {arr[2]}");
+                                RainMeadow.Debug($"{arr[0]}, {arr[1]}, {arr[2]}");
                             }
                             vibeZonesDict.Add(regName, zones);
                         }
                     }
-                    Debug("Yo wassup it went past worlds");
+                    RainMeadow.Debug("Yo wassup it went past worlds");
                     fileshavebeenchecked = true;
                 }
             }
             catch (Exception e)
             {
-                Debug(e);
+                RainMeadow.Debug(e);
                 //throw;
             }
         }
@@ -346,15 +290,14 @@ namespace PlopMachine
             //orig(self, sLeaser, timeStacker, rCam, timeStacker, camPos);
             orig(self, sLeaser, rCam, timeStacker, camPos);
             Color camocoloryo = rCam.PixelColorAtCoordinate(self.player.mainBodyChunk.pos);
-            //Debug($"So the color at here issss {color}");
+            //RainMeadow.Debug($"So the color at here issss {color}");
             //Color mycolor = sLeaser[self.startSprite].color;
             foreach (var sprite in sLeaser.sprites)
             {
                 //sprite.color = camocoloryo;
-                sprite.color = mycolor; 
+                sprite.color = mycolor;
             }
         }
-
 
         /*
             //On Initialize()
@@ -371,8 +314,6 @@ namespace PlopMachine
                 }
         */
 
-
-
         //public delegate int orig_lengthSamples(int self);
         //
         //    public static int get_CreateHK(orig_lengthSamples orig_lengthSamples, AudioClip self)
@@ -380,7 +321,6 @@ namespace PlopMachine
         //        
         //        return orig_lengthSamples(self);
         //    }
-
 
 
         public int IndexTOCKInt(int index)
@@ -392,27 +332,27 @@ namespace PlopMachine
                 thescale = intsinkey;
             }
             else
-            { 
+            {
                 thescale = intsinmkey;
             }
             int integer = thescale[treatedkey, index - 1];
             return integer;
         }
-
         private SoundID[] SampDict(string length)
         {
-            //Debug($"It's trying to get length {length}");
+            //RainMeadow.Debug($"It's trying to get length {length}");
             SoundID[] library = new SoundID[7]; //to do:  make better
             string acronym = CurrentRegion.ToUpper();
             VibeZone[] newthings;
             bool diditwork = vibeZonesDict.TryGetValue(acronym, out newthings);
             //we retrieve a newthings array (one of many vibezones)
-            //Debug("C" + diditwork);
+            //RainMeadow.Debug("C" + diditwork);
+            if (!diditwork) { RainMeadow.Debug("itdidn'twork"); return null; }
             VibeZone newthing = newthings[0]; //TEMP DUMMY FOR UNTIL HELLOTHERE'S REQUIUM
             //and pick the one that is closer
-            //Debug("d");
+            //RainMeadow.Debug("d");
             string patch = newthing.songName;
-            //Debug(patch);
+            //RainMeadow.Debug(patch);
             //switch (acronym)
             //{
             //    case "su" or "hi":
@@ -450,59 +390,59 @@ namespace PlopMachine
             //ss(fivebepples)
             //su(outskirts)
             //uw(underhang and wall)
-            
+
             switch (length)
             {
                 case "L":
                     switch (patch)
                     {
                         case "Trisaw":
-                            library[0] = C1LongTrisaw; 
-                            library[1] = C2LongTrisaw; 
-                            library[2] = C3LongTrisaw; 
-                            library[3] = C4LongTrisaw; 
-                            library[4] = C5LongTrisaw; 
-                            library[5] = C6LongTrisaw; 
+                            library[0] = C1LongTrisaw;
+                            library[1] = C2LongTrisaw;
+                            library[2] = C3LongTrisaw;
+                            library[3] = C4LongTrisaw;
+                            library[4] = C5LongTrisaw;
+                            library[5] = C6LongTrisaw;
                             library[6] = C7LongTrisaw;
                             break;
 
                         case "Clar":
-                            library[0] = C1LongClar; 
-                            library[1] = C2LongClar; 
-                            library[2] = C3LongClar; 
-                            library[3] = C4LongClar; 
-                            library[4] = C5LongClar; 
-                            library[5] = C6LongClar; 
+                            library[0] = C1LongClar;
+                            library[1] = C2LongClar;
+                            library[2] = C3LongClar;
+                            library[3] = C4LongClar;
+                            library[4] = C5LongClar;
+                            library[5] = C6LongClar;
                             library[6] = C7LongClar;
                             break;
 
                         case "Litri":
-                            library[0] = C1LongLitri; 
-                            library[1] = C2LongLitri; 
-                            library[2] = C3LongLitri; 
-                            library[3] = C4LongLitri; 
-                            library[4] = C5LongLitri; 
-                            library[5] = C6LongLitri; 
+                            library[0] = C1LongLitri;
+                            library[1] = C2LongLitri;
+                            library[2] = C3LongLitri;
+                            library[3] = C4LongLitri;
+                            library[4] = C5LongLitri;
+                            library[5] = C6LongLitri;
                             library[6] = C7LongLitri;
                             break;
 
                         case "Sine":
-                            library[0] = C1LongSine; 
-                            library[1] = C2LongSine; 
-                            library[2] = C3LongSine; 
-                            library[3] = C4LongSine; 
+                            library[0] = C1LongSine;
+                            library[1] = C2LongSine;
+                            library[2] = C3LongSine;
+                            library[3] = C4LongSine;
                             library[4] = C5LongSine;
-                            library[5] = C6LongSine; 
+                            library[5] = C6LongSine;
                             library[6] = C7LongSine;
                             break;
 
                         case "Bell":
-                            library[0] = C1LongBell; 
-                            library[1] = C2LongBell; 
-                            library[2] = C3LongBell; 
-                            library[3] = C4LongBell; 
+                            library[0] = C1LongBell;
+                            library[1] = C2LongBell;
+                            library[2] = C3LongBell;
+                            library[3] = C4LongBell;
                             library[4] = C5LongBell;
-                            library[5] = C6LongBell; 
+                            library[5] = C6LongBell;
                             library[6] = C7LongBell;
                             break;
                     }
@@ -511,52 +451,52 @@ namespace PlopMachine
                     switch (patch)
                     {
                         case "Trisaw":
-                            library[0] = C1MediumTrisaw; 
-                            library[1] = C2MediumTrisaw; 
-                            library[2] = C3MediumTrisaw; 
-                            library[3] = C4MediumTrisaw; 
+                            library[0] = C1MediumTrisaw;
+                            library[1] = C2MediumTrisaw;
+                            library[2] = C3MediumTrisaw;
+                            library[3] = C4MediumTrisaw;
                             library[4] = C5MediumTrisaw;
-                            library[5] = C6MediumTrisaw; 
+                            library[5] = C6MediumTrisaw;
                             library[6] = C7MediumTrisaw;
                             break;
 
                         case "Clar":
-                            library[0] = C1MediumClar; 
-                            library[1] = C2MediumClar; 
-                            library[2] = C3MediumClar; 
-                            library[3] = C4MediumClar; 
+                            library[0] = C1MediumClar;
+                            library[1] = C2MediumClar;
+                            library[2] = C3MediumClar;
+                            library[3] = C4MediumClar;
                             library[4] = C5MediumClar;
-                            library[5] = C6MediumClar; 
+                            library[5] = C6MediumClar;
                             library[6] = C7MediumClar;
                             break;
 
                         case "Litri":
-                            library[0] = C1MediumLitri; 
-                            library[1] = C2MediumLitri; 
-                            library[2] = C3MediumLitri; 
-                            library[3] = C4MediumLitri; 
+                            library[0] = C1MediumLitri;
+                            library[1] = C2MediumLitri;
+                            library[2] = C3MediumLitri;
+                            library[3] = C4MediumLitri;
                             library[4] = C5MediumLitri;
-                            library[5] = C6MediumLitri; 
+                            library[5] = C6MediumLitri;
                             library[6] = C7MediumLitri;
                             break;
 
                         case "Sine":
-                            library[0] = C1MediumSine; 
-                            library[1] = C2MediumSine; 
-                            library[2] = C3MediumSine; 
-                            library[3] = C4MediumSine; 
+                            library[0] = C1MediumSine;
+                            library[1] = C2MediumSine;
+                            library[2] = C3MediumSine;
+                            library[3] = C4MediumSine;
                             library[4] = C5MediumSine;
-                            library[5] = C6MediumSine; 
+                            library[5] = C6MediumSine;
                             library[6] = C7MediumSine;
                             break;
 
                         case "Bell":
-                            library[0] = C1MediumBell; 
-                            library[1] = C2MediumBell; 
-                            library[2] = C3MediumBell; 
-                            library[3] = C4MediumBell; 
+                            library[0] = C1MediumBell;
+                            library[1] = C2MediumBell;
+                            library[2] = C3MediumBell;
+                            library[3] = C4MediumBell;
                             library[4] = C5MediumBell;
-                            library[5] = C6MediumBell; 
+                            library[5] = C6MediumBell;
                             library[6] = C7MediumBell;
                             break;
 
@@ -566,52 +506,52 @@ namespace PlopMachine
                     switch (patch)
                     {
                         case "Trisaw":
-                            library[0] = C1ShortTrisaw; 
-                            library[1] = C2ShortTrisaw; 
-                            library[2] = C3ShortTrisaw; 
-                            library[3] = C4ShortTrisaw; 
+                            library[0] = C1ShortTrisaw;
+                            library[1] = C2ShortTrisaw;
+                            library[2] = C3ShortTrisaw;
+                            library[3] = C4ShortTrisaw;
                             library[4] = C5ShortTrisaw;
-                            library[5] = C6ShortTrisaw; 
+                            library[5] = C6ShortTrisaw;
                             library[6] = C7ShortTrisaw;
                             break;
 
                         case "Clar":
-                            library[0] = C1ShortClar; 
-                            library[1] = C2ShortClar; 
-                            library[2] = C3ShortClar; 
-                            library[3] = C4ShortClar; 
+                            library[0] = C1ShortClar;
+                            library[1] = C2ShortClar;
+                            library[2] = C3ShortClar;
+                            library[3] = C4ShortClar;
                             library[4] = C5ShortClar;
-                            library[5] = C6ShortClar; 
+                            library[5] = C6ShortClar;
                             library[6] = C7ShortClar;
                             break;
 
                         case "Litri":
-                            library[0] = C1ShortLitri; 
-                            library[1] = C2ShortLitri; 
-                            library[2] = C3ShortLitri; 
-                            library[3] = C4ShortLitri; 
+                            library[0] = C1ShortLitri;
+                            library[1] = C2ShortLitri;
+                            library[2] = C3ShortLitri;
+                            library[3] = C4ShortLitri;
                             library[4] = C5ShortLitri;
-                            library[5] = C6ShortLitri; 
+                            library[5] = C6ShortLitri;
                             library[6] = C7ShortLitri;
                             break;
 
                         case "Sine":
-                            library[0] = C1ShortSine; 
-                            library[1] = C2ShortSine; 
-                            library[2] = C3ShortSine; 
-                            library[3] = C4ShortSine; 
+                            library[0] = C1ShortSine;
+                            library[1] = C2ShortSine;
+                            library[2] = C3ShortSine;
+                            library[3] = C4ShortSine;
                             library[4] = C5ShortSine;
-                            library[5] = C6ShortSine; 
+                            library[5] = C6ShortSine;
                             library[6] = C7ShortSine;
                             break;
 
                         case "Bell":
-                            library[0] = C1ShortBell; 
-                            library[1] = C2ShortBell; 
-                            library[2] = C3ShortBell; 
-                            library[3] = C4ShortBell; 
+                            library[0] = C1ShortBell;
+                            library[1] = C2ShortBell;
+                            library[2] = C3ShortBell;
+                            library[3] = C4ShortBell;
                             library[4] = C5ShortBell;
-                            library[5] = C6ShortBell; 
+                            library[5] = C6ShortBell;
                             library[6] = C7ShortBell;
                             break;
 
@@ -620,7 +560,6 @@ namespace PlopMachine
             }
             return library;
         }
-        
         private int Peeps(int low, int high)
         {
 
@@ -633,29 +572,23 @@ namespace PlopMachine
 
             return lol;
         }
-
         private int Peep(int value)  //marked for die
         {
-            //take 10 as an example, agora being.... 2-3 people? 
-            // i can follow a 2.5 people rule
-            //agora then has to be changed (from being just an int to
-            //be the result of a method)
 
             if (agora <= 1) { phob = 1; }
-            //if (agora > 1) { phob = (float)((Mathf.Log((float)(agora * 0.7)) / 3.8) + 1); }
-            if (agora > 1) { phob = (float)((Mathf.Log((float)(agora * 0.8)) / 4.5) + 1); }
+            if (agora > 1) { phob = (float)(Mathf.Log((float)(agora * 0.8)) / 4.5 + 1); }
 
-            //Debug(phob);
+            //RainMeadow.Debug(phob);
             float fvalue = value;
             float avalue = fvalue / phob;
 
             string st1 = avalue.ToString();
-            //Debug($"{st1}, Peep");
+            //RainMeadow.Debug($"{st1}, Peep");
 
-            //Debug(st1);
+            //RainMeadow.Debug(st1);
             int PointPos = st1.IndexOf('.');
 
-            //Debug($"PointPos, Funny");
+            //RainMeadow.Debug($"PointPos, Funny");
             if (PointPos == -1) { st1 += ".00000"; }
             else
             {
@@ -674,14 +607,14 @@ namespace PlopMachine
                         st1 += "000";
                         break;
                     case 1:
-                        Debug("what");
+                        RainMeadow.Debug("what");
                         st1 += "00000";
                         break;
                     default:
                         break;
                 }
 
-                //Debug($"{st1}, Peep 2");
+                //RainMeadow.Debug($"{st1}, Peep 2");
             }
 
             string[] parts = st1.Split('.');
@@ -698,34 +631,32 @@ namespace PlopMachine
             return former;
 
         }
-
         private void Plop(string input, VirtualMicrophone mic)
         {
-            string s = input.ToString(); //just to make sure it is a string, yknow :)
-
-            string[] parts = s.Split('-');
+            RainMeadow.Debug("It plays the plop " + input);
+            string[] parts = input.Split('-');
 
             string slib = parts[0]; //either L for Long, M for Medium, or S for Short
             int oct = int.Parse(parts[1]);
             int ind;
             bool intiseasy = int.TryParse(parts[2], out ind);
-            if (weplipping) if (intiseasy) if (3 == UnityEngine.Random.Range(1,4)) Dust.Add(s);
+            if (weplipping) if (intiseasy) if (3 == UnityEngine.Random.Range(1, 4)) Dust.Add(input);
 
-            //Debug($"So the string is {s}, which counts as {parts.Length} amounts of parts. {slib}, {oct}, {ind}");
+            //RainMeadow.Debug($"So the string is {s}, which counts as {parts.Length} amounts of parts. {slib}, {oct}, {ind}");
 
             SoundID[] slopb = SampDict(slib);
 
             //SoundID sampleused = slopb[oct]; //one octave higher
             SoundID sampleused = slopb[oct - 1];
-            //Debug("Octave integer " + oct + ". sampleused: " + sampleused);
-            //Debug($"It uses the sample {sampleused}");
+            //RainMeadow.Debug("Octave integer " + oct + ". sampleused: " + sampleused);
+            //RainMeadow.Debug($"It uses the sample {sampleused}");
             int extratranspose = 0;
             if (!intiseasy)
             {
                 string appends = parts[2].Substring(1);
                 foreach (char letter in appends)
                 {
-                    switch(letter)
+                    switch (letter)
                     {
                         case 'b':
                             extratranspose--;
@@ -754,16 +685,10 @@ namespace PlopMachine
             // get intensity and turn that into too 
             // (which will also be reverb effect here then)
 
-            if (RainWorld.ShowLogs)
-            {
-                //Debug($"the note that played: {NoteNow}, {transposition} at {CurrentKey}");
-            }
-            float humanizingrandomnessinvelocitylol = (UnityEngine.Random.Range(360, 1001) / 1000f);
+            float humanizingrandomnessinvelocitylol = UnityEngine.Random.Range(360, 1001) / 1000f;
             PlayThing(sampleused, humanizingrandomnessinvelocitylol, speeed, mic);
 
         }
-
-        
         private void Plip(string input, float velocity, VirtualMicrophone mic)
         {
             //hellllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll
@@ -808,14 +733,12 @@ namespace PlopMachine
             PlayThing(sampleused, velocity, speeed, mic);
 
         }
-        
-
         private void PushModulation()
         {
             int dicedsign = UnityEngine.Random.Range(-5, 3);
             if (dicedsign <= 0) dicedsign = -1; else dicedsign = 1; //6/8th chance to go downwards, unstable by choice
             int dicedint = UnityEngine.Random.Range(0, 777) / (Math.Abs(QueuedModulation) + 1);
-            int deadint = CurrentKey; //debug thing
+            int deadint = CurrentKey; //RainMeadow.Debug thing
             if (dicedint <= 77 && dicedint > 44) CurrentKey += 1 * dicedsign;
             if (dicedint <= 44 && dicedint > 7) CurrentKey += 2 * dicedsign;
             if (dicedint <= 7) CurrentKey += 3 * dicedsign;
@@ -825,23 +748,23 @@ namespace PlopMachine
                 if (inmajorscale)
                 {
                     inmajorscale = false;
-                    Debug("Minor scale now");
+                    RainMeadow.Debug("Minor scale now");
                     //weplipping = false;
                 }
                 else
                 {
                     inmajorscale = true;
-                    Debug("Major scale now");
+                    RainMeadow.Debug("Major scale now");
                     //weplipping = true;
                 }
             }
 
 
-            Debug($"The chance rolled {dicedint}, modified by {QueuedModulation}, it goes to {dicedsign}. So it was {deadint} and now is {CurrentKey}");
+            RainMeadow.Debug($"The chance rolled {dicedint}, modified by {QueuedModulation}, it goes to {dicedsign}. So it was {deadint} and now is {CurrentKey}");
             QueuedModulation = 0;
 
             //CurrentKey += QueuedModulation;
-            
+
             switch (CurrentKey)
             {
                 case -7:
@@ -865,19 +788,19 @@ namespace PlopMachine
                 default:
                     break;
             }
-            IdleFetter.Analyze(this); //if made into a 12 tone temprement, maybe analyze will  be readjusted to remove duplicates, or muting the duplicates, or other stuff with them
+            ChitChat.Analyze(this); //if made into a 12 tone temprement, maybe analyze will  be readjusted to remove duplicates, or muting the duplicates, or other stuff with them
         }
         private void PlayEntry(VirtualMicrophone mic)
         {
-            //Debug($"yo sup dude,{EntryRequest} {UpcomingEntry} {chordqueuedentry} {entrychord} {entryriff} {entrysample} {playingchord} {playingriff} {playingsample}");
+            //RainMeadow.Debug($"yo sup dude,{EntryRequest} {UpcomingEntry} {chordqueuedentry} {entrychord} {entryriff} {playingchord} {playingriff}");
             if (EntryRequest == true)
                 for (int i = 0; i < ChordInfos.GetLength(0); i++)
                 {
-                    //Debug($"Nuclear {UpcomingEntry} vs Coughing {ChordInfos[i, 0]}... Round {i}, begin!");
+                    //RainMeadow.Debug($"Nuclear {UpcomingEntry} vs Coughing {ChordInfos[i, 0]}... Round {i}, begin!");
                     if (UpcomingEntry == ChordInfos[i][0])
                     {
-                        Debug($"So it's gonna start a {UpcomingEntry}, with the key {CurrentKey}");
-                        //Debug($"{ChordInfos[i, 0]},{ChordInfos[i, 1]},{ChordInfos[i, 2]},{ChordInfos[i, 3]}");
+                        RainMeadow.Debug($"So it's gonna start a {UpcomingEntry}, with the key {CurrentKey}");
+                        //RainMeadow.Debug($"{ChordInfos[i, 0]},{ChordInfos[i, 1]},{ChordInfos[i, 2]},{ChordInfos[i, 3]}");
 
                         switch (ChordInfos[i][1])
                         {
@@ -890,26 +813,21 @@ namespace PlopMachine
                             case "Riff":
                                 riffline = ChordInfos[i][2];
                                 riffleadups = ChordInfos[i][3];
-                                //Debug(ChordInfos[i, 3] +" " + riffleadups);
+                                //RainMeadow.Debug(ChordInfos[i, 3] +" " + riffleadups);
                                 entryriff = true;
-                                break;
-                            case "Sample":
-                                sampleinfo = ChordInfos[i][2];
-                                sampleleadups = ChordInfos[i][3];
-                                entrysample = true;
                                 break;
                         }
                     }
                 }
-            //Debug("Done with entryrequest");
+            //RainMeadow.Debug("Done with entryrequest");
             if (EntryRequest == true && entrychord == true)
             {
                 //playing a chord
-                //Debug("Starts the chord: " + UpcomingEntry + " " + chordnotes + "    and leadup: " + chordleadups);
+                //RainMeadow.Debug("Starts the chord: " + UpcomingEntry + " " + chordnotes + "    and leadup: " + chordleadups);
                 myred += 2f;
                 PushModulation();
-                IdleFetter.Wipe(this);
-                IdleFetter.RandomMode();
+                ChitChat.Wipe(this);
+                ChitChat.RandomMode();
                 EntryRequest = false;
                 entrychord = false;
                 string[] inst = chordnotes.Split(',');
@@ -922,16 +840,16 @@ namespace PlopMachine
                 for (int i = 0; i < notes.Length; i++)
                 {
                     Plop(notes[i], mic);
-                    if (UnityEngine.Random.Range(0, 100) > 69) IdleFetter.Add(notes[i].Substring(2), this);
-                    //Debug($"It is playing the Notes?{chord},{notes.Length},{i}, {notes[i]}... {debugtimer}");    
+                    if (UnityEngine.Random.Range(0, 100) > 69) ChitChat.Add(notes[i].Substring(2), this);
+                    //RainMeadow.Debug($"It is playing the Notes?{chord},{notes.Length},{i}, {notes[i]}... {RainMeadow.Debugtimer}");    
                 }
-                //Debug($"done playing them???{EntryRequest}");                                  !!!!!!!!!!
+                //RainMeadow.Debug($"done playing them???{EntryRequest}");                                  !!!!!!!!!!
                 //string[] bassnotes = bass.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 string[] bassnotes = bass.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 int sowhichoneisitboss = UnityEngine.Random.Range(0, bassnotes.Length);
 
                 Plop(bassnotes[sowhichoneisitboss], mic); //THIS is where it fucked up, which was because it had a space before the comma
-                //Debug("And i played a Bass note");
+                //RainMeadow.Debug("And i played a Bass note");
 
 
                 //all notes have been played, moving onto liason
@@ -960,32 +878,32 @@ namespace PlopMachine
                     string[] thebabes = liaisonnotes.Split(' ');
                     foreach (string s in thebabes)
                     {
-                        IdleFetter.Add(s, this);
+                        ChitChat.Add(s, this);
                     }
                 }
                 playingchord = true;
-                //Debug($"Info given of: Timer: {low} {high}, {chordstopwatch}, And times: {Ltime1}, {Ltime2}, {Ltime3}, and Key {CurrentKey} of chord (put another name here)... {debugtimer}");
+                //RainMeadow.Debug($"Info given of: Timer: {low} {high}, {chordstopwatch}, And times: {Ltime1}, {Ltime2}, {Ltime3}, and Key {CurrentKey} of chord (put another name here)... {RainMeadow.Debugtimer}");
             }
-            //Debug("Done with entrychord");
+            //RainMeadow.Debug("Done with entrychord");
 
             if (playingchord == true)
             {
-                //Debug("It's playing liaisonnotes" + $": {Lslot1}, {Ltime1} {Lnote1}. {Lslot2}, {Ltime2} {Lnote2}. {Lslot3}, {Ltime3} {Lnote3}. ");
+                //RainMeadow.Debug("It's playing liaisonnotes" + $": {Lslot1}, {Ltime1} {Lnote1}. {Lslot2}, {Ltime2} {Lnote2}. {Lslot3}, {Ltime3} {Lnote3}. ");
 
                 if (chordstopwatch == 0)
                 {
                     EntryRequest = true;
                     UpcomingEntry = chordqueuedentry;
-                    //Debug($"{UpcomingEntry} will play");       
+                    //RainMeadow.Debug($"{UpcomingEntry} will play");       
                     playingchord = false;
                 }
                 else
                 {
-                    IdleFetter.Update(mic, this);
+                    ChitChat.Update(mic, this);
                     chordstopwatch--;
                 }
             }
-            //Debug("Done with Playingchord");
+            //RainMeadow.Debug("Done with Playingchord");
 
             if (EntryRequest == true && entryriff == true)
             {
@@ -993,7 +911,6 @@ namespace PlopMachine
                 entryriff = false;
                 PushModulation();
                 theline = riffline.Split(',');
-                // take { "Yooo", "Entry", "3-1,2,3-2,2,3-5 3-7,4,3-5 3-7,4,3-5 3-7,6,3-5 3-7,6,3-5 3-7,8,!,3-6", "Triad"} for example
                 riffindex = 0;
                 rifflength = theline.Length;
                 playingriff = true;
@@ -1012,19 +929,19 @@ namespace PlopMachine
                     {
                         myred += 0.075f;
                         //if (pushingindex) { riffindex = queuedindex; pushingindex = false; }
-                        //Debug("Started they thing");
-                        //Debug("hullo");
+                        //RainMeadow.Debug("Started they thing");
+                        //RainMeadow.Debug("hullo");
                         //randomise it, if it's an array, then also remove extras if else
-                        //Debug($"{riffindex}, {rifflength}, {riffcurrentvar}, {theline}");
-                        //Debug(splitvar[0]);
-                        //Debug(splitvar.Length);
+                        //RainMeadow.Debug($"{riffindex}, {rifflength}, {riffcurrentvar}, {theline}");
+                        //RainMeadow.Debug(splitvar[0]);
+                        //RainMeadow.Debug(splitvar.Length);
                         riffcurrentvar = theline[riffindex];
-                        Debug("Currently treating " + riffindex + ". With currentvar: " + riffcurrentvar);
+                        RainMeadow.Debug("Currently treating " + riffindex + ". With currentvar: " + riffcurrentvar);
                         string[] splitvar = riffcurrentvar.Split(' ');
                         int whichofthese = UnityEngine.Random.Range(0, splitvar.Length);
                         string treatedvar = splitvar[whichofthese];
 
-                        //Debug("hello");
+                        //RainMeadow.Debug("hello");
                         //testing if it's just a number
                         bool umitsanumber = int.TryParse(treatedvar, out int intivarp);
                         if (umitsanumber)
@@ -1034,10 +951,10 @@ namespace PlopMachine
                         }
                         else
                         {
-                            Debug(treatedvar);
+                            RainMeadow.Debug(treatedvar);
                             if (treatedvar.Contains("loop"))
                             {
-                                Debug("Matched it as a loop");
+                                RainMeadow.Debug("Matched it as a loop");
                                 if (islooping)
                                 {
                                     loopcountdown--;
@@ -1046,13 +963,13 @@ namespace PlopMachine
                                         //queuedindex = riffindex - tilestasked;
                                         //pushingindex = true;
                                         riffindex -= tilestasked + 1;
-                                        Debug($"Went backwards {tilestasked} to {riffindex}");
+                                        RainMeadow.Debug($"Went backwards {tilestasked} to {riffindex}");
                                     }
                                     if (loopcountdown <= 0)
                                     {
                                         islooping = false;
                                     }
-                                    Debug("Done with islooping, looping countdown is " + loopcountdown);
+                                    RainMeadow.Debug("Done with islooping, looping countdown is " + loopcountdown);
                                 }
                                 //finish the timeloop by not doin anythin
                                 else
@@ -1064,7 +981,7 @@ namespace PlopMachine
                                     loopcountdown = int.Parse(Supdude[1]);
                                     islooping = true;
                                     riffindex -= tilestasked + 1; //the extra 1 is to compensate for riffindex being ++;'d at the end, it goes 5 backwards FROM this one, 1 will be 1 back
-                                    Debug($"He thinks he's {riffindex}, {tilestasked}");
+                                    RainMeadow.Debug($"He thinks he's {riffindex}, {tilestasked}");
                                 }
                             }
                             if (treatedvar.Contains("d"))
@@ -1095,32 +1012,32 @@ namespace PlopMachine
                                     default:
                                         break;
                                 }
-                                riffstopwatch = (int)Math.Round((double)riffd, 0);
-                                Debug($"Matched it as a Delta, waiting for {riffd}, {riffstopwatch}");
+                                riffstopwatch = (int)Math.Round(riffd, 0);
+                                RainMeadow.Debug($"Matched it as a Delta, waiting for {riffd}, {riffstopwatch}");
                                 inwaitmode = true;
                             }
 
                             if (treatedvar.Contains("!"))
                             {
-                                Debug("Matched it as a chorder, the leadups are");
+                                RainMeadow.Debug("Matched it as a chorder, the leadups are");
                                 EntryRequest = true;
-                                //Debug(riffleadups);
+                                //RainMeadow.Debug(riffleadups);
                                 string[] leadups = riffleadups.Split('|');
-                                Debug("Splits it up");
+                                RainMeadow.Debug("Splits it up");
                                 //for (int i = 0; i < leadups.Length - 1; i++)
                                 //{
-                                //    Debug(leadups[i]);
+                                //    RainMeadow.Debug(leadups[i]);
                                 //}
                                 int butwhatnowboss = UnityEngine.Random.Range(0, leadups.Length);
-                                //Debug("Picks a random one");
+                                //RainMeadow.Debug("Picks a random one");
                                 string leadup = leadups[butwhatnowboss];
-                                //Debug("Picks " + leadup);
+                                //RainMeadow.Debug("Picks " + leadup);
                                 UpcomingEntry = leadup;
-                                //Debug(riffleadups + " " + leadups + " "+ butwhatnowboss + " " + leadup + " " + UpcomingEntry);
+                                //RainMeadow.Debug(riffleadups + " " + leadups + " "+ butwhatnowboss + " " + leadup + " " + UpcomingEntry);
                             }
                             if (treatedvar.Contains("L-") || treatedvar.Contains("M-") || treatedvar.Contains("S-"))
                             {
-                                Debug("Matched it as a noter");
+                                RainMeadow.Debug("Matched it as a noter");
                                 //will assume its a note for now
                                 treatedvar = treatedvar.ToString();
                                 Plop(treatedvar, mic);
@@ -1128,9 +1045,9 @@ namespace PlopMachine
                             if (treatedvar.Contains("D-"))
                             {
 
-                                Debug("Matched it as a Dynamic noter");
+                                RainMeadow.Debug("Matched it as a Dynamic noter");
                                 var riffnextvar = theline[riffindex + 1];
-                                Debug("Predicting future index to be " + riffindex + "+1. With thenextvar being: " + riffnextvar);
+                                RainMeadow.Debug("Predicting future index to be " + riffindex + "+1. With thenextvar being: " + riffnextvar);
                                 string[] splitnextvar = riffnextvar.Split(' ');
                                 int whichofthesenexts = UnityEngine.Random.Range(0, splitnextvar.Length);
                                 string treatednextvar = splitnextvar[whichofthesenexts];
@@ -1173,18 +1090,18 @@ namespace PlopMachine
                                                     break;
                                             }
                                             upcomingdelay = (int)Math.Round((double)dummyriffd, 0);
-                                            Debug($"Matched it as a Delta, waiting for {riffd}, {riffstopwatch}");
+                                            RainMeadow.Debug($"Matched it as a Delta, waiting for {riffd}, {riffstopwatch}");
                                         }
                                     }
                                 }
                                 treatedvar = treatedvar.Substring(1);
                                 int currentsounds = mic.soundObjects.Count;
-                                Debug("I have calculated upcomingdelay to be " + upcomingdelay + " and the amount of currently to be " + currentsounds);
-                                if ((upcomingdelay < 3.5f) || currentsounds > 22)//either 3 or 2
+                                RainMeadow.Debug("I have calculated upcomingdelay to be " + upcomingdelay + " and the amount of currently to be " + currentsounds);
+                                if (upcomingdelay < 3.5f || currentsounds > 22)//either 3 or 2
                                 {
                                     treatedvar = "S" + treatedvar;
                                 }
-                                else if (((upcomingdelay >= 3) && (upcomingdelay < 55)) || currentsounds > 17) //either 75 or 40, or 55
+                                else if (upcomingdelay >= 3 && upcomingdelay < 55 || currentsounds > 17) //either 75 or 40, or 55
                                 {
                                     treatedvar = "M" + treatedvar;
                                 }
@@ -1192,86 +1109,31 @@ namespace PlopMachine
                                 {
                                     treatedvar = "L" + treatedvar;
                                 }
-                                //Debug(treatedvar);
+                                //RainMeadow.Debug(treatedvar);
                                 Plop(treatedvar, mic);
                             }
                         }
-                        //Debug("HEY THIS ONE DOES THE THING IT*S COOL");
+                        //RainMeadow.Debug("HEY THIS ONE DOES THE THING IT*S COOL");
                         riffindex++;
                     }
                     else
                     {
                         playingriff = false;
-                        //Debug("it is OVER");
+                        //RainMeadow.Debug("it is OVER");
                     }
                 }
             }
-
-
-            if (EntryRequest == true && entrysample == true)
-            {
-                EntryRequest = false;
-                entrysample = false;
-                PushModulation();
-                theinfo = sampleinfo.Split(',');
-                // take { "Firstsample", "Entry", "Lol,1,200", "Triad"} for example
-                SoundID whichsample = FetchSoundID(theinfo[0]);
-                indexofsample = int.Parse(theinfo[1]);
-                samplestopwatch = int.Parse(theinfo[2]);
-
-                sampletransposition = IndexTOCKInt(indexofsample);
-                playingsample = true;
-                speeedofsample = 1;
-
-                speeedofsample *= Mathf.Pow(magicnumber, sampletransposition);
-
-                PlayThing(whichsample, 1, speeedofsample, mic);
-            }
-
-            if (playingsample == true)
-            {
-                if (samplestopwatch == 0)
-                {
-                    playingsample = false;
-                    //Debug(riffleadups);
-                    string[] leadups = sampleleadups.Split('|');
-                    int butwhatnowboss = UnityEngine.Random.Range(0, leadups.Length);
-                    string leadup = leadups[butwhatnowboss];
-                    UpcomingEntry = leadup;
-                    EntryRequest = true;
-                }
-                else
-                {
-                    samplestopwatch--;
-                }
-            }
         }
-
-        private SoundID FetchSoundID(string soundid)
-        {
-            switch (soundid)
-            {
-                case "HelloA":
-                    return HelloA;
-                default://add as many as you want here lol just remember to have them match
-                    return HelloB;
-            }
-        }
-        private void AmbientSoundPlayer_TryInitiation(On.AmbientSoundPlayer.orig_TryInitiation orig, AmbientSoundPlayer self)
-        {
-            //Debug("fuckoff");
-        }
-
         private void PlayThing(SoundID Note, float velocity, float speed, VirtualMicrophone virtualMicrophone)
         {
 
             //virtualMicrophone.PlaySound(Note, 0f, intensity*0.5f, speed);
-            
+
             float pan = (float)(UnityEngine.Random.Range(-350, 351) / 1000f);
             float vol = velocity * 0.5f;
             float pitch = speed;
 
-            //Debug($"Trying to play a {Note}");
+            //RainMeadow.Debug($"Trying to play a {Note}");
             try
             {
                 if (virtualMicrophone.visualize)
@@ -1281,7 +1143,7 @@ namespace PlopMachine
 
                 if (!virtualMicrophone.AllowSound(Note))
                 {
-                    Debug($"Too many sounds playing, denying a {Note}");
+                    RainMeadow.Debug($"Too many sounds playing, denying a {Note}");
                     return;
                 }
                 SoundLoader.SoundData soundData = virtualMicrophone.GetSoundData(Note, -1);
@@ -1317,8 +1179,8 @@ namespace PlopMachine
                     */
 
 
-                    //Debug(10000*((float)Math.Pow(intensity, 0.75)-1));
-                    //Debug(10000*((float)Math.Pow((-intensity+1.0), 0.75)-1));
+                    //RainMeadow.Debug(10000*((float)Math.Pow(intensity, 0.75)-1));
+                    //RainMeadow.Debug(10000*((float)Math.Pow((-intensity+1.0), 0.75)-1));
 
 
                     //var delay = thissound.gameObject.AddComponent<AudioEchoFilter>();
@@ -1328,18 +1190,18 @@ namespace PlopMachine
                 }
                 else
                 {
-                    Debug($"Soundclip not ready");
+                    RainMeadow.Debug($"Soundclip not ready");
                     return;
                 }
 
                 if (RainWorld.ShowLogs)
                 {
-                    //Debug($"the note that played: {Note} at {speed}");
+                    //RainMeadow.Debug($"the note that played: {Note} at {speed}");
                 }
             }
             catch (Exception e)
             {
-                Debug($"Log {e}");
+                RainMeadow.Debug($"Log {e}");
             }
 
         }
@@ -1361,44 +1223,13 @@ namespace PlopMachine
             public float basetime;
             public float propacceleration; //will multiply basetime by this
         }
-        
-        //so, sometimes when a Plop plays, it also is followed by some tail, dust, flutter, those are its Plip(s)
-        //but it registeres to play plips by adding the note onto the Dust. ("kicking" the dust)
-        //this thing just keeps the tails
-        //the update will then check all the dust and see if any of them should advance to the next step.
-        
-        //when advancing to the next step, it'll then play the note in the tail at that index in fluttertail 
-        //if it has advanced to the last step, play the note, then terminate DESTROY KILL ANNIHALATE THEM KILL 
-
-        //for each step, the loudness of the note should be weakened, to give the sound the "flutters away" jazz.
-        //i can do it in two ways, either
-        //  divide the Volume value by the decay, and remake it when (remake the flutter with that new number) flutter's remade anyways
-        //  divide the OriginalVolume by the decay *step* amount of times when it's called  <--- lets go with this one for now 
-        //well, evil third option
-        //  since i want to play all the notes in the tail, count the amount of numbers in the tail, and make the decay proportional to that, maybe a lerp from 1-0 ^2
-        //  maybe this is the good
-        
-        //anyways, when added, it'll set the stopwatch for the first time in according to the basetime, so, how does basetime ?
-        //basetime is set kinda randomly, between uhh, 6 and 18
-        //
-        //when updated, basetime will also be divided by propacceleration (proportional acceleration)
-
-        //when stopwatch is 0 and thus updated and all, just do like, (int)basetime, ez.
-        
-        //so, big question how will the fluttertail be given,, well, what
-        //  lets just say it'll makes a list that's 2 to 5 long and that features notes that go 2 or 1 upwards or downwards (and that switches octaves)
-        //and also 4 upwards mode but only with  a big propacceleration
-        //in the future i want to make a big list of arrays that reads the note and ,... does shit
-        //  shit = uses the note as the key to pick one of many prewritten tails 
-        //  shit = have those tails actually be math variables, so that it can calculate a tail out of it.
-
         public static class Dust
         {
             static List<Flutter> flutters = new List<Flutter>();
             static List<int> slatedfordeletion = new List<int>();
             public static void Update(VirtualMicrophone mic, PlopMachine plopmachine)
             {
-                if ( flutters.Count != 0 )
+                if (flutters.Count != 0)
                 {
                     for (int i = 0; i < flutters.Count; i++)
                     {
@@ -1413,33 +1244,33 @@ namespace PlopMachine
                             if (mic.soundObjects.Count < 21)
                             {
                                 flutter.step++;
-                                plopmachine.Plip(flutter.fluttertail[flutter.step], 0.6f * Mathf.Lerp(1, 0, (float)flutter.step/flutter.fluttertail.Length), mic);
+                                plopmachine.Plip(flutter.fluttertail[flutter.step], 0.6f * Mathf.Lerp(1, 0, (float)flutter.step / flutter.fluttertail.Length), mic);
                                 flutter.stopwatch = (int)flutter.basetime;
                                 flutter.basetime *= flutter.propacceleration;
-                                if (flutter.step == flutter.fluttertail.Length-1) { slatedfordeletion.Add(i); }
+                                if (flutter.step == flutter.fluttertail.Length - 1) { slatedfordeletion.Add(i); }
                             } //this is lovely actually! Flutter is only *after* the sounds have played
                             else
                             {
-                                Debug($"Waiting on a note {flutter.originalnote}, has the index: {i}, with there being {mic.soundObjects.Count} amount of sounds currently occuptying");
-                                flutter.stopwatch = (int)flutter.basetime*2;
+                                RainMeadow.Debug($"Waiting on a note {flutter.originalnote}, has the index: {i}, with there being {mic.soundObjects.Count} amount of sounds currently occuptying");
+                                flutter.stopwatch = (int)flutter.basetime * 2;
                                 flutter.basetime *= 1.12f;
                             }
                             flutters[i] = new Flutter(flutter.originalnote, flutter.fluttertail, flutter.stopwatch, flutter.step, flutter.basetime, flutter.propacceleration);
                         }
                     }
-                    if (slatedfordeletion.Count != 0) 
+                    if (slatedfordeletion.Count != 0)
                     {
-                        slatedfordeletion.Reverse();    
-                        foreach(int deletion in slatedfordeletion)
+                        slatedfordeletion.Reverse();
+                        foreach (int deletion in slatedfordeletion)
                         {
-                            Debug("Does delete " +  deletion);
+                            RainMeadow.Debug("Does delete " + deletion);
                             flutters.RemoveAt(deletion);
                         }
                         slatedfordeletion.Clear();
                     }
                 }
             }
-            public static void Add(string note) 
+            public static void Add(string note)
             {
                 int TailLength = UnityEngine.Random.Range(3, 8);
                 string[] notetail = new string[TailLength];
@@ -1449,7 +1280,7 @@ namespace PlopMachine
                 string slib = parts[0]; //useless
                 int oct = int.Parse(parts[1]);
                 int ind = int.Parse(parts[2]);
-                
+
                 for (int i = 0; i < TailLength; i++)
                 {
                     ind += UnityEngine.Random.Range(-3, 3);
@@ -1477,31 +1308,27 @@ namespace PlopMachine
 
                 int randomint = UnityEngine.Random.Range(12, 32); //6, 22
                 float haha = UnityEngine.Random.Range(75, 135) / 100f;
-                Debug(haha);
+                RainMeadow.Debug(haha);
                 Flutter helo = new Flutter(note, notetail, randomint, -1, randomint, haha);
                 flutters.Add(helo);
             }
         }
-
         struct Liaison
         {
-            public Liaison(string note, int timer, int yoffset)
+            public Liaison(string note, int stopwatch, int yoffset)
             {
                 this.note = note;
-                this.stopwatch = timer;
+                this.stopwatch = stopwatch;
                 this.yoffset = yoffset;
             }
             public string note;
             public int stopwatch;
             public int yoffset;
-        
         }
-
-        public static class IdleFetter
+        public static class ChitChat
         {
             static List<Liaison> LiaisonList = new List<Liaison>(); //list of the Liaison(s) currently playing
             static int[] liaisonrace = new int[0]; //arp pitch sorted array that will be remade with the analyze function
-            //static readonly int maxliaisons = 8; //self imposed limit on the amount of notes
             static public bool isindividualistic = false; //setting for whether it'll treat things as individualistic
             static bool upperswitch = true;
             static int Idletimer = 0;
@@ -1519,7 +1346,7 @@ namespace PlopMachine
             static int arpcountdown = 20;
             static List<int> randomsetsacrificeboard = new List<int>();
             //static List<string> nameshaha = [];
-            
+
 
             //public Liaison slot3; //public Liaison slot4; //public Liaison slot5; //public Liaison slot6; //public Liaison slot7; //public Liaison slot8;
 
@@ -1546,7 +1373,7 @@ namespace PlopMachine
                         if (LiaisonList.Count != 0) //bruh why should it ever be less than zero lmao (that's the joke here)
                         {
                             plopmachine.mygreen += 0.3f;
-                            arpcountdown = (int)(Math.Cos(UnityEngine.Mathf.PerlinNoise(Idletimer / 400f, 7f + (Idletimer / 1600f)) * Math.PI) * 27 + 47);
+                            arpcountdown = (int)(Math.Cos(Mathf.PerlinNoise(Idletimer / 400f, 7f + Idletimer / 1600f) * Math.PI) * 27 + 47);
                             arpcountdown = plopmachine.Peep(arpcountdown);
                             CollectiveArpStep(mic, plopmachine);
                         }
@@ -1568,19 +1395,13 @@ namespace PlopMachine
                     {
                         plopmachine.mygreen += 0.2f;
                         plopmachine.Plop(liaison.note, mic);
-                        int moneydym1 = (int)(Math.Cos(UnityEngine.Mathf.PerlinNoise(Idletimer / 400f, liaison.yoffset + (Idletimer / 1600f)) * Math.PI) * 69 + 107);
+                        int moneydym1 = (int)(Math.Cos(Mathf.PerlinNoise(Idletimer / 400f, liaison.yoffset + Idletimer / 1600f) * Math.PI) * 69 + 107);
                         moneydym1 = plopmachine.Peep(moneydym1);
                         LiaisonList[i] = new Liaison(liaison.note, moneydym1, liaison.yoffset);
-                        Debug($"We're so here, playing a {liaison.note}, and their {liaison.yoffset} makes a delay of {moneydym1}");
+                        RainMeadow.Debug($"We're so here, playing a {liaison.note}, and their {liaison.yoffset} makes a delay of {moneydym1}");
                     }
                 }
             }
-            //https://www.ableton.com/en/manual/live-midi-effect-reference/
-
-            //int moneydym1 = (int)(Math.Cos(UnityEngine.Mathf.PerlinNoise(debugtimer / 400f, 00f + (debugtimer / 1600f)) * Math.PI) * -100 + 110);
-
-            //collective mode
-            //https://stackoverflow.com/questions/47752/remove-duplicates-from-a-listt-in-c-sharp
             public static void Analyze(PlopMachine plopmachine)
             {
                 List<int> LiaisonsFreqNumbs = new List<int>();
@@ -1590,7 +1411,7 @@ namespace PlopMachine
                     string[] hey = heyo.note.Substring(2).Split('-');//maybe this'll fuck up in the future :3
                     int freqnumb = int.Parse(hey[0]) * 100 + plopmachine.IndexTOCKInt(int.Parse(hey[1]));
                     LiaisonsFreqNumbs.Add(freqnumb);
-                    //Debug($"Car warranty {freqnumb}, It's index in the LiaisonList: {index}");
+                    //RainMeadow.Debug($"Car warranty {freqnumb}, It's index in the LiaisonList: {index}");
                     index++;
                 }//there's ceraintly a better and less costly ways of going about but :PPPPPP
 
@@ -1601,27 +1422,27 @@ namespace PlopMachine
                 int[] LiaisonsFreqNumbsArray = LiaisonsFreqNumbs.ToArray();
                 Array.Sort(LiaisonsFreqNumbsArray, LiaisonIndexArrayThatllBeSwayed);
                 liaisonrace = LiaisonIndexArrayThatllBeSwayed;
-            
+
             }
             public static void PrintRace()
             {
-                Debug("Liaisonrace being printed individually from left to right. The number is the index, the latter is what it represents.");
-                Debug("Remember that the sequence they're PRINTED in is the order of the liaisonrace, NOT the index shown(as that is just the pointer)");
+                RainMeadow.Debug("Liaisonrace being printed individually from left to right. The number is the index, the latter is what it represents.");
+                RainMeadow.Debug("Remember that the sequence they're PRINTED in is the order of the liaisonrace, NOT the index shown(as that is just the pointer)");
                 foreach (int i in liaisonrace)
                 {
-                    Debug(i + " " + LiaisonList[i].note);
+                    RainMeadow.Debug(i + " " + LiaisonList[i].note);
                 }
             }
             public static void Add(string note, PlopMachine plopmachine)
             {
-                //Debug("SOthestart of add");
+                //RainMeadow.Debug("SOthestart of add");
                 string[] anotherhighernotesparts = note.Split('-');
-                //Debug(anotherhighernotesparts[0] + " " + anotherhighernotesparts[1]);
+                //RainMeadow.Debug(anotherhighernotesparts[0] + " " + anotherhighernotesparts[1]);
                 int octave = int.Parse(anotherhighernotesparts[0]);
                 int randomint = UnityEngine.Random.Range(octave, octave + 4);
                 if (2 <= randomint && randomint <= 4)
                 {
-                    Debug("Made it a shimmer power too");
+                    RainMeadow.Debug("Made it a shimmer power too");
                     string shimmernote = "M-" + Convert.ToString(octave + 1) + "-" + anotherhighernotesparts[1];  //reminder that i want this to be dynamic
                     uniqueyoffset += 10;
                     Liaison sup = new Liaison(shimmernote, plopmachine.Peeps(30, 80), uniqueyoffset);
@@ -1631,26 +1452,29 @@ namespace PlopMachine
                 string mynote = "M-" + note;
                 uniqueyoffset += 10;
                 Liaison helo = new Liaison(mynote, plopmachine.Peeps(30, 80), uniqueyoffset);
-                
+
                 //checks there's no duplicates, doesn't add if so
                 foreach (Liaison thing in LiaisonList)
                 {
-                    if (thing.note == mynote) willadd = false;             
-                }//  
+                    if (thing.note == mynote) willadd = false;
+                }
+
                 if (willadd) LiaisonList.Add(helo);
 
 
-                if (LiaisonList.Count < 3) {
-                    isindividualistic = true; }
+                if (LiaisonList.Count < 3)
+                {
+                    isindividualistic = true;
+                }
                 else
                 {
                     isindividualistic = UnityEngine.Random.Range(0, 100) > 44;
                 }
                 if (!isindividualistic) { Analyze(plopmachine); }
-                //if (!isindividualistic) { Debug($"Added {mynote}, a {helo.note} with analysis"); } else { Debug($"Added {mynote}, a {helo.note} without analysis"); }
+                //if (!isindividualistic) { RainMeadow.Debug($"Added {mynote}, a {helo.note} with analysis"); } else { RainMeadow.Debug($"Added {mynote}, a {helo.note} without analysis"); }
             }
             public static void Wipe(PlopMachine plopmachine)
-            { 
+            {
                 LiaisonList.Clear();
                 arpstep = 0;
                 randomsetsacrificeboard.Clear();
@@ -1671,9 +1495,9 @@ namespace PlopMachine
                 //liaisonrace interprets the number and gives back another number which is the index of the note in liaison
                 //when picking an index from the liaisonlist, it returns a Liaison, that liaison has got properties, one of them is its note, which'll be a string.
 
-                //Debug($"it plays a thing at uhhhh   {arpstep},,,,   then it's the index  {liaisonrace[arpstep]}.. .  ..  {LiaisonList[liaisonrace[arpstep]].note}");
+                //RainMeadow.Debug($"it plays a thing at uhhhh   {arpstep},,,,   then it's the index  {liaisonrace[arpstep]}.. .  ..  {LiaisonList[liaisonrace[arpstep]].note}");
                 plopMachine.Plop(LiaisonList[liaisonrace[arpstep]].note, mic); //so it plays the previous one
-                
+
                 switch (arpingmode)
                 {
                     case Arpmode.upwards:
@@ -1683,14 +1507,14 @@ namespace PlopMachine
 
                     case Arpmode.downwards:
                         arpstep--;
-                        if (arpstep < 0) { arpstep = LiaisonList.Count-1; }
+                        if (arpstep < 0) { arpstep = LiaisonList.Count - 1; }
                         break;
 
                     case Arpmode.switchwards:
                         if (arpgoingupwards)
                         {
                             arpstep++;
-                            if (arpstep >= LiaisonList.Count) 
+                            if (arpstep >= LiaisonList.Count)
                             { //will have already played the top one, so back down it go
                                 arpstep = LiaisonList.Count - 2;
                                 arpgoingupwards = false;
@@ -1715,26 +1539,378 @@ namespace PlopMachine
                                 randomsetsacrificeboard.Add(i);
                             }
                         }
-                        //Debug("sodiditevengethere");
-                        //Debug("when the count is "+randomsetsacrificeboard.Count);
-                        //foreach (int i in randomsetsacrificeboard)
-                        //{
-                        //    Debug("Ummmm there's " + i);
-                        //}
                         int thesacrifice = UnityEngine.Random.Range(0, randomsetsacrificeboard.Count);
-                        //Debug($"SO WE'RE SACRIFICING THE {thesacrifice}, in which there is a {randomsetsacrificeboard[thesacrifice]} at");
                         arpstep = liaisonrace[randomsetsacrificeboard[thesacrifice]];
                         randomsetsacrificeboard.RemoveAt(thesacrifice);
-                        //Debug("So it's here");
-                        //Debug("arpstep given is=" + arpstep);
                         break;
                 }
             }
         }
+        //
+        //With the help of henpe, i was able to register soundID's and have plopmachine playing in game. 
+        //though he had one gripe: how arrhythmical it was. which pointed me towards
+        //which begged the question, how quick will it be? this made the idea: dynamic progression. sometimes ambience-y, sometimes chord-y
+        //the amount of features this idea way spawned has had me pseudocoding for 6 hours, it adds features to everything
 
-        //.cameras[0].virtualMicrophone
-        //    public static Color blue => new Color(0f, 0f, 1f, 1f);
-        //Color mycolor = Color.blue;
+        //So, after showing it of to henpemaz, they were all nice and chill but then they had their gripes as well,
+        //apperantly it was quite the pointer to another idea i had had for a while but putting off: 
+        //
+        //Quantization update.
+        //
+        //well, so what henp's big gripe then was that there was randomness, and not the good kind. good kinds of randomness being:
+        //The chords that are played
+        //
+        //uh,
+        //yeah no just the notes
+        //maybe the liaison picks? oh yeah no definetly the type of liaison that is being played (which is also something to take note of)
+        //and also, the chord modulations, that's not too bad to have be random
+        //and also the switch between major and minor
+        //
+        //everything else that is random, are the delays, ergo, the tempo,
+        //and everything of that will have to be reworked, because that was the gripe, arythmetic sounds like too ass,
+        //even though my lazy argument against it was that "it's like rain in the forest, and conversations are chittering randomly, 2.5 rule after all"
+        //the rebuttal: "does rain sound like music"
+        //(which by my definition yes fuck u henp lololol)
+        //still, the point is that music most often follows a quantized grid that a bpm decides
+        //and that the current production line has clockwatches set at a wholey anarchistic vibe
+        //this is not the machine way.
+        //we want the machine way.
+        //.
+        //(reminder that i want the thing to be able to switch between the machine and nature way)
+        //
+        //so lets ask ourselves the question:
+        //what shall we doa bout it
+        //
+        //
+        //
+        //
+        //          ----QUANTIZATION UPDATE. Fichtean Update-----
+        //
+        //
+        //with this quantization comes liveliness, which is a thing i want to make
+        //
+        //because with every bach piece, there's like, two different vibes to follow an intensity curve, a Fichtean curve apperantly, lets say calm v intense
+        //but here, it's actually more like: ambiancy v chordy
+        //ya see where i'm going, well, i don't 
+        //those are the ends of a spectrum though - 0 to 1 - and the value inbetween them will be a slowly moving perlin noise value
+        //all the different properties and stuff shall lerp this value in a respective way.
+        //by the end of this, there shall be no more need for the liaisoninfo's between chords; as the delaytime, the liaisons, and the modulation is taken care of somewhere else
+        //
+        //
+        //---ambiancy---
+        //chords    :less frequent to make it more drawn out
+        //liaisons  :also less frequent, but more of them, and with more complex arping
+        //flutter   :longer tail, but (takes more time in between) steps, also more chance of them happening
+        //
+        //----chordy----.
+        //chords    :more frequent,, bigger chance of sequencing..               like  [bam, bam, 0, bam, 0, 0, 0], [bam bam bam bam light-bam,,,,[bam],,,,,]
+        //liaisons  :more frequent but smaller quantity, and simpler
+        //flutter   :shorter tail, fast steps, less chance of them happening 
+        //
+        //
+        //flutter *is* triggered by liaisons and chord notes the same, aye? so...
+        //
+        //
+        //lets discuss the extra features:
+        //
+        //---Chords---
+        //
+        //so, there's this whole nother thing that i have elected to ignore for myself and i'm happy i still remember it now.
+        //because, well, now it is.
+        //
+        //the scary thing about ambiency chords is the fear that there won't really be enough liaisons to carry it through the big empty pit
+        //pluss, you can't really let too many notes by default in, because it'll overwhelm when you play chordie
+        //even so, what if there's too few notes to be liaisoned over? what if you should want six notes when you only have four to choose:
+        //
+        //and thus i introduce: 
+        //class LiaisonMagazineCreator
+        //
+        //the purpose of this creature will be that it'll make an array with a fitting amount of liaisons for the current livelyness
+        //when there's too few liaisons, i want it to find out what note would also work in here, and create that.
+        //      how? idk, well, easy but then a bit complicated cuz i want livelyness to have a say in which notes are preferred in created liaisons
+        //      the more lively, the more chance it'll create new *off* notes
+        //      it does a thing
+        //      until theres's as many notes as requested, it'll try creating notes until it's made
+        //the consequence of it will also be that we won't be needing to specify liaisons in the chord graph
+        //
+        //so, what playing a chord currently does is this:                 i can make it do this:
+        //
+        //takes the chord notes, splits them into notes and basses    |
+        //plays all the notes (also adds some to chitchat)            |     adds all notes to chitchat
+        //plays one bass                                              |
+        //gets one of the leadups                                     |     gets just the name of one of the leadups, queues it up
+        //starts dissecting leadup:                                   |
+        //Lowest wait,                                                |     handled by below
+        //Highest wait,                                               |     handled by below
+        //modulation.                                                 |     handled by below
+        //Plugs and utilises                                          |     handled by below
+        //finds Extra Liaisons and adds them to chitchat              |     no need, the extras are figured by liaisonmagazinecreator
+        //
+        //
+        //
+        //
+        //i want 0 - 1,  ambience - chord-y,  6 - 2 liaison
+        //notes are entered to this thing as an oct-ind
+        //
+        //NoteMagazine.InNoteList = List<string> 
+        //NoteMagazine.OutNoteList = List<string> 
+        //bool hasdecidedamount
+        //int decidedamount
+        //
+        //
+        //NoteMagazine.Add(string)
+        //  (this will add a note to the InNotelist)
+        //
+        //NoteMagazine.AddLoad(string)
+        //  (this will add a note to the OutNoteList)
+        //
+        //NoteMagazine.Fester() (it is time to create the outnotes.) (very expensive here)
+        //  if (hasdecidedamount){decidedamount = (roundddown)lerp(6.5,2,livingly) }
+        //  while (OutNoteList.count() < decidedamount)
+        //  {
+        //      bool gonnadomultiple;
+        //      if (InNoteList.count() = 1) { gonnadomultiple = false }
+        //      else { gonnadomultiple = (Random(0,2) == 1) }
+        //      
+        //      if (gonnadomultiple) NoteMagazine.Grows();
+        //      else NoteMagazine.Grow();
+        //  }
+        //    
+        //  NoteMagazine.Push()
+        //  
+        //NoteMagazine.Grow(), 
+        //  my baby boy
+        //  you shall take 
+        //  a nicenote, from innotelist
+        //  store its octave, have it's ind
+        //  input the octaveless thing as a key to the dictionary
+        //  have the dictionary give you back a relative string.  (technically two, but you biasly get rid of one of them, and have picked one of the notes in the string)
+        //  get the othernote it's looking for by refrencing nicenote, adding and compensating
+        //  see if the note already exists in OutNoteList, if not, addload it 
+        //  see if the note already exists in InNoteList, if not, add it 
+        //
+        //NoteMagazine.Grows(), 
+        //  my baby boy
+        //  you shall recieve
+        //  two nicenotes, from innotelist
+        //  count their octs*8 + inds*1, let the lowest be the rootnote, latter be the relnote
+        //  the rootnote shall be 1-x, the relnote can vary in octave from the first, so it shall store how far away from the first it is, and say, well, 2-y, or 1-(x+4)
+        //  
+        //  input the octaveless things as a key to the dictionary
+        //  have the dictionary give you back a relative string.  (technically two, but you biasly get rid of one of them, and have picked one of the notes in the string)
+        //  get the othernote it's looking for by refrencing nicenote, adding and compensating
+        //  see if the notes already exists in OutNoteList, addload the ones that don't
+        //  see if the notes already exists in InNoteList, add the ones that don't
+        //
+        //NoteMagazine.Push()
+        //  Takes all the notes and sends them over to ChitChat
+        //  clears slotted notes beforeso
+        //
+        //this calls for a dictionary,like list.
+        //all notes, and all two-notes, has an array of two strings: one for ambient easynote, one for chord-y dissonantnote.
+        //when given this key^^^, it returns the array of two strings,
+        //depending on livelyness, it'll be biased towards picking its thing (((-cos(livelyness*pi))^0.52)/2+0.5
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //---time to speak wait and delay
+        //:maxwait~=32bars
+        //
+        //the idea that popped up is:
+        //chord exhaustion: the more chords that are played, the longer they'll wait for the next set
+        //so, when a chord is played, it'll increase chordexhaustion(float).
+        //
+        //big brainwave,playing chords in: 
+        //ambiancy will increment chordexhaustion a lot      /  //////un-exhausts slowly     0.975
+        //chordy   will increment chordexhaustion a little   /  //////un-exhausts rapidly    0.935
+        //
+        //while playing chords, there should be a chance it'll ignore it's exhaustion, so that it can play stuff sequencially
+        //only a human power(no special treatment): chords played in sequence still increment chordexhaustion
+        //once it's started waiting, it shant stop
+        //
+        //
+        //so, how does this *realllllly* work. how will it be inserted into the other code and shit
+        //well, ok, lets not discuss how it's inserted, but still how it works or smth
+        //
+        //so we have the variable "livelyness" or smth, 0 is ambiancy, 1 is chordy, slow, fast
+        //
+        //we want to make it so that when livelyness is higher, chords play more frequently, and may have a higher chance of sequencing, yet even the highest one has 
+        //      so, when it's low,  chords   play     unfrequently          sometimes with      sequences      but even the sequences are slow
+        //      when it's high,   chords     play   more often       though   with breaks and that            sequences make big pauses too
+        //0 = ambiency,  1 = chordy
+        //
+        //every chord is independant, funnily enough, though present is made up of past.
+        //the present made would be made up of. chordexhaustion
+        //
+        //
+        //sequencedchord = false
+        //everytime the chord is played it does a 
+        //      chordexhaustion^2 + chordexhaustion + (lerp(0.5, 3, livelyness))
+        //the sequencing code::
+        //            
+        //      i want the chance for it to be a sequenced chord to be dependant on two things:
+        //          1: Livelyness, the bigger, the more chance
+        //          2: chordexhaustion, the more, the less chacne
+        //      and so i roll a number between 0-1.000 = feelingtopolay:
+        //          threshholdtoplay = (0.9-(livelyness*0.9)) + chordexaustion*0.08
+        //          if feelingtoplay > (thing(threshholdtoplay)), sequencedchord = true
+        //            
+        //      if (sequencedchord)
+        //      1 = (rounded down) random(100, 500-(int)(livelyness*375))/100
+        //      { thedelay = wait.bar(1); }
+        //      else:
+        //      the delay should be made into NOT the chordexhaustion
+        //      chordexhaustion should be rounded into an int, then the delay shall be made
+        //      the delay = wait.bar(int (int)chordexhaustion)
+        //
+        //at the update()
+        //      chordexhaustion is proportionally reduced by *= lerp(0.975, 0.925, livelyness)
+        //      chordtimer--;
+        //
+        //--------
+        //
+        //Liaisons:
+        //
+        //There's many ideas that popped up suddenly, all features that would exist to be complementing a long wait
+        //Well, when they're implemented, they would just *be* more prevalent during long waits(ambiances).
+        //
+        //Most of these ideas bear to modify fundamental blocks of ChitChat
+        //
+        //  idea    :   having some liaisons evolve (change note),
+        //                  or transposing key while waiting, or min/maj switch
+        //  idea    :   chance of many liaisons being occationally strummed (lightly)
+        //  idea    :   having the ChitChat arpmode change over time too
+        //  idea    :   having ChitChat arps and strums interlink, so that a strum can change the arpmode, and have
+        //              more flare too: that it pauses arp a bit before and after.
+        //  idea    :   having the notes by ChitChat be played in creciendoes and the opposite
+        //  idea    :   make more ChitChat arpmodes, some of which can play multiple notes and also wait
+        //  idea    :   add functionality in "collectivearpstep" to process and play multiple notes 
+        //
+        //
+        //so lets go through and think, what to set up for these things?
+        //
+        //
+        //so, the first one has two different things cuz it's targetting two different areas, so we're dealing with two different places
+        //
+        //lets deal with what's affecting everything first! The key modulation / minmaj switch
+        //So, when would this happen? After a while? When's a while? What's time?
+        //We need to set a Chordstopwatch- actually, i just reazied everything i've used that counts down to 0 is a *timer*, not a stopwatch
+        //still, for here, it would actually be nice to have a chordstopwatch (something that counts upwards) resetted to 0.
+        //this could be called on wipe()
+        //
+        //we want to make it so that the more time(stopwatch) that goes, the more likely it is that the all get shifted. (want it to be most probably happen at 16bars(still a 1/4ths roll of it happening at all)
+        //  a "shift" can be three things: either a modulation, a minmaj switch, or a ,,, transposition?
+        //  a "shift" can result in three things happening: either a modulation (minmaj is in here), or a transposition
+        //      if it gets a modulation, it calls Pushmodulation() like, 3 times. the modulation is permanent, as the key will simply be used by the next chord (don't gotta cuz pushmodulation does that)
+        //      if it gets a transposition, every note in LiaisonList gets a flat or a sharp. this is temporary, as the liaisons are wipe();d by the next chord (must Analyze())
+        //  whatever happens, log the change
+        //      log the modulation by,, urm, referencing CurrentKey (I should probably just rework pushmodulation)
+        //
+        //oh, and when things get shifted, reset the timer so that it doesn't do it *many times*  
+        //      have a chance(smaller chance the bigger stopwatch was) to make a new bar-timer which when elapsed, reverts the change
+        //          if there was a modulation, add the inverse of the steps taken.
+        //          if there was a transposition, SubString(0,3) all liaisonnotes (cut off flats sharps)
+        //
+        //
+        //so, the evolving notes: (lol this do be collective thinking)
+        //lets picture a four noted upwards arpegio
+        //we want to make it so that all notes have a chance to somehow shift one up/downwards
+        //      the chance any note will shift increases the longer it's been since the last shift (did i meantion we want a shiftstopwatch?, --reset to zero-- shiftstopwatch = debugtimer.)
+        //          
+        //      this chance shall be rolled after playing a note (it is much harder to modify the arp before, as it might break together by trying to analyze() it)
+        //      the chance is, like, random(debugtimer-shiftstopwatch, debugtimer-shiftstopwatch+7000) > 7000+shiftstopwatch
+        //      
+        //      if it hits, ok. hopefully we know what index it is in the liaisonlist, cuz we gonna modify it to go either up or down    
+        //          
+        //          there's a hypothetical universe where a note shall is less likely to shift if already shifted. in that universe, it's a wheelspin with paid entry to who gets shifted.
+        //          in that universe i'd require liaison to have a number to be resetted, "votes". and  the whole thing to count "totalvotes" 
+        //          every time a note is played, we start the mechanism.
+        //          we add the time it had waited (shh) to their "votes" and "totalvotes"
+        //          roll (random(0, totalvotes) < their.votes), if less: {modify their.note; subtract their.votes from totalvotes; reset their.votes}
+        //
+        //this also points towards a hot new "ChitChat.Modify(int whichone)" method
+        //
+        //
+        //
+        //so, strums
+        //well, 1 or 2 delay between strummed notes, somethighn like that 
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //ChitChat.Update(
+        //ChitChat.Anarchy(
+        //ChitChat.Analyze(
+        //ChitChat.PrintRace(
+        //ChitChat.Add(
+        //ChitChat.Wipe(
+        //ChitChat.RandomMode(
+        //ChitChat.CollectiveArpStep(
+        //
+        //
+        //
+        //Fetter
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //
+        //let's discuss frequency : waits : delays
+        //      the actual quantisation update 
+        //
+        //
+        //
+        //
+        //
+
+
+
         Color mycolor = new(0f, 0f, 1f, 1f);
         float myred;
         float mygreen;
@@ -1750,129 +1926,22 @@ namespace PlopMachine
             debugtimer++;
             var mic = self.cameras[0].virtualMicrophone;
             CurrentRegion = self.world.region.name;
-            //Debug((int)(Math.Cos(UnityEngine.Mathf.PerlinNoise(debugtimer / 2000f, 7f + (debugtimer / 8000f)) * Math.PI) * 100));
-            Debug("hello");
-            //PlayEntry(mic);
-            //Dust.Update(mic, this);
+            CurrentRegion ??= "sl";
+            PlayEntry(mic);
+            Dust.Update(mic, this);
+            //RainMeadow.Debug(MeadowMusic.vibeIntensity ??= 231);
+            //RainMeadow.Debug(MeadowMusic.vibePan ??= 20);
 
-            //Debug($"CurrentRegion is: {CurrentRegion}");
-            if (CurrentRegion == null)
-            {
-                CurrentRegion = "sl";
-            }
-            mycolor = new(myred, mygreen, myblue, 1f);
-            myred   *= 0.97f;
+            myred *= 0.97f;
             mygreen *= 0.963f;
-            myblue  *= 0.94f;
+            myblue *= 0.94f;
             if (myred == 0f && mygreen == 0f && myblue == 0f)
             {
-                myred = 0.02f;
+                myred = 0.06f;
             }
-            //Debug(mic.soundObjects.Count);
+            mycolor = new(myred, mygreen, myblue, 1f);
 
-            //yoyo = Input.GetKey("1");
-            //if (Input.GetKey("1") && !yoyo)
-            //{
-            //    //agora -= 1;
-            //    lel++;
-            //    if (lel > thepresets.Length) { lel = 0; }
-            //    Debug("Reverb selected: " + thepresets[lel]);
-            //}
-            /*
-            if (Input.GetKey("1") && !yoyo)
-            {
-                QueuedModulation = 2;
-                PushModulation();
-            }
-            yoyo = Input.GetKey("1");
-            if (Input.GetKey("2") && !yoyo2)
-            {
-                if (inmajorscale)
-                {
-                    inmajorscale = false;
-                    Debug("Minor scale now");
-                    //weplipping = false;
-                }
-                else
-                {
-                    inmajorscale = true;
-                    Debug("Major scale now");
-                    //weplipping = true;
-                }
-
-            }
-            yoyo2 = Input.GetKey("2");
-
-            if (Input.GetKey("5") && !yoyo3)
-            {
-                revbvalues[lel2] = revbvalues[lel2] + RangeAdjs[lel3];
-                Debug($"Currently: {revbvalues[lel2]}");
-            }
-            yoyo3 = Input.GetKey("5");
-            if (Input.GetKey("6") && !yoyo4)
-            {
-                //] RangeAdjs
-                if (lel3 == thepresets.Length-1) { lel3 = 0; }
-                else
-                {
-                    lel3++;
-                }
-                Debug(RangeAdjs[lel3]);
-                //  revbvalues
-                //  revbnames  this one switches the amount of shit
-            }
-            yoyo4 = Input.GetKey("6");
-            if (Input.GetKey("7") && !yoyo5)
-            {
-                if (lel2 == thepresets.Length-1) { lel2 = 0; }
-                else
-                {
-                    lel2++;
-                }
-                Debug(revbnames[lel2]);
-                Debug($"Currently: {revbvalues[lel2]}");
-                //switches them around, this one to the right as lel3
-            }
-            yoyo5 = Input.GetKey("7");
-            if (Input.GetKey("t") && !yoyo6)
-            {
-                revbvalues[lel2] = revbvalues[lel2] - RangeAdjs[lel3];
-                Debug($"Currently: {revbvalues[lel2]}");
-            }
-            yoyo6 = Input.GetKey("t");
-            if (Input.GetKey("y") && !yoyo7)
-            {
-                if (lel3 == 0) { lel3 = thepresets.Length-1; }
-                else
-                {
-                    lel3--;
-                }
-                Debug($"Adjusts by: {RangeAdjs[lel3]}");
-            }
-            yoyo7 = Input.GetKey("y");
-            if (Input.GetKey("u") && !yoyo8)
-            {
-                if (lel2 == 0) { lel2 = thepresets.Length - 1; }
-                else
-                {
-                    lel2--;
-                }
-                Debug(revbnames[lel2]);
-                Debug($"Currently: {revbvalues[lel2]}");
-            }
-            yoyo8 = Input.GetKey("u"); 
-            if (Input.GetKey("p") && !yoyo9)
-            {
-                Debug("This preset's values are");
-                for (int i = 0; i < thepresets.Length-1; i++)
-                {
-                    Debug(revbnames[i] + " " + revbvalues[i]);
-                }
-            }
-            yoyo9 = Input.GetKey("p");
-            */
         }
-
 
         public static readonly SoundID HelloC = new SoundID("HelloC", register: true);
         public static readonly SoundID HelloD = new SoundID("HelloD", register: true);
@@ -1881,25 +1950,6 @@ namespace PlopMachine
         public static readonly SoundID HelloG = new SoundID("HelloG", register: true);
         public static readonly SoundID HelloA = new SoundID("HelloA", register: true);
         public static readonly SoundID HelloB = new SoundID("HelloB", register: true);
-
-
-        public static readonly SoundID TriangleC1 = new SoundID("TriangleC1", register: true);
-        public static readonly SoundID TriangleC2 = new SoundID("TriangleC2", register: true);
-        public static readonly SoundID TriangleC3 = new SoundID("TriangleC3", register: true);
-        public static readonly SoundID TriangleC4 = new SoundID("TriangleC4", register: true);
-        public static readonly SoundID TriangleC5 = new SoundID("TriangleC5", register: true);
-        public static readonly SoundID TriangleC6 = new SoundID("TriangleC6", register: true);
-        public static readonly SoundID TriangleC7 = new SoundID("TriangleC7", register: true);
-
-        public static readonly SoundID LongswavC1 = new SoundID("LongswavC1", register: true);
-        public static readonly SoundID LongswavC2 = new SoundID("LongswavC2", register: true);
-        public static readonly SoundID LongswavC3 = new SoundID("LongswavC3", register: true);
-        public static readonly SoundID LongswavC4 = new SoundID("LongswavC4", register: true);
-        public static readonly SoundID LongswavC5 = new SoundID("LongswavC5", register: true);
-        public static readonly SoundID LongswavC6 = new SoundID("LongswavC6", register: true);
-        public static readonly SoundID LongswavC7 = new SoundID("LongswavC7", register: true);
-
-
         public static readonly SoundID C1LongSine = new SoundID("C1LongSine", register: true);
         public static readonly SoundID C2LongSine = new SoundID("C2LongSine", register: true);
         public static readonly SoundID C3LongSine = new SoundID("C3LongSine", register: true);
@@ -2005,27 +2055,5 @@ namespace PlopMachine
         public static readonly SoundID C5ShortTrisaw = new SoundID("C5ShortTrisaw", register: true);
         public static readonly SoundID C6ShortTrisaw = new SoundID("C6ShortTrisaw", register: true);
         public static readonly SoundID C7ShortTrisaw = new SoundID("C7ShortTrisaw", register: true);
-
-        private static string LogTime() { return ((int)(Time.time * 1000)).ToString(); }
-        public static void Debug(object data, [CallerMemberName] string callerName = "")
-        {
-            UnityEngine.Debug.Log($"{LogTime()}|{callerName}:{data}");
-        }
-
-        private void IntroRollMusic_ctor(On.Music.IntroRollMusic.orig_ctor orig, Music.IntroRollMusic self, Music.MusicPlayer musicPlayer)
-        {
-            orig(self, musicPlayer);
-            var TheTracktm = self.subTracks[1];
-            self.subTracks.Remove(TheTracktm);
-            self.subTracks.Add(new Music.MusicPiece.SubTrack(self, 1, "RW_18 - The Captain"));
-
-
-            // self.meter.hud.PlaySound(SoundID.HUD_Food_Meter_Fill_Plop_A);
-
-            if (self.musicPlayer.manager.menuMic != null)
-            {
-                self.musicPlayer.manager.menuMic.PlaySound(PlopMachine.HelloC);
-            }
-        }
     }
 }

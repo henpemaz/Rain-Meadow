@@ -33,6 +33,7 @@ namespace RainMeadow
         static VibeZone? activeZone = null;
 
         static float? vibeIntensity = null;
+        //public static float? vibePan = null;
 
         struct VibeZone
         {
@@ -165,6 +166,7 @@ namespace RainMeadow
                 //activezonedict has the room ids of each vibe zone's room as keys
                 int[] rooms = activeZonesDict.Keys.ToArray();
                 float[] dists = new float[rooms.Length];
+                //float[] pans = new float[rooms.Length];
                 //this for loop populates the dist array with the distances of the player to each of the vibe zone rooms
                 for (int i = 0; i < rooms.Length; i++)
                 {
@@ -174,8 +176,11 @@ namespace RainMeadow
                     Vector2 v2 = room.world.RoomToWorldPos(Vector2.zero, rooms[i]);
                     //calculate the flat distance between these two vectors
                     dists[i] = (v2 - v1).magnitude;
+                    //be me 5000,    be vibezone  400,  thing should be left, so minus, so 400-5000
+                    //pans[i] = v2.x - v1.x;
                 }
                 float minDist = Mathf.Min(dists);
+                //float pan = pans[0];
                 //we now have the smallest of all the distances, aka the one closest to the player. grab this smallest distance's corresponding room id
                 int closestVibe = rooms[dists.ToList().IndexOf(minDist)];
                 //and just grab its corresponding vibezone from the dict
@@ -187,6 +192,7 @@ namespace RainMeadow
                     musicPlayer.song.FadeOut(40f);
                     activeZone = null;
                     vibeIntensity = null;
+                    //vibePan = null;
                 }
                 //if this active zone's song is not currently playing, and we are within its radius
                 else if (musicPlayer.song.name != az.songName && minDist < az.radius)
@@ -199,6 +205,7 @@ namespace RainMeadow
                 else if (minDist < az.radius)
                 {
                     vibeIntensity = Custom.LerpMap(minDist, az.radius, 0, 0.5f, 1);
+                    //vibePan = Custom.LerpMap(pan, -az.radius, az.radius, -1, 1) * (1 - vibeIntensity);
                     musicPlayer.song.baseVolume = Custom.LerpMap(minDist, az.radius, 0, 0.5f, 1) * 0.3f;
                 }
             }
