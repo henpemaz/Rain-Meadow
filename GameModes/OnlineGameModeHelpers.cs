@@ -87,7 +87,7 @@ namespace RainMeadow
             PlacedObject.Type.VultureGrub,
             PlacedObject.Type.DeadVultureGrub,
             //PlacedObject.Type.ScavengerTreasury,  //Spear, Explosive spear, Scav bomb, Pearl, & Laterns
-            //PlacedObject.Type.MultiplayerItem,    //Rock, Spear, ExplosiveSpear, Bomb, SporePlant data
+            //PlacedObject.Type.MultiplayerItem,    //ARENA_SPAWNS for Rock, Spear, ExplosiveSpear, Bomb, SporePlant data
             //PlacedObject.Type.SporePlant,         //abstractConsumable Child MEDIUM
             PlacedObject.Type.ReliableSpear,        //Spears have MSC elements
             PlacedObject.Type.NeedleEgg,
