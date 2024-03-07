@@ -17,9 +17,9 @@ namespace RainMeadow
             RoomSettings roomsetting = new RoomSettings(newObjectEvent.roomName, world.region, false, false, OnlineManager.lobby.gameMode.LoadWorldAs(world.game));
             RainMeadow.Debug("serializedObject: " + newObjectEvent.serializedObject);
             var apo = SaveState.AbstractPhysicalObjectFromString(world, newObjectEvent.serializedObject);
-            var asc = new SeedCob.AbstractSeedCob(world, apo.realizedObject, apo.pos, id, newObjectEvent.originRoom, newObjectEvent.placedObjectIndex, newObjectEvent.originallyDead,
+            var asc = new SeedCob.AbstractSeedCob(world, apo.realizedObject, apo.pos, apo.ID, newObjectEvent.originRoom, newObjectEvent.placedObjectIndex, newObjectEvent.originallyDead,
                 roomsetting.placedObjects[newObjectEvent.placedObjectIndex].data as PlacedObject.ConsumableObjectData);
-
+            asc.ID = id;
             return new OnlineSeedCob(newObjectEvent, asc);
         }
 

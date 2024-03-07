@@ -87,16 +87,16 @@ namespace RainMeadow
             PlacedObject.Type.VultureGrub,
             PlacedObject.Type.DeadVultureGrub,
             //PlacedObject.Type.ScavengerTreasury,  //Spear, Explosive spear, Scav bomb, Pearl, & Laterns
-            //PlacedObject.Type.MultiplayerItem,    //other spear types
+            //PlacedObject.Type.MultiplayerItem,    //Rock, Spear, ExplosiveSpear, Bomb, SporePlant data
             //PlacedObject.Type.SporePlant,         //abstractConsumable Child MEDIUM
-            PlacedObject.Type.ReliableSpear,
+            PlacedObject.Type.ReliableSpear,        //Spears have MSC elements
             PlacedObject.Type.NeedleEgg,
             PlacedObject.Type.BubbleGrass,
             PlacedObject.Type.Hazer,
             PlacedObject.Type.DeadHazer,
-            //PlacedObject.Type.VultureMask,        //AbstractPhysicalObject Child MEDIUM
-            //PlacedObject.Type.HangingPearls,      //MSC?
-            PlacedObject.Type.Lantern,
+            PlacedObject.Type.VultureMask,          //MSC
+            //PlacedObject.Type.HangingPearls,      //MSC
+            PlacedObject.Type.Lantern
         };
     }
 }

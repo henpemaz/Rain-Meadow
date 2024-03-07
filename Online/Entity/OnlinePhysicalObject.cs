@@ -77,10 +77,11 @@ namespace RainMeadow
                 switch (apo)
                 {
                     case AbstractSpear:
+                        //may break with downpour
                         return new OnlinePhysicalObject(opoDef, apo);
-                    case VultureMask.AbstractVultureMask abstractVultureMask:
-                        RainMeadow.Debug("AbstractVultureMask not handled");
-                        return new OnlinePhysicalObject(opoDef, abstractVultureMask);
+                    case VultureMask.AbstractVultureMask:
+                        //May break with downpour
+                        return new OnlinePhysicalObject(opoDef, apo);
                     case EggBugEgg.AbstractBugEgg abstractBugEgg:
                         RainMeadow.Debug("AbstractBugEgg not handled");
                         return new OnlinePhysicalObject(opoDef, abstractBugEgg);
