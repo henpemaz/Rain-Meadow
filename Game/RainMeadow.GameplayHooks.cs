@@ -26,12 +26,13 @@ namespace RainMeadow
                 return;
             }
 
-            if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
                 if (objectHit != null)
                 {
-                    OnlineManager.lobby.owner.InvokeRPC(OnlinePhysicalObject.HitByExplosion, objectHit, hitFac);
+                    room.owner.InvokeRPC(OnlinePhysicalObject.HitByExplosion, objectHit, hitFac);
                 }
             }
 
@@ -47,11 +48,12 @@ namespace RainMeadow
                 return;
             }
 
-            if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
                 OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var abstWeapon);
-                OnlineManager.lobby.owner.InvokeRPC(OnlinePhysicalObject.HitByWeapon, objectHit, abstWeapon);
+                room.owner.InvokeRPC(OnlinePhysicalObject.HitByWeapon, objectHit, abstWeapon);
             }
             else 
             {

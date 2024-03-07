@@ -86,15 +86,22 @@ namespace RainMeadow
 
         private void BubbleGrass_Update(On.BubbleGrass.orig_Update orig, BubbleGrass self, bool eu)
         {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self,eu);
+                return;
+            }
+
             var prevOxygenLevel = self.AbstrBubbleGrass.oxygenLeft;
             orig(self, eu);
             var currentOxygenLevel = self.AbstrBubbleGrass.oxygenLeft;
 
-            if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                if (prevOxygenLevel != currentOxygenLevel) {
+                if (prevOxygenLevel > currentOxygenLevel) {
                     OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineBubbleGrass);
-                    OnlineManager.lobby.owner.InvokeRPC(ConsumableRPCs.SetOxygenLevel, onlineBubbleGrass, currentOxygenLevel);
+                    room.owner.InvokeRPC(ConsumableRPCs.SetOxygenLevel, onlineBubbleGrass, currentOxygenLevel);
                 }
             }
         }
@@ -173,15 +180,16 @@ namespace RainMeadow
         {
             if (isStoryMode(out var gameMode))
             {
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
-                {
-
-                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                    {
-                        if (ac.state.alive) return;
-                    }
-                }
+                //Initiate death whenever any player dies.
+                //foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+                //{
+                //
+                //    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                //    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                //    {
+                //        if (ac.state.alive) return;
+                //    }
+                //}
                 //INITIATE DEATH
                 foreach (OnlinePlayer player in OnlineManager.players)
                 {
