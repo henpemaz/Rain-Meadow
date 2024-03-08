@@ -61,7 +61,9 @@ namespace RainMeadow
                 {
                     displayer.OnUpdate(); // so this only updates while the creature is in-room, what about creatures in pipes though
                 }
-                
+
+                if (self is AirBreatherCreature breather) breather.lungs = 1f;
+
                 if(self.room != null)
                 {
                     // fall out of world handling
