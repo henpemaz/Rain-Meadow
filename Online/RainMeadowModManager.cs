@@ -27,10 +27,8 @@ namespace RainMeadow
             {
                 System.Type type = typeof(MoreSlugcats.MMF);
 
-                // Get all static fields of the type
                 FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
 
-                // Filter and add fields of type Configurable<bool> to the list
                 foreach (FieldInfo field in fields)
                 {
                     if (field.Name == "MOD_ID") continue;
