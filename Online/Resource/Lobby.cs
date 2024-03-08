@@ -1,6 +1,8 @@
-﻿using System;
+﻿using RainMeadow.Properties;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace RainMeadow
 {
@@ -14,6 +16,7 @@ namespace RainMeadow
         public Dictionary<OnlinePlayer, OnlineEntity.EntityId> playerAvatars = new(); // should maybe be in GameMode
 
         public string[] mods = RainMeadowModManager.GetActiveMods();
+        public List<FieldInfo> settings = RainMeadowModManager.GetSettings();
         public static bool modsChecked;
 
         public string? password;
@@ -163,6 +166,7 @@ namespace RainMeadow
             public Generics.AddRemoveSortedUshorts inLobbyIds;
             [OnlineField]
             public string[] mods;
+            public List<FieldInfo> settings;
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
@@ -170,6 +174,8 @@ namespace RainMeadow
                 players = new(lobby.participants.Keys.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
                 mods = lobby.mods;
+                settings = lobby.settings;
+                
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -195,7 +201,10 @@ namespace RainMeadow
                 {
                     modsChecked = true;
                     RainMeadowModManager.CheckMods(this.mods, lobby.mods);
+                    RainMeadowModManager.CheckSettings(this.settings, lobby.settings);
                 }
+
+
 
                 base.ReadTo(resource);
             }
