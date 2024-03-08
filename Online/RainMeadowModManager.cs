@@ -48,15 +48,11 @@ namespace RainMeadow
 
         internal static void CheckSettings(List<FieldInfo> lobbySettings, List<FieldInfo> localSettings)
         {
-
-            foreach(FieldInfo field in localSettings)
+            if (Enumerable.SequenceEqual(lobbySettings, localSettings)) // null ref on lobby settings, data is not transferred
             {
-                RainMeadow.Debug("LOCAL SETTTINGS: " + field.Name);
+                RainMeadow.Debug("Game settings match!");
             }
-            foreach (FieldInfo field2 in lobbySettings) // Null ref, data is not coming through
-            {
-                RainMeadow.Debug("LOBBY SETTTINGS: " + field2.Name);
-            }
+            RainMeadow.Debug("Game settings DO NOT match!");
 
         }
 
