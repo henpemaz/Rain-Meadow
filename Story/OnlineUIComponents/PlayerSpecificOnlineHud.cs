@@ -166,9 +166,12 @@ namespace RainMeadow
                 if (found)
                 {
                     this.drawpos = camrect.GetClosestInteriorPoint(rawPos);
+                    Vector2 translation = pointDir * 10f; // Vector shift for shortcut viewability
+                    this.drawpos += translation;
+
                     if (drawpos != rawPos)
                     {
-                        pointDir = (rawPos - drawpos).normalized;
+                        pointDir = (rawPos - drawpos).normalized * -1; // Point away from the shortcut entrance
                     }
                 }
                 else // elsewhere, use world pos
