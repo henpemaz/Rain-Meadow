@@ -1,6 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using IL.MoreSlugcats;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MoreSlugcats;
+using System.Reflection;
+using Mono.Cecil;
+using static RainMeadow.Lobby;
+using static RainMeadow.OnlineResource;
+using UnityEngine.UI;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -10,6 +18,54 @@ namespace RainMeadow
         {
             return ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().Select(mod => mod.id.ToString()).ToArray();
         }
+
+        internal static List<FieldInfo> GetSettings()
+        {
+            List<FieldInfo> configurables = new List<FieldInfo>();
+
+            if (ModManager.MMF)
+            {
+                System.Type type = typeof(MoreSlugcats.MMF);
+
+                // Get all static fields of the type
+                FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
+
+                // Filter and add fields of type Configurable<bool> to the list
+                foreach (FieldInfo field in fields)
+                {
+                    if (field.Name == "MOD_ID") continue;
+
+                    {
+                        RainMeadow.Debug("FIELD Name: " + field.Name);
+                        configurables.Add(field);
+                    }
+                }
+                return configurables;
+
+            }
+            return configurables;
+        }
+
+        internal static void CheckSettings(List<FieldInfo> lobbySettings, List<FieldInfo> localSettings)
+        {
+
+            foreach(FieldInfo field in localSettings)
+            {
+                RainMeadow.Debug("LOCAL SETTTINGS: " + field.Name);
+            }
+/*
+            [Error: RainMeadow] 23:30:59 | 11364 | OnlineManager.ProcessIncomingState:System.NullReferenceException: Object reference not set to an instance of an object
+  at RainMeadow.RainMeadowModManager.CheckSettings(System.Collections.Generic.List`1[T] lobbySettings, System.Collections.Generic.List`1[T] localSettings)[0x00050] in C: \Users\lol\source\repos\Rain - Meadow\Online\RainMeadowModManager.cs:52
+  at RainMeadow.Lobby + LobbyState.ReadTo(RainMeadow.OnlineResource resource)[0x00180] in C: \Users\lol\source\repos\Rain - Meadow\Online\Resource\Lobby.cs:204
+  at RainMeadow.OnlineResource.ReadState(RainMeadow.OnlineResource + ResourceState newState)[0x002eb] in C: \Users\lol\source\repos\Rain - Meadow\Online\Resource\OnlineResource.State.cs:64
+  at RainMeadow.OnlineManager.ProcessIncomingState(RainMeadow.OnlineState state)[0x00069] in C: \Users\lol\source\repos\Rain - Meadow\Online\OnlineManager.cs:233*/
+            foreach (FieldInfo field2 in lobbySettings)
+            {
+                RainMeadow.Debug("LOBBY SETTTINGS: " + field2.Name);
+            }
+
+        }
+
 
         internal static void CheckMods(string[] lobbyMods, string[] localMods)
         {
