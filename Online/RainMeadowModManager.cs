@@ -53,13 +53,7 @@ namespace RainMeadow
             {
                 RainMeadow.Debug("LOCAL SETTTINGS: " + field.Name);
             }
-/*
-            [Error: RainMeadow] 23:30:59 | 11364 | OnlineManager.ProcessIncomingState:System.NullReferenceException: Object reference not set to an instance of an object
-  at RainMeadow.RainMeadowModManager.CheckSettings(System.Collections.Generic.List`1[T] lobbySettings, System.Collections.Generic.List`1[T] localSettings)[0x00050] in C: \Users\lol\source\repos\Rain - Meadow\Online\RainMeadowModManager.cs:52
-  at RainMeadow.Lobby + LobbyState.ReadTo(RainMeadow.OnlineResource resource)[0x00180] in C: \Users\lol\source\repos\Rain - Meadow\Online\Resource\Lobby.cs:204
-  at RainMeadow.OnlineResource.ReadState(RainMeadow.OnlineResource + ResourceState newState)[0x002eb] in C: \Users\lol\source\repos\Rain - Meadow\Online\Resource\OnlineResource.State.cs:64
-  at RainMeadow.OnlineManager.ProcessIncomingState(RainMeadow.OnlineState state)[0x00069] in C: \Users\lol\source\repos\Rain - Meadow\Online\OnlineManager.cs:233*/
-            foreach (FieldInfo field2 in lobbySettings)
+            foreach (FieldInfo field2 in lobbySettings) // Null ref, data is not coming through
             {
                 RainMeadow.Debug("LOBBY SETTTINGS: " + field2.Name);
             }
