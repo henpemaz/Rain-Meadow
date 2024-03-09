@@ -43,7 +43,6 @@ namespace RainMeadow
 
             On.RainWorldGame.GameOver += RainWorldGame_GameOver;
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
-          
 
         }
 

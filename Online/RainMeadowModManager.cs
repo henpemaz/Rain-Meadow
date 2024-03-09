@@ -11,9 +11,6 @@ namespace RainMeadow
         {
             return ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().Select(mod => mod.id.ToString()).ToArray();
         }
-
-
-
         internal static void CheckMods(string[] lobbyMods, string[] localMods)
         {
             if (Enumerable.SequenceEqual(localMods, lobbyMods))
