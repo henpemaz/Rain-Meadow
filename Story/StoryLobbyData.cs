@@ -1,5 +1,6 @@
 ﻿using Mono.Cecil;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using static RainMeadow.OnlineResource;
 
@@ -37,6 +38,9 @@ namespace RainMeadow
             public int quarterfood;
             [OnlineField]
             public int mushroomCounter;
+            [OnlineField]
+            public List<bool> storyRemixSettings;
+
 
             public State() {}
 
@@ -47,6 +51,7 @@ namespace RainMeadow
 
                 didStartGame = storyGameMode.didStartGame;
                 currentCampaign = storyGameMode.currentCampaign;
+                storyRemixSettings = storyGameMode.storyRemixSettings;
                 didStartCycle = storyGameMode.didStartCycle;
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
@@ -88,6 +93,8 @@ namespace RainMeadow
                 }
                 (lobby.gameMode as StoryGameMode).didStartGame = didStartGame;
                 (lobby.gameMode as StoryGameMode).currentCampaign = currentCampaign;
+                (lobby.gameMode as StoryGameMode).storyRemixSettings = storyRemixSettings;
+
 
                 (lobby.gameMode as StoryGameMode).didStartCycle = didStartCycle;
             }
