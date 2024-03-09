@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 
-
 namespace RainMeadow
 {
     public class RainMeadowModManager
