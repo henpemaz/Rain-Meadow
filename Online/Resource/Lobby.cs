@@ -71,10 +71,6 @@ namespace RainMeadow
             if (requestResult is GenericResult.Ok)
             {
                 MatchmakingManager.instance.JoinLobby(true);
-                if (!OnlineManager.lobby.isOwner)
-                {
-                    OnlineManager.lobby.owner.InvokeRPC(RPCs.GetStoryRemixSettings);
-                }
                 if (!isAvailable) // this was transfered to me because the previous owner left
                 {
                     WaitingForState();
