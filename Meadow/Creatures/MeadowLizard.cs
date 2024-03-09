@@ -3,7 +3,6 @@ using System;
 using RWCustom;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
-using System.Linq;
 
 namespace RainMeadow
 {
@@ -199,10 +198,10 @@ namespace RainMeadow
                     flipDirection = this.input[0].x;
                     cs[0].vel.x = 6f * flipDirection;
                     cs[0].vel.y = 6f;
-                    cs[1].vel.x = 4f * flipDirection;
-                    cs[1].vel.y = 4.5f;
-                    cs[2].vel.x = 4f * flipDirection;
-                    cs[2].vel.y = 4.5f;
+                    cs[1].vel.x = 5f * flipDirection;
+                    cs[1].vel.y = 5f;
+                    cs[2].vel.x = 5f * flipDirection;
+                    cs[2].vel.y = 5f;
                     creature.room.PlaySound(SoundID.Slugcat_From_Vertical_Pole_Jump, mainBodyChunk, false, 1f, 1f);
                     return;
                 }

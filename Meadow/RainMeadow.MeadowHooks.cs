@@ -37,9 +37,34 @@ namespace RainMeadow
 
             On.Room.LoadFromDataString += Room_LoadFromDataString1; // places of spawning items
 
+            // open gate
             new Hook(typeof(RegionGate).GetProperty("MeetRequirement").GetGetMethod(), this.RegionGate_MeetRequirement);
             new Hook(typeof(WaterGate).GetProperty("EnergyEnoughToOpen").GetGetMethod(), this.RegionGate_EnergyEnoughToOpen);
             new Hook(typeof(ElectricGate).GetProperty("EnergyEnoughToOpen").GetGetMethod(), this.RegionGate_EnergyEnoughToOpen);
+
+            On.Creature.Die += Creature_Die; // do not die!
+
+            On.WormGrass.Worm.ctor += Worm_ctor; // only cosmetic worms
+        }
+
+        private void Worm_ctor(On.WormGrass.Worm.orig_ctor orig, WormGrass.Worm self, WormGrass wormGrass, WormGrass.WormGrassPatch patch, Vector2 basePos, float reachHeight, float iFac, float lengthFac, bool cosmeticOnly)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                orig(self, wormGrass, patch, basePos, reachHeight, iFac, lengthFac, true);
+                return;
+            }
+
+            orig(self, wormGrass, patch, basePos, reachHeight, iFac, lengthFac, cosmeticOnly);
+        }
+
+        private void Creature_Die(On.Creature.orig_Die orig, Creature self)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                return;
+            }
+            orig(self);
         }
 
         public delegate bool orig_RegionGateBool(RegionGate self);

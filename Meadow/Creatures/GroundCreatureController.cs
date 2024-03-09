@@ -37,6 +37,8 @@ namespace RainMeadow
             var tile0 = creature.room.GetTile(chunks[0].pos);
             var tile1 = creature.room.GetTile(chunks[1].pos);
 
+            bool localTrace = Input.GetKey(KeyCode.L);
+
             if (CanClimbJump)
             {
                 RainMeadow.Trace("can swing jump");
@@ -138,7 +140,7 @@ namespace RainMeadow
                 bool reachable = room.aimap.TileAccessibleToCreature(toPos.Tile, creature.Template);
                 bool keeplooking = true; // this could be turned into a helper and an early return
 
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"moving towards {toPos.Tile}");
+                if (localTrace) RainMeadow.Debug($"moving towards {toPos.Tile}");
                 if (this.forceJump > 0) // jumping
                 {
                     this.MovementOverride(new MovementConnection(MovementConnection.MovementType.Standard, basecoord, toPos, 2));
@@ -199,7 +201,7 @@ namespace RainMeadow
                             var tile = room.GetTile(basecoord + new IntVector2(num, 1));
                             if (!tile.Solid && tile.verticalBeam)
                             {
-                                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("pole close");
+                                if (localTrace) RainMeadow.Debug("pole close");
                                 toPos = WorldCoordinate.AddIntVector(basecoord, new IntVector2(0, 1));
                                 reachable = true;
                                 keeplooking = false;
@@ -213,7 +215,7 @@ namespace RainMeadow
                             var tileup2 = room.GetTile(basecoord + new IntVector2(num, 2));
                             if (!tileup1.Solid && tileup2.verticalBeam)
                             {
-                                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("pole far");
+                                if (localTrace) RainMeadow.Debug("pole far");
                                 toPos = WorldCoordinate.AddIntVector(basecoord, new IntVector2(0, 2));
                                 reachable = true;
                                 keeplooking = false;
@@ -225,20 +227,20 @@ namespace RainMeadow
                     {
                         if (this.input[0].x != 0) // to sides
                         {
-                            if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("sides");
+                            if (localTrace) RainMeadow.Debug("sides");
                             if (reachable)
                             {
-                                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("ahead");
+                                if (localTrace) RainMeadow.Debug("ahead");
                             }
                             else if (room.aimap.TileAccessibleToCreature(toPos.Tile + new IntVector2(0, 1), creature.Template)) // try up
                             {
-                                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("up");
+                                if (localTrace) RainMeadow.Debug("up");
                                 toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(0, 1));
                                 reachable = true;
                             }
                             else if (room.aimap.TileAccessibleToCreature(toPos.Tile + new IntVector2(0, -1), creature.Template)) // try down
                             {
-                                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("down");
+                                if (localTrace) RainMeadow.Debug("down");
                                 toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(0, -1));
                                 reachable = true;
                             }
@@ -247,19 +249,19 @@ namespace RainMeadow
                             var furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir * 3f));
                             if (room.aimap.TileAccessibleToCreature(furtherOut.Tile, creature.Template) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile, 10) > 0)
                             {
-                                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("reaching further");
+                                if (localTrace) RainMeadow.Debug("reaching further");
                                 toPos = furtherOut;
                                 reachable = true;
                             }
                             else if (room.aimap.TileAccessibleToCreature(furtherOut.Tile + new IntVector2(0, 1), creature.Template) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, 1), 10) > 0)
                             {
-                                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("further up");
+                                if (localTrace) RainMeadow.Debug("further up");
                                 toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, 1));
                                 reachable = true;
                             }
                             else if (room.aimap.TileAccessibleToCreature(furtherOut.Tile + new IntVector2(0, -1), creature.Template) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, -1), 10) > 0)
                             {
-                                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("further down");
+                                if (localTrace) RainMeadow.Debug("further down");
                                 toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, -1));
                                 reachable = true;
                             }
@@ -267,7 +269,7 @@ namespace RainMeadow
                             if (!reachable)
                             {
                                 // no pathing
-                                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("unpathable");
+                                if (localTrace) RainMeadow.Debug("unpathable");
                                 // don't let go of beams/walls/ceilings
                                 if (room.aimap.TileAccessibleToCreature(tile0.X, tile0.Y, creature.Template) && aiTile0.acc >= AItile.Accessibility.Climb)// && self.inAllowedTerrainCounter > 10)
                                 {
@@ -276,27 +278,27 @@ namespace RainMeadow
                                 }
                                 else // force movement
                                 {
-                                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("forced move");
+                                    if (localTrace) RainMeadow.Debug("forced move");
                                     this.MovementOverride(new MovementConnection(MovementConnection.MovementType.Standard, basecoord, furtherOut, 2));
                                 }
                             }
                         }
                         else
                         {
-                            if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("vertical");
+                            if (localTrace) RainMeadow.Debug("vertical");
 
                             if (keeplooking)
                             {
                                 if (reachable)
                                 {
-                                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("ahead");
+                                    if (localTrace) RainMeadow.Debug("ahead");
                                 }
                                 if (keeplooking)
                                 {
                                     var furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir * 2.2f));
                                     if (!room.GetTile(toPos).Solid && !room.GetTile(furtherOut).Solid && room.aimap.TileAccessibleToCreature(furtherOut.Tile, creature.Template)) // ahead unblocked, move further
                                     {
-                                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("reaching");
+                                        if (localTrace) RainMeadow.Debug("reaching");
                                         toPos = furtherOut;
                                         reachable = true;
                                     }
@@ -341,7 +343,7 @@ namespace RainMeadow
                     Moving();
                     if(toPos != creature.abstractCreature.abstractAI.destination)
                     {
-                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"new destination {toPos.Tile}");
+                        if (localTrace) RainMeadow.Debug($"new destination {toPos.Tile}");
                         this.ForceAIDestination(toPos);
                     }
                 }
