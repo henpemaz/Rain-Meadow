@@ -16,7 +16,7 @@ namespace RainMeadow
         public Dictionary<OnlinePlayer, OnlineEntity.EntityId> playerAvatars = new(); // should maybe be in GameMode
 
         public string[] mods = RainMeadowModManager.GetActiveMods();
-        public List<FieldInfo> settings = RainMeadowModManager.GetSettings();
+        public Dictionary<string, bool> settings = RainMeadowModManager.GetSettings();
         public static bool modsChecked;
         public string? password;
         public bool hasPassword => password != null;
@@ -165,7 +165,8 @@ namespace RainMeadow
             public Generics.AddRemoveSortedUshorts inLobbyIds;
             [OnlineField]
             public string[] mods;
-            public List<FieldInfo> settings;
+            [OnlineField]
+            public Dictionary<string, bool> settings;
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
