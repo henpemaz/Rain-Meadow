@@ -252,24 +252,16 @@ namespace RainMeadow
             else throw new InvalidProgrammerException("can't jump");
         }
 
-        // might need a new hookpoint between movement planing and movement acting
         private static void Lizard_Act(On.Lizard.orig_Act orig, Lizard self)
         {
             if (creatureControllers.TryGetValue(self.abstractCreature, out var c) && c is LizardController l)
             {
                 l.ConsciousUpdate();
 
-                var room = self.room;
-                var chunks = self.bodyChunks;
-                var nc = chunks.Length;
-
-                var aiTile0 = self.room.aimap.getAItile(chunks[0].pos);
-                var tile0 = self.room.GetTile(chunks[0].pos);
-
                 // lost footing doesn't auto-recover
                 if (self.inAllowedTerrainCounter < 10)
                 {
-                    if (l.input[0].y < 1 && !(chunks[0].contactPoint.y == -1 || chunks[1].contactPoint.y == -1 || self.IsTileSolid(1, 0, -1) || self.IsTileSolid(0, 0, -1)))
+                    if (l.input[0].y < 1 && !((self.bodyChunks)[0].contactPoint.y == -1 || (self.bodyChunks)[1].contactPoint.y == -1 || self.IsTileSolid(1, 0, -1) || self.IsTileSolid(0, 0, -1)))
                     {
                         self.inAllowedTerrainCounter = 0;
                     }

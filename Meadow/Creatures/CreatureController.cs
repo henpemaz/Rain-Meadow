@@ -74,11 +74,9 @@ namespace RainMeadow
         public int wantToPickUp;
         public int wantToThrow;
 
-        public int superLaunchJump;
         public int flipDirection;
         public int sleepCounter;
         public int blink;
-        public int forceBoost;
 
         public int touchedNoInputCounter;
         public bool standStillOnMapButton;
@@ -132,7 +130,7 @@ namespace RainMeadow
 
         public HUD.HUD.OwnerType GetOwnerType() => controlledCreatureHudOwner;
 
-        public void CheckInput()
+        public virtual void CheckInput()
         {
             for (int i = this.input.Length - 1; i > 0; i--)
             {
@@ -213,17 +211,6 @@ namespace RainMeadow
                 this.Blink(5);
             }
 
-            if (this.superLaunchJump > 10 && this.input[0].jmp && this.input[1].jmp && this.input[0].y < 1)
-            {
-                this.input[0].x = 0;
-                this.input[0].analogueDir.x *= 0;
-            }
-            else if (this.superLaunchJump >= 20)
-            {
-                this.input[0].x = 0;
-                this.input[0].analogueDir.x *= 0;
-            }
-
             // no input
             if (this.input[0].x == 0 && this.input[0].y == 0 && !this.input[0].jmp && !this.input[0].thrw && !this.input[0].pckp)
             {
@@ -233,14 +220,6 @@ namespace RainMeadow
             {
                 this.touchedNoInputCounter = 0;
             }
-
-            inputDir = input[0].analogueDir.magnitude > 0.2f ? input[0].analogueDir
-                : input[0].IntVec.ToVector2().magnitude > 0.2 ? input[0].IntVec.ToVector2().normalized
-                : Vector2.zero;
-
-            inputLastDir = input[1].analogueDir.magnitude > 0.2f ? input[1].analogueDir
-                : input[1].IntVec.ToVector2().magnitude > 0.2 ? input[1].IntVec.ToVector2().normalized
-                : Vector2.zero;
         }
 
         private SpecialInput GetSpecialInput(Vector2 referencePoint, int playerNumber, RainWorld rainWorld)
@@ -251,13 +230,13 @@ namespace RainMeadow
             if(controller is Joystick joystick)
             {
                 //if(controllerPreset == Options.ControlSetup.Preset.XBox)
-                specialInput.direction = new Vector2(joystick.GetAxis(2), joystick.GetAxis(3));
+                specialInput.direction = Vector2.ClampMagnitude(new Vector2(joystick.GetAxis(2), joystick.GetAxis(3)), 1f);
             }
             else
             {
                 if(Input.GetMouseButton(0))
                 {
-                    specialInput.direction = ((Vector2)Futile.mousePosition) - referencePoint;
+                    specialInput.direction = Vector2.ClampMagnitude((((Vector2)Futile.mousePosition) - referencePoint) / 500f, 1f);
                 }
             }
             return specialInput;
@@ -278,6 +257,14 @@ namespace RainMeadow
             // Input
             this.CheckInput();
 
+            inputDir = input[0].analogueDir.magnitude > 0.2f ? input[0].analogueDir
+                : input[0].IntVec.ToVector2().magnitude > 0.2 ? input[0].IntVec.ToVector2().normalized
+                : Vector2.zero;
+
+            inputLastDir = input[1].analogueDir.magnitude > 0.2f ? input[1].analogueDir
+                : input[1].IntVec.ToVector2().magnitude > 0.2 ? input[1].IntVec.ToVector2().normalized
+                : Vector2.zero;
+
             // a lot of things copypasted from from p.update
             if (this.wantToJump > 0) this.wantToJump--;
             if (this.wantToPickUp > 0) this.wantToPickUp--;
@@ -287,7 +274,6 @@ namespace RainMeadow
             if (this.input[0].pckp && !this.input[1].pckp) wantToPickUp = 5;
             if (this.input[0].thrw && !this.input[1].thrw) wantToThrow = 5;
 
-            if (this.forceBoost > 0) this.forceBoost--;
 
             // bunch of unimplemented story things
             // relevant to story
@@ -728,6 +714,11 @@ namespace RainMeadow
 
             GrabUpdate();
 
+            if (this.specialInput[0].direction != Vector2.zero)
+            {
+                LookImpl(creature.DangerPos + 500f * this.specialInput[0].direction);
+            }
+
             // player direct into holes simplified equivalent
             if ((input[0].x == 0 || input[0].y == 0) && input[0].x != input[0].y) // a straight direction
             {
@@ -752,5 +743,7 @@ namespace RainMeadow
             ai.tracker.Update(); // creature looker uses this
             ai.timeInRoom++;
         }
+
+        protected abstract void LookImpl(Vector2 pos);
     }
 }

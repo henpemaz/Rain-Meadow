@@ -206,27 +206,30 @@ namespace RainMeadow
             {
                 s.ConsciousUpdate();
 
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"current AI destination {s.creature.abstractCreature.abstractAI.destination}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"moving {s.forceMoving}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"movMode {self.movMode}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"commitedToMove {self.commitedToMove}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"animation {self.animation}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"commitedMoveFollowChunk {self.commitedMoveFollowChunk}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"drop {self.drop}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"ghostCounter {self.ghostCounter}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"occupyTile {self.occupyTile}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"pathingWithExits {self.pathingWithExits}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"pathWithExitsCounter {self.pathWithExitsCounter}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"swingPos {self.swingPos}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"swingProgress {self.swingProgress}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"commitToMoveCounter {self.commitToMoveCounter}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"footingCounter {self.footingCounter}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"moveModeChangeCounter {self.moveModeChangeCounter}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"notFollowingPathToCurrentGoalCounter {self.notFollowingPathToCurrentGoalCounter}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"pathWithExitsCounter {self.pathWithExitsCounter}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"stuckCounter {self.stuckCounter}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"stuckOnShortcutCounter {self.stuckOnShortcutCounter}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"swingClimbCounter {self.swingClimbCounter}");
+                if (Input.GetKey(KeyCode.L))
+                {
+                    RainMeadow.Debug($"current AI destination {s.creature.abstractCreature.abstractAI.destination}");
+                    RainMeadow.Debug($"moving {s.forceMoving}");
+                    RainMeadow.Debug($"movMode {self.movMode}");
+                    RainMeadow.Debug($"commitedToMove {self.commitedToMove}");
+                    RainMeadow.Debug($"animation {self.animation}");
+                    RainMeadow.Debug($"commitedMoveFollowChunk {self.commitedMoveFollowChunk}");
+                    RainMeadow.Debug($"drop {self.drop}");
+                    RainMeadow.Debug($"ghostCounter {self.ghostCounter}");
+                    RainMeadow.Debug($"occupyTile {self.occupyTile}");
+                    RainMeadow.Debug($"pathingWithExits {self.pathingWithExits}");
+                    RainMeadow.Debug($"pathWithExitsCounter {self.pathWithExitsCounter}");
+                    RainMeadow.Debug($"swingPos {self.swingPos}");
+                    RainMeadow.Debug($"swingProgress {self.swingProgress}");
+                    RainMeadow.Debug($"commitToMoveCounter {self.commitToMoveCounter}");
+                    RainMeadow.Debug($"footingCounter {self.footingCounter}");
+                    RainMeadow.Debug($"moveModeChangeCounter {self.moveModeChangeCounter}");
+                    RainMeadow.Debug($"notFollowingPathToCurrentGoalCounter {self.notFollowingPathToCurrentGoalCounter}");
+                    RainMeadow.Debug($"pathWithExitsCounter {self.pathWithExitsCounter}");
+                    RainMeadow.Debug($"stuckCounter {self.stuckCounter}");
+                    RainMeadow.Debug($"stuckOnShortcutCounter {self.stuckOnShortcutCounter}");
+                    RainMeadow.Debug($"swingClimbCounter {self.swingClimbCounter}");
+                }
             }
             orig(self);
         }
@@ -289,7 +292,7 @@ namespace RainMeadow
 
         protected override void LookImpl(Vector2 pos)
         {
-            throw new NotImplementedException();
+            scavenger.lookPoint = pos;
         }
     }
 }

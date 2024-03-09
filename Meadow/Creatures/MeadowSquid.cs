@@ -379,5 +379,14 @@ namespace RainMeadow
                 c.Emit(OpCodes.Mul);
             }
         }
+
+        protected override void LookImpl(Vector2 pos)
+        {
+            var dir = (pos - cicada.DangerPos) / 500f;
+            var mag = dir.magnitude;
+
+            (cicada.graphicsModule as CicadaGraphics).lookDir = dir.normalized * Mathf.Pow(mag, 0.5f) * 1.5f;
+            (cicada.graphicsModule as CicadaGraphics).lookRotation = - RWCustom.Custom.VecToDeg(dir);
+        }
     }
 }
