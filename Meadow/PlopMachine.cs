@@ -1584,7 +1584,7 @@ namespace RainMeadow
         //
         //
         //
-        //          ----QUANTIZATION UPDATE. Fichtean Update-----
+        //          ----Fichtean Update. QUANTIZATION UPDATE.-----
         //
         //
         //with this quantization comes liveliness, which is a thing i want to make
@@ -1741,6 +1741,8 @@ namespace RainMeadow
         //we want to make it so that when livelyness is higher, chords play more frequently, and may have a higher chance of sequencing, yet even the highest one has 
         //      so, when it's low,  chords   play     unfrequently          sometimes with      sequences      but even the sequences are slow
         //      when it's high,   chords     play   more often       though   with breaks and that            sequences make big pauses too
+        //
+        //
         //0 = ambiency,  1 = chordy
         //
         //every chord is independant, funnily enough, though present is made up of past.
@@ -1838,6 +1840,86 @@ namespace RainMeadow
         //
         //so, strums
         //well, 1 or 2 delay between strummed notes, somethighn like that 
+        //ok so how does this really work
+        //well, it'd be a new thing in ChitChat
+        //ChitChat.strum();
+        //      we want to make a function that, when called, will take all the notes in the chitchat, and play them in order like how you strum a guitar
+        //      well, how you'd strum a guitar would be a bit different, aye? i mean, you can't strum a note that's right next to each other on a guitar.
+        //      hmmm, lets not think that far, lets just play all the notes either upwards or downwards
+        //      
+        //      this'll need var
+        //      int "strumindex", which will be used to pick from liaisonrace, and in/decremented every turn it plays a note
+        //      string "strumdirection", to say it goes upwards or downwards.    i want the string picked to  be the opposite direction of what it is currently
+        //      int strumtimer, which will be set when a note is played, and used to wait for a bit. It will be 1-3, perlinnoising to be em 
+        //      bool strumming, true when it's strumming
+        //      bool strumqueued, 
+        //      int strumqueuetimer
+        //
+        //      so when this bool is false when this method is called, it'll: switch it on, find out what direction to play, set strumindex what's fitting (0 or max)... then do the same thing as if it was true once, (so set the delay as well)
+        //
+        //      i'll work out the *chance* if a strum happening later for now lets just say we queue it up manually
+        //      
+        //      this thing is just a *liaison thing*, only called within a liaison, in chitchat, nah it's in chitchat.update() it shall be called
+        //      notes shall arp every eight(triplet) notes. 
+        //          
+        //          
+        //      so, playing a note shall have a chance (that increases over time since chordstart) to queue up a strum
+        //      {
+        //          strumming = true;
+        //          strumphase = strumphases.queued;
+        //          strumqueuetimer = wait.bar(1,2)) 
+        //          analyse what arpegiationmode is happening, and pick the opposite
+        //              if arpegiation = upwards:  strumdirection = downwards..
+        //              if it's swapwards, check if it was going upwards/downwards, pick downwards/upwards
+        //              if random, pick a random direction
+        //          depending on strumdirection, strumindex will be: "upwards" = 0, "downwards" = (liaisonlist.count-1) //(cuz 4 and then 3 is maxindex)
+        //      }
+        //
+        //strumphases strumphase;
+        //enum strumphases
+        //{
+        //  queued,
+        //  playing,
+        //  epilogue
+        //}
+        //
+        //ChitChat.strum();
+        //  switch (strumphase)
+        //        case (strumphases.queued)
+        //            strumqueuetimer--;
+        //            if strumqueuetimer has reached zero: strum is no longer queued, it will start playing (strumplaying/strumstrumming = true, strumqueued = false, strumtimer = 0)
+        //            if strumtimer = 0, {strumphase++; strumtimer = 0}
+        //        
+        //        case (strumphases.playing)
+        //            if (strumtimer > 0)
+        //                strumtimer--;
+        //            else
+        //                playsound liaisonrace(strumindex) (medium sound)
+        //                strumtimer = int slowperlinnoise(1,3) 
+        //                strumindex = (depending on direction, -- or ++)
+        //                if strumindex is less than 0, or more than (liaisonlist.count-1)
+        //                {
+        //                    strumphase++;
+        //                    strumsepiloguetimer = wait.untilbar();
+        //                }
+        //        case (strumphases.epilogue)
+        //            if strumsepiloguetimer > 0
+        //                strumsepiloguetimer--;   //maybe in the future we can do some BONUS DUCKS
+        //            else
+        //                strumming = false
+        //
+        //
+        //
+        //
+        //
+        //if strumming
+        //  chitchat.strum();
+        //else
+        //{ do normal liaisoning things }
+        //
+        //
+        //
+        //      
         //
         //
         //
@@ -1845,10 +1927,7 @@ namespace RainMeadow
         //
         //
         //
-        //
-        //
-        //
-        //
+        //ok just realized that quantizing stuff makes leeway for eazy drum,,,
         //
         //
         //
@@ -1874,6 +1953,7 @@ namespace RainMeadow
         //
         //Fetter
         //
+        //Fetter will be 32ths, but can transform into until16T()'s
         //
         //
         //
@@ -1899,15 +1979,33 @@ namespace RainMeadow
         //
         //
         //
-        //
-        //
+        //https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fwww.songsofthecosmos.com%2Fimages%2Fexamples_of_triplets.jpg&f=1&nofb=1&ipt=0ba2b02132091e1f9db7a10d94a80c0f8a4f7af1fb63eeaeb6fce07be880b472&ipo=images
         //let's discuss frequency : waits : delays
         //      the actual quantisation update 
         //
+        //      when i play a quarter note each bar, i am waiting for three quarters
+        //      so if a queuetimer is set for 24FF when the note is played (and doesn't decrement it at the same update), and it'll play the next note when timer reaches 0, it wont be waiting a quarter note, it'll wait a quarternote + 1FF
+        //      this can be mitigated by setting the wait to 23FF, or checking when it's 1 instead
+        //      i will mitigate it by setting the wait to 23FF instead. (I will have all wait be 1FF less than total), because that's how notation works
+        //      in a coding sense, every method call is a 1/4*24 th note, and decrementing a timer starts only after that. so a wait.bar is really a note, and 24*4-1 waits, and we are calculating on a grid of 24*4 then.
         //
+        //wait.bar    just an int
+        //wait.bar(1, 2)  ((useless, you could just time it outside) PSYCHE, not useless cuz a bar is 23FF really, this method would do a subtraction after finding it out)
+        //wait.untilbar();  a method that returns an int
         //
-        //
-        //
+        //a bar = 24*4 = 96
+        //a half = 24*2 = 48
+        //a quartertriplet = 96/3 = 24*4/3 = 32
+        //a quarternote = 24
+        //a eighttriplet = 16
+        //am eight = 12
+        //a sixteenthtriplet = 8
+        //a sixteenth = 6
+        //a thirtysecondtriplet = 4
+        //a thirtysecond = 3
+        //a sixtyfourthtriplet = 2
+        //a hundredandtwentyeighttriplet = 1 //lmao
+        //remember that when you have to wait for any of these, you'll need to subtract 1 from it, because you're using that 1 at the time of starting the wait.
 
 
 
