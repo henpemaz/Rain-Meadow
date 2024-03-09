@@ -88,6 +88,5 @@ namespace RainMeadow
             game.GetStorySession.saveState.SessionEnded(game, false, false);
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.DeathScreen);
         }
-
     }
 }
