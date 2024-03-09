@@ -197,7 +197,7 @@ namespace RainMeadow
 
             if (OnlineManager.lobby.isOwner)
             {
-                storyGameSettings = GetHostStoryRemixSettingsAsAList();
+                GetHostStoryRemixSettingsAsAList();
 
             }
 
@@ -563,7 +563,7 @@ namespace RainMeadow
             }
         }
 
-        internal static List<Configurable<bool>> GetHostStoryRemixSettingsAsAList()
+        internal static void GetHostStoryRemixSettingsAsAList()
         {
             List<Configurable<bool>> configurables = new List<Configurable<bool>>();
 
@@ -624,10 +624,9 @@ namespace RainMeadow
                     RainMeadow.Debug($"HOST SETTING NAME: {setting.key}, Value: {setting.Value}");
                 }
 
-                storyGameSettings = configurables; // host chooses
+                storyGameSettings = configurables;
 
             }
-            return configurables;
         }
 
 
