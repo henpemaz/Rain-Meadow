@@ -164,7 +164,6 @@ namespace RainMeadow
             public Generics.AddRemoveSortedUshorts inLobbyIds;
             [OnlineField]
             public string[] mods;
-
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
@@ -172,7 +171,6 @@ namespace RainMeadow
                 players = new(lobby.participants.Keys.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
                 mods = lobby.mods;
-                
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -199,8 +197,6 @@ namespace RainMeadow
                     modsChecked = true;
                     RainMeadowModManager.CheckMods(this.mods, lobby.mods);
                 }
-
-
 
                 base.ReadTo(resource);
             }
