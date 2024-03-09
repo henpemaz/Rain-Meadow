@@ -72,11 +72,12 @@ namespace RainMeadow
         private MeadowAvatarCustomization customization;
         private EmoteKeyboardInput kbmInput;
         private EmoteControllerInput controllerInput;
+        private Options.ControlSetup.Preset? currentPreset;
 
         public EmoteHandler(HUD.HUD hud, RoomCamera roomCamera, Creature avatar) : base(hud)
         {
             RainMeadow.Debug($"EmoteHandler created for {avatar}");
-            currentInputScheme = InputScheme.kbm; // todo
+            currentInputScheme = InputScheme.none; // todo
 
             this.roomCamera = roomCamera;
             this.avatar = avatar;
@@ -91,12 +92,15 @@ namespace RainMeadow
             {
                 HeavyTexturesCache.futileAtlasListings.Add(Futile.atlasManager.LoadAtlas("illustrations/emotes/" + customization.EmoteAtlas).name);
             }
+        }
 
-
-            // todo
-            InitControllerInput();
-
-            InitKeyboardInput();
+        private InputScheme SchemeForPreset(Options.ControlSetup.Preset? currentPreset)
+        {
+            if(currentPreset == Options.ControlSetup.Preset.None || currentPreset == Options.ControlSetup.Preset.KeyboardSinglePlayer)
+            {
+                return InputScheme.kbm;
+            }
+            return InputScheme.controller;
         }
 
         private void InitKeyboardInput()
@@ -109,6 +113,36 @@ namespace RainMeadow
         {
             this.controllerInput = new EmoteControllerInput(hud, customization, this);
             hud.AddPart(this.controllerInput);
+        }
+
+        public override void Update()
+        {
+            base.Update();
+            var newpreset = hud.rainWorld.options.controls[0].recentPreset;
+            var newscheme = SchemeForPreset(newpreset);
+            if (currentPreset != newpreset && currentInputScheme != newscheme)
+            {
+
+                if (currentInputScheme == InputScheme.kbm)
+                {
+                    this.kbmInput.slatedForDeletion = true;
+                }
+                else if (currentInputScheme == InputScheme.controller)
+                {
+                    this.controllerInput.slatedForDeletion = true;
+                }
+
+                if (newscheme == InputScheme.kbm)
+                {
+                    InitKeyboardInput();
+                }
+                else if (newscheme == InputScheme.controller)
+                {
+                    InitControllerInput();
+                }
+            }
+            currentPreset = newpreset;
+            currentInputScheme = newscheme;
         }
 
         public void EmotePressed(EmoteType emoteType)

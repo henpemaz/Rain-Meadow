@@ -58,3 +58,6 @@ slugcat in meadow mode
 - lookdir input like the others
 - point things
 
+Toss in eggbug and noodlefly
+- make flying controller template?
+- do "wall-crawlers" deserve their own template or just better handling of climb/noclimb modes?

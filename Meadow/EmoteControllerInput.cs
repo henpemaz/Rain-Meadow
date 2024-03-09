@@ -37,21 +37,21 @@ namespace RainMeadow
             },new[]{
                 EmoteType.symbolTravel,
                 EmoteType.symbolMartyr,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
                 EmoteType.symbolCollectible,
                 EmoteType.symbolFood,
                 EmoteType.symbolLight,
                 EmoteType.symbolShelter,
-            },new[]{
                 EmoteType.symbolGate,
                 EmoteType.symbolEcho,
+            },new[]{
                 EmoteType.symbolPointOfInterest,
                 EmoteType.symbolTree,
                 EmoteType.symbolIterator,
                 EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
+                EmoteType.none,
+                EmoteType.none,
+                EmoteType.none,
+                EmoteType.none,
             }
         };
         static int npages = radialMappingPages.Length;
