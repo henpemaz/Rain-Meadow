@@ -16,7 +16,6 @@ namespace RainMeadow
         public Dictionary<OnlinePlayer, OnlineEntity.EntityId> playerAvatars = new(); // should maybe be in GameMode
 
         public string[] mods = RainMeadowModManager.GetActiveMods();
-        public Dictionary<string, bool> settings = RainMeadowModManager.GetSettings();
         public static bool modsChecked;
 
         public string? password;
@@ -73,6 +72,10 @@ namespace RainMeadow
             if (requestResult is GenericResult.Ok)
             {
                 MatchmakingManager.instance.JoinLobby(true);
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    OnlineManager.lobby.owner.InvokeRPC(RPCs.GetStoryRemixSettings);
+                }
                 if (!isAvailable) // this was transfered to me because the previous owner left
                 {
                     WaitingForState();
@@ -166,8 +169,7 @@ namespace RainMeadow
             public Generics.AddRemoveSortedUshorts inLobbyIds;
             [OnlineField]
             public string[] mods;
-            [OnlineField]
-            public Dictionary<string, bool> settings;
+
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
@@ -175,7 +177,6 @@ namespace RainMeadow
                 players = new(lobby.participants.Keys.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
                 mods = lobby.mods;
-                settings = lobby.settings;
                 
             }
 
@@ -202,7 +203,6 @@ namespace RainMeadow
                 {
                     modsChecked = true;
                     RainMeadowModManager.CheckMods(this.mods, lobby.mods);
-                    RainMeadowModManager.CheckSettings(this.settings, lobby.settings);
                 }
 
 
