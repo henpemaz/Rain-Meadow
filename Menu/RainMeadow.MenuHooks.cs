@@ -8,6 +8,7 @@ using UnityEngine;
 using Menu;
 using System.Linq;
 using System.Collections.Generic;
+using IL.MoreSlugcats;
 
 namespace RainMeadow
 {
@@ -311,9 +312,9 @@ namespace RainMeadow
             if (ModManager.MMF)
             {
                 RainMeadow.Debug("Restoring config settings");
-                StoryMenu.GetHostBoolStoryRemixSettings();
-                StoryMenu.GetHostFloatStoryRemixSettings();
-                StoryMenu.GetHostIntStoryRemixSettings();
+
+                var mmfOptions = MachineConnector.GetRegisteredOI(MoreSlugcats.MMF.MOD_ID);
+                MachineConnector.ReloadConfig(mmfOptions);
 
             }
         }
