@@ -311,7 +311,10 @@ namespace RainMeadow
             if (ModManager.MMF)
             {
                 RainMeadow.Debug("Restoring config settings");
-                MoreSlugcats.MMF.OnInit();
+                StoryMenu.GetHostBoolStoryRemixSettings();
+                StoryMenu.GetHostFloatStoryRemixSettings();
+                StoryMenu.GetHostIntStoryRemixSettings();
+
             }
         }
     }
