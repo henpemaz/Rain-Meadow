@@ -39,7 +39,11 @@ namespace RainMeadow
             [OnlineField]
             public int mushroomCounter;
             [OnlineField]
-            public List<bool> storyRemixSettings;
+            public List<bool> storyBoolRemixSettings;
+            [OnlineField]
+            public List<float> storyFloatRemixSettings;
+            [OnlineField]
+            public List<int> storyIntRemixSettings;
 
 
             public State() {}
@@ -51,7 +55,10 @@ namespace RainMeadow
 
                 didStartGame = storyGameMode.didStartGame;
                 currentCampaign = storyGameMode.currentCampaign;
-                storyRemixSettings = storyGameMode.storyRemixSettings;
+                storyBoolRemixSettings = storyGameMode.storyBoolRemixSettings;
+                storyFloatRemixSettings = storyGameMode.storyFloatRemixSettings;
+                storyIntRemixSettings = storyGameMode.storyIntRemixSettings;
+
                 didStartCycle = storyGameMode.didStartCycle;
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
@@ -93,7 +100,10 @@ namespace RainMeadow
                 }
                 (lobby.gameMode as StoryGameMode).didStartGame = didStartGame;
                 (lobby.gameMode as StoryGameMode).currentCampaign = currentCampaign;
-                (lobby.gameMode as StoryGameMode).storyRemixSettings = storyRemixSettings;
+                (lobby.gameMode as StoryGameMode).storyBoolRemixSettings = storyBoolRemixSettings;
+                (lobby.gameMode as StoryGameMode).storyFloatRemixSettings = storyFloatRemixSettings;
+                (lobby.gameMode as StoryGameMode).storyIntRemixSettings = storyIntRemixSettings;
+
 
 
                 (lobby.gameMode as StoryGameMode).didStartCycle = didStartCycle;
