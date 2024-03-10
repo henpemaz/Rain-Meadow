@@ -18,11 +18,11 @@ mapping going to 0 - = is a bit weird
 	rethink the whole thing damn it
 radial menu
 	/ should be working on xbox
-	/ need to figure out dualshock mapping
-	/ need to swap between the two inputs as needed not have the two
+	todo sort out mappings for dualshock (ps 3 4 5) and switchpro
+	need to swap between the two inputs as needed not have the two / done
 rethink kb input
 	one configurable hotbar with 10 the rest on mouse?
-add backdrop to previews
+add backdrop to previews / done
 
 creature todo
 - shelter activation? does nothing atm anyways

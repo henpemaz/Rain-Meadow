@@ -151,7 +151,6 @@ namespace RainMeadow
             if (displayer.AddEmoteLocal(emoteType))
             {
                 RainMeadow.Debug("emote added");
-                // todo play local input sound
                 hud.owner.PlayHUDSound(SoundID.MENU_Checkbox_Check);
             }
         }

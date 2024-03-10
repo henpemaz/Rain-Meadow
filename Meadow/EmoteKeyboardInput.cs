@@ -54,6 +54,7 @@ namespace RainMeadow
         private readonly EmoteHandler owner;
         private FContainer container;
         private FSprite[] emoteDisplayers;
+        private FSprite[] emoteTiles;
         private FSprite[] emoteSeparators;
         private FLabel[] inputLabels;
         private int currentKeyboardRow;
@@ -61,7 +62,6 @@ namespace RainMeadow
         private int nr;
         private int ne;
         private IntVector2 hoverPos;
-        private EmoteDisplayer displayer;
         private bool lastMouseDown;
         public const int emotePreviewSize = 40;
         public const int emotePreviewSpacing = 8;
@@ -75,6 +75,7 @@ namespace RainMeadow
             nr = keyboardMappingRows.GetLength(0);
             ne = keyboardMappingRows.GetLength(1);
             this.emoteDisplayers = new FSprite[ne * nr];
+            this.emoteTiles = new FSprite[ne * nr];
             this.inputLabels = new FLabel[ne];
             this.emoteSeparators = new FSprite[nr * (ne - 1)];
             var left = hud.rainWorld.options.ScreenSize.x / 2f - (emotePreviewSize + emotePreviewSpacing) * ((ne - 1) / 2f);
@@ -94,6 +95,13 @@ namespace RainMeadow
                         x = x - (emotePreviewSize + emotePreviewSpacing) / 2f,
                         y = y,
                         alpha = alpha / 2f
+                    });
+                    container.AddChild(emoteTiles[j * ne + i] = new FSprite(customization.GetBackground(keyboardMappingRows[j, i]))
+                    {
+                        scale = emotePreviewSize / EmoteDisplayer.emoteSourceSize,
+                        x = x,
+                        y = y,
+                        alpha = alpha
                     });
                     container.AddChild(emoteDisplayers[j * ne + i] = new FSprite(customization.GetEmote(keyboardMappingRows[j, i]))
                     {
@@ -176,11 +184,13 @@ namespace RainMeadow
 
             for (int j = 0; j < nr; j++)
             {
-                var alpha = j == currentKeyboardRow ? emotePreviewOpacityActive : emotePreviewOpacityInactive;
+                var emotealpha = j == currentKeyboardRow ? emotePreviewOpacityActive : emotePreviewOpacityInactive * 1.33f;
+                var tilealpha = j == currentKeyboardRow ? emotePreviewOpacityActive : emotePreviewOpacityInactive * 0.75f;
                 for (int i = 0; i < ne; i++)
                 {
-                    if (i != 0) emoteSeparators[j * (ne - 1) + i - 1].alpha = alpha / 2f;
-                    emoteDisplayers[j * ne + i].alpha = (hoverPos.x == i && hoverPos.y == j) ? 1 : alpha;
+                    if (i != 0) emoteSeparators[j * (ne - 1) + i - 1].alpha = emotealpha / 2f;
+                    emoteDisplayers[j * ne + i].alpha = (hoverPos.x == i && hoverPos.y == j) ? 1 : emotealpha;
+                    emoteTiles[j * ne + i].alpha = (hoverPos.x == i && hoverPos.y == j) ? 1 : tilealpha;
                 }
             }
         }

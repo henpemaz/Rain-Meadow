@@ -207,6 +207,7 @@ namespace RainMeadow
             private MeadowAvatarCustomization customization;
             private TriangleMesh[] meshes;
             private FSprite[] icons;
+            private FSprite[] tiles;
             private TriangleMesh centerMesh;
             
 
@@ -214,9 +215,9 @@ namespace RainMeadow
             public Color colorSelected = new Color(1f, 1f, 1f, 0.2f);
 
             // relative to emote size
-            const float innerRadiusFactor = 0.888f;
-            const float outterRadiusFactor = 1.975f;
-            const float emoteRadiusFactor = 1.32f;
+            const float innerRadiusFactor = 1f;
+            const float outterRadiusFactor = 2.076f;
+            const float emoteRadiusFactor = 1.42f;
             float innerRadius;
             float outterRadius;
             float emoteRadius;
@@ -229,6 +230,7 @@ namespace RainMeadow
                 this.customization = customization;
                 this.meshes = new TriangleMesh[8];
                 this.icons = new FSprite[8];
+                this.tiles = new FSprite[8];
                 this.centerMesh = new TriangleMesh("Futile_White", new TriangleMesh.Triangle[] { new(0, 1, 2), new(0, 2, 3), new(0, 3, 4), new(0, 4, 5), new(0, 5, 6), new(0, 6, 7), new(0, 7, 8), new(0, 8, 1), }, false);
                 container.AddChild(this.centerMesh);
 
@@ -253,12 +255,18 @@ namespace RainMeadow
 
                     container.AddChild(meshes[i]);
 
+                    tiles[i] = new FSprite("Futile_White");
+                    tiles[i].scale = emotesSize / EmoteDisplayer.emoteSourceSize;
+                    tiles[i].alpha = 0.6f;
+                    tiles[i].SetPosition(pos + RWCustom.Custom.RotateAroundOrigo(Vector2.left * emoteRadius, (i) * (360f / 8f)));
+                    container.AddChild(tiles[i]);
+
                     icons[i] = new FSprite("Futile_White");
                     icons[i].scale = emotesSize / EmoteDisplayer.emoteSourceSize;
                     icons[i].alpha = 0.6f;
                     icons[i].SetPosition(pos + RWCustom.Custom.RotateAroundOrigo(Vector2.left * emoteRadius, (i) * (360f / 8f)));
                     container.AddChild(icons[i]);
-
+                    
                     centerMesh.vertices[i + 1] = pos + dira * innerRadius;
                 }
                 centerMesh.vertices[0] = pos;
@@ -275,10 +283,13 @@ namespace RainMeadow
                     {
                         icons[i].SetElementByName(customization.GetEmote(emotes[i]));
                         icons[i].alpha = 0.6f;
+                        tiles[i].SetElementByName(customization.GetBackground(emotes[i]));
+                        tiles[i].alpha = 0.6f;
                     }
                     else
                     {
                         icons[i].alpha = 0f;
+                        tiles[i].alpha = 0f;
                     }
                 }
             }
