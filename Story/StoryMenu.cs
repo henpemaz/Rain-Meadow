@@ -576,7 +576,7 @@ namespace RainMeadow
             }
         }
 
-        internal static List<bool> GetHostBoolStoryRemixSettings()
+        internal List<bool> GetHostBoolStoryRemixSettings()
         {
             List<Configurable<bool>> configurableBools = new List<Configurable<bool>>();
 
@@ -642,7 +642,7 @@ namespace RainMeadow
             return configurableTypes;
         }
 
-        internal static List<float> GetHostFloatStoryRemixSettings()
+        internal List<float> GetHostFloatStoryRemixSettings()
         {
             List<Configurable<float>> configurableBools = new List<Configurable<float>>();
 
@@ -666,7 +666,7 @@ namespace RainMeadow
             return configurableTypes;
         }
 
-        internal static List<int> GetHostIntStoryRemixSettings()
+        internal List<int> GetHostIntStoryRemixSettings()
         {
             List<Configurable<int>> configurableBools = new List<Configurable<int>>();
 
