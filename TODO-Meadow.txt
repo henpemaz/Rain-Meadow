@@ -5,7 +5,7 @@ plants todo
 - more items
 	copy the arena unlocks
 
-
+	
 emotes todo
 "wish I could "stop" an emote block and start a new one, instead of having to wait out the fade"
 	maybe pressing backspace? should it clear or not clear the current group? /ok
@@ -22,9 +22,10 @@ radial menu
 	/ need to swap between the two inputs as needed not have the two
 rethink kb input
 	one configurable hotbar with 10 the rest on mouse?
+add backdrop to previews
 
 creature todo
-- shelter activation
+- shelter activation? does nothing atm anyways
 - gate activation / done
 - other story-mode things?
 - any ways to die left?
@@ -34,7 +35,7 @@ creature todo
 
 player grabbing cicada = laggy physics
 
-tint color doesnt work on controller
+tint color slider/picker doesnt work on controller
 
 really hard to enter pipe sometimes
 
