@@ -3,19 +3,21 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class OnlinePlayerArrow : OnlinePlayerHudPart
+    public class OnlinePlayerDisplay : OnlinePlayerHudPart
     {
         public FSprite arrowSprite;
         public FSprite gradient;
         public FLabel label;
+        public FSprite slugIcon;
         public int counter;
         public int fadeAwayCounter;
         public float alpha;
         public float lastAlpha;
         public float blink;
         public float lastBlink;
+        public bool switchedToDeathIcon;
 
-        public OnlinePlayerArrow(PlayerSpecificOnlineHud owner) : base(owner)
+        public OnlinePlayerDisplay(PlayerSpecificOnlineHud owner) : base(owner)
         {
             this.owner = owner;
             this.pos = new Vector2(-1000f, -1000f);
@@ -36,7 +38,15 @@ namespace RainMeadow
             owner.hud.fContainers[0].AddChild(this.arrowSprite);
             this.arrowSprite.alpha = 0f;
             this.arrowSprite.x = -1000f;
+
+            this.slugIcon = new FSprite("Kill_Slugcat", true);
+            this.slugIcon.color = owner.clientSettings.SlugcatColor();
+            owner.hud.fContainers[0].AddChild(this.slugIcon);
+            this.slugIcon.alpha = 0f;
+            this.slugIcon.x = -1000f;
+
             this.blink = 1f;
+            this.switchedToDeathIcon = false;
         }
 
         public override void Update()
@@ -46,19 +56,30 @@ namespace RainMeadow
             if (Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
             {
                 this.lastAlpha = this.alpha;
-                // this.lastBlink = this.blink;
                 this.blink = 1f;
                 if (owner.found)
                 {
+                    this.alpha = Custom.LerpAndTick(this.alpha, owner.needed ? 1 : 0, 0.08f, 0.033333335f);
+
                     this.pos = owner.drawpos;
                     if (owner.pointDir == Vector2.down) pos += new Vector2(0f, 45f);
+
+                    if (owner.PlayerConsideredDead)
+                    {
+                        this.alpha = 0.5f;
+                        if (!switchedToDeathIcon)
+                        {
+                            slugIcon.RemoveFromContainer();
+                            slugIcon = new FSprite("Multiplayer_Death");
+                            owner.hud.fContainers[0].AddChild(slugIcon);
+                            switchedToDeathIcon = true;
+                        }
+                    }
                 }
                 else
                 {
                     pos.x = -1000;
                 }
-
-                this.alpha = Custom.LerpAndTick(this.alpha, owner.needed ? 1 : 0, 0.08f, 0.033333335f);
 
                 this.counter++;
             }
@@ -82,6 +103,10 @@ namespace RainMeadow
             this.arrowSprite.x = vector.x;
             this.arrowSprite.y = vector.y;
             this.arrowSprite.rotation = RWCustom.Custom.VecToDeg(owner.pointDir * -1);
+
+            this.slugIcon.x = vector.x;
+            this.slugIcon.y = vector.y + 40f;
+
             this.label.x = vector.x;
             this.label.y = vector.y + 20f;
             Color color = owner.clientSettings.SlugcatColor();
@@ -96,10 +121,15 @@ namespace RainMeadow
                     color = Color.Lerp(color, new Color(1f, 1f, 1f), Mathf.InverseLerp(0f, 0.5f, Mathf.Lerp(this.lastBlink, this.blink, timeStacker)));
                 }
             }
-            this.label.color = color;
-            this.arrowSprite.color = color;
+            var lighter_color = color * 1.7f;
+
+            this.label.color = lighter_color;
+            this.arrowSprite.color = lighter_color;
+            this.slugIcon.color = lighter_color;
+
             this.label.alpha = num;
             this.arrowSprite.alpha = num;
+            this.slugIcon.alpha = num;
         }
 
         public override void ClearSprites()
@@ -108,6 +138,7 @@ namespace RainMeadow
             this.gradient.RemoveFromContainer();
             this.arrowSprite.RemoveFromContainer();
             this.label.RemoveFromContainer();
+            this.slugIcon.RemoveFromContainer();
         }
     }
 }
