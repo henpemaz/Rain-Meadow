@@ -31,11 +31,11 @@ creature todo
 - any ways to die left?
 - can get stuck
 	some rooms will get fixed
-	but maybe an unstuck button is in order?
+	but maybe an unstuck button is in order? / done
 
 player grabbing cicada = laggy physics
 
-tint color slider/picker doesnt work on controller
+tint color slider/picker doesnt work on controller / done
 
 really hard to enter pipe sometimes
 

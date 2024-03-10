@@ -45,6 +45,7 @@ namespace RainMeadow
             On.Creature.Die += Creature_Die; // do not die!
 
             On.WormGrass.Worm.ctor += Worm_ctor; // only cosmetic worms
+
         }
 
         private void Worm_ctor(On.WormGrass.Worm.orig_ctor orig, WormGrass.Worm self, WormGrass wormGrass, WormGrass.WormGrassPatch patch, Vector2 basePos, float reachHeight, float iFac, float lengthFac, bool cosmeticOnly)

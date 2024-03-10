@@ -70,7 +70,12 @@ namespace RainMeadow
                     float num = -self.bodyChunks[0].restrictInRoomRange + 1f;
                     if (self.bodyChunks[0].pos.y < num && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) && (!self.Template.canFly || self.Stunned || self.dead) && (self is Player || !self.room.game.IsArenaSession || self.room.game.GetArenaGameSession.chMeta == null || !self.room.game.GetArenaGameSession.chMeta.oobProtect))
                     {
-                        self.SpitOutOfShortCut(self.room.ShortcutLeadingToNode(self.coord.abstractNode).startCoord.Tile, self.room, true);
+                        var room = self.room;
+                        self.RemoveFromRoom();
+                        room.CleanOutObjectNotInThisRoom(self); // we need it this frame
+                        var node = self.coord.abstractNode;
+                        if (node > room.abstractRoom.exits) node = UnityEngine.Random.Range(0, room.abstractRoom.exits);
+                        self.SpitOutOfShortCut(room.ShortcutLeadingToNode(node).startCoord.Tile, room, true);
                     }
                 }
             }

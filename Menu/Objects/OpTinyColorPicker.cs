@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using Menu;
 using Menu.Remix.MixedUI;
+using System;
+using Menu.Remix;
 
 namespace RainMeadow
 {
@@ -8,13 +10,16 @@ namespace RainMeadow
     {
         public OpColorPicker colorPicker;
         private bool currentlyPicking;
-        private const int mouseTimeout = 10;
-        private int mouseOutCounter;
+        private const int focusTimeout = 10;
+        private int loseFocusCounter;
 
         public OpTinyColorPicker(Menu.Menu menu, Vector2 pos, string defaultHex) : base(pos, new Vector2(30, 30))
         {
             //this.colorPicker = new OpColorPicker(pos + new Vector2(-60, 24), "", defaultHex);
-            this.colorPicker = FlatColorPicker.MakeFlatColorpicker(menu, pos + new Vector2(-60, 30), defaultHex);
+            this.colorPicker = new OpColorPicker(new Configurable<Color>(MenuColorEffect.HexToColor(defaultHex)), pos);
+            UIelementWrapper wrapper = new UIelementWrapper((menu as SmartMenu).tabWrapper, colorPicker);
+            colorPicker.Hide();
+
             this.currentlyPicking = false;
 
             this.colorFill = colorPicker.valueColor;
@@ -24,47 +29,28 @@ namespace RainMeadow
             OnReactivate += Show;
         }
 
-        private class FlatColorPicker : OpColorPicker
-        {
-            private FlatColorPicker(Vector2 pos, string defaultHex = "FFFFFF") : base(new Configurable<Color>(MenuColorEffect.HexToColor(defaultHex)), pos) { }
-
-            public override void Change()
-            {
-                Vector2 oldPos = this._pos;
-                this._pos = Vector2.zero;
-                base.Change();
-                this._pos = oldPos;
-                this.myContainer.SetPosition(this.ScreenPos);
-            }
-
-            public static OpColorPicker MakeFlatColorpicker(Menu.Menu menu, Vector2 pos, string defaultHex = "FFFFFF")
-            {
-                FContainer container = new FContainer();
-                FContainer pgctr = menu.pages[0].Container;
-                menu.pages[0].Container = container;
-                FlatColorPicker pkr = new FlatColorPicker(pos, defaultHex);
-                menu.pages[0].Container = pgctr;
-                FContainer pfkcontainer = pkr.myContainer;
-                pfkcontainer.AddChildAtIndex(container, 0);
-                return pkr;
-            }
-        }
-
         public void Signal(UIfocusable trigger)
         {
-            // base.Signal();
+            RainMeadow.Debug("clicked! " + Environment.StackTrace);
             if (!currentlyPicking)
             {
                 //this.colorPicker.pos = (this.inScrollBox ? (this.GetPos() + scrollBox.GetPos()) : this.GetPos()) + new Vector2(-60, 24);
                 this.colorPicker.pos = (this.InScrollBox ? (this.GetPos() + scrollBox.GetPos() + new Vector2(0f, scrollBox.ScrollOffset)) : this.GetPos()) + new Vector2(-60, 24);
                 colorPicker.Show();
                 currentlyPicking = true;
+                colorPicker.NonMouseSetHeld(true);
+                colorPicker.held = true;
+                Menu.selectedObject = this.colorPicker.wrapper;
             }
             else
             {
                 currentlyPicking = false;
                 colorFill = colorPicker.valueColor;
                 OnValueChangedEvent?.Invoke();
+                
+                if(Menu.selectedObject == this.colorPicker.wrapper)
+                    Menu.selectedObject = this.wrapper;
+
                 colorPicker.Hide();
             }
         }
@@ -78,27 +64,35 @@ namespace RainMeadow
 
         public override void Update()
         {
+            var mouseMode = MenuMouseMode;
+
             // we do a little tricking
             //if (currentlyPicking && !this.MouseOver) this.held = false;
             base.Update();
-            if (currentlyPicking && !this.MouseOver)
+            if (currentlyPicking)
             {
-                colorPicker.Update();
-                //base.OnFrozenUpdate?.Invoke();
                 OnValueChangedEvent?.Invoke();
-                this.held = true;
+                //Menu.selectedObject = this.colorPicker.wrapper;
+
+                if (!mouseMode && !colorPicker.held)
+                {
+                    // lose focus
+                    RainMeadow.Debug("lost focus, not held");
+                    this.Signal(this);
+                }
             }
 
-            if (currentlyPicking && !this.MouseOver && !colorPicker.MouseOver)
+            if (currentlyPicking && (mouseMode ? (!this.MouseOver && !colorPicker.MouseOver) : (!Focused && !colorPicker.Focused)))
             {
-                mouseOutCounter++;
+                loseFocusCounter++;
             }
             else
             {
-                mouseOutCounter = 0;
+                loseFocusCounter = 0;
             }
-            if (mouseOutCounter >= mouseTimeout)
+            if (loseFocusCounter >= focusTimeout)
             {
+                RainMeadow.Debug("lost focus! selected object was " + Menu.selectedObject);
                 this.Signal(this);
             }
         }

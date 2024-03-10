@@ -9,7 +9,7 @@ namespace RainMeadow
     {
         protected ProcessManager.ProcessID backTarget;
         protected Page mainPage;
-        protected MenuTabWrapper tabWrapper;
+        public MenuTabWrapper tabWrapper;
 
         public abstract MenuScene.SceneID GetScene { get; }
 
