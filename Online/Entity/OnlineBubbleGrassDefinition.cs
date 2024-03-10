@@ -9,7 +9,7 @@
 
         public OnlineBubbleGrassDefinition(OnlineConsumableDefinition opod, BubbleGrass.AbstractBubbleGrass abstractConsumable) : base(opod)
         {
-            this.originalOxygenLevel = (short)abstractConsumable.oxygenLeft;
+            this.originalOxygenLevel = abstractConsumable.oxygenLeft;
         }
 
         public override OnlineEntity MakeEntity(OnlineResource inResource)

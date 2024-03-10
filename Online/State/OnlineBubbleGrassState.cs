@@ -1,6 +1,6 @@
 ﻿namespace RainMeadow
 {
-    public class OnlineBubbleGrassState : PhysicalObjectEntityState
+    public class OnlineBubbleGrassState : OnlineConsumableState
     {
         [OnlineField]
         float oxygenLeft;
@@ -14,8 +14,8 @@
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
-            var onlineSeedPod = onlineEntity as OnlineBubbleGrass;
-            onlineSeedPod.AbstractBubbleGrass.oxygenLeft = oxygenLeft;
+            var onlineBubbleGrass = onlineEntity as OnlineBubbleGrass;
+            onlineBubbleGrass.AbstractBubbleGrass.oxygenLeft = oxygenLeft;
         }
     }
 }

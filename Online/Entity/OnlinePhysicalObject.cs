@@ -53,17 +53,15 @@ namespace RainMeadow
                         var ascDef = new OnlineSeedCobDefinition(acmDef, asc);
                         return new OnlineSeedCob(ascDef, asc);
                     case SporePlant.AbstractSporePlant asp:
-                        RainMeadow.Debug("AbstractSporePlant not handled");
-                        return new OnlineConsumable(acmDef, asp);
+                        var aspDef = new OnlineSporePlantDefinition(acmDef, asp);
+                        return new OnlineSporePlant(aspDef, asp);
                     case WaterNut.AbstractWaterNut awn:
-                        RainMeadow.Debug("AbstractWaterNut not handled");
                         return new OnlineConsumable(acmDef, awn);
                     case PebblesPearl.AbstractPebblesPearl app:
                         //May have issues since AbstractPebblesPearl is an AbstractDataPearl
                         RainMeadow.Debug("AbstractPebblesPearl not handled");
                         return new OnlineConsumable(acmDef, app);
                     case DataPearl.AbstractDataPearl adp:
-                        RainMeadow.Debug("AbstractDataPearl not handled");
                         return new OnlineConsumable(acmDef, adp);
                     default:
                         return new OnlineConsumable(acmDef, acm);
