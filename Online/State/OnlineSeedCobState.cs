@@ -1,6 +1,6 @@
 ﻿namespace RainMeadow
 {
-    public class OnlineSeedCobState : PhysicalObjectEntityState
+    public class OnlineSeedCobState : OnlineConsumableState
     {
         [OnlineField]
         bool isOpened;

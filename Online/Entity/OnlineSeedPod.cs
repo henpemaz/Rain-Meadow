@@ -2,7 +2,7 @@
 
 namespace RainMeadow
 {
-    public class OnlineSeedCob : OnlinePhysicalObject
+    public class OnlineSeedCob : OnlineConsumable
     {
         public OnlineSeedCob(OnlineSeedCobDefinition entityDefinition, AbstractPhysicalObject apo) : base(entityDefinition, apo) { }
 
