@@ -68,8 +68,20 @@ namespace RainMeadow
                 {
                     // fall out of world handling
                     float num = -self.bodyChunks[0].restrictInRoomRange + 1f;
+                    if (self is Player && self.bodyChunks[0].restrictInRoomRange == self.bodyChunks[0].defaultRestrictInRoomRange)
+                    {
+                        if ((self as Player).bodyMode == Player.BodyModeIndex.WallClimb)
+                        {
+                            num = Mathf.Max(num, -250f);
+                        }
+                        else
+                        {
+                            num = Mathf.Max(num, -500f);
+                        }
+                    }
                     if (self.bodyChunks[0].pos.y < num && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) && (!self.Template.canFly || self.Stunned || self.dead) && (self is Player || !self.room.game.IsArenaSession || self.room.game.GetArenaGameSession.chMeta == null || !self.room.game.GetArenaGameSession.chMeta.oobProtect))
                     {
+                        RainMeadow.Debug("fall out of world prevention: " + self);
                         var room = self.room;
                         self.RemoveFromRoom();
                         room.CleanOutObjectNotInThisRoom(self); // we need it this frame
