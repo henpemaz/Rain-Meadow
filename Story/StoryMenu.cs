@@ -7,6 +7,7 @@ using System.Linq;
 using UnityEngine;
 using static RainMeadow.RainMeadow;
 using RainMeadow.Properties;
+using System.Reflection;
 
 namespace RainMeadow
 {
@@ -149,9 +150,10 @@ namespace RainMeadow
             // Grab Host Remix Settings
             if (OnlineManager.lobby.isOwner)
             {
-                (OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings = GetHostBoolStoryRemixSettings();
-                (OnlineManager.lobby.gameMode as StoryGameMode).storyFloatRemixSettings = GetHostFloatStoryRemixSettings();
-                (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings = GetHostIntStoryRemixSettings();
+                GetHostBoolStoryRemixSettings();
+                /*               (OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings = GetHostBoolStoryRemixSettings();
+                                (OnlineManager.lobby.gameMode as StoryGameMode).storyFloatRemixSettings = GetHostFloatStoryRemixSettings();
+                                (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings = GetHostIntStoryRemixSettings();*/
 
 
 
@@ -576,7 +578,35 @@ namespace RainMeadow
             }
         }
 
-        internal List<bool> GetHostBoolStoryRemixSettings()
+        internal static List<bool> GetHostBoolStoryRemixSettings()
+        {
+            List<bool> configurables = new List<bool>();
+
+
+            if (ModManager.MMF)
+            {
+                Type type = typeof(MoreSlugcats.MMF);
+
+                FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
+
+                foreach (FieldInfo field in fields)
+                {
+
+                    var reflectedValue = field.GetValue(null);
+                    if (reflectedValue is Configurable<bool> configurableBool)
+                    {
+                        RainMeadow.Debug("FIELD Name: " + field.Name + "FIELD VALUE: " + configurableBool._typedValue);
+                        configurables.Add(configurableBool._typedValue);
+                    }
+
+                }
+                return configurables;
+
+            }
+            return configurables;
+        }
+
+        internal List<bool> GetHostBoolStoryRemixSettings2()
         {
             List<Configurable<bool>> configurableBools = new List<Configurable<bool>>();
 
