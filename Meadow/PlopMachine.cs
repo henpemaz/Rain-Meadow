@@ -168,7 +168,7 @@ namespace RainMeadow
         float phob;
 
         //string teststring = "hehe";
-        string CurrentRegion;
+        string? CurrentRegion;
 
         //float distancetovibeepicentre = 0;
 
@@ -199,13 +199,13 @@ namespace RainMeadow
         public static class EnumExt_AudioFilters
         {
 #pragma warning disable 0649
-            public static RoomSettings.RoomEffect.Type AudioFiltersReverb;
+            public static RoomSettings.RoomEffect.Type? AudioFiltersReverb;
 #pragma warning restore 0649
         }
 
 
         bool fileshavebeenchecked = false;
-        string[][] ChordInfos;
+        string[][]? ChordInfos;
         static readonly Dictionary<string, VibeZone[]> vibeZonesDict = new();
         struct VibeZone
         {
@@ -397,6 +397,7 @@ namespace RainMeadow
                     switch (patch)
                     {
                         case "Trisaw":
+                            //string[] keycodeNames = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=" };
                             library[0] = C1LongTrisaw;
                             library[1] = C2LongTrisaw;
                             library[2] = C3LongTrisaw;
@@ -1342,7 +1343,7 @@ namespace RainMeadow
             }
             static public Arpmode arpingmode = Arpmode.upwards;
             static int arpstep = 0;
-            static bool arpgoingupwards = false;
+            static public bool arpgoingupwards = false;
             static int arpcountdown = 20;
             static List<int> randomsetsacrificeboard = new List<int>();
             //static List<string> nameshaha = [];
@@ -1704,7 +1705,8 @@ namespace RainMeadow
         //
         //NoteMagazine.Push()
         //  Takes all the notes and sends them over to ChitChat
-        //  clears slotted notes beforeso
+        //  clears slotted innotes beforeso
+        //  clears slooted outnotes as well
         //
         //this calls for a dictionary,like list.
         //all notes, and all two-notes, has an array of two strings: one for ambient easynote, one for chord-y dissonantnote.
@@ -1788,9 +1790,9 @@ namespace RainMeadow
         //  idea    :   having the ChitChat arpmode change over time too
         //  idea    :   having ChitChat arps and strums interlink, so that a strum can change the arpmode, and have
         //              more flare too: that it pauses arp a bit before and after.
-        //  idea    :   having the notes by ChitChat be played in creciendoes and the opposite
-        //  idea    :   make more ChitChat arpmodes, some of which can play multiple notes and also wait
-        //  idea    :   add functionality in "collectivearpstep" to process and play multiple notes 
+        //  idea    :   having the notes by ChitChat be played in creciendoes and the opposite              requires Plop update, if you still want flutter. and also a bit wacky
+        //  idea    :   make more ChitChat arpmodes, some of which can play multiple notes and also wait    uuuu
+        //  idea    :   add functionality in "collectivearpstep" to process and play multiple notes         oooh
         //
         //
         //so lets go through and think, what to set up for these things?
@@ -1870,7 +1872,7 @@ namespace RainMeadow
         //          strumqueuetimer = wait.bar(1,2)) 
         //          analyse what arpegiationmode is happening, and pick the opposite
         //              if arpegiation = upwards:  strumdirection = downwards..
-        //              if it's swapwards, check if it was going upwards/downwards, pick downwards/upwards
+        //              if it's swapwards, check if it was going upwards/downwards, pick downwards/upwards.. ChitChat.arpgoingupwards
         //              if random, pick a random direction
         //          depending on strumdirection, strumindex will be: "upwards" = 0, "downwards" = (liaisonlist.count-1) //(cuz 4 and then 3 is maxindex)
         //      }
@@ -1911,16 +1913,17 @@ namespace RainMeadow
         //
         //
         //
+        //in update()
+        //  is arping
+        //      if strumming
+        //        chitchat.strum();
+        //      else
+        //      { do normal liaisoning things }
         //
-        //if strumming
-        //  chitchat.strum();
-        //else
-        //{ do normal liaisoning things }
         //
         //
-        //
+        //still kinda wanna do a "multiplenote" rework on arps
         //      
-        //
         //
         //
         //
@@ -1934,55 +1937,204 @@ namespace RainMeadow
         //
         //
         //
+        //-------
         //
-        //
-        //
-        //
-        //
-        //
-        //ChitChat.Update(
-        //ChitChat.Anarchy(
-        //ChitChat.Analyze(
-        //ChitChat.PrintRace(
-        //ChitChat.Add(
-        //ChitChat.Wipe(
-        //ChitChat.RandomMode(
-        //ChitChat.CollectiveArpStep(
-        //
-        //
-        //
-        //Fetter
+        //Fetter:
         //
         //Fetter will be 32ths, but can transform into until16T()'s
         //
         //
+        //sixtyfourthtriplet as real fast, 2
+        //thirdysecond as a bit fast,      3
+        //thirtysecondtriplet as normal,   4
+        //sixteenth as really slow,        6
+        //sixteenthtriplet is really slow  8
+        //
+        //int randomint = UnityEngine.Random.Range(12, 32); //6, 22
+        //though this was the status quo beforeso, maybe i should reconsider, well then, maybe put like two steps above
+        //
+        //HIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+        //thirtysecondtriplet as real fast, 4
+        //sixteenth as a bit fast,          6
+        //sixteenthtriplet as normal,       8
+        //eight as really slow,             12
+        //eigthtriplet is really slow       16
+        //
+        //
+        //-----ambiancy-----
+        //flutter   :longer tail, but (takes more time in between) steps, also more chance of them happening
+        //----chordy----.
+        //flutter   :shorter tail, fast steps, less chance of them happening 
+        //
+        //
+        //so, how will we rework flutters to make this into smth
+        //
+        //    public Flutter(string originalnote, string[] fluttertail, int stopwatch, int step, float basetime, float propacceleration)
+        //    {
+        //        this.originalnote = originalnote; //for safekeeping
+        //        this.fluttertail = fluttertail; //the path that will follow
+        //        this.stopwatch = stopwatch;
+        //        this.step = step; //how many steps through the fluttertail has been taken (though zero isn't a good one)
+        //        this.basetime = basetime;
+        //        this.propacceleration = propacceleration;
+        //    }
+        //    public string originalnote; //just for safekeeping aye?
+        //    public string[] fluttertail;//First in array is always nothing,   ...  first one in array is the one you start at  // GOTTEN ANOTHER ONE
+        //    public int stopwatch;                                                             // IS GOTTEN PUTTING BASE THROUGH A METHOD 
+        //    public int step; //starts at 0,  ...     starts at -1                           //
+        //    public float basetime;                                                          //IS NOT THE DELAYVALUE 
+        //    public float propacceleration; //will multiply basetime by this                 //NO LONGER
+        //
+        //
+        //the things we are modifying now is NOT originalnote, nor step, but we are 
+        //fundimentally(LOLLL) altering how propacceleration is interacting with basetime, and thus setting the time for stopwatch, but eh
+        //that it decided when the thing is built, first and foremost
+        //and, well, then when stopwatch = basetime    *=  propacceleration
+        //
+        //
+        //
+        //
+        //but whatever lets just start getting to the meat of it,, ,how is the time so different
+        //well, we need to figure out how to make it be a quantized amount, so 
+        //
+        //if we go from the HIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII, we'll say that the first is a 1, and last is a 0 (chordy, ambienty)
+        //and the current livelyness just makes the FALLOFFpoint from them,, as in it'll turn through a lerp,, (Fichtean, 0, 1, 0.3, 0.7) 
+        //this will then be like,,,, added a number on top of every time,, (that's what propacceleration now becomes lol) ((no longer prop))
+        //but then the big elephant: what  basenumber  constitutes  what  wait?
+        //well, here=
+        //
+        //0-0.11    = 0
+        //0.11-0.28 = 0.2
+        //0.28-0.72 = 0.4
+        //0.72-0.89 = 0.6
+        //0.89-1    = 0.8
+        //
+        //
+        //and thus the delaytimer generated is a method that takes in the thing and returns the other thing, as in
+        //
+        //private int flutternumber(float base)
+        //{
+        //      if (base <= 0.11f)                 { wait.until(thirtysecondtriplet, 1) }
+        //      if (base > 0.11f && base <= 0.28f) { wait.until(sixteenth, 1) }
+        //      if (base > 0.28f && base <= 0.72f) { wait.until(sixteenthtriplet, 1) }
+        //      if (base > 0.72f && base <= 0.89f) { wait.until(eight, 1) }
+        //      if (base > 0.89f)                  { wait.until(eigthtriplet, 1) }
+        //}        
+        //so basetime becomes that,, and propacceleration is rolled as a 
+        //randomint(-22, 23) / 1000      0.022 
+        //which is what the thing is added with every time
+        //
+        //
+        //
+        //uggghhhh the length of the tail,, Taillengthhhh  
+        //randomint(8-(int)lichtean*6,16-(int)lichtean*8) 
+        //
+        //
+        //
+        //and uGHHHHHHH the chance of them... appppearrrrinnnngggg
+        //
+        //ummmmmmmm
+        //if (weplipping) if (intiseasy) if (3 == UnityEngine.Random.Range(1, 4)) Dust.Add(input)
+        //is the previous standard thing, but like,,,, 0 is ambient, 1 is chordy
+        //
+        //soooooooooo
+        //if (weplipping) if (intiseasy) if (35-(Fichtean*25)<UnityEngine.Random.Range(0, 101))
+        //
+        //
+        //i'm going to wake up to this mess of a pseudocode and want to die... future me's problem
         //
         //
         //
         //
         //
         //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //
-        //https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fwww.songsofthecosmos.com%2Fimages%2Fexamples_of_triplets.jpg&f=1&nofb=1&ipt=0ba2b02132091e1f9db7a10d94a80c0f8a4f7af1fb63eeaeb6fce07be880b472&ipo=images
         //let's discuss frequency : waits : delays
+        //https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fwww.songsofthecosmos.com%2Fimages%2Fexamples_of_triplets.jpg&f=1&nofb=1&ipt=0ba2b02132091e1f9db7a10d94a80c0f8a4f7af1fb63eeaeb6fce07be880b472&ipo=images
         //      the actual quantisation update 
         //
+        //
+        //                            a bar = 24*4 = 96
+        //                           a half = 24*2 = 48
+        //        a quartertriplet = 96/3 = 24*4/3 = 32
+        //                           a quarternote = 24
+        //                          a eighttriplet = 16
+        //                                am eight = 12
+        //                      a sixteenthtriplet = 8
+        //                             a sixteenth = 6
+        //                   a thirtysecondtriplet = 4
+        //                          a thirtysecond = 3
+        //                    a sixtyfourthtriplet = 2
+        //          a hundredandtwentyeighttriplet = 1     //lmao
+        //remember that when you have to wait for any of these, you'll need to subtract 1 from it, because you're using that 1 at the time of starting the wait.
+        //
+        //
+        //
+        //the universal clock: well, we'll calculate everything out of a bar, cuz triplets are smth
+        //a clock will go around from being something, downwards to close to 0, but never 0.
+        //imagine a timer with a 1 second timer, which takes 1 seconds of steps at a time.
+        //if the clock was able to "count" 0, it would be alternating between 1 and 0, making it a 2 second loop
+        //if it was only 0, that's dumb as shit and recursive, when would it loop? it would need to revert back  to -1? 
+        //see, again, imagine the 1 second timer, but as a clock or eggwatch. when it has done one rotation, exactly when it's done it goes back around to 1
+        //00:00 o' clock is the same as 24:00 o' clock. 
+        //so what i'm saying is, we will reach 0, but that doesn't mean we count it, aka: When we reach 0, it loops-around/reverts-back-to-max *at the same time*
+        //
+        //
+        //aka, every second: it decrements, 
+        //      if it reached 0, reset to max
+        //      
+        //another way to think of it is like that annoying friend that halters at 1.
+        //    "3.... 2.... 1.... (1....) 1.... 1.... 1...."
+        //everytime he would've reached 0, he resets to 1, effectivly starting *a* 1 second loop.
+        //like, it's the same with the other ones.
+        //      "4... 3... 2... 1... 2... 1... (2... 1... )2... 1... " 2 second loop
+        //      "4... 3... 2... 1... (4... 3... 2... 1...) 4... 3... 2... 1... " 4 BEAT loop,,  the nice segway
+        // 
+        // 
+        //so lets talk about how to go about the quantization, the grid.
+        //because i'm so fucking smart, i've made it so that every *beat* is comprised of 24 segments, which makes a bar(4 beats) divisable by three, and all that
+        //what i want to figure out now would be 
+        //      what is readposition (spoiler: it's where we are in a bar) ((read position as in: "This is the position we read whether there's a note or a wait"))
+        //      how will the creature know where we are in a bar? (what's its current delta in relation to the bar's start)
+        //      how can we know how far away from... a quarter, the current readposition is
+        //
+        //
+        //a bar is 96 segments
+        // 
+        //lets find out where we are in that bar as an example at first, well, since we'll usually use the bartime or smth.
+        //anyhoo 
+        //yeah
+        //
+        //so, there's a debugtimer int var that increments every rwupdate(), that can be the universal timer the barstopwatch shall calculate from.
+        //bartimer = 96 - (debugtimer % 96) 
+        //
+        //so, explenation=
+        //debutimer = thing go upwards every frame
+        //"%" will.. "the modulo operation returns the remainder or signed remainder of a division"
+        //      here i'm using it so that every 96FFs, it resets back down to 0
+        //i am subtracting 96 by this.
+        //this will make bartimer be a timer that goes from 96 down to 1 and back around.
+        // 
+        //when debugtimer%96 = 0, that's the start of a bar. 
+        //bartimer will be 96 then, which is the amount of segments from and with *now* to the next bar
+        // 
+        //ok, tragic turn of the fates, i don' really need a master *timer* or smth like that. you can calculate the distance "to the next one" with the same formula.
+        //
+        //
+        //bar               timer = 96 - (debugtimer % 96) 
+        //half               timer = 48 - (debugtimer % 48) 
+        //quartertriplet      timer = 32 - (debugtimer % 32) 
+        //quarternote          timer = 24 - (debugtimer % 24) 
+        //eighttriplet          timer = 16 - (debugtimer % 16) 
+        //eight                  timer = 12 - (debugtimer % 12) 
+        //sixteenthtriplet        timer = 8  - (debugtimer % 8) 
+        //sixteenth                timer = 6  - (debugtimer % 6) 
+        //thirtysecondtriplet       timer = 4  - (debugtimer % 4) 
+        //thirtysecond               timer = 3  - (debugtimer % 3) 
+        //sixtyfourthtriplet          timer = 2  - (debugtimer % 2) 
+        //hundredandtwentyeighttriplet timer = 1  - (debugtimer % 1)
+        //
+        //
+        //then, lets discuss how one of these will be translated into a wait
         //      when i play a quarter note each bar, i am waiting for three quarters
         //      so if a queuetimer is set for 24FF when the note is played (and doesn't decrement it at the same update), and it'll play the next note when timer reaches 0, it wont be waiting a quarter note, it'll wait a quarternote + 1FF
         //      this can be mitigated by setting the wait to 23FF, or checking when it's 1 instead
@@ -1993,19 +2145,70 @@ namespace RainMeadow
         //wait.bar(1, 2)  ((useless, you could just time it outside) PSYCHE, not useless cuz a bar is 23FF really, this method would do a subtraction after finding it out)
         //wait.untilbar();  a method that returns an int
         //
-        //a bar = 24*4 = 96
-        //a half = 24*2 = 48
-        //a quartertriplet = 96/3 = 24*4/3 = 32
-        //a quarternote = 24
-        //a eighttriplet = 16
-        //am eight = 12
-        //a sixteenthtriplet = 8
-        //a sixteenth = 6
-        //a thirtysecondtriplet = 4
-        //a thirtysecond = 3
-        //a sixtyfourthtriplet = 2
-        //a hundredandtwentyeighttriplet = 1 //lmao
-        //remember that when you have to wait for any of these, you'll need to subtract 1 from it, because you're using that 1 at the time of starting the wait.
+        //so, i'm considering just making it implicit that uhhh, 
+        //waiting multiple of a note always means you want to be *in line* with that note.
+        //and through that, i wanna make a feat where like, wait.bar(3) means waiting for the bar that's 3 ahead (pluss your own)
+        //meaning that you wanna wait 2 whole bars, + 1 wackybar.. (-1 FF for the time taken to consider this)
+        //
+        //
+        //
+        //wait.abar            public  var int frames for a bar, 96
+        //wait.leftofbar();    private method that returns: int frames of wait after now until the next bar. (96 - (debugtimer % 96) - 1)
+        //wait.untilbar(2);    public  method that returns: int frames of wait after now until the bar 2 after this one. (calculates untilbar + (int input-1) * abar)
+        //wait.untilbar(1, 3); public  method that returns: the untilbar(of), a randomint between the two inputs.
+        //
+        //
+        //public class wait
+        //
+        //
+        //
+        //      public int bar = 96  
+        //      
+        //      private int leftofbar()
+        //          return ( abar - ( debugtimer % abar ) - 1);
+        //      
+        //      public int untilbar(int bars)
+        //      {
+        //          return (leftofbar() + (bars-1)*abar );
+        //      }
+        //
+        //
+        //
+        //ok actually this is quite universal actually
+        //
+        //      Dictionary<string, int> waittypes = new();
+        //      waittypes.Add("bar", 96)                         
+        //      waittypes.Add("half", 48)    
+        //      waittypes.Add("quarterT", 32)
+        //      waittypes.Add("quarternote", 24)
+        //      waittypes.Add("eightT", 16)
+        //      waittypes.Add("eight", 12)
+        //      waittypes.Add("sixteenthT", 8 )
+        //      waittypes.Add("sixteenth", 6 )
+        //      waittypes.Add("thirtysecondT", 4 )
+        //      waittypes.Add("thirtysecond", 3 )
+        //      waittypes.Add("sixtyfourthT", 2 )
+        //      waittypes.Add("hundredandtwentyeightT", 1 )
+        //
+        //      private int leftof(string waittype)
+        //      {
+        //          return ( waittypes(waitttype) - (debugtimer % waittypes(waittype) ) - 1);
+        //      }
+        //
+        //      public int until(string waittype, int waits)
+        //      {
+        //          if (wait >= 0) wait = 1;
+        //          return (leftof(waittype) + (waits-1)*waittypes(waittype) );
+        //      }
+        //
+        //      public int until(string waittype, int waitlow, int waithigh)
+        //      {
+        //          int thewait = unityengine.random.range(waitlow, waithigh+1)
+        //          return (leftof(waittype) + (thewait-1)*waittypes(waittype) );
+        //      }
+        //
+        //
+        //
 
 
 
