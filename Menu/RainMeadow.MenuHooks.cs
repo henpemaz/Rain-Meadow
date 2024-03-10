@@ -308,6 +308,11 @@ namespace RainMeadow
 #endif
                 self.manager.RequestMainProcessSwitch(Ext_ProcessID.LobbySelectMenu);
             }, self.mainMenuButtons.Count - 2);
+            if (ModManager.MMF)
+            {
+                RainMeadow.Debug("Restoring config settings");
+                MoreSlugcats.MMF.OnInit();
+            }
         }
     }
 }
