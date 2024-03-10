@@ -153,7 +153,10 @@ namespace RainMeadow
             // Grab Host Remix Settings
             if (OnlineManager.lobby.isOwner)
             {
-                (OnlineManager.lobby.gameMode as StoryGameMode).storyRemixSettings = GetHostStoryRemixSettings();
+                (OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings = GetHostBoolStoryRemixSettings();
+                (OnlineManager.lobby.gameMode as StoryGameMode).storyFloatRemixSettings = GetHostFloatStoryRemixSettings();
+                (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings = GetHostIntStoryRemixSettings();
+
 
 
             }
@@ -187,7 +190,7 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner) // I'm a client
             {
 
-                SetClientStoryRemixSettings((OnlineManager.lobby.gameMode as StoryGameMode).storyRemixSettings); // Set client remix settings to Host's on StartGame()
+                SetClientStoryRemixSettings((OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings, (OnlineManager.lobby.gameMode as StoryGameMode).storyFloatRemixSettings, (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings); // Set client remix settings to Host's on StartGame()
 
 
                 if (!rainMeadowOptions.SlugcatCustomToggle.Value) // I'm a client and I want to match the hosts
@@ -499,75 +502,95 @@ namespace RainMeadow
             return currentCampaignName;
         }
 
-        internal void SetClientStoryRemixSettings(List<bool> hostRemixSettings)
+        internal void SetClientStoryRemixSettings(List<bool> hostBoolRemixSettings, List<float> hostFloatRemixSettings, List<int> hostIntRemixSettings)
         {
-            List<Configurable<bool>> configurables = new List<Configurable<bool>>();
+            List<Configurable<bool>> configurableBools = new List<Configurable<bool>>();
+            List<Configurable<float>> configurableFloats = new List<Configurable<float>>();
+            List<Configurable<int>> configurableInts = new List<Configurable<int>>();
+
 
             if (ModManager.MMF)
             {
 
-                configurables.Add(MoreSlugcats.MMF.cfgAlphaRedLizards);
-                configurables.Add(MoreSlugcats.MMF.cfgBreathTimeVisualIndicator);
-                configurables.Add(MoreSlugcats.MMF.cfgClearerDeathGradients);
-                configurables.Add(MoreSlugcats.MMF.cfgClimbingGrip);
-                configurables.Add(MoreSlugcats.MMF.cfgCreatureSense);
-                configurables.Add(MoreSlugcats.MMF.cfgDeerBehavior);
-                configurables.Add(MoreSlugcats.MMF.cfgDisableGateKarma);
-                configurables.Add(MoreSlugcats.MMF.cfgDisableScreenShake);
-                configurables.Add(MoreSlugcats.MMF.cfgExtraLizardSounds);
-                configurables.Add(MoreSlugcats.MMF.cfgExtraTutorials);
-                configurables.Add(MoreSlugcats.MMF.cfgFasterShelterOpen);
-                configurables.Add(MoreSlugcats.MMF.cfgFastMapReveal);
-                configurables.Add(MoreSlugcats.MMF.cfgFreeSwimBoosts);
-                configurables.Add(MoreSlugcats.MMF.cfgGlobalMonkGates);
-                configurables.Add(MoreSlugcats.MMF.cfgGraspWiggling);
-                configurables.Add(MoreSlugcats.MMF.cfgHideRainMeterNoThreat);
-                configurables.Add(MoreSlugcats.MMF.cfgHunterBackspearProtect);
-                configurables.Add(MoreSlugcats.MMF.cfgHunterBatflyAutograb);
-                //configurables.Add(MoreSlugcats.MMF.cfgHunterBonusCycles);
-                //configurables.Add(MoreSlugcats.MMF.cfgHunterCycles);
-                configurables.Add(MoreSlugcats.MMF.cfgIncreaseStuns);
-                configurables.Add(MoreSlugcats.MMF.cfgJetfishItemProtection);
-                configurables.Add(MoreSlugcats.MMF.cfgKeyItemPassaging);
-                configurables.Add(MoreSlugcats.MMF.cfgKeyItemTracking);
-                configurables.Add(MoreSlugcats.MMF.cfgLargeHologramLight);
-                configurables.Add(MoreSlugcats.MMF.cfgLoadingScreenTips);
-                configurables.Add(MoreSlugcats.MMF.cfgMonkBreathTime);
-                configurables.Add(MoreSlugcats.MMF.cfgNewDynamicDifficulty);
-                configurables.Add(MoreSlugcats.MMF.cfgNoArenaFleeing);
-                configurables.Add(MoreSlugcats.MMF.cfgNoRandomCycles);
-                configurables.Add(MoreSlugcats.MMF.cfgOldTongue);
-                configurables.Add(MoreSlugcats.MMF.cfgQuieterGates);
-                // configurables.Add(MoreSlugcats.MMF.cfgRainTimeMultiplier);
-                configurables.Add(MoreSlugcats.MMF.cfgSafeCentipedes);
-                configurables.Add(MoreSlugcats.MMF.cfgSandboxItemStems);
-                configurables.Add(MoreSlugcats.MMF.cfgScavengerKillSquadDelay);
-                configurables.Add(MoreSlugcats.MMF.cfgShowUnderwaterShortcuts);
-                //configurables.Add(MoreSlugcats.MMF.cfgSlowTimeFactor);
-                configurables.Add(MoreSlugcats.MMF.cfgSpeedrunTimer);
-                configurables.Add(MoreSlugcats.MMF.cfgSurvivorPassageNotRequired);
-                configurables.Add(MoreSlugcats.MMF.cfgSwimBreathLeniency);
-                configurables.Add(MoreSlugcats.MMF.cfgThreatMusicPulse);
-                configurables.Add(MoreSlugcats.MMF.cfgTickTock);
-                configurables.Add(MoreSlugcats.MMF.cfgUpwardsSpearThrow);
-                configurables.Add(MoreSlugcats.MMF.cfgVanillaExploits);
-                configurables.Add(MoreSlugcats.MMF.cfgVulnerableJellyfish);
-                configurables.Add(MoreSlugcats.MMF.cfgWallpounce);
+                configurableBools.Add(MoreSlugcats.MMF.cfgAlphaRedLizards);
+                configurableBools.Add(MoreSlugcats.MMF.cfgBreathTimeVisualIndicator);
+                configurableBools.Add(MoreSlugcats.MMF.cfgClearerDeathGradients);
+                configurableBools.Add(MoreSlugcats.MMF.cfgClimbingGrip);
+                configurableBools.Add(MoreSlugcats.MMF.cfgCreatureSense);
+                configurableBools.Add(MoreSlugcats.MMF.cfgDeerBehavior);
+                configurableBools.Add(MoreSlugcats.MMF.cfgDisableGateKarma);
+                configurableBools.Add(MoreSlugcats.MMF.cfgDisableScreenShake);
+                configurableBools.Add(MoreSlugcats.MMF.cfgExtraLizardSounds);
+                configurableBools.Add(MoreSlugcats.MMF.cfgExtraTutorials);
+                configurableBools.Add(MoreSlugcats.MMF.cfgFasterShelterOpen);
+                configurableBools.Add(MoreSlugcats.MMF.cfgFastMapReveal);
+                configurableBools.Add(MoreSlugcats.MMF.cfgFreeSwimBoosts);
+                configurableBools.Add(MoreSlugcats.MMF.cfgGlobalMonkGates);
+                configurableBools.Add(MoreSlugcats.MMF.cfgGraspWiggling);
+                configurableBools.Add(MoreSlugcats.MMF.cfgHideRainMeterNoThreat);
+                configurableBools.Add(MoreSlugcats.MMF.cfgHunterBackspearProtect);
+                configurableBools.Add(MoreSlugcats.MMF.cfgHunterBatflyAutograb);
 
+                configurableBools.Add(MoreSlugcats.MMF.cfgIncreaseStuns);
+                configurableBools.Add(MoreSlugcats.MMF.cfgJetfishItemProtection);
+                configurableBools.Add(MoreSlugcats.MMF.cfgKeyItemPassaging);
+                configurableBools.Add(MoreSlugcats.MMF.cfgKeyItemTracking);
+                configurableBools.Add(MoreSlugcats.MMF.cfgLargeHologramLight);
+                configurableBools.Add(MoreSlugcats.MMF.cfgLoadingScreenTips);
+                configurableBools.Add(MoreSlugcats.MMF.cfgMonkBreathTime);
+                configurableBools.Add(MoreSlugcats.MMF.cfgNewDynamicDifficulty);
+                configurableBools.Add(MoreSlugcats.MMF.cfgNoArenaFleeing);
+                configurableBools.Add(MoreSlugcats.MMF.cfgNoRandomCycles);
+                configurableBools.Add(MoreSlugcats.MMF.cfgOldTongue);
+                configurableBools.Add(MoreSlugcats.MMF.cfgQuieterGates);
+                configurableBools.Add(MoreSlugcats.MMF.cfgSafeCentipedes);
+                configurableBools.Add(MoreSlugcats.MMF.cfgSandboxItemStems);
+                configurableBools.Add(MoreSlugcats.MMF.cfgScavengerKillSquadDelay);
+                configurableBools.Add(MoreSlugcats.MMF.cfgShowUnderwaterShortcuts);
+                configurableBools.Add(MoreSlugcats.MMF.cfgSpeedrunTimer);
+                configurableBools.Add(MoreSlugcats.MMF.cfgSurvivorPassageNotRequired);
+                configurableBools.Add(MoreSlugcats.MMF.cfgSwimBreathLeniency);
+                configurableBools.Add(MoreSlugcats.MMF.cfgThreatMusicPulse);
+                configurableBools.Add(MoreSlugcats.MMF.cfgTickTock);
+                configurableBools.Add(MoreSlugcats.MMF.cfgUpwardsSpearThrow);
+                configurableBools.Add(MoreSlugcats.MMF.cfgVanillaExploits);
+                configurableBools.Add(MoreSlugcats.MMF.cfgVulnerableJellyfish);
+                configurableBools.Add(MoreSlugcats.MMF.cfgWallpounce);
 
-                for (int i = 0; i < hostRemixSettings.Count; i++)
+                configurableFloats.Add(MoreSlugcats.MMF.cfgRainTimeMultiplier);
+                configurableFloats.Add(MoreSlugcats.MMF.cfgSlowTimeFactor);
+
+                configurableInts.Add(MoreSlugcats.MMF.cfgHunterBonusCycles);
+                configurableInts.Add(MoreSlugcats.MMF.cfgHunterCycles);
+
+                for (int i = 0; i < hostBoolRemixSettings.Count; i++)
                 {
-                    configurables[i]._typedValue = hostRemixSettings[i];
-                    RainMeadow.Debug($"CLIENT GETTING KEY {configurables[i].key}, VALUE: {configurables[i]._typedValue}");
+                    configurableBools[i]._typedValue = hostBoolRemixSettings[i];
+                    RainMeadow.Debug($"CLIENT GETTING BOOL KEY {configurableBools[i].key}, VALUE: {configurableBools[i]._typedValue}");
+
+                }
+
+                for (int i = 0; i < hostFloatRemixSettings.Count; i++)
+                {
+                    configurableFloats[i]._typedValue = hostFloatRemixSettings[i];
+                    RainMeadow.Debug($"CLIENT GETTING FLOAT KEY {configurableFloats[i].key}, VALUE: {configurableFloats[i]._typedValue}");
+
+                }
+
+
+                for (int i = 0; i < hostIntRemixSettings.Count; i++)
+                {
+                    configurableInts[i]._typedValue = hostIntRemixSettings[i];
+                    RainMeadow.Debug($"CLIENT GETTING BOOL KEY {configurableInts[i].key}, VALUE: {configurableInts[i]._typedValue}");
 
                 }
 
             }
         }
 
-        internal List<bool> GetHostStoryRemixSettings()
+        internal List<bool> GetHostBoolStoryRemixSettings()
         {
-            List<Configurable<bool>> configurables = new List<Configurable<bool>>();
+            List<Configurable<bool>> configurableBools = new List<Configurable<bool>>();
 
             List<bool> configurableTypes = new List<bool>();
 
@@ -575,58 +598,103 @@ namespace RainMeadow
             {
 
 
-                configurables.Add(MoreSlugcats.MMF.cfgAlphaRedLizards);
-                configurables.Add(MoreSlugcats.MMF.cfgBreathTimeVisualIndicator);
-                configurables.Add(MoreSlugcats.MMF.cfgClearerDeathGradients);
-                configurables.Add(MoreSlugcats.MMF.cfgClimbingGrip);
-                configurables.Add(MoreSlugcats.MMF.cfgCreatureSense);
-                configurables.Add(MoreSlugcats.MMF.cfgDeerBehavior);
-                configurables.Add(MoreSlugcats.MMF.cfgDisableGateKarma);
-                configurables.Add(MoreSlugcats.MMF.cfgDisableScreenShake);
-                configurables.Add(MoreSlugcats.MMF.cfgExtraLizardSounds);
-                configurables.Add(MoreSlugcats.MMF.cfgExtraTutorials);
-                configurables.Add(MoreSlugcats.MMF.cfgFasterShelterOpen);
-                configurables.Add(MoreSlugcats.MMF.cfgFastMapReveal);
-                configurables.Add(MoreSlugcats.MMF.cfgFreeSwimBoosts);
-                configurables.Add(MoreSlugcats.MMF.cfgGlobalMonkGates);
-                configurables.Add(MoreSlugcats.MMF.cfgGraspWiggling);
-                configurables.Add(MoreSlugcats.MMF.cfgHideRainMeterNoThreat);
-                configurables.Add(MoreSlugcats.MMF.cfgHunterBackspearProtect);
-                configurables.Add(MoreSlugcats.MMF.cfgHunterBatflyAutograb);
-                //configurables.Add(MoreSlugcats.MMF.cfgHunterBonusCycles);
-                //configurables.Add(MoreSlugcats.MMF.cfgHunterCycles);
-                configurables.Add(MoreSlugcats.MMF.cfgIncreaseStuns);
-                configurables.Add(MoreSlugcats.MMF.cfgJetfishItemProtection);
-                configurables.Add(MoreSlugcats.MMF.cfgKeyItemPassaging);
-                configurables.Add(MoreSlugcats.MMF.cfgKeyItemTracking);
-                configurables.Add(MoreSlugcats.MMF.cfgLargeHologramLight);
-                configurables.Add(MoreSlugcats.MMF.cfgLoadingScreenTips);
-                configurables.Add(MoreSlugcats.MMF.cfgMonkBreathTime);
-                configurables.Add(MoreSlugcats.MMF.cfgNewDynamicDifficulty);
-                configurables.Add(MoreSlugcats.MMF.cfgNoArenaFleeing);
-                configurables.Add(MoreSlugcats.MMF.cfgNoRandomCycles);
-                configurables.Add(MoreSlugcats.MMF.cfgOldTongue);
-                configurables.Add(MoreSlugcats.MMF.cfgQuieterGates);
-                // configurables.Add(MoreSlugcats.MMF.cfgRainTimeMultiplier);
-                configurables.Add(MoreSlugcats.MMF.cfgSafeCentipedes);
-                configurables.Add(MoreSlugcats.MMF.cfgSandboxItemStems);
-                configurables.Add(MoreSlugcats.MMF.cfgScavengerKillSquadDelay);
-                configurables.Add(MoreSlugcats.MMF.cfgShowUnderwaterShortcuts);
-                //configurables.Add(MoreSlugcats.MMF.cfgSlowTimeFactor);
-                configurables.Add(MoreSlugcats.MMF.cfgSpeedrunTimer);
-                configurables.Add(MoreSlugcats.MMF.cfgSurvivorPassageNotRequired);
-                configurables.Add(MoreSlugcats.MMF.cfgSwimBreathLeniency);
-                configurables.Add(MoreSlugcats.MMF.cfgThreatMusicPulse);
-                configurables.Add(MoreSlugcats.MMF.cfgTickTock);
-                configurables.Add(MoreSlugcats.MMF.cfgUpwardsSpearThrow);
-                configurables.Add(MoreSlugcats.MMF.cfgVanillaExploits);
-                configurables.Add(MoreSlugcats.MMF.cfgVulnerableJellyfish);
-                configurables.Add(MoreSlugcats.MMF.cfgWallpounce);
+                configurableBools.Add(MoreSlugcats.MMF.cfgAlphaRedLizards);
+                configurableBools.Add(MoreSlugcats.MMF.cfgBreathTimeVisualIndicator);
+                configurableBools.Add(MoreSlugcats.MMF.cfgClearerDeathGradients);
+                configurableBools.Add(MoreSlugcats.MMF.cfgClimbingGrip);
+                configurableBools.Add(MoreSlugcats.MMF.cfgCreatureSense);
+                configurableBools.Add(MoreSlugcats.MMF.cfgDeerBehavior);
+                configurableBools.Add(MoreSlugcats.MMF.cfgDisableGateKarma);
+                configurableBools.Add(MoreSlugcats.MMF.cfgDisableScreenShake);
+                configurableBools.Add(MoreSlugcats.MMF.cfgExtraLizardSounds);
+                configurableBools.Add(MoreSlugcats.MMF.cfgExtraTutorials);
+                configurableBools.Add(MoreSlugcats.MMF.cfgFasterShelterOpen);
+                configurableBools.Add(MoreSlugcats.MMF.cfgFastMapReveal);
+                configurableBools.Add(MoreSlugcats.MMF.cfgFreeSwimBoosts);
+                configurableBools.Add(MoreSlugcats.MMF.cfgGlobalMonkGates);
+                configurableBools.Add(MoreSlugcats.MMF.cfgGraspWiggling);
+                configurableBools.Add(MoreSlugcats.MMF.cfgHideRainMeterNoThreat);
+                configurableBools.Add(MoreSlugcats.MMF.cfgHunterBackspearProtect);
+                configurableBools.Add(MoreSlugcats.MMF.cfgHunterBatflyAutograb);
+                configurableBools.Add(MoreSlugcats.MMF.cfgIncreaseStuns);
+                configurableBools.Add(MoreSlugcats.MMF.cfgJetfishItemProtection);
+                configurableBools.Add(MoreSlugcats.MMF.cfgKeyItemPassaging);
+                configurableBools.Add(MoreSlugcats.MMF.cfgKeyItemTracking);
+                configurableBools.Add(MoreSlugcats.MMF.cfgLargeHologramLight);
+                configurableBools.Add(MoreSlugcats.MMF.cfgLoadingScreenTips);
+                configurableBools.Add(MoreSlugcats.MMF.cfgMonkBreathTime);
+                configurableBools.Add(MoreSlugcats.MMF.cfgNewDynamicDifficulty);
+                configurableBools.Add(MoreSlugcats.MMF.cfgNoArenaFleeing);
+                configurableBools.Add(MoreSlugcats.MMF.cfgNoRandomCycles);
+                configurableBools.Add(MoreSlugcats.MMF.cfgOldTongue);
+                configurableBools.Add(MoreSlugcats.MMF.cfgQuieterGates);
+                configurableBools.Add(MoreSlugcats.MMF.cfgSafeCentipedes);
+                configurableBools.Add(MoreSlugcats.MMF.cfgSandboxItemStems);
+                configurableBools.Add(MoreSlugcats.MMF.cfgScavengerKillSquadDelay);
+                configurableBools.Add(MoreSlugcats.MMF.cfgShowUnderwaterShortcuts);
+                configurableBools.Add(MoreSlugcats.MMF.cfgSpeedrunTimer);
+                configurableBools.Add(MoreSlugcats.MMF.cfgSurvivorPassageNotRequired);
+                configurableBools.Add(MoreSlugcats.MMF.cfgSwimBreathLeniency);
+                configurableBools.Add(MoreSlugcats.MMF.cfgThreatMusicPulse);
+                configurableBools.Add(MoreSlugcats.MMF.cfgTickTock);
+                configurableBools.Add(MoreSlugcats.MMF.cfgUpwardsSpearThrow);
+                configurableBools.Add(MoreSlugcats.MMF.cfgVanillaExploits);
+                configurableBools.Add(MoreSlugcats.MMF.cfgVulnerableJellyfish);
+                configurableBools.Add(MoreSlugcats.MMF.cfgWallpounce);
 
 
-                foreach (var setting in configurables)
+                foreach (var setting in configurableBools)
                 {
                     RainMeadow.Debug($"HOST SETTING KEY: {setting.key}, VALUE:{setting.Value}");
+                    configurableTypes.Add(setting._typedValue);
+                }
+
+                return configurableTypes;
+            }
+            return configurableTypes;
+        }
+
+        internal List<float> GetHostFloatStoryRemixSettings()
+        {
+            List<Configurable<float>> configurableBools = new List<Configurable<float>>();
+
+            List<float> configurableTypes = new List<float>();
+
+            if (ModManager.MMF)
+            {
+                configurableBools.Add(MoreSlugcats.MMF.cfgRainTimeMultiplier);
+                configurableBools.Add(MoreSlugcats.MMF.cfgSlowTimeFactor);
+
+
+
+                foreach (var setting in configurableBools)
+                {
+                    RainMeadow.Debug($"HOST SETTING FLOAT KEY: {setting.key}, VALUE:{setting.Value}");
+                    configurableTypes.Add(setting._typedValue);
+                }
+
+                return configurableTypes;
+            }
+            return configurableTypes;
+        }
+
+        internal List<int> GetHostIntStoryRemixSettings()
+        {
+            List<Configurable<int>> configurableBools = new List<Configurable<int>>();
+
+            List<int> configurableTypes = new List<int>();
+
+            if (ModManager.MMF)
+            {
+
+                configurableBools.Add(MoreSlugcats.MMF.cfgHunterBonusCycles);
+                configurableBools.Add(MoreSlugcats.MMF.cfgHunterCycles);
+
+
+
+                foreach (var setting in configurableBools)
+                {
+                    RainMeadow.Debug($"HOST SETTING INT KEY: {setting.key}, VALUE:{setting.Value}");
                     configurableTypes.Add(setting._typedValue);
                 }
 
