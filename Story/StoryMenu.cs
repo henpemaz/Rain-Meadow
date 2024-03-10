@@ -569,14 +569,14 @@ namespace RainMeadow
                 for (int i = 0; i < hostIntRemixSettings.Count; i++)
                 {
                     configurableInts[i]._typedValue = hostIntRemixSettings[i];
-                    RainMeadow.Debug($"CLIENT GETTING BOOL KEY {configurableInts[i].key}, VALUE: {configurableInts[i]._typedValue}");
+                    RainMeadow.Debug($"CLIENT GETTING INT KEY {configurableInts[i].key}, VALUE: {configurableInts[i]._typedValue}");
 
                 }
 
             }
         }
 
-        internal List<bool> GetHostBoolStoryRemixSettings()
+        internal static List<bool> GetHostBoolStoryRemixSettings()
         {
             List<Configurable<bool>> configurableBools = new List<Configurable<bool>>();
 
@@ -642,7 +642,7 @@ namespace RainMeadow
             return configurableTypes;
         }
 
-        internal List<float> GetHostFloatStoryRemixSettings()
+        internal static List<float> GetHostFloatStoryRemixSettings()
         {
             List<Configurable<float>> configurableBools = new List<Configurable<float>>();
 
@@ -666,7 +666,7 @@ namespace RainMeadow
             return configurableTypes;
         }
 
-        internal List<int> GetHostIntStoryRemixSettings()
+        internal static List<int> GetHostIntStoryRemixSettings()
         {
             List<Configurable<int>> configurableBools = new List<Configurable<int>>();
 
