@@ -11,6 +11,7 @@ namespace RainMeadow
         // prevent creature spawns
         private void GameHooks()
         {
+            On.Futile.OnApplicationQuit += Futile_OnApplicationQuit;
             On.StoryGameSession.ctor += StoryGameSession_ctor;
             On.RainWorldGame.RawUpdate += RainWorldGame_RawUpdate;
             On.RainWorldGame.ShutDownProcess += RainWorldGame_ShutDownProcess;
@@ -30,6 +31,12 @@ namespace RainMeadow
             
             // Arena specific
             On.GameSession.AddPlayer += GameSession_AddPlayer;
+        }
+
+        private void Futile_OnApplicationQuit(On.Futile.orig_OnApplicationQuit orig, Futile self)
+        {
+            //TODO: Impliment graceful exist
+            orig(self);
         }
 
         private void World_LoadWorld(On.World.orig_LoadWorld orig, World self, SlugcatStats.Name slugcatNumber, System.Collections.Generic.List<AbstractRoom> abstractRoomsList, int[] swarmRooms, int[] shelters, int[] gates)
@@ -83,8 +90,8 @@ namespace RainMeadow
                 saveStateNumber = OnlineManager.lobby.gameMode.GetStorySessionPlayer(game);
                 if (isStoryMode(out var story))
                 {
-                    story.storyAvatarSettings.inGame = true;
-                    story.storyAvatarSettings.isDead = false;
+                    story.storyClientSettings.inGame = true;
+                    story.storyClientSettings.isDead = false;
                 }
             }
             orig(self, saveStateNumber, game);
@@ -110,7 +117,7 @@ namespace RainMeadow
 
                 if(isStoryMode(out var story))
                 {
-                    story.storyAvatarSettings.inGame = false;
+                    story.storyClientSettings.inGame = false;
                 }
 
                 if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;

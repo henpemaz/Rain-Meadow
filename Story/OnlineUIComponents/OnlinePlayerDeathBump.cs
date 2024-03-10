@@ -10,6 +10,7 @@ using System.Linq;
 using HUD;
 using RWCustom;
 using UnityEngine;
+using static RainMeadow.RainMeadow;
 
 namespace RainMeadow
 {
@@ -150,7 +151,7 @@ namespace RainMeadow
             Color color = PlayerGraphics.DefaultSlugcatColor((this.owner.abstractPlayer.state as PlayerState).slugcatCharacter);
             if (this.counter % 6 < 2 && this.lastBlink > 0f)
             {
-                if ((this.owner.abstractPlayer.state as PlayerState).slugcatCharacter == SlugcatStats.Name.White)
+                if ((this.owner.abstractPlayer.state as PlayerState).slugcatCharacter == Ext_SlugcatStatsName.OnlineStoryWhite)
                 {
                     color = Color.Lerp(color, new Color(0.9f, 0.9f, 0.9f), Mathf.InverseLerp(0f, 0.5f, Mathf.Lerp(this.lastBlink, this.blink, timeStacker)));
                 }

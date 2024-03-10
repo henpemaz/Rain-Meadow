@@ -1,4 +1,4 @@
-﻿using Menu;
+using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 using Steamworks;
@@ -7,6 +7,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using UnityEngine;
+using MoreSlugcats;
+using RWCustom;
+using static RainMeadow.RainMeadow;
 
 namespace RainMeadow
 {
@@ -16,7 +19,6 @@ namespace RainMeadow
 
         private EventfulHoldButton hostStartButton;
         private EventfulHoldButton clientWaitingButton;
-
 
         private EventfulBigArrowButton prevButton;
         private EventfulBigArrowButton nextButton;
@@ -28,21 +30,27 @@ namespace RainMeadow
         private StoryClientSettings personaSettings;
 
         private List<SlugcatSelectMenu.SlugcatPage> characterPages;
-        private EventfulSelectOneButton[] playerButtons;
+        private EventfulSelectOneButton[] playerButtons = new EventfulSelectOneButton[0];
         int skinIndex;
         private OpTinyColorPicker bodyColorPicker;
         private OpTinyColorPicker eyeColorPicker;
+        private SlugcatStats.Name currentCampaign;
+        private string currentCampaignName = "";
+        private MenuLabel campaignContainer;
+
+
+        private SlugcatStats.Name customSelectedSlugcat = Ext_SlugcatStatsName.OnlineStoryWhite;
+
+
 
         public override MenuScene.SceneID GetScene => null;
         public StoryMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.StoryMenu)
         {
-
-            // TODO: Find the source of the little white half circle on the bottom right
             RainMeadow.DebugMe();
             this.rainEffect = new RainEffect(this, this.pages[0]);
             this.pages[0].subObjects.Add(this.rainEffect);
             this.rainEffect.rainFade = 0.3f;
-
+            this.characterPages = new List<SlugcatSelectMenu.SlugcatPage>();
 
             // Initial setup for slugcat menu & pages
             ssm = (SlugcatSelectMenu)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(SlugcatSelectMenu));
@@ -54,69 +62,19 @@ namespace RainMeadow
             ssm.manager = manager;
             ssm.pages = pages;
 
-            MenuScene.SceneID HostSceneID = MenuScene.SceneID.Slugcat_White;
-            MenuScene.SceneID ClientSceneID = MenuScene.SceneID.Landscape_SU;
 
 
-            // Custom images for host vs clients
-            if (OnlineManager.lobby.isOwner)
-            {
-                sp.slugcatImage = new InteractiveMenuScene(this, this.pages[0], HostSceneID);
-
-                this.pages[0].subObjects.Add(sp.slugcatImage);
-
-            }
-            else
-            {
-                sp.slugcatImage = new InteractiveMenuScene(this, this.pages[0], ClientSceneID);
-
-                this.pages[0].subObjects.Add(sp.slugcatImage);
-
-            }
-
-
-            ssm.slugcatColorOrder = AllAvailableCharacters();
+            ssm.slugcatColorOrder = AllSlugcats();
             sp.imagePos = new Vector2(683f, 484f);
-            /*
-                        // TODO: Multiple Characters
-                        for (int j = 0; j < ssm.slugcatColorOrder.Count; j++)
-                        {
-                            sp.slugcatNumber = ssm.slugcatColorOrder[j];
-
-                            // TODO: Background images
-                            if (sp.slugcatNumber == SlugcatStats.Name.White)
-                            {
-                                //HostSceneID = MenuScene.SceneID.Slugcat_White;
-                                sp.sceneOffset = new Vector2(-10f, 100f);
-                                sp.slugcatDepth = 3.1000001f;
-                                sp.markOffset = new Vector2(-15f, -2f);
-                                sp.glowOffset = new Vector2(-30f, -50f);
-
-                            }
-
-                        }*/
 
 
-            // TODO: Alignment issues.
 
-            /*            s = RWCustom.Custom.ReplaceLineDelimeters(s);
-                        int num = s.Count((char f) => f == '\n');
-                        float num2 = 0f;
-                        if (num > 1)
-                        {
-                            num2 = 30f;
-                        }
-                        var characterName = new MenuLabel(this, pages[0], text, new Vector2(sp.imagePos.x, sp.imagePos.y - 400f), new Vector2(200f, 30f), bigText: true);
-                        characterName.label.alignment = FLabelAlignment.Center;
-                        this.pages[0].subObjects.Add(characterName);
+            for (int j = 0; j < ssm.slugcatColorOrder.Count; j++)
+            {
+                this.characterPages.Add(new SlugcatCustomSelection(this, ssm, 1 + j, ssm.slugcatColorOrder[j]));
+                this.pages.Add(this.characterPages[j]);
 
-                        var infoLabel = new MenuLabel(this, pages[0], s, new Vector2(-1000f, sp.imagePos.y - 249f - 60f + num2 / 2f), new Vector2(400f, 60f), bigText: true);
-                        infoLabel.label.alignment = FLabelAlignment.Center;
-                        this.pages[0].subObjects.Add(infoLabel);
-
-                        *//*            characterName.label.color = MenuRGB(MenuColors.MediumGrey);
-                                    infoLabel.label.color = MenuRGB(MenuColors.DarkGrey);
-                        */
+            }
 
 
             // Setup host / client buttons & general view
@@ -132,11 +90,51 @@ namespace RainMeadow
                 this.pages[0].subObjects.Add(this.hostStartButton);
 
 
+                // Previous
+                this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
+                this.prevButton.OnClick += (_) =>
+                {
+                    if (!rainMeadowOptions.SlugcatCustomToggle.Value)
+                    { // I don't want to choose unstable slugcats
+                        return;
+                    }
+
+                    ssm.quedSideInput = Math.Max(-3, ssm.quedSideInput - 1);
+                    base.PlaySound(SoundID.MENU_Next_Slugcat);
+
+                };
+                this.pages[0].subObjects.Add(this.prevButton);
+
+
+                // Next
+
+                this.nextButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(985f, 50f), 1);
+                this.nextButton.OnClick += (_) =>
+                {
+                    if (!rainMeadowOptions.SlugcatCustomToggle.Value)
+                    {
+                        return;
+                    }
+                    ssm.quedSideInput = Math.Min(3, ssm.quedSideInput + 1);
+                    base.PlaySound(SoundID.MENU_Next_Slugcat);
+                };
+                this.pages[0].subObjects.Add(this.nextButton);
+
             }
 
             if (!OnlineManager.lobby.isOwner)
             {
+                campaignContainer = new MenuLabel(this, mainPage, this.Translate(currentCampaignName), new Vector2(583f, sp.imagePos.y - 268f), new Vector2(200f, 30f), true);
 
+                this.pages[0].subObjects.Add(campaignContainer);
+
+
+                // Back button doesn't highlight?
+                this.backButton = new SimplerButton(this, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f));
+                this.backButton.OnClick += (_) =>
+                {
+                    manager.RequestMainProcessSwitch(this.backTarget);
+                };
                 this.pages[0].subObjects.Add(this.backButton);
 
                 this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
@@ -150,6 +148,11 @@ namespace RainMeadow
             SteamSetup();
             SetupCharacterCustomization();
             UpdateCharacterUI();
+
+            if (!OnlineManager.lobby.isOwner && rainMeadowOptions.SlugcatCustomToggle.Value)
+            {
+                CustomSlugcatSetup();
+            }
 
 
 
@@ -172,6 +175,25 @@ namespace RainMeadow
         private void StartGame()
         {
             RainMeadow.DebugMe();
+            if (!OnlineManager.lobby.isOwner) // I'm a client
+            {
+                if (!rainMeadowOptions.SlugcatCustomToggle.Value) // I'm a client and I want to match the hosts
+                {
+
+                    personaSettings.playingAs = (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign;
+                }
+                else // I'm a client and I want my own Slugcat
+                {
+                    personaSettings.playingAs = customSelectedSlugcat;
+
+                }
+            }
+            else //I'm the host
+            {
+                personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
+                (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber; // I decide the campaign
+            }
+
             manager.arenaSitting = null;
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
@@ -187,8 +209,6 @@ namespace RainMeadow
                 this.rainEffect.rainFade = Mathf.Min(0.3f, this.rainEffect.rainFade + 0.006f);
             }
 
-
-
             ssm.lastScroll = ssm.scroll;
             ssm.scroll = ssm.NextScroll;
             if (Mathf.Abs(ssm.lastScroll) > 0.5f && Mathf.Abs(ssm.scroll) <= 0.5f)
@@ -199,7 +219,13 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner)
             {
                 this.clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame;
+                if ((OnlineManager.lobby.gameMode as StoryGameMode).didStartGame)
+                {
+                    currentCampaign = (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign ?? Ext_SlugcatStatsName.OnlineStoryWhite;
+                    campaignContainer.text = $"Current Campaign: {GetCampaignName(currentCampaign)}";
+                }
             }
+
             if (ssm.scroll == 0f && ssm.lastScroll == 0f)
             {
                 if (ssm.quedSideInput != 0)
@@ -220,8 +246,15 @@ namespace RainMeadow
         }
         private void UpdateCharacterUI()
         {
+            for (int i = 0; i < playerButtons.Length; i++)
+            {
+                var playerbtn = playerButtons[i];
+                playerbtn.RemoveSprites();
+                mainPage.RemoveSubObject(playerbtn);
+            }
 
             playerButtons = new EventfulSelectOneButton[players.Length];
+
             for (int i = 0; i < players.Length; i++)
             {
                 var player = players[i];
@@ -278,41 +311,17 @@ namespace RainMeadow
         private void SetupMenuItems()
         {
 
-            // Previous
-            this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
-            this.prevButton.OnClick += (_) =>
-            {
-                return; // TODO: Protect the users until all characters are fixed
-                ssm.quedSideInput = Math.Max(-3, ssm.quedSideInput - 1);
-                base.PlaySound(SoundID.MENU_Next_Slugcat);
-            };
-            this.pages[0].subObjects.Add(this.prevButton);
-
-
-            // Next
-            this.nextButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(985f, 50f), 1);
-            this.nextButton.OnClick += (_) =>
-            {
-                return;
-                ssm.quedSideInput = Math.Min(3, ssm.quedSideInput + 1);
-                base.PlaySound(SoundID.MENU_Next_Slugcat);
-            };
-            this.pages[0].subObjects.Add(this.nextButton);
-
-
-            // Back button doesn't highlight?
-            this.backButton = new SimplerButton(this, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f));
-            this.backButton.OnClick += (_) =>
-            {
-                manager.RequestMainProcessSwitch(this.backTarget);
-            };
-
 
             // Music
             this.mySoundLoopID = SoundID.MENU_Main_Menu_LOOP;
 
             // Player lobby label
             this.pages[0].subObjects.Add(new MenuLabel(this, mainPage, this.Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true));
+
+            if (rainMeadowOptions.SlugcatCustomToggle.Value && !OnlineManager.lobby.isOwner)
+            {
+                this.pages[0].subObjects.Add(new MenuLabel(this, mainPage, this.Translate("Slugcats"), new Vector2(394, 553), new(110, 30), true));
+            }
 
 
         }
@@ -340,8 +349,6 @@ namespace RainMeadow
             friendsList[0] = new EventfulSelectOneButton(this, mainPage, Translate("Invite Friends"), "friendsList", new(1150f, 50f), new(110, 50), friendsList, 0);
             this.pages[0].subObjects.Add(friendsList[0]);
 
-            // TODO: Add Friend's list back when I'm done testing
-
             friendsList[0].OnClick += (_) =>
             {
                 SteamFriends.ActivateGameOverlay("friends");
@@ -350,6 +357,39 @@ namespace RainMeadow
 
 
 
+        }
+        private void CustomSlugcatSetup()
+        {
+            var slugList = AllSlugcats();
+            var slugButtons = new EventfulSelectOneButton[slugList.Count];
+
+
+            for (int i = 0; i < slugButtons.Length; i++)
+            {
+                var slug = slugList[i];
+                var slugStringName = GetCampaignName(slugList[i]);
+                var btn = new SimplerButton(this, mainPage, slugStringName, new Vector2(394, 515) - i * new Vector2(0, 38), new Vector2(110, 30));
+                btn.toggled = false;
+                mainPage.subObjects.Add(btn);
+
+                // Store the current button in a variable accessible by the lambda
+                var currentBtn = btn;
+                btn.OnClick += (_) =>
+                {
+                    // Set the clicked button to true
+                    currentBtn.toggled = !currentBtn.toggled;
+                    customSelectedSlugcat = slug;
+
+                    // Set all other buttons to false
+                    foreach (var otherBtn in mainPage.subObjects.OfType<SimplerButton>())
+                    {
+                        if (otherBtn != currentBtn)
+                        {
+                            otherBtn.toggled = false;
+                        }
+                    }
+                };
+            }
         }
 
 
@@ -370,16 +410,38 @@ namespace RainMeadow
             UpdateCharacterUI();
         }
 
-        public static List<SlugcatStats.Name> AllAvailableCharacters()
-        {
 
-            return SlugcatStats.Name.values.entries.Select(s => new SlugcatStats.Name(s)).ToList();
+
+        public static List<SlugcatStats.Name> AllSlugcats()
+        {
+            // List<string> namesToExclude = new List<string> { "Night", "MeadowOnline", "MeadowOnlineRemote" }; // TODO: follow up on these
+            var filteredList = new List<SlugcatStats.Name>();
+
+
+            if (!ModManager.MSC)
+            {
+                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryWhite);
+                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryYellow);
+                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryRed);
+            }
+            else // I have more slugs for you
+            {
+                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryWhite);
+                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryYellow);
+                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryRed);
+
+            }
+
+            return filteredList;
+
         }
+
+
 
         private void BindSettings()
         {
             this.personaSettings = (StoryClientSettings)OnlineManager.lobby.gameMode.clientSettings;
-            personaSettings.playingAs = SlugcatStats.Name.White;
+            personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
             personaSettings.bodyColor = Color.white;
             personaSettings.eyeColor = Color.black;
 
@@ -395,6 +457,30 @@ namespace RainMeadow
             if (personaSettings != null) personaSettings.bodyColor = bodyColorPicker.valuecolor;
             if (personaSettings != null) personaSettings.eyeColor = eyeColorPicker.valuecolor;
 
+        }
+
+        public string GetCampaignName(SlugcatStats.Name name)
+        {
+            this.currentCampaignName = "";
+            if (name == Ext_SlugcatStatsName.OnlineStoryWhite)
+            {
+
+                currentCampaignName = "SURVIVOR";
+            }
+            else if (name == Ext_SlugcatStatsName.OnlineStoryYellow)
+            {
+                currentCampaignName = "MONK";
+            }
+            else if (name == Ext_SlugcatStatsName.OnlineStoryRed)
+            {
+                currentCampaignName = "HUNTER";
+            }
+            else
+            {
+                currentCampaignName = "";
+            }
+
+            return currentCampaignName;
         }
 
     }

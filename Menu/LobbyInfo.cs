@@ -11,18 +11,22 @@ namespace RainMeadow
         public string name;
         public string mode;
         public int playerCount;
+        public bool hasPassword;
+        public int maxPlayerCount;
 
         public IPEndPoint? ipEndpoint;
 
-        public LobbyInfo(CSteamID id, string name, string mode, int playerCount)
+        public LobbyInfo(CSteamID id, string name, string mode, int playerCount, bool hasPassword, int? maxPlayerCount)
         {
             this.id = id;
             this.name = name;
             this.mode = mode;
             this.playerCount = playerCount;
+            this.hasPassword = hasPassword;
+            this.maxPlayerCount = (int)maxPlayerCount;
         }
 
-        public LobbyInfo(IPEndPoint ipEndpoint, string name, string mode, int playerCount)
+        public LobbyInfo(IPEndPoint ipEndpoint, string name, string mode, int playerCount, bool hasPassword, int? maxPlayerCount)
         {
             this.ipEndpoint = ipEndpoint;
 
@@ -30,6 +34,8 @@ namespace RainMeadow
             this.name = name;
             this.mode = mode;
             this.playerCount = playerCount;
+            this.hasPassword = hasPassword;
+            this.maxPlayerCount = (int)maxPlayerCount;
         }
     }
 }

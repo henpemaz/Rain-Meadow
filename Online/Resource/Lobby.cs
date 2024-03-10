@@ -15,8 +15,9 @@ namespace RainMeadow
 
         public string[] mods = RainMeadowModManager.GetActiveMods();
         public static bool modsChecked;
-
-        public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner)
+        public string? password;
+        public bool hasPassword => password != null;
+        public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password)
         {
             this.super = this;
             OnlineManager.lobby = this; // needed for early entity processing
@@ -31,11 +32,61 @@ namespace RainMeadow
             activateOnAvailable = true;
             if (isOwner)
             {
+                this.password = password;
                 Available();
             }
             else
             {
-                Request(); // Everyone auto-subscribes this resource
+                RequestLobby(password);
+            }
+        }
+
+        public void RequestLobby(string? key)
+        {
+            RainMeadow.Debug(this);
+            if (isPending) throw new InvalidOperationException("pending");
+            if (isAvailable) throw new InvalidOperationException("available");
+            ClearIncommingBuffers();
+            pendingRequest = supervisor.InvokeRPC(RequestedLobby, key).Then(ResolveLobbyRequest);
+        }
+
+        [RPCMethod]
+        public void RequestedLobby(RPCEvent request, string? key)
+        {
+            if (this.hasPassword)
+            {
+                if (this.password != key)
+                {
+                    request.from.QueueEvent(new GenericResult.Fail(request));
+                    return;
+                }
+            }
+            Requested(request);
+        }
+
+        public void ResolveLobbyRequest(GenericResult requestResult)
+        {
+            if (requestResult is GenericResult.Ok)
+            {
+                MatchmakingManager.instance.JoinLobby(true);
+                if (!isAvailable) // this was transfered to me because the previous owner left
+                {
+                    WaitingForState();
+                    if (isOwner)
+                    {
+                        Available();
+                    }
+                }
+            }
+            else if (requestResult is GenericResult.Fail) // I didn't have the right key for this resource
+            {
+                RainMeadow.Error("locked request for " + this);
+                MatchmakingManager.instance.JoinLobby(false);
+            }
+            else if (requestResult is GenericResult.Error) // I should retry
+            {
+                Request();
+                RainMeadow.Error("request failed for " + this);
             }
         }
 

@@ -42,25 +42,36 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
-            this.lastAlpha = this.alpha;
-            this.lastBlink = this.blink;
-            this.blink = Mathf.Max(0f, this.blink - 0.0125f);
-            if (owner.found)
+            
+            if (Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
             {
-                this.pos = owner.drawpos;
-                if (owner.pointDir == Vector2.down) pos += new Vector2(0f, 60f);
+                this.lastAlpha = this.alpha;
+                // this.lastBlink = this.blink;
+                this.blink = 1f;
+                if (owner.found)
+                {
+                    this.pos = owner.drawpos;
+                    if (owner.pointDir == Vector2.down) pos += new Vector2(0f, 45f);
+                }
+                else
+                {
+                    pos.x = -1000;
+                }
+
+                this.alpha = Custom.LerpAndTick(this.alpha, owner.needed ? 1 : 0, 0.08f, 0.033333335f);
+
+                this.counter++;
             }
             else
             {
-                pos.x = -1000;
-            }
-            
-            this.alpha = Custom.LerpAndTick(this.alpha, owner.needed ? 1 : 0, 0.08f, 0.033333335f);
+                this.alpha = Custom.LerpAndTick(this.alpha, owner.needed ? 0 : 1, 0.08f, 0.033333335f);
+                this.lastAlpha = this.alpha;
 
-            this.counter++;
+            }
+
         }
 
-        public override void Draw(float timeStacker)
+    public override void Draw(float timeStacker)
         {
             Vector2 vector = Vector2.Lerp(this.lastPos, this.pos, timeStacker) + new Vector2(0.01f, 0.01f);
             float num = Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(this.lastAlpha, this.alpha, timeStacker)), 0.7f);

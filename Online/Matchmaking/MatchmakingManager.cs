@@ -12,7 +12,8 @@ namespace RainMeadow
         public static string CLIENT_VAL = "Meadow_" + RainMeadow.MeadowVersionStr;
         public static string NAME_KEY = "name";
         public static string MODE_KEY = "mode";
-
+        public static string PASSWORD_KEY = "password";
+        public static int MAX_LOBBY = 4;
 
         public static void InitLobbyManager()
         {
@@ -31,7 +32,6 @@ namespace RainMeadow
             FriendsOnly,
             [Description("Private")]
             Private
-
         }
 
         public abstract event LobbyListReceived_t OnLobbyListReceived;
@@ -43,9 +43,10 @@ namespace RainMeadow
 
         public abstract void RequestLobbyList();
 
-        public abstract void CreateLobby(LobbyVisibility visibility, string gameMode);
+        public abstract void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount);
 
-        public abstract void JoinLobby(LobbyInfo lobby);
+        public abstract void RequestJoinLobby(LobbyInfo lobby, string? password);
+        public abstract void JoinLobby(bool success);
 
         public abstract void LeaveLobby();
 
