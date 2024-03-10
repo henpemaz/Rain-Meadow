@@ -15,7 +15,6 @@ namespace RainMeadow
 
         public OpTinyColorPicker(Menu.Menu menu, Vector2 pos, string defaultHex) : base(pos, new Vector2(30, 30))
         {
-            //this.colorPicker = new OpColorPicker(pos + new Vector2(-60, 24), "", defaultHex);
             this.colorPicker = new OpColorPicker(new Configurable<Color>(MenuColorEffect.HexToColor(defaultHex)), pos);
             UIelementWrapper wrapper = new UIelementWrapper((menu as SmartMenu).tabWrapper, colorPicker);
             colorPicker.Hide();
@@ -31,10 +30,8 @@ namespace RainMeadow
 
         public void Signal(UIfocusable trigger)
         {
-            RainMeadow.Debug("clicked! " + Environment.StackTrace);
             if (!currentlyPicking)
             {
-                //this.colorPicker.pos = (this.inScrollBox ? (this.GetPos() + scrollBox.GetPos()) : this.GetPos()) + new Vector2(-60, 24);
                 this.colorPicker.pos = (this.InScrollBox ? (this.GetPos() + scrollBox.GetPos() + new Vector2(0f, scrollBox.ScrollOffset)) : this.GetPos()) + new Vector2(-60, 24);
                 colorPicker.Show();
                 currentlyPicking = true;
@@ -60,23 +57,17 @@ namespace RainMeadow
 
         public Color valuecolor => colorPicker.valueColor;
 
-        //public event OnFrozenUpdateHandler OnFrozenUpdate;
-
         public override void Update()
         {
             var mouseMode = MenuMouseMode;
 
-            // we do a little tricking
-            //if (currentlyPicking && !this.MouseOver) this.held = false;
             base.Update();
             if (currentlyPicking)
             {
                 OnValueChangedEvent?.Invoke();
-                //Menu.selectedObject = this.colorPicker.wrapper;
 
                 if (!mouseMode && !colorPicker.held)
                 {
-                    // lose focus
                     RainMeadow.Debug("lost focus, not held");
                     this.Signal(this);
                 }
@@ -92,7 +83,7 @@ namespace RainMeadow
             }
             if (loseFocusCounter >= focusTimeout)
             {
-                RainMeadow.Debug("lost focus! selected object was " + Menu.selectedObject);
+                RainMeadow.Debug("lost focus!");
                 this.Signal(this);
             }
         }
