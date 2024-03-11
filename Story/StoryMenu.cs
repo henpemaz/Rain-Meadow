@@ -150,13 +150,10 @@ namespace RainMeadow
             // Grab Host Remix Settings
             if (OnlineManager.lobby.isOwner)
             {
-                GetHostBoolStoryRemixSettings();
-                /*               (OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings = GetHostBoolStoryRemixSettings();
-                                (OnlineManager.lobby.gameMode as StoryGameMode).storyFloatRemixSettings = GetHostFloatStoryRemixSettings();
-                                (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings = GetHostIntStoryRemixSettings();*/
-
-
-
+                var hostSettings = GetHostBoolStoryRemixSettings();
+                (OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings = hostSettings.hostBoolSettings;
+                (OnlineManager.lobby.gameMode as StoryGameMode).storyFloatRemixSettings = hostSettings.hostFloatSettings;
+                (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings = hostSettings.hostIntSettings;
             }
 
             if (!OnlineManager.lobby.isOwner && rainMeadowOptions.SlugcatCustomToggle.Value)
@@ -423,7 +420,6 @@ namespace RainMeadow
 
         public static List<SlugcatStats.Name> AllSlugcats()
         {
-            // List<string> namesToExclude = new List<string> { "Night", "MeadowOnline", "MeadowOnlineRemote" }; // TODO: follow up on these
             var filteredList = new List<SlugcatStats.Name>();
 
 
@@ -494,94 +490,9 @@ namespace RainMeadow
 
         internal void SetClientStoryRemixSettings(List<bool> hostBoolRemixSettings, List<float> hostFloatRemixSettings, List<int> hostIntRemixSettings)
         {
-            List<Configurable<bool>> configurableBools = new List<Configurable<bool>>();
-            List<Configurable<float>> configurableFloats = new List<Configurable<float>>();
-            List<Configurable<int>> configurableInts = new List<Configurable<int>>();
-
-
-            if (ModManager.MMF)
-            {
-
-                configurableBools.Add(MoreSlugcats.MMF.cfgAlphaRedLizards);
-                configurableBools.Add(MoreSlugcats.MMF.cfgBreathTimeVisualIndicator);
-                configurableBools.Add(MoreSlugcats.MMF.cfgClearerDeathGradients);
-                configurableBools.Add(MoreSlugcats.MMF.cfgClimbingGrip);
-                configurableBools.Add(MoreSlugcats.MMF.cfgCreatureSense);
-                configurableBools.Add(MoreSlugcats.MMF.cfgDeerBehavior);
-                configurableBools.Add(MoreSlugcats.MMF.cfgDisableGateKarma);
-                configurableBools.Add(MoreSlugcats.MMF.cfgDisableScreenShake);
-                configurableBools.Add(MoreSlugcats.MMF.cfgExtraLizardSounds);
-                configurableBools.Add(MoreSlugcats.MMF.cfgExtraTutorials);
-                configurableBools.Add(MoreSlugcats.MMF.cfgFasterShelterOpen);
-                configurableBools.Add(MoreSlugcats.MMF.cfgFastMapReveal);
-                configurableBools.Add(MoreSlugcats.MMF.cfgFreeSwimBoosts);
-                configurableBools.Add(MoreSlugcats.MMF.cfgGlobalMonkGates);
-                configurableBools.Add(MoreSlugcats.MMF.cfgGraspWiggling);
-                configurableBools.Add(MoreSlugcats.MMF.cfgHideRainMeterNoThreat);
-                configurableBools.Add(MoreSlugcats.MMF.cfgHunterBackspearProtect);
-                configurableBools.Add(MoreSlugcats.MMF.cfgHunterBatflyAutograb);
-
-                configurableBools.Add(MoreSlugcats.MMF.cfgIncreaseStuns);
-                configurableBools.Add(MoreSlugcats.MMF.cfgJetfishItemProtection);
-                configurableBools.Add(MoreSlugcats.MMF.cfgKeyItemPassaging);
-                configurableBools.Add(MoreSlugcats.MMF.cfgKeyItemTracking);
-                configurableBools.Add(MoreSlugcats.MMF.cfgLargeHologramLight);
-                configurableBools.Add(MoreSlugcats.MMF.cfgLoadingScreenTips);
-                configurableBools.Add(MoreSlugcats.MMF.cfgMonkBreathTime);
-                configurableBools.Add(MoreSlugcats.MMF.cfgNewDynamicDifficulty);
-                configurableBools.Add(MoreSlugcats.MMF.cfgNoArenaFleeing);
-                configurableBools.Add(MoreSlugcats.MMF.cfgNoRandomCycles);
-                configurableBools.Add(MoreSlugcats.MMF.cfgOldTongue);
-                configurableBools.Add(MoreSlugcats.MMF.cfgQuieterGates);
-                configurableBools.Add(MoreSlugcats.MMF.cfgSafeCentipedes);
-                configurableBools.Add(MoreSlugcats.MMF.cfgSandboxItemStems);
-                configurableBools.Add(MoreSlugcats.MMF.cfgScavengerKillSquadDelay);
-                configurableBools.Add(MoreSlugcats.MMF.cfgShowUnderwaterShortcuts);
-                configurableBools.Add(MoreSlugcats.MMF.cfgSpeedrunTimer);
-                configurableBools.Add(MoreSlugcats.MMF.cfgSurvivorPassageNotRequired);
-                configurableBools.Add(MoreSlugcats.MMF.cfgSwimBreathLeniency);
-                configurableBools.Add(MoreSlugcats.MMF.cfgThreatMusicPulse);
-                configurableBools.Add(MoreSlugcats.MMF.cfgTickTock);
-                configurableBools.Add(MoreSlugcats.MMF.cfgUpwardsSpearThrow);
-                configurableBools.Add(MoreSlugcats.MMF.cfgVanillaExploits);
-                configurableBools.Add(MoreSlugcats.MMF.cfgVulnerableJellyfish);
-                configurableBools.Add(MoreSlugcats.MMF.cfgWallpounce);
-
-                configurableFloats.Add(MoreSlugcats.MMF.cfgRainTimeMultiplier);
-                configurableFloats.Add(MoreSlugcats.MMF.cfgSlowTimeFactor);
-
-                configurableInts.Add(MoreSlugcats.MMF.cfgHunterBonusCycles);
-                configurableInts.Add(MoreSlugcats.MMF.cfgHunterCycles);
-
-                for (int i = 0; i < hostBoolRemixSettings.Count; i++)
-                {
-                    configurableBools[i]._typedValue = hostBoolRemixSettings[i];
-                    RainMeadow.Debug($"CLIENT GETTING BOOL KEY {configurableBools[i].key}, VALUE: {configurableBools[i]._typedValue}");
-
-                }
-
-                for (int i = 0; i < hostFloatRemixSettings.Count; i++)
-                {
-                    configurableFloats[i]._typedValue = hostFloatRemixSettings[i];
-                    RainMeadow.Debug($"CLIENT GETTING FLOAT KEY {configurableFloats[i].key}, VALUE: {configurableFloats[i]._typedValue}");
-
-                }
-
-
-                for (int i = 0; i < hostIntRemixSettings.Count; i++)
-                {
-                    configurableInts[i]._typedValue = hostIntRemixSettings[i];
-                    RainMeadow.Debug($"CLIENT GETTING INT KEY {configurableInts[i].key}, VALUE: {configurableInts[i]._typedValue}");
-
-                }
-
-            }
-        }
-
-        internal static List<bool> GetHostBoolStoryRemixSettings()
-        {
-            List<bool> configurables = new List<bool>();
-
+            List<bool> configurableBools = new List<bool>();
+            List<float> configurableFloats = new List<float>();
+            List<int> configurableInts = new List<int>();
 
             if (ModManager.MMF)
             {
@@ -589,138 +500,101 @@ namespace RainMeadow
 
                 FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
 
-                foreach (FieldInfo field in fields)
+                var sortedFields = fields.OrderBy(f => f.Name);
+
+
+                foreach (FieldInfo field in sortedFields)
                 {
 
                     var reflectedValue = field.GetValue(null);
-                    if (reflectedValue is Configurable<bool> configurableBool)
+                    if (reflectedValue is Configurable<bool> boolOption)
                     {
-                        RainMeadow.Debug("FIELD Name: " + field.Name + "FIELD VALUE: " + configurableBool._typedValue);
-                        configurables.Add(configurableBool._typedValue);
+                        RainMeadow.Debug("FIELD CLIENT BOOL Name: " + field.Name + "FIELD VALUE: " + boolOption._typedValue);
+                        
+                        configurableBools.Add(boolOption._typedValue);
+                    }
+
+                    if (reflectedValue is Configurable<float> floatOption)
+                    {
+                        RainMeadow.Debug("FIELD CLIENT FLOAT Name: " + field.Name + "FIELD VALUE: " + floatOption._typedValue);
+                        configurableFloats.Add(floatOption._typedValue);
+                    }
+
+                    if (reflectedValue is Configurable<int> intOption)
+                    {
+                        RainMeadow.Debug("FIELD CLIENT INT Name: " + field.Name + "FIELD VALUE: " + intOption._typedValue);
+                        configurableInts.Add(intOption._typedValue);
                     }
 
                 }
-                return configurables;
+
+                for (int i = 0; i < hostBoolRemixSettings.Count; i++)
+                {
+                    configurableBools[i] = hostBoolRemixSettings[i];
+                    RainMeadow.Debug($"FIELD CLIENT BOOL Name " + configurableBools[i]);
+
+                }
+
+                for (int i = 0; i < hostFloatRemixSettings.Count; i++)
+                {
+                    configurableFloats[i] = hostFloatRemixSettings[i];
+                    RainMeadow.Debug("FIELD CLIENT FLOAT Name: " + configurableFloats[i]);
+
+                }
+
+
+                for (int i = 0; i < hostIntRemixSettings.Count; i++)
+                {
+                    configurableInts[i] = hostIntRemixSettings[i];
+                    RainMeadow.Debug("FIELD CLIENT INT Name: " + configurableInts[i]);
+
+                }
 
             }
-            return configurables;
         }
 
-        internal List<bool> GetHostBoolStoryRemixSettings2()
+        internal (List<bool> hostBoolSettings, List<float> hostFloatSettings, List<int> hostIntSettings) GetHostBoolStoryRemixSettings()
         {
-            List<Configurable<bool>> configurableBools = new List<Configurable<bool>>();
-
-            List<bool> configurableTypes = new List<bool>();
+            List<bool> configurableBools = new List<bool>();
+            List<float> configurableFloats = new List<float>();
+            List<int> configurableInts = new List<int>();
 
             if (ModManager.MMF)
             {
+                Type type = typeof(MoreSlugcats.MMF);
+
+                FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
+                var sortedFields = fields.OrderBy(f => f.Name);
 
 
-                configurableBools.Add(MoreSlugcats.MMF.cfgAlphaRedLizards);
-                configurableBools.Add(MoreSlugcats.MMF.cfgBreathTimeVisualIndicator);
-                configurableBools.Add(MoreSlugcats.MMF.cfgClearerDeathGradients);
-                configurableBools.Add(MoreSlugcats.MMF.cfgClimbingGrip);
-                configurableBools.Add(MoreSlugcats.MMF.cfgCreatureSense);
-                configurableBools.Add(MoreSlugcats.MMF.cfgDeerBehavior);
-                configurableBools.Add(MoreSlugcats.MMF.cfgDisableGateKarma);
-                configurableBools.Add(MoreSlugcats.MMF.cfgDisableScreenShake);
-                configurableBools.Add(MoreSlugcats.MMF.cfgExtraLizardSounds);
-                configurableBools.Add(MoreSlugcats.MMF.cfgExtraTutorials);
-                configurableBools.Add(MoreSlugcats.MMF.cfgFasterShelterOpen);
-                configurableBools.Add(MoreSlugcats.MMF.cfgFastMapReveal);
-                configurableBools.Add(MoreSlugcats.MMF.cfgFreeSwimBoosts);
-                configurableBools.Add(MoreSlugcats.MMF.cfgGlobalMonkGates);
-                configurableBools.Add(MoreSlugcats.MMF.cfgGraspWiggling);
-                configurableBools.Add(MoreSlugcats.MMF.cfgHideRainMeterNoThreat);
-                configurableBools.Add(MoreSlugcats.MMF.cfgHunterBackspearProtect);
-                configurableBools.Add(MoreSlugcats.MMF.cfgHunterBatflyAutograb);
-                configurableBools.Add(MoreSlugcats.MMF.cfgIncreaseStuns);
-                configurableBools.Add(MoreSlugcats.MMF.cfgJetfishItemProtection);
-                configurableBools.Add(MoreSlugcats.MMF.cfgKeyItemPassaging);
-                configurableBools.Add(MoreSlugcats.MMF.cfgKeyItemTracking);
-                configurableBools.Add(MoreSlugcats.MMF.cfgLargeHologramLight);
-                configurableBools.Add(MoreSlugcats.MMF.cfgLoadingScreenTips);
-                configurableBools.Add(MoreSlugcats.MMF.cfgMonkBreathTime);
-                configurableBools.Add(MoreSlugcats.MMF.cfgNewDynamicDifficulty);
-                configurableBools.Add(MoreSlugcats.MMF.cfgNoArenaFleeing);
-                configurableBools.Add(MoreSlugcats.MMF.cfgNoRandomCycles);
-                configurableBools.Add(MoreSlugcats.MMF.cfgOldTongue);
-                configurableBools.Add(MoreSlugcats.MMF.cfgQuieterGates);
-                configurableBools.Add(MoreSlugcats.MMF.cfgSafeCentipedes);
-                configurableBools.Add(MoreSlugcats.MMF.cfgSandboxItemStems);
-                configurableBools.Add(MoreSlugcats.MMF.cfgScavengerKillSquadDelay);
-                configurableBools.Add(MoreSlugcats.MMF.cfgShowUnderwaterShortcuts);
-                configurableBools.Add(MoreSlugcats.MMF.cfgSpeedrunTimer);
-                configurableBools.Add(MoreSlugcats.MMF.cfgSurvivorPassageNotRequired);
-                configurableBools.Add(MoreSlugcats.MMF.cfgSwimBreathLeniency);
-                configurableBools.Add(MoreSlugcats.MMF.cfgThreatMusicPulse);
-                configurableBools.Add(MoreSlugcats.MMF.cfgTickTock);
-                configurableBools.Add(MoreSlugcats.MMF.cfgUpwardsSpearThrow);
-                configurableBools.Add(MoreSlugcats.MMF.cfgVanillaExploits);
-                configurableBools.Add(MoreSlugcats.MMF.cfgVulnerableJellyfish);
-                configurableBools.Add(MoreSlugcats.MMF.cfgWallpounce);
-
-
-                foreach (var setting in configurableBools)
+                foreach (FieldInfo field in sortedFields)
                 {
-                    RainMeadow.Debug($"HOST SETTING KEY: {setting.key}, VALUE:{setting.Value}");
-                    configurableTypes.Add(setting._typedValue);
+
+                    var reflectedValue = field.GetValue(null);
+                    if (reflectedValue is Configurable<bool> boolOption)
+                    {
+                        RainMeadow.Debug("FIELD HOST BOOL Name: " + field.Name + "FIELD VALUE: " + boolOption._typedValue);
+                        configurableBools.Add(boolOption._typedValue);
+                    }
+
+                    if (reflectedValue is Configurable<float> floatOption)
+                    {
+                        RainMeadow.Debug("FIELD HOST FLOAT Name: " + field.Name + "FIELD VALUE: " + floatOption._typedValue);
+                        configurableFloats.Add(floatOption._typedValue);
+                    }
+
+                    if (reflectedValue is Configurable<int> intOption)
+                    {
+                        RainMeadow.Debug("FIELD HOST INT Name: " + field.Name + "FIELD VALUE: " + intOption._typedValue);
+                        configurableInts.Add(intOption._typedValue);
+                    }
+
                 }
+                return (configurableBools, configurableFloats, configurableInts);
 
-                return configurableTypes;
             }
-            return configurableTypes;
+            return (configurableBools, configurableFloats, configurableInts);
         }
-
-        internal List<float> GetHostFloatStoryRemixSettings()
-        {
-            List<Configurable<float>> configurableBools = new List<Configurable<float>>();
-
-            List<float> configurableTypes = new List<float>();
-
-            if (ModManager.MMF)
-            {
-                configurableBools.Add(MoreSlugcats.MMF.cfgRainTimeMultiplier);
-                configurableBools.Add(MoreSlugcats.MMF.cfgSlowTimeFactor);
-
-
-
-                foreach (var setting in configurableBools)
-                {
-                    RainMeadow.Debug($"HOST SETTING FLOAT KEY: {setting.key}, VALUE:{setting.Value}");
-                    configurableTypes.Add(setting._typedValue);
-                }
-
-                return configurableTypes;
-            }
-            return configurableTypes;
-        }
-
-        internal List<int> GetHostIntStoryRemixSettings()
-        {
-            List<Configurable<int>> configurableBools = new List<Configurable<int>>();
-
-            List<int> configurableTypes = new List<int>();
-
-            if (ModManager.MMF)
-            {
-
-                configurableBools.Add(MoreSlugcats.MMF.cfgHunterBonusCycles);
-                configurableBools.Add(MoreSlugcats.MMF.cfgHunterCycles);
-
-
-
-                foreach (var setting in configurableBools)
-                {
-                    RainMeadow.Debug($"HOST SETTING INT KEY: {setting.key}, VALUE:{setting.Value}");
-                    configurableTypes.Add(setting._typedValue);
-                }
-
-                return configurableTypes;
-            }
-            return configurableTypes;
-        }
-
 
     }
 }
