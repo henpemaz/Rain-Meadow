@@ -520,21 +520,17 @@ namespace RainMeadow
 
                     var reflectedValue = field.GetValue(null);
                     if (reflectedValue is Configurable<bool> boolOption)
-                    {
-                        RainMeadow.Debug("FIELD CLIENT BOOL Name: " + field.Name + "FIELD VALUE: " + boolOption._typedValue);
-                        
+                    {                      
                         configurableBools.Add(boolOption._typedValue);
                     }
 
                     if (reflectedValue is Configurable<float> floatOption)
                     {
-                        RainMeadow.Debug("FIELD CLIENT FLOAT Name: " + field.Name + "FIELD VALUE: " + floatOption._typedValue);
                         configurableFloats.Add(floatOption._typedValue);
                     }
 
                     if (reflectedValue is Configurable<int> intOption)
                     {
-                        RainMeadow.Debug("FIELD CLIENT INT Name: " + field.Name + "FIELD VALUE: " + intOption._typedValue);
                         configurableInts.Add(intOption._typedValue);
                     }
 
@@ -543,14 +539,12 @@ namespace RainMeadow
                 for (int i = 0; i < hostBoolRemixSettings.Count; i++)
                 {
                     configurableBools[i] = hostBoolRemixSettings[i];
-                    RainMeadow.Debug($"FIELD CLIENT BOOL Name " + configurableBools[i]);
 
                 }
 
                 for (int i = 0; i < hostFloatRemixSettings.Count; i++)
                 {
                     configurableFloats[i] = hostFloatRemixSettings[i];
-                    RainMeadow.Debug("FIELD CLIENT FLOAT Name: " + configurableFloats[i]);
 
                 }
 
@@ -558,7 +552,6 @@ namespace RainMeadow
                 for (int i = 0; i < hostIntRemixSettings.Count; i++)
                 {
                     configurableInts[i] = hostIntRemixSettings[i];
-                    RainMeadow.Debug("FIELD CLIENT INT Name: " + configurableInts[i]);
 
                 }
 
@@ -585,19 +578,16 @@ namespace RainMeadow
                     var reflectedValue = field.GetValue(null);
                     if (reflectedValue is Configurable<bool> boolOption)
                     {
-                        RainMeadow.Debug("FIELD HOST BOOL Name: " + field.Name + "FIELD VALUE: " + boolOption._typedValue);
                         configurableBools.Add(boolOption._typedValue);
                     }
 
                     if (reflectedValue is Configurable<float> floatOption)
                     {
-                        RainMeadow.Debug("FIELD HOST FLOAT Name: " + field.Name + "FIELD VALUE: " + floatOption._typedValue);
                         configurableFloats.Add(floatOption._typedValue);
                     }
 
                     if (reflectedValue is Configurable<int> intOption)
                     {
-                        RainMeadow.Debug("FIELD HOST INT Name: " + field.Name + "FIELD VALUE: " + intOption._typedValue);
                         configurableInts.Add(intOption._typedValue);
                     }
 
