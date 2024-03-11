@@ -12,9 +12,9 @@ namespace RainMeadow
         public bool didStartCycle = false;
         public string defaultDenPos;
         public SlugcatStats.Name currentCampaign = RainMeadow.Ext_SlugcatStatsName.OnlineStoryWhite;
-        public List<bool> storyBoolRemixSettings;
-        public List<float> storyFloatRemixSettings;
-        public List<int> storyIntRemixSettings;
+        public Dictionary<string, bool> storyBoolRemixSettings;
+        public Dictionary<string, float> storyFloatRemixSettings;
+        public Dictionary<string, int> storyIntRemixSettings;
 
 
 

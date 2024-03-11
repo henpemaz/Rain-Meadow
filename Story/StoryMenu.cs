@@ -492,11 +492,11 @@ namespace RainMeadow
             return currentCampaignName;
         }
 
-        internal void SetClientStoryRemixSettings(List<bool> hostBoolRemixSettings, List<float> hostFloatRemixSettings, List<int> hostIntRemixSettings)
+        internal void SetClientStoryRemixSettings(Dictionary<string, bool> hostBoolRemixSettings, Dictionary<string, float> hostFloatRemixSettings, Dictionary<string, int> hostIntRemixSettings)
         {
-            List<bool> configurableBools = new List<bool>();
-            List<float> configurableFloats = new List<float>();
-            List<int> configurableInts = new List<int>();
+            Dictionary<string, bool> configurableBools = new Dictionary<string, bool>();
+            Dictionary<string, float> configurableFloats = new Dictionary<string, float>();
+            Dictionary<string, int> configurableInts = new Dictionary<string, int>();
 
             if (ModManager.MMF)
             {
@@ -513,57 +513,73 @@ namespace RainMeadow
                     var reflectedValue = field.GetValue(null);
                     if (reflectedValue is Configurable<bool> boolOption)
                     {
-                        configurableBools.Add(boolOption._typedValue);
+
+                        configurableBools.Add(field.Name, boolOption._typedValue);
                     }
 
                     if (reflectedValue is Configurable<float> floatOption)
                     {
-                        configurableFloats.Add(floatOption._typedValue);
+                        configurableFloats.Add(field.Name, floatOption._typedValue);
                     }
 
                     if (reflectedValue is Configurable<int> intOption)
                     {
-                        configurableInts.Add(intOption._typedValue);
+                        configurableInts.Add(field.Name, intOption._typedValue);
                     }
 
                 }
 
                 for (int i = 0; i < hostBoolRemixSettings.Count; i++)
                 {
-                    RainMeadow.Debug($"FIELD CLIENT BOOL BEFORE " + configurableBools[i]);
+                    string key = configurableBools.Keys.ElementAt(i);
+                    bool val = configurableBools.Values.ElementAt(i);
+                    if (key == hostBoolRemixSettings.Keys.ElementAt(i))
+                    {
+                        Debug($"FOUND BOOLS! {key}, {val}");
+                        val = hostBoolRemixSettings.Values.ElementAt(i);
+                        Debug($"NEW VAL! {key}, {val}");
 
-                    configurableBools[i] = hostBoolRemixSettings[i];
-                    RainMeadow.Debug($"FIELD CLIENT BOOL AFTER " + configurableBools[i]);
+                    }
 
                 }
 
                 for (int i = 0; i < hostFloatRemixSettings.Count; i++)
                 {
-                    RainMeadow.Debug("FIELD CLIENT FLOAT BEFORE: " + configurableFloats[i]);
+                    string key = hostFloatRemixSettings.Keys.ElementAt(i);
+                    float val = configurableFloats.Values.ElementAt(i);
+                    if (key == hostFloatRemixSettings.Keys.ElementAt(i))
+                    {
+                        Debug($"FOUND FLOATS! {key}, {val}");
+                        val = hostFloatRemixSettings.Values.ElementAt(i);
+                        Debug($"NEW VAL! {key}, {val}");
 
-                    configurableFloats[i] = hostFloatRemixSettings[i];
-                    RainMeadow.Debug("FIELD CLIENT FLOAT AFTER: " + configurableFloats[i]);
+                    }
 
                 }
 
 
                 for (int i = 0; i < hostIntRemixSettings.Count; i++)
                 {
-                    RainMeadow.Debug("FIELD CLIENT INT BEFORE: " + configurableInts[i]);
+                    string key = configurableInts.Keys.ElementAt(i);
+                    int val = configurableInts.Values.ElementAt(i);
+                    if (key == hostIntRemixSettings.Keys.ElementAt(i))
+                    {
+                        Debug($"FOUND INTS! {key}, {val}");
+                        val = hostIntRemixSettings.Values.ElementAt(i);
+                        Debug($"NEW VAL! {key}, {val}");
 
-                    configurableInts[i] = hostIntRemixSettings[i];
-                    RainMeadow.Debug("FIELD CLIENT INT AFTER: " + configurableInts[i]);
+                    }
 
                 }
 
             }
         }
 
-        internal (List<bool> hostBoolSettings, List<float> hostFloatSettings, List<int> hostIntSettings) GetHostBoolStoryRemixSettings()
+        internal (Dictionary<string, bool> hostBoolSettings, Dictionary<string, float> hostFloatSettings, Dictionary<string,int> hostIntSettings) GetHostBoolStoryRemixSettings()
         {
-            List<bool> configurableBools = new List<bool>();
-            List<float> configurableFloats = new List<float>();
-            List<int> configurableInts = new List<int>();
+            Dictionary<string, bool> configurableBools = new Dictionary<string, bool>();
+            Dictionary<string, float> configurableFloats = new Dictionary<string, float>();
+            Dictionary<string, int> configurableInts = new Dictionary<string, int>();
 
             if (ModManager.MMF)
             {
@@ -580,19 +596,19 @@ namespace RainMeadow
                     if (reflectedValue is Configurable<bool> boolOption)
                     {
                         RainMeadow.Debug("FIELD HOST BOOL Name: " + field.Name + "FIELD VALUE: " + boolOption._typedValue);
-                        configurableBools.Add(boolOption._typedValue);
+                        configurableBools.Add(field.Name, boolOption._typedValue);
                     }
 
                     if (reflectedValue is Configurable<float> floatOption)
                     {
                         RainMeadow.Debug("FIELD HOST FLOAT Name: " + field.Name + "FIELD VALUE: " + floatOption._typedValue);
-                        configurableFloats.Add(floatOption._typedValue);
+                        configurableFloats.Add(field.Name, floatOption._typedValue);
                     }
 
                     if (reflectedValue is Configurable<int> intOption)
                     {
                         RainMeadow.Debug("FIELD HOST INT Name: " + field.Name + "FIELD VALUE: " + intOption._typedValue);
-                        configurableInts.Add(intOption._typedValue);
+                        configurableInts.Add(field.Name, intOption._typedValue);
                     }
 
                 }

@@ -39,11 +39,11 @@ namespace RainMeadow
             [OnlineField]
             public int mushroomCounter;
             [OnlineField]
-            public List<bool> storyBoolRemixSettings;
+            public Dictionary<string, bool> storyBoolRemixSettings;
             [OnlineField]
-            public List<float> storyFloatRemixSettings;
+            public Dictionary<string, float> storyFloatRemixSettings;
             [OnlineField]
-            public List<int> storyIntRemixSettings;
+            public Dictionary<string, int> storyIntRemixSettings;
 
 
             public State() {}
