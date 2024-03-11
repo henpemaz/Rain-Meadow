@@ -38,6 +38,7 @@ namespace RainMeadow
         {
             if (onlineObject.apo.realizedObject == null) throw new InvalidOperationException("not realized");
             if (onlineObject.apo.realizedObject is Spear) return new RealizedSpearState(onlineObject);
+            if (onlineObject.apo.realizedObject is SporePlant) return new RealizedSporePlantState(onlineObject);
             if (onlineObject.apo.realizedObject is Weapon) return new RealizedWeaponState(onlineObject);
             if (onlineObject.apo.realizedObject is SlimeMold) return new RealizedSlimeMoldState(onlineObject);
             if (onlineObject.apo.realizedObject is VultureGrub) return new RealizedVultureGrubState(onlineObject);

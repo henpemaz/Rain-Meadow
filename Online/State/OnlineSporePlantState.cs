@@ -20,7 +20,6 @@
             var onlineSeedPod = onlineEntity as OnlineSporePlant;
             onlineSeedPod.AbstractSporePlant.pacified = pacified;
             onlineSeedPod.AbstractSporePlant.used = used;
-
         }
     }
 }
