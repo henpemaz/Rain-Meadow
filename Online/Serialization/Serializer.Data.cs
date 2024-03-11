@@ -946,5 +946,98 @@ namespace RainMeadow
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
 #endif
         }
+
+        public void Serialize(ref Dictionary<string, bool> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write((byte)data.Count);
+                foreach (var kvp in data)
+                {
+                    writer.Write(kvp.Key);
+                    writer.Write(kvp.Value);
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadByte();
+                data = new Dictionary<string, bool>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    var key = reader.ReadString();
+                    var value = reader.ReadBoolean();
+                    data.Add(key, value);
+                }
+
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
+        public void Serialize(ref Dictionary<string, float> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write((byte)data.Count);
+                foreach (var kvp in data)
+                {
+                    writer.Write(kvp.Key);
+                    writer.Write(kvp.Value);
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadByte();
+                data = new Dictionary<string, float>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    var key = reader.ReadString();
+                    var value = reader.ReadSingle();
+                    data.Add(key, value);
+                }
+
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
+        public void Serialize(ref Dictionary<string, int> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write((byte)data.Count);
+                foreach (var kvp in data)
+                {
+                    writer.Write(kvp.Key);
+                    writer.Write(kvp.Value);
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadByte();
+                data = new Dictionary<string, int>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    var key = reader.ReadString();
+                    var value = reader.ReadInt32();
+                    data.Add(key, value);
+                }
+
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
     }
 }
