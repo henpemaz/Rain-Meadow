@@ -1,14 +1,10 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using Steamworks;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using Menu;
-using System.Linq;
-using System.Collections.Generic;
-using IL.MoreSlugcats;
 
 namespace RainMeadow
 {
