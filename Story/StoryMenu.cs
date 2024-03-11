@@ -541,32 +541,29 @@ namespace RainMeadow
 
                 }
 
-                for (int i = 0; i < hostBoolRemixSettings.Count; i++)
+                // check client vs host settings with dictionaries
+                for (int i = 0; i < hostBoolRemixSettings.Count; i++) 
                 {
+
                     string key = configurableBools.Keys.ElementAt(i);
                     bool val = configurableBools.Values.ElementAt(i);
-                    if (key == hostBoolRemixSettings.Keys.ElementAt(i))
+                    if (key == hostBoolRemixSettings.Keys.ElementAt(i) && val != hostBoolRemixSettings.Values.ElementAt(i))
                     {
-                        Debug($"FOUND BOOLS! {key}, {val}");
-                        val = hostBoolRemixSettings.Values.ElementAt(i);
-                        Debug($"NEW VAL! {key}, {val}");
-
+                        Debug($"Remix Key: {key} with value {val} does not match host's, setting to {hostBoolRemixSettings.Values.ElementAt(i)}");
+                        configurableBools[key] = hostBoolRemixSettings.Values.ElementAt(i);
                     }
-
                 }
 
                 for (int i = 0; i < hostFloatRemixSettings.Count; i++)
                 {
                     string key = hostFloatRemixSettings.Keys.ElementAt(i);
                     float val = configurableFloats.Values.ElementAt(i);
-                    if (key == hostFloatRemixSettings.Keys.ElementAt(i))
+                    if (key == hostFloatRemixSettings.Keys.ElementAt(i) && val != hostFloatRemixSettings.Values.ElementAt(i))
                     {
-                        Debug($"FOUND FLOATS! {key}, {val}");
-                        val = hostFloatRemixSettings.Values.ElementAt(i);
-                        Debug($"NEW VAL! {key}, {val}");
+                        Debug($"Remix Key: {key} with value {val} does not match host's, setting to {hostFloatRemixSettings.Values.ElementAt(i)}");
+                        configurableFloats[key] = hostFloatRemixSettings.Values.ElementAt(i);
 
                     }
-
                 }
 
 
@@ -574,14 +571,12 @@ namespace RainMeadow
                 {
                     string key = configurableInts.Keys.ElementAt(i);
                     int val = configurableInts.Values.ElementAt(i);
-                    if (key == hostIntRemixSettings.Keys.ElementAt(i))
+                    if (key == hostIntRemixSettings.Keys.ElementAt(i) && val != hostIntRemixSettings.Values.ElementAt(i))
                     {
-                        Debug($"FOUND INTS! {key}, {val}");
-                        val = hostIntRemixSettings.Values.ElementAt(i);
-                        Debug($"NEW VAL! {key}, {val}");
+                        Debug($"Remix Key: {key} with value {val} does not match host's, setting to {hostIntRemixSettings.Values.ElementAt(i)}");
+                        configurableInts[key] = hostIntRemixSettings.Values.ElementAt(i);
 
                     }
-
                 }
 
             }
@@ -607,19 +602,16 @@ namespace RainMeadow
                     var reflectedValue = field.GetValue(null);
                     if (reflectedValue is Configurable<bool> boolOption)
                     {
-                        RainMeadow.Debug("FIELD HOST BOOL Name: " + field.Name + "FIELD VALUE: " + boolOption._typedValue);
                         configurableBools.Add(field.Name, boolOption._typedValue);
                     }
 
                     if (reflectedValue is Configurable<float> floatOption)
                     {
-                        RainMeadow.Debug("FIELD HOST FLOAT Name: " + field.Name + "FIELD VALUE: " + floatOption._typedValue);
                         configurableFloats.Add(field.Name, floatOption._typedValue);
                     }
 
                     if (reflectedValue is Configurable<int> intOption)
                     {
-                        RainMeadow.Debug("FIELD HOST INT Name: " + field.Name + "FIELD VALUE: " + intOption._typedValue);
                         configurableInts.Add(field.Name, intOption._typedValue);
                     }
 
