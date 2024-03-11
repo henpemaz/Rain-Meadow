@@ -135,6 +135,73 @@ namespace RainMeadow.Generics
         public abstract void CustomSerialize(Serializer serializer);
     }
 
+    public abstract class AddRemoveSortedDict<TKey, TValue, Imp> : IDelta<Imp>, Serializer.ICustomSerializable
+        where Imp : AddRemoveSortedDict<TKey, TValue, Imp>, new()
+    {
+        public Dictionary<TKey, TValue> dict;
+        public List<byte> listIndexes;
+        public List<byte> removedIndexes;
+
+        public AddRemoveSortedDict() { }
+        public AddRemoveSortedDict(Dictionary<TKey, TValue> dict)
+        {
+            this.dict = dict;
+        }
+
+        public Imp Delta(Imp other)
+        {
+            if (other == null) { return (Imp)this; }
+
+            Imp delta = new();
+
+            // TODO: Not use local vars!
+            var addedKeys = dict.Keys.Except(other.dict.Keys).ToList();
+            var removedKeys = other.dict.Keys.Except(dict.Keys).ToList();
+
+            delta.dict = new Dictionary<TKey, TValue>();
+            foreach (var key in addedKeys)
+            {
+                delta.dict.Add(key, dict[key]);
+            }
+
+
+            foreach (var key in removedKeys)
+            {
+                delta.dict.Remove(key);
+            }
+
+            return (delta.dict.Count == 0 && removedKeys.Count == 0) ? null : delta;
+        }
+
+        public Imp ApplyDelta(Imp other)
+        {
+            Imp result = new();
+            result.dict = new Dictionary<TKey, TValue>(dict);
+
+            if (other != null)
+            {
+                foreach (var kvp in other.dict)
+                {
+                    // If the key exists in the current dictionary, update its value
+                    // Otherwise, add the new key-value pair
+                    result.dict[kvp.Key] = kvp.Value;
+                }
+
+                // Remove keys that are in the current dictionary but not in other.dict
+                var keysToRemove = result.dict.Keys.Except(other.dict.Keys).ToList();
+                foreach (var key in keysToRemove)
+                {
+                    result.dict.Remove(key);
+                }
+
+            }
+
+            return result;
+        }
+
+        public abstract void CustomSerialize(Serializer serializer);
+    }
+
     /// <summary>
     /// Static list, no adds/removes supported, id-elementwise delta
     /// </summary>
@@ -418,6 +485,22 @@ namespace RainMeadow.Generics
         public override void CustomSerialize(Serializer serializer)
         {
             serializer.Serialize(ref list);
+            if (serializer.IsDelta)
+            {
+                serializer.Serialize(ref listIndexes);
+                serializer.Serialize(ref removedIndexes);
+            }
+        }
+    }
+
+    public class AddRemoveSortedStringBoolDict<T> : AddRemoveSortedDict<string, bool, AddRemoveSortedStringBoolDict<T>>
+    {
+        public AddRemoveSortedStringBoolDict() { }
+        public AddRemoveSortedStringBoolDict(Dictionary<string, bool> dict) : base(dict) { }
+
+        public override void CustomSerialize(Serializer serializer)
+        {
+            serializer.SerializePolyStates(ref dict);
             if (serializer.IsDelta)
             {
                 serializer.Serialize(ref listIndexes);
