@@ -55,7 +55,7 @@ namespace RainMeadow.Generics
     /// <summary>
     /// Dynamic list, order-unaware
     /// </summary>
-    public abstract class AddRemoveUnsortedList<T, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp: AddRemoveUnsortedList<T, Imp>, new()
+    public abstract class AddRemoveUnsortedList<T, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp : AddRemoveUnsortedList<T, Imp>, new()
     {
         public List<T> list;
         public List<T> removed;
@@ -129,73 +129,6 @@ namespace RainMeadow.Generics
                     result.list.Insert(other.listIndexes[i], other.list[i]);
                 }
             }
-            return result;
-        }
-
-        public abstract void CustomSerialize(Serializer serializer);
-    }
-
-    public abstract class AddRemoveSortedDict<TKey, TValue, Imp> : IDelta<Imp>, Serializer.ICustomSerializable
-        where Imp : AddRemoveSortedDict<TKey, TValue, Imp>, new()
-    {
-        public Dictionary<TKey, TValue> dict;
-        public List<byte> listIndexes;
-        public List<byte> removedIndexes;
-
-        public AddRemoveSortedDict() { }
-        public AddRemoveSortedDict(Dictionary<TKey, TValue> dict)
-        {
-            this.dict = dict;
-        }
-
-        public Imp Delta(Imp other)
-        {
-            if (other == null) { return (Imp)this; }
-
-            Imp delta = new();
-
-            // TODO: Not use local vars!
-            var addedKeys = dict.Keys.Except(other.dict.Keys).ToList();
-            var removedKeys = other.dict.Keys.Except(dict.Keys).ToList();
-
-            delta.dict = new Dictionary<TKey, TValue>();
-            foreach (var key in addedKeys)
-            {
-                delta.dict.Add(key, dict[key]);
-            }
-
-
-            foreach (var key in removedKeys)
-            {
-                delta.dict.Remove(key);
-            }
-
-            return (delta.dict.Count == 0 && removedKeys.Count == 0) ? null : delta;
-        }
-
-        public Imp ApplyDelta(Imp other)
-        {
-            Imp result = new();
-            result.dict = new Dictionary<TKey, TValue>(dict);
-
-            if (other != null)
-            {
-                foreach (var kvp in other.dict)
-                {
-                    // If the key exists in the current dictionary, update its value
-                    // Otherwise, add the new key-value pair
-                    result.dict[kvp.Key] = kvp.Value;
-                }
-
-                // Remove keys that are in the current dictionary but not in other.dict
-                var keysToRemove = result.dict.Keys.Except(other.dict.Keys).ToList();
-                foreach (var key in keysToRemove)
-                {
-                    result.dict.Remove(key);
-                }
-
-            }
-
             return result;
         }
 
@@ -285,7 +218,7 @@ namespace RainMeadow.Generics
         {
             if (baseline == null) { return (Imp)this; }
             Imp delta = new();
-            delta.list = list.Select(newstate => 
+            delta.list = list.Select(newstate =>
                 baseline.list.FirstOrDefault(basestate => basestate.ID.Equals(newstate.ID)) is T basestate ? (T)newstate.Delta(basestate) : newstate
             ).Where(sl => !sl.IsEmptyDelta).ToList();
             delta.removed = baseline.list.Except(list, new IdentityComparer<T, U>()).Select(e => e.ID).ToList();
@@ -295,7 +228,7 @@ namespace RainMeadow.Generics
         public virtual Imp ApplyDelta(Imp incoming)
         {
             Imp result = new();
-            result.list = incoming == null ? list : 
+            result.list = incoming == null ? list :
                 list.Where(e => !incoming.removed.Contains(e.ID)) // remove
                     .Select(e => incoming.list.FirstOrDefault(o => e.ID.Equals(o.ID)) is T o ? (T)e.ApplyDelta(o) : e) // keep or update
                     .Concat(incoming.list.Where(o => list.FirstOrDefault(e => e.ID.Equals(o.ID)) == null)) // add new
@@ -485,22 +418,6 @@ namespace RainMeadow.Generics
         public override void CustomSerialize(Serializer serializer)
         {
             serializer.Serialize(ref list);
-            if (serializer.IsDelta)
-            {
-                serializer.Serialize(ref listIndexes);
-                serializer.Serialize(ref removedIndexes);
-            }
-        }
-    }
-
-    public class AddRemoveSortedStringBoolDict<T> : AddRemoveSortedDict<string, bool, AddRemoveSortedStringBoolDict<T>>
-    {
-        public AddRemoveSortedStringBoolDict() { }
-        public AddRemoveSortedStringBoolDict(Dictionary<string, bool> dict) : base(dict) { }
-
-        public override void CustomSerialize(Serializer serializer)
-        {
-            serializer.SerializePolyStates(ref dict);
             if (serializer.IsDelta)
             {
                 serializer.Serialize(ref listIndexes);
