@@ -156,6 +156,7 @@ namespace RainMeadow
                 (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings = hostSettings.hostIntSettings;
             }
 
+            // TODO: Move this to StartGame() after testing
             if (!OnlineManager.lobby.isOwner) {
                 SetClientStoryRemixSettings((OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings, (OnlineManager.lobby.gameMode as StoryGameMode).storyFloatRemixSettings, (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings); // Set client remix settings to Host's on StartGame()
 
@@ -537,8 +538,8 @@ namespace RainMeadow
                     bool val = configurableBools.Values.ElementAt(i);
                     if (key == hostBoolRemixSettings.Keys.ElementAt(i) && val != hostBoolRemixSettings.Values.ElementAt(i))
                     {
-                        Debug($"Remix Key: {key} with value {val} does not match host's, setting to {hostBoolRemixSettings.Values.ElementAt(i)}");
-                        configurableBools[key] = hostBoolRemixSettings.Values.ElementAt(i);
+                        Debug($"Remix Key: {key} with value {configurableBools[key]} does not match host's, setting to {hostBoolRemixSettings.Values.ElementAt(i)}");
+                        val = hostBoolRemixSettings.Values.ElementAt(i);
                     }
                 }
 
