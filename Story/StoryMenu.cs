@@ -156,11 +156,7 @@ namespace RainMeadow
                 (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings = hostSettings.hostIntSettings;
             }
 
-            // TODO: Move this to StartGame() after testing
-            if (!OnlineManager.lobby.isOwner) {
-                SetClientStoryRemixSettings((OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings, (OnlineManager.lobby.gameMode as StoryGameMode).storyFloatRemixSettings, (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings); // Set client remix settings to Host's on StartGame()
 
-            }
 
             if (!OnlineManager.lobby.isOwner && rainMeadowOptions.SlugcatCustomToggle.Value)
             {
@@ -191,7 +187,7 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner) // I'm a client
             {
 
-
+                SetClientStoryRemixSettings((OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings, (OnlineManager.lobby.gameMode as StoryGameMode).storyFloatRemixSettings, (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings); // Set client remix settings to Host's on StartGame()
 
                 if (!rainMeadowOptions.SlugcatCustomToggle.Value) // I'm a client and I want to match the hosts
                 {
