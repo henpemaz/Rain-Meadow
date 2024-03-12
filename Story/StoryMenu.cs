@@ -495,10 +495,6 @@ namespace RainMeadow
 
         internal void SetClientStoryRemixSettings(Dictionary<string, bool> hostBoolRemixSettings, Dictionary<string, float> hostFloatRemixSettings, Dictionary<string, int> hostIntRemixSettings)
         {
-            Dictionary<string, bool> configurableBools = new Dictionary<string, bool>();
-            Dictionary<string, float> configurableFloats = new Dictionary<string, float>();
-            Dictionary<string, int> configurableInts = new Dictionary<string, int>();
-
             if (ModManager.MMF)
             {
                 Type type = typeof(MoreSlugcats.MMF);
@@ -515,13 +511,10 @@ namespace RainMeadow
                     if (reflectedValue is Configurable<bool> boolOption)
                     {
 
-                        // configurableBools.Add(field.Name, boolOption._typedValue);
-                        // check client vs host settings with dictionaries
                         for (int i = 0; i < hostBoolRemixSettings.Count; i++)
                         {
 
-                            // string key = configurableBools.Keys.ElementAt(i);
-                            // bool val = configurableBools.Values.ElementAt(i);
+
                             if (field.Name == hostBoolRemixSettings.Keys.ElementAt(i) && boolOption._typedValue != hostBoolRemixSettings.Values.ElementAt(i))
                             {
                                 Debug($"Remix Key: {field.Name} with value {boolOption._typedValue} does not match host's, setting to {hostBoolRemixSettings.Values.ElementAt(i)}");
@@ -533,55 +526,34 @@ namespace RainMeadow
 
                     if (reflectedValue is Configurable<float> floatOption)
                     {
-                        configurableFloats.Add(field.Name, floatOption._typedValue);
+                        for (int i = 0; i < hostFloatRemixSettings.Count; i++)
+                        {
+
+
+                            if (field.Name == hostFloatRemixSettings.Keys.ElementAt(i) && floatOption._typedValue != hostFloatRemixSettings.Values.ElementAt(i))
+                            {
+                                Debug($"Remix Key: {field.Name} with value {floatOption._typedValue} does not match host's, setting to {hostFloatRemixSettings.Values.ElementAt(i)}");
+                                floatOption._typedValue = hostFloatRemixSettings.Values.ElementAt(i);
+
+                            }
+                        }
                     }
 
                     if (reflectedValue is Configurable<int> intOption)
                     {
-                        configurableInts.Add(field.Name, intOption._typedValue);
+                        for (int i = 0; i < hostIntRemixSettings.Count; i++)
+                        {
+
+                            if (field.Name == hostIntRemixSettings.Keys.ElementAt(i) && intOption._typedValue != hostIntRemixSettings.Values.ElementAt(i))
+                            {
+                                Debug($"Remix Key: {field.Name} with value {intOption._typedValue} does not match host's, setting to {hostIntRemixSettings.Values.ElementAt(i)}");
+                                intOption._typedValue = hostIntRemixSettings.Values.ElementAt(i);
+
+                            }
+                        }
                     }
 
                 }
-
-                // check client vs host settings with dictionaries
-/*                for (int i = 0; i < hostBoolRemixSettings.Count; i++) 
-                {
-
-                    string key = configurableBools.Keys.ElementAt(i);
-                    bool val = configurableBools.Values.ElementAt(i);
-                    if (key == hostBoolRemixSettings.Keys.ElementAt(i) && val != hostBoolRemixSettings.Values.ElementAt(i))
-                    {
-                        Debug($"Remix Key: {key} with value {val} does not match host's, setting to {hostBoolRemixSettings.Values.ElementAt(i)}");
-                        configurableBools[key] = hostBoolRemixSettings.Values.ElementAt(i);
-                        
-                    }
-                }*/
-
-                for (int i = 0; i < hostFloatRemixSettings.Count; i++)
-                {
-                    string key = hostFloatRemixSettings.Keys.ElementAt(i);
-                    float val = configurableFloats.Values.ElementAt(i);
-                    if (key == hostFloatRemixSettings.Keys.ElementAt(i) && val != hostFloatRemixSettings.Values.ElementAt(i))
-                    {
-                        Debug($"Remix Key: {key} with value {val} does not match host's, setting to {hostFloatRemixSettings.Values.ElementAt(i)}");
-                        configurableFloats[key] = hostFloatRemixSettings.Values.ElementAt(i);
-
-                    }
-                }
-
-
-                for (int i = 0; i < hostIntRemixSettings.Count; i++)
-                {
-                    string key = configurableInts.Keys.ElementAt(i);
-                    int val = configurableInts.Values.ElementAt(i);
-                    if (key == hostIntRemixSettings.Keys.ElementAt(i) && val != hostIntRemixSettings.Values.ElementAt(i))
-                    {
-                        Debug($"Remix Key: {key} with value {val} does not match host's, setting to {hostIntRemixSettings.Values.ElementAt(i)}");
-                        configurableInts[key] = hostIntRemixSettings.Values.ElementAt(i);
-
-                    }
-                }
-
             }
         }
 
