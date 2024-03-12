@@ -527,7 +527,20 @@ namespace RainMeadow
                     if (reflectedValue is Configurable<bool> boolOption)
                     {
 
-                        configurableBools.Add(field.Name, boolOption._typedValue);
+                        // configurableBools.Add(field.Name, boolOption._typedValue);
+                        // check client vs host settings with dictionaries
+                        for (int i = 0; i < hostBoolRemixSettings.Count; i++)
+                        {
+
+                            // string key = configurableBools.Keys.ElementAt(i);
+                            // bool val = configurableBools.Values.ElementAt(i);
+                            if (field.Name == hostBoolRemixSettings.Keys.ElementAt(i) && boolOption._typedValue != hostBoolRemixSettings.Values.ElementAt(i))
+                            {
+                                Debug($"Remix Key: {field.Name} with value {boolOption._typedValue} does not match host's, setting to {hostBoolRemixSettings.Values.ElementAt(i)}");
+                                boolOption._typedValue = hostBoolRemixSettings.Values.ElementAt(i);
+
+                            }
+                        }
                     }
 
                     if (reflectedValue is Configurable<float> floatOption)
@@ -543,17 +556,18 @@ namespace RainMeadow
                 }
 
                 // check client vs host settings with dictionaries
-                for (int i = 0; i < hostBoolRemixSettings.Count; i++) 
+/*                for (int i = 0; i < hostBoolRemixSettings.Count; i++) 
                 {
 
                     string key = configurableBools.Keys.ElementAt(i);
                     bool val = configurableBools.Values.ElementAt(i);
                     if (key == hostBoolRemixSettings.Keys.ElementAt(i) && val != hostBoolRemixSettings.Values.ElementAt(i))
                     {
-                        Debug($"Remix Key: {key} with value {configurableBools[key]} does not match host's, setting to {hostBoolRemixSettings.Values.ElementAt(i)}");
-                        val = hostBoolRemixSettings.Values.ElementAt(i);
+                        Debug($"Remix Key: {key} with value {val} does not match host's, setting to {hostBoolRemixSettings.Values.ElementAt(i)}");
+                        configurableBools[key] = hostBoolRemixSettings.Values.ElementAt(i);
+                        
                     }
-                }
+                }*/
 
                 for (int i = 0; i < hostFloatRemixSettings.Count; i++)
                 {
