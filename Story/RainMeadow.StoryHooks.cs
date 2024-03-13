@@ -47,52 +47,7 @@ namespace RainMeadow
 
             On.Oracle.CreateMarble += Oracle_CreateMarble;
             On.Oracle.SetUpMarbles += Oracle_SetUpMarbles;
-            On.Oracle.SetUpSwarmers += Oracle_SetUpSwarmers;
-            On.SLOracleWakeUpProcedure.SwarmerEnterRoom += SLOracleWakeUpProcedure_SwarmerEnterRoom;
-        }
 
-        private void SLOracleWakeUpProcedure_SwarmerEnterRoom(On.SLOracleWakeUpProcedure.orig_SwarmerEnterRoom orig, SLOracleWakeUpProcedure self, RWCustom.IntVector2 tilePos)
-        {
-            if (OnlineManager.lobby == null)
-            {
-                orig(self, tilePos);
-                return;
-            }
-
-            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
-            if (room.isOwner)
-            {
-                var abstractPhysicalObject = new AbstractPhysicalObject(self.room.world, AbstractPhysicalObject.AbstractObjectType.SLOracleSwarmer, null, self.room.GetWorldCoordinate(tilePos), self.room.game.GetNewID());
-                self.room.abstractRoom.AddEntity(abstractPhysicalObject);
-
-                abstractPhysicalObject.RealizeInRoom();
-
-                var sloracleSwarmer = abstractPhysicalObject.realizedObject as SLOracleSwarmer;
-                self.SLOracle.mySwarmers.Add(sloracleSwarmer);
-                sloracleSwarmer.firstChunk.vel.y = 3f;
-                sloracleSwarmer.direction = ((Random.value < 0.5f) ? new Vector2(-1f, 0f) : new Vector2(1f, 0f));
-                sloracleSwarmer.lastDirection = sloracleSwarmer.direction;
-                sloracleSwarmer.lazyDirection = sloracleSwarmer.direction;
-                sloracleSwarmer.lastLazyDirection = sloracleSwarmer.direction;
-                sloracleSwarmer.rotation = Random.value * 360f;
-                sloracleSwarmer.blackMode = 1f;
-            }
-        }
-
-        private void Oracle_SetUpSwarmers(On.Oracle.orig_SetUpSwarmers orig, Oracle self)
-        {
-            if (OnlineManager.lobby == null)
-            {
-                orig(self);
-                return;
-            }
-
-            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
-            if (room.isOwner)
-            {
-                orig(self); //Only setup the room if we are the room owner.
-                //Might have to do some funky stuff for LTM nuerons
-            }
         }
 
         private void Oracle_SetUpMarbles(On.Oracle.orig_SetUpMarbles orig, Oracle self)
