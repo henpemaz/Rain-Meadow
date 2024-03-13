@@ -85,6 +85,7 @@ namespace RainMeadow
 
             public static readonly StateType OnlinePhysicalObjectDefinition = new("OnlinePhysicalObjectDefinition", typeof(OnlinePhysicalObjectDefinition));
             public static readonly StateType OnlineConsumableDefinition = new("OnlineConsumableDefinition", typeof(OnlineConsumableDefinition));
+            public static readonly StateType OnlinePebblesPearlDefinition = new("OnlinePebblesPearlDefinition", typeof(OnlinePebblesPearlDefinition));
             public static readonly StateType OnlineSeedCobDefinition = new("OnlineSeedCobDefinition", typeof(OnlineSeedCobDefinition));
             public static readonly StateType OnlineBubbleGrassDefinition = new("OnlineBubbleGrassDefinition", typeof(OnlineBubbleGrassDefinition));
             public static readonly StateType OnlineSporePlantDefinition = new("OnlineSporePlantDefinition", typeof(OnlineSporePlantDefinition));

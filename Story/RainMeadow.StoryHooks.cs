@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
 using UnityEngine;
 namespace RainMeadow
 {
@@ -42,6 +44,106 @@ namespace RainMeadow
             On.BubbleGrass.Update += BubbleGrass_Update;
             On.WaterNut.Swell += WaterNut_Swell;
             On.SporePlant.Pacify += SporePlant_Pacify;
+
+            On.Oracle.CreateMarble += Oracle_CreateMarble;
+            On.Oracle.SetUpMarbles += Oracle_SetUpMarbles;
+            On.Oracle.SetUpSwarmers += Oracle_SetUpSwarmers;
+            On.SLOracleWakeUpProcedure.SwarmerEnterRoom += SLOracleWakeUpProcedure_SwarmerEnterRoom;
+        }
+
+        private void SLOracleWakeUpProcedure_SwarmerEnterRoom(On.SLOracleWakeUpProcedure.orig_SwarmerEnterRoom orig, SLOracleWakeUpProcedure self, RWCustom.IntVector2 tilePos)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self, tilePos);
+                return;
+            }
+
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            if (room.isOwner)
+            {
+                var abstractPhysicalObject = new AbstractPhysicalObject(self.room.world, AbstractPhysicalObject.AbstractObjectType.SLOracleSwarmer, null, self.room.GetWorldCoordinate(tilePos), self.room.game.GetNewID());
+                self.room.abstractRoom.AddEntity(abstractPhysicalObject);
+
+                abstractPhysicalObject.RealizeInRoom();
+
+                var sloracleSwarmer = abstractPhysicalObject.realizedObject as SLOracleSwarmer;
+                self.SLOracle.mySwarmers.Add(sloracleSwarmer);
+                sloracleSwarmer.firstChunk.vel.y = 3f;
+                sloracleSwarmer.direction = ((Random.value < 0.5f) ? new Vector2(-1f, 0f) : new Vector2(1f, 0f));
+                sloracleSwarmer.lastDirection = sloracleSwarmer.direction;
+                sloracleSwarmer.lazyDirection = sloracleSwarmer.direction;
+                sloracleSwarmer.lastLazyDirection = sloracleSwarmer.direction;
+                sloracleSwarmer.rotation = Random.value * 360f;
+                sloracleSwarmer.blackMode = 1f;
+            }
+        }
+
+        private void Oracle_SetUpSwarmers(On.Oracle.orig_SetUpSwarmers orig, Oracle self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+                return;
+            }
+
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            if (room.isOwner)
+            {
+                orig(self); //Only setup the room if we are the room owner.
+                //Might have to do some funky stuff for LTM nuerons
+            }
+        }
+
+        private void Oracle_SetUpMarbles(On.Oracle.orig_SetUpMarbles orig, Oracle self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+                return;
+            }
+
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            if (room.isOwner)
+            {
+                orig(self); //Only setup the room if we are the room owner.
+            }
+        }
+
+        private void Oracle_CreateMarble(On.Oracle.orig_CreateMarble orig, Oracle self, PhysicalObject orbitObj, Vector2 ps, int circle, float dist, int color)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self,orbitObj,ps,circle,dist,color);
+                return;
+            }
+
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            if (room.isOwner)
+            {
+                AbstractPhysicalObject abstractPhysicalObject = new PebblesPearl.AbstractPebblesPearl(self.room.world, null, self.room.GetWorldCoordinate(ps), self.room.game.GetNewID(), -1, -1, null, color, self.pearlCounter * ((ModManager.MSC && self.room.world.name == "DM") ? -1 : 1));
+                self.pearlCounter++;
+                self.room.abstractRoom.AddEntity(abstractPhysicalObject);
+
+                abstractPhysicalObject.RealizeInRoom();
+
+                PebblesPearl pebblesPearl = abstractPhysicalObject.realizedObject as PebblesPearl;
+                pebblesPearl.oracle = self;
+                pebblesPearl.firstChunk.HardSetPosition(ps);
+                pebblesPearl.orbitObj = orbitObj;
+                if (orbitObj == null)
+                {
+                    pebblesPearl.hoverPos = new Vector2?(ps);
+                }
+                pebblesPearl.orbitCircle = circle;
+                pebblesPearl.orbitDistance = dist;
+                pebblesPearl.marbleColor = (abstractPhysicalObject as PebblesPearl.AbstractPebblesPearl).color;
+                self.marbles.Add(pebblesPearl);
+            }
+            else
+            {
+                return;
+            }
         }
 
         private void SporePlant_Pacify(On.SporePlant.orig_Pacify orig, SporePlant self)

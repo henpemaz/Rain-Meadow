@@ -43,28 +43,27 @@ namespace RainMeadow
             
             if (apo is AbstractConsumable acm)
             {
-                var acmDef = new OnlineConsumableDefinition(opoDef, acm);
+                var ocmDef = new OnlineConsumableDefinition(opoDef, acm);
                 switch (acm) 
                 {
                     case BubbleGrass.AbstractBubbleGrass abg:
-                        var abgDef = new OnlineBubbleGrassDefinition(acmDef, abg);
+                        var abgDef = new OnlineBubbleGrassDefinition(ocmDef, abg);
                         return new OnlineBubbleGrass(abgDef, abg);
                     case SeedCob.AbstractSeedCob asc:
-                        var ascDef = new OnlineSeedCobDefinition(acmDef, asc);
+                        var ascDef = new OnlineSeedCobDefinition(ocmDef, asc);
                         return new OnlineSeedCob(ascDef, asc);
                     case SporePlant.AbstractSporePlant asp:
-                        var aspDef = new OnlineSporePlantDefinition(acmDef, asp);
+                        var aspDef = new OnlineSporePlantDefinition(ocmDef, asp);
                         return new OnlineSporePlant(aspDef, asp);
                     case WaterNut.AbstractWaterNut awn:
-                        return new OnlineConsumable(acmDef, awn);
+                        return new OnlineConsumable(ocmDef, awn);
                     case PebblesPearl.AbstractPebblesPearl app:
-                        //May have issues since AbstractPebblesPearl is an AbstractDataPearl
-                        RainMeadow.Debug("AbstractPebblesPearl not handled");
-                        return new OnlineConsumable(acmDef, app);
+                        var appDef = new OnlinePebblesPearlDefinition(ocmDef, app);
+                        return new OnlinePebblesPearl(appDef, app);
                     case DataPearl.AbstractDataPearl adp:
-                        return new OnlineConsumable(acmDef, adp);
+                        return new OnlineConsumable(ocmDef, adp);
                     default:
-                        return new OnlineConsumable(acmDef, acm);
+                        return new OnlineConsumable(ocmDef, acm);
                     case null:
                         throw new ArgumentNullException(nameof(acm));
 
