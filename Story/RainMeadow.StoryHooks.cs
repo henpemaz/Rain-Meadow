@@ -41,6 +41,27 @@ namespace RainMeadow
 
             On.BubbleGrass.Update += BubbleGrass_Update;
             On.WaterNut.Swell += WaterNut_Swell;
+            On.SporePlant.Pacify += SporePlant_Pacify;
+        }
+
+        private void SporePlant_Pacify(On.SporePlant.orig_Pacify orig, SporePlant self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+                return;
+            }
+
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineSporePlant);
+                room.owner.InvokeRPC(ConsumableRPCs.pacifySporePlant, onlineSporePlant);
+            }
+            else 
+            {
+                orig(self);
+            }
         }
 
         private void WaterNut_Swell(On.WaterNut.orig_Swell orig, WaterNut self)

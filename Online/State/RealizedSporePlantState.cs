@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using RWCustom;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -10,6 +12,8 @@ namespace RainMeadow
         int releaseBeesCounter;
         [OnlineField]
         int releaseBeesDelay;
+        [OnlineField]
+        List<IntVector2> possibleDestinations;
         [OnlineField]
         bool hasStalk;
         [OnlineField]
@@ -31,6 +35,14 @@ namespace RainMeadow
             this.angry = sporePlant.angry;
             this.releaseBeesCounter = sporePlant.releaseBeesCounter;
             this.releaseBeesDelay = sporePlant.releaseBeesDelay;
+            if (sporePlant.possibleDestinations != null)
+            {
+                this.possibleDestinations = sporePlant.possibleDestinations;
+            }
+            else 
+            {
+                this.possibleDestinations = new List<IntVector2>();
+            }
             if (sporePlant.stalk != null)
             {
                 this.hasStalk = true;
@@ -54,6 +66,7 @@ namespace RainMeadow
             sporePlant.angry = this.angry;
             sporePlant.releaseBeesCounter = this.releaseBeesCounter;
             sporePlant.releaseBeesDelay = this.releaseBeesDelay;
+            sporePlant.possibleDestinations = this.possibleDestinations;
             //sporePlant.deployOnCollision = this.deployOnCollision;
             if (hasStalk && sporePlant.stalk != null) {
                 sporePlant.stalk.baseDirVec = this.baseDirVec;

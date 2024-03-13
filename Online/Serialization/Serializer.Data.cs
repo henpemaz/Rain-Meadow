@@ -893,6 +893,36 @@ namespace RainMeadow
 #endif
         }
 
+        public void Serialize(ref List<IntVector2> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write((byte)data.Count);
+                for (int i = 0; i < data.Count; i++)
+                {
+                    writer.Write((short)data[i].x);
+                    writer.Write((short)data[i].y);
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadByte();
+                data = new(count);
+                for (int i = 0; i < count; i++)
+                {
+                    short x = reader.ReadInt16();
+                    short y = reader.ReadInt16();
+                    data.Add(new IntVector2(x, y));
+                }
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
         public void SerializeRGB(ref Color data)
         {
 #if TRACING
