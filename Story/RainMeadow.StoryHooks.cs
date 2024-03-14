@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using HUD;
 using System.Linq;
 using System;
+using static Sony.PS4.SaveData.Dialogs;
 
 namespace RainMeadow
 {
@@ -261,7 +262,7 @@ namespace RainMeadow
         private bool RegionGate_AllPlayersThroughToOtherSide(On.RegionGate.orig_AllPlayersThroughToOtherSide orig, RegionGate self)
         {
 
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
+            if (isStoryMode(out var storyGameMode))
             {
                 foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
                 {
@@ -278,7 +279,11 @@ namespace RainMeadow
                     {
                         return false; // not loaded
                     }
+
                 }
+
+                self.room.game.cameras[0].hud.parts.Add(new OnlineStoryHud(self.room.game.cameras[0].hud, self.room.game.cameras[0], storyGameMode));
+
                 return true;
             }
             return orig(self);
@@ -336,6 +341,24 @@ namespace RainMeadow
                     {
                         return false; // not loaded
                     }
+                }
+
+                List<HudPart> partsToRemove = new List<HudPart>();
+
+                foreach (HudPart part in self.room.game.cameras[0].hud.parts)
+                {
+                    if (part is OnlineStoryHud || part is PlayerSpecificOnlineHud)
+                    {
+
+                        partsToRemove.Add(part);
+                    }
+                }
+
+                foreach (HudPart part in partsToRemove)
+                {
+                    part.slatedForDeletion = true;
+                    part.ClearSprites();
+                    self.room.game.cameras[0].hud.parts.Remove(part);
                 }
                 return true;
             }
