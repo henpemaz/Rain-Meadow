@@ -49,26 +49,11 @@ namespace RainMeadow
                 case VultureMask.AbstractVultureMask:
                     //May break with downpour
                     return new OnlinePhysicalObject(opoDef, apo);
-                case BubbleGrass.AbstractBubbleGrass abg:
-                    var abgDef = new OnlineBubbleGrassDefinition(new OnlineConsumableDefinition(opoDef, abg), abg);
-                    return new OnlineBubbleGrass(abgDef, abg);
-                case SeedCob.AbstractSeedCob asc:
-                    var ascDef = new OnlineSeedCobDefinition(new OnlineConsumableDefinition(opoDef, asc), asc);
-                    return new OnlineSeedCob(ascDef, asc);
-                case SporePlant.AbstractSporePlant asp:
-                    var aspDef = new OnlineSporePlantDefinition(new OnlineConsumableDefinition(opoDef, asp), asp);
-                    return new OnlineSporePlant(aspDef, asp);
-                case WaterNut.AbstractWaterNut awn:
-                    return new OnlineConsumable(new OnlineConsumableDefinition(opoDef, awn), awn);
-                case PebblesPearl.AbstractPebblesPearl app:
-                    var appDef = new OnlinePebblesPearlDefinition(new OnlineConsumableDefinition(opoDef, app), app);
-                    return new OnlinePebblesPearl(appDef, app);
                 case AbstractCreature ac:
                     var acDef = new OnlineCreatureDefinition(ac.ID.RandomSeed, ac.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                     return new OnlineCreature(acDef, ac);
                 case AbstractConsumable acm:
-                    var ocmDef = new OnlineConsumableDefinition(opoDef, acm);
-                    return new OnlineConsumable(ocmDef, acm);
+                    return OnlineConsumableFromAcm(acm,opoDef);
                 default:
                     return new OnlinePhysicalObject(opoDef, apo);
                 case null:
@@ -76,6 +61,28 @@ namespace RainMeadow
             }
         }
 
+        private static OnlineConsumable OnlineConsumableFromAcm(AbstractConsumable acm, OnlinePhysicalObjectDefinition opoDef) 
+        {
+            var ocmDef = new OnlineConsumableDefinition(opoDef, acm);
+            switch (acm) {
+                case BubbleGrass.AbstractBubbleGrass abg:
+                    var abgDef = new OnlineBubbleGrassDefinition(ocmDef, abg);
+                    return new OnlineBubbleGrass(abgDef, abg);
+                case SeedCob.AbstractSeedCob asc:
+                    var ascDef = new OnlineSeedCobDefinition(ocmDef, asc);
+                    return new OnlineSeedCob(ascDef, asc);
+                case SporePlant.AbstractSporePlant asp:
+                    var aspDef = new OnlineSporePlantDefinition(ocmDef, asp);
+                    return new OnlineSporePlant(aspDef, asp);
+                case PebblesPearl.AbstractPebblesPearl app:
+                    var appDef = new OnlinePebblesPearlDefinition(ocmDef, app);
+                    return new OnlinePebblesPearl(appDef, app);
+                default:
+                    return new OnlineConsumable(ocmDef, acm);
+                case null:
+                    throw new ArgumentNullException(nameof(acm));
+            }
+        }
         public OnlinePhysicalObject(OnlinePhysicalObjectDefinition entityDefinition, AbstractPhysicalObject apo) : base(entityDefinition)
         {
             this.apo = apo;
