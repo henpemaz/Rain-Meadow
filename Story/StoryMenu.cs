@@ -1,16 +1,11 @@
 using Menu;
 using Menu.Remix;
-using Menu.Remix.MixedUI;
 using Steamworks;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using UnityEngine;
-using MoreSlugcats;
-using RWCustom;
 using static RainMeadow.RainMeadow;
-using RainMeadow.Properties;
 using System.Reflection;
 
 namespace RainMeadow
@@ -151,8 +146,8 @@ namespace RainMeadow
             SetupCharacterCustomization();
             UpdateCharacterUI();
 
-            // Grab Host Remix Settings
-            if (OnlineManager.lobby.isOwner)
+                // Grab Host Remix Settings
+                if (OnlineManager.lobby.isOwner)
             {
                 var hostSettings = GetHostBoolStoryRemixSettings();
                 (OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings = hostSettings.hostBoolSettings;
