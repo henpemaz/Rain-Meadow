@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static RainMeadow.RainMeadow;
-using RainMeadow.Properties;
 using System.Reflection;
 
 namespace RainMeadow
@@ -147,8 +146,8 @@ namespace RainMeadow
             SetupCharacterCustomization();
             UpdateCharacterUI();
 
-            // Grab Host Remix Settings
-            if (OnlineManager.lobby.isOwner)
+                // Grab Host Remix Settings
+                if (OnlineManager.lobby.isOwner)
             {
                 var hostSettings = GetHostBoolStoryRemixSettings();
                 (OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings = hostSettings.hostBoolSettings;

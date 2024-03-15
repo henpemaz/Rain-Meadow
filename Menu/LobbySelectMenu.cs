@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static RainMeadow.OnlineGameMode;
 
 namespace RainMeadow
 {
@@ -259,6 +260,12 @@ namespace RainMeadow
             if (ModManager.JollyCoop)
             {
                 ShowErrorDialog("Please disable JollyCoop before playing Online");
+                return;
+
+            }
+            if (!ModManager.MMF && OnlineManager.lobby.gameModeType == OnlineGameModeType.Story)
+            {
+                ShowErrorDialog("Please enable Remix before playing Online");
                 return;
 
             }
