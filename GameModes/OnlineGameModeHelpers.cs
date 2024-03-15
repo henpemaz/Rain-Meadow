@@ -8,7 +8,6 @@ namespace RainMeadow
         {
             PlacedObject.Type.None,
             PlacedObject.Type.LightSource,
-            //PlacedObject.Type.TempleGuard,
             PlacedObject.Type.LightFixture,
             PlacedObject.Type.CoralStem,
             PlacedObject.Type.CoralStemWithNeurons,
@@ -24,9 +23,7 @@ namespace RainMeadow
             PlacedObject.Type.Corruption,
             PlacedObject.Type.CorruptionTube,
             PlacedObject.Type.CorruptionDarkness,
-            //PlacedObject.Type.StuckDaddy,
             PlacedObject.Type.SSLightRod,
-            //PlacedObject.Type.CentipedeAttractor,
             PlacedObject.Type.DandelionPatch,
             PlacedObject.Type.GhostSpot,
             PlacedObject.Type.CosmeticSlimeMold,
@@ -67,7 +64,13 @@ namespace RainMeadow
             PlacedObject.Type.NeuronSpawner,
             PlacedObject.Type.ExitSymbolAncientShelter,
             PlacedObject.Type.BlinkingFlower
-         };
+        };
+        public static HashSet<PlacedObject.Type> creatureRelatedItems = new() 
+        {
+            //PlacedObject.Type.TempleGuard,
+            //PlacedObject.Type.StuckDaddy,
+            //PlacedObject.Type.CentipedeAttractor,
+        };
         public static HashSet<PlacedObject.Type> PlayerGrablableItems = new()
         {
             PlacedObject.Type.FlareBomb,
