@@ -240,9 +240,9 @@ namespace RainMeadow
 
             }
 
-            if (!ModManager.MMF && lobbyInfo.mode == OnlineGameModeType.Story.value)
+            if (!ModManager.MMF && modeDropDown.value == OnlineGameModeType.Story.value)
             {
-                ShowErrorDialog("Please enable Remix before playing Online");
+                ShowErrorDialog("Please enable Remix before playing Story Mode Online");
                 return;
 
             }
