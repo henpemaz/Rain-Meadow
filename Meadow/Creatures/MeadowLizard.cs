@@ -63,7 +63,48 @@ namespace RainMeadow
 
             On.Lizard.AttemptBite += Lizard_AttemptBite;
             On.Lizard.DamageAttack += Lizard_DamageAttack;
+
+            //On.Lizard.FollowConnection += Lizard_FollowConnection;
+
+            On.LizardPather.FollowPath += LizardPather_FollowPath;
         }
+
+        private static MovementConnection LizardPather_FollowPath(On.LizardPather.orig_FollowPath orig, LizardPather self, WorldCoordinate originPos, int? bodyDirection, bool actuallyFollowingThisPath)
+        {
+            if (creatureControllers.TryGetValue(self.creature, out var c) && c is LizardController l)
+            {
+                if (originPos == self.destination) return null; // such a silly behavior...
+            }
+
+            return orig(self, originPos, bodyDirection, actuallyFollowingThisPath);
+        }
+
+        //private static void Lizard_FollowConnection(On.Lizard.orig_FollowConnection orig, Lizard self, float runSpeed)
+        //{
+        //    if (creatureControllers.TryGetValue(self.abstractCreature, out var c) && c is LizardController l)
+        //    {
+        //        if (self.followingConnection.type < MovementConnection.MovementType.ShortCut && runSpeed > 0.5f)
+        //        {
+        //            var chunk0 = self.bodyChunks[0];
+        //            var chunk1 = self.bodyChunks[1];
+        //            var to = self.room.MiddleOfTile(self.followingConnection.destinationCoord);
+        //            var dist0 = to - chunk0.pos;
+        //            if(dist0.magnitude > 10f && (to - chunk1.pos).magnitude > 10f)
+        //            {
+        //                var todir = dist0.normalized;
+        //                var indir = Vector2.Dot(chunk0.vel, todir);
+        //                if (indir < runSpeed * 2f)
+        //                {
+        //                    var amount = todir.normalized * (runSpeed * 2f - indir);
+        //                    chunk0.vel += amount;
+        //                    chunk1.vel -= amount / 2f;
+        //                }
+        //            }
+        //        }
+        //    }
+
+        //    orig(self, runSpeed);
+        //}
 
         private static void Lizard_DamageAttack(On.Lizard.orig_DamageAttack orig, Lizard self, BodyChunk chunk, float dmgFac)
         {
@@ -256,7 +297,6 @@ namespace RainMeadow
             if (creatureControllers.TryGetValue(self.abstractCreature, out var c) && c is LizardController l)
             {
                 l.ConsciousUpdate();
-
                 // lost footing doesn't auto-recover
                 if (self.inAllowedTerrainCounter < 10)
                 {
@@ -292,6 +332,7 @@ namespace RainMeadow
 
             var tile0 = creature.room.GetTile(creature.bodyChunks[0].pos);
 
+            // greater air friction because uhhh didnt feel right
             if (lizard.applyGravity && creature.room.aimap.TileAccessibleToCreature(tile0.X, tile0.Y, lizard.Template))
             {
                 for (int i = 0; i < creature.bodyChunks.Length; i++)
@@ -310,7 +351,6 @@ namespace RainMeadow
             lizard.AI.behavior = LizardAI.Behavior.Idle;
             lizard.AI.runSpeed = Custom.LerpAndTick(lizard.AI.runSpeed, 0, 0.4f, 0.1f);
             lizard.AI.excitement = Custom.LerpAndTick(lizard.AI.excitement, 0.2f, 0.1f, 0.05f);
-            lizard.commitedToDropConnection = null;
 
             // pull towards floor
             for (int i = 0; i < lizard.bodyChunks.Length; i++)
@@ -333,7 +373,10 @@ namespace RainMeadow
 
         protected override void MovementOverride(MovementConnection movementConnection)
         {
+            Moving();
+            movementConnection.type = MovementConnection.MovementType.DropToFloor;
             lizard.commitedToDropConnection = movementConnection;
+            ForceAIDestination(movementConnection.destinationCoord);
         }
 
         protected override void ClearMovementOverride()

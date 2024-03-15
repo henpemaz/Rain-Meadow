@@ -12,7 +12,7 @@ namespace RainMeadow
         internal List<EmoteType> emotes = new();
         internal byte emotesVersion;
         internal Player.InputPackage input;
-        internal CreatureController.SpecialInput specialInput;
+        internal CreatureController.SpecialInput specialInput; // todo todo todo
 
         public MeadowCreatureData(OnlineCreature owner)
         {

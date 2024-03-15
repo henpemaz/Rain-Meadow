@@ -31,6 +31,8 @@ namespace RainMeadow
             var chunks = creature.bodyChunks;
             var nc = chunks.Length;
 
+            var template = creature.Template;
+
             var aiTile0 = creature.room.aimap.getAItile(chunks[0].pos);
             var aiTile1 = creature.room.aimap.getAItile(chunks[1].pos);
             var tile0 = creature.room.GetTile(chunks[0].pos);
@@ -39,78 +41,81 @@ namespace RainMeadow
             bool localTrace = Input.GetKey(KeyCode.L);
 
             toPos = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir * 1.42f));
-            bool reachable = room.aimap.TileAccessibleToCreature(toPos.Tile, creature.Template);
-            //bool keeplooking = true; // this could be turned into a helper and an early return
+            var previousAccessibility = room.aimap.getAItile(basecoord).acc;
 
-            if (localTrace) RainMeadow.Debug($"moving towards {toPos.Tile}");
+            var currentAccessibility = room.aimap.getAItile(toPos).acc;
+            var currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
+
+            if (localTrace) RainMeadow.Debug($"moving from {basecoord.Tile} towards {toPos.Tile}");
+            
             if (this.forceJump > 0) // jumping
             {
                 this.Moving();
                 this.MovementOverride(new MovementConnection(MovementConnection.MovementType.Standard, basecoord, toPos, 2));
-                reachable = false;
-                keeplooking = false;
+                return false;
             }
-            else if (true)//self.inAllowedTerrainCounter > 10)
+
+            // prio 1: entering shortcut
+            if (creature.enteringShortCut == null && creature.shortcutDelay < 1)
             {
-                if (creature.enteringShortCut == null && creature.shortcutDelay < 1)
+                for (int i = 0; i < nc; i++)
                 {
-                    for (int i = 0; i < nc; i++)
+                    if (room.GetTile(chunks[i].pos).Terrain == Room.Tile.TerrainType.ShortcutEntrance)
                     {
-                        if (room.GetTile(chunks[i].pos).Terrain == Room.Tile.TerrainType.ShortcutEntrance)
+                        var scdata = room.shortcutData(room.GetTilePosition(chunks[i].pos));
+                        if (scdata.shortCutType != ShortcutData.Type.DeadEnd)
                         {
-                            var scdata = room.shortcutData(room.GetTilePosition(chunks[i].pos));
-                            if (scdata.shortCutType != ShortcutData.Type.DeadEnd)
+                            IntVector2 intVector = room.ShorcutEntranceHoleDirection(room.GetTilePosition(chunks[i].pos));
+                            if (this.input[0].x == -intVector.x && this.input[0].y == -intVector.y)
                             {
-                                IntVector2 intVector = room.ShorcutEntranceHoleDirection(room.GetTilePosition(chunks[i].pos));
-                                if (this.input[0].x == -intVector.x && this.input[0].y == -intVector.y)
+                                RainMeadow.Debug("creature entering shortcut");
+                                creature.enteringShortCut = new IntVector2?(room.GetTilePosition(chunks[i].pos));
+
+                                if (scdata.shortCutType == ShortcutData.Type.NPCTransportation)
                                 {
-                                    RainMeadow.Debug("creature entering shortcut");
-                                    creature.enteringShortCut = new IntVector2?(room.GetTilePosition(chunks[i].pos));
-                                    reachable = false;
-                                    keeplooking = false;
-
-                                    if (scdata.shortCutType == ShortcutData.Type.NPCTransportation)
+                                    var whackamoles = room.shortcuts.Where(s => s.shortCutType == ShortcutData.Type.NPCTransportation).ToList();
+                                    var index = whackamoles.IndexOf(creature.room.shortcuts.FirstOrDefault(s => s.StartTile == scdata.StartTile));
+                                    if (index > -1 && whackamoles.Count > 0)
                                     {
-                                        var whackamoles = room.shortcuts.Where(s => s.shortCutType == ShortcutData.Type.NPCTransportation).ToList();
-                                        var index = whackamoles.IndexOf(creature.room.shortcuts.FirstOrDefault(s => s.StartTile == scdata.StartTile));
-                                        if (index > -1 && whackamoles.Count > 0)
-                                        {
-                                            var newindex = (index + 1) % whackamoles.Count;
-                                            RainMeadow.Debug($"creature entered at {index} will exit at {newindex} mapped to {creature.NPCTransportationDestination}");
-                                            creature.NPCTransportationDestination = whackamoles[newindex].startCoord;
-                                            // needs to be set as destination as well otherwise might be overriden
-                                            toPos = creature.NPCTransportationDestination;
-                                            reachable = true;
-                                            keeplooking = false;
-                                        }
-                                        else
-                                        {
-                                            RainMeadow.Error("shortcut issue");
-                                        }
-
-                                        ClearMovementOverride();
+                                        var newindex = (index + 1) % whackamoles.Count;
+                                        RainMeadow.Debug($"creature entered at {index} will exit at {newindex} mapped to {creature.NPCTransportationDestination}");
+                                        creature.NPCTransportationDestination = whackamoles[newindex].startCoord;
+                                        // needs to be set as destination as well otherwise might be overriden
+                                        toPos = creature.NPCTransportationDestination;
+                                        return true;
                                     }
-                                    break;
+                                    else
+                                    {
+                                        RainMeadow.Error("shortcut issue");
+                                    }
+
+                                    ClearMovementOverride();
                                 }
+                                return false;
                             }
                         }
                     }
                 }
-                if (keeplooking && this.input[0].y > 0) // climbing has priority
+            }
+
+            // prio 2: climb
+            if (this.input[0].y > 0 && previousAccessibility <= AItile.Accessibility.Climb || tile0.WaterSurface)
+            {
+                bool climbing = false;
+                for (int i = 0; i < 3; i++)
                 {
-                    for (int i = 0; i < 3; i++)
+                    int num = (i > 0) ? ((i == 1) ? -1 : 1) : 0;
+                    var tile = room.GetTile(basecoord + new IntVector2(num, 1));
+                    if (!tile.Solid && tile.verticalBeam)
                     {
-                        int num = (i > 0) ? ((i == 1) ? -1 : 1) : 0;
-                        var tile = room.GetTile(basecoord + new IntVector2(num, 1));
-                        if (!tile.Solid && tile.verticalBeam)
-                        {
-                            if (localTrace) RainMeadow.Debug("pole close");
-                            toPos = WorldCoordinate.AddIntVector(basecoord, new IntVector2(0, 1));
-                            reachable = true;
-                            keeplooking = false;
-                            break;
-                        }
+                        if (localTrace) RainMeadow.Debug("pole close");
+                        toPos = WorldCoordinate.AddIntVector(basecoord, new IntVector2(num, 1));
+                        climbing = true;
+                        break;
                     }
+                }
+                if(!climbing || inputDir.y > 0.75f) // not found yet, OR pulling the stick hard
+                {
                     for (int i = 0; i < 3; i++)
                     {
                         int num = (i > 0) ? ((i == 1) ? -1 : 1) : 0;
@@ -120,121 +125,157 @@ namespace RainMeadow
                         {
                             if (localTrace) RainMeadow.Debug("pole far");
                             toPos = WorldCoordinate.AddIntVector(basecoord, new IntVector2(0, 2));
-                            reachable = true;
-                            keeplooking = false;
+                            climbing = true;
                             break;
                         }
                     }
                 }
-                if (keeplooking)
-                {
-                    if (this.input[0].x != 0) // to sides
-                    {
-                        if (localTrace) RainMeadow.Debug("sides");
-                        if (reachable)
-                        {
-                            if (localTrace) RainMeadow.Debug("ahead");
-                        }
-                        else if (room.aimap.TileAccessibleToCreature(toPos.Tile + new IntVector2(0, 1), creature.Template)) // try up
-                        {
-                            if (localTrace) RainMeadow.Debug("up");
-                            toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(0, 1));
-                            reachable = true;
-                        }
-                        else if (room.aimap.TileAccessibleToCreature(toPos.Tile + new IntVector2(0, -1), creature.Template)) // try down
-                        {
-                            if (localTrace) RainMeadow.Debug("down");
-                            toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(0, -1));
-                            reachable = true;
-                        }
-
-                        // if can reach further out, it goes faster and smoother
-                        var furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir * 3f));
-                        if (room.aimap.TileAccessibleToCreature(furtherOut.Tile, creature.Template) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile, 10) > 0)
-                        {
-                            if (localTrace) RainMeadow.Debug("reaching further");
-                            toPos = furtherOut;
-                            reachable = true;
-                        }
-                        else if (room.aimap.TileAccessibleToCreature(furtherOut.Tile + new IntVector2(0, 1), creature.Template) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, 1), 10) > 0)
-                        {
-                            if (localTrace) RainMeadow.Debug("further up");
-                            toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, 1));
-                            reachable = true;
-                        }
-                        else if (room.aimap.TileAccessibleToCreature(furtherOut.Tile + new IntVector2(0, -1), creature.Template) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, -1), 10) > 0)
-                        {
-                            if (localTrace) RainMeadow.Debug("further down");
-                            toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, -1));
-                            reachable = true;
-                        }
-
-                        if (!reachable)
-                        {
-                            // no pathing
-                            if (localTrace) RainMeadow.Debug("unpathable");
-                            // don't let go of beams/walls/ceilings
-                            if (room.aimap.TileAccessibleToCreature(tile0.X, tile0.Y, creature.Template) && aiTile0.acc >= AItile.Accessibility.Climb)// && self.inAllowedTerrainCounter > 10)
-                            {
-                                //self.AI.runSpeed *= 0.5f;
-                                toPos = basecoord;
-                            }
-                            else // force movement
-                            {
-                                if (localTrace) RainMeadow.Debug("forced move");
-                                this.MovementOverride(new MovementConnection(MovementConnection.MovementType.Standard, basecoord, furtherOut, 2));
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (localTrace) RainMeadow.Debug("vertical");
-
-                        if (keeplooking)
-                        {
-                            if (reachable)
-                            {
-                                if (localTrace) RainMeadow.Debug("ahead");
-                            }
-                            if (keeplooking)
-                            {
-                                var furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir * 2.2f));
-                                if (!room.GetTile(toPos).Solid && !room.GetTile(furtherOut).Solid && room.aimap.TileAccessibleToCreature(furtherOut.Tile, creature.Template)) // ahead unblocked, move further
-                                {
-                                    if (localTrace) RainMeadow.Debug("reaching");
-                                    toPos = furtherOut;
-                                    reachable = true;
-                                }
-                            }
-                        }
-                    }
-                }
+                if (climbing) return true;
             }
 
-            //// minimun directional speed
-            //if (reachable && (self.graphicsModule as LizardGraphics)?.frontLegsGrabbing > 0)
-            //{
-            //    var inDirection = Vector2.Dot(self.mainBodyChunk.vel, s.inputDir);
-            //    var minSpeed = 0.35f;
-            //    if (inDirection < minSpeed)
-            //    {
-            //        self.mainBodyChunk.vel += s.inputDir * (minSpeed - inDirection);
-            //    }
-            //}
+            var targetAccessibility = currentAccessibility;
 
-            //// fake extra airfriction in gravity mode
-            //if (self.applyGravity && room.aimap.TileAccessibleToCreature(tile0.X, tile0.Y, self.Template))
-            //{
-            //    for (int i = 0; i < nc; i++)
-            //    {
-            //        BodyChunk bodyChunk = self.bodyChunks[i];
-            //        if (bodyChunk.submersion < 0.5f)
-            //        {
-            //            bodyChunk.vel.x *= 0.95f;
-            //        }
-            //    }
-            //}
 
+            // run once at current accessibility level
+            // if not found and any higher accessibility level available, run again once
+            while (true)
+            {
+                if (this.input[0].x != 0) // to sides
+                {
+                    if (localTrace) RainMeadow.Debug("sides");
+                    if (currentLegality <= PathCost.Legality.Unwanted)
+                    {
+                        if (localTrace) RainMeadow.Debug("ahead");
+                    }
+                    else if (room.aimap.TileAccessibleToCreature(toPos.Tile + new IntVector2(0, 1), creature.Template)) // try up
+                    {
+                        if (localTrace) RainMeadow.Debug("up");
+                        toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(0, 1));
+                        currentAccessibility = room.aimap.getAItile(toPos).acc;
+                        currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
+                    }
+                    else if (room.aimap.TileAccessibleToCreature(toPos.Tile + new IntVector2(0, -1), creature.Template)) // try down
+                    {
+                        if (localTrace) RainMeadow.Debug("down");
+                        toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(0, -1));
+                        currentAccessibility = room.aimap.getAItile(toPos).acc;
+                        currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
+                    }
+
+                    // not pulling the stick hard
+                    if (currentLegality <= PathCost.Legality.Unwanted && inputDir.magnitude < 0.75f)
+                    {
+                        return true;
+                    }
+
+                    // if can reach further out, it goes faster and smoother
+                    var furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir * 3f));
+                    if (room.aimap.TileAccessibleToCreature(furtherOut.Tile, creature.Template) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile, 6) > 0)
+                    {
+                        if (localTrace) RainMeadow.Debug("reaching further");
+                        toPos = furtherOut;
+                        currentAccessibility = room.aimap.getAItile(toPos).acc;
+                        currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
+                    }
+                    else if (room.aimap.TileAccessibleToCreature(furtherOut.Tile + new IntVector2(0, 1), creature.Template) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, 1), 6) > 0)
+                    {
+                        if (localTrace) RainMeadow.Debug("further up");
+                        toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, 1));
+                        currentAccessibility = room.aimap.getAItile(toPos).acc;
+                        currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
+                    }
+                    else if (room.aimap.TileAccessibleToCreature(furtherOut.Tile + new IntVector2(0, -1), creature.Template) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, -1), 6) > 0)
+                    {
+                        if (localTrace) RainMeadow.Debug("further down");
+                        toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, -1));
+                        currentAccessibility = room.aimap.getAItile(toPos).acc;
+                        currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
+                    }
+
+                    if (currentLegality > PathCost.Legality.Unwanted)
+                    {
+                        // no pathing
+                        if (localTrace) RainMeadow.Debug("unpathable");
+                        // don't let go of beams/walls/ceilings
+                        if (room.aimap.TileAccessibleToCreature(tile0.X, tile0.Y, creature.Template) && aiTile0.acc >= AItile.Accessibility.Climb)// && self.inAllowedTerrainCounter > 10)
+                        {
+                            //self.AI.runSpeed *= 0.5f;
+                            toPos = basecoord;
+                            return true;
+                        }
+                        else // force movement
+                        {
+                            if (localTrace) RainMeadow.Debug("forced move to " + furtherOut.Tile);
+                            this.MovementOverride(new MovementConnection(MovementConnection.MovementType.Standard, basecoord, furtherOut, 2));
+                            return false;
+                        }
+                    }
+
+                    return currentLegality <= PathCost.Legality.Unwanted;
+                }
+                else
+                {
+                    if (localTrace) RainMeadow.Debug("vertical");
+
+                    if (currentLegality <= PathCost.Legality.Unwanted)
+                    {
+                        if (localTrace) RainMeadow.Debug("ahead");
+                    }
+                    else if (room.aimap.TileAccessibleToCreature(toPos.Tile + new IntVector2(1, 0), creature.Template)) // right
+                    {
+                        if (localTrace) RainMeadow.Debug("right");
+                        toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(1, 0));
+                        currentAccessibility = room.aimap.getAItile(toPos).acc;
+                        currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
+                    }
+                    else if (room.aimap.TileAccessibleToCreature(toPos.Tile + new IntVector2(-1, 0), creature.Template)) // left
+                    {
+                        if (localTrace) RainMeadow.Debug("left");
+                        toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(-1, 0));
+                        currentAccessibility = room.aimap.getAItile(toPos).acc;
+                        currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
+                    }
+                    var furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir * 2.2f));
+                    if (!room.GetTile(toPos).Solid && !room.GetTile(furtherOut).Solid && room.aimap.TileAccessibleToCreature(furtherOut.Tile, creature.Template)) // ahead unblocked, move further
+                    {
+                        if (localTrace) RainMeadow.Debug("reaching");
+                        toPos = furtherOut;
+                        currentAccessibility = room.aimap.getAItile(toPos).acc;
+                        currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
+                    }
+
+                    if (currentLegality > PathCost.Legality.Unwanted)
+                    {
+                        // no pathing
+                        if (localTrace) RainMeadow.Debug("unpathable");
+                        // don't let go of beams/walls/ceilings
+                        if (room.aimap.TileAccessibleToCreature(tile0.X, tile0.Y, creature.Template) && aiTile0.acc >= AItile.Accessibility.Climb)// && self.inAllowedTerrainCounter > 10)
+                        {
+                            //self.AI.runSpeed *= 0.5f;
+                            toPos = basecoord;
+                            return true;
+                        }
+                        else // force movement
+                        {
+                            if (localTrace) RainMeadow.Debug("forced move");
+                            this.MovementOverride(new MovementConnection(MovementConnection.MovementType.Standard, basecoord, toPos, 2));
+                            return false;
+                        }
+                    }
+
+                    return currentLegality <= PathCost.Legality.Unwanted;
+                }
+
+
+                bool higherAcc = false;
+                while (targetAccessibility < AItile.Accessibility.Solid) higherAcc |= template.AccessibilityResistance(targetAccessibility).Allowed; 
+                if (currentLegality > PathCost.Legality.Unwanted && higherAcc)
+                {
+                    // run again
+                    continue;
+                }
+                break;
+            }
         }
 
         internal override void ConsciousUpdate()
@@ -343,7 +384,7 @@ namespace RainMeadow
 
             // move
             //var basepos = 0.5f * (self.bodyChunks[0].pos + self.bodyChunks[1].pos);
-            var basepos = creature.bodyChunks[1].pos;
+            var basepos = creature.mainBodyChunk.pos;
             var basecoord = creature.room.GetWorldCoordinate(basepos);
             if (this.inputDir != Vector2.zero)
             {
@@ -352,6 +393,8 @@ namespace RainMeadow
                     GripPole(tile0);
                 }
 
+
+                // todo have remote send us this instead of pathfinding for remote entities
                 if (FindDestination(basecoord, out var toPos))
                 {
                     Moving();

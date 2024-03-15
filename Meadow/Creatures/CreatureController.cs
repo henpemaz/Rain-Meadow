@@ -61,8 +61,8 @@ namespace RainMeadow
             standStillOnMapButton = creature.abstractCreature.world.game.IsStorySession;
             flipDirection = 1;
 
-            //creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
-            //debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);
+            creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
+            debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);
         }
 
         public int playerNumber = 0;
@@ -93,8 +93,8 @@ namespace RainMeadow
         // IOwnAHUD
         public int CurrentFood => 0;
         // IOwnAHUD
-        public Player.InputPackage MapInput => mapInput;
-        private Player.InputPackage mapInput;
+        public Player.InputPackage MapInput => rawInput;
+        private Player.InputPackage rawInput;
         // IOwnAHUD
         public bool RevealMap => input[0].mp;
         // IOwnAHUD
@@ -199,7 +199,7 @@ namespace RainMeadow
                 }
             }
 
-            mapInput = this.input[0];
+            rawInput = this.input[0];
             if ((this.standStillOnMapButton && this.input[0].mp) || this.sleepCounter != 0)
             {
                 this.input[0].x = 0;
@@ -464,7 +464,7 @@ namespace RainMeadow
             }
         }
 
-        public void ForceAIDestination(WorldCoordinate coord)
+        public virtual void ForceAIDestination(WorldCoordinate coord)
         {
             var absAI = creature.abstractCreature.abstractAI;
             var realAI = absAI.RealAI;
