@@ -14,6 +14,7 @@ namespace RainMeadow
         public readonly bool isTransferable;
 
         public bool isMine => owner.isMe;
+
         /// <summary>
         /// stack of resources this entity has entered locally, updated imediately, kept in sync for remote entities
         /// </summary>
@@ -29,6 +30,7 @@ namespace RainMeadow
 
         public bool isPending => pendingRequest != null;
         public OnlineEvent pendingRequest;
+
         protected OnlineEntity(EntityDefinition entityDefinition)
         {
             this.definition = entityDefinition;

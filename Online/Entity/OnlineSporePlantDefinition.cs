@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace RainMeadow 
+﻿namespace RainMeadow 
 { 
     public class OnlineSporePlantDefinition : OnlineConsumableDefinition
     {

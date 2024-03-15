@@ -14,7 +14,6 @@ namespace RainMeadow
         public bool beingMoved;
         public static ConditionalWeakTable<AbstractPhysicalObject, OnlinePhysicalObject> map = new();
 
-
         public RoomSession roomSession => this.currentlyJoinedResource as RoomSession; // shorthand
 
         public static OnlinePhysicalObject RegisterPhysicalObject(AbstractPhysicalObject apo)

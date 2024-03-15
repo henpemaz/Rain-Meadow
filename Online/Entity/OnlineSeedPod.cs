@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     public class OnlineSeedCob : OnlineConsumable
     {
