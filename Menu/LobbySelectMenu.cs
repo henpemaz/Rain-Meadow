@@ -237,7 +237,7 @@ namespace RainMeadow
                 return;
 
             }
-            if (!ModManager.MMF && OnlineManager.lobby.gameModeType == OnlineGameModeType.Story)
+            if (!ModManager.MMF)
             {
                 ShowErrorDialog("Please enable Remix before playing Online");
                 return;
