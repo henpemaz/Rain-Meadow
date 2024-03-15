@@ -264,14 +264,15 @@ namespace RainMeadow
 
             }
 
-            if (modeDropDown.value == "Story" && !ModManager.MMF)
-            {
-                ShowErrorDialog("Please enable Remix before playing Story Mode Online");
-                return;
-            }
 
             if (currentlySelectedCard == 0)
             {
+
+                if ((modeDropDown.value == "Story") && !ModManager.MMF)
+                {
+                    ShowErrorDialog("Please enable Remix before playing Story Mode Online");
+                    return;
+                }
                 ShowLoadingDialog("Creating lobby...");
                 RequestLobbyCreate();
             }
