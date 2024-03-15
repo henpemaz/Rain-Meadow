@@ -49,9 +49,6 @@ namespace RainMeadow
                 case VultureMask.AbstractVultureMask:
                     //May break with downpour
                     return new OnlinePhysicalObject(opoDef, apo);
-                case EggBugEgg.AbstractBugEgg abstractBugEgg:
-                    RainMeadow.Debug("AbstractBugEgg not handled");
-                    return new OnlinePhysicalObject(opoDef, abstractBugEgg);
                 case BubbleGrass.AbstractBubbleGrass abg:
                     var abgDef = new OnlineBubbleGrassDefinition(new OnlineConsumableDefinition(opoDef, abg), abg);
                     return new OnlineBubbleGrass(abgDef, abg);

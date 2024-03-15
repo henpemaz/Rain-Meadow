@@ -10,12 +10,6 @@
         public bool originallyConsumed;
 
         public OnlineConsumableDefinition() { }
-        public OnlineConsumableDefinition(OnlineConsumableDefinition ocd) : base(ocd)
-        { 
-            this.originRoom = ocd.originRoom;
-            this.placedObjectIndex = ocd.placedObjectIndex;
-            this.originallyConsumed = ocd.originallyConsumed;
-        }
         public OnlineConsumableDefinition(OnlinePhysicalObjectDefinition opod, AbstractConsumable abstractConsumable) : base(opod)
         {
             this.originRoom = (short)abstractConsumable.originRoom;
