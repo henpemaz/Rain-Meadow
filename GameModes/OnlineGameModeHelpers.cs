@@ -71,7 +71,7 @@ namespace RainMeadow
         public static HashSet<PlacedObject.Type> PlayerGrablableItems = new()
         {
             PlacedObject.Type.FlareBomb,
-            PlacedObject.Type.PuffBall,
+            //PlacedObject.Type.PuffBall,          //Weird behavior between thrower and everyone else when throwing 
             PlacedObject.Type.DangleFruit,
             PlacedObject.Type.DataPearl,
             PlacedObject.Type.UniqueDataPearl,
