@@ -7,7 +7,7 @@
 
         public OnlineBubbleGrassDefinition() { }
 
-        public OnlineBubbleGrassDefinition(OnlineConsumableDefinition opod, BubbleGrass.AbstractBubbleGrass abstractConsumable) : base(opod)
+        public OnlineBubbleGrassDefinition(OnlineConsumableDefinition opod, BubbleGrass.AbstractBubbleGrass abstractConsumable) : base(opod,abstractConsumable)
         {
             this.originalOxygenLevel = abstractConsumable.oxygenLeft;
         }

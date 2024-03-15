@@ -7,7 +7,7 @@
         [OnlineField]
         public short originalNumber;
         public OnlinePebblesPearlDefinition() { }
-        public OnlinePebblesPearlDefinition(OnlineConsumableDefinition ocmDef, PebblesPearl.AbstractPebblesPearl abstractPebblesPearl) : base(ocmDef)
+        public OnlinePebblesPearlDefinition(OnlineConsumableDefinition ocmDef, PebblesPearl.AbstractPebblesPearl abstractPebblesPearl) : base(ocmDef,abstractPebblesPearl)
         {
             //Color is only ever the numbers -4 to 4 based on DataPearl::ApplyPalette
             this.originalColor = (sbyte)abstractPebblesPearl.color;

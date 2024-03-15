@@ -10,7 +10,7 @@ namespace RainMeadow
         public bool originallyUsed;
         public OnlineSporePlantDefinition() { }
 
-        public OnlineSporePlantDefinition(OnlineConsumableDefinition ocd, SporePlant.AbstractSporePlant abstractSporePlant) : base(ocd)
+        public OnlineSporePlantDefinition(OnlineConsumableDefinition ocd, SporePlant.AbstractSporePlant abstractSporePlant) : base(ocd,abstractSporePlant)
         {
             this.originallyPacified = abstractSporePlant.pacified;
             this.originallyUsed = abstractSporePlant.used;

@@ -9,7 +9,7 @@
 
         public OnlineSeedCobDefinition() { }
 
-        public OnlineSeedCobDefinition(OnlineConsumableDefinition ocd, SeedCob.AbstractSeedCob abstractSeedCob) : base (ocd)
+        public OnlineSeedCobDefinition(OnlineConsumableDefinition ocd, SeedCob.AbstractSeedCob abstractSeedCob) : base (ocd,abstractSeedCob)
         {
             this.originallyDead = abstractSeedCob.dead;
             this.roomName = abstractSeedCob.Room.name;
