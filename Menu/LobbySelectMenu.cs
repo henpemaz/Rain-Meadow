@@ -257,8 +257,6 @@ namespace RainMeadow
 
         private void Play(SimplerButton obj)
         {
-            var lobbyInfo = (lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo;
-
             if (ModManager.JollyCoop)
             {
                 ShowErrorDialog("Please disable JollyCoop before playing Online");
@@ -266,12 +264,12 @@ namespace RainMeadow
 
             }
 
-            if (!ModManager.MMF && modeDropDown.value == OnlineGameModeType.Story.value)
+            if (modeDropDown.value == "Story" && !ModManager.MMF)
             {
                 ShowErrorDialog("Please enable Remix before playing Story Mode Online");
                 return;
-
             }
+
             if (currentlySelectedCard == 0)
             {
                 ShowLoadingDialog("Creating lobby...");
