@@ -373,10 +373,7 @@ namespace RainMeadow
 
         protected override void MovementOverride(MovementConnection movementConnection)
         {
-            Moving();
-            movementConnection.type = MovementConnection.MovementType.DropToFloor;
             lizard.commitedToDropConnection = movementConnection;
-            ForceAIDestination(movementConnection.destinationCoord);
         }
 
         protected override void ClearMovementOverride()

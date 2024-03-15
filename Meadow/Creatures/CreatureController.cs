@@ -61,7 +61,7 @@ namespace RainMeadow
             standStillOnMapButton = creature.abstractCreature.world.game.IsStorySession;
             flipDirection = 1;
 
-            creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
+            //creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
             debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);
         }
 

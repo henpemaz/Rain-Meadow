@@ -18,6 +18,20 @@ namespace RainMeadow
 
             // color
             On.ScavengerGraphics.ctor += ScavengerGraphics_ctor;
+
+            On.Scavenger.FollowPath += Scavenger_FollowPath;
+        }
+
+        private static MovementConnection Scavenger_FollowPath(On.Scavenger.orig_FollowPath orig, Scavenger self, WorldCoordinate origin, bool actuallyFollowingThisPath)
+        {
+            if (creatureControllers.TryGetValue(self.abstractCreature, out var c) && c is ScavengerController s)
+            {
+                if (origin == self.AI.pathFinder.destination) // return null; // such a silly behavior...
+                    // actually scav NEEDS an upcoming connection wtf??
+                    return new MovementConnection(MovementConnection.MovementType.Standard, origin, WorldCoordinate.AddIntVector(origin, new IntVector2(0, 1)), 1);
+            }
+
+            return orig(self, origin, actuallyFollowingThisPath);
         }
 
         // fix "will only move if target > 3 tiles away" issue
@@ -35,7 +49,7 @@ namespace RainMeadow
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((Scavenger self) => {
-                    if(creatureControllers.TryGetValue(self.abstractCreature, out var s))
+                    if (creatureControllers.TryGetValue(self.abstractCreature, out var s))
                     {
                         self.moving = (s as ScavengerController).forceMoving;
                     }
@@ -73,7 +87,7 @@ namespace RainMeadow
             var chunk = pickUpCandidate.bodyChunks[0];
 
             // TODO
-            
+
             return false;
         }
 
@@ -234,34 +248,47 @@ namespace RainMeadow
             orig(self);
         }
 
-        public override bool CanClimbJump => scavenger.movMode == Scavenger.MovementMode.Climb && scavenger.swingPos != null && scavenger.swingClimbCounter >= 2;
+        public override bool CanClimbJump => !CanGroundJump && scavenger.swingPos != null && scavenger.swingClimbCounter >= 2;
 
-        public override bool CanPoleJump => scavenger.movMode == Scavenger.MovementMode.Climb && ((creature.room.aimap.getAItile(creature.bodyChunks[0].pos).acc == AItile.Accessibility.Climb && creature.room.GetTile(creature.bodyChunks[0].pos).AnyBeam) || (creature.room.aimap.getAItile(creature.bodyChunks[1].pos).acc == AItile.Accessibility.Climb && creature.room.GetTile(creature.bodyChunks[1].pos).AnyBeam));
+        public override bool CanPoleJump => !CanGroundJump && ((creature.room.aimap.getAItile(creature.bodyChunks[1].pos).acc == AItile.Accessibility.Climb && creature.room.GetTile(creature.bodyChunks[1].pos).AnyBeam) || (creature.room.aimap.getAItile(creature.bodyChunks[2].pos).acc == AItile.Accessibility.Climb && creature.room.GetTile(creature.bodyChunks[2].pos).AnyBeam));
 
-        public override bool CanGroundJump => (scavenger.movMode == Scavenger.MovementMode.Run || scavenger.movMode == Scavenger.MovementMode.StandStill) && (creature.bodyChunks[0].contactPoint.y == -1 || creature.bodyChunks[1].contactPoint.y == -1 || creature.IsTileSolid(1, 0, -1) || creature.IsTileSolid(0, 0, -1));
+        public override bool CanGroundJump => (scavenger.movMode == Scavenger.MovementMode.Run || scavenger.movMode == Scavenger.MovementMode.StandStill) && (creature.bodyChunks[1].contactPoint.y == -1 || creature.bodyChunks[2].contactPoint.y == -1 || creature.IsTileSolid(1, 0, -1) || creature.IsTileSolid(2, 0, -1));
 
+        public override WorldCoordinate pathfindingOrigin
+        {
+            get
+            {
+                if (scavenger.occupyTile != new IntVector2(-1, -1))
+                {
+                    return creature.room.GetWorldCoordinate(scavenger.occupyTile);
+                }
+                return base.pathfindingOrigin;
+            }
+        }
 
         protected override void Moving()
         {
             scavenger.AI.behavior = ScavengerAI.Behavior.Travel;
             scavenger.AI.runSpeedGoal = Custom.LerpAndTick(scavenger.AI.runSpeedGoal, 0.8f, 0.2f, 0.05f);
             forceMoving = true;
-
+            scavenger.stuckCounter = 5;
         }
 
         protected override void Resting()
         {
             scavenger.AI.behavior = ScavengerAI.Behavior.Idle;
-            scavenger.AI.runSpeedGoal = Custom.LerpAndTick(scavenger.AI.runSpeedGoal, 0, 0.4f, 0.1f);
+            scavenger.AI.runSpeedGoal = Custom.LerpAndTick(scavenger.AI.runSpeedGoal, 0.0f, 0.4f, 0.1f);
             scavenger.commitedToMove = nullConnection;
             forceMoving = false;
+            //scavenger.movMode = Scavenger.MovementMode.StandStill;
+            scavenger.stuckCounter = 5;
 
         }
         protected override void MovementOverride(MovementConnection movementConnection)
         {
             scavenger.commitedToMove = movementConnection;
             scavenger.commitToMoveCounter = 20;
-            scavenger.drop = true;
+            //scavenger.drop = true;
             forceMoving = true;
         }
 
@@ -275,8 +302,10 @@ namespace RainMeadow
             if(scavenger.swingPos == null)
             {
                 scavenger.swingPos = creature.room.MiddleOfTile(tile0.X, tile0.Y);
-                scavenger.swingRadius = 50f;
-                scavenger.swingClimbCounter = 40;
+                scavenger.swingRadius = 10f;
+                scavenger.swingClimbCounter = 10;
+                scavenger.movMode = Scavenger.MovementMode.Climb;
+                //creature.bodyChunks[1].vel = Vector2.zero;
             }
         }
 
