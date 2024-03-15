@@ -40,56 +40,42 @@ namespace RainMeadow
             }
 
             var opoDef = new OnlinePhysicalObjectDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
-            
-            if (apo is AbstractConsumable acm)
-            {
-                var ocmDef = new OnlineConsumableDefinition(opoDef, acm);
-                switch (acm) 
-                {
-                    case BubbleGrass.AbstractBubbleGrass abg:
-                        var abgDef = new OnlineBubbleGrassDefinition(ocmDef, abg);
-                        return new OnlineBubbleGrass(abgDef, abg);
-                    case SeedCob.AbstractSeedCob asc:
-                        var ascDef = new OnlineSeedCobDefinition(ocmDef, asc);
-                        return new OnlineSeedCob(ascDef, asc);
-                    case SporePlant.AbstractSporePlant asp:
-                        var aspDef = new OnlineSporePlantDefinition(ocmDef, asp);
-                        return new OnlineSporePlant(aspDef, asp);
-                    case WaterNut.AbstractWaterNut awn:
-                        return new OnlineConsumable(ocmDef, awn);
-                    case PebblesPearl.AbstractPebblesPearl app:
-                        var appDef = new OnlinePebblesPearlDefinition(ocmDef, app);
-                        return new OnlinePebblesPearl(appDef, app);
-                    case DataPearl.AbstractDataPearl adp:
-                        return new OnlineConsumable(ocmDef, adp);
-                    default:
-                        return new OnlineConsumable(ocmDef, acm);
-                    case null:
-                        throw new ArgumentNullException(nameof(acm));
 
-                }
-            }
-            else
-            { 
-                switch (apo)
-                {
-                    case AbstractSpear:
-                        //may break with downpour
-                        return new OnlinePhysicalObject(opoDef, apo);
-                    case VultureMask.AbstractVultureMask:
-                        //May break with downpour
-                        return new OnlinePhysicalObject(opoDef, apo);
-                    case EggBugEgg.AbstractBugEgg abstractBugEgg:
-                        RainMeadow.Debug("AbstractBugEgg not handled");
-                        return new OnlinePhysicalObject(opoDef, abstractBugEgg);
-                    case AbstractCreature ac:
-                        var acDef = new OnlineCreatureDefinition(ac.ID.RandomSeed, ac.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
-                        return new OnlineCreature(acDef, ac);
-                    default:
-                        return new OnlinePhysicalObject(opoDef, apo);
-                    case null:
-                        throw new ArgumentNullException(nameof(apo));
-                }
+            switch (apo)
+            {
+                case AbstractSpear:
+                    //may break with downpour
+                    return new OnlinePhysicalObject(opoDef, apo);
+                case VultureMask.AbstractVultureMask:
+                    //May break with downpour
+                    return new OnlinePhysicalObject(opoDef, apo);
+                case EggBugEgg.AbstractBugEgg abstractBugEgg:
+                    RainMeadow.Debug("AbstractBugEgg not handled");
+                    return new OnlinePhysicalObject(opoDef, abstractBugEgg);
+                case BubbleGrass.AbstractBubbleGrass abg:
+                    var abgDef = new OnlineBubbleGrassDefinition(new OnlineConsumableDefinition(opoDef, abg), abg);
+                    return new OnlineBubbleGrass(abgDef, abg);
+                case SeedCob.AbstractSeedCob asc:
+                    var ascDef = new OnlineSeedCobDefinition(new OnlineConsumableDefinition(opoDef, asc), asc);
+                    return new OnlineSeedCob(ascDef, asc);
+                case SporePlant.AbstractSporePlant asp:
+                    var aspDef = new OnlineSporePlantDefinition(new OnlineConsumableDefinition(opoDef, asp), asp);
+                    return new OnlineSporePlant(aspDef, asp);
+                case WaterNut.AbstractWaterNut awn:
+                    return new OnlineConsumable(new OnlineConsumableDefinition(opoDef, awn), awn);
+                case PebblesPearl.AbstractPebblesPearl app:
+                    var appDef = new OnlinePebblesPearlDefinition(new OnlineConsumableDefinition(opoDef, app), app);
+                    return new OnlinePebblesPearl(appDef, app);
+                case AbstractCreature ac:
+                    var acDef = new OnlineCreatureDefinition(ac.ID.RandomSeed, ac.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+                    return new OnlineCreature(acDef, ac);
+                case AbstractConsumable acm:
+                    var ocmDef = new OnlineConsumableDefinition(opoDef, acm);
+                    return new OnlineConsumable(ocmDef, acm);
+                default:
+                    return new OnlinePhysicalObject(opoDef, apo);
+                case null:
+                    throw new ArgumentNullException(nameof(apo));
             }
         }
 
