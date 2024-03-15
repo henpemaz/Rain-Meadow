@@ -8,7 +8,13 @@ namespace RainMeadow
     {
         public static string[] GetActiveMods()
         {
-            return ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().Select(mod => mod.id.ToString()).ToArray();
+            var suffer = ModManager.ActiveMods.Select(mod => mod.id.ToString()).ToArray();
+            foreach (string mod in suffer)
+            {
+                RainMeadow.Debug("MY MODS:" + mod);
+            }
+
+            return ModManager.ActiveMods.Select(mod => mod.id.ToString()).ToArray();
         }
 
         internal static void CheckMods(string[] lobbyMods, string[] localMods)
