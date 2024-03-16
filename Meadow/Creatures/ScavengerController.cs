@@ -4,6 +4,7 @@ using System;
 using UnityEngine;
 using RWCustom;
 using Mono.Cecil.Cil;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -54,6 +55,28 @@ namespace RainMeadow
                         self.moving |= (s as ScavengerController).forceMoving;
                     }
                 });
+
+
+                // Act() line 605 this.connections.Count > 2
+                c.Index = 0;
+                ILLabel run = null;
+                c.GotoNext(MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<Scavenger>("connections"),
+                    i => i.MatchCallOrCallvirt(out _),
+                    i => i.MatchLdcI4(2),
+                    i => i.MatchBgt(out run)
+                    );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((Scavenger self) => {
+                    if (creatureControllers.TryGetValue(self.abstractCreature, out var s))
+                    {
+                        return self.connections.Count > 0 && (s as ScavengerController).forceMoving;
+                    }
+                    return false;
+                });
+                c.Emit(OpCodes.Brtrue, run);
+
             }
             catch (Exception e)
             {
@@ -276,7 +299,7 @@ namespace RainMeadow
         protected override void Moving(float magnitude)
         {
             scavenger.AI.behavior = ScavengerAI.Behavior.Travel;
-            scavenger.AI.runSpeedGoal = Custom.LerpAndTick(scavenger.AI.runSpeedGoal, 0.8f * magnitude, 0.2f, 0.05f);
+            scavenger.AI.runSpeedGoal = Custom.LerpAndTick(scavenger.AI.runSpeedGoal, 0.8f * Mathf.Pow(magnitude, 2f), 0.2f, 0.05f);
             forceMoving = true;
             scavenger.stuckCounter = 5;
         }
