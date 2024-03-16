@@ -24,7 +24,7 @@ namespace RainMeadow
 
         }
 
-        public virtual WorldCoordinate pathfindingOrigin
+        public virtual WorldCoordinate CurrentPathfindingPosition
         {
             get
             {
@@ -32,7 +32,7 @@ namespace RainMeadow
             }
         }
 
-        internal virtual bool FindDestination(WorldCoordinate basecoord, out WorldCoordinate toPos)
+        internal virtual bool FindDestination(WorldCoordinate basecoord, out WorldCoordinate toPos, out float magnitude)
         {
 
             var room = creature.room;
@@ -41,16 +41,16 @@ namespace RainMeadow
 
             var template = creature.Template;
 
-            var aiTile0 = creature.room.aimap.getAItile(chunks[0].pos);
-            var aiTile1 = creature.room.aimap.getAItile(chunks[1].pos);
             var tile0 = creature.room.GetTile(chunks[0].pos);
             var tile1 = creature.room.GetTile(chunks[1].pos);
 
             bool localTrace = Input.GetKey(KeyCode.L);
 
-            toPos = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir * 1.42f));
+            toPos = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir.normalized * 1.42f));
+            magnitude = 0.5f;
             var previousAccessibility = room.aimap.getAItile(basecoord).acc;
 
+            var currentTile = room.GetTile(basecoord);
             var currentAccessibility = room.aimap.getAItile(toPos).acc;
             var currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
 
@@ -63,9 +63,9 @@ namespace RainMeadow
             }
 
             // problematic when climbing
-            if (creature.mainBodyChunk.vel.y < -1 && this.input[0].y > 0 && tile0.AnyBeam) // maybe "no footing" condition?
+            if (this.input[0].y > 0 && (tile0.AnyBeam || tile1.AnyBeam)) // maybe "no footing" condition?
             {
-                GripPole(tile0);
+                GripPole(tile0.AnyBeam ? tile0 : tile1);
             }
 
             // prio 1: entering shortcut
@@ -112,7 +112,7 @@ namespace RainMeadow
             }
 
             // prio 2: climb
-            if (this.input[0].y > 0 && previousAccessibility <= AItile.Accessibility.Climb || tile0.WaterSurface)
+            if (this.input[0].y > 0 && previousAccessibility <= AItile.Accessibility.Climb || currentTile.WaterSurface)
             {
                 bool climbing = false;
                 for (int i = 0; i < 3; i++)
@@ -175,34 +175,34 @@ namespace RainMeadow
                         currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
                     }
 
-                    // not pulling the stick hard
-                    if (currentLegality <= PathCost.Legality.Unwanted && inputDir.magnitude < 0.75f)
+                    if (inputDir.magnitude > 0.75f)
                     {
-                        return true;
-                    }
-
-                    // if can reach further out, it goes faster and smoother
-                    furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir * 3f));
-                    if (room.aimap.TileAccessibleToCreature(furtherOut.Tile, creature.Template) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile, 6) > 0)
-                    {
-                        if (localTrace) RainMeadow.Debug("reaching further");
-                        toPos = furtherOut;
-                        currentAccessibility = room.aimap.getAItile(toPos).acc;
-                        currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
-                    }
-                    else if (room.aimap.TileAccessibleToCreature(furtherOut.Tile + new IntVector2(0, 1), creature.Template) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, 1), 6) > 0)
-                    {
-                        if (localTrace) RainMeadow.Debug("further up");
-                        toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, 1));
-                        currentAccessibility = room.aimap.getAItile(toPos).acc;
-                        currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
-                    }
-                    else if (room.aimap.TileAccessibleToCreature(furtherOut.Tile + new IntVector2(0, -1), creature.Template) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, -1), 6) > 0)
-                    {
-                        if (localTrace) RainMeadow.Debug("further down");
-                        toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, -1));
-                        currentAccessibility = room.aimap.getAItile(toPos).acc;
-                        currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
+                        // if can reach further out, it goes faster and smoother
+                        furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir.normalized * 3f));
+                        if (room.aimap.TileAccessibleToCreature(furtherOut.Tile, creature.Template) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile, 6) > 0)
+                        {
+                            if (localTrace) RainMeadow.Debug("reaching further");
+                            toPos = furtherOut;
+                            magnitude = 1f;
+                            currentAccessibility = room.aimap.getAItile(toPos).acc;
+                            currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
+                        }
+                        else if (room.aimap.TileAccessibleToCreature(furtherOut.Tile + new IntVector2(0, 1), creature.Template) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, 1), 6) > 0)
+                        {
+                            if (localTrace) RainMeadow.Debug("further up");
+                            toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, 1));
+                            magnitude = 1f;
+                            currentAccessibility = room.aimap.getAItile(toPos).acc;
+                            currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
+                        }
+                        else if (room.aimap.TileAccessibleToCreature(furtherOut.Tile + new IntVector2(0, -1), creature.Template) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, -1), 6) > 0)
+                        {
+                            if (localTrace) RainMeadow.Debug("further down");
+                            toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, -1));
+                            magnitude = 1f;
+                            currentAccessibility = room.aimap.getAItile(toPos).acc;
+                            currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
+                        }
                     }
                 }
                 else
@@ -227,13 +227,17 @@ namespace RainMeadow
                         currentAccessibility = room.aimap.getAItile(toPos).acc;
                         currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
                     }
-                    furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir * 2.2f));
-                    if (!room.GetTile(toPos).Solid && !room.GetTile(furtherOut).Solid && room.aimap.TileAccessibleToCreature(furtherOut.Tile, creature.Template)) // ahead unblocked, move further
+                    if (inputDir.magnitude > 0.75f)
                     {
-                        if (localTrace) RainMeadow.Debug("reaching");
-                        toPos = furtherOut;
-                        currentAccessibility = room.aimap.getAItile(toPos).acc;
-                        currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
+                        furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir.normalized * 2.2f));
+                        if (!room.GetTile(toPos).Solid && !room.GetTile(furtherOut).Solid && room.aimap.TileAccessibleToCreature(furtherOut.Tile, creature.Template)) // ahead unblocked, move further
+                        {
+                            if (localTrace) RainMeadow.Debug("reaching");
+                            toPos = furtherOut;
+                            magnitude = 1f;
+                            currentAccessibility = room.aimap.getAItile(toPos).acc;
+                            currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
+                        }
                     }
                 }
 
@@ -242,13 +246,13 @@ namespace RainMeadow
                 while (targetAccessibility < AItile.Accessibility.Solid) higherAcc |= template.AccessibilityResistance(++targetAccessibility).Allowed;
                 if (currentLegality > PathCost.Legality.Unwanted && higherAcc)
                 {
-                    // run again
+                    // not found, run again
                     continue;
                 }
                 break;
             }
 
-            if (currentLegality <= PathCost.Legality.Unwanted)
+            if (currentLegality <= PathCost.Legality.Unwanted) // found
             {
                 return true;
             }
@@ -257,7 +261,7 @@ namespace RainMeadow
                 // no pathing
                 if (localTrace) RainMeadow.Debug("unpathable");
                 // don't let go of beams/walls/ceilings
-                if (room.aimap.TileAccessibleToCreature(tile0.X, tile0.Y, creature.Template) && aiTile0.acc >= AItile.Accessibility.Climb)// && self.inAllowedTerrainCounter > 10)
+                if (room.aimap.TileAccessibleToCreature(currentTile.X, currentTile.Y, creature.Template) && currentAccessibility >= AItile.Accessibility.Climb)
                 {
                     if (localTrace) RainMeadow.Debug("staying in climb");
                     return false;
@@ -364,19 +368,7 @@ namespace RainMeadow
                 this.jumpBoost = 0f;
             }
 
-            // facing
-            if (Mathf.Abs(Vector2.Dot(Vector2.right, (chunks[0].pos - chunks[1].pos).normalized)) > 0.5f)
-            {
-                this.flipDirection = (chunks[0].pos.x > chunks[1].pos.x) ? 1 : -1;
-            }
-            else if (input[0].x != 0)
-            {
-                this.flipDirection = this.input[0].x;
-            }
-            else if (Mathf.Abs(specialInput[0].direction.x) > 0.2f)
-            {
-                this.flipDirection = (int)Mathf.Sign(specialInput[0].direction.x);
-            }
+            this.flipDirection = GetFlip();
 
             //// lost footing doesn't auto-recover
             //if (self.inAllowedTerrainCounter < 10)
@@ -389,8 +381,8 @@ namespace RainMeadow
 
             // move
             //var basepos = 0.5f * (self.bodyChunks[0].pos + self.bodyChunks[1].pos);
-            
-            var basecoord = pathfindingOrigin;
+
+            var basecoord = CurrentPathfindingPosition;
             if (this.inputDir != Vector2.zero)
             {
                 if (specialInput[0].direction.magnitude < 0.2f)
@@ -398,10 +390,10 @@ namespace RainMeadow
                     LookImpl(creature.DangerPos + 200 * inputDir);
                 }
                 // todo have remote send us this instead of pathfinding for remote entities
-                if (FindDestination(basecoord, out var toPos))
+                if (FindDestination(basecoord, out var toPos, out float magnitude))
                 {
-                    Moving();
-                    if(toPos != creature.abstractCreature.abstractAI.destination)
+                    Moving(magnitude);
+                    if (toPos != creature.abstractCreature.abstractAI.destination)
                     {
                         if (localTrace) RainMeadow.Debug($"new destination {toPos.Tile}");
                         this.ForceAIDestination(toPos);
@@ -423,11 +415,30 @@ namespace RainMeadow
             }
         }
 
+        protected virtual int GetFlip()
+        {
+            BodyChunk[] chunks = creature.bodyChunks;
+            // facing
+            if (Mathf.Abs(Vector2.Dot(Vector2.right, (chunks[0].pos - chunks[1].pos).normalized)) > 0.5f)
+            {
+                return (chunks[0].pos.x > chunks[1].pos.x) ? 1 : -1;
+            }
+            else if (input[0].x != 0)
+            {
+                return this.input[0].x;
+            }
+            else if (Mathf.Abs(specialInput[0].direction.x) > 0.2f)
+            {
+                return (int)Mathf.Sign(specialInput[0].direction.x);
+            }
+            return flipDirection;
+        }
+
         protected abstract void Resting();
         protected abstract void GripPole(Room.Tile tile0);
         protected abstract void ClearMovementOverride();
         protected abstract void MovementOverride(MovementConnection movementConnection);
-        protected abstract void Moving();
+        protected abstract void Moving(float magnitude);
 
 
         public override void CheckInput()

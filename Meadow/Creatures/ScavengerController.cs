@@ -28,7 +28,7 @@ namespace RainMeadow
             {
                 if (origin == self.AI.pathFinder.destination) // return null; // such a silly behavior...
                     // actually scav NEEDS an upcoming connection wtf??
-                    return new MovementConnection(MovementConnection.MovementType.Standard, origin, WorldCoordinate.AddIntVector(origin, new IntVector2(0, 1)), 1);
+                    return new MovementConnection(MovementConnection.MovementType.Standard, origin, WorldCoordinate.AddIntVector(origin, new IntVector2(s.input[0].x, s.input[0].y)), 1);
             }
 
             return orig(self, origin, actuallyFollowingThisPath);
@@ -51,7 +51,7 @@ namespace RainMeadow
                 c.EmitDelegate((Scavenger self) => {
                     if (creatureControllers.TryGetValue(self.abstractCreature, out var s))
                     {
-                        self.moving = (s as ScavengerController).forceMoving;
+                        self.moving |= (s as ScavengerController).forceMoving;
                     }
                 });
             }
@@ -80,7 +80,7 @@ namespace RainMeadow
 
         public Scavenger scavenger => creature as Scavenger;
 
-        private static MovementConnection nullConnection = new MovementConnection(MovementConnection.MovementType.Standard, new WorldCoordinate(-1, -1, -1, -1), new WorldCoordinate(-1, -1, -1, -1), 1);
+        //private static MovementConnection nullConnection = new MovementConnection(MovementConnection.MovementType.Standard, new WorldCoordinate(-1, -1, -1, -1), new WorldCoordinate(-1, -1, -1, -1), 1);
 
         public override bool GrabImpl(PhysicalObject pickUpCandidate)
         {
@@ -254,7 +254,7 @@ namespace RainMeadow
 
         public override bool CanGroundJump => (scavenger.movMode == Scavenger.MovementMode.Run || scavenger.movMode == Scavenger.MovementMode.StandStill) && (creature.bodyChunks[1].contactPoint.y == -1 || creature.bodyChunks[2].contactPoint.y == -1 || creature.IsTileSolid(1, 0, -1) || creature.IsTileSolid(2, 0, -1));
 
-        public override WorldCoordinate pathfindingOrigin
+        public override WorldCoordinate CurrentPathfindingPosition
         {
             get
             {
@@ -262,14 +262,21 @@ namespace RainMeadow
                 {
                     return creature.room.GetWorldCoordinate(scavenger.occupyTile);
                 }
-                return base.pathfindingOrigin;
+                return base.CurrentPathfindingPosition;
             }
         }
 
-        protected override void Moving()
+        protected override int GetFlip()
+        {
+            int newFlip = (int) Mathf.Sign(scavenger.flip);
+            if (newFlip != 0) return newFlip;
+            return flipDirection;
+        }
+
+        protected override void Moving(float magnitude)
         {
             scavenger.AI.behavior = ScavengerAI.Behavior.Travel;
-            scavenger.AI.runSpeedGoal = Custom.LerpAndTick(scavenger.AI.runSpeedGoal, 0.8f, 0.2f, 0.05f);
+            scavenger.AI.runSpeedGoal = Custom.LerpAndTick(scavenger.AI.runSpeedGoal, 0.8f * magnitude, 0.2f, 0.05f);
             forceMoving = true;
             scavenger.stuckCounter = 5;
         }
@@ -278,7 +285,7 @@ namespace RainMeadow
         {
             scavenger.AI.behavior = ScavengerAI.Behavior.Idle;
             scavenger.AI.runSpeedGoal = Custom.LerpAndTick(scavenger.AI.runSpeedGoal, 0.0f, 0.4f, 0.1f);
-            scavenger.commitedToMove = nullConnection;
+            scavenger.commitToMoveCounter = 0;
             forceMoving = false;
             //scavenger.movMode = Scavenger.MovementMode.StandStill;
             scavenger.stuckCounter = 5;
@@ -288,24 +295,26 @@ namespace RainMeadow
         {
             scavenger.commitedToMove = movementConnection;
             scavenger.commitToMoveCounter = 20;
+            scavenger.commitedMoveFollowChunk = 1;
             //scavenger.drop = true;
             forceMoving = true;
         }
 
         protected override void ClearMovementOverride()
         {
-            scavenger.commitedToMove = nullConnection;
+            scavenger.commitToMoveCounter = 0;
         }
 
         protected override void GripPole(Room.Tile tile0)
         {
-            if(scavenger.swingPos == null)
+            if(scavenger.swingPos == null && scavenger.nextSwingPos == null && creature.mainBodyChunk.vel.y < 0)
             {
                 scavenger.swingPos = creature.room.MiddleOfTile(tile0.X, tile0.Y);
                 scavenger.swingRadius = 10f;
                 scavenger.swingClimbCounter = 10;
                 scavenger.movMode = Scavenger.MovementMode.Climb;
-                //creature.bodyChunks[1].vel = Vector2.zero;
+                scavenger.drop = false;
+                creature.mainBodyChunk.vel.y = 0f;
             }
         }
 

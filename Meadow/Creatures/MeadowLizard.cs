@@ -324,10 +324,10 @@ namespace RainMeadow
             (lizard.graphicsModule as LizardGraphics).lookPos = pos;
         }
 
-        protected override void Moving()
+        protected override void Moving(float magnitude)
         {
             lizard.AI.behavior = LizardAI.Behavior.Travelling;
-            lizard.AI.runSpeed = Custom.LerpAndTick(lizard.AI.runSpeed, 0.8f, 0.2f, 0.05f);
+            lizard.AI.runSpeed = Custom.LerpAndTick(lizard.AI.runSpeed, 0.8f * magnitude, 0.2f, 0.05f);
             lizard.AI.excitement = Custom.LerpAndTick(lizard.AI.excitement, 0.5f, 0.1f, 0.05f);
 
             var tile0 = creature.room.GetTile(creature.bodyChunks[0].pos);
