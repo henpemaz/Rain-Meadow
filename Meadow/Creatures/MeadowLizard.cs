@@ -3,6 +3,7 @@ using System;
 using RWCustom;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
+using static UnityEngine.UI.Image;
 
 namespace RainMeadow
 {
@@ -12,11 +13,13 @@ namespace RainMeadow
 
         public Lizard lizard => creature as Lizard;
 
-        public override bool CanClimbJump => lizard.LegsGripping >= 2 && (creature.room.aimap.getAItile(creature.bodyChunks[0].pos).acc is AItile.Accessibility.Wall or AItile.Accessibility.Ceiling);
+        public override bool CanClimbJump => !lizard.applyGravity && !CanGroundJump;
 
         public override bool CanPoleJump => lizard.LegsGripping >= 2 && (creature.room.aimap.getAItile(creature.bodyChunks[0].pos).acc == AItile.Accessibility.Climb && creature.room.GetTile(creature.bodyChunks[0].pos).AnyBeam);
 
         public override bool CanGroundJump => lizard.LegsGripping >= 2 && (creature.bodyChunks[0].contactPoint.y == -1 || creature.bodyChunks[1].contactPoint.y == -1 || creature.IsTileSolid(1, 0, -1) || creature.IsTileSolid(0, 0, -1));
+
+        public override bool HasFooting => CanGroundJump;
 
         public override bool GrabImpl(PhysicalObject pickUpCandidate)
         {
@@ -73,7 +76,8 @@ namespace RainMeadow
         {
             if (creatureControllers.TryGetValue(self.creature, out var c) && c is LizardController l)
             {
-                if (originPos == self.destination) return null; // such a silly behavior...
+                if (originPos == self.destination)// return null; // such a silly behavior...
+                    return new MovementConnection(MovementConnection.MovementType.Standard, originPos, WorldCoordinate.AddIntVector(originPos, new IntVector2(l.input[0].x, l.input[0].y)), 1);
             }
 
             return orig(self, originPos, bodyDirection, actuallyFollowingThisPath);
@@ -261,6 +265,19 @@ namespace RainMeadow
                     return;
                 }// no climb boost
             }
+            else if (canGroundJump > 0)
+            {
+                RainMeadow.Debug("lizard normal jump");
+                lizard.movementAnimation = null;
+                lizard.inAllowedTerrainCounter = 10; // regain footing faster
+                lizard.gripPoint = null;
+                this.jumpBoost = 8;
+                cs[0].vel.y = 5f;
+                cs[1].vel.y = 5f;
+                cs[2].vel.y = 3f;
+
+                creature.room.PlaySound(SoundID.Slugcat_Normal_Jump, mainBodyChunk, false, 1f, 1f);
+            }
             else if (canClimbJump > 0)
             {
                 RainMeadow.Debug("lizard climb jump");
@@ -275,19 +292,6 @@ namespace RainMeadow
                     chunk.vel += jumpdir;
                 }
                 creature.room.PlaySound(SoundID.Slugcat_Wall_Jump, mainBodyChunk, false, 1f, 1f);
-            }
-            else if (canGroundJump > 0)
-            {
-                RainMeadow.Debug("lizard normal jump");
-                lizard.movementAnimation = null;
-                lizard.inAllowedTerrainCounter = 10; // regain footing faster
-                lizard.gripPoint = null;
-                this.jumpBoost = 8;
-                cs[0].vel.y = 5f;
-                cs[1].vel.y = 5f;
-                cs[2].vel.y = 3f;
-
-                creature.room.PlaySound(SoundID.Slugcat_Normal_Jump, mainBodyChunk, false, 1f, 1f);
             }
             else throw new InvalidProgrammerException("can't jump");
         }
@@ -374,6 +378,7 @@ namespace RainMeadow
         protected override void MovementOverride(MovementConnection movementConnection)
         {
             lizard.commitedToDropConnection = movementConnection;
+            lizard.inAllowedTerrainCounter = 0;
         }
 
         protected override void ClearMovementOverride()

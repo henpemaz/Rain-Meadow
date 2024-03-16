@@ -277,6 +277,8 @@ namespace RainMeadow
 
         public override bool CanGroundJump => (scavenger.movMode == Scavenger.MovementMode.Run || scavenger.movMode == Scavenger.MovementMode.StandStill) && (creature.bodyChunks[1].contactPoint.y == -1 || creature.bodyChunks[2].contactPoint.y == -1 || creature.IsTileSolid(1, 0, -1) || creature.IsTileSolid(2, 0, -1));
 
+        public override bool HasFooting => CanGroundJump;
+
         public override WorldCoordinate CurrentPathfindingPosition
         {
             get

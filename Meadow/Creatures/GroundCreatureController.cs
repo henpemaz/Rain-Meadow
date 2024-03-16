@@ -14,6 +14,7 @@ namespace RainMeadow
         protected int canClimbJump;
         public int superLaunchJump;
 
+        public abstract bool HasFooting { get; }
         public abstract bool CanClimbJump { get; }
         public abstract bool CanPoleJump { get; }
         public abstract bool CanGroundJump { get; }
@@ -261,21 +262,10 @@ namespace RainMeadow
                 // no pathing
                 if (localTrace) RainMeadow.Debug("unpathable");
                 // don't let go of beams/walls/ceilings
-                if (room.aimap.TileAccessibleToCreature(currentTile.X, currentTile.Y, creature.Template) && currentAccessibility >= AItile.Accessibility.Climb)
-                {
-                    if (localTrace) RainMeadow.Debug("staying in climb");
-                    return false;
-                }
-                //else if (room.aimap.getAItile(furtherOut).acc < AItile.Accessibility.Solid) // force movement // oops this goes too far and too fast
-                //{
-                //    toPos = furtherOut;
-                //    if (localTrace) RainMeadow.Debug("forced move to " + toPos.Tile);
-                //    this.MovementOverride(new MovementConnection(MovementConnection.MovementType.DropToFloor, basecoord, toPos, 2));
-                //    return true;
-                //}
-                else if (room.aimap.getAItile(toPos).acc < AItile.Accessibility.Solid) // force movement
+                if (HasFooting && room.aimap.getAItile(toPos).acc < AItile.Accessibility.Solid) // force movement
                 {
                     if (localTrace) RainMeadow.Debug("forced move to " + toPos.Tile);
+                    magnitude = 1f;
                     this.MovementOverride(new MovementConnection(MovementConnection.MovementType.DropToFloor, basecoord, toPos, 1));
                     return true;
                 }
@@ -307,12 +297,12 @@ namespace RainMeadow
                 RainMeadow.Trace("can swing jump");
                 this.canClimbJump = 5;
             }
-            else if (CanPoleJump)
+            if (CanPoleJump)
             {
                 RainMeadow.Trace("can pole jump");
                 this.canPoleJump = 5;
             }
-            else if (CanGroundJump)
+            if (CanGroundJump)
             {
                 RainMeadow.Trace("can jump");
                 this.canGroundJump = 5;
