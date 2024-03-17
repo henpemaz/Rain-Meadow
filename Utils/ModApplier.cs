@@ -50,17 +50,20 @@ namespace RainMeadow
             }
         }
 
-        public void ShowConfirmation(List<ModManager.Mod> modsToEnable, List<ModManager.Mod> modsToDisable, List<string> unknownMods)
+        public bool ShowConfirmation(List<ModManager.Mod> modsToEnable, List<ModManager.Mod> modsToDisable, List<string> unknownMods)
         {
-            string text = "Mod mismatch detected" + Environment.NewLine;
+            string text = "Mod mismatch detected." + Environment.NewLine;
 
             if (modsToEnable.Count > 0) text += Environment.NewLine + "Mods that will be enabled: " + string.Join(", ", modsToEnable.ConvertAll(mod => mod.LocalizedName));
             if (modsToDisable.Count > 0) text += Environment.NewLine + "Mods that will be disabled: " + string.Join(", ", modsToDisable.ConvertAll(mod => mod.LocalizedName));
             if (unknownMods.Count > 0) text += Environment.NewLine + "Unable to find those mods, please install them: " + string.Join(", ", unknownMods);
 
+            text += Environment.NewLine + Environment.NewLine + "Rain World will be restarted for these changes to take effect";
+
             requiresRestartDialog = new DialogNotify(text, new Vector2(480f, 320f), manager, () => { Start(false); });
             
             manager.ShowDialog(requiresRestartDialog);
+            return false;
         }
 
         public new void Start(bool filesInBadState)
@@ -71,10 +74,6 @@ namespace RainMeadow
                 manager.ShowNextDialog();
                 requiresRestartDialog = null;
             }
-
-            dialogBox = new DialogAsyncWait(menu, "Applying mods...", new Vector2(480f, 320f));
-
-            manager.ShowDialog(dialogBox);
 
             base.Start(filesInBadState);
         }
