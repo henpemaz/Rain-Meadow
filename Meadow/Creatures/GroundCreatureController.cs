@@ -381,36 +381,66 @@ namespace RainMeadow
             // move
             //var basepos = 0.5f * (self.bodyChunks[0].pos + self.bodyChunks[1].pos);
 
-            
-            var basecoord = CurrentPathfindingPosition;
-            if (!lockInPlace && this.inputDir != Vector2.zero)
+            if (onlineCreature.isMine)
             {
-                if (specialInput[0].direction.magnitude < 0.2f)
+                var mcd = onlineCreature.GetData<MeadowCreatureData>();
+                var basecoord = CurrentPathfindingPosition;
+                if (!lockInPlace && this.inputDir != Vector2.zero)
                 {
-                    LookImpl(creature.DangerPos + 200 * inputDir);
-                }
-                // todo have remote send us this instead of pathfinding for remote entities
-                if (FindDestination(basecoord, out var toPos, out float magnitude))
-                {
-                    Moving(magnitude);
-                    if (toPos != creature.abstractCreature.abstractAI.destination)
+                    if (specialInput[0].direction.magnitude < 0.2f)
                     {
-                        if (localTrace) RainMeadow.Debug($"new destination {toPos.Tile}");
-                        this.ForceAIDestination(toPos);
+                        LookImpl(creature.DangerPos + 200 * inputDir);
+                    }
+                    // todo have remote send us this instead of pathfinding for remote entities
+                    if (FindDestination(basecoord, out var toPos, out float magnitude))
+                    {
+                        Moving(magnitude);
+                        mcd.moveSpeed = magnitude;
+                        if (toPos != creature.abstractCreature.abstractAI.destination)
+                        {
+                            if (localTrace) RainMeadow.Debug($"new destination {toPos.Tile}");
+                            this.ForceAIDestination(toPos);
+                            mcd.destination = toPos;
+                        }
+                    }
+                    else
+                    {
+                        Resting();
+                        mcd.moveSpeed = 0f;
+                        if (basecoord != creature.abstractCreature.abstractAI.destination)
+                        {
+                            if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"resting at {basecoord.Tile}");
+                            this.ForceAIDestination(basecoord);
+                            mcd.destination = basecoord;
+                        }
                     }
                 }
                 else
                 {
                     Resting();
+                    mcd.moveSpeed = 0f;
+                    if (basecoord != creature.abstractCreature.abstractAI.destination)
+                    {
+                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"resting at {basecoord.Tile}");
+                        this.ForceAIDestination(basecoord);
+                        mcd.destination = basecoord;
+                    }
                 }
             }
             else
             {
-                Resting();
-                if (basecoord != creature.abstractCreature.abstractAI.destination)
+                var mcd = onlineCreature.GetData<MeadowCreatureData>();
+                if (mcd.moveSpeed > 0f)
                 {
-                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"resting at {basecoord.Tile}");
-                    this.ForceAIDestination(basecoord);
+                    Moving(mcd.moveSpeed);
+                }
+                else
+                {
+                    Resting();
+                }
+                if (mcd.destination != creature.abstractCreature.abstractAI.destination)
+                {
+                    this.ForceAIDestination(mcd.destination);
                 }
             }
 

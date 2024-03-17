@@ -242,9 +242,24 @@ namespace RainMeadow
             return specialInput;
         }
 
-        public struct SpecialInput
+        public struct SpecialInput : Serializer.ICustomSerializable
         {
             public Vector2 direction;
+
+            public void CustomSerialize(Serializer serializer)
+            {
+                serializer.SerializeHalf(ref direction.x);
+                serializer.SerializeHalf(ref direction.y);
+            }
+
+            public static bool operator ==(SpecialInput self, SpecialInput other)
+            {
+                return self.direction == other.direction;
+            }
+            public static bool operator !=(SpecialInput self, SpecialInput other)
+            {
+                return self.direction != other.direction;
+            }
         }
 
         private void Blink(int blink)
@@ -431,7 +446,7 @@ namespace RainMeadow
             }
 
             // cheats
-            if (creature.room != null && creature.room.game.devToolsActive)
+            if (creature.room != null && creature.room.game.devToolsActive && onlineCreature.isMine)
             {
                 // relevant to story
                 //if (Input.GetKey("q") && !this.FLYEATBUTTON)
@@ -464,6 +479,17 @@ namespace RainMeadow
 
         public virtual void ForceAIDestination(WorldCoordinate coord)
         {
+            if (onlineCreature.isMine)
+            {
+                if (onlineCreature.TryGetData<MeadowCreatureData>(out var mcd))
+                {
+                    mcd.destination = coord;
+                }
+                else
+                {
+                    throw new InvalidProgrammerException("Missing mcd");
+                }
+            }
             var absAI = creature.abstractCreature.abstractAI;
             var realAI = absAI.RealAI;
             absAI.SetDestination(coord);
@@ -710,7 +736,10 @@ namespace RainMeadow
             var chunks = creature.bodyChunks;
             var nc = chunks.Length;
 
-            GrabUpdate();
+            if (onlineCreature.isMine)
+            {
+                GrabUpdate();
+            }
 
             if (this.specialInput[0].direction != Vector2.zero)
             {

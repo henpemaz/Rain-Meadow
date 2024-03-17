@@ -38,6 +38,7 @@ player grabbing cicada = laggy physics
 tint color slider/picker doesnt work on controller / done
 
 really hard to enter pipe sometimes
+	still the case, needs body shrinkage?
 
 lizard todo
 - charge
@@ -46,14 +47,16 @@ lizard todo
 - find a good seed for our buddies
 
 lizard still bites cicada
+	// how?
 lizard on first load doesn't get colors assigned ?? firstload in realize room vs load far and walk in?
 	
 blue lizard make it prefer ground
 	work as non-climber unless UP
+	/ reworked so will preferr "keepig same acessibility as current path"
 
 playable scav
-- up a pole sucks
-- go through floors
+- up a pole sucks // done
+- go through floors // done?
 
 slugcat in meadow mode
 - lookdir input like the others
