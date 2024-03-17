@@ -10,6 +10,8 @@ namespace RainMeadow
         public DialogAsyncWait dialogBox;
         public DialogNotify requiresRestartDialog;
         private readonly Menu.Menu menu;
+        private List<ModManager.Mod> modsToEnable;
+        private List<ModManager.Mod> modsToDisable;
 
         public event Action<ModApplier> OnFinish;
 
@@ -54,14 +56,27 @@ namespace RainMeadow
         {
             string text = "Mod mismatch detected." + Environment.NewLine;
 
-            if (modsToEnable.Count > 0) text += Environment.NewLine + "Mods that will be enabled: " + string.Join(", ", modsToEnable.ConvertAll(mod => mod.LocalizedName));
-            if (modsToDisable.Count > 0) text += Environment.NewLine + "Mods that will be disabled: " + string.Join(", ", modsToDisable.ConvertAll(mod => mod.LocalizedName));
-            if (unknownMods.Count > 0) text += Environment.NewLine + "Unable to find those mods, please install them: " + string.Join(", ", unknownMods);
+            if (modsToEnable.Count > 0)
+            {
+                text += Environment.NewLine + "Mods that will be enabled: " + string.Join(", ", modsToEnable.ConvertAll(mod => mod.LocalizedName));
+                this.modsToEnable = modsToEnable;
+            }
+            if (modsToDisable.Count > 0)
+            {
+                text += Environment.NewLine + "Mods that will be disabled: " + string.Join(", ", modsToDisable.ConvertAll(mod => mod.LocalizedName));
+            }   this.modsToDisable = modsToDisable;
+            if (unknownMods.Count > 0)
+            {
+                text += Environment.NewLine + "Unable to find those mods, please install them: " + string.Join(", ", unknownMods);
+            }
 
             text += Environment.NewLine + Environment.NewLine + "Rain World will be restarted for these changes to take effect";
 
-            requiresRestartDialog = new DialogNotify(text, new Vector2(480f, 320f), manager, () => { Start(false); });
-            
+            requiresRestartDialog = new DialogNotify(text, new Vector2(480f, 320f), manager, () =>
+            {
+                Start(false);
+            });
+
             manager.ShowDialog(requiresRestartDialog);
             return false;
         }
@@ -73,6 +88,17 @@ namespace RainMeadow
                 manager.dialog = null;
                 manager.ShowNextDialog();
                 requiresRestartDialog = null;
+            }
+
+            foreach(ModManager.Mod mod in this.modsToDisable)
+            {
+                ModManager.ActiveMods.Remove(mod);
+                RainMeadow.Debug($"Disabled mod: {mod.name}");
+            }
+            foreach(ModManager.Mod mod in this.modsToEnable)
+            {
+                ModManager.ActiveMods.Add(mod);
+                RainMeadow.Debug($"Enabled mod: {mod.name}");
             }
 
             base.Start(filesInBadState);
