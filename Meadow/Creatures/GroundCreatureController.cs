@@ -13,6 +13,7 @@ namespace RainMeadow
         protected int canPoleJump;
         protected int canClimbJump;
         public int superLaunchJump;
+        public bool lockInPlace;
 
         public abstract bool HasFooting { get; }
         public abstract bool CanClimbJump { get; }
@@ -318,6 +319,14 @@ namespace RainMeadow
                     {
                         this.superLaunchJump++;
                     }
+                    else
+                    {
+                        lockInPlace = true;
+                    }
+                    if (this.superLaunchJump > 10)
+                    {
+                        lockInPlace = true;
+                    }
                 }
                 if (!this.input[0].jmp && this.input[1].jmp)
                 {
@@ -372,8 +381,9 @@ namespace RainMeadow
             // move
             //var basepos = 0.5f * (self.bodyChunks[0].pos + self.bodyChunks[1].pos);
 
+            
             var basecoord = CurrentPathfindingPosition;
-            if (this.inputDir != Vector2.zero)
+            if (!lockInPlace && this.inputDir != Vector2.zero)
             {
                 if (specialInput[0].direction.magnitude < 0.2f)
                 {
@@ -403,6 +413,8 @@ namespace RainMeadow
                     this.ForceAIDestination(basecoord);
                 }
             }
+
+            lockInPlace = false;
         }
 
         protected virtual int GetFlip()
@@ -430,21 +442,6 @@ namespace RainMeadow
         protected abstract void MovementOverride(MovementConnection movementConnection);
         protected abstract void Moving(float magnitude);
 
-
-        public override void CheckInput()
-        {
-            base.CheckInput();
-            if (this.superLaunchJump > 10 && this.input[0].jmp && this.input[1].jmp && this.input[0].y < 1)
-            {
-                this.input[0].x = 0;
-                this.input[0].analogueDir.x *= 0;
-            }
-            else if (this.superLaunchJump >= 20)
-            {
-                this.input[0].x = 0;
-                this.input[0].analogueDir.x *= 0;
-            }
-        }
         internal override void Update(bool eu)
         {
             base.Update(eu);

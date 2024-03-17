@@ -257,13 +257,11 @@ namespace RainMeadow
             // Input
             this.CheckInput();
 
+            inputLastDir = inputDir;
             inputDir = input[0].analogueDir.magnitude > 0.2f ? input[0].analogueDir
                 : input[0].IntVec.ToVector2().magnitude > 0.2 ? input[0].IntVec.ToVector2().normalized
                 : Vector2.zero;
 
-            inputLastDir = input[1].analogueDir.magnitude > 0.2f ? input[1].analogueDir
-                : input[1].IntVec.ToVector2().magnitude > 0.2 ? input[1].IntVec.ToVector2().normalized
-                : Vector2.zero;
 
             // a lot of things copypasted from from p.update
             if (this.wantToJump > 0) this.wantToJump--;

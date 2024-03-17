@@ -66,7 +66,6 @@ namespace RainMeadow
             On.Lizard.AttemptBite += Lizard_AttemptBite;
             On.Lizard.DamageAttack += Lizard_DamageAttack;
 
-            //On.Lizard.FollowConnection += Lizard_FollowConnection;
 
             On.LizardPather.FollowPath += LizardPather_FollowPath;
 
@@ -103,33 +102,6 @@ namespace RainMeadow
 
             return orig(self, originPos, bodyDirection, actuallyFollowingThisPath);
         }
-
-        //private static void Lizard_FollowConnection(On.Lizard.orig_FollowConnection orig, Lizard self, float runSpeed)
-        //{
-        //    if (creatureControllers.TryGetValue(self.abstractCreature, out var c) && c is LizardController l)
-        //    {
-        //        if (self.followingConnection.type < MovementConnection.MovementType.ShortCut && runSpeed > 0.5f)
-        //        {
-        //            var chunk0 = self.bodyChunks[0];
-        //            var chunk1 = self.bodyChunks[1];
-        //            var to = self.room.MiddleOfTile(self.followingConnection.destinationCoord);
-        //            var dist0 = to - chunk0.pos;
-        //            if(dist0.magnitude > 10f && (to - chunk1.pos).magnitude > 10f)
-        //            {
-        //                var todir = dist0.normalized;
-        //                var indir = Vector2.Dot(chunk0.vel, todir);
-        //                if (indir < runSpeed * 2f)
-        //                {
-        //                    var amount = todir.normalized * (runSpeed * 2f - indir);
-        //                    chunk0.vel += amount;
-        //                    chunk1.vel -= amount / 2f;
-        //                }
-        //            }
-        //        }
-        //    }
-
-        //    orig(self, runSpeed);
-        //}
 
         private static void Lizard_DamageAttack(On.Lizard.orig_DamageAttack orig, Lizard self, BodyChunk chunk, float dmgFac)
         {
@@ -230,10 +202,7 @@ namespace RainMeadow
             var mainBodyChunk = creature.mainBodyChunk;
             var tile = creature.room.aimap.getAItile(mainBodyChunk.pos);
 
-            // todo if jump module use that instead
-
-            // todo take body factors into factor. blue liz jump too stronk
-
+            // todo take body factors into factor. blue liz jump feels too stronk
             if (canGroundJump > 0 && superLaunchJump >= 20)
             {
                 RainMeadow.Debug("lizard super jump");
@@ -322,14 +291,6 @@ namespace RainMeadow
             if (creatureControllers.TryGetValue(self.abstractCreature, out var c) && c is LizardController l)
             {
                 l.ConsciousUpdate();
-                // lost footing doesn't auto-recover
-                if (self.inAllowedTerrainCounter < 10)
-                {
-                    if (l.input[0].y < 1 && !((self.bodyChunks)[0].contactPoint.y == -1 || (self.bodyChunks)[1].contactPoint.y == -1 || self.IsTileSolid(1, 0, -1) || self.IsTileSolid(0, 0, -1)))
-                    {
-                        self.inAllowedTerrainCounter = 0;
-                    }
-                }
             }
             orig(self);
         }
@@ -357,31 +318,46 @@ namespace RainMeadow
             {
                 if(this.superLaunchJump > 10)
                 {
-                    if (jumpModule.actOnJump == null)
+                    if (input[0].jmp)
                     {
-                        // start a new jump
-                        RainMeadow.Debug("JumpModule init");
-                        var jumpFinder = new LizardJumpModule.JumpFinder(creature.room, jumpModule, lizard.coord.Tile, false);
-                        jumpFinder.vel = (creature.bodyChunks[0].pos - creature.bodyChunks[1].pos).normalized * 8f + new Vector2(8f * flipDirection, 6f);
-                        jumpFinder.currentJump.initVel = jumpFinder.vel;
-                        jumpFinder.currentJump.power = 0.5f;
-                        jumpFinder.bestJump = jumpFinder.currentJump;
-                        jumpFinder.bestJump.goalCell = lizard.AI.pathFinder.PathingCellAtWorldCoordinate(creature.room.GetWorldCoordinate(creature.bodyChunks[0].pos + jumpFinder.vel * 10));
-                        jumpFinder.bestJump.tick = 20;
+                        if (jumpModule.actOnJump == null)
+                        {
+                            // start a new jump
+                            RainMeadow.Debug("JumpModule init");
+                            var jumpFinder = new LizardJumpModule.JumpFinder(creature.room, jumpModule, lizard.coord.Tile, false);
+                            jumpFinder.currentJump.power = 0.5f;
+                            jumpFinder.bestJump = jumpFinder.currentJump;
+                            jumpFinder.bestJump.goalCell = jumpFinder.startCell;
+                            jumpFinder.bestJump.tick = 20;
 
-                        jumpModule.spin = 1;
-                        jumpModule.InitiateJump(jumpFinder, false);
+                            //jumpModule.spin = 1;
+                            jumpModule.InitiateJump(jumpFinder, false);
+                        }
+                        jumpModule.actOnJump.vel = (creature.bodyChunks[0].pos - creature.bodyChunks[1].pos).normalized * 4f + (inputDir.magnitude > 0.5f ? inputDir * 14 + new Vector2(0, 2) : new Vector2(12f * flipDirection, 9f));
+                        jumpModule.actOnJump.bestJump.initVel = jumpModule.actOnJump.vel;
+                        jumpModule.actOnJump.bestJump.goalCell = lizard.AI.pathFinder.PathingCellAtWorldCoordinate(creature.room.GetWorldCoordinate(creature.bodyChunks[0].pos + jumpModule.actOnJump.vel * 20));
+                        canGroundJump = 5; // doesn't interrupt
+                        superLaunchJump = 12; // never completes
+                        lockInPlace = true;
+                        Moving(1f);
                     }
 
-                    canGroundJump = 5; // doesn't interrupt
-                    superLaunchJump = 10; // never completes
+                    else
+                    {
+                        if (lizard.animation != Lizard.Animation.Jumping)
+                        {
+                            jumpModule.actOnJump = null;
+                        }
+                    }
                 }
-                else
+            }
+
+            // lost footing doesn't auto-recover
+            if (lizard.inAllowedTerrainCounter < 10)
+            {
+                if ((forceJump > 0 || input[0].y < 1) && !((creature.bodyChunks)[0].contactPoint.y == -1 || (creature.bodyChunks)[1].contactPoint.y == -1 || creature.IsTileSolid(1, 0, -1) || creature.IsTileSolid(0, 0, -1)))
                 {
-                    if(lizard.animation != Lizard.Animation.Jumping)
-                    {
-                        jumpModule.actOnJump = null;
-                    }
+                    lizard.inAllowedTerrainCounter = 0;
                 }
             }
         }
