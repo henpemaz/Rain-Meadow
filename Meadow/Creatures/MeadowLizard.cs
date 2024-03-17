@@ -3,7 +3,6 @@ using System;
 using RWCustom;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
-using static UnityEngine.UI.Image;
 
 namespace RainMeadow
 {
@@ -70,6 +69,28 @@ namespace RainMeadow
             //On.Lizard.FollowConnection += Lizard_FollowConnection;
 
             On.LizardPather.FollowPath += LizardPather_FollowPath;
+
+            On.LizardJumpModule.RunningUpdate += LizardJumpModule_RunningUpdate;
+            On.LizardJumpModule.Jump += LizardJumpModule_Jump;
+        }
+
+        private static void LizardJumpModule_Jump(On.LizardJumpModule.orig_Jump orig, LizardJumpModule self)
+        {
+            if (creatureControllers.TryGetValue(self.lizard.abstractCreature, out var c) && c is LizardController l)
+            {
+                l.superLaunchJump = 0;
+                l.forceJump = 10;
+            }
+            orig(self);
+        }
+
+        private static void LizardJumpModule_RunningUpdate(On.LizardJumpModule.orig_RunningUpdate orig, LizardJumpModule self)
+        {
+            if (creatureControllers.TryGetValue(self.lizard.abstractCreature, out var c) && c is LizardController l)
+            {
+                return;
+            }
+            orig(self);
         }
 
         private static MovementConnection LizardPather_FollowPath(On.LizardPather.orig_FollowPath orig, LizardPather self, WorldCoordinate originPos, int? bodyDirection, bool actuallyFollowingThisPath)
@@ -326,6 +347,43 @@ namespace RainMeadow
         protected override void LookImpl(Vector2 pos)
         {
             (lizard.graphicsModule as LizardGraphics).lookPos = pos;
+        }
+
+        internal override void ConsciousUpdate()
+        {
+            base.ConsciousUpdate();
+
+            if(lizard.jumpModule is LizardJumpModule jumpModule)
+            {
+                if(this.superLaunchJump > 10)
+                {
+                    if (jumpModule.actOnJump == null)
+                    {
+                        // start a new jump
+                        RainMeadow.Debug("JumpModule init");
+                        var jumpFinder = new LizardJumpModule.JumpFinder(creature.room, jumpModule, lizard.coord.Tile, false);
+                        jumpFinder.vel = (creature.bodyChunks[0].pos - creature.bodyChunks[1].pos).normalized * 8f + new Vector2(8f * flipDirection, 6f);
+                        jumpFinder.currentJump.initVel = jumpFinder.vel;
+                        jumpFinder.currentJump.power = 0.5f;
+                        jumpFinder.bestJump = jumpFinder.currentJump;
+                        jumpFinder.bestJump.goalCell = lizard.AI.pathFinder.PathingCellAtWorldCoordinate(creature.room.GetWorldCoordinate(creature.bodyChunks[0].pos + jumpFinder.vel * 10));
+                        jumpFinder.bestJump.tick = 20;
+
+                        jumpModule.spin = 1;
+                        jumpModule.InitiateJump(jumpFinder, false);
+                    }
+
+                    canGroundJump = 5; // doesn't interrupt
+                    superLaunchJump = 10; // never completes
+                }
+                else
+                {
+                    if(lizard.animation != Lizard.Animation.Jumping)
+                    {
+                        jumpModule.actOnJump = null;
+                    }
+                }
+            }
         }
 
         protected override void Moving(float magnitude)
