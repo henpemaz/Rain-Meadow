@@ -35,7 +35,7 @@ namespace RainMeadow
         internal static bool CheckMods(string[] lobbyMods, string[] localMods)
         {
 
-            if (!Enumerable.SequenceEqual(localMods, lobbyMods)) //change !
+            if (Enumerable.SequenceEqual(localMods, lobbyMods)) //change !
             {
                 RainMeadow.Debug("Same mod set !");
                 return true;
@@ -53,7 +53,6 @@ namespace RainMeadow
                 List<string> unknownMods = new();
                 List<ModManager.Mod> modsToEnable = new();
                 List<ModManager.Mod> modsToDisable = new();
-                modsToDisable.Add(ModManager.ActiveMods.Find(mod => mod.id == "rwremix"));
 
 
                 foreach (var id in MissingMods)
