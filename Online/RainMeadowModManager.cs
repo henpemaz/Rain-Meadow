@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -8,20 +10,35 @@ namespace RainMeadow
     {
         public static string[] GetActiveMods()
         {
-            var suffer = ModManager.ActiveMods.Select(mod => mod.id.ToString()).ToArray();
-            foreach (string mod in suffer)
+
+            var highImpactMods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().Select(mod => mod.id.ToString()).ToArray();
+
+            string remixModId = "rwremix"; // Add remix to high impact mods to manage game setting sync. 
+
+            var remixMod = ModManager.ActiveMods.Find(mod => mod.id == remixModId);
+
+            if (remixMod != null)
             {
-                RainMeadow.Debug("MY MODS:" + mod);
+
+                var highImpactModsList = highImpactMods.ToList();
+                highImpactModsList.Add(remixMod.id);
+                highImpactMods = highImpactModsList.ToArray();
+
+            } else
+            {
+                RainMeadow.Debug("Couldn't find rwremix");
             }
 
-            return ModManager.ActiveMods.Select(mod => mod.id.ToString()).ToArray();
+            return highImpactMods;
         }
 
-        internal static void CheckMods(string[] lobbyMods, string[] localMods)
+        internal static bool CheckMods(string[] lobbyMods, string[] localMods)
         {
-            if (Enumerable.SequenceEqual(localMods, lobbyMods))
+
+            if (!Enumerable.SequenceEqual(localMods, lobbyMods)) //change !
             {
                 RainMeadow.Debug("Same mod set !");
+                return true;
             }
             else
             {
@@ -36,6 +53,8 @@ namespace RainMeadow
                 List<string> unknownMods = new();
                 List<ModManager.Mod> modsToEnable = new();
                 List<ModManager.Mod> modsToDisable = new();
+                modsToDisable.Add(ModManager.ActiveMods.Find(mod => mod.id == "rwremix"));
+
 
                 foreach (var id in MissingMods)
                 {
@@ -64,12 +83,15 @@ namespace RainMeadow
 
                 ModApplier modApplyer = new(RWCustom.Custom.rainWorld.processManager, mods.ToList(), loadOrder);
 
-                modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
-
-                modApplyer.OnFinish += (ModApplier modApplyer) =>
+                modApplyer.OnFinish += (ModApplier modApplyer) => // currently does not reconnect users to the lobby
                 {
                     Utils.Restart($"+connect_lobby {MatchmakingManager.instance.GetLobbyID()}");
+
                 };
+
+                return modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
+
+
             }
         }
 

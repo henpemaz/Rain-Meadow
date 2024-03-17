@@ -21,6 +21,7 @@ namespace RainMeadow
         public static List<OnlinePlayer> players;
         public static Lobby lobby;
 
+
         public static LobbyInfo currentlyJoiningLobby;
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
@@ -33,19 +34,39 @@ namespace RainMeadow
             MatchmakingManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
             RainMeadow.Debug("OnlineManager Created");
         }
-        
+
         private void OnlineManager_OnLobbyJoined(bool ok, string error)
         {
             RainMeadow.Debug(ok);
             currentlyJoiningLobby = default;
             if (ok)
             {
-                manager.RequestMainProcessSwitch(lobby.gameMode.MenuProcessId());
+                if (!OnlineManager.lobby.isOwner) // clients must check mods at the door
+                {
+                    var theirMods = OnlineManager.lobby.mods;
+
+                    var myMods = RainMeadowModManager.GetActiveMods();
+
+                    if (RainMeadowModManager.CheckMods(theirMods, myMods))
+                    {
+                        manager.RequestMainProcessSwitch(lobby.gameMode.MenuProcessId());
+
+                    }
+                    else
+                    {
+                        MatchmakingManager.instance.LeaveLobby();
+                    }
+                }
+                if (OnlineManager.lobby.isOwner)
+                {
+                    manager.RequestMainProcessSwitch(lobby.gameMode.MenuProcessId());
+                }
             }
             else
             {
                 MatchmakingManager.instance.LeaveLobby();
             }
+
         }
 
         public static void Reset()
@@ -140,9 +161,9 @@ namespace RainMeadow
                 {
                     SendData(player);
                 }
-//#if TRACING
+                //#if TRACING
                 RainMeadow.tracing = false; // cleanup
-//#endif
+                                            //#endif
             }
         }
 
