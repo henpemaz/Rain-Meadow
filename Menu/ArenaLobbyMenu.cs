@@ -201,8 +201,7 @@ namespace RainMeadow
 
                 pages[0].subObjects.Add(playerJoinButtons[l]);
             }
-
-            playerJoinButtons[0].Joined = true; // host should be part of game
+            mm.GetArenaSetup.playersJoined[0] = true; // host should be part of game
         }
 
         void AddAbovePlayText()

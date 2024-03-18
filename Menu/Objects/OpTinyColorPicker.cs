@@ -24,8 +24,10 @@ namespace RainMeadow
             this.colorFill = colorPicker.valueColor;
             this._rect.fillAlpha = 1f;
 
-            OnClick += Signal;
-            OnReactivate += Show;
+            var debugbutton = new OpSimpleButton(pos, new Vector2(30, 30));
+            //UPDATE-TODO fix this
+            //OnClick += Signal;
+            //OnReactivate += Show;
         }
 
         public void Signal(UIfocusable trigger)
