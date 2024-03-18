@@ -24,8 +24,6 @@ namespace RainMeadow
             this.colorFill = colorPicker.valueColor;
             this._rect.fillAlpha = 1f;
 
-
-            //UPDATE-TODO fix this
             OnClick += Signal;
             OnReactivate += Show;
         }
