@@ -1,57 +1,67 @@
 plants todo
-- sync timer
-- respawn
+- sync timer and collected (so can be transfered)
+- respawn a plant on plant expired
 
+- more items
+	copy the arena unlocks
+
+	
 emotes todo
-on emote already expiring shouldn't be able to emote more
- + or instead should replace the old emotes, start new group
 "wish I could "stop" an emote block and start a new one, instead of having to wait out the fade"
-	maybe pressing backspace? should it clear or not clear the current group?
+	maybe pressing backspace? should it clear or not clear the current group? /ok
+	what about controller?
 mapping going to 0 - = is a bit weird
-	- = don't work on most euro layouts
-instinct was to click the emotes
-not seeing all emotes at once is a bit of a hinger
-	takes time to find them switching pages
-	time means you lose the combo
-"sometimes can't use emotes" - SleepyCup
-	either bug or unintuitive timer lock
-
+	- = don't work on most euro layouts /can'tfix
+		an alternative would be to skip unity and go straight to user32 key events that are virtualkey based
+		here's hoping that the next update has better unity version or even usephisicalkeys who knows
+	but but but 12 emotes...
+	rethink the whole thing damn it
+radial menu
+	/ should be working on xbox
+	todo sort out mappings for dualshock (ps 3 4 5) and switchpro
+	need to swap between the two inputs as needed not have the two / done
+rethink kb input
+	one configurable hotbar with 10 the rest on mouse?
+add backdrop to previews / done
 
 creature todo
-- shelter activation
-- gate activation
+- shelter activation? does nothing atm anyways
+- gate activation / done
 - other story-mode things?
-- can still drown/die in several ways
-coming out of pipe + lag = stuck "pipe entering"
-come out of shortcut = bugged af doesn't clear shortcut pointer
-karma in gates
+- any ways to die left?
+- can get stuck
+	some rooms will get fixed
+	but maybe an unstuck button is in order? / done
+
 player grabbing cicada = laggy physics
-on wackamole pipe, game picks randomly I think, maybe should be player-chosen
+
+tint color slider/picker doesnt work on controller / done
+
+really hard to enter pipe sometimes
+	still the case, needs body shrinkage?
 
 lizard todo
-- walking off ledge /done
-- go through floors
 - charge
-- pounce / done
 - head rotation should really prefer unrotated
 - head blinking seems a bit much, how control?
 - find a good seed for our buddies
-- maybe seed could be a setting for the most special skin? any skin?
+
 lizard still bites cicada
-lizard on first load doesn't get colors assigned
-creature pipes behavior undefined
-	picks closest? random?
-	in room to drainage impossible to get up?
+	// how?
+lizard on first load doesn't get colors assigned ?? firstload in realize room vs load far and walk in?
 	
-clear animation on jump / done
-standing jump / done
-jump from pole / done
-
-test blue lizard jump
-	shouldn't re-grip unless input up? / done
-	
-
 blue lizard make it prefer ground
+	work as non-climber unless UP
+	/ reworked so will preferr "keepig same acessibility as current path"
 
 playable scav
-- go through floors
+- up a pole sucks // done
+- go through floors // done?
+
+slugcat in meadow mode
+- lookdir input like the others
+- point things
+
+Toss in eggbug and noodlefly
+- make flying controller template?
+- do "wall-crawlers" deserve their own template or just better handling of climb/noclimb modes?

@@ -4,10 +4,11 @@ using System;
 using UnityEngine;
 using RWCustom;
 using Mono.Cecil.Cil;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
-    internal class ScavengerController : CreatureController
+    internal class ScavengerController : GroundCreatureController
     {
         public static void EnableScavenger()
         {
@@ -18,8 +19,23 @@ namespace RainMeadow
 
             // color
             On.ScavengerGraphics.ctor += ScavengerGraphics_ctor;
+
+            On.Scavenger.FollowPath += Scavenger_FollowPath;
         }
 
+        private static MovementConnection Scavenger_FollowPath(On.Scavenger.orig_FollowPath orig, Scavenger self, WorldCoordinate origin, bool actuallyFollowingThisPath)
+        {
+            if (creatureControllers.TryGetValue(self.abstractCreature, out var c) && c is ScavengerController s)
+            {
+                if (origin == self.AI.pathFinder.destination) // return null; // such a silly behavior...
+                    // actually scav NEEDS an upcoming connection wtf??
+                    return new MovementConnection(MovementConnection.MovementType.Standard, origin, WorldCoordinate.AddIntVector(origin, new IntVector2(s.input[0].x, s.input[0].y)), 1);
+            }
+
+            return orig(self, origin, actuallyFollowingThisPath);
+        }
+
+        // fix "will only move if target > 3 tiles away" issue
         private static void Scavenger_Act1(ILContext il)
         {
             try
@@ -34,11 +50,33 @@ namespace RainMeadow
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((Scavenger self) => {
-                    if(creatureControllers.TryGetValue(self.abstractCreature, out var s))
+                    if (creatureControllers.TryGetValue(self.abstractCreature, out var s))
                     {
-                        self.moving = (s as ScavengerController).forceMoving;
+                        self.moving |= (s as ScavengerController).forceMoving;
                     }
                 });
+
+
+                // Act() line 605 this.connections.Count > 2
+                c.Index = 0;
+                ILLabel run = null;
+                c.GotoNext(MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<Scavenger>("connections"),
+                    i => i.MatchCallOrCallvirt(out _),
+                    i => i.MatchLdcI4(2),
+                    i => i.MatchBgt(out run)
+                    );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((Scavenger self) => {
+                    if (creatureControllers.TryGetValue(self.abstractCreature, out var s))
+                    {
+                        return self.connections.Count > 0 && (s as ScavengerController).forceMoving;
+                    }
+                    return false;
+                });
+                c.Emit(OpCodes.Brtrue, run);
+
             }
             catch (Exception e)
             {
@@ -61,24 +99,18 @@ namespace RainMeadow
 
         public ScavengerController(Scavenger scav, OnlineCreature oc, int playerNumber) : base(scav, oc, playerNumber) { }
 
-        private float jumpBoost;
-        private int forceJump;
-        private int canGroundJump;
-        private int canPoleJump;
-        private int canSwingJump;
         private bool forceMoving;
-        private IntVector2? lastEnteringShortcut;
 
         public Scavenger scavenger => creature as Scavenger;
 
-        private static MovementConnection nullConnection = new MovementConnection(MovementConnection.MovementType.Standard, new WorldCoordinate(-1, -1, -1, -1), new WorldCoordinate(-1, -1, -1, -1), 1);
+        //private static MovementConnection nullConnection = new MovementConnection(MovementConnection.MovementType.Standard, new WorldCoordinate(-1, -1, -1, -1), new WorldCoordinate(-1, -1, -1, -1), 1);
 
         public override bool GrabImpl(PhysicalObject pickUpCandidate)
         {
             var chunk = pickUpCandidate.bodyChunks[0];
 
             // TODO
-            
+
             return false;
         }
 
@@ -107,7 +139,7 @@ namespace RainMeadow
             }
         }
 
-        private void Jump()
+        protected override void JumpImpl()
         {
             //RainMeadow.Debug(onlineCreature);
             var cs = creature.bodyChunks;
@@ -171,7 +203,7 @@ namespace RainMeadow
                     return;
                 }// no climb boost
             }
-            else if (canSwingJump > 0)
+            else if (canClimbJump > 0)
             {
                 RainMeadow.Debug("scavenger climb jump");
                 scavenger.animation = null;
@@ -211,391 +243,119 @@ namespace RainMeadow
             {
                 s.ConsciousUpdate();
 
-                var room = self.room;
-                var chunks = self.bodyChunks;
-                var nc = chunks.Length;
-
-                var aiTile0 = self.room.aimap.getAItile(chunks[0].pos);
-                var aiTile1 = self.room.aimap.getAItile(chunks[1].pos);
-                var tile0 = self.room.GetTile(chunks[0].pos);
-                var tile1 = self.room.GetTile(chunks[1].pos);
-
-                if (self.movMode == Scavenger.MovementMode.Climb && self.swingPos != null && self.swingClimbCounter >= 2)
+                if (Input.GetKey(KeyCode.L))
                 {
-                    RainMeadow.Trace("can swing jump");
-                    s.canSwingJump = 5;
+                    RainMeadow.Debug($"current AI destination {s.creature.abstractCreature.abstractAI.destination}");
+                    RainMeadow.Debug($"moving {s.forceMoving}");
+                    RainMeadow.Debug($"movMode {self.movMode}");
+                    RainMeadow.Debug($"commitedToMove {self.commitedToMove}");
+                    RainMeadow.Debug($"animation {self.animation}");
+                    RainMeadow.Debug($"commitedMoveFollowChunk {self.commitedMoveFollowChunk}");
+                    RainMeadow.Debug($"drop {self.drop}");
+                    RainMeadow.Debug($"ghostCounter {self.ghostCounter}");
+                    RainMeadow.Debug($"occupyTile {self.occupyTile}");
+                    RainMeadow.Debug($"pathingWithExits {self.pathingWithExits}");
+                    RainMeadow.Debug($"pathWithExitsCounter {self.pathWithExitsCounter}");
+                    RainMeadow.Debug($"swingPos {self.swingPos}");
+                    RainMeadow.Debug($"swingProgress {self.swingProgress}");
+                    RainMeadow.Debug($"commitToMoveCounter {self.commitToMoveCounter}");
+                    RainMeadow.Debug($"footingCounter {self.footingCounter}");
+                    RainMeadow.Debug($"moveModeChangeCounter {self.moveModeChangeCounter}");
+                    RainMeadow.Debug($"notFollowingPathToCurrentGoalCounter {self.notFollowingPathToCurrentGoalCounter}");
+                    RainMeadow.Debug($"pathWithExitsCounter {self.pathWithExitsCounter}");
+                    RainMeadow.Debug($"stuckCounter {self.stuckCounter}");
+                    RainMeadow.Debug($"stuckOnShortcutCounter {self.stuckOnShortcutCounter}");
+                    RainMeadow.Debug($"swingClimbCounter {self.swingClimbCounter}");
                 }
-                else if (self.movMode == Scavenger.MovementMode.Climb && ((aiTile0.acc == AItile.Accessibility.Climb && tile0.AnyBeam) || (aiTile1.acc == AItile.Accessibility.Climb && tile1.AnyBeam)) )
-                {
-                    RainMeadow.Trace("can pole jump");
-                    s.canPoleJump = 5;
-                }
-                else if ((self.movMode == Scavenger.MovementMode.Run || self.movMode == Scavenger.MovementMode.StandStill) && (chunks[0].contactPoint.y == -1 || chunks[1].contactPoint.y == -1 || self.IsTileSolid(1, 0, -1) || self.IsTileSolid(0, 0, -1)))
-                {
-                    RainMeadow.Trace("can jump");
-                    s.canGroundJump = 5;
-                }
-
-                if (s.canGroundJump > 0 && s.input[0].x == 0 && s.input[0].y <= 0 && (s.input[0].jmp || s.input[1].jmp))
-                {
-                    if (s.input[0].jmp)
-                    {
-                        // todo if jumpmodule animate
-                        s.wantToJump = 0;
-                        if (s.superLaunchJump < 20)
-                        {
-                            s.superLaunchJump++;
-                        }
-                    }
-                    if (!s.input[0].jmp && s.input[1].jmp)
-                    {
-                        s.wantToJump = 1;
-                        s.canGroundJump = 1;
-                    }
-                }
-                else if (s.superLaunchJump > 0)
-                {
-                    s.superLaunchJump--;
-                }
-
-                if (s.wantToJump > 0 && (s.canSwingJump > 0 || s.canPoleJump > 0 || s.canGroundJump > 0))
-                {
-                    s.Jump();
-                    s.canSwingJump = 0;
-                    s.canPoleJump = 0;
-                    s.canGroundJump = 0;
-                    s.wantToJump = 0;
-                }
-                if (s.canSwingJump > 0) s.canSwingJump--;
-                if (s.canPoleJump > 0) s.canPoleJump--;
-                if (s.canGroundJump > 0) s.canGroundJump--;
-                if (s.forceJump > 0) s.forceJump--;
-
-                if (s.jumpBoost > 0f && (s.input[0].jmp || s.forceBoost > 0))
-                {
-                    s.jumpBoost -= 1.5f;
-                    self.bodyChunks[0].vel.y += (s.jumpBoost + 1f) * 0.3f;
-                    self.bodyChunks[1].vel.y += (s.jumpBoost + 1f) * 0.25f;
-                    self.bodyChunks[2].vel.y += (s.jumpBoost + 1f) * 0.25f;
-                }
-                else
-                {
-                    s.jumpBoost = 0f;
-                }
-
-                // facing
-                if (Mathf.Abs(Vector2.Dot(Vector2.right, chunks[0].pos - chunks[1].pos)) > 0.5f)
-                {
-                    s.flipDirection = (chunks[0].pos.x > chunks[1].pos.x) ? 1 : -1;
-                }
-                else if (Mathf.Abs(s.inputDir.x) > 0.5f)
-                {
-                    s.flipDirection = s.inputDir.x > 0 ? 1 : -1;
-                }
-
-                //// lost footing doesn't auto-recover
-                //if (self.inAllowedTerrainCounter < 10)
-                //{
-                //    if (s.input[0].y < 1 && !(chunks[0].contactPoint.y == -1 || chunks[1].contactPoint.y == -1 || self.IsTileSolid(1, 0, -1) || self.IsTileSolid(0, 0, -1)))
-                //    {
-                //        self.inAllowedTerrainCounter = 0;
-                //    }
-                //}
-
-                // move
-                //var basepos = 0.5f * (self.bodyChunks[0].pos + self.bodyChunks[1].pos);
-                var basepos = self.bodyChunks[1].pos;
-                var basecoord = self.room.GetWorldCoordinate(basepos);
-                if (s.inputDir != Vector2.zero)
-                {
-                    self.AI.behavior = ScavengerAI.Behavior.Travel;
-                    self.AI.runSpeedGoal = Custom.LerpAndTick(self.AI.runSpeedGoal, 0.8f, 0.2f, 0.05f);
-                    //self.AI.excitement = Custom.LerpAndTick(self.AI.excitement, 0.5f, 0.1f, 0.05f);
-
-                    var toPos = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(s.inputDir * 1.42f));
-                    bool reachable = room.aimap.TileAccessibleToCreature(toPos.Tile, self.Template);
-                    bool keeplooking = true; // this could be turned into a helper and an early return
-
-                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"moving towards {toPos.Tile}");
-                    if (s.forceJump > 0) // jumping
-                    {
-                        if (self.commitedToMove == nullConnection) self.commitedToMove = new MovementConnection(MovementConnection.MovementType.Standard, basecoord, toPos, 2);
-                        reachable = false;
-                        keeplooking = false;
-                    }
-                    else if (true)//self.inAllowedTerrainCounter > 10)
-                    {
-                        if (self.enteringShortCut == null && self.shortcutDelay < 1)
-                        {
-                            for (int i = 0; i < nc; i++)
-                            {
-                                if (room.GetTile(chunks[i].pos).Terrain == Room.Tile.TerrainType.ShortcutEntrance)
-                                {
-                                    var scdata = room.shortcutData(room.GetTilePosition(chunks[i].pos));
-                                    if (scdata.shortCutType != ShortcutData.Type.DeadEnd)
-                                    {
-                                        IntVector2 intVector = room.ShorcutEntranceHoleDirection(room.GetTilePosition(chunks[i].pos));
-                                        if (s.input[0].x == -intVector.x && s.input[0].y == -intVector.y)
-                                        {
-                                            RainMeadow.Debug("creature entering shortcut");
-                                            self.enteringShortCut = new IntVector2?(room.GetTilePosition(chunks[i].pos));
-                                            reachable = false;
-                                            keeplooking = false;
-
-                                            if (scdata.shortCutType == ShortcutData.Type.NPCTransportation)
-                                            {
-                                                var whackamoles = room.shortcuts.Where(s => s.shortCutType == ShortcutData.Type.NPCTransportation).ToList();
-                                                var index = whackamoles.IndexOf(self.room.shortcuts.FirstOrDefault(s => s.StartTile == scdata.StartTile));
-                                                if (index > -1 && whackamoles.Count > 0)
-                                                {
-                                                    var newindex = (index + 1) % whackamoles.Count;
-                                                    RainMeadow.Debug($"creature entered at {index} will exit at {newindex} mapped to {self.NPCTransportationDestination}");
-                                                    self.NPCTransportationDestination = whackamoles[newindex].startCoord;
-                                                    // needs to be set as destination as well otherwise might be overriden
-                                                    toPos = self.NPCTransportationDestination;
-                                                    reachable = true;
-                                                    keeplooking = false;
-                                                }
-                                                else
-                                                {
-                                                    RainMeadow.Error("shortcut issue");
-                                                }
-
-                                                self.commitedToMove = nullConnection;
-                                            }
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        if (keeplooking && s.inputDir.y > 0) // climbing has priority
-                        {
-                            for (int i = 0; i < 3; i++)
-                            {
-                                int num = (i > 0) ? ((i == 1) ? -1 : 1) : 0;
-                                var tile = room.GetTile(basecoord + new IntVector2(num, 1));
-                                if (!tile.Solid && tile.verticalBeam)
-                                {
-                                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("pole close");
-                                    toPos = WorldCoordinate.AddIntVector(basecoord, new IntVector2(0, 1));
-                                    reachable = true;
-                                    keeplooking = false;
-                                    break;
-                                }
-                            }
-                            for (int i = 0; i < 3; i++)
-                            {
-                                int num = (i > 0) ? ((i == 1) ? -1 : 1) : 0;
-                                var tileup1 = room.GetTile(basecoord + new IntVector2(num, 1));
-                                var tileup2 = room.GetTile(basecoord + new IntVector2(num, 2));
-                                if (!tileup1.Solid && tileup2.verticalBeam)
-                                {
-                                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("pole far");
-                                    toPos = WorldCoordinate.AddIntVector(basecoord, new IntVector2(0, 2));
-                                    reachable = true;
-                                    keeplooking = false;
-                                    break;
-                                }
-                            }
-                        }
-                        if (keeplooking)
-                        {
-                            if (s.inputDir.x != 0) // to sides
-                            {
-                                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("sides");
-                                if (reachable)
-                                {
-                                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("ahead");
-                                }
-                                else if (room.aimap.TileAccessibleToCreature(toPos.Tile + new IntVector2(0, 1), self.Template)) // try up
-                                {
-                                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("up");
-                                    toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(0, 1));
-                                    reachable = true;
-                                }
-                                else if (room.aimap.TileAccessibleToCreature(toPos.Tile + new IntVector2(0, -1), self.Template)) // try down
-                                {
-                                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("down");
-                                    toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(0, -1));
-                                    reachable = true;
-                                }
-
-                                // if can reach further out, it goes faster and smoother
-                                var furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(s.inputDir * 3f));
-                                if (room.aimap.TileAccessibleToCreature(furtherOut.Tile, self.Template) && QuickConnectivity.Check(room, self.Template, basecoord.Tile, furtherOut.Tile, 10) > 0)
-                                {
-                                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("reaching further");
-                                    toPos = furtherOut;
-                                    reachable = true;
-                                }
-                                else if (room.aimap.TileAccessibleToCreature(furtherOut.Tile + new IntVector2(0, 1), self.Template) && QuickConnectivity.Check(room, self.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, 1), 10) > 0)
-                                {
-                                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("further up");
-                                    toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, 1));
-                                    reachable = true;
-                                }
-                                else if (room.aimap.TileAccessibleToCreature(furtherOut.Tile + new IntVector2(0, -1), self.Template) && QuickConnectivity.Check(room, self.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, -1), 10) > 0)
-                                {
-                                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("further down");
-                                    toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, -1));
-                                    reachable = true;
-                                }
-
-                                if (!reachable)
-                                {
-                                    // no pathing
-                                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("unpathable");
-                                    // don't let go of beams/walls/ceilings
-                                    if (room.aimap.TileAccessibleToCreature(tile0.X, tile0.Y, self.Template) && aiTile0.acc >= AItile.Accessibility.Climb)// && self.inAllowedTerrainCounter > 10)
-                                    {
-                                        //self.AI.runSpeed *= 0.5f;
-                                        toPos = basecoord;
-                                    }
-                                    else // force movement
-                                    {
-                                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("forced move");
-                                        self.commitedToMove = new MovementConnection(MovementConnection.MovementType.Standard, basecoord, furtherOut, 2);
-                                        self.commitToMoveCounter = 20;
-                                        self.drop = true;
-                                        //toPos = furtherOut;
-                                        //reachable = true;
-                                        s.forceMoving = true;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("vertical");
-
-                                if (keeplooking)
-                                {
-                                    if (reachable)
-                                    {
-                                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("ahead");
-                                    }
-                                    if (keeplooking)
-                                    {
-                                        var furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(s.inputDir * 2.2f));
-                                        if (!room.GetTile(toPos).Solid && !room.GetTile(furtherOut).Solid && room.aimap.TileAccessibleToCreature(furtherOut.Tile, self.Template)) // ahead unblocked, move further
-                                        {
-                                            if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("reaching");
-                                            toPos = furtherOut;
-                                            reachable = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if (s.forceJump <= 0 && self.swingPos == null && s.inputDir.y > 0 && tile0.AnyBeam)
-                    {
-                        self.swingPos = room.MiddleOfTile(tile0.X, tile0.Y);
-                        self.swingRadius = 50f;
-                        self.swingClimbCounter = 40;
-                    }
-
-                    //// minimun directional speed
-                    //if (reachable && (self.graphicsModule as LizardGraphics)?.frontLegsGrabbing > 0)
-                    //{
-                    //    var inDirection = Vector2.Dot(self.mainBodyChunk.vel, s.inputDir);
-                    //    var minSpeed = 0.35f;
-                    //    if (inDirection < minSpeed)
-                    //    {
-                    //        self.mainBodyChunk.vel += s.inputDir * (minSpeed - inDirection);
-                    //    }
-                    //}
-
-                    //// fake extra airfriction in gravity mode
-                    //if (self.applyGravity && room.aimap.TileAccessibleToCreature(tile0.X, tile0.Y, self.Template))
-                    //{
-                    //    for (int i = 0; i < nc; i++)
-                    //    {
-                    //        BodyChunk bodyChunk = self.bodyChunks[i];
-                    //        if (bodyChunk.submersion < 0.5f)
-                    //        {
-                    //            bodyChunk.vel.x *= 0.95f;
-                    //        }
-                    //    }
-                    //}
-
-
-                    if (reachable && toPos != self.abstractCreature.abstractAI.destination)
-                    {
-                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"new destination {toPos.Tile}");
-                        s.ForceAIDestination(toPos);
-                        s.forceMoving = true;
-                    }
-                }
-                else
-                {
-                    // rest
-                    self.AI.behavior = ScavengerAI.Behavior.Idle;
-                    self.AI.runSpeedGoal = Custom.LerpAndTick(self.AI.runSpeedGoal, 0, 0.4f, 0.1f);
-                    //self.AI.excitement = Custom.LerpAndTick(self.AI.excitement, 0.2f, 0.1f, 0.05f);
-                    self.commitedToMove = nullConnection;
-                    s.forceMoving = false;
-
-
-                    //// pull towards floor
-                    //for (int i = 0; i < nc; i++)
-                    //{
-                    //    if (self.IsTileSolid(i, 0, -1))
-                    //    {
-                    //        BodyChunk bodyChunk = self.bodyChunks[i];
-                    //        bodyChunk.vel.y -= 0.1f;
-                    //    }
-                    //}
-
-                    if (basecoord != self.abstractCreature.abstractAI.destination)
-                    {
-                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"resting at {basecoord.Tile}");
-                        s.ForceAIDestination(basecoord);
-                    }
-                }
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"current AI destination {s.creature.abstractCreature.abstractAI.destination}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"moving {s.forceMoving}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"movMode {self.movMode}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"commitedToMove {self.commitedToMove}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"animation {self.animation}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"commitedMoveFollowChunk {self.commitedMoveFollowChunk}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"drop {self.drop}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"ghostCounter {self.ghostCounter}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"occupyTile {self.occupyTile}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"pathingWithExits {self.pathingWithExits}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"pathWithExitsCounter {self.pathWithExitsCounter}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"swingPos {self.swingPos}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"swingProgress {self.swingProgress}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"commitToMoveCounter {self.commitToMoveCounter}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"footingCounter {self.footingCounter}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"moveModeChangeCounter {self.moveModeChangeCounter}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"notFollowingPathToCurrentGoalCounter {self.notFollowingPathToCurrentGoalCounter}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"pathWithExitsCounter {self.pathWithExitsCounter}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"stuckCounter {self.stuckCounter}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"stuckOnShortcutCounter {self.stuckOnShortcutCounter}");
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"swingClimbCounter {self.swingClimbCounter}");
-
-                if (s.lastEnteringShortcut != self.enteringShortCut)
-                {
-                    RainMeadow.Debug($"shortcut was {s.lastEnteringShortcut} is {self.enteringShortCut}");
-                    //RainMeadow.Debug($"followingConnection {self.connections}");
-                    RainMeadow.Debug($"commitedToDropConnection {self.commitedToMove}");
-                }
-
-                s.lastEnteringShortcut = self.enteringShortCut;
             }
             orig(self);
         }
 
+        public override bool CanClimbJump => !CanGroundJump && scavenger.swingPos != null && scavenger.swingClimbCounter >= 2;
+
+        public override bool CanPoleJump => !CanGroundJump && ((creature.room.aimap.getAItile(creature.bodyChunks[1].pos).acc == AItile.Accessibility.Climb && creature.room.GetTile(creature.bodyChunks[1].pos).AnyBeam) || (creature.room.aimap.getAItile(creature.bodyChunks[2].pos).acc == AItile.Accessibility.Climb && creature.room.GetTile(creature.bodyChunks[2].pos).AnyBeam));
+
+        public override bool CanGroundJump => (scavenger.movMode == Scavenger.MovementMode.Run || scavenger.movMode == Scavenger.MovementMode.StandStill) && (creature.bodyChunks[1].contactPoint.y == -1 || creature.bodyChunks[2].contactPoint.y == -1 || creature.IsTileSolid(1, 0, -1) || creature.IsTileSolid(2, 0, -1));
+
+        public override bool HasFooting => CanGroundJump;
+
+        public override WorldCoordinate CurrentPathfindingPosition
+        {
+            get
+            {
+                if (scavenger.occupyTile != new IntVector2(-1, -1))
+                {
+                    return creature.room.GetWorldCoordinate(scavenger.occupyTile);
+                }
+                return base.CurrentPathfindingPosition;
+            }
+        }
+
+        protected override int GetFlip()
+        {
+            int newFlip = (int) Mathf.Sign(scavenger.flip);
+            if (newFlip != 0) return newFlip;
+            return flipDirection;
+        }
+
+        protected override void Moving(float magnitude)
+        {
+            scavenger.AI.behavior = ScavengerAI.Behavior.Travel;
+            scavenger.AI.runSpeedGoal = Custom.LerpAndTick(scavenger.AI.runSpeedGoal, 0.8f * Mathf.Pow(magnitude, 2f), 0.2f, 0.05f);
+            forceMoving = true;
+            scavenger.stuckCounter = 5;
+        }
+
+        protected override void Resting()
+        {
+            scavenger.AI.behavior = ScavengerAI.Behavior.Idle;
+            scavenger.AI.runSpeedGoal = Custom.LerpAndTick(scavenger.AI.runSpeedGoal, 0.0f, 0.4f, 0.1f);
+            scavenger.commitToMoveCounter = 0;
+            forceMoving = false;
+            //scavenger.movMode = Scavenger.MovementMode.StandStill;
+            scavenger.stuckCounter = 5;
+
+        }
+        protected override void MovementOverride(MovementConnection movementConnection)
+        {
+            scavenger.commitedToMove = movementConnection;
+            scavenger.commitToMoveCounter = 20;
+            scavenger.commitedMoveFollowChunk = 1;
+            //scavenger.drop = true;
+            forceMoving = true;
+        }
+
+        protected override void ClearMovementOverride()
+        {
+            scavenger.commitToMoveCounter = 0;
+        }
+
+        protected override void GripPole(Room.Tile tile0)
+        {
+            if(scavenger.swingPos == null && scavenger.nextSwingPos == null && creature.mainBodyChunk.vel.y < 0)
+            {
+                scavenger.swingPos = creature.room.MiddleOfTile(tile0.X, tile0.Y);
+                scavenger.swingRadius = 10f;
+                scavenger.swingClimbCounter = 10;
+                scavenger.movMode = Scavenger.MovementMode.Climb;
+                scavenger.drop = false;
+                creature.mainBodyChunk.vel.y = 0f;
+            }
+        }
+
         private static void Scavenger_Update(On.Scavenger.orig_Update orig, Scavenger self, bool eu)
         {
-            if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+            if (creatureControllers.TryGetValue(self.abstractCreature, out var s))
             {
-                p.Update(eu);
+                s.Update(eu);
             }
 
             orig(self, eu);
+        }
+
+        protected override void LookImpl(Vector2 pos)
+        {
+            scavenger.lookPoint = pos;
         }
     }
 }

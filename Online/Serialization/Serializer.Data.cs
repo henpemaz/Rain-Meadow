@@ -863,6 +863,36 @@ namespace RainMeadow
 #endif
         }
 
+        // We cast to shorts as we assume that
+        // all IntVector2 represent tile coordinates.
+        // Sorry if this caused a bug, yell at DevLope and Henpemaz.
+        public void SerializeNullable(ref IntVector2? data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write(data.HasValue);
+                if (data.HasValue)
+                {
+                    writer.Write((short)data.Value.x);
+                    writer.Write((short)data.Value.y);
+                }
+            }
+            if (IsReading)
+            {
+                if (reader.ReadBoolean())
+                {
+                    data = new IntVector2(reader.ReadInt16(), reader.ReadInt16());
+                }
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
+
         public void SerializeRGB(ref Color data)
         {
 #if TRACING

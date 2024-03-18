@@ -12,6 +12,9 @@ namespace RainMeadow
         internal List<EmoteType> emotes = new();
         internal byte emotesVersion;
         internal Player.InputPackage input;
+        internal CreatureController.SpecialInput specialInput; // todo todo todo
+        internal WorldCoordinate destination;
+        internal float moveSpeed;
 
         public MeadowCreatureData(OnlineCreature owner)
         {
@@ -31,13 +34,13 @@ namespace RainMeadow
 
         public class State : EntityDataState
         {
-            [OnlineField(nullable = true)]
+            [OnlineField(nullable = true, group = "emotes")]
             public Generics.AddRemoveSortedExtEnums<EmoteType> emotes;
-            [OnlineField]
+            [OnlineField(group = "emotes")]
             public TickReference emotesTick;
-            [OnlineFieldHalf]
+            [OnlineFieldHalf(group = "emotes")]
             public float emotesLife;
-            [OnlineField]
+            [OnlineField(group = "emotes")]
             public byte emotesVersion;
             [OnlineField(group = "inputs")]
             public ushort inputs;
@@ -45,16 +48,22 @@ namespace RainMeadow
             public float analogInputX;
             [OnlineFieldHalf(group = "inputs")]
             public float analogInputY;
+            [OnlineField(group = "inputs")]
+            internal CreatureController.SpecialInput specialInput; // todo todo todo
+            [OnlineField(group = "ai")]
+            internal WorldCoordinate destination;
+            [OnlineField(group = "ai")]
+            internal float moveSpeed;
 
             public State() { }
-            public State(MeadowCreatureData meadowCreatureData)
+            public State(MeadowCreatureData mcd)
             {
-                emotes = new(meadowCreatureData.emotes.ToList());
-                emotesVersion = meadowCreatureData.emotesVersion;
-                emotesLife = meadowCreatureData.emotesLife;
-                emotesTick = meadowCreatureData.emotesTick;
+                emotes = new(mcd.emotes.ToList());
+                emotesVersion = mcd.emotesVersion;
+                emotesLife = mcd.emotesLife;
+                emotesTick = mcd.emotesTick;
 
-                var i = meadowCreatureData.input;
+                var i = mcd.input;
                 inputs = (ushort)(
                       (i.x == 1 ? 1 << 0 : 0)
                     | (i.x == -1 ? 1 << 1 : 0)
@@ -69,6 +78,9 @@ namespace RainMeadow
 
                 analogInputX = i.analogueDir.x;
                 analogInputY = i.analogueDir.y;
+                specialInput = mcd.specialInput;
+                destination = mcd.destination;
+                moveSpeed = mcd.moveSpeed;
             }
 
             internal override void ReadTo(OnlineEntity onlineEntity)
@@ -94,6 +106,9 @@ namespace RainMeadow
                     i.analogueDir.x = analogInputX;
                     i.analogueDir.y = analogInputY;
                     mcd.input = i;
+                    mcd.specialInput = specialInput;
+                    mcd.destination = destination;
+                    mcd.moveSpeed = moveSpeed;
                 }
                 else
                 {

@@ -55,10 +55,43 @@ namespace RainMeadow
                 Error($"Creature {self} {self.abstractPhysicalObject.ID} doesn't exist in online space!");
                 return;
             }
-            if(OnlineManager.lobby.gameMode is MeadowGameMode && EmoteDisplayer.map.TryGetValue(self, out var displayer))
+            if (OnlineManager.lobby.gameMode is MeadowGameMode)
             {
-                displayer.OnUpdate(); // so this only updates while the creature is in-room, what about creatures in pipes though
+                if (EmoteDisplayer.map.TryGetValue(self, out var displayer))
+                {
+                    displayer.OnUpdate(); // so this only updates while the creature is in-room, what about creatures in pipes though
+                }
+
+                if (self is AirBreatherCreature breather) breather.lungs = 1f;
+
+                if(self.room != null)
+                {
+                    // fall out of world handling
+                    float num = -self.bodyChunks[0].restrictInRoomRange + 1f;
+                    if (self is Player && self.bodyChunks[0].restrictInRoomRange == self.bodyChunks[0].defaultRestrictInRoomRange)
+                    {
+                        if ((self as Player).bodyMode == Player.BodyModeIndex.WallClimb)
+                        {
+                            num = Mathf.Max(num, -250f);
+                        }
+                        else
+                        {
+                            num = Mathf.Max(num, -500f);
+                        }
+                    }
+                    if (self.bodyChunks[0].pos.y < num && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) && (!self.Template.canFly || self.Stunned || self.dead) && (self is Player || !self.room.game.IsArenaSession || self.room.game.GetArenaGameSession.chMeta == null || !self.room.game.GetArenaGameSession.chMeta.oobProtect))
+                    {
+                        RainMeadow.Debug("fall out of world prevention: " + self);
+                        var room = self.room;
+                        self.RemoveFromRoom();
+                        room.CleanOutObjectNotInThisRoom(self); // we need it this frame
+                        var node = self.coord.abstractNode;
+                        if (node > room.abstractRoom.exits) node = UnityEngine.Random.Range(0, room.abstractRoom.exits);
+                        self.SpitOutOfShortCut(room.ShortcutLeadingToNode(node).startCoord.Tile, room, true);
+                    }
+                }
             }
+
             if (onlineCreature.isMine && self.grasps != null)
             {
                 foreach (var grasp in self.grasps)

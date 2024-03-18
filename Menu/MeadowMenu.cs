@@ -77,9 +77,7 @@ namespace RainMeadow
 
             colorpicker = new OpTinyColorPicker(this, new Vector2(800, 60), "FFFFFF"); // todo read stored
             var wrapper = new UIelementWrapper(this.tabWrapper, colorpicker);
-            tabWrapper._tab.AddItems(colorpicker.colorPicker); // so much work for a nested object man...
-            colorpicker.colorPicker.wrapper = wrapper;
-            colorpicker.colorPicker.Hide();
+
             colorpicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
             // todo update a preview of some sort for the resulting tinted color!
 
@@ -89,6 +87,9 @@ namespace RainMeadow
 
             var slider = new SubtleSlider2(this, mainPage, "Tint amount", new Vector2(800, 30), new Vector2(100, 30));
             this.pages[0].subObjects.Add(slider);
+
+            colorpicker.wrapper.nextSelectable[3] = slider;
+            slider.nextSelectable[1] = colorpicker.wrapper;
 
             UpdateCharacterUI();
 
