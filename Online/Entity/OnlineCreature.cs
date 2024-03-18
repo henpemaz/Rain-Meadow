@@ -132,7 +132,14 @@ namespace RainMeadow
         public void SuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
         {
             enteringShortCut = true;
-            (apo.realizedObject as Creature)?.SuckedIntoShortCut(entrancePos, carriedByOther);
+            var creature = (apo.realizedObject as Creature);
+            var room = creature.room;
+            creature?.SuckedIntoShortCut(entrancePos, carriedByOther);
+            if (creature.graphicsModule != null)
+			{
+                Vector2 vector = room.MiddleOfTile(entrancePos) + Custom.IntVector2ToVector2(room.ShorcutEntranceHoleDirection(entrancePos)) * -5f;
+                creature.graphicsModule.SuckedIntoShortCut(vector);
+			}
             enteringShortCut = false;
         }
 
