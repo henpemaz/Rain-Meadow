@@ -51,16 +51,22 @@ namespace RainMeadow
 
             public static readonly StateType PhysicalObjectEntityState = new("PhysicalObjectEntityState", typeof(PhysicalObjectEntityState));
             public static readonly StateType OnlineConsumableState = new("OnlineConsumableState", typeof(OnlineConsumableState));
+            public static readonly StateType OnlineSeedCobState = new("OnlineSeedCobState", typeof(OnlineSeedCobState));
+            public static readonly StateType OnlineBubbleGrassState = new("OnlineBubbleGrassState", typeof(OnlineBubbleGrassState));
+            public static readonly StateType OnlineSporePlantState = new("OnlineSporePlantState", typeof(OnlineSporePlantState));
             public static readonly StateType PlayerStateState = new("PlayerStateState", typeof(PlayerStateState));
             public static readonly StateType AbstractCreatureState = new("AbstractCreatureState", typeof(AbstractCreatureState));
             public static readonly StateType RealizedFlyState = new("RealizedFlyState", typeof(RealizedFlyState));
             public static readonly StateType RealizedPhysicalObjectState = new("RealizedPhysicalObjectState", typeof(RealizedPhysicalObjectState));
             public static readonly StateType RealizedDangleFruitState = new("RealizedDangleFruitState", typeof(RealizedDangleFruitState));
-            public static readonly StateType RealizedFirecrackerPlantState = new("RealizedFirecrackerPlantState", typeof(RealizedFirecrackerPlantState));
+            public static readonly StateType RealizedSeedCobState = new("RealizedSeedCobState", typeof(RealizedSeedCobState));
+            public static readonly StateType RealizedSlimeMoldState = new("RealizedSlimeMoldState", typeof(RealizedSlimeMoldState));
+            public static readonly StateType RealizedVultureGrubState = new("RealizedVultureGrubState", typeof(RealizedVultureGrubState));
             public static readonly StateType RealizedCreatureState = new("RealizedCreatureState", typeof(RealizedCreatureState));
             public static readonly StateType RealizedPlayerState = new("RealizedPlayerState", typeof(RealizedPlayerState));
             public static readonly StateType RealizedOverseerState = new("RealizedOverseerState", typeof(RealizedOverseerState));
             public static readonly StateType RealizedWeaponState = new("RealizedWeaponState", typeof(RealizedWeaponState));
+            public static readonly StateType RealizedSporePlantState = new("RealizedSporePlantState", typeof(RealizedSporePlantState));
             public static readonly StateType RealizedSpearState = new("RealizedSpearState", typeof(RealizedSpearState));
             public static readonly StateType CreatureStateState = new("CreatureStateState", typeof(CreatureStateState));
             public static readonly StateType CreatureHealthStateState = new("CreatureHealthStateState", typeof(CreatureHealthStateState));
@@ -79,6 +85,10 @@ namespace RainMeadow
 
             public static readonly StateType OnlinePhysicalObjectDefinition = new("OnlinePhysicalObjectDefinition", typeof(OnlinePhysicalObjectDefinition));
             public static readonly StateType OnlineConsumableDefinition = new("OnlineConsumableDefinition", typeof(OnlineConsumableDefinition));
+            public static readonly StateType OnlinePebblesPearlDefinition = new("OnlinePebblesPearlDefinition", typeof(OnlinePebblesPearlDefinition));
+            public static readonly StateType OnlineSeedCobDefinition = new("OnlineSeedCobDefinition", typeof(OnlineSeedCobDefinition));
+            public static readonly StateType OnlineBubbleGrassDefinition = new("OnlineBubbleGrassDefinition", typeof(OnlineBubbleGrassDefinition));
+            public static readonly StateType OnlineSporePlantDefinition = new("OnlineSporePlantDefinition", typeof(OnlineSporePlantDefinition));
             public static readonly StateType OnlineCreatureDefinition = new("OnlineCreatureDefinition", typeof(OnlineCreatureDefinition));
             public static readonly StateType MeadowAvatarSettingsDefinition = new ("MeadowAvatarSettings.Definition", typeof(MeadowAvatarSettings.Definition));
             public static readonly StateType SlugcatAvatarSettingsDefinition = new ("SlugcatAvatarSettings.Definition", typeof(StoryClientSettings.Definition));
