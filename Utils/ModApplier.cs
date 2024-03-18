@@ -13,8 +13,7 @@ namespace RainMeadow
         private readonly Menu.Menu menu;
         private List<ModManager.Mod> modsToEnable;
         private List<ModManager.Mod> modsToDisable;
-        private List<ModManager.Mod> modsToEnable;
-        private List<ModManager.Mod> modsToDisable;
+
 
         public event Action<ModApplier> OnFinish;
 
@@ -67,9 +66,7 @@ namespace RainMeadow
         }
 
         public bool ShowConfirmation(List<ModManager.Mod> modsToEnable, List<ModManager.Mod> modsToDisable, List<string> unknownMods)
-        public bool ShowConfirmation(List<ModManager.Mod> modsToEnable, List<ModManager.Mod> modsToDisable, List<string> unknownMods)
         {
-            string text = "Mod mismatch detected." + Environment.NewLine;
             string text = "Mod mismatch detected." + Environment.NewLine;
 
             if (modsToEnable.Count > 0)
@@ -95,7 +92,6 @@ namespace RainMeadow
             });
 
             manager.ShowDialog(requiresRestartDialog);
-            return false;
             return false;
         }
 

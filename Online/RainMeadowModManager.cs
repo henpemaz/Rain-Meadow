@@ -35,29 +35,6 @@ namespace RainMeadow
         }
 
         internal static bool CheckMods(string[] lobbyMods, string[] localMods)
-
-            var highImpactMods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().Select(mod => mod.id.ToString()).ToArray();
-
-            string remixModId = "rwremix"; // Add remix to high impact mods to manage game setting sync. 
-
-            var remixMod = ModManager.ActiveMods.Find(mod => mod.id == remixModId);
-
-            if (remixMod != null)
-            {
-
-                var highImpactModsList = highImpactMods.ToList();
-                highImpactModsList.Add(remixMod.id);
-                highImpactMods = highImpactModsList.ToArray();
-
-            } else
-            {
-                RainMeadow.Debug("Couldn't find rwremix");
-            }
-
-            return highImpactMods;
-        }
-
-        internal static bool CheckMods(string[] lobbyMods, string[] localMods)
         {
 
             if (!Enumerable.SequenceEqual(localMods, lobbyMods)) //change !
