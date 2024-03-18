@@ -95,12 +95,6 @@ namespace RainMeadow
                 };
 
                 return modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
-
-
-
-                return modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
-
-
             }
         }
 
