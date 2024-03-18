@@ -1,16 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 using RWCustom;
 using MonoMod.Cil;
-using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace RainMeadow
 {
-    class CicadaController : CreatureController
+    public abstract class AirCreatureController : CreatureController
+    {
+        protected AirCreatureController(Creature creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber) { }
+    }
+
+    class CicadaController : AirCreatureController
     {
         public CicadaController(Cicada creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber) { }
 
@@ -81,176 +82,7 @@ namespace RainMeadow
         {
             if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
             {
-
                 p.ConsciousUpdate();
-
-                var room = self.room;
-                var chunks = self.bodyChunks;
-                var nc = chunks.Length;
-
-                //// shroom things
-                //if (p.Adrenaline > 0f)
-                //{
-                //    if (self.waitToFlyCounter < 30) self.waitToFlyCounter = 30;
-                //    if (self.flying)
-                //    {
-                //        self.flyingPower = Mathf.Lerp(self.flyingPower, 1.4f, 0.03f * p.Adrenaline);
-                //    }
-                //}
-                //var stuccker = self.AI.stuckTracker; // used while in climbing/pipe mode
-                //stuccker.stuckCounter = (int)Mathf.Lerp(stuccker.minStuckCounter, stuccker.maxStuckCounter, p.Adrenaline);
-
-                // faster takeoff
-                if (self.waitToFlyCounter <= 15)
-                    self.waitToFlyCounter = 15;
-
-                bool preventStaminaRegen = false;
-                if (p.input[0].thrw && !p.input[1].thrw) p.wantToJump = 5;
-                if (p.wantToJump > 0) // dash charge
-                {
-                    if (self.flying && !self.Charging && self.chargeCounter == 0 && self.stamina > 0.2f)
-                    {
-                        self.Charge(self.mainBodyChunk.pos + (p.inputDir == Vector2.zero ? (chunks[0].pos - chunks[1].pos) : p.inputDir) * 100f);
-                        p.wantToJump = 0;
-                    }
-                }
-
-                if (self.chargeCounter > 0) // charge windup or midcharge
-                {
-                    self.stamina -= 0.008f;
-                    preventStaminaRegen = true;
-                    if (self.chargeCounter < 20)
-                    {
-                        if (self.stamina <= 0.2f || !p.input[0].thrw) // cancel out if unable to complete
-                        {
-                            self.chargeCounter = 0;
-                        }
-                    }
-                    else
-                    {
-                        if (self.stamina <= 0f) // cancel out mid charge if out of stamina (happens in long bouncy charges)
-                        {
-                            self.chargeCounter = 0;
-                        }
-                    }
-                    self.chargeDir = (self.chargeDir
-                                                + 0.15f * p.inputDir
-                                                + 0.03f * Custom.DirVec(self.bodyChunks[1].pos, self.mainBodyChunk.pos)).normalized;
-
-                    if (self.Charging && self.grasps[0] != null && self.grasps[0].grabbed is Weapon w)
-                    {
-                        SharedPhysics.CollisionResult result = SharedPhysics.TraceProjectileAgainstBodyChunks(null, self.room, w.firstChunk.lastPos, ref w.firstChunk.pos, w.firstChunk.rad, 1, self, true);
-                        if (result.hitSomething)
-                        {
-                            var dir = (self.bodyChunks[0].pos - self.bodyChunks[1].pos).normalized;
-                            var throwndir = new IntVector2(Mathf.Abs(dir.x) > 0.38 ? (int)Mathf.Sign(dir.x) : 0, Mathf.Abs(dir.y) > 0.38 ? (int)Mathf.Sign(dir.y) : 0);
-                            w.Thrown(self, w.firstChunk.pos, w.firstChunk.lastPos, throwndir, 1f, self.evenUpdate);
-                            if (w is Spear sp && !(result.obj is Player))
-                            {
-                                sp.spearDamageBonus *= 0.6f;
-                                sp.setRotation = dir;
-                            }
-                            w.Forbid();
-                            self.ReleaseGrasp(0);
-                        }
-                    }
-                }
-
-                // scoooot
-                self.AI.swooshToPos = null;
-                if (p.input[0].jmp)
-                {
-                    if (self.room.aimap.getAItile(self.mainBodyChunk.pos).terrainProximity > 1 && self.stamina > 0.5f) // cada.flying && 
-                    {
-                        self.AI.swooshToPos = self.mainBodyChunk.pos + p.inputDir * 40f + new Vector2(0, 4f);
-                        self.flyingPower = Mathf.Lerp(self.flyingPower, 1f, 0.05f);
-                        preventStaminaRegen = true;
-                        self.stamina -= 0.6f * self.stamina * p.inputDir.magnitude / ((!self.gender) ? 120f : 190f);
-                    }
-                    else // easier takeoff
-                    {
-                        if (self.waitToFlyCounter < 30) self.waitToFlyCounter = 30;
-                    }
-                }
-
-                // move
-                var basepos = 0.5f * (self.firstChunk.pos + room.MiddleOfTile(self.abstractCreature.pos.Tile));
-                if (p.inputDir != Vector2.zero || self.Charging)
-                {
-                    self.AI.behavior = CicadaAI.Behavior.GetUnstuck; // helps with sitting behavior
-
-                    if (self.enteringShortCut == null && self.shortcutDelay < 1)
-                    {
-                        for (int i = 0; i < nc; i++)
-                        {
-                            if (room.GetTile(chunks[i].pos).Terrain == Room.Tile.TerrainType.ShortcutEntrance)
-                            {
-                                var scdata = room.shortcutData(room.GetTilePosition(chunks[i].pos));
-                                if (scdata.shortCutType != ShortcutData.Type.DeadEnd)
-                                {
-                                    IntVector2 intVector = room.ShorcutEntranceHoleDirection(room.GetTilePosition(chunks[i].pos));
-                                    if (p.input[0].x == -intVector.x && p.input[0].y == -intVector.y)
-                                    {
-                                        RainMeadow.Debug("creature entering shortcut");
-                                        self.enteringShortCut = new IntVector2?(room.GetTilePosition(chunks[i].pos));
-
-                                        if (scdata.shortCutType == ShortcutData.Type.NPCTransportation)
-                                        {
-                                            var whackamoles = room.shortcuts.Where(s => s.shortCutType == ShortcutData.Type.NPCTransportation).ToList();
-                                            var index = whackamoles.IndexOf(self.room.shortcuts.FirstOrDefault(s => s.StartTile == scdata.StartTile));
-                                            if (index > -1 && whackamoles.Count > 0)
-                                            {
-                                                var newindex = (index + 1) % whackamoles.Count;
-                                                RainMeadow.Debug($"creature entered at {index} will exit at {newindex} mapped to {self.NPCTransportationDestination}");
-                                                self.NPCTransportationDestination = whackamoles[newindex].startCoord;
-                                                // needs to be set as destination as well otherwise might be overriden
-                                                self.AI.pathFinder.AbortCurrentGenerationPathFinding(); // ignore previous dest
-                                                self.abstractCreature.abstractAI.SetDestination(self.NPCTransportationDestination);
-                                            }
-                                            else
-                                            {
-                                                RainMeadow.Error("shortcut issue");
-                                            }
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if(self.enteringShortCut == null)
-                    {
-                        var dest = basepos + p.inputDir * 20f;
-                        if (self.flying) dest.y -= 12f; // nose up goes funny
-                        if (Mathf.Abs(p.inputDir.y) < 0.1f) // trying to move horizontally, compensate for momentum a bit
-                        {
-                            dest.y -= self.mainBodyChunk.vel.y * 1.3f;
-                        }
-                        var destCoord = self.room.GetWorldCoordinate(dest);
-                        if (destCoord != self.abstractCreature.abstractAI.destination)
-                        {
-                            self.AI.pathFinder.AbortCurrentGenerationPathFinding(); // ignore previous dest
-                            self.abstractCreature.abstractAI.SetDestination(self.room.GetWorldCoordinate(dest));
-                        }
-                    }
-                }
-                else
-                {
-                    self.AI.behavior = CicadaAI.Behavior.Idle;
-                    if (p.inputDir == Vector2.zero && p.inputLastDir != Vector2.zero) // let go
-                    {
-                        self.abstractCreature.abstractAI.SetDestination(self.room.GetWorldCoordinate(basepos));
-                    }
-                }
-
-                if (preventStaminaRegen) // opposite of what happens in orig
-                {
-                    if (self.grabbedBy.Count == 0 && self.stickyCling == null)
-                    {
-                        self.stamina -= 0.014285714f;
-                    }
-                }
-                self.stamina = Mathf.Clamp01(self.stamina);
             }
 
             orig(self);
@@ -380,6 +212,113 @@ namespace RainMeadow
             }
         }
 
+        internal override void ConsciousUpdate()
+        {
+            base.ConsciousUpdate();
+
+            var room = cicada.room;
+            var chunks = cicada.bodyChunks;
+            var nc = chunks.Length;
+
+            //// shroom things
+            //if (this.Adrenaline > 0f)
+            //{
+            //    if (cicada.waitToFlyCounter < 30) cicada.waitToFlyCounter = 30;
+            //    if (cicada.flying)
+            //    {
+            //        cicada.flyingPower = Mathf.Lerp(cicada.flyingPower, 1.4f, 0.03f * this.Adrenaline);
+            //    }
+            //}
+            //var stuccker = cicada.AI.stuckTracker; // used while in climbing/pipe mode
+            //stuccker.stuckCounter = (int)Mathf.Lerp(stuccker.minStuckCounter, stuccker.maxStuckCounter, this.Adrenaline);
+
+            //cicada.flipH
+
+
+            // faster takeoff
+            if (cicada.waitToFlyCounter <= 30)
+                cicada.waitToFlyCounter = 30;
+
+            bool preventStaminaRegen = false;
+            if (this.input[0].thrw && !this.input[1].thrw) this.wantToJump = 5;
+            if (this.wantToJump > 0) // dash charge
+            {
+                if (cicada.flying && !cicada.Charging && cicada.chargeCounter == 0 && cicada.stamina > 0.2f)
+                {
+                    cicada.Charge(cicada.mainBodyChunk.pos + (this.inputDir == Vector2.zero ? (chunks[0].pos - chunks[1].pos) : this.inputDir) * 100f);
+                    this.wantToJump = 0;
+                }
+            }
+
+            if (cicada.chargeCounter > 0) // charge windup or midcharge
+            {
+                cicada.stamina -= 0.008f;
+                preventStaminaRegen = true;
+                if (cicada.chargeCounter < 20)
+                {
+                    if (cicada.stamina <= 0.2f || !this.input[0].thrw) // cancel out if unable to complete
+                    {
+                        cicada.chargeCounter = 0;
+                    }
+                }
+                else
+                {
+                    if (cicada.stamina <= 0f) // cancel out mid charge if out of stamina (happens in long bouncy charges)
+                    {
+                        cicada.chargeCounter = 0;
+                    }
+                }
+                cicada.chargeDir = (cicada.chargeDir
+                                            + 0.15f * this.inputDir
+                                            + 0.03f * Custom.DirVec(cicada.bodyChunks[1].pos, cicada.mainBodyChunk.pos)).normalized;
+
+                // hopefully won't be needing that in the meadows...
+                //if (cicada.Charging && cicada.grasps[0] != null && cicada.grasps[0].grabbed is Weapon w)
+                //{
+                //    SharedPhysics.CollisionResult result = SharedPhysics.TraceProjectileAgainstBodyChunks(null, cicada.room, w.firstChunk.lastPos, ref w.firstChunk.pos, w.firstChunk.rad, 1, cicada, true);
+                //    if (result.hitSomething)
+                //    {
+                //        var dir = (cicada.bodyChunks[0].pos - cicada.bodyChunks[1].pos).normalized;
+                //        var throwndir = new IntVector2(Mathf.Abs(dir.x) > 0.38 ? (int)Mathf.Sign(dir.x) : 0, Mathf.Abs(dir.y) > 0.38 ? (int)Mathf.Sign(dir.y) : 0);
+                //        w.Thrown(cicada, w.firstChunk.pos, w.firstChunk.lastPos, throwndir, 1f, cicada.evenUpdate);
+                //        if (w is Spear sp && !(result.obj is Player))
+                //        {
+                //            sp.spearDamageBonus *= 0.6f;
+                //            sp.setRotation = dir;
+                //        }
+                //        w.Forbid();
+                //        cicada.ReleaseGrasp(0);
+                //    }
+                //}
+            }
+
+            // scoooot
+            cicada.AI.swooshToPos = null;
+            if (this.input[0].jmp)
+            {
+                if (cicada.room.aimap.getAItile(cicada.mainBodyChunk.pos).terrainProximity > 1 && cicada.stamina > 0.5f) // cada.flying && 
+                {
+                    cicada.AI.swooshToPos = cicada.mainBodyChunk.pos + this.inputDir * 40f + new Vector2(0, 4f);
+                    cicada.flyingPower = Mathf.Lerp(cicada.flyingPower, 1f, 0.05f);
+                    preventStaminaRegen = true;
+                    cicada.stamina -= 0.6f * cicada.stamina * this.inputDir.magnitude / ((!cicada.gender) ? 120f : 190f);
+                }
+                else // easier takeoff
+                {
+                    if (cicada.waitToFlyCounter < 30) cicada.waitToFlyCounter = 30;
+                }
+            }
+
+            if (preventStaminaRegen) // opposite of what happens in orig
+            {
+                if (cicada.grabbedBy.Count == 0 && cicada.stickyCling == null)
+                {
+                    cicada.stamina -= 0.014285714f;
+                }
+            }
+            cicada.stamina = Mathf.Clamp01(cicada.stamina);
+        }
+
         protected override void LookImpl(Vector2 pos)
         {
             var dir = (pos - cicada.DangerPos) / 500f;
@@ -387,6 +326,33 @@ namespace RainMeadow
 
             (cicada.graphicsModule as CicadaGraphics).lookDir = dir.normalized * Mathf.Pow(mag, 0.5f) * 1.5f;
             (cicada.graphicsModule as CicadaGraphics).lookRotation = - RWCustom.Custom.VecToDeg(dir);
+        }
+
+        public override WorldCoordinate CurrentPathfindingPosition => cicada.AtSitDestination ? cicada.AI.pathFinder.destination : creature.room.GetWorldCoordinate(0.5f * (cicada.firstChunk.pos + creature.room.MiddleOfTile(cicada.abstractCreature.pos.Tile)) + (cicada.flying && !creature.IsTileSolid(0, 0, -1) ? new Vector2(0, -20f) : new Vector2(0, 0f)));
+
+        internal override bool FindDestination(WorldCoordinate basecoord, out WorldCoordinate toPos, out float magnitude)
+        {
+            if (base.FindDestination(basecoord, out toPos, out magnitude)) return true;
+            var basepos = 0.5f * (cicada.firstChunk.pos + creature.room.MiddleOfTile(cicada.abstractCreature.pos.Tile));
+            var dest = basepos + this.inputDir * 30f;
+            if (cicada.flying) dest.y -= 12f; // nose up goes funny
+            if (Mathf.Abs(this.inputDir.y) < 0.1f) // trying to move horizontally, compensate for momentum a bit
+            {
+                dest.y -= cicada.mainBodyChunk.vel.y * 2f;
+            }
+            toPos = cicada.room.GetWorldCoordinate(dest);
+            magnitude = inputDir.magnitude;
+            return true;
+        }
+
+        protected override void Resting()
+        {
+            cicada.AI.behavior = CicadaAI.Behavior.Idle;
+        }
+
+        protected override void Moving(float magnitude)
+        {
+            cicada.AI.behavior = CicadaAI.Behavior.GetUnstuck; // helps with sitting behavior
         }
     }
 }

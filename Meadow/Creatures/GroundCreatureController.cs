@@ -13,7 +13,6 @@ namespace RainMeadow
         protected int canPoleJump;
         protected int canClimbJump;
         public int superLaunchJump;
-        public bool lockInPlace;
 
         public abstract bool HasFooting { get; }
         public abstract bool CanClimbJump { get; }
@@ -26,16 +25,9 @@ namespace RainMeadow
 
         }
 
-        public virtual WorldCoordinate CurrentPathfindingPosition
+        internal override bool FindDestination(WorldCoordinate basecoord, out WorldCoordinate toPos, out float magnitude)
         {
-            get
-            {
-                return creature.coord;
-            }
-        }
-
-        internal virtual bool FindDestination(WorldCoordinate basecoord, out WorldCoordinate toPos, out float magnitude)
-        {
+            if (base.FindDestination(basecoord, out toPos, out magnitude)) return true;
 
             var room = creature.room;
             var chunks = creature.bodyChunks;
@@ -70,50 +62,7 @@ namespace RainMeadow
                 GripPole(tile0.AnyBeam ? tile0 : tile1);
             }
 
-            // prio 1: entering shortcut
-            if (creature.enteringShortCut == null && creature.shortcutDelay < 1)
-            {
-                for (int i = 0; i < nc; i++)
-                {
-                    if (room.GetTile(chunks[i].pos).Terrain == Room.Tile.TerrainType.ShortcutEntrance)
-                    {
-                        var scdata = room.shortcutData(room.GetTilePosition(chunks[i].pos));
-                        if (scdata.shortCutType != ShortcutData.Type.DeadEnd)
-                        {
-                            IntVector2 intVector = room.ShorcutEntranceHoleDirection(room.GetTilePosition(chunks[i].pos));
-                            if (this.input[0].x == -intVector.x && this.input[0].y == -intVector.y)
-                            {
-                                RainMeadow.Debug("creature entering shortcut");
-                                creature.enteringShortCut = new IntVector2?(room.GetTilePosition(chunks[i].pos));
-
-                                if (scdata.shortCutType == ShortcutData.Type.NPCTransportation)
-                                {
-                                    var whackamoles = room.shortcuts.Where(s => s.shortCutType == ShortcutData.Type.NPCTransportation).ToList();
-                                    var index = whackamoles.IndexOf(creature.room.shortcuts.FirstOrDefault(s => s.StartTile == scdata.StartTile));
-                                    if (index > -1 && whackamoles.Count > 0)
-                                    {
-                                        var newindex = (index + 1) % whackamoles.Count;
-                                        RainMeadow.Debug($"creature entered at {index} will exit at {newindex} mapped to {creature.NPCTransportationDestination}");
-                                        creature.NPCTransportationDestination = whackamoles[newindex].startCoord;
-                                        // needs to be set as destination as well otherwise might be overriden
-                                        toPos = creature.NPCTransportationDestination;
-                                        return true;
-                                    }
-                                    else
-                                    {
-                                        RainMeadow.Error("shortcut issue");
-                                    }
-
-                                    ClearMovementOverride();
-                                }
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // prio 2: climb
+            // climb
             if (this.input[0].y > 0 && previousAccessibility <= AItile.Accessibility.Climb || currentTile.WaterSurface)
             {
                 bool climbing = false;
@@ -380,71 +329,6 @@ namespace RainMeadow
 
             // move
             //var basepos = 0.5f * (self.bodyChunks[0].pos + self.bodyChunks[1].pos);
-
-            if (onlineCreature.isMine)
-            {
-                var mcd = onlineCreature.GetData<MeadowCreatureData>();
-                var basecoord = CurrentPathfindingPosition;
-                if (!lockInPlace && this.inputDir != Vector2.zero)
-                {
-                    if (specialInput[0].direction.magnitude < 0.2f)
-                    {
-                        LookImpl(creature.DangerPos + 200 * inputDir);
-                    }
-                    // todo have remote send us this instead of pathfinding for remote entities
-                    if (FindDestination(basecoord, out var toPos, out float magnitude))
-                    {
-                        Moving(magnitude);
-                        mcd.moveSpeed = magnitude;
-                        if (toPos != creature.abstractCreature.abstractAI.destination)
-                        {
-                            if (localTrace) RainMeadow.Debug($"new destination {toPos.Tile}");
-                            this.ForceAIDestination(toPos);
-                            mcd.destination = toPos;
-                        }
-                    }
-                    else
-                    {
-                        Resting();
-                        mcd.moveSpeed = 0f;
-                        if (basecoord != creature.abstractCreature.abstractAI.destination)
-                        {
-                            if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"resting at {basecoord.Tile}");
-                            this.ForceAIDestination(basecoord);
-                            mcd.destination = basecoord;
-                        }
-                    }
-                }
-                else
-                {
-                    Resting();
-                    mcd.moveSpeed = 0f;
-                    if (basecoord != creature.abstractCreature.abstractAI.destination)
-                    {
-                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"resting at {basecoord.Tile}");
-                        this.ForceAIDestination(basecoord);
-                        mcd.destination = basecoord;
-                    }
-                }
-            }
-            else
-            {
-                var mcd = onlineCreature.GetData<MeadowCreatureData>();
-                if (mcd.moveSpeed > 0f)
-                {
-                    Moving(mcd.moveSpeed);
-                }
-                else
-                {
-                    Resting();
-                }
-                if (mcd.destination != creature.abstractCreature.abstractAI.destination)
-                {
-                    this.ForceAIDestination(mcd.destination);
-                }
-            }
-
-            lockInPlace = false;
         }
 
         protected virtual int GetFlip()
@@ -466,11 +350,9 @@ namespace RainMeadow
             return flipDirection;
         }
 
-        protected abstract void Resting();
         protected abstract void GripPole(Room.Tile tile0);
         protected abstract void ClearMovementOverride();
         protected abstract void MovementOverride(MovementConnection movementConnection);
-        protected abstract void Moving(float magnitude);
 
         internal override void Update(bool eu)
         {
