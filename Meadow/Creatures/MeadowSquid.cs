@@ -296,7 +296,7 @@ namespace RainMeadow
             cicada.AI.swooshToPos = null;
             if (this.input[0].jmp)
             {
-                if (cicada.room.aimap.getAItile(cicada.mainBodyChunk.pos).terrainProximity > 1 && cicada.stamina > 0.5f) // cada.flying && 
+                if (cicada.room.aimap.getTerrainProximity(cicada.mainBodyChunk.pos) > 1 && cicada.stamina > 0.5f) // cada.flying && 
                 {
                     cicada.AI.swooshToPos = cicada.mainBodyChunk.pos + this.inputDir * 40f + new Vector2(0, 4f);
                     cicada.flyingPower = Mathf.Lerp(cicada.flyingPower, 1f, 0.05f);
