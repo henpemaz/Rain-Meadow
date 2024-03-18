@@ -35,7 +35,7 @@ namespace RainMeadow
         internal static bool CheckMods(string[] lobbyMods, string[] localMods)
         {
 
-            if (Enumerable.SequenceEqual(localMods, lobbyMods)) //change !
+            if (!Enumerable.SequenceEqual(localMods, lobbyMods)) //change !
             {
                 RainMeadow.Debug("Same mod set !");
                 return true;
@@ -54,6 +54,7 @@ namespace RainMeadow
                 List<ModManager.Mod> modsToEnable = new();
                 List<ModManager.Mod> modsToDisable = new();
 
+                modsToDisable.Add(ModManager.ActiveMods.Find(mod => mod.id == "rwremix"));
 
                 foreach (var id in MissingMods)
                 {
@@ -84,7 +85,8 @@ namespace RainMeadow
 
                 modApplyer.OnFinish += (ModApplier modApplyer) => // currently does not reconnect users to the lobby
                 {
-                    Utils.Restart($"+connect_lobby {MatchmakingManager.instance.GetLobbyID()}");
+                    modApplyer.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+                    // Utils.Restart($"+connect_lobby {MatchmakingManager.instance.GetLobbyID()}");
 
                 };
 

@@ -1,6 +1,7 @@
 ﻿using Menu;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 
 namespace RainMeadow
@@ -18,13 +19,23 @@ namespace RainMeadow
         public ModApplier(ProcessManager manager, List<bool> pendingEnabled, List<int> pendingLoadOrder) : base(manager, pendingEnabled, pendingLoadOrder)
         {
             On.RainWorld.Update += RainWorld_Update;
+            On.ModManager.ModApplyer.Update += ModApplyer_Update;
             menu = (Menu.Menu)manager.currentMainLoop;
+
+        }
+
+        private void ModApplyer_Update(On.ModManager.ModApplyer.orig_Update orig, ModManager.ModApplyer self)
+        {
+            orig(self);
+            RainMeadow.Debug("IS MMF ENABLED " + ModManager.MMF);
+
+
         }
 
         private void RainWorld_Update(On.RainWorld.orig_Update orig, RainWorld self)
         {
             orig(self);
-
+            
             Update();
         }
 
@@ -32,6 +43,7 @@ namespace RainMeadow
         {
 
             base.Update();
+            
 
             dialogBox?.SetText(menu.Translate("mod_menu_apply_mods") + Environment.NewLine + statusText);
 
@@ -64,7 +76,8 @@ namespace RainMeadow
             if (modsToDisable.Count > 0)
             {
                 text += Environment.NewLine + "Mods that will be disabled: " + string.Join(", ", modsToDisable.ConvertAll(mod => mod.LocalizedName));
-            }   this.modsToDisable = modsToDisable;
+            }
+            this.modsToDisable = modsToDisable;
             if (unknownMods.Count > 0)
             {
                 text += Environment.NewLine + "Unable to find those mods, please install them: " + string.Join(", ", unknownMods);
@@ -83,6 +96,8 @@ namespace RainMeadow
 
         public new void Start(bool filesInBadState)
         {
+
+            
             if (requiresRestartDialog != null)
             {
                 manager.dialog = null;
@@ -90,18 +105,38 @@ namespace RainMeadow
                 requiresRestartDialog = null;
             }
 
-            foreach(ModManager.Mod mod in this.modsToDisable)
+            if (modsToDisable.Count > 0)
             {
-                ModManager.ActiveMods.Remove(mod);
-                RainMeadow.Debug($"Disabled mod: {mod.name}");
-            }
-            foreach(ModManager.Mod mod in this.modsToEnable)
-            {
-                ModManager.ActiveMods.Add(mod);
-                RainMeadow.Debug($"Enabled mod: {mod.name}");
+                foreach (ModManager.Mod mod in this.modsToDisable)
+                {
+                    ModManager.ActiveMods.Remove(mod);
+                    RainMeadow.Debug($"Disabled mod: {mod.name}");
+
+                }
+
+                foreach (var mod in ModManager.ActiveMods)
+                {
+                    RainMeadow.Debug("now enabled mods: " + mod.name);
+                }
+
             }
 
+
+            /*
+                        if (modsToEnable.Count > 0 && modsToEnable is not null)
+                        {
+                            foreach (ModManager.Mod mod in this.modsToEnable)
+                            {
+                                ModManager.ActiveMods.Add(mod);
+                                RainMeadow.Debug($"Enabled mod: {mod.name}");
+                            }
+                        }*/
+
+           
+
             base.Start(filesInBadState);
+            // All of this works but does not actually chnage the active mods, why?
+
         }
     }
 }
