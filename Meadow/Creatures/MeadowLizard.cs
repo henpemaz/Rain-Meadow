@@ -417,7 +417,7 @@ namespace RainMeadow
 
         protected override void ClearMovementOverride()
         {
-            lizard.commitedToDropConnection = new MovementConnection();
+            lizard.commitedToDropConnection = default(MovementConnection);
         }
     }
 }
