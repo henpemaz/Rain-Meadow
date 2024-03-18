@@ -22,6 +22,7 @@ namespace RainMeadow
         public static Lobby lobby;
 
 
+
         public static LobbyInfo currentlyJoiningLobby;
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
@@ -34,6 +35,7 @@ namespace RainMeadow
             MatchmakingManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
             RainMeadow.Debug("OnlineManager Created");
         }
+
 
         private void OnlineManager_OnLobbyJoined(bool ok, string error)
         {
@@ -67,6 +69,7 @@ namespace RainMeadow
             {
                 MatchmakingManager.instance.LeaveLobby();
             }
+
 
         }
 
@@ -163,7 +166,9 @@ namespace RainMeadow
                     SendData(player);
                 }
                 //#if TRACING
+                //#if TRACING
                 RainMeadow.tracing = false; // cleanup
+                                            //#endif
                                             //#endif
             }
         }

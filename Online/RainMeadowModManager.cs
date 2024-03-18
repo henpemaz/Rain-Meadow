@@ -3,6 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using System.Reflection;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -33,11 +35,35 @@ namespace RainMeadow
         }
 
         internal static bool CheckMods(string[] lobbyMods, string[] localMods)
+
+            var highImpactMods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().Select(mod => mod.id.ToString()).ToArray();
+
+            string remixModId = "rwremix"; // Add remix to high impact mods to manage game setting sync. 
+
+            var remixMod = ModManager.ActiveMods.Find(mod => mod.id == remixModId);
+
+            if (remixMod != null)
+            {
+
+                var highImpactModsList = highImpactMods.ToList();
+                highImpactModsList.Add(remixMod.id);
+                highImpactMods = highImpactModsList.ToArray();
+
+            } else
+            {
+                RainMeadow.Debug("Couldn't find rwremix");
+            }
+
+            return highImpactMods;
+        }
+
+        internal static bool CheckMods(string[] lobbyMods, string[] localMods)
         {
 
             if (!Enumerable.SequenceEqual(localMods, lobbyMods)) //change !
             {
                 RainMeadow.Debug("Same mod set !");
+                return true;
                 return true;
             }
             else
@@ -84,11 +110,16 @@ namespace RainMeadow
                 ModApplier modApplyer = new(RWCustom.Custom.rainWorld.processManager, mods.ToList(), loadOrder);
 
                 modApplyer.OnFinish += (ModApplier modApplyer) => // currently does not reconnect users to the lobby
+                modApplyer.OnFinish += (ModApplier modApplyer) => // currently does not reconnect users to the lobby
                 {
                     modApplyer.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
                     // Utils.Restart($"+connect_lobby {MatchmakingManager.instance.GetLobbyID()}");
 
                 };
+
+                return modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
+
+
 
                 return modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
 

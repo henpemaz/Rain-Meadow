@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static RainMeadow.OnlineGameMode;
+using static RainMeadow.OnlineGameMode;
 
 namespace RainMeadow
 {
@@ -265,8 +266,16 @@ namespace RainMeadow
             }
 
 
+
+
             if (currentlySelectedCard == 0)
             {
+
+                if ((modeDropDown.value == "Story") && !ModManager.MMF)
+                {
+                    ShowErrorDialog("Please enable Remix before playing Story Mode Online");
+                    return;
+                }
 
                 if ((modeDropDown.value == "Story") && !ModManager.MMF)
                 {
