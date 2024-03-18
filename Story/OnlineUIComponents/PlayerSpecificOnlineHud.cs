@@ -10,7 +10,7 @@ namespace RainMeadow
         public StoryClientSettings clientSettings;
 
         public AbstractCreature abstractPlayer;
-        public OnlinePlayerArrow playerArrow;
+        public OnlinePlayerDisplay playerDisplay;
         public OnlinePlayerDeathBump deathBump;
         public int deadCounter = -1;
         public int antiDeathBumpFlicker;
@@ -37,8 +37,6 @@ namespace RainMeadow
             }
         }
 
-
-        // todo tracking of player
         public PlayerSpecificOnlineHud(HUD.HUD hud, RoomCamera camera, StoryGameMode storyGameMode, StoryClientSettings clientSettings) : base(hud)
         {
             RainMeadow.Debug("Adding PlayerSpecificOnlineHud for " + clientSettings.owner);
@@ -46,8 +44,10 @@ namespace RainMeadow
             camrect = new Rect(Vector2.zero, this.camera.sSize).CloneWithExpansion(-30f);
             this.storyGameMode = storyGameMode;
             this.clientSettings = clientSettings;
-            this.playerArrow = new OnlinePlayerArrow(this);
-            this.parts.Add(this.playerArrow);
+
+            this.playerDisplay = new OnlinePlayerDisplay(this);
+
+            this.parts.Add(this.playerDisplay);
 
             needed = true;
         }
@@ -56,7 +56,7 @@ namespace RainMeadow
         {
             get
             {
-                return clientSettings.inGame && abstractPlayer != null 
+                return clientSettings.inGame && abstractPlayer != null
                     && (
                         abstractPlayer.state.dead ||
                         (
@@ -74,14 +74,15 @@ namespace RainMeadow
             {
                 if (this.parts[i].slatedForDeletion)
                 {
-                    if (this.parts[i] == this.playerArrow)
+                    if (this.parts[i] == this.playerDisplay)
                     {
-                        this.playerArrow = null;
+                        this.playerDisplay = null;
                     }
                     else if (this.parts[i] == this.deathBump)
                     {
                         this.deathBump = null;
                     }
+
                     this.parts[i].ClearSprites();
                     this.parts.RemoveAt(i);
                 }
@@ -96,28 +97,29 @@ namespace RainMeadow
             if (abstractPlayer == null)
             {
                 RainMeadow.Debug("finding player abscrt for " + clientSettings.owner);
-                if(clientSettings.avatarId.FindEntity(true) is OnlineCreature oc)
+                if (clientSettings.avatarId.FindEntity(true) is OnlineCreature oc)
                 {
                     abstractPlayer = oc.abstractCreature;
                 }
                 return;
             }
-            if (this.playerArrow == null)
+            if (this.playerDisplay == null)
             {
                 RainMeadow.Debug("adding player arrow for " + clientSettings.owner);
-                this.playerArrow = new OnlinePlayerArrow(this);
-                this.parts.Add(this.playerArrow);
+                this.playerDisplay = new OnlinePlayerDisplay(this);
+                this.parts.Add(this.playerDisplay);
             }
+
 
             // tracking
             this.found = false;
-            
+
             Vector2 rawPos = new();
             // in this room
             if (abstractPlayer.Room == camera.room.abstractRoom)
             {
                 // in room or in shortcut
-                if(abstractPlayer.realizedCreature is Player player)
+                if (abstractPlayer.realizedCreature is Player player)
                 {
                     if (player.room == camera.room)
                     {
@@ -152,7 +154,7 @@ namespace RainMeadow
                 var connections = camera.room.abstractRoom.connections;
                 for (int i = 0; i < connections.Length; i++)
                 {
-                    if(abstractPlayer.pos.room == connections[i])
+                    if (abstractPlayer.pos.room == connections[i])
                     {
                         found = true;
                         var shortcutpos = camera.room.LocalCoordinateOfNode(i);
@@ -164,15 +166,18 @@ namespace RainMeadow
                 if (found)
                 {
                     this.drawpos = camrect.GetClosestInteriorPoint(rawPos);
+                    Vector2 translation = pointDir * 10f; // Vector shift for shortcut viewability
+                    this.drawpos += translation;
+
                     if (drawpos != rawPos)
                     {
-                        pointDir = (rawPos - drawpos).normalized;
+                        pointDir = (rawPos - drawpos).normalized * -1; // Point away from the shortcut entrance
                     }
                 }
                 else // elsewhere, use world pos
                 {
                     var world = camera.game.world;
-                    if(world.GetAbstractRoom(abstractPlayer.pos.room) is AbstractRoom abstractRoom) // room in region
+                    if (world.GetAbstractRoom(abstractPlayer.pos.room) is AbstractRoom abstractRoom) // room in region
                     {
                         found = true;
                         if (abstractPlayer.pos != lastWorldPos || camera.currentCameraPosition != lastCameraPos || camera.room.abstractRoom.index != lastAbstractRoom) // cache these maths
