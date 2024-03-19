@@ -1,8 +1,7 @@
-﻿using UnityEngine;
-using System.Collections.Generic;
-using HUD;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System;
+using UnityEngine;
+using HUD;
 
 namespace RainMeadow
 {
@@ -33,7 +32,6 @@ namespace RainMeadow
             On.Player.Update += Player_Update;
 
             On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass;
-
             On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
 
 
@@ -44,6 +42,147 @@ namespace RainMeadow
             On.RainWorldGame.GameOver += RainWorldGame_GameOver;
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
 
+            On.BubbleGrass.Update += BubbleGrass_Update;
+            On.WaterNut.Swell += WaterNut_Swell;
+            On.SporePlant.Pacify += SporePlant_Pacify;
+
+            On.Oracle.CreateMarble += Oracle_CreateMarble;
+            On.Oracle.SetUpMarbles += Oracle_SetUpMarbles;
+
+        }
+
+        private void Oracle_SetUpMarbles(On.Oracle.orig_SetUpMarbles orig, Oracle self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+                return;
+            }
+
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            if (room.isOwner)
+            {
+                orig(self); //Only setup the room if we are the room owner.
+            }
+        }
+
+        private void Oracle_CreateMarble(On.Oracle.orig_CreateMarble orig, Oracle self, PhysicalObject orbitObj, Vector2 ps, int circle, float dist, int color)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self,orbitObj,ps,circle,dist,color);
+                return;
+            }
+
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            if (room.isOwner)
+            {
+                AbstractPhysicalObject abstractPhysicalObject = new PebblesPearl.AbstractPebblesPearl(self.room.world, null, self.room.GetWorldCoordinate(ps), self.room.game.GetNewID(), -1, -1, null, color, self.pearlCounter * ((ModManager.MSC && self.room.world.name == "DM") ? -1 : 1));
+                self.pearlCounter++;
+                self.room.abstractRoom.AddEntity(abstractPhysicalObject);
+
+                abstractPhysicalObject.RealizeInRoom();
+
+                PebblesPearl pebblesPearl = abstractPhysicalObject.realizedObject as PebblesPearl;
+                pebblesPearl.oracle = self;
+                pebblesPearl.firstChunk.HardSetPosition(ps);
+                pebblesPearl.orbitObj = orbitObj;
+                if (orbitObj == null)
+                {
+                    pebblesPearl.hoverPos = new Vector2?(ps);
+                }
+                pebblesPearl.orbitCircle = circle;
+                pebblesPearl.orbitDistance = dist;
+                pebblesPearl.marbleColor = (abstractPhysicalObject as PebblesPearl.AbstractPebblesPearl).color;
+                self.marbles.Add(pebblesPearl);
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        private void SporePlant_Pacify(On.SporePlant.orig_Pacify orig, SporePlant self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+                return;
+            }
+
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineSporePlant);
+                room.owner.InvokeRPC(ConsumableRPCs.pacifySporePlant, onlineSporePlant);
+            }
+            else 
+            {
+                orig(self);
+            }
+        }
+
+        private void WaterNut_Swell(On.WaterNut.orig_Swell orig, WaterNut self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+                return;
+            }
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            self.room.PlaySound(SoundID.Water_Nut_Swell, self.firstChunk.pos);
+            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineWaterNut);
+                if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(ConsumableRPCs.swellWaterNut, onlineWaterNut))) 
+                {
+                    room.owner.InvokeRPC(ConsumableRPCs.swellWaterNut, onlineWaterNut);
+                    self.Destroy();
+                }
+            }
+            else {
+                if (self.grabbedBy.Count > 0)
+                {
+                    self.grabbedBy[0].Release();
+                }
+                var abstractWaterNut = self.abstractPhysicalObject as WaterNut.AbstractWaterNut;
+
+                EntityID id = self.room.world.game.GetNewID();
+                var abstractSwollenWaterNut = new WaterNut.AbstractWaterNut(abstractWaterNut.world, null, abstractWaterNut.pos, id, abstractWaterNut.originRoom, abstractWaterNut.placedObjectIndex, null, true);
+                self.room.abstractRoom.AddEntity(abstractSwollenWaterNut);
+                OnlinePhysicalObject.map.TryGetValue(abstractSwollenWaterNut, out var onlineWaterNut);
+
+                abstractSwollenWaterNut.RealizeInRoom();
+
+                SwollenWaterNut swollenWaterNut = abstractSwollenWaterNut.realizedObject as SwollenWaterNut;
+                //self.room.AddObject(swollenWaterNut);
+                swollenWaterNut.firstChunk.HardSetPosition(self.firstChunk.pos);
+                swollenWaterNut.AbstrConsumable.isFresh = abstractSwollenWaterNut.isFresh;
+                onlineWaterNut.realized = true;
+                self.Destroy();
+            }
+        }
+
+        private void BubbleGrass_Update(On.BubbleGrass.orig_Update orig, BubbleGrass self, bool eu)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self,eu);
+                return;
+            }
+
+            var prevOxygenLevel = self.AbstrBubbleGrass.oxygenLeft;
+            orig(self, eu);
+            var currentOxygenLevel = self.AbstrBubbleGrass.oxygenLeft;
+
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                if (prevOxygenLevel > currentOxygenLevel) {
+                    OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineBubbleGrass);
+                    room.owner.InvokeRPC(ConsumableRPCs.SetOxygenLevel, onlineBubbleGrass, currentOxygenLevel);
+                }
+            }
         }
 
         private void Player_GetInitialSlugcatClass(On.Player.orig_GetInitialSlugcatClass orig, Player self)
@@ -120,15 +259,16 @@ namespace RainMeadow
         {
             if (isStoryMode(out var gameMode))
             {
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
-                {
-
-                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                    {
-                        if (ac.state.alive) return;
-                    }
-                }
+                //Initiate death whenever any player dies.
+                //foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+                //{
+                //
+                //    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                //    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                //    {
+                //        if (ac.state.alive) return;
+                //    }
+                //}
                 //INITIATE DEATH
                 foreach (OnlinePlayer player in OnlineManager.players)
                 {
