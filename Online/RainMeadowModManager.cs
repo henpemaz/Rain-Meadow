@@ -5,6 +5,7 @@ using System.Reflection;
 using UnityEngine;
 using System.Reflection;
 using UnityEngine;
+using IL.Menu;
 
 namespace RainMeadow
 {
@@ -87,10 +88,9 @@ namespace RainMeadow
                 ModApplier modApplyer = new(RWCustom.Custom.rainWorld.processManager, mods.ToList(), loadOrder);
 
                 modApplyer.OnFinish += (ModApplier modApplyer) => // currently does not reconnect users to the lobby
-                modApplyer.OnFinish += (ModApplier modApplyer) => // currently does not reconnect users to the lobby
                 {
                     modApplyer.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
-                    // Utils.Restart($"+connect_lobby {MatchmakingManager.instance.GetLobbyID()}");
+                    //Utils.Restart($"+connect_lobby {MatchmakingManager.instance.GetLobbyID()}");
 
                 };
 
