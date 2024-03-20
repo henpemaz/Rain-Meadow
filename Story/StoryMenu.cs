@@ -310,16 +310,10 @@ namespace RainMeadow
 
             bodyColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 553), "FFFFFF");
             var wrapper = new UIelementWrapper(this.tabWrapper, bodyColorPicker);
-            tabWrapper._tab.AddItems(bodyColorPicker.colorPicker);
-            bodyColorPicker.colorPicker.wrapper = wrapper;
-            bodyColorPicker.colorPicker.Hide();
             bodyColorPicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
 
             eyeColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 500), "000000");
             var wrapper2 = new UIelementWrapper(this.tabWrapper, eyeColorPicker);
-            tabWrapper._tab.AddItems(eyeColorPicker.colorPicker);
-            eyeColorPicker.colorPicker.wrapper = wrapper2;
-            eyeColorPicker.colorPicker.Hide();
             eyeColorPicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
         }
         private void SetupMenuItems()
@@ -405,8 +399,6 @@ namespace RainMeadow
                 };
             }
         }
-
-
 
         public int GetCurrentlySelectedOfSeries(string series)
         {

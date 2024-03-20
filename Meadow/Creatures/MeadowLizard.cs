@@ -3,22 +3,22 @@ using System;
 using RWCustom;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
-using System.Linq;
 
 namespace RainMeadow
 {
-    class LizardController : CreatureController
+    class LizardController : GroundCreatureController
     {
-        private float jumpBoost;
-        private int forceJump;
-        private int canGroundJump;
-        private int canPoleJump;
-        private int canClimbJump;
-        private IntVector2? lastEnteringShortcut;
-
         public LizardController(Lizard creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber) { }
 
         public Lizard lizard => creature as Lizard;
+
+        public override bool CanClimbJump => !lizard.applyGravity && !CanGroundJump;
+
+        public override bool CanPoleJump => lizard.LegsGripping >= 2 && (creature.room.aimap.getAItile(creature.bodyChunks[0].pos).acc == AItile.Accessibility.Climb && creature.room.GetTile(creature.bodyChunks[0].pos).AnyBeam);
+
+        public override bool CanGroundJump => lizard.LegsGripping >= 2 && (creature.bodyChunks[0].contactPoint.y == -1 || creature.bodyChunks[1].contactPoint.y == -1 || creature.IsTileSolid(1, 0, -1) || creature.IsTileSolid(0, 0, -1));
+
+        public override bool HasFooting => CanGroundJump;
 
         public override bool GrabImpl(PhysicalObject pickUpCandidate)
         {
@@ -65,6 +65,42 @@ namespace RainMeadow
 
             On.Lizard.AttemptBite += Lizard_AttemptBite;
             On.Lizard.DamageAttack += Lizard_DamageAttack;
+
+
+            On.LizardPather.FollowPath += LizardPather_FollowPath;
+
+            On.LizardJumpModule.RunningUpdate += LizardJumpModule_RunningUpdate;
+            On.LizardJumpModule.Jump += LizardJumpModule_Jump;
+        }
+
+        private static void LizardJumpModule_Jump(On.LizardJumpModule.orig_Jump orig, LizardJumpModule self)
+        {
+            if (creatureControllers.TryGetValue(self.lizard.abstractCreature, out var c) && c is LizardController l)
+            {
+                l.superLaunchJump = 0;
+                l.forceJump = 10;
+            }
+            orig(self);
+        }
+
+        private static void LizardJumpModule_RunningUpdate(On.LizardJumpModule.orig_RunningUpdate orig, LizardJumpModule self)
+        {
+            if (creatureControllers.TryGetValue(self.lizard.abstractCreature, out var c) && c is LizardController l)
+            {
+                return;
+            }
+            orig(self);
+        }
+
+        private static MovementConnection LizardPather_FollowPath(On.LizardPather.orig_FollowPath orig, LizardPather self, WorldCoordinate originPos, int? bodyDirection, bool actuallyFollowingThisPath)
+        {
+            if (creatureControllers.TryGetValue(self.creature, out var c) && c is LizardController l)
+            {
+                if (originPos == self.destination)// return null; // such a silly behavior...
+                    return new MovementConnection(MovementConnection.MovementType.Standard, originPos, WorldCoordinate.AddIntVector(originPos, new IntVector2(l.input[0].x, l.input[0].y)), 1);
+            }
+
+            return orig(self, originPos, bodyDirection, actuallyFollowingThisPath);
         }
 
         private static void Lizard_DamageAttack(On.Lizard.orig_DamageAttack orig, Lizard self, BodyChunk chunk, float dmgFac)
@@ -158,17 +194,15 @@ namespace RainMeadow
             }
         }
 
-        private void Jump()
+
+        protected override void JumpImpl()
         {
             //RainMeadow.Debug(onlineCreature);
             var cs = creature.bodyChunks;
             var mainBodyChunk = creature.mainBodyChunk;
             var tile = creature.room.aimap.getAItile(mainBodyChunk.pos);
 
-            // todo if jump module use that instead
-
-            // todo take body factors into factor. blue liz jump too stronk
-
+            // todo take body factors into factor. blue liz jump feels too stronk
             if (canGroundJump > 0 && superLaunchJump >= 20)
             {
                 RainMeadow.Debug("lizard super jump");
@@ -199,10 +233,10 @@ namespace RainMeadow
                     flipDirection = this.input[0].x;
                     cs[0].vel.x = 6f * flipDirection;
                     cs[0].vel.y = 6f;
-                    cs[1].vel.x = 4f * flipDirection;
-                    cs[1].vel.y = 4.5f;
-                    cs[2].vel.x = 4f * flipDirection;
-                    cs[2].vel.y = 4.5f;
+                    cs[1].vel.x = 5f * flipDirection;
+                    cs[1].vel.y = 5f;
+                    cs[2].vel.x = 5f * flipDirection;
+                    cs[2].vel.y = 5f;
                     creature.room.PlaySound(SoundID.Slugcat_From_Vertical_Pole_Jump, mainBodyChunk, false, 1f, 1f);
                     return;
                 }
@@ -221,6 +255,19 @@ namespace RainMeadow
                     return;
                 }// no climb boost
             }
+            else if (canGroundJump > 0)
+            {
+                RainMeadow.Debug("lizard normal jump");
+                lizard.movementAnimation = null;
+                lizard.inAllowedTerrainCounter = 10; // regain footing faster
+                lizard.gripPoint = null;
+                this.jumpBoost = 8;
+                cs[0].vel.y = 5f;
+                cs[1].vel.y = 5f;
+                cs[2].vel.y = 3f;
+
+                creature.room.PlaySound(SoundID.Slugcat_Normal_Jump, mainBodyChunk, false, 1f, 1f);
+            }
             else if (canClimbJump > 0)
             {
                 RainMeadow.Debug("lizard climb jump");
@@ -236,372 +283,14 @@ namespace RainMeadow
                 }
                 creature.room.PlaySound(SoundID.Slugcat_Wall_Jump, mainBodyChunk, false, 1f, 1f);
             }
-            else if (canGroundJump > 0)
-            {
-                RainMeadow.Debug("lizard normal jump");
-                lizard.movementAnimation = null;
-                lizard.inAllowedTerrainCounter = 10; // regain footing faster
-                lizard.gripPoint = null;
-                this.jumpBoost = 8;
-                cs[0].vel.y = 5f;
-                cs[1].vel.y = 5f;
-                cs[2].vel.y = 3f;
-
-                creature.room.PlaySound(SoundID.Slugcat_Normal_Jump, mainBodyChunk, false, 1f, 1f);
-            }
             else throw new InvalidProgrammerException("can't jump");
         }
 
-        // might need a new hookpoint between movement planing and movement acting
         private static void Lizard_Act(On.Lizard.orig_Act orig, Lizard self)
         {
             if (creatureControllers.TryGetValue(self.abstractCreature, out var c) && c is LizardController l)
             {
                 l.ConsciousUpdate();
-
-                var room = self.room;
-                var chunks = self.bodyChunks;
-                var nc = chunks.Length;
-
-                var aiTile0 = self.room.aimap.getAItile(chunks[0].pos);
-                var tile0 = self.room.GetTile(chunks[0].pos);
-
-
-                RainMeadow.Trace($"legs? {self.LegsGripping}");
-
-                if (self.LegsGripping >= 2 && (aiTile0.acc == AItile.Accessibility.Wall || aiTile0.acc == AItile.Accessibility.Ceiling))
-                {
-                    RainMeadow.Trace("can climb jump");
-                    l.canClimbJump = 5;
-                }
-                else if (self.LegsGripping >= 2 && aiTile0.acc == AItile.Accessibility.Climb && tile0.AnyBeam)
-                {
-                    RainMeadow.Trace("can pole jump");
-                    l.canPoleJump = 5;
-                }
-                else if (self.LegsGripping >= 2 && (chunks[0].contactPoint.y == -1 || chunks[1].contactPoint.y == -1 || self.IsTileSolid(1, 0, -1) || self.IsTileSolid(0, 0, -1)))
-                {
-                    RainMeadow.Trace("can jump");
-                    l.canGroundJump = 5;
-                }
-
-                if (l.canGroundJump > 0 && l.input[0].x == 0 && l.input[0].y <= 0 && (l.input[0].jmp || l.input[1].jmp))
-                {
-                    if (l.input[0].jmp)
-                    {
-                        // todo if jumpmodule animate
-                        l.wantToJump = 0;
-                        if (l.superLaunchJump < 20)
-                        {
-                            l.superLaunchJump++;
-                        }
-                    }
-                    if (!l.input[0].jmp && l.input[1].jmp)
-                    {
-                        l.wantToJump = 1;
-                        l.canGroundJump = 1;
-                    }
-                }
-                else if (l.superLaunchJump > 0)
-                {
-                    l.superLaunchJump--;
-                }
-
-                if (l.wantToJump > 0 && (l.canClimbJump > 0 || l.canPoleJump > 0 || l.canGroundJump > 0))
-                {
-                    l.Jump();
-                    l.canClimbJump = 0;
-                    l.canPoleJump = 0;
-                    l.canGroundJump = 0;
-                    l.wantToJump = 0;
-                }
-                if (l.canClimbJump > 0) l.canClimbJump--;
-                if (l.canPoleJump > 0) l.canPoleJump--;
-                if (l.canGroundJump > 0) l.canGroundJump--;
-                if (l.forceJump > 0) l.forceJump--;
-
-                if (l.jumpBoost > 0f && (l.input[0].jmp || l.forceBoost > 0))
-                {
-                    l.jumpBoost -= 1.5f;
-                    self.bodyChunks[0].vel.y += (l.jumpBoost + 1f) * 0.3f;
-                    self.bodyChunks[1].vel.y += (l.jumpBoost + 1f) * 0.25f;
-                    self.bodyChunks[2].vel.y += (l.jumpBoost + 1f) * 0.25f;
-                }
-                else
-                {
-                    l.jumpBoost = 0f;
-                }
-
-                // facing
-                if (Mathf.Abs(Vector2.Dot(Vector2.right, chunks[0].pos - chunks[1].pos)) > 0.5f)
-                {
-                    l.flipDirection = (chunks[0].pos.x > chunks[1].pos.x) ? 1 : -1;
-                }
-                else if (Mathf.Abs(l.inputDir.x) > 0.5f)
-                {
-                    l.flipDirection = l.inputDir.x > 0 ? 1 : -1;
-                }
-
-                // lost footing doesn't auto-recover
-                if (self.inAllowedTerrainCounter < 10)
-                {
-                    if (l.input[0].y < 1 && !(chunks[0].contactPoint.y == -1 || chunks[1].contactPoint.y == -1 || self.IsTileSolid(1, 0, -1) || self.IsTileSolid(0, 0, -1)))
-                    {
-                        self.inAllowedTerrainCounter = 0;
-                    }
-                }
-
-                // move
-                //var basepos = 0.5f * (self.bodyChunks[0].pos + self.bodyChunks[1].pos);
-                var basepos = self.bodyChunks[0].pos;
-                var basecoord = self.room.GetWorldCoordinate(basepos);
-                if (l.inputDir != Vector2.zero)
-                {
-                    self.AI.behavior = LizardAI.Behavior.Travelling;
-                    self.AI.runSpeed = Custom.LerpAndTick(self.AI.runSpeed, 0.8f, 0.2f, 0.05f);
-                    self.AI.excitement = Custom.LerpAndTick(self.AI.excitement, 0.5f, 0.1f, 0.05f);
-
-                    var toPos = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(l.inputDir * 1.42f));
-                    bool reachable = room.aimap.TileAccessibleToCreature(toPos.Tile, self.Template);
-                    bool keeplooking = true; // this could be turned into a helper and an early return
-
-                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"moving towards {toPos.Tile}");
-                    if (l.forceJump > 0) // jumping
-                    {
-                        if (self.commitedToDropConnection == null) self.commitedToDropConnection = new MovementConnection(MovementConnection.MovementType.Standard, basecoord, toPos, 2);
-                        reachable = false;
-                        keeplooking = false;
-                    }
-                    else if (self.inAllowedTerrainCounter > 10)
-                    {
-                        if (self.enteringShortCut == null && self.shortcutDelay < 1)
-                        {
-                            for (int i = 0; i < nc; i++)
-                            {
-                                if (room.GetTile(chunks[i].pos).Terrain == Room.Tile.TerrainType.ShortcutEntrance)
-                                {
-                                    var scdata = room.shortcutData(room.GetTilePosition(chunks[i].pos));
-                                    if (scdata.shortCutType != ShortcutData.Type.DeadEnd)
-                                    {
-                                        IntVector2 intVector = room.ShorcutEntranceHoleDirection(room.GetTilePosition(chunks[i].pos));
-                                        if (l.input[0].x == -intVector.x && l.input[0].y == -intVector.y)
-                                        {
-                                            RainMeadow.Debug("creature entering shortcut");
-                                            self.enteringShortCut = new IntVector2?(room.GetTilePosition(chunks[i].pos));
-                                            reachable = false;
-                                            keeplooking = false;
-
-                                            if (scdata.shortCutType == ShortcutData.Type.NPCTransportation)
-                                            {
-                                                var whackamoles = room.shortcuts.Where(s => s.shortCutType == ShortcutData.Type.NPCTransportation).ToList();
-                                                var index = whackamoles.IndexOf(self.room.shortcuts.FirstOrDefault(s => s.StartTile == scdata.StartTile));
-                                                if (index > -1 && whackamoles.Count > 0)
-                                                {
-                                                    var newindex = (index + 1) % whackamoles.Count;
-                                                    RainMeadow.Debug($"creature entered at {index} will exit at {newindex} mapped to {self.NPCTransportationDestination}");
-                                                    self.NPCTransportationDestination = whackamoles[newindex].startCoord;
-                                                    // needs to be set as destination as well otherwise might be overriden
-                                                    toPos = self.NPCTransportationDestination;
-                                                    reachable = true;
-                                                    keeplooking = false;
-                                                }
-                                                else
-                                                {
-                                                    RainMeadow.Error("shortcut issue");
-                                                }
-
-                                                self.commitedToDropConnection = null;
-                                            }
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        if (keeplooking && l.inputDir.y > 0) // climbing has priority
-                        {
-                            for (int i = 0; i < 3; i++)
-                            {
-                                int num = (i > 0) ? ((i == 1) ? -1 : 1) : 0;
-                                var tile = room.GetTile(basecoord + new IntVector2(num, 1));
-                                if (!tile.Solid && tile.verticalBeam)
-                                {
-                                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("pole close");
-                                    toPos = WorldCoordinate.AddIntVector(basecoord, new IntVector2(0, 1));
-                                    reachable = true;
-                                    keeplooking = false;
-                                    break;
-                                }
-                            }
-                            for (int i = 0; i < 3; i++)
-                            {
-                                int num = (i > 0) ? ((i == 1) ? -1 : 1) : 0;
-                                var tile1 = room.GetTile(basecoord + new IntVector2(num, 1));
-                                var tile2 = room.GetTile(basecoord + new IntVector2(num, 2));
-                                if (!tile1.Solid && tile2.verticalBeam)
-                                {
-                                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("pole far");
-                                    toPos = WorldCoordinate.AddIntVector(basecoord, new IntVector2(0, 2));
-                                    reachable = true;
-                                    keeplooking = false;
-                                    break;
-                                }
-                            }
-                        }
-                        if (keeplooking)
-                        {
-                            if (l.inputDir.x != 0) // to sides
-                            {
-                                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("sides");
-                                if (reachable)
-                                {
-                                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("ahead");
-                                }
-                                else if (room.aimap.TileAccessibleToCreature(toPos.Tile + new IntVector2(0, 1), self.Template)) // try up
-                                {
-                                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("up");
-                                    toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(0, 1));
-                                    reachable = true;
-                                }
-                                else if (room.aimap.TileAccessibleToCreature(toPos.Tile + new IntVector2(0, -1), self.Template)) // try down
-                                {
-                                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("down");
-                                    toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(0, -1));
-                                    reachable = true;
-                                }
-
-                                // if can reach further out, it goes faster and smoother
-                                var furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(l.inputDir * 2.84f));
-                                if (room.aimap.TileAccessibleToCreature(furtherOut.Tile, self.Template) && QuickConnectivity.Check(room, self.Template, basecoord.Tile, furtherOut.Tile, 10) > 0)
-                                {
-                                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("reaching further");
-                                    toPos = furtherOut;
-                                    reachable = true;
-                                }
-                                else if (room.aimap.TileAccessibleToCreature(furtherOut.Tile + new IntVector2(0, 1), self.Template) && QuickConnectivity.Check(room, self.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, 1), 10) > 0)
-                                {
-                                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("further up");
-                                    toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, 1));
-                                    reachable = true;
-                                }
-                                else if (room.aimap.TileAccessibleToCreature(furtherOut.Tile + new IntVector2(0, -1), self.Template) && QuickConnectivity.Check(room, self.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, -1), 10) > 0)
-                                {
-                                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("further down");
-                                    toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, -1));
-                                    reachable = true;
-                                }
-
-                                if (!reachable)
-                                {
-                                    // no pathing
-                                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("unpathable");
-                                    // don't let go of beams/walls/ceilings
-                                    if (room.aimap.TileAccessibleToCreature(tile0.X, tile0.Y, self.Template) && aiTile0.acc >= AItile.Accessibility.Climb && self.inAllowedTerrainCounter > 10)
-                                    {
-                                        self.AI.runSpeed *= 0.5f;
-                                        toPos = basecoord;
-                                    }
-                                    else // force movement
-                                    {
-                                        self.commitedToDropConnection = new MovementConnection(MovementConnection.MovementType.Standard, basecoord, furtherOut, 2);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("vertical");
-
-                                if (keeplooking)
-                                {
-                                    if (reachable)
-                                    {
-                                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("ahead");
-                                    }
-                                    if (keeplooking)
-                                    {
-                                        var furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(l.inputDir * 2.2f));
-                                        if (!room.GetTile(toPos).Solid && !room.GetTile(furtherOut).Solid && room.aimap.TileAccessibleToCreature(furtherOut.Tile, self.Template)) // ahead unblocked, move further
-                                        {
-                                            if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("reaching");
-                                            toPos = furtherOut;
-                                            reachable = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if (l.forceJump <= 0 && self.inAllowedTerrainCounter < 10 && l.inputDir.y > 0 && tile0.AnyBeam)
-                    {
-                        self.gripPoint = room.MiddleOfTile(tile0.X, tile0.Y);
-                    }
-
-                    // minimun directional speed
-                    if (reachable && (self.graphicsModule as LizardGraphics)?.frontLegsGrabbing > 0)
-                    {
-                        var inDirection = Vector2.Dot(self.mainBodyChunk.vel, l.inputDir);
-                        var minSpeed = 0.35f;
-                        if (inDirection < minSpeed)
-                        {
-                            self.mainBodyChunk.vel += l.inputDir * (minSpeed - inDirection);
-                        }
-                    }
-
-                    // fake extra airfriction in gravity mode
-                    if (self.applyGravity && room.aimap.TileAccessibleToCreature(tile0.X, tile0.Y, self.Template))
-                    {
-                        for (int i = 0; i < nc; i++)
-                        {
-                            BodyChunk bodyChunk = self.bodyChunks[i];
-                            if (bodyChunk.submersion < 0.5f)
-                            {
-                                bodyChunk.vel.x *= 0.95f;
-                            }
-                        }
-                    }
-
-
-                    if (reachable && toPos != self.abstractCreature.abstractAI.destination)
-                    {
-                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"new destination {toPos.Tile}");
-                        l.ForceAIDestination(toPos);
-                    }
-                }
-                else
-                {
-                    // rest
-                    self.AI.behavior = LizardAI.Behavior.Idle;
-                    self.AI.runSpeed = Custom.LerpAndTick(self.AI.runSpeed, 0, 0.4f, 0.1f);
-                    self.AI.excitement = Custom.LerpAndTick(self.AI.excitement, 0.2f, 0.1f, 0.05f);
-                    self.commitedToDropConnection = null;
-
-                    // pull towards floor
-                    for (int i = 0; i < nc; i++)
-                    {
-                        if (self.IsTileSolid(i, 0, -1))
-                        {
-                            BodyChunk bodyChunk = self.bodyChunks[i];
-                            bodyChunk.vel.y -= 0.1f;
-                        }
-                    }
-
-                    if (basecoord != self.abstractCreature.abstractAI.destination)
-                    {
-                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"resting at {basecoord.Tile}");
-                        l.ForceAIDestination(basecoord);
-                    }
-                }
-                if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"current AI destination {l.creature.abstractCreature.abstractAI.destination}");
-
-                if(l.lastEnteringShortcut != self.enteringShortCut)
-                {
-                    RainMeadow.Debug($"shortcut was {l.lastEnteringShortcut} is {self.enteringShortCut}");
-                    RainMeadow.Debug($"followingConnection {self.followingConnection}");
-                    RainMeadow.Debug($"commitedToDropConnection {self.commitedToDropConnection}");
-                }
-
-                l.lastEnteringShortcut = self.enteringShortCut;
             }
             orig(self);
         }
@@ -614,6 +303,121 @@ namespace RainMeadow
             }
 
             orig(self, eu);
+        }
+
+        protected override void LookImpl(Vector2 pos)
+        {
+            (lizard.graphicsModule as LizardGraphics).lookPos = pos;
+        }
+
+        internal override void ConsciousUpdate()
+        {
+            base.ConsciousUpdate();
+
+            if(lizard.jumpModule is LizardJumpModule jumpModule)
+            {
+                if(this.superLaunchJump > 10)
+                {
+                    if (input[0].jmp)
+                    {
+                        if (jumpModule.actOnJump == null)
+                        {
+                            // start a new jump
+                            RainMeadow.Debug("JumpModule init");
+                            var jumpFinder = new LizardJumpModule.JumpFinder(creature.room, jumpModule, lizard.coord.Tile, false);
+                            jumpFinder.currentJump.power = 0.5f;
+                            jumpFinder.bestJump = jumpFinder.currentJump;
+                            jumpFinder.bestJump.goalCell = jumpFinder.startCell;
+                            jumpFinder.bestJump.tick = 20;
+
+                            //jumpModule.spin = 1;
+                            jumpModule.InitiateJump(jumpFinder, false);
+                        }
+                        jumpModule.actOnJump.vel = (creature.bodyChunks[0].pos - creature.bodyChunks[1].pos).normalized * 4f + (inputDir.magnitude > 0.5f ? inputDir * 14 + new Vector2(0, 2) : new Vector2(12f * flipDirection, 9f));
+                        jumpModule.actOnJump.bestJump.initVel = jumpModule.actOnJump.vel;
+                        jumpModule.actOnJump.bestJump.goalCell = lizard.AI.pathFinder.PathingCellAtWorldCoordinate(creature.room.GetWorldCoordinate(creature.bodyChunks[0].pos + jumpModule.actOnJump.vel * 20));
+                        canGroundJump = 5; // doesn't interrupt
+                        superLaunchJump = 12; // never completes
+                        lockInPlace = true;
+                        Moving(1f);
+                    }
+
+                    else
+                    {
+                        if (lizard.animation != Lizard.Animation.Jumping)
+                        {
+                            jumpModule.actOnJump = null;
+                        }
+                    }
+                }
+            }
+
+            // lost footing doesn't auto-recover
+            if (lizard.inAllowedTerrainCounter < 10)
+            {
+                if ((forceJump > 0 || input[0].y < 1) && !((creature.bodyChunks)[0].contactPoint.y == -1 || (creature.bodyChunks)[1].contactPoint.y == -1 || creature.IsTileSolid(1, 0, -1) || creature.IsTileSolid(0, 0, -1)))
+                {
+                    lizard.inAllowedTerrainCounter = 0;
+                }
+            }
+        }
+
+        protected override void Moving(float magnitude)
+        {
+            lizard.AI.behavior = LizardAI.Behavior.Travelling;
+            lizard.AI.runSpeed = Custom.LerpAndTick(lizard.AI.runSpeed, 0.8f * magnitude, 0.2f, 0.05f);
+            lizard.AI.excitement = Custom.LerpAndTick(lizard.AI.excitement, 0.5f, 0.1f, 0.05f);
+
+            var tile0 = creature.room.GetTile(creature.bodyChunks[0].pos);
+
+            // greater air friction because uhhh didnt feel right
+            if (lizard.applyGravity && creature.room.aimap.TileAccessibleToCreature(tile0.X, tile0.Y, lizard.Template))
+            {
+                for (int i = 0; i < creature.bodyChunks.Length; i++)
+                {
+                    BodyChunk bodyChunk = lizard.bodyChunks[i];
+                    if (bodyChunk.submersion < 0.5f)
+                    {
+                        bodyChunk.vel.x *= 0.95f;
+                    }
+                }
+            }
+        }
+
+        protected override void Resting()
+        {
+            lizard.AI.behavior = LizardAI.Behavior.Idle;
+            lizard.AI.runSpeed = Custom.LerpAndTick(lizard.AI.runSpeed, 0, 0.4f, 0.1f);
+            lizard.AI.excitement = Custom.LerpAndTick(lizard.AI.excitement, 0.2f, 0.1f, 0.05f);
+
+            // pull towards floor
+            for (int i = 0; i < lizard.bodyChunks.Length; i++)
+            {
+                if (lizard.IsTileSolid(i, 0, -1))
+                {
+                    BodyChunk bodyChunk = lizard.bodyChunks[i];
+                    bodyChunk.vel.y -= 0.1f;
+                }
+            }
+        }
+
+        protected override void GripPole(Room.Tile tile0)
+        {
+            if (lizard.inAllowedTerrainCounter < 10)
+            {
+                lizard.gripPoint = creature.room.MiddleOfTile(tile0.X, tile0.Y);
+            }
+        }
+
+        protected override void MovementOverride(MovementConnection movementConnection)
+        {
+            lizard.commitedToDropConnection = movementConnection;
+            lizard.inAllowedTerrainCounter = 0;
+        }
+
+        protected override void ClearMovementOverride()
+        {
+            lizard.commitedToDropConnection = default(MovementConnection);
         }
     }
 }

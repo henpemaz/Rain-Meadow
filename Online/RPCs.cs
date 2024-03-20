@@ -1,4 +1,4 @@
-﻿using System.Linq;
+﻿using UnityEngine;
 
 namespace RainMeadow
 {
@@ -30,6 +30,22 @@ namespace RainMeadow
                     }
                 }
             }
+        }
+
+        [RPCMethod]
+        public static void HitSomething(OnlinePhysicalObject objectHitting, OnlinePhysicalObject objectHit, short chunkID, short appendageID, bool hitSomething, Vector2 collisionPoint, bool eu) {
+            var realizedObject = objectHitting.apo.realizedObject;
+            var realizedObjectHit = objectHit?.apo.realizedObject;
+
+
+
+            var result = new SharedPhysics.CollisionResult(realizedObjectHit,null,null,hitSomething,collisionPoint);
+            (realizedObject as Weapon).HitSomething(result, eu);
+            //this.obj = obj;                       object hit
+            //this.chunk = chunk;                   body part hit
+            //this.hitSomething = hitSomething;     didhit
+            //this.collisionPoint = collisionPoint; point in space hit
+            //this.onAppendagePos = onAppendagePos; appendage hit
         }
 
         [RPCMethod]

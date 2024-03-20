@@ -1,4 +1,5 @@
 using RainMeadow.Generics;
+using RWCustom;
 using System;
 using System.Linq;
 
@@ -10,13 +11,18 @@ namespace RainMeadow
         private Generics.AddRemoveUnsortedCustomSerializables<GraspRef> Grasps;
         [OnlineField]
         public short stun;
+        [OnlineField(nullable = true)]
+        private IntVector2? enteringShortcut;
+
         public RealizedCreatureState() { }
         public RealizedCreatureState(OnlineCreature onlineCreature) : base(onlineCreature)
         {
             var creature = onlineCreature.apo.realizedObject as Creature;
             Grasps = new(creature.grasps?.Where(g => g != null).Select(GraspRef.FromGrasp).ToList() ?? new());
             stun = (short)creature.stun;
+            enteringShortcut = creature.enteringShortCut;
         }
+
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
@@ -25,6 +31,7 @@ namespace RainMeadow
             if (onlineCreature.apo.realizedObject is not Creature creature) return;
 
             creature.stun = stun;
+            creature.enteringShortCut = enteringShortcut;
 
             if (creature.grasps == null) return;
             for (var i = 0; i < creature.grasps.Length; i++)

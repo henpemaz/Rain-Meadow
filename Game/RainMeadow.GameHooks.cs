@@ -1,7 +1,9 @@
 ﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using System;
 using System.Linq;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -28,9 +30,84 @@ namespace RainMeadow
             On.Room.PlaceQuantifiedCreaturesInRoom += Room_PlaceQuantifiedCreaturesInRoom;
 
             On.FliesWorldAI.AddFlyToSwarmRoom += FliesWorldAI_AddFlyToSwarmRoom;
-            
+
+            // can't pause it's online mom
+            new Hook(typeof(RainWorldGame).GetProperty("GamePaused").GetGetMethod(), this.RainWorldGame_GamePaused);
+
+            On.Menu.PauseMenu.ctor += PauseMenu_ctor;
+
+            IL.RainWorldGame.Update += RainWorldGame_Update;
+
             // Arena specific
             On.GameSession.AddPlayer += GameSession_AddPlayer;
+        }
+
+        private void RainWorldGame_Update(ILContext il)
+        {
+            try
+            {
+                // no construct pause menu if pause menu already there!
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchStfld<RainWorldGame>("pauseMenu")
+                    );
+                c.GotoPrev(moveType: MoveType.After,
+                    i => i.MatchBrfalse(out skip)
+                    );
+                c.MoveAfterLabels();
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((RainWorldGame self) =>
+                {
+                    return OnlineManager.lobby == null || self.pauseMenu == null;
+                }
+                );
+                c.Emit(OpCodes.Brfalse, skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void PauseMenu_ctor(On.Menu.PauseMenu.orig_ctor orig, Menu.PauseMenu self, ProcessManager manager, RainWorldGame game)
+        {
+            orig(self, manager, game);
+            if(OnlineManager.lobby != null)
+            {
+                if(OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+                {
+                    self.pauseWarningActive = false;
+                    game.cameras[0].hud.textPrompt.pausedWarningText = false;
+                    SimplerButton unstuckButton;
+                    self.pages[0].subObjects.Add(unstuckButton = new SimplerButton(self, self.pages[0], self.Translate("UNSTUCK"),
+                        new Vector2(manager.rainWorld.options.SafeScreenOffset.x + 70f, Mathf.Max(manager.rainWorld.options.SafeScreenOffset.y, 15f)),
+                        new Vector2(110f, 30f)));
+                    unstuckButton.OnClick += (_) =>
+                    {
+                        var creature = mgm.avatar.realizedCreature;
+                        if(creature.room != null)
+                        {
+                            var room = creature.room;
+                            creature.RemoveFromRoom();
+                            room.CleanOutObjectNotInThisRoom(creature); // we need it this frame
+                            var node = creature.coord.abstractNode;
+                            if (node > room.abstractRoom.exits) node = UnityEngine.Random.Range(0, room.abstractRoom.exits);
+                            creature.SpitOutOfShortCut(room.ShortcutLeadingToNode(node).startCoord.Tile, room, true);
+                        }
+                    };
+                }
+            }
+        }
+
+        public bool RainWorldGame_GamePaused(Func<RainWorldGame, bool> orig, RainWorldGame self)
+        {
+            if(OnlineManager.lobby != null)
+            {
+                // todo we could do very fancy things with the (story) lobby owner being able to pause etc
+                return false; // it's online mom
+            }
+            return orig(self);
         }
 
         private void Futile_OnApplicationQuit(On.Futile.orig_OnApplicationQuit orig, Futile self)

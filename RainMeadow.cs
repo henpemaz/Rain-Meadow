@@ -13,7 +13,7 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.0.57";
+        public const string MeadowVersionStr = "0.0.58";
         public static RainMeadow instance;
         private bool init;
         public static RainMeadowOptions rainMeadowOptions;
@@ -176,7 +176,7 @@ namespace RainMeadow
 #if LOCAL_P2P
                 if (!self.setup.startScreen)
                 {
-                    OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(LocalMatchmakingManager.localGameMode), OnlineManager.mePlayer,null);
+                    OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(LocalMatchmakingManager.localGameMode), OnlineManager.mePlayer, null);
                 }
 #endif
             }

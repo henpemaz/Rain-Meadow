@@ -15,7 +15,6 @@ namespace RainMeadow
 
         public string[] mods = RainMeadowModManager.GetActiveMods();
         public static bool modsChecked;
-
         public string? password;
         public bool hasPassword => password != null;
         public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password)

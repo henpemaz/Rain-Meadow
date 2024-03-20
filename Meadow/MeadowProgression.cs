@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
 {
@@ -21,7 +18,7 @@ namespace RainMeadow
             {
                 _ = Character.Slugcat;
                 _ = Skin.Slugcat_Survivor;
-                currentTestSkin = Skin.Scavenger_Twigs;
+                currentTestSkin = Skin.Cicada_White;
             }
             catch (Exception e)
             {
