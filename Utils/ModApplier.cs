@@ -24,33 +24,45 @@ namespace RainMeadow
             On.ModManager.ModApplyer.Update += ModApplyer_Update;
             On.ModManager.ModApplyer.ApplyModsThread += ModApplyer_ApplyModsThread;
             menu = (Menu.Menu)manager.currentMainLoop;
+            this.modsToDisable = new List<ModManager.Mod>();
+            this.modsToEnable = new List<ModManager.Mod>();
 
         }
 
         private void ModApplyer_ApplyModsThread(On.ModManager.ModApplyer.orig_ApplyModsThread orig, ModManager.ModApplyer self)
         {
-            for (int i = 0; i < ModManager.InstalledMods.Count; i++)
+            if (modsToDisable.Count > 0)
             {
-                if (ModManager.InstalledMods[i].id == "rwremix")
+                for (int i = 0; i < modsToDisable.Count; i++)
                 {
-                    ModManager.InstalledMods[i].enabled = false;
-                    pendingEnabled[i] = false;
+                    int installedModIndex = ModManager.InstalledMods.FindIndex(mod => mod.id == modsToDisable[i].id);
+                    if (installedModIndex != -1)
+                    {
+                        ModManager.InstalledMods[installedModIndex].enabled = false;
+                        pendingEnabled[installedModIndex] = false;
+                    }
                 }
+            }
 
+            if (modsToEnable.Count > 0)
+            {
+                for (int i = 0; i < modsToEnable.Count; i++)
+                {
+                    int installedModIndex = ModManager.InstalledMods.FindIndex(mod => mod.id == modsToEnable[i].id);
+                    if (installedModIndex != -1)
+                    {
+                        ModManager.InstalledMods[installedModIndex].enabled = false;
+                        pendingEnabled[installedModIndex] = true;
+                    }
+                }
             }
             orig(self);
 
-
-            //manager.enableModsOnProcessSwitch = this.modsToEnable;
         }
 
         private void ModApplyer_Update(On.ModManager.ModApplyer.orig_Update orig, ModManager.ModApplyer self)
         {
             orig(self);
-            RainMeadow.Debug("IS MMF ENABLED " + ModManager.MMF);
-
-
-
         }
 
         private void RainWorld_Update(On.RainWorld.orig_Update orig, RainWorld self)
@@ -88,8 +100,6 @@ namespace RainMeadow
         public bool ShowConfirmation(List<ModManager.Mod> modsToEnable, List<ModManager.Mod> modsToDisable, List<string> unknownMods)
         {
             string text = "Mod mismatch detected." + Environment.NewLine;
-            modsToDisable = new List<ModManager.Mod>();
-            modsToEnable = new List<ModManager.Mod>();
 
             if (modsToEnable.Count > 0)
             {
@@ -99,8 +109,8 @@ namespace RainMeadow
             if (modsToDisable.Count > 0)
             {
                 text += Environment.NewLine + "Mods that will be disabled: " + string.Join(", ", modsToDisable.ConvertAll(mod => mod.LocalizedName));
+                this.modsToDisable = modsToDisable;
             }
-            this.modsToDisable = modsToDisable;
             if (unknownMods.Count > 0)
             {
                 text += Environment.NewLine + "Unable to find those mods, please install them: " + string.Join(", ", unknownMods);
@@ -127,43 +137,7 @@ namespace RainMeadow
                 manager.ShowNextDialog();
                 requiresRestartDialog = null;
             }
-
-            if (modsToDisable.Count > 0)
-            {
-                foreach (ModManager.Mod mod in this.modsToDisable)
-                {
-                    mod.enabled = false;
-
-                    //ModManager.ActiveMods.Remove(mod);
-
-
-
-                    RainMeadow.Debug($"Disabled mod: {mod.name}");
-
-                }
-
-                foreach (var mod in ModManager.ActiveMods)
-                {
-                    RainMeadow.Debug("now enabled mods: " + mod.name);
-                }
-
-            }
-
-
-
-            /*            if (modsToEnable.Count > 0)
-            {
-                foreach (ModManager.Mod mod in this.modsToEnable)
-                {
-                    ModManager.ActiveMods.Add(mod);
-                    RainMeadow.Debug($"Enabled mod: {mod.name}");
-                }
-            }*/
-
-            // TODO: Figure out where this data is loaded / saved from
-
             base.Start(filesInBadState);
-            // All of this works but does not actually chnage the active mods, why?
 
         }
     }
