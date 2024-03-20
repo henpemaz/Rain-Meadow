@@ -43,11 +43,12 @@ namespace RainMeadow
             currentlyJoiningLobby = default;
             if (ok)
             {
-/*                if (OnlineManager.lobby.isOwner)
+                if (OnlineManager.lobby.isOwner)
                 {
                     manager.RequestMainProcessSwitch(lobby.gameMode.MenuProcessId());
-                }*/
-                if (OnlineManager.lobby.isOwner) // clients must check mods at the door
+                }
+
+                if (!OnlineManager.lobby.isOwner) // clients must check mods at the door
                 {
                     var theirMods = OnlineManager.lobby.mods;
 
