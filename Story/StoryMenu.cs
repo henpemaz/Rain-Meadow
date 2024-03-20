@@ -146,13 +146,16 @@ namespace RainMeadow
             SetupCharacterCustomization();
             UpdateCharacterUI();
 
-                // Grab Host Remix Settings
-                if (OnlineManager.lobby.isOwner)
+            // Grab Host Remix Settings
+            if (ModManager.MMF)
             {
-                var hostSettings = GetHostBoolStoryRemixSettings();
-                (OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings = hostSettings.hostBoolSettings;
-                (OnlineManager.lobby.gameMode as StoryGameMode).storyFloatRemixSettings = hostSettings.hostFloatSettings;
-                (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings = hostSettings.hostIntSettings;
+                if (OnlineManager.lobby.isOwner)
+                {
+                    var hostSettings = GetHostBoolStoryRemixSettings();
+                    (OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings = hostSettings.hostBoolSettings;
+                    (OnlineManager.lobby.gameMode as StoryGameMode).storyFloatRemixSettings = hostSettings.hostFloatSettings;
+                    (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings = hostSettings.hostIntSettings;
+                }
             }
 
 
@@ -185,9 +188,10 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             if (!OnlineManager.lobby.isOwner) // I'm a client
             {
-
-                SetClientStoryRemixSettings((OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings, (OnlineManager.lobby.gameMode as StoryGameMode).storyFloatRemixSettings, (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings); // Set client remix settings to Host's on StartGame()
-
+                if (ModManager.MMF)
+                {
+                    SetClientStoryRemixSettings((OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings, (OnlineManager.lobby.gameMode as StoryGameMode).storyFloatRemixSettings, (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings); // Set client remix settings to Host's on StartGame()
+                }
                 if (!rainMeadowOptions.SlugcatCustomToggle.Value) // I'm a client and I want to match the hosts
                 {
 
@@ -490,106 +494,101 @@ namespace RainMeadow
 
         internal void SetClientStoryRemixSettings(Dictionary<string, bool> hostBoolRemixSettings, Dictionary<string, float> hostFloatRemixSettings, Dictionary<string, int> hostIntRemixSettings)
         {
-            if (ModManager.MMF)
+
+            Type type = typeof(MoreSlugcats.MMF);
+
+            FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
+
+            var sortedFields = fields.OrderBy(f => f.Name);
+
+
+            foreach (FieldInfo field in sortedFields)
             {
-                Type type = typeof(MoreSlugcats.MMF);
 
-                FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
-
-                var sortedFields = fields.OrderBy(f => f.Name);
-
-
-                foreach (FieldInfo field in sortedFields)
+                var reflectedValue = field.GetValue(null);
+                if (reflectedValue is Configurable<bool> boolOption)
                 {
 
-                    var reflectedValue = field.GetValue(null);
-                    if (reflectedValue is Configurable<bool> boolOption)
+                    for (int i = 0; i < hostBoolRemixSettings.Count; i++)
                     {
 
-                        for (int i = 0; i < hostBoolRemixSettings.Count; i++)
+
+                        if (field.Name == hostBoolRemixSettings.Keys.ElementAt(i) && boolOption._typedValue != hostBoolRemixSettings.Values.ElementAt(i))
                         {
+                            Debug($"Remix Key: {field.Name} with value {boolOption._typedValue} does not match host's, setting to {hostBoolRemixSettings.Values.ElementAt(i)}");
+                            boolOption._typedValue = hostBoolRemixSettings.Values.ElementAt(i);
 
-
-                            if (field.Name == hostBoolRemixSettings.Keys.ElementAt(i) && boolOption._typedValue != hostBoolRemixSettings.Values.ElementAt(i))
-                            {
-                                Debug($"Remix Key: {field.Name} with value {boolOption._typedValue} does not match host's, setting to {hostBoolRemixSettings.Values.ElementAt(i)}");
-                                boolOption._typedValue = hostBoolRemixSettings.Values.ElementAt(i);
-
-                            }
                         }
                     }
-
-                    if (reflectedValue is Configurable<float> floatOption)
-                    {
-                        for (int i = 0; i < hostFloatRemixSettings.Count; i++)
-                        {
-
-
-                            if (field.Name == hostFloatRemixSettings.Keys.ElementAt(i) && floatOption._typedValue != hostFloatRemixSettings.Values.ElementAt(i))
-                            {
-                                Debug($"Remix Key: {field.Name} with value {floatOption._typedValue} does not match host's, setting to {hostFloatRemixSettings.Values.ElementAt(i)}");
-                                floatOption._typedValue = hostFloatRemixSettings.Values.ElementAt(i);
-
-                            }
-                        }
-                    }
-
-                    if (reflectedValue is Configurable<int> intOption)
-                    {
-                        for (int i = 0; i < hostIntRemixSettings.Count; i++)
-                        {
-
-                            if (field.Name == hostIntRemixSettings.Keys.ElementAt(i) && intOption._typedValue != hostIntRemixSettings.Values.ElementAt(i))
-                            {
-                                Debug($"Remix Key: {field.Name} with value {intOption._typedValue} does not match host's, setting to {hostIntRemixSettings.Values.ElementAt(i)}");
-                                intOption._typedValue = hostIntRemixSettings.Values.ElementAt(i);
-
-                            }
-                        }
-                    }
-
                 }
+
+                if (reflectedValue is Configurable<float> floatOption)
+                {
+                    for (int i = 0; i < hostFloatRemixSettings.Count; i++)
+                    {
+
+
+                        if (field.Name == hostFloatRemixSettings.Keys.ElementAt(i) && floatOption._typedValue != hostFloatRemixSettings.Values.ElementAt(i))
+                        {
+                            Debug($"Remix Key: {field.Name} with value {floatOption._typedValue} does not match host's, setting to {hostFloatRemixSettings.Values.ElementAt(i)}");
+                            floatOption._typedValue = hostFloatRemixSettings.Values.ElementAt(i);
+
+                        }
+                    }
+                }
+
+                if (reflectedValue is Configurable<int> intOption)
+                {
+                    for (int i = 0; i < hostIntRemixSettings.Count; i++)
+                    {
+
+                        if (field.Name == hostIntRemixSettings.Keys.ElementAt(i) && intOption._typedValue != hostIntRemixSettings.Values.ElementAt(i))
+                        {
+                            Debug($"Remix Key: {field.Name} with value {intOption._typedValue} does not match host's, setting to {hostIntRemixSettings.Values.ElementAt(i)}");
+                            intOption._typedValue = hostIntRemixSettings.Values.ElementAt(i);
+
+                        }
+                    }
+                }
+
+
             }
         }
 
-        internal (Dictionary<string, bool> hostBoolSettings, Dictionary<string, float> hostFloatSettings, Dictionary<string,int> hostIntSettings) GetHostBoolStoryRemixSettings()
+        internal (Dictionary<string, bool> hostBoolSettings, Dictionary<string, float> hostFloatSettings, Dictionary<string, int> hostIntSettings) GetHostBoolStoryRemixSettings()
         {
             Dictionary<string, bool> configurableBools = new Dictionary<string, bool>();
             Dictionary<string, float> configurableFloats = new Dictionary<string, float>();
             Dictionary<string, int> configurableInts = new Dictionary<string, int>();
 
-            if (ModManager.MMF)
+            Type type = typeof(MoreSlugcats.MMF);
+
+            FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
+            var sortedFields = fields.OrderBy(f => f.Name);
+
+
+            foreach (FieldInfo field in sortedFields)
             {
-                Type type = typeof(MoreSlugcats.MMF);
 
-                FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
-                var sortedFields = fields.OrderBy(f => f.Name);
-
-
-                foreach (FieldInfo field in sortedFields)
+                var reflectedValue = field.GetValue(null);
+                if (reflectedValue is Configurable<bool> boolOption)
                 {
-
-                    var reflectedValue = field.GetValue(null);
-                    if (reflectedValue is Configurable<bool> boolOption)
-                    {
-                        configurableBools.Add(field.Name, boolOption._typedValue);
-                    }
-
-                    if (reflectedValue is Configurable<float> floatOption)
-                    {
-                        configurableFloats.Add(field.Name, floatOption._typedValue);
-                    }
-
-                    if (reflectedValue is Configurable<int> intOption)
-                    {
-                        configurableInts.Add(field.Name, intOption._typedValue);
-                    }
-
+                    configurableBools.Add(field.Name, boolOption._typedValue);
                 }
-                return (configurableBools, configurableFloats, configurableInts);
+
+                if (reflectedValue is Configurable<float> floatOption)
+                {
+                    configurableFloats.Add(field.Name, floatOption._typedValue);
+                }
+
+                if (reflectedValue is Configurable<int> intOption)
+                {
+                    configurableInts.Add(field.Name, intOption._typedValue);
+                }
 
             }
             return (configurableBools, configurableFloats, configurableInts);
+
         }
 
     }
