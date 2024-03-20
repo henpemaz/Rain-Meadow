@@ -93,24 +93,24 @@ namespace RainMeadow
 
         public bool ShowConfirmation(List<ModManager.Mod> modsToEnable, List<ModManager.Mod> modsToDisable, List<string> unknownMods)
         {
-            string text = "Mod mismatch detected." + Environment.NewLine;
+            string text = menu.Translate("Mod mismatch detected.") + Environment.NewLine;
 
             if (modsToEnable.Count > 0)
             {
-                text += Environment.NewLine + "Mods that will be enabled: " + string.Join(", ", modsToEnable.ConvertAll(mod => mod.LocalizedName));
+                text += Environment.NewLine + menu.Translate("Mods that will be enabled: ") + string.Join(", ", modsToEnable.ConvertAll(mod => mod.LocalizedName));
                 this.modsToEnable = modsToEnable;
             }
             if (modsToDisable.Count > 0)
             {
-                text += Environment.NewLine + "Mods that will be disabled: " + string.Join(", ", modsToDisable.ConvertAll(mod => mod.LocalizedName));
+                text += Environment.NewLine + menu.Translate("Mods that will be disabled: ") + string.Join(", ", modsToDisable.ConvertAll(mod => mod.LocalizedName));
                 this.modsToDisable = modsToDisable;
             }
             if (unknownMods.Count > 0)
             {
-                text += Environment.NewLine + "Unable to find those mods, please install them: " + string.Join(", ", unknownMods);
+                text += Environment.NewLine + menu.Translate("Unable to find those mods, please install them: ") + string.Join(", ", unknownMods);
             }
 
-            text += Environment.NewLine + Environment.NewLine + "Rain World will be restarted for these changes to take effect";
+            text += Environment.NewLine + Environment.NewLine + menu.Translate("Rain World will be restarted for these changes to take effect");
 
             requiresRestartDialog = new DialogNotify(text, new Vector2(480f, 320f), manager, () =>
             {
