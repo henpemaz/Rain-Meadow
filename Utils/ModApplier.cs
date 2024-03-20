@@ -21,7 +21,6 @@ namespace RainMeadow
         public ModApplier(ProcessManager manager, List<bool> pendingEnabled, List<int> pendingLoadOrder) : base(manager, pendingEnabled, pendingLoadOrder)
         {
             On.RainWorld.Update += RainWorld_Update;
-            On.ModManager.ModApplyer.Update += ModApplyer_Update;
             On.ModManager.ModApplyer.ApplyModsThread += ModApplyer_ApplyModsThread;
             menu = (Menu.Menu)manager.currentMainLoop;
             this.modsToDisable = new List<ModManager.Mod>();
@@ -58,11 +57,6 @@ namespace RainMeadow
             }
             orig(self);
 
-        }
-
-        private void ModApplyer_Update(On.ModManager.ModApplyer.orig_Update orig, ModManager.ModApplyer self)
-        {
-            orig(self);
         }
 
         private void RainWorld_Update(On.RainWorld.orig_Update orig, RainWorld self)
