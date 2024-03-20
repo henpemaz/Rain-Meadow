@@ -14,7 +14,7 @@ namespace RainMeadow
         public Dictionary<OnlinePlayer, OnlineEntity.EntityId> playerAvatars = new(); // should maybe be in GameMode
 
         public string[] mods = RainMeadowModManager.GetActiveMods();
-        public static bool modsChecked;
+
         public string? password;
         public bool hasPassword => password != null;
         public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password)
@@ -161,14 +161,12 @@ namespace RainMeadow
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedUshorts inLobbyIds;
             [OnlineField]
-            public string[] mods;
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
                 nextId = lobby.nextId;
                 players = new(lobby.participants.Keys.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
-                mods = lobby.mods;
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -189,13 +187,6 @@ namespace RainMeadow
                     }
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
-
-                if (!modsChecked)
-                {
-                    modsChecked = true;
-                    RainMeadowModManager.CheckMods(this.mods, lobby.mods);
-                }
-
                 base.ReadTo(resource);
             }
         }

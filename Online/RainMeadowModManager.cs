@@ -1,6 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using UnityEngine;
+using System.Reflection;
+using UnityEngine;
+using IL.Menu;
 
 namespace RainMeadow
 {
@@ -8,14 +13,33 @@ namespace RainMeadow
     {
         public static string[] GetActiveMods()
         {
-            return ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().Select(mod => mod.id.ToString()).ToArray();
+
+            var highImpactMods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().Select(mod => mod.id.ToString()).ToArray();
+
+            var remixMod = ModManager.ActiveMods.Find(mod => mod.id == "rwremix");
+
+            if (remixMod != null)
+            {
+                var highImpactModsList = highImpactMods.ToList();
+                highImpactModsList.Add(remixMod.id);
+                highImpactMods = highImpactModsList.ToArray();
+
+            }
+            else
+            {
+                RainMeadow.Debug("Couldn't find rwremix");
+            }
+
+            return highImpactMods;
         }
 
-        internal static void CheckMods(string[] lobbyMods, string[] localMods)
+        internal static bool CheckMods(string[] lobbyMods, string[] localMods)
         {
+
             if (Enumerable.SequenceEqual(localMods, lobbyMods))
             {
                 RainMeadow.Debug("Same mod set !");
+                return true;
             }
             else
             {
@@ -56,14 +80,25 @@ namespace RainMeadow
                     modsToDisable.Add(ModManager.InstalledMods[index]);
                 }
 
+                var disableRemixAndTriggerReload = modsToDisable.Find(mod => mod.id == "rwremix");
+                var enableRemixAndTriggerReload = modsToEnable.Find(mod => mod.id == "rwremix");
+
                 ModApplier modApplyer = new(RWCustom.Custom.rainWorld.processManager, mods.ToList(), loadOrder);
 
-                modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
-
-                modApplyer.OnFinish += (ModApplier modApplyer) =>
+                modApplyer.OnFinish += (ModApplier modApplyer) => // currently does not reconnect users to the lobby
                 {
-                    Utils.Restart($"+connect_lobby {MatchmakingManager.instance.GetLobbyID()}");
+                    if (disableRemixAndTriggerReload != null || enableRemixAndTriggerReload != null)
+                    {
+                        modApplyer.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+                    }
+                    else
+                    {
+                        Utils.Restart($"+connect_lobby {MatchmakingManager.instance.GetLobbyID()}");
+                    }
+
                 };
+
+                return modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
             }
         }
 
