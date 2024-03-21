@@ -12,7 +12,7 @@ namespace RainMeadow
 
             var highImpactMods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().Select(mod => mod.id.ToString()).ToArray();
 
-            var remixMod = ModManager.InstalledMods.Find(mod => mod.id == "rwremix");
+            var remixMod = ModManager.ActiveMods.Find(mod => mod.id == "rwremix");
 
             if (remixMod != null)
             {
@@ -32,7 +32,7 @@ namespace RainMeadow
         internal static bool CheckMods(string[] lobbyMods, string[] localMods)
         {
 
-            if (!Enumerable.SequenceEqual(localMods, lobbyMods))
+            if (Enumerable.SequenceEqual(localMods, lobbyMods))
             {
                 RainMeadow.Debug("Same mod set !");
                 return true;
@@ -76,14 +76,6 @@ namespace RainMeadow
                     modsToDisable.Add(ModManager.InstalledMods[index]);
                 }
 
-                foreach (var mod in ModManager.ActiveMods)
-                {
-                    if (mod.id == "rwremix")
-                    {
-                        modsToDisable.Add(mod);
-                    }
-                }
-
                 bool disableRemixAndTriggerReload = modsToDisable.Count == 1 && modsToDisable.Exists(mod => mod.id == "rwremix");
                 bool enableRemixAndTriggerReload = modsToEnable.Count == 1 && modsToEnable.Exists(mod => mod.id == "rwremix");
 
@@ -101,7 +93,7 @@ namespace RainMeadow
                     }
 
                 };
-
+                RainMeadow.Debug("Show mod confirmation to client");
                 return modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
             }
         }
