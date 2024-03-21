@@ -1,8 +1,6 @@
 ﻿using Menu;
 using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Transactions.Configuration;
 using UnityEngine;
 
 namespace RainMeadow
@@ -110,7 +108,7 @@ namespace RainMeadow
                 text += Environment.NewLine + menu.Translate("Unable to find those mods, please install them: ") + string.Join(", ", unknownMods);
             }
 
-            text += Environment.NewLine + Environment.NewLine + menu.Translate("Rain World will be restarted for these changes to take effect");
+            text += Environment.NewLine + Environment.NewLine + menu.Translate("Rain World may be restarted for these changes to take effect");
 
             requiresRestartDialog = new DialogNotify(text, new Vector2(480f, 320f), manager, () =>
             {

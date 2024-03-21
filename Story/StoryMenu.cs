@@ -147,16 +147,14 @@ namespace RainMeadow
             UpdateCharacterUI();
 
             // Grab Host Remix Settings
-            if (ModManager.MMF)
+            if (OnlineManager.lobby.isOwner && ModManager.MMF)
             {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    var hostSettings = GetHostBoolStoryRemixSettings();
-                    (OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings = hostSettings.hostBoolSettings;
-                    (OnlineManager.lobby.gameMode as StoryGameMode).storyFloatRemixSettings = hostSettings.hostFloatSettings;
-                    (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings = hostSettings.hostIntSettings;
-                }
+                var hostSettings = GetHostBoolStoryRemixSettings();
+                (OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings = hostSettings.hostBoolSettings;
+                (OnlineManager.lobby.gameMode as StoryGameMode).storyFloatRemixSettings = hostSettings.hostFloatSettings;
+                (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings = hostSettings.hostIntSettings;
             }
+
 
 
 
