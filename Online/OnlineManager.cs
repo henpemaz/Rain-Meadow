@@ -54,6 +54,16 @@ namespace RainMeadow
 
                     var myMods = RainMeadowModManager.GetActiveMods();
 
+                    foreach (var mod in theirMods)
+                    {
+                        RainMeadow.Debug("THEIR MODS: " + mod);
+                    }
+
+                    foreach (var mod in myMods)
+                    {
+                        RainMeadow.Debug("MY MODS: " + mod);
+                    }
+
                     if (RainMeadowModManager.CheckMods(theirMods, myMods))
                     {
                         manager.RequestMainProcessSwitch(lobby.gameMode.MenuProcessId());
