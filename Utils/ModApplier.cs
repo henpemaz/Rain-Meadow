@@ -105,7 +105,7 @@ namespace RainMeadow
             }
             if (unknownMods.Count > 0)
             {
-                text += Environment.NewLine + menu.Translate("Unable to find those mods, please install them: ") + string.Join(", ", unknownMods);
+                text += Environment.NewLine + menu.Translate("Unable to find the following mods, please install them: ") + string.Join(", ", unknownMods);
             }
 
             text += Environment.NewLine + Environment.NewLine + menu.Translate("Rain World may be restarted for these changes to take effect");
