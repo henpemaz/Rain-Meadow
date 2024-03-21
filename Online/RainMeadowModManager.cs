@@ -76,9 +76,8 @@ namespace RainMeadow
                     modsToDisable.Add(ModManager.InstalledMods[index]);
                 }
 
-                bool disableRemixAndTriggerReload = modsToDisable.Count == 1 && modsToDisable.Any(mod => mod.id == "rwremix");
-                bool enableRemixAndTriggerReload = modsToEnable.Count == 1 && modsToEnable.Any(mod => mod.id == "rwremix");
-
+                bool disableRemixAndTriggerReload = modsToDisable.Count == 1 && modsToDisable.Exists(mod => mod.id == "rwremix");
+                bool enableRemixAndTriggerReload = modsToEnable.Count == 1 && modsToEnable.Exists(mod => mod.id == "rwremix");
 
                 ModApplier modApplyer = new(RWCustom.Custom.rainWorld.processManager, mods.ToList(), loadOrder);
 
