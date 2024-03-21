@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Steamworks;
 
 namespace RainMeadow
 {
@@ -46,7 +47,7 @@ namespace RainMeadow
                 {
                     manager.RequestMainProcessSwitch(lobby.gameMode.MenuProcessId());
                 }
-
+                RainMeadow.Debug("Checking client mods...");
                 if (!OnlineManager.lobby.isOwner) // clients must check mods at the door
                 {
                     var theirMods = OnlineManager.lobby.mods;
