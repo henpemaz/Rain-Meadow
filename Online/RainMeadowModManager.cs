@@ -21,10 +21,6 @@ namespace RainMeadow
                 highImpactMods = highImpactModsList.ToArray();
 
             }
-            else
-            {
-                RainMeadow.Debug("Couldn't find rwremix");
-            }
 
             return highImpactMods;
         }
@@ -79,7 +75,6 @@ namespace RainMeadow
 
                 ModApplier modApplyer = new(RWCustom.Custom.rainWorld.processManager, mods.ToList(), loadOrder);
 
-                RainMeadow.Debug("Show mod confirmation to client");
                 modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
 
                 modApplyer.OnFinish += (ModApplier modApplyer) => // currently does not reconnect users to the lobby
