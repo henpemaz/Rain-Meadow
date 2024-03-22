@@ -78,10 +78,13 @@ namespace RainMeadow
                 bool enableRemixAndTriggerReload = modsToEnable.Count == 1 && modsToEnable.Exists(mod => mod.id == "rwremix");
 
                 ModApplier modApplyer = new(RWCustom.Custom.rainWorld.processManager, mods.ToList(), loadOrder);
-           
+
+                RainMeadow.Debug("Show mod confirmation to client");
+                modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
+
                 modApplyer.OnFinish += (ModApplier modApplyer) => // currently does not reconnect users to the lobby
                 {
-                     if (disableRemixAndTriggerReload || enableRemixAndTriggerReload)
+                    if (disableRemixAndTriggerReload || enableRemixAndTriggerReload)
                     {
                         MatchmakingManager.instance.LeaveLobby();
                         modApplyer.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
@@ -92,8 +95,6 @@ namespace RainMeadow
                     }
 
                 };
-                RainMeadow.Debug("Show mod confirmation to client");
-                modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
             }
         }
 

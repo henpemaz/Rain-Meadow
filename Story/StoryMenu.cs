@@ -424,20 +424,9 @@ namespace RainMeadow
         {
             var filteredList = new List<SlugcatStats.Name>();
 
-
-            if (!ModManager.MSC)
-            {
-                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryWhite);
-                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryYellow);
-                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryRed);
-            }
-            else // I have more slugs for you
-            {
-                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryWhite);
-                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryYellow);
-                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryRed);
-
-            }
+            filteredList.Add(Ext_SlugcatStatsName.OnlineStoryWhite);
+            filteredList.Add(Ext_SlugcatStatsName.OnlineStoryYellow);
+            filteredList.Add(Ext_SlugcatStatsName.OnlineStoryRed);
 
             return filteredList;
 
