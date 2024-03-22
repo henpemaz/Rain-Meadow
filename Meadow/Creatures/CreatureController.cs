@@ -26,6 +26,10 @@ namespace RainMeadow
             {
                 new ScavengerController(scav, oc, 0);
             }
+            else if (creature is NeedleWorm noodle)
+            {
+                new NoodleController(noodle, oc, 0);
+            }
             else if (creature is Player player)
             {
                 if (!oc.owner.isMe)
@@ -123,7 +127,7 @@ namespace RainMeadow
         {
             get
             {
-                return creature.coord;
+                return creature.room.GetWorldCoordinate(creature.mainBodyChunk.pos);
             }
         }
         // IOwnAHUD

@@ -6,11 +6,6 @@ using Mono.Cecil.Cil;
 
 namespace RainMeadow
 {
-    public abstract class AirCreatureController : CreatureController
-    {
-        protected AirCreatureController(Creature creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber) { }
-    }
-
     class CicadaController : AirCreatureController
     {
         public CicadaController(Cicada creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber) { }

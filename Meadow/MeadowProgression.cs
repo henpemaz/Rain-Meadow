@@ -18,7 +18,7 @@ namespace RainMeadow
             {
                 _ = Character.Slugcat;
                 _ = Skin.Slugcat_Survivor;
-                currentTestSkin = Skin.Cicada_White;
+                currentTestSkin = Skin.Noodlefly_Big;
             }
             catch (Exception e)
             {
@@ -75,6 +75,13 @@ namespace RainMeadow
                 emotePrefix = "sc_", // "scav_"
                 emoteAtlas = "emotes_slugcat",//"emotes_scav",
                 emoteColor = new Color(232, 187, 200, 255f) / 255f,
+            });
+            public static Character Noodlefly = new("Noodlefly", true, new()
+            {
+                displayName = "NOODLEFLY",
+                emotePrefix = "sc_", // "noot_"
+                emoteAtlas = "emotes_slugcat",//"emotes_noot",
+                emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
             });
         }
 
@@ -251,6 +258,19 @@ namespace RainMeadow
                 displayName = "Juniper",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 4566,
+            });
+
+            public static Skin Noodlefly_Big = new("Noodlefly_Big", true, new()
+            {
+                character = Character.Noodlefly,
+                displayName = "Big",
+                creatureType = CreatureTemplate.Type.BigNeedleWorm,
+            });
+            public static Skin Noodlefly_Small = new("Noodlefly_Small", true, new()
+            {
+                character = Character.Noodlefly,
+                displayName = "Small",
+                creatureType = CreatureTemplate.Type.SmallNeedleWorm,
             });
         }
 

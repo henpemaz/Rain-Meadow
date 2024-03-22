@@ -29,13 +29,23 @@ namespace RainMeadow
             instance.Logger.LogError($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}:{data}");
         }
 
-//#if TRACING
+        public static void Stacktrace()
+        {
+            var stacktrace = Environment.StackTrace;
+            stacktrace = stacktrace.Substring(stacktrace.IndexOf('\n') + 1);
+            stacktrace = stacktrace.Substring(stacktrace.IndexOf('\n'));
+            instance.Logger.LogInfo(stacktrace);
+        }
+
+        //#if TRACING
+        // tracing stays on for one net-frame after pressing L
         public static bool tracing;
+        // this better captures the caller member info for delegates/lambdas at the cost of using the stackframe
         public static void Trace(object data, [CallerFilePath] string callerFile = "")
         {
             if (tracing)
             {
-                instance.Logger.LogInfo($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{new StackFrame(1, false).GetMethod().ToString()}:{data}");
+                instance.Logger.LogInfo($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{new StackFrame(1, false).GetMethod()}:{data}");
             }
         }
 //#endif
