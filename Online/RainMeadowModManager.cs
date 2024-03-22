@@ -83,6 +83,7 @@ namespace RainMeadow
                 {
                      if (disableRemixAndTriggerReload || enableRemixAndTriggerReload)
                     {
+                        MatchmakingManager.instance.LeaveLobby();
                         modApplyer.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
                     }
                     else
