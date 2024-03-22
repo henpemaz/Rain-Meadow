@@ -147,7 +147,7 @@ namespace RainMeadow
             UpdateCharacterUI();
 
             // Grab Host Remix Settings
-            if (OnlineManager.lobby.isOwner)
+            if (OnlineManager.lobby.isOwner) // ModManager.MMF should be in the check but serializing a nullable dictionary is not a thing at the moment so I'm cheating inside GetHostBoolStoryRemixSettings().
             {
                 var hostSettings = GetHostBoolStoryRemixSettings();
                 (OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings = hostSettings.hostBoolSettings;
