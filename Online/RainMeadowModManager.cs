@@ -12,7 +12,7 @@ namespace RainMeadow
 
             var highImpactMods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().Select(mod => mod.id.ToString()).ToArray();
 
-            var remixMod = ModManager.ActiveMods.Find(mod => mod.id == "rwremix");
+            var remixMod = ModManager.ActiveMods.Find(mod => mod.id == "rwremix"); // Remix needs to be added to the 'game-breaking' mods for game settings sync
 
             if (remixMod != null)
             {
@@ -77,7 +77,7 @@ namespace RainMeadow
 
                 modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
 
-                modApplyer.OnFinish += (ModApplier modApplyer) => // currently does not reconnect users to the lobby
+                modApplyer.OnFinish += (ModApplier modApplyer) => 
                 {
                     if (disableRemixAndTriggerReload || enableRemixAndTriggerReload)
                     {
@@ -86,7 +86,7 @@ namespace RainMeadow
                     }
                     else
                     {
-                        Utils.Restart($"+connect_lobby {MatchmakingManager.instance.GetLobbyID()}");
+                        Utils.Restart($"+connect_lobby {MatchmakingManager.instance.GetLobbyID()}"); // currently does not reconnect users to the lobby
                     }
 
                 };
