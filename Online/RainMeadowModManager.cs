@@ -32,7 +32,7 @@ namespace RainMeadow
         internal static void CheckMods(string[] lobbyMods, string[] localMods)
         {
 
-            if (!Enumerable.SequenceEqual(localMods, lobbyMods))
+            if (Enumerable.SequenceEqual(localMods, lobbyMods))
             {
                 RainMeadow.Debug("Same mod set !");
             }
