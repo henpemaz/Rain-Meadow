@@ -89,7 +89,7 @@ namespace RainMeadow
             }
         }
 
-        public bool ShowConfirmation(List<ModManager.Mod> modsToEnable, List<ModManager.Mod> modsToDisable, List<string> unknownMods)
+        public void ShowConfirmation(List<ModManager.Mod> modsToEnable, List<ModManager.Mod> modsToDisable, List<string> unknownMods)
         {
             string text = menu.Translate("Mod mismatch detected.") + Environment.NewLine;
 
@@ -116,7 +116,6 @@ namespace RainMeadow
             });
 
             manager.ShowDialog(requiresRestartDialog);
-            return false;
         }
 
         public new void Start(bool filesInBadState)

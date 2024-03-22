@@ -29,13 +29,12 @@ namespace RainMeadow
             return highImpactMods;
         }
 
-        internal static bool CheckMods(string[] lobbyMods, string[] localMods)
+        internal static void CheckMods(string[] lobbyMods, string[] localMods)
         {
 
-            if (Enumerable.SequenceEqual(localMods, lobbyMods))
+            if (!Enumerable.SequenceEqual(localMods, lobbyMods))
             {
                 RainMeadow.Debug("Same mod set !");
-                return true;
             }
             else
             {
@@ -44,7 +43,6 @@ namespace RainMeadow
                 var (MissingMods, ExcessiveMods) = CompareModSets(lobbyMods, localMods);
 
                 bool[] mods = ModManager.InstalledMods.ConvertAll(mod => mod.enabled).ToArray();
-
                 List<int> loadOrder = ModManager.InstalledMods.ConvertAll(mod => mod.loadOrder);
 
                 List<string> unknownMods = new();
@@ -80,7 +78,7 @@ namespace RainMeadow
                 bool enableRemixAndTriggerReload = modsToEnable.Count == 1 && modsToEnable.Exists(mod => mod.id == "rwremix");
 
                 ModApplier modApplyer = new(RWCustom.Custom.rainWorld.processManager, mods.ToList(), loadOrder);
-
+           
                 modApplyer.OnFinish += (ModApplier modApplyer) => // currently does not reconnect users to the lobby
                 {
                      if (disableRemixAndTriggerReload || enableRemixAndTriggerReload)
@@ -94,7 +92,7 @@ namespace RainMeadow
 
                 };
                 RainMeadow.Debug("Show mod confirmation to client");
-                return modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
+                modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
             }
         }
 

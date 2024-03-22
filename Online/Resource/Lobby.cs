@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace RainMeadow
 {
@@ -14,6 +15,7 @@ namespace RainMeadow
         public Dictionary<OnlinePlayer, OnlineEntity.EntityId> playerAvatars = new(); // should maybe be in GameMode
 
         public string[] mods = RainMeadowModManager.GetActiveMods();
+        public static bool modsChecked = false;
 
         public string? password;
         public bool hasPassword => password != null;
@@ -92,7 +94,7 @@ namespace RainMeadow
 
         internal override void Tick(uint tick)
         {
-            clientSettings = entities.Values.Where(em => em.entity is ClientSettings).ToDictionary(e => e.entity.owner, e=> e.entity as ClientSettings);
+            clientSettings = entities.Values.Where(em => em.entity is ClientSettings).ToDictionary(e => e.entity.owner, e => e.entity as ClientSettings);
             playerAvatars = clientSettings.ToDictionary(e => e.Key, e => e.Value.avatarId);
             gameMode.LobbyTick(tick);
             base.Tick(tick);
@@ -122,7 +124,7 @@ namespace RainMeadow
 
         protected override void AvailableImpl()
         {
-            
+
         }
 
         protected override void DeactivateImpl()
@@ -156,6 +158,8 @@ namespace RainMeadow
         {
             [OnlineField]
             public ushort nextId;
+            [OnlineField]
+            public string[] mods;
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedPlayerIDs players;
             [OnlineField(nullable = true)]
@@ -167,6 +171,7 @@ namespace RainMeadow
                 nextId = lobby.nextId;
                 players = new(lobby.participants.Keys.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
+                mods = lobby.mods;
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -187,6 +192,14 @@ namespace RainMeadow
                     }
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
+
+                if (!modsChecked)
+                {
+                    RainMeadowModManager.CheckMods(this.mods, lobby.mods);
+                    modsChecked = true;
+
+                }
+
                 base.ReadTo(resource);
             }
         }

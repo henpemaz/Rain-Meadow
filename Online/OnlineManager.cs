@@ -43,37 +43,40 @@ namespace RainMeadow
             currentlyJoiningLobby = default;
             if (ok)
             {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    manager.RequestMainProcessSwitch(lobby.gameMode.MenuProcessId());
-                }
-                if (!OnlineManager.lobby.isOwner) // clients must check mods at the door
-                {
-                    RainMeadow.Debug("Checking client mods...");
-                    var theirMods = OnlineManager.lobby.mods;
+                // if (OnlineManager.lobby.isOwner)
+                //{
+                manager.RequestMainProcessSwitch(lobby.gameMode.MenuProcessId());
 
-                    var myMods = RainMeadowModManager.GetActiveMods();
+                /*                if (!OnlineManager.lobby.isOwner) // clients must check mods at the door
+                                {
 
-                    foreach (var mod in theirMods)
-                    {
-                        RainMeadow.Debug("THEIR MODS: " + mod);
-                    }
+                                    RainMeadow.Debug("Checking client mods...");
 
-                    foreach (var mod in myMods)
-                    {
-                        RainMeadow.Debug("MY MODS: " + mod);
-                    }
+                                    var myMods = RainMeadowModManager.GetActiveMods();
 
-                    if (RainMeadowModManager.CheckMods(theirMods, myMods))
-                    {
-                        manager.RequestMainProcessSwitch(lobby.gameMode.MenuProcessId());
+                                    // sanity check their mods
+                                    foreach (var mod in theirMods)
+                                    {
+                                        RainMeadow.Debug("THEIR MODS: " + mod);
+                                    }
 
-                    }
-                    else
-                    {
-                        MatchmakingManager.instance.LeaveLobby();
-                    }
-                }
+                                    // sanity check my mods
+                                    foreach (var mod in myMods)
+                                    {
+                                        RainMeadow.Debug("MY MODS: " + mod);
+                                    }
+
+                                    // Lobby.LobbyState.mods seems to contain THEIR MODS
+                                    if (RainMeadowModManager.CheckMods(theirMods, myMods))
+                                    {
+                                        manager.RequestMainProcessSwitch(lobby.gameMode.MenuProcessId());
+
+                                    }*/
+                /*                    else
+                                    {
+                                        MatchmakingManager.instance.LeaveLobby();
+                                    }*/
+                //}
 
             }
             else
