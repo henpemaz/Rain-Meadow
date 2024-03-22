@@ -63,7 +63,7 @@
       <Private>False</Private>
     </Reference>
 	<Reference Update="lib\Assembly-CSharp-nstrip.dll">
-		<Private>False</Private>
+	  <Private>False</Private>
 	</Reference>
     <Reference Update="lib\BepInEx.dll">
       <Private>False</Private>
@@ -123,7 +123,7 @@
       <Private>False</Private>
     </Reference>
 	<Reference Update="lib\Unity.Mathematics.dll">
-		<Private>False</Private>
+      <Private>False</Private>
 	</Reference>
     <Reference Update="lib\UnityEngine.AssetBundleModule.dll">
       <Private>False</Private>
