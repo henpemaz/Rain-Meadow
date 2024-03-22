@@ -147,7 +147,7 @@ namespace RainMeadow
             UpdateCharacterUI();
 
             // Grab Host Remix Settings
-            if (OnlineManager.lobby.isOwner && ModManager.MMF)
+            if (OnlineManager.lobby.isOwner)
             {
                 var hostSettings = GetHostBoolStoryRemixSettings();
                 (OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings = hostSettings.hostBoolSettings;
@@ -559,31 +559,35 @@ namespace RainMeadow
             Dictionary<string, float> configurableFloats = new Dictionary<string, float>();
             Dictionary<string, int> configurableInts = new Dictionary<string, int>();
 
-            Type type = typeof(MoreSlugcats.MMF);
-
-            FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
-            var sortedFields = fields.OrderBy(f => f.Name);
-
-
-            foreach (FieldInfo field in sortedFields)
+            if (ModManager.MMF)
             {
+                Type type = typeof(MoreSlugcats.MMF);
 
-                var reflectedValue = field.GetValue(null);
-                if (reflectedValue is Configurable<bool> boolOption)
+                FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
+                var sortedFields = fields.OrderBy(f => f.Name);
+
+
+                foreach (FieldInfo field in sortedFields)
                 {
-                    configurableBools.Add(field.Name, boolOption._typedValue);
-                }
 
-                if (reflectedValue is Configurable<float> floatOption)
-                {
-                    configurableFloats.Add(field.Name, floatOption._typedValue);
-                }
+                    var reflectedValue = field.GetValue(null);
+                    if (reflectedValue is Configurable<bool> boolOption)
+                    {
+                        configurableBools.Add(field.Name, boolOption._typedValue);
+                    }
 
-                if (reflectedValue is Configurable<int> intOption)
-                {
-                    configurableInts.Add(field.Name, intOption._typedValue);
-                }
+                    if (reflectedValue is Configurable<float> floatOption)
+                    {
+                        configurableFloats.Add(field.Name, floatOption._typedValue);
+                    }
 
+                    if (reflectedValue is Configurable<int> intOption)
+                    {
+                        configurableInts.Add(field.Name, intOption._typedValue);
+                    }
+
+                }
+                return (configurableBools, configurableFloats, configurableInts);
             }
             return (configurableBools, configurableFloats, configurableInts);
 
