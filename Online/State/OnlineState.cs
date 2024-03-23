@@ -1,4 +1,5 @@
 ﻿using RainMeadow.Generics;
+using RainMeadow.Online.State;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,6 +71,8 @@ namespace RainMeadow
             public static readonly StateType RealizedSpearState = new("RealizedSpearState", typeof(RealizedSpearState));
             public static readonly StateType CreatureStateState = new("CreatureStateState", typeof(CreatureStateState));
             public static readonly StateType CreatureHealthStateState = new("CreatureHealthStateState", typeof(CreatureHealthStateState));
+            public static readonly StateType RealizedExplosiveSpearState = new("RealizedExplosiveSpearState", typeof(RealizedExplosiveSpearState));
+
 
             public static readonly StateType RainCycleDataState = new("RainCycleDataState", typeof(RainCycleData));
 

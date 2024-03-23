@@ -48,7 +48,13 @@ namespace RainMeadow
 
             On.Oracle.CreateMarble += Oracle_CreateMarble;
             On.Oracle.SetUpMarbles += Oracle_SetUpMarbles;
+            On.ExplosiveSpear.Explode += ExplosiveSpear_Explode;
 
+        }
+
+        private void ExplosiveSpear_Explode(On.ExplosiveSpear.orig_Explode orig, ExplosiveSpear self)
+        {
+            self.Destroy();
         }
 
         private void Oracle_SetUpMarbles(On.Oracle.orig_SetUpMarbles orig, Oracle self)

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace RainMeadow.Online.State
 {
@@ -9,10 +10,10 @@ namespace RainMeadow.Online.State
     {
         [OnlineField]
         int explodeAt;
+/*        [OnlineField]
+        Vector2[,] rag;*/
         [OnlineField]
-        UnityEngine.Vector2[,] rag;
-        [OnlineField]
-        List<int> miniExplosions; // doubt this can be serialized right now
+        List<int> miniExplosions; 
 
         public RealizedExplosiveSpearState() { }
 
@@ -20,7 +21,7 @@ namespace RainMeadow.Online.State
         {
             var explosiveSpear = (ExplosiveSpear)onlineEntity.apo.realizedObject;
             explodeAt = explosiveSpear.explodeAt;
-            rag = explosiveSpear.rag;
+            //rag = explosiveSpear.rag;
             miniExplosions = explosiveSpear.miniExplosions;
 
         }
@@ -31,7 +32,7 @@ namespace RainMeadow.Online.State
 
             var explosiveSpear = (ExplosiveSpear)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             explosiveSpear.explodeAt = explodeAt;
-            explosiveSpear.rag = rag;
+            //explosiveSpear.rag = rag;
             explosiveSpear.miniExplosions = miniExplosions;
         }
 
