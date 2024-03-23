@@ -53,7 +53,7 @@ namespace RainMeadow
         {
             base.Update();
             
-            if (Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value) || (owner.found && owner.RealizedPlayer.inShortcut))
+            if (Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value)) // || (owner.found && owner.RealizedPlayer.inShortcut)
             {
                 this.lastAlpha = this.alpha;
                 this.blink = 1f;
