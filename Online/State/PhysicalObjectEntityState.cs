@@ -1,4 +1,5 @@
 ﻿using Mono.Cecil;
+using RainMeadow.Online.State;
 using System;
 using System.ComponentModel;
 using System.Text;
@@ -44,6 +45,8 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject is VultureGrub) return new RealizedVultureGrubState(onlineObject);
             if (onlineObject.apo.realizedObject is SeedCob) return new RealizedSeedCobState(onlineObject);
             if (onlineObject.apo.realizedObject is DangleFruit) return new RealizedDangleFruitState(onlineObject);
+            if (onlineObject.apo.realizedObject is ExplosiveSpear) return new RealizedExplosiveSpearState(onlineObject);
+
             return new RealizedPhysicalObjectState(onlineObject);
         }
 
