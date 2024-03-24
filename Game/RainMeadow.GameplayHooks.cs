@@ -1,4 +1,5 @@
 ﻿using RWCustom;
+using Sony.NP;
 using System;
 using System.Linq;
 using UnityEngine;
@@ -21,7 +22,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby == null)
             {
-                orig(self,hitFac,explosion,hitChunk);
+                orig(self, hitFac, explosion, hitChunk);
                 return;
             }
 
@@ -29,11 +30,23 @@ namespace RainMeadow
             if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
+                
+                if (!OnlinePhysicalObject.map.TryGetValue(explosion.sourceObject.abstractPhysicalObject, out var sourceObject))
+                {
+                    Error("Error getting source object");
+                }
+
+                if (!OnlinePhysicalObject.map.TryGetValue(explosion.killTagHolder.abstractPhysicalObject, out var onlineCreature)) // to pass OnlinePhysicalObject data to convert to OnlineCreature over the wire
+                {
+
+                    Error("Error getting kill tag holder");
+                }
+
                 if (objectHit != null)
                 {
-                    if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.HitByExplosion, objectHit, hitFac)))
+                    if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.HitByExplosion, objectHit, sourceObject, explosion.pos, explosion.lifeTime, explosion.rad, explosion.force, explosion.damage, explosion.stun, explosion.deafen, onlineCreature, explosion.killTagHolderDmgFactor, explosion.minStun, explosion.backgroundNoise, hitFac)))
                     {
-                        room.owner.InvokeRPC(OnlinePhysicalObject.HitByExplosion, objectHit, hitFac);
+                        room.owner.InvokeRPC(OnlinePhysicalObject.HitByExplosion, objectHit, sourceObject, explosion.pos, explosion.lifeTime, explosion.rad, explosion.force, explosion.damage, explosion.stun, explosion.deafen, onlineCreature, explosion.killTagHolderDmgFactor, explosion.minStun, explosion.backgroundNoise, hitFac);
                     }
                 }
             }
@@ -45,7 +58,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby == null)
             {
-                orig(self,weapon);
+                orig(self, weapon);
                 return;
             }
 
@@ -56,7 +69,7 @@ namespace RainMeadow
                 OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var abstWeapon);
                 room.owner.InvokeRPC(OnlinePhysicalObject.HitByWeapon, objectHit, abstWeapon);
             }
-            else 
+            else
             {
                 orig(self, weapon);
             }
@@ -76,14 +89,16 @@ namespace RainMeadow
                 var playerIDs = OnlineManager.lobby.participants.Keys.Select(p => p.inLobbyId).ToList();
                 var readyWinPlayers = storyGameMode.readyForWinPlayers.ToList();
 
-                foreach (var playerID in playerIDs) {
+                foreach (var playerID in playerIDs)
+                {
                     if (!readyWinPlayers.Contains(playerID)) return;
                 }
                 var storyClientSettings = storyGameMode.clientSettings as StoryClientSettings;
                 storyClientSettings.myLastDenPos = self.room.abstractRoom.name;
 
             }
-            else {
+            else
+            {
                 var scug = self.room.game.Players.First(); //needs to be changed if we want to support Jolly
                 var realizedScug = (Player)scug.realizedCreature;
                 if (realizedScug == null || !self.room.PlayersInRoom.Contains(realizedScug)) return;
@@ -110,7 +125,7 @@ namespace RainMeadow
 
                 if (self is AirBreatherCreature breather) breather.lungs = 1f;
 
-                if(self.room != null)
+                if (self.room != null)
                 {
                     // fall out of world handling
                     float num = -self.bodyChunks[0].restrictInRoomRange + 1f;
@@ -191,9 +206,9 @@ namespace RainMeadow
             {
                 PhysicalObject trueVillain = null;
                 var suspect = room.updateList[room.updateIndex];
-                if (suspect is Explosion explosion) trueVillain = explosion.sourceObject;
-                else if (suspect is PhysicalObject villainObject) trueVillain = villainObject;
-                if(trueVillain != null)
+                //if (suspect is Explosion explosion) trueVillain = explosion.sourceObject;
+                if (suspect is PhysicalObject villainObject) trueVillain = villainObject;
+                if (trueVillain != null)
                 {
                     if (!OnlinePhysicalObject.map.TryGetValue(trueVillain.abstractPhysicalObject, out var onlineTrueVillain))
                     {

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -305,9 +306,14 @@ namespace RainMeadow
             objectHit?.apo.realizedObject.HitByWeapon(weapon.apo.realizedObject as Weapon);
         }
         [RPCMethod]
-        public static void HitByExplosion(OnlinePhysicalObject objectHit, float hitfac)
+        public static void HitByExplosion(OnlinePhysicalObject objectHit, OnlinePhysicalObject sourceObject, Vector2 pos, int lifeTime, float rad, float force, float damage, float stun, float deafen, OnlinePhysicalObject killTagHolder, float killTagHolderDmgFactor, float minStun, float backgroundNoise, float hitfac)
         {
-            objectHit?.apo.realizedObject.HitByExplosion(hitfac, null, 0);
+            var source = (sourceObject.apo.realizedObject);
+
+            var creature = (killTagHolder.apo as AbstractCreature).realizedCreature;
+            var explosion = new Explosion(source.room, source, pos, lifeTime, rad, force, damage, stun, deafen, creature, killTagHolderDmgFactor, minStun, backgroundNoise);
+            objectHit?.apo.realizedObject.HitByExplosion(hitfac, explosion, 0);
+
         }
     }
 }
