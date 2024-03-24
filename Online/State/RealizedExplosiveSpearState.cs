@@ -15,6 +15,8 @@ namespace RainMeadow.Online.State
         [OnlineField]
         List<int> miniExplosions; 
 
+        // TODO: VFX
+        // Explosion() -> the explosion class needs to be synced
         public RealizedExplosiveSpearState() { }
 
         public RealizedExplosiveSpearState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
@@ -30,6 +32,7 @@ namespace RainMeadow.Online.State
         {
             base.ReadTo(onlineEntity);
 
+            
             var explosiveSpear = (ExplosiveSpear)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             explosiveSpear.explodeAt = explodeAt;
             //explosiveSpear.rag = rag;

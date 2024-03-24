@@ -307,7 +307,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void HitByExplosion(OnlinePhysicalObject objectHit, float hitfac)
         {
-            objectHit?.apo.realizedObject.HitByExplosion(hitfac,null,0);
+            objectHit?.apo.realizedObject.HitByExplosion(hitfac, null, 0);
         }
     }
 }

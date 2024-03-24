@@ -49,11 +49,211 @@ namespace RainMeadow
             On.Oracle.CreateMarble += Oracle_CreateMarble;
             On.Oracle.SetUpMarbles += Oracle_SetUpMarbles;
             On.ExplosiveSpear.Explode += ExplosiveSpear_Explode;
+            On.ScavengerBomb.Explode += ScavengerBomb_Explode;
+        }
+
+        private void ScavengerBomb_Explode(On.ScavengerBomb.orig_Explode orig, ScavengerBomb self, BodyChunk hitChunk)
+        {
+
+            if (self.slatedForDeletetion)
+            {
+                return;
+            }
+
+            Vector2 vector = Vector2.Lerp(self.firstChunk.pos, self.firstChunk.lastPos, 0.35f);
+            self.room.AddObject(new SootMark(self.room, vector, 80f, bigSprite: true));
+            if (!self.explosionIsForShow)
+            {
+                RainMeadow.Debug("Prevent game crash");
+                // self.room.AddObject(new Explosion(self.room, self, vector, 7, 250f, 6.2f, 2f, 280f, 0.25f, self.thrownBy, 0.7f, 160f, 1f));
+            }
+
+            self.room.AddObject(new Explosion.ExplosionLight(vector, 280f, 1f, 7, self.explodeColor));
+            self.room.AddObject(new Explosion.ExplosionLight(vector, 230f, 1f, 3, new Color(1f, 1f, 1f)));
+            self.room.AddObject(new ExplosionSpikes(self.room, vector, 14, 30f, 9f, 7f, 170f, self.explodeColor));
+            self.room.AddObject(new ShockWave(vector, 330f, 0.045f, 5));
+            for (int i = 0; i < 25; i++)
+            {
+                Vector2 vector2 = RWCustom.Custom.RNV();
+                if (self.room.GetTile(vector + vector2 * 20f).Solid)
+                {
+                    if (!self.room.GetTile(vector - vector2 * 20f).Solid)
+                    {
+                        vector2 *= -1f;
+                    }
+                    else
+                    {
+                        vector2 = RWCustom.Custom.RNV();
+                    }
+                }
+
+                for (int j = 0; j < 3; j++)
+                {
+                    self.room.AddObject(new Spark(vector + vector2 * Mathf.Lerp(30f, 60f, UnityEngine.Random.value), vector2 * Mathf.Lerp(7f, 38f, UnityEngine.Random.value) + RWCustom.Custom.RNV() * 20f * UnityEngine.Random.value, Color.Lerp(self.explodeColor, new Color(1f, 1f, 1f), UnityEngine.Random.value), null, 11, 28));
+                }
+
+                self.room.AddObject(new Explosion.FlashingSmoke(vector + vector2 * 40f * UnityEngine.Random.value, vector2 * Mathf.Lerp(4f, 20f, Mathf.Pow(UnityEngine.Random.value, 2f)), 1f + 0.05f * UnityEngine.Random.value, new Color(1f, 1f, 1f), self.explodeColor, UnityEngine.Random.Range(3, 11)));
+            }
+
+            if (self.smoke != null)
+            {
+                for (int k = 0; k < 8; k++)
+                {
+                    self.smoke.EmitWithMyLifeTime(vector + RWCustom.Custom.RNV(), RWCustom.Custom.RNV() * UnityEngine.Random.value * 17f);
+                }
+            }
+
+            for (int l = 0; l < 6; l++)
+            {
+                self.room.AddObject(new ScavengerBomb.BombFragment(vector, RWCustom.Custom.DegToVec(((float)l + UnityEngine.Random.value) / 6f * 360f) * Mathf.Lerp(18f, 38f, UnityEngine.Random.value)));
+            }
+
+            self.room.ScreenMovement(vector, default(Vector2), 1.3f);
+            for (int m = 0; m < self.abstractPhysicalObject.stuckObjects.Count; m++)
+            {
+                self.abstractPhysicalObject.stuckObjects[m].Deactivate();
+            }
+
+            self.room.PlaySound(SoundID.Bomb_Explode, vector);
+            self.room.InGameNoise(new Noise.InGameNoise(vector, 9000f, self, 1f));
+            bool flag = hitChunk != null;
+            for (int n = 0; n < 5; n++)
+            {
+                if (self.room.GetTile(vector + RWCustom.Custom.fourDirectionsAndZero[n].ToVector2() * 20f).Solid)
+                {
+                    flag = true;
+                    break;
+                }
+            }
+
+            if (flag)
+            {
+                if (self.smoke == null)
+                {
+                    self.smoke = new Smoke.BombSmoke(self.room, vector, null, self.explodeColor);
+                    self.room.AddObject(self.smoke);
+                }
+
+                if (hitChunk != null)
+                {
+                    self.smoke.chunk = hitChunk;
+                }
+                else
+                {
+                    self.smoke.chunk = null;
+                    self.smoke.fadeIn = 1f;
+                }
+
+                self.smoke.pos = vector;
+                self.smoke.stationary = true;
+                self.smoke.DisconnectSmoke();
+            }
+            else if (self.smoke != null)
+            {
+                self.smoke.Destroy();
+            }
+
+            self.Destroy();
 
         }
 
         private void ExplosiveSpear_Explode(On.ExplosiveSpear.orig_Explode orig, ExplosiveSpear self)
         {
+            if (self.exploded)
+            {
+                return;
+            }
+
+            RainMeadow.Debug("STARTING");
+
+
+            self.exploded = true;
+            if (self.stuckInObject != null)
+            {
+                if (self.stuckInObject is Creature)
+                {
+                    RainMeadow.Debug("CREATURE");
+
+                    (self.stuckInObject as Creature).Violence(self.firstChunk, self.rotation * 12f, self.stuckInChunk, null, Creature.DamageType.Explosion, (self.stuckInAppendage != null) ? 1.8f : 4.2f, 120f);
+                }
+                else
+                {
+                    RainMeadow.Debug("NOT CRIT");
+
+                    self.stuckInChunk.vel += self.rotation * 12f / self.stuckInChunk.mass;
+                }
+            }
+
+            Vector2 vector = self.firstChunk.pos + self.rotation * (self.pivotAtTip ? 0f : 10f);
+            RainMeadow.Debug("SOOt");
+
+            self.room.AddObject(new SootMark(self.room, vector, 50f, bigSprite: false));
+
+            // self.room.AddObject(new Explosion(self.room, self, vector, 5, 110f, 5f, 1.1f, 60f, 0.3f, self.thrownBy, 0.8f, 0f, 0.7f));
+            for (int i = 0; i < 14; i++)
+            {
+                RainMeadow.Debug("EXPLOSION SMOKE");
+
+                self.room.AddObject(new Explosion.ExplosionSmoke(vector, RWCustom.Custom.RNV() * 5f * UnityEngine.Random.value, 1f));
+            }
+
+            RainMeadow.Debug("EXPLOSION LITE");
+
+            self.room.AddObject(new Explosion.ExplosionLight(vector, 160f, 1f, 3, self.explodeColor));
+            RainMeadow.Debug("EXPLOSION SPIKE");
+
+            self.room.AddObject(new ExplosionSpikes(self.room, vector, 9, 4f, 5f, 5f, 90f, self.explodeColor));
+            RainMeadow.Debug("SHOCK");
+
+            self.room.AddObject(new ShockWave(vector, 60f, 0.045f, 4));
+            for (int j = 0; j < 20; j++)
+            {
+                Vector2 vector2 = RWCustom.Custom.RNV();
+                RainMeadow.Debug("SPARK");
+
+                self.room.AddObject(new Spark(vector + vector2 * UnityEngine.Random.value * 40f, vector2 * Mathf.Lerp(4f, 30f, UnityEngine.Random.value), self.explodeColor, null, 4, 18));
+            }
+            RainMeadow.Debug("SCREEN");
+
+            self.room.ScreenMovement(vector, default(Vector2), 0.7f);
+            for (int k = 0; k < 2; k++)
+            {
+                RainMeadow.Debug("SMOLDER");
+
+                Smoke.Smolder smolder = null;
+                if (self.stuckInObject != null)
+                {
+                    RainMeadow.Debug(" SMOKE2");
+
+                    smolder = new Smoke.Smolder(self.room, self.stuckInChunk.pos, self.stuckInChunk, self.stuckInAppendage);
+                }
+                else
+                {
+                    RainMeadow.Debug(" TRACE");
+
+                    Vector2? vector3 = SharedPhysics.ExactTerrainRayTracePos(self.room, self.firstChunk.pos, self.firstChunk.pos + ((k == 0) ? (self.rotation * 20f) : (RWCustom.Custom.RNV() * 20f)));
+                    if (vector3.HasValue)
+                    {
+                        RainMeadow.Debug(" SMOLDER2");
+
+                        smolder = new Smoke.Smolder(self.room, vector3.Value + RWCustom.Custom.DirVec(vector3.Value, self.firstChunk.pos) * 3f, null, null);
+                    }
+                }
+
+                if (smolder != null)
+                {
+                    self.room.AddObject(smolder);
+                }
+            }
+            RainMeadow.Debug(" LOSER");
+
+            self.abstractPhysicalObject.LoseAllStuckObjects();
+            RainMeadow.Debug(" FIRE");
+
+            self.room.PlaySound(SoundID.Fire_Spear_Explode, vector);
+            RainMeadow.Debug(" NOISE");
+
+            self.room.InGameNoise(new Noise.InGameNoise(vector, 8000f, self, 1f));
             self.Destroy();
         }
 
@@ -76,7 +276,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby == null)
             {
-                orig(self,orbitObj,ps,circle,dist,color);
+                orig(self, orbitObj, ps, circle, dist, color);
                 return;
             }
 
@@ -122,7 +322,7 @@ namespace RainMeadow
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineSporePlant);
                 room.owner.InvokeRPC(ConsumableRPCs.pacifySporePlant, onlineSporePlant);
             }
-            else 
+            else
             {
                 orig(self);
             }
@@ -140,13 +340,14 @@ namespace RainMeadow
             if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineWaterNut);
-                if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(ConsumableRPCs.swellWaterNut, onlineWaterNut))) 
+                if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(ConsumableRPCs.swellWaterNut, onlineWaterNut)))
                 {
                     room.owner.InvokeRPC(ConsumableRPCs.swellWaterNut, onlineWaterNut);
                     self.Destroy();
                 }
             }
-            else {
+            else
+            {
                 if (self.grabbedBy.Count > 0)
                 {
                     self.grabbedBy[0].Release();
@@ -173,7 +374,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby == null)
             {
-                orig(self,eu);
+                orig(self, eu);
                 return;
             }
 
@@ -184,7 +385,8 @@ namespace RainMeadow
             RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
             if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                if (prevOxygenLevel > currentOxygenLevel) {
+                if (prevOxygenLevel > currentOxygenLevel)
+                {
                     OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineBubbleGrass);
                     room.owner.InvokeRPC(ConsumableRPCs.SetOxygenLevel, onlineBubbleGrass, currentOxygenLevel);
                 }
