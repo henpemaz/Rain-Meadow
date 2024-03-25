@@ -8,22 +8,26 @@ namespace RainMeadow.Online.State
 {
     public class RealizedExplosiveSpearState : RealizedSpearState
     {
+
+        // Most of these don't seem to require syncing?
         [OnlineField]
         int explodeAt;
-/*        [OnlineField]
-        Vector2[,] rag;*/
         [OnlineField]
-        List<int> miniExplosions; 
+        List<int> miniExplosions;
+        [OnlineFieldColorRgb]
+        Color redColor;
 
-        // TODO: VFX
-        // Explosion() -> the explosion class needs to be synced
+        [OnlineFieldColorRgb] // maybe?
+        Color explodeColor;
+
         public RealizedExplosiveSpearState() { }
 
         public RealizedExplosiveSpearState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
             var explosiveSpear = (ExplosiveSpear)onlineEntity.apo.realizedObject;
             explodeAt = explosiveSpear.explodeAt;
-            //rag = explosiveSpear.rag;
+            redColor = explosiveSpear.redColor;
+            explodeColor = explosiveSpear.explodeColor;
             miniExplosions = explosiveSpear.miniExplosions;
 
         }
@@ -35,8 +39,9 @@ namespace RainMeadow.Online.State
             
             var explosiveSpear = (ExplosiveSpear)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             explosiveSpear.explodeAt = explodeAt;
-            //explosiveSpear.rag = rag;
             explosiveSpear.miniExplosions = miniExplosions;
+            explosiveSpear.redColor = redColor;
+            explosiveSpear.explodeColor = explodeColor;
         }
 
     }

@@ -26,7 +26,7 @@ namespace RainMeadow
                 return;
             }
 
-            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room); // null ref on hitting the room sometimes, game crash
             if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
@@ -42,8 +42,6 @@ namespace RainMeadow
                     return; 
                 }
 
-                // TODO: Targets that are stabbed with explosive spears will cause de-sync on this line
-                // Also beastmaster works for testing this.
                 if (!OnlinePhysicalObject.map.TryGetValue(explosion.killTagHolder.abstractPhysicalObject, out var onlineCreature)) // to pass OnlinePhysicalObject data to convert to OnlineCreature over the wire
                 {
 
