@@ -1,11 +1,16 @@
 ﻿using UnityEngine;
 using RWCustom;
+using MonoMod.Cil;
+using System;
+using Mono.Cecil.Cil;
 
 namespace RainMeadow
 {
     class NoodleController : AirCreatureController
     {
         private bool actLock; // act is hooked both at base and an override
+        private bool forceMove;
+
         private NeedleWorm noodle => creature as NeedleWorm;
 
         public static void EnableNoodle()
@@ -17,14 +22,94 @@ namespace RainMeadow
             On.SmallNeedleWorm.Update += SmallNeedleWorm_Update;
             On.SmallNeedleWorm.Act += SmallNeedleWorm_Act;
             On.SmallNeedleWormAI.Update += SmallNeedleWormAI_Update;
+
+            IL.NeedleWorm.Fly += NeedleWorm_Fly;
         }
+
+        private static void NeedleWorm_Fly(ILContext il)
+        {
+            var c = new ILCursor(il);
+            int loc = 0;
+            ILLabel after = null;
+            c.GotoNext(MoveType.After, // set that one flag that cuts off the "at destination" branch
+                i => i.MatchCall<MovementConnection>("op_Equality"),
+                i => i.MatchStloc(out loc),
+                i => i.MatchBr(out after)
+                );
+            c.GotoLabel(after);
+            c.MoveAfterLabels();
+            c.Emit(OpCodes.Ldarg_0);
+            c.Emit(OpCodes.Ldloc, loc);
+            c.EmitDelegate<Func<NeedleWorm, bool, bool>>((self, orig) =>
+            {
+                if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+                {
+                    return orig || (p as NoodleController).forceMove;
+                }
+                return orig;
+            });
+            c.Emit(OpCodes.Stloc, loc);
+
+            c.GotoNext(MoveType.After, // num, first we find the loc then we patch its usage
+                i => i.MatchCall<NeedleWorm>("get_SlowFlySpeed"),
+                i => i.MatchLdcR4(1f),
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<NeedleWorm>("extraMovementForce"),
+                i => i.MatchCallOrCallvirt(out _),
+                i => i.MatchMul(),
+                i => i.MatchStloc(out loc)
+                );
+
+            // but also PLEASE don't just do this
+            c.GotoNext(MoveType.After,
+                i => i.MatchStfld<NeedleWorm>("extraMovementForce")
+                );
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate<Action<NeedleWorm>>((self) =>
+            {
+                if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+                {
+                    self.extraMovementForce = 0f; // ZERO this weird guy out
+                }
+            });
+
+            // insert before
+            // if (followingConnection != default(MovementConnection))
+            c.Index = il.Instrs.Count - 1;
+            c.GotoPrev(MoveType.After,
+                i => i.MatchCall<MovementConnection>("op_Inequality")
+                );
+            c.GotoPrev(MoveType.Before,
+                i => i.MatchLdarg(1)
+                );
+            c.MoveAfterLabels();
+            c.Emit(OpCodes.Ldarg_0);
+            c.Emit(OpCodes.Ldloc, loc);
+            c.EmitDelegate<Func<NeedleWorm, float, float>>((self, orig) =>
+            {
+                if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+                {
+                    return self.SlowFlySpeed; // use the original value not your weird compensated thing thanks
+                }
+                return orig;
+            });
+            c.Emit(OpCodes.Stloc, loc);
+        }
+
+        public override WorldCoordinate CurrentPathfindingPosition => noodle.AI.pathFinder.destination;
 
         internal override bool FindDestination(WorldCoordinate basecoord, out WorldCoordinate toPos, out float magnitude)
         {
             if (base.FindDestination(basecoord, out toPos, out magnitude)) return true;
-            var basepos = 0.5f * (creature.firstChunk.pos + creature.room.MiddleOfTile(creature.abstractCreature.pos.Tile));
-            var dest = basepos + this.inputDir * 80f;
-            if (noodle.flying > 0) dest.y -= 12f; // nose up goes funny
+            //var basepos = 0.5f * (creature.firstChunk.pos + creature.room.MiddleOfTile(creature.abstractCreature.pos.Tile));
+            var basepos = creature.firstChunk.pos;
+            var dest = basepos + this.inputDir * 40f;
+            if (noodle.flying > 0)
+            {
+                dest += 1.4f * (creature.bodyChunks[0].pos - creature.bodyChunks[1].pos); // lookdir of the sorts, when it looks down going side-to-side it gets weird
+                dest.y += 4f;
+            }
+            //dest = 0.5f * (dest + creature.room.MiddleOfTile(creature.abstractCreature.pos.Tile)); // average to tile center
             if (Mathf.Abs(this.inputDir.y) < 0.1f) // trying to move horizontally, compensate for momentum a bit
             {
                 dest.y -= creature.mainBodyChunk.vel.y * 2f;
@@ -98,6 +183,8 @@ namespace RainMeadow
             }
 
             orig(self, eu);
+
+            RainMeadow.Trace($"atDestThisFrame? {self.atDestThisFrame}");
         }
 
         public NoodleController(Creature creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber)
@@ -112,20 +199,22 @@ namespace RainMeadow
 
         protected override void LookImpl(Vector2 pos)
         {
-            //noodle.lookDir = (pos - creature.DangerPos).normalized;
-            //noodle.getToLookDir = noodle.lookDir;
+            noodle.lookDir = (pos - creature.DangerPos).normalized;
+            noodle.getToLookDir = noodle.lookDir;
         }
 
         protected override void Moving(float magnitude)
         {
             noodle.AI.behavior = NeedleWormAI.Behavior.GetUnstuck;
-            noodle.AI.flySpeed = Custom.LerpAndTick(noodle.AI.flySpeed, 0.8f * magnitude, 0.2f, 0.05f);
+            noodle.AI.flySpeed = Custom.LerpAndTick(noodle.AI.flySpeed, magnitude, 0.2f, 0.05f);
+            forceMove = true;
         }
 
         protected override void Resting()
         {
             noodle.AI.behavior = NeedleWormAI.Behavior.Idle;
             noodle.AI.flySpeed = Custom.LerpAndTick(noodle.AI.flySpeed, 0, 0.4f, 0.1f);
+            forceMove = false;
         }
     }
 }
