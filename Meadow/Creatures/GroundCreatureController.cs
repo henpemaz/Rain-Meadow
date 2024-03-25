@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    internal abstract class GroundCreatureController : CreatureController
+    public abstract class GroundCreatureController : CreatureController
     {
         protected float jumpBoost;
         protected int forceJump;

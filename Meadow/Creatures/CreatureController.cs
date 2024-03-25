@@ -30,6 +30,10 @@ namespace RainMeadow
             {
                 new NoodleController(noodle, oc, 0);
             }
+            else if (creature is EggBug bug)
+            {
+                new EggbugController(bug, oc, 0);
+            }
             else if (creature is Player player)
             {
                 if (!oc.owner.isMe)
@@ -64,6 +68,8 @@ namespace RainMeadow
 
             standStillOnMapButton = creature.abstractCreature.world.game.IsStorySession;
             flipDirection = 1;
+
+            RainMeadow.Debug(this + " added!");
 
             //creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
             debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);

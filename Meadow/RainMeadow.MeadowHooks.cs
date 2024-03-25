@@ -2,9 +2,7 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
-using RWCustom;
 using System;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -19,6 +17,7 @@ namespace RainMeadow
             LizardController.EnableLizard();
             ScavengerController.EnableScavenger();
             NoodleController.EnableNoodle();
+            EggbugController.EnableEggbug();
 
             On.RoomCamera.Update += RoomCamera_Update; // init meadow hud
 

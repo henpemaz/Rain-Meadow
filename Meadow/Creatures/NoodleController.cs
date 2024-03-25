@@ -116,7 +116,7 @@ namespace RainMeadow
             if (noodle.flying > 0)
             {
                 dest += 1.4f * (creature.bodyChunks[0].pos - creature.bodyChunks[1].pos); // lookdir of the sorts, when it looks down going side-to-side it gets weird
-                dest.y += 4f;
+                dest.y += noodle.small ? 8f : 4f; // purely empirical
             }
             if (Mathf.Abs(this.inputDir.y) < 0.1f) // trying to move horizontally, compensate for momentum a bit
             {

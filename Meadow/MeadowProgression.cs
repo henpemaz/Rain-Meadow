@@ -18,7 +18,10 @@ namespace RainMeadow
             {
                 _ = Character.Slugcat;
                 _ = Skin.Slugcat_Survivor;
-                currentTestSkin = Skin.Noodlefly_Big;
+                currentTestSkin = Skin.Eggbug_Blue;
+
+                RainMeadow.Debug($"characters loaded: {Character.values.Count}");
+                RainMeadow.Debug($"skins loaded: {Skin.values.Count}");
             }
             catch (Exception e)
             {
@@ -79,6 +82,13 @@ namespace RainMeadow
             public static Character Noodlefly = new("Noodlefly", true, new()
             {
                 displayName = "NOODLEFLY",
+                emotePrefix = "sc_", // "noot_"
+                emoteAtlas = "emotes_slugcat",//"emotes_noot",
+                emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
+            });
+            public static Character Eggbug = new("Eggbug", true, new()
+            {
+                displayName = "EGGBUG",
                 emotePrefix = "sc_", // "noot_"
                 emoteAtlas = "emotes_slugcat",//"emotes_noot",
                 emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
@@ -271,6 +281,21 @@ namespace RainMeadow
                 character = Character.Noodlefly,
                 displayName = "Small",
                 creatureType = CreatureTemplate.Type.SmallNeedleWorm,
+            });
+
+            public static Skin Eggbug_Blue = new("Eggbug_Blue", true, new()
+            {
+                character = Character.Eggbug,
+                displayName = "Blue",
+                creatureType = CreatureTemplate.Type.EggBug,
+                randomSeed = 1001,
+            });
+            public static Skin Eggbug_Teal = new("Eggbug_Teal", true, new()
+            {
+                character = Character.Eggbug,
+                displayName = "Teal",
+                creatureType = CreatureTemplate.Type.EggBug,
+                randomSeed = 1002,
             });
         }
 
