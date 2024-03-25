@@ -96,20 +96,28 @@ namespace RainMeadow
             c.Emit(OpCodes.Stloc, loc);
         }
 
-        public override WorldCoordinate CurrentPathfindingPosition => noodle.AI.pathFinder.destination;
+        public override WorldCoordinate CurrentPathfindingPosition
+        {
+            get
+            {
+                if (!forceMove && Custom.DistLess(creature.coord, noodle.AI.pathFinder.destination, 3))
+                {
+                    return noodle.AI.pathFinder.destination;
+                }
+                return base.CurrentPathfindingPosition;
+            }
+        }
 
         internal override bool FindDestination(WorldCoordinate basecoord, out WorldCoordinate toPos, out float magnitude)
         {
             if (base.FindDestination(basecoord, out toPos, out magnitude)) return true;
-            //var basepos = 0.5f * (creature.firstChunk.pos + creature.room.MiddleOfTile(creature.abstractCreature.pos.Tile));
             var basepos = creature.firstChunk.pos;
-            var dest = basepos + this.inputDir * 40f;
+            var dest = basepos + this.inputDir * 56f;
             if (noodle.flying > 0)
             {
                 dest += 1.4f * (creature.bodyChunks[0].pos - creature.bodyChunks[1].pos); // lookdir of the sorts, when it looks down going side-to-side it gets weird
                 dest.y += 4f;
             }
-            //dest = 0.5f * (dest + creature.room.MiddleOfTile(creature.abstractCreature.pos.Tile)); // average to tile center
             if (Mathf.Abs(this.inputDir.y) < 0.1f) // trying to move horizontally, compensate for momentum a bit
             {
                 dest.y -= creature.mainBodyChunk.vel.y * 2f;

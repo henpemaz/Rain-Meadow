@@ -485,6 +485,11 @@ namespace RainMeadow
 
             if (this.debugDestinationVisualizer != null)
             {
+                var visibility = creature.abstractCreature.world.game.devToolsActive;
+                this.debugDestinationVisualizer.sprite1.sprite.isVisible = visibility;
+                this.debugDestinationVisualizer.sprite2.sprite.isVisible = visibility;
+                this.debugDestinationVisualizer.sprite3.sprite.isVisible = visibility;
+                this.debugDestinationVisualizer.sprite4.sprite.isVisible = visibility;
                 if (debugDestinationVisualizer.room != creature.room) debugDestinationVisualizer.ChangeRooms(creature.room);
                 this.debugDestinationVisualizer.Update();
             }
