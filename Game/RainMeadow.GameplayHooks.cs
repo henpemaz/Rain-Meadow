@@ -36,6 +36,14 @@ namespace RainMeadow
                     Error("Error getting source object");
                 }
 
+                if (explosion.killTagHolder == null)
+                {
+                    orig(self, hitFac, explosion, hitChunk); // Safely kills target when it's stuck in them.
+                    return; 
+                }
+
+                // TODO: Targets that are stabbed with explosive spears will cause de-sync on this line
+                // Also beastmaster works for testing this.
                 if (!OnlinePhysicalObject.map.TryGetValue(explosion.killTagHolder.abstractPhysicalObject, out var onlineCreature)) // to pass OnlinePhysicalObject data to convert to OnlineCreature over the wire
                 {
 
