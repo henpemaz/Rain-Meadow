@@ -306,13 +306,14 @@ namespace RainMeadow
             objectHit?.apo.realizedObject.HitByWeapon(weapon.apo.realizedObject as Weapon);
         }
         [RPCMethod]
-        public static void HitByExplosion(OnlinePhysicalObject objectHit, OnlinePhysicalObject sourceObject, Vector2 pos, int lifeTime, float rad, float force, float damage, float stun, float deafen, OnlinePhysicalObject killTagHolder, float killTagHolderDmgFactor, float minStun, float backgroundNoise, float hitfac)
+        public static void HitByExplosion(OnlinePhysicalObject objectHit, OnlinePhysicalObject sourceObject, Vector2 pos, int lifeTime, float rad, float force, float damage, float stun, float deafen, OnlinePhysicalObject killTagHolder, float killTagHolderDmgFactor, float minStun, float backgroundNoise, float hitfac, int hitChunk)
         {
-            var source = (sourceObject.apo.realizedObject);
-
+            var source = (sourceObject?.apo.realizedObject);
+            var room = objectHit?.apo.realizedObject.room;
             var creature = (killTagHolder.apo as AbstractCreature).realizedCreature;
-            var explosion = new Explosion(source.room, source, pos, lifeTime, rad, force, damage, stun, deafen, creature, killTagHolderDmgFactor, minStun, backgroundNoise);
-            objectHit?.apo.realizedObject.HitByExplosion(hitfac, explosion, 0);
+            var explosion = new Explosion(room, source, pos, lifeTime, rad, force, damage, stun, deafen, creature, killTagHolderDmgFactor, minStun, backgroundNoise);
+
+            objectHit?.apo.realizedObject.HitByExplosion(hitfac, explosion, hitChunk);
 
         }
     }

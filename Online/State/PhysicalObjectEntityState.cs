@@ -45,8 +45,8 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject is VultureGrub) return new RealizedVultureGrubState(onlineObject);
             if (onlineObject.apo.realizedObject is SeedCob) return new RealizedSeedCobState(onlineObject);
             if (onlineObject.apo.realizedObject is DangleFruit) return new RealizedDangleFruitState(onlineObject);
-            //if (onlineObject.apo.realizedObject is ExplosiveSpear) return new RealizedExplosiveSpearState(onlineObject);
-            //if (onlineObject.apo.realizedObject is ScavengerBomb) return new RealizedScavengerBombState(onlineObject);
+            if (onlineObject.apo.realizedObject is ExplosiveSpear) return new RealizedExplosiveSpearState(onlineObject);
+            if (onlineObject.apo.realizedObject is ScavengerBomb) return new RealizedScavengerBombState(onlineObject);
 
 
             return new RealizedPhysicalObjectState(onlineObject);

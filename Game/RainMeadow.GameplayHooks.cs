@@ -18,7 +18,7 @@ namespace RainMeadow
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
         }
 
-        private void PhysicalObject_HitByExplosion(On.PhysicalObject.orig_HitByExplosion orig, PhysicalObject self, float hitFac, Explosion explosion, int hitChunk)
+         private void PhysicalObject_HitByExplosion(On.PhysicalObject.orig_HitByExplosion orig, PhysicalObject self, float hitFac, Explosion explosion, int hitChunk)
         {
             if (OnlineManager.lobby == null)
             {
@@ -26,14 +26,24 @@ namespace RainMeadow
                 return;
             }
 
-            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room); // null ref on hitting the room sometimes, game crash
+            if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
+            {
+                Error("Error getting room, explosion object may have been blocked from landing");
+
+            } 
             if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
-                
+                if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit))
+                {
+                    Error("Error getting target of explosion object hit"); 
+                    
+                }
                 if (!OnlinePhysicalObject.map.TryGetValue(explosion.sourceObject.abstractPhysicalObject, out var sourceObject))
                 {
-                    Error("Error getting source object");
+                    // Not getting source object can kill friendly slugcats and will null ref in the RPC but continue the game safely.
+                    // May be due to current null Creature violence against other slugcats.
+                    // Can only replicate if I throw explosive spear at friendly slugcat who is right next to a wall and the spear hits their position but denies a kill
+                    Error("Error getting source object for explosion");
                 }
 
                 if (explosion.killTagHolder == null)
@@ -41,6 +51,7 @@ namespace RainMeadow
                     orig(self, hitFac, explosion, hitChunk); // Safely kills target when it's stuck in them.
                     return; 
                 }
+            
 
                 if (!OnlinePhysicalObject.map.TryGetValue(explosion.killTagHolder.abstractPhysicalObject, out var onlineCreature)) // to pass OnlinePhysicalObject data to convert to OnlineCreature over the wire
                 {
@@ -50,9 +61,9 @@ namespace RainMeadow
 
                 if (objectHit != null)
                 {
-                    if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.HitByExplosion, objectHit, sourceObject, explosion.pos, explosion.lifeTime, explosion.rad, explosion.force, explosion.damage, explosion.stun, explosion.deafen, onlineCreature, explosion.killTagHolderDmgFactor, explosion.minStun, explosion.backgroundNoise, hitFac)))
+                    if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.HitByExplosion, objectHit, sourceObject, explosion.pos, explosion.lifeTime, explosion.rad, explosion.force, explosion.damage, explosion.stun, explosion.deafen, onlineCreature, explosion.killTagHolderDmgFactor, explosion.minStun, explosion.backgroundNoise, hitFac, hitChunk)))
                     {
-                        room.owner.InvokeRPC(OnlinePhysicalObject.HitByExplosion, objectHit, sourceObject, explosion.pos, explosion.lifeTime, explosion.rad, explosion.force, explosion.damage, explosion.stun, explosion.deafen, onlineCreature, explosion.killTagHolderDmgFactor, explosion.minStun, explosion.backgroundNoise, hitFac);
+                        room.owner.InvokeRPC(OnlinePhysicalObject.HitByExplosion, objectHit, sourceObject, explosion.pos, explosion.lifeTime, explosion.rad, explosion.force, explosion.damage, explosion.stun, explosion.deafen, onlineCreature, explosion.killTagHolderDmgFactor, explosion.minStun, explosion.backgroundNoise, hitFac, hitChunk);
                     }
                 }
             }

@@ -17,7 +17,7 @@ namespace RainMeadow.Online.State
         [OnlineFieldColorRgb]
         Color redColor;
 
-        [OnlineFieldColorRgb] // maybe?
+        [OnlineFieldColorRgb]
         Color explodeColor;
 
         public RealizedExplosiveSpearState() { }
@@ -36,7 +36,6 @@ namespace RainMeadow.Online.State
         {
             base.ReadTo(onlineEntity);
 
-            
             var explosiveSpear = (ExplosiveSpear)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             explosiveSpear.explodeAt = explodeAt;
             explosiveSpear.miniExplosions = miniExplosions;
