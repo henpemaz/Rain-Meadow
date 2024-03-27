@@ -17,6 +17,12 @@ namespace RainMeadow
         [OnlineFieldColorRgb]
         Color color;
 
+        [OnlineField]
+        Vector2 pos;
+
+        [OnlineField]
+        Vector2 lastPos;
+
         public RealizedScavengerBombState() { }
 
         public RealizedScavengerBombState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
@@ -24,7 +30,8 @@ namespace RainMeadow
             var scavBomb = (ScavengerBomb)onlineEntity.apo.realizedObject;
             explosionColor = scavBomb.explodeColor;
             color = scavBomb.color;
-           
+            scavBomb.firstChunk.pos = pos;
+            scavBomb.firstChunk.lastPos = lastPos;
 
 
         }
@@ -35,6 +42,13 @@ namespace RainMeadow
             var scavBomb = (ScavengerBomb)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             scavBomb.explodeColor = explosionColor;
             scavBomb.color = color;
+            scavBomb.firstChunk.pos = pos;
+            scavBomb.firstChunk.lastPos = lastPos;
+
+            RainMeadow.Debug("SCAV BOMB FIRST " + pos);
+            RainMeadow.Debug("SCAV BOMB LAST " + lastPos);
+
+
         }
 
     }
