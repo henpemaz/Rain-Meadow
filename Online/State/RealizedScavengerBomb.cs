@@ -45,9 +45,6 @@ namespace RainMeadow
             scavBomb.firstChunk.pos = pos;
             scavBomb.firstChunk.lastPos = lastPos;
 
-            RainMeadow.Debug("SCAV BOMB FIRST " + pos);
-            RainMeadow.Debug("SCAV BOMB LAST " + lastPos);
-
 
         }
 

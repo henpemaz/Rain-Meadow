@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Sony.NP;
+using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using static Rewired.ComponentControls.Effects.RotateAroundAxis;
 
 namespace RainMeadow
 {
@@ -315,6 +317,33 @@ namespace RainMeadow
 
             objectHit.apo.realizedObject.HitByExplosion(hitfac, explosion, hitChunk);
 
+        }
+
+        [RPCMethod]
+        public static void ScavengerBombExplode(OnlinePhysicalObject abstScavBomb, int index, Vector2 pos, float rad, float mass)
+        {
+            // The realized object may be missing from it being exploded
+
+            var bomb = (abstScavBomb.apo.realizedObject as ScavengerBomb);
+            var hitChunk = new BodyChunk(bomb, index, pos, rad, mass);
+
+            bomb.Explode(hitChunk);
+
+        }
+
+        [RPCMethod]
+        public static void ScavengerBombTerrainImpact(OnlinePhysicalObject abstScavBomb, int chunk, RWCustom.IntVector2 direction, float speed, bool firstContact)
+        {
+            // The same thing may be true for this
+            (abstScavBomb.apo.realizedObject as ScavengerBomb).TerrainImpact(chunk, direction, speed, firstContact);
+       }
+
+        [RPCMethod]
+        public static void ScavengerBombHitSomething(OnlinePhysicalObject abstScavBomb)
+        {
+            // The same thing may be true for this
+            SharedPhysics.CollisionResult pain = new SharedPhysics.CollisionResult();
+            // (abstScavBomb.apo.realizedObject as ScavengerBomb).HitSomething(reuslt, eu);
         }
     }
 }

@@ -3,6 +3,9 @@ using Sony.NP;
 using System;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
+using static Rewired.ComponentControls.Effects.RotateAroundAxis;
+
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -16,9 +19,137 @@ namespace RainMeadow
             On.PhysicalObject.Grabbed += PhysicalObjectOnGrabbed;
             On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
+
+            // Not helpful
+            // On.ScavengerBomb.Explode += ScavengerBomb_Explode;
+            // On.ScavengerBomb.TerrainImpact += ScavengerBomb_TerrainImpact;
+
+            // Probably HitSomething as topmost level to manage explode and terrain
+            On.ScavengerBomb.HitSomething += ScavengerBomb_HitSomething;
         }
 
-         private void PhysicalObject_HitByExplosion(On.PhysicalObject.orig_HitByExplosion orig, PhysicalObject self, float hitFac, Explosion explosion, int hitChunk)
+        private bool ScavengerBomb_HitSomething(On.ScavengerBomb.orig_HitSomething orig, ScavengerBomb self, SharedPhysics.CollisionResult result, bool eu)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                return orig(self, result, eu);
+                
+            }
+
+            if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
+            {
+                Error("Error getting room for scav explosion!");
+
+            }
+            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+
+
+                if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var scavBombAbstract))
+
+                {
+                    Error("Error getting target of explosion object hit");
+
+                }
+
+                if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.ScavengerBombHitSomething, scavBombAbstract, result, eu)))
+                {
+                    room.owner.InvokeRPC(OnlinePhysicalObject.ScavengerBombHitSomething, scavBombAbstract, result, eu);
+                }
+            }
+            return orig(self, result, eu);
+            
+        }
+
+        private void ScavengerBomb_TerrainImpact(On.ScavengerBomb.orig_TerrainImpact orig, ScavengerBomb self, int chunk, IntVector2 direction, float speed, bool firstContact)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self, chunk, direction, speed, firstContact);
+                return;
+            }
+
+            if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
+            {
+                Error("Error getting room for scav explosion!");
+
+            }
+            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+
+
+                if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var scavBombAbstract))
+
+                {
+                    Error("Error getting target of explosion object hit");
+
+                }
+
+                RainMeadow.Debug("TERRAUB CHUNKS INDEX X ABST " + chunk);
+
+                RainMeadow.Debug("DIR POS X ABST " + direction);
+                RainMeadow.Debug("SPD RAD X ABST " + speed);
+                RainMeadow.Debug("FC MASS X ABST " + firstContact);
+
+                if (scavBombAbstract != null)
+                {
+                    if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.ScavengerBombTerrainImpact, scavBombAbstract, chunk, direction, speed, firstContact)))
+                    {
+                        room.owner.InvokeRPC(OnlinePhysicalObject.ScavengerBombTerrainImpact, scavBombAbstract, chunk, direction, speed, firstContact);
+                    }
+                }
+
+            }
+            orig(self, chunk, direction, speed, firstContact);
+        }
+
+        private void ScavengerBomb_Explode(On.ScavengerBomb.orig_Explode orig, ScavengerBomb self, BodyChunk hitChunk)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self, hitChunk);
+                return;
+            }
+
+            if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
+            {
+                Error("Error getting room for scav explosion!");
+
+            }
+            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+
+
+                if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var scavBombAbstract))
+
+                {
+                    RainMeadow.Debug("Error getting scav bomb abstract");
+
+                }
+
+                // HIT CHUNK INDEX NULL REFS ON THROW TO GROUND
+                //RainMeadow.Debug("EXPLODE CHUNKS INDEX X ABST " + hitChunk.index);
+
+                RainMeadow.Debug("CHUNKS POS X ABST " + hitChunk.pos);
+                RainMeadow.Debug("CHUNKS RAD X ABST " + hitChunk.rad);
+                RainMeadow.Debug("CHUNKS MASS X ABST " + hitChunk.mass);
+
+
+                if (scavBombAbstract != null)
+                {
+                    if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract, hitChunk.index, hitChunk.pos, hitChunk.rad, hitChunk.mass)))
+                    {
+                        // Currently null refs, kills client game
+                        // Then the other player can pick up where client threw bomb anad throw it again.
+                        room.owner.InvokeRPC(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract, hitChunk.index, hitChunk.pos, hitChunk.rad, hitChunk.mass);
+
+                    }
+                }
+            }
+            orig(self, hitChunk);
+        }
+
+        private void PhysicalObject_HitByExplosion(On.PhysicalObject.orig_HitByExplosion orig, PhysicalObject self, float hitFac, Explosion explosion, int hitChunk)
         {
             if (OnlineManager.lobby == null)
             {
@@ -31,13 +162,13 @@ namespace RainMeadow
             {
                 Error("Error getting room for explosion!");
 
-            } 
+            }
             if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit))
                 {
-                    Error("Error getting target of explosion object hit"); 
-                    
+                    Error("Error getting target of explosion object hit");
+
                 }
                 if (!OnlinePhysicalObject.map.TryGetValue(explosion.sourceObject.abstractPhysicalObject, out var sourceObject))
                 {
@@ -50,9 +181,9 @@ namespace RainMeadow
                 if (explosion.killTagHolder == null)
                 {
                     orig(self, hitFac, explosion, hitChunk); // Safely kills target when it's stuck in them.
-                    return; 
+                    return;
                 }
-            
+
 
                 if (!OnlinePhysicalObject.map.TryGetValue(explosion.killTagHolder.abstractPhysicalObject, out var onlineCreature)) // to pass OnlinePhysicalObject data to convert to OnlineCreature over the wire
                 {
@@ -80,7 +211,7 @@ namespace RainMeadow
                 return;
             }
 
-            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room); // Why does explosive spear throw this error?
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
             if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
