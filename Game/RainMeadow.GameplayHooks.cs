@@ -29,6 +29,9 @@ namespace RainMeadow
             if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
             {
                 Error("Error getting room, explosion object may have been blocked from landing");
+                // When alternative player throws a bomb after initial player does, room cannot get gotten
+                // Null ref with game crash
+                // Maybe a beast master thing?
 
             } 
             if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
