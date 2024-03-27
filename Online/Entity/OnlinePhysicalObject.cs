@@ -311,6 +311,7 @@ namespace RainMeadow
         public static void HitByExplosion(OnlinePhysicalObject objectHit, OnlinePhysicalObject sourceObject, Vector2 pos, int lifeTime, float rad, float force, float damage, float stun, float deafen, OnlinePhysicalObject killTagHolder, float killTagHolderDmgFactor, float minStun, float backgroundNoise, float hitfac, int hitChunk)
         {
             var source = (sourceObject?.apo.realizedObject);
+            // can null ref but wont kill game
             var creature = (killTagHolder.apo as AbstractCreature).realizedCreature;
             var room = (objectHit.apo.Room.realizedRoom);
             var explosion = new Explosion(room, source, pos, lifeTime, rad, force, damage, stun, deafen, creature, killTagHolderDmgFactor, minStun, backgroundNoise);
@@ -322,14 +323,21 @@ namespace RainMeadow
         [RPCMethod]
         public static void ScavengerBombExplode(OnlinePhysicalObject abstScavBomb, int index, Vector2 pos, float rad, float mass)
         {
-            // The realized object may be missing from it being exploded
 
             var bomb = (abstScavBomb.apo.realizedObject as ScavengerBomb);
-            var hitChunk = new BodyChunk(bomb, index, pos, rad, mass);
+            BodyChunk hitChunk;
+            if (index != null && pos != null && rad != null && mass != null)
+            {
+               hitChunk = new BodyChunk(bomb, index, pos, rad, mass);
+               bomb.Explode(hitChunk);
 
-            bomb.Explode(hitChunk);
+            } else
+            {
+                bomb.Explode(null);
+            }
 
         }
+
 
         [RPCMethod]
         public static void ScavengerBombTerrainImpact(OnlinePhysicalObject abstScavBomb, int chunk, RWCustom.IntVector2 direction, float speed, bool firstContact)
@@ -337,15 +345,5 @@ namespace RainMeadow
             // The same thing may be true for this
             (abstScavBomb.apo.realizedObject as ScavengerBomb).TerrainImpact(chunk, direction, speed, firstContact);
        }
-
-        [RPCMethod]
-        public static void ScavengerBombHitSomething(OnlinePhysicalObject abstScavBomb, int index, bool eu)
-        {
-            // The same thing may be true for this
-            SharedPhysics.CollisionResult pain = new SharedPhysics.CollisionResult();
-            pain.hitSomething = true;
-            pain.chunk.index = index;
-            (abstScavBomb.apo.realizedObject as ScavengerBomb).HitSomething(pain, eu);
-        }
     }
 }

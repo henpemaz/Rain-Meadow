@@ -20,14 +20,17 @@ namespace RainMeadow
             On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
 
+            // THIS MUST BE WHAT DOES THE EXPLOSION, MAKE THIS WORK
+            On.ScavengerBomb.Explode += ScavengerBomb_Explode;
+
         }
 
-        private void ScavengerBomb_TerrainImpact(On.ScavengerBomb.orig_TerrainImpact orig, ScavengerBomb self, int chunk, IntVector2 direction, float speed, bool firstContact)
+        private bool ScavengerBomb_HitSomething(On.ScavengerBomb.orig_HitSomething orig, ScavengerBomb self, SharedPhysics.CollisionResult result, bool eu)
         {
             if (OnlineManager.lobby == null)
             {
-                orig(self, chunk, direction, speed, firstContact);
-                return;
+                return orig(self, result, eu);
+
             }
 
             if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
@@ -46,25 +49,31 @@ namespace RainMeadow
 
                 }
 
-                RainMeadow.Debug("TERRAUB CHUNKS INDEX X ABST " + chunk);
+                if (result.obj == null)
+                {
+                    return false;
+                }
 
-                RainMeadow.Debug("DIR POS X ABST " + direction);
-                RainMeadow.Debug("SPD RAD X ABST " + speed);
-                RainMeadow.Debug("FC MASS X ABST " + firstContact);
+                if (!OnlinePhysicalObject.map.TryGetValue(result.obj.abstractPhysicalObject, out var objectHit))
+
+                {
+                    Error("Error getting target of explosion object hit");
+
+                }
 
                 if (scavBombAbstract != null)
                 {
-                    if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.ScavengerBombTerrainImpact, scavBombAbstract, chunk, direction, speed, firstContact)))
+                    if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.ScavengerBombHitSomething, scavBombAbstract, objectHit, result.hitSomething, result.collisionPoint, eu)))
                     {
-                        room.owner.InvokeRPC(OnlinePhysicalObject.ScavengerBombTerrainImpact, scavBombAbstract, chunk, direction, speed, firstContact);
+                        room.owner.InvokeRPC(RPCs.ScavengerBombHitSomething, scavBombAbstract, objectHit, result.hitSomething, result.collisionPoint, eu);
                     }
                 }
-
             }
-            orig(self, chunk, direction, speed, firstContact);
+            return orig(self, result, eu);
+
         }
 
-        private void ScavengerBomb_Explode(On.ScavengerBomb.orig_Explode orig, ScavengerBomb self, BodyChunk hitChunk)
+       private void ScavengerBomb_Explode(On.ScavengerBomb.orig_Explode orig, ScavengerBomb self, BodyChunk hitChunk)
         {
             if (OnlineManager.lobby == null)
             {
@@ -88,22 +97,23 @@ namespace RainMeadow
 
                 }
 
-                // HIT CHUNK INDEX NULL REFS ON THROW TO GROUND
-                //RainMeadow.Debug("EXPLODE CHUNKS INDEX X ABST " + hitChunk.index);
-
-                RainMeadow.Debug("CHUNKS POS X ABST " + hitChunk.pos);
-                RainMeadow.Debug("CHUNKS RAD X ABST " + hitChunk.rad);
-                RainMeadow.Debug("CHUNKS MASS X ABST " + hitChunk.mass);
-
-
-                if (scavBombAbstract != null)
+                if (hitChunk == null)
                 {
-                    if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract, hitChunk.index, hitChunk.pos, hitChunk.rad, hitChunk.mass)))
-                    {
-                        // Currently null refs, kills client game
-                        // Then the other player can pick up where client threw bomb anad throw it again.
-                        room.owner.InvokeRPC(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract, hitChunk.index, hitChunk.pos, hitChunk.rad, hitChunk.mass);
+                    orig(self, hitChunk); // This made the vfx show up once. How / why? Terrain impact? Luck? 
+                    return;
 
+
+                } else
+                {
+                    if (scavBombAbstract != null)
+                    {
+                        if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract, hitChunk.index, hitChunk.pos, hitChunk.rad, hitChunk.mass)))
+                        {
+                            // Currently null refs, kills client game
+                            // Then the other player can pick up where client threw bomb anad throw it again.
+                            room.owner.InvokeRPC(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract, hitChunk.index, hitChunk.pos, hitChunk.rad, hitChunk.mass);
+
+                        }
                     }
                 }
             }

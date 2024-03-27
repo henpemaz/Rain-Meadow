@@ -37,7 +37,6 @@ namespace RainMeadow
             var realizedObject = objectHitting.apo.realizedObject;
             var realizedObjectHit = objectHit?.apo.realizedObject;
 
-            // Might fix scav bomb if this is built out
             var result = new SharedPhysics.CollisionResult(realizedObjectHit,null,null,hitSomething,collisionPoint);
             (realizedObject as Weapon).HitSomething(result, eu);
             //this.obj = obj;                       object hit
