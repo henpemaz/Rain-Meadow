@@ -20,45 +20,12 @@ namespace RainMeadow
             On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
 
-            // Not helpful
-            // On.ScavengerBomb.Explode += ScavengerBomb_Explode;
-            // On.ScavengerBomb.TerrainImpact += ScavengerBomb_TerrainImpact;
-
-            // Probably HitSomething as topmost level to manage explode and terrain
-            On.ScavengerBomb.HitSomething += ScavengerBomb_HitSomething;
-        }
-
-        private bool ScavengerBomb_HitSomething(On.ScavengerBomb.orig_HitSomething orig, ScavengerBomb self, SharedPhysics.CollisionResult result, bool eu)
-        {
-            if (OnlineManager.lobby == null)
-            {
-                return orig(self, result, eu);
-                
-            }
-
-            if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
-            {
-                Error("Error getting room for scav explosion!");
-
-            }
-            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
-            {
-
-
-                if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var scavBombAbstract))
-
-                {
-                    Error("Error getting target of explosion object hit");
-
-                }
-
-                if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.ScavengerBombHitSomething, scavBombAbstract, result, eu)))
-                {
-                    room.owner.InvokeRPC(OnlinePhysicalObject.ScavengerBombHitSomething, scavBombAbstract, result, eu);
-                }
-            }
-            return orig(self, result, eu);
             
+            // Explode testing seems to not work.
+            // On.ScavengerBomb.Explode += ScavengerBomb_Explode;
+
+            // Terrain didn't impact vfx 
+            // On.ScavengerBomb.TerrainImpact += ScavengerBomb_TerrainImpact;
         }
 
         private void ScavengerBomb_TerrainImpact(On.ScavengerBomb.orig_TerrainImpact orig, ScavengerBomb self, int chunk, IntVector2 direction, float speed, bool firstContact)

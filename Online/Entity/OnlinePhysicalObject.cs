@@ -339,11 +339,13 @@ namespace RainMeadow
        }
 
         [RPCMethod]
-        public static void ScavengerBombHitSomething(OnlinePhysicalObject abstScavBomb)
+        public static void ScavengerBombHitSomething(OnlinePhysicalObject abstScavBomb, int index, bool eu)
         {
             // The same thing may be true for this
             SharedPhysics.CollisionResult pain = new SharedPhysics.CollisionResult();
-            // (abstScavBomb.apo.realizedObject as ScavengerBomb).HitSomething(reuslt, eu);
+            pain.hitSomething = true;
+            pain.chunk.index = index;
+            (abstScavBomb.apo.realizedObject as ScavengerBomb).HitSomething(pain, eu);
         }
     }
 }
