@@ -82,7 +82,7 @@ namespace RainMeadow
                 return;
             }
 
-            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room); // Why does explosive spear throw this error?
             if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
