@@ -20,12 +20,6 @@ namespace RainMeadow
             On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
 
-            
-            // Explode testing seems to not work.
-            // On.ScavengerBomb.Explode += ScavengerBomb_Explode;
-
-            // Terrain didn't impact vfx 
-            // On.ScavengerBomb.TerrainImpact += ScavengerBomb_TerrainImpact;
         }
 
         private void ScavengerBomb_TerrainImpact(On.ScavengerBomb.orig_TerrainImpact orig, ScavengerBomb self, int chunk, IntVector2 direction, float speed, bool firstContact)
