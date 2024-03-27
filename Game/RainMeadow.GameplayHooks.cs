@@ -26,12 +26,10 @@ namespace RainMeadow
                 return;
             }
 
-            if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
+            // explosion.room is the most stable source of truth for room data. Other options sometimes null ref
+            if (!RoomSession.map.TryGetValue(explosion.room.abstractRoom, out var room))
             {
-                Error("Error getting room, explosion object may have been blocked from landing");
-                // When alternative player throws a bomb after initial player does, room cannot get gotten
-                // Null ref with game crash
-                // Maybe a beast master thing?
+                Error("Error getting room for explosion!");
 
             } 
             if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)

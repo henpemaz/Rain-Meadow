@@ -309,11 +309,11 @@ namespace RainMeadow
         public static void HitByExplosion(OnlinePhysicalObject objectHit, OnlinePhysicalObject sourceObject, Vector2 pos, int lifeTime, float rad, float force, float damage, float stun, float deafen, OnlinePhysicalObject killTagHolder, float killTagHolderDmgFactor, float minStun, float backgroundNoise, float hitfac, int hitChunk)
         {
             var source = (sourceObject?.apo.realizedObject);
-            var room = objectHit?.apo.realizedObject.room;
             var creature = (killTagHolder.apo as AbstractCreature).realizedCreature;
+            var room = (objectHit.apo.Room.realizedRoom);
             var explosion = new Explosion(room, source, pos, lifeTime, rad, force, damage, stun, deafen, creature, killTagHolderDmgFactor, minStun, backgroundNoise);
 
-            objectHit?.apo.realizedObject.HitByExplosion(hitfac, explosion, hitChunk);
+            objectHit.apo.realizedObject.HitByExplosion(hitfac, explosion, hitChunk);
 
         }
     }
