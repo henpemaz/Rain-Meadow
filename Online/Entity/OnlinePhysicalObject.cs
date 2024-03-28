@@ -37,24 +37,51 @@ namespace RainMeadow
                 entityId = new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number);
                 RainMeadow.Error($"set as: {entityId}");
             }
-            if (apo is AbstractCreature ac)
+
+            var opoDef = new OnlinePhysicalObjectDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+
+            switch (apo)
             {
-                var def = new OnlineCreatureDefinition(apo.ID.RandomSeed, apo.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
-                return new OnlineCreature(def, ac);
-            }
-            if (apo is AbstractConsumable acm)
-            {
-                var def = new OnlineConsumableDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar,
-                    (short)acm.originRoom, (sbyte)acm.placedObjectIndex, acm.isConsumed);
-                return new OnlineConsumable(def, acm);
-            }
-            else
-            {
-                var def = new OnlinePhysicalObjectDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
-                return new OnlinePhysicalObject(def, apo);
+                case AbstractSpear:
+                    //may break with downpour
+                    return new OnlinePhysicalObject(opoDef, apo);
+                case VultureMask.AbstractVultureMask:
+                    //May break with downpour
+                    return new OnlinePhysicalObject(opoDef, apo);
+                case AbstractCreature ac:
+                    var acDef = new OnlineCreatureDefinition(ac.ID.RandomSeed, ac.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+                    return new OnlineCreature(acDef, ac);
+                case AbstractConsumable acm:
+                    return OnlineConsumableFromAcm(acm,opoDef);
+                default:
+                    return new OnlinePhysicalObject(opoDef, apo);
+                case null:
+                    throw new ArgumentNullException(nameof(apo));
             }
         }
 
+        private static OnlineConsumable OnlineConsumableFromAcm(AbstractConsumable acm, OnlinePhysicalObjectDefinition opoDef) 
+        {
+            var ocmDef = new OnlineConsumableDefinition(opoDef, acm);
+            switch (acm) {
+                case BubbleGrass.AbstractBubbleGrass abg:
+                    var abgDef = new OnlineBubbleGrassDefinition(ocmDef, abg);
+                    return new OnlineBubbleGrass(abgDef, abg);
+                case SeedCob.AbstractSeedCob asc:
+                    var ascDef = new OnlineSeedCobDefinition(ocmDef, asc);
+                    return new OnlineSeedCob(ascDef, asc);
+                case SporePlant.AbstractSporePlant asp:
+                    var aspDef = new OnlineSporePlantDefinition(ocmDef, asp);
+                    return new OnlineSporePlant(aspDef, asp);
+                case PebblesPearl.AbstractPebblesPearl app:
+                    var appDef = new OnlinePebblesPearlDefinition(ocmDef, app);
+                    return new OnlinePebblesPearl(appDef, app);
+                default:
+                    return new OnlineConsumable(ocmDef, acm);
+                case null:
+                    throw new ArgumentNullException(nameof(acm));
+            }
+        }
         public OnlinePhysicalObject(OnlinePhysicalObjectDefinition entityDefinition, AbstractPhysicalObject apo) : base(entityDefinition)
         {
             this.apo = apo;
@@ -270,6 +297,17 @@ namespace RainMeadow
         public override string ToString()
         {
             return apo.ToString() + base.ToString();
+        }
+
+        [RPCMethod]
+        public static void HitByWeapon(OnlinePhysicalObject objectHit, OnlinePhysicalObject weapon)
+        {
+            objectHit?.apo.realizedObject.HitByWeapon(weapon.apo.realizedObject as Weapon);
+        }
+        [RPCMethod]
+        public static void HitByExplosion(OnlinePhysicalObject objectHit, float hitfac)
+        {
+            objectHit?.apo.realizedObject.HitByExplosion(hitfac,null,0);
         }
     }
 }

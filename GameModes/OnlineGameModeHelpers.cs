@@ -8,7 +8,6 @@ namespace RainMeadow
         {
             PlacedObject.Type.None,
             PlacedObject.Type.LightSource,
-            //PlacedObject.Type.TempleGuard,
             PlacedObject.Type.LightFixture,
             PlacedObject.Type.CoralStem,
             PlacedObject.Type.CoralStemWithNeurons,
@@ -24,9 +23,7 @@ namespace RainMeadow
             PlacedObject.Type.Corruption,
             PlacedObject.Type.CorruptionTube,
             PlacedObject.Type.CorruptionDarkness,
-            //PlacedObject.Type.StuckDaddy,
             PlacedObject.Type.SSLightRod,
-            //PlacedObject.Type.CentipedeAttractor,
             PlacedObject.Type.DandelionPatch,
             PlacedObject.Type.GhostSpot,
             PlacedObject.Type.CosmeticSlimeMold,
@@ -40,7 +37,6 @@ namespace RainMeadow
             PlacedObject.Type.LanternOnStick,
             PlacedObject.Type.ScavengerOutpost,
             PlacedObject.Type.TradeOutpost,
-            //PlacedObject.Type.ScavengerTreasury,
             //PlacedObject.Type.ScavTradeInstruction,
             PlacedObject.Type.CustomDecal,
             PlacedObject.Type.InsectGroup,
@@ -68,35 +64,42 @@ namespace RainMeadow
             PlacedObject.Type.NeuronSpawner,
             PlacedObject.Type.ExitSymbolAncientShelter,
             PlacedObject.Type.BlinkingFlower
-         };
+        };
+        public static HashSet<PlacedObject.Type> creatureRelatedItems = new() 
+        {
+            //PlacedObject.Type.TempleGuard,
+            //PlacedObject.Type.StuckDaddy,
+            //PlacedObject.Type.CentipedeAttractor,
+        };
         public static HashSet<PlacedObject.Type> PlayerGrablableItems = new()
         {
-            //PlacedObject.Type.FlareBomb,          
-            //PlacedObject.Type.PuffBall,           //EDIBLE NOT FOOD
+            PlacedObject.Type.FlareBomb,
+            //PlacedObject.Type.PuffBall,          //Weird behavior between thrower and everyone else when throwing 
             PlacedObject.Type.DangleFruit,
-            PlacedObject.Type.DataPearl,          
-            PlacedObject.Type.UniqueDataPearl,    
-            //PlacedObject.Type.SeedCob,            //FOOD
-            //PlacedObject.Type.DeadSeedCob,        //After Seedcob
-            //PlacedObject.Type.WaterNut,           //HARD
-            //PlacedObject.Type.JellyFish,          //MEDIUM
+            PlacedObject.Type.DataPearl,
+            PlacedObject.Type.UniqueDataPearl,
+            PlacedObject.Type.SeedCob,
+            PlacedObject.Type.DeadSeedCob,
+            PlacedObject.Type.WaterNut,
+            PlacedObject.Type.JellyFish,
             PlacedObject.Type.KarmaFlower,
             PlacedObject.Type.Mushroom,
-            //PlacedObject.Type.SlimeMold,          //EASY
+            PlacedObject.Type.SlimeMold,
             PlacedObject.Type.FlyLure,
             PlacedObject.Type.FirecrackerPlant,
-            //PlacedObject.Type.VultureGrub,        //PREREQ
-            //PlacedObject.Type.DeadVultureGrub,    //FOOD
-            //PlacedObject.Type.MultiplayerItem,
-            //PlacedObject.Type.SporePlant,         //HARD bee granade
-            //PlacedObject.Type.ReliableSpear,
-            //PlacedObject.Type.NeedleEgg,          //HELL Noodle egg DANGER SYNC
-            //PlacedObject.Type.BubbleGrass,        //MEDIUM
-            //PlacedObject.Type.Hazer,              //PREREQ
-            //PlacedObject.Type.DeadHazer,          //FOOD
-            //PlacedObject.Type.VultureMask,        //EASY?
-            //PlacedObject.Type.HangingPearls,      //
-            //PlacedObject.Type.Lantern,            //EASY
+            PlacedObject.Type.VultureGrub,
+            PlacedObject.Type.DeadVultureGrub,
+            //PlacedObject.Type.ScavengerTreasury,  //Spear, Explosive spear, Scav bomb, Pearl, & Laterns
+            //PlacedObject.Type.MultiplayerItem,    //ARENA_SPAWNS for Rock, Spear, ExplosiveSpear, Bomb, SporePlant data
+            //PlacedObject.Type.SporePlant,         //abstractConsumable HARD. Need to sync bee's and attached Bee's still
+            PlacedObject.Type.ReliableSpear,        //Spears have MSC elements
+            PlacedObject.Type.NeedleEgg,
+            PlacedObject.Type.BubbleGrass,
+            PlacedObject.Type.Hazer,
+            PlacedObject.Type.DeadHazer,
+            PlacedObject.Type.VultureMask,          //MSC
+            //PlacedObject.Type.HangingPearls,      //MSC
+            PlacedObject.Type.Lantern
         };
     }
 }

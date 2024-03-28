@@ -2,7 +2,6 @@
 using System;
 using System.Linq;
 using UnityEngine;
-
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -14,6 +13,53 @@ namespace RainMeadow
             On.Creature.Violence += CreatureOnViolence;
             On.Creature.Grasp.ctor += GraspOnctor;
             On.PhysicalObject.Grabbed += PhysicalObjectOnGrabbed;
+            On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
+            On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
+        }
+
+        private void PhysicalObject_HitByExplosion(On.PhysicalObject.orig_HitByExplosion orig, PhysicalObject self, float hitFac, Explosion explosion, int hitChunk)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self,hitFac,explosion,hitChunk);
+                return;
+            }
+
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
+                if (objectHit != null)
+                {
+                    if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.HitByExplosion, objectHit, hitFac)))
+                    {
+                        room.owner.InvokeRPC(OnlinePhysicalObject.HitByExplosion, objectHit, hitFac);
+                    }
+                }
+            }
+
+            orig(self, hitFac, explosion, hitChunk);
+        }
+
+        private void PhysicalObject_HitByWeapon(On.PhysicalObject.orig_HitByWeapon orig, PhysicalObject self, Weapon weapon)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self,weapon);
+                return;
+            }
+
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
+                OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var abstWeapon);
+                room.owner.InvokeRPC(OnlinePhysicalObject.HitByWeapon, objectHit, abstWeapon);
+            }
+            else 
+            {
+                orig(self, weapon);
+            }
         }
 
         private void ShelterDoorOnClose(On.ShelterDoor.orig_Close orig, ShelterDoor self)
@@ -55,10 +101,43 @@ namespace RainMeadow
                 Error($"Creature {self} {self.abstractPhysicalObject.ID} doesn't exist in online space!");
                 return;
             }
-            if(OnlineManager.lobby.gameMode is MeadowGameMode && EmoteDisplayer.map.TryGetValue(self, out var displayer))
+            if (OnlineManager.lobby.gameMode is MeadowGameMode)
             {
-                displayer.OnUpdate(); // so this only updates while the creature is in-room, what about creatures in pipes though
+                if (EmoteDisplayer.map.TryGetValue(self, out var displayer))
+                {
+                    displayer.OnUpdate(); // so this only updates while the creature is in-room, what about creatures in pipes though
+                }
+
+                if (self is AirBreatherCreature breather) breather.lungs = 1f;
+
+                if(self.room != null)
+                {
+                    // fall out of world handling
+                    float num = -self.bodyChunks[0].restrictInRoomRange + 1f;
+                    if (self is Player && self.bodyChunks[0].restrictInRoomRange == self.bodyChunks[0].defaultRestrictInRoomRange)
+                    {
+                        if ((self as Player).bodyMode == Player.BodyModeIndex.WallClimb)
+                        {
+                            num = Mathf.Max(num, -250f);
+                        }
+                        else
+                        {
+                            num = Mathf.Max(num, -500f);
+                        }
+                    }
+                    if (self.bodyChunks[0].pos.y < num && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) && (!self.Template.canFly || self.Stunned || self.dead) && (self is Player || !self.room.game.IsArenaSession || self.room.game.GetArenaGameSession.chMeta == null || !self.room.game.GetArenaGameSession.chMeta.oobProtect))
+                    {
+                        RainMeadow.Debug("fall out of world prevention: " + self);
+                        var room = self.room;
+                        self.RemoveFromRoom();
+                        room.CleanOutObjectNotInThisRoom(self); // we need it this frame
+                        var node = self.coord.abstractNode;
+                        if (node > room.abstractRoom.exits) node = UnityEngine.Random.Range(0, room.abstractRoom.exits);
+                        self.SpitOutOfShortCut(room.ShortcutLeadingToNode(node).startCoord.Tile, room, true);
+                    }
+                }
             }
+
             if (onlineCreature.isMine && self.grasps != null)
             {
                 foreach (var grasp in self.grasps)
@@ -146,7 +225,7 @@ namespace RainMeadow
             orig(self, grabber, grabbed, graspused, chunkgrabbed, shareability, dominance, pacifying);
             if (OnlineManager.lobby == null) return;
             if (!OnlinePhysicalObject.map.TryGetValue(grabber.abstractPhysicalObject, out var onlineGrabber)) throw new InvalidOperationException("Grabber doesn't exist in online space!");
-            if (!OnlinePhysicalObject.map.TryGetValue(grabbed.abstractPhysicalObject, out var onlineGrabbed)) throw new InvalidOperationException("Grabbed tjing doesn't exist in online space!");
+            if (!OnlinePhysicalObject.map.TryGetValue(grabbed.abstractPhysicalObject, out var onlineGrabbed)) throw new InvalidOperationException("Grabbed thing doesn't exist in online space!");
 
             if (onlineGrabber.isMine && !onlineGrabbed.isMine && onlineGrabbed.isTransferable && !onlineGrabbed.isPending)
             {
