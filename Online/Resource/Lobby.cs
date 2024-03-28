@@ -164,7 +164,6 @@ namespace RainMeadow
             public Generics.AddRemoveSortedPlayerIDs players;
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedUshorts inLobbyIds;
-            [OnlineField]
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {

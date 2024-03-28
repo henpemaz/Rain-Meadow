@@ -43,48 +43,13 @@ namespace RainMeadow
             currentlyJoiningLobby = default;
             if (ok)
             {
-                // if (OnlineManager.lobby.isOwner)
-                //{
                 manager.RequestMainProcessSwitch(lobby.gameMode.MenuProcessId());
-
-                /*                if (!OnlineManager.lobby.isOwner) // clients must check mods at the door
-                                {
-
-                                    RainMeadow.Debug("Checking client mods...");
-
-                                    var myMods = RainMeadowModManager.GetActiveMods();
-
-                                    // sanity check their mods
-                                    foreach (var mod in theirMods)
-                                    {
-                                        RainMeadow.Debug("THEIR MODS: " + mod);
-                                    }
-
-                                    // sanity check my mods
-                                    foreach (var mod in myMods)
-                                    {
-                                        RainMeadow.Debug("MY MODS: " + mod);
-                                    }
-
-                                    // Lobby.LobbyState.mods seems to contain THEIR MODS
-                                    if (RainMeadowModManager.CheckMods(theirMods, myMods))
-                                    {
-                                        manager.RequestMainProcessSwitch(lobby.gameMode.MenuProcessId());
-
-                                    }*/
-                /*                    else
-                                    {
-                                        MatchmakingManager.instance.LeaveLobby();
-                                    }*/
-                //}
 
             }
             else
             {
                 MatchmakingManager.instance.LeaveLobby();
             }
-
-
         }
 
         public static void Reset()
