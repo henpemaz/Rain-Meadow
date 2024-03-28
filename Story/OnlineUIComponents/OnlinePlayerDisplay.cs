@@ -53,7 +53,7 @@ namespace RainMeadow
         {
             base.Update();
             
-            if (Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
+            if (Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value)) // || (owner.found && owner.RealizedPlayer.inShortcut)
             {
                 this.lastAlpha = this.alpha;
                 this.blink = 1f;
@@ -85,7 +85,7 @@ namespace RainMeadow
             }
             else
             {
-                this.alpha = Custom.LerpAndTick(this.alpha, owner.needed ? 0 : 1, 0.08f, 0.033333335f);
+                this.alpha = Custom.LerpAndTick(this.alpha, owner.needed ? 0 : 1, 0.08f, 0.0033333335f);
                 this.lastAlpha = this.alpha;
 
             }
