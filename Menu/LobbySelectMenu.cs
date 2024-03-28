@@ -262,6 +262,7 @@ namespace RainMeadow
                 return;
 
             }
+
             if (currentlySelectedCard == 0)
             {
                 ShowLoadingDialog("Creating lobby...");

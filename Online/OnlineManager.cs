@@ -1,7 +1,7 @@
-﻿using Steamworks;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Steamworks;
 
 namespace RainMeadow
 {
@@ -21,6 +21,8 @@ namespace RainMeadow
         public static List<OnlinePlayer> players;
         public static Lobby lobby;
 
+
+
         public static LobbyInfo currentlyJoiningLobby;
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
@@ -33,7 +35,8 @@ namespace RainMeadow
             MatchmakingManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
             RainMeadow.Debug("OnlineManager Created");
         }
-        
+
+
         private void OnlineManager_OnLobbyJoined(bool ok, string error)
         {
             RainMeadow.Debug(ok);
@@ -41,6 +44,7 @@ namespace RainMeadow
             if (ok)
             {
                 manager.RequestMainProcessSwitch(lobby.gameMode.MenuProcessId());
+
             }
             else
             {
@@ -140,9 +144,11 @@ namespace RainMeadow
                 {
                     SendData(player);
                 }
-//#if TRACING
+                //#if TRACING
+                //#if TRACING
                 RainMeadow.tracing = false; // cleanup
-//#endif
+                                            //#endif
+                                            //#endif
             }
         }
 

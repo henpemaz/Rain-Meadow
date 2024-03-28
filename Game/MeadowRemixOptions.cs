@@ -18,7 +18,7 @@ public class RainMeadowOptions : OptionInterface
     public RainMeadowOptions(global::RainMeadow.RainMeadow instance)
     {
 
-        FriendsListKey = config.Bind("OpenMenuKey", KeyCode.J);
+        FriendsListKey = config.Bind("OpenMenuKey", KeyCode.Space);
         SlugcatCustomToggle = config.Bind("SlugToggle", false);
 
     }
@@ -33,7 +33,7 @@ public class RainMeadowOptions : OptionInterface
             {
                 new OpLabel(10f, 550f, "Options", bigText: true),
                 new OpKeyBinder(FriendsListKey, new Vector2(10f, 480f), new Vector2(150f, 30f)),
-                new OpLabel(166f, 480f, "Key used for viewing friends usernames (not implemented)")
+                new OpLabel(166f, 480f, "Key used for viewing friends usernames")
                 {
                     verticalAlignment = OpLabel.LabelVAlignment.Center
                 },

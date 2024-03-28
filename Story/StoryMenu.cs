@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static RainMeadow.RainMeadow;
+using System.Reflection;
 
 namespace RainMeadow
 {
@@ -145,6 +146,18 @@ namespace RainMeadow
             SetupCharacterCustomization();
             UpdateCharacterUI();
 
+            // Grab Host Remix Settings
+            if (OnlineManager.lobby.isOwner) // ModManager.MMF should be in the check but serializing a nullable dictionary is not a thing at the moment so I'm cheating inside GetHostBoolStoryRemixSettings().
+            {
+                var hostSettings = GetHostBoolStoryRemixSettings();
+                (OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings = hostSettings.hostBoolSettings;
+                (OnlineManager.lobby.gameMode as StoryGameMode).storyFloatRemixSettings = hostSettings.hostFloatSettings;
+                (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings = hostSettings.hostIntSettings;
+            }
+
+
+
+
             if (!OnlineManager.lobby.isOwner && rainMeadowOptions.SlugcatCustomToggle.Value)
             {
                 CustomSlugcatSetup();
@@ -173,6 +186,10 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             if (!OnlineManager.lobby.isOwner) // I'm a client
             {
+                if (ModManager.MMF)
+                {
+                    SetClientStoryRemixSettings((OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings, (OnlineManager.lobby.gameMode as StoryGameMode).storyFloatRemixSettings, (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings); // Set client remix settings to Host's on StartGame()
+                }
                 if (!rainMeadowOptions.SlugcatCustomToggle.Value) // I'm a client and I want to match the hosts
                 {
 
@@ -189,6 +206,7 @@ namespace RainMeadow
                 personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
                 (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber; // I decide the campaign
             }
+
 
             manager.arenaSitting = null;
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
@@ -220,7 +238,9 @@ namespace RainMeadow
                     currentCampaign = (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign ?? Ext_SlugcatStatsName.OnlineStoryWhite;
                     campaignContainer.text = $"Current Campaign: {GetCampaignName(currentCampaign)}";
                 }
+
             }
+
 
             if (ssm.scroll == 0f && ssm.lastScroll == 0f)
             {
@@ -402,23 +422,11 @@ namespace RainMeadow
 
         public static List<SlugcatStats.Name> AllSlugcats()
         {
-            // List<string> namesToExclude = new List<string> { "Night", "MeadowOnline", "MeadowOnlineRemote" }; // TODO: follow up on these
             var filteredList = new List<SlugcatStats.Name>();
 
-
-            if (!ModManager.MSC)
-            {
-                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryWhite);
-                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryYellow);
-                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryRed);
-            }
-            else // I have more slugs for you
-            {
-                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryWhite);
-                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryYellow);
-                filteredList.Add(Ext_SlugcatStatsName.OnlineStoryRed);
-
-            }
+            filteredList.Add(Ext_SlugcatStatsName.OnlineStoryWhite);
+            filteredList.Add(Ext_SlugcatStatsName.OnlineStoryYellow);
+            filteredList.Add(Ext_SlugcatStatsName.OnlineStoryRed);
 
             return filteredList;
 
@@ -470,5 +478,109 @@ namespace RainMeadow
 
             return currentCampaignName;
         }
+
+        internal void SetClientStoryRemixSettings(Dictionary<string, bool> hostBoolRemixSettings, Dictionary<string, float> hostFloatRemixSettings, Dictionary<string, int> hostIntRemixSettings)
+        {
+
+            Type type = typeof(MoreSlugcats.MMF);
+
+            FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
+
+            var sortedFields = fields.OrderBy(f => f.Name);
+
+
+            foreach (FieldInfo field in sortedFields)
+            {
+
+                var reflectedValue = field.GetValue(null);
+                if (reflectedValue is Configurable<bool> boolOption)
+                {
+
+                    for (int i = 0; i < hostBoolRemixSettings.Count; i++)
+                    {
+
+
+                        if (field.Name == hostBoolRemixSettings.Keys.ElementAt(i) && boolOption._typedValue != hostBoolRemixSettings.Values.ElementAt(i))
+                        {
+                            Debug($"Remix Key: {field.Name} with value {boolOption._typedValue} does not match host's, setting to {hostBoolRemixSettings.Values.ElementAt(i)}");
+                            boolOption._typedValue = hostBoolRemixSettings.Values.ElementAt(i);
+
+                        }
+                    }
+                }
+
+                if (reflectedValue is Configurable<float> floatOption)
+                {
+                    for (int i = 0; i < hostFloatRemixSettings.Count; i++)
+                    {
+
+
+                        if (field.Name == hostFloatRemixSettings.Keys.ElementAt(i) && floatOption._typedValue != hostFloatRemixSettings.Values.ElementAt(i))
+                        {
+                            Debug($"Remix Key: {field.Name} with value {floatOption._typedValue} does not match host's, setting to {hostFloatRemixSettings.Values.ElementAt(i)}");
+                            floatOption._typedValue = hostFloatRemixSettings.Values.ElementAt(i);
+
+                        }
+                    }
+                }
+
+                if (reflectedValue is Configurable<int> intOption)
+                {
+                    for (int i = 0; i < hostIntRemixSettings.Count; i++)
+                    {
+
+                        if (field.Name == hostIntRemixSettings.Keys.ElementAt(i) && intOption._typedValue != hostIntRemixSettings.Values.ElementAt(i))
+                        {
+                            Debug($"Remix Key: {field.Name} with value {intOption._typedValue} does not match host's, setting to {hostIntRemixSettings.Values.ElementAt(i)}");
+                            intOption._typedValue = hostIntRemixSettings.Values.ElementAt(i);
+
+                        }
+                    }
+                }
+
+
+            }
+        }
+
+        internal (Dictionary<string, bool> hostBoolSettings, Dictionary<string, float> hostFloatSettings, Dictionary<string, int> hostIntSettings) GetHostBoolStoryRemixSettings()
+        {
+            Dictionary<string, bool> configurableBools = new Dictionary<string, bool>();
+            Dictionary<string, float> configurableFloats = new Dictionary<string, float>();
+            Dictionary<string, int> configurableInts = new Dictionary<string, int>();
+
+            if (ModManager.MMF)
+            {
+                Type type = typeof(MoreSlugcats.MMF);
+
+                FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
+                var sortedFields = fields.OrderBy(f => f.Name);
+
+
+                foreach (FieldInfo field in sortedFields)
+                {
+
+                    var reflectedValue = field.GetValue(null);
+                    if (reflectedValue is Configurable<bool> boolOption)
+                    {
+                        configurableBools.Add(field.Name, boolOption._typedValue);
+                    }
+
+                    if (reflectedValue is Configurable<float> floatOption)
+                    {
+                        configurableFloats.Add(field.Name, floatOption._typedValue);
+                    }
+
+                    if (reflectedValue is Configurable<int> intOption)
+                    {
+                        configurableInts.Add(field.Name, intOption._typedValue);
+                    }
+
+                }
+                return (configurableBools, configurableFloats, configurableInts);
+            }
+            return (configurableBools, configurableFloats, configurableInts);
+
+        }
+
     }
 }
