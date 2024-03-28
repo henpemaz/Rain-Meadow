@@ -10,6 +10,12 @@
         public string serializedObject;
 
         public OnlinePhysicalObjectDefinition() { }
+        public OnlinePhysicalObjectDefinition(OnlinePhysicalObjectDefinition opod) : base(opod)
+        {
+            seed = opod.seed;
+            realized = opod.realized;
+            serializedObject = opod.serializedObject;
+        }
         public OnlinePhysicalObjectDefinition(int seed, bool realized, string serializedObject, OnlineEntity.EntityId entityId, OnlinePlayer owner, bool isTransferable) : base(entityId, owner, isTransferable)
         {
             this.seed = seed;

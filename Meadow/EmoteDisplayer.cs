@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -14,7 +15,7 @@ namespace RainMeadow
         private RainWorldGame game;
 
         public const int maxEmoteCount = 4;
-        public const float initialLifetime = 4; // seconds
+        public const float initialLifetime = 5; // seconds
 
         public int startInGameClock;
         public float timeToLive;
@@ -26,6 +27,7 @@ namespace RainMeadow
         private List<EmoteTile> tiles = new();
         private byte localVersion;
 
+        // this weird thing isn't a uad, it sort of follows the creature and gets updated when the creature updates
         public EmoteDisplayer(Creature owner, OnlineCreature ownerEntity, MeadowCreatureData creatureData, MeadowAvatarCustomization customization)
         {
             RainMeadow.Debug($"EmoteDisplayer created for {owner}");
@@ -48,6 +50,7 @@ namespace RainMeadow
 
         public void ProcessRemoteData()
         {
+            OnUpdate();
             if (localVersion != this.creatureData.emotesVersion)
             {
                 RainMeadow.Debug("new version");
@@ -120,12 +123,18 @@ namespace RainMeadow
         {
             RainMeadow.Debug(emoteType);
             if (!ownerEntity.isMine) throw new InvalidProgrammerException("not mine");
-            if (this.creatureData.emotes.Contains(emoteType)) return false;
-            if (this.creatureData.emotes.Count >= maxEmoteCount) return false;
             if (owner.abstractPhysicalObject.realizedObject == null) return false;
             if (owner.abstractPhysicalObject.Room.realizedRoom == null) return false;
-            if (this.creatureData.emotes.Count > 0 && (timeToLive < this.creatureData.emotes.Count)) return false;
 
+            if (this.creatureData.emotes.Count > 0 && timeToLive < 2 && timeToLive > 1) return false; // locked out
+            if (this.creatureData.emotes.Count > 0 && timeToLive < 1)
+            {
+                ClearEmotes();
+            }
+
+            if (this.creatureData.emotes.Contains(emoteType)) return false;
+            if (this.creatureData.emotes.Count >= maxEmoteCount) return false;
+            
             if (this.creatureData.emotes.Count == 0)
             {
                 startInGameClock = owner.abstractPhysicalObject.world.game.clock;
@@ -136,8 +145,7 @@ namespace RainMeadow
             }
             else
             {
-                timeToLive += initialLifetime / (this.creatureData.emotes.Count + 1);
-                this.creatureData.emotesLife = timeToLive;
+                this.creatureData.emotesLife = initialLifetime; // refresh
             }
 
             var tile = new EmoteTile(emoteType, this.tiles.Count, this);
@@ -188,6 +196,14 @@ namespace RainMeadow
                     return pos + mainOffset + (index == 0 ? (1.414f) * (-halfWidth + halfHeight) : index == 1 ? Vector2.zero : index == 2 ? (1.414f) * (halfWidth + halfHeight) : 2.828f * halfHeight);
             }
         }
+
+        internal void ClearEmotes()
+        {
+            Clear();
+            this.creatureData.emotesVersion++;
+            this.creatureData.emotes.Clear();
+        }
+
         internal class EmoteTile : UpdatableAndDeletable, IDrawable
         {
             public EmoteType emote;
