@@ -1,7 +1,11 @@
 ﻿using RWCustom;
+using Sony.NP;
 using System;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
+using static Rewired.ComponentControls.Effects.RotateAroundAxis;
+
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -15,25 +19,116 @@ namespace RainMeadow
             On.PhysicalObject.Grabbed += PhysicalObjectOnGrabbed;
             On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
+
+
+            // Explode is claled on TerrainImpact, HitSomething, and Update (if on fire). 
+            // None of these seem to actually trigger a VFX if I call them on the client side, so idk
+            // On.ScavengerBomb.HitSomething += ScavengerBomb_HitSomething;
+
+        }
+
+        private bool ScavengerBomb_HitSomething(On.ScavengerBomb.orig_HitSomething orig, ScavengerBomb self, SharedPhysics.CollisionResult result, bool eu)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                return orig(self, result, eu);
+
+            }
+
+            if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
+            {
+                Error("Error getting room for scav explosion!");
+
+            }
+            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+
+
+                if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var scavBombAbstract))
+
+                {
+                    Error("Error getting target of explosion object hit");
+
+                }
+
+                if (result.obj == null)
+                {
+                    return false;
+                }
+
+
+                if (result.obj == null)
+                {
+                    return false;
+                }
+
+                if (!OnlinePhysicalObject.map.TryGetValue(result.obj.abstractPhysicalObject, out var objectHit))
+
+                {
+                    Error("Error getting target of explosion object hit");
+
+                }
+
+
+                if (scavBombAbstract != null)
+                {
+                    if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.ScavengerBombHitSomething, scavBombAbstract, objectHit, result.hitSomething, result.collisionPoint, eu)))
+                    {
+                        room.owner.InvokeRPC(OnlinePhysicalObject.ScavengerBombHitSomething, scavBombAbstract, objectHit, result.hitSomething, result.collisionPoint, eu);
+                    }
+                }
+            }
+            return orig(self, result, eu);
+
         }
 
         private void PhysicalObject_HitByExplosion(On.PhysicalObject.orig_HitByExplosion orig, PhysicalObject self, float hitFac, Explosion explosion, int hitChunk)
         {
             if (OnlineManager.lobby == null)
             {
-                orig(self,hitFac,explosion,hitChunk);
+                orig(self, hitFac, explosion, hitChunk);
                 return;
             }
 
-            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            // explosion.room is the most stable source of truth for room data. Other options sometimes null ref
+            if (!RoomSession.map.TryGetValue(explosion.room.abstractRoom, out var room))
+            {
+                Error("Error getting room for explosion!");
+
+            }
             if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
+                if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit))
+                {
+                    Error("Error getting target of explosion object hit");
+
+                }
+                if (!OnlinePhysicalObject.map.TryGetValue(explosion.sourceObject.abstractPhysicalObject, out var sourceObject))
+                {
+                    // Not getting source object can kill friendly slugcats and will null ref in the RPC but continue the game safely.
+                    // May be due to current null Creature violence against other slugcats.
+                    // Can only replicate if I throw explosive spear at friendly slugcat who is right next to a wall and the spear hits their position but denies a kill
+                    Error("Error getting source object for explosion");
+                }
+
+                if (explosion.killTagHolder == null)
+                {
+                    orig(self, hitFac, explosion, hitChunk); // Safely kills target when it's stuck in them.
+                    return;
+                }
+
+
+                if (!OnlinePhysicalObject.map.TryGetValue(explosion.killTagHolder.abstractPhysicalObject, out var onlineCreature)) // to pass OnlinePhysicalObject data to convert to OnlineCreature over the wire
+                {
+
+                    Error("Error getting kill tag holder");
+                }
+
                 if (objectHit != null)
                 {
-                    if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.HitByExplosion, objectHit, hitFac)))
+                    if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.HitByExplosion, objectHit, sourceObject, explosion.pos, explosion.lifeTime, explosion.rad, explosion.force, explosion.damage, explosion.stun, explosion.deafen, onlineCreature, explosion.killTagHolderDmgFactor, explosion.minStun, explosion.backgroundNoise, hitFac, hitChunk)))
                     {
-                        room.owner.InvokeRPC(OnlinePhysicalObject.HitByExplosion, objectHit, hitFac);
+                        room.owner.InvokeRPC(OnlinePhysicalObject.HitByExplosion, objectHit, sourceObject, explosion.pos, explosion.lifeTime, explosion.rad, explosion.force, explosion.damage, explosion.stun, explosion.deafen, onlineCreature, explosion.killTagHolderDmgFactor, explosion.minStun, explosion.backgroundNoise, hitFac, hitChunk);
                     }
                 }
             }
@@ -45,7 +140,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby == null)
             {
-                orig(self,weapon);
+                orig(self, weapon);
                 return;
             }
 
@@ -56,7 +151,7 @@ namespace RainMeadow
                 OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var abstWeapon);
                 room.owner.InvokeRPC(OnlinePhysicalObject.HitByWeapon, objectHit, abstWeapon);
             }
-            else 
+            else
             {
                 orig(self, weapon);
             }
@@ -76,14 +171,16 @@ namespace RainMeadow
                 var playerIDs = OnlineManager.lobby.participants.Keys.Select(p => p.inLobbyId).ToList();
                 var readyWinPlayers = storyGameMode.readyForWinPlayers.ToList();
 
-                foreach (var playerID in playerIDs) {
+                foreach (var playerID in playerIDs)
+                {
                     if (!readyWinPlayers.Contains(playerID)) return;
                 }
                 var storyClientSettings = storyGameMode.clientSettings as StoryClientSettings;
                 storyClientSettings.myLastDenPos = self.room.abstractRoom.name;
 
             }
-            else {
+            else
+            {
                 var scug = self.room.game.Players.First(); //needs to be changed if we want to support Jolly
                 var realizedScug = (Player)scug.realizedCreature;
                 if (realizedScug == null || !self.room.PlayersInRoom.Contains(realizedScug)) return;
@@ -110,7 +207,7 @@ namespace RainMeadow
 
                 if (self is AirBreatherCreature breather) breather.lungs = 1f;
 
-                if(self.room != null)
+                if (self.room != null)
                 {
                     // fall out of world handling
                     float num = -self.bodyChunks[0].restrictInRoomRange + 1f;
@@ -191,9 +288,9 @@ namespace RainMeadow
             {
                 PhysicalObject trueVillain = null;
                 var suspect = room.updateList[room.updateIndex];
-                if (suspect is Explosion explosion) trueVillain = explosion.sourceObject;
-                else if (suspect is PhysicalObject villainObject) trueVillain = villainObject;
-                if(trueVillain != null)
+                //if (suspect is Explosion explosion) trueVillain = explosion.sourceObject;
+                if (suspect is PhysicalObject villainObject) trueVillain = villainObject;
+                if (trueVillain != null)
                 {
                     if (!OnlinePhysicalObject.map.TryGetValue(trueVillain.abstractPhysicalObject, out var onlineTrueVillain))
                     {

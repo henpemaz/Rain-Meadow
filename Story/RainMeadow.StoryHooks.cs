@@ -2,6 +2,7 @@
 using System.Linq;
 using UnityEngine;
 using HUD;
+using static PhysicalObject;
 
 namespace RainMeadow
 {
@@ -48,7 +49,6 @@ namespace RainMeadow
 
             On.Oracle.CreateMarble += Oracle_CreateMarble;
             On.Oracle.SetUpMarbles += Oracle_SetUpMarbles;
-
         }
 
         private void Oracle_SetUpMarbles(On.Oracle.orig_SetUpMarbles orig, Oracle self)
@@ -70,7 +70,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby == null)
             {
-                orig(self,orbitObj,ps,circle,dist,color);
+                orig(self, orbitObj, ps, circle, dist, color);
                 return;
             }
 
@@ -116,7 +116,7 @@ namespace RainMeadow
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineSporePlant);
                 room.owner.InvokeRPC(ConsumableRPCs.pacifySporePlant, onlineSporePlant);
             }
-            else 
+            else
             {
                 orig(self);
             }
@@ -134,13 +134,14 @@ namespace RainMeadow
             if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineWaterNut);
-                if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(ConsumableRPCs.swellWaterNut, onlineWaterNut))) 
+                if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(ConsumableRPCs.swellWaterNut, onlineWaterNut)))
                 {
                     room.owner.InvokeRPC(ConsumableRPCs.swellWaterNut, onlineWaterNut);
                     self.Destroy();
                 }
             }
-            else {
+            else
+            {
                 if (self.grabbedBy.Count > 0)
                 {
                     self.grabbedBy[0].Release();
@@ -167,7 +168,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby == null)
             {
-                orig(self,eu);
+                orig(self, eu);
                 return;
             }
 
@@ -178,7 +179,8 @@ namespace RainMeadow
             RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
             if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                if (prevOxygenLevel > currentOxygenLevel) {
+                if (prevOxygenLevel > currentOxygenLevel)
+                {
                     OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineBubbleGrass);
                     room.owner.InvokeRPC(ConsumableRPCs.SetOxygenLevel, onlineBubbleGrass, currentOxygenLevel);
                 }

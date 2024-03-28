@@ -1,7 +1,10 @@
-﻿using System;
+﻿using Sony.NP;
+using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using UnityEngine;
+using static Rewired.ComponentControls.Effects.RotateAroundAxis;
 
 namespace RainMeadow
 {
@@ -305,9 +308,28 @@ namespace RainMeadow
             objectHit?.apo.realizedObject.HitByWeapon(weapon.apo.realizedObject as Weapon);
         }
         [RPCMethod]
-        public static void HitByExplosion(OnlinePhysicalObject objectHit, float hitfac)
+        public static void HitByExplosion(OnlinePhysicalObject objectHit, OnlinePhysicalObject sourceObject, Vector2 pos, int lifeTime, float rad, float force, float damage, float stun, float deafen, OnlinePhysicalObject killTagHolder, float killTagHolderDmgFactor, float minStun, float backgroundNoise, float hitfac, int hitChunk)
         {
-            objectHit?.apo.realizedObject.HitByExplosion(hitfac,null,0);
+            var source = (sourceObject?.apo.realizedObject);
+            // can null ref but wont kill game
+            var creature = (killTagHolder.apo as AbstractCreature).realizedCreature;
+            var room = (objectHit.apo.Room.realizedRoom);
+            var explosion = new Explosion(room, source, pos, lifeTime, rad, force, damage, stun, deafen, creature, killTagHolderDmgFactor, minStun, backgroundNoise);
+
+            objectHit.apo.realizedObject.HitByExplosion(hitfac, explosion, hitChunk);
+
         }
+
+        [RPCMethod]
+        public static void ScavengerBombHitSomething(OnlinePhysicalObject objectHitting, OnlinePhysicalObject objectHit, bool hitSomething, Vector2 collisionPoint, bool eu)
+        {
+            var realizedObject = objectHitting.apo.realizedObject;
+            var realizedObjectHit = objectHit?.apo.realizedObject;
+
+            var result = new SharedPhysics.CollisionResult(realizedObjectHit, null, null, hitSomething, collisionPoint);
+            (realizedObject as ScavengerBomb).HitSomething(result, eu);
+
+        }
+
     }
 }
