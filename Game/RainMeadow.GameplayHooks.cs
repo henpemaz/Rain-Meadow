@@ -20,8 +20,10 @@ namespace RainMeadow
             On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
 
-            // THIS MUST BE WHAT DOES THE EXPLOSION, MAKE THIS WORK
-            On.ScavengerBomb.Explode += ScavengerBomb_Explode;
+
+            // Explode is claled on TerrainImpact, HitSomething, and Update (if on fire). 
+            // None of these seem to actually trigger a VFX if I call them on the client side, so idk
+            // On.ScavengerBomb.HitSomething += ScavengerBomb_HitSomething;
 
         }
 
@@ -54,6 +56,12 @@ namespace RainMeadow
                     return false;
                 }
 
+
+                if (result.obj == null)
+                {
+                    return false;
+                }
+
                 if (!OnlinePhysicalObject.map.TryGetValue(result.obj.abstractPhysicalObject, out var objectHit))
 
                 {
@@ -61,63 +69,17 @@ namespace RainMeadow
 
                 }
 
+
                 if (scavBombAbstract != null)
                 {
-                    if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.ScavengerBombHitSomething, scavBombAbstract, objectHit, result.hitSomething, result.collisionPoint, eu)))
+                    if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.ScavengerBombHitSomething, scavBombAbstract, objectHit, result.hitSomething, result.collisionPoint, eu)))
                     {
-                        room.owner.InvokeRPC(RPCs.ScavengerBombHitSomething, scavBombAbstract, objectHit, result.hitSomething, result.collisionPoint, eu);
+                        room.owner.InvokeRPC(OnlinePhysicalObject.ScavengerBombHitSomething, scavBombAbstract, objectHit, result.hitSomething, result.collisionPoint, eu);
                     }
                 }
             }
             return orig(self, result, eu);
 
-        }
-
-       private void ScavengerBomb_Explode(On.ScavengerBomb.orig_Explode orig, ScavengerBomb self, BodyChunk hitChunk)
-        {
-            if (OnlineManager.lobby == null)
-            {
-                orig(self, hitChunk);
-                return;
-            }
-
-            if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
-            {
-                Error("Error getting room for scav explosion!");
-
-            }
-            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
-            {
-
-
-                if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var scavBombAbstract))
-
-                {
-                    RainMeadow.Debug("Error getting scav bomb abstract");
-
-                }
-
-                if (hitChunk == null)
-                {
-                    orig(self, hitChunk); // This made the vfx show up once. How / why? Terrain impact? Luck? 
-                    return;
-
-
-                } else
-                {
-                    if (scavBombAbstract != null)
-                    {
-                        if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract, hitChunk.index, hitChunk.pos, hitChunk.rad, hitChunk.mass)))
-                        {
-                            // Currently null refs, kills client game
-                            // Then the other player can pick up where client threw bomb anad throw it again.
-                            room.owner.InvokeRPC(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract, hitChunk.index, hitChunk.pos, hitChunk.rad, hitChunk.mass);
-
-                        }
-                    }
-                }
-            }
-            orig(self, hitChunk);
         }
 
         private void PhysicalObject_HitByExplosion(On.PhysicalObject.orig_HitByExplosion orig, PhysicalObject self, float hitFac, Explosion explosion, int hitChunk)

@@ -321,29 +321,15 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void ScavengerBombExplode(OnlinePhysicalObject abstScavBomb, int index, Vector2 pos, float rad, float mass)
+        public static void ScavengerBombHitSomething(OnlinePhysicalObject objectHitting, OnlinePhysicalObject objectHit, bool hitSomething, Vector2 collisionPoint, bool eu)
         {
+            var realizedObject = objectHitting.apo.realizedObject;
+            var realizedObjectHit = objectHit?.apo.realizedObject;
 
-            var bomb = (abstScavBomb.apo.realizedObject as ScavengerBomb);
-            BodyChunk hitChunk;
-            if (index != null && pos != null && rad != null && mass != null)
-            {
-               hitChunk = new BodyChunk(bomb, index, pos, rad, mass);
-               bomb.Explode(hitChunk);
-
-            } else
-            {
-                bomb.Explode(null);
-            }
+            var result = new SharedPhysics.CollisionResult(realizedObjectHit, null, null, hitSomething, collisionPoint);
+            (realizedObject as ScavengerBomb).HitSomething(result, eu);
 
         }
 
-
-        [RPCMethod]
-        public static void ScavengerBombTerrainImpact(OnlinePhysicalObject abstScavBomb, int chunk, RWCustom.IntVector2 direction, float speed, bool firstContact)
-        {
-            // The same thing may be true for this
-            (abstScavBomb.apo.realizedObject as ScavengerBomb).TerrainImpact(chunk, direction, speed, firstContact);
-       }
     }
 }
