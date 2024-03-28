@@ -4,6 +4,11 @@ plants todo
 
 - more items
 	copy the arena unlocks
+		a collectoken is a UAD, but my objects so far (MeadowCollectible) were POs
+		inheriting CT means I need to implement UAD sync ("shouldn't be too complicated") besides getting it to work
+		ineriting MeadowCollectible means I need to copypaste a ton of code to make it work like a token
+		maybe an empty-ish PO that spawns a token for visuals/collision?
+		it reeeeally wants placeobjdata and "is blue" vs "is gold", is it worth the trouble?
 
 	
 emotes todo
@@ -20,8 +25,12 @@ radial menu
 	/ should be working on xbox
 	todo sort out mappings for dualshock (ps 3 4 5) and switchpro
 	need to swap between the two inputs as needed not have the two / done
+	maybe more than 8 per page? this thing has a lot of pages...
+		12 per page would be interesting/ideal, but no keyboard support...
 rethink kb input
 	one configurable hotbar with 10 the rest on mouse?
+	really really wish I could support "fully keyboard input"
+		maybe the radial?
 add backdrop to previews / done
 
 creature todo
@@ -69,3 +78,4 @@ Toss in eggbug and noodlefly
 water controls for lizard and scav etc
 	needs to be there, crossing DS etc
 	SU_A12
+	I think the pathing logic breaks, water "isn't accessible" but it is. Istileaccessibletocreature accounts for it, some of my logic might not
