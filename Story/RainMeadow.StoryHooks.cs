@@ -190,19 +190,7 @@ namespace RainMeadow
             orig(self);
             if (isStoryMode(out var storyGameMode))
             {
-                SlugcatStats.Name slugcatClass;
-                if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryWhite)
-                {
-                    self.SlugCatClass = SlugcatStats.Name.White;
-                }
-                else if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryYellow)
-                {
-                    self.SlugCatClass = SlugcatStats.Name.Yellow;
-                }
-                else if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryRed)
-                {
-                    self.SlugCatClass = SlugcatStats.Name.Red;
-                }
+                self.SlugCatClass = (storyGameMode.clientSettings as StoryClientSettings).playingAs;
             }
         }
 
@@ -210,21 +198,9 @@ namespace RainMeadow
         {
             if (isStoryMode(out var storyGameMode))
             {
-                if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryWhite)
-                {
-                    return new RWCustom.IntVector2(7, 4);
-                }
-                if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryYellow)
-                {
-                    return new RWCustom.IntVector2(5, 3);
-                }
-                if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryRed)
-                {
-                    return new RWCustom.IntVector2(9, 6);
-                }
+                return orig(storyGameMode.currentCampaign);
             }
             return orig(slugcat);
-
         }
 
         private void HUD_InitSinglePlayerHud(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam)

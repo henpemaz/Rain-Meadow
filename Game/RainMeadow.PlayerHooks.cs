@@ -288,20 +288,7 @@ public partial class RainMeadow
 
         if (isStoryMode(out var storyGameMode))
         {
-            if (OnlineManager.lobby == null) return;
-
-            if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryWhite)
-            {
-                slugcat = SlugcatStats.Name.White;
-            }
-            else if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryYellow)
-            {
-                slugcat = SlugcatStats.Name.Yellow;
-            }
-            else if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryRed)
-            {
-                slugcat = SlugcatStats.Name.Red;
-            }
+            slugcat = (storyGameMode.clientSettings as StoryClientSettings).playingAs;
         }
         orig(self, slugcat, malnourished);
 

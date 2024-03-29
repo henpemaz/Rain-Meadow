@@ -22,8 +22,20 @@ namespace RainMeadow
 
             On.Menu.MenuScene.BuildScene += MenuScene_BuildScene;
 
+            On.Menu.SlugcatSelectMenu.SlugcatUnlocked += SlugcatSelectMenu_SlugcatUnlocked;
+
         }
 
+        private bool SlugcatSelectMenu_SlugcatUnlocked(On.Menu.SlugcatSelectMenu.orig_SlugcatUnlocked orig, SlugcatSelectMenu self, SlugcatStats.Name i)
+        {
+            if (OnlineManager.lobby == null) 
+            {
+                return orig(self, i);
+            }
+
+            //TODO MSC: do something smarter, this stops the crash; I'm being lazy -Turtle
+            return true;
+        }
 
         private void MenuScene_BuildScene(On.Menu.MenuScene.orig_BuildScene orig, MenuScene self)
         {
@@ -164,7 +176,7 @@ namespace RainMeadow
                     if (OnlineManager.lobby.isOwner) // Host
                     {
 
-                        if (slugcatCustom.slug == Ext_SlugcatStatsName.OnlineStoryWhite)
+                        if (slugcatCustom.slug == SlugcatStats.Name.White)
                         {
                             sceneID = Menu.MenuScene.SceneID.Slugcat_White;
                             self.sceneOffset = new Vector2(-10f, 100f);
@@ -172,14 +184,14 @@ namespace RainMeadow
                             
                         }
 
-                        else if (slugcatCustom.slug == Ext_SlugcatStatsName.OnlineStoryYellow)
+                        else if (slugcatCustom.slug == SlugcatStats.Name.Yellow)
                         {
                             sceneID = Menu.MenuScene.SceneID.Slugcat_Yellow;
                             self.sceneOffset = new Vector2(-10f, 100f);
                             self.slugcatDepth = 3.1000001f;
                         }
 
-                        else if (slugcatCustom.slug == Ext_SlugcatStatsName.OnlineStoryRed)
+                        else if (slugcatCustom.slug == SlugcatStats.Name.Red)
                         {
                             sceneID = Menu.MenuScene.SceneID.Slugcat_Red;
                             self.sceneOffset = new Vector2(-10f, 100f);

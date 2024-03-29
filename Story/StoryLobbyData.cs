@@ -18,7 +18,7 @@ namespace RainMeadow
 
         public class State : ResourceDataState
         {
-            [OnlineField(nullable =true)]
+            [OnlineField(nullable=true)]
             public string? defaultDenPos;
             [OnlineField]
             public bool didStartGame;
@@ -103,8 +103,6 @@ namespace RainMeadow
                 (lobby.gameMode as StoryGameMode).storyBoolRemixSettings = storyBoolRemixSettings;
                 (lobby.gameMode as StoryGameMode).storyFloatRemixSettings = storyFloatRemixSettings;
                 (lobby.gameMode as StoryGameMode).storyIntRemixSettings = storyIntRemixSettings;
-
-
 
                 (lobby.gameMode as StoryGameMode).didStartCycle = didStartCycle;
             }

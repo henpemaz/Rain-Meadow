@@ -28,7 +28,7 @@ namespace RainMeadow
         public StoryClientSettings(Definition entityDefinition) : base(entityDefinition)
         {
             RainMeadow.Debug(this);
-            playingAs = RainMeadow.Ext_SlugcatStatsName.OnlineStoryWhite; //this is bad, we'll need to investigate this.
+            playingAs = SlugcatStats.Name.White; //this is bad, we'll need to investigate this.
             myLastDenPos = "SU_C04";
             bodyColor = entityDefinition.owner == 2 ? Color.cyan : PlayerGraphics.DefaultSlugcatColor(playingAs);
             eyeColor = Color.black;

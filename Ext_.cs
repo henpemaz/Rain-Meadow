@@ -18,11 +18,6 @@ namespace RainMeadow
         {
             public static SlugcatStats.Name OnlineSessionPlayer = new("MeadowOnline", true);
             public static SlugcatStats.Name OnlineSessionRemotePlayer = new("MeadowOnlineRemote", true);
-
-            public static SlugcatStats.Name OnlineStoryWhite = new("OnlineStoryWhite", true);
-            public static SlugcatStats.Name OnlineStoryYellow = new("OnlineStoryYellow", true);
-            public static SlugcatStats.Name OnlineStoryRed = new("OnlineStoryRed", true);
-
         }
 
         public class Ext_SceneID
