@@ -19,7 +19,7 @@ namespace RainMeadow
 
         public Color bodyColor;
         public Color eyeColor; // unused
-        public SlugcatStats.Name playingAs;
+        public SlugcatStats.Name? playingAs;
         public bool readyForWin;
         public string? myLastDenPos = null;
         public bool inGame;
@@ -53,8 +53,8 @@ namespace RainMeadow
             public Color bodyColor;
             [OnlineFieldColorRgb]
             public Color eyeColor;
-            [OnlineField]
-            public SlugcatStats.Name playingAs;
+            [OnlineField(nullable = true)]
+            public string? playingAs;
             [OnlineField(group = "game")]
             public bool readyForWin;
             [OnlineField(group = "game")]
@@ -67,7 +67,7 @@ namespace RainMeadow
             {
                 bodyColor = onlineEntity.bodyColor;
                 eyeColor = onlineEntity.eyeColor;
-                playingAs = onlineEntity.playingAs;
+                playingAs = onlineEntity.playingAs?.value;
                 readyForWin = onlineEntity.readyForWin;
                 inGame = onlineEntity.inGame;
                 isDead = onlineEntity.isDead;
@@ -79,7 +79,10 @@ namespace RainMeadow
                 var avatarSettings = (StoryClientSettings)onlineEntity;
                 avatarSettings.bodyColor = bodyColor;
                 avatarSettings.eyeColor = eyeColor;
-                avatarSettings.playingAs = playingAs;
+                if (playingAs != null) {
+                    ExtEnumBase.TryParse(typeof(SlugcatStats.Name), playingAs, false, out var rawEnumBase);
+                    avatarSettings.playingAs = rawEnumBase as SlugcatStats.Name;
+                }
                 avatarSettings.readyForWin = readyForWin;
                 avatarSettings.inGame = inGame;
                 avatarSettings.isDead = isDead;
