@@ -47,7 +47,8 @@ namespace RainMeadow
             return true;
         }
 
-        public override SlugcatStats.Name GetStorySessionPlayer(RainWorldGame self) {
+        public override SlugcatStats.Name GetStorySessionPlayer(RainWorldGame self) 
+        {
             // Return the save slot slugcatStats name
             // return saveSlot;
             return RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;

@@ -22,8 +22,6 @@ namespace RainMeadow
         private void StoryHooks()
         {
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
-            On.PlayerProgression.SaveDeathPersistentDataOfCurrentState += PlayerProgression_SaveDeathPersistentDataOfCurrentState;
-            On.PlayerProgression.LoadGameState += PlayerProgression_LoadGameState;
             On.Menu.SleepAndDeathScreen.ctor += SleepAndDeathScreen_ctor;
             On.Menu.SleepAndDeathScreen.Update += SleepAndDeathScreen_Update;
             On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
@@ -296,33 +294,6 @@ namespace RainMeadow
                 return origSaveState;
             }
             return origSaveState;
-        }
-
-        private void PlayerProgression_SaveDeathPersistentDataOfCurrentState(On.PlayerProgression.orig_SaveDeathPersistentDataOfCurrentState orig, PlayerProgression self, bool saveAsIfPlayerDied, bool saveAsIfPlayerQuit)
-        {
-            if (OnlineManager.lobby == null)
-            {
-                orig(self, saveAsIfPlayerDied, saveAsIfPlayerQuit);
-                return;
-            }
-            else 
-            {
-                RainMeadow.Debug($"current save file dir {self.saveFileDataInMemory.directoryName}");
-                RainMeadow.Debug($"current save filename {self.saveFileDataInMemory.filename}");
-                orig(self, saveAsIfPlayerDied, saveAsIfPlayerQuit);
-            }
-        }
-
-        private SaveState PlayerProgression_LoadGameState(On.PlayerProgression.orig_LoadGameState orig, PlayerProgression self, string saveFilePath, RainWorldGame game, bool saveAsDeathOrQuit)
-        {
-            if (OnlineManager.lobby == null)
-            {
-                return orig(self, saveFilePath, game, saveAsDeathOrQuit);
-            }
-
-            RainMeadow.Debug($"trying to load savestate from file {saveFilePath}");
-
-            return orig(self, saveFilePath, game, saveAsDeathOrQuit);
         }
 
         private void KarmaLadderScreen_Singal(On.Menu.KarmaLadderScreen.orig_Singal orig, Menu.KarmaLadderScreen self, Menu.MenuObject sender, string message)
