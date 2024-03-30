@@ -2,7 +2,6 @@
 using System.Linq;
 using UnityEngine;
 using HUD;
-
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -266,13 +265,6 @@ namespace RainMeadow
 
         private SaveState PlayerProgression_GetOrInitiateSaveState(On.PlayerProgression.orig_GetOrInitiateSaveState orig, PlayerProgression self, SlugcatStats.Name saveStateNumber, RainWorldGame game, ProcessManager.MenuSetup setup, bool saveAsDeathOrQuit)
         {
-            if (self.currentSaveState == null)
-            {
-                RainMeadow.Debug($"{self.starvedSaveState != null}");
-                RainMeadow.Debug($"trying to get/initiate savestate {saveStateNumber}");
-                RainMeadow.Debug($"current save filename {self.saveFileDataInMemory.filename}");
-            }
-
             var origSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
             if (isStoryMode(out var gameMode))
             {

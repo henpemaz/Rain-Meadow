@@ -127,6 +127,11 @@ namespace RainMeadow
                 sw.Stop();
                 RainMeadow.Debug($"MeadowProgression.InitializeBuiltinTypes: {sw.Elapsed}");
 
+                sw = Stopwatch.StartNew();
+                StorySaveManager.InitializeStorySaves();
+                sw.Stop();
+                RainMeadow.Debug($"StorySaveManager.InitializeSaveFiles: {sw.Elapsed}");
+
                 EmoteHandler.InitializeBuiltinTypes();
 
                 sw = Stopwatch.StartNew();
@@ -168,7 +173,6 @@ namespace RainMeadow
                 MeadowHooks();
                 LoadingHooks();
                 StoryHooks();
-
                 MeadowMusic.EnableMusic();
 
                 self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));

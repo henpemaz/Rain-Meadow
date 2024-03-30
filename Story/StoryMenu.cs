@@ -446,7 +446,7 @@ namespace RainMeadow
             var filteredList = new List<SlugcatStats.Name>();
             for (int i = 0; i < SlugcatStats.Name.values.entries.Count; i++) {
                 var slugcatName = SlugcatStats.Name.values.entries[i];
-                if (slugcatName == "Night" || slugcatName == "Inv" || slugcatName == "Slugpup" || slugcatName == "MeadowOnline" || slugcatName == "MeadowOnlineRemote") 
+                if (StorySaveManager.nonCampaignSlugcats.Contains(slugcatName)) 
                 {
                     continue;
                 }
