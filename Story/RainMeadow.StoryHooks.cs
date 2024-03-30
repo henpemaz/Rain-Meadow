@@ -22,6 +22,8 @@ namespace RainMeadow
         private void StoryHooks()
         {
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
+            On.PlayerProgression.SaveDeathPersistentDataOfCurrentState += PlayerProgression_SaveDeathPersistentDataOfCurrentState;
+            On.PlayerProgression.LoadGameState += PlayerProgression_LoadGameState;
             On.Menu.SleepAndDeathScreen.ctor += SleepAndDeathScreen_ctor;
             On.Menu.SleepAndDeathScreen.Update += SleepAndDeathScreen_Update;
             On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
@@ -266,15 +268,51 @@ namespace RainMeadow
 
         private SaveState PlayerProgression_GetOrInitiateSaveState(On.PlayerProgression.orig_GetOrInitiateSaveState orig, PlayerProgression self, SlugcatStats.Name saveStateNumber, RainWorldGame game, ProcessManager.MenuSetup setup, bool saveAsDeathOrQuit)
         {
+            if (self.currentSaveState == null)
+            {
+                RainMeadow.Debug($"{self.starvedSaveState != null}");
+                RainMeadow.Debug($"trying to get/initiate savestate {saveStateNumber}");
+                RainMeadow.Debug($"current save filename {self.saveFileDataInMemory.filename}");
+            }
+
             var origSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
             if (isStoryMode(out var gameMode))
             {
-                //self.currentSaveState.LoadGame(gameMode.saveStateProgressString, game); //pretty sure we can just stuff the string here
                 var storyClientSettings = gameMode.clientSettings as StoryClientSettings;
-                origSaveState.denPosition = storyClientSettings.myLastDenPos;
+                if (storyClientSettings.myLastDenPos != null) 
+                {
+                    origSaveState.denPosition = storyClientSettings.myLastDenPos;
+                }
                 return origSaveState;
             }
             return origSaveState;
+        }
+
+        private void PlayerProgression_SaveDeathPersistentDataOfCurrentState(On.PlayerProgression.orig_SaveDeathPersistentDataOfCurrentState orig, PlayerProgression self, bool saveAsIfPlayerDied, bool saveAsIfPlayerQuit)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self, saveAsIfPlayerDied, saveAsIfPlayerQuit);
+                return;
+            }
+            else 
+            {
+                RainMeadow.Debug($"current save file dir {self.saveFileDataInMemory.directoryName}");
+                RainMeadow.Debug($"current save filename {self.saveFileDataInMemory.filename}");
+                orig(self, saveAsIfPlayerDied, saveAsIfPlayerQuit);
+            }
+        }
+
+        private SaveState PlayerProgression_LoadGameState(On.PlayerProgression.orig_LoadGameState orig, PlayerProgression self, string saveFilePath, RainWorldGame game, bool saveAsDeathOrQuit)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                return orig(self, saveFilePath, game, saveAsDeathOrQuit);
+            }
+
+            RainMeadow.Debug($"trying to load savestate from file {saveFilePath}");
+
+            return orig(self, saveFilePath, game, saveAsDeathOrQuit);
         }
 
         private void KarmaLadderScreen_Singal(On.Menu.KarmaLadderScreen.orig_Singal orig, Menu.KarmaLadderScreen self, Menu.MenuObject sender, string message)
@@ -291,11 +329,6 @@ namespace RainMeadow
             }
             orig(self, sender, message);
         }
-
-        //On Static hook class
-
-
-
 
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {

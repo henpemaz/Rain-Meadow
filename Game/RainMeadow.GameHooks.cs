@@ -42,6 +42,22 @@ namespace RainMeadow
             On.GameSession.AddPlayer += GameSession_AddPlayer;
         }
 
+        private void World_LoadWorld(On.World.orig_LoadWorld orig, World self, SlugcatStats.Name slugcatNumber, System.Collections.Generic.List<AbstractRoom> abstractRoomsList, int[] swarmRooms, int[] shelters, int[] gates)
+        {
+            orig(self, slugcatNumber, abstractRoomsList, swarmRooms, shelters, gates);
+
+            if (OnlineManager.lobby != null)
+                OnlineManager.lobby.gameMode.LobbyReadyCheck();
+        }
+
+        private void WorldLoader_CreatingWorld(On.WorldLoader.orig_CreatingWorld orig, WorldLoader self)
+        {
+            orig(self);
+
+            if (OnlineManager.lobby != null)
+                OnlineManager.lobby.gameMode.LobbyReadyCheck();
+        }
+
         private void RainWorldGame_Update(ILContext il)
         {
             try
@@ -114,14 +130,6 @@ namespace RainMeadow
         {
             //TODO: Impliment graceful exist
             orig(self);
-        }
-
-        private void World_LoadWorld(On.World.orig_LoadWorld orig, World self, SlugcatStats.Name slugcatNumber, System.Collections.Generic.List<AbstractRoom> abstractRoomsList, int[] swarmRooms, int[] shelters, int[] gates)
-        {
-            orig(self, slugcatNumber, abstractRoomsList, swarmRooms, shelters, gates);
-            // Check if we need to allow others to join
-            if(OnlineManager.lobby != null)
-                OnlineManager.lobby.gameMode.LobbyReadyCheck();
         }
 
         private void Room_PlaceQuantifiedCreaturesInRoom(On.Room.orig_PlaceQuantifiedCreaturesInRoom orig, Room self, CreatureTemplate.Type critType)

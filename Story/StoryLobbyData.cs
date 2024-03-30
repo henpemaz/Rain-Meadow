@@ -53,12 +53,12 @@ namespace RainMeadow
                 StoryGameMode storyGameMode = (onlineResource as Lobby).gameMode as StoryGameMode;
                 RainWorldGame currentGameState = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
 
-                didStartGame = storyGameMode.didStartGame;
                 currentCampaign = storyGameMode.currentCampaign;
                 storyBoolRemixSettings = storyGameMode.storyBoolRemixSettings;
                 storyFloatRemixSettings = storyGameMode.storyFloatRemixSettings;
                 storyIntRemixSettings = storyGameMode.storyIntRemixSettings;
 
+                didStartGame = storyGameMode.didStartGame;
                 didStartCycle = storyGameMode.didStartCycle;
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
@@ -98,12 +98,12 @@ namespace RainMeadow
                     storySession.saveState.theGlow = theGlow;
                     (lobby.gameMode as StoryGameMode).defaultDenPos = defaultDenPos;
                 }
-                (lobby.gameMode as StoryGameMode).didStartGame = didStartGame;
                 (lobby.gameMode as StoryGameMode).currentCampaign = currentCampaign;
                 (lobby.gameMode as StoryGameMode).storyBoolRemixSettings = storyBoolRemixSettings;
                 (lobby.gameMode as StoryGameMode).storyFloatRemixSettings = storyFloatRemixSettings;
                 (lobby.gameMode as StoryGameMode).storyIntRemixSettings = storyIntRemixSettings;
 
+                (lobby.gameMode as StoryGameMode).didStartGame = didStartGame;
                 (lobby.gameMode as StoryGameMode).didStartCycle = didStartCycle;
             }
         }

@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace RainMeadow
 {
-    public class StoryMenu : SmartMenu, SelectOneButton.SelectOneButtonOwner
+    public class StoryMenu : SmartMenu, SelectOneButton.SelectOneButtonOwner, CheckBox.IOwnCheckBox
     {
         private readonly RainEffect rainEffect;
 
@@ -31,6 +31,8 @@ namespace RainMeadow
         private OpTinyColorPicker bodyColorPicker;
         private OpTinyColorPicker eyeColorPicker;
         private MenuLabel campaignContainer;
+        private CheckBox resetSaveCheckbox;
+        private bool resetSave;
 
         private SlugcatStats.Name customSelectedSlugcat;
 
@@ -76,6 +78,8 @@ namespace RainMeadow
                 hostStartButton.buttonBehav.greyedOut = false;
                 this.pages[0].subObjects.Add(this.hostStartButton);
 
+                resetSaveCheckbox = new CheckBox(this, mainPage, this, new Vector2(903, 30f), 70f, Translate("Reset Save"), "RESETSAVE", false);
+                this.pages[0].subObjects.Add(resetSaveCheckbox);
 
                 // Previous
                 this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
@@ -188,7 +192,14 @@ namespace RainMeadow
 
             manager.arenaSitting = null;
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
-            manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
+            if (resetSave)
+            {
+                manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
+            }
+            else
+            {
+                manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.Load;
+            }
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
 
@@ -211,6 +222,7 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner)
             {
                 campaignContainer.text = $"Current Campaign: The {GetCurrentCampaignName()}";
+                clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame;
             }
 
             if (ssm.scroll == 0f && ssm.lastScroll == 0f)
@@ -340,8 +352,7 @@ namespace RainMeadow
             for (int i = 0; i < slugButtons.Length; i++)
             {
                 var slug = slugList[i];
-                //var slugStringName = GetCampaignName(slugList[i]);
-                var btn = new SimplerButton(this, mainPage, "slugStringName", new Vector2(394, 515) - i * new Vector2(0, 38), new Vector2(110, 30));
+                var btn = new SimplerButton(this, mainPage, SanitizeSlugCatName(slug), new Vector2(394, 515) - i * new Vector2(0, 38), new Vector2(110, 30));
                 btn.toggled = false;
                 mainPage.subObjects.Add(btn);
 
@@ -366,20 +377,24 @@ namespace RainMeadow
         }
 
         public string GetCurrentCampaignName() {
-            var campaignName = (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign.value;
-            if (campaignName == "White")
+            return SanitizeSlugCatName((OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign);
+        }
+
+        public string SanitizeSlugCatName(SlugcatStats.Name name) 
+        {
+            if (name.value == "White")
             {
                 return "Survivor";
             }
-            else if (campaignName == "Yellow")
+            else if (name.value == "Yellow")
             {
                 return "Monk";
             }
-            else if (campaignName == "Red")
+            else if (name.value == "Red")
             {
                 return "Hunter";
             }
-            return campaignName;
+            return name.value;
         }
 
         public int GetCurrentlySelectedOfSeries(string series)
@@ -533,6 +548,30 @@ namespace RainMeadow
                 return (configurableBools, configurableFloats, configurableInts);
             }
             return (configurableBools, configurableFloats, configurableInts);
+        }
+
+        public bool GetChecked(CheckBox box)
+        {
+            string idstring = box.IDString;
+            if (idstring != null)
+            {
+                if (idstring == "RESETSAVE")
+                {
+                    return resetSave;
+                }
+            }
+            return false;
+        }
+        public void SetChecked(CheckBox box, bool c)
+        {
+            string idstring = box.IDString;
+            if (idstring != null)
+            {
+                if (idstring == "RESETSAVE")
+                {
+                    resetSave = !resetSave;
+                }
+            }
         }
     }
 }

@@ -1130,21 +1130,5 @@ namespace RainMeadow
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
 #endif
         }
-
-        public void Serialize(ref SlugcatStats.Name? data)
-        {
-#if TRACING
-            long wasPos = this.Position;
-#endif
-            if (IsWriting)
-            {
-            }
-            if (IsReading)
-            {
-            }
-#if TRACING
-            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
-#endif
-        }
     }
 }

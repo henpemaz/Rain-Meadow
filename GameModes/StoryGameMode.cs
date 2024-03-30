@@ -10,9 +10,9 @@ namespace RainMeadow
         // these are synced by StoryLobbyData
         public bool didStartGame = false;
         public bool didStartCycle = false;
-        public string defaultDenPos;
+        public string? defaultDenPos = null;
         public SlugcatStats.Name saveSlot;
-        public SlugcatStats.Name? currentCampaign = null;
+        public SlugcatStats.Name currentCampaign;
         public Dictionary<string, bool> storyBoolRemixSettings;
         public Dictionary<string, float> storyFloatRemixSettings;
         public Dictionary<string, int> storyIntRemixSettings;
@@ -77,6 +77,7 @@ namespace RainMeadow
         {
             if (lobby.isOwner && !didStartGame)
             {
+                RainMeadow.Debug("Host LobbyReadyCheck - started game");
                 didStartGame = true;
                 currentCampaign = storyClientSettings.playingAs;
             }
