@@ -6,11 +6,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using System.Reflection;
+using Menu.Remix.MixedUI;
 
 namespace RainMeadow
 {
     public class StoryMenu : SmartMenu, SelectOneButton.SelectOneButtonOwner, CheckBox.IOwnCheckBox
     {
+        private StoryGameMode gameMode => (StoryGameMode)OnlineManager.lobby.gameMode;
         private readonly RainEffect rainEffect;
 
         private EventfulHoldButton hostStartButton;
@@ -33,6 +35,8 @@ namespace RainMeadow
         private MenuLabel campaignContainer;
         private CheckBox resetSaveCheckbox;
         private bool resetSave;
+
+        private OpComboBox2 saveSelectDropdown;
 
         private SlugcatStats.Name customSelectedSlugcat;
 
@@ -65,84 +69,22 @@ namespace RainMeadow
                 this.pages.Add(this.characterPages[j]);
             }
 
-            (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
+            gameMode.currentCampaign = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
             // Setup host / client buttons & general view
 
             SetupMenuItems();
 
             if (OnlineManager.lobby.isOwner)
             {
-
-                this.hostStartButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
-                this.hostStartButton.OnClick += (_) => { StartGame(); };
-                hostStartButton.buttonBehav.greyedOut = false;
-                this.pages[0].subObjects.Add(this.hostStartButton);
-                if (!manager.rainWorld.progression.IsThereASavedGame(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer))
-                {
-                    hostStartButton.menuLabel.text = "NEW GAME";
-                }
-                else
-                {
-                    hostStartButton.menuLabel.text = "CONTINUE";
-                }
-
-                resetSaveCheckbox = new CheckBox(this, mainPage, this, new Vector2(903, 30f), 70f, Translate("Reset Save"), "RESETSAVE", false);
-                this.pages[0].subObjects.Add(resetSaveCheckbox);
-
-                // Previous
-                this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
-                this.prevButton.OnClick += (_) =>
-                {
-                    if (!RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value)
-                    { // I don't want to choose unstable slugcats
-                        return;
-                    }
-
-                    ssm.quedSideInput = Math.Max(-3, ssm.quedSideInput - 1);
-                    base.PlaySound(SoundID.MENU_Next_Slugcat);
-                    var index = ssm.slugcatPageIndex - 1 < 0 ? ssm.slugcatPages.Count - 1 : ssm.slugcatPageIndex - 1;
-                    (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign = ssm.slugcatPages[index].slugcatNumber;
-                };
-                this.pages[0].subObjects.Add(this.prevButton);
-
-
-                // Next
-
-                this.nextButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(985f, 50f), 1);
-                this.nextButton.OnClick += (_) =>
-                {
-                    if (!RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value)
-                    {
-                        return;
-                    }
-                    ssm.quedSideInput = Math.Min(3, ssm.quedSideInput + 1);
-                    base.PlaySound(SoundID.MENU_Next_Slugcat);
-                    var index = ssm.slugcatPageIndex + 1 >= ssm.slugcatPages.Count ? 0 : ssm.slugcatPageIndex + 1;
-                    (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign = ssm.slugcatPages[index].slugcatNumber;
-                };
-                this.pages[0].subObjects.Add(this.nextButton);
-
+                SetupHostMenu();
             }
             else
             {
-                campaignContainer = new MenuLabel(this, mainPage, this.Translate((OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign.value), new Vector2(583f, sp.imagePos.y - 268f), new Vector2(200f, 30f), true);
-
-                this.pages[0].subObjects.Add(campaignContainer);
-
-
-                // Back button doesn't highlight?
-                this.backButton = new SimplerButton(this, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f));
-                this.backButton.OnClick += (_) =>
+                SetupClientMenu();
+                if (RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value) 
                 {
-                    manager.RequestMainProcessSwitch(this.backTarget);
-                };
-                this.pages[0].subObjects.Add(this.backButton);
-
-                this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
-                this.clientWaitingButton.OnClick += (_) => { StartGame(); };
-                clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame; // True to begin
-
-                this.pages[0].subObjects.Add(this.clientWaitingButton);
+                    CustomSlugcatSetup();
+                }
             }
 
             SteamSetup();
@@ -153,13 +95,9 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner) // ModManager.MMF should be in the check but serializing a nullable dictionary is not a thing at the moment so I'm cheating inside GetHostBoolStoryRemixSettings().
             {
                 var hostSettings = GetHostBoolStoryRemixSettings();
-                (OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings = hostSettings.hostBoolSettings;
-                (OnlineManager.lobby.gameMode as StoryGameMode).storyFloatRemixSettings = hostSettings.hostFloatSettings;
-                (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings = hostSettings.hostIntSettings;
-            }
-            if (!OnlineManager.lobby.isOwner && RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value)
-            {
-                CustomSlugcatSetup();
+                gameMode.storyBoolRemixSettings = hostSettings.hostBoolSettings;
+                gameMode.storyFloatRemixSettings = hostSettings.hostFloatSettings;
+                gameMode.storyIntRemixSettings = hostSettings.hostIntSettings;
             }
 
             if (OnlineManager.lobby.isActive)
@@ -173,6 +111,110 @@ namespace RainMeadow
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
         }
 
+        private void SetupHostMenu() 
+        {
+            this.hostStartButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
+            this.hostStartButton.OnClick += (_) => { StartGame(); };
+            hostStartButton.buttonBehav.greyedOut = false;
+            this.pages[0].subObjects.Add(this.hostStartButton);
+            //TODO: point to saveprofile instead
+            if (!manager.rainWorld.progression.IsThereASavedGame(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer))
+            {
+                hostStartButton.menuLabel.text = "NEW GAME";
+            }
+            else
+            {
+                hostStartButton.menuLabel.text = "CONTINUE";
+            }
+
+            resetSaveCheckbox = new CheckBox(this, mainPage, this, new Vector2(903, 30f), 70f, Translate("Reset Save"), "RESETSAVE", false);
+            this.pages[0].subObjects.Add(resetSaveCheckbox);
+
+            // Previous
+            this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
+            this.prevButton.OnClick += (_) =>
+            {
+                if (!RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value)
+                { // I don't want to choose unstable slugcats
+                    return;
+                }
+
+                ssm.quedSideInput = Math.Max(-3, ssm.quedSideInput - 1);
+                base.PlaySound(SoundID.MENU_Next_Slugcat);
+                var index = ssm.slugcatPageIndex - 1 < 0 ? ssm.slugcatPages.Count - 1 : ssm.slugcatPageIndex - 1;
+                gameMode.currentCampaign = ssm.slugcatPages[index].slugcatNumber;
+                saveSelectDropdown._itemList = StorySaveManager.getListItems(gameMode.currentCampaign).ToArray();
+                saveSelectDropdown._ResetIndex();
+                saveSelectDropdown.defaultValue = saveSelectDropdown._itemList[0].name;
+                saveSelectDropdown.Reset();
+                gameMode.currentSaveSlot = StorySaveManager.GetStorySaveProfile(gameMode.currentCampaign, saveSelectDropdown.value);
+                RainMeadow.Debug($"prev saveslot: {gameMode.currentSaveSlot.save.value}");
+            };
+            this.pages[0].subObjects.Add(this.prevButton);
+
+
+            // Next
+            this.nextButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(985f, 50f), 1);
+            this.nextButton.OnClick += (_) =>
+            {
+                if (!RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value)
+                {
+                    return;
+                }
+                ssm.quedSideInput = Math.Min(3, ssm.quedSideInput + 1);
+                base.PlaySound(SoundID.MENU_Next_Slugcat);
+                var index = ssm.slugcatPageIndex + 1 >= ssm.slugcatPages.Count ? 0 : ssm.slugcatPageIndex + 1;
+                gameMode.currentCampaign = ssm.slugcatPages[index].slugcatNumber;
+                saveSelectDropdown._itemList = StorySaveManager.getListItems(gameMode.currentCampaign).ToArray();
+                saveSelectDropdown._ResetIndex();
+                saveSelectDropdown.defaultValue = saveSelectDropdown._itemList[0].name;
+                saveSelectDropdown.Reset();
+                gameMode.currentSaveSlot = StorySaveManager.GetStorySaveProfile(gameMode.currentCampaign, saveSelectDropdown.value);
+                RainMeadow.Debug($"next saveslot: {gameMode.currentSaveSlot.save.value}");
+            };
+            this.pages[0].subObjects.Add(this.nextButton);
+
+
+            var modeLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Save Select"), new Vector2(1090, 430), new Vector2(200, 20f), true, null);
+            mainPage.subObjects.Add(modeLabel);
+
+            var config = new Configurable<string>(gameMode.currentCampaign.value);
+            saveSelectDropdown = new OpComboBox2(config, new Vector2(1090, 400), 160, StorySaveManager.getListItems(gameMode.currentCampaign)) { colorEdge = MenuColorEffect.rgbWhite };
+            saveSelectDropdown.OnChanged += UpdateCurrentSaveSlot;
+            new UIelementWrapper(this.tabWrapper, saveSelectDropdown);
+
+            gameMode.currentSaveSlot = StorySaveManager.GetStorySaveProfile(gameMode.currentCampaign, saveSelectDropdown.value);
+            RainMeadow.Debug($"def saveslot: {gameMode.currentSaveSlot.save.value}");
+        }
+
+        private void UpdateCurrentSaveSlot()
+        {
+            gameMode.currentSaveSlot = StorySaveManager.GetStorySaveProfile(gameMode.currentCampaign, saveSelectDropdown.value);
+            RainMeadow.Debug($"Set saveslot to: {gameMode.currentSaveSlot.save.value}");
+        }
+
+        private void SetupClientMenu() 
+        {
+            campaignContainer = new MenuLabel(this, mainPage, this.Translate(gameMode.currentCampaign.value), new Vector2(583f, sp.imagePos.y - 268f), new Vector2(200f, 30f), true);
+
+            this.pages[0].subObjects.Add(campaignContainer);
+
+
+            // Back button doesn't highlight?
+            this.backButton = new SimplerButton(this, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f));
+            this.backButton.OnClick += (_) =>
+            {
+                manager.RequestMainProcessSwitch(this.backTarget);
+            };
+            this.pages[0].subObjects.Add(this.backButton);
+
+            this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
+            this.clientWaitingButton.OnClick += (_) => { StartGame(); };
+            clientWaitingButton.buttonBehav.greyedOut = !gameMode.didStartGame; // True to begin
+
+            this.pages[0].subObjects.Add(this.clientWaitingButton);
+        }
+        
         private void StartGame()
         {
             RainMeadow.DebugMe();
@@ -180,11 +222,11 @@ namespace RainMeadow
             {
                 if (ModManager.MMF)
                 {
-                    SetClientStoryRemixSettings((OnlineManager.lobby.gameMode as StoryGameMode).storyBoolRemixSettings, (OnlineManager.lobby.gameMode as StoryGameMode).storyFloatRemixSettings, (OnlineManager.lobby.gameMode as StoryGameMode).storyIntRemixSettings); // Set client remix settings to Host's on StartGame()
+                    SetClientStoryRemixSettings(gameMode.storyBoolRemixSettings, gameMode.storyFloatRemixSettings, gameMode.storyIntRemixSettings); // Set client remix settings to Host's on StartGame()
                 }
                 if (!RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value) // I'm a client and I want to match the hosts
                 {
-                    personaSettings.playingAs = (OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign;
+                    personaSettings.playingAs = gameMode.currentCampaign;
                 }
                 else // I'm a client and I want my own Slugcat
                 {
@@ -211,7 +253,6 @@ namespace RainMeadow
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
 
-
         public override void Update()
         {
             base.Update();
@@ -230,7 +271,7 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner)
             {
                 campaignContainer.text = $"Current Campaign: The {GetCurrentCampaignName()}";
-                clientWaitingButton.buttonBehav.greyedOut = !(OnlineManager.lobby.gameMode as StoryGameMode).didStartGame;
+                clientWaitingButton.buttonBehav.greyedOut = !gameMode.didStartGame;
             }
 
             if (ssm.scroll == 0f && ssm.lastScroll == 0f)
@@ -360,7 +401,7 @@ namespace RainMeadow
             for (int i = 0; i < slugButtons.Length; i++)
             {
                 var slug = slugList[i];
-                var btn = new SimplerButton(this, mainPage, SanitizeSlugCatName(slug), new Vector2(394, 515) - i * new Vector2(0, 38), new Vector2(110, 30));
+                var btn = new SimplerButton(this, mainPage, SlugcatStats.getSlugcatName(slug), new Vector2(394, 515) - i * new Vector2(0, 38), new Vector2(110, 30));
                 btn.toggled = false;
                 mainPage.subObjects.Add(btn);
 
@@ -385,24 +426,7 @@ namespace RainMeadow
         }
 
         public string GetCurrentCampaignName() {
-            return SanitizeSlugCatName((OnlineManager.lobby.gameMode as StoryGameMode).currentCampaign);
-        }
-
-        public string SanitizeSlugCatName(SlugcatStats.Name name) 
-        {
-            if (name.value == "White")
-            {
-                return "Survivor";
-            }
-            else if (name.value == "Yellow")
-            {
-                return "Monk";
-            }
-            else if (name.value == "Red")
-            {
-                return "Hunter";
-            }
-            return name.value;
+            return SlugcatStats.getSlugcatName(gameMode.currentCampaign);
         }
 
         public int GetCurrentlySelectedOfSeries(string series)

@@ -11,7 +11,7 @@ namespace RainMeadow
         public bool didStartGame = false;
         public bool didStartCycle = false;
         public string? defaultDenPos;
-        public SlugcatStats.Name saveSlot;
+        public StorySaveProfile? currentSaveSlot;
         public SlugcatStats.Name currentCampaign;
         public Dictionary<string, bool> storyBoolRemixSettings;
         public Dictionary<string, float> storyFloatRemixSettings;
@@ -48,8 +48,8 @@ namespace RainMeadow
         public override SlugcatStats.Name GetStorySessionPlayer(RainWorldGame self) 
         {
             // Return the save slot slugcatStats name
-            // return saveSlot;
-            return RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;
+            // TODO: Handle client side saves. As in don't do anything savestate related, just get from host.
+            return currentSaveSlot?.save ?? RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;
         }
         public override SlugcatStats.Name LoadWorldAs(RainWorldGame game)
         {

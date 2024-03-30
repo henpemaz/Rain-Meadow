@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Menu.Remix.MixedUI;
 using Kittehface.Framework20;
 
 namespace RainMeadow
@@ -8,7 +9,7 @@ namespace RainMeadow
     public class StorySaveManager
     {
         public static StorySaveManager instance { get; private set; }
-        public List<StorySaveInfo> storyModeSaves { get; private set; }
+        public List<StorySaveProfile> storyModeSaves { get; private set; }
         private static string fileName = "onlineSave";
         private UserData.File onlineSaveFile;
 
@@ -16,7 +17,7 @@ namespace RainMeadow
         public static void InitializeStorySaves()
         {
             instance = new StorySaveManager();
-            instance.storyModeSaves = new List<StorySaveInfo>();
+            instance.storyModeSaves = new List<StorySaveProfile>();
         }
 
         private StorySaveManager() {
@@ -54,8 +55,9 @@ namespace RainMeadow
 
                 if (result.Contains(UserData.Result.FileNotFound))
                 {
-                    onlineSaveFile.OnWriteCompleted += OnlineSaveFile_OnWriteCompleted;
-                    onlineSaveFile.Write();
+                    dumbSaveFileInit();
+                    //onlineSaveFile.OnWriteCompleted += OnlineSaveFile_OnWriteCompleted;
+                    //onlineSaveFile.Write();
                     return;
                 }
 
@@ -68,18 +70,19 @@ namespace RainMeadow
                         if (!string.IsNullOrWhiteSpace(info)) 
                         {
                             var temp = info.Split('|').ToList();
-                            if (StorySaveInfo.tryParse(temp[0], temp[1], out var storyInfo))
+                            if (StorySaveProfile.tryParse(temp[0], temp[1], out var saveProfile))
                             {
-                                nonCampaignSlugcats.Add(storyInfo.save.value);
-                                storyModeSaves.Add(storyInfo);
+                                nonCampaignSlugcats.Add(saveProfile.save.value);
+                                storyModeSaves.Add(saveProfile);
                             }
                         }
                     }
                 }
             }
             else if (result.Contains(UserData.Result.FileNotFound)) {
-                onlineSaveFile.OnWriteCompleted += OnlineSaveFile_OnWriteCompleted;
-                onlineSaveFile.Write();
+                dumbSaveFileInit();
+                //onlineSaveFile.OnWriteCompleted += OnlineSaveFile_OnWriteCompleted;
+                //onlineSaveFile.Write();
                 return;
             }
         }
@@ -112,10 +115,11 @@ namespace RainMeadow
             {
                 throw new ArgumentException($"savename {saveName} already exists");
             }
-            var saveInfo = new StorySaveInfo(campaign, saveName);
-            if (saveInfo != null) 
+            var saveProfile = new StorySaveProfile(campaign, saveName);
+            if (saveProfile != null) 
             {
-                instance.storyModeSaves.Add(saveInfo);
+                instance.storyModeSaves.Add(saveProfile);
+                nonCampaignSlugcats.Add(saveProfile.save.value);
             }
         }
 
@@ -127,9 +131,9 @@ namespace RainMeadow
             instance.onlineSaveFile.OnWriteCompleted += instance.OnlineSaveFile_OnWriteCompleted;
         }
 
-        public static void deleteStorySave(string saveName)
+        public static void deleteStorySave(string campaign, string saveName)
         {
-            var saveToRemove = instance.storyModeSaves.FirstOrDefault(x => x.save.value == saveName);
+            var saveToRemove = instance.storyModeSaves.FirstOrDefault(x => x.campaignName == campaign && x.displayName == saveName);
             if (saveToRemove != null)
             {
                 instance.storyModeSaves.Remove(saveToRemove);
@@ -142,9 +146,41 @@ namespace RainMeadow
             }
         }
 
-        public static List<StorySaveInfo> getCampaignSaves(SlugcatStats.Name campaign) 
+        public static List<StorySaveProfile> getCampaignSaves(SlugcatStats.Name campaign) 
         {
             return instance.storyModeSaves.Where(x => x.campaignName == campaign.value).ToList();
         }
+
+        public static StorySaveProfile GetStorySaveProfile(SlugcatStats.Name campaign, string saveName) 
+        {
+            return instance.storyModeSaves.FirstOrDefault(x => x.campaignName == campaign.value && x.displayName == saveName);
+        }
+
+        public static List<ListItem> getListItems(SlugcatStats.Name campaign) 
+        {
+            var listitems = new List<ListItem>();
+            var profiles = getCampaignSaves(campaign);
+            foreach (var profile in profiles) 
+            { 
+                ListItem item = new ListItem(profile.displayName);
+                listitems.Add(item);
+            }
+            return listitems;
+        }
+
+        //TODO: need to have a UI element to allow players to create saves. For now we do this dumb thing
+        private static void dumbSaveFileInit() 
+        {
+            generateStorySave(SlugcatStats.Name.White,"save1");
+            generateStorySave(SlugcatStats.Name.White,"save2");
+            generateStorySave(SlugcatStats.Name.White,"save3");
+            generateStorySave(SlugcatStats.Name.Yellow,"save1");
+            generateStorySave(SlugcatStats.Name.Yellow,"save2");
+            generateStorySave(SlugcatStats.Name.Yellow,"save3");
+            generateStorySave(SlugcatStats.Name.Red,"save1");
+            generateStorySave(SlugcatStats.Name.Red,"save2");
+            generateStorySave(SlugcatStats.Name.Red,"save3");
+            saveToDisk();
+        } 
     }
 }

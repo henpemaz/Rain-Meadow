@@ -173,6 +173,7 @@ namespace RainMeadow
                 MeadowHooks();
                 LoadingHooks();
                 StoryHooks();
+
                 MeadowMusic.EnableMusic();
 
                 self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
