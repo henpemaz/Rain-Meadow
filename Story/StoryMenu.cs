@@ -453,15 +453,7 @@ namespace RainMeadow
 
                 if (ExtEnumBase.TryParse(typeof(SlugcatStats.Name), slugcatName, false, out var enumBase)) {
                     var temp = (SlugcatStats.Name)enumBase;
-                    //matching single player order
-                    if (temp.value == "Gourmand")
-                    {
-                        filteredList.Insert(3, temp);
-                    }
-                    else 
-                    {
-                        filteredList.Add(temp);
-                    }
+                    filteredList.Add(temp);
                 }
             }
             return filteredList;

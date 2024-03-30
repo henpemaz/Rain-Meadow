@@ -16,12 +16,10 @@ namespace RainMeadow
         public Dictionary<string, bool> storyBoolRemixSettings;
         public Dictionary<string, float> storyFloatRemixSettings;
         public Dictionary<string, int> storyIntRemixSettings;
-
         public StoryClientSettings storyClientSettings => clientSettings as StoryClientSettings;
 
         public StoryGameMode(Lobby lobby) : base(lobby)
         {
-
         }
         public override ProcessManager.ProcessID MenuProcessId()
         {
