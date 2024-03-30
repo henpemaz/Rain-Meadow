@@ -117,15 +117,6 @@ namespace RainMeadow
             this.hostStartButton.OnClick += (_) => { StartGame(); };
             hostStartButton.buttonBehav.greyedOut = false;
             this.pages[0].subObjects.Add(this.hostStartButton);
-            //TODO: point to saveprofile instead
-            if (!manager.rainWorld.progression.IsThereASavedGame(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer))
-            {
-                hostStartButton.menuLabel.text = "NEW GAME";
-            }
-            else
-            {
-                hostStartButton.menuLabel.text = "CONTINUE";
-            }
 
             resetSaveCheckbox = new CheckBox(this, mainPage, this, new Vector2(903, 30f), 70f, Translate("Reset Save"), "RESETSAVE", false);
             this.pages[0].subObjects.Add(resetSaveCheckbox);
@@ -148,7 +139,6 @@ namespace RainMeadow
                 saveSelectDropdown.defaultValue = saveSelectDropdown._itemList[0].name;
                 saveSelectDropdown.Reset();
                 gameMode.currentSaveSlot = StorySaveManager.GetStorySaveProfile(gameMode.currentCampaign, saveSelectDropdown.value);
-                RainMeadow.Debug($"prev saveslot: {gameMode.currentSaveSlot.save.value}");
             };
             this.pages[0].subObjects.Add(this.prevButton);
 
@@ -170,7 +160,6 @@ namespace RainMeadow
                 saveSelectDropdown.defaultValue = saveSelectDropdown._itemList[0].name;
                 saveSelectDropdown.Reset();
                 gameMode.currentSaveSlot = StorySaveManager.GetStorySaveProfile(gameMode.currentCampaign, saveSelectDropdown.value);
-                RainMeadow.Debug($"next saveslot: {gameMode.currentSaveSlot.save.value}");
             };
             this.pages[0].subObjects.Add(this.nextButton);
 
@@ -184,13 +173,29 @@ namespace RainMeadow
             new UIelementWrapper(this.tabWrapper, saveSelectDropdown);
 
             gameMode.currentSaveSlot = StorySaveManager.GetStorySaveProfile(gameMode.currentCampaign, saveSelectDropdown.value);
-            RainMeadow.Debug($"def saveslot: {gameMode.currentSaveSlot.save.value}");
+
+            if (!manager.rainWorld.progression.IsThereASavedGame(gameMode.currentSaveSlot.save))
+            {
+                hostStartButton.menuLabel.text = "NEW GAME";
+            }
+            else
+            {
+                hostStartButton.menuLabel.text = "CONTINUE";
+            }
         }
 
         private void UpdateCurrentSaveSlot()
         {
             gameMode.currentSaveSlot = StorySaveManager.GetStorySaveProfile(gameMode.currentCampaign, saveSelectDropdown.value);
-            RainMeadow.Debug($"Set saveslot to: {gameMode.currentSaveSlot.save.value}");
+
+            if (!manager.rainWorld.progression.IsThereASavedGame(gameMode.currentSaveSlot.save))
+            {
+                hostStartButton.menuLabel.text = "NEW GAME";
+            }
+            else
+            {
+                hostStartButton.menuLabel.text = "CONTINUE";
+            }
         }
 
         private void SetupClientMenu() 
