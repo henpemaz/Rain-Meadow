@@ -9,7 +9,7 @@ namespace RainMeadow
     public class StorySaveManager
     {
         public static StorySaveManager instance { get; private set; }
-        public List<StorySaveProfile> storyModeSaves { get; private set; }
+        public List<StorySaveProfile> storyModeSaves { get; private set; } = new List<StorySaveProfile>();
         private static string fileName = "onlineSave";
         private UserData.File onlineSaveFile;
 
@@ -17,7 +17,6 @@ namespace RainMeadow
         public static void InitializeStorySaves()
         {
             instance = new StorySaveManager();
-            instance.storyModeSaves = new List<StorySaveProfile>();
         }
 
         private StorySaveManager() {
@@ -55,9 +54,7 @@ namespace RainMeadow
 
                 if (result.Contains(UserData.Result.FileNotFound))
                 {
-                    dumbSaveFileInit();
-                    //onlineSaveFile.OnWriteCompleted += OnlineSaveFile_OnWriteCompleted;
-                    //onlineSaveFile.Write();
+                    SanitizeSaveFile();
                     return;
                 }
 
@@ -78,11 +75,10 @@ namespace RainMeadow
                         }
                     }
                 }
+                SanitizeSaveFile();
             }
             else if (result.Contains(UserData.Result.FileNotFound)) {
-                dumbSaveFileInit();
-                //onlineSaveFile.OnWriteCompleted += OnlineSaveFile_OnWriteCompleted;
-                //onlineSaveFile.Write();
+                SanitizeSaveFile();
                 return;
             }
         }
@@ -156,6 +152,13 @@ namespace RainMeadow
             return instance.storyModeSaves.FirstOrDefault(x => x.campaignName == campaign.value && x.displayName == saveName);
         }
 
+        public static bool TryGetStorySaveProfile(SlugcatStats.Name campaign, string saveName, out StorySaveProfile saveslot) 
+        {
+            saveslot = instance.storyModeSaves.FirstOrDefault(x => x.campaignName == campaign.value && x.displayName == saveName);
+
+            return saveslot != null;
+        }
+
         public static List<ListItem> getListItems(SlugcatStats.Name campaign) 
         {
             var listitems = new List<ListItem>();
@@ -169,17 +172,28 @@ namespace RainMeadow
         }
 
         //TODO: need to have a UI element to allow players to create saves. For now we do this dumb thing
-        private static void dumbSaveFileInit() 
+        private static void SanitizeSaveFile() 
         {
-            generateStorySave(SlugcatStats.Name.White,"save1");
-            generateStorySave(SlugcatStats.Name.White,"save2");
-            generateStorySave(SlugcatStats.Name.White,"save3");
-            generateStorySave(SlugcatStats.Name.Yellow,"save1");
-            generateStorySave(SlugcatStats.Name.Yellow,"save2");
-            generateStorySave(SlugcatStats.Name.Yellow,"save3");
-            generateStorySave(SlugcatStats.Name.Red,"save1");
-            generateStorySave(SlugcatStats.Name.Red,"save2");
-            generateStorySave(SlugcatStats.Name.Red,"save3");
+            var filteredList = new List<SlugcatStats.Name>();
+            for (int i = 0; i < SlugcatStats.Name.values.entries.Count; i++)
+            {
+                var campaignName = SlugcatStats.Name.values.entries[i];
+                if (StorySaveManager.nonCampaignSlugcats.Contains(campaignName))
+                {
+                    continue;
+                }
+                if (!instance.storyModeSaves.Any(x => x.campaignName == campaignName)) 
+                {
+                    if (ExtEnumBase.TryParse(typeof(SlugcatStats.Name), campaignName, false, out var enumBase))
+                    {
+                        var temp = (SlugcatStats.Name)enumBase;
+                        for (int j = 1; j <= 3; j++) 
+                        {
+                            generateStorySave(temp, $"save{j}");
+                        }
+                    }
+                }
+            }
             saveToDisk();
         } 
     }
