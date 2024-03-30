@@ -77,6 +77,14 @@ namespace RainMeadow
                 this.hostStartButton.OnClick += (_) => { StartGame(); };
                 hostStartButton.buttonBehav.greyedOut = false;
                 this.pages[0].subObjects.Add(this.hostStartButton);
+                if (!manager.rainWorld.progression.IsThereASavedGame(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer))
+                {
+                    hostStartButton.menuLabel.text = "NEW GAME";
+                }
+                else
+                {
+                    hostStartButton.menuLabel.text = "CONTINUE";
+                }
 
                 resetSaveCheckbox = new CheckBox(this, mainPage, this, new Vector2(903, 30f), 70f, Translate("Reset Save"), "RESETSAVE", false);
                 this.pages[0].subObjects.Add(resetSaveCheckbox);

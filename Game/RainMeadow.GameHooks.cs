@@ -50,14 +50,6 @@ namespace RainMeadow
                 OnlineManager.lobby.gameMode.LobbyReadyCheck();
         }
 
-        private void WorldLoader_CreatingWorld(On.WorldLoader.orig_CreatingWorld orig, WorldLoader self)
-        {
-            orig(self);
-
-            if (OnlineManager.lobby != null)
-                OnlineManager.lobby.gameMode.LobbyReadyCheck();
-        }
-
         private void RainWorldGame_Update(ILContext il)
         {
             try

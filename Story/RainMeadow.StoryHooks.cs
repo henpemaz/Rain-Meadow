@@ -279,10 +279,20 @@ namespace RainMeadow
             if (isStoryMode(out var gameMode))
             {
                 var storyClientSettings = gameMode.clientSettings as StoryClientSettings;
-                if (storyClientSettings.myLastDenPos != null) 
+                if (storyClientSettings.myLastDenPos != null)
                 {
                     origSaveState.denPosition = storyClientSettings.myLastDenPos;
                 }
+                else if (!OnlineManager.lobby.isOwner)
+                {
+                    origSaveState.denPosition = (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos;
+                }
+
+                if (OnlineManager.lobby.isOwner) 
+                {
+                    (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos = origSaveState.denPosition;
+                }
+
                 return origSaveState;
             }
             return origSaveState;

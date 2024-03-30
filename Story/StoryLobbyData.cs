@@ -53,6 +53,7 @@ namespace RainMeadow
                 StoryGameMode storyGameMode = (onlineResource as Lobby).gameMode as StoryGameMode;
                 RainWorldGame currentGameState = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
 
+                defaultDenPos = storyGameMode.defaultDenPos;
                 currentCampaign = storyGameMode.currentCampaign;
                 storyBoolRemixSettings = storyGameMode.storyBoolRemixSettings;
                 storyFloatRemixSettings = storyGameMode.storyFloatRemixSettings;
@@ -64,7 +65,6 @@ namespace RainMeadow
                 {
                     karma = storySession.saveState.deathPersistentSaveData.karma;
                     theGlow = storySession.saveState.theGlow;
-                    defaultDenPos = storySession.saveState.denPosition;
                     reinforcedKarma = storySession.saveState.deathPersistentSaveData.reinforcedKarma;
                 }
 
@@ -81,6 +81,8 @@ namespace RainMeadow
                 var playerstate = (currentGameState?.Players[0].state as PlayerState);
                 var lobby = (data.resource as Lobby);
 
+                (lobby.gameMode as StoryGameMode).defaultDenPos = defaultDenPos;
+                
                 if (playerstate != null)
                 {
                     playerstate.foodInStomach = food;
@@ -96,7 +98,6 @@ namespace RainMeadow
                     storySession.saveState.deathPersistentSaveData.karma = karma;
                     storySession.saveState.deathPersistentSaveData.reinforcedKarma = reinforcedKarma;
                     storySession.saveState.theGlow = theGlow;
-                    (lobby.gameMode as StoryGameMode).defaultDenPos = defaultDenPos;
                 }
                 (lobby.gameMode as StoryGameMode).currentCampaign = currentCampaign;
                 (lobby.gameMode as StoryGameMode).storyBoolRemixSettings = storyBoolRemixSettings;

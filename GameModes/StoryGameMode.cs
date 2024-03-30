@@ -10,14 +10,12 @@ namespace RainMeadow
         // these are synced by StoryLobbyData
         public bool didStartGame = false;
         public bool didStartCycle = false;
-        public string? defaultDenPos = null;
+        public string? defaultDenPos;
         public SlugcatStats.Name saveSlot;
         public SlugcatStats.Name currentCampaign;
         public Dictionary<string, bool> storyBoolRemixSettings;
         public Dictionary<string, float> storyFloatRemixSettings;
         public Dictionary<string, int> storyIntRemixSettings;
-
-
 
         public StoryClientSettings storyClientSettings => clientSettings as StoryClientSettings;
 
