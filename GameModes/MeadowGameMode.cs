@@ -9,7 +9,7 @@ namespace RainMeadow
 {
     public class MeadowGameMode : OnlineGameMode
     {
-        public bool spawnPlants = false;
+        public bool spawnPlants = true;
 
         public MeadowGameMode(Lobby lobby) : base(lobby)
         {
@@ -132,7 +132,7 @@ namespace RainMeadow
                             var n = (ushort)stacker;
                             for (int k = 0; k < n; k++)
                             {
-                                var e = new AbstractMeadowCollectible(r.world, RainMeadow.Ext_PhysicalObjectType.MeadowPlant, new WorldCoordinate(r.index, -1, -1, 0), r.world.game.GetNewID(), false);
+                                var e = new AbstractMeadowCollectible(r.world, RainMeadow.Ext_PhysicalObjectType.MeadowToken, new WorldCoordinate(r.index, -1, -1, 0), r.world.game.GetNewID(), false);
                                 r.AddEntity(e);
                                 data.spawnedItems += 1;
                             }

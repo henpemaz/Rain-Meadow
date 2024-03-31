@@ -38,6 +38,7 @@ creature todo
 - gate activation / done
 - other story-mode things?
 - any ways to die left?
+	player (slugcat) can drown
 - can get stuck
 	some rooms will get fixed
 	but maybe an unstuck button is in order? / done

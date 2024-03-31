@@ -1,5 +1,7 @@
 ﻿namespace RainMeadow
 {
+    // todo support serialization so can be sent around by definitions
+    // apofs much
     public class AbstractMeadowCollectible : AbstractPhysicalObject
     {
         bool collected;
@@ -46,11 +48,10 @@
             {
                 this.realizedObject = new MeadowPlant(this);
             }
-        }
-
-        public override void RealizeInRoom()
-        {
-            base.RealizeInRoom();
+            if (type == RainMeadow.Ext_PhysicalObjectType.MeadowToken)
+            {
+                this.realizedObject = new MeadowCollectibleToken(this);
+            }
         }
     }
 }

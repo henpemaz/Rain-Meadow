@@ -36,6 +36,7 @@ namespace RainMeadow
         public class Ext_PhysicalObjectType
         {
             public static AbstractPhysicalObject.AbstractObjectType MeadowPlant = new("MeadowPlant", true);
+            public static AbstractPhysicalObject.AbstractObjectType MeadowToken = new("MeadowToken", true);
         }
     }
 }
