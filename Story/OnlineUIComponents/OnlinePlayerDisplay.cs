@@ -61,7 +61,7 @@ namespace RainMeadow
                 this.isButtonToggled = !this.isButtonToggled;
             } 
             
-            if (isButtonToggled || (!RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value && Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value))) // || (owner.found && owner.RealizedPlayer.inShortcut)
+            if (isButtonToggled || (!RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value && Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value)))
             {
                 this.lastAlpha = this.alpha;
                 this.blink = 1f;
