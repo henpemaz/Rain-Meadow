@@ -5,7 +5,7 @@
     public class AbstractMeadowCollectible : AbstractPhysicalObject
     {
         bool collected;
-        bool collectedLocally;
+        internal bool collectedLocally;
         int collectedAt;
         TickReference collectedTR;
         const int duration = 40 * 30;

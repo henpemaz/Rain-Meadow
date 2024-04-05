@@ -44,12 +44,19 @@ namespace RainMeadow
             this.pos = pos;
             this.hoverPos = pos;
             this.lastPos = pos;
+            if (abstractCollectible.collectedLocally)
+            {
+                this.RemoveFromRoom();
+                return;
+            }
             this.soundLoop = new StaticSoundLoop(SoundID.Token_Idle_LOOP, this.pos, room, 0f, 1f);
             this.glitchLoop = new StaticSoundLoop(SoundID.Token_Upset_LOOP, this.pos, room, 0f, 1f);
         }
 
         public override void Update(bool eu)
         {
+            base.Update(eu);
+            if (this.room == null) return;
             this.sinCounter += Random.value * this.power;
             this.sinCounter2 += (1f + Mathf.Lerp(-10f, 10f, Random.value) * this.glitch) * this.power;
             float num = Mathf.Sin(this.sinCounter2 / 20f);
@@ -104,7 +111,7 @@ namespace RainMeadow
             this.vel += Vector2.ClampMagnitude(this.hoverPos + new Vector2(0f, Mathf.Sin(this.sinCounter / 15f) * 7f) - this.pos, 15f) / 81f;
             this.vel += Custom.RNV() * Random.value * Random.value * Mathf.Lerp(0.06f, 0.4f, this.glitch);
             this.pos += Custom.RNV() * Mathf.Pow(Random.value, 7f - 6f * this.generalGlitch) * Mathf.Lerp(0.06f, 1.2f, this.glitch);
-            if (this.expandAroundCreature != null)
+            if (this.expandAroundCreature != null) // collected, animating
             {
                 // todo creaturecontroller blink
                 // this.expandAroundCreature.Blink(5);
@@ -146,9 +153,7 @@ namespace RainMeadow
                     this.hoverPos = a;
                     if (this.expand < 0f)
                     {
-                        // maybe this is removefromroom instead?
-                        // we want the collectible gone but the abstract must stay
-                        this.Destroy();
+                        
                         int num3 = 0;
                         while (num3 < 20)
                         {
@@ -157,6 +162,9 @@ namespace RainMeadow
                         }
                         this.room.PlaySound(SoundID.Token_Collected_Sparks, this.pos);
 
+                        // maybe this is removefromroom instead?
+                        // we want the collectible gone but the abstract must stay
+                        this.RemoveFromRoom();
 
                         // todo feedback
                     }
@@ -184,43 +192,41 @@ namespace RainMeadow
                     this.glitch = Mathf.Pow(Random.value, 1f - 0.85f * this.generalGlitch);
                 }
 
-                // todo if OTHER creatures around, also expand but do not collect
-                float num4 = float.MaxValue;
-                float num5 = 140f;
                 if (avatarCreature == null)
                 {
                     avatarCreature = mgm.avatar.creature.realizedCreature;
                 }
                 else if (avatarCreature.room == this.room)
                 {
-                    num4 = Mathf.Min(num4, Vector2.Distance(avatarCreature.mainBodyChunk.pos, this.pos));
+                    // collect logic moved here
                     if (Custom.DistLess(avatarCreature.mainBodyChunk.pos, this.pos, 18f))
                     {
-                        if (this.expand > 0f)
-                        {
-                            return;
-                        }
-
-                        // aaa set target
                         expandAroundCreature = avatarCreature;
-
                         this.expand = 0.01f;
                         this.room.PlaySound(SoundID.Token_Collect, this.pos);
-                        // todo collect
-                        int num6 = 0;
-                        while (num6 < 10)
+                        abstractCollectible.Collect();
+                        for (int num6 = 0; num6 < 10; num6++)
                         {
                             this.room.AddObject(new MeadowCollectToken.TokenSpark(this.pos + Custom.RNV() * 2f, Custom.RNV() * 11f * Random.value + Custom.DirVec(avatarCreature.mainBodyChunk.pos, this.pos) * 5f * Random.value, this.GoldCol(this.glitch), this.underWaterMode));
-                            num6++;
                         }
                     }
-                    if (Custom.DistLess(avatarCreature.mainBodyChunk.pos, this.pos, num5))
+                }
+                // if OTHER creatures around, also expand but do not collect
+                float num4 = float.MaxValue;
+                float num5 = 140f;
+                for (int i = 0; i < room.abstractRoom.creatures.Count; i++)
+                {
+                    var creature = room.abstractRoom.creatures[i].realizedCreature;
+                    if (creature == null) continue;
+                    num4 = Mathf.Min(num4, Vector2.Distance(creature.mainBodyChunk.pos, this.pos));
+                    
+                    if (Custom.DistLess(creature.mainBodyChunk.pos, this.pos, num5))
                     {
                         if (Custom.DistLess(this.pos, this.hoverPos, 80f))
                         {
-                            this.pos += Custom.DirVec(this.pos,avatarCreature.mainBodyChunk.pos) * Custom.LerpMap(Vector2.Distance(this.pos, avatarCreature.mainBodyChunk.pos), 40f, num5, 2.2f, 0f, 0.5f) * Random.value;
+                            this.pos += Custom.DirVec(this.pos, creature.mainBodyChunk.pos) * Custom.LerpMap(Vector2.Distance(this.pos, creature.mainBodyChunk.pos), 40f, num5, 2.2f, 0f, 0.5f) * Random.value;
                         }
-                        if (Random.value < 0.05f && Random.value < Mathf.InverseLerp(num5, 40f, Vector2.Distance(this.pos, avatarCreature.mainBodyChunk.pos)))
+                        if (Random.value < 0.05f && Random.value < Mathf.InverseLerp(num5, 40f, Vector2.Distance(this.pos, creature.mainBodyChunk.pos)))
                         {
                             this.glitch = Mathf.Max(this.glitch, Random.value * 0.5f);
                         }
@@ -237,7 +243,6 @@ namespace RainMeadow
                     this.room.PlaySound(SoundID.Token_Turn_On, this.pos);
                 }
             }
-            base.Update(eu);
         }
 
         public Color GoldCol(float g)
