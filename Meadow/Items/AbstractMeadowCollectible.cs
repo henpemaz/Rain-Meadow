@@ -50,7 +50,7 @@
             }
             if (type == RainMeadow.Ext_PhysicalObjectType.MeadowToken)
             {
-                this.realizedObject = new MeadowCollectibleToken(this);
+                this.realizedObject = new MeadowCollectToken(this);
             }
         }
     }
