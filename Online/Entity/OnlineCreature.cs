@@ -22,6 +22,8 @@ namespace RainMeadow
         {
             string[] array = Regex.Split(creatureString, "<cA>");
             CreatureTemplate.Type type = new CreatureTemplate.Type(array[0], false);
+
+
             if (type.Index == -1)
             {
                 RainMeadow.Debug("Unknown creature: " + array[0] + " creature not spawning");
@@ -31,12 +33,22 @@ namespace RainMeadow
             {
             '.'
             });
+
+
+
             EntityID id = EntityID.FromString(array[1]);
+
             int? num = BackwardsCompatibilityRemix.ParseRoomIndex(array2[0]);
-            if(num == null || !world.IsRoomInRegion(num.Value))
+
+            if (num == null || !world.IsRoomInRegion(num.Value))
             {
+
                 num = world.GetAbstractRoom(array2[0]).index;
+
+
+
             }
+
             WorldCoordinate den = new WorldCoordinate(num.Value, -1, -1, int.Parse(array2[1], NumberStyles.Any, CultureInfo.InvariantCulture));
             AbstractCreature abstractCreature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, den, id);
             if (world != null)
@@ -59,6 +71,9 @@ namespace RainMeadow
             return abstractCreature;
         }
 
+
+
+        // Maybe the abstract creature is not being seen correctly from here?
         public static OnlineEntity FromDefinition(OnlineCreatureDefinition newCreatureEvent, OnlineResource inResource)
         {
             World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
@@ -98,7 +113,7 @@ namespace RainMeadow
         {
             var castShareability = new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(graspRef.Shareability));
             var other = graspRef.OnlineGrabbed.FindEntity(quiet: true) as OnlinePhysicalObject;
-            if(other != null && other.apo.realizedObject != null)
+            if (other != null && other.apo.realizedObject != null)
             {
                 var grabber = (Creature)this.apo.realizedObject;
                 var grabbedThing = other.apo.realizedObject;
@@ -136,10 +151,10 @@ namespace RainMeadow
             var room = creature.room;
             creature?.SuckedIntoShortCut(entrancePos, carriedByOther);
             if (creature.graphicsModule != null)
-			{
+            {
                 Vector2 vector = room.MiddleOfTile(entrancePos) + Custom.IntVector2ToVector2(room.ShorcutEntranceHoleDirection(entrancePos)) * -5f;
                 creature.graphicsModule.SuckedIntoShortCut(vector);
-			}
+            }
             enteringShortCut = false;
         }
 

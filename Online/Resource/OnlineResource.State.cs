@@ -45,7 +45,7 @@ namespace RainMeadow
                 {
                     RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.baseline}");
                     RainMeadow.Error($"Available ticks are: [{string.Join(", ", incomingState.Where(s => s.from == newState.from).Select(s => s.tick))}]");
-                    if (!newState.from.OutgoingEvents.Any(e=>e is RPCEvent rpc && rpc.IsIdentical(RPCs.DeltaReset, this, null)))
+                    if (!newState.from.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.DeltaReset, this, null)))
                     {
                         newState.from.InvokeRPC(RPCs.DeltaReset, this, null);
                     }
@@ -62,7 +62,7 @@ namespace RainMeadow
             {
                 latestState = newState;
                 if (isWaitingForState || isAvailable) newState.ReadTo(this);
-                if(isWaitingForState) { Available(); }
+                if (isWaitingForState) { Available(); }
             }
             else
             {
