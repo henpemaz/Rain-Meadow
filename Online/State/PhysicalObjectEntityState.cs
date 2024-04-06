@@ -69,7 +69,7 @@ namespace RainMeadow
                 //throw;
             }
             
-            if(!pos.NodeDefined && !wasPos.CompareDisregardingNode(pos))onlineObject.apo.pos = pos; // pos isn't updated if compareDisregardingTile, but please, do
+            onlineObject.apo.pos = pos; // pos isn't updated if compareDisregardingTile, but please, do
             onlineObject.beingMoved = false;
             onlineObject.realized = this.realized;
             if (onlineObject.apo.realizedObject != null)

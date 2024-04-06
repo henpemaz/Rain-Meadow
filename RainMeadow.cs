@@ -207,7 +207,7 @@ namespace RainMeadow
             catch (Exception e)
             {
                 Logger.LogError(e);
-                throw;
+                //throw;
             }
         }
     }

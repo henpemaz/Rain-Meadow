@@ -3,10 +3,7 @@ using MonoMod.Cil;
 using MonoMod.Utils;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace RainMeadow
 {
@@ -18,12 +15,12 @@ namespace RainMeadow
     // stalk of token should disappear if used=to-be-token expired, but not if just collected
     public class AbstractMeadowCollectible : AbstractPhysicalObject
     {
-        bool collected;
-        internal bool collectedLocally;
-        int collectedAt;
-        TickReference collectedTR;
-        const int duration = 40 * 30;
         public bool placed;
+        public bool collectedLocally;
+        public bool collected;
+        public TickReference collectedTR;
+        public int collectedAt;
+        const int duration = 40 * 10;
         public OnlinePhysicalObject online;
 
         internal bool Expired => collected && world.game.clock > collectedAt + duration;
@@ -44,12 +41,15 @@ namespace RainMeadow
             
             if (Expired && online.isMine)
             {
+                RainMeadow.Debug("Expired:" + online);
                 this.Destroy();
+                this.Room.RemoveEntity(this);
             }
         }
 
         public void Collect()
         {
+            RainMeadow.Debug("Collected locally:" + online);
             collectedLocally = true;
             if (collected) { return; }
             if (online.isMine)
@@ -66,6 +66,7 @@ namespace RainMeadow
         {
             if (!online.isMine) { throw new InvalidProgrammerException("not owner: " + online); }
             if (collected) { return; }
+            RainMeadow.Debug("Collected:" + online);
             collected = true;
             collectedAt = world.game.clock;
             collectedTR = world.GetResource().owner.MakeTickReference();
@@ -74,6 +75,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void CollectRemote(OnlinePhysicalObject online)
         {
+            RainMeadow.Debug("Collect remote!:" + online);
             if (online != null && online.isMine && online.apo is AbstractMeadowCollectible amc)
             {
                 amc.NowCollected();
@@ -109,6 +111,7 @@ namespace RainMeadow
 
         private static AbstractPhysicalObject AbstractMeadowCollectible_APOFS(World world, string[] arr, EntityID entityID, AbstractObjectType apoType, WorldCoordinate pos)
         {
+            RainMeadow.Debug(apoType);
             if(apoType == RainMeadow.Ext_PhysicalObjectType.MeadowToken)
             {
                 return new AbstractMeadowCollectible(world, apoType, pos, entityID);
@@ -127,18 +130,19 @@ namespace RainMeadow
             var cont = c.DefineLabel();
 
             var stringArrayType = il.Module.ImportReference(typeof(string[]));
-            var arrLoc = il.Body.Variables.First(v => v.VariableType == stringArrayType);
+            var arrLoc = il.Body.Variables.First(v => v.VariableType.FullName == stringArrayType.FullName);
             var idType = il.Module.ImportReference(typeof(EntityID));
-            var idLoc = il.Body.Variables.First(v => v.VariableType == idType);
+            var idLoc = il.Body.Variables.First(v => v.VariableType.FullName == idType.FullName);
             var abstractObjectTypeType = il.Module.ImportReference(typeof(AbstractPhysicalObject.AbstractObjectType));
-            var typeLoc = il.Body.Variables.First(v => v.VariableType == abstractObjectTypeType);
+            var typeLoc = il.Body.Variables.First(v => v.VariableType.FullName == abstractObjectTypeType.FullName);
             var posType = il.Module.ImportReference(typeof(WorldCoordinate));
-            var posLoc = il.Body.Variables.First(v => v.VariableType == posType);
+            var posLoc = il.Body.Variables.First(v => v.VariableType.FullName == posType.FullName);
             var abstractObjectType = il.Module.ImportReference(typeof(AbstractPhysicalObject));
-            var apoLoc = il.Body.Variables.First(v => v.VariableType == abstractObjectType);
+            var apoLoc = il.Body.Variables.First(v => v.VariableType.FullName == abstractObjectType.FullName);
 
             c.GotoNext(i => i.MatchNewobj<AbstractPhysicalObject>());
             c.GotoPrev(MoveType.After, i => i.MatchBr(out skip));
+            c.MoveAfterLabels();
             c.Emit(OpCodes.Ldarg_0);
             c.Emit(OpCodes.Ldloc, arrLoc);
             c.Emit(OpCodes.Ldloc, idLoc);
@@ -148,6 +152,7 @@ namespace RainMeadow
             c.EmitDelegate(
                 (World world, string[] arr, EntityID entityID, AbstractPhysicalObject.AbstractObjectType apoType, WorldCoordinate pos, out AbstractPhysicalObject result) =>
                 {
+                    RainMeadow.Debug("funny delegate");
                     result = APOFS.InvokeWhileNull<AbstractPhysicalObject>(world, arr, entityID, apoType, pos);
                     return result != null;
                 });

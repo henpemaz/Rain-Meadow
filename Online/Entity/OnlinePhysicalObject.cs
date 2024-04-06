@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.ConstrainedExecution;
 using System.Text.RegularExpressions;
 
 namespace RainMeadow
@@ -42,6 +43,8 @@ namespace RainMeadow
 
             switch (apo)
             {
+                case AbstractMeadowCollectible:
+                    return new OnlineMeadowCollectible(new OnlineMeadowCollectible.Definition(opoDef), apo);
                 case AbstractSpear:
                     //may break with downpour
                     return new OnlinePhysicalObject(opoDef, apo);

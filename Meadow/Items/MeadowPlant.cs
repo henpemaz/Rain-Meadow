@@ -33,7 +33,6 @@ namespace RainMeadow
             }
             else
             {
-
                 if (avatarCreature == null)
                 {
                     avatarCreature = mgm.avatar.creature.realizedCreature;

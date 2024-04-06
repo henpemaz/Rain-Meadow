@@ -37,6 +37,7 @@ namespace RainMeadow
         public override void PlaceInRoom(Room placeRoom)
         {
             base.PlaceInRoom(placeRoom);
+
             var pos = this.firstChunk.pos;
             this.underWaterMode = (room.GetTilePosition(pos).y < room.defaultWaterLevel);
             this.stalk = new MeadowCollectToken.TokenStalk(room, pos, pos + new Vector2(0f, -40f), this);
@@ -164,6 +165,7 @@ namespace RainMeadow
 
                         // maybe this is removefromroom instead?
                         // we want the collectible gone but the abstract must stay
+                        RainMeadow.Debug("RemoveFromRoom");
                         this.RemoveFromRoom();
 
                         // todo feedback
@@ -477,7 +479,7 @@ namespace RainMeadow
                 this.lastHead = this.head;
                 this.head += this.headVel;
                 this.headVel *= 0.8f;
-                if (this.token != null && this.token.slatedForDeletetion || token.room == null)
+                if (this.token != null && (this.token.slatedForDeletetion || token.room == null))
                 {
                     this.token = null;
                 }

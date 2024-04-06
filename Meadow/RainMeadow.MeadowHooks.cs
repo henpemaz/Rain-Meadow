@@ -19,6 +19,8 @@ namespace RainMeadow
             NoodleController.EnableNoodle();
             EggbugController.EnableEggbug();
 
+            AbstractMeadowCollectible.Enable();
+
             On.RoomCamera.Update += RoomCamera_Update; // init meadow hud
 
             IL.HUD.Map.ctor += Map_OwnerFixup; // support non-slug owner
