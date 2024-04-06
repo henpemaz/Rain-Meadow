@@ -2,6 +2,7 @@
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
+using RainMeadow.GameModes;
 using RWCustom;
 using System;
 using System.Collections.Generic;
@@ -43,12 +44,12 @@ namespace RainMeadow
 
         void UninitializeInheritedScene()
         {
-            mainPage.subObjects.Remove(this.backObject);
+            mainPage.subObjects.Remove(backObject);
 
-            mainPage.subObjects.Add(this.backObject = new SimplerButton(mm, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f)));
+            mainPage.subObjects.Add(backObject = new SimplerButton(mm, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f)));
             (backObject as SimplerButton).OnClick += (btn) =>
             {
-                manager.RequestMainProcessSwitch(this.backTarget);
+                manager.RequestMainProcessSwitch(backTarget);
             };
         }
 
@@ -154,7 +155,7 @@ namespace RainMeadow
         {
             float num = 120f;
             float num2 = 0f;
-            if (base.CurrLang == InGameTranslator.LanguageID.German)
+            if (CurrLang == InGameTranslator.LanguageID.German)
             {
                 num = 140f;
                 num2 = 15f;
@@ -224,13 +225,22 @@ namespace RainMeadow
             {
                 b.buttonBehav.greyedOut = false;
             }
+
+/*            var personaSettings = (ArenaClientSettings)OnlineManager.lobby.gameMode.clientSettings;
+            personaSettings.bodyColor = Color.white;
+            personaSettings.eyeColor = Color.black;*/
+
         }
 
         private void InitializeSitting()
         {
             manager.arenaSitting = new ArenaSitting(mm.GetGameTypeSetup, mm.multiplayerUnlocks);
 
-            manager.arenaSitting.AddPlayer(0); // placeholder add player
+            for (int i = 0; i < OnlineManager.players.Count; i++)
+            {
+                manager.arenaSitting.AddPlayer(i); // placeholder add player
+
+            }
             manager.arenaSitting.levelPlaylist = new List<string>();
 
             if (mm.GetGameTypeSetup.shufflePlaylist)
@@ -286,15 +296,15 @@ namespace RainMeadow
             mm.Update();
             //base.Update();
 
-			if (mm.GetGameTypeSetup.playList.Count * mm.GetGameTypeSetup.levelRepeats > 0)
-			{
-				mm.playButton.buttonBehav.greyedOut = false;
-			}
-			else
-			{
-				mm.playButton.buttonBehav.greyedOut = OnlineManager.lobby.isAvailable;
-			}
-		}
+            if (mm.GetGameTypeSetup.playList.Count * mm.GetGameTypeSetup.levelRepeats > 0)
+            {
+                mm.playButton.buttonBehav.greyedOut = false;
+            }
+            else
+            {
+                mm.playButton.buttonBehav.greyedOut = OnlineManager.lobby.isAvailable;
+            }
+        }
 
 
         public override void Singal(MenuObject sender, string message)
@@ -424,9 +434,9 @@ namespace RainMeadow
                     {
                         int num4 = mm.ApproximatePlayTime();
                         string text;
-                        text = ((num3 == 1) ? Translate("ROUND SESSION") : ((num3 < 2 && num3 > 4) ? Translate("ROUNDS SESSION") : Translate("ROUNDS SESSION-ru2")));
-                        text = ((!text.Contains("#")) ? (num3 + " " + text) : text.Replace("#", num3.ToString()));
-                        mm.abovePlayButtonLabel.text = text + ((num4 > 0) ? ("\r\n" + Translate("Approximately") + " " + num4 + " " + ((num4 == 1) ? Translate("minute") : Translate("minutes"))) : "");
+                        text = num3 == 1 ? Translate("ROUND SESSION") : num3 < 2 && num3 > 4 ? Translate("ROUNDS SESSION") : Translate("ROUNDS SESSION-ru2");
+                        text = !text.Contains("#") ? num3 + " " + text : text.Replace("#", num3.ToString());
+                        mm.abovePlayButtonLabel.text = text + (num4 > 0 ? "\r\n" + Translate("Approximately") + " " + num4 + " " + (num4 == 1 ? Translate("minute") : Translate("minutes")) : "");
                         flag2 = true;
                     }
                 }

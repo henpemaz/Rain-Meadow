@@ -20,8 +20,25 @@ namespace RainMeadow
 
         public static AbstractCreature AbstractCreatureFromString(World world, string creatureString)
         {
+            //  Slugcat<cA>ID.-1.1<cA>GATE_HI_CC.-1<cA>
+/*              array[0] = "Slugcat"
+                array[1] = "ID.-1.1"
+                array[2] = "GATE_HI_CC.-1*/
             string[] array = Regex.Split(creatureString, "<cA>");
             CreatureTemplate.Type type = new CreatureTemplate.Type(array[0], false);
+
+            if (RainMeadow.isArenaMode(out var _)) {
+
+                // Need to fix this
+                int? num2 = BackwardsCompatibilityRemix.ParseRoomIndex("GATE_HI_CC");
+                EntityID idz = EntityID.FromString("ID.-1.1");
+                WorldCoordinate denz = new WorldCoordinate(num2.Value, -1, -1, int.Parse("-1", NumberStyles.Any, CultureInfo.InvariantCulture));
+                AbstractCreature abstractCreature2 = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, denz, idz);
+                return abstractCreature2;
+
+
+            }
+
             if (type.Index == -1)
             {
                 RainMeadow.Debug("Unknown creature: " + array[0] + " creature not spawning");
@@ -31,12 +48,30 @@ namespace RainMeadow
             {
             '.'
             });
+
+
             EntityID id = EntityID.FromString(array[1]);
+
+
+
+
             int? num = BackwardsCompatibilityRemix.ParseRoomIndex(array2[0]);
-            if(num == null || !world.IsRoomInRegion(num.Value))
+
+            if (num == null || !world.IsRoomInRegion(num.Value))
             {
-                num = world.GetAbstractRoom(array2[0]).index;
+                if (!RainMeadow.isArenaMode(out var _))
+                {
+                    num = world.GetAbstractRoom(array2[0]).index; // Arena hates this, null reference
+
+                } else
+                {
+                    // array2[0] = "GATE_HI_CC"
+                    // array2[1] = "-1"
+                }
+
+
             }
+
             WorldCoordinate den = new WorldCoordinate(num.Value, -1, -1, int.Parse(array2[1], NumberStyles.Any, CultureInfo.InvariantCulture));
             AbstractCreature abstractCreature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, den, id);
             if (world != null)
@@ -98,7 +133,7 @@ namespace RainMeadow
         {
             var castShareability = new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(graspRef.Shareability));
             var other = graspRef.OnlineGrabbed.FindEntity(quiet: true) as OnlinePhysicalObject;
-            if(other != null && other.apo.realizedObject != null)
+            if (other != null && other.apo.realizedObject != null)
             {
                 var grabber = (Creature)this.apo.realizedObject;
                 var grabbedThing = other.apo.realizedObject;
@@ -136,10 +171,10 @@ namespace RainMeadow
             var room = creature.room;
             creature?.SuckedIntoShortCut(entrancePos, carriedByOther);
             if (creature.graphicsModule != null)
-			{
+            {
                 Vector2 vector = room.MiddleOfTile(entrancePos) + Custom.IntVector2ToVector2(room.ShorcutEntranceHoleDirection(entrancePos)) * -5f;
                 creature.graphicsModule.SuckedIntoShortCut(vector);
-			}
+            }
             enteringShortCut = false;
         }
 

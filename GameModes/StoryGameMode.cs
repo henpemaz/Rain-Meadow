@@ -48,20 +48,21 @@ namespace RainMeadow
             return true;
         }
 
-        public override SlugcatStats.Name GetStorySessionPlayer(RainWorldGame self) {
+        public override SlugcatStats.Name GetStorySessionPlayer(RainWorldGame self)
+        {
             return currentCampaign;
         }
         public override SlugcatStats.Name LoadWorldAs(RainWorldGame game)
         {
-            if (currentCampaign == RainMeadow.Ext_SlugcatStatsName.OnlineStoryYellow) 
+            if (currentCampaign == RainMeadow.Ext_SlugcatStatsName.OnlineStoryYellow)
             {
                 return SlugcatStats.Name.Yellow;
             }
-            else if (currentCampaign == RainMeadow.Ext_SlugcatStatsName.OnlineStoryWhite) 
+            else if (currentCampaign == RainMeadow.Ext_SlugcatStatsName.OnlineStoryWhite)
             {
                 return SlugcatStats.Name.White;
             }
-            else if (currentCampaign == RainMeadow.Ext_SlugcatStatsName.OnlineStoryRed) 
+            else if (currentCampaign == RainMeadow.Ext_SlugcatStatsName.OnlineStoryRed)
             {
                 return SlugcatStats.Name.Red;
             }
@@ -106,7 +107,7 @@ namespace RainMeadow
         internal override void ResourceAvailable(OnlineResource onlineResource)
         {
             base.ResourceAvailable(onlineResource);
-            if(onlineResource is Lobby lobby)
+            if (onlineResource is Lobby lobby)
             {
                 lobby.AddData<StoryLobbyData>(true);
             }
@@ -117,5 +118,22 @@ namespace RainMeadow
             base.LobbyTick(tick);
             readyForWinPlayers = lobby.entities.Values.Where(e => e.entity is StoryClientSettings sas && sas.readyForWin).Select(e => e.entity.owner.inLobbyId).ToList();
         }
+
+        internal override void AddAvatarSettings()
+        {
+            RainMeadow.Debug("Adding avatar settings!");
+
+
+            clientSettings = new StoryClientSettings(
+                new StoryClientSettings.Definition(
+                    new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0)
+                    , OnlineManager.mePlayer));
+            clientSettings.EnterResource(lobby);
+
+
+
+
+        }
+
     }
 }

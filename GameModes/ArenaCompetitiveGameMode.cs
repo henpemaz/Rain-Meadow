@@ -1,7 +1,12 @@
-﻿namespace RainMeadow
+﻿using RainMeadow.GameModes;
+
+namespace RainMeadow
 {
     public class ArenaCompetitiveGameMode : OnlineGameMode
     {
+
+        public bool dummyTest = false;
+
         public ArenaCompetitiveGameMode(Lobby lobby) : base(lobby)
         {
         }
@@ -15,5 +20,35 @@
         {
             return RainMeadow.Ext_ProcessID.ArenaLobbyMenu;
         }
+
+        public override bool ShouldSyncObjectInWorld(WorldSession ws, AbstractPhysicalObject apo)
+        {
+            return true;
+        }
+
+        internal override void AddAvatarSettings()
+        {
+            RainMeadow.Debug("Adding arena avatar settings!");
+            // Some sort of registration is missing
+            ArenaClientSettings arenaClientSettings = new ArenaClientSettings(
+                            new ArenaClientSettings.Definition(
+                                new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0)
+                                , OnlineManager.mePlayer));
+            clientSettings = arenaClientSettings;
+            clientSettings.EnterResource(lobby);
+        }
+
+        internal override void ResourceAvailable(OnlineResource onlineResource)
+        {
+            base.ResourceAvailable(onlineResource);
+
+            if (onlineResource is Lobby lobby)
+            {
+                lobby.AddData<ArenaLobbyData>(true);
+            }
+
+
+        }
+
     }
 }

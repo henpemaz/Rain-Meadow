@@ -323,6 +323,7 @@ namespace RainMeadow
             if (lobby != null)
             {
                 if (rid == ".") return lobby;
+                if (rid == "arena" && lobby.worldSessions.TryGetValue(rid, out var arenaRoom)) return arenaRoom;
                 if (rid.Length == 2 && lobby.worldSessions.TryGetValue(rid, out var r)) return r;
                 if (rid.Length > 2 && lobby.worldSessions.TryGetValue(rid.Substring(0, 2), out var r2) && r2.roomSessions.TryGetValue(rid.Substring(2), out var room)) return room;
             }

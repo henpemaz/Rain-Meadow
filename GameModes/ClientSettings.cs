@@ -10,7 +10,7 @@ namespace RainMeadow
         public abstract class Definition : EntityDefinition
         {
             public Definition() : base() { }
-            public Definition(OnlineEntity.EntityId entityId, OnlinePlayer owner) : base(entityId, owner, false) { }
+            public Definition(OnlineEntity.EntityId entityId, OnlinePlayer owner) : base(entityId, owner, false) { } 
         }
 
         /// <summary>

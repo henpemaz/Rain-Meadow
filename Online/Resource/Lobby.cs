@@ -1,4 +1,5 @@
-﻿using System;
+﻿using On;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -104,9 +105,12 @@ namespace RainMeadow
         {
             if (gameModeType == OnlineGameMode.OnlineGameModeType.ArenaCompetitive) // Arena
             {
-                var nr = new Region("arena", 0, -1, null);
+                // changing from 0, -1 to 0, 0 no longer breaks lobby
+                var nr = new Region("arena", 0, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer); // this loads game but leaves a ResourceFromIdentifier:resource not found : arena
+
                 var ns = new WorldSession(nr, this);
                 worldSessions.Add(nr.name, ns);
+
                 subresources.Add(ns);
             }
             else // story mode

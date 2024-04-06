@@ -24,8 +24,8 @@ namespace RainMeadow
             this.colorFill = colorPicker.valueColor;
             this._rect.fillAlpha = 1f;
 
-            OnClick += Signal;
-            OnReactivate += Show;
+/*            OnClick += Signal;
+            OnReactivate += Show;*/
         }
 
         public void Signal(UIfocusable trigger)
