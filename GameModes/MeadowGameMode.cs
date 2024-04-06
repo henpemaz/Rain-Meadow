@@ -120,19 +120,19 @@ namespace RainMeadow
                     var shelters = new HashSet<int>(ws.world.shelters);
                     var gates = new HashSet<int>(ws.world.gates);
                     var validRooms = ws.world.abstractRooms.Where(r => !shelters.Contains(r.index) && !gates.Contains(r.index)).ToArray();
-                    var perNode = toSpawn / (double)validRooms.Select(r => r.nodes.Length).Sum();
+                    var perRoom = 0.5 * toSpawn / (double)validRooms.Length;
+                    var perNode = 0.5 * toSpawn / (double)validRooms.Select(r => r.nodes.Length).Sum();
                     var stacker = 0d;
                     if (spawnPlants)
                     {
-                        // todo use half weight on nodes, it's creating too much discrepancy
                         for (int i = 0; i < validRooms.Length; i++)
                         {
                             var r = validRooms[i];
-                            stacker += perNode * r.nodes.Length;
+                            stacker += perRoom + perNode * r.nodes.Length;
                             var n = (ushort)stacker;
                             for (int k = 0; k < n; k++)
                             {
-                                var e = new AbstractMeadowCollectible(r.world,UnityEngine.Random.value > 0.5f? RainMeadow.Ext_PhysicalObjectType.MeadowToken : RainMeadow.Ext_PhysicalObjectType.MeadowPlant, new WorldCoordinate(r.index, -1, -1, 0), r.world.game.GetNewID(), false);
+                                var e = new AbstractMeadowCollectible(r.world,UnityEngine.Random.value > 0.5f? RainMeadow.Ext_PhysicalObjectType.MeadowToken : RainMeadow.Ext_PhysicalObjectType.MeadowPlant, new WorldCoordinate(r.index, -1, -1, 0), r.world.game.GetNewID());
                                 r.AddEntity(e);
                                 data.spawnedItems += 1;
                             }

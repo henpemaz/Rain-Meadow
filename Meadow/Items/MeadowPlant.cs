@@ -43,7 +43,7 @@ namespace RainMeadow
                     // collect logic moved here
                     if (Custom.DistLess(avatarCreature.mainBodyChunk.pos, this.placePos, 18f))
                     {
-                        this.room.PlaySound(SoundID.Token_Collect, this.placePos);
+                        this.room.PlaySound(SoundID.HUD_Karma_Reinforce_Flicker, this.placePos);
                         this.popping = 0.01f;
                         abstractCollectible.Collect();
 

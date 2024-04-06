@@ -27,18 +27,15 @@ namespace RainMeadow
             {
                 RoomSession.map.TryGetValue(placeRoom.abstractRoom, out var rs);
                 var mrd = rs.GetData<MeadowRoomData>();
-                var place = mrd.GetUnusedPlace(placeRoom);
+                var place = mrd.GetUnusedPlace(placeRoom); // todo extra reqs for places ie not-narrow etc
                 this.abstractPhysicalObject.pos.Tile = place;
                 this.placePos = placeRoom.MiddleOfTile(place);
                 firstChunk.HardSetPosition(placePos);
+                abstractCollectible.placed = true;
             }
 
+            if (abstractCollectible.collectedLocally) return;
             base.PlaceInRoom(placeRoom);
-        }
-
-        public override void NewRoom(Room newRoom)
-        {
-            base.NewRoom(newRoom);
         }
     }
 }

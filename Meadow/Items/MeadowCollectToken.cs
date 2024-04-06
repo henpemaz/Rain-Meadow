@@ -477,7 +477,7 @@ namespace RainMeadow
                 this.lastHead = this.head;
                 this.head += this.headVel;
                 this.headVel *= 0.8f;
-                if (this.token != null && this.token.slatedForDeletetion)
+                if (this.token != null && this.token.slatedForDeletetion || token.room == null)
                 {
                     this.token = null;
                 }
