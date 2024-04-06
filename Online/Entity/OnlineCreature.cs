@@ -51,6 +51,10 @@ namespace RainMeadow
 
         public static AbstractCreature AbstractCreatureFromString(World world, string creatureString)
         {
+            //  Slugcat<cA>ID.-1.1<cA>GATE_HI_CC.-1<cA>
+/*              array[0] = "Slugcat"
+                array[1] = "ID.-1.1"
+                array[2] = "GATE_HI_CC.-1*/
             string[] array = Regex.Split(creatureString, "<cA>");
             CreatureTemplate.Type type = new CreatureTemplate.Type(array[0], false);
 
