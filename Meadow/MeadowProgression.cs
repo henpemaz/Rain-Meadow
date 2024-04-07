@@ -10,7 +10,6 @@ namespace RainMeadow
     // Saving loading what's unlocked is handled here
     public static class MeadowProgression
     {
-
         internal static void InitializeBuiltinTypes()
         {
             // todo load progression
@@ -312,6 +311,37 @@ namespace RainMeadow
         public static List<Character> AllAvailableCharacters()
         {
             return characterData.Keys.ToList();
+        }
+
+        internal static void ItemCollected(AbstractMeadowCollectible abstractMeadowCollectible)
+        {
+            if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold) // creature unlock
+            {
+                progressionData.characterUnlockProgress++;
+            }
+            else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
+            {
+                progressionData.characterProgress[currentlySelectedCharacter].emoteUnlockProgress++;
+            }
+            else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue)
+            {
+                progressionData.characterProgress[currentlySelectedCharacter].skinUnlockProgress++;
+            }
+        }
+
+        public static ProgressionData progressionData;
+        private static Character currentlySelectedCharacter;
+
+        public class ProgressionData
+        {
+            internal int characterUnlockProgress;
+            internal Dictionary<Character, CharacterProgressionData> characterProgress;
+
+            internal class CharacterProgressionData
+            {
+                internal int emoteUnlockProgress;
+                internal int skinUnlockProgress;
+            }
         }
     }
 }

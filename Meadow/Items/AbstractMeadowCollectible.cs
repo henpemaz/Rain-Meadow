@@ -7,12 +7,6 @@ using System.Linq;
 
 namespace RainMeadow
 {
-    // make sure real counterpart leaves as well once abs destroyed, might not be automagic
-    // bonus points if realized part animates out
-    // stalk of token should disappear if used=to-be-token expired, but not if just collected
-
-    // todo rarity
-
     // todo plug into progression system
 
     // todo progression system prototype
@@ -52,8 +46,11 @@ namespace RainMeadow
 
         public void Collect()
         {
+            if (collectedLocally) { return; }
             RainMeadow.Debug("Collected locally:" + online);
             collectedLocally = true;
+            MeadowProgression.ItemCollected(this);
+
             if (collected) { return; }
             if (online.isMine)
             {
@@ -100,7 +97,10 @@ namespace RainMeadow
             {
                 this.realizedObject = new MeadowPlant(this);
             }
-            if (type == RainMeadow.Ext_PhysicalObjectType.MeadowToken)
+            if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed
+                || type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue
+                || type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold
+                )
             {
                 this.realizedObject = new MeadowCollectToken(this);
             }
@@ -115,7 +115,10 @@ namespace RainMeadow
         private static AbstractPhysicalObject AbstractMeadowCollectible_APOFS(World world, string[] arr, EntityID entityID, AbstractObjectType apoType, WorldCoordinate pos)
         {
             RainMeadow.Debug(apoType);
-            if(apoType == RainMeadow.Ext_PhysicalObjectType.MeadowToken)
+            if (apoType == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed
+                || apoType == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue
+                || apoType == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold
+                )
             {
                 return new AbstractMeadowCollectible(world, apoType, pos, entityID);
             }

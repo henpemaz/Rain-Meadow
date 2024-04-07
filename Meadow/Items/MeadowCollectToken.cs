@@ -17,6 +17,19 @@ namespace RainMeadow
             this.mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
             avatarCreature = mgm.avatar.creature.realizedCreature;
 
+            if (this.abstractPhysicalObject.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
+            {
+                TokenColor = new Color(248f/255f, 89f / 255f, 93f / 255f);
+            }
+            else if (this.abstractPhysicalObject.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue)
+            {
+                TokenColor = RainWorld.AntiGold.rgb;
+            }
+            else if (this.abstractPhysicalObject.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold)
+            {
+                TokenColor = RainWorld.GoldRGB;
+            }
+
             this.lines = new Vector2[4, 4];
             for (int i = 0; i < this.lines.GetLength(0); i++)
             {
@@ -40,7 +53,7 @@ namespace RainMeadow
 
             var pos = this.firstChunk.pos;
             this.underWaterMode = (room.GetTilePosition(pos).y < room.defaultWaterLevel);
-            this.stalk = new MeadowCollectToken.TokenStalk(room, pos, pos + new Vector2(0f, -40f), this);
+            this.stalk = new MeadowCollectToken.TokenStalk(room, pos, pos + new Vector2(0f, -40f), this.TokenColor, this);
             room.AddObject(this.stalk);
             this.pos = pos;
             this.hoverPos = pos;
@@ -154,7 +167,6 @@ namespace RainMeadow
                     this.hoverPos = a;
                     if (this.expand < 0f)
                     {
-                        
                         int num3 = 0;
                         while (num3 < 20)
                         {
@@ -163,16 +175,15 @@ namespace RainMeadow
                         }
                         this.room.PlaySound(SoundID.Token_Collected_Sparks, this.pos);
 
-                        // maybe this is removefromroom instead?
                         // we want the collectible gone but the abstract must stay
-                        RainMeadow.Debug("RemoveFromRoom");
+                        RainMeadow.Debug("RemoveFromRoom: " + abstractCollectible.online);
                         this.RemoveFromRoom();
 
-                        // todo feedback
+                        // feedback would be here but better done from progression
                     }
                 }
             }
-            else
+            else // not collected, looking for target
             {
                 this.generalGlitch = Mathf.Max(0f, this.generalGlitch - 0.008333334f);
                 if (Random.value < 0.0027027028f)
@@ -370,14 +381,7 @@ namespace RainMeadow
             }
         }
 
-        public Color TokenColor
-        {
-            get
-            {
-                return RainWorld.AntiGold.rgb;
-            }
-        }
-
+        public Color TokenColor;
         public Vector2 hoverPos;
         public Vector2 pos;
         public Vector2 lastPos;
@@ -430,17 +434,17 @@ namespace RainMeadow
                 }
             }
 
-            public TokenStalk(Room room, Vector2 hoverPos, Vector2 basePos, MeadowCollectToken token)
+            public TokenStalk(Room room, Vector2 hoverPos, Vector2 basePos, Color tokenColor, MeadowCollectToken token)
             {
                 this.token = token;
                 this.hoverPos = hoverPos;
                 this.basePos = basePos;
-                if (token != null) // todo switch to collected
+                if (token != null)
                 {
                     this.lampPower = 1f;
                     this.lastLampPower = 1f;
                 }
-                this.lampColor = Color.Lerp(RainWorld.AntiGold.rgb, new Color(1f, 1f, 1f), 0.4f);
+                this.lampColor = Color.Lerp(tokenColor, new Color(1f, 1f, 1f), 0.4f);
                 Random.State state = Random.state;
                 Random.InitState((int)(hoverPos.x * 10f) + (int)(hoverPos.y * 10f));
                 this.curveLerps = new float[2, 5];

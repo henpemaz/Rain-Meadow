@@ -132,14 +132,24 @@ namespace RainMeadow
                             var n = (ushort)stacker;
                             for (int k = 0; k < n; k++)
                             {
-                                var e = new AbstractMeadowCollectible(r.world,UnityEngine.Random.value > 0.5f? RainMeadow.Ext_PhysicalObjectType.MeadowToken : RainMeadow.Ext_PhysicalObjectType.MeadowPlant, new WorldCoordinate(r.index, -1, -1, 0), r.world.game.GetNewID());
+                                var type = UnityEngine.Random.value switch
+                                {
+                                    < 0.25f =>
+                                        RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed,
+                                    < 0.5f =>
+                                        RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue,
+                                    < 0.75f =>
+                                        RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold,
+                                    _ =>
+                                        RainMeadow.Ext_PhysicalObjectType.MeadowPlant,
+                                };
+                                var e = new AbstractMeadowCollectible(r.world, type, new WorldCoordinate(r.index, -1, -1, 0), r.world.game.GetNewID());
                                 r.AddEntity(e);
                                 data.spawnedItems += 1;
                             }
                             stacker -= (ushort)stacker;
                         }
                     }
-                    
                     RainMeadow.Debug($"Region items: {toSpawn} spawned {data.spawnedItems}");
                 }
             }
