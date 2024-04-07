@@ -13,7 +13,7 @@ namespace RainMeadow
 
         public MeadowGameMode(Lobby lobby) : base(lobby)
         {
-            
+            MeadowProgression.LoadProgression();
         }
 
         public override ProcessManager.ProcessID MenuProcessId()

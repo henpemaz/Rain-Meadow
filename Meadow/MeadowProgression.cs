@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
 {
@@ -321,21 +322,36 @@ namespace RainMeadow
             }
             else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
             {
-                progressionData.characterProgress[currentlySelectedCharacter].emoteUnlockProgress++;
+                progressionData.currentCharacterProgress.emoteUnlockProgress++;
             }
             else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue)
             {
-                progressionData.characterProgress[currentlySelectedCharacter].skinUnlockProgress++;
+                progressionData.currentCharacterProgress.skinUnlockProgress++;
             }
         }
 
+        public static void LoadProgression()
+        {
+            progressionData = new ProgressionData();
+            progressionData.currentlySelectedCharacter = Character.Lizard;
+            progressionData.SetSelectedCharacter(progressionData.currentlySelectedCharacter);
+        }
+
         public static ProgressionData progressionData;
-        private static Character currentlySelectedCharacter;
 
         public class ProgressionData
         {
             internal int characterUnlockProgress;
-            internal Dictionary<Character, CharacterProgressionData> characterProgress;
+            internal Dictionary<Character, CharacterProgressionData> characterProgress = new();
+            internal Character currentlySelectedCharacter;
+
+            public void SetSelectedCharacter(Character character)
+            {
+                currentlySelectedCharacter = character;
+                if(!characterProgress.ContainsKey(character)) characterProgress[character] = new CharacterProgressionData();
+            }
+
+            internal CharacterProgressionData currentCharacterProgress => characterProgress[currentlySelectedCharacter];
 
             internal class CharacterProgressionData
             {

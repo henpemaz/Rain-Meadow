@@ -41,6 +41,8 @@ namespace RainMeadow
             ssm.pages = pages;
 
             playableCharacters = MeadowProgression.AllAvailableCharacters();
+            ssm.slugcatPageIndex = playableCharacters.IndexOf(MeadowProgression.progressionData.currentlySelectedCharacter);
+
             characterSkins = new();
             for (int j = 0; j < this.playableCharacters.Count; j++)
             {
