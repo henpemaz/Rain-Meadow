@@ -1,5 +1,5 @@
 plants todo
-- sync timer and collected (so can be transfered)
+- sync timer and collected (so can be transfered) /done
 - respawn a plant on plant expired
 
 - more items
@@ -7,9 +7,14 @@ plants todo
 		a collectoken is a UAD, but my objects so far (MeadowCollectible) were POs
 		inheriting CT means I need to implement UAD sync ("shouldn't be too complicated") besides getting it to work
 		ineriting MeadowCollectible means I need to copypaste a ton of code to make it work like a token
-		maybe an empty-ish PO that spawns a token for visuals/collision?
-		it reeeeally wants placeobjdata and "is blue" vs "is gold", is it worth the trouble?
-
+			/ went with this
+		make several rarities of them
+			one type, specific val for rarity?
+			one type per rarity?
+				will we run out of item enums? 255 is the current seri cap
+					game uses 33/255
+					dlc adds 15
+				seems safe
 	
 emotes todo
 "wish I could "stop" an emote block and start a new one, instead of having to wait out the fade"
@@ -19,6 +24,7 @@ mapping going to 0 - = is a bit weird
 	- = don't work on most euro layouts /can'tfix
 		an alternative would be to skip unity and go straight to user32 key events that are virtualkey based
 		here's hoping that the next update has better unity version or even usephisicalkeys who knows
+		try getting presses through rewired-keyboard? maybe it's good there?
 	but but but 12 emotes...
 	rethink the whole thing damn it
 radial menu
@@ -71,6 +77,8 @@ playable scav
 slugcat in meadow mode
 - lookdir input like the others
 - point things
+- go through creature pipes
+	since no spears around
 
 Toss in eggbug and noodlefly
 - make flying controller template?

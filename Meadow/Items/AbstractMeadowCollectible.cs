@@ -7,12 +7,15 @@ using System.Linq;
 
 namespace RainMeadow
 {
-    // todo support serialization so can be sent around by definitions
-    // apofs much
-
     // make sure real counterpart leaves as well once abs destroyed, might not be automagic
     // bonus points if realized part animates out
     // stalk of token should disappear if used=to-be-token expired, but not if just collected
+
+    // todo rarity
+
+    // todo plug into progression system
+
+    // todo progression system prototype
     public class AbstractMeadowCollectible : AbstractPhysicalObject
     {
         public bool placed;

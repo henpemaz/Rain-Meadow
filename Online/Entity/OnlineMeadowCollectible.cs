@@ -92,7 +92,7 @@ namespace RainMeadow
                 {
                     collectible.collected = this.collected;
                     collectible.collectedTR = this.collectedTR;
-                    collectible.collectedAt = collectible.world.game.clock;
+                    collectible.collectedAt = collectible.world.game.clock - (int)(40 * collectedTR.TimeSinceTick());
                 }
             }
         }
