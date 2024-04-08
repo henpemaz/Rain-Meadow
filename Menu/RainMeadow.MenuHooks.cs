@@ -92,6 +92,26 @@ namespace RainMeadow
                     (self as InteractiveMenuScene).idleDepths.Add(1.5f);
                 }
             }
+            if (self.sceneID == RainMeadow.Ext_SceneID.Slugcat_MeadowEggbug)
+            {
+                self.sceneFolder = "Scenes" + Path.DirectorySeparatorChar.ToString() + "meadow - eggbug";
+                if (self.flatMode)
+                {
+                    self.AddIllustration(new MenuIllustration(self.menu, self, self.sceneFolder, "MeadowEggbug - Flat", new Vector2(683f, 384f), false, true));
+                }
+                else
+                {
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmbug bg", new Vector2(0f, 0f), 3.5f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmbug mg", new Vector2(0f, 0f), 2.4f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmbug bug", new Vector2(0f, 0f), 2.2f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmbug fg", new Vector2(0f, 0f), 2.1f, MenuDepthIllustration.MenuShader.LightEdges));
+                    (self as InteractiveMenuScene).idleDepths.Add(3.2f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.2f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.1f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.0f);
+                    (self as InteractiveMenuScene).idleDepths.Add(1.5f);
+                }
+            }
             if (string.IsNullOrEmpty(self.sceneFolder))
             {
                 return;
@@ -151,6 +171,12 @@ namespace RainMeadow
                     else if (mcsp.character == MeadowProgression.Character.Scavenger)
                     {
                         sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowScav;
+                        self.sceneOffset = new Vector2(-10f, 100f);
+                        self.slugcatDepth = 3.1000001f;
+                    }
+                    else if (mcsp.character == MeadowProgression.Character.Eggbug)
+                    {
+                        sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowEggbug;
                         self.sceneOffset = new Vector2(-10f, 100f);
                         self.slugcatDepth = 3.1000001f;
                     }
