@@ -141,6 +141,21 @@ namespace RainMeadow
             characterIcon.ClearSprites();
         }
 
+        internal void NewCharacterUnlocked(MeadowProgression.Character chararcter)
+        {
+            //throw new NotImplementedException();
+        }
+
+        internal void NewEmoteUnlocked(MeadowProgression.Emote emote)
+        {
+            //throw new NotImplementedException();
+        }
+
+        internal void NewSkinUnlocked(MeadowProgression.Skin skin)
+        {
+            //throw new NotImplementedException();
+        }
+
         public class TokenSparkIcon
         {
             private Color TokenColor;

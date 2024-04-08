@@ -1,5 +1,6 @@
 ﻿using RWCustom;
 using UnityEngine;
+using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
 {
@@ -8,46 +9,46 @@ namespace RainMeadow
         static KeyCode[] alphaRow = new[] { KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3, KeyCode.Alpha4, KeyCode.Alpha5, KeyCode.Alpha6, KeyCode.Alpha7, KeyCode.Alpha8, KeyCode.Alpha9, KeyCode.Alpha0, KeyCode.Minus, KeyCode.Equals };
         static string[] keycodeNames = new[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=" };
 
-        static EmoteType[,] keyboardMappingRows = new EmoteType[,]{
+        static Emote[,] keyboardMappingRows = new Emote[,]{
             {
-                EmoteType.emoteHello,
-                EmoteType.emoteHappy,
-                EmoteType.emoteSad,
-                EmoteType.emoteConfused,
-                EmoteType.emoteGoofy,
-                EmoteType.emoteDead,
-                EmoteType.emoteAmazed,
-                EmoteType.emoteShrug,
-                EmoteType.emoteHug,
-                EmoteType.emoteAngry,
-                EmoteType.emoteWink,
-                EmoteType.emoteMischievous,
+                Emote.emoteHello,
+                Emote.emoteHappy,
+                Emote.emoteSad,
+                Emote.emoteConfused,
+                Emote.emoteGoofy,
+                Emote.emoteDead,
+                Emote.emoteAmazed,
+                Emote.emoteShrug,
+                Emote.emoteHug,
+                Emote.emoteAngry,
+                Emote.emoteWink,
+                Emote.emoteMischievous,
             },{
-                EmoteType.symbolYes,
-                EmoteType.symbolNo,
-                EmoteType.symbolQuestion,
-                EmoteType.symbolTime,
-                EmoteType.symbolSurvivor,
-                EmoteType.symbolFriends,
-                EmoteType.symbolGroup,
-                EmoteType.symbolKnoledge,
-                EmoteType.symbolTravel,
-                EmoteType.symbolMartyr,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
+                Emote.symbolYes,
+                Emote.symbolNo,
+                Emote.symbolQuestion,
+                Emote.symbolTime,
+                Emote.symbolSurvivor,
+                Emote.symbolFriends,
+                Emote.symbolGroup,
+                Emote.symbolKnoledge,
+                Emote.symbolTravel,
+                Emote.symbolMartyr,
+                Emote.symbolNo,
+                Emote.symbolNo,
             },{
-                EmoteType.symbolCollectible,
-                EmoteType.symbolFood,
-                EmoteType.symbolLight,
-                EmoteType.symbolShelter,
-                EmoteType.symbolGate,
-                EmoteType.symbolEcho,
-                EmoteType.symbolPointOfInterest,
-                EmoteType.symbolTree,
-                EmoteType.symbolIterator,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
-                EmoteType.symbolNo,
+                Emote.symbolCollectible,
+                Emote.symbolFood,
+                Emote.symbolLight,
+                Emote.symbolShelter,
+                Emote.symbolGate,
+                Emote.symbolEcho,
+                Emote.symbolPointOfInterest,
+                Emote.symbolTree,
+                Emote.symbolIterator,
+                Emote.symbolNo,
+                Emote.symbolNo,
+                Emote.symbolNo,
             }
         };
 

@@ -163,6 +163,7 @@ namespace RainMeadow
             if (Mathf.Abs(ssm.lastScroll) > 0.5f && Mathf.Abs(ssm.scroll) <= 0.5f)
             {
                 this.UpdateCharacterUI();
+                MeadowProgression.progressionData.SetSelectedCharacter(playableCharacters[ssm.slugcatPageIndex]);
             }
             if (ssm.scroll == 0f && ssm.lastScroll == 0f)
             {

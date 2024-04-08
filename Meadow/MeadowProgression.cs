@@ -1,9 +1,9 @@
-﻿using RWCustom;
+﻿using HarmonyLib;
+using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
 {
@@ -14,7 +14,6 @@ namespace RainMeadow
     {
         internal static void InitializeBuiltinTypes()
         {
-            // todo load progression
             try
             {
                 _ = Character.Slugcat;
@@ -300,19 +299,60 @@ namespace RainMeadow
             });
         }
 
-        public static bool SkinAvailable(Skin skin)
+        public class Emote : ExtEnum<Emote>
         {
-            return true; // todo progression system
+            public Emote(string value, bool register = false) : base(value, register) { }
+            public static Emote none = new("none", true);
+
+            // emotions
+            public static Emote emoteHello = new("emoteHello", true);
+            public static Emote emoteHappy = new("emoteHappy", true);
+            public static Emote emoteSad = new("emoteSad", true);
+            public static Emote emoteConfused = new("emoteConfused", true);
+            public static Emote emoteGoofy = new("emoteGoofy", true);
+            public static Emote emoteDead = new("emoteDead", true);
+            public static Emote emoteAmazed = new("emoteAmazed", true);
+            public static Emote emoteShrug = new("emoteShrug", true);
+            public static Emote emoteHug = new("emoteHug", true);
+            public static Emote emoteAngry = new("emoteAngry", true);
+            public static Emote emoteWink = new("emoteWink", true);
+            public static Emote emoteMischievous = new("emoteMischievous", true);
+
+            // ideas
+            public static Emote symbolYes = new("symbolYes", true);
+            public static Emote symbolNo = new("symbolNo", true);
+            public static Emote symbolQuestion = new("symbolQuestion", true);
+            public static Emote symbolTime = new("symbolTime", true);
+            public static Emote symbolSurvivor = new("symbolSurvivor", true);
+            public static Emote symbolFriends = new("symbolFriends", true);
+            public static Emote symbolGroup = new("symbolGroup", true);
+            public static Emote symbolKnoledge = new("symbolKnoledge", true);
+            public static Emote symbolTravel = new("symbolTravel", true);
+            public static Emote symbolMartyr = new("symbolMartyr", true);
+
+            // things
+            public static Emote symbolCollectible = new("symbolCollectible", true);
+            public static Emote symbolFood = new("symbolFood", true);
+            public static Emote symbolLight = new("symbolLight", true);
+            public static Emote symbolShelter = new("symbolShelter", true);
+            public static Emote symbolGate = new("symbolGate", true);
+            public static Emote symbolEcho = new("symbolEcho", true);
+            public static Emote symbolPointOfInterest = new("symbolPointOfInterest", true);
+            public static Emote symbolTree = new("symbolTree", true);
+            public static Emote symbolIterator = new("symbolIterator", true);
+
+            // verbs
+            // todo
         }
 
         public static List<Skin> AllAvailableSkins(Character character)
         {
-            return characterData[character].skins.Where(SkinAvailable).ToList();
+            return characterData[character].skins.Intersect(progressionData.characterProgress[character].unlockedSkins).ToList();
         }
 
         public static List<Character> AllAvailableCharacters()
         {
-            return characterData.Keys.ToList();
+            return characterData.Keys.Intersect(progressionData.unlockedCharacters).ToList();
         }
 
         internal static void ItemCollected(AbstractMeadowCollectible abstractMeadowCollectible)
@@ -320,19 +360,73 @@ namespace RainMeadow
             var meadowHud = (Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).cameras[0].hud.parts.First(p => p is MeadowHud) as MeadowHud;
             if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold) // creature unlock
             {
-                progressionData.characterUnlockProgress++;
                 meadowHud.AnimateChar();
+                progressionData.characterUnlockProgress++;
+                if (progressionData.characterUnlockProgress >= characterProgressTreshold)
+                {
+                    if (NextUnlockableCharacter() is Character chararcter)
+                    {
+                        progressionData.unlockedCharacters.Add(chararcter);
+                        progressionData.characterUnlockProgress -= characterProgressTreshold;
+                        meadowHud.NewCharacterUnlocked(chararcter);
+                    }
+                    else
+                    {
+                        progressionData.characterUnlockProgress = characterProgressTreshold;
+                    }
+                }
             }
             else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
             {
-                progressionData.currentCharacterProgress.emoteUnlockProgress++;
                 meadowHud.AnimateEmote();
+                progressionData.currentCharacterProgress.emoteUnlockProgress++;
+                if (progressionData.currentCharacterProgress.emoteUnlockProgress >= emoteProgressTreshold)
+                {
+                    if (NextUnlockableEmote() is Emote emote)
+                    {
+                        progressionData.currentCharacterProgress.unlockedEmotes.Add(emote);
+                        progressionData.currentCharacterProgress.emoteUnlockProgress -= emoteProgressTreshold;
+                        meadowHud.NewEmoteUnlocked(emote);
+                    }
+                    else
+                    {
+                        progressionData.currentCharacterProgress.emoteUnlockProgress = emoteProgressTreshold;
+                    }
+                }
             }
             else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue)
             {
-                progressionData.currentCharacterProgress.skinUnlockProgress++;
                 meadowHud.AnimateSkin();
+                progressionData.currentCharacterProgress.skinUnlockProgress++;
+                if (progressionData.currentCharacterProgress.skinUnlockProgress >= skinProgressTreshold)
+                {
+                    if (NextUnlockableSkin() is Skin skin)
+                    {
+                        progressionData.currentCharacterProgress.unlockedSkins.Add(skin);
+                        progressionData.currentCharacterProgress.skinUnlockProgress -= skinProgressTreshold;
+                        meadowHud.NewSkinUnlocked(skin);
+                    }
+                    else
+                    {
+                        progressionData.currentCharacterProgress.skinUnlockProgress = skinProgressTreshold;
+                    }
+                }
             }
+        }
+
+        private static Emote NextUnlockableEmote()
+        {
+            return emoteEmotes.Except(progressionData.currentCharacterProgress.unlockedEmotes).FirstOrDefault();
+        }
+
+        private static Skin NextUnlockableSkin()
+        {
+            return characterData[progressionData.currentlySelectedCharacter].skins.Except(progressionData.currentCharacterProgress.unlockedSkins).FirstOrDefault();
+        }
+
+        private static Character NextUnlockableCharacter()
+        {
+            return characterData.Keys.Except(progressionData.unlockedCharacters).FirstOrDefault();
         }
 
         internal static Color TokenRedColor = new Color(248f / 255f, 89f / 255f, 93f / 255f);
@@ -341,7 +435,15 @@ namespace RainMeadow
 
         public static void LoadProgression()
         {
+            if (progressionData != null) return;
+            // todo unfake me
             progressionData = new ProgressionData();
+            progressionData.unlockedCharacters = new() { Character.Slugcat, Character.Cicada, Character.Lizard };
+            progressionData.characterProgress = progressionData.unlockedCharacters.Select(c => new KeyValuePair<Character, ProgressionData.CharacterProgressionData>(c, new ProgressionData.CharacterProgressionData()
+            {
+                unlockedEmotes = new List<Emote>() { Emote.emoteHello, Emote.emoteHappy, Emote.emoteSad },
+                unlockedSkins = characterData[c].skins.Take(1).ToList()
+            })).ToDictionary();
             progressionData.currentlySelectedCharacter = Character.Lizard;
             progressionData.SetSelectedCharacter(progressionData.currentlySelectedCharacter);
         }
@@ -350,17 +452,33 @@ namespace RainMeadow
         internal static int emoteProgressTreshold = 4;
         internal static int skinProgressTreshold = 6;
         internal static int characterProgressTreshold = 8;
+        public static List<Emote> emoteEmotes = new()
+        {
+            Emote.emoteHello,
+            Emote.emoteHappy,
+            Emote.emoteSad,
+            Emote.emoteConfused,
+            Emote.emoteGoofy,
+            Emote.emoteDead,
+            Emote.emoteAmazed,
+            Emote.emoteShrug,
+            Emote.emoteHug,
+            Emote.emoteAngry,
+            Emote.emoteWink,
+            Emote.emoteMischievous,
+        };
 
         public class ProgressionData
         {
             internal int characterUnlockProgress;
-            internal Dictionary<Character, CharacterProgressionData> characterProgress = new();
+            internal List<Character> unlockedCharacters;
+            internal Dictionary<Character, CharacterProgressionData> characterProgress;
             internal Character currentlySelectedCharacter;
 
             public void SetSelectedCharacter(Character character)
             {
                 currentlySelectedCharacter = character;
-                if(!characterProgress.ContainsKey(character)) characterProgress[character] = new CharacterProgressionData();
+                if (!characterProgress.ContainsKey(character)) characterProgress[character] = new CharacterProgressionData();
             }
 
             internal CharacterProgressionData currentCharacterProgress => characterProgress[currentlySelectedCharacter];
@@ -369,6 +487,8 @@ namespace RainMeadow
             {
                 internal int emoteUnlockProgress;
                 internal int skinUnlockProgress;
+                internal List<Emote> unlockedEmotes;
+                internal List<Skin> unlockedSkins;
             }
         }
     }

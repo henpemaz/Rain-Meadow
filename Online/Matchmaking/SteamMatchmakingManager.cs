@@ -389,10 +389,9 @@ namespace RainMeadow
         public override void LeaveLobby()
         {
             RainMeadow.DebugMe();
-            if (OnlineManager.lobby != null)
+            if (lobbyID != default)
             {
                 SteamMatchmaking.LeaveLobby(lobbyID);
-                OnlineManager.Reset();
             }
             lobbyID = default;
             SteamFriends.ClearRichPresence();

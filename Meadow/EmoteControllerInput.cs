@@ -1,57 +1,58 @@
 ﻿using UnityEngine;
 using RWCustom;
 using System;
+using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
 {
     public class EmoteControllerInput : HUD.HudPart
     {
-        static EmoteType[][] radialMappingPages = new EmoteType[][]{
+        static Emote[][] radialMappingPages = new Emote[][]{
             new[]{
-                EmoteType.emoteHello,
-                EmoteType.emoteHappy,
-                EmoteType.emoteSad,
-                EmoteType.emoteConfused,
-                EmoteType.emoteGoofy,
-                EmoteType.emoteDead,
-                EmoteType.emoteAmazed,
-                EmoteType.emoteShrug,
+                Emote.emoteHello,
+                Emote.emoteHappy,
+                Emote.emoteSad,
+                Emote.emoteConfused,
+                Emote.emoteGoofy,
+                Emote.emoteDead,
+                Emote.emoteAmazed,
+                Emote.emoteShrug,
             },new[]{
-                EmoteType.emoteHug,
-                EmoteType.emoteAngry,
-                EmoteType.emoteWink,
-                EmoteType.emoteMischievous,
-                EmoteType.none,
-                EmoteType.none,
-                EmoteType.none,
-                EmoteType.none,
+                Emote.emoteHug,
+                Emote.emoteAngry,
+                Emote.emoteWink,
+                Emote.emoteMischievous,
+                Emote.none,
+                Emote.none,
+                Emote.none,
+                Emote.none,
             },new[]{
-                EmoteType.symbolYes,
-                EmoteType.symbolNo,
-                EmoteType.symbolQuestion,
-                EmoteType.symbolTime,
-                EmoteType.symbolSurvivor,
-                EmoteType.symbolFriends,
-                EmoteType.symbolGroup,
-                EmoteType.symbolKnoledge,
+                Emote.symbolYes,
+                Emote.symbolNo,
+                Emote.symbolQuestion,
+                Emote.symbolTime,
+                Emote.symbolSurvivor,
+                Emote.symbolFriends,
+                Emote.symbolGroup,
+                Emote.symbolKnoledge,
             },new[]{
-                EmoteType.symbolTravel,
-                EmoteType.symbolMartyr,
-                EmoteType.symbolCollectible,
-                EmoteType.symbolFood,
-                EmoteType.symbolLight,
-                EmoteType.symbolShelter,
-                EmoteType.symbolGate,
-                EmoteType.symbolEcho,
+                Emote.symbolTravel,
+                Emote.symbolMartyr,
+                Emote.symbolCollectible,
+                Emote.symbolFood,
+                Emote.symbolLight,
+                Emote.symbolShelter,
+                Emote.symbolGate,
+                Emote.symbolEcho,
             },new[]{
-                EmoteType.symbolPointOfInterest,
-                EmoteType.symbolTree,
-                EmoteType.symbolIterator,
-                EmoteType.symbolNo,
-                EmoteType.none,
-                EmoteType.none,
-                EmoteType.none,
-                EmoteType.none,
+                Emote.symbolPointOfInterest,
+                Emote.symbolTree,
+                Emote.symbolIterator,
+                Emote.symbolNo,
+                Emote.none,
+                Emote.none,
+                Emote.none,
+                Emote.none,
             }
         };
         static int npages = radialMappingPages.Length;
@@ -150,7 +151,7 @@ namespace RainMeadow
             if (!active && lastActive && selected != -1)
             {
                 var selectedEmote = radialMappingPages[currentPage][selected];
-                if (selectedEmote != EmoteType.none)
+                if (selectedEmote != Emote.none)
                 {
                     emoteHandler.EmotePressed(selectedEmote);
                 }
@@ -203,7 +204,7 @@ namespace RainMeadow
 
         public class EmoteRadialPage
         {
-            private EmoteType[] emotes;
+            private Emote[] emotes;
             private MeadowAvatarCustomization customization;
             private TriangleMesh[] meshes;
             private FSprite[] icons;
@@ -225,7 +226,7 @@ namespace RainMeadow
 
             // maybe these are visual-only parts and there's a containing class that handles the input logic?
             // or if(ismain) all the way down?
-            public EmoteRadialPage(HUD.HUD hud, FContainer container, MeadowAvatarCustomization customization, EmoteType[] emotes, Vector2 pos, bool big)
+            public EmoteRadialPage(HUD.HUD hud, FContainer container, MeadowAvatarCustomization customization, Emote[] emotes, Vector2 pos, bool big)
             {
                 this.customization = customization;
                 this.meshes = new TriangleMesh[8];
@@ -274,12 +275,12 @@ namespace RainMeadow
                 SetEmotes(emotes);
             }
 
-            public void SetEmotes(EmoteType[] emotes)
+            public void SetEmotes(Emote[] emotes)
             {
                 this.emotes = emotes;
                 for (int i = 0; i < icons.Length; i++)
                 {
-                    if (emotes[i] != EmoteType.none)
+                    if (emotes[i] != Emote.none)
                     {
                         icons[i].SetElementByName(customization.GetEmote(emotes[i]));
                         icons[i].alpha = 0.6f;
@@ -301,7 +302,7 @@ namespace RainMeadow
                 {
                     meshes[i].color = colorUnselected;
                 }
-                if (selected > -1 && emotes[selected] != EmoteType.none) meshes[selected].color = colorSelected; else centerMesh.color = colorSelected;
+                if (selected > -1 && emotes[selected] != Emote.none) meshes[selected].color = colorSelected; else centerMesh.color = colorSelected;
             }
         }
     }
