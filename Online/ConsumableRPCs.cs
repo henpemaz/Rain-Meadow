@@ -13,11 +13,6 @@ namespace RainMeadow
                 obg.AbstractBubbleGrass.oxygenLeft = oxygenLeft;
             }
         }
-        [RPCMethod]
-        public static void swellWaterNut(OnlineConsumable onlineWaterNut) {
-            (onlineWaterNut.apo.realizedObject as WaterNut).Swell();
-        }
-
 
         [RPCMethod]
         public static void pacifySporePlant(OnlinePhysicalObject onlineSporePlant) {
