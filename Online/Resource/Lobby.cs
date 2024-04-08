@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace RainMeadow
 {
@@ -14,7 +15,8 @@ namespace RainMeadow
         public Dictionary<OnlinePlayer, OnlineEntity.EntityId> playerAvatars = new(); // should maybe be in GameMode
 
         public string[] mods = RainMeadowModManager.GetActiveMods();
-        public static bool modsChecked;
+        public static bool modsChecked = false;
+
         public string? password;
         public bool hasPassword => password != null;
         public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password)
@@ -92,7 +94,7 @@ namespace RainMeadow
 
         internal override void Tick(uint tick)
         {
-            clientSettings = entities.Values.Where(em => em.entity is ClientSettings).ToDictionary(e => e.entity.owner, e=> e.entity as ClientSettings);
+            clientSettings = entities.Values.Where(em => em.entity is ClientSettings).ToDictionary(e => e.entity.owner, e => e.entity as ClientSettings);
             playerAvatars = clientSettings.ToDictionary(e => e.Key, e => e.Value.avatarId);
             gameMode.LobbyTick(tick);
             base.Tick(tick);
@@ -122,7 +124,7 @@ namespace RainMeadow
 
         protected override void AvailableImpl()
         {
-            
+
         }
 
         protected override void DeactivateImpl()
@@ -156,12 +158,12 @@ namespace RainMeadow
         {
             [OnlineField]
             public ushort nextId;
+            [OnlineField]
+            public string[] mods;
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedPlayerIDs players;
             [OnlineField(nullable = true)]
             public Generics.AddRemoveSortedUshorts inLobbyIds;
-            [OnlineField]
-            public string[] mods;
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
@@ -192,8 +194,9 @@ namespace RainMeadow
 
                 if (!modsChecked)
                 {
-                    modsChecked = true;
                     RainMeadowModManager.CheckMods(this.mods, lobby.mods);
+                    modsChecked = true;
+
                 }
 
                 base.ReadTo(resource);

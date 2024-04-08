@@ -1,13 +1,11 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using Steamworks;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using Menu;
-using System.Linq;
-using System.Collections.Generic;
+using Steamworks;
 
 namespace RainMeadow
 {
@@ -335,6 +333,14 @@ namespace RainMeadow
 #endif
                 self.manager.RequestMainProcessSwitch(Ext_ProcessID.LobbySelectMenu);
             }, self.mainMenuButtons.Count - 2);
+            if (ModManager.MMF)
+            {
+                RainMeadow.Debug("Restoring config settings");
+
+                var mmfOptions = MachineConnector.GetRegisteredOI(MoreSlugcats.MMF.MOD_ID);
+                MachineConnector.ReloadConfig(mmfOptions);
+
+            }
         }
     }
 }

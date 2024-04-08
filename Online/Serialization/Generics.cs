@@ -55,7 +55,7 @@ namespace RainMeadow.Generics
     /// <summary>
     /// Dynamic list, order-unaware
     /// </summary>
-    public abstract class AddRemoveUnsortedList<T, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp: AddRemoveUnsortedList<T, Imp>, new()
+    public abstract class AddRemoveUnsortedList<T, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp : AddRemoveUnsortedList<T, Imp>, new()
     {
         public List<T> list;
         public List<T> removed;
@@ -218,7 +218,7 @@ namespace RainMeadow.Generics
         {
             if (baseline == null) { return (Imp)this; }
             Imp delta = new();
-            delta.list = list.Select(newstate => 
+            delta.list = list.Select(newstate =>
                 baseline.list.FirstOrDefault(basestate => basestate.ID.Equals(newstate.ID)) is T basestate ? (T)newstate.Delta(basestate) : newstate
             ).Where(sl => !sl.IsEmptyDelta).ToList();
             delta.removed = baseline.list.Except(list, new IdentityComparer<T, U>()).Select(e => e.ID).ToList();
@@ -228,7 +228,7 @@ namespace RainMeadow.Generics
         public virtual Imp ApplyDelta(Imp incoming)
         {
             Imp result = new();
-            result.list = incoming == null ? list : 
+            result.list = incoming == null ? list :
                 list.Where(e => !incoming.removed.Contains(e.ID)) // remove
                     .Select(e => incoming.list.FirstOrDefault(o => e.ID.Equals(o.ID)) is T o ? (T)e.ApplyDelta(o) : e) // keep or update
                     .Concat(incoming.list.Where(o => list.FirstOrDefault(e => e.ID.Equals(o.ID)) == null)) // add new
