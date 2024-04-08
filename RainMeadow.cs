@@ -150,6 +150,11 @@ namespace RainMeadow
                 sw.Stop();
                 RainMeadow.Debug($"MeadowProgression.InitializeBuiltinTypes: {sw.Elapsed}");
 
+                sw = Stopwatch.StartNew();
+                StorySaveManager.InitializeStorySaves();
+                sw.Stop();
+                RainMeadow.Debug($"StorySaveManager.InitializeSaveFiles: {sw.Elapsed}");
+
                 EmoteHandler.InitializeBuiltinTypes();
 
                 sw = Stopwatch.StartNew();

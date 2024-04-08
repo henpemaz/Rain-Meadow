@@ -18,7 +18,7 @@ namespace RainMeadow
 
         public class State : ResourceDataState
         {
-            [OnlineField(nullable =true)]
+            [OnlineField(nullable=true)]
             public string? defaultDenPos;
             [OnlineField]
             public bool didStartGame;
@@ -53,18 +53,18 @@ namespace RainMeadow
                 StoryGameMode storyGameMode = (onlineResource as Lobby).gameMode as StoryGameMode;
                 RainWorldGame currentGameState = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
 
-                didStartGame = storyGameMode.didStartGame;
+                defaultDenPos = storyGameMode.defaultDenPos;
                 currentCampaign = storyGameMode.currentCampaign;
                 storyBoolRemixSettings = storyGameMode.storyBoolRemixSettings;
                 storyFloatRemixSettings = storyGameMode.storyFloatRemixSettings;
                 storyIntRemixSettings = storyGameMode.storyIntRemixSettings;
 
+                didStartGame = storyGameMode.didStartGame;
                 didStartCycle = storyGameMode.didStartCycle;
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
                     karma = storySession.saveState.deathPersistentSaveData.karma;
                     theGlow = storySession.saveState.theGlow;
-                    defaultDenPos = storySession.saveState.denPosition;
                     reinforcedKarma = storySession.saveState.deathPersistentSaveData.reinforcedKarma;
                 }
 
@@ -81,6 +81,8 @@ namespace RainMeadow
                 var playerstate = (currentGameState?.Players[0].state as PlayerState);
                 var lobby = (data.resource as Lobby);
 
+                (lobby.gameMode as StoryGameMode).defaultDenPos = defaultDenPos;
+                
                 if (playerstate != null)
                 {
                     playerstate.foodInStomach = food;
@@ -96,16 +98,13 @@ namespace RainMeadow
                     storySession.saveState.deathPersistentSaveData.karma = karma;
                     storySession.saveState.deathPersistentSaveData.reinforcedKarma = reinforcedKarma;
                     storySession.saveState.theGlow = theGlow;
-                    (lobby.gameMode as StoryGameMode).defaultDenPos = defaultDenPos;
                 }
-                (lobby.gameMode as StoryGameMode).didStartGame = didStartGame;
                 (lobby.gameMode as StoryGameMode).currentCampaign = currentCampaign;
                 (lobby.gameMode as StoryGameMode).storyBoolRemixSettings = storyBoolRemixSettings;
                 (lobby.gameMode as StoryGameMode).storyFloatRemixSettings = storyFloatRemixSettings;
                 (lobby.gameMode as StoryGameMode).storyIntRemixSettings = storyIntRemixSettings;
 
-
-
+                (lobby.gameMode as StoryGameMode).didStartGame = didStartGame;
                 (lobby.gameMode as StoryGameMode).didStartCycle = didStartCycle;
             }
         }

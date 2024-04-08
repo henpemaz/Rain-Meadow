@@ -2,7 +2,6 @@
 using System.Linq;
 using UnityEngine;
 using HUD;
-
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -190,19 +189,7 @@ namespace RainMeadow
             orig(self);
             if (isStoryMode(out var storyGameMode))
             {
-                SlugcatStats.Name slugcatClass;
-                if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryWhite)
-                {
-                    self.SlugCatClass = SlugcatStats.Name.White;
-                }
-                else if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryYellow)
-                {
-                    self.SlugCatClass = SlugcatStats.Name.Yellow;
-                }
-                else if ((storyGameMode.clientSettings as StoryClientSettings).playingAs == Ext_SlugcatStatsName.OnlineStoryRed)
-                {
-                    self.SlugCatClass = SlugcatStats.Name.Red;
-                }
+                self.SlugCatClass = (storyGameMode.clientSettings as StoryClientSettings).playingAs;
             }
         }
 
@@ -210,21 +197,9 @@ namespace RainMeadow
         {
             if (isStoryMode(out var storyGameMode))
             {
-                if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryWhite)
-                {
-                    return new RWCustom.IntVector2(7, 4);
-                }
-                if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryYellow)
-                {
-                    return new RWCustom.IntVector2(5, 3);
-                }
-                if (storyGameMode.currentCampaign == Ext_SlugcatStatsName.OnlineStoryRed)
-                {
-                    return new RWCustom.IntVector2(9, 6);
-                }
+                return orig(storyGameMode.currentCampaign);
             }
             return orig(slugcat);
-
         }
 
         private void HUD_InitSinglePlayerHud(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam)
@@ -293,9 +268,21 @@ namespace RainMeadow
             var origSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
             if (isStoryMode(out var gameMode))
             {
-                //self.currentSaveState.LoadGame(gameMode.saveStateProgressString, game); //pretty sure we can just stuff the string here
                 var storyClientSettings = gameMode.clientSettings as StoryClientSettings;
-                origSaveState.denPosition = storyClientSettings.myLastDenPos;
+                if (storyClientSettings.myLastDenPos != null)
+                {
+                    origSaveState.denPosition = storyClientSettings.myLastDenPos;
+                }
+                else if (!OnlineManager.lobby.isOwner)
+                {
+                    origSaveState.denPosition = (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos;
+                }
+
+                if (OnlineManager.lobby.isOwner) 
+                {
+                    (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos = origSaveState.denPosition;
+                }
+
                 return origSaveState;
             }
             return origSaveState;
@@ -315,11 +302,6 @@ namespace RainMeadow
             }
             orig(self, sender, message);
         }
-
-        //On Static hook class
-
-
-
 
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {

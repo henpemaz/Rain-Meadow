@@ -81,6 +81,9 @@ namespace RainMeadow
                 }
                 var storyClientSettings = storyGameMode.clientSettings as StoryClientSettings;
                 storyClientSettings.myLastDenPos = self.room.abstractRoom.name;
+                if (OnlineManager.lobby.isOwner) {
+                    (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos = self.room.abstractRoom.name;
+                }
 
             }
             else {
