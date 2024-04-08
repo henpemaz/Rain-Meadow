@@ -26,6 +26,14 @@ namespace RainMeadow
             {
                 new ScavengerController(scav, oc, 0);
             }
+            else if (creature is NeedleWorm noodle)
+            {
+                new NoodleController(noodle, oc, 0);
+            }
+            else if (creature is EggBug bug)
+            {
+                new EggbugController(bug, oc, 0);
+            }
             else if (creature is Player player)
             {
                 if (!oc.owner.isMe)
@@ -60,6 +68,8 @@ namespace RainMeadow
 
             standStillOnMapButton = creature.abstractCreature.world.game.IsStorySession;
             flipDirection = 1;
+
+            RainMeadow.Debug(this + " added!");
 
             //creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
             debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);
@@ -123,7 +133,7 @@ namespace RainMeadow
         {
             get
             {
-                return creature.coord;
+                return creature.room.GetWorldCoordinate(creature.mainBodyChunk.pos);
             }
         }
         // IOwnAHUD
@@ -481,6 +491,11 @@ namespace RainMeadow
 
             if (this.debugDestinationVisualizer != null)
             {
+                var visibility = creature.abstractCreature.world.game.devToolsActive;
+                this.debugDestinationVisualizer.sprite1.sprite.isVisible = visibility;
+                this.debugDestinationVisualizer.sprite2.sprite.isVisible = visibility;
+                this.debugDestinationVisualizer.sprite3.sprite.isVisible = visibility;
+                this.debugDestinationVisualizer.sprite4.sprite.isVisible = visibility;
                 if (debugDestinationVisualizer.room != creature.room) debugDestinationVisualizer.ChangeRooms(creature.room);
                 this.debugDestinationVisualizer.Update();
             }

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
 {
@@ -48,22 +49,22 @@ namespace RainMeadow
             if (skinData.eyeColor.HasValue) originalEyeColor = skinData.eyeColor.Value;
         }
 
-        internal string GetEmote(EmoteType emote)
+        internal string GetEmote(Emote emote)
         {
             return (emote.value.StartsWith("emote") ? EmotePrefix + emote.value : emote.value).ToLowerInvariant();
         }
 
-        internal string GetBackground(EmoteType emote)
+        internal string GetBackground(Emote emote)
         {
             return (emote.value.StartsWith("emote") ? "emote_background" : "symbols_background");
         }
 
-        internal Color EmoteBackgroundColor(EmoteType emote)
+        internal Color EmoteBackgroundColor(Emote emote)
         {
             return emote.value.StartsWith("emote") ? emoteBgColor : symbolBgColor;
         }
 
-        internal Color EmoteColor(EmoteType emote)
+        internal Color EmoteColor(Emote emote)
         {
             return emote.value.StartsWith("emote") ? emoteColor : symbolColor;
         }

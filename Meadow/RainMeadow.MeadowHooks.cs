@@ -2,9 +2,7 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
-using RWCustom;
 using System;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -18,6 +16,10 @@ namespace RainMeadow
             CicadaController.EnableCicada();
             LizardController.EnableLizard();
             ScavengerController.EnableScavenger();
+            NoodleController.EnableNoodle();
+            EggbugController.EnableEggbug();
+
+            AbstractMeadowCollectible.Enable();
 
             On.RoomCamera.Update += RoomCamera_Update; // init meadow hud
 
@@ -246,6 +248,7 @@ namespace RainMeadow
                     self.hud.AddPart(new HUD.TextPrompt(self.hud)); // game assumes this never null
                     self.hud.AddPart(new HUD.Map(self.hud, new HUD.Map.MapData(self.room.world, self.room.game.rainWorld))); // game assumes this too :/
                     self.hud.AddPart(new EmoteHandler(self.hud, self, owner));
+                    self.hud.AddPart(new MeadowHud(self.hud, self, owner));
                 }
             }
             orig(self);

@@ -1,10 +1,20 @@
 plants todo
-- sync timer and collected (so can be transfered)
+- sync timer and collected (so can be transfered) /done
 - respawn a plant on plant expired
 
 - more items
 	copy the arena unlocks
-
+		a collectoken is a UAD, but my objects so far (MeadowCollectible) were POs
+		inheriting CT means I need to implement UAD sync ("shouldn't be too complicated") besides getting it to work
+		ineriting MeadowCollectible means I need to copypaste a ton of code to make it work like a token
+			/ went with this
+		make several rarities of them
+			one type, specific val for rarity?
+			one type per rarity?
+				will we run out of item enums? 255 is the current seri cap
+					game uses 33/255
+					dlc adds 15
+				seems safe
 	
 emotes todo
 "wish I could "stop" an emote block and start a new one, instead of having to wait out the fade"
@@ -14,14 +24,19 @@ mapping going to 0 - = is a bit weird
 	- = don't work on most euro layouts /can'tfix
 		an alternative would be to skip unity and go straight to user32 key events that are virtualkey based
 		here's hoping that the next update has better unity version or even usephisicalkeys who knows
+		try getting presses through rewired-keyboard? maybe it's good there?
 	but but but 12 emotes...
 	rethink the whole thing damn it
 radial menu
 	/ should be working on xbox
 	todo sort out mappings for dualshock (ps 3 4 5) and switchpro
 	need to swap between the two inputs as needed not have the two / done
+	maybe more than 8 per page? this thing has a lot of pages...
+		12 per page would be interesting/ideal, but no keyboard support...
 rethink kb input
 	one configurable hotbar with 10 the rest on mouse?
+	really really wish I could support "fully keyboard input"
+		maybe the radial?
 add backdrop to previews / done
 
 creature todo
@@ -29,6 +44,7 @@ creature todo
 - gate activation / done
 - other story-mode things?
 - any ways to die left?
+	player (slugcat) can drown
 - can get stuck
 	some rooms will get fixed
 	but maybe an unstuck button is in order? / done
@@ -61,7 +77,14 @@ playable scav
 slugcat in meadow mode
 - lookdir input like the others
 - point things
+- go through creature pipes
+	since no spears around
 
 Toss in eggbug and noodlefly
 - make flying controller template?
 - do "wall-crawlers" deserve their own template or just better handling of climb/noclimb modes?
+
+water controls for lizard and scav etc
+	needs to be there, crossing DS etc
+	SU_A12
+	I think the pathing logic breaks, water "isn't accessible" but it is. Istileaccessibletocreature accounts for it, some of my logic might not

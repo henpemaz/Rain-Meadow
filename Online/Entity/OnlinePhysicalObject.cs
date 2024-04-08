@@ -42,6 +42,8 @@ namespace RainMeadow
 
             switch (apo)
             {
+                case AbstractMeadowCollectible:
+                    return new OnlineMeadowCollectible(new OnlineMeadowCollectible.Definition(opoDef), apo);
                 case AbstractSpear:
                     //may break with downpour
                     return new OnlinePhysicalObject(opoDef, apo);

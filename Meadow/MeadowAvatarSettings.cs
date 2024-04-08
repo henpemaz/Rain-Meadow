@@ -67,7 +67,7 @@ namespace RainMeadow
             {
                 base.ReadTo(onlineEntity);
                 var meadowAvatarSettings = (MeadowAvatarSettings)onlineEntity;
-                meadowAvatarSettings.skin = new MeadowProgression.Skin(MeadowProgression.Skin.values.GetEntry(skin));
+                meadowAvatarSettings.skin = skin < 0 ? null : new MeadowProgression.Skin(MeadowProgression.Skin.values.GetEntry(skin));
                 meadowAvatarSettings.tintAmount = tintAmount / 255f;
                 meadowAvatarSettings.tint = tint;
             }
