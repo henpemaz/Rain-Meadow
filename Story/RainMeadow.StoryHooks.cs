@@ -45,9 +45,44 @@ namespace RainMeadow
             On.WaterNut.Swell += WaterNut_Swell;
             On.SporePlant.Pacify += SporePlant_Pacify;
 
+            On.PuffBall.Explode += PuffBall_Explode;
+
             On.Oracle.CreateMarble += Oracle_CreateMarble;
             On.Oracle.SetUpMarbles += Oracle_SetUpMarbles;
 
+        }
+
+        private void PuffBall_Explode(On.PuffBall.orig_Explode orig, PuffBall self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+                return;
+            }
+
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var onlineRoom);
+            OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineSporePlant);
+
+            if (onlineSporePlant.isMine) 
+            {
+                foreach (var kv in OnlineManager.lobby.playerAvatars)
+                {
+                    var playerAvatar = kv.Value;
+                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none || kv.Key.isMe) continue; // not in game or is me
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                    {
+                        if (ac.Room == self.room.abstractRoom)
+                        {
+                            if (!opo.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(ConsumableRPCs.explodePuffBall, onlineSporePlant, self.bodyChunks[0].pos))) 
+                            {
+                                opo.owner.InvokeRPC(ConsumableRPCs.explodePuffBall, onlineRoom, self.bodyChunks[0].pos, self.sporeColor, self.color);
+                            }
+                        }
+                    }
+                }
+                orig(self);
+                return;
+            }
         }
 
         private void Oracle_SetUpMarbles(On.Oracle.orig_SetUpMarbles orig, Oracle self)
@@ -128,28 +163,22 @@ namespace RainMeadow
                 orig(self);
                 return;
             }
-            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
             self.room.PlaySound(SoundID.Water_Nut_Swell, self.firstChunk.pos);
-            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+
+            var abstractWaterNut = self.abstractPhysicalObject as WaterNut.AbstractWaterNut;
+            OnlinePhysicalObject.map.TryGetValue(abstractWaterNut, out var onlineWaterNut);
+
+            if (onlineWaterNut.isMine && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineWaterNut);
-                if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(ConsumableRPCs.swellWaterNut, onlineWaterNut))) 
-                {
-                    room.owner.InvokeRPC(ConsumableRPCs.swellWaterNut, onlineWaterNut);
-                    self.Destroy();
-                }
-            }
-            else {
                 if (self.grabbedBy.Count > 0)
                 {
                     self.grabbedBy[0].Release();
                 }
-                var abstractWaterNut = self.abstractPhysicalObject as WaterNut.AbstractWaterNut;
 
                 EntityID id = self.room.world.game.GetNewID();
                 var abstractSwollenWaterNut = new WaterNut.AbstractWaterNut(abstractWaterNut.world, null, abstractWaterNut.pos, id, abstractWaterNut.originRoom, abstractWaterNut.placedObjectIndex, null, true);
                 self.room.abstractRoom.AddEntity(abstractSwollenWaterNut);
-                OnlinePhysicalObject.map.TryGetValue(abstractSwollenWaterNut, out var onlineWaterNut);
+                OnlinePhysicalObject.map.TryGetValue(abstractSwollenWaterNut, out var onlineSwollenWaterNut);
 
                 abstractSwollenWaterNut.RealizeInRoom();
 
@@ -157,9 +186,14 @@ namespace RainMeadow
                 //self.room.AddObject(swollenWaterNut);
                 swollenWaterNut.firstChunk.HardSetPosition(self.firstChunk.pos);
                 swollenWaterNut.AbstrConsumable.isFresh = abstractSwollenWaterNut.isFresh;
-                onlineWaterNut.realized = true;
+                onlineSwollenWaterNut.realized = true;
                 self.Destroy();
             }
+        }
+
+        private void destroyWaterNut(GenericResult result) 
+        {
+            ((result.referencedEvent as RPCEvent).target as OnlinePhysicalObject).apo.realizedObject.Destroy();
         }
 
         private void BubbleGrass_Update(On.BubbleGrass.orig_Update orig, BubbleGrass self, bool eu)

@@ -1130,5 +1130,27 @@ namespace RainMeadow
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
 #endif
         }
+
+        public void Serialize(ref Color data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting) {
+                writer.Write(data.r);
+                writer.Write(data.g);
+                writer.Write(data.b);
+                writer.Write(data.a);
+            }
+            if (IsReading) { 
+                data.r = reader.ReadSingle();
+                data.g = reader.ReadSingle();
+                data.b = reader.ReadSingle();
+                data.a = reader.ReadSingle();
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
     }
 }
