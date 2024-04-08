@@ -18,12 +18,12 @@ namespace RainMeadow
             (onlineWaterNut.apo.realizedObject as WaterNut).Swell();
         }
 
+
         [RPCMethod]
         public static void pacifySporePlant(OnlinePhysicalObject onlineSporePlant) {
             (onlineSporePlant.apo.realizedObject as SporePlant).Pacify(); 
         }
 
-        //This may add a damage multiplier, based on how many players are in the same room, to insects.
         [RPCMethod]
         public static void explodePuffBall(RoomSession onlineRoom, Vector2 pos, Color sporeColor, Color puffballColor) 
         {
