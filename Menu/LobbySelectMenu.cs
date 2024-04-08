@@ -180,6 +180,7 @@ namespace RainMeadow
             passwordInputBox.greyedOut = !setpassword || this.currentlySelectedCard != 0;
             enablePasswordCheckbox.buttonBehav.greyedOut = this.currentlySelectedCard != 0;
             lobbyLimitNumberTextBox.greyedOut = this.currentlySelectedCard != 0;
+            playButton.menuLabel.text = (this.currentlySelectedCard == 0) ? "CREATE!" : "JOIN!";
             if (lobbyLimitNumberTextBox.value != "")
             {
                 maxPlayerCount = lobbyLimitNumberTextBox.valueInt;
