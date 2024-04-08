@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RWCustom;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -316,19 +317,27 @@ namespace RainMeadow
 
         internal static void ItemCollected(AbstractMeadowCollectible abstractMeadowCollectible)
         {
+            var meadowHud = (Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).cameras[0].hud.parts.First(p => p is MeadowHud) as MeadowHud;
             if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold) // creature unlock
             {
                 progressionData.characterUnlockProgress++;
+                meadowHud.AnimateChar();
             }
             else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
             {
                 progressionData.currentCharacterProgress.emoteUnlockProgress++;
+                meadowHud.AnimateEmote();
             }
             else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue)
             {
                 progressionData.currentCharacterProgress.skinUnlockProgress++;
+                meadowHud.AnimateSkin();
             }
         }
+
+        internal static Color TokenRedColor = new Color(248f / 255f, 89f / 255f, 93f / 255f);
+        internal static Color TokenBlueColor = RainWorld.AntiGold.rgb;
+        internal static Color TokenGoldColor = RainWorld.GoldRGB;
 
         public static void LoadProgression()
         {
@@ -338,6 +347,9 @@ namespace RainMeadow
         }
 
         public static ProgressionData progressionData;
+        internal static int emoteProgressTreshold = 4;
+        internal static int skinProgressTreshold = 6;
+        internal static int characterProgressTreshold = 8;
 
         public class ProgressionData
         {

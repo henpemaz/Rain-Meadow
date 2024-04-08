@@ -19,15 +19,15 @@ namespace RainMeadow
 
             if (this.abstractPhysicalObject.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
             {
-                TokenColor = new Color(248f/255f, 89f / 255f, 93f / 255f);
+                TokenColor = MeadowProgression.TokenRedColor;
             }
             else if (this.abstractPhysicalObject.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue)
             {
-                TokenColor = RainWorld.AntiGold.rgb;
+                TokenColor = MeadowProgression.TokenBlueColor;
             }
             else if (this.abstractPhysicalObject.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold)
             {
-                TokenColor = RainWorld.GoldRGB;
+                TokenColor = MeadowProgression.TokenGoldColor;
             }
 
             this.lines = new Vector2[4, 4];
