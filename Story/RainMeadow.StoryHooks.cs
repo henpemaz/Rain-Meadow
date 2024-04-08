@@ -49,7 +49,60 @@ namespace RainMeadow
 
             On.Oracle.CreateMarble += Oracle_CreateMarble;
             On.Oracle.SetUpMarbles += Oracle_SetUpMarbles;
+            On.Oracle.SetUpSwarmers += Oracle_SetUpSwarmers;
+            On.OracleSwarmer.BitByPlayer += OracleSwarmer_BitByPlayer;
+            On.SLOracleSwarmer.BitByPlayer += SLOracleSwarmer_BitByPlayer;
+        }
 
+        private void SLOracleSwarmer_BitByPlayer(On.SLOracleSwarmer.orig_BitByPlayer orig, SLOracleSwarmer self, Creature.Grasp grasp, bool eu)
+        {
+            orig(self, grasp, eu);
+            if (self.slatedForDeletetion == true)
+            {
+                SwarmerEaten();
+            }
+        }
+
+        private void OracleSwarmer_BitByPlayer(On.OracleSwarmer.orig_BitByPlayer orig, OracleSwarmer self, Creature.Grasp grasp, bool eu)
+        {
+            orig(self, grasp, eu);
+            if (self.slatedForDeletetion == true) 
+            {
+                SwarmerEaten();
+            }
+        }
+
+        private void SwarmerEaten() 
+        {
+            if (OnlineManager.lobby == null) return;
+            if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                if (!OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(ConsumableRPCs.enableTheGlow))) 
+                { 
+                    OnlineManager.lobby.owner.InvokeRPC(ConsumableRPCs.enableTheGlow);
+                }
+            }
+        }
+
+        private void Oracle_SetUpSwarmers(On.Oracle.orig_SetUpSwarmers orig, Oracle self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+                return;
+            }
+
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            if (room.isOwner)
+            {
+                orig(self); //Only setup the room if we are the room owner.
+                foreach (var swamer in self.mySwarmers) 
+                {
+                    var apo = swamer.abstractPhysicalObject;
+                    if (WorldSession.map.TryGetValue(self.room.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.ApoEnteringWorld(apo);
+                    if (RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoEnteringRoom(apo, apo.pos);
+                }
+            }
         }
 
         private void PuffBall_Explode(On.PuffBall.orig_Explode orig, PuffBall self)
