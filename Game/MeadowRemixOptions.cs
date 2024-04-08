@@ -1,16 +1,12 @@
 ﻿using System;
-using RainMeadow;
-using BepInEx.Logging;
 using Menu.Remix.MixedUI;
 using UnityEngine;
-using RainMeadow;
 
 public class RainMeadowOptions : OptionInterface
 {
     public readonly Configurable<KeyCode> FriendsListKey;
-    public readonly Configurable<bool> SlugcatCustomToggle;
-    private bool slugcatToggle = false;
-
+    public readonly Configurable<bool> SlugcatCustomToggle; 
+    public readonly Configurable<bool> FriendViewClickToActivate;
     private UIelement[] UIArrPlayerOptions;
     
 
@@ -18,8 +14,9 @@ public class RainMeadowOptions : OptionInterface
     public RainMeadowOptions(global::RainMeadow.RainMeadow instance)
     {
 
-        FriendsListKey = config.Bind("OpenMenuKey", KeyCode.Space);
+        FriendsListKey = config.Bind("OpenMenuKey", KeyCode.J);
         SlugcatCustomToggle = config.Bind("SlugToggle", false);
+        FriendViewClickToActivate = config.Bind("FriendViewHoldOrToggle", false);
 
     }
 
@@ -29,15 +26,21 @@ public class RainMeadowOptions : OptionInterface
         {
             OpTab opTab = new OpTab(this, "Options");
             Tabs = new OpTab[1] { opTab };
-            UIArrPlayerOptions = new UIelement[8]
+
+
+            UIArrPlayerOptions = new UIelement[11]
             {
+
                 new OpLabel(10f, 550f, "Options", bigText: true),
-                new OpKeyBinder(FriendsListKey, new Vector2(10f, 480f), new Vector2(150f, 30f)),
-                new OpLabel(166f, 480f, "Key used for viewing friends usernames")
-                {
-                    verticalAlignment = OpLabel.LabelVAlignment.Center
-                },
-            
+
+                new OpLabel(10, 500f, "Key used for viewing friends' usernames"),
+                new OpKeyBinder(FriendsListKey, new Vector2(10f, 460f), new Vector2(150f, 30f)),
+
+
+                new OpLabel(10f, 410f, "Username Toggle", bigText: false),
+                new OpCheckBox(FriendViewClickToActivate, new Vector2(10f, 380f)),
+                new OpLabel(40f, 385, RWCustom.Custom.ReplaceLineDelimeters("If selected, replaces holding to toggling to view usernames")),
+
                 new OpLabel(10f, 230f, "[Experimental Features]", bigText: true),
                 new OpLabel(10f, 215f, "WARNING: Experimental features may cause data corruption, back up your saves", bigText: false),
 
@@ -50,6 +53,7 @@ public class RainMeadowOptions : OptionInterface
                 }
 };
             opTab.AddItems(UIArrPlayerOptions);
+          
         }
         catch (Exception ex)
         {
