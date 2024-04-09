@@ -101,7 +101,10 @@ namespace RainMeadow
         internal override void LobbyTick(uint tick)
         {
             base.LobbyTick(tick);
-            readyForWinPlayers = lobby.entities.Values.Where(e => e.entity is StoryClientSettings sas && sas.readyForWin).Select(e => e.entity.owner.inLobbyId).ToList();
+            readyForWinPlayers = lobby.entities.Values.Where(
+                e => e.entity is StoryClientSettings sas && 
+                (sas.readyForWin || !sas.inGame || sas.isDead)
+            ).Select(e => e.entity.owner.inLobbyId).ToList();
         }
     }
 }
