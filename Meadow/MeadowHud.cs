@@ -143,17 +143,17 @@ namespace RainMeadow
 
         internal void NewCharacterUnlocked(MeadowProgression.Character chararcter)
         {
-            //throw new NotImplementedException();
+            hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate("New character unlocked"), 60, 160, true, true);
         }
 
         internal void NewEmoteUnlocked(MeadowProgression.Emote emote)
         {
-            //throw new NotImplementedException();
+            hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate("New emote unlocked"), 60, 160, true, true);
         }
 
         internal void NewSkinUnlocked(MeadowProgression.Skin skin)
         {
-            //throw new NotImplementedException();
+            hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate("New skin unlocked"), 60, 160, true, true);
         }
 
         public class TokenSparkIcon

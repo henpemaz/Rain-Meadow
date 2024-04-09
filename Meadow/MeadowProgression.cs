@@ -566,7 +566,7 @@ namespace RainMeadow
 
             [JsonProperty]
             public int characterUnlockProgress;
-            [JsonProperty] 
+            [JsonProperty]
             public Character CurrentlySelectedCharacter { get => currentlySelectedCharacter; set { currentlySelectedCharacter = value; if (!characterProgress.ContainsKey(value)) characterProgress[value] = new CharacterProgressionData(value); } }
             private Character currentlySelectedCharacter;
             [JsonProperty]
@@ -593,6 +593,8 @@ namespace RainMeadow
                 [JsonProperty]
                 public List<Skin> unlockedSkins;
 
+                [JsonConstructor]
+                private CharacterProgressionData() { }
                 public CharacterProgressionData(Character character)
                 {
                     unlockedEmotes = emoteEmotes.Take(3).ToList();
