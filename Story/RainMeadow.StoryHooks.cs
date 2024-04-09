@@ -2,6 +2,9 @@
 using System.Linq;
 using UnityEngine;
 using HUD;
+using MonoMod.Cil;
+using System;
+using Mono.Cecil.Cil;
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -52,6 +55,48 @@ namespace RainMeadow
             On.Oracle.SetUpSwarmers += Oracle_SetUpSwarmers;
             On.OracleSwarmer.BitByPlayer += OracleSwarmer_BitByPlayer;
             On.SLOracleSwarmer.BitByPlayer += SLOracleSwarmer_BitByPlayer;
+            On.CoralBrain.CoralNeuronSystem.PlaceSwarmers += OnCoralNeuronSystem_PlaceSwarmers;
+            IL.CoralBrain.CoralNeuronSystem.PlaceSwarmers += ILCoralNeuronSystem_PlaceSwarmers;
+
+        }
+
+        //Only spawn if we own the room
+        private void OnCoralNeuronSystem_PlaceSwarmers(On.CoralBrain.CoralNeuronSystem.orig_PlaceSwarmers orig, CoralBrain.CoralNeuronSystem self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+                return;
+            }
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            if (room.isOwner)
+            {
+                orig(self);
+            }
+        }
+
+        private void ILCoralNeuronSystem_PlaceSwarmers(MonoMod.Cil.ILContext il)
+        {
+            try
+            {
+                // if (ModManager.MSC)
+                //becomes
+                // if (ModManager.MSC || OnlineManager.Lobby != null)
+                var c = new ILCursor(il);
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdsfld<ModManager>("MSC"));
+                c.MoveAfterLabels();
+                var target = il.DefineLabel();
+                c.GotoPrev(moveType: MoveType.Before,
+                    i => i.MatchLdsfld<ModManager>("MSC"));
+                c.MoveBeforeLabels();
+                c.EmitDelegate(() => { return OnlineManager.lobby != null; } );
+                c.Emit(OpCodes.Brtrue, target);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
         }
 
         private void SLOracleSwarmer_BitByPlayer(On.SLOracleSwarmer.orig_BitByPlayer orig, SLOracleSwarmer self, Creature.Grasp grasp, bool eu)
@@ -242,11 +287,6 @@ namespace RainMeadow
                 onlineSwollenWaterNut.realized = true;
                 self.Destroy();
             }
-        }
-
-        private void destroyWaterNut(GenericResult result) 
-        {
-            ((result.referencedEvent as RPCEvent).target as OnlinePhysicalObject).apo.realizedObject.Destroy();
         }
 
         private void BubbleGrass_Update(On.BubbleGrass.orig_Update orig, BubbleGrass self, bool eu)
