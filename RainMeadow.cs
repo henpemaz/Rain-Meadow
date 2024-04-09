@@ -17,8 +17,8 @@ namespace RainMeadow
         public const string MeadowVersionStr = "0.0.60";
         public static RainMeadow instance;
         private bool init;
+        public bool fullyInit;
         public static RainMeadowOptions rainMeadowOptions;
-
 
         public void OnEnable()
         {
@@ -131,8 +131,6 @@ namespace RainMeadow
 
             try
             {
-
-
                 MachineConnector.SetRegisteredOI("henpemaz_rainmeadow", rainMeadowOptions);
 
                 var sw = Stopwatch.StartNew();
@@ -199,6 +197,8 @@ namespace RainMeadow
 
                 MeadowMusic.EnableMusic();
 
+                MeadowProgression.LoadProgression();
+
                 self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
 
 #if LOCAL_P2P
@@ -208,10 +208,12 @@ namespace RainMeadow
                     OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(LocalMatchmakingManager.localGameMode), OnlineManager.mePlayer, null);
                 }
 #endif
+                fullyInit = true;
             }
             catch (Exception e)
             {
                 Logger.LogError(e);
+                fullyInit = false;
                 //throw;
             }
         }

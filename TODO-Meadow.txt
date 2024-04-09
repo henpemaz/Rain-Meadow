@@ -15,7 +15,12 @@ plants todo
 					game uses 33/255
 					dlc adds 15
 				seems safe
-	
+
+progression todo
+	progression feedback on UI is missing unlocks
+	could show current progress to next thing on char select page
+	could have first few creature unlocks be easier the rest harder
+
 emotes todo
 "wish I could "stop" an emote block and start a new one, instead of having to wait out the fade"
 	maybe pressing backspace? should it clear or not clear the current group? /ok

@@ -1,7 +1,10 @@
-﻿using HarmonyLib;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using RWCustom;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 
@@ -30,6 +33,8 @@ namespace RainMeadow
             }
         }
 
+        private static List<Character> allCharacters = new();
+
         public static Dictionary<Character, CharacterData> characterData = new();
 
         public class CharacterData
@@ -41,6 +46,7 @@ namespace RainMeadow
             public List<Skin> skins = new();
         }
 
+        [TypeConverter(typeof(ExtEnumTypeConverter<Character>))]
         public class Character : ExtEnum<Character>
         {
             public Character(string value, bool register = false, CharacterData characterDataEntry = null) : base(value, register)
@@ -48,6 +54,7 @@ namespace RainMeadow
                 if (register)
                 {
                     characterData[this] = characterDataEntry;
+                    allCharacters.Add(this);
                 }
             }
 
@@ -114,6 +121,7 @@ namespace RainMeadow
             public Color? emoteColorOverride;
         }
 
+        [TypeConverter(typeof(ExtEnumTypeConverter<Skin>))]
         public class Skin : ExtEnum<Skin>
         {
             public Skin(string value, bool register = false, SkinData skinDataEntry = null) : base(value, register)
@@ -299,6 +307,7 @@ namespace RainMeadow
             });
         }
 
+        [TypeConverter(typeof(ExtEnumTypeConverter<Emote>))]
         public class Emote : ExtEnum<Emote>
         {
             public Emote(string value, bool register = false) : base(value, register) { }
@@ -345,113 +354,6 @@ namespace RainMeadow
             // todo
         }
 
-        public static List<Skin> AllAvailableSkins(Character character)
-        {
-            return characterData[character].skins.Intersect(progressionData.characterProgress[character].unlockedSkins).ToList();
-        }
-
-        public static List<Character> AllAvailableCharacters()
-        {
-            return characterData.Keys.Intersect(progressionData.unlockedCharacters).ToList();
-        }
-
-        internal static void ItemCollected(AbstractMeadowCollectible abstractMeadowCollectible)
-        {
-            var meadowHud = (Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).cameras[0].hud.parts.First(p => p is MeadowHud) as MeadowHud;
-            if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold) // creature unlock
-            {
-                meadowHud.AnimateChar();
-                progressionData.characterUnlockProgress++;
-                if (progressionData.characterUnlockProgress >= characterProgressTreshold)
-                {
-                    if (NextUnlockableCharacter() is Character chararcter)
-                    {
-                        progressionData.unlockedCharacters.Add(chararcter);
-                        progressionData.characterUnlockProgress -= characterProgressTreshold;
-                        meadowHud.NewCharacterUnlocked(chararcter);
-                    }
-                    else
-                    {
-                        progressionData.characterUnlockProgress = characterProgressTreshold;
-                    }
-                }
-            }
-            else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
-            {
-                meadowHud.AnimateEmote();
-                progressionData.currentCharacterProgress.emoteUnlockProgress++;
-                if (progressionData.currentCharacterProgress.emoteUnlockProgress >= emoteProgressTreshold)
-                {
-                    if (NextUnlockableEmote() is Emote emote)
-                    {
-                        progressionData.currentCharacterProgress.unlockedEmotes.Add(emote);
-                        progressionData.currentCharacterProgress.emoteUnlockProgress -= emoteProgressTreshold;
-                        meadowHud.NewEmoteUnlocked(emote);
-                    }
-                    else
-                    {
-                        progressionData.currentCharacterProgress.emoteUnlockProgress = emoteProgressTreshold;
-                    }
-                }
-            }
-            else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue)
-            {
-                meadowHud.AnimateSkin();
-                progressionData.currentCharacterProgress.skinUnlockProgress++;
-                if (progressionData.currentCharacterProgress.skinUnlockProgress >= skinProgressTreshold)
-                {
-                    if (NextUnlockableSkin() is Skin skin)
-                    {
-                        progressionData.currentCharacterProgress.unlockedSkins.Add(skin);
-                        progressionData.currentCharacterProgress.skinUnlockProgress -= skinProgressTreshold;
-                        meadowHud.NewSkinUnlocked(skin);
-                    }
-                    else
-                    {
-                        progressionData.currentCharacterProgress.skinUnlockProgress = skinProgressTreshold;
-                    }
-                }
-            }
-        }
-
-        private static Emote NextUnlockableEmote()
-        {
-            return emoteEmotes.Except(progressionData.currentCharacterProgress.unlockedEmotes).FirstOrDefault();
-        }
-
-        private static Skin NextUnlockableSkin()
-        {
-            return characterData[progressionData.currentlySelectedCharacter].skins.Except(progressionData.currentCharacterProgress.unlockedSkins).FirstOrDefault();
-        }
-
-        private static Character NextUnlockableCharacter()
-        {
-            return characterData.Keys.Except(progressionData.unlockedCharacters).FirstOrDefault();
-        }
-
-        internal static Color TokenRedColor = new Color(248f / 255f, 89f / 255f, 93f / 255f);
-        internal static Color TokenBlueColor = RainWorld.AntiGold.rgb;
-        internal static Color TokenGoldColor = RainWorld.GoldRGB;
-
-        public static void LoadProgression()
-        {
-            if (progressionData != null) return;
-            // todo unfake me
-            progressionData = new ProgressionData();
-            progressionData.unlockedCharacters = new() { Character.Slugcat, Character.Cicada, Character.Lizard };
-            progressionData.characterProgress = progressionData.unlockedCharacters.Select(c => new KeyValuePair<Character, ProgressionData.CharacterProgressionData>(c, new ProgressionData.CharacterProgressionData()
-            {
-                unlockedEmotes = new List<Emote>() { Emote.emoteHello, Emote.emoteHappy, Emote.emoteSad },
-                unlockedSkins = characterData[c].skins.Take(1).ToList()
-            })).ToDictionary();
-            progressionData.currentlySelectedCharacter = Character.Lizard;
-            progressionData.SetSelectedCharacter(progressionData.currentlySelectedCharacter);
-        }
-
-        public static ProgressionData progressionData;
-        internal static int emoteProgressTreshold = 4;
-        internal static int skinProgressTreshold = 6;
-        internal static int characterProgressTreshold = 8;
         public static List<Emote> emoteEmotes = new()
         {
             Emote.emoteHello,
@@ -468,27 +370,234 @@ namespace RainMeadow
             Emote.emoteMischievous,
         };
 
-        public class ProgressionData
+        public static List<Emote> AllAvailableEmotes(Character character)
         {
-            internal int characterUnlockProgress;
-            internal List<Character> unlockedCharacters;
-            internal Dictionary<Character, CharacterProgressionData> characterProgress;
-            internal Character currentlySelectedCharacter;
+            return emoteEmotes.Intersect(progressionData.characterProgress[character].unlockedEmotes).ToList();
+        }
 
-            public void SetSelectedCharacter(Character character)
+        public static List<Skin> AllAvailableSkins(Character character)
+        {
+            return characterData[character].skins.Intersect(progressionData.characterProgress[character].unlockedSkins).ToList();
+        }
+
+        public static List<Character> AllAvailableCharacters()
+        {
+            return characterData.Keys.Intersect(progressionData.characterProgress.Keys).ToList();
+        }
+
+        internal static void ItemCollected(AbstractMeadowCollectible abstractMeadowCollectible)
+        {
+            anythingToSave = true;
+            var meadowHud = (Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).cameras[0].hud.parts.First(p => p is MeadowHud) as MeadowHud;
+            if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold) // creature unlock
             {
-                currentlySelectedCharacter = character;
-                if (!characterProgress.ContainsKey(character)) characterProgress[character] = new CharacterProgressionData();
+                meadowHud.AnimateChar();
+                progressionData.characterUnlockProgress++;
+                if (progressionData.characterUnlockProgress >= characterProgressTreshold)
+                {
+                    if (NextUnlockableCharacter() is Character chararcter)
+                    {
+                        progressionData.characterProgress.Add(chararcter, new ProgressionData.CharacterProgressionData(chararcter));
+                        if(NextUnlockableCharacter() != null) progressionData.characterUnlockProgress -= characterProgressTreshold;
+                        meadowHud.NewCharacterUnlocked(chararcter);
+                        SaveProgression();
+                    }
+                    else
+                    {
+                        progressionData.characterUnlockProgress = characterProgressTreshold;
+                        anythingToSave = false;
+                    }
+                }
+            }
+            else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
+            {
+                meadowHud.AnimateEmote();
+                progressionData.currentCharacterProgress.emoteUnlockProgress++;
+                if (progressionData.currentCharacterProgress.emoteUnlockProgress >= emoteProgressTreshold)
+                {
+                    if (NextUnlockableEmote() is Emote emote)
+                    {
+                        progressionData.currentCharacterProgress.unlockedEmotes.Add(emote);
+                        if (NextUnlockableEmote() != null) progressionData.currentCharacterProgress.emoteUnlockProgress -= emoteProgressTreshold;
+                        meadowHud.NewEmoteUnlocked(emote);
+                        SaveProgression();
+                    }
+                    else
+                    {
+                        progressionData.currentCharacterProgress.emoteUnlockProgress = emoteProgressTreshold;
+                        anythingToSave = false;
+                    }
+                }
+            }
+            else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue)
+            {
+                meadowHud.AnimateSkin();
+                progressionData.currentCharacterProgress.skinUnlockProgress++;
+                if (progressionData.currentCharacterProgress.skinUnlockProgress >= skinProgressTreshold)
+                {
+                    if (NextUnlockableSkin() is Skin skin)
+                    {
+                        progressionData.currentCharacterProgress.unlockedSkins.Add(skin);
+                        if (NextUnlockableSkin() != null) progressionData.currentCharacterProgress.skinUnlockProgress -= skinProgressTreshold;
+                        meadowHud.NewSkinUnlocked(skin);
+                        SaveProgression();
+                    }
+                    else
+                    {
+                        progressionData.currentCharacterProgress.skinUnlockProgress = skinProgressTreshold;
+                        anythingToSave = false;
+                    }
+                }
+            }
+            AutosaveProgression(); // will be skipped if already saved
+        }
+
+        private static Emote NextUnlockableEmote()
+        {
+            return emoteEmotes.Except(progressionData.currentCharacterProgress.unlockedEmotes).FirstOrDefault();
+        }
+
+        private static Skin NextUnlockableSkin()
+        {
+            return characterData[progressionData.CurrentlySelectedCharacter].skins.Except(progressionData.currentCharacterProgress.unlockedSkins).FirstOrDefault();
+        }
+
+        private static Character NextUnlockableCharacter()
+        {
+            return allCharacters.Except(progressionData.characterProgress.Keys).FirstOrDefault();
+        }
+
+        internal static Color TokenRedColor = new Color(248f / 255f, 89f / 255f, 93f / 255f);
+        internal static Color TokenBlueColor = RainWorld.AntiGold.rgb;
+        internal static Color TokenGoldColor = RainWorld.GoldRGB;
+
+        public class ExtEnumTypeConverter<T> : TypeConverter
+        {
+            public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+            {
+                if(sourceType == typeof(string))
+                {
+                    return true;
+                }
+                return base.CanConvertFrom(context, sourceType);
             }
 
-            internal CharacterProgressionData currentCharacterProgress => characterProgress[currentlySelectedCharacter];
-
-            internal class CharacterProgressionData
+            public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
             {
-                internal int emoteUnlockProgress;
-                internal int skinUnlockProgress;
-                internal List<Emote> unlockedEmotes;
-                internal List<Skin> unlockedSkins;
+                return value != null && ExtEnumBase.TryParse(typeof(T), (string)value, true, out var val) ? val : null;
+            }
+
+
+            public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
+            {
+                return (value == null) ? null : value.ToString();
+            }
+        }
+
+        private static string _saveLocation;
+        static string SaveLocation
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_saveLocation))
+                {
+                    _saveLocation = Path.Combine(Path.GetFullPath(Kittehface.Framework20.UserData.GetPersistentDataPath()), "meadow.json");
+                }
+                return _saveLocation;
+            }
+        }
+
+        public static void LoadProgression()
+        {
+            RainMeadow.DebugMe();
+            if (progressionData != null) return;
+            try
+            {
+                progressionData = JsonConvert.DeserializeObject<ProgressionData>(File.ReadAllText(SaveLocation));
+            }
+            catch (Exception ex)
+            {
+                RainMeadow.Error(ex);
+            }
+            if (progressionData == null) LoadDefaultProgression();
+            lastSaved = UnityEngine.Time.realtimeSinceStartup;
+        }
+
+        public static void LoadDefaultProgression()
+        {
+            RainMeadow.DebugMe();
+            if (progressionData != null) return;
+
+            progressionData = new ProgressionData();
+
+            SaveProgression();
+        }
+
+        // force save
+        internal static void SaveProgression()
+        {
+            RainMeadow.DebugMe();
+            File.WriteAllText(SaveLocation, JsonConvert.SerializeObject(progressionData));
+            anythingToSave = false;
+            lastSaved = UnityEngine.Time.realtimeSinceStartup;
+        }
+
+        // maybe save
+        internal static void AutosaveProgression()
+        {
+            if(anythingToSave && UnityEngine.Time.realtimeSinceStartup > lastSaved + 120) // no more than once a couple minutes
+            {
+                SaveProgression();
+            }
+        }
+
+        public static ProgressionData progressionData;
+        internal static int emoteProgressTreshold = 4;
+        internal static int skinProgressTreshold = 6;
+        internal static int characterProgressTreshold = 8;
+        private static float lastSaved;
+        private static bool anythingToSave;
+
+
+        // Will future me regret unversioned serialization? We'll see... If there's an issue try Serialization Callbacks
+        [JsonObject(MemberSerialization.OptIn)] // otherwise properties/accessors create duplicated data, could also be opt-out but I don't like implicit
+        public class ProgressionData
+        {
+
+            [JsonProperty]
+            public int characterUnlockProgress;
+            [JsonProperty] 
+            public Character CurrentlySelectedCharacter { get => currentlySelectedCharacter; set { currentlySelectedCharacter = value; if (!characterProgress.ContainsKey(value)) characterProgress[value] = new CharacterProgressionData(value); } }
+            private Character currentlySelectedCharacter;
+            [JsonProperty]
+            public Dictionary<Character, CharacterProgressionData> characterProgress;
+            public CharacterProgressionData currentCharacterProgress => characterProgress[CurrentlySelectedCharacter];
+
+            public ProgressionData()
+            {
+                characterProgress = new();
+                CurrentlySelectedCharacter = Character.Slugcat;
+            }
+
+            [JsonObject(MemberSerialization.OptIn)]
+            public class CharacterProgressionData
+            {
+                [JsonProperty]
+                public double timePlayed; // todo pick type hased on what helpers we have available for display
+                [JsonProperty]
+                public int emoteUnlockProgress;
+                [JsonProperty]
+                public int skinUnlockProgress;
+                [JsonProperty]
+                public List<Emote> unlockedEmotes;
+                [JsonProperty]
+                public List<Skin> unlockedSkins;
+
+                public CharacterProgressionData(Character character)
+                {
+                    unlockedEmotes = emoteEmotes.Take(3).ToList();
+                    unlockedSkins = characterData[character].skins.Take(1).ToList();
+                }
             }
         }
     }

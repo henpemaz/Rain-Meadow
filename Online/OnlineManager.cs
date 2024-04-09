@@ -63,7 +63,11 @@ namespace RainMeadow
             RoomSession.map = new();
             OnlinePhysicalObject.map = new();
 
+            RainMeadowModManager.Reset();
+
+            MatchmakingManager.instance.LeaveLobby();
             lobby = null;
+
             mePlayer = new OnlinePlayer(mePlayer.id) { isMe = true };
             players = new List<OnlinePlayer>() { mePlayer };
         }

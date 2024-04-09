@@ -37,10 +37,12 @@ namespace RainMeadow
             On.Menu.PauseMenu.ctor += PauseMenu_ctor;
 
             IL.RainWorldGame.Update += RainWorldGame_Update;
+            On.RainWorldGame.Update += RainWorldGame_Update1;
 
             // Arena specific
             On.GameSession.AddPlayer += GameSession_AddPlayer;
         }
+
 
         private void World_LoadWorld(On.World.orig_LoadWorld orig, World self, SlugcatStats.Name slugcatNumber, System.Collections.Generic.List<AbstractRoom> abstractRoomsList, int[] swarmRooms, int[] shelters, int[] gates)
         {
@@ -75,6 +77,16 @@ namespace RainMeadow
             catch (Exception e)
             {
                 Logger.LogError(e);
+            }
+        }
+
+        private void RainWorldGame_Update1(On.RainWorldGame.orig_Update orig, RainWorldGame self)
+        {
+            orig(self);
+            // every 5 minutes
+            if(self.clock % (5*60*40) == 0 && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                MeadowProgression.AutosaveProgression();
             }
         }
 
@@ -195,6 +207,11 @@ namespace RainMeadow
                 if(isStoryMode(out var story))
                 {
                     story.storyClientSettings.inGame = false;
+                }
+
+                if(OnlineManager.lobby.gameMode is MeadowGameMode)
+                {
+                    MeadowProgression.SaveProgression();
                 }
 
                 if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
