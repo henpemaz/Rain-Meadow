@@ -25,7 +25,6 @@ namespace RainMeadow
             On.Menu.SleepAndDeathScreen.Update += SleepAndDeathScreen_Update;
             On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
 
-
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
 
             On.Player.Update += Player_Update;
@@ -38,8 +37,9 @@ namespace RainMeadow
             On.RegionGate.PlayersStandingStill += PlayersStandingStill;
             On.RegionGate.PlayersInZone += RegionGate_PlayersInZone;
 
-            On.RainWorldGame.GameOver += RainWorldGame_GameOver;
+            On.RainWorldGame.GhostShutDown += RainWorldGame_GhostShutDown;
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
+            On.RainWorldGame.GameOver += RainWorldGame_GameOver;
 
             On.BubbleGrass.Update += BubbleGrass_Update;
             On.WaterNut.Swell += WaterNut_Swell;
@@ -244,7 +244,24 @@ namespace RainMeadow
                 self.AddPart(new OnlineStoryHud(self, cam, gameMode));
             }
         }
-
+        private void RainWorldGame_GhostShutDown(On.RainWorldGame.orig_GhostShutDown orig, RainWorldGame self, GhostWorldPresence.GhostID ghostID)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToGhostScreen, ghostID.value);
+                }
+                else
+                {
+                    RPCs.MovePlayersToGhostScreen(ghostID.value);
+                }
+            }
+            else
+            {
+                orig(self,ghostID);
+            }
+        }
         private void RainWorldGame_GoToDeathScreen(On.RainWorldGame.orig_GoToDeathScreen orig, RainWorldGame self)
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)

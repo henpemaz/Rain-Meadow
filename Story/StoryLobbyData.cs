@@ -29,6 +29,8 @@ namespace RainMeadow
             [OnlineField]
             public bool reinforcedKarma;
             [OnlineField]
+            public int karmaCap;
+            [OnlineField]
             public int karma;
             [OnlineField]
             public bool theGlow;
@@ -64,6 +66,7 @@ namespace RainMeadow
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
                     karma = storySession.saveState.deathPersistentSaveData.karma;
+                    karmaCap = storySession.saveState.deathPersistentSaveData.karmaCap;
                     theGlow = storySession.saveState.theGlow;
                     reinforcedKarma = storySession.saveState.deathPersistentSaveData.reinforcedKarma;
                 }
@@ -96,6 +99,7 @@ namespace RainMeadow
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
                     storySession.saveState.deathPersistentSaveData.karma = karma;
+                    storySession.saveState.deathPersistentSaveData.karmaCap = karmaCap;
                     storySession.saveState.deathPersistentSaveData.reinforcedKarma = reinforcedKarma;
                     storySession.saveState.theGlow = theGlow;
                 }
