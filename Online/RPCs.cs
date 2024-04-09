@@ -106,6 +106,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void GoToGhostScreen(string ghostID)
         {
+            //For MSC support, we'll need to add a check for artificer campaign and send it to the VengeanceGhostScreen
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
             if (game.manager.upcomingProcess != null)
             {
