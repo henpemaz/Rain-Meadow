@@ -215,7 +215,7 @@ namespace RainMeadow
 
             this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
             this.clientWaitingButton.OnClick += (_) => { StartGame(); };
-            clientWaitingButton.buttonBehav.greyedOut = !gameMode.didStartGame; // True to begin
+            clientWaitingButton.buttonBehav.greyedOut = !(gameMode.isInGame && !gameMode.changedRegions);
 
             this.pages[0].subObjects.Add(this.clientWaitingButton);
         }
@@ -276,7 +276,7 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner)
             {
                 campaignContainer.text = $"Current Campaign: The {GetCurrentCampaignName()}";
-                clientWaitingButton.buttonBehav.greyedOut = !gameMode.didStartGame;
+                clientWaitingButton.buttonBehav.greyedOut = !(gameMode.isInGame && !gameMode.changedRegions);
             }
 
             if (ssm.scroll == 0f && ssm.lastScroll == 0f)

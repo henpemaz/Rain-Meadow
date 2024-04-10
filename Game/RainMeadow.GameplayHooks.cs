@@ -84,7 +84,7 @@ namespace RainMeadow
                 if (OnlineManager.lobby.isOwner) {
                     (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos = self.room.abstractRoom.name;
                 }
-
+                storyGameMode.changedRegions = false;
             }
             else {
                 var scug = self.room.game.Players.First(); //needs to be changed if we want to support Jolly

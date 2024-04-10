@@ -8,7 +8,8 @@ namespace RainMeadow
         public List<ushort> readyForWinPlayers = new List<ushort>();
 
         // these are synced by StoryLobbyData
-        public bool didStartGame = false;
+        public bool isInGame = false;
+        public bool changedRegions = false;
         public bool didStartCycle = false;
         public string? defaultDenPos;
         public StorySaveProfile? currentSaveSlot;
@@ -72,10 +73,9 @@ namespace RainMeadow
 
         public override void LobbyReadyCheck()
         {
-            if (lobby.isOwner && !didStartGame)
+            if (lobby.isOwner)
             {
                 RainMeadow.Debug("Host LobbyReadyCheck - started game");
-                didStartGame = true;
                 currentCampaign = storyClientSettings.playingAs;
             }
         }
@@ -101,7 +101,10 @@ namespace RainMeadow
         internal override void LobbyTick(uint tick)
         {
             base.LobbyTick(tick);
-            readyForWinPlayers = lobby.entities.Values.Where(e => e.entity is StoryClientSettings sas && sas.readyForWin).Select(e => e.entity.owner.inLobbyId).ToList();
+            readyForWinPlayers = lobby.entities.Values.Where(
+                e => e.entity is StoryClientSettings sas && 
+                (sas.readyForWin || !sas.inGame || sas.isDead)
+            ).Select(e => e.entity.owner.inLobbyId).ToList();
         }
     }
 }
