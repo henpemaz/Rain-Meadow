@@ -507,17 +507,17 @@ namespace RainMeadow
             if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold)
             {
                 meadowHud.AnimateChar();
-                if (CharacterProgress() is var character) meadowHud.NewCharacterUnlocked(character);
+                if (CharacterProgress() is Character character) meadowHud.NewCharacterUnlocked(character);
             }
             else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue)
             {
                 meadowHud.AnimateSkin();
-                if (SkinProgress() is var skin) meadowHud.NewSkinUnlocked(skin);
+                if (SkinProgress() is Skin skin) meadowHud.NewSkinUnlocked(skin);
             }
             else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
             {
                 meadowHud.AnimateEmote();
-                if(EmoteProgress() is var emote) meadowHud.NewEmoteUnlocked(emote);
+                if(EmoteProgress() is Emote emote) meadowHud.NewEmoteUnlocked(emote);
             }
             
             AutosaveProgression(); // will be skipped if already saved

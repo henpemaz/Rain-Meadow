@@ -115,7 +115,7 @@ namespace RainMeadow
                 {
                     MeadowProgression.CharacterProgress();
                 }
-                foreach(var character in MeadowProgression.allCharacters)
+                foreach (var character in MeadowProgression.allCharacters)
                 {
                     MeadowProgression.progressionData.CurrentlySelectedCharacter = character;
                     for (int i = 0; i < 80; i++)
@@ -128,6 +128,14 @@ namespace RainMeadow
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.MeadowMenu);
             };
             mainPage.subObjects.Add(cheatButton);
+
+            var resetButton = new SimplerButton(this, mainPage, "RESET", new Vector2(200f, 140f), new Vector2(110f, 30f));
+            resetButton.OnClick += (_) => {
+                MeadowProgression.progressionData = null;
+                MeadowProgression.LoadDefaultProgression();
+                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.MeadowMenu);
+            };
+            mainPage.subObjects.Add(resetButton);
 
             if (manager.musicPlayer != null)
             {
