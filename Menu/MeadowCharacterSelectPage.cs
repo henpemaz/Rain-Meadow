@@ -1,4 +1,5 @@
 ﻿using Menu;
+using Rewired;
 using UnityEngine;
 
 namespace RainMeadow
@@ -7,24 +8,27 @@ namespace RainMeadow
     {
         public MeadowMenu realMenu;
         public MeadowProgression.Character character;
+        private readonly bool locked;
         public MenuLabel mainLabel;
         public MenuLabel infoLabel;
         public bool isNew;
         public float flashSin;
+        private MeadowMenu.TokenMenuDisplayer unlockProgres;
 
-        public MeadowCharacterSelectPage(MeadowMenu realMenu, SlugcatSelectMenu fakeMenu, int pageIndex, MeadowProgression.Character character) : base(fakeMenu, null, pageIndex, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer)
+        public MeadowCharacterSelectPage(MeadowMenu realMenu, SlugcatSelectMenu fakeMenu, int pageIndex, MeadowProgression.Character character, bool locked = false) : base(fakeMenu, null, pageIndex, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer)
         {
             this.realMenu = realMenu;
             this.character = character;
-            string main = GetSaveLocation();
-            string info;
+            this.locked = locked;
+            string main = locked ? "LOCKED" : GetSaveLocation();
+            string info = "";
             isNew = string.IsNullOrEmpty(main);
             if (isNew)
             {
                 main = GetCharacterName();
                 info = realMenu.Translate("New character!");
             }
-            else
+            else if (!locked)
             {
                 info = GetPlaytime();
             }
@@ -41,6 +45,20 @@ namespace RainMeadow
 
             this.mainLabel.label.color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.MediumGrey);
             this.infoLabel.label.color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.DarkGrey);
+
+            if (locked && !this.slugcatImage.flatMode)
+            {
+                foreach(var index in MeadowProgression.characterData[character].selectSpriteIndexes)
+                {
+                    this.slugcatImage.depthIllustrations[index].sprite.shader = menu.manager.rainWorld.Shaders["RM_SceneHidden"];
+                }
+            }
+
+            if (locked)
+            {
+                this.unlockProgres = new MeadowMenu.TokenMenuDisplayer(realMenu, this, new Vector2(-1000f, this.imagePos.y - 268f - 34f), MeadowProgression.TokenGoldColor, $"{MeadowProgression.progressionData.characterUnlockProgress}/{MeadowProgression.characterProgressTreshold}");
+                this.subObjects.Add(unlockProgres);
+            }
         }
 
         private string GetSaveLocation()
@@ -100,6 +118,11 @@ namespace RainMeadow
             if (isNew)
             {
                 this.infoLabel.label.color = HSLColor.Lerp(Menu.Menu.MenuColor(Menu.Menu.MenuColors.VeryDarkGrey), Menu.Menu.MenuColor(Menu.Menu.MenuColors.MediumGrey), 0.5f + 0.5f * Mathf.Sin(flashSin)).rgb;
+            }
+            if (locked)
+            {
+                this.unlockProgres.alpha = alpha;
+                this.unlockProgres.pos.x = base.MidXpos + scroll * base.ScrollMagnitude + 0.01f;
             }
         }
     }

@@ -67,7 +67,7 @@ namespace RainMeadow
             needed = Mathf.Max(needed - 1, 0);
             if (emoteAnim > 0)
             {
-                needed = 60;
+                needed = 80;
                 emoteAnim--;
                 if (emoteAnim == 0)
                 {
@@ -78,7 +78,7 @@ namespace RainMeadow
             }
             if (skinAnim > 0)
             {
-                needed = 60;
+                needed = 80;
                 skinAnim--;
                 if (skinAnim == 0)
                 {
@@ -89,7 +89,7 @@ namespace RainMeadow
             }
             if (charAnim > 0)
             {
-                needed = 60;
+                needed = 80;
                 charAnim--;
                 if (charAnim == 0)
                 {
@@ -134,8 +134,8 @@ namespace RainMeadow
         public override void ClearSprites()
         {
             base.ClearSprites();
-            container.RemoveAllChildren();
             container.RemoveFromContainer();
+            container.RemoveAllChildren();
             emotesIcon.ClearSprites();
             skinsIcon.ClearSprites();
             characterIcon.ClearSprites();
@@ -165,7 +165,7 @@ namespace RainMeadow
             //private float sinCounter;
             private float sinCounter2;
             private FSprite[] sprites;
-            private FContainer container;
+            public FContainer container;
 
             public TokenSparkIcon(FContainer hudContainer, Color color, Vector2 pos, float scale)
             {

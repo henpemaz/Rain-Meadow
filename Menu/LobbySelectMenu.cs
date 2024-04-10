@@ -36,6 +36,7 @@ namespace RainMeadow
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
         {
             RainMeadow.DebugMe();
+            OnlineManager.Reset();
             Vector2 buttonSize = new(130f, 30f);
             this.backTarget = ProcessManager.ProcessID.MainMenu;
 

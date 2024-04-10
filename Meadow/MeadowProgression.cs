@@ -44,6 +44,7 @@ namespace RainMeadow
             public string emoteAtlas;
             public Color emoteColor;
             public List<Skin> skins = new();
+            public int[] selectSpriteIndexes;
         }
 
         [TypeConverter(typeof(ExtEnumTypeConverter<Character>))]
@@ -64,6 +65,7 @@ namespace RainMeadow
                 emotePrefix = "sc_",
                 emoteAtlas = "emotes_slugcat",
                 emoteColor = new Color(85f, 120f, 120f, 255f) / 255f,
+                selectSpriteIndexes = new[] { 2 },
             });
             public static Character Cicada = new("Cicada", true, new()
             {
@@ -71,6 +73,7 @@ namespace RainMeadow
                 emotePrefix = "squid_",
                 emoteAtlas = "emotes_squid",
                 emoteColor = new Color(81f, 81f, 81f, 255f) / 255f,
+                selectSpriteIndexes = new[] { 2 },
             });
             public static Character Lizard = new("Lizard", true, new()
             {
@@ -78,6 +81,7 @@ namespace RainMeadow
                 emotePrefix = "liz_",
                 emoteAtlas = "emotes_lizard",
                 emoteColor = new Color(197, 220, 232, 255f) / 255f,
+                selectSpriteIndexes = new[] { 1, 2 },
             });
             public static Character Scavenger = new("Scavenger", true, new()
             {
@@ -85,6 +89,7 @@ namespace RainMeadow
                 emotePrefix = "sc_", // "scav_"
                 emoteAtlas = "emotes_slugcat",//"emotes_scav",
                 emoteColor = new Color(232, 187, 200, 255f) / 255f,
+                selectSpriteIndexes = new[] { 1 },
             });
             public static Character Noodlefly = new("Noodlefly", true, new()
             {
@@ -92,6 +97,7 @@ namespace RainMeadow
                 emotePrefix = "sc_", // "noot_"
                 emoteAtlas = "emotes_slugcat",//"emotes_noot",
                 emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
+                selectSpriteIndexes = new int[0],
             });
             public static Character Eggbug = new("Eggbug", true, new()
             {
@@ -99,6 +105,7 @@ namespace RainMeadow
                 emotePrefix = "sc_", // "noot_"
                 emoteAtlas = "emotes_slugcat",//"emotes_noot",
                 emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
+                selectSpriteIndexes = new[] { 2 },
             });
         }
 
@@ -452,24 +459,24 @@ namespace RainMeadow
             AutosaveProgression(); // will be skipped if already saved
         }
 
-        private static Emote NextUnlockableEmote()
+        public static Emote NextUnlockableEmote()
         {
             return emoteEmotes.Except(progressionData.currentCharacterProgress.unlockedEmotes).FirstOrDefault();
         }
 
-        private static Skin NextUnlockableSkin()
+        public static Skin NextUnlockableSkin()
         {
             return characterData[progressionData.CurrentlySelectedCharacter].skins.Except(progressionData.currentCharacterProgress.unlockedSkins).FirstOrDefault();
         }
 
-        private static Character NextUnlockableCharacter()
+        public static Character NextUnlockableCharacter()
         {
             return allCharacters.Except(progressionData.characterProgress.Keys).FirstOrDefault();
         }
 
-        internal static Color TokenRedColor = new Color(248f / 255f, 89f / 255f, 93f / 255f);
-        internal static Color TokenBlueColor = RainWorld.AntiGold.rgb;
-        internal static Color TokenGoldColor = RainWorld.GoldRGB;
+        public static Color TokenRedColor = new Color(248f / 255f, 89f / 255f, 93f / 255f);
+        public static Color TokenBlueColor = RainWorld.AntiGold.rgb;
+        public static Color TokenGoldColor = RainWorld.GoldRGB;
 
         public class ExtEnumTypeConverter<T> : TypeConverter
         {
