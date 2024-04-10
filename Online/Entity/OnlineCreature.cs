@@ -51,10 +51,6 @@ namespace RainMeadow
 
         public static AbstractCreature AbstractCreatureFromString(World world, string creatureString)
         {
-            //  Slugcat<cA>ID.-1.1<cA>GATE_HI_CC.-1<cA>
-/*              array[0] = "Slugcat"
-                array[1] = "ID.-1.1"
-                array[2] = "GATE_HI_CC.-1*/
             string[] array = Regex.Split(creatureString, "<cA>");
             CreatureTemplate.Type type = new CreatureTemplate.Type(array[0], false);
 
@@ -74,6 +70,32 @@ namespace RainMeadow
             EntityID id = EntityID.FromString(array[1]);
 
             int? num = BackwardsCompatibilityRemix.ParseRoomIndex(array2[0]);
+
+            /*            if (RainMeadow.isArenaMode(out var _))
+                        {
+
+                            int num2 = world.GetAbstractRoom("arenasmallroom").index;
+                            EntityID id2 = EntityID.FromString(array[1]);
+
+                            WorldCoordinate denz = new WorldCoordinate(num2, -1, 1, int.Parse(array2[1], NumberStyles.Any, CultureInfo.InvariantCulture));
+
+                            AbstractCreature abstractCreature2 = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, denz, id2);
+                            abstractCreature2.state.alive = true;
+                            abstractCreature2.setCustomFlags();
+
+                            return abstractCreature2;
+
+                        }*/
+
+            foreach (var thing in array)
+            {
+                RainMeadow.Debug("ARRAY 1 " + thing);
+            }
+
+            foreach (var thing2 in array2)
+            {
+                RainMeadow.Debug("ARRAY TWO " + thing2);
+            }
 
             if (num == null || !world.IsRoomInRegion(num.Value))
             {
@@ -108,6 +130,7 @@ namespace RainMeadow
 
         protected override AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, PhysicalObjectEntityState initialState)
         {
+            RainMeadow.Debug("ur mom");
             World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
             EntityID id = world.game.GetNewID();
 
