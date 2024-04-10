@@ -84,12 +84,16 @@ namespace RainMeadow
                 // if (ModManager.MSC || OnlineManager.Lobby != null)
                 var c = new ILCursor(il);
                 c.GotoNext(moveType: MoveType.After,
-                    i => i.MatchLdsfld<ModManager>("MSC"));
-                c.MoveAfterLabels();
-                var target = il.DefineLabel();
+                    i => i.MatchLdsfld<ModManager>("MSC")
+                    );
+                c.GotoNext(moveType: MoveType.Before,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<UpdatableAndDeletable>("room")
+                    );
+                var target = c.Next;
                 c.GotoPrev(moveType: MoveType.Before,
-                    i => i.MatchLdsfld<ModManager>("MSC"));
-                c.MoveBeforeLabels();
+                    i => i.MatchLdsfld<ModManager>("MSC")
+                    );
                 c.EmitDelegate(() => { return OnlineManager.lobby != null; } );
                 c.Emit(OpCodes.Brtrue, target);
             }
