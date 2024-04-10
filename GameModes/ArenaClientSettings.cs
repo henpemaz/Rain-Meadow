@@ -24,6 +24,8 @@ namespace RainMeadow.GameModes
         public ArenaClientSettings(Definition entityDefinition) : base(entityDefinition)
         {
             RainMeadow.Debug(this);
+            bodyColor = entityDefinition.owner == 2 ? Color.cyan : PlayerGraphics.DefaultSlugcatColor(SlugcatStats.Name.Yellow);
+            eyeColor = Color.black;
 
         }
 
@@ -72,7 +74,7 @@ namespace RainMeadow.GameModes
 
             public ArenaAvatarCustomization(ArenaClientSettings slugcatAvatarSettings)
             {
-                settings = slugcatAvatarSettings;
+                this.settings = slugcatAvatarSettings;
             }
 
             internal override void ModifyBodyColor(ref Color bodyColor)

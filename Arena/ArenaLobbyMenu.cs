@@ -14,6 +14,8 @@ namespace RainMeadow
 {
     public class ArenaLobbyMenu : SmartMenu
     {
+        private ArenaClientSettings personaSettings;
+
         public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
         private ArenaClientSettings personaSettings;
 
@@ -257,6 +259,7 @@ namespace RainMeadow
 
         public override void Update()
         {
+
             //MultiplayerMenuUpdate();
             mm.Update();
             //base.Update();
