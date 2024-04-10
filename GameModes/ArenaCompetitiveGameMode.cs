@@ -30,11 +30,10 @@ namespace RainMeadow
         {
             RainMeadow.Debug("Adding arena avatar settings!");
             // Some sort of registration is missing
-            ArenaClientSettings arenaClientSettings = new ArenaClientSettings(
-                            new ArenaClientSettings.Definition(
-                                new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0)
-                                , OnlineManager.mePlayer));
-            clientSettings = arenaClientSettings;
+            clientSettings = new ArenaClientSettings(
+                new ArenaClientSettings.Definition(
+                    new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0)
+                    , OnlineManager.mePlayer));
             clientSettings.EnterResource(lobby);
         }
 

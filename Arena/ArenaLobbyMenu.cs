@@ -14,6 +14,8 @@ namespace RainMeadow
 {
     public class ArenaLobbyMenu : SmartMenu
     {
+        private ArenaClientSettings personaSettings;
+
         public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
         public ArenaLobbyMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
         {
@@ -226,9 +228,7 @@ namespace RainMeadow
                 b.buttonBehav.greyedOut = false;
             }
 
-/*            var personaSettings = (ArenaClientSettings)OnlineManager.lobby.gameMode.clientSettings;
-            personaSettings.bodyColor = Color.white;
-            personaSettings.eyeColor = Color.black;*/
+            BindSettings();
 
         }
 
@@ -239,6 +239,7 @@ namespace RainMeadow
             for (int i = 0; i < OnlineManager.players.Count; i++)
             {
                 manager.arenaSitting.AddPlayer(i); // placeholder add player
+             
 
             }
             manager.arenaSitting.levelPlaylist = new List<string>();
@@ -292,6 +293,7 @@ namespace RainMeadow
 
         public override void Update()
         {
+
             //MultiplayerMenuUpdate();
             mm.Update();
             //base.Update();
@@ -468,6 +470,15 @@ namespace RainMeadow
                 MatchmakingManager.instance.LeaveLobby();
             }
             base.ShutDownProcess();
+        }
+
+        private void BindSettings()
+        {
+            this.personaSettings = (ArenaClientSettings)OnlineManager.lobby.gameMode.clientSettings;
+            // personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
+            personaSettings.bodyColor = Color.magenta;
+            personaSettings.eyeColor = Color.black;
+
         }
     }
 }

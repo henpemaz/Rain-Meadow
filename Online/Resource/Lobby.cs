@@ -105,13 +105,31 @@ namespace RainMeadow
         {
             if (gameModeType == OnlineGameMode.OnlineGameModeType.ArenaCompetitive) // Arena
             {
-                // changing from 0, -1 to 0, 0 no longer breaks lobby
-                var nr = new Region("arena", 0, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer); // this loads game but leaves a ResourceFromIdentifier:resource not found : arena
+                // changing from 0, -1 to 0, 0 no longer breaks lobby. Region number cannot be zero
+                // TODO: Need to load all arena region resources
+
+/*                foreach (var r in Region.LoadAllRegions(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer))
+                {
+                    RainMeadow.Debug(r.name);
+                    var ws = new WorldSession(r, this);
+                    worldSessions.Add(r.name, ws);
+                    subresources.Add(ws);
+                }*/
+
+
+                var nr = new Region("arena", 0, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer); // OnlineManager.rsid
 
                 var ns = new WorldSession(nr, this);
                 worldSessions.Add(nr.name, ns);
 
                 subresources.Add(ns);
+
+                var nr2 = new Region("arenasmallroom", 0, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer);
+
+                var ns2 = new WorldSession(nr, this);
+                worldSessions.Add(nr2.name, ns2);
+
+                subresources.Add(ns2);
             }
             else // story mode
             {

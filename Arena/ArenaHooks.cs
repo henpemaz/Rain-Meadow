@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -22,9 +23,161 @@ namespace RainMeadow
         private void ArenaHooks()
         {
 
+            On.ArenaGameSession.Update += ArenaGameSession_Update;
+            On.ArenaGameSession.SpawnPlayers += ArenaGameSession_SpawnPlayers;
+
+
         }
 
-    }
+
+        private void ArenaGameSession_SpawnPlayers(On.ArenaGameSession.orig_SpawnPlayers orig, ArenaGameSession self, Room room, List<int> suggestedDens) // player 2 is not spawning, is spectating the correct room but no data from player 1 is sent
+        {
+            List<ArenaSitting.ArenaPlayer> list = new List<ArenaSitting.ArenaPlayer>();
+
+
+            List<ArenaSitting.ArenaPlayer> list2 = new List<ArenaSitting.ArenaPlayer>();
+            for (int j = 0; j < self.arenaSitting.players.Count; j++)
+            {
+                list2.Add(self.arenaSitting.players[j]);
+            }
+
+            while (list2.Count > 0)
+            {
+                int index = UnityEngine.Random.Range(0, list2.Count);
+                list.Add(list2[index]);
+                list2.RemoveAt(index);
+            }
+
+
+            int exits = self.game.world.GetAbstractRoom(0).exits;
+            int[] array = new int[exits];
+            if (suggestedDens != null)
+            {
+                for (int k = 0; k < suggestedDens.Count; k++)
+                {
+                    if (suggestedDens[k] >= 0 && suggestedDens[k] < array.Length)
+                    {
+                        array[suggestedDens[k]] -= 1000;
+                    }
+                }
+            }
+
+            for (int l = 0; l < list.Count; l++)
+            {
+                int num = UnityEngine.Random.Range(0, exits);
+                float num2 = float.MinValue;
+                for (int m = 0; m < exits; m++)
+                {
+                    float num3 = UnityEngine.Random.value - (float)array[m] * 1000f;
+                    RWCustom.IntVector2 startTile = room.ShortcutLeadingToNode(m).StartTile;
+                    for (int n = 0; n < exits; n++)
+                    {
+                        if (n != m && array[n] > 0)
+                        {
+                            num3 += Mathf.Clamp(startTile.FloatDist(room.ShortcutLeadingToNode(n).StartTile), 8f, 17f) * UnityEngine.Random.value;
+                        }
+                    }
+
+                    if (num3 > num2)
+                    {
+                        num = m;
+                        num2 = num3;
+                    }
+                }
+
+                array[num]++;
+                AbstractCreature abstractCreature = new AbstractCreature(self.game.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(0, -1, -1, -1), new EntityID(-1, list[l].playerNumber));
+
+
+
+
+                if (ModManager.MSC && l == 0)
+                {
+                    self.game.cameras[0].followAbstractCreature = abstractCreature;
+                }
+
+                if (self.chMeta != null)
+                {
+                    abstractCreature.state = new PlayerState(abstractCreature, list[l].playerNumber, self.characterStats_Mplayer[0].name, isGhost: false);
+                }
+                else
+                {
+                    abstractCreature.state = new PlayerState(abstractCreature, list[l].playerNumber, new SlugcatStats.Name(ExtEnum<SlugcatStats.Name>.values.GetEntry(list[l].playerNumber)), isGhost: false);
+                }
+
+                abstractCreature.Realize();
+                ShortcutHandler.ShortCutVessel shortCutVessel = new ShortcutHandler.ShortCutVessel(new RWCustom.IntVector2(-1, -1), abstractCreature.realizedCreature, self.game.world.GetAbstractRoom(0), 0);
+                shortCutVessel.entranceNode = num;
+                shortCutVessel.room = self.game.world.GetAbstractRoom("smallroom");
+                abstractCreature.pos.room = self.game.world.offScreenDen.index;
+                self.game.shortcuts.betweenRoomsWaitingLobby.Add(shortCutVessel);
+                self.AddPlayer(abstractCreature);
+                if (ModManager.MSC)
+                {
+                    if ((abstractCreature.realizedCreature as Player).SlugCatClass == SlugcatStats.Name.Red)
+                    {
+                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.All, -1, l, -0.75f);
+                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Scavengers, -1, l, 0.5f);
+                    }
+
+                    if ((abstractCreature.realizedCreature as Player).SlugCatClass == SlugcatStats.Name.Yellow)
+                    {
+                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.All, -1, l, 0.75f);
+                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Scavengers, -1, l, 0.3f);
+                    }
+
+
+                }
+            }
+
+            self.playersSpawned = true;
+
+        }
+
+        private void ArenaGameSession_Update(On.ArenaGameSession.orig_Update orig, ArenaGameSession self) // stop game over 
+        {
+            // TODO: Follow the trail of playerAvatars (onlinePlayer and OnlineEntity CWT)
+            if (OnlineManager.lobby.playerAvatars != null)
+            {
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+                {
+
+                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none)
+                    {
+                        RainMeadow.Debug("I'm NOT HERE " + playerAvatar.id); // Current prints 'I'm NOT HERE  0" for host. Host is not an online Entity
+                        continue; // not in game
+                    }
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                    {
+                        RainMeadow.Debug("MY ID " + playerAvatar.id + "My POS " + ac.pos); // Currently does not
+                    }
+                }
+            }
+            if (self.arenaSitting.attempLoadInGame && self.arenaSitting.gameTypeSetup.savingAndLoadingSession)
+            {
+                self.arenaSitting.attempLoadInGame = false;
+                self.arenaSitting.LoadFromFile(self, self.game.world, self.game.rainWorld);
+            }
+
+            if (self.initiated)
+            {
+                self.counter++;
+            }
+            else if (self.room != null && self.room.shortCutsReady)
+            {
+                self.Initiate();
+            }
+
+            if (self.room != null && self.chMeta != null && self.chMeta.deferred)
+            {
+                self.room.deferred = true;
+            }
+
+            self.thisFrameActivePlayers = self.PlayersStillActive(addToAliveTime: true, dontCountSandboxLosers: false);
+        }
 
 
     }
+
+
+}
