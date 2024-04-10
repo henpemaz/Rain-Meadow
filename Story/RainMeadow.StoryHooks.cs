@@ -56,8 +56,23 @@ namespace RainMeadow
             On.OracleSwarmer.BitByPlayer += OracleSwarmer_BitByPlayer;
             On.SLOracleSwarmer.BitByPlayer += SLOracleSwarmer_BitByPlayer;
             On.CoralBrain.CoralNeuronSystem.PlaceSwarmers += OnCoralNeuronSystem_PlaceSwarmers;
-            IL.CoralBrain.CoralNeuronSystem.PlaceSwarmers += ILCoralNeuronSystem_PlaceSwarmers;
+            On.SSOracleSwarmer.NewRoom += SSOracleSwarmer_NewRoom;
+            //IL.CoralBrain.CoralNeuronSystem.PlaceSwarmers += ILCoralNeuronSystem_PlaceSwarmers;
 
+        }
+
+        private void SSOracleSwarmer_NewRoom(On.SSOracleSwarmer.orig_NewRoom orig, SSOracleSwarmer self, Room newRoom)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self,newRoom);
+                return;
+            }
+
+            if (!ModManager.MSC)
+            {
+                newRoom.abstractRoom.AddEntity(self.abstractPhysicalObject);
+            }
         }
 
         //Only spawn if we own the room
@@ -75,6 +90,7 @@ namespace RainMeadow
             }
         }
 
+        //Unused, keeping it around incase SSOracleSwarmer_NewRoom acts up.
         private void ILCoralNeuronSystem_PlaceSwarmers(MonoMod.Cil.ILContext il)
         {
             try
