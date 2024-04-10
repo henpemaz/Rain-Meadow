@@ -100,14 +100,7 @@ namespace RainMeadow
                 gameMode.storyIntRemixSettings = hostSettings.hostIntSettings;
             }
 
-            if (OnlineManager.lobby.isActive)
-            {
-                OnLobbyActive();
-            }
-            else
-            {
-                OnlineManager.lobby.gameMode.OnLobbyActive += OnLobbyActive;
-            }
+            BindSettings();
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
         }
 
@@ -323,12 +316,9 @@ namespace RainMeadow
         public override void ShutDownProcess()
         {
             RainMeadow.DebugMe();
-
-            if (OnlineManager.lobby != null) OnlineManager.lobby.gameMode.OnLobbyActive -= OnLobbyActive;
-
-            if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
+            if (manager.upcomingProcess != ProcessManager.ProcessID.Game) // if join on sleep/deathscreen this needs to be added here as well
             {
-                MatchmakingManager.instance.LeaveLobby();
+                OnlineManager.LeaveLobby();
             }
             base.ShutDownProcess();
         }
@@ -392,7 +382,6 @@ namespace RainMeadow
             friendsList[0].OnClick += (_) =>
             {
                 SteamFriends.ActivateGameOverlay("friends");
-
             };
         }
 
@@ -456,11 +445,6 @@ namespace RainMeadow
             personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
             personaSettings.bodyColor = Color.white;
             personaSettings.eyeColor = Color.black;
-        }
-
-        private void OnLobbyActive()
-        {
-            BindSettings();
         }
 
         private void Colorpicker_OnValueChangedEvent()

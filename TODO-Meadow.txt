@@ -17,8 +17,13 @@ plants todo
 				seems safe
 
 progression todo
-	could show current progress to next thing on char select page
 	could have first few creature unlocks be easier the rest harder
+
+save system
+	use save position when loading in
+
+Menu todo
+	track time and save position
 
 emotes todo
 "wish I could "stop" an emote block and start a new one, instead of having to wait out the fade"

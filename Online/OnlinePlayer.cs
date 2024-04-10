@@ -91,7 +91,7 @@ namespace RainMeadow
 
         public void TickAckFromRemote(uint tickAck, ushort recentTickAcks)
         {
-            var timeSinceLastTick = (int)Math.Floor(Math.Max(1, (UnityEngine.Time.realtimeSinceStartup - OnlineManager.lastUpdate) * 1000));
+            var timeSinceLastTick = (int)Math.Floor(Math.Max(1, (UnityEngine.Time.realtimeSinceStartup - OnlineManager.lastReceive) * 1000));
             ping = (int)(OnlineManager.mePlayer.tick - tickAck) * 50 + timeSinceLastTick;
 
             if (NetIO.IsNewerOrEqual(tickAck, latestTickAck))

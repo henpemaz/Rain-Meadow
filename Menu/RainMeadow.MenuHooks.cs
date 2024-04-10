@@ -336,7 +336,8 @@ namespace RainMeadow
                 return;
             }
 
-            OnlineManager.Reset();
+            // we might get here from quitting out of game
+            OnlineManager.LeaveLobby();
 
             var meadowButton = new SimpleButton(self, self.pages[0], self.Translate("MEADOW"), "MEADOW", Vector2.zero, new Vector2(Menu.MainMenu.GetButtonWidth(self.CurrLang), 30f));
             self.AddMainMenuButton(meadowButton, () =>

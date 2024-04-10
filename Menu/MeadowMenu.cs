@@ -1,27 +1,33 @@
 ﻿using Menu;
 using Menu.Remix;
-using Menu.Remix.MixedUI;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
 {
     public class MeadowMenu : SmartMenu, SelectOneButton.SelectOneButtonOwner
     {
-        private RainEffect rainEffect;
+        RainEffect rainEffect;
 
-        private EventfulHoldButton startButton;
-        private EventfulBigArrowButton prevButton;
-        private EventfulBigArrowButton nextButton;
+        EventfulHoldButton startButton;
+        EventfulBigArrowButton prevButton;
+        EventfulBigArrowButton nextButton;
 
-        private SlugcatSelectMenu ssm;
-        private List<SlugcatSelectMenu.SlugcatPage> characterPages;
-        private EventfulSelectOneButton[] skinButtons;
+        SlugcatSelectMenu ssm;
+        List<SlugcatSelectMenu.SlugcatPage> characterPages;
+        
+        MenuLabel skinsLabel;
+        EventfulSelectOneButton[] skinButtons;
 
-        private List<MeadowProgression.Character> playableCharacters;
-        private Dictionary<MeadowProgression.Character, List<MeadowProgression.Skin>> characterSkins;
+        List<MeadowProgression.Character> playableCharacters;
+        Dictionary<MeadowProgression.Character, List<MeadowProgression.Skin>> characterSkins;
+
+        int skinIndex;
+        float tintAmount;
+        MeadowAvatarSettings personaSettings;
+        OpTinyColorPicker colorpicker;
+        TokenMenuDisplayer skinProgressIcon;
 
         public override MenuScene.SceneID GetScene => null;
         public MeadowMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.MeadowMenu)
@@ -47,18 +53,13 @@ namespace RainMeadow
             for (int j = 0; j < this.playableCharacters.Count; j++)
             {
                 this.characterPages.Add(new MeadowCharacterSelectPage(this, ssm, 1 + j, this.playableCharacters[j]));
-                if (characterPages[j].sceneOffset.y == 0) characterPages[j].sceneOffset = new Vector2(-10f, 100f);
                 this.pages.Add(this.characterPages[j]);
 
-                var skins = MeadowProgression.AllAvailableSkins(this.playableCharacters[j]);
-                RainMeadow.Debug(skins);
-                RainMeadow.Debug(skins.Select(s => s.ToString()).Aggregate((a, b) => (a + b)));
-                characterSkins[playableCharacters[j]] = skins;
+                characterSkins[playableCharacters[j]] = MeadowProgression.AllAvailableSkins(this.playableCharacters[j]);
             }
             if(MeadowProgression.NextUnlockableCharacter() is MeadowProgression.Character character)
             {
                 this.characterPages.Add(new MeadowCharacterSelectPage(this, ssm, characterPages.Count + 1, character, locked:true));
-                if (characterPages[characterPages.Count - 1].sceneOffset.y == 0) characterPages[characterPages.Count - 1].sceneOffset = new Vector2(-10f, 100f);
                 this.pages.Add(this.characterPages[characterPages.Count - 1]);
             }
 
@@ -98,8 +99,8 @@ namespace RainMeadow
             colorpicker.wrapper.nextSelectable[3] = slider;
             slider.nextSelectable[1] = colorpicker.wrapper;
 
-            this.unlockProgres = new MeadowMenu.TokenMenuDisplayer(this, this.pages[0], new Vector2(-1000f, -1000f), MeadowProgression.TokenBlueColor, $"{0}/{MeadowProgression.skinProgressTreshold}");
-            this.pages[0].subObjects.Add(unlockProgres);
+            this.skinProgressIcon = new TokenMenuDisplayer(this, this.pages[0], new Vector2(-1000f, -1000f), MeadowProgression.TokenBlueColor, $"{0}/{MeadowProgression.skinProgressTreshold}");
+            this.pages[0].subObjects.Add(skinProgressIcon);
 
             UpdateCharacterUI();
 
@@ -111,63 +112,9 @@ namespace RainMeadow
             }
         }
 
-        public class TokenMenuDisplayer : PositionedMenuObject
-        {
-            public float alpha;
-            private MeadowHud.TokenSparkIcon token;
-            private MenuLabel label;
-            internal string text;
-
-            public TokenMenuDisplayer(Menu.Menu menu, MenuObject owner, Vector2 pos, Color color, string text) : base(menu, owner, pos)
-            {
-                Shader.SetGlobalVector(RainWorld.ShadPropSpriteRect, new Vector4(0, 0, 1, 1)); // only ever set in game smh
-                Shader.SetGlobalVector(RainWorld.ShadPropScreenSize, menu.manager.rainWorld.screenSize);
-                this.text = text;
-                this.token = new MeadowHud.TokenSparkIcon(this.Container, color, pos, 1.5f);
-                this.label = new MenuLabel(menu, owner, text, pos + new Vector2(0, 24f), Vector2.zero, false);
-                this.subObjects.Add(label);
-                alpha = 1f;
-            }
-
-            public override void Update()
-            {
-                base.Update();
-                token.Update();
-                label.text = text;
-            }
-
-            public override void GrafUpdate(float timeStacker)
-            {
-                base.GrafUpdate(timeStacker);
-                token.Draw(timeStacker);
-                token.container.SetPosition(pos);
-                token.container.alpha = alpha;
-                token.container.isVisible = alpha > 0f;
-                label.pos = pos + new Vector2(0, 24f);
-                label.label.alpha = alpha;
-            }
-
-            public override void RemoveSprites()
-            {
-                base.RemoveSprites();
-                token.ClearSprites();
-            }
-        }
-
         private void Colorpicker_OnValueChangedEvent()
         {
             if (personaSettings != null) personaSettings.tint = colorpicker.valuecolor;
-        }
-
-        float tintAmount;
-        public override void SliderSetValue(Slider slider, float f)
-        {
-            tintAmount = f;
-            if (personaSettings != null) personaSettings.tintAmount = f;
-        }
-        public override float ValueOfSlider(Slider slider)
-        {
-            return tintAmount;
         }
 
         private void UpdateCharacterUI()
@@ -195,16 +142,15 @@ namespace RainMeadow
             if(skinButtons.Length > 0)
             {
                 skinsLabel.label.alpha = 1f;
-                unlockProgres.alpha = 1f;
-                unlockProgres.pos = new Vector2(194 + 55, 515) - skinButtons.Length * new Vector2(0, 38);
-                unlockProgres.text = $"{MeadowProgression.progressionData.currentCharacterProgress.skinUnlockProgress}/{MeadowProgression.skinProgressTreshold}";
+                skinProgressIcon.alpha = 1f;
+                skinProgressIcon.pos = new Vector2(194 + 55, 515) - skinButtons.Length * new Vector2(0, 38);
+                skinProgressIcon.text = $"{MeadowProgression.progressionData.currentCharacterProgress.skinUnlockProgress}/{MeadowProgression.skinProgressTreshold}";
             }
             else
             {
                 skinsLabel.label.alpha = 0f;
-                unlockProgres.alpha = 0f;
+                skinProgressIcon.alpha = 0f;
             }
-
         }
 
         public override void Update()
@@ -229,7 +175,6 @@ namespace RainMeadow
                     this.startButton.buttonBehav.greyedOut = true;
                 }
                 this.UpdateCharacterUI();
-                
             }
             if (ssm.scroll == 0f && ssm.lastScroll == 0f)
             {
@@ -257,7 +202,6 @@ namespace RainMeadow
             personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][skinIndex];
             personaSettings.tint = colorpicker.valuecolor;
             personaSettings.tintAmount = this.tintAmount;
-
         }
 
         private void StartGame()
@@ -275,16 +219,10 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
-                MatchmakingManager.instance.LeaveLobby();
+                OnlineManager.LeaveLobby();
             }
             base.ShutDownProcess();
         }
-
-        int skinIndex;
-        private MeadowAvatarSettings personaSettings;
-        private OpTinyColorPicker colorpicker;
-        private TokenMenuDisplayer unlockProgres;
-        private MenuLabel skinsLabel;
 
         public int GetCurrentlySelectedOfSeries(string series) // SelectOneButton.SelectOneButtonOwner
         {
@@ -295,6 +233,17 @@ namespace RainMeadow
         {
             skinIndex = to;
             if(personaSettings != null) personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][to];
+        }
+
+        // Slider owner
+        public override void SliderSetValue(Slider slider, float f)
+        {
+            tintAmount = f;
+            if (personaSettings != null) personaSettings.tintAmount = f;
+        }
+        public override float ValueOfSlider(Slider slider)
+        {
+            return tintAmount;
         }
     }
 }

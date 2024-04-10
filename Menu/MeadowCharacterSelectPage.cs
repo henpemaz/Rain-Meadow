@@ -13,7 +13,7 @@ namespace RainMeadow
         public MenuLabel infoLabel;
         public bool isNew;
         public float flashSin;
-        private MeadowMenu.TokenMenuDisplayer unlockProgres;
+        private TokenMenuDisplayer unlockProgres;
 
         public MeadowCharacterSelectPage(MeadowMenu realMenu, SlugcatSelectMenu fakeMenu, int pageIndex, MeadowProgression.Character character, bool locked = false) : base(fakeMenu, null, pageIndex, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer)
         {
@@ -56,7 +56,7 @@ namespace RainMeadow
 
             if (locked)
             {
-                this.unlockProgres = new MeadowMenu.TokenMenuDisplayer(realMenu, this, new Vector2(-1000f, this.imagePos.y - 268f - 34f), MeadowProgression.TokenGoldColor, $"{MeadowProgression.progressionData.characterUnlockProgress}/{MeadowProgression.characterProgressTreshold}");
+                this.unlockProgres = new TokenMenuDisplayer(realMenu, this, new Vector2(-1000f, this.imagePos.y - 268f - 34f), MeadowProgression.TokenGoldColor, $"{MeadowProgression.progressionData.characterUnlockProgress}/{MeadowProgression.characterProgressTreshold}");
                 this.subObjects.Add(unlockProgres);
             }
         }
