@@ -64,7 +64,7 @@ namespace RainMeadow
 
         private string GetSaveLocation()
         {
-            if (MeadowProgression.progressionData.characterProgress.ContainsKey(character) && !string.IsNullOrEmpty(MeadowProgression.progressionData.characterProgress[character].saveLocation.ResolveRoomName()))
+            if (MeadowProgression.progressionData.characterProgress.ContainsKey(character) && MeadowProgression.progressionData.characterProgress[character].saveLocation != MeadowProgression.characterData[character].startingCoords && !string.IsNullOrEmpty(MeadowProgression.progressionData.characterProgress[character].saveLocation.ResolveRoomName()))
             {
                 var text = Region.GetRegionFullName(MeadowProgression.progressionData.characterProgress[character].saveLocation.ResolveRoomName().Substring(0, 2), slugcatNumber);
                 if (text.Length > 0)

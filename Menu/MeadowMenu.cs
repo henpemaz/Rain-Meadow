@@ -49,6 +49,8 @@ namespace RainMeadow
 
             playableCharacters = MeadowProgression.AllAvailableCharacters();
             ssm.slugcatPageIndex = playableCharacters.IndexOf(MeadowProgression.progressionData.CurrentlySelectedCharacter);
+            if (ssm.slugcatPageIndex == -1) ssm.slugcatPageIndex = 0;
+            MeadowProgression.progressionData.characterProgress[playableCharacters[ssm.slugcatPageIndex]].everSeenInMenu = true;
 
             characterSkins = new();
             for (int j = 0; j < this.playableCharacters.Count; j++)
@@ -106,6 +108,26 @@ namespace RainMeadow
             UpdateCharacterUI();
 
             BindSettings();
+
+            var cheatButton = new SimplerButton(this, mainPage, "CHEAT", new Vector2(200f, 90f), new Vector2(110f, 30f));
+            cheatButton.OnClick += (_) => {
+                for (int i = 0; i < 80; i++)
+                {
+                    MeadowProgression.CharacterProgress();
+                }
+                foreach(var character in MeadowProgression.allCharacters)
+                {
+                    MeadowProgression.progressionData.CurrentlySelectedCharacter = character;
+                    for (int i = 0; i < 80; i++)
+                    {
+                        MeadowProgression.EmoteProgress();
+                        MeadowProgression.SkinProgress();
+                    }
+                }
+                MeadowProgression.progressionData.CurrentlySelectedCharacter = playableCharacters[ssm.slugcatPageIndex];
+                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.MeadowMenu);
+            };
+            mainPage.subObjects.Add(cheatButton);
 
             if (manager.musicPlayer != null)
             {
@@ -227,7 +249,7 @@ namespace RainMeadow
         public override void ShutDownProcess()
         {
             RainMeadow.DebugMe();
-            if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
+            if (manager.upcomingProcess != ProcessManager.ProcessID.Game && manager.upcomingProcess != RainMeadow.Ext_ProcessID.MeadowMenu)
             {
                 OnlineManager.LeaveLobby();
             }

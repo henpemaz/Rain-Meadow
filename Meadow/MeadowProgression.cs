@@ -33,7 +33,7 @@ namespace RainMeadow
             }
         }
 
-        private static List<Character> allCharacters = new();
+        public static List<Character> allCharacters = new();
 
         public static Dictionary<Character, CharacterData> characterData = new();
 
@@ -45,6 +45,7 @@ namespace RainMeadow
             public Color emoteColor;
             public List<Skin> skins = new();
             public int[] selectSpriteIndexes;
+            public WorldCoordinate startingCoords;
         }
 
         [TypeConverter(typeof(ExtEnumTypeConverter<Character>))]
@@ -66,14 +67,7 @@ namespace RainMeadow
                 emoteAtlas = "emotes_slugcat",
                 emoteColor = new Color(85f, 120f, 120f, 255f) / 255f,
                 selectSpriteIndexes = new[] { 2 },
-            });
-            public static Character Cicada = new("Cicada", true, new()
-            {
-                displayName = "CICADA",
-                emotePrefix = "squid_",
-                emoteAtlas = "emotes_squid",
-                emoteColor = new Color(81f, 81f, 81f, 255f) / 255f,
-                selectSpriteIndexes = new[] { 2 },
+                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["SU_C04"], 7, 28, -1),
             });
             public static Character Lizard = new("Lizard", true, new()
             {
@@ -82,6 +76,16 @@ namespace RainMeadow
                 emoteAtlas = "emotes_lizard",
                 emoteColor = new Color(197, 220, 232, 255f) / 255f,
                 selectSpriteIndexes = new[] { 1, 2 },
+                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["DS_A06"], 12, 16, -1),
+            });
+            public static Character Cicada = new("Cicada", true, new()
+            {
+                displayName = "CICADA",
+                emotePrefix = "squid_",
+                emoteAtlas = "emotes_squid",
+                emoteColor = new Color(81f, 81f, 81f, 255f) / 255f,
+                selectSpriteIndexes = new[] { 2 },
+                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["SI_D05"], 32, 18, -1),
             });
             public static Character Scavenger = new("Scavenger", true, new()
             {
@@ -90,6 +94,7 @@ namespace RainMeadow
                 emoteAtlas = "emotes_slugcat",//"emotes_scav",
                 emoteColor = new Color(232, 187, 200, 255f) / 255f,
                 selectSpriteIndexes = new[] { 1 },
+                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["GW_A11"], 26, 22, -1),
             });
             public static Character Noodlefly = new("Noodlefly", true, new()
             {
@@ -98,6 +103,7 @@ namespace RainMeadow
                 emoteAtlas = "emotes_slugcat",//"emotes_noot",
                 emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
                 selectSpriteIndexes = new int[0],
+                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["LF_F02"], 63, 43, -1),
             });
             public static Character Eggbug = new("Eggbug", true, new()
             {
@@ -106,6 +112,16 @@ namespace RainMeadow
                 emoteAtlas = "emotes_slugcat",//"emotes_noot",
                 emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
                 selectSpriteIndexes = new[] { 2 },
+                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["HI_B04"], 32, 18, -1),
+            });
+            public static Character LanternMouse = new("LanternMouse", true, new()
+            {
+                displayName = "LANTERN MOUSE",
+                emotePrefix = "sc_", // "noot_"
+                emoteAtlas = "emotes_slugcat",//"emotes_noot",
+                emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
+                selectSpriteIndexes = new int[0],
+                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["SH_A21"], 32, 26, -1),
             });
         }
 
@@ -312,6 +328,21 @@ namespace RainMeadow
                 creatureType = CreatureTemplate.Type.EggBug,
                 randomSeed = 1002,
             });
+
+            public static Skin LanternMouse_Blue = new("LanternMouse_Blue", true, new()
+            {
+                character = Character.LanternMouse,
+                displayName = "Blue",
+                creatureType = CreatureTemplate.Type.LanternMouse,
+                randomSeed = 1001,
+            });
+            public static Skin LanternMouse_Teal = new("LanternMouse_Teal", true, new()
+            {
+                character = Character.LanternMouse,
+                displayName = "Teal",
+                creatureType = CreatureTemplate.Type.LanternMouse,
+                randomSeed = 1002,
+            });
         }
 
         [TypeConverter(typeof(ExtEnumTypeConverter<Emote>))]
@@ -389,74 +420,7 @@ namespace RainMeadow
 
         public static List<Character> AllAvailableCharacters()
         {
-            return characterData.Keys.Intersect(progressionData.characterProgress.Keys).ToList();
-        }
-
-        internal static void ItemCollected(AbstractMeadowCollectible abstractMeadowCollectible)
-        {
-            anythingToSave = true;
-            var meadowHud = (Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).cameras[0].hud.parts.First(p => p is MeadowHud) as MeadowHud;
-            if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold) // creature unlock
-            {
-                meadowHud.AnimateChar();
-                progressionData.characterUnlockProgress++;
-                if (progressionData.characterUnlockProgress >= characterProgressTreshold)
-                {
-                    if (NextUnlockableCharacter() is Character chararcter)
-                    {
-                        progressionData.characterProgress.Add(chararcter, new ProgressionData.CharacterProgressionData(chararcter));
-                        if(NextUnlockableCharacter() != null) progressionData.characterUnlockProgress -= characterProgressTreshold;
-                        meadowHud.NewCharacterUnlocked(chararcter);
-                        SaveProgression();
-                    }
-                    else
-                    {
-                        progressionData.characterUnlockProgress = characterProgressTreshold;
-                        anythingToSave = false;
-                    }
-                }
-            }
-            else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
-            {
-                meadowHud.AnimateEmote();
-                progressionData.currentCharacterProgress.emoteUnlockProgress++;
-                if (progressionData.currentCharacterProgress.emoteUnlockProgress >= emoteProgressTreshold)
-                {
-                    if (NextUnlockableEmote() is Emote emote)
-                    {
-                        progressionData.currentCharacterProgress.unlockedEmotes.Add(emote);
-                        if (NextUnlockableEmote() != null) progressionData.currentCharacterProgress.emoteUnlockProgress -= emoteProgressTreshold;
-                        meadowHud.NewEmoteUnlocked(emote);
-                        SaveProgression();
-                    }
-                    else
-                    {
-                        progressionData.currentCharacterProgress.emoteUnlockProgress = emoteProgressTreshold;
-                        anythingToSave = false;
-                    }
-                }
-            }
-            else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue)
-            {
-                meadowHud.AnimateSkin();
-                progressionData.currentCharacterProgress.skinUnlockProgress++;
-                if (progressionData.currentCharacterProgress.skinUnlockProgress >= skinProgressTreshold)
-                {
-                    if (NextUnlockableSkin() is Skin skin)
-                    {
-                        progressionData.currentCharacterProgress.unlockedSkins.Add(skin);
-                        if (NextUnlockableSkin() != null) progressionData.currentCharacterProgress.skinUnlockProgress -= skinProgressTreshold;
-                        meadowHud.NewSkinUnlocked(skin);
-                        SaveProgression();
-                    }
-                    else
-                    {
-                        progressionData.currentCharacterProgress.skinUnlockProgress = skinProgressTreshold;
-                        anythingToSave = false;
-                    }
-                }
-            }
-            AutosaveProgression(); // will be skipped if already saved
+            return allCharacters.Intersect(progressionData.characterProgress.Keys).ToList();
         }
 
         public static Emote NextUnlockableEmote()
@@ -474,50 +438,94 @@ namespace RainMeadow
             return allCharacters.Except(progressionData.characterProgress.Keys).FirstOrDefault();
         }
 
+        public static Character CharacterProgress()
+        {
+            progressionData.characterUnlockProgress++;
+            if (progressionData.characterUnlockProgress >= characterProgressTreshold)
+            {
+                if (NextUnlockableCharacter() is Character character)
+                {
+                    progressionData.characterProgress.Add(character, new ProgressionData.CharacterProgressionData(character));
+                    if (NextUnlockableCharacter() != null) progressionData.characterUnlockProgress -= characterProgressTreshold;
+                    SaveProgression();
+                    return character;
+                }
+                else
+                {
+                    progressionData.characterUnlockProgress = characterProgressTreshold;
+                }
+            }
+            else anythingToSave = true;
+            return null;
+        }
+
+        public static Skin SkinProgress()
+        {
+            progressionData.currentCharacterProgress.skinUnlockProgress++;
+            if (progressionData.currentCharacterProgress.skinUnlockProgress >= skinProgressTreshold)
+            {
+                if (NextUnlockableSkin() is Skin skin)
+                {
+                    progressionData.currentCharacterProgress.unlockedSkins.Add(skin);
+                    if (NextUnlockableSkin() != null) progressionData.currentCharacterProgress.skinUnlockProgress -= skinProgressTreshold;
+                    SaveProgression();
+                    return skin;
+                }
+                else
+                {
+                    progressionData.currentCharacterProgress.skinUnlockProgress = skinProgressTreshold;
+                }
+            }
+            else anythingToSave = true;
+            return null;
+        }
+
+        public static Emote EmoteProgress()
+        {
+            progressionData.currentCharacterProgress.emoteUnlockProgress++;
+            if (progressionData.currentCharacterProgress.emoteUnlockProgress >= emoteProgressTreshold)
+            {
+                if (NextUnlockableEmote() is Emote emote)
+                {
+                    progressionData.currentCharacterProgress.unlockedEmotes.Add(emote);
+                    if (NextUnlockableEmote() != null) progressionData.currentCharacterProgress.emoteUnlockProgress -= emoteProgressTreshold;
+                    SaveProgression();
+                    return emote;
+                }
+                else
+                {
+                    progressionData.currentCharacterProgress.emoteUnlockProgress = emoteProgressTreshold;
+                }
+            }
+            else anythingToSave = true;
+            return null;
+        }
+
+        internal static void ItemCollected(AbstractMeadowCollectible abstractMeadowCollectible)
+        {
+            var meadowHud = (Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).cameras[0].hud.parts.First(p => p is MeadowHud) as MeadowHud;
+            if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold)
+            {
+                meadowHud.AnimateChar();
+                if (CharacterProgress() is var character) meadowHud.NewCharacterUnlocked(character);
+            }
+            else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue)
+            {
+                meadowHud.AnimateSkin();
+                if (SkinProgress() is var skin) meadowHud.NewSkinUnlocked(skin);
+            }
+            else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
+            {
+                meadowHud.AnimateEmote();
+                if(EmoteProgress() is var emote) meadowHud.NewEmoteUnlocked(emote);
+            }
+            
+            AutosaveProgression(); // will be skipped if already saved
+        }
+
         public static Color TokenRedColor = new Color(248f / 255f, 89f / 255f, 93f / 255f);
         public static Color TokenBlueColor = RainWorld.AntiGold.rgb;
         public static Color TokenGoldColor = RainWorld.GoldRGB;
-
-        public class ExtEnumTypeConverter<T> : TypeConverter
-        {
-            public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-            {
-                if(sourceType == typeof(string))
-                {
-                    return true;
-                }
-                return base.CanConvertFrom(context, sourceType);
-            }
-
-            public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
-            {
-                return value != null && ExtEnumBase.TryParse(typeof(T), (string)value, true, out var val) ? val : null;
-            }
-
-
-            public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
-            {
-                return (value == null) ? null : value.ToString();
-            }
-        }
-
-        public class WorldCoordinateConverter : JsonConverter
-        {
-            public override bool CanConvert(Type objectType)
-            {
-                return typeof(WorldCoordinate).IsAssignableFrom(objectType);
-            }
-
-            public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
-            {
-                return WorldCoordinate.FromString(reader.ReadAsString());
-            }
-
-            public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
-            {
-                writer.WriteRawValue(((WorldCoordinate)value).SaveToString());
-            }
-        }
 
         private static string _saveLocation;
         static string SaveLocation
@@ -607,7 +615,7 @@ namespace RainMeadow
             public class CharacterProgressionData
             {
                 [JsonProperty]
-                public long timePlayed; // todo pick type hased on what helpers we have available for display
+                public long timePlayed;
                 [JsonProperty]
                 public int emoteUnlockProgress;
                 [JsonProperty]
@@ -628,6 +636,7 @@ namespace RainMeadow
                 {
                     unlockedEmotes = emoteEmotes.Take(3).ToList();
                     unlockedSkins = characterData[character].skins.Take(1).ToList();
+                    saveLocation = characterData[character].startingCoords;
                 }
             }
         }
