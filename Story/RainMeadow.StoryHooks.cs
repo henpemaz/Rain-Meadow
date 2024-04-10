@@ -90,7 +90,7 @@ namespace RainMeadow
                     i => i.MatchLdarg(0),
                     i => i.MatchLdfld<UpdatableAndDeletable>(nameof(UpdatableAndDeletable.room))
                     );
-                var target = c.Next;
+                var target = il.DefineLabel(c.Next);
                 c.GotoPrev(moveType: MoveType.Before,
                     i => i.MatchLdsfld<ModManager>(nameof(ModManager.MSC))
                     );
