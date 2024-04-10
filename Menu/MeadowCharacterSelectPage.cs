@@ -1,5 +1,4 @@
 ﻿using Menu;
-using Rewired;
 using UnityEngine;
 
 namespace RainMeadow
@@ -104,7 +103,7 @@ namespace RainMeadow
             return MeadowProgression.characterData[character].displayName;
         }
 
-        public override void GrafUpdate(float timeStacker)
+        public override void GrafUpdate(float timeStacker) // why did they make this so hacky...
         {
             base.GrafUpdate(timeStacker);
             flashSin = (flashSin + timeStacker / 6f) % (2 * Mathf.PI);
@@ -121,8 +120,11 @@ namespace RainMeadow
             }
             if (locked)
             {
-                this.unlockProgres.alpha = alpha;
-                this.unlockProgres.pos.x = base.MidXpos + scroll * base.ScrollMagnitude + 0.01f;
+                this.unlockProgres.label.label.alpha = alpha;
+                this.unlockProgres.label.label.x = base.MidXpos + scroll * base.ScrollMagnitude + 0.01f;
+                this.unlockProgres.token.container.alpha = alpha;
+                this.unlockProgres.token.container.isVisible = alpha > 0f;
+                this.unlockProgres.token.container.x = base.MidXpos + scroll * base.ScrollMagnitude + 0.01f;
             }
         }
     }

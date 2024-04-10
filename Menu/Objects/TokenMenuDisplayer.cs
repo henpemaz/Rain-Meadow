@@ -6,8 +6,9 @@ namespace RainMeadow
     public class TokenMenuDisplayer : PositionedMenuObject
     {
         public float alpha;
-        private MeadowHud.TokenSparkIcon token;
-        private MenuLabel label;
+        public float lastAlpha;
+        public MeadowHud.TokenSparkIcon token;
+        public MenuLabel label;
         internal string text;
 
         public TokenMenuDisplayer(Menu.Menu menu, MenuObject owner, Vector2 pos, Color color, string text) : base(menu, owner, pos)
@@ -16,7 +17,7 @@ namespace RainMeadow
             Shader.SetGlobalVector(RainWorld.ShadPropScreenSize, menu.manager.rainWorld.screenSize);
             this.text = text;
             this.token = new MeadowHud.TokenSparkIcon(this.Container, color, pos, 1.5f);
-            this.label = new MenuLabel(menu, owner, text, pos + new Vector2(0, 24f), Vector2.zero, false);
+            this.label = new MenuLabel(menu, this, text, new Vector2(0, 24f), Vector2.zero, false);
             this.subObjects.Add(label);
             alpha = 1f;
         }
@@ -25,6 +26,7 @@ namespace RainMeadow
         {
             base.Update();
             token.Update();
+            lastAlpha = alpha;
             label.text = text;
         }
 
@@ -32,11 +34,12 @@ namespace RainMeadow
         {
             base.GrafUpdate(timeStacker);
             token.Draw(timeStacker);
-            token.container.SetPosition(pos);
-            token.container.alpha = alpha;
-            token.container.isVisible = alpha > 0f;
-            label.pos = pos + new Vector2(0, 24f);
-            label.label.alpha = alpha;
+            var where = Vector2.Lerp(lastPos, pos, timeStacker);
+            var drawAlpha = Mathf.Lerp(lastAlpha, alpha, timeStacker);
+            token.container.SetPosition(where);
+            token.container.alpha = drawAlpha;
+            token.container.isVisible = drawAlpha > 0f;
+            label.label.alpha = drawAlpha;
         }
 
         public override void RemoveSprites()

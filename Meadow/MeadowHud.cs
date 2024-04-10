@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    internal class MeadowHud : HudPart
+    public class MeadowHud : HudPart
     {
         private RoomCamera self;
         private Creature owner;
@@ -165,7 +165,7 @@ namespace RainMeadow
             //private float sinCounter;
             private float sinCounter2;
             private FSprite[] sprites;
-            public FContainer container;
+            public FContainer container; // controls position and scaling
 
             public TokenSparkIcon(FContainer hudContainer, Color color, Vector2 pos, float scale)
             {

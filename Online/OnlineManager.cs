@@ -51,7 +51,7 @@ namespace RainMeadow
 
         public static void LeaveLobby()
         {
-            OnlineManager.LeaveLobby();
+            MatchmakingManager.instance.LeaveLobby();
             lobby = null;
 
             subscriptions = new();
