@@ -501,6 +501,24 @@ namespace RainMeadow
             }
         }
 
+        public class WorldCoordinateConverter : JsonConverter
+        {
+            public override bool CanConvert(Type objectType)
+            {
+                return typeof(WorldCoordinate).IsAssignableFrom(objectType);
+            }
+
+            public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
+            {
+                return WorldCoordinate.FromString(reader.ReadAsString());
+            }
+
+            public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
+            {
+                writer.WriteRawValue(((WorldCoordinate)value).SaveToString());
+            }
+        }
+
         private static string _saveLocation;
         static string SaveLocation
         {
@@ -570,7 +588,6 @@ namespace RainMeadow
         [JsonObject(MemberSerialization.OptIn)] // otherwise properties/accessors create duplicated data, could also be opt-out but I don't like implicit
         public class ProgressionData
         {
-
             [JsonProperty]
             public int characterUnlockProgress;
             [JsonProperty]
@@ -590,7 +607,7 @@ namespace RainMeadow
             public class CharacterProgressionData
             {
                 [JsonProperty]
-                public double timePlayed; // todo pick type hased on what helpers we have available for display
+                public long timePlayed; // todo pick type hased on what helpers we have available for display
                 [JsonProperty]
                 public int emoteUnlockProgress;
                 [JsonProperty]
@@ -599,6 +616,11 @@ namespace RainMeadow
                 public List<Emote> unlockedEmotes;
                 [JsonProperty]
                 public List<Skin> unlockedSkins;
+                [JsonProperty]
+                [JsonConverter(typeof(WorldCoordinateConverter))]
+                internal WorldCoordinate saveLocation;
+                [JsonProperty]
+                internal bool everSeenInMenu;
 
                 [JsonConstructor]
                 private CharacterProgressionData() { }

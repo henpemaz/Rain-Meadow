@@ -1,4 +1,5 @@
 ﻿using Menu;
+using System;
 using UnityEngine;
 
 namespace RainMeadow
@@ -19,7 +20,8 @@ namespace RainMeadow
             this.realMenu = realMenu;
             this.character = character;
             this.locked = locked;
-            string main = locked ? "LOCKED" : GetSaveLocation();
+
+            string main = locked ? "Locked" : GetSaveLocation();
             string info = "";
             isNew = string.IsNullOrEmpty(main);
             if (isNew)
@@ -62,39 +64,26 @@ namespace RainMeadow
 
         private string GetSaveLocation()
         {
-            // todo
-            if (character == MeadowProgression.Character.Slugcat)
+            if (MeadowProgression.progressionData.characterProgress.ContainsKey(character) && !string.IsNullOrEmpty(MeadowProgression.progressionData.characterProgress[character].saveLocation.ResolveRoomName()))
             {
-                return "Five Pebbles";
+                var text = Region.GetRegionFullName(MeadowProgression.progressionData.characterProgress[character].saveLocation.ResolveRoomName().Substring(0, 2), slugcatNumber);
+                if (text.Length > 0)
+                {
+                    text = menu.Translate(text);
+                }
+                return text;
             }
-            if (character == MeadowProgression.Character.Cicada)
-            {
-                return "Outskirts";
-            }
-            if (character == MeadowProgression.Character.Lizard)
-            {
-                return "Industrial Complex";
-            }
-            RainMeadow.Error("no status string for " + this.slugcatNumber);
             return "";
         }
 
         private string GetPlaytime()
         {
-            // todo
-            if (character == MeadowProgression.Character.Slugcat)
+            if (MeadowProgression.progressionData.characterProgress.ContainsKey(character))
             {
-                return "2h37";
+                var timeSpan = TimeSpan.FromMilliseconds(MeadowProgression.progressionData.characterProgress[character].timePlayed);
+                //return string.Format("{0:D}h:{1:D2}m:{2:D2}s", timeSpan.Hours + timeSpan.Days * 24, timeSpan.Minutes, timeSpan.Seconds);
+                return string.Format("{0:D1} : {1:D2}", timeSpan.Hours + timeSpan.Days * 24, timeSpan.Minutes);
             }
-            if (character == MeadowProgression.Character.Cicada)
-            {
-                return "16m";
-            }
-            if (character == MeadowProgression.Character.Lizard)
-            {
-                return "4h46";
-            }
-            RainMeadow.Error("no status string for " + this.character);
             return "";
         }
 

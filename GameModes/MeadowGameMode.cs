@@ -42,6 +42,7 @@ namespace RainMeadow
 
         public override AbstractCreature SpawnAvatar(RainWorldGame game, WorldCoordinate location)
         {
+            if (location.room == MeadowProgression.progressionData.currentCharacterProgress.saveLocation.room) location = MeadowProgression.progressionData.currentCharacterProgress.saveLocation;
             var settings = (clientSettings as MeadowAvatarSettings);
             var skinData = MeadowProgression.skinData[settings.skin];
             var abstractCreature = new AbstractCreature(game.world, StaticWorld.GetCreatureTemplate(skinData.creatureType), null, location, new EntityID(-1, 0) { altSeed = skinData.randomSeed });

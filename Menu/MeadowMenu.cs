@@ -2,6 +2,7 @@
 using Menu.Remix;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -169,6 +170,7 @@ namespace RainMeadow
                 {
                     this.startButton.buttonBehav.greyedOut = false;
                     MeadowProgression.progressionData.CurrentlySelectedCharacter = playableCharacters[ssm.slugcatPageIndex];
+                    MeadowProgression.progressionData.characterProgress[playableCharacters[ssm.slugcatPageIndex]].everSeenInMenu = true;
                 }
                 else
                 {
@@ -178,6 +180,10 @@ namespace RainMeadow
             }
             if (ssm.scroll == 0f && ssm.lastScroll == 0f)
             {
+                if (playableCharacters.Any(x => !MeadowProgression.progressionData.characterProgress[x].everSeenInMenu))
+                {
+                    ssm.quedSideInput = 1;
+                }
                 if(ssm.quedSideInput != 0)
                 {
                     var sign = (int)Mathf.Sign(ssm.quedSideInput);
@@ -208,9 +214,13 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
             if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
+
+            MeadowProgression.SaveProgression();
+
             manager.arenaSitting = null;
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
-            manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
+            manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.RegionSelect;
+            manager.menuSetup.regionSelectRoom = MeadowProgression.progressionData.currentCharacterProgress.saveLocation.ResolveRoomName();
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
 

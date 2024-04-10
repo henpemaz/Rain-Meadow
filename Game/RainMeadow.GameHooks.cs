@@ -43,7 +43,6 @@ namespace RainMeadow
             On.GameSession.AddPlayer += GameSession_AddPlayer;
         }
 
-
         private void World_LoadWorld(On.World.orig_LoadWorld orig, World self, SlugcatStats.Name slugcatNumber, System.Collections.Generic.List<AbstractRoom> abstractRoomsList, int[] swarmRooms, int[] shelters, int[] gates)
         {
             orig(self, slugcatNumber, abstractRoomsList, swarmRooms, shelters, gates);
@@ -83,10 +82,16 @@ namespace RainMeadow
         private void RainWorldGame_Update1(On.RainWorldGame.orig_Update orig, RainWorldGame self)
         {
             orig(self);
-            // every 5 minutes
-            if(self.clock % (5*60*40) == 0 && OnlineManager.lobby.gameMode is MeadowGameMode)
+
+            if (OnlineManager.lobby.gameMode is MeadowGameMode mgm)
             {
-                MeadowProgression.AutosaveProgression();
+                MeadowProgression.progressionData.currentCharacterProgress.timePlayed += 1000 / self.framesPerSecond;
+                // every 5 minutes
+                if (self.clock % (5 * 60 * 40) == 0)
+                {
+                    MeadowProgression.progressionData.currentCharacterProgress.saveLocation = mgm.avatar.apo.pos;
+                    MeadowProgression.AutosaveProgression();
+                }
             }
         }
 
@@ -209,8 +214,9 @@ namespace RainMeadow
                     story.storyClientSettings.inGame = false;
                 }
 
-                if(OnlineManager.lobby.gameMode is MeadowGameMode)
+                if(OnlineManager.lobby.gameMode is MeadowGameMode mgm)
                 {
+                    MeadowProgression.progressionData.currentCharacterProgress.saveLocation = mgm.avatar.apo.pos;
                     MeadowProgression.SaveProgression();
                 }
 
