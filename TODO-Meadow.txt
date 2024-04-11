@@ -6,9 +6,9 @@ plants todo
 
 progression todo
 	could have first few creature unlocks be easier the rest harder
-	reorder liz squid
 
 Save system
+	save selected skin of character
 	save color/tint of characters
 	
 Menu todo

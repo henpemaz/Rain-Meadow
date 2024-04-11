@@ -1,6 +1,7 @@
 ﻿using RWCustom;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -21,28 +22,17 @@ namespace RainMeadow
 
         internal IntVector2 GetUnusedPlace(Room placeRoom)
         {
-            if(places.Count == 0) {
+            if (places.Count == 0)
+            {
                 throw new Exception("no places!");
             }
-            var index = UnityEngine.Random.Range(0, places.Count);
-            return places[index].pos;
-        }
-
-        internal override ResourceDataState MakeState()
-        {
-            return new State(this);
-        }
-
-        internal class State : ResourceDataState
-        {
-            [OnlineField]
-            bool dummy;
-            public State() { }
-            public State(MeadowRoomData meadowRoomData) { }
-
-            internal override Type GetDataType() => typeof(MeadowRoomData);
-
-            internal override void ReadTo(OnlineResource.ResourceData data) { }
+            var usedPlaces = placeRoom.abstractRoom.entities.Select(e => e.pos.Tile).ToHashSet();
+            var unusedPlaces = places.Where(p => !usedPlaces.Contains(p.pos)).ToList();
+            if(unusedPlaces.Count > 0)
+            {
+                return unusedPlaces[UnityEngine.Random.Range(0, unusedPlaces.Count)].pos;
+            }
+            return places[UnityEngine.Random.Range(0, places.Count)].pos;
         }
 
         private class Place
