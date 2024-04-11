@@ -105,6 +105,11 @@ namespace RainMeadow
                     storySession.saveState.deathPersistentSaveData.karmaCap = karmaCap;
                     storySession.saveState.deathPersistentSaveData.reinforcedKarma = reinforcedKarma;
                     storySession.saveState.theGlow = theGlow;
+                    if ((RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame rainWorldGame))
+                    {
+                        if(rainWorldGame.Players[0].realizedCreature != null)
+                            (rainWorldGame.Players[0].realizedCreature as Player).glowing = theGlow;
+                    }
                 }
                 (lobby.gameMode as StoryGameMode).currentCampaign = currentCampaign;
                 (lobby.gameMode as StoryGameMode).storyBoolRemixSettings = storyBoolRemixSettings;

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Security.Cryptography;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -12,6 +13,8 @@ namespace RainMeadow
         private byte bodyModeIndex;
         [OnlineField]
         private bool standing;
+        [OnlineField]
+        private bool glowing;
         [OnlineField(group = "inputs")]
         private ushort inputs;
         [OnlineFieldHalf(group = "inputs")]
@@ -27,7 +30,7 @@ namespace RainMeadow
             animationFrame = (short)p.animationFrame;
             bodyModeIndex = (byte)p.bodyMode.Index;
             standing = p.standing;
-
+            glowing = p.glowing;
             var i = p.input[0];
             inputs = (ushort)(
                   (i.x == 1 ? 1 << 0 : 0)
@@ -72,6 +75,7 @@ namespace RainMeadow
                 if (wasAnimation != pl.animation) pl.animationFrame = animationFrame;
                 pl.bodyMode = new Player.BodyModeIndex(Player.BodyModeIndex.values.GetEntry(bodyModeIndex));
                 pl.standing = standing;
+                pl.glowing = glowing;
             }
         }
     }

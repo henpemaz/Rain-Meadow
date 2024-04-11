@@ -43,5 +43,15 @@ namespace RainMeadow
             }
             room.PlaySound(SoundID.Puffball_Eplode, pos);
         }
+
+        [RPCMethod]
+        public static void enableTheGlow() {
+            RainWorldGame currentGameState = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
+            if (currentGameState?.session is StoryGameSession storySession)
+            {
+                storySession.saveState.theGlow = true;
+                (currentGameState.Players[0].realizedCreature as Player).glowing = true;
+            }
+        }
     }
 }

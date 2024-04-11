@@ -2,6 +2,9 @@
 using System.Linq;
 using UnityEngine;
 using HUD;
+using MonoMod.Cil;
+using System;
+using Mono.Cecil.Cil;
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -49,7 +52,93 @@ namespace RainMeadow
 
             On.Oracle.CreateMarble += Oracle_CreateMarble;
             On.Oracle.SetUpMarbles += Oracle_SetUpMarbles;
+            On.Oracle.SetUpSwarmers += Oracle_SetUpSwarmers;
+            On.OracleSwarmer.BitByPlayer += OracleSwarmer_BitByPlayer;
+            On.SLOracleSwarmer.BitByPlayer += SLOracleSwarmer_BitByPlayer;
+            On.CoralBrain.CoralNeuronSystem.PlaceSwarmers += OnCoralNeuronSystem_PlaceSwarmers;
+            On.SSOracleSwarmer.NewRoom += SSOracleSwarmer_NewRoom;
 
+        }
+
+        private void SSOracleSwarmer_NewRoom(On.SSOracleSwarmer.orig_NewRoom orig, SSOracleSwarmer self, Room newRoom)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self,newRoom);
+                return;
+            }
+
+            if (!ModManager.MSC)
+            {
+                newRoom.abstractRoom.AddEntity(self.abstractPhysicalObject);
+            }
+        }
+
+        //Only spawn if we own the room
+        private void OnCoralNeuronSystem_PlaceSwarmers(On.CoralBrain.CoralNeuronSystem.orig_PlaceSwarmers orig, CoralBrain.CoralNeuronSystem self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+                return;
+            }
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            if (room.isOwner)
+            {
+                orig(self);
+            }
+        }
+
+
+        private void SLOracleSwarmer_BitByPlayer(On.SLOracleSwarmer.orig_BitByPlayer orig, SLOracleSwarmer self, Creature.Grasp grasp, bool eu)
+        {
+            orig(self, grasp, eu);
+            if (self.slatedForDeletetion == true)
+            {
+                SwarmerEaten();
+            }
+        }
+
+        private void OracleSwarmer_BitByPlayer(On.OracleSwarmer.orig_BitByPlayer orig, OracleSwarmer self, Creature.Grasp grasp, bool eu)
+        {
+            orig(self, grasp, eu);
+            if (self.slatedForDeletetion == true) 
+            {
+                SwarmerEaten();
+            }
+        }
+
+        private void SwarmerEaten() 
+        {
+            if (OnlineManager.lobby == null) return;
+            if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                if (!OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(ConsumableRPCs.enableTheGlow))) 
+                { 
+                    OnlineManager.lobby.owner.InvokeRPC(ConsumableRPCs.enableTheGlow);
+                }
+            }
+        }
+
+        private void Oracle_SetUpSwarmers(On.Oracle.orig_SetUpSwarmers orig, Oracle self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+                return;
+            }
+
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            if (room.isOwner)
+            {
+                orig(self); //Only setup the room if we are the room owner.
+                foreach (var swamer in self.mySwarmers) 
+                {
+                    var apo = swamer.abstractPhysicalObject;
+                    if (WorldSession.map.TryGetValue(self.room.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.ApoEnteringWorld(apo);
+                    if (RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoEnteringRoom(apo, apo.pos);
+                }
+            }
         }
 
         private void PuffBall_Explode(On.PuffBall.orig_Explode orig, PuffBall self)
@@ -189,11 +278,6 @@ namespace RainMeadow
                 onlineSwollenWaterNut.realized = true;
                 self.Destroy();
             }
-        }
-
-        private void destroyWaterNut(GenericResult result) 
-        {
-            ((result.referencedEvent as RPCEvent).target as OnlinePhysicalObject).apo.realizedObject.Destroy();
         }
 
         private void BubbleGrass_Update(On.BubbleGrass.orig_Update orig, BubbleGrass self, bool eu)
