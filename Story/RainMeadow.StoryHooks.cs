@@ -57,7 +57,6 @@ namespace RainMeadow
             On.SLOracleSwarmer.BitByPlayer += SLOracleSwarmer_BitByPlayer;
             On.CoralBrain.CoralNeuronSystem.PlaceSwarmers += OnCoralNeuronSystem_PlaceSwarmers;
             On.SSOracleSwarmer.NewRoom += SSOracleSwarmer_NewRoom;
-            //IL.CoralBrain.CoralNeuronSystem.PlaceSwarmers += ILCoralNeuronSystem_PlaceSwarmers;
 
         }
 
@@ -90,34 +89,6 @@ namespace RainMeadow
             }
         }
 
-        //Unused, keeping it around incase SSOracleSwarmer_NewRoom acts up.
-        private void ILCoralNeuronSystem_PlaceSwarmers(MonoMod.Cil.ILContext il)
-        {
-            try
-            {
-                // if (ModManager.MSC)
-                //becomes
-                // if (ModManager.MSC || OnlineManager.Lobby != null)
-                var c = new ILCursor(il);
-                c.GotoNext(moveType: MoveType.After,
-                    i => i.MatchLdsfld<ModManager>(nameof(ModManager.MSC))
-                    );
-                c.GotoNext(moveType: MoveType.Before,
-                    i => i.MatchLdarg(0),
-                    i => i.MatchLdfld<UpdatableAndDeletable>(nameof(UpdatableAndDeletable.room))
-                    );
-                var target = il.DefineLabel(c.Next);
-                c.GotoPrev(moveType: MoveType.Before,
-                    i => i.MatchLdsfld<ModManager>(nameof(ModManager.MSC))
-                    );
-                c.EmitDelegate(() => { return OnlineManager.lobby != null; } );
-                c.Emit(OpCodes.Brtrue, target);
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e);
-            }
-        }
 
         private void SLOracleSwarmer_BitByPlayer(On.SLOracleSwarmer.orig_BitByPlayer orig, SLOracleSwarmer self, Creature.Grasp grasp, bool eu)
         {
