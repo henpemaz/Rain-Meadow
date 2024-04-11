@@ -1,19 +1,21 @@
-plants todo
-- mechanism for respawning items
-- respawn item on item gone
-- revisit spawn conditions
-- make sure tospawn etc are being synched properly
+items todo
+	items could be a little higher from the ground
+		too high up becomes a problem for liz though?
+		/done
+	slugcar collision could be better, lower body doesnt hit
+		/done
 
 progression todo
 	could have first few creature unlocks be easier the rest harder
+		nahhh
 
 Save system
-	save selected skin of character
-	save color/tint of characters
+	save selected skin of character / done
+	save color/tint of characters / done
 	
 Menu todo
-	hide tint on locked character
-	use saved colors
+	hide tint on locked character / done
+	use saved colors / done
 
 emotes todo
 "wish I could "stop" an emote block and start a new one, instead of having to wait out the fade"

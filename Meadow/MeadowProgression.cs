@@ -629,6 +629,13 @@ namespace RainMeadow
                 internal WorldCoordinate saveLocation;
                 [JsonProperty]
                 internal bool everSeenInMenu;
+                [JsonProperty]
+                internal Skin selectedSkin;
+                [JsonProperty]
+                internal float tintAmount;
+                [JsonProperty]
+                [JsonConverter(typeof(UnityColorConverter))]
+                internal Color tintColor;
 
                 [JsonConstructor]
                 private CharacterProgressionData() { }

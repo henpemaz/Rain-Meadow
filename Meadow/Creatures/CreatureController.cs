@@ -71,8 +71,11 @@ namespace RainMeadow
 
             RainMeadow.Debug(this + " added!");
 
-            //creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
-            debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);
+            if (oc.isMine)
+            {
+                //creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
+                debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);
+            }
         }
 
         public int playerNumber = 0;
@@ -515,13 +518,16 @@ namespace RainMeadow
                 }
             }
             var absAI = creature.abstractCreature.abstractAI;
-            var realAI = absAI.RealAI;
             absAI.SetDestination(coord);
-            // pathfinder has some "optimizations" that need bypassing
-            realAI.pathFinder.nextDestination = null;
-            realAI.pathFinder.currentlyFollowingDestination = coord;
-            realAI.pathFinder.AbortCurrentGenerationPathFinding();
-            realAI.pathFinder.AssignNewDestination(coord);
+            var realAI = absAI.RealAI;
+            if(realAI != null)
+            {
+                // pathfinder has some "optimizations" that need bypassing
+                realAI.pathFinder.nextDestination = null;
+                realAI.pathFinder.currentlyFollowingDestination = coord;
+                realAI.pathFinder.AbortCurrentGenerationPathFinding();
+                realAI.pathFinder.AssignNewDestination(coord);
+            }
         }
 
         public virtual PhysicalObject PickupCandidate(float favorSpears)
