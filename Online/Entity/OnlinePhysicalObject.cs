@@ -20,7 +20,7 @@ namespace RainMeadow
         public static OnlinePhysicalObject RegisterPhysicalObject(AbstractPhysicalObject apo)
         {
             OnlinePhysicalObject newOe = NewFromApo(apo);
-            RainMeadow.Debug("Registered new entity - " + newOe.ToString());
+            RainMeadow.Debug("Registered new entity - " + newOe.ToString()); // Arena: OnlinePhysicalObject.RegisterPhysicalObject:Registered new entity - CreatureTemplateSlugcat ID.-1.0#0:apo:0001 from local:8720
             return newOe;
         }
 
