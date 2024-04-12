@@ -21,7 +21,7 @@ namespace RainMeadow
             {
                 _ = Character.Slugcat;
                 _ = Skin.Slugcat_Survivor;
-                currentTestSkin = Skin.Eggbug_Blue;
+                currentTestSkin = Skin.Lizard_Pink;
 
                 RainMeadow.Debug($"characters loaded: {Character.values.Count}");
                 RainMeadow.Debug($"skins loaded: {Skin.values.Count}");

@@ -253,33 +253,6 @@ namespace RainMeadow
             }
         }
 
-        internal override void LobbyTick(uint tick)
-        {
-            base.LobbyTick(tick);
-            //if(tick % 4 == 0 )
-            //{
-            if (lobby.isOwner && lobby.isActive)
-            {
-                // ? everything done in the RPC ?
-                // mathcheck for losses? shouldn't be needed
-            }
-
-            if (lobby.isActive)
-            {
-                for (int i = 0; i < lobby.subresources.Count; i++)
-                {
-                    var ws = lobby.subresources[i] as WorldSession;
-                    if(ws.isOwner && ws.isActive)
-                    {
-
-                    }
-                }
-            }
-
-            //}
-        }
-
-
         static int RandomIndexFromWeightedList(float[] weights) // weights must add up to 1
         {
             var rnd = UnityEngine.Random.value;
@@ -289,7 +262,7 @@ namespace RainMeadow
                 weight += weights[i];
                 if (weight > rnd) return i;
             }
-            return weights.Length - 1; // exact 1
+            return weights.Length - 1; // exact 1 or fpe
         }
 
         [RPCMethod]
@@ -343,7 +316,7 @@ namespace RainMeadow
 
         internal override void Customize(Creature creature, OnlineCreature oc)
         {
-            if (lobby.playerAvatars.Any(a => a.Value == oc.id)) // little cache
+            if (lobby.playerAvatars[oc.owner] == oc.id)
             {
                 RainMeadow.Debug($"Customizing avatar {creature} for {oc.owner}");
                 var settings = lobby.entities.Values.First(em => em.entity is ClientSettings avs && avs.avatarId == oc.id).entity as MeadowAvatarSettings;
@@ -363,7 +336,7 @@ namespace RainMeadow
             }
             else
             {
-                RainMeadow.Error("missing mas?? " + oc);
+                RainMeadow.Error("creature not avatar ?? " + oc);
             }
         }
     }

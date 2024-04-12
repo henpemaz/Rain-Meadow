@@ -19,6 +19,18 @@ namespace RainMeadow
         public abstract bool CanPoleJump { get; }
         public abstract bool CanGroundJump { get; }
 
+        public bool IsTileFooting(int bChunk, int relativeX, int relativeY)
+        {
+            switch (creature.room.GetTile(creature.room.GetTilePosition(creature.bodyChunks[bChunk].pos) + new IntVector2(relativeX, relativeY)).Terrain)
+            {
+                case Room.Tile.TerrainType.Solid:
+                case Room.Tile.TerrainType.Floor:
+                case Room.Tile.TerrainType.Slope:
+                    return true;
+            }
+            return false;
+        }
+
         protected abstract void JumpImpl();
         public GroundCreatureController(Creature creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber)
         {
@@ -98,12 +110,12 @@ namespace RainMeadow
             }
 
             var targetAccessibility = currentAccessibility;
-            var furtherOut = toPos;
 
             // run once at current accessibility level
             // if not found and any higher accessibility level available, run again once
             while (true)
             {
+                
                 if (this.input[0].x != 0) // to sides
                 {
                     if (localTrace) RainMeadow.Debug("sides");
@@ -129,7 +141,7 @@ namespace RainMeadow
                     if (inputDir.magnitude > 0.75f)
                     {
                         // if can reach further out, it goes faster and smoother
-                        furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir.normalized * 3f));
+                        WorldCoordinate furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir.normalized * 3f));
                         if (room.aimap.TileAccessibleToCreature(furtherOut.Tile, creature.Template) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile, 6) > 0)
                         {
                             if (localTrace) RainMeadow.Debug("reaching further");
@@ -180,7 +192,7 @@ namespace RainMeadow
                     }
                     if (inputDir.magnitude > 0.75f)
                     {
-                        furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir.normalized * 2.2f));
+                        WorldCoordinate furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir.normalized * 2.2f));
                         if (!room.GetTile(toPos).Solid && !room.GetTile(furtherOut).Solid && room.aimap.TileAccessibleToCreature(furtherOut.Tile, creature.Template)) // ahead unblocked, move further
                         {
                             if (localTrace) RainMeadow.Debug("reaching");
@@ -216,7 +228,7 @@ namespace RainMeadow
                 {
                     if (localTrace) RainMeadow.Debug("forced move to " + toPos.Tile);
                     magnitude = 1f;
-                    this.MovementOverride(new MovementConnection(MovementConnection.MovementType.DropToFloor, basecoord, toPos, 1));
+                    this.MovementOverride(new MovementConnection(MovementConnection.MovementType.Standard, basecoord, toPos, 1));
                     return true;
                 }
                 else
@@ -230,17 +242,6 @@ namespace RainMeadow
         internal override void ConsciousUpdate()
         {
             base.ConsciousUpdate();
-
-            var room = creature.room;
-            var chunks = creature.bodyChunks;
-            var nc = chunks.Length;
-
-            var aiTile0 = creature.room.aimap.getAItile(chunks[0].pos);
-            var aiTile1 = creature.room.aimap.getAItile(chunks[1].pos);
-            var tile0 = creature.room.GetTile(chunks[0].pos);
-            var tile1 = creature.room.GetTile(chunks[1].pos);
-
-            bool localTrace = Input.GetKey(KeyCode.L);
 
             if (CanClimbJump)
             {
@@ -258,35 +259,28 @@ namespace RainMeadow
                 this.canGroundJump = 5;
             }
 
-            if (this.canGroundJump > 0 && this.input[0].x == 0 && this.input[0].y <= 0 && (this.input[0].jmp || this.input[1].jmp))
+            if (this.canGroundJump > 0)
             {
-                if (this.input[0].jmp)
+                if (this.input[0].jmp && (this.superLaunchJump > 10 || (this.input[0].x == 0 && this.input[0].y <= 0)))
                 {
-                    // todo if jumpmodule animate
                     this.wantToJump = 0;
-                    if (this.superLaunchJump < 20)
+                    if (this.superLaunchJump <= 20)
                     {
                         this.superLaunchJump++;
-                    }
-                    else
-                    {
-                        lockInPlace = true;
                     }
                     if (this.superLaunchJump > 10)
                     {
                         lockInPlace = true;
                     }
                 }
-                if (!this.input[0].jmp && this.input[1].jmp)
+                else if (this.superLaunchJump > 0) this.superLaunchJump--;
+                if (this.superLaunchJump >= 20 && !this.input[0].jmp && this.input[1].jmp)
                 {
                     this.wantToJump = 1;
                     this.canGroundJump = 1;
                 }
             }
-            else if (this.superLaunchJump > 0)
-            {
-                this.superLaunchJump--;
-            }
+            else if (this.superLaunchJump > 0) this.superLaunchJump--;
 
             if (this.wantToJump > 0 && (this.canClimbJump > 0 || this.canPoleJump > 0 || this.canGroundJump > 0))
             {
@@ -304,6 +298,8 @@ namespace RainMeadow
             if (this.jumpBoost > 0f && (this.input[0].jmp || this.forceBoost > 0))
             {
                 this.jumpBoost -= 1.5f;
+                var chunks = creature.bodyChunks;
+                var nc = chunks.Length;
                 chunks[0].vel.y += (this.jumpBoost + 1f) * 0.3f;
                 for (int i = 1; i < nc; i++)
                 {
@@ -317,18 +313,6 @@ namespace RainMeadow
             }
 
             this.flipDirection = GetFlip();
-
-            //// lost footing doesn't auto-recover
-            //if (self.inAllowedTerrainCounter < 10)
-            //{
-            //    if (s.input[0].y < 1 && !(chunks[0].contactPoint.y == -1 || chunks[1].contactPoint.y == -1 || self.IsTileSolid(1, 0, -1) || self.IsTileSolid(0, 0, -1)))
-            //    {
-            //        self.inAllowedTerrainCounter = 0;
-            //    }
-            //}
-
-            // move
-            //var basepos = 0.5f * (self.bodyChunks[0].pos + self.bodyChunks[1].pos);
         }
 
         protected virtual int GetFlip()

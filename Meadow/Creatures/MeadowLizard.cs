@@ -8,15 +8,32 @@ namespace RainMeadow
 {
     class LizardController : GroundCreatureController
     {
-        public LizardController(Lizard creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber) { }
+        public LizardController(Lizard lizard, OnlineCreature oc, int playerNumber) : base(lizard, oc, playerNumber){
 
-        public Lizard lizard => creature as Lizard;
+            this.lizard = lizard;
+        }
+
+        public Lizard lizard;
 
         public override bool CanClimbJump => !lizard.applyGravity && !CanGroundJump;
 
         public override bool CanPoleJump => lizard.LegsGripping >= 2 && (creature.room.aimap.getAItile(creature.bodyChunks[0].pos).acc == AItile.Accessibility.Climb && creature.room.GetTile(creature.bodyChunks[0].pos).AnyBeam);
 
-        public override bool CanGroundJump => lizard.LegsGripping >= 2 && (creature.bodyChunks[0].contactPoint.y == -1 || creature.bodyChunks[1].contactPoint.y == -1 || creature.IsTileSolid(1, 0, -1) || creature.IsTileSolid(0, 0, -1));
+        public override bool CanGroundJump
+        {
+            get
+            {
+                //lizard.LegsGripping >= 2 && (creature.bodyChunks[0].contactPoint.y == -1 || creature.bodyChunks[1].contactPoint.y == -1 || IsTileFooting(1, 0, -1) || IsTileFooting(0, 0, -1))
+                if (lizard.applyGravity)
+                {
+                    return creature.bodyChunks[0].contactPoint.y == -1 || creature.bodyChunks[1].contactPoint.y == -1;
+                }
+                else
+                {
+                    return IsTileFooting(1, 0, -1) || IsTileFooting(0, 0, -1);
+                }
+            }
+        }
 
         public override bool HasFooting => CanGroundJump;
 
@@ -85,7 +102,7 @@ namespace RainMeadow
 
         private static void LizardJumpModule_RunningUpdate(On.LizardJumpModule.orig_RunningUpdate orig, LizardJumpModule self)
         {
-            if (creatureControllers.TryGetValue(self.lizard.abstractCreature, out var c) && c is LizardController l)
+            if (creatureControllers.TryGetValue(self.lizard.abstractCreature, out var c) && c is LizardController)
             {
                 return;
             }
@@ -96,7 +113,7 @@ namespace RainMeadow
         {
             if (creatureControllers.TryGetValue(self.creature, out var c) && c is LizardController l)
             {
-                if (originPos == self.destination)// return null; // such a silly behavior...
+                if (originPos == self.destination)// such a silly behavior...
                     return new MovementConnection(MovementConnection.MovementType.Standard, originPos, WorldCoordinate.AddIntVector(originPos, new IntVector2(l.input[0].x, l.input[0].y)), 1);
             }
 
@@ -178,6 +195,7 @@ namespace RainMeadow
             {
                 var col = self.lizard.effectColor;
                 c.ModifyBodyColor(ref col);
+                RainMeadow.Debug($"{self.lizard} color from {self.lizard.effectColor} to {col}");
                 self.lizard.effectColor = col;
             }
         }
@@ -194,13 +212,11 @@ namespace RainMeadow
             }
         }
 
-
         protected override void JumpImpl()
         {
             //RainMeadow.Debug(onlineCreature);
             var cs = creature.bodyChunks;
             var mainBodyChunk = creature.mainBodyChunk;
-            var tile = creature.room.aimap.getAItile(mainBodyChunk.pos);
 
             // todo take body factors into factor. blue liz jump feels too stronk
             if (canGroundJump > 0 && superLaunchJump >= 20)
@@ -233,9 +249,9 @@ namespace RainMeadow
                     flipDirection = this.input[0].x;
                     cs[0].vel.x = 6f * flipDirection;
                     cs[0].vel.y = 6f;
-                    cs[1].vel.x = 5f * flipDirection;
+                    cs[1].vel.x = 6f * flipDirection;
                     cs[1].vel.y = 5f;
-                    cs[2].vel.x = 5f * flipDirection;
+                    cs[2].vel.x = 6f * flipDirection;
                     cs[2].vel.y = 5f;
                     creature.room.PlaySound(SoundID.Slugcat_From_Vertical_Pole_Jump, mainBodyChunk, false, 1f, 1f);
                     return;
@@ -259,12 +275,19 @@ namespace RainMeadow
             {
                 RainMeadow.Debug("lizard normal jump");
                 lizard.movementAnimation = null;
-                lizard.inAllowedTerrainCounter = 10; // regain footing faster
+                lizard.inAllowedTerrainCounter = 0;
                 lizard.gripPoint = null;
-                this.jumpBoost = 8;
-                cs[0].vel.y = 5f;
+                this.jumpBoost = 6;
+                cs[0].vel.y = 4f;
                 cs[1].vel.y = 5f;
                 cs[2].vel.y = 3f;
+                if (input[0].x != 0)
+                {
+                    var d = input[0].x;
+                    cs[0].vel.x += d * 1.2f;
+                    cs[1].vel.x += d * 1.2f;
+                    cs[2].vel.x += d * 1.2f;
+                }
 
                 creature.room.PlaySound(SoundID.Slugcat_Normal_Jump, mainBodyChunk, false, 1f, 1f);
             }
@@ -355,18 +378,24 @@ namespace RainMeadow
             // lost footing doesn't auto-recover
             if (lizard.inAllowedTerrainCounter < 10)
             {
-                if ((forceJump > 0 || input[0].y < 1) && !((creature.bodyChunks)[0].contactPoint.y == -1 || (creature.bodyChunks)[1].contactPoint.y == -1 || creature.IsTileSolid(1, 0, -1) || creature.IsTileSolid(0, 0, -1)))
+                if ((forceJump > 0 || input[0].y < 1) && !(creature.bodyChunks[0].contactPoint.y == -1 || creature.bodyChunks[1].contactPoint.y == -1 || creature.IsTileSolid(1, 0, -1) || creature.IsTileSolid(0, 0, -1)))
                 {
                     lizard.inAllowedTerrainCounter = 0;
                 }
+            }
+
+            if(inputDir.magnitude > 0f && !lockInPlace)
+            {
+                creature.bodyChunks[0].vel += inputDir;
+                creature.bodyChunks[1].vel -= inputDir;
             }
         }
 
         protected override void Moving(float magnitude)
         {
             lizard.AI.behavior = LizardAI.Behavior.Travelling;
-            lizard.AI.runSpeed = Custom.LerpAndTick(lizard.AI.runSpeed, 0.8f * magnitude, 0.2f, 0.05f);
-            lizard.AI.excitement = Custom.LerpAndTick(lizard.AI.excitement, 0.5f, 0.1f, 0.05f);
+            lizard.AI.runSpeed = Custom.LerpAndTick(lizard.AI.runSpeed, 0.9f * magnitude, 0.2f, 0.05f);
+            lizard.AI.excitement = Custom.LerpAndTick(lizard.AI.excitement, 0.6f, 0.1f, 0.05f);
 
             var tile0 = creature.room.GetTile(creature.bodyChunks[0].pos);
 
@@ -387,8 +416,8 @@ namespace RainMeadow
         protected override void Resting()
         {
             lizard.AI.behavior = LizardAI.Behavior.Idle;
-            lizard.AI.runSpeed = Custom.LerpAndTick(lizard.AI.runSpeed, 0, 0.4f, 0.1f);
-            lizard.AI.excitement = Custom.LerpAndTick(lizard.AI.excitement, 0.2f, 0.1f, 0.05f);
+            lizard.AI.runSpeed = Custom.LerpAndTick(lizard.AI.runSpeed, 0f, 0.4f, 0.1f);
+            lizard.AI.excitement = Custom.LerpAndTick(lizard.AI.excitement, 0f, 0.1f, 0.05f);
 
             // pull towards floor
             for (int i = 0; i < lizard.bodyChunks.Length; i++)

@@ -14,7 +14,11 @@ namespace RainMeadow
         public static ConditionalWeakTable<AbstractCreature, CreatureController> creatureControllers = new();
         internal static void BindAvatar(Creature creature, OnlineCreature oc)
         {
-            if (creature is Cicada cada)
+            if (creature is Player player)
+            {
+                new MeadowPlayerController(player, oc, 0);
+            }
+            else if(creature is Cicada cada)
             {
                 new CicadaController(cada, oc, 0);
             }
@@ -34,12 +38,9 @@ namespace RainMeadow
             {
                 new EggbugController(bug, oc, 0);
             }
-            else if (creature is Player player)
+            else if (creature is LanternMouse mouse)
             {
-                if (!oc.owner.isMe)
-                {
-                    player.controller = new OnlineController(oc, player);
-                }
+                new LanternMouseController(mouse, oc, 0);
             }
             else
             {
@@ -49,12 +50,14 @@ namespace RainMeadow
 
         public Creature creature;
         public OnlineCreature onlineCreature;
+        public MeadowCreatureData mcd;
         public RainWorld rainWorld;
 
         public CreatureController(Creature creature, OnlineCreature oc, int playerNumber)
         {
             this.creature = creature;
             this.onlineCreature = oc;
+            this.mcd = oc.GetData<MeadowCreatureData>();
             this.playerNumber = playerNumber;
 
             rainWorld = creature.abstractCreature.world.game.rainWorld;
@@ -71,7 +74,7 @@ namespace RainMeadow
 
             RainMeadow.Debug(this + " added!");
 
-            if (oc.isMine)
+            if (creature.Template.AI && creature.abstractCreature.world.GetAbstractRoom(creature.abstractCreature.pos) != null)
             {
                 //creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
                 debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);
@@ -79,7 +82,7 @@ namespace RainMeadow
         }
 
         public int playerNumber = 0;
-        public Player.InputPackage[] input = new Player.InputPackage[10];
+        public Player.InputPackage[] input = new Player.InputPackage[2];
         public Vector2 inputDir;
         public Vector2 inputLastDir;
 
@@ -170,25 +173,11 @@ namespace RainMeadow
                     this.input[0] = new Player.InputPackage(rainWorld.options.controls[playerNumber].gamePad, rainWorld.options.controls[playerNumber].GetActivePreset(), 0, 0, false, false, false, false, false);
                 }
 
-                if (onlineCreature.TryGetData<MeadowCreatureData>(out var mcd))
-                {
-                    mcd.input = this.input[0];
-                }
-                else
-                {
-                    RainMeadow.Error("Missing mcd on send");
-                }
+                mcd.input = this.input[0];
             }
             else
             {
-                if (onlineCreature.TryGetData<MeadowCreatureData>(out var mcd))
-                {
-                    this.input[0] = mcd.input;
-                }
-                else
-                {
-                    RainMeadow.Error("Missing mcd on receive");
-                }
+                this.input[0] = mcd.input;
             }
 
             for (int i = this.specialInput.Length - 1; i > 0; i--)
@@ -200,25 +189,11 @@ namespace RainMeadow
             {
                 this.specialInput[0] = GetSpecialInput(creature.DangerPos - creature.room.game.cameras[0].pos, playerNumber, rainWorld);
 
-                if (onlineCreature.TryGetData<MeadowCreatureData>(out var mcd))
-                {
-                    mcd.specialInput = this.specialInput[0];
-                }
-                else
-                {
-                    RainMeadow.Error("Missing mcd on send");
-                }
+                mcd.specialInput = this.specialInput[0];
             }
             else
             {
-                if (onlineCreature.TryGetData<MeadowCreatureData>(out var mcd))
-                {
-                    this.specialInput[0] = mcd.specialInput;
-                }
-                else
-                {
-                    RainMeadow.Error("Missing mcd on receive");
-                }
+                this.specialInput[0] = mcd.specialInput;
             }
 
             rawInput = this.input[0];
@@ -508,14 +483,7 @@ namespace RainMeadow
         {
             if (onlineCreature.isMine)
             {
-                if (onlineCreature.TryGetData<MeadowCreatureData>(out var mcd))
-                {
-                    mcd.destination = coord;
-                }
-                else
-                {
-                    throw new InvalidProgrammerException("Missing mcd");
-                }
+                mcd.destination = coord;
             }
             var absAI = creature.abstractCreature.abstractAI;
             absAI.SetDestination(coord);
@@ -765,6 +733,7 @@ namespace RainMeadow
             var room = creature.room;
             var chunks = creature.bodyChunks;
             var nc = chunks.Length;
+            var template = creature.Template;
 
             bool localTrace = Input.GetKey(KeyCode.L);
 
@@ -795,7 +764,6 @@ namespace RainMeadow
 
             if (onlineCreature.isMine)
             {
-                var mcd = onlineCreature.GetData<MeadowCreatureData>();
                 var basecoord = CurrentPathfindingPosition;
                 if (!lockInPlace && this.inputDir != Vector2.zero)
                 {
@@ -808,7 +776,7 @@ namespace RainMeadow
                     {
                         Moving(magnitude);
                         mcd.moveSpeed = magnitude;
-                        if (toPos != creature.abstractCreature.abstractAI.destination)
+                        if (template.AI && toPos != creature.abstractCreature.abstractAI.destination)
                         {
                             if (localTrace) RainMeadow.Debug($"new destination {toPos.Tile}");
                             this.ForceAIDestination(toPos);
@@ -819,7 +787,7 @@ namespace RainMeadow
                     {
                         Resting();
                         mcd.moveSpeed = 0f;
-                        if (basecoord != creature.abstractCreature.abstractAI.destination)
+                        if (template.AI && basecoord != creature.abstractCreature.abstractAI.destination)
                         {
                             if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"resting at {basecoord.Tile}");
                             this.ForceAIDestination(basecoord);
@@ -831,7 +799,7 @@ namespace RainMeadow
                 {
                     Resting();
                     mcd.moveSpeed = 0f;
-                    if (basecoord != creature.abstractCreature.abstractAI.destination)
+                    if (template.AI && basecoord != creature.abstractCreature.abstractAI.destination)
                     {
                         if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"resting at {basecoord.Tile}");
                         this.ForceAIDestination(basecoord);
@@ -841,7 +809,6 @@ namespace RainMeadow
             }
             else
             {
-                var mcd = onlineCreature.GetData<MeadowCreatureData>();
                 if (mcd.moveSpeed > 0f)
                 {
                     Moving(mcd.moveSpeed);
@@ -850,7 +817,7 @@ namespace RainMeadow
                 {
                     Resting();
                 }
-                if (mcd.destination != creature.abstractCreature.abstractAI.destination)
+                if (template.AI && mcd.destination != creature.abstractCreature.abstractAI.destination)
                 {
                     this.ForceAIDestination(mcd.destination);
                 }

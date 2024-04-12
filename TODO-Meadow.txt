@@ -1,7 +1,8 @@
 items todo
 	items could be a little higher from the ground
 		too high up becomes a problem for liz though?
-		/done
+			could be property of avatar, how high off the ground it hovers
+		/done-ish
 	slugcar collision could be better, lower body doesnt hit
 		/done
 
@@ -16,6 +17,8 @@ Save system
 Menu todo
 	hide tint on locked character / done
 	use saved colors / done
+
+	tint resulting color preview
 
 emotes todo
 "wish I could "stop" an emote block and start a new one, instead of having to wait out the fade"
@@ -44,9 +47,12 @@ creature todo
 - shelter activation? does nothing atm anyways
 - other story-mode things?
 - any ways to die left?
-	player (slugcat) can drown
+	player (slugcat) can drown /done
 - can get stuck
 	some rooms will get fixed
+- show creature pipes
+	some rooms are only solvable with them, they aren't well known
+- allow creature to change the creature-pipe they're going to
 
 player grabbing cicada = laggy physics
 
@@ -56,24 +62,22 @@ really hard to enter pipe sometimes
 lizard todo
 - charge
 - find a good seed for our buddies
+- fall + diagdown = slide
 
-lizard still bites cicada
-	// how?
 lizard on first load doesn't get colors assigned ?? firstload in realize room vs load far and walk in?
 	
 slugcat in meadow mode
-- lookdir input like the others
+- lookdir input like the others / done
 - point things
-- go through creature pipes
-	since no spears around
+- go through creature pipes / done
 
 eggbug
 	update art
-	pick seeds
+	pick seeds and names
 
 noot
 	make art
-	pick seeds
+	pick seeds and names
 
 water controls for lizard and scav etc
 	needs to be there, crossing DS etc
