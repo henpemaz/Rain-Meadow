@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text.RegularExpressions;
 
 namespace RainMeadow
@@ -19,7 +20,7 @@ namespace RainMeadow
         public static OnlinePhysicalObject RegisterPhysicalObject(AbstractPhysicalObject apo)
         {
             OnlinePhysicalObject newOe = NewFromApo(apo);
-            RainMeadow.Debug("Registered new entity - " + newOe.ToString());
+            RainMeadow.Debug("Registered new entity - " + newOe.ToString()); // Arena: OnlinePhysicalObject.RegisterPhysicalObject:Registered new entity - CreatureTemplateSlugcat ID.-1.0#0:apo:0001 from local:8720
             return newOe;
         }
 
@@ -39,6 +40,8 @@ namespace RainMeadow
             }
 
             var opoDef = new OnlinePhysicalObjectDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+            RainMeadow.Debug("ONLINE PHYS OBJ DEF: " + opoDef);
+
 
             switch (apo)
             {
@@ -49,10 +52,22 @@ namespace RainMeadow
                     //May break with downpour
                     return new OnlinePhysicalObject(opoDef, apo);
                 case AbstractCreature ac:
-                    var acDef = new OnlineCreatureDefinition(ac.ID.RandomSeed, ac.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+                    OnlineCreatureDefinition acDef;
+                    if (RainMeadow.isArenaMode(out var _))
+                    {
+                        acDef = new OnlineCreatureDefinition(ac.ID.RandomSeed, ac.realizedObject != null, SaveState.AbstractCreatureToStringSingleRoomWorld(ac), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+
+                    }
+                    else
+                    {
+                        acDef = new OnlineCreatureDefinition(ac.ID.RandomSeed, ac.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+
+                    }
+                    
                     return new OnlineCreature(acDef, ac);
+
                 case AbstractConsumable acm:
-                    return OnlineConsumableFromAcm(acm,opoDef);
+                    return OnlineConsumableFromAcm(acm, opoDef);
                 default:
                     return new OnlinePhysicalObject(opoDef, apo);
                 case null:
@@ -60,10 +75,11 @@ namespace RainMeadow
             }
         }
 
-        private static OnlineConsumable OnlineConsumableFromAcm(AbstractConsumable acm, OnlinePhysicalObjectDefinition opoDef) 
+        private static OnlineConsumable OnlineConsumableFromAcm(AbstractConsumable acm, OnlinePhysicalObjectDefinition opoDef)
         {
             var ocmDef = new OnlineConsumableDefinition(opoDef, acm);
-            switch (acm) {
+            switch (acm)
+            {
                 case BubbleGrass.AbstractBubbleGrass abg:
                     var abgDef = new OnlineBubbleGrassDefinition(ocmDef, abg);
                     return new OnlineBubbleGrass(abgDef, abg);
@@ -128,7 +144,7 @@ namespace RainMeadow
             }
 
             RainMeadow.Debug($"room index -> {apo.pos.room} in region? {world.IsRoomInRegion(apo.pos.room)}");
-            
+
 
             return new OnlinePhysicalObject(newObjectEvent, apo);
         }
@@ -172,7 +188,7 @@ namespace RainMeadow
                         }
 
                         // todo carried by other won't pick up if entering from abstract, how fix?
-                        if(apo.realizedObject != null && apo.realizedObject.grabbedBy.Count > 0)
+                        if (apo.realizedObject != null && apo.realizedObject.grabbedBy.Count > 0)
                         {
                             RainMeadow.Debug($"Entity {this} carried by other, not adding!");
                             return;
@@ -307,7 +323,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void HitByExplosion(OnlinePhysicalObject objectHit, float hitfac)
         {
-            objectHit?.apo.realizedObject.HitByExplosion(hitfac,null,0);
+            objectHit?.apo.realizedObject.HitByExplosion(hitfac, null, 0);
         }
     }
 }

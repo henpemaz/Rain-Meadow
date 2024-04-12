@@ -90,22 +90,14 @@ namespace RainMeadow
 
                 array[num]++;
 
-                // AbstractCreature abstractCreature = ArenaGameSession_SetAbstractCreature(self.game, new WorldCoordinate(0, -1, -1, -1), list[l].playerNumber);
                 AbstractCreature abstractCreature = new AbstractCreature(self.game.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(0, -1, -1, -1), new EntityID(-1, list[l].playerNumber));
 
                 AbstractRoom_Arena_MoveEntityToDen(self.game.world, abstractCreature.Room, abstractCreature); // Arena adds entities then realizes them
-
-
-                if (OnlineCreature.map.TryGetValue(abstractCreature, out var onlineCreature))
+                SetOnlineCreature(abstractCreature);
+                if (OnlineManager.lobby.isActive)
                 {
-                    RainMeadow.Debug("Found OnlineCreature");
-                    OnlineManager.lobby.gameMode.SetAvatar(onlineCreature as OnlineCreature);
+                    OnlineManager.lobby.Tick(OnlineManager.mePlayer.tick); // Why...
                 }
-                else
-                {
-                    throw new InvalidProgrammerException($"Can't find OnlineCreature for {abstractCreature}"); 
-                }
-
 
 
                 if (ModManager.MSC && l == 0)
@@ -121,6 +113,8 @@ namespace RainMeadow
                 {
                     abstractCreature.state = new PlayerState(abstractCreature, list[l].playerNumber, new SlugcatStats.Name(ExtEnum<SlugcatStats.Name>.values.GetEntry(list[l].playerNumber)), isGhost: false);
                 }
+
+
 
                 abstractCreature.Realize();
                 ShortcutHandler.ShortCutVessel shortCutVessel = new ShortcutHandler.ShortCutVessel(new RWCustom.IntVector2(-1, -1), abstractCreature.realizedCreature, self.game.world.GetAbstractRoom(0), 0);
@@ -151,32 +145,17 @@ namespace RainMeadow
 
         }
 
-        private AbstractCreature ArenaGameSession_SetAbstractCreature(RainWorldGame self, WorldCoordinate location, int playerNumber)
+        private void SetOnlineCreature(AbstractCreature abstractCreature)
         {
-
-            sSpawningAvatar = true;
-            // AbstractCreature ac = OnlineManager.lobby.gameMode.SpawnAvatar(self, location);
-            //if (ac == null)
-            //{
-
-            AbstractCreature ac = new AbstractCreature(self.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, location, new EntityID(-1, playerNumber));
-
-            //}
-
-            sSpawningAvatar = false;
-
-            if (OnlineCreature.map.TryGetValue(ac, out var onlineCreature))
+            if (OnlineCreature.map.TryGetValue(abstractCreature, out var onlineCreature))
             {
                 RainMeadow.Debug("Found OnlineCreature");
                 OnlineManager.lobby.gameMode.SetAvatar(onlineCreature as OnlineCreature);
             }
             else
             {
-                throw new InvalidProgrammerException($"Can't find OnlineCreature for {ac}"); // currently throws
+                throw new InvalidProgrammerException($"Can't find OnlineCreature for {abstractCreature}");
             }
-
-            return ac;
-
         }
 
         private void AbstractRoom_Arena_MoveEntityToDen(World world, AbstractRoom asbtRoom, AbstractWorldEntity entity)
@@ -200,24 +179,20 @@ namespace RainMeadow
 
         private void ArenaGameSession_Update(On.ArenaGameSession.orig_Update orig, ArenaGameSession self) // stop game over 
         {
-            // TODO: Follow the trail of playerAvatars (onlinePlayer and OnlineEntity CWT)
-
+            // TODO: EntityID and Avatar ID do not match)
 
             if (OnlineManager.lobby.playerAvatars != null)
             {
                 foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
                 {
-
-                    RainMeadow.Debug("ONLINE ENTITY TYPE " + playerAvatar.type);
-
                     if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none)
                     {
-                        RainMeadow.Debug("I'm NOT HERE " + playerAvatar.id); // Current prints 'I'm NOT HERE  0" for host. Host is not an online Entity
                         continue; // not in game
                     }
                     if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
                     {
-                        RainMeadow.Debug("MY ID " + playerAvatar.id + "My POS " + ac.pos); // Currently does not
+                        RainMeadow.Debug("Position: " + ac.pos);
+
                     }
                 }
             }
