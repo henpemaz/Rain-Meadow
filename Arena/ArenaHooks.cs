@@ -182,32 +182,17 @@ namespace RainMeadow
 
         }
 
-        private AbstractCreature ArenaGameSession_SetAbstractCreature(RainWorldGame self, WorldCoordinate location, int playerNumber)
+        private void SetOnlineCreature(AbstractCreature abstractCreature)
         {
-
-            sSpawningAvatar = true;
-            // AbstractCreature ac = OnlineManager.lobby.gameMode.SpawnAvatar(self, location);
-            //if (ac == null)
-            //{
-
-            AbstractCreature ac = new AbstractCreature(self.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, location, new EntityID(-1, playerNumber));
-
-            //}
-
-            sSpawningAvatar = false;
-
-            if (OnlineCreature.map.TryGetValue(ac, out var onlineCreature))
+            if (OnlineCreature.map.TryGetValue(abstractCreature, out var onlineCreature))
             {
                 RainMeadow.Debug("Found OnlineCreature");
                 OnlineManager.lobby.gameMode.SetAvatar(onlineCreature as OnlineCreature);
             }
             else
             {
-                throw new InvalidProgrammerException($"Can't find OnlineCreature for {ac}"); // currently throws
+                throw new InvalidProgrammerException($"Can't find OnlineCreature for {abstractCreature}");
             }
-
-            return ac;
-
         }
 
         private void AbstractRoom_Arena_MoveEntityToDen(World world, AbstractRoom asbtRoom, AbstractWorldEntity entity)
