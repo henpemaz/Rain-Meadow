@@ -150,11 +150,12 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && self.game != null)
             {
                 WorldSession ws = null;
-                if (game != null && game.IsArenaSession)
+                if (isArenaMode(out var _))
                 {
                     // Arena has null region and single-room world
                     Debug("Requesting arena world resource");
                     ws = OnlineManager.lobby.worldSessions["arena"];
+
                 }
                 else
                 {

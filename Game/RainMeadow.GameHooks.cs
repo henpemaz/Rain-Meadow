@@ -123,9 +123,39 @@ namespace RainMeadow
             }
         }
 
+        private void PauseMenu_ctor(On.Menu.PauseMenu.orig_ctor orig, Menu.PauseMenu self, ProcessManager manager, RainWorldGame game)
+        {
+            orig(self, manager, game);
+            if (OnlineManager.lobby != null)
+            {
+                if (OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+                {
+                    self.pauseWarningActive = false;
+                    game.cameras[0].hud.textPrompt.pausedWarningText = false;
+                    SimplerButton unstuckButton;
+                    self.pages[0].subObjects.Add(unstuckButton = new SimplerButton(self, self.pages[0], self.Translate("UNSTUCK"),
+                        new Vector2(manager.rainWorld.options.SafeScreenOffset.x + 70f, Mathf.Max(manager.rainWorld.options.SafeScreenOffset.y, 15f)),
+                        new Vector2(110f, 30f)));
+                    unstuckButton.OnClick += (_) =>
+                    {
+                        var creature = mgm.avatar.realizedCreature;
+                        if (creature.room != null)
+                        {
+                            var room = creature.room;
+                            creature.RemoveFromRoom();
+                            room.CleanOutObjectNotInThisRoom(creature); // we need it this frame
+                            var node = creature.coord.abstractNode;
+                            if (node > room.abstractRoom.exits) node = UnityEngine.Random.Range(0, room.abstractRoom.exits);
+                            creature.SpitOutOfShortCut(room.ShortcutLeadingToNode(node).startCoord.Tile, room, true);
+                        }
+                    };
+                }
+            }
+        }
+
         public bool RainWorldGame_GamePaused(Func<RainWorldGame, bool> orig, RainWorldGame self)
         {
-            if(OnlineManager.lobby != null)
+            if (OnlineManager.lobby != null)
             {
                 // todo we could do very fancy things with the (story) lobby owner being able to pause etc
                 return false; // it's online mom
@@ -151,7 +181,7 @@ namespace RainMeadow
                     }
                 }
             }
-            orig(self,critType);
+            orig(self, critType);
         }
 
         private void Room_LoadedCheck(On.Room.orig_Loaded orig, Room self)
@@ -191,7 +221,7 @@ namespace RainMeadow
         private void RainWorldGame_RawUpdate(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
         {
             orig(self, dt);
-            if(OnlineManager.lobby != null)
+            if (OnlineManager.lobby != null)
             {
                 DebugOverlay.Update(self, dt);
             }
@@ -205,6 +235,10 @@ namespace RainMeadow
                 DebugOverlay.RemoveOverlay(self);
 
                 OnlineManager.lobby.gameMode.clientSettings.inGame = false;
+                if (isStoryMode(out var story))
+                {
+                    story.storyClientSettings.inGame = false;
+                }
 
                 if (OnlineManager.lobby.gameMode is MeadowGameMode mgm)
                 {
@@ -262,7 +296,7 @@ namespace RainMeadow
                     self.saveState.pendingObjects.Clear();
                 }
             }
-            
+
             orig(self);
         }
 
@@ -296,7 +330,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((Room self) =>
                 {
-                    return OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.abstractRoom, out var roomSession) && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.game, roomSession); 
+                    return OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.abstractRoom, out var roomSession) && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.game, roomSession);
                 }
                 );
                 c.Emit(OpCodes.Brtrue, skip);
@@ -326,10 +360,10 @@ namespace RainMeadow
                     );
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((Room self) => 
+                c.EmitDelegate((Room self) =>
                 {
                     // during room.loaded the RoomSession isn't available yet so no point in passing self?
-                    return OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.abstractRoom, out var roomSession) && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.game, roomSession); 
+                    return OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.abstractRoom, out var roomSession) && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.game, roomSession);
                 });
                 c.Emit(OpCodes.Brtrue, skip);
             }
