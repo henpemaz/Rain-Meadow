@@ -180,6 +180,53 @@ namespace RainMeadow
 
         }
 
+        private AbstractCreature ArenaGameSession_SetAbstractCreature(RainWorldGame self, WorldCoordinate location, int playerNumber)
+        {
+
+            sSpawningAvatar = true;
+            // AbstractCreature ac = OnlineManager.lobby.gameMode.SpawnAvatar(self, location);
+            //if (ac == null)
+            //{
+
+            AbstractCreature ac = new AbstractCreature(self.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, location, new EntityID(-1, playerNumber));
+
+            //}
+
+            sSpawningAvatar = false;
+
+            if (OnlineCreature.map.TryGetValue(ac, out var onlineCreature))
+            {
+                RainMeadow.Debug("Found OnlineCreature");
+                OnlineManager.lobby.gameMode.SetAvatar(onlineCreature as OnlineCreature);
+            }
+            else
+            {
+                throw new InvalidProgrammerException($"Can't find OnlineCreature for {ac}"); // currently throws
+            }
+
+            return ac;
+
+        }
+
+        private void AbstractRoom_Arena_MoveEntityToDen(World world, AbstractRoom asbtRoom, AbstractWorldEntity entity)
+        {
+            if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo0 && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe))
+            {
+                if (!oe.isMine && !oe.beingMoved)
+                {
+                    Error($"Remote entity trying to move: {oe} at {oe.roomSession} {Environment.StackTrace}");
+                    return;
+                }
+            }
+
+            if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo)
+            {
+                if (WorldSession.map.TryGetValue(world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.ApoEnteringWorld(apo);
+                if (RoomSession.map.TryGetValue(asbtRoom, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoLeavingRoom(apo);
+            }
+        }
+
+
         private void SetOnlineCreature(AbstractCreature abstractCreature)
         {
             if (OnlineCreature.map.TryGetValue(abstractCreature, out var onlineCreature))
