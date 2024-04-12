@@ -17,13 +17,14 @@ namespace RainMeadow
 
         public override bool CanClimbJump => !lizard.applyGravity && !CanGroundJump;
 
-        public override bool CanPoleJump => lizard.LegsGripping >= 2 && (creature.room.aimap.getAItile(creature.bodyChunks[0].pos).acc == AItile.Accessibility.Climb && creature.room.GetTile(creature.bodyChunks[0].pos).AnyBeam);
+        public override bool CanPoleJump => Climbing;
 
-        public override bool CanGroundJump
+        public override bool CanGroundJump => HasFooting;
+        
+        public override bool HasFooting
         {
             get
             {
-                //lizard.LegsGripping >= 2 && (creature.bodyChunks[0].contactPoint.y == -1 || creature.bodyChunks[1].contactPoint.y == -1 || IsTileFooting(1, 0, -1) || IsTileFooting(0, 0, -1))
                 if (lizard.applyGravity)
                 {
                     return creature.bodyChunks[0].contactPoint.y == -1 || creature.bodyChunks[1].contactPoint.y == -1;
@@ -35,7 +36,7 @@ namespace RainMeadow
             }
         }
 
-        public override bool HasFooting => CanGroundJump;
+        public override bool Climbing => !lizard.applyGravity && !IsTileFooting(0, 0, -1) && !IsTileFooting(1, 0, -1) && (GetTile(0).AnyBeam || GetTile(1).AnyBeam);
 
         public override bool GrabImpl(PhysicalObject pickUpCandidate)
         {
@@ -382,6 +383,11 @@ namespace RainMeadow
                 {
                     lizard.inAllowedTerrainCounter = 0;
                 }
+            }
+            // footing recovers faster on climbing ledges etc
+            if (lizard.inAllowedTerrainCounter < 20 && input[0].x != 0 && (creature.bodyChunks[0].contactPoint.x == input[0].x || creature.bodyChunks[1].contactPoint.x == input[0].x))
+            {
+                if (lizard.inAllowedTerrainCounter > 0) lizard.inAllowedTerrainCounter = Mathf.Max(lizard.inAllowedTerrainCounter + 1, 10);
             }
 
             if(inputDir.magnitude > 0f && !lockInPlace)

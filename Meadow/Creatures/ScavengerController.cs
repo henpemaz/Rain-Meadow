@@ -279,6 +279,8 @@ namespace RainMeadow
 
         public override bool HasFooting => CanGroundJump;
 
+        public override bool Climbing => scavenger.movMode == Scavenger.MovementMode.Climb;
+
         public override WorldCoordinate CurrentPathfindingPosition
         {
             get

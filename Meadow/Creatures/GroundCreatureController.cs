@@ -18,6 +18,17 @@ namespace RainMeadow
         public abstract bool CanClimbJump { get; }
         public abstract bool CanPoleJump { get; }
         public abstract bool CanGroundJump { get; }
+        public abstract bool Climbing { get; }
+
+        public Room.Tile GetTile(int bChunk)
+        {
+            return creature.room.GetTile(creature.room.GetTilePosition(creature.bodyChunks[bChunk].pos));
+        }
+
+        public Room.Tile GetTile(int bChunk, int relativeX, int relativeY)
+        {
+            return creature.room.GetTile(creature.room.GetTilePosition(creature.bodyChunks[bChunk].pos) + new IntVector2(relativeX, relativeY));
+        }
 
         public bool IsTileFooting(int bChunk, int relativeX, int relativeY)
         {
@@ -223,12 +234,14 @@ namespace RainMeadow
             {
                 // no pathing
                 if (localTrace) RainMeadow.Debug("unpathable");
-                // don't let go of beams/walls/ceilings
-                if (HasFooting && room.aimap.getAItile(toPos).acc < AItile.Accessibility.Solid) // force movement
+                
+                if (!Climbing && room.aimap.getAItile(toPos).acc < AItile.Accessibility.Solid // don't let go of beams/walls/ceilings
+                    && (input[0].y != 1 || input[0].x != 0)) // not straight up
                 {
+                    // force movement
                     if (localTrace) RainMeadow.Debug("forced move to " + toPos.Tile);
                     magnitude = 1f;
-                    this.MovementOverride(new MovementConnection(MovementConnection.MovementType.Standard, basecoord, toPos, 1));
+                    this.MovementOverride(new MovementConnection(MovementConnection.MovementType.Standard, basecoord, toPos, 2));
                     return true;
                 }
                 else
@@ -290,10 +303,6 @@ namespace RainMeadow
                 this.canGroundJump = 0;
                 this.wantToJump = 0;
             }
-            if (this.canClimbJump > 0) this.canClimbJump--;
-            if (this.canPoleJump > 0) this.canPoleJump--;
-            if (this.canGroundJump > 0) this.canGroundJump--;
-            if (this.forceJump > 0) this.forceJump--;
 
             if (this.jumpBoost > 0f && (this.input[0].jmp || this.forceBoost > 0))
             {
@@ -342,6 +351,10 @@ namespace RainMeadow
         {
             base.Update(eu);
 
+            if (this.canClimbJump > 0) this.canClimbJump--;
+            if (this.canPoleJump > 0) this.canPoleJump--;
+            if (this.canGroundJump > 0) this.canGroundJump--;
+            if (this.forceJump > 0) this.forceJump--;
             if (this.forceBoost > 0) this.forceBoost--;
         }
 

@@ -280,10 +280,6 @@ namespace RainMeadow
             if (this.wantToPickUp > 0) this.wantToPickUp--;
             if (this.wantToThrow > 0) this.wantToThrow--;
 
-            if (this.input[0].jmp && !this.input[1].jmp) wantToJump = 5;
-            if (this.input[0].pckp && !this.input[1].pckp) wantToPickUp = 5;
-            if (this.input[0].thrw && !this.input[1].thrw) wantToThrow = 5;
-
 
             // bunch of unimplemented story things
             // relevant to story
@@ -737,33 +733,35 @@ namespace RainMeadow
 
             bool localTrace = Input.GetKey(KeyCode.L);
 
-            if (onlineCreature.isMine)
-            {
-                GrabUpdate();
-            }
+            if (this.input[0].jmp && !this.input[1].jmp) wantToJump = 5;
+            if (this.input[0].pckp && !this.input[1].pckp) wantToPickUp = 5;
+            if (this.input[0].thrw && !this.input[1].thrw) wantToThrow = 5;
 
             if (this.specialInput[0].direction != Vector2.zero)
             {
                 LookImpl(creature.DangerPos + 500f * this.specialInput[0].direction);
             }
 
-            // player direct into holes simplified equivalent
-            // seems to not work too well for lizards because 3 chunks middle chunk causes stuckiness
-            if ((input[0].x == 0 || input[0].y == 0) && input[0].x != input[0].y) // a straight direction
-            {
-                for (int n = 0; n < nc; n++)
-                {
-                    if (room.GetTile(chunks[n].pos + input[0].IntVec.ToVector2() * 40f).Terrain == Room.Tile.TerrainType.ShortcutEntrance
-                        || room.GetTile(chunks[n].pos + input[0].IntVec.ToVector2() * 20f).Terrain == Room.Tile.TerrainType.ShortcutEntrance)
-                    {
-                        chunks[n].vel += (room.MiddleOfTile(chunks[n].pos + new Vector2(20f * (float)input[0].x, 20f * (float)input[0].y)) - chunks[n].pos) / 10f;
-                        break;
-                    }
-                }
-            }
-
             if (onlineCreature.isMine)
             {
+                GrabUpdate();
+
+                // player direct into holes simplified equivalent
+                // seems to not work too well for lizards because 3 chunks middle chunk causes stuckiness
+                if ((input[0].x == 0 || input[0].y == 0) && input[0].x != input[0].y) // a straight direction
+                {
+                    for (int n = 0; n < nc; n++)
+                    {
+                        if (room.GetTile(chunks[n].pos + input[0].IntVec.ToVector2() * 40f).Terrain == Room.Tile.TerrainType.ShortcutEntrance
+                            || room.GetTile(chunks[n].pos + input[0].IntVec.ToVector2() * 20f).Terrain == Room.Tile.TerrainType.ShortcutEntrance)
+                        {
+                            chunks[0].vel += (room.MiddleOfTile(chunks[0].pos + new Vector2(20f * (float)input[0].x, 20f * (float)input[0].y)) - chunks[0].pos) / 10f;
+                            chunks[n].vel += (room.MiddleOfTile(chunks[n].pos + new Vector2(20f * (float)input[0].x, 20f * (float)input[0].y)) - chunks[n].pos) / 10f;
+                            break;
+                        }
+                    }
+                }
+
                 var basecoord = CurrentPathfindingPosition;
                 if (!lockInPlace && this.inputDir != Vector2.zero)
                 {

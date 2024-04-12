@@ -51,6 +51,8 @@ namespace RainMeadow
 
         public override bool HasFooting => mouse.Footing;
 
+        public override bool Climbing => !HasFooting && GetTile(0).AnyBeam;
+
         public override bool CanClimbJump => !mouse.Footing;
 
         public override bool CanPoleJump => !mouse.Footing;
