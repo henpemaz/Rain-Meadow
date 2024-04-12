@@ -49,6 +49,7 @@ namespace RainMeadow
             On.SporePlant.Pacify += SporePlant_Pacify;
 
             On.PuffBall.Explode += PuffBall_Explode;
+            On.ScavengerBomb.Explode += ScavengerBomb_Explode;
 
             On.Oracle.CreateMarble += Oracle_CreateMarble;
             On.Oracle.SetUpMarbles += Oracle_SetUpMarbles;
@@ -172,6 +173,20 @@ namespace RainMeadow
                 orig(self);
                 return;
             }
+        }
+
+        private void ScavengerBomb_Explode(On.ScavengerBomb.orig_Explode orig, ScavengerBomb self, BodyChunk hitChunk)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self, hitChunk);
+                return;
+            }
+
+            OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineScavBomb);
+
+            //We don't explode until violence is fixed.
+            return;
         }
 
         private void Oracle_SetUpMarbles(On.Oracle.orig_SetUpMarbles orig, Oracle self)
