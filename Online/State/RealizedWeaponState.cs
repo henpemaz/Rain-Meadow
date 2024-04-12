@@ -19,7 +19,9 @@ namespace RainMeadow
         private Vector2 lastRotation;
         [OnlineField]
         private float rotationSpeed;
-        
+        [OnlineField(nullable = true)]
+        private OnlineEntity.EntityId? thrownBy;
+
         public RealizedWeaponState() { }
         public RealizedWeaponState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
@@ -30,6 +32,11 @@ namespace RainMeadow
             rotation = weapon.rotation;
             lastRotation = weapon.lastRotation;
             rotationSpeed = weapon.rotationSpeed;
+            if (weapon.thrownBy != null)
+            {
+                OnlinePhysicalObject.map.TryGetValue(weapon.thrownBy.abstractCreature, out var onlineCreature);
+                thrownBy = onlineCreature.id;
+            }
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
@@ -44,6 +51,10 @@ namespace RainMeadow
             weapon.rotation = rotation;
             weapon.lastRotation = lastRotation;
             weapon.rotationSpeed = rotationSpeed;
+            if (thrownBy != null)
+            {
+                weapon.thrownBy = (thrownBy.FindEntity() as OnlineCreature).apo.realizedObject as Creature;
+            }
         }
     }
 }
