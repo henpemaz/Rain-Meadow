@@ -80,8 +80,9 @@ namespace RainMeadow
             }
 
             // problematic when climbing
-            if (this.input[0].y > 0 && (tile0.AnyBeam || tile1.AnyBeam)) // maybe "no footing" condition?
+            if (this.input[0].y > 0 && (tile0.AnyBeam || tile1.AnyBeam) && !Climbing)
             {
+                RainMeadow.Debug("grip!");
                 GripPole(tile0.AnyBeam ? tile0 : tile1);
             }
 
@@ -93,7 +94,8 @@ namespace RainMeadow
                 {
                     int num = (i > 0) ? ((i == 1) ? -1 : 1) : 0;
                     var tile = room.GetTile(basecoord + new IntVector2(num, 1));
-                    if (!tile.Solid && tile.verticalBeam)
+                    var aitile = room.aimap.getAItile(tile.X, tile.Y);
+                    if (!tile.Solid && (tile.verticalBeam || aitile.acc == AItile.Accessibility.Climb))
                     {
                         if (localTrace) RainMeadow.Debug("pole close");
                         toPos = WorldCoordinate.AddIntVector(basecoord, new IntVector2(num, 1));
@@ -108,10 +110,11 @@ namespace RainMeadow
                         int num = (i > 0) ? ((i == 1) ? -1 : 1) : 0;
                         var tileup1 = room.GetTile(basecoord + new IntVector2(num, 1));
                         var tileup2 = room.GetTile(basecoord + new IntVector2(num, 2));
-                        if (!tileup1.Solid && tileup2.verticalBeam)
+                        var aitile = room.aimap.getAItile(tileup2.X, tileup2.Y);
+                        if (!tileup1.Solid && (tileup2.verticalBeam || aitile.acc == AItile.Accessibility.Climb))
                         {
                             if (localTrace) RainMeadow.Debug("pole far");
-                            toPos = WorldCoordinate.AddIntVector(basecoord, new IntVector2(0, 2));
+                            toPos = WorldCoordinate.AddIntVector(basecoord, new IntVector2(num, 2));
                             climbing = true;
                             break;
                         }
@@ -215,14 +218,15 @@ namespace RainMeadow
                     }
                 }
 
-                // any higher accessibilities to check?
-                bool higherAcc = false;
-                while (targetAccessibility < AItile.Accessibility.Solid) higherAcc |= template.AccessibilityResistance(++targetAccessibility).Allowed;
-                if (currentLegality > PathCost.Legality.Unwanted && higherAcc)
-                {
-                    // not found, run again
-                    continue;
-                }
+                // ended up unused, need better engineering of "stick to same acc mode unless not available"
+                //// any higher accessibilities to check?
+                //bool higherAcc = false;
+                //while (targetAccessibility < AItile.Accessibility.Solid) higherAcc |= template.AccessibilityResistance(++targetAccessibility).Allowed;
+                //if (currentLegality > PathCost.Legality.Unwanted && higherAcc)
+                //{
+                //    // not found, run again
+                //    continue;
+                //}
                 break;
             }
 
@@ -235,7 +239,8 @@ namespace RainMeadow
                 // no pathing
                 if (localTrace) RainMeadow.Debug("unpathable");
                 
-                if (!Climbing && room.aimap.getAItile(toPos).acc < AItile.Accessibility.Solid // don't let go of beams/walls/ceilings
+                if (!Climbing // don't let go of beams/walls/ceilings
+                    && room.aimap.getAItile(toPos).acc < AItile.Accessibility.Solid // no
                     && (input[0].y != 1 || input[0].x != 0)) // not straight up
                 {
                     // force movement

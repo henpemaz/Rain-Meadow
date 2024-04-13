@@ -43,6 +43,14 @@ rethink kb input
 		maybe the radial?
 	study Meadow update, they've cooked it enough
 
+teleporting
+	to outskirts
+	to hub of [current region]
+	to home
+		home is initially set to thematic region
+		creatures otherwise spawn in outskirts
+
+
 creature todo
 - shelter activation? does nothing atm anyways
 - other story-mode things?
@@ -53,6 +61,9 @@ creature todo
 - show creature pipes
 	some rooms are only solvable with them, they aren't well known
 - allow creature to change the creature-pipe they're going to
+
+walking down falsefloor
+	groundctrl might need to check for y<0 && tile.isfloor
 
 player grabbing cicada = laggy physics
 
