@@ -22,7 +22,6 @@ namespace RainMeadow
             RainMeadow.DebugMe();
 
             pages[0].subObjects.Add(startbtn = new SimplerButton(this, pages[0], "START", btns, btnsize));
-            startbtn.buttonBehav.greyedOut = !OnlineManager.lobby.isAvailable;
             startbtn.OnClick += (SimplerButton obj) => { StartGame(); };
 
             // player list
@@ -64,15 +63,6 @@ namespace RainMeadow
             CreatePlayerCards();
 
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
-            if (OnlineManager.lobby.isActive)
-            {
-                OnLobbyActive();
-            }
-            else
-            {
-                OnlineManager.lobby.gameMode.OnLobbyActive += OnLobbyActive;
-            }
-
         }
 
         public override void Update()
@@ -83,11 +73,6 @@ namespace RainMeadow
             if (scrollTo < 0) scrollTo = RWCustom.Custom.LerpAndTick(scrollTo, 0, 0.1f, 0.1f);
             if (scrollTo > extraItems) scrollTo = RWCustom.Custom.LerpAndTick(scrollTo, extraItems, 0.1f, 0.1f);
             scroll = RWCustom.Custom.LerpAndTick(scroll, scrollTo, 0.1f, 0.1f);
-        }
-
-        private void OnLobbyActive()
-        {
-            startbtn.buttonBehav.greyedOut = false;
         }
 
         private void StartGame()
@@ -153,11 +138,10 @@ namespace RainMeadow
         public override void ShutDownProcess()
         {
             RainMeadow.DebugMe();
-            if (OnlineManager.lobby != null) OnlineManager.lobby.gameMode.OnLobbyActive -= OnLobbyActive;
             MatchmakingManager.instance.OnPlayerListReceived -= OnlineManager_OnPlayerListReceived;
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
-                MatchmakingManager.instance.LeaveLobby();
+                OnlineManager.LeaveLobby();
             }
             base.ShutDownProcess();
         }

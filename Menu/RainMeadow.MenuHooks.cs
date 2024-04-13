@@ -330,8 +330,14 @@ namespace RainMeadow
         {
             orig(self, manager, showRegionSpecificBkg);
 
-            MatchmakingManager.instance.LeaveLobby();
-            OnlineManager.Reset();
+            if (!fullyInit)
+            {
+                self.manager.ShowDialog(new DialogNotify("Rain Meadow failed to start", self.manager, null));
+                return;
+            }
+
+            // we might get here from quitting out of game
+            OnlineManager.LeaveLobby();
 
             var meadowButton = new SimpleButton(self, self.pages[0], self.Translate("MEADOW"), "MEADOW", Vector2.zero, new Vector2(Menu.MainMenu.GetButtonWidth(self.CurrLang), 30f));
             self.AddMainMenuButton(meadowButton, () =>
@@ -345,14 +351,6 @@ namespace RainMeadow
 #endif
                 self.manager.RequestMainProcessSwitch(Ext_ProcessID.LobbySelectMenu);
             }, self.mainMenuButtons.Count - 2);
-            if (ModManager.MMF)
-            {
-                RainMeadow.Debug("Restoring config settings");
-
-                var mmfOptions = MachineConnector.GetRegisteredOI(MoreSlugcats.MMF.MOD_ID);
-                MachineConnector.ReloadConfig(mmfOptions);
-
-            }
         }
     }
 }

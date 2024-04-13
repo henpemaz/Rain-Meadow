@@ -25,7 +25,7 @@ namespace RainMeadow
             this._rect.fillAlpha = 1f;
 
             OnClick += Signal;
-            OnReactivate += Show;
+            OnReactivate += Reactivated;
         }
 
         public void Signal(UIfocusable trigger)
@@ -55,7 +55,18 @@ namespace RainMeadow
         internal delegate void OnValueChangedHandler();
         public event OnValueChangedHandler OnValueChangedEvent;
 
-        public Color valuecolor => colorPicker.valueColor;
+        public Color valuecolor
+        {
+            get
+            {
+                return colorPicker.valueColor;
+            }
+            set
+            {
+                colorPicker.valueColor = value;
+                colorFill = value;
+            }
+        }
 
         public override void Update()
         {
@@ -98,7 +109,7 @@ namespace RainMeadow
             _rect.fillAlpha = 1f;
         }
 
-        public void Show()
+        public void Reactivated()
         {
             colorPicker.Hide();
         }

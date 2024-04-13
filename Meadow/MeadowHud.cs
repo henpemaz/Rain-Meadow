@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    internal class MeadowHud : HudPart
+    public class MeadowHud : HudPart
     {
         private RoomCamera self;
         private Creature owner;
@@ -67,7 +67,7 @@ namespace RainMeadow
             needed = Mathf.Max(needed - 1, 0);
             if (emoteAnim > 0)
             {
-                needed = 60;
+                needed = 80;
                 emoteAnim--;
                 if (emoteAnim == 0)
                 {
@@ -78,7 +78,7 @@ namespace RainMeadow
             }
             if (skinAnim > 0)
             {
-                needed = 60;
+                needed = 80;
                 skinAnim--;
                 if (skinAnim == 0)
                 {
@@ -89,7 +89,7 @@ namespace RainMeadow
             }
             if (charAnim > 0)
             {
-                needed = 60;
+                needed = 80;
                 charAnim--;
                 if (charAnim == 0)
                 {
@@ -134,8 +134,8 @@ namespace RainMeadow
         public override void ClearSprites()
         {
             base.ClearSprites();
-            container.RemoveAllChildren();
             container.RemoveFromContainer();
+            container.RemoveAllChildren();
             emotesIcon.ClearSprites();
             skinsIcon.ClearSprites();
             characterIcon.ClearSprites();
@@ -143,17 +143,17 @@ namespace RainMeadow
 
         internal void NewCharacterUnlocked(MeadowProgression.Character chararcter)
         {
-            //throw new NotImplementedException();
+            hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate("New character unlocked"), 60, 160, true, true);
         }
 
         internal void NewEmoteUnlocked(MeadowProgression.Emote emote)
         {
-            //throw new NotImplementedException();
+            hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate("New emote unlocked"), 60, 160, true, true);
         }
 
         internal void NewSkinUnlocked(MeadowProgression.Skin skin)
         {
-            //throw new NotImplementedException();
+            hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate("New skin unlocked"), 60, 160, true, true);
         }
 
         public class TokenSparkIcon
@@ -165,7 +165,7 @@ namespace RainMeadow
             //private float sinCounter;
             private float sinCounter2;
             private FSprite[] sprites;
-            private FContainer container;
+            public FContainer container; // controls position and scaling
 
             public TokenSparkIcon(FContainer hudContainer, Color color, Vector2 pos, float scale)
             {

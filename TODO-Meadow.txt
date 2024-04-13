@@ -1,21 +1,25 @@
-plants todo
-- sync timer and collected (so can be transfered) /done
-- respawn a plant on plant expired
+items todo
+	items could be a little higher from the ground
+		too high up becomes a problem for liz though?
+			could be property of avatar, how high off the ground it hovers
+		/done-ish
+	slugcar collision could be better, lower body doesnt hit
+		/done
 
-- more items
-	copy the arena unlocks
-		a collectoken is a UAD, but my objects so far (MeadowCollectible) were POs
-		inheriting CT means I need to implement UAD sync ("shouldn't be too complicated") besides getting it to work
-		ineriting MeadowCollectible means I need to copypaste a ton of code to make it work like a token
-			/ went with this
-		make several rarities of them
-			one type, specific val for rarity?
-			one type per rarity?
-				will we run out of item enums? 255 is the current seri cap
-					game uses 33/255
-					dlc adds 15
-				seems safe
+progression todo
+	could have first few creature unlocks be easier the rest harder
+		nahhh
+
+Save system
+	save selected skin of character / done
+	save color/tint of characters / done
 	
+Menu todo
+	hide tint on locked character / done
+	use saved colors / done
+
+	tint resulting color preview
+
 emotes todo
 "wish I could "stop" an emote block and start a new one, instead of having to wait out the fade"
 	maybe pressing backspace? should it clear or not clear the current group? /ok
@@ -37,52 +41,54 @@ rethink kb input
 	one configurable hotbar with 10 the rest on mouse?
 	really really wish I could support "fully keyboard input"
 		maybe the radial?
-add backdrop to previews / done
+	study Meadow update, they've cooked it enough
+
+teleporting
+	to outskirts
+	to hub of [current region]
+	to home
+		home is initially set to thematic region
+		creatures otherwise spawn in outskirts
+
 
 creature todo
 - shelter activation? does nothing atm anyways
-- gate activation / done
 - other story-mode things?
 - any ways to die left?
-	player (slugcat) can drown
+	player (slugcat) can drown /done
 - can get stuck
 	some rooms will get fixed
-	but maybe an unstuck button is in order? / done
+- show creature pipes
+	some rooms are only solvable with them, they aren't well known
+- allow creature to change the creature-pipe they're going to
+
+walking down falsefloor
+	groundctrl might need to check for y<0 && tile.isfloor
 
 player grabbing cicada = laggy physics
-
-tint color slider/picker doesnt work on controller / done
 
 really hard to enter pipe sometimes
 	still the case, needs body shrinkage?
 
 lizard todo
 - charge
-- head rotation should really prefer unrotated
-- head blinking seems a bit much, how control?
 - find a good seed for our buddies
+- fall + diagdown = slide
 
-lizard still bites cicada
-	// how?
 lizard on first load doesn't get colors assigned ?? firstload in realize room vs load far and walk in?
 	
-blue lizard make it prefer ground
-	work as non-climber unless UP
-	/ reworked so will preferr "keepig same acessibility as current path"
-
-playable scav
-- up a pole sucks // done
-- go through floors // done?
-
 slugcat in meadow mode
-- lookdir input like the others
+- lookdir input like the others / done
 - point things
-- go through creature pipes
-	since no spears around
+- go through creature pipes / done
 
-Toss in eggbug and noodlefly
-- make flying controller template?
-- do "wall-crawlers" deserve their own template or just better handling of climb/noclimb modes?
+eggbug
+	update art
+	pick seeds and names
+
+noot
+	make art
+	pick seeds and names
 
 water controls for lizard and scav etc
 	needs to be there, crossing DS etc

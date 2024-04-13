@@ -31,33 +31,33 @@ namespace RainMeadow
             }
 
             this.lines = new Vector2[4, 4];
-            for (int i = 0; i < this.lines.GetLength(0); i++)
-            {
-                this.lines[i, 0] = this.pos;
-                this.lines[i, 1] = this.pos;
-            }
             this.lines[0, 2] = new Vector2(-7f, 0f);
             this.lines[1, 2] = new Vector2(0f, 11f);
             this.lines[2, 2] = new Vector2(7f, 0f);
             this.lines[3, 2] = new Vector2(0f, -11f);
             this.trail = new Vector2[5];
-            for (int j = 0; j < this.trail.Length; j++)
-            {
-                this.trail[j] = this.pos;
-            }
         }
 
         public override void PlaceInRoom(Room placeRoom)
         {
             base.PlaceInRoom(placeRoom);
 
-            var pos = this.firstChunk.pos;
+            var pos = placePos + new Vector2(0, 20);
             this.underWaterMode = (room.GetTilePosition(pos).y < room.defaultWaterLevel);
             this.stalk = new MeadowCollectToken.TokenStalk(room, pos, pos + new Vector2(0f, -40f), this.TokenColor, this);
             room.AddObject(this.stalk);
             this.pos = pos;
             this.hoverPos = pos;
             this.lastPos = pos;
+            for (int i = 0; i < this.lines.GetLength(0); i++)
+            {
+                this.lines[i, 0] = this.pos;
+                this.lines[i, 1] = this.pos;
+            }
+            for (int j = 0; j < this.trail.Length; j++)
+            {
+                this.trail[j] = this.pos;
+            }
             if (abstractCollectible.collectedLocally)
             {
                 this.RemoveFromRoom();
@@ -212,15 +212,19 @@ namespace RainMeadow
                 else if (avatarCreature.room == this.room)
                 {
                     // collect logic moved here
-                    if (Custom.DistLess(avatarCreature.mainBodyChunk.pos, this.pos, 18f))
+                    for (int i = 0; i < avatarCreature.bodyChunks.Length; i++)
                     {
-                        expandAroundCreature = avatarCreature;
-                        this.expand = 0.01f;
-                        this.room.PlaySound(SoundID.Token_Collect, this.pos);
-                        abstractCollectible.Collect();
-                        for (int num6 = 0; num6 < 10; num6++)
+                        if (Custom.DistLess(avatarCreature.bodyChunks[i].pos, this.pos, 18f))
                         {
-                            this.room.AddObject(new MeadowCollectToken.TokenSpark(this.pos + Custom.RNV() * 2f, Custom.RNV() * 11f * Random.value + Custom.DirVec(avatarCreature.mainBodyChunk.pos, this.pos) * 5f * Random.value, this.GoldCol(this.glitch), this.underWaterMode));
+                            expandAroundCreature = avatarCreature;
+                            this.expand = 0.01f;
+                            this.room.PlaySound(SoundID.Token_Collect, this.pos);
+                            abstractCollectible.Collect();
+                            for (int num6 = 0; num6 < 10; num6++)
+                            {
+                                this.room.AddObject(new MeadowCollectToken.TokenSpark(this.pos + Custom.RNV() * 2f, Custom.RNV() * 11f * Random.value + Custom.DirVec(avatarCreature.bodyChunks[i].pos, this.pos) * 5f * Random.value, this.GoldCol(this.glitch), this.underWaterMode));
+                            }
+                            break;
                         }
                     }
                 }

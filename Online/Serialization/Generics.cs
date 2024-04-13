@@ -136,6 +136,46 @@ namespace RainMeadow.Generics
     }
 
     /// <summary>
+    /// Fixed ordered list
+    /// </summary>
+    public abstract class FixedOrderedList<T, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp : FixedOrderedList<T, Imp>, new()
+    {
+        public List<T> list;
+        public List<byte> updateIndexes;
+
+        public FixedOrderedList() { }
+        public FixedOrderedList(List<T> list)
+        {
+            this.list = list;
+        }
+
+        public Imp Delta(Imp other)
+        {
+            if (other == null) { return (Imp)this; }
+
+            Imp delta = new();
+            (delta.list, delta.updateIndexes) = other.list.Select((e, i) => { return (e, i: (byte)i); }).Where(e => list[e.i].Equals(e.e)).ToListTuple();
+            return (delta.list.Count == 0) ? null : delta;
+        }
+
+        public Imp ApplyDelta(Imp other)
+        {
+            Imp result = new();
+            result.list = list.ToList();
+            if (other != null)
+            {
+                for (int i = 0; i < other.updateIndexes.Count; i++)
+                {
+                    list[other.updateIndexes[i]] = other.list[i];
+                }
+            }
+            return result;
+        }
+
+        public abstract void CustomSerialize(Serializer serializer);
+    }
+
+    /// <summary>
     /// Static list, no adds/removes supported, id-elementwise delta
     /// </summary>
     public abstract class IdentifiablesDeltaList<T, U, V, Imp> : Serializer.ICustomSerializable, IDelta<Imp> where T : IDelta<V>, V, IIdentifiable<U> where U : IEquatable<U> where Imp : IdentifiablesDeltaList<T, U, V, Imp>, new()
@@ -422,6 +462,21 @@ namespace RainMeadow.Generics
             {
                 serializer.Serialize(ref listIndexes);
                 serializer.Serialize(ref removedIndexes);
+            }
+        }
+    }
+
+    public class FixedOrderedUshorts : FixedOrderedList<ushort, FixedOrderedUshorts>
+    {
+        public FixedOrderedUshorts() { }
+        public FixedOrderedUshorts(List<ushort> list) : base(list) { }
+
+        public override void CustomSerialize(Serializer serializer)
+        {
+            serializer.Serialize(ref list);
+            if (serializer.IsDelta)
+            {
+                serializer.Serialize(ref updateIndexes);
             }
         }
     }

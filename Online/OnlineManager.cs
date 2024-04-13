@@ -15,13 +15,11 @@ namespace RainMeadow
         public static List<EntityFeed> feeds;
         public static Dictionary<OnlineEntity.EntityId, OnlineEntity> recentEntities;
         public static HashSet<OnlineEvent> waitingEvents;
-        public static float lastDt;
-        public static float lastUpdate;
+        public static float lastSend;
+        public static float lastReceive;
         public static OnlinePlayer mePlayer;
         public static List<OnlinePlayer> players;
         public static Lobby lobby;
-
-
 
         public static LobbyInfo currentlyJoiningLobby;
 
@@ -31,7 +29,7 @@ namespace RainMeadow
             framesPerSecond = 20; // alternatively, run as fast as we can for the receiving stuff, but send on a lower tickrate?
 
             MatchmakingManager.InitLobbyManager();
-            Reset();
+            LeaveLobby();
             MatchmakingManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
             RainMeadow.Debug("OnlineManager Created");
         }
@@ -44,16 +42,18 @@ namespace RainMeadow
             if (ok)
             {
                 manager.RequestMainProcessSwitch(lobby.gameMode.MenuProcessId());
-
             }
             else
             {
-                MatchmakingManager.instance.LeaveLobby();
+                OnlineManager.LeaveLobby();
             }
         }
 
-        public static void Reset()
+        public static void LeaveLobby()
         {
+            MatchmakingManager.instance.LeaveLobby();
+            lobby = null;
+
             subscriptions = new();
             feeds = new();
             recentEntities = new();
@@ -63,7 +63,8 @@ namespace RainMeadow
             RoomSession.map = new();
             OnlinePhysicalObject.map = new();
 
-            lobby = null;
+            RainMeadowModManager.Reset();
+
             mePlayer = new OnlinePlayer(mePlayer.id) { isMe = true };
             players = new List<OnlinePlayer>() { mePlayer };
         }
@@ -72,6 +73,7 @@ namespace RainMeadow
         {
             myTimeStacker += dt * (float)framesPerSecond;
             NetIO.Update(); // incoming data
+            lastReceive = UnityEngine.Time.realtimeSinceStartup;
 
             if (myTimeStacker >= 1f)
             {
@@ -82,7 +84,6 @@ namespace RainMeadow
                 }
                 Update(); // outgoing data
             }
-            lastUpdate = UnityEngine.Time.realtimeSinceStartup;
         }
 
         // from a force-load situation
@@ -92,11 +93,11 @@ namespace RainMeadow
             SteamAPI.RunCallbacks();
 #endif
             NetIO.Update();
+            lastReceive = UnityEngine.Time.realtimeSinceStartup;
 
-            if (UnityEngine.Time.realtimeSinceStartup > lastDt + 1f / instance.framesPerSecond)
+            if (UnityEngine.Time.realtimeSinceStartup > lastSend + 1f / instance.framesPerSecond)
             {
                 instance.Update();
-                lastDt = UnityEngine.Time.realtimeSinceStartup;
             }
         }
 
@@ -144,11 +145,9 @@ namespace RainMeadow
                 {
                     SendData(player);
                 }
-                //#if TRACING
-                //#if TRACING
-                RainMeadow.tracing = false; // cleanup
-                                            //#endif
-                                            //#endif
+
+                lastSend = UnityEngine.Time.realtimeSinceStartup;
+                RainMeadow.tracing = false; // tracing captures one tick
             }
         }
 
@@ -204,7 +203,6 @@ namespace RainMeadow
                     waitingEvents.Add(onlineEvent);
                 }
             }
-            //else { RainMeadow.Debug($"Stale event {onlineEvent} from {fromPlayer}"); }
         }
 
         public static void MaybeProcessWaitingEvents()
