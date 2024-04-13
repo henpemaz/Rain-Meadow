@@ -21,8 +21,6 @@ public partial class RainMeadow
         On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites1;
 
         On.AbstractCreature.ctor += AbstractCreature_ctor;
-
-        On.Player.Update += Player_Update1;
     }
 
     private void KarmaFlower_BitByPlayer(On.KarmaFlower.orig_BitByPlayer orig, KarmaFlower self, Creature.Grasp grasp, bool eu)
@@ -42,96 +40,6 @@ public partial class RainMeadow
                         player.InvokeRPC(RPCs.PlayReinforceKarmaAnimation);
                     }
                 }
-            }
-        }
-    }
-
-    private void Player_Update1(On.Player.orig_Update orig, Player self, bool eu)
-    {
-        if (OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
-        {
-            if (RainMeadow.tracing && oe.id.originalOwner == 2)
-            {
-
-                RainMeadow.Trace($"player debug 1 {oe}");
-                RainMeadow.Trace($"{oe.id}");
-                RainMeadow.Trace($"{oe.owner}");
-                RainMeadow.Trace($"{oe.owner.inLobbyId}");
-                RainMeadow.Trace($"animation: {self.animation}");
-                RainMeadow.Trace($"animationFrame: {self.animationFrame}");
-                RainMeadow.Trace($"bodyMode: {self.bodyMode}");
-                RainMeadow.Trace($"CollideWithObjects: {self.CollideWithObjects}");
-                RainMeadow.Trace($"CollideWithSlopes: {self.CollideWithSlopes}");
-                RainMeadow.Trace($"CollideWithTerrain: {self.CollideWithTerrain}");
-                RainMeadow.Trace($"collisionLayer: {self.collisionLayer}");
-                RainMeadow.Trace($"corridorDrop: {self.corridorDrop}");
-                RainMeadow.Trace($"diveForce: {self.diveForce}");
-                RainMeadow.Trace($"goIntoCorridorClimb: {self.goIntoCorridorClimb}");
-                RainMeadow.Trace($"gravity: {self.gravity}");
-                RainMeadow.Trace($"initSlideCounter: {self.initSlideCounter}");
-                RainMeadow.Trace($"input: {self.input[0].x}");
-                RainMeadow.Trace($"input: {self.input[0].y}");
-                RainMeadow.Trace($"rollCounter: {self.rollCounter}");
-                RainMeadow.Trace($"shootUpCounter: {self.shootUpCounter}");
-                RainMeadow.Trace($"slideCounter: {self.slideCounter}");
-                RainMeadow.Trace($"standing: {self.standing}");
-                RainMeadow.Trace($"stopRollingCounter: {self.stopRollingCounter}");
-                RainMeadow.Trace($"straightUpOnHorizontalBeam: {self.straightUpOnHorizontalBeam}");
-                RainMeadow.Trace($"timeSinceInCorridorMode: {self.timeSinceInCorridorMode}");
-                RainMeadow.Trace($"upperBodyFramesOffGround: {self.upperBodyFramesOffGround}");
-                RainMeadow.Trace($"upperBodyFramesOnGround: {self.upperBodyFramesOnGround}");
-                RainMeadow.Trace($"verticalCorridorSlideCounter: {self.verticalCorridorSlideCounter}");
-                RainMeadow.Trace($"wallSlideCounter: {self.wallSlideCounter}");
-                RainMeadow.Trace($"wantToJump: {self.wantToJump}");
-                RainMeadow.Trace($"WANTTOSTAND: {self.WANTTOSTAND}");
-                RainMeadow.Trace($"enteringShortCut.HasValue: {self.enteringShortCut.HasValue}");
-                RainMeadow.Trace($"enteringShortCut.Value: {(self.enteringShortCut.HasValue ? self.enteringShortCut : "null")}");
-                RainMeadow.Trace($"stun: {self.stun}");
-                RainMeadow.Trace($"dead: {self.dead}");
-                RainMeadow.Trace($"inShortcut: {self.inShortcut}");
-            }
-        }
-        orig(self, eu);
-
-        if (OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe2))
-        {
-            if (RainMeadow.tracing && oe2.id.originalOwner == 2)
-            {
-                RainMeadow.Trace($"player debug 2 {oe}");
-                RainMeadow.Trace($"animation: {self.animation}");
-                RainMeadow.Trace($"animationFrame: {self.animationFrame}");
-                RainMeadow.Trace($"bodyMode: {self.bodyMode}");
-                RainMeadow.Trace($"CollideWithObjects: {self.CollideWithObjects}");
-                RainMeadow.Trace($"CollideWithSlopes: {self.CollideWithSlopes}");
-                RainMeadow.Trace($"CollideWithTerrain: {self.CollideWithTerrain}");
-                RainMeadow.Trace($"collisionLayer: {self.collisionLayer}");
-                RainMeadow.Trace($"corridorDrop: {self.corridorDrop}");
-                RainMeadow.Trace($"diveForce: {self.diveForce}");
-                RainMeadow.Trace($"goIntoCorridorClimb: {self.goIntoCorridorClimb}");
-                RainMeadow.Trace($"gravity: {self.gravity}");
-                RainMeadow.Trace($"initSlideCounter: {self.initSlideCounter}");
-                RainMeadow.Trace($"input: {self.input[0].x}");
-                RainMeadow.Trace($"input: {self.input[0].y}");
-                RainMeadow.Trace($"rollCounter: {self.rollCounter}");
-                RainMeadow.Trace($"shootUpCounter: {self.shootUpCounter}");
-                RainMeadow.Trace($"slideCounter: {self.slideCounter}");
-                RainMeadow.Trace($"standing: {self.standing}");
-                RainMeadow.Trace($"stopRollingCounter: {self.stopRollingCounter}");
-                RainMeadow.Trace($"straightUpOnHorizontalBeam: {self.straightUpOnHorizontalBeam}");
-                RainMeadow.Trace($"timeSinceInCorridorMode: {self.timeSinceInCorridorMode}");
-                RainMeadow.Trace($"upperBodyFramesOffGround: {self.upperBodyFramesOffGround}");
-                RainMeadow.Trace($"upperBodyFramesOnGround: {self.upperBodyFramesOnGround}");
-                RainMeadow.Trace($"verticalCorridorSlideCounter: {self.verticalCorridorSlideCounter}");
-                RainMeadow.Trace($"wallSlideCounter: {self.wallSlideCounter}");
-                RainMeadow.Trace($"wantToJump: {self.wantToJump}");
-                RainMeadow.Trace($"WANTTOSTAND: {self.WANTTOSTAND}");
-                RainMeadow.Trace($"enteringShortCut.HasValue: {self.enteringShortCut.HasValue}");
-                RainMeadow.Trace($"enteringShortCut.Value: {(self.enteringShortCut.HasValue ? self.enteringShortCut : "null")}");
-                RainMeadow.Trace($"stun: {self.stun}");
-                RainMeadow.Trace($"dead: {self.dead}");
-                RainMeadow.Trace($"inShortcut: {self.inShortcut}");
-
-                RainMeadow.Trace(Environment.StackTrace);
             }
         }
     }

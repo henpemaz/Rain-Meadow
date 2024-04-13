@@ -18,6 +18,8 @@ namespace RainMeadow
             ScavengerController.EnableScavenger();
             NoodleController.EnableNoodle();
             EggbugController.EnableEggbug();
+            MeadowPlayerController.Enable();
+            LanternMouseController.EnableMouse();
 
             AbstractMeadowCollectible.Enable();
 
@@ -242,7 +244,7 @@ namespace RainMeadow
                     {
                         self.ReturnFContainer("HUD"),
                         self.ReturnFContainer("HUD2")
-                    }, self.room.game.rainWorld, owner is Player player? player : CreatureController.creatureControllers.TryGetValue(owner.abstractCreature, out var controller) ? controller : throw new InvalidProgrammerException("Not player nor controlled creature"));
+                    }, self.room.game.rainWorld, CreatureController.creatureControllers.TryGetValue(owner.abstractCreature, out var controller) ? controller : throw new InvalidProgrammerException("Not player nor controlled creature"));
 
                     var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
                     self.hud.AddPart(new HUD.TextPrompt(self.hud)); // game assumes this never null

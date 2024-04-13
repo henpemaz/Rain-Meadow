@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -10,19 +11,15 @@ namespace RainMeadow
         public static string[] GetActiveMods()
         {
 
-            var highImpactMods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().Select(mod => mod.id.ToString()).ToArray();
+            var highImpactMods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).Select(mod => mod.id);
 
             var remixMod = ModManager.ActiveMods.Find(mod => mod.id == "rwremix"); // Remix needs to be added to the 'game-breaking' mods for game settings sync
-
             if (remixMod != null)
             {
-                var highImpactModsList = highImpactMods.ToList();
-                highImpactModsList.Add(remixMod.id);
-                highImpactMods = highImpactModsList.ToArray();
-
+                highImpactMods = highImpactMods.Append(remixMod.id);
             }
 
-            return highImpactMods;
+            return highImpactMods.ToArray();
         }
 
         internal static void CheckMods(string[] lobbyMods, string[] localMods)
@@ -89,6 +86,17 @@ namespace RainMeadow
                     }
 
                 };
+            }
+        }
+
+        internal static void Reset()
+        {
+            if (ModManager.MMF)
+            {
+                RainMeadow.Debug("Restoring config settings");
+
+                var mmfOptions = MachineConnector.GetRegisteredOI(MoreSlugcats.MMF.MOD_ID);
+                MachineConnector.ReloadConfig(mmfOptions);
             }
         }
 

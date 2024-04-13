@@ -67,6 +67,8 @@ namespace RainMeadow
 
         public override bool HasFooting => true;
 
+        public override bool Climbing => !HasFooting && GetTile(0).AnyBeam;
+
         public override bool CanClimbJump => false;
 
         public override bool CanPoleJump => false;

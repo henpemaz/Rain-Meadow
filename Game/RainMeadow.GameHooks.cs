@@ -37,6 +37,7 @@ namespace RainMeadow
             On.Menu.PauseMenu.ctor += PauseMenu_ctor;
 
             IL.RainWorldGame.Update += RainWorldGame_Update;
+            On.RainWorldGame.Update += RainWorldGame_Update1;
 
             // Arena specific
             On.GameSession.AddPlayer += GameSession_AddPlayer;
@@ -75,6 +76,22 @@ namespace RainMeadow
             catch (Exception e)
             {
                 Logger.LogError(e);
+            }
+        }
+
+        private void RainWorldGame_Update1(On.RainWorldGame.orig_Update orig, RainWorldGame self)
+        {
+            orig(self);
+
+            if (OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+            {
+                MeadowProgression.progressionData.currentCharacterProgress.timePlayed += 1000 / self.framesPerSecond;
+                // every 5 minutes
+                if (self.clock % (5 * 60 * 40) == 0)
+                {
+                    MeadowProgression.progressionData.currentCharacterProgress.saveLocation = mgm.avatar.apo.pos;
+                    MeadowProgression.AutosaveProgression();
+                }
             }
         }
 
@@ -195,6 +212,12 @@ namespace RainMeadow
                 if(isStoryMode(out var story))
                 {
                     story.storyClientSettings.inGame = false;
+                }
+
+                if(OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+                {
+                    MeadowProgression.progressionData.currentCharacterProgress.saveLocation = mgm.avatar.apo.pos;
+                    MeadowProgression.SaveProgression();
                 }
 
                 if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;

@@ -1,7 +1,10 @@
-﻿using HarmonyLib;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using RWCustom;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 
@@ -18,7 +21,7 @@ namespace RainMeadow
             {
                 _ = Character.Slugcat;
                 _ = Skin.Slugcat_Survivor;
-                currentTestSkin = Skin.Eggbug_Blue;
+                currentTestSkin = Skin.Lizard_Pink;
 
                 RainMeadow.Debug($"characters loaded: {Character.values.Count}");
                 RainMeadow.Debug($"skins loaded: {Skin.values.Count}");
@@ -30,6 +33,8 @@ namespace RainMeadow
             }
         }
 
+        public static List<Character> allCharacters = new();
+
         public static Dictionary<Character, CharacterData> characterData = new();
 
         public class CharacterData
@@ -39,8 +44,11 @@ namespace RainMeadow
             public string emoteAtlas;
             public Color emoteColor;
             public List<Skin> skins = new();
+            public int[] selectSpriteIndexes;
+            public WorldCoordinate startingCoords;
         }
 
+        [TypeConverter(typeof(ExtEnumTypeConverter<Character>))]
         public class Character : ExtEnum<Character>
         {
             public Character(string value, bool register = false, CharacterData characterDataEntry = null) : base(value, register)
@@ -48,6 +56,7 @@ namespace RainMeadow
                 if (register)
                 {
                     characterData[this] = characterDataEntry;
+                    allCharacters.Add(this);
                 }
             }
 
@@ -57,13 +66,8 @@ namespace RainMeadow
                 emotePrefix = "sc_",
                 emoteAtlas = "emotes_slugcat",
                 emoteColor = new Color(85f, 120f, 120f, 255f) / 255f,
-            });
-            public static Character Cicada = new("Cicada", true, new()
-            {
-                displayName = "CICADA",
-                emotePrefix = "squid_",
-                emoteAtlas = "emotes_squid",
-                emoteColor = new Color(81f, 81f, 81f, 255f) / 255f,
+                selectSpriteIndexes = new[] { 2 },
+                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["SU_C04"], 7, 28, -1),
             });
             public static Character Lizard = new("Lizard", true, new()
             {
@@ -71,6 +75,17 @@ namespace RainMeadow
                 emotePrefix = "liz_",
                 emoteAtlas = "emotes_lizard",
                 emoteColor = new Color(197, 220, 232, 255f) / 255f,
+                selectSpriteIndexes = new[] { 1, 2 },
+                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["DS_A06"], 12, 16, -1),
+            });
+            public static Character Cicada = new("Cicada", true, new()
+            {
+                displayName = "CICADA",
+                emotePrefix = "squid_",
+                emoteAtlas = "emotes_squid",
+                emoteColor = new Color(81f, 81f, 81f, 255f) / 255f,
+                selectSpriteIndexes = new[] { 2 },
+                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["SI_D05"], 32, 18, -1),
             });
             public static Character Scavenger = new("Scavenger", true, new()
             {
@@ -78,6 +93,8 @@ namespace RainMeadow
                 emotePrefix = "sc_", // "scav_"
                 emoteAtlas = "emotes_slugcat",//"emotes_scav",
                 emoteColor = new Color(232, 187, 200, 255f) / 255f,
+                selectSpriteIndexes = new[] { 1 },
+                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["GW_A11"], 26, 22, -1),
             });
             public static Character Noodlefly = new("Noodlefly", true, new()
             {
@@ -85,6 +102,8 @@ namespace RainMeadow
                 emotePrefix = "sc_", // "noot_"
                 emoteAtlas = "emotes_slugcat",//"emotes_noot",
                 emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
+                selectSpriteIndexes = new int[0],
+                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["LF_F02"], 63, 43, -1),
             });
             public static Character Eggbug = new("Eggbug", true, new()
             {
@@ -92,6 +111,17 @@ namespace RainMeadow
                 emotePrefix = "sc_", // "noot_"
                 emoteAtlas = "emotes_slugcat",//"emotes_noot",
                 emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
+                selectSpriteIndexes = new[] { 2 },
+                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["HI_B04"], 32, 18, -1),
+            });
+            public static Character LanternMouse = new("LanternMouse", true, new()
+            {
+                displayName = "LANTERN MOUSE",
+                emotePrefix = "sc_", // "noot_"
+                emoteAtlas = "emotes_slugcat",//"emotes_noot",
+                emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
+                selectSpriteIndexes = new int[0],
+                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["SH_A21"], 32, 26, -1),
             });
         }
 
@@ -114,6 +144,7 @@ namespace RainMeadow
             public Color? emoteColorOverride;
         }
 
+        [TypeConverter(typeof(ExtEnumTypeConverter<Skin>))]
         public class Skin : ExtEnum<Skin>
         {
             public Skin(string value, bool register = false, SkinData skinDataEntry = null) : base(value, register)
@@ -297,8 +328,24 @@ namespace RainMeadow
                 creatureType = CreatureTemplate.Type.EggBug,
                 randomSeed = 1002,
             });
+
+            public static Skin LanternMouse_Blue = new("LanternMouse_Blue", true, new()
+            {
+                character = Character.LanternMouse,
+                displayName = "Blue",
+                creatureType = CreatureTemplate.Type.LanternMouse,
+                randomSeed = 1001,
+            });
+            public static Skin LanternMouse_Teal = new("LanternMouse_Teal", true, new()
+            {
+                character = Character.LanternMouse,
+                displayName = "Teal",
+                creatureType = CreatureTemplate.Type.LanternMouse,
+                randomSeed = 1002,
+            });
         }
 
+        [TypeConverter(typeof(ExtEnumTypeConverter<Emote>))]
         public class Emote : ExtEnum<Emote>
         {
             public Emote(string value, bool register = false) : base(value, register) { }
@@ -345,113 +392,6 @@ namespace RainMeadow
             // todo
         }
 
-        public static List<Skin> AllAvailableSkins(Character character)
-        {
-            return characterData[character].skins.Intersect(progressionData.characterProgress[character].unlockedSkins).ToList();
-        }
-
-        public static List<Character> AllAvailableCharacters()
-        {
-            return characterData.Keys.Intersect(progressionData.unlockedCharacters).ToList();
-        }
-
-        internal static void ItemCollected(AbstractMeadowCollectible abstractMeadowCollectible)
-        {
-            var meadowHud = (Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).cameras[0].hud.parts.First(p => p is MeadowHud) as MeadowHud;
-            if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold) // creature unlock
-            {
-                meadowHud.AnimateChar();
-                progressionData.characterUnlockProgress++;
-                if (progressionData.characterUnlockProgress >= characterProgressTreshold)
-                {
-                    if (NextUnlockableCharacter() is Character chararcter)
-                    {
-                        progressionData.unlockedCharacters.Add(chararcter);
-                        progressionData.characterUnlockProgress -= characterProgressTreshold;
-                        meadowHud.NewCharacterUnlocked(chararcter);
-                    }
-                    else
-                    {
-                        progressionData.characterUnlockProgress = characterProgressTreshold;
-                    }
-                }
-            }
-            else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
-            {
-                meadowHud.AnimateEmote();
-                progressionData.currentCharacterProgress.emoteUnlockProgress++;
-                if (progressionData.currentCharacterProgress.emoteUnlockProgress >= emoteProgressTreshold)
-                {
-                    if (NextUnlockableEmote() is Emote emote)
-                    {
-                        progressionData.currentCharacterProgress.unlockedEmotes.Add(emote);
-                        progressionData.currentCharacterProgress.emoteUnlockProgress -= emoteProgressTreshold;
-                        meadowHud.NewEmoteUnlocked(emote);
-                    }
-                    else
-                    {
-                        progressionData.currentCharacterProgress.emoteUnlockProgress = emoteProgressTreshold;
-                    }
-                }
-            }
-            else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue)
-            {
-                meadowHud.AnimateSkin();
-                progressionData.currentCharacterProgress.skinUnlockProgress++;
-                if (progressionData.currentCharacterProgress.skinUnlockProgress >= skinProgressTreshold)
-                {
-                    if (NextUnlockableSkin() is Skin skin)
-                    {
-                        progressionData.currentCharacterProgress.unlockedSkins.Add(skin);
-                        progressionData.currentCharacterProgress.skinUnlockProgress -= skinProgressTreshold;
-                        meadowHud.NewSkinUnlocked(skin);
-                    }
-                    else
-                    {
-                        progressionData.currentCharacterProgress.skinUnlockProgress = skinProgressTreshold;
-                    }
-                }
-            }
-        }
-
-        private static Emote NextUnlockableEmote()
-        {
-            return emoteEmotes.Except(progressionData.currentCharacterProgress.unlockedEmotes).FirstOrDefault();
-        }
-
-        private static Skin NextUnlockableSkin()
-        {
-            return characterData[progressionData.currentlySelectedCharacter].skins.Except(progressionData.currentCharacterProgress.unlockedSkins).FirstOrDefault();
-        }
-
-        private static Character NextUnlockableCharacter()
-        {
-            return characterData.Keys.Except(progressionData.unlockedCharacters).FirstOrDefault();
-        }
-
-        internal static Color TokenRedColor = new Color(248f / 255f, 89f / 255f, 93f / 255f);
-        internal static Color TokenBlueColor = RainWorld.AntiGold.rgb;
-        internal static Color TokenGoldColor = RainWorld.GoldRGB;
-
-        public static void LoadProgression()
-        {
-            if (progressionData != null) return;
-            // todo unfake me
-            progressionData = new ProgressionData();
-            progressionData.unlockedCharacters = new() { Character.Slugcat, Character.Cicada, Character.Lizard };
-            progressionData.characterProgress = progressionData.unlockedCharacters.Select(c => new KeyValuePair<Character, ProgressionData.CharacterProgressionData>(c, new ProgressionData.CharacterProgressionData()
-            {
-                unlockedEmotes = new List<Emote>() { Emote.emoteHello, Emote.emoteHappy, Emote.emoteSad },
-                unlockedSkins = characterData[c].skins.Take(1).ToList()
-            })).ToDictionary();
-            progressionData.currentlySelectedCharacter = Character.Lizard;
-            progressionData.SetSelectedCharacter(progressionData.currentlySelectedCharacter);
-        }
-
-        public static ProgressionData progressionData;
-        internal static int emoteProgressTreshold = 4;
-        internal static int skinProgressTreshold = 6;
-        internal static int characterProgressTreshold = 8;
         public static List<Emote> emoteEmotes = new()
         {
             Emote.emoteHello,
@@ -468,27 +408,243 @@ namespace RainMeadow
             Emote.emoteMischievous,
         };
 
+        public static List<Emote> AllAvailableEmotes(Character character)
+        {
+            return emoteEmotes.Intersect(progressionData.characterProgress[character].unlockedEmotes).ToList();
+        }
+
+        public static List<Skin> AllAvailableSkins(Character character)
+        {
+            return characterData[character].skins.Intersect(progressionData.characterProgress[character].unlockedSkins).ToList();
+        }
+
+        public static List<Character> AllAvailableCharacters()
+        {
+            return allCharacters.Intersect(progressionData.characterProgress.Keys).ToList();
+        }
+
+        public static Emote NextUnlockableEmote()
+        {
+            return emoteEmotes.Except(progressionData.currentCharacterProgress.unlockedEmotes).FirstOrDefault();
+        }
+
+        public static Skin NextUnlockableSkin()
+        {
+            return characterData[progressionData.CurrentlySelectedCharacter].skins.Except(progressionData.currentCharacterProgress.unlockedSkins).FirstOrDefault();
+        }
+
+        public static Character NextUnlockableCharacter()
+        {
+            return allCharacters.Except(progressionData.characterProgress.Keys).FirstOrDefault();
+        }
+
+        public static Character CharacterProgress()
+        {
+            progressionData.characterUnlockProgress++;
+            if (progressionData.characterUnlockProgress >= characterProgressTreshold)
+            {
+                if (NextUnlockableCharacter() is Character character)
+                {
+                    progressionData.characterProgress.Add(character, new ProgressionData.CharacterProgressionData(character));
+                    if (NextUnlockableCharacter() != null) progressionData.characterUnlockProgress -= characterProgressTreshold;
+                    SaveProgression();
+                    return character;
+                }
+                else
+                {
+                    progressionData.characterUnlockProgress = characterProgressTreshold;
+                }
+            }
+            else anythingToSave = true;
+            return null;
+        }
+
+        public static Skin SkinProgress()
+        {
+            progressionData.currentCharacterProgress.skinUnlockProgress++;
+            if (progressionData.currentCharacterProgress.skinUnlockProgress >= skinProgressTreshold)
+            {
+                if (NextUnlockableSkin() is Skin skin)
+                {
+                    progressionData.currentCharacterProgress.unlockedSkins.Add(skin);
+                    if (NextUnlockableSkin() != null) progressionData.currentCharacterProgress.skinUnlockProgress -= skinProgressTreshold;
+                    SaveProgression();
+                    return skin;
+                }
+                else
+                {
+                    progressionData.currentCharacterProgress.skinUnlockProgress = skinProgressTreshold;
+                }
+            }
+            else anythingToSave = true;
+            return null;
+        }
+
+        public static Emote EmoteProgress()
+        {
+            progressionData.currentCharacterProgress.emoteUnlockProgress++;
+            if (progressionData.currentCharacterProgress.emoteUnlockProgress >= emoteProgressTreshold)
+            {
+                if (NextUnlockableEmote() is Emote emote)
+                {
+                    progressionData.currentCharacterProgress.unlockedEmotes.Add(emote);
+                    if (NextUnlockableEmote() != null) progressionData.currentCharacterProgress.emoteUnlockProgress -= emoteProgressTreshold;
+                    SaveProgression();
+                    return emote;
+                }
+                else
+                {
+                    progressionData.currentCharacterProgress.emoteUnlockProgress = emoteProgressTreshold;
+                }
+            }
+            else anythingToSave = true;
+            return null;
+        }
+
+        internal static void ItemCollected(AbstractMeadowCollectible abstractMeadowCollectible)
+        {
+            var meadowHud = (Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).cameras[0].hud.parts.First(p => p is MeadowHud) as MeadowHud;
+            if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold)
+            {
+                meadowHud.AnimateChar();
+                if (CharacterProgress() is Character character) meadowHud.NewCharacterUnlocked(character);
+            }
+            else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue)
+            {
+                meadowHud.AnimateSkin();
+                if (SkinProgress() is Skin skin) meadowHud.NewSkinUnlocked(skin);
+            }
+            else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
+            {
+                meadowHud.AnimateEmote();
+                if(EmoteProgress() is Emote emote) meadowHud.NewEmoteUnlocked(emote);
+            }
+            
+            AutosaveProgression(); // will be skipped if already saved
+        }
+
+        public static Color TokenRedColor = new Color(248f / 255f, 89f / 255f, 93f / 255f);
+        public static Color TokenBlueColor = RainWorld.AntiGold.rgb;
+        public static Color TokenGoldColor = RainWorld.GoldRGB;
+
+        private static string _saveLocation;
+        static string SaveLocation
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_saveLocation))
+                {
+                    _saveLocation = Path.Combine(Path.GetFullPath(Kittehface.Framework20.UserData.GetPersistentDataPath()), "meadow.json");
+                }
+                return _saveLocation;
+            }
+        }
+
+        public static void LoadProgression()
+        {
+            RainMeadow.DebugMe();
+            if (progressionData != null) return;
+            try
+            {
+                progressionData = JsonConvert.DeserializeObject<ProgressionData>(File.ReadAllText(SaveLocation));
+            }
+            catch (Exception ex)
+            {
+                RainMeadow.Error(ex);
+            }
+            if (progressionData == null) LoadDefaultProgression();
+            lastSaved = UnityEngine.Time.realtimeSinceStartup;
+        }
+
+        public static void LoadDefaultProgression()
+        {
+            RainMeadow.DebugMe();
+            if (progressionData != null) return;
+
+            progressionData = new ProgressionData();
+
+            SaveProgression();
+        }
+
+        // force save
+        internal static void SaveProgression()
+        {
+            RainMeadow.DebugMe();
+            File.WriteAllText(SaveLocation, JsonConvert.SerializeObject(progressionData));
+            anythingToSave = false;
+            lastSaved = UnityEngine.Time.realtimeSinceStartup;
+        }
+
+        // maybe save
+        internal static void AutosaveProgression()
+        {
+            if(anythingToSave && UnityEngine.Time.realtimeSinceStartup > lastSaved + 120) // no more than once a couple minutes
+            {
+                SaveProgression();
+            }
+        }
+
+        public static ProgressionData progressionData;
+        internal static int emoteProgressTreshold = 4;
+        internal static int skinProgressTreshold = 6;
+        internal static int characterProgressTreshold = 8;
+        private static float lastSaved;
+        private static bool anythingToSave;
+
+
+        // Will future me regret unversioned serialization? We'll see... If there's an issue try Serialization Callbacks
+        [JsonObject(MemberSerialization.OptIn)] // otherwise properties/accessors create duplicated data, could also be opt-out but I don't like implicit
         public class ProgressionData
         {
-            internal int characterUnlockProgress;
-            internal List<Character> unlockedCharacters;
-            internal Dictionary<Character, CharacterProgressionData> characterProgress;
-            internal Character currentlySelectedCharacter;
+            [JsonProperty]
+            public int characterUnlockProgress;
+            [JsonProperty]
+            public Character CurrentlySelectedCharacter { get => currentlySelectedCharacter; set { currentlySelectedCharacter = value; if (!characterProgress.ContainsKey(value)) characterProgress[value] = new CharacterProgressionData(value); } }
+            private Character currentlySelectedCharacter;
+            [JsonProperty]
+            public Dictionary<Character, CharacterProgressionData> characterProgress;
+            public CharacterProgressionData currentCharacterProgress => characterProgress[CurrentlySelectedCharacter];
 
-            public void SetSelectedCharacter(Character character)
+            public ProgressionData()
             {
-                currentlySelectedCharacter = character;
-                if (!characterProgress.ContainsKey(character)) characterProgress[character] = new CharacterProgressionData();
+                characterProgress = new();
+                CurrentlySelectedCharacter = Character.Slugcat;
             }
 
-            internal CharacterProgressionData currentCharacterProgress => characterProgress[currentlySelectedCharacter];
-
-            internal class CharacterProgressionData
+            [JsonObject(MemberSerialization.OptIn)]
+            public class CharacterProgressionData
             {
-                internal int emoteUnlockProgress;
-                internal int skinUnlockProgress;
-                internal List<Emote> unlockedEmotes;
-                internal List<Skin> unlockedSkins;
+                [JsonProperty]
+                public long timePlayed;
+                [JsonProperty]
+                public int emoteUnlockProgress;
+                [JsonProperty]
+                public int skinUnlockProgress;
+                [JsonProperty]
+                public List<Emote> unlockedEmotes;
+                [JsonProperty]
+                public List<Skin> unlockedSkins;
+                [JsonProperty]
+                [JsonConverter(typeof(WorldCoordinateConverter))]
+                internal WorldCoordinate saveLocation;
+                [JsonProperty]
+                internal bool everSeenInMenu;
+                [JsonProperty]
+                internal Skin selectedSkin;
+                [JsonProperty]
+                internal float tintAmount;
+                [JsonProperty]
+                [JsonConverter(typeof(UnityColorConverter))]
+                internal Color tintColor;
+
+                [JsonConstructor]
+                private CharacterProgressionData() { }
+                public CharacterProgressionData(Character character)
+                {
+                    unlockedEmotes = emoteEmotes.Take(3).ToList();
+                    unlockedSkins = characterData[character].skins.Take(1).ToList();
+                    saveLocation = characterData[character].startingCoords;
+                }
             }
         }
     }

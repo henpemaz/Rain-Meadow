@@ -30,15 +30,6 @@ namespace RainMeadow
             UninitializeInheritedScene();
 
             BuildLayout();
-
-            if (OnlineManager.lobby.isActive)
-            {
-                OnLobbyActive();
-            }
-            else
-            {
-                OnlineManager.lobby.gameMode.OnLobbyActive += OnLobbyActive;
-            }
         }
 
         void UninitializeInheritedScene()
@@ -105,27 +96,14 @@ namespace RainMeadow
 
         }
 
-        #region Menu Builders
-        SimplerButton CreateButton(string text, Vector2 pos, Vector2 size, bool waitLobbyAvailability, Action<SimplerButton>? clicked = null, Page? page = null)
+        SimplerButton CreateButton(string text, Vector2 pos, Vector2 size, Action<SimplerButton>? clicked = null, Page? page = null)
         {
-            page = page ?? pages[0];
-
+            page ??= pages[0];
             var b = new SimplerButton(mm, page, text, pos, size);
-
-            if (waitLobbyAvailability && !OnlineManager.lobby.isAvailable)
-            {
-                b.buttonBehav.greyedOut = true;
-                enableOnLobbyAvailable.Add(b);
-            }
-
             if (clicked != null) b.OnClick += clicked;
-
             page.subObjects.Add(b);
-
             return b;
         }
-
-        #endregion
 
         int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x; // been using 1360 as ref
         void BuildLayout()
@@ -134,7 +112,7 @@ namespace RainMeadow
             scene.AddIllustration(new MenuIllustration(mm, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
             scene.flatIllustrations[scene.flatIllustrations.Count - 1].sprite.shader = manager.rainWorld.Shaders["MenuText"];
 
-            mm.playButton = CreateButton("START", new Vector2(ScreenWidth - 304, 50), new Vector2(110, 30), true, self => StartGame());
+            mm.playButton = CreateButton("START", new Vector2(ScreenWidth - 304, 50), new Vector2(110, 30), self => StartGame());
 
             infoButton = new SymbolButton(mm, pages[0], "Menu_InfoI", "INFO", new Vector2(1142f, 624f));
             pages[0].subObjects.Add(infoButton);
@@ -214,15 +192,6 @@ namespace RainMeadow
             {
                 mm.abovePlayButtonLabel.label.alignment = FLabelAlignment.Right;
                 mm.abovePlayButtonLabel.pos.x = mm.playButton.pos.x + 55f;
-            }
-        }
-
-        List<SimplerButton> enableOnLobbyAvailable = new();
-        private void OnLobbyActive()
-        {
-            foreach (var b in enableOnLobbyAvailable)
-            {
-                b.buttonBehav.greyedOut = false;
             }
         }
 
@@ -452,10 +421,9 @@ namespace RainMeadow
         {
             // Rain Meadow
             RainMeadow.DebugMe();
-            if (OnlineManager.lobby != null) OnlineManager.lobby.gameMode.OnLobbyActive -= OnLobbyActive;
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
-                MatchmakingManager.instance.LeaveLobby();
+                OnlineManager.LeaveLobby();
             }
             base.ShutDownProcess();
         }

@@ -5,7 +5,14 @@ namespace RainMeadow
 {
     internal class MeadowLobbyData : OnlineResource.ResourceData
     {
-        public ushort[] itemsPerRegion;
+        public float[] regionSpawnWeights;
+        public ushort[] regionRedTokensGoal;
+        public ushort[] regionBlueTokensGoal;
+        public ushort[] regionGoldTokensGoal;
+
+        public int redTokensGoal;
+        public int blueTokensGoal;
+        public int goldTokensGoal;
 
         public MeadowLobbyData(OnlineResource resource) : base(resource) { }
 
@@ -17,18 +24,26 @@ namespace RainMeadow
         internal class State : ResourceDataState
         {
             [OnlineField]
-            Generics.AddRemoveSortedUshorts itemsPerRegion;
+            Generics.FixedOrderedUshorts regionRedTokensGoal;
+            [OnlineField]
+            Generics.FixedOrderedUshorts regionBlueTokensGoal;
+            [OnlineField]
+            Generics.FixedOrderedUshorts regionGoldTokensGoal;
             public State() { }
             public State(MeadowLobbyData meadowLobbyData)
             {
-                itemsPerRegion = new(meadowLobbyData.itemsPerRegion.ToList());
+                regionRedTokensGoal = new(meadowLobbyData.regionRedTokensGoal.ToList());
+                regionBlueTokensGoal = new(meadowLobbyData.regionBlueTokensGoal.ToList());
+                regionGoldTokensGoal = new(meadowLobbyData.regionGoldTokensGoal.ToList());
             }
 
             internal override Type GetDataType() => typeof(MeadowLobbyData);
 
             internal override void ReadTo(OnlineResource.ResourceData data)
             {
-                (data as MeadowLobbyData).itemsPerRegion = itemsPerRegion.list.ToArray();
+                (data as MeadowLobbyData).regionRedTokensGoal = regionRedTokensGoal.list.ToArray();
+                (data as MeadowLobbyData).regionBlueTokensGoal = regionBlueTokensGoal.list.ToArray();
+                (data as MeadowLobbyData).regionGoldTokensGoal = regionGoldTokensGoal.list.ToArray();
             }
         }
     }
