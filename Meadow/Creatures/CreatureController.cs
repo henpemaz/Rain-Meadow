@@ -483,15 +483,7 @@ namespace RainMeadow
             }
             var absAI = creature.abstractCreature.abstractAI;
             absAI.SetDestination(coord);
-            var realAI = absAI.RealAI;
-            if(realAI != null)
-            {
-                // pathfinder has some "optimizations" that need bypassing
-                realAI.pathFinder.nextDestination = null;
-                realAI.pathFinder.currentlyFollowingDestination = coord;
-                realAI.pathFinder.AbortCurrentGenerationPathFinding();
-                realAI.pathFinder.AssignNewDestination(coord);
-            }
+            absAI.RealAI.pathFinder.ForceNextDestination();
         }
 
         public virtual PhysicalObject PickupCandidate(float favorSpears)

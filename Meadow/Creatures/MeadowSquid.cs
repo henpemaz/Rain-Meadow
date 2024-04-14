@@ -153,10 +153,10 @@ namespace RainMeadow
         private static void Cicada_Act1(ILContext il)
         {
             var c = new ILCursor(il);
-            ILLabel dorun = null;
-            ILLabel dontrun = null;
             try
             {
+                ILLabel dorun = null;
+                ILLabel dontrun = null;
                 c.GotoNext(MoveType.AfterLabel,
                 i => i.MatchLdloc(0),
                 i => i.MatchLdfld<MovementConnection>("type"),
@@ -205,6 +205,75 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldc_R4, (float)(1d / 0.9d));
                 c.Emit(OpCodes.Mul);
             }
+
+            // patch out invalid terrain proximity calcs
+            try
+            {
+                int num7 = 0; // the var that stores it
+                c.Index = 0;
+                c.GotoNext(MoveType.After,
+                i => i.MatchCallvirt<AImap>("getTerrainProximity"),
+                i => i.MatchConvR4(),
+                i => i.MatchLdcR4(1),
+                i => i.MatchCall<UnityEngine.Mathf>("Max"),
+                i => i.MatchDiv(),
+                i => i.MatchStloc(out num7)
+                );
+                c.MoveAfterLabels();
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldloc, num7);
+                c.EmitDelegate<Func<Cicada, float, float>>((self, num7) => // num7 is negative if oob, shouldn't
+                {
+                    if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+                    {
+                        if (num7 < 0) num7 *= -1;
+                    }
+                    return num7;
+                });
+                c.Emit(OpCodes.Stloc, num7); // patched value
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                throw;
+            }
+
+
+            // land on horiz poles wtf game
+            try
+            {
+                ILLabel skip = null;
+                ILLabel done = null;
+                c.Index = 0;
+                c.GotoNext(MoveType.After,
+                i => i.MatchLdfld<Room.Tile>("verticalBeam"), // line 134
+                i => i.MatchBrfalse(out skip),
+                i => i.MatchLdarg(0),
+                i => i.MatchCall<Cicada>("Land"),
+                i => i.MatchBr(out done)
+                );
+                c.GotoLabel(skip);
+                c.MoveAfterLabels();
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate<Func<Cicada, bool>>((self) => // if( hascontroller && room...tile.horizontalBeam)
+                {
+                    if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+                    {
+                        if (self.room.GetTile(self.mainBodyChunk.pos).horizontalBeam)
+                        {
+                            self.Land();
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+                c.Emit(OpCodes.Brtrue, done);
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                throw;
+            }
         }
 
         internal override void ConsciousUpdate()
@@ -214,6 +283,8 @@ namespace RainMeadow
             var room = cicada.room;
             var chunks = cicada.bodyChunks;
             var nc = chunks.Length;
+
+            bool localTrace = UnityEngine.Input.GetKey(KeyCode.L);
 
             //// shroom things
             //if (this.Adrenaline > 0f)
@@ -227,26 +298,24 @@ namespace RainMeadow
             //var stuccker = cicada.AI.stuckTracker; // used while in climbing/pipe mode
             //stuccker.stuckCounter = (int)Mathf.Lerp(stuccker.minStuckCounter, stuccker.maxStuckCounter, this.Adrenaline);
 
-            //cicada.flipH
-
-
             // faster takeoff
             if (cicada.waitToFlyCounter <= 30)
                 cicada.waitToFlyCounter = 30;
 
             bool preventStaminaRegen = false;
-            if (this.input[0].thrw && !this.input[1].thrw) this.wantToJump = 5;
-            if (this.wantToJump > 0) // dash charge
+            if (this.wantToThrow > 0) // dash charge
             {
                 if (cicada.flying && !cicada.Charging && cicada.chargeCounter == 0 && cicada.stamina > 0.2f)
                 {
+                    if (localTrace) RainMeadow.Debug("Dash charge!");
                     cicada.Charge(cicada.mainBodyChunk.pos + (this.inputDir == Vector2.zero ? (chunks[0].pos - chunks[1].pos) : this.inputDir) * 100f);
-                    this.wantToJump = 0;
+                    this.wantToThrow = 0;
                 }
             }
 
             if (cicada.chargeCounter > 0) // charge windup or midcharge
             {
+                if (localTrace) RainMeadow.Debug("charging");
                 cicada.stamina -= 0.008f;
                 preventStaminaRegen = true;
                 if (cicada.chargeCounter < 20)
@@ -291,8 +360,10 @@ namespace RainMeadow
             cicada.AI.swooshToPos = null;
             if (this.input[0].jmp)
             {
+                if (localTrace) RainMeadow.Debug("jump input");
                 if (cicada.room.aimap.getTerrainProximity(cicada.mainBodyChunk.pos) > 1 && cicada.stamina > 0.5f) // cada.flying && 
                 {
+                    if (localTrace) RainMeadow.Debug("flight");
                     cicada.AI.swooshToPos = cicada.mainBodyChunk.pos + this.inputDir * 40f + new Vector2(0, 4f);
                     cicada.flyingPower = Mathf.Lerp(cicada.flyingPower, 1f, 0.05f);
                     preventStaminaRegen = true;
@@ -323,7 +394,28 @@ namespace RainMeadow
             (cicada.graphicsModule as CicadaGraphics).lookRotation = - RWCustom.Custom.VecToDeg(dir);
         }
 
-        public override WorldCoordinate CurrentPathfindingPosition => cicada.AtSitDestination ? cicada.AI.pathFinder.destination : creature.room.GetWorldCoordinate(0.5f * (cicada.firstChunk.pos + creature.room.MiddleOfTile(cicada.abstractCreature.pos.Tile)) + (cicada.flying && !creature.IsTileSolid(0, 0, -1) ? new Vector2(0, -20f) : new Vector2(0, 0f)));
+        public override WorldCoordinate CurrentPathfindingPosition
+        {
+            get
+            {
+                if (cicada.AtSitDestination)
+                {
+                    return cicada.AI.pathFinder.destination;
+                }
+                else if (cicada.flying && cicada.Climbable(creature.coord.Tile))
+                {
+                    return creature.coord;
+                }
+                else if (Custom.DistLess(creature.coord, cicada.AI.pathFinder.destination, 2))
+                {
+                    return cicada.AI.pathFinder.destination;
+                }
+                else
+                {
+                    return creature.room.GetWorldCoordinate(0.5f * (cicada.firstChunk.pos + creature.room.MiddleOfTile(cicada.abstractCreature.pos.Tile)) + (cicada.flying && !creature.IsTileSolid(0, 0, -1) ? new Vector2(0, -20f) : new Vector2(0, 0f)));
+                }
+            }
+        }
 
         internal override bool FindDestination(WorldCoordinate basecoord, out WorldCoordinate toPos, out float magnitude)
         {
@@ -335,6 +427,7 @@ namespace RainMeadow
             {
                 dest.y -= cicada.mainBodyChunk.vel.y * 2f;
             }
+            if (UnityEngine.Input.GetKey(KeyCode.L)) RainMeadow.Debug($"pathfinding {basepos} -> {dest}");
             toPos = cicada.room.GetWorldCoordinate(dest);
             magnitude = inputDir.magnitude;
             return true;
