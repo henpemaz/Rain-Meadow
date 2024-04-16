@@ -114,7 +114,7 @@ namespace RainMeadow
                 RainMeadow.Debug(subresources.Count);
 
             }
-            else // story mode
+            else
             {
                 foreach (var r in Region.LoadAllRegions(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer))
                 {

@@ -428,7 +428,6 @@ namespace RainMeadow
 
         public override void ShutDownProcess()
         {
-            // Rain Meadow
             RainMeadow.DebugMe();
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
