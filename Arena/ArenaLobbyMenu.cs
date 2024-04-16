@@ -238,9 +238,8 @@ namespace RainMeadow
 
             for (int i = 0; i < OnlineManager.players.Count; i++)
             {
-                manager.arenaSitting.AddPlayer(i); // placeholder add player
+                manager.arenaSitting.AddPlayer(0); // placeholder add player
              
-
             }
             manager.arenaSitting.levelPlaylist = new List<string>();
 
@@ -462,9 +461,10 @@ namespace RainMeadow
 
         public override void ShutDownProcess()
         {
-            // Rain Meadow
             RainMeadow.DebugMe();
+
             if (OnlineManager.lobby != null) OnlineManager.lobby.gameMode.OnLobbyActive -= OnLobbyActive;
+
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
                 MatchmakingManager.instance.LeaveLobby();

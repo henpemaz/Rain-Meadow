@@ -103,35 +103,20 @@ namespace RainMeadow
 
         protected override void ActivateImpl()
         {
-            if (gameModeType == OnlineGameMode.OnlineGameModeType.ArenaCompetitive) // Arena
+            if (RainMeadow.isArenaMode(out var _)) // Arena
             {
-                // changing from 0, -1 to 0, 0 no longer breaks lobby. Region number cannot be zero
-                // TODO: Need to load all arena region resources
 
-/*                foreach (var r in Region.LoadAllRegions(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer))
+                foreach (var r in RainMeadow.LoadAllArenaLevels(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer))
                 {
                     RainMeadow.Debug(r.name);
                     var ws = new WorldSession(r, this);
                     worldSessions.Add(r.name, ws);
                     subresources.Add(ws);
-                }*/
+                }
+                RainMeadow.Debug(subresources.Count);
 
-
-                var nr = new Region("arena", 0, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer); // OnlineManager.rsid
-
-                var ns = new WorldSession(nr, this);
-                worldSessions.Add(nr.name, ns);
-
-                subresources.Add(ns);
-
-                var nr2 = new Region("arenasmallroom", 0, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer);
-
-                var ns2 = new WorldSession(nr, this);
-                worldSessions.Add(nr2.name, ns2);
-
-                subresources.Add(ns2);
             }
-            else // story mode
+            else
             {
                 foreach (var r in Region.LoadAllRegions(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer))
                 {

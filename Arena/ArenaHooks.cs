@@ -1,6 +1,7 @@
 ﻿using RainMeadow.GameModes;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,7 +26,7 @@ namespace RainMeadow
         {
 
             On.ArenaGameSession.Update += ArenaGameSession_Update;
-            On.ArenaGameSession.SpawnPlayers += ArenaGameSession_SpawnPlayers2;
+            On.ArenaGameSession.SpawnPlayers += ArenaGameSession_SpawnPlayers;
 
 
 
@@ -33,7 +34,7 @@ namespace RainMeadow
 
 
 
-        private void ArenaGameSession_SpawnPlayers2(On.ArenaGameSession.orig_SpawnPlayers orig, ArenaGameSession self, Room room, List<int> suggestedDens) // player 2 is not spawning, is spectating the correct room but no data from player 1 is sent
+        private void ArenaGameSession_SpawnPlayers(On.ArenaGameSession.orig_SpawnPlayers orig, ArenaGameSession self, Room room, List<int> suggestedDens) // player 2 is not spawning, is spectating the correct room but no data from player 1 is sent
         {
             List<ArenaSitting.ArenaPlayer> list = new List<ArenaSitting.ArenaPlayer>();
 
@@ -92,11 +93,11 @@ namespace RainMeadow
 
                 AbstractCreature abstractCreature = new AbstractCreature(self.game.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(0, -1, -1, -1), new EntityID(-1, list[l].playerNumber));
 
-                AbstractRoom_Arena_MoveEntityToDen(self.game.world, abstractCreature.Room, abstractCreature); // Arena adds entities then realizes them
+                AbstractRoom_Arena_MoveEntityToDen(self.game.world, abstractCreature.Room, abstractCreature); // Arena adds abstract creature then realizes it later
                 SetOnlineCreature(abstractCreature);
                 if (OnlineManager.lobby.isActive)
                 {
-                    OnlineManager.lobby.Tick(OnlineManager.mePlayer.tick); // Why...
+                    OnlineManager.lobby.Tick(OnlineManager.mePlayer.tick); // I think the Lobby data is being destroyed and that's why it only works here?
                 }
 
 
@@ -119,7 +120,7 @@ namespace RainMeadow
                 abstractCreature.Realize();
                 ShortcutHandler.ShortCutVessel shortCutVessel = new ShortcutHandler.ShortCutVessel(new RWCustom.IntVector2(-1, -1), abstractCreature.realizedCreature, self.game.world.GetAbstractRoom(0), 0);
                 shortCutVessel.entranceNode = num;
-                shortCutVessel.room = self.game.world.GetAbstractRoom("smallroom");
+                shortCutVessel.room = self.game.world.GetAbstractRoom(abstractCreature.Room.name);
                 abstractCreature.pos.room = self.game.world.offScreenDen.index;
                 self.game.shortcuts.betweenRoomsWaitingLobby.Add(shortCutVessel);
                 self.AddPlayer(abstractCreature);
@@ -177,25 +178,9 @@ namespace RainMeadow
         }
 
 
-        private void ArenaGameSession_Update(On.ArenaGameSession.orig_Update orig, ArenaGameSession self) // stop game over 
+        private void ArenaGameSession_Update(On.ArenaGameSession.orig_Update orig, ArenaGameSession self) 
         {
-            // TODO: EntityID and Avatar ID do not match)
 
-            if (OnlineManager.lobby.playerAvatars != null)
-            {
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
-                {
-                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none)
-                    {
-                        continue; // not in game
-                    }
-                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                    {
-                        RainMeadow.Debug("Position: " + ac.pos);
-
-                    }
-                }
-            }
             if (self.arenaSitting.attempLoadInGame && self.arenaSitting.gameTypeSetup.savingAndLoadingSession)
             {
                 self.arenaSitting.attempLoadInGame = false;
@@ -217,6 +202,55 @@ namespace RainMeadow
             }
 
             self.thisFrameActivePlayers = self.PlayersStillActive(addToAliveTime: true, dontCountSandboxLosers: false);
+
+            // stop game over by not adding the rest of orig code
+        }
+
+
+        // TODO: Index out of range issue
+        public static Region[] LoadAllArenaLevels(SlugcatStats.Name storyIndex)
+        {
+
+            List<Region> regions = new List<Region>();
+
+            /*            string[] files = Directory.GetFiles(AssetManager.ResolveFilePath("Levels"), "*.txt");
+
+                        if (files.Length == 0)
+                        {
+                            RainMeadow.Error("No arena files found");
+                        }
+
+                        List<string> modifiedFileNames = new List<string>();
+                        List<Region> regions = new List<Region>();
+                        int num = 0;
+                        for (int i = 0; i < files.Length; i++)
+                        {
+                            // Extract just the filename without the extension from the full path
+                            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(files[i]);
+
+                            // Check if the filename contains "_arena" or "_settings"
+                            if (fileNameWithoutExtension.Contains("_arena") || fileNameWithoutExtension.Contains("_settings"))
+                            {
+                                continue; // Skip this file
+                            }
+
+                            // uncomment this when you're done
+                            string modifiedFileName = "arena" + fileNameWithoutExtension;
+
+                            // Add the modified filename to the list
+                            modifiedFileNames.Add(fileNameWithoutExtension);
+
+                            // Use the modified filename when creating the Region object
+                            Region region = new Region(fileNameWithoutExtension, 0, 0, storyIndex);
+                            regions.Add(region);
+                            num += region.numberOfRooms;
+                        }*/
+            Region arenaRegion = new Region("arena", 0, 0, storyIndex);
+            Region arenaRegionsm = new Region("arenasmallroom", 0, 0, storyIndex);
+
+            regions.Add(arenaRegion);
+            regions.Add(arenaRegionsm);
+            return regions.ToArray();
         }
 
 
