@@ -73,8 +73,7 @@ namespace RainMeadow
 
                 modApplyer.OnFinish += (ModApplier modApplyer) =>
                 {
-                    Utils.Restart($"+connect_lobby {MatchmakingManager.instance.GetLobbyID()}"); // currently does not reconnect users to the lobby
-
+                    Utils.Restart($"+connect_lobby {MatchmakingManager.instance.GetLobbyID()}"); 
 
                 };
             }
