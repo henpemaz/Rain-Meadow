@@ -95,10 +95,10 @@ namespace RainMeadow
 
                 AbstractRoom_Arena_MoveEntityToDen(self.game.world, abstractCreature.Room, abstractCreature); // Arena adds abstract creature then realizes it later
                 SetOnlineCreature(abstractCreature);
-                if (OnlineManager.lobby.isActive)
+/*                if (OnlineManager.lobby.isActive)
                 {
                     OnlineManager.lobby.Tick(OnlineManager.mePlayer.tick); // I think the Lobby data is being destroyed and that's why it only works here?
-                }
+                }*/
 
 
                 if (ModManager.MSC && l == 0)
@@ -178,7 +178,7 @@ namespace RainMeadow
         }
 
 
-        private void ArenaGameSession_Update(On.ArenaGameSession.orig_Update orig, ArenaGameSession self) 
+        private void ArenaGameSession_Update(On.ArenaGameSession.orig_Update orig, ArenaGameSession self)
         {
 
             if (self.arenaSitting.attempLoadInGame && self.arenaSitting.gameTypeSetup.savingAndLoadingSession)
@@ -202,6 +202,7 @@ namespace RainMeadow
             }
 
             self.thisFrameActivePlayers = self.PlayersStillActive(addToAliveTime: true, dontCountSandboxLosers: false);
+            RainMeadow.Debug("GAME COLOR" + (OnlineManager.lobby.gameMode.clientSettings as ArenaClientSettings).bodyColor);
 
             // stop game over by not adding the rest of orig code
         }
