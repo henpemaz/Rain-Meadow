@@ -129,7 +129,7 @@ namespace RainMeadow
 
                 AbstractRoom_Arena_MoveEntityToDen(self.game.world, abstractCreature.Room, abstractCreature); // Arena adds abstract creature then realizes it later
                 SetOnlineCreature(abstractCreature);
-                if (OnlineManager.lobby.isActive)
+/*                if (OnlineManager.lobby.isActive)
                 {
                     OnlineManager.instance.Update(); // Subresources are active, gamemode is online, ticks are happening. Not sure why we'd need this here
                 }
