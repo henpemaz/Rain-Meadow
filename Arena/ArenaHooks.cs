@@ -133,8 +133,6 @@ namespace RainMeadow
                 {
                     OnlineManager.instance.Update(); // Subresources are active, gamemode is online, ticks are happening. Not sure why we'd need this here
                 }
-                    OnlineManager.instance.Update(); // Subresources are active, gamemode is online, ticks are happening. Not sure why we'd need this here
-                }
 
 
                 if (ModManager.MSC && l == 0)
