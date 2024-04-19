@@ -95,10 +95,10 @@ namespace RainMeadow
 
                 AbstractRoom_Arena_MoveEntityToDen(self.game.world, abstractCreature.Room, abstractCreature); // Arena adds abstract creature then realizes it later
                 SetOnlineCreature(abstractCreature);
-/*                if (OnlineManager.lobby.isActive)
+                if (OnlineManager.lobby.isActive)
                 {
-                    OnlineManager.lobby.Tick(OnlineManager.mePlayer.tick); // I think the Lobby data is being destroyed and that's why it only works here?
-                }*/
+                    OnlineManager.instance.Update(); // idk. Subresources are active, gamemode is online, ticks are happening. Not sure why we'd need this here
+                }
 
 
                 if (ModManager.MSC && l == 0)
@@ -202,57 +202,12 @@ namespace RainMeadow
             }
 
             self.thisFrameActivePlayers = self.PlayersStillActive(addToAliveTime: true, dontCountSandboxLosers: false);
-            RainMeadow.Debug("GAME COLOR" + (OnlineManager.lobby.gameMode.clientSettings as ArenaClientSettings).bodyColor);
+
 
             // stop game over by not adding the rest of orig code
         }
 
 
-        // TODO: Index out of range issue
-        public static Region[] LoadAllArenaLevels(SlugcatStats.Name storyIndex)
-        {
-
-            List<Region> regions = new List<Region>();
-
-            /*            string[] files = Directory.GetFiles(AssetManager.ResolveFilePath("Levels"), "*.txt");
-
-                        if (files.Length == 0)
-                        {
-                            RainMeadow.Error("No arena files found");
-                        }
-
-                        List<string> modifiedFileNames = new List<string>();
-                        List<Region> regions = new List<Region>();
-                        int num = 0;
-                        for (int i = 0; i < files.Length; i++)
-                        {
-                            // Extract just the filename without the extension from the full path
-                            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(files[i]);
-
-                            // Check if the filename contains "_arena" or "_settings"
-                            if (fileNameWithoutExtension.Contains("_arena") || fileNameWithoutExtension.Contains("_settings"))
-                            {
-                                continue; // Skip this file
-                            }
-
-                            // uncomment this when you're done
-                            string modifiedFileName = "arena" + fileNameWithoutExtension;
-
-                            // Add the modified filename to the list
-                            modifiedFileNames.Add(fileNameWithoutExtension);
-
-                            // Use the modified filename when creating the Region object
-                            Region region = new Region(fileNameWithoutExtension, 0, 0, storyIndex);
-                            regions.Add(region);
-                            num += region.numberOfRooms;
-                        }*/
-            Region arenaRegion = new Region("arena", 0, 0, storyIndex);
-            Region arenaRegionsm = new Region("arenasmallroom", 0, 0, storyIndex);
-
-            regions.Add(arenaRegion);
-            regions.Add(arenaRegionsm);
-            return regions.ToArray();
-        }
 
 
     }
