@@ -1,6 +1,8 @@
-﻿using On;
+﻿using Menu;
+using On;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -96,7 +98,7 @@ namespace RainMeadow
         internal override void Tick(uint tick)
         {
             clientSettings = entities.Values.Where(em => em.entity is ClientSettings).ToDictionary(e => e.entity.owner, e => e.entity as ClientSettings);
-            playerAvatars = clientSettings.ToDictionary(e => e.Key, e => e.Value.avatarId);
+            playerAvatars = clientSettings.ToDictionary(e => e.Key, e => e.Value.avatarId);            
             gameMode.LobbyTick(tick);
             base.Tick(tick);
         }
