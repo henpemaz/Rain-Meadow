@@ -1,6 +1,8 @@
-﻿using On;
+﻿using Menu;
+using On;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -96,7 +98,7 @@ namespace RainMeadow
         internal override void Tick(uint tick)
         {
             clientSettings = entities.Values.Where(em => em.entity is ClientSettings).ToDictionary(e => e.entity.owner, e => e.entity as ClientSettings);
-            playerAvatars = clientSettings.ToDictionary(e => e.Key, e => e.Value.avatarId);
+            playerAvatars = clientSettings.ToDictionary(e => e.Key, e => e.Value.avatarId);            
             gameMode.LobbyTick(tick);
             base.Tick(tick);
         }
@@ -106,13 +108,13 @@ namespace RainMeadow
             if (RainMeadow.isArenaMode(out var _)) // Arena
             {
 
-                foreach (var r in RainMeadow.LoadAllArenaLevels(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer))
-                {
-                    RainMeadow.Debug(r.name);
-                    var ws = new WorldSession(r, this);
-                    worldSessions.Add(r.name, ws);
-                    subresources.Add(ws);
-                }
+
+                Region arenaRegion = new Region("arena", 0, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer);
+
+                var ws = new WorldSession(arenaRegion, this);
+                worldSessions.Add(arenaRegion.name, ws);
+                subresources.Add(ws);
+
                 RainMeadow.Debug(subresources.Count);
 
             }

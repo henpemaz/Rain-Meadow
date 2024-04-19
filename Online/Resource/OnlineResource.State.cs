@@ -306,19 +306,10 @@ namespace RainMeadow
                 if (resource.isActive)
                 {
 
-                    RainMeadow.Debug("CURRENT RESOURCE" + resource);
-                    RainMeadow.Debug("SUBLEASE ARENA COUNT " + subleaseState.list.Count);
                     foreach (var item in subleaseState.list)
                     {
-                        RainMeadow.Debug($"SUBLEASE ARENA ID AND NAME {item.resourceId} {item.ID}");
-
                         var subresource = resource.SubresourceFromShortId(item.resourceId);  
-
-                        RainMeadow.Debug($"SUBRESOURCE {subresource}");
-
-
                         var itemOwner = OnlineManager.lobby.PlayerFromId(item.owner);
-                        RainMeadow.Debug($"ITEM OWNER {itemOwner}");
                         if (subresource.owner != itemOwner) subresource.NewOwner(itemOwner);
 
                         subresource.UpdateParticipants(item.participants.list.Select(OnlineManager.lobby.PlayerFromId).Where(p => p != null).ToList());
