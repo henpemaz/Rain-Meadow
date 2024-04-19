@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Mono.Cecil;
 using Steamworks;
 
 namespace RainMeadow
@@ -325,8 +326,9 @@ namespace RainMeadow
             {
                 if (rid == ".") return lobby;
 
-                if (RainMeadow.isArenaMode(out var _) && lobby.worldSessions.TryGetValue(rid, out var arenaRegion)) return arenaRegion; // try anything
-                //if ((rid == "arenasmallroom" || rid == "arenaOffScreenDen_smallroom") && RainMeadow.isArenaMode(out var _) && lobby.worldSessions.TryGetValue(rid, out var arenaRooms) && arenaRooms.roomSessions.TryGetValue(rid, out var arenaRoom)) return arenaRoom; // try anything
+                if (rid == "arena" && lobby.worldSessions.TryGetValue(rid, out var arenaRegionz)) return arenaRegionz;
+
+                if (rid == "arenasmallroom" && lobby.worldSessions["arena"].roomSessions.TryGetValue("smallroom", out var painroom)) return painroom;
 
                 if (rid.Length == 2 && lobby.worldSessions.TryGetValue(rid, out var r)) return r;
                 if (rid.Length > 2 && lobby.worldSessions.TryGetValue(rid.Substring(0, 2), out var r2) && r2.roomSessions.TryGetValue(rid.Substring(2), out var room)) return room;
