@@ -5,8 +5,6 @@ namespace RainMeadow
 {
     public class ArenaCompetitiveGameMode : OnlineGameMode
     {
-        // TODO: When owner leaves lobby, they release the resource. This should not happen
-
         public bool dummyTest = false;
 
         public ArenaCompetitiveGameMode(Lobby lobby) : base(lobby)
@@ -39,10 +37,6 @@ namespace RainMeadow
             return true;
         }
 
-/*        public override AbstractCreature SpawnAvatar(RainWorldGame game, WorldCoordinate location)
-        {
-
-        }*/
 
         internal override void PlayerLeftLobby(OnlinePlayer player)
         {

@@ -113,13 +113,12 @@ namespace RainMeadow
         // Maybe the abstract creature is not being seen correctly from here?
         public static OnlineEntity FromDefinition(OnlineCreatureDefinition newCreatureEvent, OnlineResource inResource)
         {
-            RainMeadow.Debug("ur mom");
             World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
             EntityID id = world.game.GetNewID();
             id.altSeed = newCreatureEvent.seed;
 
             RainMeadow.Debug("serializedObject: " + newCreatureEvent.serializedObject);
-            AbstractCreature ac = AbstractCreatureFromString(world, newCreatureEvent.serializedObject); // Arena white screen for client, host is never made online
+            AbstractCreature ac = AbstractCreatureFromString(world, newCreatureEvent.serializedObject);
             ac.ID = id;
 
             return new OnlineCreature(newCreatureEvent, ac);

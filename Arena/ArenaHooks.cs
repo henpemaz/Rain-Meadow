@@ -97,7 +97,7 @@ namespace RainMeadow
                 SetOnlineCreature(abstractCreature);
                 if (OnlineManager.lobby.isActive)
                 {
-                    OnlineManager.instance.Update(); // idk. Subresources are active, gamemode is online, ticks are happening. Not sure why we'd need this here
+                    OnlineManager.instance.Update(); // Subresources are active, gamemode is online, ticks are happening. Not sure why we'd need this here
                 }
 
 
