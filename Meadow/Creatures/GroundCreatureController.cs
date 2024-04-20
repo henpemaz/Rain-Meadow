@@ -7,18 +7,27 @@ namespace RainMeadow
 {
     public abstract class GroundCreatureController : CreatureController
     {
-        protected float jumpBoost;
-        protected int forceJump;
-        protected int canGroundJump;
-        protected int canPoleJump;
-        protected int canClimbJump;
+        public GroundCreatureController(Creature creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber)
+        {
+            this._wallClimber = creature.Template.AccessibilityResistance(AItile.Accessibility.Wall).Allowed;
+        }
+
+        public float jumpBoost;
+        public int forceJump;
+        public int canCorridorBoost;
+        public int canGroundJump;
+        public int canPoleJump;
+        public int canClimbJump;
         public int superLaunchJump;
 
         public abstract bool HasFooting { get; }
-        public abstract bool CanClimbJump { get; }
-        public abstract bool CanPoleJump { get; }
-        public abstract bool CanGroundJump { get; }
-        public abstract bool Climbing { get; }
+        public abstract bool OnGround { get; }
+        public abstract bool OnPole { get; }
+        public abstract bool OnCorridor { get; }
+
+        private readonly bool _wallClimber;
+        protected bool canZeroGClimb;
+        public bool WallClimber => _wallClimber || (creature.room.gravity == 0f && canZeroGClimb);
 
         public Room.Tile GetTile(int bChunk)
         {
@@ -30,7 +39,12 @@ namespace RainMeadow
             return creature.room.GetTile(creature.room.GetTilePosition(creature.bodyChunks[bChunk].pos) + new IntVector2(relativeX, relativeY));
         }
 
-        public bool IsTileFooting(int bChunk, int relativeX, int relativeY)
+        public AItile GetAITile(int bChunk)
+        {
+            return creature.room.aimap.getAItile(creature.room.GetTilePosition(creature.bodyChunks[bChunk].pos));
+        }
+
+        public bool IsTileGround(int bChunk, int relativeX, int relativeY)
         {
             switch (creature.room.GetTile(creature.room.GetTilePosition(creature.bodyChunks[bChunk].pos) + new IntVector2(relativeX, relativeY)).Terrain)
             {
@@ -43,10 +57,6 @@ namespace RainMeadow
         }
 
         protected abstract void JumpImpl();
-        public GroundCreatureController(Creature creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber)
-        {
-
-        }
 
         internal override bool FindDestination(WorldCoordinate basecoord, out WorldCoordinate toPos, out float magnitude)
         {
@@ -80,7 +90,7 @@ namespace RainMeadow
             }
 
             // problematic when climbing
-            if (this.input[0].y > 0 && (tile0.AnyBeam || tile1.AnyBeam) && !Climbing)
+            if (this.input[0].y > 0 && (tile0.AnyBeam || tile1.AnyBeam) && !HasFooting)
             {
                 RainMeadow.Debug("grip!");
                 GripPole(tile0.AnyBeam ? tile0 : tile1);
@@ -239,7 +249,7 @@ namespace RainMeadow
                 // no pathing
                 if (localTrace) RainMeadow.Debug("unpathable");
                 
-                if (!Climbing // don't let go of beams/walls/ceilings
+                if (!OnPole // don't let go of beams/walls/ceilings
                     && room.aimap.getAItile(toPos).acc < AItile.Accessibility.Solid // no
                     && (input[0].y != 1 || input[0].x != 0)) // not straight up
                 {
@@ -260,27 +270,41 @@ namespace RainMeadow
         internal override void ConsciousUpdate()
         {
             base.ConsciousUpdate();
-
-            if (CanClimbJump)
+            bool localTrace = UnityEngine.Input.GetKey(KeyCode.L);
+            
+            if(HasFooting)
             {
-                RainMeadow.Trace("can swing jump");
-                this.canClimbJump = 5;
+                if (OnCorridor)
+                {
+                    if (localTrace) RainMeadow.Debug("can corridor boost");
+                    this.canCorridorBoost = 5;
+                }
+                if (OnGround)
+                {
+                    if(localTrace) RainMeadow.Debug("can ground jump");
+                    this.canGroundJump = 5;
+                }
+                else if (OnPole)
+                {
+                    if (localTrace) RainMeadow.Debug("can pole jump");
+                    this.canPoleJump = 5;
+                }
+                else
+                {
+                    if (localTrace) RainMeadow.Debug("can climb jump");
+                    this.canClimbJump = 5;
+                }
             }
-            if (CanPoleJump)
+            else
             {
-                RainMeadow.Trace("can pole jump");
-                this.canPoleJump = 5;
+                if (localTrace) RainMeadow.Debug("no footing");
             }
-            if (CanGroundJump)
-            {
-                RainMeadow.Trace("can jump");
-                this.canGroundJump = 5;
-            }
-
+            
             if (this.canGroundJump > 0)
             {
                 if (this.input[0].jmp && (this.superLaunchJump > 10 || (this.input[0].x == 0 && this.input[0].y <= 0)))
                 {
+                    if (localTrace) RainMeadow.Debug("charging pounce");
                     this.wantToJump = 0;
                     if (this.superLaunchJump <= 20)
                     {
@@ -292,20 +316,28 @@ namespace RainMeadow
                     }
                 }
                 else if (this.superLaunchJump > 0) this.superLaunchJump--;
-                if (this.superLaunchJump >= 20 && !this.input[0].jmp && this.input[1].jmp)
+                if (!this.input[0].jmp && this.input[1].jmp)
                 {
-                    this.wantToJump = 1;
-                    this.canGroundJump = 1;
+                    if(this.superLaunchJump >= 20)
+                    {
+                        this.wantToJump = 1;
+                    } 
+                    else if (this.superLaunchJump <= 10) // regular jump attempt
+                    {
+                        this.wantToJump = 5;
+                    }
                 }
             }
             else if (this.superLaunchJump > 0) this.superLaunchJump--;
 
             if (this.wantToJump > 0 && (this.canClimbJump > 0 || this.canPoleJump > 0 || this.canGroundJump > 0))
             {
+                if (localTrace) RainMeadow.Debug("jumping");
                 this.JumpImpl();
                 this.canClimbJump = 0;
                 this.canPoleJump = 0;
                 this.canGroundJump = 0;
+                this.superLaunchJump = 0;
                 this.wantToJump = 0;
             }
 
@@ -317,8 +349,7 @@ namespace RainMeadow
                 chunks[0].vel.y += (this.jumpBoost + 1f) * 0.3f;
                 for (int i = 1; i < nc; i++)
                 {
-                    chunks[1].vel.y += (this.jumpBoost + 1f) * 0.25f;
-                    chunks[2].vel.y += (this.jumpBoost + 1f) * 0.25f;
+                    chunks[i].vel.y += (this.jumpBoost + 1f) * 0.25f;
                 }
             }
             else

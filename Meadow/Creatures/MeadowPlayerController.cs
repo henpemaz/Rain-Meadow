@@ -31,7 +31,7 @@ namespace RainMeadow
 
         private static void Player_MovementUpdate(On.Player.orig_MovementUpdate orig, Player self, bool eu)
         {
-            if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+            if (creatureControllers.TryGetValue(self, out var p))
             {
                 p.ConsciousUpdate();
             }
@@ -40,7 +40,7 @@ namespace RainMeadow
 
         private static void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {
-            if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+            if (creatureControllers.TryGetValue(self, out var p))
             {
                 if(OnlineManager.lobby.gameMode is MeadowGameMode)
                 {

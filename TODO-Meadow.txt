@@ -53,14 +53,16 @@ teleporting
 
 creature todo
 - shelter activation? does nothing atm anyways
+	in meadow could save your "home"
 - other story-mode things?
 - any ways to die left?
-	player (slugcat) can drown /done
 - can get stuck
 	some rooms will get fixed
+		eventually :tm:
+	climb-only critters have a rough time without wall-jumps hmm
 - show creature pipes
 	some rooms are only solvable with them, they aren't well known
-- allow creature to change the creature-pipe they're going to
+- allow creature to change the creature-pipe they're going to mid-flight
 
 walking down falsefloor
 	groundctrl might need to check for y<0 && tile.isfloor
@@ -72,15 +74,23 @@ really hard to enter pipe sometimes
 
 lizard todo
 - charge
-- find a good seed for our buddies
 - fall + diagdown = slide
+- find a good seed for our buddies
 
 lizard on first load doesn't get colors assigned ?? firstload in realize room vs load far and walk in?
+
+scav todo
+doesn't like water
+can't jump out of water
+can't move on water surface
 	
 slugcat in meadow mode
 - lookdir input like the others / done
 - point things
 - go through creature pipes / done
+
+squidcicada todo
+button for spin/dance
 
 eggbug
 	update art
@@ -89,6 +99,10 @@ eggbug
 noot
 	make art
 	pick seeds and names
+	movement feels a tad boring
+		make tail float around more?
+
+	scream
 
 water controls for lizard and scav etc
 	needs to be there, crossing DS etc

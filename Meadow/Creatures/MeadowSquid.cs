@@ -63,11 +63,10 @@ namespace RainMeadow
 
         private static void Cicada_Update(On.Cicada.orig_Update orig, Cicada self, bool eu)
         {
-            if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+            if (creatureControllers.TryGetValue(self, out var p))
             {
                 p.Update(eu);
             }
-
             orig(self, eu);
         }
 
@@ -75,7 +74,7 @@ namespace RainMeadow
         // player consious update
         private static void Cicada_Act(On.Cicada.orig_Act orig, Cicada self)
         {
-            if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+            if (creatureControllers.TryGetValue(self, out var p))
             {
                 p.ConsciousUpdate();
             }
@@ -86,7 +85,7 @@ namespace RainMeadow
         // cicada brain normally shut down when it touches water huh
         private static void Cicada_Swim(On.Cicada.orig_Swim orig, Cicada self)
         {
-            if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+            if (creatureControllers.TryGetValue(self, out var p))
             {
                 if (self.Consious)
                 {
@@ -107,7 +106,7 @@ namespace RainMeadow
 
         private static void Cicada_CarryObject(On.Cicada.orig_CarryObject orig, Cicada self)
         {
-            if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+            if (creatureControllers.TryGetValue(self, out var p))
             {
                 // more realistic grab pos plz
                 var oldpos = self.mainBodyChunk.pos;
@@ -123,7 +122,7 @@ namespace RainMeadow
         // dont let AI interfere on squiddy
         private static void CicadaAI_Update(On.CicadaAI.orig_Update orig, CicadaAI self)
         {
-            if (creatureControllers.TryGetValue(self.creature, out var p))
+            if (creatureControllers.TryGetValue(self.creature.realizedCreature, out var p))
             {
                 p.AIUpdate(self);
             }
@@ -135,7 +134,7 @@ namespace RainMeadow
 
         private static void Cicada_GrabbedByPlayer(On.Cicada.orig_GrabbedByPlayer orig, Cicada self)
         {
-            if (creatureControllers.TryGetValue(self.abstractCreature, out var p) && self.Consious)
+            if (creatureControllers.TryGetValue(self, out var p) && self.Consious)
             {
                 var oldflypower = self.flyingPower;
                 self.flyingPower *= 0.6f;
@@ -171,7 +170,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate<Func<Cicada, bool>>((self) => // squiddy don't
                 {
-                    if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+                    if (creatureControllers.TryGetValue(self, out var p))
                     {
                         return true;
                     }
@@ -224,7 +223,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldloc, num7);
                 c.EmitDelegate<Func<Cicada, float, float>>((self, num7) => // num7 is negative if oob, shouldn't
                 {
-                    if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+                    if (creatureControllers.TryGetValue(self, out var p))
                     {
                         if (num7 < 0) num7 *= -1;
                     }
@@ -257,7 +256,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate<Func<Cicada, bool>>((self) => // if( hascontroller && room...tile.horizontalBeam)
                 {
-                    if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+                    if (creatureControllers.TryGetValue(self, out var p))
                     {
                         if (self.room.GetTile(self.mainBodyChunk.pos).horizontalBeam)
                         {

@@ -21,7 +21,7 @@ namespace RainMeadow
             {
                 _ = Character.Slugcat;
                 _ = Skin.Slugcat_Survivor;
-                currentTestSkin = Skin.Lizard_Pink;
+                currentTestSkin = Skin.Scavenger_Branches;
 
                 RainMeadow.Debug($"characters loaded: {Character.values.Count}");
                 RainMeadow.Debug($"skins loaded: {Skin.values.Count}");
@@ -578,7 +578,8 @@ namespace RainMeadow
         // maybe save
         internal static void AutosaveProgression()
         {
-            if(anythingToSave && UnityEngine.Time.realtimeSinceStartup > lastSaved + 120) // no more than once a couple minutes
+            if ((anythingToSave && UnityEngine.Time.realtimeSinceStartup > lastSaved + 120) // no more than once a couple minutes
+                || UnityEngine.Time.realtimeSinceStartup > lastSaved + 300) // or 5 minutes for position etc
             {
                 SaveProgression();
             }
@@ -641,8 +642,9 @@ namespace RainMeadow
                 private CharacterProgressionData() { }
                 public CharacterProgressionData(Character character)
                 {
-                    unlockedEmotes = emoteEmotes.Take(3).ToList();
+                    unlockedEmotes = emoteEmotes.Take(4).ToList();
                     unlockedSkins = characterData[character].skins.Take(1).ToList();
+                    selectedSkin = unlockedSkins[0];
                     saveLocation = characterData[character].startingCoords;
                 }
             }

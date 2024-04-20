@@ -118,7 +118,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
             {
-                if(CreatureController.creatureControllers.TryGetValue(mgm.avatar.creature, out var c))
+                if (mgm.avatar.realizedCreature != null && CreatureController.creatureControllers.TryGetValue(mgm.avatar.realizedCreature, out var c))
                 {
                     return c.touchedNoInputCounter > 20;
                 }
@@ -130,7 +130,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
             {
-                if (CreatureController.creatureControllers.TryGetValue(mgm.avatar.creature, out var c))
+                if (mgm.avatar.realizedCreature != null && CreatureController.creatureControllers.TryGetValue(mgm.avatar.realizedCreature, out var c))
                 {
                     return self.DetectZone(c.creature.abstractCreature);
                 }
@@ -244,7 +244,7 @@ namespace RainMeadow
                     {
                         self.ReturnFContainer("HUD"),
                         self.ReturnFContainer("HUD2")
-                    }, self.room.game.rainWorld, CreatureController.creatureControllers.TryGetValue(owner.abstractCreature, out var controller) ? controller : throw new InvalidProgrammerException("Not player nor controlled creature"));
+                    }, self.room.game.rainWorld, CreatureController.creatureControllers.GetValue(owner, (c) => throw new InvalidProgrammerException("Not controlled creature: " + c)));
 
                     var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
                     self.hud.AddPart(new HUD.TextPrompt(self.hud)); // game assumes this never null
