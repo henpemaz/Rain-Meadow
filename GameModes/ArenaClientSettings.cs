@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class StoryClientSettings : ClientSettings
+    public class ArenaClientSettings : ClientSettings
     {
         public class Definition : ClientSettings.Definition
         {
@@ -13,27 +13,25 @@ namespace RainMeadow
 
             public override OnlineEntity MakeEntity(OnlineResource inResource)
             {
-                return new StoryClientSettings(this);
+                return new ArenaClientSettings(this);
             }
         }
 
         public Color bodyColor;
-        public Color eyeColor; // unused
-        public SlugcatStats.Name? playingAs;
-        public bool readyForWin;
-        public string? myLastDenPos = null;
-        public bool isDead;
+        public Color eyeColor;
 
-        public StoryClientSettings(Definition entityDefinition) : base(entityDefinition)
+
+        public ArenaClientSettings(Definition entityDefinition) : base(entityDefinition)
         {
             RainMeadow.Debug(this);
-            bodyColor = entityDefinition.owner == 2 ? Color.cyan : PlayerGraphics.DefaultSlugcatColor(playingAs);
+            bodyColor = entityDefinition.owner == 2 ? Color.cyan : PlayerGraphics.DefaultSlugcatColor(SlugcatStats.Name.Yellow);
             eyeColor = Color.black;
+
         }
 
         internal override AvatarCustomization MakeCustomization()
         {
-            return new SlugcatCustomization(this);
+            return new ArenaAvatarCustomization(this);
         }
 
         protected override EntityState MakeState(uint tick, OnlineResource inResource)
@@ -52,43 +50,29 @@ namespace RainMeadow
             public Color bodyColor;
             [OnlineFieldColorRgb]
             public Color eyeColor;
-            [OnlineField(nullable = true)]
-            public string? playingAs;
-            [OnlineField(group = "game")]
-            public bool readyForWin;
-
-            [OnlineField(group = "game")]
-            public bool isDead;
 
             public State() { }
-            public State(StoryClientSettings onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
+            public State(ArenaClientSettings onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
             {
                 bodyColor = onlineEntity.bodyColor;
                 eyeColor = onlineEntity.eyeColor;
-                playingAs = onlineEntity.playingAs?.value;
-                readyForWin = onlineEntity.readyForWin;
-                isDead = onlineEntity.isDead;
+
             }
 
             public override void ReadTo(OnlineEntity onlineEntity)
             {
                 base.ReadTo(onlineEntity);
-                var avatarSettings = (StoryClientSettings)onlineEntity;
+                var avatarSettings = (ArenaClientSettings)onlineEntity;
                 avatarSettings.bodyColor = bodyColor;
                 avatarSettings.eyeColor = eyeColor;
-                if (playingAs != null) {
-                    ExtEnumBase.TryParse(typeof(SlugcatStats.Name), playingAs, false, out var rawEnumBase);
-                    avatarSettings.playingAs = rawEnumBase as SlugcatStats.Name;
-                }
-                avatarSettings.readyForWin = readyForWin;
-                avatarSettings.isDead = isDead;
+
             }
         }
-        public class SlugcatCustomization : AvatarCustomization
+        public class ArenaAvatarCustomization : AvatarCustomization
         {
-            public readonly StoryClientSettings settings;
+            public readonly ArenaClientSettings settings;
 
-            public SlugcatCustomization(StoryClientSettings slugcatAvatarSettings)
+            public ArenaAvatarCustomization(ArenaClientSettings slugcatAvatarSettings)
             {
                 this.settings = slugcatAvatarSettings;
             }

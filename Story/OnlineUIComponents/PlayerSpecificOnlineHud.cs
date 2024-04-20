@@ -6,8 +6,8 @@ namespace RainMeadow
 {
     public class PlayerSpecificOnlineHud : HudPart
     {
-        public StoryGameMode storyGameMode;
-        public StoryClientSettings clientSettings;
+        public OnlineGameMode onlineGameMode;
+        public ClientSettings clientSettings;
 
         public AbstractCreature abstractPlayer;
         public OnlinePlayerDisplay playerDisplay;
@@ -37,12 +37,12 @@ namespace RainMeadow
             }
         }
 
-        public PlayerSpecificOnlineHud(HUD.HUD hud, RoomCamera camera, StoryGameMode storyGameMode, StoryClientSettings clientSettings) : base(hud)
+        public PlayerSpecificOnlineHud(HUD.HUD hud, RoomCamera camera, OnlineGameMode onlineGameMode, ClientSettings clientSettings) : base(hud)
         {
             RainMeadow.Debug("Adding PlayerSpecificOnlineHud for " + clientSettings.owner);
             this.camera = camera;
             camrect = new Rect(Vector2.zero, this.camera.sSize).CloneWithExpansion(-30f);
-            this.storyGameMode = storyGameMode;
+            this.onlineGameMode = onlineGameMode;
             this.clientSettings = clientSettings;
 
             this.playerDisplay = new OnlinePlayerDisplay(this);

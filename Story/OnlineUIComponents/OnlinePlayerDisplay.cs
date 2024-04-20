@@ -17,6 +17,7 @@ namespace RainMeadow
         public float lastBlink;
         public bool switchedToDeathIcon;
         private bool isButtonToggled;
+        public Color drawColor;
 
 
         public OnlinePlayerDisplay(PlayerSpecificOnlineHud owner) : base(owner)
@@ -31,18 +32,67 @@ namespace RainMeadow
             this.gradient.alpha = 0f;
             this.gradient.x = -1000f;
             this.label = new FLabel(Custom.GetFont(), owner.clientSettings.owner.id.name);
-            this.label.color = owner.clientSettings.SlugcatColor();
+            if (RainMeadow.isArenaMode(out var _))
+            {
+
+                this.label.color = (owner.clientSettings as ArenaClientSettings).SlugcatColor();
+
+            }
+            else if (RainMeadow.isStoryMode(out var _))
+            {
+
+                this.label.color = (owner.clientSettings as StoryClientSettings).SlugcatColor();
+
+            }
+            else
+            {
+                this.label.color = Color.white;
+
+            }
             owner.hud.fContainers[0].AddChild(this.label);
             this.label.alpha = 0f;
             this.label.x = -1000f;
             this.arrowSprite = new FSprite("Multiplayer_Arrow", true);
-            this.arrowSprite.color = owner.clientSettings.SlugcatColor();
+            if (RainMeadow.isArenaMode(out var _))
+            {
+
+                this.arrowSprite.color = (owner.clientSettings as ArenaClientSettings).SlugcatColor();
+
+            }
+            else if (RainMeadow.isStoryMode(out var _))
+            {
+
+                this.arrowSprite.color = (owner.clientSettings as StoryClientSettings).SlugcatColor();
+
+            }
+            else
+            {
+                this.arrowSprite.color = Color.white;
+
+            }
             owner.hud.fContainers[0].AddChild(this.arrowSprite);
             this.arrowSprite.alpha = 0f;
             this.arrowSprite.x = -1000f;
 
             this.slugIcon = new FSprite("Kill_Slugcat", true);
-            this.slugIcon.color = owner.clientSettings.SlugcatColor();
+            if (RainMeadow.isArenaMode(out var _))
+            {
+
+                this.slugIcon.color = (owner.clientSettings as ArenaClientSettings).SlugcatColor();
+
+            }
+            else if (RainMeadow.isStoryMode(out var _))
+            {
+
+                this.slugIcon.color = (owner.clientSettings as StoryClientSettings).SlugcatColor();
+
+            }
+            else
+            {
+                this.slugIcon.color = Color.white;
+
+            }
+
             owner.hud.fContainers[0].AddChild(this.slugIcon);
             this.slugIcon.alpha = 0f;
             this.slugIcon.x = -1000f;
@@ -117,19 +167,35 @@ namespace RainMeadow
 
             this.label.x = vector.x;
             this.label.y = vector.y + 20f;
-            Color color = owner.clientSettings.SlugcatColor();
+            if (RainMeadow.isArenaMode(out var _))
+            {
+
+                this.drawColor = (owner.clientSettings as ArenaClientSettings).SlugcatColor();
+
+            }
+            else if (RainMeadow.isStoryMode(out var _))
+            {
+
+                this.drawColor = (owner.clientSettings as StoryClientSettings).SlugcatColor();
+
+            }
+            else
+            {
+                this.drawColor = Color.white;
+
+            }
             if (this.counter % 6 < 2 && this.lastBlink > 0f)
             {
-                if (((Vector3)(Vector4)color).magnitude > 1.56f)
+                if (((Vector3)(Vector4)drawColor).magnitude > 1.56f)
                 {
-                    color = Color.Lerp(color, new Color(0.9f, 0.9f, 0.9f), Mathf.InverseLerp(0f, 0.5f, Mathf.Lerp(this.lastBlink, this.blink, timeStacker)));
+                    drawColor = Color.Lerp(drawColor, new Color(0.9f, 0.9f, 0.9f), Mathf.InverseLerp(0f, 0.5f, Mathf.Lerp(this.lastBlink, this.blink, timeStacker)));
                 }
                 else
                 {
-                    color = Color.Lerp(color, new Color(1f, 1f, 1f), Mathf.InverseLerp(0f, 0.5f, Mathf.Lerp(this.lastBlink, this.blink, timeStacker)));
+                    drawColor = Color.Lerp(drawColor, new Color(1f, 1f, 1f), Mathf.InverseLerp(0f, 0.5f, Mathf.Lerp(this.lastBlink, this.blink, timeStacker)));
                 }
             }
-            var lighter_color = color * 1.7f;
+            var lighter_color = drawColor * 1.7f;
 
             this.label.color = lighter_color;
             this.arrowSprite.color = lighter_color;

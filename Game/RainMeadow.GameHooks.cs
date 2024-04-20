@@ -184,7 +184,7 @@ namespace RainMeadow
                 saveStateNumber = OnlineManager.lobby.gameMode.GetStorySessionPlayer(game);
                 if (isStoryMode(out var story))
                 {
-                    story.storyClientSettings.inGame = true;
+                    story.clientSettings.inGame = true;
                     story.storyClientSettings.isDead = false;
                 }
             }

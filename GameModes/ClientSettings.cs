@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using System.Reflection;
 using UnityEngine;
+using static RainMeadow.OnlineState;
 
 namespace RainMeadow
 {
@@ -17,7 +18,7 @@ namespace RainMeadow
         /// the real avatar of the player
         /// </summary>
         public OnlineEntity.EntityId avatarId;
-
+        public bool inGame;
         public ClientSettings(EntityDefinition entityDefinition) : base(entityDefinition)
         {
             avatarId = new OnlineEntity.EntityId(entityDefinition.owner, OnlineEntity.EntityId.IdType.none, 0);
@@ -36,18 +37,24 @@ namespace RainMeadow
         {
             [OnlineField(nullable:true)]
             private EntityId avatarId;
+            [OnlineField(group = "game")]
+            private bool inGame;
 
             protected State() { }
 
             protected State(ClientSettings clientSettings, OnlineResource inResource, uint ts) : base(clientSettings, inResource, ts)
             {
                 this.avatarId = clientSettings.avatarId;
+                this.inGame = clientSettings.inGame;
+
             }
 
             public override void ReadTo(OnlineEntity onlineEntity)
             {
                 base.ReadTo(onlineEntity);
                 (onlineEntity as ClientSettings).avatarId = avatarId;
+                (onlineEntity as ClientSettings).inGame = inGame;
+
             }
         }
     }
