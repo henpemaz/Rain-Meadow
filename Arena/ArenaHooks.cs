@@ -25,9 +25,8 @@ namespace RainMeadow
         private void ArenaHooks()
         {
 
-            On.ArenaGameSession.Update += ArenaGameSession_Update;
+            // On.ArenaGameSession.Update += ArenaGameSession_Update;
             On.ArenaGameSession.SpawnPlayers += ArenaGameSession_SpawnPlayers;
-
 
 
         }
@@ -36,6 +35,13 @@ namespace RainMeadow
 
         private void ArenaGameSession_SpawnPlayers(On.ArenaGameSession.orig_SpawnPlayers orig, ArenaGameSession self, Room room, List<int> suggestedDens)
         {
+
+            if (OnlineManager.lobby == null)
+            {
+                orig(self, room, suggestedDens);
+                return;
+            }
+
             List<ArenaSitting.ArenaPlayer> list = new List<ArenaSitting.ArenaPlayer>();
 
 
