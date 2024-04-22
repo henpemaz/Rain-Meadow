@@ -1,11 +1,13 @@
 ﻿using RainMeadow.GameModes;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RainMeadow
 {
     public class ArenaCompetitiveGameMode : OnlineGameMode
     {
-        public bool dummyTest = false;
+        public List<string> playList = new List<string>();
+
 
         public ArenaCompetitiveGameMode(Lobby lobby) : base(lobby)
         {

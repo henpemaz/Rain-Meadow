@@ -25,12 +25,40 @@ namespace RainMeadow
         private void ArenaHooks()
         {
 
-            // On.ArenaGameSession.Update += ArenaGameSession_Update;
             On.ArenaGameSession.SpawnPlayers += ArenaGameSession_SpawnPlayers;
+            On.ArenaBehaviors.ExitManager.ExitsOpen += ExitManager_ExitsOpen;
 
 
         }
 
+        private bool ExitManager_ExitsOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                return orig(self);
+            }
+
+            var deadCount = 0;
+            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+            {
+                if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                {
+                    if (ac.state.dead
+                    || ((ac.realizedCreature as Player)?.dangerGrasp != null && (ac.realizedCreature as Player)?.dangerGraspTime > 200))
+                    {
+                        deadCount++;
+                    }
+                }
+
+            }
+
+            if (deadCount == OnlineManager.players.Count -1)
+            {
+                return true;
+            }
+            return false;
+        }
 
 
         private void ArenaGameSession_SpawnPlayers(On.ArenaGameSession.orig_SpawnPlayers orig, ArenaGameSession self, Room room, List<int> suggestedDens)
@@ -182,39 +210,6 @@ namespace RainMeadow
                 if (RoomSession.map.TryGetValue(asbtRoom, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoLeavingRoom(apo);
             }
         }
-
-
-        private void ArenaGameSession_Update(On.ArenaGameSession.orig_Update orig, ArenaGameSession self)
-        {
-
-            if (self.arenaSitting.attempLoadInGame && self.arenaSitting.gameTypeSetup.savingAndLoadingSession)
-            {
-                self.arenaSitting.attempLoadInGame = false;
-                self.arenaSitting.LoadFromFile(self, self.game.world, self.game.rainWorld);
-            }
-
-            if (self.initiated)
-            {
-                self.counter++;
-            }
-            else if (self.room != null && self.room.shortCutsReady)
-            {
-                self.Initiate();
-            }
-
-            if (self.room != null && self.chMeta != null && self.chMeta.deferred)
-            {
-                self.room.deferred = true;
-            }
-
-            self.thisFrameActivePlayers = self.PlayersStillActive(addToAliveTime: true, dontCountSandboxLosers: false);
-
-
-            // stop game over by not adding the rest of orig code
-        }
-
-
-
 
     }
 

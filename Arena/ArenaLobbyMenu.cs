@@ -239,7 +239,7 @@ namespace RainMeadow
             for (int i = 0; i < OnlineManager.players.Count; i++)
             {
                 manager.arenaSitting.AddPlayer(0); // placeholder add player
-             
+
             }
             manager.arenaSitting.levelPlaylist = new List<string>();
 
@@ -268,11 +268,36 @@ namespace RainMeadow
                 {
                     for (int num = 0; num < mm.GetGameTypeSetup.levelRepeats; num++)
                     {
-                        manager.arenaSitting.levelPlaylist.Add(mm.GetGameTypeSetup.playList[n]);
+
+                        if (OnlineManager.lobby.isOwner)
+                        {
+                            manager.arenaSitting.levelPlaylist.Add(mm.GetGameTypeSetup.playList[n]);
+
+                        }
+
                     }
+                }
+
+                // Client retrieves Playlist
+                foreach (var player in OnlineManager.players)
+                {
+                    if (!OnlineManager.lobby.isOwner)
+                    {
+                        player.InvokeRPC(RPCs.UpdateArenaPlaylist, (OnlineManager.lobby.gameMode as ArenaCompetitiveGameMode).playList);
+
+
+                    }
+                    // Host dictates playlist
+                    else
+                    {
+                        (OnlineManager.lobby.gameMode as ArenaCompetitiveGameMode).playList = manager.arenaSitting.levelPlaylist;
+
+                    }
+
                 }
             }
         }
+
 
         private void StartGame()
         {
@@ -280,6 +305,7 @@ namespace RainMeadow
             if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
             InitializeSitting();
+
 
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
 

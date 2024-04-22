@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -103,6 +105,15 @@ namespace RainMeadow
             }
             game.GetStorySession.saveState.SessionEnded(game, false, false);
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.DeathScreen);
+        }
+
+        [RPCMethod]
+        public static void UpdateArenaPlaylist(List<string> playlist)
+        {
+
+            var manager = RWCustom.Custom.rainWorld.processManager;
+
+            manager.arenaSitting.levelPlaylist = playlist;
         }
     }
 }
