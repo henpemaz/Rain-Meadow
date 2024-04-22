@@ -24,7 +24,7 @@ namespace RainMeadow.GameModes
         public ArenaClientSettings(Definition entityDefinition) : base(entityDefinition)
         {
             RainMeadow.Debug(this);
-            bodyColor = entityDefinition.owner == 2 ? Color.cyan : PlayerGraphics.DefaultSlugcatColor(SlugcatStats.Name.Yellow);
+            bodyColor = entityDefinition.owner == 2 ? Color.white : PlayerGraphics.DefaultSlugcatColor(SlugcatStats.Name.White);
             eyeColor = Color.black;
 
         }
