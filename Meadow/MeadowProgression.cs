@@ -21,10 +21,12 @@ namespace RainMeadow
             {
                 _ = Character.Slugcat;
                 _ = Skin.Slugcat_Survivor;
+                _ = Emote.emoteHello;
                 currentTestSkin = Skin.Scavenger_Branches;
 
                 RainMeadow.Debug($"characters loaded: {Character.values.Count}");
                 RainMeadow.Debug($"skins loaded: {Skin.values.Count}");
+                RainMeadow.Debug($"emotes loaded: {Emote.values.Count}");
             }
             catch (Exception e)
             {
@@ -348,7 +350,20 @@ namespace RainMeadow
         [TypeConverter(typeof(ExtEnumTypeConverter<Emote>))]
         public class Emote : ExtEnum<Emote>
         {
-            public Emote(string value, bool register = false) : base(value, register) { }
+            public Emote(string value, bool register = false) : base(value, register)
+            {
+                if(register)
+                {
+                    if (value.StartsWith("emote"))
+                    {
+                        emoteEmotes.Add(this);
+                    }
+                    if (value.StartsWith("symbol"))
+                    {
+                        symbolEmotes.Add(this);
+                    }
+                }
+            }
             public static Emote none = new("none", true);
 
             // emotions
@@ -392,21 +407,8 @@ namespace RainMeadow
             // todo
         }
 
-        public static List<Emote> emoteEmotes = new()
-        {
-            Emote.emoteHello,
-            Emote.emoteHappy,
-            Emote.emoteSad,
-            Emote.emoteConfused,
-            Emote.emoteGoofy,
-            Emote.emoteDead,
-            Emote.emoteAmazed,
-            Emote.emoteShrug,
-            Emote.emoteHug,
-            Emote.emoteAngry,
-            Emote.emoteWink,
-            Emote.emoteMischievous,
-        };
+        public static List<Emote> emoteEmotes = new();
+        public static List<Emote> symbolEmotes = new();
 
         public static List<Emote> AllAvailableEmotes(Character character)
         {
@@ -430,7 +432,7 @@ namespace RainMeadow
 
         public static Skin NextUnlockableSkin()
         {
-            return characterData[progressionData.CurrentlySelectedCharacter].skins.Except(progressionData.currentCharacterProgress.unlockedSkins).FirstOrDefault();
+            return characterData[progressionData.currentlySelectedCharacter].skins.Except(progressionData.currentCharacterProgress.unlockedSkins).FirstOrDefault();
         }
 
         public static Character NextUnlockableCharacter()
@@ -592,7 +594,6 @@ namespace RainMeadow
         private static float lastSaved;
         private static bool anythingToSave;
 
-
         // Will future me regret unversioned serialization? We'll see... If there's an issue try Serialization Callbacks
         [JsonObject(MemberSerialization.OptIn)] // otherwise properties/accessors create duplicated data, could also be opt-out but I don't like implicit
         public class ProgressionData
@@ -600,16 +601,16 @@ namespace RainMeadow
             [JsonProperty]
             public int characterUnlockProgress;
             [JsonProperty]
-            public Character CurrentlySelectedCharacter { get => currentlySelectedCharacter; set { currentlySelectedCharacter = value; if (!characterProgress.ContainsKey(value)) characterProgress[value] = new CharacterProgressionData(value); } }
-            private Character currentlySelectedCharacter;
+            public Character currentlySelectedCharacter { get => _currentlySelectedCharacter; set { _currentlySelectedCharacter = value; if (value != null && !characterProgress.ContainsKey(value)) characterProgress[value] = new CharacterProgressionData(value); } }
+            private Character _currentlySelectedCharacter;
             [JsonProperty]
             public Dictionary<Character, CharacterProgressionData> characterProgress;
-            public CharacterProgressionData currentCharacterProgress => characterProgress[CurrentlySelectedCharacter];
+            public CharacterProgressionData currentCharacterProgress => characterProgress[_currentlySelectedCharacter];
 
             public ProgressionData()
             {
                 characterProgress = new();
-                CurrentlySelectedCharacter = Character.Slugcat;
+                currentlySelectedCharacter = Character.Slugcat;
             }
 
             [JsonObject(MemberSerialization.OptIn)]

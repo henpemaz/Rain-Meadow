@@ -2,14 +2,21 @@
 using HUD;
 using RWCustom;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
+using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
 {
     public class MeadowHud : HudPart
     {
-        private RoomCamera self;
+        // common
+        private RoomCamera camera;
+        public RainWorldGame game;
         private Creature owner;
+        private MeadowAvatarCustomization customization;
+
+        // progression
         private FContainer container;
         private TokenSparkIcon emotesIcon;
         private FLabel emotesLabel;
@@ -24,31 +31,55 @@ namespace RainMeadow
         private float visible;
         private Vector2 rootPos;
 
+        // emote
+        private EmoteDisplayer displayer;
+        private EmoteKbmInput kbmInput;
+        private EmoteRadialInput controllerInput;
+
         Vector2 DrawPos(float timeStacker, int index)
         {
             return rootPos + new Vector2(index * 40f, 0);
         }
 
-        public MeadowHud(HUD.HUD hud, RoomCamera self, Creature owner) : base(hud)
+        public MeadowHud(HUD.HUD hud, RoomCamera camera, Creature owner) : base(hud)
         {
             this.hud = hud;
-            this.self = self;
+            this.camera = camera;
+            this.game = camera.game;
             this.owner = owner;
+            this.displayer = EmoteDisplayer.map.GetValue(owner, (c) => throw new KeyNotFoundException());
+            this.customization = (MeadowAvatarCustomization)RainMeadow.creatureCustomizations.GetValue(owner, (c) => throw new KeyNotFoundException());
+
+            if (!Futile.atlasManager.DoesContainAtlas("emotes_common"))
+            {
+                HeavyTexturesCache.futileAtlasListings.Add(Futile.atlasManager.LoadAtlas("illustrations/emotes/emotes_common").name);
+            }
+            if (!Futile.atlasManager.DoesContainAtlas(customization.EmoteAtlas))
+            {
+                HeavyTexturesCache.futileAtlasListings.Add(Futile.atlasManager.LoadAtlas("illustrations/emotes/" + customization.EmoteAtlas).name);
+            }
+
+            this.kbmInput = new EmoteKbmInput(hud, customization, this);
+            hud.AddPart(this.kbmInput);
+
+            this.controllerInput = new EmoteRadialInput(hud, customization, this);
+            hud.AddPart(this.controllerInput);
+
 
             rootPos = new Vector2(22f + Mathf.Max(55.01f, hud.rainWorld.options.SafeScreenOffset.x + 22.51f), Mathf.Max(45.01f, hud.rainWorld.options.SafeScreenOffset.y + 22.51f));
             this.container = new FContainer();
             
-            emotesIcon = new TokenSparkIcon(container, MeadowProgression.TokenRedColor, DrawPos(1f, 0), 1.5f);
+            emotesIcon = new TokenSparkIcon(container, MeadowProgression.TokenRedColor, DrawPos(1f, 0), 1.5f, 1f);
             emotesLabel = new FLabel(Custom.GetFont(), EmoteCountText);
             emotesLabel.SetPosition(DrawPos(1f, 0) + new Vector2(0, 20f));
             container.AddChild(emotesLabel);
 
-            skinsIcon = new TokenSparkIcon(container, MeadowProgression.TokenBlueColor, DrawPos(1f, 1), 1.5f);
+            skinsIcon = new TokenSparkIcon(container, MeadowProgression.TokenBlueColor, DrawPos(1f, 1), 1.5f, 1f);
             skinsLabel = new FLabel(Custom.GetFont(), SkinCountText);
             skinsLabel.SetPosition(DrawPos(1f, 1) + new Vector2(0, 20f));
             container.AddChild(skinsLabel);
 
-            characterIcon = new TokenSparkIcon(container, MeadowProgression.TokenGoldColor, DrawPos(1f, 2), 1.5f);
+            characterIcon = new TokenSparkIcon(container, MeadowProgression.TokenGoldColor, DrawPos(1f, 2), 1.5f, 1f);
             characterLabel = new FLabel(Custom.GetFont(), CharacterCountText);
             characterLabel.SetPosition(DrawPos(1f, 2) + new Vector2(0, 20f));
             container.AddChild(characterLabel);
@@ -111,7 +142,7 @@ namespace RainMeadow
             }
             else
             {
-                container.isVisible = false;
+                container.isVisible = false; // cut off shaders that still draw at 0 alpha
             }
         }
 
@@ -156,18 +187,37 @@ namespace RainMeadow
             hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate("New skin unlocked"), 60, 160, true, true);
         }
 
+        public void EmotePressed(Emote emoteType)
+        {
+            RainMeadow.Debug(emoteType);
+            if (displayer.AddEmoteLocal(emoteType))
+            {
+                RainMeadow.Debug("emote added");
+                hud.owner.PlayHUDSound(SoundID.MENU_Checkbox_Check);
+            }
+        }
+
+        public void ClearEmotes()
+        {
+            displayer.ClearEmotes();
+            hud.owner.PlayHUDSound(SoundID.MENU_Checkbox_Uncheck);
+        }
+
         public class TokenSparkIcon
         {
             private Color TokenColor;
             private Vector2[,] lines;
-            //private Vector2 pos;
-            //private Vector2[] trail;
-            //private float sinCounter;
+            public Vector2 pos;
+            public float scale;
+            public float alpha;
             private float sinCounter2;
             private FSprite[] sprites;
-            public FContainer container; // controls position and scaling
+            private Vector2 lastPos;
+            private float lastScale;
+            private float lastAlpha;
+            private FContainer container; // controls position and scaling
 
-            public TokenSparkIcon(FContainer hudContainer, Color color, Vector2 pos, float scale)
+            public TokenSparkIcon(FContainer hudContainer, Color color, Vector2 pos, float scale, float alpha)
             {
                 TokenColor = color;
 
@@ -198,9 +248,18 @@ namespace RainMeadow
                 this.sprites[0].scale = Mathf.Lerp(20f, 40f, num) / 16f;
                 this.sprites[0].color = Color.Lerp(this.TokenColor, goldColor, 0.4f);
 
+                this.pos = pos;
+                this.scale = scale;
+                this.alpha = alpha;
+                this.lastPos = pos;
+                this.lastScale = scale;
+                this.lastAlpha = alpha;
+
                 this.container = new FContainer();
                 container.SetPosition(pos);
                 container.scale = scale; // yipee
+                container.alpha = alpha;
+                container.isVisible = alpha > 0f;
 
                 this.sprites.Do(s => container.AddChild(s));
                 hudContainer.AddChild(container);
@@ -208,6 +267,9 @@ namespace RainMeadow
 
             public void Update()
             {
+                this.lastPos = pos;
+                this.lastScale = scale;
+                this.lastAlpha = alpha;
                 this.sinCounter2 += (1f + Mathf.Lerp(-10f, 10f, UnityEngine.Random.value) * 0.2f);
                 float num = Mathf.Sin(this.sinCounter2 / 20f);
                 num = Mathf.Pow(Mathf.Abs(num), 0.5f) * Mathf.Sign(num);
@@ -243,29 +305,41 @@ namespace RainMeadow
 
             public void Draw(float timeStacker)
             {
-                float num = 0.2f;
-                float num2 = 0f;
-                float num3 = 1f;
-                Color goldColor = this.GoldCol(num);
-                
-                for (int i = 0; i < 4; i++)
+                var drawPos = Vector2.Lerp(lastPos, pos, timeStacker);
+                var drawAlpha = Mathf.Lerp(lastAlpha, alpha, timeStacker);
+                var drawScale = Mathf.Lerp(lastScale, scale, timeStacker);
+
+                container.SetPosition(drawPos);
+                container.alpha = drawAlpha;
+                container.scale = drawScale; // yipee
+                if (drawAlpha > 0f)
                 {
-                    Vector2 vector2 = Vector2.Lerp(this.lines[i, 1], this.lines[i, 0], timeStacker);
-                    int num4 = (i == 3) ? 0 : (i + 1);
-                    Vector2 vector3 = Vector2.Lerp(this.lines[num4, 1], this.lines[num4, 0], timeStacker);
-                    float num5 = 1f - (1f - Mathf.Max(this.lines[i, 3].x, this.lines[num4, 3].x)) * (1f - num);
-                    num5 = Mathf.Pow(num5, 2f);
-                    num5 *= 1f - num2;
-                    if (UnityEngine.Random.value < num5)
+                    container.isVisible = true;
+
+                    // lines animate
+                    Color goldColor = this.GoldCol((float)0.2f);
+                    for (int i = 0; i < 4; i++)
                     {
-                        vector3 = Vector2.Lerp(vector2, vector3, UnityEngine.Random.value);
+                        Vector2 vector2 = Vector2.Lerp(this.lines[i, 1], this.lines[i, 0], timeStacker);
+                        int num4 = (i == 3) ? 0 : (i + 1);
+                        Vector2 vector3 = Vector2.Lerp(this.lines[num4, 1], this.lines[num4, 0], timeStacker);
+                        float num5 = 1f - (1f - Mathf.Max(this.lines[i, 3].x, this.lines[num4, 3].x)) * 0.8f;
+                        num5 = Mathf.Pow(num5, 2f);
+                        if (UnityEngine.Random.value < num5)
+                        {
+                            vector3 = Vector2.Lerp(vector2, vector3, UnityEngine.Random.value);
+                        }
+                        this.sprites[(2 + i)].x = vector2.x;
+                        this.sprites[(2 + i)].y = vector2.y;
+                        this.sprites[(2 + i)].scaleY = Vector2.Distance(vector2, vector3);
+                        this.sprites[(2 + i)].rotation = Custom.AimFromOneVectorToAnother(vector2, vector3);
+                        this.sprites[(2 + i)].alpha = (1f - num5);
+                        this.sprites[(2 + i)].color = goldColor;
                     }
-                    this.sprites[(2 + i)].x = vector2.x;
-                    this.sprites[(2 + i)].y = vector2.y;
-                    this.sprites[(2 + i)].scaleY = Vector2.Distance(vector2, vector3);
-                    this.sprites[(2 + i)].rotation = Custom.AimFromOneVectorToAnother(vector2, vector3);
-                    this.sprites[(2 + i)].alpha = (1f - num5) * num3 * 1f;
-                    this.sprites[(2 + i)].color = goldColor;
+                }
+                else
+                {
+                    container.isVisible = false;
                 }
             }
 

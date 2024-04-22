@@ -112,14 +112,14 @@ namespace RainMeadow
                 }
                 foreach (var character in MeadowProgression.allCharacters)
                 {
-                    MeadowProgression.progressionData.CurrentlySelectedCharacter = character;
+                    MeadowProgression.progressionData.currentlySelectedCharacter = character;
                     for (int i = 0; i < 80; i++)
                     {
                         MeadowProgression.EmoteProgress();
                         MeadowProgression.SkinProgress();
                     }
                 }
-                MeadowProgression.progressionData.CurrentlySelectedCharacter = playableCharacters[ssm.slugcatPageIndex];
+                MeadowProgression.progressionData.currentlySelectedCharacter = playableCharacters[ssm.slugcatPageIndex];
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.MeadowMenu);
             };
             mainPage.subObjects.Add(cheatButton);
@@ -133,11 +133,11 @@ namespace RainMeadow
             mainPage.subObjects.Add(resetButton);
 
             // read state
-            ssm.slugcatPageIndex = playableCharacters.IndexOf(MeadowProgression.progressionData.CurrentlySelectedCharacter);
+            ssm.slugcatPageIndex = playableCharacters.IndexOf(MeadowProgression.progressionData.currentlySelectedCharacter);
             if (ssm.slugcatPageIndex == -1)
             {
                 ssm.slugcatPageIndex = 0;
-                MeadowProgression.progressionData.CurrentlySelectedCharacter = playableCharacters[0];
+                MeadowProgression.progressionData.currentlySelectedCharacter = playableCharacters[0];
             }
             MeadowProgression.progressionData.characterProgress[playableCharacters[ssm.slugcatPageIndex]].everSeenInMenu = true;
 
@@ -220,7 +220,7 @@ namespace RainMeadow
                 if (ssm.slugcatPageIndex < playableCharacters.Count)
                 {
                     this.startButton.buttonBehav.greyedOut = false;
-                    MeadowProgression.progressionData.CurrentlySelectedCharacter = playableCharacters[ssm.slugcatPageIndex];
+                    MeadowProgression.progressionData.currentlySelectedCharacter = playableCharacters[ssm.slugcatPageIndex];
                     MeadowProgression.progressionData.characterProgress[playableCharacters[ssm.slugcatPageIndex]].everSeenInMenu = true;
                     skinIndex = characterSkins[playableCharacters[ssm.slugcatPageIndex]].IndexOf(MeadowProgression.progressionData.currentCharacterProgress.selectedSkin);
                     if (skinIndex == -1)

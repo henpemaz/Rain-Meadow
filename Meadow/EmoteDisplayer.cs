@@ -29,6 +29,7 @@ namespace RainMeadow
         private byte localVersion;
 
         // this weird thing isn't a uad, it sort of follows the creature and gets updated when the creature updates
+        // the "tiles" it adds though are UADs
         public EmoteDisplayer(Creature owner, OnlineCreature ownerEntity, MeadowCreatureData creatureData, MeadowAvatarCustomization customization)
         {
             RainMeadow.Debug($"EmoteDisplayer created for {owner}");

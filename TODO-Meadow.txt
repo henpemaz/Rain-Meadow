@@ -1,24 +1,12 @@
-items todo
-	items could be a little higher from the ground
-		too high up becomes a problem for liz though?
-			could be property of avatar, how high off the ground it hovers
-		/done-ish
-	slugcar collision could be better, lower body doesnt hit
-		/done
-
 progression todo
-	could have first few creature unlocks be easier the rest harder
-		nahhh
+	implement emote progression
 
 Save system
-	save selected skin of character / done
-	save color/tint of characters / done
+	emote hotbar config
 	
 Menu todo
-	hide tint on locked character / done
-	use saved colors / done
-
 	tint resulting color preview
+	back out to lobby when quit from game
 
 emotes todo
 "wish I could "stop" an emote block and start a new one, instead of having to wait out the fade"
@@ -43,6 +31,38 @@ rethink kb input
 		maybe the radial?
 	study Meadow update, they've cooked it enough
 
+So the plan is
+	there's a list of emotes with all available ones as a grid, clickable
+	the list can be shown/hidden with a shortcut or a button on screen
+
+	there's a hotbar that is customizable, comes pre-filled with default things
+		default is your 3 initial emotions, plus important/generic symbols
+		customize the hotbar by hovering an emote and pressing the new keybind
+		or by click-and-drag?
+	the hotbar can be shown/hidden with a shortcut or a button on screen
+	keys 1~0 bound to the hotbar (1~8?) (1~12?)
+	the toggle hide shortcut respects whether you wanted only hotbar or only emotes
+
+	there's a radial menu, bound to a new keybind
+		on keyboard that's C
+		on controller that's left-shoulder
+	this radial menu has 8 (12?) sides
+	holding the keybind brings the menu up, releasing it confirms your selection
+		holding a direction for an option, neutral to cancel
+		since it's using the same input as "point", lock character from pointing until direction released
+	the radial menu's main page reflects the hotbar
+	2 new keybinds swap pages back and forth
+		on keyboard that's mouse left/right click or scrollwheel (for mouse people), OR right-shift/right-ctrl (for arrow people)
+			what about touch-based? steamdeck etc, left/right click collides with click-and-drag for selection
+				future me problem I guess
+		on controller that's triggers
+
+	12 vs 8 slots on hotbar/pages
+	8 is very kb-friendly but a lot of pages, and page boundaries don't line up with categories? kb-frend for directional input
+	12 is less pages, lines up with categories, but binding -= doesn't work out-of-the-box on several layouts, and diagonals on kb become complex (needs to remember last non-diag, harder to flicker on controller)
+
+	
+
 teleporting
 	to outskirts
 	to hub of [current region]
@@ -50,10 +70,10 @@ teleporting
 		home is initially set to thematic region
 		creatures otherwise spawn in outskirts
 
-
 creature todo
 - shelter activation? does nothing atm anyways
 	in meadow could save your "home"
+	could allow passage to known shelters
 - other story-mode things?
 - any ways to die left?
 - can get stuck
@@ -63,31 +83,26 @@ creature todo
 - show creature pipes
 	some rooms are only solvable with them, they aren't well known
 - allow creature to change the creature-pipe they're going to mid-flight
-
-walking down falsefloor
-	groundctrl might need to check for y<0 && tile.isfloor
+- on gate transition, pathing visualizer bugs out
 
 player grabbing cicada = laggy physics
-
-really hard to enter pipe sometimes
-	still the case, needs body shrinkage?
+	some mechanism for lending/borrowing control over an entity
+	main entity would sim both,
+		side who leased would still sim self attached to main
 
 lizard todo
 - charge
 - fall + diagdown = slide
 - find a good seed for our buddies
 
-lizard on first load doesn't get colors assigned ?? firstload in realize room vs load far and walk in?
-
 scav todo
-doesn't like water
-can't jump out of water
-can't move on water surface
+- jump from tip of pole
+- won't jump on slopes
+- hands look silly when walking on falsefloor
+- jumping off ledge wack because regains footing too quick?
 	
 slugcat in meadow mode
-- lookdir input like the others / done
 - point things
-- go through creature pipes / done
 
 squidcicada todo
 button for spin/dance
