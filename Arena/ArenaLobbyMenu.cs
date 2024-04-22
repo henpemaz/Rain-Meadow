@@ -278,23 +278,21 @@ namespace RainMeadow
                     }
                 }
 
-                // Client retrieves Playlist
-                foreach (var player in OnlineManager.players)
-                {
-                    if (!OnlineManager.lobby.isOwner)
-                    {
-                        player.InvokeRPC(RPCs.UpdateArenaPlaylist, (OnlineManager.lobby.gameMode as ArenaCompetitiveGameMode).playList);
+            }
 
+            // Host dictates playlist
 
-                    }
-                    // Host dictates playlist
-                    else
-                    {
-                        (OnlineManager.lobby.gameMode as ArenaCompetitiveGameMode).playList = manager.arenaSitting.levelPlaylist;
+            if (OnlineManager.lobby.isOwner)
+            {
+                (OnlineManager.lobby.gameMode as ArenaCompetitiveGameMode).playList = manager.arenaSitting.levelPlaylist;
 
-                    }
+            }
 
-                }
+            // Client retrieves playlist
+            else
+            {
+                manager.arenaSitting.levelPlaylist = (OnlineManager.lobby.gameMode as ArenaCompetitiveGameMode).playList;
+
             }
         }
 

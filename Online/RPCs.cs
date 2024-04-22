@@ -107,13 +107,5 @@ namespace RainMeadow
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.DeathScreen);
         }
 
-        [RPCMethod]
-        public static void UpdateArenaPlaylist(List<string> playlist)
-        {
-
-            var manager = RWCustom.Custom.rainWorld.processManager;
-
-            manager.arenaSitting.levelPlaylist = playlist;
-        }
     }
 }
