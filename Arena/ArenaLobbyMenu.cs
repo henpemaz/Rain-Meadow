@@ -248,6 +248,7 @@ namespace RainMeadow
 
             InitializeSitting();
 
+
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
 
             // temp
