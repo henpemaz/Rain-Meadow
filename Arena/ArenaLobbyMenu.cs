@@ -501,9 +501,9 @@ namespace RainMeadow
         private void BindSettings()
         {
             this.personaSettings = (ArenaClientSettings)OnlineManager.lobby.gameMode.clientSettings;
-            // personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
-            personaSettings.bodyColor = Color.magenta;
-            personaSettings.eyeColor = Color.black;
+            personaSettings.bodyColor = UnityEngine.Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
+
+            personaSettings.eyeColor = UnityEngine.Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
 
         }
     }
