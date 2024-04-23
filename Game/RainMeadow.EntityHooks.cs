@@ -337,7 +337,15 @@ namespace RainMeadow
                             // should these be some sort of OnlinePhisicalObject api?
                             if (apo is AbstractCreature ac)
                             {
-                                (oe.definition as OnlineCreatureDefinition).serializedObject = SaveState.AbstractCreatureToStringStoryWorld(ac);
+                                if (isArenaMode(out var _))
+                                {
+                                    (oe.definition as OnlineCreatureDefinition).serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(ac);
+
+                                } else
+                                {
+                                    (oe.definition as OnlineCreatureDefinition).serializedObject = SaveState.AbstractCreatureToStringStoryWorld(ac);
+
+                                }
                             }
                             else
                             {
