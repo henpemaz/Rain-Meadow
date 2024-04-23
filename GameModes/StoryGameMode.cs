@@ -123,5 +123,22 @@ namespace RainMeadow
 
         }
 
+
+        internal override void AddAvatarSettings()
+        {
+            RainMeadow.Debug("Adding avatar settings!");
+
+
+            clientSettings = new StoryClientSettings(
+                new StoryClientSettings.Definition(
+                    new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0)
+                    , OnlineManager.mePlayer));
+            clientSettings.EnterResource(lobby);
+
+
+
+
+        }
+
     }
 }

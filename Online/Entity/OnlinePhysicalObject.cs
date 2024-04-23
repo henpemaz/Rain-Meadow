@@ -63,7 +63,7 @@ namespace RainMeadow
                         acDef = new OnlineCreatureDefinition(ac.ID.RandomSeed, ac.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
 
                     }
-
+                    
                     return new OnlineCreature(acDef, ac);
 
                 case AbstractConsumable acm:

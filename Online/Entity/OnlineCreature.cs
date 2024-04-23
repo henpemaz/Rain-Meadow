@@ -43,7 +43,7 @@ namespace RainMeadow
             if (num == null || !world.IsRoomInRegion(num.Value))
             {
 
-                num = world.GetAbstractRoom(array2[0]).index;
+                num = world.GetAbstractRoom(array2[0]).index;  
 
 
 
@@ -72,7 +72,7 @@ namespace RainMeadow
         }
 
 
-
+        
         // Maybe the abstract creature is not being seen correctly from here?
         public static OnlineEntity FromDefinition(OnlineCreatureDefinition newCreatureEvent, OnlineResource inResource)
         {

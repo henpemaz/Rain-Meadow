@@ -141,6 +141,14 @@ namespace RainMeadow
             orig(self);
         }
 
+        private void World_LoadWorld(On.World.orig_LoadWorld orig, World self, SlugcatStats.Name slugcatNumber, System.Collections.Generic.List<AbstractRoom> abstractRoomsList, int[] swarmRooms, int[] shelters, int[] gates)
+        {
+            orig(self, slugcatNumber, abstractRoomsList, swarmRooms, shelters, gates);
+            // Check if we need to allow others to join
+            if (OnlineManager.lobby != null)
+                OnlineManager.lobby.gameMode.LobbyReadyCheck();
+        }
+
         private void Room_PlaceQuantifiedCreaturesInRoom(On.Room.orig_PlaceQuantifiedCreaturesInRoom orig, Room self, CreatureTemplate.Type critType)
         {
             if (OnlineManager.lobby != null)
@@ -363,13 +371,15 @@ namespace RainMeadow
                 return;
             }
 
-
             if (WorldSession.map.TryGetValue(self.game.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, player))
             {
                 ws.ApoEnteringWorld(player);
                 ws.roomSessions.First().Value.ApoEnteringRoom(player, player.pos);
-
+               
             }
+
+            // OnlineManager.lobby.worldSessions["arena"].ApoEnteringWorld(player);
+            // OnlineManager.lobby.worldSessions["arena"].roomSessions.First().Value.ApoEnteringRoom(player, player.pos);
         }
     }
 }

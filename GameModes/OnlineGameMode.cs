@@ -146,7 +146,7 @@ namespace RainMeadow
 
         internal virtual void ResourceActive(OnlineResource onlineResource)
         {
-            if(onlineResource is Lobby)
+            if (onlineResource is Lobby lobby)
             {
                 AddAvatarSettings();
             }

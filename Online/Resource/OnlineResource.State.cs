@@ -305,11 +305,13 @@ namespace RainMeadow
                 base.ReadTo(resource);
                 if (resource.isActive)
                 {
+
                     foreach (var item in subleaseState.list)
                     {
-                        var subresource = resource.SubresourceFromShortId(item.resourceId);
+                        var subresource = resource.SubresourceFromShortId(item.resourceId);  
                         var itemOwner = OnlineManager.lobby.PlayerFromId(item.owner);
                         if (subresource.owner != itemOwner) subresource.NewOwner(itemOwner);
+
                         subresource.UpdateParticipants(item.participants.list.Select(OnlineManager.lobby.PlayerFromId).Where(p => p != null).ToList());
                     }
                 }
