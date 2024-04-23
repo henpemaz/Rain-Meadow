@@ -73,7 +73,6 @@ namespace RainMeadow
 
 
         
-        // Maybe the abstract creature is not being seen correctly from here?
         public static OnlineEntity FromDefinition(OnlineCreatureDefinition newCreatureEvent, OnlineResource inResource)
         {
             World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
