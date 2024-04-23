@@ -38,6 +38,9 @@ namespace RainMeadow
                 return orig(self);
             }
 
+            orig(self);
+
+            
             var deadCount = 0;
             foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
             {
@@ -51,6 +54,11 @@ namespace RainMeadow
                     }
                 }
 
+            }
+
+            if (OnlineManager.players.Count == 1)
+            {
+                return false;
             }
 
             if (deadCount == OnlineManager.players.Count -1)
