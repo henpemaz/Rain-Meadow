@@ -73,7 +73,7 @@ namespace RainMeadow
 
             public static readonly StateType MeadowPersonaSettingsState = new("MeadowPersonaSettings.State", typeof(MeadowAvatarSettings.State));
             public static readonly StateType SlugcatAvatarSettingsState = new("SlugcatAvatarSettings.State", typeof(StoryClientSettings.State));
-            public static readonly StateType ArenaCustomization = new("ArenaAvatarCustomization.State", typeof(ArenaClientSettings.State));
+            public static readonly StateType ArenaAvatarSettingsDefinition = new("ArenaAvatarSettings.Definition", typeof(ArenaClientSettings.Definition));
 
             //public static readonly StateType GamemodeDataState = new("GamemodeDataState", typeof(GamemodeDataState)); // abstract
             public static readonly StateType MeadowCreatureDataState = new("MeadowCreatureDataState", typeof(MeadowCreatureData.State));
@@ -113,7 +113,7 @@ namespace RainMeadow
 
         private static Dictionary<StateType, StateHandler> handlersByEnum = new Dictionary<StateType, StateHandler>();
         private static Dictionary<Type, StateHandler> handlersByType = new Dictionary<Type, StateHandler>();
-        
+
         public static void RegisterState(StateType stateType, Type type)
         {
             if (!handlersByEnum.ContainsKey(stateType)) { handlersByEnum[stateType] = handlersByType[type] = new StateHandler(stateType, type); }
