@@ -289,7 +289,6 @@ namespace RainMeadow
                 {
                     string modifiedRid = rid.Replace("arena", "");
 
-                    // Attempt to get the value from roomSessions using the modified rid
                     if (lobby.worldSessions["arena"].roomSessions.TryGetValue(modifiedRid, out var roomSession))
                     {
                         return roomSession;
