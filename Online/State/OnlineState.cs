@@ -76,15 +76,11 @@ namespace RainMeadow
 
             public static readonly StateType MeadowPersonaSettingsState = new("MeadowPersonaSettings.State", typeof(MeadowAvatarSettings.State));
             public static readonly StateType SlugcatAvatarSettingsState = new("SlugcatAvatarSettings.State", typeof(StoryClientSettings.State));
-            public static readonly StateType ArenaCustomization = new("ArenaAvatarCustomization.State", typeof(ArenaClientSettings.State));
+            public static readonly StateType ArenaAvatarSettingsDefinition = new("ArenaAvatarSettings.Definition", typeof(ArenaClientSettings.Definition));
 
             //public static readonly StateType GamemodeDataState = new("GamemodeDataState", typeof(GamemodeDataState));
             public static readonly StateType MeadowCreatureDataState = new("MeadowCreatureDataState", typeof(MeadowCreatureData.State));
             public static readonly StateType MeadowLobbyState = new("MeadowLobbyState", typeof(MeadowLobbyData.State));
-
-
-            public static readonly StateType MeadowWorldState = new("MeadowWorldState", typeof(MeadowWorldData.State));
-            public static readonly StateType MeadowRoomState = new("MeadowRoomState", typeof(MeadowRoomData.State));
 
             public static readonly StateType StoryLobbyDataState = new("StoryLobbyDataState", typeof(StoryLobbyData.State));
             public static readonly StateType ArenaLobbyDataState = new("ArenaLobbyDataState", typeof(ArenaLobbyData.State));
@@ -97,10 +93,10 @@ namespace RainMeadow
             public static readonly StateType OnlineBubbleGrassDefinition = new("OnlineBubbleGrassDefinition", typeof(OnlineBubbleGrassDefinition));
             public static readonly StateType OnlineSporePlantDefinition = new("OnlineSporePlantDefinition", typeof(OnlineSporePlantDefinition));
             public static readonly StateType OnlineCreatureDefinition = new("OnlineCreatureDefinition", typeof(OnlineCreatureDefinition));
-
-            public static readonly StateType MeadowAvatarSettingsDefinition = new ("MeadowAvatarSettings.Definition", typeof(MeadowAvatarSettings.Definition));
-            public static readonly StateType SlugcatAvatarSettingsDefinition = new ("SlugcatAvatarSettings.Definition", typeof(StoryClientSettings.Definition));
-            public static readonly StateType ArenaAvatarSettingsDefinition = new("ArenaAvatarSettings.Definition", typeof(ArenaClientSettings.Definition));
+            public static readonly StateType MeadowAvatarSettingsDefinition = new("MeadowAvatarSettings.Definition", typeof(MeadowAvatarSettings.Definition));
+            public static readonly StateType SlugcatAvatarSettingsDefinition = new("SlugcatAvatarSettings.Definition", typeof(StoryClientSettings.Definition));
+            public static readonly StateType OnlineMeadowCollectibleDefinition = new("OnlineMeadowCollectible.Definition", typeof(OnlineMeadowCollectible.Definition));
+            public static readonly StateType OnlineMeadowCollectibleMeadowCollectibleState = new("MeadowCollectibleState", typeof(OnlineMeadowCollectible.MeadowCollectibleState));
 
             public static readonly StateType DeflateState = new("DeflateState", typeof(DeflateState)); // used in serializer for wrapping large states
         }
@@ -117,7 +113,7 @@ namespace RainMeadow
 
         private static Dictionary<StateType, StateHandler> handlersByEnum = new Dictionary<StateType, StateHandler>();
         private static Dictionary<Type, StateHandler> handlersByType = new Dictionary<Type, StateHandler>();
-        
+
         public static void RegisterState(StateType stateType, Type type)
         {
             if (!handlersByEnum.ContainsKey(stateType)) { handlersByEnum[stateType] = handlersByType[type] = new StateHandler(stateType, type); }

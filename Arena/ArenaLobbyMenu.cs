@@ -14,7 +14,6 @@ namespace RainMeadow
 {
     public class ArenaLobbyMenu : SmartMenu
     {
-        private ArenaClientSettings personaSettings;
 
         public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
         private ArenaClientSettings personaSettings;
@@ -469,8 +468,6 @@ namespace RainMeadow
         public override void ShutDownProcess()
         {
             RainMeadow.DebugMe();
-
-            if (OnlineManager.lobby != null) OnlineManager.lobby.gameMode.OnLobbyActive -= OnLobbyActive;
 
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
