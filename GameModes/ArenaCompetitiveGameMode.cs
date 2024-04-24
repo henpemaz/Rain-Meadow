@@ -1,4 +1,5 @@
 ﻿using RainMeadow.GameModes;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RainMeadow
@@ -7,7 +8,7 @@ namespace RainMeadow
     {
         // TODO: When owner leaves lobby, they release the resource. This should not happen
 
-        public bool dummyTest = false;
+        public List<string> playlist = new List<string>();
 
         public ArenaCompetitiveGameMode(Lobby lobby) : base(lobby)
         {

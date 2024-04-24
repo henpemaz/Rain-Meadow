@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RainMeadow
@@ -15,24 +16,44 @@ namespace RainMeadow
         internal class State : ResourceDataState
         {
             [OnlineField]
-            public bool dummyTest;
+            public List<string> playlist = new List<string>(); // possibly convert to a ushort (map index)
 
 
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
                 ArenaCompetitiveGameMode arenaGameMode = (onlineResource as Lobby).gameMode as ArenaCompetitiveGameMode;
-                dummyTest = arenaGameMode.dummyTest;
 
+				var process = RWCustom.Custom.rainWorld.processManager.currentMainLoop;
+				if (process is not ArenaLobbyMenu)
+				{
+					return;
+				}
+
+				var menu = process as ArenaLobbyMenu;
+
+                playlist = menu.mm.GetGameTypeSetup.playList;
 
             }
 
-            internal override Type GetDataType() => typeof(ArenaLobbyData);
+
+
+			internal override Type GetDataType() => typeof(ArenaLobbyData);
 
             internal override void ReadTo(OnlineResource.ResourceData data)
             {
                 var lobby = (data.resource as Lobby);
-                (lobby.gameMode as ArenaCompetitiveGameMode).dummyTest = dummyTest;
+
+				var process = RWCustom.Custom.rainWorld.processManager.currentMainLoop;
+				if (process is not ArenaLobbyMenu)
+				{
+					return;
+				}
+
+				var menu = process as ArenaLobbyMenu;
+
+				menu.mm.GetGameTypeSetup.playList = playlist;
+                
             }
         }
     }

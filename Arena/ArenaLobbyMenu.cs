@@ -55,7 +55,7 @@ namespace RainMeadow
             };
         }
 
-        MultiplayerMenu mm;
+        public MultiplayerMenu mm;
 
         void FakeInitializeMultiplayerMenu()
         {
@@ -137,7 +137,8 @@ namespace RainMeadow
             scene.AddIllustration(new MenuIllustration(mm, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
             scene.flatIllustrations[scene.flatIllustrations.Count - 1].sprite.shader = manager.rainWorld.Shaders["MenuText"];
 
-            mm.playButton = CreateButton("START", new Vector2(ScreenWidth - 304, 50), new Vector2(110, 30), true, self => StartGame());
+            mm.playButton = CreateButton("START", new Vector2(ScreenWidth - 304, 50), new Vector2(110, 30), false, self => StartGame());
+            mm.playButton.buttonBehav.greyedOut = true;
 
             infoButton = new SymbolButton(mm, pages[0], "Menu_InfoI", "INFO", new Vector2(1142f, 624f));
             pages[0].subObjects.Add(infoButton);
@@ -276,18 +277,47 @@ namespace RainMeadow
 
         private void StartGame()
         {
-            RainMeadow.DebugMe();
+            RainMeadow.Debug("sending startgame rpc");
+            if (!OnlineManager.lobby.isOwner) return;
+
+            foreach (OnlinePlayer player in OnlineManager.players)
+            {
+                player.InvokeRPC(StartArena);
+            }
+        }
+
+        private void SendNetworkedMenuState()
+        {
+			if (OnlineManager.lobby.isOwner)
+			{
+				OnlineManager.lobby.GetData<ArenaLobbyData>().MakeState();
+			}
+		}
+
+        [RPCMethod]
+        public static void StartArena()
+        {
+            RainMeadow.Debug("got startarena rpc");
+
+            var process = RWCustom.Custom.rainWorld.processManager.currentMainLoop;
+            if (process is not ArenaLobbyMenu)
+            {
+                Debug.Log("game is not arena lobby menu");
+                return;
+            }
+
+            var menu = process as ArenaLobbyMenu;
+
             if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
-            InitializeSitting();
-
-            manager.rainWorld.progression.ClearOutSaveStateFromMemory();
+            menu.InitializeSitting();
+            menu.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
 
             // temp
             UserInput.SetUserCount(OnlineManager.players.Count);
             UserInput.SetForceDisconnectControllers(forceDisconnect: false);
 
-            manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
+            menu.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
 
         public override void Update()
@@ -299,12 +329,14 @@ namespace RainMeadow
 
             if (mm.GetGameTypeSetup.playList.Count * mm.GetGameTypeSetup.levelRepeats > 0)
             {
-                mm.playButton.buttonBehav.greyedOut = false;
+                mm.playButton.buttonBehav.greyedOut = !(OnlineManager.lobby.isAvailable && OnlineManager.lobby.isOwner);
             }
             else
             {
-                mm.playButton.buttonBehav.greyedOut = OnlineManager.lobby.isAvailable;
+                mm.playButton.buttonBehav.greyedOut = true;
             }
+
+            SendNetworkedMenuState(); // not sure if we should do this every frame for a menu, placeholder for now
         }
 
 
@@ -469,6 +501,7 @@ namespace RainMeadow
             {
                 MatchmakingManager.instance.LeaveLobby();
             }
+
             base.ShutDownProcess();
         }
 
