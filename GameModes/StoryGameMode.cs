@@ -59,7 +59,11 @@ namespace RainMeadow
 
         public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
         {
-            return true;
+            if (WorldSession.map.TryGetValue(self.world, out var ws)) 
+            {
+                return ws.owner == null || ws.isOwner;
+            }
+            return false;
         }
 
         public override bool PlayerCanOwnResource(OnlinePlayer from, OnlineResource onlineResource)
