@@ -7,14 +7,17 @@ namespace RainMeadow
 {
     public class EmoteRadialInput : HUD.HudPart
     {
+        private float mainWheelSize;
+        private float innerWheelSize;
         private Vector2 mainPos;
         EmoteRadialPage[] pages;
         private int currentPage;
         private MeadowAvatarCustomization customization;
-        private MeadowHud emoteHandler;
+        private MeadowHud owner;
+        private FContainer mainContainer;
         private FContainer secondaryContainer;
 
-        private FLabel cancelLabel;
+        private FLabel centerLabel;
         private FSprite knobSprite;
         private bool lastActive;
         private Vector2 lastKnobPos;
@@ -27,18 +30,24 @@ namespace RainMeadow
         Emote[][] radialMappingPages;
         int npages;
         int emotesPerPage = 8;
+        private Rect buttonRect;
+        private bool lastMouseDown;
+        private bool visible;
+        private Vector2 mouseOrigin;
 
-
-        public EmoteRadialInput(HUD.HUD hud, MeadowAvatarCustomization customization, MeadowHud emoteHandler) : base(hud)
+        public EmoteRadialInput(HUD.HUD hud, MeadowAvatarCustomization customization, MeadowHud owner) : base(hud)
         {
             this.customization = customization;
-            this.emoteHandler = emoteHandler;
+            this.owner = owner;
 
+            mainContainer = new FContainer();
             secondaryContainer = new FContainer();
 
             var emotes = MeadowProgression.AllAvailableEmotes(customization.character);
             var symbols = MeadowProgression.symbolEmotes;
             
+            // todo add favorites page
+            // rounded up div
             var emotePages = (emotes.Count - 1) / emotesPerPage + 1;
             var symbolPages = (symbols.Count - 1) / emotesPerPage + 1;
             npages = emotePages + symbolPages;
@@ -73,15 +82,41 @@ namespace RainMeadow
                 }
             }
 
-            var cornerPos = new Vector2(hud.rainWorld.options.ScreenSize.x - 22f - Mathf.Max(30.01f, hud.rainWorld.options.SafeScreenOffset.x + 30.51f), Mathf.Max(30.01f, hud.rainWorld.options.SafeScreenOffset.y + 30.51f));
-            var mainSize = 1.9f * 60f;
-            mainPos = cornerPos + new Vector2(-mainSize, mainSize);
+            // bottom left
+            var cornerPos = new Vector2(hud.rainWorld.options.ScreenSize.x - Mathf.Max(30.01f, hud.rainWorld.options.SafeScreenOffset.x + 15.51f), Mathf.Max(8.01f, hud.rainWorld.options.SafeScreenOffset.y + 4.51f));
+            
+            // size math
+            var mainEmoteSize = 50f;
+            var secondaryEmoteSize = 20f;
+            mainWheelSize = 1.9f * mainEmoteSize;
+            innerWheelSize = 0.9f * mainEmoteSize;
+            mainPos = cornerPos + new Vector2(-mainWheelSize, mainWheelSize);
 
             this.pages = new[] {
-                new EmoteRadialPage(hud, hud.fContainers[1], customization, radialMappingPages[0], mainPos, 60),
-                new EmoteRadialPage(hud, this.secondaryContainer, customization, radialMappingPages[npages-1], mainPos + Custom.RotateAroundOrigo(Vector2.right, 45) * (mainSize + 40), 20),
-                new EmoteRadialPage(hud, this.secondaryContainer, customization, radialMappingPages[1], mainPos + Custom.RotateAroundOrigo(Vector2.left, -45) * (mainSize + 40), 20)
+                new EmoteRadialPage(hud, mainContainer, customization, radialMappingPages[0], mainPos, mainEmoteSize),
+                new EmoteRadialPage(hud, secondaryContainer, customization, radialMappingPages[npages-1], mainPos + Custom.RotateAroundOrigo(Vector2.right, 45) * (mainWheelSize + 40), secondaryEmoteSize),
+                new EmoteRadialPage(hud, secondaryContainer, customization, radialMappingPages[1], mainPos + Custom.RotateAroundOrigo(Vector2.left, -45) * (mainWheelSize + 40), secondaryEmoteSize)
             };
+
+            var dots = new FSprite[8];
+            Vector2 buttonPos = cornerPos + new Vector2(-1.44f * mainWheelSize, 0f);
+            buttonRect = new Rect(buttonPos + new Vector2(-12, -12), new Vector2(24, 24));
+            for (int i = 0; i < dots.Length; i++)
+            {
+                var pos = buttonPos + Custom.RotateAroundOrigo(Vector2.up, i * 360f / dots.Length) * 6f;
+                hud.fContainers[1].AddChild(dots[i] = new FSprite("Futile_White")
+                {
+                    shader = Custom.rainWorld.Shaders["FlatLight"],
+                    scale = 12f / 16f,
+                    x = pos.x,
+                    y = pos.y,
+                });
+            }
+
+            visible = true;
+            active = false;
+            lastActive = active;
+            selected = -1;
 
             this.currentPage = 0;
 
@@ -89,27 +124,84 @@ namespace RainMeadow
             knobSprite.alpha = 0.4f;
             this.secondaryContainer.AddChild(this.knobSprite);
 
-            this.cancelLabel = new FLabel(Custom.GetFont(), "CANCEL");
-            cancelLabel.SetPosition(mainPos);
-            secondaryContainer.AddChild(cancelLabel);
+            this.centerLabel = new FLabel(Custom.GetFont(), "CANCEL");
+            centerLabel.SetPosition(mainPos);
+            mainContainer.AddChild(centerLabel);
 
+            hud.fContainers[1].AddChild(this.mainContainer);
             hud.fContainers[1].AddChild(this.secondaryContainer);
         }
 
         public override void Update()
         {
-            this.lastActive = active;
             if (active)
             {
                 this.lastKnobPos = this.knobPos;
                 this.knobPos += this.knobVel;
                 this.knobVel *= 0.5f;
             }
-            
+
+            var mouseDown = Input.GetMouseButton(0);
+            if (mouseDown && !lastMouseDown && buttonRect.Contains((Vector2)Futile.mousePosition))
+            {
+                ToggleVisibility();
+            }
+
+            if (visible && !active) // mouse input
+            {
+                Vector2 offset = ((Vector2)Futile.mousePosition - this.mainPos);
+                var mag = offset.magnitude;
+                if(mag < this.mainWheelSize && mag > innerWheelSize)
+                { 
+                    this.selected = Mathf.FloorToInt((-Custom.Angle(Vector2.up, offset) + 382.5f) / 45f) % 8;
+                    if (selected != lastSelected)
+                    {
+                        centerLabel.text = "CLEAR"; // could display name here
+                        pages[0].SetSelected(selected);
+                    }
+                }
+                else if (mag < this.innerWheelSize)
+                {
+                    selected = -1;
+                    if (selected != lastSelected)
+                    {
+                        centerLabel.text = "CLEAR";
+                        pages[0].SetSelected(selected);
+                    }
+                }
+                else if (mag > this.mainWheelSize)
+                {
+                    selected = -2;
+                    if (selected != lastSelected)
+                    {
+                        centerLabel.text = "";
+                        pages[0].ClearSelection();
+                    }
+                }
+                if (mouseDown && !lastMouseDown) // mouse confirm
+                {
+                    if (selected > -1)
+                    {
+                        var selectedEmote = radialMappingPages[currentPage][selected];
+                        if (selectedEmote != null)
+                        {
+                            owner.EmotePressed(selectedEmote);
+                        }
+                        selected = -1;
+                    }
+                    else if (selected == -1) // center = CLEAR
+                    {
+                        owner.ClearEmotes();
+                    }
+                    pages[0].ClearSelection();
+                }
+            }
+
+            // directional input
             var controller = Custom.rainWorld.options.controls[0].GetActiveController();
             if (controller is Rewired.Joystick joystick)
             {
-                this.active = joystick.GetAxis(4) > 0.5f;
+                this.active = joystick.GetAxis(4) > 0.5f; // ideally should be button shouldnt it
                 // maybe unify this with creaturecontroller getspecialinput
                 var analogDir = new Vector2(joystick.GetAxis(2), joystick.GetAxis(3));
                 if (active)
@@ -118,18 +210,32 @@ namespace RainMeadow
                     this.knobPos += (analogDir - this.knobPos) / 4f;
                 }
             }
-            else
+            else if(controller is Rewired.Keyboard keyboard)
             {
-                var keyboard = controller as Rewired.Keyboard;
                 this.active = keyboard.GetKey(KeyCode.A);
                 if (active)
                 {
-                    var package = RWInput.PlayerInput(0);
-                    this.knobVel -= this.knobPos / 6f;
-                    this.knobVel.x += (float)package.x * 0.4f;
-                    this.knobVel.y += (float)package.y * 0.4f;
-                    this.knobPos.x += (float)package.x * 0.4f;
-                    this.knobPos.y += (float)package.y * 0.4f;
+                    var mousePos = (Vector2)Futile.mousePosition;
+                    if (!lastActive)
+                    {
+                        mouseOrigin = mousePos;
+                    }
+                    var mouseOffset = mousePos - mouseOrigin;
+                    if (mouseOffset.magnitude > 10f)
+                    {
+                        var mouseDir = Vector2.ClampMagnitude(mouseOffset / 50f, 1f);
+                        this.knobVel += (mouseDir - this.knobPos) / 2f;
+                        this.knobPos += (mouseDir - this.knobPos) / 2f;
+                    }
+                    else
+                    {
+                        var package = RWInput.PlayerInput(0);
+                        this.knobVel -= this.knobPos / 6f;
+                        this.knobVel.x += (float)package.x * 0.4f;
+                        this.knobVel.y += (float)package.y * 0.4f;
+                        this.knobPos.x += (float)package.x * 0.4f;
+                        this.knobPos.y += (float)package.y * 0.4f;
+                    }
                 }
             }
             if (active)
@@ -140,8 +246,6 @@ namespace RainMeadow
                     this.knobPos += b;
                     this.knobVel += b;
                 }
-
-                this.lastSelected = selected;
                 if (knobPos.magnitude > 0.5f)
                 {
                     this.selected = Mathf.FloorToInt((-Custom.Angle(Vector2.up, knobPos) + 382.5f) / 45f) % 8;
@@ -164,12 +268,23 @@ namespace RainMeadow
                     var selectedEmote = radialMappingPages[currentPage][selected];
                     if (selectedEmote != null)
                     {
-                        emoteHandler.EmotePressed(selectedEmote);
+                        owner.EmotePressed(selectedEmote);
                     }
                     selected = -1;
                 }
                 pages[0].ClearSelection();
+                knobPos = Vector2.zero;
+                knobVel = Vector2.zero;
             }
+
+            lastMouseDown = mouseDown;
+            this.lastSelected = selected;
+            lastActive = active;
+        }
+
+        private void ToggleVisibility()
+        {
+            visible = !visible;
         }
 
         private void FlipPage(int v)
@@ -182,7 +297,8 @@ namespace RainMeadow
 
         public override void Draw(float timeStacker)
         {
-            secondaryContainer.isVisible = active;
+            mainContainer.isVisible = visible;
+            secondaryContainer.isVisible = active && visible;
             if (!active) return;
             InputUpdate();
             var outterRadius = 1.975f * 60f;
@@ -201,9 +317,8 @@ namespace RainMeadow
                 if (joystick.GetButtonDown(5)) FlipPage(1);
                 if (joystick.GetButtonDown(4)) FlipPage(-1);
             }
-            else
+            else if(controller is Rewired.Keyboard keyboard)
             {
-                var keyboard = controller as Rewired.Keyboard;
                 if (keyboard.GetKeyDown(KeyCode.Tab)) FlipPage(keyboard.GetModifierKey(Rewired.ModifierKey.Shift) ? -1 : 1);
             }
         }
@@ -213,111 +328,6 @@ namespace RainMeadow
             base.ClearSprites();
             secondaryContainer.RemoveAllChildren();
             secondaryContainer.RemoveFromContainer();
-        }
-
-        public class EmoteRadialPage
-        {
-            private Emote[] emotes;
-            private MeadowAvatarCustomization customization;
-            private TriangleMesh[] meshes;
-            private FSprite[] icons;
-            private FSprite[] tiles;
-            private TriangleMesh centerMesh;
-            
-
-            public Color colorUnselected = new Color(0f, 0f, 0f, 0.2f);
-            public Color colorSelected = new Color(1f, 1f, 1f, 0.2f);
-
-            // relative to emote size
-            const float innerRadiusFactor = 1f;
-            const float outterRadiusFactor = 2.076f;
-            const float emoteRadiusFactor = 1.42f;
-            float innerRadius;
-            float outterRadius;
-            float emoteRadius;
-
-            public EmoteRadialPage(HUD.HUD hud, FContainer container, MeadowAvatarCustomization customization, Emote[] emotes, Vector2 pos, float emotesSize)
-            {
-                this.customization = customization;
-                this.meshes = new TriangleMesh[8];
-                this.icons = new FSprite[8];
-                this.tiles = new FSprite[8];
-                this.centerMesh = new TriangleMesh("Futile_White", new TriangleMesh.Triangle[] { new(0, 1, 2), new(0, 2, 3), new(0, 3, 4), new(0, 4, 5), new(0, 5, 6), new(0, 6, 7), new(0, 7, 8), new(0, 8, 1), }, false);
-                container.AddChild(this.centerMesh);
-
-                this.innerRadius = innerRadiusFactor * emotesSize;
-                this.outterRadius = outterRadiusFactor * emotesSize;
-                this.emoteRadius = emoteRadiusFactor * emotesSize;
-
-                centerMesh.color = colorUnselected;
-                for (int i = 0; i < 8; i++)
-                {
-                    Vector2 dira = RWCustom.Custom.RotateAroundOrigo(Vector2.up, (-1f + 2 * i) * (360f / 16f));
-                    Vector2 dirb = RWCustom.Custom.RotateAroundOrigo(Vector2.up, (1f + 2 * i) * (360f / 16f));
-                    this.meshes[i] = new TriangleMesh("Futile_White", new TriangleMesh.Triangle[] { new(0, 1, 2), new(2, 3, 0) }, false);
-
-                    meshes[i].vertices[0] = pos + dira * innerRadius;
-                    meshes[i].vertices[1] = pos + dira * outterRadius;
-                    meshes[i].vertices[2] = pos + dirb * outterRadius;
-                    meshes[i].vertices[3] = pos + dirb * innerRadius;
-
-                    meshes[i].color = colorUnselected;
-
-                    container.AddChild(meshes[i]);
-
-                    tiles[i] = new FSprite("Futile_White");
-                    tiles[i].scale = emotesSize / EmoteDisplayer.emoteSourceSize;
-                    tiles[i].alpha = 0.6f;
-                    tiles[i].SetPosition(pos + RWCustom.Custom.RotateAroundOrigo(Vector2.up * emoteRadius, (i) * (360f / 8f)));
-                    container.AddChild(tiles[i]);
-
-                    icons[i] = new FSprite("Futile_White");
-                    icons[i].scale = emotesSize / EmoteDisplayer.emoteSourceSize;
-                    icons[i].alpha = 0.6f;
-                    icons[i].SetPosition(pos + RWCustom.Custom.RotateAroundOrigo(Vector2.up * emoteRadius, (i) * (360f / 8f)));
-                    container.AddChild(icons[i]);
-                    
-                    centerMesh.vertices[i + 1] = pos + dira * innerRadius;
-                }
-                centerMesh.vertices[0] = pos;
-
-                SetEmotes(emotes);
-            }
-
-            public void SetEmotes(Emote[] emotes)
-            {
-                this.emotes = emotes;
-                for (int i = 0; i < icons.Length; i++)
-                {
-                    if (emotes[i] != null)
-                    {
-                        icons[i].SetElementByName(customization.GetEmote(emotes[i]));
-                        icons[i].alpha = 0.6f;
-                        tiles[i].SetElementByName(customization.GetBackground(emotes[i]));
-                        tiles[i].alpha = 0.6f;
-                    }
-                    else
-                    {
-                        icons[i].alpha = 0f;
-                        tiles[i].alpha = 0f;
-                    }
-                }
-            }
-
-            internal void SetSelected(int selected)
-            {
-                ClearSelection();
-                if (selected > -1 && emotes[selected] != null) meshes[selected].color = colorSelected; else centerMesh.color = colorSelected;
-            }
-
-            internal void ClearSelection()
-            {
-                centerMesh.color = colorUnselected;
-                for (int i = 0; i < 8; i++)
-                {
-                    meshes[i].color = colorUnselected;
-                }
-            }
         }
     }
 }

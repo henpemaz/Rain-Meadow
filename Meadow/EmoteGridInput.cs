@@ -5,15 +5,15 @@ using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
 {
-    public class EmoteKbmInput : HUD.HudPart
+    public class EmoteGridInput : HUD.HudPart
     {
         private readonly MeadowHud owner;
-        private FContainer container;
+        private FContainer gridContainer;
         private FSprite[] emoteDisplayers;
         private FSprite[] emoteTiles;
-        private FSprite[] sixDots;
+        private FSprite[] dots;
         private Vector2 corner;
-        Emote[,] keyboardMappingRows;
+        Emote[,] emoteGrid;
         private int nr;
         private int nc;
         private IntVector2 hoverPos;
@@ -23,9 +23,9 @@ namespace RainMeadow
         public const int emotePreviewSpacing = 6;
         public const float emotePreviewOpacityInactive = 0.5f;
 
-        public EmoteKbmInput(HUD.HUD hud, MeadowAvatarCustomization customization, MeadowHud owner) : base(hud)
+        public EmoteGridInput(HUD.HUD hud, MeadowAvatarCustomization customization, MeadowHud owner) : base(hud)
         {
-            this.container = new FContainer();
+            this.gridContainer = new FContainer();
 
             var emotes = MeadowProgression.AllAvailableEmotes(customization.character);
             var symbols = MeadowProgression.symbolEmotes;
@@ -34,7 +34,7 @@ namespace RainMeadow
             var emoteColumns = (emotes.Count - 1) / iconsPerColumn + 1;
             var symbolColumns = (symbols.Count - 1) / iconsPerColumn + 1;
 
-            keyboardMappingRows = new Emote[iconsPerColumn, emoteColumns + symbolColumns];
+            emoteGrid = new Emote[iconsPerColumn, emoteColumns + symbolColumns];
 
             for (int i = 0; i < emoteColumns; i++)
             {
@@ -43,7 +43,7 @@ namespace RainMeadow
                     var n = i * iconsPerColumn + j;
                     if (n < emotes.Count)
                     {
-                        keyboardMappingRows[j, i] = emotes[n];
+                        emoteGrid[j, i] = emotes[n];
                     }
                     else break;
                 }
@@ -56,7 +56,7 @@ namespace RainMeadow
                     var n = i * iconsPerColumn + j;
                     if (n < symbols.Count)
                     {
-                        keyboardMappingRows[j, emoteColumns + i] = symbols[n];
+                        emoteGrid[j, emoteColumns + i] = symbols[n];
                     }
                     else break;
                 }
@@ -75,16 +75,16 @@ namespace RainMeadow
                 var alpha = emotePreviewOpacityInactive;
                 for (int i = 0; i < nc; i++)
                 {
-                    if (keyboardMappingRows[j, i] == null) continue;
+                    if (emoteGrid[j, i] == null) continue;
                     float x = left + (emotePreviewSize + emotePreviewSpacing) * i;
-                    container.AddChild(emoteTiles[j * nc + i] = new FSprite(customization.GetBackground(keyboardMappingRows[j, i]))
+                    gridContainer.AddChild(emoteTiles[j * nc + i] = new FSprite(customization.GetBackground(emoteGrid[j, i]))
                     {
                         scale = emotePreviewSize / EmoteDisplayer.emoteSourceSize,
                         x = x,
                         y = y,
                         alpha = alpha
                     });
-                    container.AddChild(emoteDisplayers[j * nc + i] = new FSprite(customization.GetEmote(keyboardMappingRows[j, i]))
+                    gridContainer.AddChild(emoteDisplayers[j * nc + i] = new FSprite(customization.GetEmote(emoteGrid[j, i]))
                     {
                         scale = emotePreviewSize / EmoteDisplayer.emoteSourceSize,
                         x = x,
@@ -94,7 +94,7 @@ namespace RainMeadow
                 }
             }
 
-            sixDots = new FSprite[6];
+            dots = new FSprite[6];
             var dotsPos = new Vector2(corner.x - 30f, emotePreviewSpacing/2f);
             var dotsSize = new Vector2(30, 20);
             buttonRect = new Rect(dotsPos + new Vector2(-6,-8), dotsSize + new Vector2(12, 16));
@@ -102,18 +102,17 @@ namespace RainMeadow
             {
                 for (int j = 0; j < 2; j++)
                 {
-                    hud.fContainers[1].AddChild(sixDots[i * 2 + j] = new FSprite("Futile_White")
+                    hud.fContainers[1].AddChild(dots[i * 2 + j] = new FSprite("Futile_White")
                     {
                         shader = Custom.rainWorld.Shaders["FlatLight"],
                         scale = 12f / 16f,
                         x = dotsPos.x + 2f + i * 8f,
                         y = dotsPos.y + 2f + j * 8f,
-                    }); ;
-
+                    });
                 }
             }
             visible = true;
-            hud.fContainers[1].AddChild(container);
+            hud.fContainers[1].AddChild(gridContainer);
             this.owner = owner;
         }
 
@@ -135,10 +134,10 @@ namespace RainMeadow
             bool newVisible = EffectiveVisible;
             if (newVisible != lastVisible)
             {
-                this.container.isVisible = newVisible;
-                for (int i = 0; i < sixDots.Length; i++)
+                this.gridContainer.isVisible = newVisible;
+                for (int i = 0; i < dots.Length; i++)
                 {
-                    sixDots[i].alpha = newVisible? 1f : 0.33f;
+                    dots[i].alpha = newVisible? 1f : 0.33f;
                 }
             }
             lastVisible = newVisible;
@@ -154,7 +153,7 @@ namespace RainMeadow
         public void InputUpdate()
         {
             if (owner.game.pauseMenu != null) return;
-            var mouseDown = Input.GetMouseButtonDown(0);
+            var mouseDown = Input.GetMouseButton(0);
             if (mouseDown && !lastMouseDown && buttonRect.Contains((Vector2)Futile.mousePosition))
             {
                 ToggleVisibility();
@@ -162,11 +161,6 @@ namespace RainMeadow
 
             if (visible)
             {
-                if (Input.GetKeyDown(KeyCode.Backspace))
-                {
-                    owner.ClearEmotes();
-                }
-
                 Vector2 offset = ((Vector2)Futile.mousePosition - this.corner) * new Vector2(1, -1) / (emotePreviewSize + emotePreviewSpacing);
                 IntVector2 newHover = new IntVector2(Mathf.FloorToInt(offset.x), Mathf.FloorToInt(offset.y));
                 if (newHover.x < 0 || newHover.x >= nc || newHover.y < 0 || newHover.y >= nr)
@@ -180,7 +174,7 @@ namespace RainMeadow
                 }
                 if (mouseDown && !lastMouseDown && hoverPos.x != -1)
                 {
-                    owner.EmotePressed(keyboardMappingRows[hoverPos.y, hoverPos.x]);
+                    owner.EmotePressed(emoteGrid[hoverPos.y, hoverPos.x]);
                 }
             }
             
@@ -208,10 +202,11 @@ namespace RainMeadow
         public override void ClearSprites()
         {
             base.ClearSprites();
-            container.RemoveFromContainer();
-            container.RemoveAllChildren();
-            container = null;
+            gridContainer.RemoveFromContainer();
+            gridContainer.RemoveAllChildren();
+            gridContainer = null;
             emoteDisplayers = null;
+            emoteTiles = null;
         }
     }
 }
