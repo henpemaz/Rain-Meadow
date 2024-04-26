@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -13,6 +13,72 @@ namespace RainMeadow
             On.RoomPreparer.ctor += RoomPreparer_ctor;
             On.RoomPreparer.Update += RoomPreparer_Update;
             On.AbstractRoom.Abstractize += AbstractRoom_Abstractize;
+            On.ArenaSitting.NextLevel += ArenaSitting_NextLevel;
+        }
+
+        private void ArenaSitting_NextLevel(On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager manager)
+        {
+            if (OnlineManager.lobby != null)
+            {
+
+                // We need to kick everyone out
+                ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
+                AbstractRoom absRoom = getArenaGameSession.game.world.abstractRooms[0];
+                Room room = absRoom.realizedRoom;
+                WorldSession worldSession = WorldSession.map.GetValue(absRoom.world, (w) => throw new KeyNotFoundException());
+
+                if (RoomSession.map.TryGetValue(absRoom, out var roomSession))
+                {
+                    // we go over all APOs in the room
+                    Debug("Next level switching");
+                    var entities = absRoom.entities;
+                    for (int i = entities.Count - 1; i >= 0; i--)
+                    {
+                        if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+                        {
+                            // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
+                            // if they're the overseer and it isn't the host moving it, that's bad as well
+                            if (!oe.isMine || (apo is AbstractCreature ac && ac.creatureTemplate.type == CreatureTemplate.Type.Overseer && !worldSession.isOwner))
+                            {
+                                // not-online-aware removal
+                                Debug("removing remote entity from game " + oe);
+                                oe.beingMoved = true;
+                                if (oe.apo.realizedObject is Creature c && c.inShortcut)
+                                {
+                                    if (c.RemoveFromShortcuts()) c.inShortcut = false;
+                                }
+                                entities.Remove(oe.apo);
+                                absRoom.creatures.Remove(oe.apo as AbstractCreature);
+                                // room.RemoveObject(oe.apo.realizedObject);
+                                room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                                oe.beingMoved = false;
+                            }
+                            else // mine leave the old online world elegantly
+                            {
+                                Debug("removing my entity from online " + oe);
+                                oe.LeaveResource(roomSession);
+                                oe.LeaveResource(roomSession.worldSession);
+                            }
+                        }
+                    }
+
+                    try
+                    {
+                        roomSession.worldSession.FullyReleaseResource();
+                    }
+                    catch
+                    {
+                        RainMeadow.Debug("oh boy");
+                    }
+                    // orig(self, manager);
+
+                }
+            }
+            else
+            {
+                orig(self, manager);
+
+            }
         }
 
         // Room unload
@@ -157,14 +223,17 @@ namespace RainMeadow
                     try
                     {
                         // Gets us to the next stage, but not graceful and includes render failures
+                        // TODO: Figure out where we need to gracefully kick players out of the game. ArenaSitting.NextLevel?
+
                         OnlineManager.lobby.worldSessions["arena"].FullyReleaseResource();
-                    } catch
+                    }
+                    catch
                     {
                         RainMeadow.Debug("World is not claimed");
                     }
-                        Debug("Requesting arena world resource");
-                        ws = OnlineManager.lobby.worldSessions["arena"];
-                    
+                    Debug("Requesting arena world resource");
+                    ws = OnlineManager.lobby.worldSessions["arena"];
+
                 }
                 else
                 {
