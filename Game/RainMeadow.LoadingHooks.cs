@@ -49,7 +49,7 @@ namespace RainMeadow
                                 }
                                 entities.Remove(oe.apo);
                                 absRoom.creatures.Remove(oe.apo as AbstractCreature);
-                                // room.RemoveObject(oe.apo.realizedObject);
+                                room.RemoveObject(oe.apo.realizedObject);
                                 room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
                                 oe.beingMoved = false;
                             }
@@ -70,7 +70,7 @@ namespace RainMeadow
                     {
                         RainMeadow.Debug("oh boy");
                     }
-                    // orig(self, manager);
+                    orig(self, manager);
 
                 }
             }
