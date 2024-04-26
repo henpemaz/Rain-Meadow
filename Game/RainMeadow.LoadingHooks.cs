@@ -74,14 +74,15 @@
             {
                 if (!ws0.isAvailable)
                 {
-                    lock (self) {
+                    lock (self)
+                    {
                         self.requestCreateWorld = false;
                         orig(self);
                     }
                     OnlineManager.ForceLoadUpdate();
                     return;
                 }
-                else if(self.requestCreateWorld)
+                else if (self.requestCreateWorld)
                 {
                     self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws0);
                     Debug($"world loading creating new world, worldCreaturesSpawn? {self.setupValues.worldCreaturesSpawn}");
@@ -151,9 +152,17 @@
                 if (isArenaMode(out var _))
                 {
                     // Arena has null region and single-room world
-                    Debug("Requesting arena world resource");
-                    ws = OnlineManager.lobby.worldSessions["arena"];
-
+                    try
+                    {
+                        // Gets us to the next stage, but not graceful and includes render failures
+                        OnlineManager.lobby.worldSessions["arena"].FullyReleaseResource();
+                    } catch
+                    {
+                        RainMeadow.Debug("World is not claimed");
+                    }
+                        Debug("Requesting arena world resource");
+                        ws = OnlineManager.lobby.worldSessions["arena"];
+                    
                 }
                 else
                 {
