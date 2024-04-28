@@ -231,6 +231,10 @@ namespace RainMeadow
 
             BindSettings();
 
+            if (!OnlineManager.lobby.isOwner)
+            {
+                ClientDisableAllButtons();
+            }
         }
 
         private void InitializeSitting()
@@ -288,11 +292,11 @@ namespace RainMeadow
 
         private void SendNetworkedMenuState()
         {
-			if (OnlineManager.lobby.isOwner)
-			{
-				OnlineManager.lobby.GetData<ArenaLobbyData>().MakeState();
-			}
-		}
+            if (OnlineManager.lobby.isOwner)
+            {
+                OnlineManager.lobby.GetData<ArenaLobbyData>().MakeState();
+            }
+        }
 
         [RPCMethod]
         public static void StartArena()
@@ -327,7 +331,7 @@ namespace RainMeadow
             mm.Update();
             //base.Update();
 
-            if (mm.GetGameTypeSetup.playList.Count * mm.GetGameTypeSetup.levelRepeats > 0)
+            if (OnlineManager.lobby.isOwner && mm.GetGameTypeSetup.playList.Count * mm.GetGameTypeSetup.levelRepeats > 0)
             {
                 mm.playButton.buttonBehav.greyedOut = !(OnlineManager.lobby.isAvailable && OnlineManager.lobby.isOwner);
             }
@@ -336,9 +340,53 @@ namespace RainMeadow
                 mm.playButton.buttonBehav.greyedOut = true;
             }
 
+            if (!OnlineManager.lobby.isOwner)
+            {
+                foreach (var obj in mm.levelSelector.levelsPlaylist.levelItems)
+                {
+                    obj.buttonBehav.greyedOut = true;
+                }
+
+                mm.levelSelector.levelsPlaylist.ClearButton.buttonBehav.greyedOut = true;
+            }
+
             SendNetworkedMenuState(); // not sure if we should do this every frame for a menu, placeholder for now
         }
 
+        void ClientDisableAllButtons()
+        {
+            mm.playButton.buttonBehav.greyedOut = true;
+            mm.arenaSettingsInterface.evilAICheckBox.buttonBehav.greyedOut = true;
+
+            var roomRepeatsArray = mm.arenaSettingsInterface.subObjects.Find(x =>
+            {
+                return x is MultipleChoiceArray mca && mca.IDString == "ROOMREPEAT";
+            }) as MultipleChoiceArray;
+
+            foreach (var obj in roomRepeatsArray.buttons)
+            {
+                obj.buttonBehav.greyedOut = true;
+            }
+
+            foreach (var obj in mm.arenaSettingsInterface.wildlifeArray.buttons)
+            {
+                obj.buttonBehav.greyedOut = true;
+            }
+
+            foreach (var obj in mm.arenaSettingsInterface.rainTimer.buttons)
+            {
+                obj.buttonBehav.greyedOut = true;
+            }
+
+            foreach (var obj in mm.levelSelector.allLevelsList.levelItems)
+            {
+                obj.buttonBehav.greyedOut = true;
+                obj.neverPlayed = 0;
+            }
+
+            mm.levelSelector.levelsPlaylist.ClearButton.maintainOutlineColorWhenGreyedOut = false;
+            mm.levelSelector.levelsPlaylist.ShuffleButton.buttonBehav.greyedOut = true;
+        }
 
         public override void Singal(MenuObject sender, string message)
         {
@@ -417,7 +465,7 @@ namespace RainMeadow
 
             base.Update();
 
-            bool flag = RWInput.CheckPauseButton(0, manager.rainWorld);
+            bool flag = RWInput.CheckPauseButton(0);
             if (flag && !mm.lastPauseButton && manager.dialog == null)
             {
                 mm.OnExit();
