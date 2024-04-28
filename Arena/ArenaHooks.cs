@@ -28,7 +28,17 @@ namespace RainMeadow
             On.ArenaGameSession.SpawnPlayers += ArenaGameSession_SpawnPlayers;
             On.ArenaBehaviors.ExitManager.ExitsOpen += ExitManager_ExitsOpen;
 
+            On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
+        }
 
+        private void ProcessManager_RequestMainProcessSwitch_ProcessID(On.ProcessManager.orig_RequestMainProcessSwitch_ProcessID orig, ProcessManager self, ProcessManager.ProcessID ID)
+        {
+            if (ID == ProcessManager.ProcessID.MultiplayerMenu && OnlineManager.lobby != null)
+            {
+                ID = Ext_ProcessID.ArenaLobbyMenu;
+            }
+
+            orig(self, ID);
         }
 
         private bool ExitManager_ExitsOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
