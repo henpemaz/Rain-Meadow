@@ -46,7 +46,7 @@ namespace RainMeadow
             mainPage.subObjects.Add(backObject = new SimplerButton(mm, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f)));
             (backObject as SimplerButton).OnClick += (btn) =>
             {
-                manager.RequestMainProcessSwitch(backTarget);
+                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
             };
         }
 
