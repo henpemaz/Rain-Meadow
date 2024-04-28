@@ -112,7 +112,17 @@ namespace RainMeadow
             self.thisFrameActivePlayers = OnlineManager.players.Count;
 
 
+            On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
+        }
 
+        private void ProcessManager_RequestMainProcessSwitch_ProcessID(On.ProcessManager.orig_RequestMainProcessSwitch_ProcessID orig, ProcessManager self, ProcessManager.ProcessID ID)
+        {
+            if (ID == ProcessManager.ProcessID.MultiplayerMenu && OnlineManager.lobby != null)
+            {
+                ID = Ext_ProcessID.ArenaLobbyMenu;
+            }
+
+            orig(self, ID);
         }
 
         private void ArenaGameBehavior_Update(On.ArenaBehaviors.ArenaGameBehavior.orig_Update orig, ArenaBehaviors.ArenaGameBehavior self)
