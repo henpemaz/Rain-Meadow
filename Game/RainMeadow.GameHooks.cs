@@ -222,8 +222,17 @@ namespace RainMeadow
                 }
 
                 if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
-                ws.FullyReleaseResource();
-            }
+
+                try
+                {
+                    ws.FullyReleaseResource();
+                } catch
+                {
+                    RainMeadow.Error("Could not release resource");
+                }
+
+                
+                }
         }
 
         // Don't activate rooms on other slugs moving around, dumbass
