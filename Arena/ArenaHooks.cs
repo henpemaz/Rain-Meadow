@@ -27,10 +27,43 @@ namespace RainMeadow
 
             On.ArenaGameSession.SpawnPlayers += ArenaGameSession_SpawnPlayers;
             On.ArenaBehaviors.ExitManager.ExitsOpen += ExitManager_ExitsOpen;
+            On.ArenaBehaviors.ExitManager.Update += ExitManager_Update;
+            On.ArenaBehaviors.Evilifier.Update += Evilifier_Update;
+            On.ArenaBehaviors.RespawnFlies.Update += RespawnFlies_Update;
 
 
         }
 
+        private void RespawnFlies_Update(On.ArenaBehaviors.RespawnFlies.orig_Update orig, ArenaBehaviors.RespawnFlies self)
+        {
+            if (self.room == null)
+            {
+                return;
+            }
+
+            orig(self);
+        }
+
+        private void Evilifier_Update(On.ArenaBehaviors.Evilifier.orig_Update orig, ArenaBehaviors.Evilifier self)
+        {
+            if (self.room == null)
+            {
+                return;
+            }
+            orig(self);
+        }
+
+        private void ExitManager_Update(On.ArenaBehaviors.ExitManager.orig_Update orig, ArenaBehaviors.ExitManager self)
+        {
+           if (self.room == null)
+            {
+                return;
+            }
+            orig(self);
+        }
+
+
+        // TODO: Check ExitManager_Update()
         private bool ExitManager_ExitsOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
             if (OnlineManager.lobby == null)
@@ -38,9 +71,7 @@ namespace RainMeadow
                 return orig(self);
             }
 
-            orig(self);
 
-            
             var deadCount = 0;
             foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
             {
@@ -61,11 +92,11 @@ namespace RainMeadow
                 return false;
             }
 
-            if (deadCount == OnlineManager.players.Count -1)
+            if (deadCount == OnlineManager.players.Count - 1)
             {
                 return true;
             }
-            return false;
+            return orig(self);
         }
 
 

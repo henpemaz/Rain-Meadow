@@ -247,11 +247,18 @@ namespace RainMeadow
                     self.rainWorld.progression.SaveToDisk(false, true, false); // save maps
                 }
 
-                if (WorldSession.map.TryGetValue(self.world, out var ws))
+                if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
+
+                try
                 {
                     ws.FullyReleaseResource();
+                } catch
+                {
+                    RainMeadow.Error("Could not release resource");
                 }
-            }
+
+                
+                }
         }
 
         // Don't activate rooms on other slugs moving around, dumbass

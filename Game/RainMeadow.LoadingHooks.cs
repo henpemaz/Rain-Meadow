@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -14,15 +15,65 @@ namespace RainMeadow
             On.RoomPreparer.Update += RoomPreparer_Update;
             On.AbstractRoom.Abstractize += AbstractRoom_Abstractize;
             On.ArenaSitting.NextLevel += ArenaSitting_NextLevel;
+
         }
 
         private void ArenaSitting_NextLevel(On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager manager)
         {
             if (OnlineManager.lobby != null)
             {
+                ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
+
+/*                if (manager.currentMainLoop is RainWorldGame)
+                {
+                    if (self.gameTypeSetup.saveCreatures)
+                    {
+                        for (int i = 0; i < getArenaGameSession.game.world.NumberOfRooms; i++)
+                        {
+                            for (int j = 0; j < getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).creatures.Count; j++)
+                            {
+                                if (getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).creatures[j].state.alive)
+                                {
+                                    self.creatures.Add(getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).creatures[j]);
+                                }
+                            }
+
+                            for (int k = 0; k < getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).entitiesInDens.Count; k++)
+                            {
+                                if (getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).entitiesInDens[k] is AbstractCreature && (getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).entitiesInDens[k] as AbstractCreature).state.alive)
+                                {
+                                    self.creatures.Add(getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).entitiesInDens[k] as AbstractCreature);
+                                }
+                            }
+                        }
+
+                       self.savCommunities = getArenaGameSession.creatureCommunities;
+                        self.savCommunities.session = null;
+                    }
+                    else
+                    {
+                        self.creatures.Clear();
+                        self.savCommunities = null;
+                    }
+
+                    self.firstGameAfterMenu = false;
+                    if (ModManager.MSC && getArenaGameSession.challengeCompleted)
+                    {
+                        manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerMenu);
+                        return;
+                    }
+                }*/
+
+
+                ///
+
+
+
+
+
 
                 // We need to kick everyone out
-                ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
+                // ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
                 AbstractRoom absRoom = getArenaGameSession.game.world.abstractRooms[0];
                 Room room = absRoom.realizedRoom;
                 WorldSession worldSession = WorldSession.map.GetValue(absRoom.world, (w) => throw new KeyNotFoundException());
@@ -37,8 +88,7 @@ namespace RainMeadow
                         if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
                         {
                             // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
-                            // if they're the overseer and it isn't the host moving it, that's bad as well
-                            if (!oe.isMine || (apo is AbstractCreature ac && ac.creatureTemplate.type == CreatureTemplate.Type.Overseer && !worldSession.isOwner))
+                            if (!oe.isMine)
                             {
                                 // not-online-aware removal
                                 Debug("removing remote entity from game " + oe);
@@ -49,8 +99,9 @@ namespace RainMeadow
                                 }
                                 entities.Remove(oe.apo);
                                 absRoom.creatures.Remove(oe.apo as AbstractCreature);
-                                room.RemoveObject(oe.apo.realizedObject);
-                                room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+
+                                // room.RemoveObject(oe.apo.realizedObject);
+                                // room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
                                 oe.beingMoved = false;
                             }
                             else // mine leave the old online world elegantly
@@ -62,16 +113,46 @@ namespace RainMeadow
                         }
                     }
 
+
+
                     try
                     {
+                        roomSession.abstractOnDeactivate = true;
+                        roomSession.FullyReleaseResource();
                         roomSession.worldSession.FullyReleaseResource();
+                        // maybe we need to do this too
+                        // TODO: Fix the rendering issue (must not be loading properly when someone else is holding onto the room?)
+                        // From Henpe: That's what a room looks like without the shaders, something crashed while it was loading
+                        // probably the error of: InvalidOperation: Pending LoadingHooks.cs:247
+                        // Also check PlayerOnDie cuz that's unhappy
+
                     }
                     catch
                     {
                         RainMeadow.Debug("oh boy");
                     }
-                    orig(self, manager);
 
+                    if (roomSession.isPending)
+                    {
+                        Debug("Arena room pending" + room);
+                        roomSession.releaseWhenPossible = true;
+                    }
+
+
+/*                    self.currentLevel++;
+                    if (self.currentLevel >= self.levelPlaylist.Count && !self.gameTypeSetup.repeatSingleLevelForever)
+                    {
+                        manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
+                        return;
+                    }
+
+                    manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
+                    if (self.gameTypeSetup.savingAndLoadingSession)
+                    {
+                        self.SaveToFile(manager.rainWorld);
+                    }*/
+
+                    orig(self, manager);
                 }
             }
             else
@@ -252,6 +333,74 @@ namespace RainMeadow
                 ws.BindWorld(self.world);
                 self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);
             }
+        }
+
+        private void ArenaGameSession_Update(On.ArenaGameSession.orig_Update orig, ArenaGameSession self)
+        {
+
+            if (self.arenaSitting.attempLoadInGame && self.arenaSitting.gameTypeSetup.savingAndLoadingSession)
+            {
+                self.arenaSitting.attempLoadInGame = false;
+                self.arenaSitting.LoadFromFile(self, self.game.world, self.game.rainWorld);
+            }
+
+            if (self.initiated)
+            {
+                self.counter++;
+            }
+            else if (self.room != null && self.room.shortCutsReady)
+            {
+                self.Initiate();
+            }
+
+            if (self.room != null && self.chMeta != null && self.chMeta.deferred)
+            {
+                self.room.deferred = true;
+            }
+
+            self.thisFrameActivePlayers = self.PlayersStillActive(addToAliveTime: true, dontCountSandboxLosers: false);
+
+/*            if (!self.sessionEnded)
+            {
+*//*                if (self.endSessionCounter > 0)
+                {
+                    if (self.ShouldSessionEnd())
+                    {
+                        self.endSessionCounter--;
+                        if (self.endSessionCounter == 0)
+                        {
+                            self.EndSession();
+                        }
+                    }
+                    else
+                    {
+                        self.endSessionCounter = -1;
+                    }
+                }
+                else if (self.endSessionCounter == -1 && self.ShouldSessionEnd())
+                {
+                    self.endSessionCounter = 30;
+                }*//*
+            }
+*/
+            for (int i = 0; i < self.behaviors.Count; i++)
+            {
+                if (self.behaviors[i].slatedForDeletion)
+                {
+                    self.RemoveBehavior(i);
+                }
+                else
+                {
+                    self.behaviors[i].Update();
+                }
+            }
+
+            if (self.game.world.rainCycle.TimeUntilRain < -1000 && !self.sessionEnded)
+            {
+                self.outsidePlayersCountAsDead = false;
+                self.EndSession();
+            }
+            // stop game over by not adding the rest of orig code
         }
     }
 }
