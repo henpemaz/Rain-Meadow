@@ -505,7 +505,7 @@ namespace RainMeadow
 
         internal static void ItemCollected(AbstractMeadowCollectible abstractMeadowCollectible)
         {
-            var meadowHud = (Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).cameras[0].hud.parts.First(p => p is MeadowHud) as MeadowHud;
+            var meadowHud = (Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).cameras[0].hud.parts.First(p => p is MeadowProgressionHud) as MeadowProgressionHud;
             if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold)
             {
                 meadowHud.AnimateChar();
@@ -638,6 +638,8 @@ namespace RainMeadow
                 [JsonProperty]
                 [JsonConverter(typeof(UnityColorConverter))]
                 internal Color tintColor;
+                [JsonProperty]
+                public List<Emote> emoteHotbar;
 
                 [JsonConstructor]
                 private CharacterProgressionData() { }
@@ -647,6 +649,7 @@ namespace RainMeadow
                     unlockedSkins = characterData[character].skins.Take(1).ToList();
                     selectedSkin = unlockedSkins[0];
                     saveLocation = characterData[character].startingCoords;
+                    emoteHotbar = unlockedEmotes.Concat(symbolEmotes.Take(4)).ToList();
                 }
             }
         }

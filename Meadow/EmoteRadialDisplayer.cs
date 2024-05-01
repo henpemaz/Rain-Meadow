@@ -3,15 +3,13 @@ using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
 {
-    public class EmoteRadialPage
+    public class EmoteRadialDisplayer
     {
-        private Emote[] emotes;
-        private MeadowAvatarCustomization customization;
+        private FContainer container;
         private TriangleMesh[] meshes;
         private FSprite[] icons;
         private FSprite[] tiles;
         private TriangleMesh centerMesh;
-
 
         public Color colorUnselected = new Color(0f, 0f, 0f, 0.2f);
         public Color colorSelected = new Color(1f, 1f, 1f, 0.2f);
@@ -24,9 +22,27 @@ namespace RainMeadow
         float outterRadius;
         float emoteRadius;
 
-        public EmoteRadialPage(HUD.HUD hud, FContainer container, MeadowAvatarCustomization customization, Emote[] emotes, Vector2 pos, float emotesSize)
+        public bool isVisible
         {
-            this.customization = customization;
+            get { return container.isVisible; }
+            set { container.isVisible = value; }
+        }
+
+        public Vector2 pos
+        {
+            get { return container.GetPosition(); }
+            set { container.SetPosition(value); }
+        }
+
+        public float alpha
+        {
+            get { return container.alpha; }
+            set { container.alpha = value; container.isVisible = (value > 0f); }
+        }
+
+        public EmoteRadialDisplayer(FContainer parentContainer, MeadowAvatarCustomization customization, Emote[] emotes, Vector2 pos, float emotesSize)
+        {
+            this.container = new FContainer();
             this.meshes = new TriangleMesh[8];
             this.icons = new FSprite[8];
             this.tiles = new FSprite[8];
@@ -69,12 +85,13 @@ namespace RainMeadow
             }
             centerMesh.vertices[0] = pos;
 
-            SetEmotes(emotes);
+            SetEmotes(emotes, customization);
+
+            parentContainer.AddChild(container);
         }
 
-        public void SetEmotes(Emote[] emotes)
+        public void SetEmotes(Emote[] emotes, MeadowAvatarCustomization customization)
         {
-            this.emotes = emotes;
             for (int i = 0; i < icons.Length; i++)
             {
                 if (emotes[i] != null)
@@ -95,7 +112,7 @@ namespace RainMeadow
         internal void SetSelected(int selected)
         {
             ClearSelection();
-            if (selected > -1 && emotes[selected] != null) meshes[selected].color = colorSelected; else centerMesh.color = colorSelected;
+            if (selected > -1) meshes[selected].color = colorSelected; else centerMesh.color = colorSelected;
         }
 
         internal void ClearSelection()
