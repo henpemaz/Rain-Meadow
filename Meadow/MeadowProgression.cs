@@ -578,8 +578,9 @@ namespace RainMeadow
         }
 
         // maybe save
-        internal static void AutosaveProgression()
+        internal static void AutosaveProgression(bool changes = false)
         {
+            anythingToSave |= changes;
             if ((anythingToSave && UnityEngine.Time.realtimeSinceStartup > lastSaved + 120) // no more than once a couple minutes
                 || UnityEngine.Time.realtimeSinceStartup > lastSaved + 300) // or 5 minutes for position etc
             {

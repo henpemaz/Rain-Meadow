@@ -147,6 +147,7 @@ namespace RainMeadow
             }
             else
             {
+                timeToLive = initialLifetime;
                 this.creatureData.emotesLife = initialLifetime; // refresh
             }
 
