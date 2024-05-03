@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
@@ -122,6 +123,16 @@ namespace RainMeadow
             {
                 meshes[i].color = colorUnselected;
             }
+        }
+
+        internal void ClearSprites()
+        {
+            container.RemoveFromContainer();
+            container.RemoveAllChildren();
+            container = null;
+            meshes = null;
+            tiles = null;
+            icons = null;
         }
     }
 }

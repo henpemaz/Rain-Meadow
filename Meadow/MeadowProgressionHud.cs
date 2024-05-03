@@ -1,6 +1,7 @@
 ﻿using HUD;
 using RWCustom;
 using System;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -20,8 +21,8 @@ namespace RainMeadow
         private int progressionNeeded;
         private float progressionVisible;
         private Vector2 rootPos;
+        private MeadowProgression.Emote newEmote;
 
-        
         Vector2 DrawPos(float timeStacker, int index)
         {
             return rootPos + new Vector2(index * 40f, 0);
@@ -70,6 +71,11 @@ namespace RainMeadow
                     emotesLabel.text = EmoteCountText;
                     this.hud.fadeCircles.Add(new FadeCircle(this.hud, 10f, 10f, 0.82f, 50f, 4f, DrawPos(1f, 0), this.progressionContainer));
                     this.hud.PlaySound(SoundID.HUD_Food_Meter_Fill_Fade_Circle);
+                    if (newEmote != null)
+                    {
+                        this.hud.parts.OfType<MeadowEmoteHud>().First().Refresh();
+                        newEmote = null;
+                    }
                 }
             }
             if (skinAnim > 0)
@@ -145,6 +151,7 @@ namespace RainMeadow
         internal void NewEmoteUnlocked(MeadowProgression.Emote emote)
         {
             hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate("New emote unlocked"), 60, 160, true, true);
+            newEmote = emote;
         }
 
         internal void NewSkinUnlocked(MeadowProgression.Skin skin)

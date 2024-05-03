@@ -1,8 +1,6 @@
 ﻿using HUD;
 using RWCustom;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
 using UnityEngine;
 using static RainMeadow.MeadowProgression;
 
@@ -393,8 +391,16 @@ namespace RainMeadow
                     }
                 }
             }
+
             if (radialPickerActive)
             {
+                if (!lastRadialPickerActive)
+                {
+                    FlipPage(-currentPage); // back to zero
+                    knobPos = Vector2.zero;
+                    knobVel = Vector2.zero;
+                    lastKnobPos = Vector2.zero;
+                }
                 this.knobPos += this.knobVel;
                 this.knobVel *= 0.5f;
                 if (this.knobPos.magnitude > 1f)
@@ -490,6 +496,16 @@ namespace RainMeadow
         public override void ClearSprites()
         {
             base.ClearSprites();
+            gridDisplay.ClearSprites();
+            gridButtonContainer.RemoveFromContainer();
+            gridButtonContainer.RemoveAllChildren();
+            radialDisplayer.ClearSprites();
+            radialButtonContainer.RemoveFromContainer();
+            radialButtonContainer.RemoveAllChildren();
+
+            knobSprite.RemoveFromContainer();
+            draggedEmote.RemoveFromContainer();
+            draggedTile.RemoveFromContainer();
         }
 
         private void InputUpdate()
@@ -533,6 +549,13 @@ namespace RainMeadow
         {
             displayer.ClearEmotes();
             hud.owner.PlayHUDSound(SoundID.MENU_Checkbox_Uncheck);
+        }
+
+        internal void Refresh()
+        {
+            if(slatedForDeletion) { return; }
+            slatedForDeletion = true;
+            hud.AddPart(new MeadowEmoteHud(hud, camera, owner));
         }
     }
 }
