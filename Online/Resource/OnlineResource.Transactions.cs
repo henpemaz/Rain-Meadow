@@ -8,7 +8,8 @@ namespace RainMeadow
         public void Request()
         {
             RainMeadow.Debug(this);
-            if (isPending) throw new InvalidOperationException("pending");
+            if (isPending) throw new InvalidOperationException("pending"); //this.releaseWhenPossible = true;
+            // P2 is throwing 'available' for region after trying to join next level, previous room release is failing
             if (isAvailable) throw new InvalidOperationException("available");
 
             ClearIncommingBuffers();
@@ -150,9 +151,19 @@ namespace RainMeadow
             {
                 Unavailable();
             }
+
+            if (RainMeadow.isArenaMode(out var _))
+            {
+                //this.releaseWhenPossible = true; // pending
+                // this.FullyReleaseResource(); // gets p2 to next level but issues
+                Unavailable(); // just gonna send it
+
+            }
             else if (releaseResult is GenericResult.Error) // I should retry
             {
                 RainMeadow.Error("released failed for " + this);
+
+
                 Release();
             }
         }

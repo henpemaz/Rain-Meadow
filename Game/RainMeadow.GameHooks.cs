@@ -215,7 +215,7 @@ namespace RainMeadow
                     story.storyClientSettings.inGame = false;
                 }
 
-                if(OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+                if (OnlineManager.lobby.gameMode is MeadowGameMode mgm)
                 {
                     MeadowProgression.progressionData.currentCharacterProgress.saveLocation = mgm.avatar.apo.pos;
                     MeadowProgression.SaveProgression();
@@ -223,16 +223,9 @@ namespace RainMeadow
 
                 if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
 
-                try
-                {
-                    ws.FullyReleaseResource();
-                } catch
-                {
-                    RainMeadow.Error("Could not release resource");
-                }
+                ws.FullyReleaseResource();
 
-                
-                }
+            }
         }
 
         // Don't activate rooms on other slugs moving around, dumbass
@@ -377,7 +370,7 @@ namespace RainMeadow
             {
                 ws.ApoEnteringWorld(player);
                 ws.roomSessions.First().Value.ApoEnteringRoom(player, player.pos);
-               
+
             }
 
             // OnlineManager.lobby.worldSessions["arena"].ApoEnteringWorld(player);

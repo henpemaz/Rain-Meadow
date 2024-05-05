@@ -204,7 +204,20 @@ namespace RainMeadow
         protected void NewOwner(OnlinePlayer newOwner)
         {
             RainMeadow.Debug($"{this} - '{(newOwner != null ? newOwner : "null")}'");
-            if (newOwner == owner && newOwner != null) throw new InvalidOperationException("Re-assigned to the same owner");
+            if (newOwner == owner && newOwner != null)
+                if (RainMeadow.isArenaMode(out var _))
+                {
+                    // -- ARENA TESTING --
+
+                    RainMeadow.Debug("Assigned to host");
+
+                }
+                else
+                {
+                    throw new InvalidOperationException("Re-assigned to the same owner");
+                }
+            // -- END ARENA TESTING --
+
             if (isAvailable && newOwner == null && (pendingRequest is not RPCEvent rc || rc.handler.method.Name != nameof(this.Released))) throw new InvalidOperationException("No owner for available resource");
             var oldOwner = owner;
             owner = newOwner;
@@ -219,7 +232,11 @@ namespace RainMeadow
                     if (membership.player.isMe || membership.player.hasLeft) continue;
                     Subscribed(membership.player, true);
                 }
-                ClaimAbandonedEntitiesAndResources();
+                // -- ARENA TESTING --
+
+                // ClaimAbandonedEntitiesAndResources(); // I DONT WANT IT BACK
+                // -- END ARENA TESTING --
+
             }
 
             if (isWaitingForState && isOwner) // I am the authority for the state of this
@@ -310,20 +327,43 @@ namespace RainMeadow
                 }
             }
             participants.Remove(participant);
-            if (isSupervisor && participant == owner)
+            // -- ARENA TESTING --
+
+            if (RainMeadow.isArenaMode(out var _))
             {
-                PickNewOwner();
+
+               
+
+                if (isSupervisor && participant == owner)
+                {
+                    RainMeadow.Debug("Abandoning Arena resource and not assigning new owner");
+
+                }
+                if (isAvailable && !participant.isMe)
+                {
+                    Unsubscribed(participant);
+                }
+
+
             }
-            if (isAvailable && isOwner && !participant.isMe)
+            // -- END ARENA TESTING --
+            else
             {
-                Unsubscribed(participant);
-                if (isActive) ClaimAbandonedEntitiesAndResources();
+                if (isSupervisor && participant == owner)
+                {
+                    PickNewOwner();
+                }
+                if (isAvailable && isOwner && !participant.isMe)
+                {
+                    Unsubscribed(participant);
+                    if (isActive) ClaimAbandonedEntitiesAndResources();
 
-                // so im thinking, make entity leaving figure out "x is subsubsubresource of y" autoleave correctly
-                // needs resource.issubresource(parent)
+                    // so im thinking, make entity leaving figure out "x is subsubsubresource of y" autoleave correctly
+                    // needs resource.issubresource(parent)
 
-                // claiming ent/res works better top down because claiming res makes us able to claim subres as well
-                // claiming/kicking ent should technically be bottom up but we can improve it
+                    // claiming ent/res works better top down because claiming res makes us able to claim subres as well
+                    // claiming/kicking ent should technically be bottom up but we can improve it
+                }
             }
             ParticipantLeftImpl(participant);
         }
@@ -411,7 +451,21 @@ namespace RainMeadow
         private void PickNewOwner()
         {
             if (!isSupervisor) throw new InvalidProgrammerException("not supervisor");
-            var newOwner = MatchmakingManager.instance.BestTransferCandidate(this, participants);
+            OnlinePlayer newOwner;
+            // -- ARENA TESTING --
+
+            if (RainMeadow.isArenaMode(out var _))
+            {
+                newOwner = OnlineManager.lobby.owner; // Host always owns, but we don't even calls this right now
+
+            }
+            else
+            {
+                newOwner = MatchmakingManager.instance.BestTransferCandidate(this, participants);
+
+            }
+            // -- END ARENA TESTING --
+
             NewOwner(newOwner);
             if (newOwner != null && !isPending)
             {
