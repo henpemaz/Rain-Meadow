@@ -30,9 +30,106 @@ namespace RainMeadow
             On.ArenaBehaviors.ExitManager.Update += ExitManager_Update;
             On.ArenaBehaviors.Evilifier.Update += Evilifier_Update;
             On.ArenaBehaviors.RespawnFlies.Update += RespawnFlies_Update;
+            On.ArenaGameSession.Update += ArenaGameSession_Update;
 
 
         }
+
+   
+
+        private void ArenaGameSession_Update(On.ArenaGameSession.orig_Update orig, ArenaGameSession self)
+        {
+            if (self.arenaSitting.attempLoadInGame && self.arenaSitting.gameTypeSetup.savingAndLoadingSession)
+            {
+                self.arenaSitting.attempLoadInGame = false;
+                self.arenaSitting.LoadFromFile(self, self.game.world, self.game.rainWorld);
+            }
+
+            if (self.initiated)
+            {
+                self.counter++;
+            }
+            else if (self.room != null && self.room.shortCutsReady)
+            {
+                self.Initiate();
+            }
+
+            if (self.room != null && self.chMeta != null && self.chMeta.deferred)
+            {
+                self.room.deferred = true;
+            }
+
+            self.thisFrameActivePlayers = self.PlayersStillActive(addToAliveTime: true, dontCountSandboxLosers: false);
+
+            /*            if (!self.sessionEnded)
+                        {
+                            if (self.endSessionCounter > 0)
+                            {
+                                if (self.ShouldSessionEnd())
+                                {
+                                    self.endSessionCounter--;
+                                    if (self.endSessionCounter == 0)
+                                    {
+                                        self.EndSession();
+                                    }
+                                }
+                                else
+                                {
+                                    self.endSessionCounter = -1;
+                                }
+                            }
+                            else if (self.endSessionCounter == -1 && self.ShouldSessionEnd())
+                            {
+                                self.endSessionCounter = 30;
+                            }
+                        }*/
+
+            for (int i = 0; i < self.behaviors.Count; i++)
+            {
+                if (self.behaviors[i].slatedForDeletion)
+                {
+                    self.RemoveBehavior(i);
+                }
+                else
+                {
+                    self.behaviors[i].Update();
+                }
+            }
+
+            var deadCount = 0;
+            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+            {
+                if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                {
+                    if (ac.state.dead
+                    || ((ac.realizedCreature as Player)?.dangerGrasp != null && (ac.realizedCreature as Player)?.dangerGraspTime > 200))
+                    {
+                        deadCount++;
+                    }
+                }
+
+            }
+
+            /*            if (OnlineManager.players.Count == 1)
+                        {
+                            continue;
+                        }
+            */
+            if (deadCount == OnlineManager.players.Count - 1 && !self.sessionEnded)
+            {
+                self.EndSession();
+
+            }
+
+            /*          if (self.game.world.rainCycle.TimeUntilRain < -1000 && !self.sessionEnded)
+                      {
+                          self.outsidePlayersCountAsDead = false;
+                          self.EndSession();
+                      }*/
+            // stop game over by not adding the rest of orig code
+        }
+
 
         private void RespawnFlies_Update(On.ArenaBehaviors.RespawnFlies.orig_Update orig, ArenaBehaviors.RespawnFlies self)
         {
@@ -55,48 +152,21 @@ namespace RainMeadow
 
         private void ExitManager_Update(On.ArenaBehaviors.ExitManager.orig_Update orig, ArenaBehaviors.ExitManager self)
         {
-           if (self.room == null)
+            if (self.room == null)
             {
                 return;
             }
             orig(self);
         }
 
-
-        // TODO: Check ExitManager_Update()
         private bool ExitManager_ExitsOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
             if (OnlineManager.lobby == null)
             {
                 return orig(self);
             }
-
-
-            var deadCount = 0;
-            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
-            {
-                if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                {
-                    if (ac.state.dead
-                    || ((ac.realizedCreature as Player)?.dangerGrasp != null && (ac.realizedCreature as Player)?.dangerGraspTime > 200))
-                    {
-                        deadCount++;
-                    }
-                }
-
-            }
-
-            if (OnlineManager.players.Count == 1)
-            {
-                return false;
-            }
-
-            if (deadCount == OnlineManager.players.Count - 1)
-            {
-                return true;
-            }
             return orig(self);
+
         }
 
 
