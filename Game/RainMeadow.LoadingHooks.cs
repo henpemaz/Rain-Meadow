@@ -72,6 +72,8 @@ namespace RainMeadow
                     if (!OnlineManager.lobby.isOwner)
                     {
                         roomSession.FullyReleaseResource();
+                        roomSession.worldSession.FullyReleaseResource();
+
 
                     }
 
