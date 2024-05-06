@@ -23,7 +23,14 @@ namespace RainMeadow
 
                 else
                 {
-                    this.Unavailable();
+                    if (this.subresources.Count > 0)
+                    {
+
+                    }
+                    else
+                    {
+                        this.Unavailable();
+                    }
                     // throw new InvalidOperationException("available");
                 }
 
