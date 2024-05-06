@@ -12,19 +12,19 @@ namespace RainMeadow
                 if (RainMeadow.isArenaMode(out var _) && !OnlineManager.lobby.isOwner)
                 {
                     this.releaseWhenPossible = true;
-                    return;
                 }
 
-                else { throw new InvalidOperationException("pending"); } 
+                else { throw new InvalidOperationException("pending"); }
             if (isAvailable) if (RainMeadow.isArenaMode(out var _) && !OnlineManager.lobby.isOwner)
                 {
-                    Request();
-                    return;
+                    this.Unavailable();
+                   
                 }
 
                 else
                 {
-                    throw new InvalidOperationException("available");
+                    this.Unavailable();
+                    // throw new InvalidOperationException("available");
                 }
 
             ClearIncommingBuffers();
