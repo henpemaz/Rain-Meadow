@@ -31,11 +31,70 @@ namespace RainMeadow
             On.ArenaBehaviors.Evilifier.Update += Evilifier_Update;
             On.ArenaBehaviors.RespawnFlies.Update += RespawnFlies_Update;
             On.ArenaGameSession.Update += ArenaGameSession_Update;
+            On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
+            On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
+
+        }
+        // TODO: Clean up the death logic, then should be good to pull into arena main branch!
+
+        private void ArenaOverlay_PlayerPressedContinue(On.Menu.ArenaOverlay.orig_PlayerPressedContinue orig, Menu.ArenaOverlay self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+            }
+
+            if (!OnlineManager.lobby.isOwner)
+            {
+                self.playersContinueButtons = null;
+                self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
+               
+            }
+            else
+            {
+                orig(self);
+            }
+        }
+
+        private void ArenaOverlay_Update(On.Menu.ArenaOverlay.orig_Update orig, Menu.ArenaOverlay self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+            }
+            if (self.countdownToNextRound == 0 && !self.nextLevelCall)
+            {
+                ArenaGameSession getArenaGameSession = (self.manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
+                AbstractRoom absRoom = getArenaGameSession.game.world.abstractRooms[0];
+                if (RoomSession.map.TryGetValue(absRoom, out var roomSession))
+                {
+
+                    foreach (OnlinePlayer player in OnlineManager.players)
+                    {
+                        if (roomSession.isOwner)
+                        {
+                            // Give the owner a head start
+                            RPCs.Arena_NextLevelCall();
+
+                            if (!player.isMe)
+                            {
+                                player.InvokeRPC(RPCs.Arena_NextLevelCall);
+                            }
+                        }
+
+                    }
+                }
+            }
+
+            if (self.nextLevelCall)
+            {
+                return;
+            }
+
+            orig(self);
 
 
         }
-
-   
 
         private void ArenaGameSession_Update(On.ArenaGameSession.orig_Update orig, ArenaGameSession self)
         {

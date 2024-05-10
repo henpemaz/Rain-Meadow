@@ -1,4 +1,6 @@
-﻿namespace RainMeadow
+﻿using System;
+
+namespace RainMeadow
 {
     public static class RPCs
     {
@@ -119,6 +121,18 @@
                 return;
             }
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.KarmaToMaxScreen);
+        }
+
+        [RPCMethod]
+        public static void Arena_NextLevelCall()
+        {
+            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            if (game.manager.upcomingProcess != null)
+            {
+                return;
+            }
+            game.GetArenaGameSession.arenaSitting.NextLevel(game.manager);
+            game.arenaOverlay.nextLevelCall = true;
         }
     }
 }
