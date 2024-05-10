@@ -180,7 +180,16 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (!isActive) { throw new InvalidOperationException("resource is already inactive"); }
-            if (isAvailable) { throw new InvalidOperationException("resource is still available"); }
+            if (isAvailable)
+            {
+                if (RainMeadow.isArenaMode(out var _))
+                {
+                    this.releaseWhenPossible = true;
+                } else
+                {
+                    throw new InvalidOperationException("resource is still available");
+                }
+            }
             if (subresources.Any(s => s.isActive)) throw new InvalidOperationException("has active subresources");
             isActive = false;
             DeactivateImpl();

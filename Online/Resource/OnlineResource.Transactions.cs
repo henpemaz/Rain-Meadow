@@ -9,30 +9,69 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (isPending)
-                if (RainMeadow.isArenaMode(out var _) && !OnlineManager.lobby.isOwner)
+                if (RainMeadow.isArenaMode(out var _))
                 {
                     this.releaseWhenPossible = true;
                 }
 
-                else { throw new InvalidOperationException("pending"); }
-            if (isAvailable) if (RainMeadow.isArenaMode(out var _) && !OnlineManager.lobby.isOwner)
-                {
-                    this.Unavailable();
-                   
-                }
-
                 else
                 {
-                    if (this.subresources.Count > 0)
+                    throw new InvalidOperationException("pending");
+                }
+
+            if (isAvailable)
+                // Right now, the host by himself seems ok with going through each level by deactivating the parent resoruce (recurisvley). 
+                // So I wouldn't touch it that much. 
+                // The client still needs some help releasing the old resources to request the new ones. 
+                // Maybe we could just pass in the world session identifier (arena rid) here to allow the recursion to kill everything
+            {
+                if (RainMeadow.isArenaMode(out var _) && !OnlineManager.lobby.isOwner)
+                {
+                    this.FullyReleaseResource();
+                    while(this.isActive)
                     {
+                        try
+                        {
+                            this.Deactivate();
+
+                        } catch
+                        {
+                            RainMeadow.Debug("Resources released quickly");
+                        }
+                    }
+
+
+                }
+
+                else if (RainMeadow.isArenaMode(out var _) && OnlineManager.lobby.isOwner)
+                {
+                    while (this.subresources.Count > 0)
+                    {
+                        RainMeadow.Debug("Waiting for resources to release");
+                        if (this.isActive)
+                        {
+  /*                          foreach (var balrg in this.subresources)
+                            {
+                                RainMeadow.Debug(balrg);
+
+                                balrg.Deactivate();
+
+                            }*/
+                            this.Deactivate();
+                        }
+
 
                     }
-                    else
-                    {
-                        this.Unavailable();
-                    }
-                    // throw new InvalidOperationException("available");
+
                 }
+                else
+                {
+                    throw new InvalidOperationException("available");
+
+                }
+
+
+            }
 
             ClearIncommingBuffers();
             pendingRequest = supervisor.InvokeRPC(this.Requested).Then(this.ResolveRequest);
@@ -42,9 +81,45 @@ namespace RainMeadow
         private void Release()
         {
             RainMeadow.Debug(this);
-            if (isPending) throw new InvalidOperationException("pending");
-            if (!isAvailable) throw new InvalidOperationException("not available");
-            if (!canRelease) throw new InvalidOperationException("cant be released in current state");
+            if (isPending)
+            {
+                if (RainMeadow.isArenaMode(out var _))
+                {
+                    this.releaseWhenPossible = true;
+                }
+
+                else
+                {
+                    throw new InvalidOperationException("pending");
+
+                }
+
+            }
+
+            if (!isAvailable)
+
+                if (RainMeadow.isArenaMode(out var _))
+                {
+                    this.releaseWhenPossible = true;
+                }
+
+                else
+                {
+                    throw new InvalidOperationException("not available");
+
+                }
+            if (!canRelease)
+
+                if (RainMeadow.isArenaMode(out var _))
+                {
+                    this.releaseWhenPossible = true;
+                }
+
+                else
+                {
+                    throw new InvalidOperationException("cant be released in current state");
+
+                }
 
             pendingRequest = supervisor.InvokeRPC(this.Released).Then(this.ResolveRelease);
         }
@@ -141,6 +216,8 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("Claimed abandoned resource");
                 }
+
+
                 else
                 {
                     WaitingForState();
@@ -155,6 +232,7 @@ namespace RainMeadow
                     }
                 }
             }
+
             else if (requestResult is GenericResult.Error) // I should retry
             {
                 Request();
