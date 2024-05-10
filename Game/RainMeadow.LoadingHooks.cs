@@ -73,8 +73,6 @@ namespace RainMeadow
                     {
                         roomSession.FullyReleaseResource();
                         roomSession.worldSession.FullyReleaseResource();
-
-
                     }
 
                     self.currentLevel++;
