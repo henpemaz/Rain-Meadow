@@ -126,6 +126,7 @@ namespace RainMeadow
                         return;
                     }
 
+
                     manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
 
                     if (self.gameTypeSetup.savingAndLoadingSession)
@@ -283,14 +284,6 @@ namespace RainMeadow
 
                 if (isArenaMode(out var _))
                 {
-/*                    try
-                    {
-                        OnlineManager.lobby.worldSessions["arena"].FullyReleaseResource();
-                    }
-                    catch
-                    {
-                        Debug("wow");
-                    }*/
                     ws = OnlineManager.lobby.worldSessions["arena"];
 
                 }
