@@ -241,16 +241,14 @@ namespace RainMeadow
             if (newOwner == owner && newOwner != null)
                 if (RainMeadow.isArenaMode(out var _))
                 {
-                    // -- ARENA TESTING --
 
-                    RainMeadow.Debug("Assigned to host");
+                    RainMeadow.Debug("Assigned to host"); // Lobby owner control
 
                 }
                 else
                 {
                     throw new InvalidOperationException("Re-assigned to the same owner");
                 }
-            // -- END ARENA TESTING --
 
             if (isAvailable && newOwner == null && (pendingRequest is not RPCEvent rc || rc.handler.method.Name != nameof(this.Released))) throw new InvalidOperationException("No owner for available resource");
             var oldOwner = owner;
@@ -266,10 +264,8 @@ namespace RainMeadow
                     if (player.isMe || player.hasLeft) continue;
                     Subscribed(player, true);
                 }
-                // -- ARENA TESTING --
 
-                // ClaimAbandonedEntitiesAndResources(); // I DONT WANT IT BACK
-                // -- END ARENA TESTING --
+                ClaimAbandonedEntitiesAndResources();
 
             }
 
@@ -356,12 +352,9 @@ namespace RainMeadow
                 }
             }
             participants.Remove(participant);
-            // -- ARENA TESTING --
 
             if (RainMeadow.isArenaMode(out var _))
             {
-
-               
 
                 if (isSupervisor && participant == owner)
                 {
@@ -375,7 +368,6 @@ namespace RainMeadow
 
 
             }
-            // -- END ARENA TESTING --
             else
             {
                 if (isSupervisor && participant == owner)
@@ -481,11 +473,10 @@ namespace RainMeadow
         {
             if (!isSupervisor) throw new InvalidProgrammerException("not supervisor");
             OnlinePlayer newOwner;
-            // -- ARENA TESTING --
 
             if (RainMeadow.isArenaMode(out var _))
             {
-                newOwner = OnlineManager.lobby.owner; // Host always owns, but we don't even calls this right now
+                newOwner = OnlineManager.lobby.owner; // Host always owns
 
             }
             else
@@ -493,7 +484,6 @@ namespace RainMeadow
                 newOwner = MatchmakingManager.instance.BestTransferCandidate(this, participants);
 
             }
-            // -- END ARENA TESTING --
 
             NewOwner(newOwner);
             if (newOwner != null && !isPending)
