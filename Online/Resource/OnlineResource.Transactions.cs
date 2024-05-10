@@ -20,21 +20,36 @@ namespace RainMeadow
                 }
 
             if (isAvailable)
-                // Right now, the host by himself seems ok with going through each level by deactivating the parent resoruce (recurisvley). 
-                // So I wouldn't touch it that much. 
-                // The client still needs some help releasing the old resources to request the new ones. 
-                // Maybe we could just pass in the world session identifier (arena rid) here to allow the recursion to kill everything
+
+
+            // Right now, it seems like I really need to find a way to immediately kill connections to resources.
+            // I've tried doing a FullyReleaseResource then Deactivate then Unavailable but there still seems to be hiccups.
+            // Strangely, only some levels really have an issue. If I do Stove Pipe -> Summit, it usually doesn't work.
+            // But Summit -> Stove Pipe did
+            // Need more consistency
             {
                 if (RainMeadow.isArenaMode(out var _) && !OnlineManager.lobby.isOwner)
                 {
-                    this.FullyReleaseResource();
-                    while(this.isActive)
+
+                    foreach (var s in this.subresources)
+                    {
+                        if (s.isAvailable)
+                        {
+                            s.Unavailable();
+
+                        }
+                    }
+                    this.Unavailable();
+
+
+                    while (this.isActive)
                     {
                         try
                         {
                             this.Deactivate();
 
-                        } catch
+                        }
+                        catch
                         {
                             RainMeadow.Debug("Resources released quickly");
                         }
@@ -45,24 +60,29 @@ namespace RainMeadow
 
                 else if (RainMeadow.isArenaMode(out var _) && OnlineManager.lobby.isOwner)
                 {
-                    while (this.subresources.Count > 0)
+
+                    foreach (var s in this.subresources)
                     {
-                        RainMeadow.Debug("Waiting for resources to release");
-                        if (this.isActive)
+                        if (s.isAvailable)
                         {
-  /*                          foreach (var balrg in this.subresources)
-                            {
-                                RainMeadow.Debug(balrg);
+                            s.Unavailable();
 
-                                balrg.Deactivate();
-
-                            }*/
-                            this.Deactivate();
                         }
-
-
                     }
+                    this.Unavailable();
 
+                    while (this.isActive)
+                    {
+                        try
+                        {
+                            this.Deactivate();
+
+                        }
+                        catch
+                        {
+                            RainMeadow.Debug("Resources released quickly");
+                        }
+                    }
                 }
                 else
                 {
@@ -232,7 +252,20 @@ namespace RainMeadow
                     }
                 }
             }
-
+            
+            else if (RainMeadow.isArenaMode(out var _))
+            {
+                WaitingForState();
+                if (isOwner)
+                {
+                    RainMeadow.Debug("Claimed resource");
+                    Available();
+                }
+                else
+                {
+                    RainMeadow.Debug("Joined resource");
+                }
+            }
             else if (requestResult is GenericResult.Error) // I should retry
             {
                 Request();
