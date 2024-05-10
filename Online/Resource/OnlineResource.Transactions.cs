@@ -28,7 +28,7 @@ namespace RainMeadow
             // But Summit -> Stove Pipe did
             // Need more consistency
             {
-                if (RainMeadow.isArenaMode(out var _) && !OnlineManager.lobby.isOwner)
+                if (RainMeadow.isArenaMode(out var _))
                 {
 
                     foreach (var s in this.subresources)
@@ -56,33 +56,6 @@ namespace RainMeadow
                     }
 
 
-                }
-
-                else if (RainMeadow.isArenaMode(out var _) && OnlineManager.lobby.isOwner)
-                {
-
-                    foreach (var s in this.subresources)
-                    {
-                        if (s.isAvailable)
-                        {
-                            s.Unavailable();
-
-                        }
-                    }
-                    this.Unavailable();
-
-                    while (this.isActive)
-                    {
-                        try
-                        {
-                            this.Deactivate();
-
-                        }
-                        catch
-                        {
-                            RainMeadow.Debug("Resources released quickly");
-                        }
-                    }
                 }
                 else
                 {
