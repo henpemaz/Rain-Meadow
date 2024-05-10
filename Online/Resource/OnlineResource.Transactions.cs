@@ -20,13 +20,6 @@ namespace RainMeadow
                 }
 
             if (isAvailable)
-
-
-            // Right now, it seems like I really need to find a way to immediately kill connections to resources.
-            // I've tried doing a FullyReleaseResource then Deactivate then Unavailable but there still seems to be hiccups.
-            // Strangely, only some levels really have an issue. If I do Stove Pipe -> Summit, it usually doesn't work.
-            // But Summit -> Stove Pipe did
-            // Need more consistency
             {
                 if (RainMeadow.isArenaMode(out var _))
                 {
