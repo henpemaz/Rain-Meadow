@@ -170,7 +170,18 @@ public partial class RainMeadow
             return;
         }
 
-        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity))
+        {
+            if (isArenaMode(out var _))
+            {
+                RainMeadow.Error("Tried to get OnlineEntity counterpart. Die() may have been called earlier");
+            }
+
+            else
+            {
+                throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+            }
+        }
         if (!onlineEntity.isMine) return;
         if (isStoryMode(out var story))
         {

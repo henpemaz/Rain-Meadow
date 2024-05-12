@@ -371,10 +371,7 @@ namespace RainMeadow
                 ws.ApoEnteringWorld(player);
                 ws.roomSessions.First().Value.ApoEnteringRoom(player, player.pos);
 
-            }
-
-            // OnlineManager.lobby.worldSessions["arena"].ApoEnteringWorld(player);
-            // OnlineManager.lobby.worldSessions["arena"].roomSessions.First().Value.ApoEnteringRoom(player, player.pos);
+            };
         }
     }
 }

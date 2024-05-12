@@ -1,4 +1,5 @@
-﻿using RainMeadow.GameModes;
+﻿using Mono.Cecil;
+using RainMeadow.GameModes;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace RainMeadow
 {
@@ -26,16 +28,79 @@ namespace RainMeadow
         {
 
             On.ArenaGameSession.SpawnPlayers += ArenaGameSession_SpawnPlayers;
+            On.ArenaGameSession.Update += ArenaGameSession_Update;
             On.ArenaBehaviors.ExitManager.ExitsOpen += ExitManager_ExitsOpen;
             On.ArenaBehaviors.ExitManager.Update += ExitManager_Update;
+            On.ArenaBehaviors.ExitManager.PlayerTryingToEnterDen += ExitManager_PlayerTryingToEnterDen;
             On.ArenaBehaviors.Evilifier.Update += Evilifier_Update;
             On.ArenaBehaviors.RespawnFlies.Update += RespawnFlies_Update;
-            On.ArenaGameSession.Update += ArenaGameSession_Update;
+            On.ArenaBehaviors.ArenaGameBehavior.Update += ArenaGameBehavior_Update;
+           
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
-
         }
-        // TODO: Clean up the death logic, then should be good to pull into arena main branch!
+
+
+        private bool ExitManager_PlayerTryingToEnterDen(On.ArenaBehaviors.ExitManager.orig_PlayerTryingToEnterDen orig, ArenaBehaviors.ExitManager self, ShortcutHandler.ShortCutVessel shortcutVessel)
+        {
+            if (!(shortcutVessel.creature is Player))
+            {
+                return false;
+            }
+
+            if (ModManager.MSC && shortcutVessel.creature.abstractCreature.creatureTemplate.type == MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SlugNPC)
+            {
+                return false;
+            }
+
+            if (self.gameSession.GameTypeSetup.denEntryRule == ArenaSetup.GameTypeSetup.DenEntryRule.Score && self.gameSession.ScoreOfPlayer(shortcutVessel.creature as Player, inHands: true) < self.gameSession.GameTypeSetup.ScoreToEnterDen)
+            {
+                return false;
+            }
+
+            int num = -1;
+            for (int i = 0; i < shortcutVessel.room.realizedRoom.exitAndDenIndex.Length; i++)
+            {
+                if (shortcutVessel.pos == shortcutVessel.room.realizedRoom.exitAndDenIndex[i])
+                {
+                    num = i;
+                    break;
+                }
+            }
+
+            if (self.ExitsOpen() && !self.ExitOccupied(num))
+            {
+                shortcutVessel.entranceNode = num;
+                self.playersInDens.Add(shortcutVessel);
+                return true;
+
+            }
+
+            return false;
+        }
+
+        private void ArenaGameBehavior_Update(On.ArenaBehaviors.ArenaGameBehavior.orig_Update orig, ArenaBehaviors.ArenaGameBehavior self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+            }
+
+            orig(self);
+
+            if (self.gameSession.Players.Count < OnlineManager.players.Count)
+            {
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+                {
+                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !self.gameSession.Players.Contains(ac))
+                    {
+                        self.gameSession.Players.Add(ac);
+                    }
+
+                }
+            }
+        }
 
         private void ArenaOverlay_PlayerPressedContinue(On.Menu.ArenaOverlay.orig_PlayerPressedContinue orig, Menu.ArenaOverlay self)
         {
@@ -62,6 +127,7 @@ namespace RainMeadow
             {
                 orig(self);
             }
+
             if (self.countdownToNextRound == 0 && !self.nextLevelCall)
             {
                 ArenaGameSession getArenaGameSession = (self.manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
@@ -98,100 +164,37 @@ namespace RainMeadow
 
         private void ArenaGameSession_Update(On.ArenaGameSession.orig_Update orig, ArenaGameSession self)
         {
-            if (self.arenaSitting.attempLoadInGame && self.arenaSitting.gameTypeSetup.savingAndLoadingSession)
+            if (OnlineManager.lobby == null)
             {
-                self.arenaSitting.attempLoadInGame = false;
-                self.arenaSitting.LoadFromFile(self, self.game.world, self.game.rainWorld);
+                orig(self);
+                return;
             }
 
-            if (self.initiated)
+            if (self.Players.Count < OnlineManager.players.Count)
             {
-                self.counter++;
-            }
-            else if (self.room != null && self.room.shortCutsReady)
-            {
-                self.Initiate();
-            }
-
-            if (self.room != null && self.chMeta != null && self.chMeta.deferred)
-            {
-                self.room.deferred = true;
-            }
-
-            self.thisFrameActivePlayers = self.PlayersStillActive(addToAliveTime: true, dontCountSandboxLosers: false);
-
-            /*            if (!self.sessionEnded)
-                        {
-                            if (self.endSessionCounter > 0)
-                            {
-                                if (self.ShouldSessionEnd())
-                                {
-                                    self.endSessionCounter--;
-                                    if (self.endSessionCounter == 0)
-                                    {
-                                        self.EndSession();
-                                    }
-                                }
-                                else
-                                {
-                                    self.endSessionCounter = -1;
-                                }
-                            }
-                            else if (self.endSessionCounter == -1 && self.ShouldSessionEnd())
-                            {
-                                self.endSessionCounter = 30;
-                            }
-                        }*/
-
-            for (int i = 0; i < self.behaviors.Count; i++)
-            {
-                if (self.behaviors[i].slatedForDeletion)
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
                 {
-                    self.RemoveBehavior(i);
-                }
-                else
-                {
-                    self.behaviors[i].Update();
-                }
-            }
-
-            var deadCount = 0;
-            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
-            {
-                if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                {
-                    if (ac.state.dead
-                    || ((ac.realizedCreature as Player)?.dangerGrasp != null && (ac.realizedCreature as Player)?.dangerGraspTime > 200))
+                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !self.Players.Contains(ac))
                     {
-                        deadCount++;
+                        self.Players.Add(ac);
                     }
+
                 }
-
             }
+            orig(self);
 
-            /*            if (OnlineManager.players.Count == 1)
-                        {
-                            continue;
-                        }
-            */
-            if (deadCount == OnlineManager.players.Count - 1 && !self.sessionEnded)
-            {
-                self.EndSession();
-
-            }
-
-            /*          if (self.game.world.rainCycle.TimeUntilRain < -1000 && !self.sessionEnded)
-                      {
-                          self.outsidePlayersCountAsDead = false;
-                          self.EndSession();
-                      }*/
-            // stop game over by not adding the rest of orig code
         }
 
 
         private void RespawnFlies_Update(On.ArenaBehaviors.RespawnFlies.orig_Update orig, ArenaBehaviors.RespawnFlies self)
         {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+                return;
+            }
+
             if (self.room == null)
             {
                 return;
