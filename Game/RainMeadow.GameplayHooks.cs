@@ -21,7 +21,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby == null)
             {
-                orig(self,hitFac,explosion,hitChunk);
+                orig(self, hitFac, explosion, hitChunk);
                 return;
             }
 
@@ -45,7 +45,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby == null)
             {
-                orig(self,weapon);
+                orig(self, weapon);
                 return;
             }
 
@@ -56,7 +56,7 @@ namespace RainMeadow
                 OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var abstWeapon);
                 room.owner.InvokeRPC(OnlinePhysicalObject.HitByWeapon, objectHit, abstWeapon);
             }
-            else 
+            else
             {
                 orig(self, weapon);
             }
@@ -76,17 +76,20 @@ namespace RainMeadow
                 var playerIDs = OnlineManager.lobby.participants.Select(p => p.inLobbyId).ToList();
                 var readyWinPlayers = storyGameMode.readyForWinPlayers.ToList();
 
-                foreach (var playerID in playerIDs) {
+                foreach (var playerID in playerIDs)
+                {
                     if (!readyWinPlayers.Contains(playerID)) return;
                 }
                 var storyClientSettings = storyGameMode.clientSettings as StoryClientSettings;
                 storyClientSettings.myLastDenPos = self.room.abstractRoom.name;
-                if (OnlineManager.lobby.isOwner) {
+                if (OnlineManager.lobby.isOwner)
+                {
                     (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos = self.room.abstractRoom.name;
                 }
                 storyGameMode.changedRegions = false;
             }
-            else {
+            else
+            {
                 var scug = self.room.game.Players.First(); //needs to be changed if we want to support Jolly
                 var realizedScug = (Player)scug.realizedCreature;
                 if (realizedScug == null || !self.room.PlayersInRoom.Contains(realizedScug)) return;
@@ -113,7 +116,7 @@ namespace RainMeadow
 
                 if (self is AirBreatherCreature breather) breather.lungs = 1f;
 
-                if(self.room != null)
+                if (self.room != null)
                 {
                     // fall out of world handling
                     float num = -self.bodyChunks[0].restrictInRoomRange + 1f;
@@ -137,6 +140,31 @@ namespace RainMeadow
                         var node = self.coord.abstractNode;
                         if (node > room.abstractRoom.exits) node = UnityEngine.Random.Range(0, room.abstractRoom.exits);
                         self.SpitOutOfShortCut(room.ShortcutLeadingToNode(node).startCoord.Tile, room, true);
+                    }
+                }
+            }
+
+            if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode) // Need to test this with creatures on
+            {
+                if (self.room != null)
+                {
+                    // fall out of world handling
+                    float num = -self.bodyChunks[0].restrictInRoomRange + 1f;
+                    if (self is Player && self.bodyChunks[0].restrictInRoomRange == self.bodyChunks[0].defaultRestrictInRoomRange)
+                    {
+                        if ((self as Player).bodyMode == Player.BodyModeIndex.WallClimb)
+                        {
+                            num = Mathf.Max(num, -250f);
+                        }
+                        else
+                        {
+                            num = Mathf.Max(num, -500f);
+                        }
+                    }
+                    if (self.bodyChunks[0].pos.y < num && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) && (!self.Template.canFly || self.Stunned || self.dead) && (self is Player || self.room.game.GetArenaGameSession.chMeta == null || !self.room.game.GetArenaGameSession.chMeta.oobProtect))
+                    {
+                        RainMeadow.Debug("prevent abstract creature destroy: " + self); // need this so that we don't release the world session on death
+                        self.Die();
                     }
                 }
             }
@@ -196,7 +224,7 @@ namespace RainMeadow
                 var suspect = room.updateList[room.updateIndex];
                 if (suspect is Explosion explosion) trueVillain = explosion.sourceObject;
                 else if (suspect is PhysicalObject villainObject) trueVillain = villainObject;
-                if(trueVillain != null)
+                if (trueVillain != null)
                 {
                     if (!OnlinePhysicalObject.map.TryGetValue(trueVillain.abstractPhysicalObject, out var onlineTrueVillain))
                     {
