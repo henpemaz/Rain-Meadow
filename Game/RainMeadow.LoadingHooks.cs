@@ -141,14 +141,13 @@
         {
             if (OnlineManager.lobby != null)
             {
-                setupValues.worldCreaturesSpawn = false;
                 playerCharacter = OnlineManager.lobby.gameMode.LoadWorldAs(game);
             }
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
             if (OnlineManager.lobby != null)
             {
                 WorldSession ws = null;
-                if (game.IsArenaSession)
+                if (game != null && game.IsArenaSession)
                 {
                     // Arena has null region and single-room world
                     Debug("Requesting arena world resource");
