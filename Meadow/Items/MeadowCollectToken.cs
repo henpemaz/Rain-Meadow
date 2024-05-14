@@ -214,7 +214,7 @@ namespace RainMeadow
                     // collect logic moved here
                     for (int i = 0; i < avatarCreature.bodyChunks.Length; i++)
                     {
-                        if (Custom.DistLess(avatarCreature.bodyChunks[i].pos, this.pos, 18f))
+                        if (Custom.DistLess(avatarCreature.bodyChunks[i].pos, this.pos, 18f) || Custom.DistLess(avatarCreature.bodyChunks[i].pos, this.placePos, 18f))
                         {
                             expandAroundCreature = avatarCreature;
                             this.expand = 0.01f;

@@ -9,8 +9,9 @@ namespace RainMeadow
     public class MeadowAvatarCustomization : ClientSettings.AvatarCustomization
     {
         public MeadowProgression.Skin skin;
-        private MeadowProgression.SkinData skinData;
-        private MeadowProgression.CharacterData characterData;
+        public MeadowProgression.SkinData skinData;
+        public MeadowProgression.Character character;
+        public MeadowProgression.CharacterData characterData;
         public Color tint;
         public float tintAmount;
 
@@ -23,7 +24,9 @@ namespace RainMeadow
         {
             this.skin = skin;
             this.skinData = MeadowProgression.skinData[skin];
+            this.character = skinData.character;
             this.characterData = MeadowProgression.characterData[skinData.character];
+
             this.tint = new(tint.r, tint.g, tint.b);
             this.tintAmount = tintAmount * skinData.tintFactor;
 

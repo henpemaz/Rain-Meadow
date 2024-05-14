@@ -34,8 +34,6 @@ namespace RainMeadow
             // can't pause it's online mom
             new Hook(typeof(RainWorldGame).GetProperty("GamePaused").GetGetMethod(), this.RainWorldGame_GamePaused);
 
-            On.Menu.PauseMenu.ctor += PauseMenu_ctor;
-
             IL.RainWorldGame.Update += RainWorldGame_Update;
             On.RainWorldGame.Update += RainWorldGame_Update1;
 
@@ -72,6 +70,20 @@ namespace RainMeadow
                 }
                 );
                 c.Emit(OpCodes.Brfalse, skip);
+
+                // special pausemenu for special needs
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((RainWorldGame self) =>
+                {
+                    if(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+                    {
+                        self.pauseMenu = new MeadowPauseMenu(self.manager, self, mgm);
+                        return true;
+                    }
+                    return false;
+                }
+                );
+                c.Emit(OpCodes.Brtrue, skip);
             }
             catch (Exception e)
             {
@@ -81,46 +93,22 @@ namespace RainMeadow
 
         private void RainWorldGame_Update1(On.RainWorldGame.orig_Update orig, RainWorldGame self)
         {
+            if (OnlineManager.lobby?.gameMode is MeadowGameMode)
+            {
+                // fast travel init means save-and-restart on load, which uses player[0]
+                if(self.manager.menuSetup.FastTravelInitCondition) self.manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
+            }
+            
             orig(self);
 
-            if (OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+            if (OnlineManager.lobby?.gameMode is MeadowGameMode mgm)
             {
                 MeadowProgression.progressionData.currentCharacterProgress.timePlayed += 1000 / self.framesPerSecond;
                 // every 5 minutes
-                if (self.clock % (5 * 60 * 40) == 0)
+                if (self.manager.upcomingProcess == null && self.clock % (5 * 60 * 40) == 0)
                 {
                     MeadowProgression.progressionData.currentCharacterProgress.saveLocation = mgm.avatar.apo.pos;
                     MeadowProgression.AutosaveProgression();
-                }
-            }
-        }
-
-        private void PauseMenu_ctor(On.Menu.PauseMenu.orig_ctor orig, Menu.PauseMenu self, ProcessManager manager, RainWorldGame game)
-        {
-            orig(self, manager, game);
-            if(OnlineManager.lobby != null)
-            {
-                if(OnlineManager.lobby.gameMode is MeadowGameMode mgm)
-                {
-                    self.pauseWarningActive = false;
-                    game.cameras[0].hud.textPrompt.pausedWarningText = false;
-                    SimplerButton unstuckButton;
-                    self.pages[0].subObjects.Add(unstuckButton = new SimplerButton(self, self.pages[0], self.Translate("UNSTUCK"),
-                        new Vector2(manager.rainWorld.options.SafeScreenOffset.x + 70f, Mathf.Max(manager.rainWorld.options.SafeScreenOffset.y, 15f)),
-                        new Vector2(110f, 30f)));
-                    unstuckButton.OnClick += (_) =>
-                    {
-                        var creature = mgm.avatar.realizedCreature;
-                        if(creature.room != null)
-                        {
-                            var room = creature.room;
-                            creature.RemoveFromRoom();
-                            room.CleanOutObjectNotInThisRoom(creature); // we need it this frame
-                            var node = creature.coord.abstractNode;
-                            if (node > room.abstractRoom.exits) node = UnityEngine.Random.Range(0, room.abstractRoom.exits);
-                            creature.SpitOutOfShortCut(room.ShortcutLeadingToNode(node).startCoord.Tile, room, true);
-                        }
-                    };
                 }
             }
         }
@@ -209,19 +197,21 @@ namespace RainMeadow
                 // some cleanup CAN be done
                 OnlineManager.recentEntities = OnlineManager.recentEntities.Where(kvp => !(kvp.Value is OnlinePhysicalObject)).ToDictionary();
 
-                if(isStoryMode(out var story))
+                if (isStoryMode(out var story))
                 {
                     story.storyClientSettings.inGame = false;
                 }
 
-                if(OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+                if (OnlineManager.lobby.gameMode is MeadowGameMode mgm)
                 {
                     MeadowProgression.progressionData.currentCharacterProgress.saveLocation = mgm.avatar.apo.pos;
                     MeadowProgression.SaveProgression();
                 }
 
-                if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
-                ws.FullyReleaseResource();
+                if (WorldSession.map.TryGetValue(self.world, out var ws))
+                {
+                    ws.FullyReleaseResource();
+                }
             }
         }
 

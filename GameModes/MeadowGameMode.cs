@@ -33,10 +33,6 @@ namespace RainMeadow
                     d.ownerEntity = oc;
                     d.creatureData = oe.GetData<MeadowCreatureData>();
                 }
-                if (CreatureController.creatureControllers.TryGetValue(oc.creature, out var cc))
-                {
-                    cc.onlineCreature = oc;
-                }
             }
         }
 

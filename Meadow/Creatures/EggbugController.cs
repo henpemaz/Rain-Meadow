@@ -10,25 +10,34 @@ namespace RainMeadow
         {
             On.EggBug.Update += EggBug_Update;
             On.EggBug.Act += EggBug_Act;
+            On.EggBug.Swim += EggBug_Swim;
 
             On.EggBugAI.Update += EggBugAI_Update;
             On.EggBug.Run += EggBug_Run;
         }
 
+        private static void EggBug_Swim(On.EggBug.orig_Swim orig, EggBug self)
+        {
+            if (creatureControllers.TryGetValue(self, out var p))
+            {
+                p.ConsciousUpdate();
+            }
+            orig(self);
+        }
+
         private static void EggBug_Run(On.EggBug.orig_Run orig, EggBug self, MovementConnection followingConnection)
         {
-            if (creatureControllers.TryGetValue(self.abstractCreature, out var c))
+            if (creatureControllers.TryGetValue(self, out var c))
             {
                 if (followingConnection.startCoord == self.abstractCreature.abstractAI.destination)
                     return;
             }
-
             orig(self, followingConnection);
         }
 
         private static void EggBugAI_Update(On.EggBugAI.orig_Update orig, EggBugAI self)
         {
-            if (creatureControllers.TryGetValue(self.creature, out var p))
+            if (creatureControllers.TryGetValue(self.creature.realizedCreature, out var p))
             {
                 p.AIUpdate(self);
             }
@@ -40,21 +49,19 @@ namespace RainMeadow
 
         private static void EggBug_Act(On.EggBug.orig_Act orig, EggBug self)
         {
-            if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+            if (creatureControllers.TryGetValue(self, out var p))
             {
                 p.ConsciousUpdate();
             }
-
             orig(self);
         }
 
         private static void EggBug_Update(On.EggBug.orig_Update orig, EggBug self, bool eu)
         {
-            if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+            if (creatureControllers.TryGetValue(self, out var p))
             {
                 p.Update(eu);
             }
-
             orig(self, eu);
         }
 
@@ -65,15 +72,10 @@ namespace RainMeadow
 
         EggBug eggbug => creature as EggBug;
 
-        public override bool HasFooting => true;
-
-        public override bool Climbing => !HasFooting && GetTile(0).AnyBeam;
-
-        public override bool CanClimbJump => false;
-
-        public override bool CanPoleJump => false;
-
-        public override bool CanGroundJump => true;
+        public override bool HasFooting => eggbug.Footing;
+        public override bool OnGround => IsTileGround(0, 0, -1) || IsTileGround(1, 0, -1);
+        public override bool OnPole => HasFooting && !OnGround && GetTile(0).AnyBeam;
+        public override bool OnCorridor => eggbug.currentlyClimbingCorridor;
 
         public override bool GrabImpl(PhysicalObject pickUpCandidate)
         {

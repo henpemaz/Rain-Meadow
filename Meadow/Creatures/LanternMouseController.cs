@@ -14,7 +14,7 @@ namespace RainMeadow
 
         private static void MouseAI_Update(On.MouseAI.orig_Update orig, MouseAI self)
         {
-            if (creatureControllers.TryGetValue(self.creature, out var p))
+            if (creatureControllers.TryGetValue(self.creature.realizedCreature, out var p))
             {
                 p.AIUpdate(self);
             }
@@ -26,7 +26,7 @@ namespace RainMeadow
 
         private static void LanternMouse_Act(On.LanternMouse.orig_Act orig, LanternMouse self)
         {
-            if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+            if (creatureControllers.TryGetValue(self, out var p))
             {
                 p.ConsciousUpdate();
             }
@@ -35,7 +35,7 @@ namespace RainMeadow
 
         private static void LanternMouse_Update(On.LanternMouse.orig_Update orig, LanternMouse self, bool eu)
         {
-            if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+            if (creatureControllers.TryGetValue(self, out var p))
             {
                 p.Update(eu);
             }
@@ -51,13 +51,11 @@ namespace RainMeadow
 
         public override bool HasFooting => mouse.Footing;
 
-        public override bool Climbing => !HasFooting && GetTile(0).AnyBeam;
+        public override bool OnPole => !HasFooting && GetTile(0).AnyBeam;
 
-        public override bool CanClimbJump => !mouse.Footing;
+        public override bool OnGround => IsTileGround(0, 0, -1) || IsTileGround(1, 0, -1);
 
-        public override bool CanPoleJump => !mouse.Footing;
-
-        public override bool CanGroundJump => mouse.Footing;
+        public override bool OnCorridor => mouse.currentlyClimbingCorridor;
 
         public override bool GrabImpl(PhysicalObject pickUpCandidate)
         {

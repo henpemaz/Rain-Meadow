@@ -7,7 +7,7 @@ namespace RainMeadow
     {
         public float alpha;
         public float lastAlpha;
-        public MeadowHud.TokenSparkIcon token;
+        public TokenSparkIcon token;
         public MenuLabel label;
         internal string text;
 
@@ -16,7 +16,7 @@ namespace RainMeadow
             Shader.SetGlobalVector(RainWorld.ShadPropSpriteRect, new Vector4(0, 0, 1, 1)); // only ever set in game smh
             Shader.SetGlobalVector(RainWorld.ShadPropScreenSize, menu.manager.rainWorld.screenSize);
             this.text = text;
-            this.token = new MeadowHud.TokenSparkIcon(this.Container, color, pos, 1.5f);
+            this.token = new TokenSparkIcon(this.Container, color, pos, 1.5f, 1f);
             this.label = new MenuLabel(menu, this, text, new Vector2(0, 24f), Vector2.zero, false);
             this.subObjects.Add(label);
             alpha = 1f;
@@ -27,6 +27,8 @@ namespace RainMeadow
             base.Update();
             token.Update();
             lastAlpha = alpha;
+            token.pos = pos;
+            token.alpha = alpha;
             label.text = text;
         }
 
@@ -34,11 +36,7 @@ namespace RainMeadow
         {
             base.GrafUpdate(timeStacker);
             token.Draw(timeStacker);
-            var where = Vector2.Lerp(lastPos, pos, timeStacker);
             var drawAlpha = Mathf.Lerp(lastAlpha, alpha, timeStacker);
-            token.container.SetPosition(where);
-            token.container.alpha = drawAlpha;
-            token.container.isVisible = drawAlpha > 0f;
             label.label.alpha = drawAlpha;
         }
 
