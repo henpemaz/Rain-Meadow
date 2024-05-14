@@ -41,6 +41,8 @@ namespace RainMeadow
 
             On.Room.LoadFromDataString += Room_LoadFromDataString1; // places of spawning items
 
+            On.Menu.FastTravelScreen.Singal += FastTravelScreen_Singal;
+
             // open gate
             new Hook(typeof(RegionGate).GetProperty("MeetRequirement").GetGetMethod(), this.RegionGate_MeetRequirement);
             new Hook(typeof(WaterGate).GetProperty("EnergyEnoughToOpen").GetGetMethod(), this.RegionGate_EnergyEnoughToOpen);
@@ -50,6 +52,23 @@ namespace RainMeadow
 
             On.WormGrass.Worm.ctor += Worm_ctor; // only cosmetic worms
 
+        }
+
+        private void FastTravelScreen_Singal(On.Menu.FastTravelScreen.orig_Singal orig, Menu.FastTravelScreen self, Menu.MenuObject sender, string message)
+        {
+            if (OnlineManager.lobby?.gameMode is MeadowGameMode mgm)
+            {
+                if (message == "HOLD TO START")
+                {
+                    self.manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.RegionSelect;
+                    MeadowProgression.progressionData.currentCharacterProgress.saveLocation = new WorldCoordinate(self.selectedShelter, -1, -1, 0);
+                }
+                if (message == "BACK")
+                {
+                    self.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.MeadowMenu);
+                }
+            }
+            orig(self, sender, message);
         }
 
         private void Worm_ctor(On.WormGrass.Worm.orig_ctor orig, WormGrass.Worm self, WormGrass wormGrass, WormGrass.WormGrassPatch patch, Vector2 basePos, float reachHeight, float iFac, float lengthFac, bool cosmeticOnly)

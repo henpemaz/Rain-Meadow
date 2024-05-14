@@ -93,13 +93,19 @@ namespace RainMeadow
 
         private void RainWorldGame_Update1(On.RainWorldGame.orig_Update orig, RainWorldGame self)
         {
+            if (OnlineManager.lobby?.gameMode is MeadowGameMode)
+            {
+                // fast travel init means save-and-restart on load, which uses player[0]
+                if(self.manager.menuSetup.FastTravelInitCondition) self.manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
+            }
+            
             orig(self);
 
-            if (OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+            if (OnlineManager.lobby?.gameMode is MeadowGameMode mgm)
             {
                 MeadowProgression.progressionData.currentCharacterProgress.timePlayed += 1000 / self.framesPerSecond;
                 // every 5 minutes
-                if (self.clock % (5 * 60 * 40) == 0)
+                if (self.manager.upcomingProcess == null && self.clock % (5 * 60 * 40) == 0)
                 {
                     MeadowProgression.progressionData.currentCharacterProgress.saveLocation = mgm.avatar.apo.pos;
                     MeadowProgression.AutosaveProgression();
@@ -191,19 +197,21 @@ namespace RainMeadow
                 // some cleanup CAN be done
                 OnlineManager.recentEntities = OnlineManager.recentEntities.Where(kvp => !(kvp.Value is OnlinePhysicalObject)).ToDictionary();
 
-                if(isStoryMode(out var story))
+                if (isStoryMode(out var story))
                 {
                     story.storyClientSettings.inGame = false;
                 }
 
-                if(OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+                if (OnlineManager.lobby.gameMode is MeadowGameMode mgm)
                 {
                     MeadowProgression.progressionData.currentCharacterProgress.saveLocation = mgm.avatar.apo.pos;
                     MeadowProgression.SaveProgression();
                 }
 
-                if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
-                ws.FullyReleaseResource();
+                if (WorldSession.map.TryGetValue(self.world, out var ws))
+                {
+                    ws.FullyReleaseResource();
+                }
             }
         }
 

@@ -1,4 +1,6 @@
-﻿namespace RainMeadow
+﻿using System.Threading;
+
+namespace RainMeadow
 {
 
     public partial class RainMeadow
@@ -70,7 +72,7 @@
         // World wait, activate
         private void WorldLoader_Update(On.WorldLoader.orig_Update orig, WorldLoader self)
         {
-            if (OnlineManager.lobby != null && WorldSession.map.TryGetValue(self.world, out var ws0))
+            if (OnlineManager.lobby != null && self.game != null && WorldSession.map.TryGetValue(self.world, out var ws0))
             {
                 if (!ws0.isAvailable)
                 {
@@ -88,7 +90,7 @@
                 }
             }
             orig(self);
-            if (OnlineManager.lobby != null && WorldSession.map.TryGetValue(self.world, out var ws))
+            if (OnlineManager.lobby != null && self.game != null && WorldSession.map.TryGetValue(self.world, out var ws))
             {
                 if (self.game.overWorld?.worldLoader != self) // force-load scenario
                 {
@@ -144,7 +146,7 @@
                 playerCharacter = OnlineManager.lobby.gameMode.LoadWorldAs(game);
             }
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
-            if (OnlineManager.lobby != null)
+            if (OnlineManager.lobby != null && self.game != null)
             {
                 WorldSession ws = null;
                 if (game != null && game.IsArenaSession)
@@ -157,6 +159,14 @@
                 {
                     Debug("Requesting new region: " + region.name);
                     ws = OnlineManager.lobby.worldSessions[region.name];
+                }
+                if (ws.isAvailable && ws.releaseWhenPossible) // mid-release
+                {
+                    while(ws.isAvailable && OnlineManager.lobby != null)
+                    {
+                        OnlineManager.ForceLoadUpdate();
+                        Thread.Sleep(1);
+                    }
                 }
                 ws.Request();
                 ws.BindWorld(self.world);
