@@ -182,6 +182,11 @@ public partial class RainMeadow
                 throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
             }
         }
+        if (onlineEntity == null) // Handle falling out of world gracefully
+        {
+            orig(self);
+            return;
+        }
         if (!onlineEntity.isMine) return;
         if (isStoryMode(out var story))
         {
