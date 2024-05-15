@@ -165,6 +165,7 @@ namespace RainMeadow
                     {
                         RainMeadow.Debug("prevent abstract creature destroy: " + self); // need this so that we don't release the world session on death
                         self.Die();
+                        self.State.alive = false;
                     }
                 }
             }
