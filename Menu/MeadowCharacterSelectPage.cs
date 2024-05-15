@@ -36,12 +36,10 @@ namespace RainMeadow
             base.AddImage(false);
             this.slugcatImage.menu = realMenu;
 
-            this.mainLabel = new MenuLabel(realMenu, this, main, new Vector2(-1000f, this.imagePos.y - 268f), new Vector2(200f, 30f), true, null);
-            this.mainLabel.label.alignment = FLabelAlignment.Center;
+            this.mainLabel = new MenuLabel(realMenu, this, main, new Vector2(-1000f, this.imagePos.y - 268f), new Vector2(0f, 30f), true, null);
             this.subObjects.Add(this.mainLabel);
 
-            this.infoLabel = new MenuLabel(realMenu, this, info, new Vector2(-1000f, this.imagePos.y - 268f - 30f), new Vector2(200f, 30f), true, null);
-            this.infoLabel.label.alignment = FLabelAlignment.Center;
+            this.infoLabel = new MenuLabel(realMenu, this, info, new Vector2(-1000f, this.imagePos.y - 268f - 30f), new Vector2(0f, 30f), true, null);
             this.subObjects.Add(this.infoLabel);
 
             this.mainLabel.label.color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.MediumGrey);
@@ -99,20 +97,24 @@ namespace RainMeadow
 
             float scroll = base.Scroll(timeStacker);
             float alpha = base.UseAlpha(timeStacker);
+            float centerX = base.MidXpos + scroll * base.ScrollMagnitude + 0.01f;
             this.mainLabel.label.alpha = alpha;
-            this.mainLabel.label.x = base.MidXpos + scroll * base.ScrollMagnitude + 0.01f;
+            this.mainLabel.pos.x = centerX;
             this.infoLabel.label.alpha = alpha;
-            this.infoLabel.label.x = base.MidXpos + scroll * base.ScrollMagnitude + 0.01f;
+            this.infoLabel.pos.x = centerX;
             if (isNew)
             {
                 this.infoLabel.label.color = HSLColor.Lerp(Menu.Menu.MenuColor(Menu.Menu.MenuColors.VeryDarkGrey), Menu.Menu.MenuColor(Menu.Menu.MenuColors.MediumGrey), 0.5f + 0.5f * Mathf.Sin(flashSin)).rgb;
             }
             if (locked)
             {
-                this.unlockProgres.label.label.alpha = alpha;
-                this.unlockProgres.label.label.x = base.MidXpos + scroll * base.ScrollMagnitude + 0.01f;
+
+                this.unlockProgres.pos.x = centerX;
+                this.unlockProgres.alpha = alpha;
+                //this.unlockProgres.label.label.alpha = alpha;
+                //this.unlockProgres.label.pos.x = centerX;
+                this.unlockProgres.token.pos.x = centerX;
                 this.unlockProgres.token.alpha = alpha;
-                this.unlockProgres.token.pos.x = base.MidXpos + scroll * base.ScrollMagnitude + 0.01f;
             }
             base.GrafUpdate(1f); // force latest pos
         }
