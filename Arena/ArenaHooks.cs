@@ -39,6 +39,11 @@ namespace RainMeadow
         }
         private bool ExitManager_PlayerTryingToEnterDen(On.ArenaBehaviors.ExitManager.orig_PlayerTryingToEnterDen orig, ArenaBehaviors.ExitManager self, ShortcutHandler.ShortCutVessel shortcutVessel)
         {
+
+            if (OnlineManager.lobby == null)
+            {
+                orig(self, shortcutVessel);
+            }
             if (!(shortcutVessel.creature is Player))
             {
                 return false;
@@ -256,6 +261,10 @@ namespace RainMeadow
 
         private void Evilifier_Update(On.ArenaBehaviors.Evilifier.orig_Update orig, ArenaBehaviors.Evilifier self)
         {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+            }
             if (self.room == null)
             {
                 return;
@@ -265,6 +274,10 @@ namespace RainMeadow
 
         private void ExitManager_Update(On.ArenaBehaviors.ExitManager.orig_Update orig, ArenaBehaviors.ExitManager self)
         {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+            }
             if (self.room == null)
             {
                 return;
