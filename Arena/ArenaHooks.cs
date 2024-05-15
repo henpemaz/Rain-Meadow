@@ -37,8 +37,6 @@ namespace RainMeadow
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
         }
-        // TODO: Figure out spears not killing players.
-        // TODO
         private bool ExitManager_PlayerTryingToEnterDen(On.ArenaBehaviors.ExitManager.orig_PlayerTryingToEnterDen orig, ArenaBehaviors.ExitManager self, ShortcutHandler.ShortCutVessel shortcutVessel)
         {
             if (!(shortcutVessel.creature is Player))
@@ -266,8 +264,6 @@ namespace RainMeadow
 
 
         }
-
-        // This is inconsistent. Need to figure out why
         private bool ExitManager_ExitsOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
             if (OnlineManager.lobby == null)
