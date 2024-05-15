@@ -1,16 +1,12 @@
-﻿using Mono.Cecil;
-using RainMeadow.GameModes;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace RainMeadow
 {
+
+
     public partial class RainMeadow
     {
         public static bool isArenaMode(out ArenaCompetitiveGameMode gameMode)
@@ -29,18 +25,20 @@ namespace RainMeadow
 
             On.ArenaGameSession.SpawnPlayers += ArenaGameSession_SpawnPlayers;
             On.ArenaGameSession.Update += ArenaGameSession_Update;
+            On.ArenaGameSession.ctor += ArenaGameSession_ctor;
             On.ArenaBehaviors.ExitManager.ExitsOpen += ExitManager_ExitsOpen;
             On.ArenaBehaviors.ExitManager.Update += ExitManager_Update;
             On.ArenaBehaviors.ExitManager.PlayerTryingToEnterDen += ExitManager_PlayerTryingToEnterDen;
             On.ArenaBehaviors.Evilifier.Update += Evilifier_Update;
             On.ArenaBehaviors.RespawnFlies.Update += RespawnFlies_Update;
             On.ArenaBehaviors.ArenaGameBehavior.Update += ArenaGameBehavior_Update;
-           
+
+
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
         }
-
-
+        // TODO: Figure out spears not killing players.
+        // TODO
         private bool ExitManager_PlayerTryingToEnterDen(On.ArenaBehaviors.ExitManager.orig_PlayerTryingToEnterDen orig, ArenaBehaviors.ExitManager self, ShortcutHandler.ShortCutVessel shortcutVessel)
         {
             if (!(shortcutVessel.creature is Player))
@@ -71,12 +69,52 @@ namespace RainMeadow
             if (self.ExitsOpen() && !self.ExitOccupied(num))
             {
                 shortcutVessel.entranceNode = num;
-                self.playersInDens.Add(shortcutVessel);
-                return true;
+                if (!OnlinePhysicalObject.map.TryGetValue(shortcutVessel.creature.abstractPhysicalObject, out var onlineVessel))
+                {
+                    Error("Error getting online vessel");
+                }
 
+                if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var roomSession))
+                {
+                    Error("Error getting exit manager room");
+                }
+
+                if (!roomSession.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.AddShortCutVessel, new RWCustom.IntVector2(-1, -1), onlineVessel, roomSession, 0)))
+                {
+                    foreach (OnlinePlayer player in OnlineManager.players)
+                    {
+                        if (roomSession.isOwner)
+                        {
+
+                            RPCs.AddShortCutVessel(new RWCustom.IntVector2(-1, -1), onlineVessel, roomSession, 0);
+                        }
+                        else
+                        {
+                            player.InvokeRPC(RPCs.AddShortCutVessel, new RWCustom.IntVector2(-1, -1), onlineVessel, roomSession, 0);
+
+                        }
+                    }
+
+                }
+                return true;
             }
 
             return false;
+
+        }
+
+        private void ArenaGameSession_ctor(On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self, game);
+            }
+
+            orig(self, game);
+            self.thisFrameActivePlayers = OnlineManager.players.Count;
+
+
+
         }
 
         private void ArenaGameBehavior_Update(On.ArenaBehaviors.ArenaGameBehavior.orig_Update orig, ArenaBehaviors.ArenaGameBehavior self)
@@ -98,8 +136,10 @@ namespace RainMeadow
                         self.gameSession.Players.Add(ac);
                     }
 
+
                 }
             }
+
         }
 
         private void ArenaOverlay_PlayerPressedContinue(On.Menu.ArenaOverlay.orig_PlayerPressedContinue orig, Menu.ArenaOverlay self)
@@ -109,11 +149,11 @@ namespace RainMeadow
                 orig(self);
             }
 
-            if (!OnlineManager.lobby.isOwner)
+            if (!OnlineManager.lobby.isOwner) // clients cannot initiate next level
             {
                 self.playersContinueButtons = null;
                 self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
-               
+
             }
             else
             {
@@ -130,6 +170,7 @@ namespace RainMeadow
 
             if (self.countdownToNextRound == 0 && !self.nextLevelCall)
             {
+
                 ArenaGameSession getArenaGameSession = (self.manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
                 AbstractRoom absRoom = getArenaGameSession.game.world.abstractRooms[0];
                 if (RoomSession.map.TryGetValue(absRoom, out var roomSession))
@@ -150,6 +191,8 @@ namespace RainMeadow
 
                     }
                 }
+
+
             }
 
             if (self.nextLevelCall)
@@ -219,14 +262,34 @@ namespace RainMeadow
                 return;
             }
             orig(self);
+
+
+
         }
 
+        // This is inconsistent. Need to figure out why
         private bool ExitManager_ExitsOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
             if (OnlineManager.lobby == null)
             {
                 return orig(self);
             }
+
+            var deadCount = 0;
+
+            foreach (var player in self.gameSession.Players)
+            {
+                if (player.realizedCreature != null && player.realizedCreature.State.dead)
+                {
+                    deadCount++;
+                }
+            }
+
+            if (deadCount != 0 && deadCount == self.gameSession.Players.Count - 1)
+            {
+                return true;
+            }
+
             return orig(self);
 
         }
@@ -323,7 +386,7 @@ namespace RainMeadow
 
 
                 abstractCreature.Realize();
-                ShortcutHandler.ShortCutVessel shortCutVessel = new ShortcutHandler.ShortCutVessel(new RWCustom.IntVector2(-1, -1), abstractCreature.realizedCreature, self.game.world.GetAbstractRoom(0), 0);
+                var shortCutVessel = new ShortcutHandler.ShortCutVessel(new RWCustom.IntVector2(-1, -1), abstractCreature.realizedCreature, self.game.world.GetAbstractRoom(0), 0);
                 shortCutVessel.entranceNode = num;
                 shortCutVessel.room = self.game.world.GetAbstractRoom(abstractCreature.Room.name);
                 abstractCreature.pos.room = self.game.world.offScreenDen.index;
