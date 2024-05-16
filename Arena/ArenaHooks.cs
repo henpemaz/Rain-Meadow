@@ -1,14 +1,12 @@
-﻿using RainMeadow.GameModes;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace RainMeadow
 {
+
+
     public partial class RainMeadow
     {
         public static bool isArenaMode(out ArenaCompetitiveGameMode gameMode)
@@ -26,20 +24,259 @@ namespace RainMeadow
         {
 
             On.ArenaGameSession.SpawnPlayers += ArenaGameSession_SpawnPlayers;
+            On.ArenaGameSession.Update += ArenaGameSession_Update;
+            On.ArenaGameSession.ctor += ArenaGameSession_ctor;
             On.ArenaBehaviors.ExitManager.ExitsOpen += ExitManager_ExitsOpen;
-            On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
-        }
+            On.ArenaBehaviors.ExitManager.Update += ExitManager_Update;
+            On.ArenaBehaviors.ExitManager.PlayerTryingToEnterDen += ExitManager_PlayerTryingToEnterDen;
+            On.ArenaBehaviors.Evilifier.Update += Evilifier_Update;
+            On.ArenaBehaviors.RespawnFlies.Update += RespawnFlies_Update;
+            On.ArenaBehaviors.ArenaGameBehavior.Update += ArenaGameBehavior_Update;
 
-        private void ProcessManager_RequestMainProcessSwitch_ProcessID(On.ProcessManager.orig_RequestMainProcessSwitch_ProcessID orig, ProcessManager self, ProcessManager.ProcessID ID)
+
+            On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
+            On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
+        }
+        private bool ExitManager_PlayerTryingToEnterDen(On.ArenaBehaviors.ExitManager.orig_PlayerTryingToEnterDen orig, ArenaBehaviors.ExitManager self, ShortcutHandler.ShortCutVessel shortcutVessel)
         {
-            if (ID == ProcessManager.ProcessID.MultiplayerMenu && self.currentMainLoop.ID == ProcessManager.ProcessID.Game && isArenaMode(out _))
+
+            if (OnlineManager.lobby == null)
             {
-                ID = Ext_ProcessID.ArenaLobbyMenu;
+                orig(self, shortcutVessel);
+            }
+            if (!(shortcutVessel.creature is Player))
+            {
+                return false;
             }
 
-            orig(self, ID);
+            if (ModManager.MSC && shortcutVessel.creature.abstractCreature.creatureTemplate.type == MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SlugNPC)
+            {
+                return false;
+            }
+
+            if (self.gameSession.GameTypeSetup.denEntryRule == ArenaSetup.GameTypeSetup.DenEntryRule.Score && self.gameSession.ScoreOfPlayer(shortcutVessel.creature as Player, inHands: true) < self.gameSession.GameTypeSetup.ScoreToEnterDen)
+            {
+                return false;
+            }
+
+            int num = -1;
+            for (int i = 0; i < shortcutVessel.room.realizedRoom.exitAndDenIndex.Length; i++)
+            {
+                if (shortcutVessel.pos == shortcutVessel.room.realizedRoom.exitAndDenIndex[i])
+                {
+                    num = i;
+                    break;
+                }
+            }
+
+            if (self.ExitsOpen() && !self.ExitOccupied(num))
+            {
+                shortcutVessel.entranceNode = num;
+                if (!OnlinePhysicalObject.map.TryGetValue(shortcutVessel.creature.abstractPhysicalObject, out var onlineVessel))
+                {
+                    Error("Error getting online vessel");
+                }
+
+                if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var roomSession))
+                {
+                    Error("Error getting exit manager room");
+                }
+
+                if (!roomSession.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.AddShortCutVessel, new RWCustom.IntVector2(-1, -1), onlineVessel, roomSession, 0)))
+                {
+                    foreach (OnlinePlayer player in OnlineManager.players)
+                    {
+                        if (roomSession.isOwner)
+                        {
+
+                            RPCs.AddShortCutVessel(new RWCustom.IntVector2(-1, -1), onlineVessel, roomSession, 0);
+                        }
+                        else
+                        {
+                            player.InvokeRPC(RPCs.AddShortCutVessel, new RWCustom.IntVector2(-1, -1), onlineVessel, roomSession, 0);
+
+                        }
+                    }
+
+                }
+                return true;
+            }
+
+            return false;
+
         }
 
+        private void ArenaGameSession_ctor(On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self, game);
+            }
+
+            orig(self, game);
+            self.thisFrameActivePlayers = OnlineManager.players.Count;
+
+
+
+        }
+
+        private void ArenaGameBehavior_Update(On.ArenaBehaviors.ArenaGameBehavior.orig_Update orig, ArenaBehaviors.ArenaGameBehavior self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+            }
+
+            orig(self);
+
+            if (self.gameSession.Players.Count < OnlineManager.players.Count)
+            {
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+                {
+                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !self.gameSession.Players.Contains(ac))
+                    {
+                        self.gameSession.Players.Add(ac);
+                    }
+
+
+                }
+            }
+
+        }
+
+        private void ArenaOverlay_PlayerPressedContinue(On.Menu.ArenaOverlay.orig_PlayerPressedContinue orig, Menu.ArenaOverlay self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+            }
+
+            if (!OnlineManager.lobby.isOwner) // clients cannot initiate next level
+            {
+                self.playersContinueButtons = null;
+                self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
+
+            }
+            else
+            {
+                orig(self);
+            }
+        }
+
+        private void ArenaOverlay_Update(On.Menu.ArenaOverlay.orig_Update orig, Menu.ArenaOverlay self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+            }
+
+            if (self.countdownToNextRound == 0 && !self.nextLevelCall)
+            {
+
+                ArenaGameSession getArenaGameSession = (self.manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
+                AbstractRoom absRoom = getArenaGameSession.game.world.abstractRooms[0];
+                if (RoomSession.map.TryGetValue(absRoom, out var roomSession))
+                {
+
+                    foreach (OnlinePlayer player in OnlineManager.players)
+                    {
+                        if (roomSession.isOwner)
+                        {
+                            // Give the owner a head start
+                            RPCs.Arena_NextLevelCall();
+
+                            if (!player.isMe)
+                            {
+                                player.InvokeRPC(RPCs.Arena_NextLevelCall);
+                            }
+                        }
+
+                    }
+                }
+
+
+            }
+
+            if (self.nextLevelCall)
+            {
+                return;
+            }
+
+            orig(self);
+
+
+        }
+
+        private void ArenaGameSession_Update(On.ArenaGameSession.orig_Update orig, ArenaGameSession self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+                return;
+            }
+
+            if (self.Players.Count < OnlineManager.players.Count)
+            {
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+                {
+                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !self.Players.Contains(ac))
+                    {
+                        self.Players.Add(ac);
+                    }
+
+                }
+            }
+            orig(self);
+
+        }
+
+
+        private void RespawnFlies_Update(On.ArenaBehaviors.RespawnFlies.orig_Update orig, ArenaBehaviors.RespawnFlies self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+                return;
+            }
+
+            if (self.room == null)
+            {
+                return;
+            }
+
+            orig(self);
+        }
+
+        private void Evilifier_Update(On.ArenaBehaviors.Evilifier.orig_Update orig, ArenaBehaviors.Evilifier self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+            }
+            if (self.room == null)
+            {
+                return;
+            }
+            orig(self);
+        }
+
+        private void ExitManager_Update(On.ArenaBehaviors.ExitManager.orig_Update orig, ArenaBehaviors.ExitManager self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+            }
+            if (self.room == null)
+            {
+                return;
+            }
+            orig(self);
+
+
+
+        }
         private bool ExitManager_ExitsOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
             if (OnlineManager.lobby == null)
@@ -47,34 +284,23 @@ namespace RainMeadow
                 return orig(self);
             }
 
-            orig(self);
-
-            
             var deadCount = 0;
-            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+
+            foreach (var player in self.gameSession.Players)
             {
-                if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                if (player.realizedCreature != null && player.realizedCreature.State.dead)
                 {
-                    if (ac.state.dead
-                    || ((ac.realizedCreature as Player)?.dangerGrasp != null && (ac.realizedCreature as Player)?.dangerGraspTime > 200))
-                    {
-                        deadCount++;
-                    }
+                    deadCount++;
                 }
-
             }
 
-            if (OnlineManager.players.Count == 1)
-            {
-                return false;
-            }
-
-            if (deadCount == OnlineManager.players.Count -1)
+            if (deadCount != 0 && deadCount == self.gameSession.Players.Count - 1)
             {
                 return true;
             }
-            return false;
+
+            return orig(self);
+
         }
 
 
@@ -169,7 +395,7 @@ namespace RainMeadow
 
 
                 abstractCreature.Realize();
-                ShortcutHandler.ShortCutVessel shortCutVessel = new ShortcutHandler.ShortCutVessel(new RWCustom.IntVector2(-1, -1), abstractCreature.realizedCreature, self.game.world.GetAbstractRoom(0), 0);
+                var shortCutVessel = new ShortcutHandler.ShortCutVessel(new RWCustom.IntVector2(-1, -1), abstractCreature.realizedCreature, self.game.world.GetAbstractRoom(0), 0);
                 shortCutVessel.entranceNode = num;
                 shortCutVessel.room = self.game.world.GetAbstractRoom(abstractCreature.Room.name);
                 abstractCreature.pos.room = self.game.world.offScreenDen.index;
