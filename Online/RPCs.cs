@@ -145,7 +145,7 @@ namespace RainMeadow
             {
                 return;
             }
-            var creature = (crit.apo.realizedObject as Creature);
+            var creature = (crit?.apo.realizedObject as Creature);
             var room = roomSess.absroom.world;
             var roomPos = room.GetAbstractRoom(0);
             var shortCutVessel = new ShortcutHandler.ShortCutVessel(pos, creature, roomPos, wait);
