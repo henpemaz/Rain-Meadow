@@ -42,7 +42,6 @@ namespace RainMeadow
 
         internal override void ModifyBodyColor(ref Color originalBodyColor)
         {
-            if (skinData.statsName != null) originalBodyColor = PlayerGraphics.SlugcatColor(skinData.statsName);
             if (skinData.baseColor.HasValue) originalBodyColor = skinData.baseColor.Value;
             originalBodyColor = Color.Lerp(originalBodyColor, tint, tintAmount);
         }

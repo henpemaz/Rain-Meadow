@@ -44,7 +44,7 @@ namespace RainMeadow
             var abstractCreature = new AbstractCreature(game.world, StaticWorld.GetCreatureTemplate(skinData.creatureType), null, location, new EntityID(-1, 0) { altSeed = skinData.randomSeed });
             if (skinData.creatureType == CreatureTemplate.Type.Slugcat)
             {
-                abstractCreature.state = new PlayerState(abstractCreature, 0, skinData.statsName, false);
+                abstractCreature.state = new PlayerState(abstractCreature, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer, false);
                 game.session.AddPlayer(abstractCreature);
             }
             else

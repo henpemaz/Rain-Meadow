@@ -5,6 +5,7 @@ Save system
 	
 Menu todo
 	tint resulting color preview
+		need to sample color of creature and have it in skindata
 
 emotes todo
 
@@ -30,14 +31,17 @@ jumping in and out of region alone re-shuffles collectables and enables being a 
 
 map reveal to be saved
 add home shelter that's revealed on start new critter
+	characterdata
 
 creature todo
 - disable grab/throw
 - any ways to die left?
+	is falldamage patched? hook to die and that's it?
 - can get stuck
 	some rooms will get fixed
 		eventually :tm:
 	climb-only critters have a rough time without wall-jumps hmm
+	will add universal pole-tip jump
 - show creature pipes
 	some rooms are only solvable with them, they aren't well known
 - allow creature to change the creature-pipe they're going to mid-flight
