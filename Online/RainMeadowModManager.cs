@@ -67,23 +67,13 @@ namespace RainMeadow
                     modsToDisable.Add(ModManager.InstalledMods[index]);
                 }
 
-                bool disableRemixAndTriggerReload = modsToDisable.Count == 1 && modsToDisable.Exists(mod => mod.id == "rwremix");
-                bool enableRemixAndTriggerReload = modsToEnable.Count == 1 && modsToEnable.Exists(mod => mod.id == "rwremix");
-
                 ModApplier modApplyer = new(RWCustom.Custom.rainWorld.processManager, mods.ToList(), loadOrder);
 
                 modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
 
-                modApplyer.OnFinish += (ModApplier modApplyer) => 
+                modApplyer.OnFinish += (ModApplier modApplyer) =>
                 {
-                    if (disableRemixAndTriggerReload || enableRemixAndTriggerReload)
-                    {
-                        modApplyer.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
-                    }
-                    else
-                    {
-                        Utils.Restart($"+connect_lobby {MatchmakingManager.instance.GetLobbyID()}"); // currently does not reconnect users to the lobby
-                    }
+                    Utils.Restart($"+connect_lobby {MatchmakingManager.instance.GetLobbyID()}"); 
 
                 };
             }
