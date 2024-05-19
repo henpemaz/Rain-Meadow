@@ -1,15 +1,4 @@
-progression todo
-	
-Save system
-	
-	
-Menu todo
-	tint resulting color preview
-		need to sample color of creature and have it in skindata
 
-emotes todo
-
-hide all on pause
 
 emote input feedback
     release trigger vs release stick
@@ -46,6 +35,8 @@ creature todo
 	some rooms are only solvable with them, they aren't well known
 - allow creature to change the creature-pipe they're going to mid-flight
 - on gate transition, pathing visualizer bugs out
+- need to sample color of creature and have it in skindata
+	- requires final-ish seeds
 
 player grabbing cicada = laggy physics
 	some mechanism for lending/borrowing control over an entity

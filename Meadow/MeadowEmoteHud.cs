@@ -118,6 +118,7 @@ namespace RainMeadow
             gridRect = new Rect(left, bottom, emoteCombinedSize * gridColumns, emoteCombinedSize * gridRows);
             this.gridDisplay = new EmoteGridDisplay(hud.fContainers[1], customization, gridEmotes, gridRect.position);
 
+            // a single sprite would have been better
             var gridButtonDots = new FSprite[6];
             var dotsPos = gridRect.position + new Vector2(-30f, 0);
             var dotsSize = new Vector2(30, 20);
@@ -250,6 +251,14 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
+
+            if(game.pauseMenu != null)
+            {
+                lastRadialPickerActive = false;
+                radialPickerActive = false;
+                dragging = false;
+                return;
+            }
 
             lastRadialSelected = radialSelected;
             lastRadialPickerActive = radialPickerActive;
@@ -460,7 +469,7 @@ namespace RainMeadow
                     FlipPage(0);
                 }
             }
-            if (!mouseDown)
+            if (!mouseDown || game.pauseMenu != null)
             {
                 dragging = false;
                 clickedEmote = null;
@@ -469,28 +478,53 @@ namespace RainMeadow
 
         public override void Draw(float timeStacker)
         {
-            InputUpdate();
+            var gamePaused = game.pauseMenu != null;
+            if (!gamePaused)
+            {
+                InputUpdate();
+            }
             base.Draw(timeStacker);
             
-            gridDisplay.isVisible = gridVisible;
-            gridButtonContainer.alpha = gridVisible ? 0.8f : 0.4f;
-
-            radialDisplayer.isVisible = radialVisible || radialPickerActive;
-            radialButtonContainer.alpha = radialVisible ? 0.8f : 0.4f;
-
-            draggedEmote.isVisible = dragging;
-            draggedTile.isVisible = dragging;
-            if(dragging)
+            if (gamePaused)
             {
-                Vector2 mouseDrawPos =  Vector2.Lerp(this.lastMousePos, this.mousePos, timeStacker);
-                draggedEmote.SetPosition(mouseDrawPos);
-                draggedTile.SetPosition(mouseDrawPos);
-            }
+                gridDisplay.isVisible = false;
+                gridButtonContainer.isVisible = false;
 
-            knobSprite.isVisible = radialPickerActive;
-            Vector2 knobDrawPos = Vector2.Lerp(this.lastKnobPos, this.knobPos, timeStacker);
-            this.knobSprite.x = knobDrawPos.x * (mainWheelRad - 18f) + mainWheelPos.x;
-            this.knobSprite.y = knobDrawPos.y * (mainWheelRad - 18f) + mainWheelPos.y;
+                radialDisplayer.isVisible = false;
+                radialButtonContainer.isVisible = false;
+
+                draggedEmote.isVisible = false;
+                draggedTile.isVisible = false;
+
+                knobSprite.isVisible = false;
+                centerLabel.isVisible = false;
+            }
+            else
+            {
+                gridDisplay.isVisible = gridVisible;
+                gridButtonContainer.isVisible = true;
+                gridButtonContainer.alpha = gridVisible ? 0.8f : 0.4f;
+
+                radialDisplayer.isVisible = radialVisible || radialPickerActive;
+                radialButtonContainer.isVisible = true;
+                radialButtonContainer.alpha = radialVisible ? 0.8f : 0.4f;
+
+                draggedEmote.isVisible = dragging;
+                draggedTile.isVisible = dragging;
+                if (dragging)
+                {
+                    Vector2 mouseDrawPos = Vector2.Lerp(this.lastMousePos, this.mousePos, timeStacker);
+                    draggedEmote.SetPosition(mouseDrawPos);
+                    draggedTile.SetPosition(mouseDrawPos);
+                }
+
+                knobSprite.isVisible = radialPickerActive;
+                Vector2 knobDrawPos = Vector2.Lerp(this.lastKnobPos, this.knobPos, timeStacker);
+                this.knobSprite.x = knobDrawPos.x * (mainWheelRad - 18f) + mainWheelPos.x;
+                this.knobSprite.y = knobDrawPos.y * (mainWheelRad - 18f) + mainWheelPos.y;
+
+                centerLabel.isVisible = true;
+            }
         }
 
         public override void ClearSprites()
@@ -506,6 +540,7 @@ namespace RainMeadow
             knobSprite.RemoveFromContainer();
             draggedEmote.RemoveFromContainer();
             draggedTile.RemoveFromContainer();
+            centerLabel.RemoveFromContainer();
         }
 
         private void InputUpdate()
