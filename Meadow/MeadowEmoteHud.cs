@@ -24,6 +24,8 @@ namespace RainMeadow
 
         // grid
         private bool gridVisible;
+        private int gridNeeded;
+        private float gridFade;
         private EmoteGridDisplay gridDisplay;
         private Emote[,] gridEmotes;
         private int gridRows;
@@ -64,6 +66,7 @@ namespace RainMeadow
         private bool dragging;
         private FLabel pageLabel;
         private Player.InputPackage package;
+        private float gridLastFade;
 
         public MeadowEmoteHud(HUD.HUD hud, RoomCamera camera, Creature owner) : base(hud)
         {
@@ -139,6 +142,9 @@ namespace RainMeadow
             }
             hud.fContainers[1].AddChild(gridButtonContainer);
             gridVisible = true;
+
+            gridNeeded = 80;
+            gridFade = 1f;
 
             RainMeadow.Debug($"grid: done");
 
@@ -272,6 +278,15 @@ namespace RainMeadow
 
             lastPackage = package;
             package = RWInput.PlayerInput(0);
+
+            gridLastFade = gridFade;
+
+            if(mousePos != lastMousePos || dragging || this.gridHover.x != -1)
+            {
+                gridNeeded = 80;
+            }
+            gridNeeded = Mathf.Max(gridNeeded - 1, 0);
+            gridFade = Custom.LerpAndTick(gridFade, (gridNeeded > 0) ? 1f : 0f, 0.02f, 0.02f);
 
             // grid
             if (mouseDown && !lastMouseDown && gridButtonRect.Contains(mousePos))
@@ -509,7 +524,9 @@ namespace RainMeadow
             }
             else
             {
+                var gridAlpha = Mathf.Lerp(gridFade, gridLastFade, timeStacker);
                 gridDisplay.isVisible = gridVisible;
+                gridDisplay.alpha = gridAlpha;
                 gridButtonContainer.isVisible = true;
                 gridButtonContainer.alpha = gridVisible ? 0.8f : 0.4f;
 

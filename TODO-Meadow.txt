@@ -1,17 +1,5 @@
 
 
-emote input feedback
-    cancel label when active / done
-    ui reminder of pages when active / done
-    no page switching when inactive / done
-    show hotbar as special
-    auto hide grid when mouse inactive
-
-    could go to lef-shoulder to open (holding will feel natural)
-        then A/B to switch layers just like map / done
-        and X to confirm as an aditional thing / nah
-		/ halfway there
-
 arrow on self on demand arena-style
 
 jumping in and out of region alone re-shuffles collectables and enables being a lazy dum
