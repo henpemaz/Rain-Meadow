@@ -1,18 +1,16 @@
 
 
 emote input feedback
-    release trigger vs release stick
-    two finger on controller back is suboptimal
-    cancel label when active
-    ui reminder of pages when active
-    no page switching when inactive
+    cancel label when active / done
+    ui reminder of pages when active / done
+    no page switching when inactive / done
     show hotbar as special
-    show hotbar as linear on keyboard
     auto hide grid when mouse inactive
 
     could go to lef-shoulder to open (holding will feel natural)
-        then A/B to switch layers just like map
-        and X to confirm as an aditional thing
+        then A/B to switch layers just like map / done
+        and X to confirm as an aditional thing / nah
+		/ halfway there
 
 arrow on self on demand arena-style
 
