@@ -114,6 +114,9 @@
     <Reference Update="lib\PUBLIC-Assembly-CSharp.dll">
       <Private>False</Private>
     </Reference>
+    <Reference Update="lib\Rewired.Runtime.dll">
+      <Private>False</Private>
+    </Reference>
     <Reference Update="lib\Rewired_Core.dll">
       <Private>False</Private>
     </Reference>

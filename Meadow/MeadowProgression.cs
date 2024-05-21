@@ -41,13 +41,13 @@ namespace RainMeadow
 
         public class CharacterData
         {
-            public string displayName;
-            public string emotePrefix;
-            public string emoteAtlas;
-            public Color emoteColor;
+            public string displayName; // in select screen
+            public string emotePrefix; // for emote sprites
+            public string emoteAtlas; // atlas name
+            public Color emoteColor; // emote tile color (pre-tint)
             public List<Skin> skins = new();
-            public int[] selectSpriteIndexes;
-            public WorldCoordinate startingCoords;
+            public int[] selectSpriteIndexes; // sprites to darken on character locked in select screen
+            public WorldCoordinate startingCoords; // first spawn pos
         }
 
         [TypeConverter(typeof(ExtEnumTypeConverter<Character>))]
@@ -135,9 +135,8 @@ namespace RainMeadow
             public Character character;
             public string displayName;
             public CreatureTemplate.Type creatureType;
-            public SlugcatStats.Name statsName; // curently only used for color
             public int randomSeed;
-            public Color? baseColor;
+            public Color? baseColor; // todo fill them all for previews
             public Color? eyeColor;
             public Color? effectColor;
             public float tintFactor = 0.3f;
@@ -163,28 +162,27 @@ namespace RainMeadow
                 character = Character.Slugcat,
                 displayName = "Survivor",
                 creatureType = CreatureTemplate.Type.Slugcat,
-                statsName = SlugcatStats.Name.White,
+                baseColor = PlayerGraphics.SlugcatColor(SlugcatStats.Name.White),
             });
             public static Skin Slugcat_Monk = new("Slugcat_Monk", true, new()
             {
                 character = Character.Slugcat,
                 displayName = "Monk",
                 creatureType = CreatureTemplate.Type.Slugcat,
-                statsName = SlugcatStats.Name.Yellow,
+                baseColor = PlayerGraphics.SlugcatColor(SlugcatStats.Name.Yellow),
             });
             public static Skin Slugcat_Hunter = new("Slugcat_Hunter", true, new()
             {
                 character = Character.Slugcat,
                 displayName = "Hunter",
                 creatureType = CreatureTemplate.Type.Slugcat,
-                statsName = SlugcatStats.Name.Red,
+                baseColor = PlayerGraphics.SlugcatColor(SlugcatStats.Name.Red),
             });
             public static Skin Slugcat_Fluffy = new("Slugcat_Fluffy", true, new()
             {
                 character = Character.Slugcat,
                 displayName = "Fluffy",
                 creatureType = CreatureTemplate.Type.Slugcat,
-                statsName = SlugcatStats.Name.White,
                 baseColor = new Color(111, 216, 255, 255) / 255f
             });
 

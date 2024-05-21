@@ -1,89 +1,25 @@
-progression todo
-	implement emote progression
 
-Save system
-	emote hotbar config
-	
-Menu todo
-	tint resulting color preview
-	back out to lobby when quit from game
+jumping in and out of region alone re-shuffles collectables and enables being a lazy dum
 
-emotes todo
-"wish I could "stop" an emote block and start a new one, instead of having to wait out the fade"
-	maybe pressing backspace? should it clear or not clear the current group? /ok
-	what about controller?
-mapping going to 0 - = is a bit weird
-	- = don't work on most euro layouts /can'tfix
-		an alternative would be to skip unity and go straight to user32 key events that are virtualkey based
-		here's hoping that the next update has better unity version or even usephisicalkeys who knows
-		try getting presses through rewired-keyboard? maybe it's good there?
-	but but but 12 emotes...
-	rethink the whole thing damn it
-radial menu
-	/ should be working on xbox
-	todo sort out mappings for dualshock (ps 3 4 5) and switchpro
-	need to swap between the two inputs as needed not have the two / done
-	maybe more than 8 per page? this thing has a lot of pages...
-		12 per page would be interesting/ideal, but no keyboard support...
-rethink kb input
-	one configurable hotbar with 10 the rest on mouse?
-	really really wish I could support "fully keyboard input"
-		maybe the radial?
-	study Meadow update, they've cooked it enough
-
-So the plan is
-	there's a list of emotes with all available ones as a grid, clickable
-	the list can be shown/hidden with a shortcut or a button on screen
-
-	there's a hotbar that is customizable, comes pre-filled with default things
-		default is your 3 initial emotions, plus important/generic symbols
-		customize the hotbar by hovering an emote and pressing the new keybind
-		or by click-and-drag?
-	the hotbar can be shown/hidden with a shortcut or a button on screen
-	keys 1~0 bound to the hotbar (1~8?) (1~12?)
-	the toggle hide shortcut respects whether you wanted only hotbar or only emotes
-
-	there's a radial menu, bound to a new keybind
-		on keyboard that's C
-		on controller that's left-shoulder
-	this radial menu has 8 (12?) sides
-	holding the keybind brings the menu up, releasing it confirms your selection
-		holding a direction for an option, neutral to cancel
-		since it's using the same input as "point", lock character from pointing until direction released
-	the radial menu's main page reflects the hotbar
-	2 new keybinds swap pages back and forth
-		on keyboard that's mouse left/right click or scrollwheel (for mouse people), OR right-shift/right-ctrl (for arrow people)
-			what about touch-based? steamdeck etc, left/right click collides with click-and-drag for selection
-				future me problem I guess
-		on controller that's triggers
-
-	12 vs 8 slots on hotbar/pages
-	8 is very kb-friendly but a lot of pages, and page boundaries don't line up with categories? kb-frend for directional input
-	12 is less pages, lines up with categories, but binding -= doesn't work out-of-the-box on several layouts, and diagonals on kb become complex (needs to remember last non-diag, harder to flicker on controller)
-
-	
-
-teleporting
-	to outskirts
-	to hub of [current region]
-	to home
-		home is initially set to thematic region
-		creatures otherwise spawn in outskirts
+map reveal to be saved
+add home shelter that's revealed on start new critter
+	characterdata
 
 creature todo
-- shelter activation? does nothing atm anyways
-	in meadow could save your "home"
-	could allow passage to known shelters
-- other story-mode things?
+- disable grab/throw
 - any ways to die left?
+	is falldamage patched? hook to die and that's it?
 - can get stuck
 	some rooms will get fixed
 		eventually :tm:
 	climb-only critters have a rough time without wall-jumps hmm
+	will add universal pole-tip jump
 - show creature pipes
 	some rooms are only solvable with them, they aren't well known
 - allow creature to change the creature-pipe they're going to mid-flight
 - on gate transition, pathing visualizer bugs out
+- need to sample color of creature and have it in skindata
+	- requires final-ish seeds
 
 player grabbing cicada = laggy physics
 	some mechanism for lending/borrowing control over an entity

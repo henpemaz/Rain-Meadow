@@ -11,6 +11,7 @@ namespace RainMeadow
         // common
         private RoomCamera camera;
         private RainWorldGame game;
+        private CreatureController creatureController;
         private Creature owner;
         private MeadowAvatarCustomization customization;
 
@@ -24,6 +25,8 @@ namespace RainMeadow
 
         // grid
         private bool gridVisible;
+        private int gridNeeded;
+        private float gridFade;
         private EmoteGridDisplay gridDisplay;
         private Emote[,] gridEmotes;
         private int gridRows;
@@ -60,16 +63,18 @@ namespace RainMeadow
         private FSprite draggedTile;
         private bool mouseDown;
         private Vector2 mousePos;
+        private Player.InputPackage lastPackage;
         private bool dragging;
-
-        // drag n drop
-        // todo
+        private FLabel pageLabel;
+        private Player.InputPackage package;
+        private float gridLastFade;
 
         public MeadowEmoteHud(HUD.HUD hud, RoomCamera camera, Creature owner) : base(hud)
         {
             this.camera = camera;
             this.owner = owner;
             this.game = camera.game;
+            this.creatureController = CreatureController.creatureControllers.GetValue(owner, (c) => throw new KeyNotFoundException());
 
             this.displayer = EmoteDisplayer.map.GetValue(owner, (c) => throw new KeyNotFoundException());
             this.customization = (MeadowAvatarCustomization)RainMeadow.creatureCustomizations.GetValue(owner, (c) => throw new KeyNotFoundException());
@@ -118,6 +123,7 @@ namespace RainMeadow
             gridRect = new Rect(left, bottom, emoteCombinedSize * gridColumns, emoteCombinedSize * gridRows);
             this.gridDisplay = new EmoteGridDisplay(hud.fContainers[1], customization, gridEmotes, gridRect.position);
 
+            // a single sprite would have been better
             var gridButtonDots = new FSprite[6];
             var dotsPos = gridRect.position + new Vector2(-30f, 0);
             var dotsSize = new Vector2(30, 20);
@@ -138,6 +144,9 @@ namespace RainMeadow
             }
             hud.fContainers[1].AddChild(gridButtonContainer);
             gridVisible = true;
+
+            gridNeeded = 80;
+            gridFade = 1f;
 
             RainMeadow.Debug($"grid: done");
 
@@ -198,11 +207,6 @@ namespace RainMeadow
             mainWheelPos = radialRootPos + new Vector2(-mainWheelRad, mainWheelRad);
 
             radialDisplayer = new EmoteRadialDisplayer(hud.fContainers[1], customization, radialEmotes[0], mainWheelPos, radialEmoteSize);
-            //this.pageDisplayers = new[] {
-            //    new EmoteRadialDisplayer(hud.fContainers[1], customization, radialEmotes[0], mainWheelPos, radialEmoteSize),
-            //    new EmoteRadialDisplayer(hud.fContainers[1], customization, radialEmotes[radialPagesCount-1], mainWheelPos + Custom.RotateAroundOrigo(Vector2.right, 45) * (mainWheelRad + 40), secondaryEmoteSize),
-            //    new EmoteRadialDisplayer(hud.fContainers[1], customization, radialEmotes[1], mainWheelPos + Custom.RotateAroundOrigo(Vector2.left, -45) * (mainWheelRad + 40), secondaryEmoteSize)
-            //};
 
             var radialDots = new FSprite[8];
             Vector2 radialButtonPos = radialRootPos + new Vector2(-1.88f * mainWheelRad, 4f);
@@ -231,6 +235,10 @@ namespace RainMeadow
             centerLabel.SetPosition(mainWheelPos);
             hud.fContainers[1].AddChild(centerLabel);
 
+            this.pageLabel = new FLabel(Custom.GetFont(), "");
+            pageLabel.SetPosition(mainWheelPos + new Vector2(mainWheelRad, mainWheelRad));
+            hud.fContainers[1].AddChild(pageLabel);
+
             radialVisible = true;
 
             // drag n drop
@@ -251,6 +259,14 @@ namespace RainMeadow
         {
             base.Update();
 
+            if(game.pauseMenu != null)
+            {
+                lastRadialPickerActive = false;
+                radialPickerActive = false;
+                dragging = false;
+                return;
+            }
+
             lastRadialSelected = radialSelected;
             lastRadialPickerActive = radialPickerActive;
 
@@ -261,6 +277,18 @@ namespace RainMeadow
 
             mouseDown = Input.GetMouseButton(0);
             mousePos = (Vector2)Futile.mousePosition;
+
+            lastPackage = package;
+            package = RWInput.PlayerInput(0);
+
+            gridLastFade = gridFade;
+
+            if(mousePos != lastMousePos || dragging || this.gridHover.x != -1)
+            {
+                gridNeeded = 80;
+            }
+            gridNeeded = Mathf.Max(gridNeeded - 1, 0);
+            gridFade = Custom.LerpAndTick(gridFade, (gridNeeded > 0) ? 1f : 0f, 0.02f, 0.02f);
 
             // grid
             if (mouseDown && !lastMouseDown && gridButtonRect.Contains(mousePos))
@@ -355,8 +383,9 @@ namespace RainMeadow
             var controller = Custom.rainWorld.options.controls[0].GetActiveController();
             if (controller is Rewired.Joystick joystick)
             {
-                this.radialPickerActive = joystick.GetAxis(4) > 0.5f; // ideally should be button shouldnt it
+                this.radialPickerActive = joystick.GetButton(4);
                 // maybe unify this with creaturecontroller getspecialinput
+                // but creature doesn't update while in shortcuts
                 var analogDir = new Vector2(joystick.GetAxis(2), joystick.GetAxis(3));
                 if (radialPickerActive)
                 {
@@ -366,7 +395,7 @@ namespace RainMeadow
             }
             else if (controller is Rewired.Keyboard keyboard)
             {
-                this.radialPickerActive = keyboard.GetKey(KeyCode.A);
+                this.radialPickerActive = keyboard.GetKey(KeyCode.C);
                 if (radialPickerActive)
                 {
                     if (!lastRadialPickerActive)
@@ -382,7 +411,7 @@ namespace RainMeadow
                     }
                     else
                     {
-                        var package = RWInput.PlayerInput(0);
+                        creatureController.standStill = true;
                         this.knobVel -= this.knobPos / 6f;
                         this.knobVel.x += (float)package.x * 0.4f;
                         this.knobVel.y += (float)package.y * 0.4f;
@@ -396,6 +425,7 @@ namespace RainMeadow
             {
                 if (!lastRadialPickerActive)
                 {
+                    centerLabel.text = "CANCEL";
                     FlipPage(-currentPage); // back to zero
                     knobPos = Vector2.zero;
                     knobVel = Vector2.zero;
@@ -422,24 +452,33 @@ namespace RainMeadow
                 {
                     radialDisplayer.SetSelected(radialSelected);
                 }
+
+                if (package.jmp && !lastPackage.jmp) FlipPage(-1);
+                if (package.thrw && !lastPackage.thrw) FlipPage(1);
+
+                pageLabel.text = $"{currentPage + 1}/{radialPagesCount}";
             }
-            // let go to confirm
-            if (!radialPickerActive && lastRadialPickerActive)
+            else
             {
-                if (radialSelected != -1)
+                pageLabel.text = "";
+                // let go to confirm
+                if (lastRadialPickerActive)
                 {
-                    var selectedEmote = radialEmotes[currentPage][radialSelected];
-                    if (selectedEmote != null)
+                    if (radialSelected != -1)
                     {
-                        EmotePressed(selectedEmote);
+                        var selectedEmote = radialEmotes[currentPage][radialSelected];
+                        if (selectedEmote != null)
+                        {
+                            EmotePressed(selectedEmote);
+                        }
+                        radialSelected = -1;
                     }
-                    radialSelected = -1;
+                    radialDisplayer.ClearSelection();
+                    FlipPage(-currentPage); // back to zero
+                    knobPos = Vector2.zero;
+                    knobVel = Vector2.zero;
+                    lastKnobPos = Vector2.zero;
                 }
-                radialDisplayer.ClearSelection();
-                FlipPage(-currentPage); // back to zero
-                knobPos = Vector2.zero;
-                knobVel = Vector2.zero;
-                lastKnobPos = Vector2.zero;
             }
 
             // drag n drop
@@ -460,7 +499,7 @@ namespace RainMeadow
                     FlipPage(0);
                 }
             }
-            if (!mouseDown)
+            if (!mouseDown || game.pauseMenu != null)
             {
                 dragging = false;
                 clickedEmote = null;
@@ -469,28 +508,51 @@ namespace RainMeadow
 
         public override void Draw(float timeStacker)
         {
-            InputUpdate();
+            var gamePaused = game.pauseMenu != null;
             base.Draw(timeStacker);
             
-            gridDisplay.isVisible = gridVisible;
-            gridButtonContainer.alpha = gridVisible ? 0.8f : 0.4f;
-
-            radialDisplayer.isVisible = radialVisible || radialPickerActive;
-            radialButtonContainer.alpha = radialVisible ? 0.8f : 0.4f;
-
-            draggedEmote.isVisible = dragging;
-            draggedTile.isVisible = dragging;
-            if(dragging)
+            if (gamePaused)
             {
-                Vector2 mouseDrawPos =  Vector2.Lerp(this.lastMousePos, this.mousePos, timeStacker);
-                draggedEmote.SetPosition(mouseDrawPos);
-                draggedTile.SetPosition(mouseDrawPos);
-            }
+                gridDisplay.isVisible = false;
+                gridButtonContainer.isVisible = false;
 
-            knobSprite.isVisible = radialPickerActive;
-            Vector2 knobDrawPos = Vector2.Lerp(this.lastKnobPos, this.knobPos, timeStacker);
-            this.knobSprite.x = knobDrawPos.x * (mainWheelRad - 18f) + mainWheelPos.x;
-            this.knobSprite.y = knobDrawPos.y * (mainWheelRad - 18f) + mainWheelPos.y;
+                radialDisplayer.isVisible = false;
+                radialButtonContainer.isVisible = false;
+
+                draggedEmote.isVisible = false;
+                draggedTile.isVisible = false;
+
+                knobSprite.isVisible = false;
+                centerLabel.isVisible = false;
+            }
+            else
+            {
+                var gridAlpha = Mathf.Lerp(gridFade, gridLastFade, timeStacker);
+                gridDisplay.alpha = gridAlpha;
+                gridDisplay.isVisible = gridVisible;
+                gridButtonContainer.isVisible = true;
+                gridButtonContainer.alpha = gridVisible ? 0.8f : 0.4f;
+
+                radialDisplayer.isVisible = radialVisible || radialPickerActive;
+                radialButtonContainer.isVisible = true;
+                radialButtonContainer.alpha = radialVisible ? 0.8f : 0.4f;
+
+                draggedEmote.isVisible = dragging;
+                draggedTile.isVisible = dragging;
+                if (dragging)
+                {
+                    Vector2 mouseDrawPos = Vector2.Lerp(this.lastMousePos, this.mousePos, timeStacker);
+                    draggedEmote.SetPosition(mouseDrawPos);
+                    draggedTile.SetPosition(mouseDrawPos);
+                }
+
+                knobSprite.isVisible = radialPickerActive;
+                Vector2 knobDrawPos = Vector2.Lerp(this.lastKnobPos, this.knobPos, timeStacker);
+                this.knobSprite.x = knobDrawPos.x * (mainWheelRad - 18f) + mainWheelPos.x;
+                this.knobSprite.y = knobDrawPos.y * (mainWheelRad - 18f) + mainWheelPos.y;
+
+                centerLabel.isVisible = true;
+            }
         }
 
         public override void ClearSprites()
@@ -506,33 +568,13 @@ namespace RainMeadow
             knobSprite.RemoveFromContainer();
             draggedEmote.RemoveFromContainer();
             draggedTile.RemoveFromContainer();
-        }
-
-        private void InputUpdate()
-        {
-            if (Input.GetKeyDown(KeyCode.Backspace))
-            {
-                ClearEmotes();
-            }
-            // need to be in draw for easy keydown events
-            var controller = Custom.rainWorld.options.controls[0].GetActiveController();
-            if (controller is Rewired.Joystick joystick)
-            {
-                if (joystick.GetButtonDown(5)) FlipPage(1);
-                if (joystick.GetButtonDown(4)) FlipPage(-1);
-            }
-            else if (controller is Rewired.Keyboard keyboard)
-            {
-                if (keyboard.GetKeyDown(KeyCode.Tab)) FlipPage(keyboard.GetModifierKey(Rewired.ModifierKey.Shift) ? -1 : 1);
-            }
+            centerLabel.RemoveFromContainer();
         }
 
         private void FlipPage(int v)
         {
             currentPage = (currentPage + radialPagesCount + v) % radialPagesCount;
             radialDisplayer.SetEmotes(radialEmotes[currentPage], customization);
-            //pageDisplayers[1].SetEmotes(radialEmotes[(currentPage + radialPagesCount - 1) % radialPagesCount], customization);
-            //pageDisplayers[2].SetEmotes(radialEmotes[(currentPage + 1) % radialPagesCount], customization);
         }
 
         public void EmotePressed(Emote emoteType)

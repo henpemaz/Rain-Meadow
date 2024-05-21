@@ -34,6 +34,7 @@ namespace RainMeadow
             symbolBgColor = Color.white;
             emoteColor = Color.white;
             var v = RWCustom.Custom.RGB2HSL(Color.Lerp(Color.white, this.tint, this.tintAmount));
+            // there used to be some hsl maths here
             symbolColor = new HSLColor(v[0], v[1], v[2]).rgb;
         }
 
@@ -42,7 +43,6 @@ namespace RainMeadow
 
         internal override void ModifyBodyColor(ref Color originalBodyColor)
         {
-            if (skinData.statsName != null) originalBodyColor = PlayerGraphics.SlugcatColor(skinData.statsName);
             if (skinData.baseColor.HasValue) originalBodyColor = skinData.baseColor.Value;
             originalBodyColor = Color.Lerp(originalBodyColor, tint, tintAmount);
         }

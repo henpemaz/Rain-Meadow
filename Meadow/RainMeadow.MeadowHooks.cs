@@ -270,6 +270,7 @@ namespace RainMeadow
                     self.hud.AddPart(new HUD.Map(self.hud, new HUD.Map.MapData(self.room.world, self.room.game.rainWorld))); // game assumes this too :/
                     self.hud.AddPart(new MeadowProgressionHud(self.hud));
                     self.hud.AddPart(new MeadowEmoteHud(self.hud, self, owner));
+                    self.hud.AddPart(new MeadowHud(self.hud, self, owner));
                 }
             }
             orig(self);
