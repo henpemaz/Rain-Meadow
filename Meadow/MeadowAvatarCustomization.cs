@@ -34,6 +34,7 @@ namespace RainMeadow
             symbolBgColor = Color.white;
             emoteColor = Color.white;
             var v = RWCustom.Custom.RGB2HSL(Color.Lerp(Color.white, this.tint, this.tintAmount));
+            // there used to be some hsl maths here
             symbolColor = new HSLColor(v[0], v[1], v[2]).rgb;
         }
 

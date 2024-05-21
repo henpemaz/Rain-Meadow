@@ -1,7 +1,4 @@
 
-
-arrow on self on demand arena-style
-
 jumping in and out of region alone re-shuffles collectables and enables being a lazy dum
 
 map reveal to be saved

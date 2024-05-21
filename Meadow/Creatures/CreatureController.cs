@@ -138,7 +138,10 @@ namespace RainMeadow
         public void FoodCountDownDone() { }
         // IOwnAHUD
         public static HUD.HUD.OwnerType controlledCreatureHudOwner = new("MeadowControlledCreature", true);
+
         public bool lockInPlace;
+        public bool standStill;
+
         // IOwnAHUD
         public HUD.HUD.OwnerType GetOwnerType() => controlledCreatureHudOwner;
 
@@ -184,7 +187,7 @@ namespace RainMeadow
             }
 
             rawInput = this.input[0];
-            if ((this.standStillOnMapButton && this.input[0].mp) || this.sleepCounter != 0)
+            if (this.standStill || (this.standStillOnMapButton && this.input[0].mp) || this.sleepCounter != 0)
             {
                 this.input[0].x = 0;
                 this.input[0].y = 0;
@@ -832,6 +835,7 @@ namespace RainMeadow
             }
 
             lockInPlace = false;
+            standStill = false;
         }
 
 

@@ -11,6 +11,7 @@ namespace RainMeadow
         // common
         private RoomCamera camera;
         private RainWorldGame game;
+        private CreatureController creatureController;
         private Creature owner;
         private MeadowAvatarCustomization customization;
 
@@ -73,6 +74,7 @@ namespace RainMeadow
             this.camera = camera;
             this.owner = owner;
             this.game = camera.game;
+            this.creatureController = CreatureController.creatureControllers.GetValue(owner, (c) => throw new KeyNotFoundException());
 
             this.displayer = EmoteDisplayer.map.GetValue(owner, (c) => throw new KeyNotFoundException());
             this.customization = (MeadowAvatarCustomization)RainMeadow.creatureCustomizations.GetValue(owner, (c) => throw new KeyNotFoundException());
@@ -409,6 +411,7 @@ namespace RainMeadow
                     }
                     else
                     {
+                        creatureController.standStill = true;
                         this.knobVel -= this.knobPos / 6f;
                         this.knobVel.x += (float)package.x * 0.4f;
                         this.knobVel.y += (float)package.y * 0.4f;
@@ -525,8 +528,8 @@ namespace RainMeadow
             else
             {
                 var gridAlpha = Mathf.Lerp(gridFade, gridLastFade, timeStacker);
-                gridDisplay.isVisible = gridVisible;
                 gridDisplay.alpha = gridAlpha;
+                gridDisplay.isVisible = gridVisible;
                 gridButtonContainer.isVisible = true;
                 gridButtonContainer.alpha = gridVisible ? 0.8f : 0.4f;
 
