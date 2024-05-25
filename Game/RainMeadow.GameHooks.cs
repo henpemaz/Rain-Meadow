@@ -206,6 +206,7 @@ namespace RainMeadow
                 {
                     MeadowProgression.progressionData.currentCharacterProgress.saveLocation = mgm.avatar.apo.pos;
                     MeadowProgression.SaveProgression();
+                    self.rainWorld.progression.SaveToDisk(false, true, false); // save maps
                 }
 
                 if (WorldSession.map.TryGetValue(self.world, out var ws))
