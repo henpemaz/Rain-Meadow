@@ -77,11 +77,6 @@ namespace RainMeadow
         public override bool OnPole => HasFooting && !OnGround && GetTile(0).AnyBeam;
         public override bool OnCorridor => eggbug.currentlyClimbingCorridor;
 
-        public override bool GrabImpl(PhysicalObject pickUpCandidate)
-        {
-            return false;
-        }
-
         protected override void GripPole(Room.Tile tile0)
         {
             

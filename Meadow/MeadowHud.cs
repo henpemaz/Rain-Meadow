@@ -27,7 +27,7 @@ namespace RainMeadow
 
         public void UpdatePlayers()
         {
-            var avatarSettings = OnlineManager.lobby.clientSettings.Values.OfType<MeadowAvatarSettings>();
+            var avatarSettings = OnlineManager.lobby.clientSettings.Values.OfType<MeadowAvatarSettings>().Where(mas=>mas.inGame);
             var currentSettings = indicators.Select(i => i.avatarSettings);
             avatarSettings.Except(currentSettings).Do(PlayerAdded);
             currentSettings.Except(avatarSettings).Do(PlayerRemoved);

@@ -126,15 +126,6 @@ namespace RainMeadow
 
         public Scavenger scavenger;
 
-        public override bool GrabImpl(PhysicalObject pickUpCandidate)
-        {
-            var chunk = pickUpCandidate.bodyChunks[0];
-
-            // TODO
-
-            return false;
-        }
-
         private static void ScavengerGraphics_ctor(On.ScavengerGraphics.orig_ctor orig, ScavengerGraphics self, PhysicalObject ow)
         {
             orig(self, ow);

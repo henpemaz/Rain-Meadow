@@ -67,7 +67,7 @@ namespace RainMeadow
 
             RainMeadow.Debug(this + " added!");
 
-            if (template.AI && creature.abstractCreature.world.GetAbstractRoom(creature.abstractCreature.pos) != null)
+            if (oc.isMine && template.AI && creature.abstractCreature.world.GetAbstractRoom(creature.abstractCreature.pos) != null)
             {
                 //creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
                 debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);
@@ -492,6 +492,8 @@ namespace RainMeadow
         }
 
         #region grabcode
+        // Disabled for now
+        /*
         public virtual PhysicalObject PickupCandidate(float favorSpears)
         {
             PhysicalObject result = null;
@@ -721,6 +723,7 @@ namespace RainMeadow
         }
 
         public abstract bool GrabImpl(PhysicalObject pickUpCandidate);
+        */
         #endregion
 
         public virtual WorldCoordinate CurrentPathfindingPosition

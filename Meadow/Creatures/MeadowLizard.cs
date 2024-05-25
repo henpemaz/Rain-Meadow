@@ -226,6 +226,7 @@ namespace RainMeadow
             }
         }
 
+        /*
         public override bool GrabImpl(PhysicalObject pickUpCandidate)
         {
             var chunk = pickUpCandidate.bodyChunks[0];
@@ -255,6 +256,7 @@ namespace RainMeadow
             creature.room.PlaySound(SoundID.Lizard_Jaws_Shut_Miss_Creature, creature.mainBodyChunk);
             return false;
         }
+        */
 
         protected override void JumpImpl()
         {

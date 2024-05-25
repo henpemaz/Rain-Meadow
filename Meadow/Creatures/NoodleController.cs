@@ -199,12 +199,6 @@ namespace RainMeadow
         {
         }
 
-        public override bool GrabImpl(PhysicalObject pickUpCandidate)
-        {
-            // todo
-            return false;
-        }
-
         protected override void LookImpl(Vector2 pos)
         {
             noodle.lookDir = (pos - creature.DangerPos).normalized;

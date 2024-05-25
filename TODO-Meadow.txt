@@ -1,10 +1,4 @@
 
-jumping in and out of region alone re-shuffles collectables and enables being a lazy dum
-
-map reveal to be saved
-add home shelter that's revealed on start new critter
-	characterdata
-
 creature todo
 - disable grab/throw
 - any ways to die left?

@@ -57,12 +57,6 @@ namespace RainMeadow
 
         public override bool OnCorridor => mouse.currentlyClimbingCorridor;
 
-        public override bool GrabImpl(PhysicalObject pickUpCandidate)
-        {
-            //throw new NotImplementedException();
-            return false;
-        }
-
         protected override void ClearMovementOverride()
         {
             //throw new NotImplementedException();
