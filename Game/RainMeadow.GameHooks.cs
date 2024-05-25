@@ -14,6 +14,7 @@ namespace RainMeadow
         private void GameHooks()
         {
             On.Futile.OnApplicationQuit += Futile_OnApplicationQuit;
+            On.RainWorldGame.ctor += RainWorldGame_ctor;
             On.StoryGameSession.ctor += StoryGameSession_ctor;
             On.RainWorldGame.RawUpdate += RainWorldGame_RawUpdate;
             On.RainWorldGame.ShutDownProcess += RainWorldGame_ShutDownProcess;
@@ -39,6 +40,15 @@ namespace RainMeadow
 
             // Arena specific
             On.GameSession.AddPlayer += GameSession_AddPlayer;
+        }
+
+        private void RainWorldGame_ctor(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                OnlineManager.lobby.gameMode.clientSettings.inGame = true;
+            }
+            orig(self, manager);
         }
 
         private void World_LoadWorld(On.World.orig_LoadWorld orig, World self, SlugcatStats.Name slugcatNumber, System.Collections.Generic.List<AbstractRoom> abstractRoomsList, int[] swarmRooms, int[] shelters, int[] gates)
@@ -172,7 +182,6 @@ namespace RainMeadow
                 saveStateNumber = OnlineManager.lobby.gameMode.GetStorySessionPlayer(game);
                 if (isStoryMode(out var story))
                 {
-                    story.storyClientSettings.inGame = true;
                     story.storyClientSettings.isDead = false;
                 }
             }
@@ -197,10 +206,7 @@ namespace RainMeadow
                 // some cleanup CAN be done
                 OnlineManager.recentEntities = OnlineManager.recentEntities.Where(kvp => !(kvp.Value is OnlinePhysicalObject)).ToDictionary();
 
-                if (isStoryMode(out var story))
-                {
-                    story.storyClientSettings.inGame = false;
-                }
+                OnlineManager.lobby.gameMode.clientSettings.inGame = false;
 
                 if (OnlineManager.lobby.gameMode is MeadowGameMode mgm)
                 {

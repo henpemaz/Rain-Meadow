@@ -22,7 +22,6 @@ namespace RainMeadow
         public SlugcatStats.Name? playingAs;
         public bool readyForWin;
         public string? myLastDenPos = null;
-        public bool inGame;
         public bool isDead;
 
         public StoryClientSettings(Definition entityDefinition) : base(entityDefinition)
@@ -58,8 +57,6 @@ namespace RainMeadow
             [OnlineField(group = "game")]
             public bool readyForWin;
             [OnlineField(group = "game")]
-            public bool inGame;
-            [OnlineField(group = "game")]
             public bool isDead;
 
             public State() { }
@@ -69,7 +66,6 @@ namespace RainMeadow
                 eyeColor = onlineEntity.eyeColor;
                 playingAs = onlineEntity.playingAs?.value;
                 readyForWin = onlineEntity.readyForWin;
-                inGame = onlineEntity.inGame;
                 isDead = onlineEntity.isDead;
             }
 
@@ -84,7 +80,6 @@ namespace RainMeadow
                     avatarSettings.playingAs = rawEnumBase as SlugcatStats.Name;
                 }
                 avatarSettings.readyForWin = readyForWin;
-                avatarSettings.inGame = inGame;
                 avatarSettings.isDead = isDead;
             }
         }
