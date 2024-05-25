@@ -1,8 +1,5 @@
 
 creature todo
-- disable grab/throw
-- any ways to die left?
-	is falldamage patched? hook to die and that's it?
 - can get stuck
 	some rooms will get fixed
 		eventually :tm:
