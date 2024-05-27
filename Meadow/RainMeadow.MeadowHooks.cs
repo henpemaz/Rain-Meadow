@@ -52,6 +52,29 @@ namespace RainMeadow
 
             On.WormGrass.Worm.ctor += Worm_ctor; // only cosmetic worms
 
+            IL.ScavengerOutpost.ctor += ScavengerOutpost_ctor;
+
+        }
+
+        private void ScavengerOutpost_ctor(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                ILLabel skip = null;
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdarg(2),
+                    i => i.MatchCallOrCallvirt(out _),
+                    i => i.MatchLdfld<Room>("firstTimeRealized"),
+                    i => i.MatchBrfalse(out skip)
+                    );
+                c.EmitDelegate(() => !(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode));
+                c.Emit(OpCodes.Brfalse, skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
         }
 
         private void FastTravelScreen_Singal(On.Menu.FastTravelScreen.orig_Singal orig, Menu.FastTravelScreen self, Menu.MenuObject sender, string message)
