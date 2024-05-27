@@ -56,7 +56,7 @@ namespace RainMeadow
             return false;
         }
 
-        protected readonly float jumpFactor = 1f;
+        protected float jumpFactor = 1f;
         protected abstract void OnJump();
         protected virtual void Jump()
         {
@@ -425,14 +425,21 @@ namespace RainMeadow
                         lockInPlace = true;
                     }
                 }
-                else if (this.superLaunchJump > 0) this.superLaunchJump--;
+                else
+                {
+                    if (this.superLaunchJump > 0) this.superLaunchJump--;
+                    if (this.input[0].jmp && !this.input[1].jmp) // directional jump, will use boost
+                    {
+                        this.wantToJump = 5;
+                    }
+                }
                 if (!this.input[0].jmp && this.input[1].jmp)
                 {
                     if(this.superLaunchJump >= 20)
                     {
                         this.wantToJump = 1;
                     } 
-                    else if (this.superLaunchJump <= 10) // regular jump attempt
+                    else if (this.superLaunchJump > 2 && this.superLaunchJump <= 10) // regular jump attempt, will miss boost because released
                     {
                         this.wantToJump = 5;
                     }

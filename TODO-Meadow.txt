@@ -16,15 +16,17 @@ player grabbing cicada = laggy physics
 	some mechanism for lending/borrowing control over an entity
 	main entity would sim both,
 		side who leased would still sim self attached to main
+	grabbing disabled for now
 
 lizard todo
 - charge
 - fall + diagdown = slide
+- sometimes fails to grab poles when holding up
 - find a good seed for our buddies
 
 scav todo
-- jump from tip of pole
-- won't jump on slopes
+- jump from tip of pole / done
+- won't jump on slopes / check again
 - hands look silly when walking on falsefloor
 - jumping off ledge wack because regains footing too quick?
 	
@@ -35,8 +37,10 @@ squidcicada todo
 button for spin/dance
 
 eggbug
-	update art
+	update art / done
 	pick seeds and names
+	jump impl
+		missing let go of ground
 
 noot
 	make art
@@ -45,6 +49,9 @@ noot
 		make tail float around more?
 
 	scream
+
+lantermouse
+	move n jump
 
 water controls for lizard and scav etc
 	needs to be there, crossing DS etc

@@ -120,11 +120,14 @@ namespace RainMeadow
         {
             scavenger = scav;
             scavenger.abstractCreature.personality.energy = 1f; // no being lazy
+
+            jumpFactor = 1.6f;
         }
 
         private bool forceMoving;
 
         public Scavenger scavenger;
+        private int forceNoFooting;
 
         private static void ScavengerGraphics_ctor(On.ScavengerGraphics.orig_ctor orig, ScavengerGraphics self, PhysicalObject ow)
         {
@@ -157,6 +160,8 @@ namespace RainMeadow
             scavenger.movMode = Scavenger.MovementMode.Run;
             scavenger.footingCounter = 0;
             scavenger.swingPos = null;
+            forceNoFooting = (canGroundJump > 0 && superLaunchJump >= 20) ? 10 : 5;
+            scavenger.movMode = Scavenger.MovementMode.Run;
         }
 
         private static void Scavenger_Act(On.Scavenger.orig_Act orig, Scavenger self)
@@ -200,6 +205,12 @@ namespace RainMeadow
                 }
             }
 
+            if(forceNoFooting > 0)
+            {
+                forceNoFooting--;
+                scavenger.footingCounter = 0;
+            }
+
             if (Input.GetKey(KeyCode.L))
             {
                 RainMeadow.Debug($"current AI destination {scavenger.AI.pathFinder.destination}");
@@ -229,6 +240,10 @@ namespace RainMeadow
         {
             get
             {
+                if (forceNoFooting > 0)
+                {
+                    return false;
+                }
                 if (scavenger.occupyTile != new IntVector2(-1, -1))
                 {
                     return true;
