@@ -67,7 +67,7 @@ namespace RainMeadow
             //throw new NotImplementedException();
         }
 
-        protected override void JumpImpl()
+        protected override void OnJump()
         {
             //throw new NotImplementedException();
         }

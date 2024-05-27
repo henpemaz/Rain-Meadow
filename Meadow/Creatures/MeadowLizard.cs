@@ -3,7 +3,6 @@ using System;
 using RWCustom;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
-using System.Security.Cryptography;
 
 namespace RainMeadow
 {
@@ -258,122 +257,12 @@ namespace RainMeadow
         }
         */
 
-        protected override void JumpImpl()
+        protected override void OnJump()
         {
-            //RainMeadow.Debug(onlineCreature);
-            var cs = creature.bodyChunks;
-            var mainBodyChunk = creature.mainBodyChunk;
-
-            // todo take body factors into factor. blue liz jump feels too stronk
-            if (canGroundJump > 0 && superLaunchJump >= 20)
-            {
-                RainMeadow.Debug("lizard super jump");
-                superLaunchJump = 0;
-                lizard.movementAnimation = null;
-                lizard.inAllowedTerrainCounter = 0;
-                lizard.gripPoint = null;
-                this.jumpBoost = 6f;
-                this.forceBoost = 6;
-                for (int i = 0; i < cs.Length; i++)
-                {
-                    BodyChunk chunk = cs[i];
-                    chunk.vel.x += 8 * flipDirection;
-                    chunk.vel.y += 6;
-                }
-                creature.room.PlaySound(SoundID.Slugcat_Super_Jump, mainBodyChunk, false, 1f, 1f);
-            }
-            else if (canPoleJump > 0)
-            {
-                this.jumpBoost = 0f;
-                if (GetTile(1, 0, 1) == GetTile(0) && // aligned
-                    ((GetTile(0).verticalBeam && !GetTile(0, 0, 1).verticalBeam)
-                    || (GetTile(1).verticalBeam && !GetTile(0).verticalBeam)))
-                {
-                    RainMeadow.Debug("lizard beamtip jump");
-                    lizard.movementAnimation = null;
-                    lizard.inAllowedTerrainCounter = 0;
-                    lizard.gripPoint = null;
-                    this.forceJump = 10;
-                    this.jumpBoost = 8f;
-                    flipDirection = this.input[0].x;
-                    var dir = new Vector2(this.input[0].x, 2f).normalized;
-                    cs[0].vel += 8f * dir;
-                    cs[1].vel += 7f * dir;
-                    cs[2].vel += 7f * dir;
-                    creature.room.PlaySound(SoundID.Slugcat_From_Vertical_Pole_Jump, mainBodyChunk, false, 1f, 1f);
-                    return;
-                }
-                if (this.input[0].x != 0)
-                {
-                    RainMeadow.Debug("lizard pole jump");
-                    lizard.movementAnimation = null;
-                    lizard.inAllowedTerrainCounter = 0;
-                    lizard.gripPoint = null;
-                    this.forceJump = 10;
-                    flipDirection = this.input[0].x;
-                    cs[0].vel.x = 6f * flipDirection;
-                    cs[0].vel.y = 6f;
-                    cs[1].vel.x = 6f * flipDirection;
-                    cs[1].vel.y = 5f;
-                    cs[2].vel.x = 6f * flipDirection;
-                    cs[2].vel.y = 5f;
-                    creature.room.PlaySound(SoundID.Slugcat_From_Vertical_Pole_Jump, mainBodyChunk, false, 1f, 1f);
-                    return;
-                }
-                if (this.input[0].y <= 0)
-                {
-                    RainMeadow.Debug("lizard pole drop");
-                    lizard.movementAnimation = null;
-                    lizard.inAllowedTerrainCounter = 0;
-                    lizard.gripPoint = null;
-                    mainBodyChunk.vel.y = 2f;
-                    if (this.input[0].y > -1)
-                    {
-                        mainBodyChunk.vel.x = 2f * flipDirection;
-                    }
-                    creature.room.PlaySound(SoundID.Slugcat_From_Vertical_Pole_Jump, mainBodyChunk, false, 0.3f, 1f);
-                    return;
-                }// no climb boost
-            }
-            else if (canGroundJump > 0)
-            {
-                RainMeadow.Debug("lizard normal jump");
-                lizard.movementAnimation = null;
-                lizard.inAllowedTerrainCounter = 0;
-                lizard.gripPoint = null;
-                this.jumpBoost = 6;
-                cs[0].vel.y = 4f;
-                cs[1].vel.y = 5f;
-                cs[2].vel.y = 3f;
-                if (input[0].x != 0)
-                {
-                    var d = input[0].x;
-                    cs[0].vel.x += d * 1.2f;
-                    cs[1].vel.x += d * 1.2f;
-                    cs[2].vel.x += d * 1.2f;
-                }
-
-                creature.room.PlaySound(SoundID.Slugcat_Normal_Jump, mainBodyChunk, false, 1f, 1f);
-            }
-            else if (canClimbJump > 0)
-            {
-                RainMeadow.Debug("lizard climb jump");
-                lizard.movementAnimation = null;
-                lizard.inAllowedTerrainCounter = 0;
-                lizard.gripPoint = null;
-                this.jumpBoost = 3f;
-                var jumpdir = (cs[0].pos - cs[1].pos).normalized + inputDir;
-                for (int i = 0; i < cs.Length; i++)
-                {
-                    BodyChunk chunk = cs[i];
-                    chunk.vel += jumpdir;
-                }
-                creature.room.PlaySound(SoundID.Slugcat_Wall_Jump, mainBodyChunk, false, 1f, 1f);
-            }
-            else throw new InvalidProgrammerException("can't jump");
+            lizard.movementAnimation = null;
+            lizard.inAllowedTerrainCounter = 0;
+            lizard.gripPoint = null;
         }
-
-
 
         protected override void LookImpl(Vector2 pos)
         {

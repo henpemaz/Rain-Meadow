@@ -151,101 +151,12 @@ namespace RainMeadow
             }
         }
 
-        protected override void JumpImpl()
+        protected override void OnJump()
         {
-            //RainMeadow.Debug(onlineCreature);
-            var cs = creature.bodyChunks;
-            var mainBodyChunk = creature.mainBodyChunk;
-            var tile = creature.room.aimap.getAItile(mainBodyChunk.pos);
-
-            // todo fake movementconnection
-
-            if (canGroundJump > 0 && superLaunchJump >= 20)
-            {
-                RainMeadow.Debug("scavenger super jump");
-                superLaunchJump = 0;
-                scavenger.animation = null;
-                scavenger.movMode = Scavenger.MovementMode.Run;
-                scavenger.footingCounter = 0;
-                scavenger.swingPos = null;
-                this.jumpBoost = 6f;
-                this.forceBoost = 6;
-                for (int i = 0; i < cs.Length; i++)
-                {
-                    BodyChunk chunk = cs[i];
-                    chunk.vel.x += 8 * flipDirection;
-                    chunk.vel.y += 6;
-                }
-                creature.room.PlaySound(SoundID.Slugcat_Super_Jump, mainBodyChunk, false, 1f, 1f);
-            }
-            else if (canPoleJump > 0)
-            {
-                this.jumpBoost = 0f;
-                if (this.input[0].x != 0)
-                {
-                    RainMeadow.Debug("scavenger pole jump");
-                    scavenger.animation = null;
-                    scavenger.movMode = Scavenger.MovementMode.Run;
-                    scavenger.footingCounter = 0;
-                    scavenger.swingPos = null;
-                    this.forceJump = 10;
-                    flipDirection = this.input[0].x;
-                    cs[0].vel.x = 6f * flipDirection;
-                    cs[0].vel.y = 6f;
-                    cs[1].vel.x = 4f * flipDirection;
-                    cs[1].vel.y = 4.5f;
-                    cs[2].vel.x = 4f * flipDirection;
-                    cs[2].vel.y = 4.5f;
-                    creature.room.PlaySound(SoundID.Slugcat_From_Vertical_Pole_Jump, mainBodyChunk, false, 1f, 1f);
-                    return;
-                }
-                if (this.input[0].y <= 0)
-                {
-                    RainMeadow.Debug("scavenger pole drop");
-                    scavenger.animation = null;
-                    scavenger.movMode = Scavenger.MovementMode.Run;
-                    scavenger.footingCounter = 0;
-                    scavenger.swingPos = null;
-                    mainBodyChunk.vel.y = 2f;
-                    if (this.input[0].y > -1)
-                    {
-                        mainBodyChunk.vel.x = 2f * flipDirection;
-                    }
-                    creature.room.PlaySound(SoundID.Slugcat_From_Vertical_Pole_Jump, mainBodyChunk, false, 0.3f, 1f);
-                    return;
-                }// no climb boost
-            }
-            else if (canClimbJump > 0)
-            {
-                RainMeadow.Debug("scavenger climb jump");
-                scavenger.animation = null;
-                scavenger.movMode = Scavenger.MovementMode.Run;
-                scavenger.footingCounter = 0;
-                scavenger.swingPos = null;
-                this.jumpBoost = 3f;
-                var jumpdir = (cs[0].pos - cs[1].pos).normalized + inputDir;
-                for (int i = 0; i < cs.Length; i++)
-                {
-                    BodyChunk chunk = cs[i];
-                    chunk.vel += jumpdir;
-                }
-                creature.room.PlaySound(SoundID.Slugcat_Wall_Jump, mainBodyChunk, false, 1f, 1f);
-            }
-            else if (canGroundJump > 0)
-            {
-                RainMeadow.Debug("scavenger normal jump");
-                scavenger.animation = null;
-                scavenger.movMode = Scavenger.MovementMode.Run;
-                scavenger.footingCounter = 0;
-                scavenger.swingPos = null;
-                this.jumpBoost = 8;
-                cs[0].vel.y = 5f;
-                cs[1].vel.y = 5f;
-                cs[2].vel.y = 3f;
-
-                creature.room.PlaySound(SoundID.Slugcat_Normal_Jump, mainBodyChunk, false, 1f, 1f);
-            }
-            else throw new InvalidProgrammerException("can't jump");
+            scavenger.animation = null;
+            scavenger.movMode = Scavenger.MovementMode.Run;
+            scavenger.footingCounter = 0;
+            scavenger.swingPos = null;
         }
 
         private static void Scavenger_Act(On.Scavenger.orig_Act orig, Scavenger self)

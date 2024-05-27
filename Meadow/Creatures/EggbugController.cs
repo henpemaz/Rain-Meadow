@@ -82,7 +82,7 @@ namespace RainMeadow
             
         }
 
-        protected override void JumpImpl()
+        protected override void OnJump()
         {
             
         }

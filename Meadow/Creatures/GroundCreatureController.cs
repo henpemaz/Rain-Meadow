@@ -56,7 +56,117 @@ namespace RainMeadow
             return false;
         }
 
-        protected abstract void JumpImpl();
+        protected readonly float jumpFactor = 1f;
+        protected abstract void OnJump();
+        protected virtual void Jump()
+        {
+            var cs = creature.bodyChunks;
+            var cc = cs.Length;
+            var mainBodyChunk = creature.mainBodyChunk;
+
+            // todo take body factors into factor. blue liz jump feels too stronk
+            if (canGroundJump > 0 && superLaunchJump >= 20)
+            {
+                RainMeadow.Debug("super jump");
+                superLaunchJump = 0;
+                OnJump();
+                this.jumpBoost = 6f;
+                this.forceBoost = 6;
+                for (int i = 0; i < cs.Length; i++)
+                {
+                    BodyChunk chunk = cs[i];
+                    chunk.vel.x += 8 * jumpFactor * flipDirection;
+                    chunk.vel.y += 6 * jumpFactor;
+                }
+                creature.room.PlaySound(SoundID.Slugcat_Super_Jump, mainBodyChunk, false, 1f, 1f);
+            }
+            else if (canPoleJump > 0)
+            {
+                this.jumpBoost = 0f;
+                if (creature.room.GetTilePosition(cs[0].pos).x == creature.room.GetTilePosition(cs[1].pos).x && // aligned
+                    ((GetTile(0).verticalBeam && !GetTile(0, 0, 1).verticalBeam)
+                    || (GetTile(1).verticalBeam && !GetTile(0).verticalBeam)))
+                {
+                    RainMeadow.Debug("beamtip jump");
+                    OnJump();
+                    this.forceJump = 10;
+                    this.jumpBoost = 8f;
+                    flipDirection = this.input[0].x;
+                    var dir = new Vector2(this.input[0].x, 2f).normalized;
+                    cs[0].vel += 8f * jumpFactor * dir;
+                    for (int i = 1; i < cc; i++)
+                    {
+                        cs[i].vel += 7f * jumpFactor * dir;
+                    }
+                    creature.room.PlaySound(SoundID.Slugcat_From_Vertical_Pole_Jump, mainBodyChunk, false, 1f, 1f);
+                    return;
+                }
+                if (this.input[0].x != 0)
+                {
+                    RainMeadow.Debug("pole jump");
+                    OnJump();
+                    this.forceJump = 10;
+                    flipDirection = this.input[0].x;
+                    cs[0].vel.x = 6f * jumpFactor * flipDirection;
+                    cs[0].vel.y = 6f * jumpFactor;
+                    for (int i = 1; i < cc; i++)
+                    {
+                        cs[i].vel.x = 6f * jumpFactor * flipDirection;
+                        cs[i].vel.y = 5f * jumpFactor;
+                    }
+                    creature.room.PlaySound(SoundID.Slugcat_From_Vertical_Pole_Jump, mainBodyChunk, false, 1f, 1f);
+                    return;
+                }
+                if (this.input[0].y <= 0)
+                {
+                    RainMeadow.Debug("pole drop");
+                    OnJump();
+                    mainBodyChunk.vel.y = 2f * jumpFactor;
+                    if (this.input[0].y > -1)
+                    {
+                        mainBodyChunk.vel.x = 2f * jumpFactor * flipDirection;
+                    }
+                    creature.room.PlaySound(SoundID.Slugcat_From_Vertical_Pole_Jump, mainBodyChunk, false, 0.3f, 1f);
+                    return;
+                }// no climb boost
+            }
+            else if (canGroundJump > 0)
+            {
+                RainMeadow.Debug("normal jump");
+                OnJump();
+                this.jumpBoost = 6;
+                cs[0].vel.y = 4f * jumpFactor;
+                for (int i = 1; i < cc; i++)
+                {
+                    cs[i].vel.y = 4.5f * jumpFactor;
+                }
+                if (input[0].x != 0)
+                {
+                    var d = input[0].x;
+                    cs[0].vel.x += d * 1.2f * jumpFactor;
+                    for (int i = 1; i < cc; i++)
+                    {
+                        cs[i].vel.x += d * 1.2f * jumpFactor;
+                    }
+                }
+
+                creature.room.PlaySound(SoundID.Slugcat_Normal_Jump, mainBodyChunk, false, 1f, 1f);
+            }
+            else if (canClimbJump > 0)
+            {
+                RainMeadow.Debug("climb jump");
+                OnJump();
+                this.jumpBoost = 3f;
+                var jumpdir = (cs[0].pos - cs[1].pos).normalized + inputDir;
+                for (int i = 0; i < cc; i++)
+                {
+                    cs[i].vel += jumpdir * jumpFactor;
+                }
+                creature.room.PlaySound(SoundID.Slugcat_Wall_Jump, mainBodyChunk, false, 1f, 1f);
+            }
+            else throw new InvalidProgrammerException("can't jump");
+        }
+
 
         internal override bool FindDestination(WorldCoordinate basecoord, out WorldCoordinate toPos, out float magnitude)
         {
@@ -333,7 +443,7 @@ namespace RainMeadow
             if (this.wantToJump > 0 && (this.canClimbJump > 0 || this.canPoleJump > 0 || this.canGroundJump > 0))
             {
                 if (localTrace) RainMeadow.Debug("jumping");
-                this.JumpImpl();
+                this.Jump();
                 this.canClimbJump = 0;
                 this.canPoleJump = 0;
                 this.canGroundJump = 0;
