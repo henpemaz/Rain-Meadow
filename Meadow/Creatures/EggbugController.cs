@@ -70,7 +70,7 @@ namespace RainMeadow
             if (creature.grasps == null) creature.grasps = new Creature.Grasp[1];
             eggbug = creature;
 
-            jumpFactor = 1.4f;
+            jumpFactor = 1.2f;
         }
 
         EggBug eggbug;
@@ -90,7 +90,7 @@ namespace RainMeadow
                     creature.bodyChunks[i].vel *= 0.25f;
                 }
                 creature.mainBodyChunk.vel += 0.2f * (creature.room.MiddleOfTile(tile0.X, tile0.Y) - creature.mainBodyChunk.pos);
-                eggbug.footingCounter = 10;
+                eggbug.footingCounter = 20;
             }
         }
 

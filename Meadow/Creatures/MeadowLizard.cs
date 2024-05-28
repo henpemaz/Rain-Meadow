@@ -266,7 +266,10 @@ namespace RainMeadow
 
         protected override void LookImpl(Vector2 pos)
         {
-            (lizard.graphicsModule as LizardGraphics).lookPos = pos;
+            if(lizard.graphicsModule != null)
+            {
+                (lizard.graphicsModule as LizardGraphics).lookPos = pos;
+            }
         }
 
         internal override void ConsciousUpdate()
