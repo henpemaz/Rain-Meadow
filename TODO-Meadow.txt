@@ -57,3 +57,43 @@ water controls for lizard and scav etc
 	needs to be there, crossing DS etc
 	SU_A12
 	I think the pathing logic breaks, water "isn't accessible" but it is. Istileaccessibletocreature accounts for it, some of my logic might not
+
+
+feedback
+cheat button freezes
+lizard can get stuck on poletip unable to jump
+lizard entering pipe jitters in place (outside of pipe)
+lizard often misses grabbing pole on jump
+creature pipe indicators would be really helpful
+
+scav movement overshoots
+
+controller-disconnedted popup might be inconsistent
+
+visualize selected skin
+	will get color previews
+	but could have tiny screenshots
+
+rat can't beat 3-tiles-tall jump
+	maybe vertfact/horizfact to help
+
+tint implementation missing in most creatures
+eggbug collapses on room transition (wolfy dms has logs)
+
+eggbug feels slow
+eggbug should have super jump at all times not just pounce, match how jumpy they are in game
+
+noodle has hard time going into pipes
+noodle could have a "grounded" state like cada
+
+"creature emotions" need addressing
+lizards shouldn't open mouth to bite
+rats shouldn't panic
+
+creature select can be inconsistent at times: I have big noodlefly selected, i enter the game, i'm small, i log off and click big again, now i'm big
+
+emote preview background color is really bad right now
+
+your avatar is marked as non-transferable, but on a gate it's re-registered in the new region and that flag is missing
+
+sandbox unlock items still present in meadow lmao

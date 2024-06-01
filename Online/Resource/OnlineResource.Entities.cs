@@ -84,6 +84,11 @@ namespace RainMeadow
         // recreate from event
         public void OnNewRemoteEntity(EntityDefinition entityDefinition, OnlineEntity.EntityState initialState)
         {
+            if (OnlineManager.lobby.PlayerFromId(entityDefinition.owner) == null)
+            {
+                RainMeadow.Error($"Owner not found for entitydefinition: {entityDefinition} : {entityDefinition.owner}");
+                return;
+            }
             OnlineEntity oe = entityDefinition.entityId.FindEntity(quiet: true) ?? entityDefinition.MakeEntity(this);
             RainMeadow.Debug($"{oe} : {this}");
             if (!oe.isMine && !registeredEntities.ContainsKey(entityDefinition.entityId)) OnlineManager.lobby.gameMode.NewEntity(oe, this);
