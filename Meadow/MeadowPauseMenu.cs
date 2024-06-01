@@ -81,15 +81,13 @@ namespace RainMeadow
         private void ToMainMenu(SimplerButton button)
         {
             base.PlaySound(SoundID.HUD_Exit_Game);
-            this.game.ExitToMenu();
-            this.ShutDownProcess();
+            manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
         }
 
         private void ToLobby(SimplerButton button)
         {
             base.PlaySound(SoundID.HUD_Exit_Game);
             manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.MeadowMenu);
-            this.ShutDownProcess();
         }
 
         private void Passage(SimplerButton button)

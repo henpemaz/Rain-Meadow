@@ -1,14 +1,5 @@
 
-jumping in and out of region alone re-shuffles collectables and enables being a lazy dum
-
-map reveal to be saved
-add home shelter that's revealed on start new critter
-	characterdata
-
 creature todo
-- disable grab/throw
-- any ways to die left?
-	is falldamage patched? hook to die and that's it?
 - can get stuck
 	some rooms will get fixed
 		eventually :tm:
@@ -25,15 +16,17 @@ player grabbing cicada = laggy physics
 	some mechanism for lending/borrowing control over an entity
 	main entity would sim both,
 		side who leased would still sim self attached to main
+	grabbing disabled for now
 
 lizard todo
 - charge
 - fall + diagdown = slide
+- sometimes fails to grab poles when holding up
 - find a good seed for our buddies
 
 scav todo
-- jump from tip of pole
-- won't jump on slopes
+- jump from tip of pole / done
+- won't jump on slopes / check again
 - hands look silly when walking on falsefloor
 - jumping off ledge wack because regains footing too quick?
 	
@@ -44,8 +37,10 @@ squidcicada todo
 button for spin/dance
 
 eggbug
-	update art
+	update art / done
 	pick seeds and names
+	jump impl
+		missing let go of ground
 
 noot
 	make art
@@ -55,7 +50,50 @@ noot
 
 	scream
 
+lantermouse
+	move n jump
+
 water controls for lizard and scav etc
 	needs to be there, crossing DS etc
 	SU_A12
 	I think the pathing logic breaks, water "isn't accessible" but it is. Istileaccessibletocreature accounts for it, some of my logic might not
+
+
+feedback
+cheat button freezes
+lizard can get stuck on poletip unable to jump
+lizard entering pipe jitters in place (outside of pipe)
+lizard often misses grabbing pole on jump
+creature pipe indicators would be really helpful
+
+scav movement overshoots
+
+controller-disconnedted popup might be inconsistent
+
+visualize selected skin
+	will get color previews
+	but could have tiny screenshots
+
+rat can't beat 3-tiles-tall jump
+	maybe vertfact/horizfact to help
+
+tint implementation missing in most creatures
+eggbug collapses on room transition (wolfy dms has logs)
+
+eggbug feels slow
+eggbug should have super jump at all times not just pounce, match how jumpy they are in game
+
+noodle has hard time going into pipes
+noodle could have a "grounded" state like cada
+
+"creature emotions" need addressing
+lizards shouldn't open mouth to bite
+rats shouldn't panic
+
+creature select can be inconsistent at times: I have big noodlefly selected, i enter the game, i'm small, i log off and click big again, now i'm big
+
+emote preview background color is really bad right now
+
+your avatar is marked as non-transferable, but on a gate it's re-registered in the new region and that flag is missing
+
+sandbox unlock items still present in meadow lmao

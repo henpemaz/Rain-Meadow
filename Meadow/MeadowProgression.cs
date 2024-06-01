@@ -22,7 +22,7 @@ namespace RainMeadow
                 _ = Character.Slugcat;
                 _ = Skin.Slugcat_Survivor;
                 _ = Emote.emoteHello;
-                currentTestSkin = Skin.Scavenger_Branches;
+                currentTestSkin = Skin.Scavenger_Acorn;
 
                 RainMeadow.Debug($"characters loaded: {Character.values.Count}");
                 RainMeadow.Debug($"skins loaded: {Skin.values.Count}");

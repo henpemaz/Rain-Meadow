@@ -12,10 +12,12 @@ namespace RainMeadow
 
         public Cicada cicada => creature as Cicada;
 
+        /*
         public override bool GrabImpl(PhysicalObject pickUpCandidate)
         {
             return cicada.TryToGrabPrey(pickUpCandidate);
         }
+        */
 
         public static void EnableCicada()
         {

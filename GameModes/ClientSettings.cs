@@ -17,6 +17,7 @@ namespace RainMeadow
         /// the real avatar of the player
         /// </summary>
         public OnlineEntity.EntityId avatarId;
+        public bool inGame;
 
         public ClientSettings(EntityDefinition entityDefinition) : base(entityDefinition)
         {
@@ -36,18 +37,23 @@ namespace RainMeadow
         {
             [OnlineField(nullable:true)]
             private EntityId avatarId;
+            [OnlineField]
+            public bool inGame;
 
             protected State() { }
 
             protected State(ClientSettings clientSettings, OnlineResource inResource, uint ts) : base(clientSettings, inResource, ts)
             {
                 this.avatarId = clientSettings.avatarId;
+                inGame = clientSettings.inGame;
             }
 
             public override void ReadTo(OnlineEntity onlineEntity)
             {
                 base.ReadTo(onlineEntity);
-                (onlineEntity as ClientSettings).avatarId = avatarId;
+                var avatarSettings = (ClientSettings)onlineEntity;
+                avatarSettings.avatarId = avatarId;
+                avatarSettings.inGame = inGame;
             }
         }
     }
