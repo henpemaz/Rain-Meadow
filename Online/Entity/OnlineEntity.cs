@@ -161,6 +161,7 @@ namespace RainMeadow
 
         public virtual void NewOwner(OnlinePlayer newOwner)
         {
+            if(newOwner == null) { throw new InvalidProgrammerException("null owner for entity"); }
             RainMeadow.Debug($"{this} assigned to {newOwner}");
             var wasOwner = owner;
             if (wasOwner == newOwner) return;

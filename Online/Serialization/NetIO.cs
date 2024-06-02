@@ -35,6 +35,7 @@ namespace RainMeadow
             catch (Exception e)
             {
                 RainMeadow.Error(e);
+                OnlineManager.serializer.EndWrite();
                 throw;
             }
 

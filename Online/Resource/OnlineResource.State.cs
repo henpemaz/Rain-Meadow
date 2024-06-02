@@ -240,9 +240,9 @@ namespace RainMeadow
                     {
                         if (resource.entities.TryGetValue(def.entityId, out var ent)) // hmm
                         {
-                            if (def.owner != ent.entity.owner.inLobbyId)
+                            if (def.owner != ent.entity.owner.inLobbyId && OnlineManager.lobby.PlayerFromId(def.owner) is OnlinePlayer newOwner)
                             {
-                                ent.entity.NewOwner(OnlineManager.lobby.PlayerFromId(def.owner));
+                                ent.entity.NewOwner(newOwner);
                             }
                         }
                         else

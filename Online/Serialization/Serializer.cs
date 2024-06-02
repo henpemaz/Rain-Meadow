@@ -161,7 +161,6 @@ namespace RainMeadow
         {
             //RainMeadow.Debug($"serializer wrote: {eventCount} events; {stateCount} states; total {stream.Position} bytes");
             currPlayer = null;
-            if (!IsWriting) throw new InvalidOperationException("not writing");
             IsWriting = false;
             writer.Flush();
             scratchpad.currPlayer = null;
