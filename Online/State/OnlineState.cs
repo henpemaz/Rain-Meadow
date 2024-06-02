@@ -177,6 +177,7 @@ namespace RainMeadow
             public string group; // things on the same group are gruped in deltas, saving bytes
             public bool nullable; // field can be null
             public bool polymorphic; // type of field needs to be serialized/parsed
+            public bool longList; // field needs ushort for indexes rather than bytes
             public bool always; // field is always sent, to be used as key
 
             public OnlineFieldAttribute(string group = "default", bool nullable = false, bool polymorphic = false, bool always = false)
@@ -189,7 +190,7 @@ namespace RainMeadow
 
             public virtual Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
             {
-                return Expression.Call(serializerRef, Serializer.GetSerializationMethod(f.FieldType, nullable, polymorphic), fieldRef);
+                return Expression.Call(serializerRef, Serializer.GetSerializationMethod(f.FieldType, nullable, polymorphic, longList), fieldRef);
             }
 
             public virtual Expression ComparisonMethod(FieldInfo f, MemberExpression currentField, MemberExpression baselineField)

@@ -48,11 +48,11 @@ namespace RainMeadow
             else Serialize(ref customSerializable);
         }
 
-
-        public void Serialize<T>(ref List<T> listOfSerializables) where T : ICustomSerializable, new()
+        public void SerializeByte<T>(ref List<T> listOfSerializables) where T : ICustomSerializable, new()
         {
             if (IsWriting)
             {
+                if (listOfSerializables.Count > 255) throw new OverflowException("too many elements");
                 writer.Write((byte)listOfSerializables.Count);
 #if TRACING
                 if (IsWriting) RainMeadow.Trace(1);
@@ -75,10 +75,11 @@ namespace RainMeadow
             }
         }
 
-        public void Serialize<T>(ref T[] arrayOfSerializables) where T : ICustomSerializable, new()
+        public void SerializeByte<T>(ref T[] arrayOfSerializables) where T : ICustomSerializable, new()
         {
             if (IsWriting)
             {
+                if (arrayOfSerializables.Length > 255) throw new OverflowException("too many elements");
                 writer.Write((byte)arrayOfSerializables.Length);
 #if TRACING
                 if (IsWriting) RainMeadow.Trace(1);
@@ -90,7 +91,61 @@ namespace RainMeadow
             }
             if (IsReading)
             {
-                var count = reader.ReadByte();
+                byte count = reader.ReadByte();
+                arrayOfSerializables = new T[count];
+                for (int i = 0; i < count; i++)
+                {
+                    T item = new();
+                    item.CustomSerialize(this);
+                    arrayOfSerializables[i] = item;
+                }
+            }
+        }
+
+        public void SerializeShort<T>(ref List<T> listOfSerializables) where T : ICustomSerializable, new()
+        {
+            if (IsWriting)
+            {
+                if (listOfSerializables.Count > ushort.MaxValue) throw new OverflowException("too many elements");
+                writer.Write((ushort)listOfSerializables.Count);
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
+                for (int i = 0; i < listOfSerializables.Count; i++)
+                {
+                    listOfSerializables[i].CustomSerialize(this);
+                }
+            }
+            if (IsReading)
+            {
+                ushort count = reader.ReadUInt16();
+                listOfSerializables = new(count);
+                for (int i = 0; i < count; i++)
+                {
+                    T item = new();
+                    item.CustomSerialize(this);
+                    listOfSerializables.Add(item);
+                }
+            }
+        }
+
+        public void SerializeShort<T>(ref T[] arrayOfSerializables) where T : ICustomSerializable, new()
+        {
+            if (IsWriting)
+            {
+                if (arrayOfSerializables.Length > ushort.MaxValue) throw new OverflowException("too many elements");
+                writer.Write((ushort)arrayOfSerializables.Length);
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
+                for (int i = 0; i < arrayOfSerializables.Length; i++)
+                {
+                    arrayOfSerializables[i].CustomSerialize(this);
+                }
+            }
+            if (IsReading)
+            {
+                ushort count = reader.ReadUInt16();
                 arrayOfSerializables = new T[count];
                 for (int i = 0; i < count; i++)
                 {
@@ -102,9 +157,9 @@ namespace RainMeadow
         }
 
         // tempting to try and cache this, would need a query icomparable
-        internal static MethodInfo GetSerializationMethod(Type fieldType, bool nullable, bool polymorphic)
+        internal static MethodInfo GetSerializationMethod(Type fieldType, bool nullable, bool polymorphic, bool longList)
         {
-            var arguments = new { nullable, polymorphic }; // one hell of a drug
+            var arguments = new { nullable, polymorphic, longList }; // one hell of a drug
             if (typeof(OnlineState).IsAssignableFrom(fieldType))
             {
                 return typeof(Serializer).GetMethods().Single(m =>
@@ -121,10 +176,15 @@ namespace RainMeadow
                 return typeof(Serializer).GetMethods().Single(m =>
                 m.Name == arguments switch
                 {
-                    { nullable: false, polymorphic: false } => "SerializeStaticStates",
-                    { nullable: false, polymorphic: true } => "SerializePolyStates",
-                    { nullable: true, polymorphic: false } => "SerializeNullableStaticStates",
-                    { nullable: true, polymorphic: true } => "SerializeNullablePolyStates"
+                    { nullable: false, polymorphic: false, longList: false } => "SerializeStaticStatesByte",
+                    { nullable: false, polymorphic: true, longList: false } => "SerializePolyStatesByte",
+                    { nullable: true, polymorphic: false, longList: false } => "SerializeNullableStaticStatesByte",
+                    { nullable: true, polymorphic: true, longList: false } => "SerializeNullablePolyStatesByte",
+                    { nullable: false, polymorphic: false, longList: true } => "SerializeStaticStatesShort",
+                    { nullable: false, polymorphic: true, longList: true } => "SerializePolyStatesShort",
+                    { nullable: true, polymorphic: false, longList: true } => "SerializeNullableStaticStatesShort",
+                    { nullable: true, polymorphic: true, longList: true } => "SerializeNullablePolyStatesShort"
+
                 } && m.IsGenericMethod && (m.GetParameters()[0].ParameterType.GetElementType().IsArray == fieldType.IsArray)).MakeGenericMethod(new Type[] { fieldType.IsArray ? fieldType.GetElementType() : fieldType.GetGenericArguments()[0] });
             }
 
@@ -144,8 +204,10 @@ namespace RainMeadow
                 return typeof(Serializer).GetMethods().Single(m =>
                 m.Name == arguments switch
                 {
-                    { nullable: false } => "Serialize",
-                    { nullable: true } => "SerializeNullable"
+                    { nullable: false, longList: false } => "SerializeByte",
+                    { nullable: true, longList: false } => "SerializeNullableByte",
+                    { nullable: false, longList: true } => "SerializeShort",
+                    { nullable: true, longList: true } => "SerializeNullableShort"
                 } && m.IsGenericMethod && m.GetGenericMethodDefinition().GetGenericArguments().Any(ga => ga.GetGenericParameterConstraints().Any(t => t == typeof(Serializer.ICustomSerializable)))
                 && m.GetParameters().Any(p => p.ParameterType.IsByRef && (p.ParameterType.GetElementType().IsGenericType && p.ParameterType.GetElementType().GetGenericTypeDefinition() == typeof(List<>)) != fieldType.IsArray && p.ParameterType.GetElementType().IsArray == fieldType.IsArray)
                 ).MakeGenericMethod(new Type[] { fieldType.IsArray ? fieldType.GetElementType() : fieldType.GetGenericArguments()[0] }) ;

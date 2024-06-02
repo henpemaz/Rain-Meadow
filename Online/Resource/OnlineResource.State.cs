@@ -285,7 +285,7 @@ namespace RainMeadow
 
             public override void CustomSerialize(Serializer serializer)
             {
-                serializer.Serialize(ref list);
+                serializer.SerializeByte(ref list); // up to 255 subresources
             }
         }
 
