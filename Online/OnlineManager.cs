@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Steamworks;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -326,6 +327,15 @@ namespace RainMeadow
             }
             RainMeadow.Error("resource not found : " + rid);
             return null;
+        }
+
+        internal static void QuitWithError(string v)
+        {
+            if(lobby != null)
+            {
+                instance.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
+                instance.manager.ShowDialog(new Menu.DialogNotify(v, "Leaving Lobby", new Vector2(240, 320), instance.manager, () => { }));
+            }
         }
     }
 }

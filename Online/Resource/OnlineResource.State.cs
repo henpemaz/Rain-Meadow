@@ -303,7 +303,14 @@ namespace RainMeadow
             public override void ReadTo(OnlineResource resource)
             {
                 base.ReadTo(resource);
-                if (resource.isActive)
+                if (resource.isWaitingForState) // check on first receive
+                {
+                    if (subleaseState.list.Count != resource.subresources.Count)
+                    {
+                        OnlineManager.QuitWithError("subresources missmatch");
+                    }
+                }
+                else if (resource.isActive)
                 {
                     foreach (var item in subleaseState.list)
                     {
