@@ -23,6 +23,7 @@ namespace RainMeadow
             }
             else // brand new
             {
+                OnlineManager.lobby.gameMode.NewEntity(oe, this);
                 EntityRegister(oe);
             }
         }
@@ -33,8 +34,6 @@ namespace RainMeadow
             RainMeadow.Debug($"{oe} : {this}");
             if (!isActive) throw new InvalidProgrammerException("not active");
             if (oe.primaryResource != null && !oe.primaryResource.IsSibling(this)) { throw new InvalidOperationException("already in a resource"); }
-
-            OnlineManager.lobby.gameMode.NewEntity(oe, this);
 
             if (isOwner) // I control this, enter right away
             {
@@ -77,7 +76,8 @@ namespace RainMeadow
             }
             else if (registerResult is GenericResult.Error) // retry
             {
-                // todo retry
+                oe.pendingRequest = null;
+                if (oe.isMine) oe.JoinOrLeavePending();
             }
         }
 
@@ -157,7 +157,8 @@ namespace RainMeadow
             }
             else if (entityJoinResult is GenericResult.Error) // retry
             {
-                // todo retry
+                oe.pendingRequest = null;
+                if (oe.isMine) oe.JoinOrLeavePending();
             }
         }
 
@@ -226,17 +227,8 @@ namespace RainMeadow
             }
             else if (entityLeaveResult is GenericResult.Error) // retry
             {
-                if (oe.isMine)
-                {
-                    if (isActive)
-                    {
-                        LocalEntityLeft(oe);
-                    }
-                    else // resource deactivated
-                    {
-                        oe.JoinOrLeavePending();
-                    }
-                }
+                oe.pendingRequest = null;
+                if (oe.isMine) oe.JoinOrLeavePending();
             }
         }
 
@@ -304,7 +296,8 @@ namespace RainMeadow
             }
             else if (entityTransferResult is GenericResult.Error) // retry
             {
-                // todo retry
+                oe.pendingRequest = null;
+                if(oe.isMine) oe.JoinOrLeavePending();
             }
         }
 

@@ -15,7 +15,7 @@ namespace RainMeadow
         public Dictionary<OnlinePlayer, OnlineEntity.EntityId> playerAvatars = new(); // should maybe be in GameMode
 
         public string[] mods = RainMeadowModManager.GetActiveMods();
-        public static bool modsChecked = false;
+        public bool modsChecked;
 
         public string? password;
         public bool hasPassword => password != null;
@@ -192,11 +192,10 @@ namespace RainMeadow
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
 
-                if (!modsChecked)
+                if (!lobby.modsChecked)
                 {
                     RainMeadowModManager.CheckMods(this.mods, lobby.mods);
-                    modsChecked = true;
-
+                    lobby.modsChecked = true;
                 }
 
                 base.ReadTo(resource);
