@@ -5,7 +5,7 @@ namespace RainMeadow
 {
     public abstract partial class OnlineResource
     {
-        public Dictionary<OnlineEntity.EntityId, EntityDefinition> registeredEntities;
+        public Dictionary<OnlineEntity.EntityId, OnlineEntity.EntityDefinition> registeredEntities;
         public Dictionary<OnlineEntity.EntityId, EntityMembership> entities;
 
         // An entity I control has entered the resource, consider registering or joining
@@ -23,7 +23,11 @@ namespace RainMeadow
             }
             else // brand new
             {
-                OnlineManager.lobby.gameMode.NewEntity(oe, this);
+                if (!oe.everRegistered)
+                {
+                    oe.everRegistered = true;
+                    OnlineManager.lobby.gameMode.NewEntity(oe, this);
+                }
                 EntityRegister(oe);
             }
         }
@@ -37,21 +41,22 @@ namespace RainMeadow
 
             if (isOwner) // I control this, enter right away
             {
-                EntityRegisteredInResource(oe, oe.definition, null);
+                EntityRegisteredInResource(oe, oe.MakeDefinition(this), null);
             }
             else // request to register
             {
-                oe.pendingRequest = owner.InvokeRPC(this.OnEntityRegisterRequest, oe.definition, oe.GetState(oe.owner.tick, this)).Then(OnRegisterResolve);
+                oe.pendingRequest = owner.InvokeRPC(this.OnEntityRegisterRequest, oe.MakeDefinition(this), oe.GetState(oe.owner.tick, this)).Then(OnRegisterResolve);
             }
         }
 
         // as owner, from other
         [RPCMethod]
-        public void OnEntityRegisterRequest(RPCEvent rpcEvent, EntityDefinition newEntityEvent, OnlineEntity.EntityState initialState)
+        public void OnEntityRegisterRequest(RPCEvent rpcEvent, OnlineEntity.EntityDefinition newEntityEvent, OnlineEntity.EntityState initialState)
         {
             RainMeadow.Debug($"{newEntityEvent} : {this}");
             if (isOwner && isActive)
             {
+                newEntityEvent.tickReference = this.supervisor.MakeTickReference();
                 OnNewRemoteEntity(newEntityEvent, initialState);
                 rpcEvent.from.QueueEvent(new GenericResult.Ok(rpcEvent));
             }
@@ -64,7 +69,7 @@ namespace RainMeadow
         // ok from owner
         public void OnRegisterResolve(GenericResult registerResult)
         {
-            var nee = ((registerResult.referencedEvent as RPCEvent).args[0]) as EntityDefinition;
+            var nee = ((registerResult.referencedEvent as RPCEvent).args[0]) as OnlineEntity.EntityDefinition;
             var oe = nee.entityId.FindEntity();
             RainMeadow.Debug($"{oe} : {this}");
             if (oe.pendingRequest == registerResult.referencedEvent) oe.pendingRequest = null;
@@ -82,21 +87,30 @@ namespace RainMeadow
         }
 
         // recreate from event
-        public void OnNewRemoteEntity(EntityDefinition entityDefinition, OnlineEntity.EntityState initialState)
+        public void OnNewRemoteEntity(OnlineEntity.EntityDefinition entityDefinition, OnlineEntity.EntityState initialState)
         {
             if (OnlineManager.lobby.PlayerFromId(entityDefinition.owner) == null)
             {
                 RainMeadow.Error($"Owner not found for entitydefinition: {entityDefinition} : {entityDefinition.owner}");
                 return;
             }
-            OnlineEntity oe = entityDefinition.entityId.FindEntity(quiet: true) ?? entityDefinition.MakeEntity(this);
+            OnlineEntity oe = entityDefinition.entityId.FindEntity(quiet: true) ?? entityDefinition.MakeEntity(this, initialState);
+            if(oe.primaryResource is OnlineResource otherResource && otherResource != this && otherResource.entities[oe.id].memberSinceTick.IsNewerThan(this, entityDefinition.tickReference, otherResource))
+            {
+                // recently registered elsewhere, to not move back here
+                return;
+            }
             RainMeadow.Debug($"{oe} : {this}");
-            if (!oe.isMine && !registeredEntities.ContainsKey(entityDefinition.entityId)) OnlineManager.lobby.gameMode.NewEntity(oe, this);
+            if (!oe.everRegistered)
+            {
+                oe.everRegistered = true;
+                OnlineManager.lobby.gameMode.NewEntity(oe, this);
+            }
             EntityRegisteredInResource(oe, entityDefinition, initialState);
         }
 
         // registering new entity
-        private void EntityRegisteredInResource(OnlineEntity oe, EntityDefinition newEntityEvent, OnlineEntity.EntityState initialState)
+        private void EntityRegisteredInResource(OnlineEntity oe, OnlineEntity.EntityDefinition newEntityEvent, OnlineEntity.EntityState initialState)
         {
             RainMeadow.Debug($"{oe} : {this}");
             registeredEntities.Add(newEntityEvent.entityId, newEntityEvent);

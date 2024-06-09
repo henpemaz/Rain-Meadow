@@ -65,7 +65,7 @@ namespace RainMeadow
                 c.GotoNext(moveType: MoveType.After,
                     i => i.MatchLdarg(2),
                     i => i.MatchCallOrCallvirt(out _),
-                    i => i.MatchLdfld<Room>("firstTimeRealized"),
+                    i => i.MatchLdfld<AbstractRoom>("firstTimeRealized"),
                     i => i.MatchBrfalse(out skip)
                     );
                 c.EmitDelegate(() => !(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode));

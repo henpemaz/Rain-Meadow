@@ -330,8 +330,8 @@ namespace RainMeadow
 #endif
         }
 
-        // serializes resource.id and finds reference
-        public void SerializEntityById(ref OnlineEntity onlineEntity)
+        // serializes entity.id and finds reference
+        public void SerializEntityById<T>(ref T onlineEntity) where T : OnlineEntity
         {
             if (IsWriting)
             {
@@ -341,7 +341,7 @@ namespace RainMeadow
             {
                 OnlineEntity.EntityId id = new();
                 id.CustomSerialize(this);
-                onlineEntity = id.FindEntity();
+                onlineEntity = (T)id.FindEntity();
             }
         }
 

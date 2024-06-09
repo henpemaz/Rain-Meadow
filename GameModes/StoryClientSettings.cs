@@ -8,12 +8,11 @@ namespace RainMeadow
         public class Definition : ClientSettings.Definition
         {
             public Definition() { }
+            public Definition(ClientSettings clientSettings, OnlineResource inResource) : base(clientSettings, inResource) { }
 
-            public Definition(EntityId entityId, OnlinePlayer owner) : base(entityId, owner) { }
-
-            public override OnlineEntity MakeEntity(OnlineResource inResource)
+            public override OnlineEntity MakeEntity(OnlineResource inResource, EntityState initialState)
             {
-                return new StoryClientSettings(this);
+                return new StoryClientSettings(this, inResource, (State)initialState);
             }
         }
 
@@ -24,11 +23,19 @@ namespace RainMeadow
         public string? myLastDenPos = null;
         public bool isDead;
 
-        public StoryClientSettings(Definition entityDefinition) : base(entityDefinition)
+        public StoryClientSettings(Definition entityDefinition, OnlineResource inResource, State initialState) : base(entityDefinition, inResource, initialState)
         {
-            RainMeadow.Debug(this);
-            bodyColor = entityDefinition.owner == 2 ? Color.cyan : PlayerGraphics.DefaultSlugcatColor(playingAs);
-            eyeColor = Color.black;
+
+        }
+
+        public StoryClientSettings(EntityId id, OnlinePlayer owner) : base(id, owner)
+        {
+
+        }
+
+        internal override EntityDefinition MakeDefinition(OnlineResource onlineResource)
+        {
+            return new Definition(this, onlineResource);
         }
 
         internal override AvatarCustomization MakeCustomization()

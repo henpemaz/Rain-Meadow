@@ -1,7 +1,9 @@
-﻿using RainMeadow.Generics;
+﻿using Mono.Cecil;
+using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static RainMeadow.OnlineResource;
 
 namespace RainMeadow
 {
@@ -62,7 +64,10 @@ namespace RainMeadow
             {
                 latestState = newState;
                 if (isWaitingForState || isAvailable) newState.ReadTo(this);
-                if(isWaitingForState) { Available(); }
+                if (isWaitingForState) 
+                {
+                    Available();
+                }
             }
             else
             {
@@ -183,7 +188,7 @@ namespace RainMeadow
             [OnlineField(nullable = true, group = "entitydefs")]
             public AddRemoveSortedCustomSerializables<OnlineEntity.EntityId> entitiesJoined;
             [OnlineField(nullable = true, group = "entitydefs")]
-            public DeltaStates<EntityDefinition, OnlineState, OnlineEntity.EntityId> registeredEntities;
+            public DeltaStates<OnlineEntity.EntityDefinition, OnlineState, OnlineEntity.EntityId> registeredEntities;
             [OnlineField(nullable = true, group = "entities")]
             public DeltaStates<OnlineEntity.EntityState, OnlineState, OnlineEntity.EntityId> entityStates;
             [OnlineField(nullable = true, group = "data")]
@@ -194,7 +199,7 @@ namespace RainMeadow
             {
                 this.resource = resource;
                 entitiesJoined = new(resource.entities.Keys.ToList());
-                registeredEntities = new(resource.registeredEntities.Values.Select(def => def.Clone() as EntityDefinition).ToList());
+                registeredEntities = new(resource.registeredEntities.Values.Select(def => def.Clone() as OnlineEntity.EntityDefinition).ToList());
                 entityStates = new(resource.entities.Select(e => e.Value.entity.GetState(ts, resource)).ToList());
                 resourceDataStates = new(resource.resourceData.Select(d => d.MakeState()).Where(s => s != null).ToList());
             }
@@ -303,14 +308,7 @@ namespace RainMeadow
             public override void ReadTo(OnlineResource resource)
             {
                 base.ReadTo(resource);
-                if (resource.isWaitingForState) // check on first receive
-                {
-                    if (subleaseState.list.Count != resource.subresources.Count)
-                    {
-                        OnlineManager.QuitWithError("subresources missmatch");
-                    }
-                }
-                else if (resource.isActive)
+                if (resource.isActive)
                 {
                     foreach (var item in subleaseState.list)
                     {

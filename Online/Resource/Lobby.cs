@@ -19,9 +19,8 @@ namespace RainMeadow
 
         public string? password;
         public bool hasPassword => password != null;
-        public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password)
+        public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password) : base(null)
         {
-            this.super = this;
             OnlineManager.lobby = this; // needed for early entity processing
 
             this.gameMode = OnlineGameMode.FromType(mode, this);

@@ -1,27 +1,53 @@
-﻿using UnityEngine;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     public class OnlineConsumable : OnlinePhysicalObject
     {
-        public OnlineConsumable(OnlineConsumableDefinition entityDefinition, AbstractPhysicalObject apo) : base(entityDefinition, apo) { }
+        public class OnlineConsumableDefinition : OnlinePhysicalObjectDefinition
+        {
+            [OnlineField]
+            public short originRoom;
+            [OnlineField]
+            public sbyte placedObjectIndex;
+
+            public OnlineConsumableDefinition() { }
+
+            public OnlineConsumableDefinition(OnlineConsumable onlineConsumable, OnlineResource inResource) : base(onlineConsumable, inResource)
+            {
+                this.originRoom = (short)onlineConsumable.Consumable.originRoom;
+                this.placedObjectIndex = (sbyte)onlineConsumable.Consumable.placedObjectIndex;
+            }
+
+            public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
+            {
+                return new OnlineConsumable(this, inResource, (OnlineConsumableState)initialState);
+            }
+        }
+
+        public OnlineConsumable(OnlineConsumableDefinition entityDefinition, OnlineResource inResource, OnlineConsumableState initialState) : base(entityDefinition, inResource, initialState)
+        {
+
+        }
+
+        public OnlineConsumable(AbstractConsumable ac, EntityId id, OnlinePlayer owner, bool isTransferable) : base(ac, id, owner, isTransferable)
+        {
+
+        }
+
+        protected override AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, PhysicalObjectEntityState initialState)
+        {
+            OnlineConsumableDefinition entityDefinition = (OnlineConsumableDefinition)newObjectEvent;
+            var acm = (AbstractConsumable)ApoFromDef(newObjectEvent, inResource, initialState);
+            acm.originRoom = entityDefinition.originRoom;
+            acm.placedObjectIndex = entityDefinition.placedObjectIndex;
+            acm.isConsumed = (initialState as OnlineConsumableState).isConsumed;
+            return acm;
+        }
 
         public AbstractConsumable Consumable => apo as AbstractConsumable;
 
-        public static OnlineEntity FromDefinition(OnlineConsumableDefinition newObjectEvent, OnlineResource inResource)
+        internal override EntityDefinition MakeDefinition(OnlineResource onlineResource)
         {
-            World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
-            EntityID id = world.game.GetNewID();
-            id.altSeed = newObjectEvent.seed;
-
-            RainMeadow.Debug("serializedObject: " + newObjectEvent.serializedObject);
-            var acm = (AbstractConsumable)SaveState.AbstractPhysicalObjectFromString(world, newObjectEvent.serializedObject);
-            acm.ID = id;
-            acm.originRoom = newObjectEvent.originRoom;
-            acm.placedObjectIndex = newObjectEvent.placedObjectIndex;
-            acm.isConsumed = newObjectEvent.originallyConsumed;
-
-            return new OnlineConsumable(newObjectEvent, acm);
+            return new OnlineConsumableDefinition(this, onlineResource);
         }
 
         protected override EntityState MakeState(uint tick, OnlineResource inResource)
@@ -29,10 +55,24 @@ namespace RainMeadow
             return new OnlineConsumableState(this, inResource, tick);
         }
 
-        public override void OnJoinedResource(OnlineResource inResource)
+        public class OnlineConsumableState : PhysicalObjectEntityState
         {
-            base.OnJoinedResource(inResource);
-            // ?
+            [OnlineField]
+            public bool isConsumed;
+
+            public OnlineConsumableState() { }
+
+            public OnlineConsumableState(OnlineConsumable onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
+            {
+                isConsumed = onlineEntity.Consumable.isConsumed;
+            }
+
+            public override void ReadTo(OnlineEntity onlineEntity)
+            {
+                base.ReadTo(onlineEntity);
+                var onlineConsumable = onlineEntity as OnlineConsumable;
+                if (!onlineConsumable.Consumable.isConsumed && isConsumed) onlineConsumable.Consumable.Consume();
+            }
         }
     }
 }
