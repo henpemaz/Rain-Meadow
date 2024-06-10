@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using static RainMeadow.OnlineEntity;
 
 namespace RainMeadow
 {
@@ -18,12 +19,12 @@ namespace RainMeadow
 
         public ClientSettings(EntityDefinition entityDefinition, OnlineResource inResource, EntityState initialState) : base(entityDefinition, inResource, initialState)
         {
-            avatarId = new EntityId(entityDefinition.owner, EntityId.IdType.none, 0);
+            avatarId = (initialState as State).avatarId;
         }
 
         protected ClientSettings(EntityId id, OnlinePlayer owner) : base(id, owner, false)
         {
-
+            avatarId = new EntityId(owner.inLobbyId, EntityId.IdType.none, 0);
         }
 
         internal abstract AvatarCustomization MakeCustomization();
@@ -38,7 +39,7 @@ namespace RainMeadow
         public abstract class State : EntityState
         {
             [OnlineField(nullable:true)]
-            private EntityId avatarId;
+            public EntityId avatarId;
             [OnlineField]
             public bool inGame;
 

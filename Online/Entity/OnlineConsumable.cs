@@ -36,7 +36,7 @@
         protected override AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, PhysicalObjectEntityState initialState)
         {
             OnlineConsumableDefinition entityDefinition = (OnlineConsumableDefinition)newObjectEvent;
-            var acm = (AbstractConsumable)ApoFromDef(newObjectEvent, inResource, initialState);
+            var acm = (AbstractConsumable)base.ApoFromDef(newObjectEvent, inResource, initialState);
             acm.originRoom = entityDefinition.originRoom;
             acm.placedObjectIndex = entityDefinition.placedObjectIndex;
             acm.isConsumed = (initialState as OnlineConsumableState).isConsumed;

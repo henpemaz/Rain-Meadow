@@ -151,6 +151,7 @@ namespace RainMeadow
             if(onlineResource is Lobby)
             {
                 AddAvatarSettings();
+                OnlineManager.instance.manager.RequestMainProcessSwitch(MenuProcessId());
             }
         }
 

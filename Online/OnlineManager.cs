@@ -42,7 +42,7 @@ namespace RainMeadow
             currentlyJoiningLobby = default;
             if (ok)
             {
-                manager.RequestMainProcessSwitch(lobby.gameMode.MenuProcessId());
+                // manager.RequestMainProcessSwitch(lobby.gameMode.MenuProcessId());
             }
             else
             {
@@ -331,8 +331,10 @@ namespace RainMeadow
 
         internal static void QuitWithError(string v)
         {
-            if(lobby != null)
+            RainMeadow.Error(v);
+            if (lobby != null && instance.manager.upcomingProcess != ProcessManager.ProcessID.MainMenu)
             {
+                instance.manager.upcomingProcess = null;
                 instance.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
                 instance.manager.ShowDialog(new Menu.DialogNotify(v, "Leaving Lobby", new Vector2(240, 320), instance.manager, () => { }));
             }

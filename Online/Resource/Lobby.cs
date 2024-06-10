@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace RainMeadow
 {
@@ -123,7 +122,7 @@ namespace RainMeadow
 
         protected override void AvailableImpl()
         {
-
+            
         }
 
         protected override void DeactivateImpl()

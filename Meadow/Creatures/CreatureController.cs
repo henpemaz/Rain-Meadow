@@ -486,6 +486,10 @@ namespace RainMeadow
             {
                 mcd.destination = coord;
             }
+            else
+            {
+                if (!creature.abstractCreature.world.IsRoomInRegion(coord.room)) return;
+            }
             var absAI = creature.abstractCreature.abstractAI;
             absAI.destination = coord; // we don't run the setter
             
