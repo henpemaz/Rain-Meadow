@@ -236,7 +236,7 @@ namespace RainMeadow
                 this.pos = holder.GetPos(index);
                 lastAlpha = alpha;
                 alpha = holder.alpha;
-                if (holder.owner.abstractPhysicalObject.Room.realizedRoom != this.room) { RainMeadow.Debug("EmoteTile destroyed"); Destroy(); }
+                if (holder.owner.abstractPhysicalObject.Room is AbstractRoom absroom && absroom.realizedRoom != this.room) { RainMeadow.Debug("EmoteTile destroyed"); Destroy(); }
                 base.Update(eu);
             }
 
