@@ -55,7 +55,7 @@ namespace RainMeadow.Generics
     /// <summary>
     /// Dynamic list, order-unaware
     /// </summary>
-    public abstract class AddRemoveUnsortedList<T, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp: AddRemoveUnsortedList<T, Imp>, new()
+    public abstract class AddRemoveUnsortedList<T, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp : AddRemoveUnsortedList<T, Imp>, new()
     {
         public List<T> list;
         public List<T> removed;
@@ -127,6 +127,46 @@ namespace RainMeadow.Generics
                 for (int i = 0; i < other.list.Count; i++)
                 {
                     result.list.Insert(other.listIndexes[i], other.list[i]);
+                }
+            }
+            return result;
+        }
+
+        public abstract void CustomSerialize(Serializer serializer);
+    }
+
+    /// <summary>
+    /// Fixed ordered list
+    /// </summary>
+    public abstract class FixedOrderedList<T, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp : FixedOrderedList<T, Imp>, new()
+    {
+        public List<T> list;
+        public List<byte> updateIndexes;
+
+        public FixedOrderedList() { }
+        public FixedOrderedList(List<T> list)
+        {
+            this.list = list;
+        }
+
+        public Imp Delta(Imp other)
+        {
+            if (other == null) { return (Imp)this; }
+
+            Imp delta = new();
+            (delta.list, delta.updateIndexes) = other.list.Select((e, i) => { return (e, i: (byte)i); }).Where(e => list[e.i].Equals(e.e)).ToListTuple();
+            return (delta.list.Count == 0) ? null : delta;
+        }
+
+        public Imp ApplyDelta(Imp other)
+        {
+            Imp result = new();
+            result.list = list.ToList();
+            if (other != null)
+            {
+                for (int i = 0; i < other.updateIndexes.Count; i++)
+                {
+                    list[other.updateIndexes[i]] = other.list[i];
                 }
             }
             return result;
@@ -218,7 +258,7 @@ namespace RainMeadow.Generics
         {
             if (baseline == null) { return (Imp)this; }
             Imp delta = new();
-            delta.list = list.Select(newstate => 
+            delta.list = list.Select(newstate =>
                 baseline.list.FirstOrDefault(basestate => basestate.ID.Equals(newstate.ID)) is T basestate ? (T)newstate.Delta(basestate) : newstate
             ).Where(sl => !sl.IsEmptyDelta).ToList();
             delta.removed = baseline.list.Except(list, new IdentityComparer<T, U>()).Select(e => e.ID).ToList();
@@ -228,7 +268,7 @@ namespace RainMeadow.Generics
         public virtual Imp ApplyDelta(Imp incoming)
         {
             Imp result = new();
-            result.list = incoming == null ? list : 
+            result.list = incoming == null ? list :
                 list.Where(e => !incoming.removed.Contains(e.ID)) // remove
                     .Select(e => incoming.list.FirstOrDefault(o => e.ID.Equals(o.ID)) is T o ? (T)e.ApplyDelta(o) : e) // keep or update
                     .Concat(incoming.list.Where(o => list.FirstOrDefault(e => e.ID.Equals(o.ID)) == null)) // add new
@@ -422,6 +462,21 @@ namespace RainMeadow.Generics
             {
                 serializer.Serialize(ref listIndexes);
                 serializer.Serialize(ref removedIndexes);
+            }
+        }
+    }
+
+    public class FixedOrderedUshorts : FixedOrderedList<ushort, FixedOrderedUshorts>
+    {
+        public FixedOrderedUshorts() { }
+        public FixedOrderedUshorts(List<ushort> list) : base(list) { }
+
+        public override void CustomSerialize(Serializer serializer)
+        {
+            serializer.Serialize(ref list);
+            if (serializer.IsDelta)
+            {
+                serializer.Serialize(ref updateIndexes);
             }
         }
     }

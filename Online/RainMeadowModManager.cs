@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
 
 namespace RainMeadow
 {
@@ -8,11 +10,21 @@ namespace RainMeadow
     {
         public static string[] GetActiveMods()
         {
-            return ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).ToList().Select(mod => mod.id.ToString()).ToArray();
+
+            var highImpactMods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).Select(mod => mod.id);
+
+            var remixMod = ModManager.ActiveMods.Find(mod => mod.id == "rwremix"); // Remix needs to be added to the 'game-breaking' mods for game settings sync
+            if (remixMod != null)
+            {
+                highImpactMods = highImpactMods.Append(remixMod.id);
+            }
+
+            return highImpactMods.ToArray();
         }
 
         internal static void CheckMods(string[] lobbyMods, string[] localMods)
         {
+
             if (Enumerable.SequenceEqual(localMods, lobbyMods))
             {
                 RainMeadow.Debug("Same mod set !");
@@ -24,7 +36,6 @@ namespace RainMeadow
                 var (MissingMods, ExcessiveMods) = CompareModSets(lobbyMods, localMods);
 
                 bool[] mods = ModManager.InstalledMods.ConvertAll(mod => mod.enabled).ToArray();
-
                 List<int> loadOrder = ModManager.InstalledMods.ConvertAll(mod => mod.loadOrder);
 
                 List<string> unknownMods = new();
@@ -62,8 +73,20 @@ namespace RainMeadow
 
                 modApplyer.OnFinish += (ModApplier modApplyer) =>
                 {
-                    Utils.Restart($"+connect_lobby {MatchmakingManager.instance.GetLobbyID()}");
+                    Utils.Restart($"+connect_lobby {MatchmakingManager.instance.GetLobbyID()}"); 
+
                 };
+            }
+        }
+
+        internal static void Reset()
+        {
+            if (ModManager.MMF)
+            {
+                RainMeadow.Debug("Restoring config settings");
+
+                var mmfOptions = MachineConnector.GetRegisteredOI(MoreSlugcats.MMF.MOD_ID);
+                MachineConnector.ReloadConfig(mmfOptions);
             }
         }
 

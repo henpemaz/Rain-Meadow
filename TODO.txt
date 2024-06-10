@@ -22,6 +22,8 @@ Entities entities entities
 	just disable grasps for now and crack on with persona-only stuff??
 		"I have failed and I'll move on with simpler things"
 
+	when scanning/tracking entities in room/world needs to skip if absentity.slatedfordeletion, game doesn't remove them from room until the room abstracts
+
 
 Mod auto installing / auto disabling
 	biggest issue: different region list

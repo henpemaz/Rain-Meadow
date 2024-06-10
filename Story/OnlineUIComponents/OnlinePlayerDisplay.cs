@@ -16,6 +16,8 @@ namespace RainMeadow
         public float blink;
         public float lastBlink;
         public bool switchedToDeathIcon;
+        private bool isButtonToggled;
+
 
         public OnlinePlayerDisplay(PlayerSpecificOnlineHud owner) : base(owner)
         {
@@ -47,13 +49,19 @@ namespace RainMeadow
 
             this.blink = 1f;
             this.switchedToDeathIcon = false;
+
+            this.isButtonToggled = false;
         }
 
         public override void Update()
         {
             base.Update();
+
+            if (RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value && Input.GetKeyDown(RainMeadow.rainMeadowOptions.FriendsListKey.Value)) {
+                this.isButtonToggled = !this.isButtonToggled;
+            } 
             
-            if (Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value)) // || (owner.found && owner.RealizedPlayer.inShortcut)
+            if (isButtonToggled || (!RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value && Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value)))
             {
                 this.lastAlpha = this.alpha;
                 this.blink = 1f;
@@ -92,7 +100,7 @@ namespace RainMeadow
 
         }
 
-    public override void Draw(float timeStacker)
+        public override void Draw(float timeStacker)
         {
             Vector2 vector = Vector2.Lerp(this.lastPos, this.pos, timeStacker) + new Vector2(0.01f, 0.01f);
             float num = Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(this.lastAlpha, this.alpha, timeStacker)), 0.7f);

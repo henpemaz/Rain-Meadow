@@ -19,17 +19,14 @@ namespace RainMeadow
 
         public Color bodyColor;
         public Color eyeColor; // unused
-        public SlugcatStats.Name playingAs;
+        public SlugcatStats.Name? playingAs;
         public bool readyForWin;
-        public string myLastDenPos;
-        public bool inGame;
+        public string? myLastDenPos = null;
         public bool isDead;
 
         public StoryClientSettings(Definition entityDefinition) : base(entityDefinition)
         {
             RainMeadow.Debug(this);
-            playingAs = RainMeadow.Ext_SlugcatStatsName.OnlineStoryWhite; //this is bad, we'll need to investigate this.
-            myLastDenPos = "SU_C04";
             bodyColor = entityDefinition.owner == 2 ? Color.cyan : PlayerGraphics.DefaultSlugcatColor(playingAs);
             eyeColor = Color.black;
         }
@@ -55,12 +52,10 @@ namespace RainMeadow
             public Color bodyColor;
             [OnlineFieldColorRgb]
             public Color eyeColor;
-            [OnlineField]
-            public SlugcatStats.Name playingAs;
+            [OnlineField(nullable = true)]
+            public string? playingAs;
             [OnlineField(group = "game")]
             public bool readyForWin;
-            [OnlineField(group = "game")]
-            public bool inGame;
             [OnlineField(group = "game")]
             public bool isDead;
 
@@ -69,9 +64,8 @@ namespace RainMeadow
             {
                 bodyColor = onlineEntity.bodyColor;
                 eyeColor = onlineEntity.eyeColor;
-                playingAs = onlineEntity.playingAs;
+                playingAs = onlineEntity.playingAs?.value;
                 readyForWin = onlineEntity.readyForWin;
-                inGame = onlineEntity.inGame;
                 isDead = onlineEntity.isDead;
             }
 
@@ -81,9 +75,11 @@ namespace RainMeadow
                 var avatarSettings = (StoryClientSettings)onlineEntity;
                 avatarSettings.bodyColor = bodyColor;
                 avatarSettings.eyeColor = eyeColor;
-                avatarSettings.playingAs = playingAs;
+                if (playingAs != null) {
+                    ExtEnumBase.TryParse(typeof(SlugcatStats.Name), playingAs, false, out var rawEnumBase);
+                    avatarSettings.playingAs = rawEnumBase as SlugcatStats.Name;
+                }
                 avatarSettings.readyForWin = readyForWin;
-                avatarSettings.inGame = inGame;
                 avatarSettings.isDead = isDead;
             }
         }

@@ -17,7 +17,7 @@ Rain Meadow is a mod that can be loaded as just any mod. Each player launches th
 
 We're currently still refining the engine. It's a totally custom engine, since RW doesn't use Unity stuff much. We've started fronts on customizations for each game-mode as well.
 
-![roadmap](/Docs/roadmap_w.png)
+![roadmap](/Docs/roadmap_20240529.png)
 
 ## Can I play it / Where can I find more
 

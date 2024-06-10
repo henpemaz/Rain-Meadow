@@ -24,7 +24,7 @@ namespace RainMeadow
         static readonly Dictionary<string, string[]> ambientDict = new();
         static readonly Dictionary<string, VibeZone[]> vibeZonesDict = new();
 
-        static Dictionary<int, VibeZone> activeZonesDict = null;
+        internal static Dictionary<int, VibeZone> activeZonesDict = null;
         static string[] ambienceSongArray = null;
 
         static float time = 0f;
@@ -35,7 +35,7 @@ namespace RainMeadow
         static float? vibeIntensity = null;
         //public static float? vibePan = null;
 
-        struct VibeZone
+        internal struct VibeZone
         {
             public VibeZone(string room, float radius, string songName)
             {
@@ -161,13 +161,11 @@ namespace RainMeadow
 
             if (musicPlayer != null && musicPlayer.song != null && activeZonesDict != null)
             {
-                //TODO: probably a better way to do all this
-
                 //activezonedict has the room ids of each vibe zone's room as keys
                 int[] rooms = activeZonesDict.Keys.ToArray();
-                float[] dists = new float[rooms.Length];
-                //float[] pans = new float[rooms.Length];
-                //this for loop populates the dist array with the distances of the player to each of the vibe zone rooms
+                float minDist = float.MaxValue;
+                int closestVibe = -1;
+                //find the closest one
                 for (int i = 0; i < rooms.Length; i++)
                 {
                     //yoink the coordinates of the player's current room
@@ -175,14 +173,13 @@ namespace RainMeadow
                     //yoink the coordinates of the vibe zone room
                     Vector2 v2 = room.world.RoomToWorldPos(Vector2.zero, rooms[i]);
                     //calculate the flat distance between these two vectors
-                    dists[i] = (v2 - v1).magnitude;
-                    //be me 5000,    be vibezone  400,  thing should be left, so minus, so 400-5000
-                    //pans[i] = v2.x - v1.x;
+                    var dist = (v2 - v1).magnitude;
+                    if (dist < minDist)
+                    {
+                        minDist = dist;
+                        closestVibe = rooms[i];
+                    }
                 }
-                float minDist = Mathf.Min(dists);
-                //float pan = pans[0];
-                //we now have the smallest of all the distances, aka the one closest to the player. grab this smallest distance's corresponding room id
-                int closestVibe = rooms[dists.ToList().IndexOf(minDist)];
                 //and just grab its corresponding vibezone from the dict
                 VibeZone az = activeZonesDict[closestVibe];
                 //if this active zone's song is currently playing, and we are beyond the zone's radius

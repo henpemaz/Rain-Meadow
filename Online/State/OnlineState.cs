@@ -37,7 +37,7 @@ namespace RainMeadow
         // todo figure out how to handle indexes for modded stuff (so doesn't depend on load-order and so forth)
         public class StateType : ExtEnum<StateType>
         {
-            public StateType(string value, bool register) : base(value, register) { }
+            private StateType(string value, bool register) : base(value, register) { }
             public StateType(string value) : base(value, false) { }
             public StateType(string value, Type type) : base(value, true) { OnlineState.RegisterState(this, type); }
 
@@ -78,8 +78,6 @@ namespace RainMeadow
             //public static readonly StateType GamemodeDataState = new("GamemodeDataState", typeof(GamemodeDataState));
             public static readonly StateType MeadowCreatureDataState = new("MeadowCreatureDataState", typeof(MeadowCreatureData.State));
             public static readonly StateType MeadowLobbyState = new("MeadowLobbyState", typeof(MeadowLobbyData.State));
-            public static readonly StateType MeadowWorldState = new("MeadowWorldState", typeof(MeadowWorldData.State));
-            public static readonly StateType MeadowRoomState = new("MeadowRoomState", typeof(MeadowRoomData.State));
 
             public static readonly StateType StoryLobbyDataState = new("StoryLobbyDataState", typeof(StoryLobbyData.State));
 
@@ -92,6 +90,8 @@ namespace RainMeadow
             public static readonly StateType OnlineCreatureDefinition = new("OnlineCreatureDefinition", typeof(OnlineCreatureDefinition));
             public static readonly StateType MeadowAvatarSettingsDefinition = new ("MeadowAvatarSettings.Definition", typeof(MeadowAvatarSettings.Definition));
             public static readonly StateType SlugcatAvatarSettingsDefinition = new ("SlugcatAvatarSettings.Definition", typeof(StoryClientSettings.Definition));
+            public static readonly StateType OnlineMeadowCollectibleDefinition = new ("OnlineMeadowCollectible.Definition", typeof(OnlineMeadowCollectible.Definition));
+            public static readonly StateType OnlineMeadowCollectibleMeadowCollectibleState = new ("MeadowCollectibleState", typeof(OnlineMeadowCollectible.MeadowCollectibleState));
 
             public static readonly StateType DeflateState = new("DeflateState", typeof(DeflateState)); // used in serializer for wrapping large states
         }

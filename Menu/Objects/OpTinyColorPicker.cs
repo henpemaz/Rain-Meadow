@@ -25,14 +25,14 @@ namespace RainMeadow
             this._rect.fillAlpha = 1f;
 
             OnClick += Signal;
-            OnReactivate += Show;
+            OnReactivate += Reactivated;
         }
 
         public void Signal(UIfocusable trigger)
         {
             if (!currentlyPicking)
             {
-                this.colorPicker.pos = (this.InScrollBox ? (this.GetPos() + scrollBox.GetPos() + new Vector2(0f, scrollBox.ScrollOffset)) : this.GetPos()) + new Vector2(-60, 24);
+                this.colorPicker.pos = (this.InScrollBox ? (this.GetPos() + scrollBox.GetPos() + new Vector2(0f, scrollBox.ScrollOffset)) : this.GetPos()) + new Vector2(-60, 30);
                 colorPicker.Show();
                 currentlyPicking = true;
                 colorPicker.NonMouseSetHeld(true);
@@ -55,7 +55,18 @@ namespace RainMeadow
         internal delegate void OnValueChangedHandler();
         public event OnValueChangedHandler OnValueChangedEvent;
 
-        public Color valuecolor => colorPicker.valueColor;
+        public Color valuecolor
+        {
+            get
+            {
+                return colorPicker.valueColor;
+            }
+            set
+            {
+                colorPicker.valueColor = value;
+                colorFill = value;
+            }
+        }
 
         public override void Update()
         {
@@ -98,7 +109,7 @@ namespace RainMeadow
             _rect.fillAlpha = 1f;
         }
 
-        public void Show()
+        public void Reactivated()
         {
             colorPicker.Hide();
         }

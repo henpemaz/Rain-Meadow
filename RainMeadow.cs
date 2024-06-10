@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using HarmonyLib;
 using System;
 using System.Diagnostics;
 using System.Reflection;
@@ -13,11 +14,11 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.0.58";
+        public const string MeadowVersionStr = "0.0.61";
         public static RainMeadow instance;
         private bool init;
+        public bool fullyInit;
         public static RainMeadowOptions rainMeadowOptions;
-
 
         public void OnEnable()
         {
@@ -30,6 +31,28 @@ namespace RainMeadow
             On.RoomPreparer.UpdateThread += RoomPreparer_UpdateThread;
             On.WorldLoader.FindingCreaturesThread += WorldLoader_FindingCreaturesThread;
             On.WorldLoader.CreatingAbstractRoomsThread += WorldLoader_CreatingAbstractRoomsThread;
+
+            On.RWCustom.Custom.Log += Custom_Log;
+            On.RWCustom.Custom.LogImportant += Custom_LogImportant;
+            On.RWCustom.Custom.LogWarning += Custom_LogWarning;
+        }
+
+        private void Custom_LogWarning(On.RWCustom.Custom.orig_LogWarning orig, string[] values)
+        {
+            values.Do(s => Logger.LogWarning(s));
+            orig(values);
+        }
+
+        private void Custom_LogImportant(On.RWCustom.Custom.orig_LogImportant orig, string[] values)
+        {
+            values.Do(s => Logger.LogInfo(s));
+            orig(values);
+        }
+
+        private void Custom_Log(On.RWCustom.Custom.orig_Log orig, string[] values)
+        {
+            values.Do(s => Logger.LogInfo(s));
+            orig(values);
         }
 
         private void WorldLoader_CreatingAbstractRoomsThread(On.WorldLoader.orig_CreatingAbstractRoomsThread orig, WorldLoader self)
@@ -108,8 +131,6 @@ namespace RainMeadow
 
             try
             {
-
-
                 MachineConnector.SetRegisteredOI("henpemaz_rainmeadow", rainMeadowOptions);
 
                 var sw = Stopwatch.StartNew();
@@ -127,7 +148,10 @@ namespace RainMeadow
                 sw.Stop();
                 RainMeadow.Debug($"MeadowProgression.InitializeBuiltinTypes: {sw.Elapsed}");
 
-                EmoteHandler.InitializeBuiltinTypes();
+                sw = Stopwatch.StartNew();
+                StorySaveManager.InitializeStorySaves();
+                sw.Stop();
+                RainMeadow.Debug($"StorySaveManager.InitializeSaveFiles: {sw.Elapsed}");
 
                 sw = Stopwatch.StartNew();
                 RPCManager.SetupRPCs();
@@ -172,19 +196,25 @@ namespace RainMeadow
                 MeadowMusic.EnableMusic();
                 new PlopMachine().OnEnable();
 
+                MeadowProgression.LoadProgression();
+
                 self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
 
 #if LOCAL_P2P
                 if (!self.setup.startScreen)
                 {
+                    if (!self.setup.loadGame) self.processManager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.Dev; // this got messed up last patch
                     OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(LocalMatchmakingManager.localGameMode), OnlineManager.mePlayer, null);
+                    MeadowProgression.progressionData.currentlySelectedCharacter = MeadowProgression.skinData[MeadowProgression.currentTestSkin].character;
                 }
 #endif
+                fullyInit = true;
             }
             catch (Exception e)
             {
                 Logger.LogError(e);
-                throw;
+                fullyInit = false;
+                //throw;
             }
         }
     }

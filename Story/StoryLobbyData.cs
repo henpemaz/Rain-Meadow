@@ -1,5 +1,6 @@
 ﻿using Mono.Cecil;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using static RainMeadow.OnlineResource;
 
@@ -17,16 +18,20 @@ namespace RainMeadow
 
         public class State : ResourceDataState
         {
-            [OnlineField(nullable =true)]
+            [OnlineField(nullable=true)]
             public string? defaultDenPos;
             [OnlineField]
-            public bool didStartGame;
+            public bool isInGame;            
+            [OnlineField]
+            public bool changedRegions;
             [OnlineField]
             public SlugcatStats.Name currentCampaign;
             [OnlineField]
             public bool didStartCycle;
             [OnlineField]
             public bool reinforcedKarma;
+            [OnlineField]
+            public int karmaCap;
             [OnlineField]
             public int karma;
             [OnlineField]
@@ -37,6 +42,13 @@ namespace RainMeadow
             public int quarterfood;
             [OnlineField]
             public int mushroomCounter;
+            [OnlineField]
+            public Dictionary<string, bool> storyBoolRemixSettings;
+            [OnlineField]
+            public Dictionary<string, float> storyFloatRemixSettings;
+            [OnlineField]
+            public Dictionary<string, int> storyIntRemixSettings;
+
 
             public State() {}
 
@@ -45,14 +57,20 @@ namespace RainMeadow
                 StoryGameMode storyGameMode = (onlineResource as Lobby).gameMode as StoryGameMode;
                 RainWorldGame currentGameState = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
 
-                didStartGame = storyGameMode.didStartGame;
+                defaultDenPos = storyGameMode.defaultDenPos;
                 currentCampaign = storyGameMode.currentCampaign;
+                storyBoolRemixSettings = storyGameMode.storyBoolRemixSettings;
+                storyFloatRemixSettings = storyGameMode.storyFloatRemixSettings;
+                storyIntRemixSettings = storyGameMode.storyIntRemixSettings;
+
+                isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
+                changedRegions = storyGameMode.changedRegions;
                 didStartCycle = storyGameMode.didStartCycle;
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
                     karma = storySession.saveState.deathPersistentSaveData.karma;
+                    karmaCap = storySession.saveState.deathPersistentSaveData.karmaCap;
                     theGlow = storySession.saveState.theGlow;
-                    defaultDenPos = storySession.saveState.denPosition;
                     reinforcedKarma = storySession.saveState.deathPersistentSaveData.reinforcedKarma;
                 }
 
@@ -69,6 +87,8 @@ namespace RainMeadow
                 var playerstate = (currentGameState?.Players[0].state as PlayerState);
                 var lobby = (data.resource as Lobby);
 
+                (lobby.gameMode as StoryGameMode).defaultDenPos = defaultDenPos;
+                
                 if (playerstate != null)
                 {
                     playerstate.foodInStomach = food;
@@ -82,13 +102,22 @@ namespace RainMeadow
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
                     storySession.saveState.deathPersistentSaveData.karma = karma;
+                    storySession.saveState.deathPersistentSaveData.karmaCap = karmaCap;
                     storySession.saveState.deathPersistentSaveData.reinforcedKarma = reinforcedKarma;
                     storySession.saveState.theGlow = theGlow;
-                    (lobby.gameMode as StoryGameMode).defaultDenPos = defaultDenPos;
+                    if ((RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame rainWorldGame))
+                    {
+                        if(rainWorldGame.Players[0].realizedCreature != null)
+                            (rainWorldGame.Players[0].realizedCreature as Player).glowing = theGlow;
+                    }
                 }
-                (lobby.gameMode as StoryGameMode).didStartGame = didStartGame;
                 (lobby.gameMode as StoryGameMode).currentCampaign = currentCampaign;
+                (lobby.gameMode as StoryGameMode).storyBoolRemixSettings = storyBoolRemixSettings;
+                (lobby.gameMode as StoryGameMode).storyFloatRemixSettings = storyFloatRemixSettings;
+                (lobby.gameMode as StoryGameMode).storyIntRemixSettings = storyIntRemixSettings;
 
+                (lobby.gameMode as StoryGameMode).isInGame = isInGame;
+                (lobby.gameMode as StoryGameMode).changedRegions = changedRegions;
                 (lobby.gameMode as StoryGameMode).didStartCycle = didStartCycle;
             }
         }

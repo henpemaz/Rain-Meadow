@@ -164,7 +164,7 @@ namespace RainMeadow
                 this.resource = resource;
             }
 
-            internal abstract ResourceDataState MakeState();
+            internal virtual ResourceDataState MakeState() { return null; }
 
             [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
             public abstract class ResourceDataState : OnlineState
@@ -196,7 +196,7 @@ namespace RainMeadow
                 entitiesJoined = new(resource.entities.Keys.ToList());
                 registeredEntities = new(resource.registeredEntities.Values.Select(def => def.Clone() as EntityDefinition).ToList());
                 entityStates = new(resource.entities.Select(e => e.Value.entity.GetState(ts, resource)).ToList());
-                resourceDataStates = new(resource.resourceData.Select(d=>d.MakeState()).ToList());
+                resourceDataStates = new(resource.resourceData.Select(d => d.MakeState()).Where(s => s != null).ToList());
             }
             public virtual void ReadTo(OnlineResource resource)
             {

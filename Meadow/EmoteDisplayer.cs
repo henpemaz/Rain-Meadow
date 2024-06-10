@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
 {
@@ -28,6 +29,7 @@ namespace RainMeadow
         private byte localVersion;
 
         // this weird thing isn't a uad, it sort of follows the creature and gets updated when the creature updates
+        // the "tiles" it adds though are UADs
         public EmoteDisplayer(Creature owner, OnlineCreature ownerEntity, MeadowCreatureData creatureData, MeadowAvatarCustomization customization)
         {
             RainMeadow.Debug($"EmoteDisplayer created for {owner}");
@@ -119,7 +121,7 @@ namespace RainMeadow
         }
 
         // maybe move this logic to the data thing?
-        internal bool AddEmoteLocal(EmoteType emoteType)
+        internal bool AddEmoteLocal(Emote emoteType)
         {
             RainMeadow.Debug(emoteType);
             if (!ownerEntity.isMine) throw new InvalidProgrammerException("not mine");
@@ -145,6 +147,7 @@ namespace RainMeadow
             }
             else
             {
+                timeToLive = initialLifetime;
                 this.creatureData.emotesLife = initialLifetime; // refresh
             }
 
@@ -157,7 +160,7 @@ namespace RainMeadow
             return true;
         }
 
-        private void AddEmoteRemote(EmoteType emoteType)
+        private void AddEmoteRemote(Emote emoteType)
         {
             RainMeadow.Debug(emoteType);
             if (ownerEntity.isMine) throw new InvalidProgrammerException("mine");
@@ -206,7 +209,7 @@ namespace RainMeadow
 
         internal class EmoteTile : UpdatableAndDeletable, IDrawable
         {
-            public EmoteType emote;
+            public Emote emote;
             private EmoteDisplayer holder;
             private int index;
 
@@ -215,7 +218,7 @@ namespace RainMeadow
             private float alpha;
             public Vector2 lastPos;
 
-            public EmoteTile(EmoteType emote, int index, EmoteDisplayer emoteHolder)
+            public EmoteTile(Emote emote, int index, EmoteDisplayer emoteHolder)
             {
                 this.emote = emote;
                 this.index = index;

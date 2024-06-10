@@ -1,13 +1,11 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using Steamworks;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using Menu;
-using System.Linq;
-using System.Collections.Generic;
+using Steamworks;
 
 namespace RainMeadow
 {
@@ -24,8 +22,20 @@ namespace RainMeadow
 
             On.Menu.MenuScene.BuildScene += MenuScene_BuildScene;
 
+            On.Menu.SlugcatSelectMenu.SlugcatUnlocked += SlugcatSelectMenu_SlugcatUnlocked;
+
         }
 
+        private bool SlugcatSelectMenu_SlugcatUnlocked(On.Menu.SlugcatSelectMenu.orig_SlugcatUnlocked orig, SlugcatSelectMenu self, SlugcatStats.Name i)
+        {
+            if (OnlineManager.lobby == null) 
+            {
+                return orig(self, i);
+            }
+
+            //TODO MSC: do something smarter, this stops the crash; I'm being lazy -Turtle
+            return true;
+        }
 
         private void MenuScene_BuildScene(On.Menu.MenuScene.orig_BuildScene orig, MenuScene self)
         {
@@ -85,6 +95,26 @@ namespace RainMeadow
                     self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmscav bg", new Vector2(0f, 0f), 3.5f, MenuDepthIllustration.MenuShader.Normal));
                     self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmscav scav", new Vector2(0f, 0f), 2.2f, MenuDepthIllustration.MenuShader.Normal));
                     self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmscav fg", new Vector2(0f, 0f), 2.1f, MenuDepthIllustration.MenuShader.LightEdges));
+                    (self as InteractiveMenuScene).idleDepths.Add(3.2f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.2f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.1f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.0f);
+                    (self as InteractiveMenuScene).idleDepths.Add(1.5f);
+                }
+            }
+            if (self.sceneID == RainMeadow.Ext_SceneID.Slugcat_MeadowEggbug)
+            {
+                self.sceneFolder = "Scenes" + Path.DirectorySeparatorChar.ToString() + "meadow - eggbug";
+                if (self.flatMode)
+                {
+                    self.AddIllustration(new MenuIllustration(self.menu, self, self.sceneFolder, "MeadowEggbug - Flat", new Vector2(683f, 384f), false, true));
+                }
+                else
+                {
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmbug bg", new Vector2(0f, 0f), 3.5f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmbug mg", new Vector2(0f, 0f), 2.4f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmbug bug", new Vector2(0f, 0f), 2.2f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmbug fg", new Vector2(0f, 0f), 2.1f, MenuDepthIllustration.MenuShader.LightEdges));
                     (self as InteractiveMenuScene).idleDepths.Add(3.2f);
                     (self as InteractiveMenuScene).idleDepths.Add(2.2f);
                     (self as InteractiveMenuScene).idleDepths.Add(2.1f);
@@ -154,9 +184,15 @@ namespace RainMeadow
                         self.sceneOffset = new Vector2(-10f, 100f);
                         self.slugcatDepth = 3.1000001f;
                     }
+                    else if (mcsp.character == MeadowProgression.Character.Eggbug)
+                    {
+                        sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowEggbug;
+                        self.sceneOffset = new Vector2(-10f, 100f);
+                        self.slugcatDepth = 3.1000001f;
+                    }
                     else
                     {
-                        throw new InvalidProgrammerException("implement me");
+                        //throw new InvalidProgrammerException("implement me");
                     }
 
                 }
@@ -166,7 +202,7 @@ namespace RainMeadow
                     if (OnlineManager.lobby.isOwner) // Host
                     {
 
-                        if (slugcatCustom.slug == Ext_SlugcatStatsName.OnlineStoryWhite)
+                        if (slugcatCustom.slug == SlugcatStats.Name.White)
                         {
                             sceneID = Menu.MenuScene.SceneID.Slugcat_White;
                             self.sceneOffset = new Vector2(-10f, 100f);
@@ -174,14 +210,14 @@ namespace RainMeadow
                             
                         }
 
-                        else if (slugcatCustom.slug == Ext_SlugcatStatsName.OnlineStoryYellow)
+                        else if (slugcatCustom.slug == SlugcatStats.Name.Yellow)
                         {
                             sceneID = Menu.MenuScene.SceneID.Slugcat_Yellow;
                             self.sceneOffset = new Vector2(-10f, 100f);
                             self.slugcatDepth = 3.1000001f;
                         }
 
-                        else if (slugcatCustom.slug == Ext_SlugcatStatsName.OnlineStoryRed)
+                        else if (slugcatCustom.slug == SlugcatStats.Name.Red)
                         {
                             sceneID = Menu.MenuScene.SceneID.Slugcat_Red;
                             self.sceneOffset = new Vector2(-10f, 100f);
@@ -294,7 +330,14 @@ namespace RainMeadow
         {
             orig(self, manager, showRegionSpecificBkg);
 
-            MatchmakingManager.instance.LeaveLobby();
+            if (!fullyInit)
+            {
+                self.manager.ShowDialog(new DialogNotify("Rain Meadow failed to start", self.manager, null));
+                return;
+            }
+
+            // we might get here from quitting out of game
+            OnlineManager.LeaveLobby();
 
             var meadowButton = new SimpleButton(self, self.pages[0], self.Translate("MEADOW"), "MEADOW", Vector2.zero, new Vector2(Menu.MainMenu.GetButtonWidth(self.CurrLang), 30f));
             self.AddMainMenuButton(meadowButton, () =>

@@ -165,7 +165,6 @@ namespace RainMeadow
                     var writer = new BinaryWriter(memory);
                     Packet.Encode(new RequestLeavePacket(), writer, null);
                     UdpPeer.Send(currentLobbyHost, memory.GetBuffer(), (int)memory.Position, UdpPeer.PacketType.Reliable);
-                    OnlineManager.lobby = null;
                 }
             }
         }

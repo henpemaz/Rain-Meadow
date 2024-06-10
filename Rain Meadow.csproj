@@ -35,6 +35,7 @@
   <ItemGroup>
     <None Remove=".gitattributes" />
     <None Remove=".gitignore" />
+    <None Remove="Menu\MeadowMenu.cs~RF8b0fc40.TMP" />
   </ItemGroup>
 
   <ItemGroup>
@@ -120,6 +121,9 @@
     <Reference Update="lib\Assembly-CSharp-firstpass.dll">
       <Private>False</Private>
     </Reference>
+    <Reference Update="lib\Assembly-CSharp-nstrip.dll">
+      <Private>False</Private>
+    </Reference>
     <Reference Update="lib\BepInEx.dll">
       <Private>False</Private>
     </Reference>
@@ -168,6 +172,9 @@
     <Reference Update="lib\PUBLIC-Assembly-CSharp.dll">
       <Private>False</Private>
     </Reference>
+    <Reference Update="lib\Rewired.Runtime.dll">
+      <Private>False</Private>
+    </Reference>
     <Reference Update="lib\Rewired_Core.dll">
       <Private>False</Private>
     </Reference>
@@ -175,6 +182,9 @@
       <Private>False</Private>
     </Reference>
     <Reference Update="lib\stripped-assembly-csharp.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Unity.Mathematics.dll">
       <Private>False</Private>
     </Reference>
     <Reference Update="lib\UnityEngine.AssetBundleModule.dll">

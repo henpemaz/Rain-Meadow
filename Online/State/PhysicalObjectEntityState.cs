@@ -1,7 +1,4 @@
-﻿using Mono.Cecil;
-using System;
-using System.ComponentModel;
-using System.Text;
+﻿using System;
 
 namespace RainMeadow
 {
@@ -50,7 +47,7 @@ namespace RainMeadow
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
-            if (onlineEntity.owner.isMe || onlineEntity.isPending) { RainMeadow.Debug($"not syncing {this} because mine?{onlineEntity.owner.isMe} pending?{onlineEntity.isPending}"); return; }; // Don't sync if pending, reduces visibility and effect of lag
+            if (onlineEntity.isPending) { RainMeadow.Debug($"not syncing {this} because pending"); return; }; // Don't sync if pending, reduces visibility and effect of lag
 
             var onlineObject = onlineEntity as OnlinePhysicalObject;
             RainMeadow.Trace($"{onlineEntity} received realized state? {realizedObjectState != null} entity realized?{onlineObject.realized}");
@@ -69,7 +66,7 @@ namespace RainMeadow
                 //throw;
             }
             
-            if(!pos.NodeDefined && !wasPos.CompareDisregardingNode(pos))onlineObject.apo.pos = pos; // pos isn't updated if compareDisregardingTile, but please, do
+            onlineObject.apo.pos = pos; // pos isn't updated if compareDisregardingTile, but please, do
             onlineObject.beingMoved = false;
             onlineObject.realized = this.realized;
             if (onlineObject.apo.realizedObject != null)

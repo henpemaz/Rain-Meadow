@@ -9,7 +9,7 @@ namespace RainMeadow
         public OnlineCreature owner;
         internal TickReference emotesTick; // tick of primary resource owner
         internal float emotesLife; // seconds
-        internal List<EmoteType> emotes = new();
+        internal List<MeadowProgression.Emote> emotes = new();
         internal byte emotesVersion;
         internal Player.InputPackage input;
         internal CreatureController.SpecialInput specialInput; // todo todo todo
@@ -35,7 +35,7 @@ namespace RainMeadow
         public class State : EntityDataState
         {
             [OnlineField(nullable = true, group = "emotes")]
-            public Generics.AddRemoveSortedExtEnums<EmoteType> emotes;
+            public Generics.AddRemoveSortedExtEnums<MeadowProgression.Emote> emotes;
             [OnlineField(group = "emotes")]
             public TickReference emotesTick;
             [OnlineFieldHalf(group = "emotes")]

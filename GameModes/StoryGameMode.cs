@@ -8,16 +8,19 @@ namespace RainMeadow
         public List<ushort> readyForWinPlayers = new List<ushort>();
 
         // these are synced by StoryLobbyData
-        public bool didStartGame = false;
+        public bool isInGame = false;
+        public bool changedRegions = false;
         public bool didStartCycle = false;
-        public string defaultDenPos;
-        public SlugcatStats.Name currentCampaign = RainMeadow.Ext_SlugcatStatsName.OnlineStoryWhite;
-
+        public string? defaultDenPos;
+        public StorySaveProfile? currentSaveSlot;
+        public SlugcatStats.Name currentCampaign;
+        public Dictionary<string, bool> storyBoolRemixSettings;
+        public Dictionary<string, float> storyFloatRemixSettings;
+        public Dictionary<string, int> storyIntRemixSettings;
         public StoryClientSettings storyClientSettings => clientSettings as StoryClientSettings;
 
         public StoryGameMode(Lobby lobby) : base(lobby)
         {
-
         }
         public override ProcessManager.ProcessID MenuProcessId()
         {
@@ -25,7 +28,7 @@ namespace RainMeadow
         }
         public override bool AllowedInMode(PlacedObject item)
         {
-            return base.AllowedInMode(item) || OnlineGameModeHelpers.PlayerGrablableItems.Contains(item.type);
+            return base.AllowedInMode(item) || OnlineGameModeHelpers.PlayerGrablableItems.Contains(item.type) || OnlineGameModeHelpers.creatureRelatedItems.Contains(item.type);
         }
         public override bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)
         {
@@ -43,27 +46,15 @@ namespace RainMeadow
             return true;
         }
 
-        public override SlugcatStats.Name GetStorySessionPlayer(RainWorldGame self) {
-            return currentCampaign;
+        public override SlugcatStats.Name GetStorySessionPlayer(RainWorldGame self) 
+        {
+            // Return the save slot slugcatStats name
+            // TODO: Handle client side saves. As in don't do anything savestate related, just get from host.
+            return currentSaveSlot?.save ?? RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;
         }
         public override SlugcatStats.Name LoadWorldAs(RainWorldGame game)
         {
-            if (currentCampaign == RainMeadow.Ext_SlugcatStatsName.OnlineStoryYellow) 
-            {
-                return SlugcatStats.Name.Yellow;
-            }
-            else if (currentCampaign == RainMeadow.Ext_SlugcatStatsName.OnlineStoryWhite) 
-            {
-                return SlugcatStats.Name.White;
-            }
-            else if (currentCampaign == RainMeadow.Ext_SlugcatStatsName.OnlineStoryRed) 
-            {
-                return SlugcatStats.Name.Red;
-            }
-            else
-            {
-                return SlugcatStats.Name.White;
-            }
+            return currentCampaign;
         }
 
         public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
@@ -82,9 +73,9 @@ namespace RainMeadow
 
         public override void LobbyReadyCheck()
         {
-            if (lobby.isOwner && !didStartGame)
+            if (lobby.isOwner)
             {
-                didStartGame = true;
+                RainMeadow.Debug("Host LobbyReadyCheck - started game");
                 currentCampaign = storyClientSettings.playingAs;
             }
         }
@@ -110,7 +101,10 @@ namespace RainMeadow
         internal override void LobbyTick(uint tick)
         {
             base.LobbyTick(tick);
-            readyForWinPlayers = lobby.entities.Values.Where(e => e.entity is StoryClientSettings sas && sas.readyForWin).Select(e => e.entity.owner.inLobbyId).ToList();
+            readyForWinPlayers = lobby.entities.Values.Where(
+                e => e.entity is StoryClientSettings sas && 
+                (sas.readyForWin || !sas.inGame || sas.isDead)
+            ).Select(e => e.entity.owner.inLobbyId).ToList();
         }
     }
 }

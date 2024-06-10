@@ -1,5 +1,7 @@
 ﻿using RWCustom;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -78,6 +80,58 @@ namespace RainMeadow
             }
 
             return dictionary;
+        }
+
+        public static (List<T1>, List<T2>) ToListTuple<T1, T2>(this IEnumerable<(T1,T2)> source)
+        {
+            var list = source.ToList(); // eval once
+            var listA = new List<T1>(list.Count);
+            var listB = new List<T2>(list.Count);
+            foreach (var t in list)
+            {
+                listA.Add(t.Item1);
+                listB.Add(t.Item2);
+            }
+
+            return (listA, listB);
+        }
+
+        // making linq better one extension at a time
+        public static T MinBy<T>(this IEnumerable<T> source, Func<T, float> evaluator)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
+
+            float num = 0f;
+            bool init = false;
+            T best = default(T);
+            foreach (T item in source)
+            {
+                var val = evaluator(item);
+                if (init)
+                {
+                    if (!init || val < num || float.IsNaN(val))
+                    {
+                        num = val;
+                        best = item;
+                    }
+                }
+                else
+                {
+                    num = val;
+                    best = item;
+                    init = true;
+                }
+            }
+
+            if (init)
+            {
+                return best;
+            }
+
+            throw new ArgumentException("no elements in sequence");
         }
 
         public static bool CloseEnoughZeroSnap(this Vector2 a, Vector2 b, float tolerance)

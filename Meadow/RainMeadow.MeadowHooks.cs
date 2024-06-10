@@ -2,9 +2,7 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
-using RWCustom;
 using System;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -18,6 +16,12 @@ namespace RainMeadow
             CicadaController.EnableCicada();
             LizardController.EnableLizard();
             ScavengerController.EnableScavenger();
+            NoodleController.EnableNoodle();
+            EggbugController.EnableEggbug();
+            MeadowPlayerController.Enable();
+            LanternMouseController.EnableMouse();
+
+            AbstractMeadowCollectible.Enable();
 
             On.RoomCamera.Update += RoomCamera_Update; // init meadow hud
 
@@ -37,6 +41,8 @@ namespace RainMeadow
 
             On.Room.LoadFromDataString += Room_LoadFromDataString1; // places of spawning items
 
+            On.Menu.FastTravelScreen.Singal += FastTravelScreen_Singal;
+
             // open gate
             new Hook(typeof(RegionGate).GetProperty("MeetRequirement").GetGetMethod(), this.RegionGate_MeetRequirement);
             new Hook(typeof(WaterGate).GetProperty("EnergyEnoughToOpen").GetGetMethod(), this.RegionGate_EnergyEnoughToOpen);
@@ -46,6 +52,46 @@ namespace RainMeadow
 
             On.WormGrass.Worm.ctor += Worm_ctor; // only cosmetic worms
 
+            IL.ScavengerOutpost.ctor += ScavengerOutpost_ctor;
+
+        }
+
+        private void ScavengerOutpost_ctor(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                ILLabel skip = null;
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdarg(2),
+                    i => i.MatchCallOrCallvirt(out _),
+                    i => i.MatchLdfld<Room>("firstTimeRealized"),
+                    i => i.MatchBrfalse(out skip)
+                    );
+                c.EmitDelegate(() => !(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode));
+                c.Emit(OpCodes.Brfalse, skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void FastTravelScreen_Singal(On.Menu.FastTravelScreen.orig_Singal orig, Menu.FastTravelScreen self, Menu.MenuObject sender, string message)
+        {
+            if (OnlineManager.lobby?.gameMode is MeadowGameMode mgm)
+            {
+                if (message == "HOLD TO START")
+                {
+                    self.manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.RegionSelect;
+                    MeadowProgression.progressionData.currentCharacterProgress.saveLocation = new WorldCoordinate(self.selectedShelter, -1, -1, 0);
+                }
+                if (message == "BACK")
+                {
+                    self.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.MeadowMenu);
+                }
+            }
+            orig(self, sender, message);
         }
 
         private void Worm_ctor(On.WormGrass.Worm.orig_ctor orig, WormGrass.Worm self, WormGrass wormGrass, WormGrass.WormGrassPatch patch, Vector2 basePos, float reachHeight, float iFac, float lengthFac, bool cosmeticOnly)
@@ -114,7 +160,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
             {
-                if(CreatureController.creatureControllers.TryGetValue(mgm.avatar.creature, out var c))
+                if (mgm.avatar.realizedCreature != null && CreatureController.creatureControllers.TryGetValue(mgm.avatar.realizedCreature, out var c))
                 {
                     return c.touchedNoInputCounter > 20;
                 }
@@ -126,7 +172,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
             {
-                if (CreatureController.creatureControllers.TryGetValue(mgm.avatar.creature, out var c))
+                if (mgm.avatar.realizedCreature != null && CreatureController.creatureControllers.TryGetValue(mgm.avatar.realizedCreature, out var c))
                 {
                     return self.DetectZone(c.creature.abstractCreature);
                 }
@@ -240,12 +286,14 @@ namespace RainMeadow
                     {
                         self.ReturnFContainer("HUD"),
                         self.ReturnFContainer("HUD2")
-                    }, self.room.game.rainWorld, owner is Player player? player : CreatureController.creatureControllers.TryGetValue(owner.abstractCreature, out var controller) ? controller : throw new InvalidProgrammerException("Not player nor controlled creature"));
+                    }, self.room.game.rainWorld, CreatureController.creatureControllers.GetValue(owner, (c) => throw new InvalidProgrammerException("Not controlled creature: " + c)));
 
                     var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
                     self.hud.AddPart(new HUD.TextPrompt(self.hud)); // game assumes this never null
                     self.hud.AddPart(new HUD.Map(self.hud, new HUD.Map.MapData(self.room.world, self.room.game.rainWorld))); // game assumes this too :/
-                    self.hud.AddPart(new EmoteHandler(self.hud, self, owner));
+                    self.hud.AddPart(new MeadowProgressionHud(self.hud));
+                    self.hud.AddPart(new MeadowEmoteHud(self.hud, self, owner));
+                    self.hud.AddPart(new MeadowHud(self.hud, self, owner));
                 }
             }
             orig(self);

@@ -36,6 +36,7 @@ namespace RainMeadow
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
         {
             RainMeadow.DebugMe();
+
             Vector2 buttonSize = new(130f, 30f);
             this.backTarget = ProcessManager.ProcessID.MainMenu;
 
@@ -180,6 +181,7 @@ namespace RainMeadow
             passwordInputBox.greyedOut = !setpassword || this.currentlySelectedCard != 0;
             enablePasswordCheckbox.buttonBehav.greyedOut = this.currentlySelectedCard != 0;
             lobbyLimitNumberTextBox.greyedOut = this.currentlySelectedCard != 0;
+            playButton.menuLabel.text = (this.currentlySelectedCard == 0) ? "CREATE!" : "JOIN!";
             if (lobbyLimitNumberTextBox.value != "")
             {
                 maxPlayerCount = lobbyLimitNumberTextBox.valueInt;
@@ -262,6 +264,7 @@ namespace RainMeadow
                 return;
 
             }
+
             if (currentlySelectedCard == 0)
             {
                 ShowLoadingDialog("Creating lobby...");

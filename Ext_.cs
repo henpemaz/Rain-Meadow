@@ -18,11 +18,6 @@ namespace RainMeadow
         {
             public static SlugcatStats.Name OnlineSessionPlayer = new("MeadowOnline", true);
             public static SlugcatStats.Name OnlineSessionRemotePlayer = new("MeadowOnlineRemote", true);
-
-            public static SlugcatStats.Name OnlineStoryWhite = new("OnlineStoryWhite", true);
-            public static SlugcatStats.Name OnlineStoryYellow = new("OnlineStoryYellow", true);
-            public static SlugcatStats.Name OnlineStoryRed = new("OnlineStoryRed", true);
-
         }
 
         public class Ext_SceneID
@@ -31,11 +26,16 @@ namespace RainMeadow
             internal static MenuScene.SceneID Slugcat_MeadowSquidcicada = new("Slugcat_MeadowSquidcicada", true);
             internal static MenuScene.SceneID Slugcat_MeadowLizard = new("Slugcat_MeadowLizard", true);
             internal static MenuScene.SceneID Slugcat_MeadowScav = new("Slugcat_MeadowScav", true);
+            internal static MenuScene.SceneID Slugcat_MeadowEggbug = new("Slugcat_MeadowEggbug", true);
         }
 
         public class Ext_PhysicalObjectType
         {
             public static AbstractPhysicalObject.AbstractObjectType MeadowPlant = new("MeadowPlant", true);
+            // public static AbstractPhysicalObject.AbstractObjectType MeadowToken = new("MeadowToken", true);
+            public static AbstractPhysicalObject.AbstractObjectType MeadowTokenRed = new("MeadowTokenRed", true);
+            public static AbstractPhysicalObject.AbstractObjectType MeadowTokenBlue = new("MeadowTokenBlue", true);
+            public static AbstractPhysicalObject.AbstractObjectType MeadowTokenGold = new("MeadowTokenGold", true);
         }
     }
 }
