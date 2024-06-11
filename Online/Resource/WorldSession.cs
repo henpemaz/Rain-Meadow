@@ -13,10 +13,9 @@ namespace RainMeadow
         public Dictionary<string, RoomSession> roomSessions = new();
         public World World => world;
 
-        public WorldSession(Region region, Lobby lobby)
+        public WorldSession(Region region, Lobby lobby) : base(lobby)
         {
             this.region = region;
-            this.super = lobby;
         }
 
         public void BindWorld(World world)

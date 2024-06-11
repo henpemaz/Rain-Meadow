@@ -123,7 +123,7 @@ namespace RainMeadow
                         MeadowProgression.SkinProgress();
                     }
                 }
-                MeadowProgression.progressionData.currentlySelectedCharacter = playableCharacters[ssm.slugcatPageIndex];
+                MeadowProgression.progressionData.currentlySelectedCharacter = MeadowProgression.allCharacters[ssm.slugcatPageIndex];
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.MeadowMenu);
             };
             mainPage.subObjects.Add(cheatButton);

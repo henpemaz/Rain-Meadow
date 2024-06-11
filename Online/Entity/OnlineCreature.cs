@@ -8,14 +8,39 @@ namespace RainMeadow
 {
     public class OnlineCreature : OnlinePhysicalObject
     {
+        public class OnlineCreatureDefinition : OnlinePhysicalObjectDefinition
+        {
+            public OnlineCreatureDefinition() { }
+
+            public OnlineCreatureDefinition(OnlineCreature onlineCreature, OnlineResource inResource) : base(onlineCreature, inResource)
+            {
+                this.serializedObject = SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
+            }
+
+            public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
+            {
+                return new OnlineCreature(this, inResource, (AbstractCreatureState)initialState);
+            }
+        }
+
         public bool enteringShortCut;
         internal AbstractCreature creature => apo as AbstractCreature;
         internal Creature realizedCreature => apo.realizedObject as Creature;
         public AbstractCreature abstractCreature => apo as AbstractCreature;
 
-        public OnlineCreature(OnlineCreatureDefinition def, AbstractCreature ac) : base(def, ac)
+        public OnlineCreature(AbstractCreature ac, EntityId id, OnlinePlayer owner, bool isTransferable) : base(ac, id, owner, isTransferable)
         {
-            // ? anything special?
+
+        }
+
+        public OnlineCreature(OnlineCreatureDefinition onlineCreatureDefinition, OnlineResource inResource, AbstractCreatureState initialState) : base(onlineCreatureDefinition, inResource, initialState)
+        {
+
+        }
+
+        internal override EntityDefinition MakeDefinition(OnlineResource onlineResource)
+        {
+            return new OnlineCreatureDefinition(this, onlineResource);
         }
 
         public static AbstractCreature AbstractCreatureFromString(World world, string creatureString)
@@ -59,17 +84,18 @@ namespace RainMeadow
             return abstractCreature;
         }
 
-        public static OnlineEntity FromDefinition(OnlineCreatureDefinition newCreatureEvent, OnlineResource inResource)
+        protected override AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, PhysicalObjectEntityState initialState)
         {
             World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
             EntityID id = world.game.GetNewID();
-            id.altSeed = newCreatureEvent.seed;
 
-            RainMeadow.Debug("serializedObject: " + newCreatureEvent.serializedObject);
-            AbstractCreature ac = AbstractCreatureFromString(world, newCreatureEvent.serializedObject);
-            ac.ID = id;
+            RainMeadow.Debug("serializedObject: " + newObjectEvent.serializedObject);
 
-            return new OnlineCreature(newCreatureEvent, ac);
+            var apo = AbstractCreatureFromString(world, newObjectEvent.serializedObject);
+            id.altSeed = apo.ID.RandomSeed;
+            apo.ID = id;
+            apo.pos = initialState.pos;
+            return apo;
         }
 
         protected override EntityState MakeState(uint tick, OnlineResource inResource)
@@ -118,12 +144,16 @@ namespace RainMeadow
 
         public void BroadcastSuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
         {
-            if (currentlyJoinedResource == null) return;
-            foreach (var participant in currentlyJoinedResource.participants)
+            if (currentlyJoinedResource is RoomSession room)
             {
-                if (!participant.Key.isMe)
+                RainMeadow.Debug(this);
+                if (id.type == 0) throw new InvalidProgrammerException("here");
+                foreach (var participant in room.participants)
                 {
-                    participant.Key.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
+                    if (!participant.Key.isMe)
+                    {
+                        participant.Key.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
+                    }
                 }
             }
         }

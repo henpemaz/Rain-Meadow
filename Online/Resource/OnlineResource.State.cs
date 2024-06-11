@@ -1,7 +1,9 @@
-﻿using RainMeadow.Generics;
+﻿using Mono.Cecil;
+using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static RainMeadow.OnlineResource;
 
 namespace RainMeadow
 {
@@ -62,7 +64,10 @@ namespace RainMeadow
             {
                 latestState = newState;
                 if (isWaitingForState || isAvailable) newState.ReadTo(this);
-                if(isWaitingForState) { Available(); }
+                if (isWaitingForState) 
+                {
+                    Available();
+                }
             }
             else
             {
@@ -183,7 +188,7 @@ namespace RainMeadow
             [OnlineField(nullable = true, group = "entitydefs")]
             public AddRemoveSortedCustomSerializables<OnlineEntity.EntityId> entitiesJoined;
             [OnlineField(nullable = true, group = "entitydefs")]
-            public DeltaStates<EntityDefinition, OnlineState, OnlineEntity.EntityId> registeredEntities;
+            public DeltaStates<OnlineEntity.EntityDefinition, OnlineState, OnlineEntity.EntityId> registeredEntities;
             [OnlineField(nullable = true, group = "entities")]
             public DeltaStates<OnlineEntity.EntityState, OnlineState, OnlineEntity.EntityId> entityStates;
             [OnlineField(nullable = true, group = "data")]
@@ -194,7 +199,7 @@ namespace RainMeadow
             {
                 this.resource = resource;
                 entitiesJoined = new(resource.entities.Keys.ToList());
-                registeredEntities = new(resource.registeredEntities.Values.Select(def => def.Clone() as EntityDefinition).ToList());
+                registeredEntities = new(resource.registeredEntities.Values.Select(def => def.Clone() as OnlineEntity.EntityDefinition).ToList());
                 entityStates = new(resource.entities.Select(e => e.Value.entity.GetState(ts, resource)).ToList());
                 resourceDataStates = new(resource.resourceData.Select(d => d.MakeState()).Where(s => s != null).ToList());
             }
@@ -240,9 +245,9 @@ namespace RainMeadow
                     {
                         if (resource.entities.TryGetValue(def.entityId, out var ent)) // hmm
                         {
-                            if (def.owner != ent.entity.owner.inLobbyId)
+                            if (def.owner != ent.entity.owner.inLobbyId && OnlineManager.lobby.PlayerFromId(def.owner) is OnlinePlayer newOwner)
                             {
-                                ent.entity.NewOwner(OnlineManager.lobby.PlayerFromId(def.owner));
+                                ent.entity.NewOwner(newOwner);
                             }
                         }
                         else
@@ -285,7 +290,7 @@ namespace RainMeadow
 
             public override void CustomSerialize(Serializer serializer)
             {
-                serializer.Serialize(ref list);
+                serializer.SerializeByte(ref list); // up to 255 subresources
             }
         }
 

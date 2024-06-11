@@ -8,7 +8,6 @@ creature todo
 - show creature pipes
 	some rooms are only solvable with them, they aren't well known
 - allow creature to change the creature-pipe they're going to mid-flight
-- on gate transition, pathing visualizer bugs out
 - need to sample color of creature and have it in skindata
 	- requires final-ish seeds
 
@@ -60,11 +59,11 @@ water controls for lizard and scav etc
 
 
 feedback
-cheat button freezes
-lizard can get stuck on poletip unable to jump
-lizard entering pipe jitters in place (outside of pipe)
+cheat button freezes / done
+lizard can get stuck on poletip unable to jump / done?
+lizard entering pipe jitters in place (outside of pipe) / done, issue was RPCs
 lizard often misses grabbing pole on jump
-creature pipe indicators would be really helpful
+creature pipe indicators would be really helpful /done
 
 scav movement overshoots
 
@@ -94,6 +93,6 @@ creature select can be inconsistent at times: I have big noodlefly selected, i e
 
 emote preview background color is really bad right now
 
-your avatar is marked as non-transferable, but on a gate it's re-registered in the new region and that flag is missing
+your avatar is marked as non-transferable, but on a gate it's re-registered in the new region and that flag is missing / no longer re-registered, should be ok
 
 sandbox unlock items still present in meadow lmao

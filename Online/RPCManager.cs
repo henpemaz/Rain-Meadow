@@ -95,14 +95,17 @@ namespace RainMeadow
                     // dunno how to make this extensible, it's probably enough for now
                     if (typeof(OnlineResource).IsAssignableFrom(targetType))
                     {
+                        RainMeadow.Debug("target is OnlineResource");
                         expressions.Add(Expression.Call(serializerParam, serializeResourceByRef.MakeGenericMethod(targetType), targetVar));
                     }
                     else if (typeof(OnlineEntity).IsAssignableFrom(targetType))
                     {
-                        expressions.Add(Expression.Call(serializerParam, serializeEntityById, targetVar));
+                        RainMeadow.Debug("target is OnlineEntity");
+                        expressions.Add(Expression.Call(serializerParam, serializeEntityById.MakeGenericMethod(targetType), targetVar));
                     }
                     else if (typeof(RainMeadow).IsAssignableFrom(targetType)) // lambdas aren't static lol
                     {
+                        RainMeadow.Debug("target is RainMeadow");
                         expressions.Add(Expression.Assign(targetVar, Expression.Constant(RainMeadow.instance)));
                     }
                     else
@@ -135,7 +138,7 @@ namespace RainMeadow
                         ParameterExpression argVar = Expression.Variable(argType);
                         vars.Add(argVar);
                         expressions.Add(Expression.IfThen(Expression.Not(isReading), Expression.Assign(argVar, Expression.Convert(Expression.ArrayAccess(argsVar, Expression.Constant(i)), argType))));
-                        var serializerMethod = Serializer.GetSerializationMethod(argType, !argType.IsValueType || Nullable.GetUnderlyingType(argType) != null, true);
+                        var serializerMethod = Serializer.GetSerializationMethod(argType, !argType.IsValueType || Nullable.GetUnderlyingType(argType) != null, true, true);
                         if (serializerMethod == null)
                         {
                             throw new NotSupportedException($"can't serialize parameter {args[i].ParameterType} on type {method} for {targetType}");

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace RainMeadow
 {
@@ -15,13 +14,12 @@ namespace RainMeadow
         public Dictionary<OnlinePlayer, OnlineEntity.EntityId> playerAvatars = new(); // should maybe be in GameMode
 
         public string[] mods = RainMeadowModManager.GetActiveMods();
-        public static bool modsChecked = false;
+        public bool modsChecked;
 
         public string? password;
         public bool hasPassword => password != null;
-        public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password)
+        public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password) : base(null)
         {
-            this.super = this;
             OnlineManager.lobby = this; // needed for early entity processing
 
             this.gameMode = OnlineGameMode.FromType(mode, this);
@@ -124,7 +122,7 @@ namespace RainMeadow
 
         protected override void AvailableImpl()
         {
-
+            
         }
 
         protected override void DeactivateImpl()
@@ -192,11 +190,10 @@ namespace RainMeadow
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
 
-                if (!modsChecked)
+                if (!lobby.modsChecked)
                 {
                     RainMeadowModManager.CheckMods(this.mods, lobby.mods);
-                    modsChecked = true;
-
+                    lobby.modsChecked = true;
                 }
 
                 base.ReadTo(resource);

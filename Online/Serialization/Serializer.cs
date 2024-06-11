@@ -161,7 +161,6 @@ namespace RainMeadow
         {
             //RainMeadow.Debug($"serializer wrote: {eventCount} events; {stateCount} states; total {stream.Position} bytes");
             currPlayer = null;
-            if (!IsWriting) throw new InvalidOperationException("not writing");
             IsWriting = false;
             writer.Flush();
             scratchpad.currPlayer = null;
@@ -331,8 +330,8 @@ namespace RainMeadow
 #endif
         }
 
-        // serializes resource.id and finds reference
-        public void SerializEntityById(ref OnlineEntity onlineEntity)
+        // serializes entity.id and finds reference
+        public void SerializEntityById<T>(ref T onlineEntity) where T : OnlineEntity
         {
             if (IsWriting)
             {
@@ -342,7 +341,7 @@ namespace RainMeadow
             {
                 OnlineEntity.EntityId id = new();
                 id.CustomSerialize(this);
-                onlineEntity = id.FindEntity();
+                onlineEntity = (T)id.FindEntity();
             }
         }
 
@@ -396,11 +395,10 @@ namespace RainMeadow
             }
         }
 
-        public void SerializePolyStates<T>(ref T[] states) where T : OnlineState
+        public void SerializePolyStatesByte<T>(ref T[] states) where T : OnlineState
         {
             if (IsWriting)
             {
-                // TODO dynamic length
                 if (states.Length > 255) throw new OverflowException("too many states");
                 writer.Write((byte)states.Length);
 #if TRACING
@@ -430,11 +428,10 @@ namespace RainMeadow
             }
         }
 
-        public void SerializePolyStates<T>(ref List<T> states) where T : OnlineState
+        public void SerializePolyStatesByte<T>(ref List<T> states) where T : OnlineState
         {
             if (IsWriting)
             {
-                // TODO dynamic length
                 if (states.Count > 255) throw new OverflowException("too many states");
                 writer.Write((byte)states.Count);
 #if TRACING
@@ -449,6 +446,73 @@ namespace RainMeadow
             if (IsReading)
             {
                 byte count = reader.ReadByte();
+                states = new(count);
+                for (int i = 0; i < count; i++)
+                {
+                    var s = (T)OnlineState.ParsePolymorph(this);
+                    if (s is RootDeltaState ps)
+                    {
+                        ps.from = currPlayer;
+                        ps.tick = currPlayer.tick;
+                    }
+                    WrappedSerialize(s);
+                    states.Add(s);
+                }
+            }
+        }
+
+
+        public void SerializePolyStatesShort<T>(ref T[] states) where T : OnlineState
+        {
+            if (IsWriting)
+            {
+                if (states.Length > ushort.MaxValue) throw new OverflowException("too many states");
+                writer.Write((ushort)states.Length);
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
+                foreach (var state in states)
+                {
+                    state.WritePolymorph(this);
+                    WrappedSerialize(state);
+                }
+            }
+            if (IsReading)
+            {
+                ushort count = reader.ReadUInt16();
+                states = new T[count];
+                for (int i = 0; i < count; i++)
+                {
+                    var s = (T)OnlineState.ParsePolymorph(this);
+                    if (s is RootDeltaState ps)
+                    {
+                        ps.from = currPlayer;
+                        ps.tick = currPlayer.tick;
+                    }
+                    WrappedSerialize(s);
+                    states[i] = s;
+                }
+            }
+        }
+
+        public void SerializePolyStatesShort<T>(ref List<T> states) where T : OnlineState
+        {
+            if (IsWriting)
+            {
+                if (states.Count > ushort.MaxValue) throw new OverflowException("too many states");
+                writer.Write((ushort)states.Count);
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
+                foreach (var state in states)
+                {
+                    state.WritePolymorph(this);
+                    WrappedSerialize(state);
+                }
+            }
+            if (IsReading)
+            {
+                ushort count = reader.ReadUInt16();
                 states = new(count);
                 for (int i = 0; i < count; i++)
                 {
@@ -505,11 +569,10 @@ namespace RainMeadow
             }
         }
 
-        public void SerializeStaticStates<T>(ref T[] states) where T : OnlineState, new()
+        public void SerializeStaticStatesByte<T>(ref T[] states) where T : OnlineState, new()
         {
             if (IsWriting)
             {
-                // TODO dynamic length
                 if (states.Length > 255) throw new OverflowException("too many states");
                 writer.Write((byte)states.Length);
 #if TRACING
@@ -523,6 +586,38 @@ namespace RainMeadow
             if (IsReading)
             {
                 byte count = reader.ReadByte();
+                states = new T[count];
+                for (int i = 0; i < count; i++)
+                {
+                    T s = new();
+                    if (s is RootDeltaState ps)
+                    {
+                        ps.from = currPlayer;
+                        ps.tick = currPlayer.tick;
+                    }
+                    WrappedSerialize(s);
+                    states[i] = s;
+                }
+            }
+        }
+
+        public void SerializeStaticStatesShort<T>(ref T[] states) where T : OnlineState, new()
+        {
+            if (IsWriting)
+            {
+                if (states.Length > ushort.MaxValue) throw new OverflowException("too many states");
+                writer.Write((ushort)states.Length);
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
+                foreach (var state in states)
+                {
+                    WrappedSerialize(state);
+                }
+            }
+            if (IsReading)
+            {
+                ushort count = reader.ReadUInt16();
                 states = new T[count];
                 for (int i = 0; i < count; i++)
                 {

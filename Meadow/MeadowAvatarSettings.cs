@@ -1,6 +1,4 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace RainMeadow
 {
@@ -9,11 +7,11 @@ namespace RainMeadow
         new public class Definition : ClientSettings.Definition
         {
             public Definition() : base() { }
-            public Definition(OnlineEntity.EntityId entityId, OnlinePlayer owner) : base(entityId, owner) { }
+            public Definition(MeadowAvatarSettings clientSettings, OnlineResource inResource) : base(clientSettings, inResource) { }
 
-            public override OnlineEntity MakeEntity(OnlineResource inResource)
+            public override OnlineEntity MakeEntity(OnlineResource inResource, EntityState initialState)
             {
-                return MeadowAvatarSettings.FromDefinition(this, inResource);
+                return new MeadowAvatarSettings(this, inResource, (State)initialState);
             }
         }
 
@@ -24,15 +22,19 @@ namespace RainMeadow
         internal Color tint;
         internal float tintAmount;
 
-        public MeadowAvatarSettings(EntityDefinition entityDefinition) : base(entityDefinition)
+        public MeadowAvatarSettings(EntityDefinition entityDefinition, OnlineResource inResource, State initialState) : base(entityDefinition, inResource, initialState)
         {
-            RainMeadow.Debug(this);
+
         }
 
-        public static MeadowAvatarSettings FromDefinition(Definition meadowPersonaSettingsDefinition, OnlineResource inResource)
+        public MeadowAvatarSettings(EntityId id, OnlinePlayer owner) : base(id, owner)
         {
-            RainMeadow.Debug(meadowPersonaSettingsDefinition);
-            return new MeadowAvatarSettings(meadowPersonaSettingsDefinition);
+            skin = MeadowProgression.Skin.Slugcat_Survivor;
+        }
+
+        internal override EntityDefinition MakeDefinition(OnlineResource onlineResource)
+        {
+            return new Definition(this, onlineResource);
         }
 
         protected override EntityState MakeState(uint tick, OnlineResource inResource)

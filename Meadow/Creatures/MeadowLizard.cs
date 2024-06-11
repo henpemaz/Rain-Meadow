@@ -197,7 +197,7 @@ namespace RainMeadow
         {
             get
             {
-                return lizard.inAllowedTerrainCounter > 10;
+                return lizard.inAllowedTerrainCounter > 10 || lizard.gripPoint != null;
             }
         }
 
