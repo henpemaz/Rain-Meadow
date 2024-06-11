@@ -54,6 +54,34 @@ namespace RainMeadow
 
             IL.ScavengerOutpost.ctor += ScavengerOutpost_ctor;
 
+            On.ShortcutGraphics.GenerateSprites += ShortcutGraphics_GenerateSprites;
+
+        }
+
+        private void ShortcutGraphics_GenerateSprites(On.ShortcutGraphics.orig_GenerateSprites orig, ShortcutGraphics self)
+        {
+            orig(self);
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                for (int l = 0; l < self.room.shortcuts.Length; l++)
+                {
+                    if (self.room.shortcuts[l].shortCutType == ShortcutData.Type.NPCTransportation && self.entranceSprites[l, 0] == null)
+                    {
+                        self.entranceSprites[l, 0] = new FSprite("Pebble10", true);
+                        self.entranceSprites[l, 0].rotation = Custom.AimFromOneVectorToAnother(new Vector2(0f, 0f), -IntVector2.ToVector2(self.room.ShorcutEntranceHoleDirection(self.room.shortcuts[l].StartTile)));
+                        self.entranceSpriteLocations[l] = self.room.MiddleOfTile(self.room.shortcuts[l].StartTile) + IntVector2.ToVector2(self.room.ShorcutEntranceHoleDirection(self.room.shortcuts[l].StartTile)) * 15f;
+                        if ((ModManager.MMF && MoreSlugcats.MMF.cfgShowUnderwaterShortcuts.Value) || (self.room.water && self.room.waterInFrontOfTerrain && self.room.PointSubmerged(self.entranceSpriteLocations[l] + new Vector2(0f, 5f))))
+                        {
+                            self.camera.ReturnFContainer((ModManager.MMF && MoreSlugcats.MMF.cfgShowUnderwaterShortcuts.Value) ? "GrabShaders" : "Items").AddChild(self.entranceSprites[l, 0]);
+                        }
+                        else
+                        {
+                            self.camera.ReturnFContainer("Shortcuts").AddChild(self.entranceSprites[l, 0]);
+                            self.camera.ReturnFContainer("Water").AddChild(self.entranceSprites[l, 1]);
+                        }
+                    }
+                }
+            }
         }
 
         private void ScavengerOutpost_ctor(ILContext il)

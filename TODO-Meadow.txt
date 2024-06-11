@@ -63,7 +63,7 @@ cheat button freezes / done
 lizard can get stuck on poletip unable to jump / done?
 lizard entering pipe jitters in place (outside of pipe) / done, issue was RPCs
 lizard often misses grabbing pole on jump
-creature pipe indicators would be really helpful
+creature pipe indicators would be really helpful /done
 
 scav movement overshoots
 
