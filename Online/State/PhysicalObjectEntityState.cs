@@ -62,7 +62,7 @@ namespace RainMeadow
             {
                 RainMeadow.Error($"{onlineEntity} failed to move from {wasPos} to {pos}, hard-setting position: " + e);
                 onlineObject.apo.pos = pos;
-                onlineObject.apo.world.GetAbstractRoom(pos).AddEntity(onlineObject.apo);
+                if (onlineObject.apo.world.IsRoomInRegion(pos.room)) onlineObject.apo.world.GetAbstractRoom(pos).AddEntity(onlineObject.apo);
                 //throw;
             }
             

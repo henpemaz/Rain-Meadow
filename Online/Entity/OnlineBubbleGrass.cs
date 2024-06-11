@@ -1,38 +1,58 @@
-﻿using static RainMeadow.OnlineEntity;
-
+﻿
 namespace RainMeadow
 {
     public class OnlineBubbleGrass : OnlineConsumable
     {
-        public OnlineBubbleGrass(OnlineBubbleGrassDefinition entityDefinition, AbstractPhysicalObject apo) : base(entityDefinition, apo) { }
+        public class OnlineBubbleGrassDefinition : OnlineConsumableDefinition
+        {
+            public OnlineBubbleGrassDefinition() { }
+
+            public OnlineBubbleGrassDefinition(OnlineConsumable onlineConsumable, OnlineResource inResource) : base(onlineConsumable, inResource) { }
+
+            public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
+            {
+                return new OnlineBubbleGrass(this, inResource, (OnlineBubbleGrassState)initialState);
+            }
+        }
+
+        public OnlineBubbleGrass(OnlineConsumableDefinition entityDefinition, OnlineResource inResource, OnlineBubbleGrassState initialState) : base(entityDefinition, inResource, initialState)
+        {
+            AbstractBubbleGrass.oxygenLeft = initialState.oxygenLeft;
+        }
+
+        public OnlineBubbleGrass(AbstractConsumable ac, EntityId id, OnlinePlayer owner, bool isTransferable) : base(ac, id, owner, isTransferable)
+        {
+
+        }
+
+        internal override EntityDefinition MakeDefinition(OnlineResource onlineResource)
+        {
+            return new OnlineBubbleGrassDefinition(this, onlineResource);
+        }
 
         public BubbleGrass.AbstractBubbleGrass AbstractBubbleGrass => apo as BubbleGrass.AbstractBubbleGrass;
-
-        public static OnlineEntity FromDefinition(OnlineBubbleGrassDefinition newObjectEvent, OnlineResource inResource)
-        {
-            World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
-            EntityID id = world.game.GetNewID();
-            id.altSeed = newObjectEvent.seed;
-
-            RainMeadow.Debug("serializedObject: " + newObjectEvent.serializedObject);
-            var abg = (BubbleGrass.AbstractBubbleGrass)SaveState.AbstractPhysicalObjectFromString(world, newObjectEvent.serializedObject);
-            abg.ID = id;
-            abg.oxygenLeft = newObjectEvent.originalOxygenLevel;
-            abg.originRoom = newObjectEvent.originRoom;
-            abg.placedObjectIndex = newObjectEvent.placedObjectIndex;
-            abg.isConsumed = newObjectEvent.originallyConsumed;
-            return new OnlineBubbleGrass(newObjectEvent, abg);
-        }
 
         protected override EntityState MakeState(uint tick, OnlineResource inResource)
         {
             return new OnlineBubbleGrassState(this, inResource, tick);
         }
 
-        public override void OnJoinedResource(OnlineResource inResource)
+        public class OnlineBubbleGrassState : OnlineConsumableState
         {
-            base.OnJoinedResource(inResource);
-            // ?
+            [OnlineField]
+            public float oxygenLeft;
+            public OnlineBubbleGrassState() { }
+
+            public OnlineBubbleGrassState(OnlineBubbleGrass onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
+            {
+                oxygenLeft = onlineEntity.AbstractBubbleGrass.oxygenLeft;
+            }
+
+            public override void ReadTo(OnlineEntity onlineEntity)
+            {
+                base.ReadTo(onlineEntity);
+                (onlineEntity as OnlineBubbleGrass).AbstractBubbleGrass.oxygenLeft = oxygenLeft;
+            }
         }
     }
 }

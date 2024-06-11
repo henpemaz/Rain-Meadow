@@ -11,9 +11,8 @@ namespace RainMeadow
         public WorldSession worldSession => super as WorldSession;
         public World World => worldSession.world;
 
-        public RoomSession(WorldSession ws, AbstractRoom absroom)
+        public RoomSession(WorldSession ws, AbstractRoom absroom) : base(ws)
         {
-            super = ws;
             this.absroom = absroom;
             map.Add(absroom, this);
         }

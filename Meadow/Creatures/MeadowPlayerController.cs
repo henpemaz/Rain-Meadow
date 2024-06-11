@@ -53,7 +53,7 @@ namespace RainMeadow
 
         protected override void LookImpl(Vector2 pos)
         {
-            (player.graphicsModule as PlayerGraphics).LookAtPoint(pos, 1000f);
+            if(player.graphicsModule != null) (player.graphicsModule as PlayerGraphics).LookAtPoint(pos, 1000f);
         }
 
         protected override void Resting()

@@ -470,7 +470,12 @@ namespace RainMeadow
                 this.debugDestinationVisualizer.sprite2.sprite.isVisible = visibility;
                 this.debugDestinationVisualizer.sprite3.sprite.isVisible = visibility;
                 this.debugDestinationVisualizer.sprite4.sprite.isVisible = visibility;
-                if (debugDestinationVisualizer.room != creature.room && creature.room != null) debugDestinationVisualizer.ChangeRooms(creature.room);
+                
+                if (debugDestinationVisualizer.room != creature.room && creature.room != null)
+                {
+                    debugDestinationVisualizer.pathfinder = this.creature.abstractCreature.abstractAI.RealAI.pathFinder;
+                    debugDestinationVisualizer.ChangeRooms(creature.room);
+                }
                 this.debugDestinationVisualizer.Update();
             }
         }
@@ -480,6 +485,10 @@ namespace RainMeadow
             if (onlineCreature.isMine)
             {
                 mcd.destination = coord;
+            }
+            else
+            {
+                if (!creature.abstractCreature.world.IsRoomInRegion(coord.room)) return;
             }
             var absAI = creature.abstractCreature.abstractAI;
             absAI.destination = coord; // we don't run the setter

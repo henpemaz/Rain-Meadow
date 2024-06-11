@@ -44,7 +44,6 @@ namespace RainMeadow
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
             On.RainWorldGame.GameOver += RainWorldGame_GameOver;
 
-            On.BubbleGrass.Update += BubbleGrass_Update;
             On.WaterNut.Swell += WaterNut_Swell;
             On.SporePlant.Pacify += SporePlant_Pacify;
 
@@ -277,28 +276,6 @@ namespace RainMeadow
                 swollenWaterNut.AbstrConsumable.isFresh = abstractSwollenWaterNut.isFresh;
                 onlineSwollenWaterNut.realized = true;
                 self.Destroy();
-            }
-        }
-
-        private void BubbleGrass_Update(On.BubbleGrass.orig_Update orig, BubbleGrass self, bool eu)
-        {
-            if (OnlineManager.lobby == null)
-            {
-                orig(self,eu);
-                return;
-            }
-
-            var prevOxygenLevel = self.AbstrBubbleGrass.oxygenLeft;
-            orig(self, eu);
-            var currentOxygenLevel = self.AbstrBubbleGrass.oxygenLeft;
-
-            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
-            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
-            {
-                if (prevOxygenLevel > currentOxygenLevel) {
-                    OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineBubbleGrass);
-                    room.owner.InvokeRPC(ConsumableRPCs.SetOxygenLevel, onlineBubbleGrass, currentOxygenLevel);
-                }
             }
         }
 

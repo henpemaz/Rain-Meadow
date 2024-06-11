@@ -388,6 +388,7 @@ namespace RainMeadow
 
         protected override void LookImpl(Vector2 pos)
         {
+            if (cicada.graphicsModule == null) return;
             var dir = (pos - cicada.DangerPos) / 500f;
             var mag = dir.magnitude;
 

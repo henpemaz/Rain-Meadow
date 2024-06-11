@@ -1,7 +1,5 @@
-﻿using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using UnityEngine;
+﻿using UnityEngine;
+using static RainMeadow.OnlineEntity;
 
 namespace RainMeadow
 {
@@ -10,18 +8,23 @@ namespace RainMeadow
         public abstract class Definition : EntityDefinition
         {
             public Definition() : base() { }
-            public Definition(OnlineEntity.EntityId entityId, OnlinePlayer owner) : base(entityId, owner, false) { }
+            public Definition(ClientSettings clientSettings, OnlineResource inResource) : base(clientSettings, inResource) { }
         }
 
         /// <summary>
         /// the real avatar of the player
         /// </summary>
-        public OnlineEntity.EntityId avatarId;
+        public EntityId avatarId;
         public bool inGame;
 
-        public ClientSettings(EntityDefinition entityDefinition) : base(entityDefinition)
+        public ClientSettings(EntityDefinition entityDefinition, OnlineResource inResource, EntityState initialState) : base(entityDefinition, inResource, initialState)
         {
-            avatarId = new OnlineEntity.EntityId(entityDefinition.owner, OnlineEntity.EntityId.IdType.none, 0);
+            avatarId = (initialState as State).avatarId;
+        }
+
+        protected ClientSettings(EntityId id, OnlinePlayer owner) : base(id, owner, false)
+        {
+            avatarId = new EntityId(owner.inLobbyId, EntityId.IdType.none, 0);
         }
 
         internal abstract AvatarCustomization MakeCustomization();
@@ -36,7 +39,7 @@ namespace RainMeadow
         public abstract class State : EntityState
         {
             [OnlineField(nullable:true)]
-            private EntityId avatarId;
+            public EntityId avatarId;
             [OnlineField]
             public bool inGame;
 

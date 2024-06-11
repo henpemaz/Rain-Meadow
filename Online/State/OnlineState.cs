@@ -5,9 +5,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using UnityEngine;
-using static RainMeadow.Lobby;
-using static RainMeadow.RoomSession;
-using static RainMeadow.WorldSession;
 
 namespace RainMeadow
 {
@@ -43,17 +40,17 @@ namespace RainMeadow
 
             public static readonly StateType Unknown = new("Unknown", true); // sending zeroes over should error out
 
-            public static readonly StateType LobbyState = new("LobbyState", typeof(LobbyState));
-            public static readonly StateType WorldState = new("WorldState", typeof(WorldState));
-            public static readonly StateType RoomState = new("RoomState", typeof(RoomState));
+            public static readonly StateType LobbyState = new("LobbyState", typeof(Lobby.LobbyState));
+            public static readonly StateType WorldState = new("WorldState", typeof(WorldSession.WorldState));
+            public static readonly StateType RoomState = new("RoomState", typeof(RoomSession.RoomState));
 
             public static readonly StateType EntityFeedState = new("EntityFeedState", typeof(EntityFeedState));
 
             public static readonly StateType PhysicalObjectEntityState = new("PhysicalObjectEntityState", typeof(PhysicalObjectEntityState));
-            public static readonly StateType OnlineConsumableState = new("OnlineConsumableState", typeof(OnlineConsumableState));
-            public static readonly StateType OnlineSeedCobState = new("OnlineSeedCobState", typeof(OnlineSeedCobState));
-            public static readonly StateType OnlineBubbleGrassState = new("OnlineBubbleGrassState", typeof(OnlineBubbleGrassState));
-            public static readonly StateType OnlineSporePlantState = new("OnlineSporePlantState", typeof(OnlineSporePlantState));
+            public static readonly StateType OnlineConsumableState = new("OnlineConsumableState", typeof(OnlineConsumable.OnlineConsumableState));
+            public static readonly StateType OnlineSeedCobState = new("OnlineSeedCobState", typeof(OnlineSeedCob.OnlineSeedCobState));
+            public static readonly StateType OnlineBubbleGrassState = new("OnlineBubbleGrassState", typeof(OnlineBubbleGrass.OnlineBubbleGrassState));
+            public static readonly StateType OnlineSporePlantState = new("OnlineSporePlantState", typeof(OnlineSporePlant.OnlineSporePlantState));
             public static readonly StateType PlayerStateState = new("PlayerStateState", typeof(PlayerStateState));
             public static readonly StateType AbstractCreatureState = new("AbstractCreatureState", typeof(AbstractCreatureState));
             public static readonly StateType RealizedFlyState = new("RealizedFlyState", typeof(RealizedFlyState));
@@ -71,23 +68,23 @@ namespace RainMeadow
             public static readonly StateType CreatureStateState = new("CreatureStateState", typeof(CreatureStateState));
             public static readonly StateType CreatureHealthStateState = new("CreatureHealthStateState", typeof(CreatureHealthStateState));
 
-            public static readonly StateType RainCycleDataState = new("RainCycleDataState", typeof(RainCycleData));
+            public static readonly StateType RainCycleDataState = new("RainCycleDataState", typeof(WorldSession.RainCycleData));
 
             public static readonly StateType MeadowPersonaSettingsState = new("MeadowPersonaSettings.State", typeof(MeadowAvatarSettings.State));
             public static readonly StateType SlugcatAvatarSettingsState = new("SlugcatAvatarSettings.State", typeof(StoryClientSettings.State));
-            //public static readonly StateType GamemodeDataState = new("GamemodeDataState", typeof(GamemodeDataState));
+            //public static readonly StateType GamemodeDataState = new("GamemodeDataState", typeof(GamemodeDataState)); // abstract
             public static readonly StateType MeadowCreatureDataState = new("MeadowCreatureDataState", typeof(MeadowCreatureData.State));
             public static readonly StateType MeadowLobbyState = new("MeadowLobbyState", typeof(MeadowLobbyData.State));
 
             public static readonly StateType StoryLobbyDataState = new("StoryLobbyDataState", typeof(StoryLobbyData.State));
 
-            public static readonly StateType OnlinePhysicalObjectDefinition = new("OnlinePhysicalObjectDefinition", typeof(OnlinePhysicalObjectDefinition));
-            public static readonly StateType OnlineConsumableDefinition = new("OnlineConsumableDefinition", typeof(OnlineConsumableDefinition));
-            public static readonly StateType OnlinePebblesPearlDefinition = new("OnlinePebblesPearlDefinition", typeof(OnlinePebblesPearlDefinition));
-            public static readonly StateType OnlineSeedCobDefinition = new("OnlineSeedCobDefinition", typeof(OnlineSeedCobDefinition));
-            public static readonly StateType OnlineBubbleGrassDefinition = new("OnlineBubbleGrassDefinition", typeof(OnlineBubbleGrassDefinition));
-            public static readonly StateType OnlineSporePlantDefinition = new("OnlineSporePlantDefinition", typeof(OnlineSporePlantDefinition));
-            public static readonly StateType OnlineCreatureDefinition = new("OnlineCreatureDefinition", typeof(OnlineCreatureDefinition));
+            public static readonly StateType OnlinePhysicalObjectDefinition = new("OnlinePhysicalObjectDefinition", typeof(OnlinePhysicalObject.OnlinePhysicalObjectDefinition));
+            public static readonly StateType OnlineConsumableDefinition = new("OnlineConsumableDefinition", typeof(OnlineConsumable.OnlineConsumableDefinition));
+            public static readonly StateType OnlinePebblesPearlDefinition = new("OnlinePebblesPearlDefinition", typeof(OnlinePebblesPearl.OnlinePebblesPearlDefinition));
+            public static readonly StateType OnlineSeedCobDefinition = new("OnlineSeedCobDefinition", typeof(OnlineSeedCob.OnlineSeedCobDefinition));
+            public static readonly StateType OnlineBubbleGrassDefinition = new("OnlineBubbleGrassDefinition", typeof(OnlineBubbleGrass.OnlineBubbleGrassDefinition));
+            public static readonly StateType OnlineSporePlantDefinition = new("OnlineSporePlantDefinition", typeof(OnlineSporePlant.OnlineSporePlantDefinition));
+            public static readonly StateType OnlineCreatureDefinition = new("OnlineCreatureDefinition", typeof(OnlineCreature.OnlineCreatureDefinition));
             public static readonly StateType MeadowAvatarSettingsDefinition = new ("MeadowAvatarSettings.Definition", typeof(MeadowAvatarSettings.Definition));
             public static readonly StateType SlugcatAvatarSettingsDefinition = new ("SlugcatAvatarSettings.Definition", typeof(StoryClientSettings.Definition));
             public static readonly StateType OnlineMeadowCollectibleDefinition = new ("OnlineMeadowCollectible.Definition", typeof(OnlineMeadowCollectible.Definition));
@@ -177,6 +174,7 @@ namespace RainMeadow
             public string group; // things on the same group are gruped in deltas, saving bytes
             public bool nullable; // field can be null
             public bool polymorphic; // type of field needs to be serialized/parsed
+            public bool longList; // field needs ushort for indexes rather than bytes
             public bool always; // field is always sent, to be used as key
 
             public OnlineFieldAttribute(string group = "default", bool nullable = false, bool polymorphic = false, bool always = false)
@@ -189,7 +187,7 @@ namespace RainMeadow
 
             public virtual Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
             {
-                return Expression.Call(serializerRef, Serializer.GetSerializationMethod(f.FieldType, nullable, polymorphic), fieldRef);
+                return Expression.Call(serializerRef, Serializer.GetSerializationMethod(f.FieldType, nullable, polymorphic, longList), fieldRef);
             }
 
             public virtual Expression ComparisonMethod(FieldInfo f, MemberExpression currentField, MemberExpression baselineField)

@@ -2,6 +2,8 @@
 {
     public partial class WorldSession
     {
+        // todo make this entitydata and only bind it in storymode
+
         [DeltaSupport(level = StateHandler.DeltaSupport.FollowsContainer)]
         public class RainCycleData : OnlineState
         {
