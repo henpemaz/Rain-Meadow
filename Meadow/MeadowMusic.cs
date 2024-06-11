@@ -64,10 +64,10 @@ namespace RainMeadow
                     string path = dir + Path.DirectorySeparatorChar + "playlist.txt";
                     if (regName.Length == 2 && File.Exists(path) && !ambientDict.ContainsKey(regName))
                     {
-                        string[] lines = File.ReadAllLines(path);
+                        string[] lines = File.ReadAllLines(path).Where(l => l != string.Empty).ToArray();
                         foreach (string line in lines)
                         {
-                            Debug.Log("Meadow Music:  Registered song " + line + " in " + dir);
+                            RainMeadow.Debug("Meadow Music:  Registered song " + line + " in " + dir);
                         }
                         ambientDict.Add(regName, lines);
                     }
@@ -86,10 +86,10 @@ namespace RainMeadow
                 }
 
                 filesChecked = true;
-                AnalyzeRegion(self.world);
-                time = 0f;
-                timerStopped = true;
             }
+            AnalyzeRegion(self.world);
+            time = 0f;
+            timerStopped = true;
         }
 
         static void RawUpdatePatch(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
@@ -109,7 +109,7 @@ namespace RainMeadow
                     {
                         if (ambienceSongArray != null)
                         {
-                            Debug.Log("Meadow Music:  Playing ambient song");
+                            RainMeadow.Debug("Meadow Music:  Playing ambient song");
                             Song song = new(musicPlayer, ambienceSongArray[(int)Random.Range(0f, ambienceSongArray.Length - 0.1f)], MusicPlayer.MusicContext.StoryMode)
                             {
                                 playWhenReady = true,
@@ -123,7 +123,7 @@ namespace RainMeadow
                     }
                     else
                     {
-                        Debug.Log("Meadow Music:  Playing vibe song...");
+                        RainMeadow.Debug("Meadow Music:  Playing vibe song...");
                         Song song = new Song(musicPlayer, ((VibeZone)activeZone).songName, MusicPlayer.MusicContext.StoryMode)
                         {
                             playWhenReady = true,
@@ -184,7 +184,7 @@ namespace RainMeadow
                 //if this active zone's song is currently playing, and we are beyond the zone's radius
                 if (musicPlayer.song.name == az.songName && minDist > az.radius)
                 {
-                    Debug.Log("Meadow Music:  Fading echo song...");
+                    RainMeadow.Debug("Meadow Music:  Fading echo song...");
                     musicPlayer.song.FadeOut(40f);
                     activeZone = null;
                     vibeIntensity = null;
@@ -192,7 +192,7 @@ namespace RainMeadow
                 //if this active zone's song is not currently playing, and we are within its radius
                 else if (musicPlayer.song.name != az.songName && minDist < az.radius)
                 {
-                    Debug.Log("Meadow Music:  Fading ambience song...");
+                    RainMeadow.Debug("Meadow Music:  Fading ambience song...");
                     musicPlayer.song.FadeOut(40f);
                     activeZone = az;
                 }
@@ -207,26 +207,42 @@ namespace RainMeadow
 
         static void AnalyzeRegion(World world)
         {
+            RainMeadow.Debug("Meadow Music:  Analyzing " + world.name);
             VibeZone[] vzArray;
             activeZonesDict = null;
             if (vibeZonesDict.TryGetValue(world.region.name, out vzArray))
             {
+                RainMeadow.Debug("Meadow Music:  found zones " + vzArray.Length);
                 activeZonesDict = new Dictionary<int, VibeZone>();
                 foreach(VibeZone vz in vzArray)
                 {
                     foreach (AbstractRoom room in world.abstractRooms)
                     {
+                        RainMeadow.Debug("Meadow Music:  looking for room " + vz.room);
                         if (room.name == vz.room)
                         {
+                            RainMeadow.Debug("Meadow Music:  found hub " + room.name);
                             activeZonesDict.Add(room.index, vz);
                             break;
                         }
                     }
                 }
-                if (activeZonesDict.Count == 0) activeZonesDict = null;
+                if (activeZonesDict.Count == 0)
+                {
+                    RainMeadow.Debug("Meadow Music:  no hubs found");
+                    activeZonesDict = null;
+                }
             }
-            if (ambientDict.TryGetValue(world.region.name, out string[] songArr)) ambienceSongArray = songArr;
-            else ambienceSongArray = null;
+            if (ambientDict.TryGetValue(world.region.name, out string[] songArr))
+            {
+                RainMeadow.Debug("Meadow Music:  ambiences loaded");
+                ambienceSongArray = songArr;
+            }
+            else
+            {
+                RainMeadow.Debug("Meadow Music:  no ambiences for region");
+                ambienceSongArray = null;
+            }
         }
     }
 }

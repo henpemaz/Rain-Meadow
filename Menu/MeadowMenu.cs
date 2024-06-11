@@ -161,7 +161,7 @@ namespace RainMeadow
 
             if (manager.musicPlayer != null)
             {
-                manager.musicPlayer.MenuRequestsSong("me", 1, 2);
+                manager.musicPlayer.MenuRequestsSong("me", 1, 0);
             }
         }
 
