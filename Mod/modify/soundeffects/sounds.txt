@@ -1,3 +1,6 @@
+[ADD]Kick : Kick
+[ADD]Snare : Snare
+[ADD]HiHat : HiHat
 [ADD]C1LongSine : C1LongSine
 [ADD]C2LongSine : C2LongSine
 [ADD]C3LongSine : C3LongSine

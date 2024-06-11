@@ -1,1 +1,1 @@
-SL_E01,3000,Vibezones1
+SL_E01,3000,Vibezones1,Litri

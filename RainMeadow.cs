@@ -19,6 +19,7 @@ namespace RainMeadow
         private bool init;
         public bool fullyInit;
         public static RainMeadowOptions rainMeadowOptions;
+        private PlopMachine PlopMachine;
 
         public void OnEnable()
         {
@@ -194,7 +195,8 @@ namespace RainMeadow
                 StoryHooks();
 
                 MeadowMusic.EnableMusic();
-                new PlopMachine().OnEnable();
+                this.PlopMachine = new PlopMachine();
+                this.PlopMachine.OnEnable();
 
                 MeadowProgression.LoadProgression();
 

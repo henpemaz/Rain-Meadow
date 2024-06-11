@@ -22,7 +22,7 @@ namespace RainMeadow
         static bool filesChecked = false;
 
         static readonly Dictionary<string, string[]> ambientDict = new();
-        static readonly Dictionary<string, VibeZone[]> vibeZonesDict = new();
+        internal static readonly Dictionary<string, VibeZone[]> vibeZonesDict = new();
 
         internal static Dictionary<int, VibeZone> activeZonesDict = null;
         static string[] ambienceSongArray = null;
@@ -37,16 +37,18 @@ namespace RainMeadow
 
         internal struct VibeZone
         {
-            public VibeZone(string room, float radius, string songName)
+            public VibeZone(string room, float radius, string songName, string sampleUsed)
             {
                 this.room = room;
                 this.radius = radius;
                 this.songName = songName;
+                this.sampleUsed = sampleUsed;
             }
 
             public string room;
             public float radius;
             public string songName;
+            public string sampleUsed;
         }
 
         static void GameCtorPatch(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
@@ -80,7 +82,7 @@ namespace RainMeadow
                         for (int i = 0; i < lines.Length; i++)
                         {
                             string[] arr = lines[i].Split(',');
-                            zones[i] = new VibeZone(arr[0], float.Parse(arr[1]), arr[2]);
+                            zones[i] = new VibeZone(arr[0], float.Parse(arr[1]), arr[2], arr[3]);
                         }
                         vibeZonesDict.Add(regName, zones);
                     }

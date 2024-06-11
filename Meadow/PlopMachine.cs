@@ -172,29 +172,9 @@ namespace RainMeadow
 
         //float intensity = 1.0f;
 
-        public static class EnumExt_AudioFilters
-        {
-#pragma warning disable 0649
-            public static RoomSettings.RoomEffect.Type AudioFiltersReverb; //?
-#pragma warning restore 0649
-        }
-
         bool fileshavebeenchecked = false;
         string[][] ChordInfos; //?
 
-        static readonly Dictionary<string, VibeZone[]> vibeZonesDict = new();
-        struct VibeZone
-        {
-            public VibeZone(string room, float radius, string songName)
-            {
-                this.room = room;
-                this.radius = radius;
-                this.songName = songName;
-            }
-            public string room;
-            public float radius;
-            public string songName;
-        }
         private void RainWorldGame_ctor(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
         {
             orig.Invoke(self, manager);
@@ -225,7 +205,7 @@ namespace RainMeadow
                     {
                         string filename = GetFolderName(dir);
                         //RainMeadow.Debug(filename + " Is one of the things it sees, straight from " + dir);
-                        if (filename == "!entries.txt")
+                        if (filename == "!Entries.txt")
                         {
                             RainMeadow.Debug("The file exists actually");
                             string[] lines = File.ReadAllLines(dir);
@@ -243,26 +223,6 @@ namespace RainMeadow
                         }
                     }
                     RainMeadow.Debug("Yo it's done with sfx");
-                    string[] dirs = AssetManager.ListDirectory("world", true, true);
-                    foreach (string dir in dirs)
-                    {
-                        string regName = GetFolderName(dir).ToUpper();
-                        string path = dir + Path.DirectorySeparatorChar + "vibe_zones.txt";
-                        if (File.Exists(path) && !vibeZonesDict.ContainsKey(regName))
-                        {
-                            RainMeadow.Debug($"It found the path for vibezone {regName} tho");
-                            string[] lines = File.ReadAllLines(path);
-                            VibeZone[] zones = new VibeZone[lines.Length];
-                            for (int i = 0; i < lines.Length; i++)
-                            {
-                                string[] arr = lines[i].Split(',');
-                                zones[i] = new VibeZone(arr[0], float.Parse(arr[1]), arr[2]);
-                                RainMeadow.Debug($"{arr[0]}, {arr[1]}, {arr[2]}");
-                            }
-                            vibeZonesDict.Add(regName, zones);
-                        }
-                    }
-                    RainMeadow.Debug("Yo wassup it went past worlds");
                     fileshavebeenchecked = true;
                 }
             }
@@ -310,18 +270,19 @@ namespace RainMeadow
         }
         private SoundID[] SampDict(string length)
         {
-            //RainMeadow.Debug($"It's trying to get length {length}");
+            RainMeadow.Debug($"It's trying to get length {length}");
             SoundID[] library = new SoundID[7]; //to do:  make better
             string acronym = CurrentRegion.ToUpper();
-            VibeZone[] newthings;
-            bool diditwork = vibeZonesDict.TryGetValue(acronym, out newthings);
+            MeadowMusic.VibeZone[] newthings;
+            bool diditwork = MeadowMusic.vibeZonesDict.TryGetValue(acronym, out newthings);
             //we retrieve a newthings array (one of many vibezones)
-            //RainMeadow.Debug("C" + diditwork);
+            RainMeadow.Debug("C" + diditwork);
+            RainMeadow.Debug(Newtonsoft.Json.JsonConvert.SerializeObject(newthings));
             if (!diditwork) { RainMeadow.Debug("itdidn'twork"); return null; }
-            VibeZone newthing = newthings[0]; //TEMP DUMMY FOR UNTIL HELLOTHERE'S REQUIUM
-            //and pick the one that is closer
-            //RainMeadow.Debug("d");
-            string patch = newthing.songName;
+            MeadowMusic.VibeZone newthing = newthings[0]; //TEMP DUMMY FOR UNTIL HELLOTHERE'S REQUIUM
+                                                          //and pick the one that is closer
+            RainMeadow.Debug("d");
+            string patch = newthing.sampleUsed;
             //RainMeadow.Debug(patch);
             //switch (acronym)
             //{
@@ -546,8 +507,8 @@ namespace RainMeadow
 
             SoundID[] slopb = SampDict(slib);
             SoundID sampleused = slopb[oct - 1];
-            //RainMeadow.Debug("Octave integer " + oct + ". sampleused: " + sampleused);
-            //RainMeadow.Debug($"It uses the sample {sampleused}");
+            RainMeadow.Debug("Octave integer " + oct + ". sampleused: " + sampleused);
+            RainMeadow.Debug($"It uses the sample {sampleused}");
             int extratranspose = 0;
             if (!intiseasy)
             {
@@ -1818,6 +1779,7 @@ namespace RainMeadow
 
             fichtean = Mathf.PerlinNoise(debugstopwatch / 1000f, debugstopwatch / 4000f);
             fichtean = thenumber;
+            RainMeadow.Debug("This Goes Hard");
             //RainMeadow.Debug("Fichtean: " + fichtean + " Yeah");
             //RainMeadow.Debug("Chordexhaustion: " + chordexhaustion + " Yeah");
             PlayEntry(mic);
@@ -1950,14 +1912,6 @@ namespace RainMeadow
         public static readonly SoundID Kick = new SoundID("Kick", register: true);
         public static readonly SoundID Snare = new SoundID("Snare", register: true);
         public static readonly SoundID HiHat = new SoundID("HiHat", register: true);
-
-        public static readonly SoundID HelloC = new SoundID("HelloC", register: true);
-        public static readonly SoundID HelloD = new SoundID("HelloD", register: true);
-        public static readonly SoundID HelloE = new SoundID("HelloE", register: true);
-        public static readonly SoundID HelloF = new SoundID("HelloF", register: true);
-        public static readonly SoundID HelloG = new SoundID("HelloG", register: true);
-        public static readonly SoundID HelloA = new SoundID("HelloA", register: true);
-        public static readonly SoundID HelloB = new SoundID("HelloB", register: true);
         public static readonly SoundID C1LongSine = new SoundID("C1LongSine", register: true);
         public static readonly SoundID C2LongSine = new SoundID("C2LongSine", register: true);
         public static readonly SoundID C3LongSine = new SoundID("C3LongSine", register: true);
