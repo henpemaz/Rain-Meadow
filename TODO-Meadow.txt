@@ -96,3 +96,6 @@ emote preview background color is really bad right now
 your avatar is marked as non-transferable, but on a gate it's re-registered in the new region and that flag is missing / no longer re-registered, should be ok
 
 sandbox unlock items still present in meadow lmao
+
+passage but the map isn't saving
+passage holds you in black screen for too long
