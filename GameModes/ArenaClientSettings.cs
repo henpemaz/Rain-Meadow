@@ -9,24 +9,32 @@ namespace RainMeadow.GameModes
         {
             public Definition() { }
 
-            public Definition(EntityId entityId, OnlinePlayer owner) : base(entityId, owner) { }
+            public Definition(ClientSettings clientSettings, OnlineResource inResource) : base(clientSettings, inResource) { }
 
-            public override OnlineEntity MakeEntity(OnlineResource inResource)
+            public override OnlineEntity MakeEntity(OnlineResource inResource, EntityState initialState)
             {
-                return new ArenaClientSettings(this);
+                return new ArenaClientSettings(this, inResource, (State)initialState);
             }
         }
 
         public Color bodyColor;
         public Color eyeColor;
 
-
-        public ArenaClientSettings(Definition entityDefinition) : base(entityDefinition)
+        public ArenaClientSettings(Definition entityDefinition, OnlineResource inResource, State initialState) : base(entityDefinition, inResource, initialState)
         {
             RainMeadow.Debug(this);
             bodyColor = entityDefinition.owner == 2 ? Color.white : PlayerGraphics.DefaultSlugcatColor(SlugcatStats.Name.White);
             eyeColor = Color.black;
+        }
 
+        public ArenaClientSettings(EntityId id, OnlinePlayer owner) : base(id, owner)
+        {
+
+        }
+
+        internal override EntityDefinition MakeDefinition(OnlineResource onlineResource)
+        {
+            return new Definition(this, onlineResource);
         }
 
         internal override AvatarCustomization MakeCustomization()
@@ -76,6 +84,7 @@ namespace RainMeadow.GameModes
             {
                 this.settings = slugcatAvatarSettings;
             }
+
 
             internal override void ModifyBodyColor(ref Color bodyColor)
             {
