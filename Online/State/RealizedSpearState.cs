@@ -26,7 +26,19 @@ namespace RainMeadow
 
             if (spear.stuckInObject != null)
             {
-                if (!OnlinePhysicalObject.map.TryGetValue(spear.stuckInObject.abstractPhysicalObject, out var onlineStuckEntity)) throw new InvalidOperationException("Stuck to a non-synced creature!");
+                if (!OnlinePhysicalObject.map.TryGetValue(spear.stuckInObject.abstractPhysicalObject, out var onlineStuckEntity))
+
+                    if (RainMeadow.isArenaMode(out var _))
+                    {
+
+                        RainMeadow.Debug("Stuck in creature while switching worlds");
+
+                    }
+
+                    else
+                    {
+                        throw new InvalidOperationException("Stuck to a non-synced creature!");
+                    }
                 stuckInObject = onlineStuckEntity?.id;
                 stuckInChunkIndex = (byte)spear.stuckInChunkIndex;
                 stuckInAppendage = spear.stuckInAppendage != null ? new AppendageRef(spear.stuckInAppendage) : null;
