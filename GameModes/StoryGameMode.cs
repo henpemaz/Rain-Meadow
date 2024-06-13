@@ -107,18 +107,5 @@ namespace RainMeadow
             ).Select(e => e.entity.owner.inLobbyId).ToList();
         }
 
-        internal override void AddAvatarSettings()
-        {
-            RainMeadow.Debug("Adding avatar settings!");
-
-
-            clientSettings.EnterResource(lobby);
-
-
-
-
-        
-        }
-
     }
 }
