@@ -62,10 +62,8 @@ namespace RainMeadow
         internal override void AddAvatarSettings()
         {
             RainMeadow.Debug("Adding arena avatar settings!");
-            clientSettings = new ArenaClientSettings(
-                new ArenaClientSettings.Definition(
-                    new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0)
-                    , OnlineManager.mePlayer));
+            clientSettings = new ArenaClientSettings(new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0), OnlineManager.mePlayer);
+
             clientSettings.EnterResource(lobby);
         }
 
