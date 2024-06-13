@@ -33,10 +33,6 @@ namespace RainMeadow
                     d.ownerEntity = oc;
                     d.creatureData = oe.GetData<MeadowCreatureData>();
                 }
-                if (CreatureController.creatureControllers.TryGetValue(oc.creature, out var cc))
-                {
-                    cc.onlineCreature = oc;
-                }
             }
         }
 
@@ -48,7 +44,7 @@ namespace RainMeadow
             var abstractCreature = new AbstractCreature(game.world, StaticWorld.GetCreatureTemplate(skinData.creatureType), null, location, new EntityID(-1, 0) { altSeed = skinData.randomSeed });
             if (skinData.creatureType == CreatureTemplate.Type.Slugcat)
             {
-                abstractCreature.state = new PlayerState(abstractCreature, 0, skinData.statsName, false);
+                abstractCreature.state = new PlayerState(abstractCreature, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer, false);
                 game.session.AddPlayer(abstractCreature);
             }
             else
@@ -81,10 +77,7 @@ namespace RainMeadow
         internal override void AddAvatarSettings()
         {
             RainMeadow.Debug("Adding avatar settings!");
-            MeadowAvatarSettings meadowAvatarSettings = new MeadowAvatarSettings(
-                            new MeadowAvatarSettings.Definition(
-                                new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0)
-                                , OnlineManager.mePlayer));
+            MeadowAvatarSettings meadowAvatarSettings = new MeadowAvatarSettings(new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0), OnlineManager.mePlayer);
             clientSettings = meadowAvatarSettings;
             if (!RWCustom.Custom.rainWorld.setup.startScreen) // skipping all menus
             {

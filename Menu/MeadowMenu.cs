@@ -3,7 +3,6 @@ using Menu.Remix;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
 using UnityEngine;
 
 namespace RainMeadow
@@ -27,6 +26,7 @@ namespace RainMeadow
 
         int skinIndex;
         float tintAmount;
+        FSprite tintPreview;
         MeadowAvatarSettings personaSettings;
         OpTinyColorPicker colorpicker;
         TokenMenuDisplayer skinProgressIcon;
@@ -37,6 +37,8 @@ namespace RainMeadow
         public MeadowMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.MeadowMenu)
         {
             RainMeadow.DebugMe();
+            backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
+
             this.rainEffect = new RainEffect(this, this.pages[0]);
             this.pages[0].subObjects.Add(this.rainEffect);
             this.rainEffect.rainFade = 0.3f;
@@ -85,11 +87,10 @@ namespace RainMeadow
 
             this.pages[0].subObjects.Add(this.skinsLabel = new MenuLabel(this, mainPage, this.Translate("SKINS"), new Vector2(194, 553), new(110, 30), true));
 
-            colorpicker = new OpTinyColorPicker(this, new Vector2(800, 60), "FFFFFF"); // todo read stored
+            colorpicker = new OpTinyColorPicker(this, new Vector2(800, 60), "FFFFFF");
             var wrapper = new UIelementWrapper(this.tabWrapper, colorpicker);
 
             colorpicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
-            // todo update a preview of some sort for the resulting tinted color!
 
             tintLabel = new MenuLabel(this, mainPage, this.Translate("Tint color"), new Vector2(845, 60), new(0, 30), false);
             tintLabel.label.alignment = FLabelAlignment.Left;
@@ -100,6 +101,9 @@ namespace RainMeadow
 
             colorpicker.wrapper.nextSelectable[3] = tintSlider;
             tintSlider.nextSelectable[1] = colorpicker.wrapper;
+
+            tintPreview = new FSprite("Futile_White") { x = 940, y = 60, scale = 1.4142f };
+            this.container.AddChild(tintPreview);
 
             this.skinProgressIcon = new TokenMenuDisplayer(this, this.pages[0], new Vector2(-1000f, -1000f), MeadowProgression.TokenBlueColor, $"{0}/{MeadowProgression.skinProgressTreshold}");
             this.pages[0].subObjects.Add(skinProgressIcon);
@@ -112,14 +116,14 @@ namespace RainMeadow
                 }
                 foreach (var character in MeadowProgression.allCharacters)
                 {
-                    MeadowProgression.progressionData.CurrentlySelectedCharacter = character;
+                    MeadowProgression.progressionData.currentlySelectedCharacter = character;
                     for (int i = 0; i < 80; i++)
                     {
                         MeadowProgression.EmoteProgress();
                         MeadowProgression.SkinProgress();
                     }
                 }
-                MeadowProgression.progressionData.CurrentlySelectedCharacter = playableCharacters[ssm.slugcatPageIndex];
+                MeadowProgression.progressionData.currentlySelectedCharacter = MeadowProgression.allCharacters[ssm.slugcatPageIndex];
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.MeadowMenu);
             };
             mainPage.subObjects.Add(cheatButton);
@@ -133,11 +137,11 @@ namespace RainMeadow
             mainPage.subObjects.Add(resetButton);
 
             // read state
-            ssm.slugcatPageIndex = playableCharacters.IndexOf(MeadowProgression.progressionData.CurrentlySelectedCharacter);
+            ssm.slugcatPageIndex = playableCharacters.IndexOf(MeadowProgression.progressionData.currentlySelectedCharacter);
             if (ssm.slugcatPageIndex == -1)
             {
                 ssm.slugcatPageIndex = 0;
-                MeadowProgression.progressionData.CurrentlySelectedCharacter = playableCharacters[0];
+                MeadowProgression.progressionData.currentlySelectedCharacter = playableCharacters[0];
             }
             MeadowProgression.progressionData.characterProgress[playableCharacters[ssm.slugcatPageIndex]].everSeenInMenu = true;
 
@@ -151,13 +155,13 @@ namespace RainMeadow
             colorpicker.valuecolor = MeadowProgression.progressionData.currentCharacterProgress.tintColor;
             tintAmount = MeadowProgression.progressionData.currentCharacterProgress.tintAmount;
 
-            UpdateCharacterUI();
-
             BindSettings();
+
+            UpdateCharacterUI();
 
             if (manager.musicPlayer != null)
             {
-                manager.musicPlayer.MenuRequestsSong("me", 1, 2);
+                manager.musicPlayer.MenuRequestsSong("me", 1, 0);
             }
         }
 
@@ -183,7 +187,8 @@ namespace RainMeadow
                 mainPage.subObjects.Add(btn);
                 skinButtons[i] = btn;
             }
-            if(ssm.slugcatPageIndex < playableCharacters.Count)
+
+            if (ssm.slugcatPageIndex < playableCharacters.Count) // only for unlocked characters [locked one will be last index]
             {
                 skinsLabel.label.alpha = 1f;
                 skinProgressIcon.alpha = 1f;
@@ -193,6 +198,7 @@ namespace RainMeadow
                 colorpicker.Show();
                 tintLabel.label.alpha = 1f;
                 tintSlider.Hidden = false;
+                UpdateTintPreview();
             }
             else
             {
@@ -202,6 +208,7 @@ namespace RainMeadow
                 colorpicker.Hide();
                 tintLabel.label.alpha = 0f;
                 tintSlider.Hidden = true;
+                tintPreview.isVisible = false;
             }
         }
 
@@ -220,7 +227,7 @@ namespace RainMeadow
                 if (ssm.slugcatPageIndex < playableCharacters.Count)
                 {
                     this.startButton.buttonBehav.greyedOut = false;
-                    MeadowProgression.progressionData.CurrentlySelectedCharacter = playableCharacters[ssm.slugcatPageIndex];
+                    MeadowProgression.progressionData.currentlySelectedCharacter = playableCharacters[ssm.slugcatPageIndex];
                     MeadowProgression.progressionData.characterProgress[playableCharacters[ssm.slugcatPageIndex]].everSeenInMenu = true;
                     skinIndex = characterSkins[playableCharacters[ssm.slugcatPageIndex]].IndexOf(MeadowProgression.progressionData.currentCharacterProgress.selectedSkin);
                     if (skinIndex == -1)
@@ -304,6 +311,8 @@ namespace RainMeadow
             skinIndex = to;
             personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][to];
             MeadowProgression.progressionData.currentCharacterProgress.selectedSkin = personaSettings.skin;
+
+            UpdateTintPreview();
         }
 
         // Slider owner
@@ -312,6 +321,8 @@ namespace RainMeadow
             tintAmount = f;
             personaSettings.tintAmount = f;
             MeadowProgression.progressionData.currentCharacterProgress.tintAmount = f;
+
+            UpdateTintPreview();
         }
 
         public override float ValueOfSlider(Slider slider)
@@ -323,6 +334,25 @@ namespace RainMeadow
         {
             personaSettings.tint = colorpicker.valuecolor;
             MeadowProgression.progressionData.currentCharacterProgress.tintColor = personaSettings.tint;
+
+            UpdateTintPreview();
+        }
+
+        private void UpdateTintPreview()
+        {
+            var cust = personaSettings.MakeCustomization() as MeadowAvatarCustomization;
+            tintPreview.SetElementByName(CreatureSymbol.SpriteNameOfCreature(new IconSymbol.IconSymbolData(cust.skinData.creatureType, AbstractPhysicalObject.AbstractObjectType.Creature, 0)));
+            if (cust.skinData.baseColor.HasValue)
+            {
+                tintPreview.isVisible = true;
+                var color = cust.skinData.baseColor.Value;
+                cust.ModifyBodyColor(ref color);
+                tintPreview.color = color;
+            }
+            else
+            {
+                tintPreview.isVisible = false;
+            }
         }
     }
 }

@@ -22,8 +22,8 @@ namespace RainMeadow
 
         public void UpdatePlayers()
         {
-            List<StoryClientSettings> clientSettings = OnlineManager.lobby.clientSettings.Values.OfType<StoryClientSettings>().ToList();
-            var currentSettings = indicators.Select(i => i.clientSettings);
+            var clientSettings = OnlineManager.lobby.clientSettings.Values.OfType<StoryClientSettings>();
+            var currentSettings = indicators.Select(i => i.clientSettings).ToList();
 
             clientSettings.Except(currentSettings).Do(PlayerAdded); 
             currentSettings.Except(clientSettings).Do(PlayerRemoved);

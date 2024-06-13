@@ -313,15 +313,8 @@ namespace RainMeadow
                                 room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
                                 oe.beingMoved = false;
                             }
-                            else // mine leave the old online world elegantly
-                            {
-                                Debug("removing my entity from online " + oe);
-                                oe.LeaveResource(roomSession);
-                                oe.LeaveResource(roomSession.worldSession);
-                            }
                         }
                     }
-                    roomSession.worldSession.FullyReleaseResource();
                 }
 
                 orig(self); // this replace the list of entities in new world with that from old world
@@ -329,35 +322,6 @@ namespace RainMeadow
                 // post: we add our entities to the new world
                 if (room != null && RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession2))
                 {
-                    // update definitions
-                    foreach (var ent in room.abstractRoom.entities)
-                    {
-                        if (ent is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
-                        {
-                            // should these be some sort of OnlinePhisicalObject api?
-                            if (apo is AbstractCreature ac)
-                            {
-                                if (isArenaMode(out var _))
-                                {
-                                    (oe.definition as OnlineCreatureDefinition).serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(ac);
-
-                                } else
-                                {
-                                    (oe.definition as OnlineCreatureDefinition).serializedObject = SaveState.AbstractCreatureToStringStoryWorld(ac);
-
-                                }
-                            }
-                            else
-                            {
-                                (oe.definition as OnlinePhysicalObjectDefinition).serializedObject = apo.ToString();
-                            }
-                        }
-                        else
-                        {
-                            RainMeadow.Error("unhandled entity in gate post switch: " + ent);
-                        }
-                    }
-
                     roomSession2.Activate(); // adds entities that are already in the room as mine
                     room.abstractRoom.entities.AddRange(entitiesFromNewRoom); // re-add overwritten entities
                     room.abstractRoom.creatures.AddRange(creaturesFromNewRoom);
@@ -369,6 +333,8 @@ namespace RainMeadow
                             oe.OnJoinedResource(roomSession2);
                         }
                     }
+
+                    oldWorldSession.FullyReleaseResource(); // done? let go
                 }
                 if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode) 
                 {

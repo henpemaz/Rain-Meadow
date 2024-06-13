@@ -1,277 +1,221 @@
 ﻿using HarmonyLib;
 using HUD;
 using RWCustom;
-using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 namespace RainMeadow
 {
-    public class MeadowHud : HudPart
+    internal class MeadowHud : HudPart
     {
-        private RoomCamera self;
+        private List<MeadowPlayerIndicator> indicators = new();
+        private RoomCamera camera;
         private Creature owner;
-        private FContainer container;
-        private TokenSparkIcon emotesIcon;
-        private FLabel emotesLabel;
-        private TokenSparkIcon skinsIcon;
-        private FLabel skinsLabel;
-        private TokenSparkIcon characterIcon;
-        private FLabel characterLabel;
-        private int emoteAnim;
-        private int skinAnim;
-        private int charAnim;
-        private int needed;
-        private float visible;
-        private Vector2 rootPos;
+        private bool showPlayerNames;
+        private bool arrowOnSelfNeeded;
+        private bool lastMapDown;
 
-        Vector2 DrawPos(float timeStacker, int index)
-        {
-            return rootPos + new Vector2(index * 40f, 0);
-        }
-
-        public MeadowHud(HUD.HUD hud, RoomCamera self, Creature owner) : base(hud)
+        public MeadowHud(HUD.HUD hud, RoomCamera camera, Creature owner) : base(hud)
         {
             this.hud = hud;
-            this.self = self;
+            this.camera = camera;
             this.owner = owner;
-
-            rootPos = new Vector2(22f + Mathf.Max(55.01f, hud.rainWorld.options.SafeScreenOffset.x + 22.51f), Mathf.Max(45.01f, hud.rainWorld.options.SafeScreenOffset.y + 22.51f));
-            this.container = new FContainer();
-            
-            emotesIcon = new TokenSparkIcon(container, MeadowProgression.TokenRedColor, DrawPos(1f, 0), 1.5f);
-            emotesLabel = new FLabel(Custom.GetFont(), EmoteCountText);
-            emotesLabel.SetPosition(DrawPos(1f, 0) + new Vector2(0, 20f));
-            container.AddChild(emotesLabel);
-
-            skinsIcon = new TokenSparkIcon(container, MeadowProgression.TokenBlueColor, DrawPos(1f, 1), 1.5f);
-            skinsLabel = new FLabel(Custom.GetFont(), SkinCountText);
-            skinsLabel.SetPosition(DrawPos(1f, 1) + new Vector2(0, 20f));
-            container.AddChild(skinsLabel);
-
-            characterIcon = new TokenSparkIcon(container, MeadowProgression.TokenGoldColor, DrawPos(1f, 2), 1.5f);
-            characterLabel = new FLabel(Custom.GetFont(), CharacterCountText);
-            characterLabel.SetPosition(DrawPos(1f, 2) + new Vector2(0, 20f));
-            container.AddChild(characterLabel);
-
-            hud.fContainers[1].AddChild(container);
+            UpdatePlayers();
         }
 
-        string EmoteCountText => $"{MeadowProgression.progressionData.currentCharacterProgress.emoteUnlockProgress}/{MeadowProgression.emoteProgressTreshold}";
-        string SkinCountText => $"{MeadowProgression.progressionData.currentCharacterProgress.skinUnlockProgress}/{MeadowProgression.skinProgressTreshold}";
-        string CharacterCountText => $"{MeadowProgression.progressionData.characterUnlockProgress}/{MeadowProgression.characterProgressTreshold}";
+        public void UpdatePlayers()
+        {
+            var avatarSettings = OnlineManager.lobby.clientSettings.Values.OfType<MeadowAvatarSettings>().Where(mas=>mas.inGame);
+            var currentSettings = indicators.Select(i => i.avatarSettings).ToList(); //needs duplication
+            avatarSettings.Except(currentSettings).Do(PlayerAdded);
+            currentSettings.Except(avatarSettings).Do(PlayerRemoved);
+        }
+
+        public void PlayerAdded(MeadowAvatarSettings avatarSettings)
+        {
+            RainMeadow.DebugMe();
+            MeadowPlayerIndicator indicator = new MeadowPlayerIndicator(hud, camera, avatarSettings, this);
+            this.indicators.Add(indicator);
+            hud.AddPart(indicator);
+        }
+
+        public void PlayerRemoved(MeadowAvatarSettings avatarSettings)
+        {
+            RainMeadow.DebugMe();
+            var indicator = this.indicators.First(i => i.avatarSettings == avatarSettings);
+            this.indicators.Remove(indicator);
+            indicator.slatedForDeletion = true;
+        }
 
         public override void Update()
         {
             base.Update();
-
-            needed = Mathf.Max(needed - 1, 0);
-            if (emoteAnim > 0)
+            UpdatePlayers();
+            var mapDown = RWInput.CheckSpecificButton(0, RewiredConsts.Action.Map);
+            if (!mapDown && lastMapDown && hud.map.fade <= 0.3f)
             {
-                needed = 80;
-                emoteAnim--;
-                if (emoteAnim == 0)
+                showPlayerNames = !showPlayerNames;
+            }
+            lastMapDown = mapDown;
+            arrowOnSelfNeeded = owner.room == null && owner.NPCTransportationDestination != default;
+        }
+
+        private class MeadowPlayerIndicator : HUD.HudPart
+        {
+            public MeadowAvatarSettings avatarSettings;
+            private MeadowHud meadowHud;
+            private Rect camrect;
+            private Vector2 pos;
+            private Vector2 lastPos;
+            private FSprite gradient;
+            private HUD.HUD hud;
+            private RoomCamera camera;
+            private OnlinePhysicalObject avatar;
+            private Vector2 pointDir;
+            private FLabel label;
+            private FSprite arrowSprite;
+            private bool active;
+            private float alpha;
+            private float lastAlpha;
+
+            public MeadowPlayerIndicator(HUD.HUD hud, RoomCamera camera, MeadowAvatarSettings avatarSettings, MeadowHud meadowHud) : base(hud)
+            {
+                this.hud = hud;
+                this.camera = camera;
+                this.avatarSettings = avatarSettings;
+                this.meadowHud = meadowHud;
+
+                this.camrect = new Rect(Vector2.zero, this.camera.sSize).CloneWithExpansion(-30f);
+
+                this.pos = new Vector2(-1000f, -1000f);
+                this.lastPos = this.pos;
+
+                Color uiColor = (avatarSettings.MakeCustomization() as MeadowAvatarCustomization).EmoteBackgroundColor(MeadowProgression.Emote.emoteHello);
+
+                this.gradient = new FSprite("Futile_White", true);
+                this.gradient.shader = hud.rainWorld.Shaders["FlatLight"];
+                this.gradient.color = new Color(0f, 0f, 0f);
+                hud.fContainers[0].AddChild(this.gradient);
+                this.gradient.alpha = 0f;
+                this.gradient.x = -1000f;
+                this.label = new FLabel(Custom.GetFont(), avatarSettings.owner.id.name);
+                this.label.color = uiColor;
+                hud.fContainers[0].AddChild(this.label);
+                this.label.alpha = 0f;
+                this.label.x = -1000f;
+                this.arrowSprite = new FSprite("Multiplayer_Arrow", true);
+                this.arrowSprite.color = uiColor;
+                hud.fContainers[0].AddChild(this.arrowSprite);
+                this.arrowSprite.alpha = 0f;
+                this.arrowSprite.x = -1000f;
+            }
+
+            public override void Update()
+            {
+                base.Update();
+                lastAlpha = alpha;
+                this.active = false;
+                bool needed;
+                if (!meadowHud.showPlayerNames && !(avatarSettings.isMine && meadowHud.arrowOnSelfNeeded))
                 {
-                    emotesLabel.text = EmoteCountText;
-                    this.hud.fadeCircles.Add(new FadeCircle(this.hud, 10f, 10f, 0.82f, 50f, 4f, DrawPos(1f, 0), this.container));
-                    this.hud.PlaySound(SoundID.HUD_Food_Meter_Fill_Fade_Circle);
+                    needed = false;
+                    if (alpha == 0f) return;
                 }
-            }
-            if (skinAnim > 0)
-            {
-                needed = 80;
-                skinAnim--;
-                if (skinAnim == 0)
+                else
                 {
-                    skinsLabel.text = SkinCountText;
-                    this.hud.fadeCircles.Add(new FadeCircle(this.hud, 10f, 10f, 0.82f, 50f, 4f, DrawPos(1f, 1), this.container));
-                    this.hud.PlaySound(SoundID.HUD_Food_Meter_Fill_Fade_Circle);
+                    needed = true;
                 }
-            }
-            if (charAnim > 0)
-            {
-                needed = 80;
-                charAnim--;
-                if (charAnim == 0)
+                alpha = Custom.LerpAndTick(alpha, needed ? 1f : 0f, 0.1f, 0.033f);
+
+                // tracking
+                lastPos = pos;
+
+                if (avatar == null || avatar.primaryResource == null)
                 {
-                    characterLabel.text = CharacterCountText;
-                    this.hud.fadeCircles.Add(new FadeCircle(this.hud, 10f, 10f, 0.82f, 50f, 4f, DrawPos(1f, 2), this.container));
-                    this.hud.PlaySound(SoundID.HUD_Food_Meter_Fill_Fade_Circle);
-                }
-            }
-
-            visible = Custom.LerpAndTick(visible, needed > 0 ? 1f : 0f, needed > 0 ? 0.025f : 0.01f, 0.01f);
-            container.alpha = visible;
-
-            if(visible > 0f)
-            {
-                container.isVisible = true;
-                emotesIcon.Update();
-                skinsIcon.Update();
-                characterIcon.Update();
-            }
-            else
-            {
-                container.isVisible = false;
-            }
-        }
-
-        public void AnimateEmote() { emoteAnim = 40; }
-        public void AnimateSkin() { skinAnim = 40; }
-        public void AnimateChar() { charAnim = 40; }
-
-        public override void Draw(float timeStacker)
-        {
-            base.Draw(timeStacker);
-
-            if (visible > 0f)
-            {
-                emotesIcon.Draw(timeStacker);
-                skinsIcon.Draw(timeStacker);
-                characterIcon.Draw(timeStacker);
-            }
-        }
-
-        public override void ClearSprites()
-        {
-            base.ClearSprites();
-            container.RemoveFromContainer();
-            container.RemoveAllChildren();
-            emotesIcon.ClearSprites();
-            skinsIcon.ClearSprites();
-            characterIcon.ClearSprites();
-        }
-
-        internal void NewCharacterUnlocked(MeadowProgression.Character chararcter)
-        {
-            hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate("New character unlocked"), 60, 160, true, true);
-        }
-
-        internal void NewEmoteUnlocked(MeadowProgression.Emote emote)
-        {
-            hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate("New emote unlocked"), 60, 160, true, true);
-        }
-
-        internal void NewSkinUnlocked(MeadowProgression.Skin skin)
-        {
-            hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate("New skin unlocked"), 60, 160, true, true);
-        }
-
-        public class TokenSparkIcon
-        {
-            private Color TokenColor;
-            private Vector2[,] lines;
-            //private Vector2 pos;
-            //private Vector2[] trail;
-            //private float sinCounter;
-            private float sinCounter2;
-            private FSprite[] sprites;
-            public FContainer container; // controls position and scaling
-
-            public TokenSparkIcon(FContainer hudContainer, Color color, Vector2 pos, float scale)
-            {
-                TokenColor = color;
-
-                this.lines = new Vector2[4, 4];
-                this.lines[0, 2] = new Vector2(-7f, 0f);
-                this.lines[1, 2] = new Vector2(0f, 11f);
-                this.lines[2, 2] = new Vector2(7f, 0f);
-                this.lines[3, 2] = new Vector2(0f, -11f);
-                this.sprites = new FSprite[6];
-                this.sprites[0] = new FSprite("Futile_White", true);
-                this.sprites[0].shader = Custom.rainWorld.Shaders["FlatLight"];
-                this.sprites[1] = new FSprite("JetFishEyeA", true);
-                this.sprites[1].shader = Custom.rainWorld.Shaders["Hologram"];
-                for (int i = 0; i < 4; i++)
-                {
-                    this.sprites[(2 + i)] = new FSprite("pixel", true);
-                    this.sprites[(2 + i)].anchorY = 0f;
-                    this.sprites[(2 + i)].shader = Custom.rainWorld.Shaders["Hologram"];
-                }
-
-                float num = 0.2f;
-                float num2 = 0f;
-                float num3 = 1f;
-                Color goldColor = this.GoldCol(num);
-                this.sprites[1].color = goldColor;
-                this.sprites[1].alpha = (1f - num) * Mathf.InverseLerp(0.5f, 0f, num2) * num3 * (1f);
-                this.sprites[0].alpha = 0.9f * (1f - num) * Mathf.InverseLerp(0.5f, 0f, num2) * num3;
-                this.sprites[0].scale = Mathf.Lerp(20f, 40f, num) / 16f;
-                this.sprites[0].color = Color.Lerp(this.TokenColor, goldColor, 0.4f);
-
-                this.container = new FContainer();
-                container.SetPosition(pos);
-                container.scale = scale; // yipee
-
-                this.sprites.Do(s => container.AddChild(s));
-                hudContainer.AddChild(container);
-            }
-
-            public void Update()
-            {
-                this.sinCounter2 += (1f + Mathf.Lerp(-10f, 10f, UnityEngine.Random.value) * 0.2f);
-                float num = Mathf.Sin(this.sinCounter2 / 20f);
-                num = Mathf.Pow(Mathf.Abs(num), 0.5f) * Mathf.Sign(num);
-                var lenLines = this.lines.GetLength(0);
-                for (int i = 0; i < lenLines; i++)
-                {
-                    this.lines[i, 1] = this.lines[i, 0];
-                }
-                for (int k = 0; k < lenLines; k++)
-                {
-                    if (Mathf.Pow(UnityEngine.Random.value, 0.1f + 0.2f * 5f) > this.lines[k, 3].x)
+                    if(avatarSettings.avatarId != null)
                     {
-                        this.lines[k, 0] = Vector2.Lerp(this.lines[k, 0], new Vector2(this.lines[k, 2].x * num, this.lines[k, 2].y), Mathf.Pow(UnityEngine.Random.value, 1f + this.lines[k, 3].x * 17f));
+                        this.avatar = (OnlinePhysicalObject)avatarSettings.avatarId.FindEntity(true);
                     }
-                    if (UnityEngine.Random.value < Mathf.Pow(this.lines[k, 3].x, 0.2f) && UnityEngine.Random.value < Mathf.Pow(0.2f, 0.8f - 0.4f * this.lines[k, 3].x))
+                }
+                if (avatar == null || camera.room == null) return;
+
+                Vector2 rawPos = new();
+                // in this room
+                if (avatar.apo.Room == camera.room.abstractRoom)
+                {
+                    // in room or in shortcut
+                    if (avatar.apo.realizedObject is Creature player)
                     {
-                        this.lines[k, 0] += Custom.RNV() * 17f * this.lines[k, 3].x;
-                        this.lines[k, 3].y = Mathf.Max(this.lines[k, 3].y, 0.2f);
-                    }
-                    this.lines[k, 3].x = Custom.LerpAndTick(this.lines[k, 3].x, this.lines[k, 3].y, 0.01f, 0.033333335f);
-                    this.lines[k, 3].y = Mathf.Max(0f, this.lines[k, 3].y - 0.014285714f);
-                    if (UnityEngine.Random.value < 1f / Mathf.Lerp(210f, 20f, 0.2f))
-                    {
-                        this.lines[k, 3].y = Mathf.Max(0.2f, (UnityEngine.Random.value < 0.5f) ? 0.2f : UnityEngine.Random.value);
+                        if (player.room == camera.room)
+                        {
+                            active = true;
+                            rawPos = player.DangerPos - camera.pos;
+                        }
+                        else if (player.room == null)
+                        {
+                            Vector2? shortcutpos = camera.game.shortcuts.OnScreenPositionOfInShortCutCreature(camera.room, player);
+                            if (shortcutpos != null)
+                            {
+                                active = true;
+                                rawPos = shortcutpos.Value - camera.pos;
+                            }
+                        }
+                        if (active)
+                        {
+                            this.pos = camrect.GetClosestInteriorPoint(rawPos); // gives straight arrows except corners
+                            if (pos != rawPos)
+                            {
+                                pointDir = (rawPos - pos).normalized;
+                            }
+                            else
+                            {
+                                pos += new Vector2(0f, (player.room != null) ? 45f : 15f);
+                                this.pointDir = Vector2.down;
+                            }
+                        }
                     }
                 }
             }
 
-            public Color GoldCol(float g)
-            {
-                return Color.Lerp(this.TokenColor, new Color(1f, 1f, 1f), 0.4f + 0.4f * Mathf.Max(0, Mathf.Pow(g, 0.5f)));
-            }
 
-            public void Draw(float timeStacker)
+            public override void Draw(float timeStacker)
             {
-                float num = 0.2f;
-                float num2 = 0f;
-                float num3 = 1f;
-                Color goldColor = this.GoldCol(num);
-                
-                for (int i = 0; i < 4; i++)
+                if (!active)
                 {
-                    Vector2 vector2 = Vector2.Lerp(this.lines[i, 1], this.lines[i, 0], timeStacker);
-                    int num4 = (i == 3) ? 0 : (i + 1);
-                    Vector2 vector3 = Vector2.Lerp(this.lines[num4, 1], this.lines[num4, 0], timeStacker);
-                    float num5 = 1f - (1f - Mathf.Max(this.lines[i, 3].x, this.lines[num4, 3].x)) * (1f - num);
-                    num5 = Mathf.Pow(num5, 2f);
-                    num5 *= 1f - num2;
-                    if (UnityEngine.Random.value < num5)
-                    {
-                        vector3 = Vector2.Lerp(vector2, vector3, UnityEngine.Random.value);
-                    }
-                    this.sprites[(2 + i)].x = vector2.x;
-                    this.sprites[(2 + i)].y = vector2.y;
-                    this.sprites[(2 + i)].scaleY = Vector2.Distance(vector2, vector3);
-                    this.sprites[(2 + i)].rotation = Custom.AimFromOneVectorToAnother(vector2, vector3);
-                    this.sprites[(2 + i)].alpha = (1f - num5) * num3 * 1f;
-                    this.sprites[(2 + i)].color = goldColor;
+                    gradient.isVisible = false;
+                    label.isVisible = false;
+                    arrowSprite.isVisible = false;
+                    return;
                 }
+                gradient.isVisible = true;
+                label.isVisible = true;
+                arrowSprite.isVisible = true;
+
+                Vector2 usePos = Vector2.Lerp(this.lastPos, this.pos, timeStacker);
+                float useAlpha = Mathf.Lerp(this.lastAlpha, this.alpha, timeStacker);
+                this.gradient.x = usePos.x;
+                this.gradient.y = usePos.y + 10f;
+                this.gradient.scale = Mathf.Lerp(80f, 110f, useAlpha) / 16f;
+                this.gradient.alpha = 0.17f * Mathf.Pow(useAlpha, 2f);
+                this.arrowSprite.x = usePos.x;
+                this.arrowSprite.y = usePos.y;
+                this.arrowSprite.rotation = RWCustom.Custom.VecToDeg(pointDir * -1);
+
+                this.label.x = usePos.x;
+                this.label.y = usePos.y + 20f;
+
+                this.label.alpha = useAlpha;
+                this.arrowSprite.alpha = useAlpha;
             }
 
-            public void ClearSprites()
+            public override void ClearSprites()
             {
-                this.sprites.Do(s => s.RemoveFromContainer());
+                base.ClearSprites();
+                this.gradient.RemoveFromContainer();
+                this.arrowSprite.RemoveFromContainer();
+                this.label.RemoveFromContainer();
             }
         }
     }

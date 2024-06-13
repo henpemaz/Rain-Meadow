@@ -1,62 +1,34 @@
-﻿using System.Text.RegularExpressions;
-
+﻿
 namespace RainMeadow
 {
+    // this class basically exists to avoid a switch in opo.makestate. worth the trouble? idk
     public class OnlineMeadowCollectible : OnlinePhysicalObject
     {
-        public OnlineMeadowCollectible(OnlinePhysicalObjectDefinition entityDefinition, AbstractPhysicalObject apo) : base(entityDefinition, apo) { }
-
         public class Definition : OnlinePhysicalObjectDefinition
         {
-            public Definition()
-            {
-            }
+            public Definition() { }
 
-            public Definition(OnlinePhysicalObjectDefinition opod) : base(opod)
-            {
-            }
+            public Definition(OnlineMeadowCollectible onlineMeadowCollectible, OnlineResource inResource) : base(onlineMeadowCollectible, inResource) { }
 
-            public Definition(int seed, bool realized, string serializedObject, EntityId entityId, OnlinePlayer owner, bool isTransferable) : base(seed, realized, serializedObject, entityId, owner, isTransferable)
+            public override OnlineEntity MakeEntity(OnlineResource inResource, EntityState initialState)
             {
-            }
-
-            public override OnlineEntity MakeEntity(OnlineResource inResource)
-            {
-                return OnlineMeadowCollectible.FromDefinition(this, inResource);
+                return new OnlineMeadowCollectible(this, inResource, (MeadowCollectibleState)initialState);
             }
         }
-        new public static OnlineEntity FromDefinition(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource)
+
+        public OnlineMeadowCollectible(AbstractPhysicalObject apo, EntityId id, OnlinePlayer owner, bool isTransferable) : base(apo, id, owner, isTransferable)
         {
-            World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
-            EntityID id = world.game.GetNewID();
-            id.altSeed = newObjectEvent.seed;
 
-            RainMeadow.Debug("serializedObject: " + newObjectEvent.serializedObject);
+        }
 
-            var apo = SaveState.AbstractPhysicalObjectFromString(world, newObjectEvent.serializedObject);
-            apo.ID = id;
-            if (!world.IsRoomInRegion(apo.pos.room))
-            {
-                RainMeadow.Debug("Room not in region: " + apo.pos.room);
-                // most common cause is gates which are ambiguous room names, solve for current region instead of global
-                string[] obarray = Regex.Split(newObjectEvent.serializedObject, "<oA>");
-                string[] wcarray = obarray[2].Split('.');
-                AbstractRoom room = world.GetAbstractRoom(wcarray[0]);
-                if (room != null)
-                {
-                    RainMeadow.Debug($"fixing room index -> {room.index}");
-                    apo.pos.room = room.index;
-                }
-                else
-                {
-                    RainMeadow.Error("Couldn't find room in region: " + wcarray[0]);
-                }
-            }
+        public OnlineMeadowCollectible(Definition definition, OnlineResource inResource, MeadowCollectibleState initialState) : base(definition, inResource, initialState)
+        {
 
-            RainMeadow.Debug($"room index -> {apo.pos.room} in region? {world.IsRoomInRegion(apo.pos.room)}");
+        }
 
-
-            return new OnlineMeadowCollectible(newObjectEvent, apo);
+        internal override EntityDefinition MakeDefinition(OnlineResource onlineResource)
+        {
+            return new Definition(this, onlineResource);
         }
 
         protected override EntityState MakeState(uint tick, OnlineResource inResource)

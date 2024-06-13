@@ -130,6 +130,8 @@ namespace RainMeadow
         internal virtual void AddAvatarSettings()
         {
             RainMeadow.Debug("Adding avatar settings!");
+            clientSettings = new StoryClientSettings(new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0), OnlineManager.mePlayer);
+            clientSettings.EnterResource(lobby);
         }
 
         internal virtual void SetAvatar(OnlineCreature onlineCreature)
@@ -149,6 +151,7 @@ namespace RainMeadow
             if (onlineResource is Lobby)
             {
                 AddAvatarSettings();
+                OnlineManager.instance.manager.RequestMainProcessSwitch(MenuProcessId());
             }
         }
 

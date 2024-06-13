@@ -8,8 +8,41 @@ namespace RainMeadow
 {
     public abstract partial class OnlineEntity
     {
+        [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
+        public abstract class EntityDefinition : OnlineState, IIdentifiable<OnlineEntity.EntityId>
+        {
+            [OnlineField(always: true)]
+            public OnlineEntity.EntityId entityId;
+            [OnlineField]
+            public ushort owner;
+            [OnlineField]
+            public bool isTransferable;
+            [OnlineField]
+            public TickReference tickReference;
+
+            public EntityDefinition() : base() { }
+
+            public EntityDefinition(OnlineEntity entity, OnlineResource inResource)
+            {
+                this.entityId = entity.id;
+                this.owner = entity.owner.inLobbyId;
+                this.isTransferable = entity.isTransferable;
+                this.tickReference = inResource.supervisor.MakeTickReference();
+            }
+
+            public abstract OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState);
+
+            public OnlineEntity.EntityId ID => entityId;
+
+            public override string ToString()
+            {
+                return base.ToString() + ":" + entityId;
+            }
+        }
+
+        internal abstract EntityDefinition MakeDefinition(OnlineResource onlineResource);
+
         public OnlinePlayer owner;
-        public readonly EntityDefinition definition;
         public readonly EntityId id;
         public readonly bool isTransferable;
 
@@ -31,11 +64,19 @@ namespace RainMeadow
         public bool isPending => pendingRequest != null;
         public OnlineEvent pendingRequest;
 
-        protected OnlineEntity(EntityDefinition entityDefinition)
+        protected OnlineEntity(EntityId id, OnlinePlayer owner, bool isTransferable)
         {
-            this.definition = entityDefinition;
-            this.owner = OnlineManager.lobby.PlayerFromId(entityDefinition.owner);
+            this.id = id;
+            this.owner = owner;
+            this.isTransferable = isTransferable;
+
+            OnlineManager.recentEntities.Add(id, this);
+        }
+
+        protected OnlineEntity(EntityDefinition entityDefinition, OnlineResource inResource, EntityState initialState)
+        {
             this.id = entityDefinition.entityId;
+            this.owner = OnlineManager.lobby.PlayerFromId(entityDefinition.owner);
             this.isTransferable = entityDefinition.isTransferable;
 
             OnlineManager.recentEntities.Add(id, this);
@@ -47,14 +88,28 @@ namespace RainMeadow
         /// <param name="resource"></param>
         public void EnterResource(OnlineResource resource)
         {
-            if (enteredResources.Contains(resource)) { return; }
-            RainMeadow.Debug($"{this} entered {resource}");
+            if (enteredResources.Contains(resource)) { if (isMine) JoinOrLeavePending(); return; }
+            RainMeadow.Debug($"{this} entering {resource}");
             if (enteredResources.Count != 0 && resource.super != currentlyEnteredResource)
             {
-                if(resource.IsSibling(currentlyEnteredResource)) { LeaveResource(currentlyEnteredResource); }
-                else RainMeadow.Error($"Not the right resource {this} - {resource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
+                var primary = enteredResources[0];
+                var commonAncestor = currentlyEnteredResource.CommonAncestor(resource, out List<OnlineResource> chainA, out List<OnlineResource> chainB);
+                // roll up
+                while (enteredResources.Count != 0 && currentlyEnteredResource != commonAncestor)
+                {
+                    enteredResources.Remove(currentlyEnteredResource);
+                }
+                // roll down
+                var mergeTarget = chainB.Contains(currentlyEnteredResource) ? currentlyEnteredResource : chainB.First(e => e.IsSibling(primary));
+                foreach (var res in chainB.SkipWhile(r => r != mergeTarget))
+                {
+                    enteredResources.Add(res);
+                }
             }
-            enteredResources.Add(resource);
+            else
+            {
+                enteredResources.Add(resource);
+            }
             if (isMine) JoinOrLeavePending();
         }
 
@@ -161,11 +216,13 @@ namespace RainMeadow
 
         public virtual void NewOwner(OnlinePlayer newOwner)
         {
+            if(newOwner == null) { throw new InvalidProgrammerException("null owner for entity"); }
             RainMeadow.Debug($"{this} assigned to {newOwner}");
             var wasOwner = owner;
             if (wasOwner == newOwner) return;
             owner = newOwner;
-            definition.owner = newOwner.inLobbyId;
+            //definition.owner = newOwner.inLobbyId;
+            primaryResource.registeredEntities[id].owner = newOwner.inLobbyId;
 
             if (wasOwner.isMe)
             {
@@ -284,6 +341,7 @@ namespace RainMeadow
         }
 
         private List<EntityData> entityData = new();
+        internal bool everRegistered;
 
         internal T AddData<T>(bool ignoreDuplicate = false) where T : EntityData, new()
         {

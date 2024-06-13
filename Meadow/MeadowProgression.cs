@@ -21,10 +21,12 @@ namespace RainMeadow
             {
                 _ = Character.Slugcat;
                 _ = Skin.Slugcat_Survivor;
-                currentTestSkin = Skin.Lizard_Pink;
+                _ = Emote.emoteHello;
+                currentTestSkin = Skin.Scavenger_Acorn;
 
                 RainMeadow.Debug($"characters loaded: {Character.values.Count}");
                 RainMeadow.Debug($"skins loaded: {Skin.values.Count}");
+                RainMeadow.Debug($"emotes loaded: {Emote.values.Count}");
             }
             catch (Exception e)
             {
@@ -39,13 +41,13 @@ namespace RainMeadow
 
         public class CharacterData
         {
-            public string displayName;
-            public string emotePrefix;
-            public string emoteAtlas;
-            public Color emoteColor;
+            public string displayName; // in select screen
+            public string emotePrefix; // for emote sprites
+            public string emoteAtlas; // atlas name
+            public Color emoteColor; // emote tile color (pre-tint)
             public List<Skin> skins = new();
-            public int[] selectSpriteIndexes;
-            public WorldCoordinate startingCoords;
+            public int[] selectSpriteIndexes; // sprites to darken on character locked in select screen
+            public WorldCoordinate startingCoords; // first spawn pos
         }
 
         [TypeConverter(typeof(ExtEnumTypeConverter<Character>))]
@@ -133,9 +135,8 @@ namespace RainMeadow
             public Character character;
             public string displayName;
             public CreatureTemplate.Type creatureType;
-            public SlugcatStats.Name statsName; // curently only used for color
             public int randomSeed;
-            public Color? baseColor;
+            public Color? baseColor; // todo fill them all for previews
             public Color? eyeColor;
             public Color? effectColor;
             public float tintFactor = 0.3f;
@@ -161,28 +162,27 @@ namespace RainMeadow
                 character = Character.Slugcat,
                 displayName = "Survivor",
                 creatureType = CreatureTemplate.Type.Slugcat,
-                statsName = SlugcatStats.Name.White,
+                baseColor = PlayerGraphics.SlugcatColor(SlugcatStats.Name.White),
             });
             public static Skin Slugcat_Monk = new("Slugcat_Monk", true, new()
             {
                 character = Character.Slugcat,
                 displayName = "Monk",
                 creatureType = CreatureTemplate.Type.Slugcat,
-                statsName = SlugcatStats.Name.Yellow,
+                baseColor = PlayerGraphics.SlugcatColor(SlugcatStats.Name.Yellow),
             });
             public static Skin Slugcat_Hunter = new("Slugcat_Hunter", true, new()
             {
                 character = Character.Slugcat,
                 displayName = "Hunter",
                 creatureType = CreatureTemplate.Type.Slugcat,
-                statsName = SlugcatStats.Name.Red,
+                baseColor = PlayerGraphics.SlugcatColor(SlugcatStats.Name.Red),
             });
             public static Skin Slugcat_Fluffy = new("Slugcat_Fluffy", true, new()
             {
                 character = Character.Slugcat,
                 displayName = "Fluffy",
                 creatureType = CreatureTemplate.Type.Slugcat,
-                statsName = SlugcatStats.Name.White,
                 baseColor = new Color(111, 216, 255, 255) / 255f
             });
 
@@ -348,7 +348,20 @@ namespace RainMeadow
         [TypeConverter(typeof(ExtEnumTypeConverter<Emote>))]
         public class Emote : ExtEnum<Emote>
         {
-            public Emote(string value, bool register = false) : base(value, register) { }
+            public Emote(string value, bool register = false) : base(value, register)
+            {
+                if(register)
+                {
+                    if (value.StartsWith("emote"))
+                    {
+                        emoteEmotes.Add(this);
+                    }
+                    if (value.StartsWith("symbol"))
+                    {
+                        symbolEmotes.Add(this);
+                    }
+                }
+            }
             public static Emote none = new("none", true);
 
             // emotions
@@ -392,21 +405,8 @@ namespace RainMeadow
             // todo
         }
 
-        public static List<Emote> emoteEmotes = new()
-        {
-            Emote.emoteHello,
-            Emote.emoteHappy,
-            Emote.emoteSad,
-            Emote.emoteConfused,
-            Emote.emoteGoofy,
-            Emote.emoteDead,
-            Emote.emoteAmazed,
-            Emote.emoteShrug,
-            Emote.emoteHug,
-            Emote.emoteAngry,
-            Emote.emoteWink,
-            Emote.emoteMischievous,
-        };
+        public static List<Emote> emoteEmotes = new();
+        public static List<Emote> symbolEmotes = new();
 
         public static List<Emote> AllAvailableEmotes(Character character)
         {
@@ -430,7 +430,7 @@ namespace RainMeadow
 
         public static Skin NextUnlockableSkin()
         {
-            return characterData[progressionData.CurrentlySelectedCharacter].skins.Except(progressionData.currentCharacterProgress.unlockedSkins).FirstOrDefault();
+            return characterData[progressionData.currentlySelectedCharacter].skins.Except(progressionData.currentCharacterProgress.unlockedSkins).FirstOrDefault();
         }
 
         public static Character NextUnlockableCharacter()
@@ -503,7 +503,7 @@ namespace RainMeadow
 
         internal static void ItemCollected(AbstractMeadowCollectible abstractMeadowCollectible)
         {
-            var meadowHud = (Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).cameras[0].hud.parts.First(p => p is MeadowHud) as MeadowHud;
+            var meadowHud = (Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).cameras[0].hud.parts.First(p => p is MeadowProgressionHud) as MeadowProgressionHud;
             if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold)
             {
                 meadowHud.AnimateChar();
@@ -576,9 +576,11 @@ namespace RainMeadow
         }
 
         // maybe save
-        internal static void AutosaveProgression()
+        internal static void AutosaveProgression(bool changes = false)
         {
-            if(anythingToSave && UnityEngine.Time.realtimeSinceStartup > lastSaved + 120) // no more than once a couple minutes
+            anythingToSave |= changes;
+            if ((anythingToSave && UnityEngine.Time.realtimeSinceStartup > lastSaved + 120) // no more than once a couple minutes
+                || UnityEngine.Time.realtimeSinceStartup > lastSaved + 300) // or 5 minutes for position etc
             {
                 SaveProgression();
             }
@@ -591,7 +593,6 @@ namespace RainMeadow
         private static float lastSaved;
         private static bool anythingToSave;
 
-
         // Will future me regret unversioned serialization? We'll see... If there's an issue try Serialization Callbacks
         [JsonObject(MemberSerialization.OptIn)] // otherwise properties/accessors create duplicated data, could also be opt-out but I don't like implicit
         public class ProgressionData
@@ -599,16 +600,16 @@ namespace RainMeadow
             [JsonProperty]
             public int characterUnlockProgress;
             [JsonProperty]
-            public Character CurrentlySelectedCharacter { get => currentlySelectedCharacter; set { currentlySelectedCharacter = value; if (!characterProgress.ContainsKey(value)) characterProgress[value] = new CharacterProgressionData(value); } }
-            private Character currentlySelectedCharacter;
+            public Character currentlySelectedCharacter { get => _currentlySelectedCharacter; set { _currentlySelectedCharacter = value; if (value != null && !characterProgress.ContainsKey(value)) characterProgress[value] = new CharacterProgressionData(value); } }
+            private Character _currentlySelectedCharacter;
             [JsonProperty]
             public Dictionary<Character, CharacterProgressionData> characterProgress;
-            public CharacterProgressionData currentCharacterProgress => characterProgress[CurrentlySelectedCharacter];
+            public CharacterProgressionData currentCharacterProgress => characterProgress[_currentlySelectedCharacter];
 
             public ProgressionData()
             {
                 characterProgress = new();
-                CurrentlySelectedCharacter = Character.Slugcat;
+                currentlySelectedCharacter = Character.Slugcat;
             }
 
             [JsonObject(MemberSerialization.OptIn)]
@@ -636,14 +637,18 @@ namespace RainMeadow
                 [JsonProperty]
                 [JsonConverter(typeof(UnityColorConverter))]
                 internal Color tintColor;
+                [JsonProperty]
+                public List<Emote> emoteHotbar;
 
                 [JsonConstructor]
                 private CharacterProgressionData() { }
                 public CharacterProgressionData(Character character)
                 {
-                    unlockedEmotes = emoteEmotes.Take(3).ToList();
+                    unlockedEmotes = emoteEmotes.Take(4).ToList();
                     unlockedSkins = characterData[character].skins.Take(1).ToList();
+                    selectedSkin = unlockedSkins[0];
                     saveLocation = characterData[character].startingCoords;
+                    emoteHotbar = unlockedEmotes.Concat(symbolEmotes.Take(4)).ToList();
                 }
             }
         }

@@ -14,7 +14,7 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.0.61";
+        public const string MeadowVersionStr = "0.0.62";
         public static RainMeadow instance;
         private bool init;
         public bool fullyInit;
@@ -153,8 +153,6 @@ namespace RainMeadow
                 sw.Stop();
                 RainMeadow.Debug($"StorySaveManager.InitializeSaveFiles: {sw.Elapsed}");
 
-                EmoteHandler.InitializeBuiltinTypes();
-
                 sw = Stopwatch.StartNew();
                 RPCManager.SetupRPCs();
                 sw.Stop();
@@ -207,6 +205,7 @@ namespace RainMeadow
                 {
                     if (!self.setup.loadGame) self.processManager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.Dev; // this got messed up last patch
                     OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(LocalMatchmakingManager.localGameMode), OnlineManager.mePlayer, null);
+                    MeadowProgression.progressionData.currentlySelectedCharacter = MeadowProgression.skinData[MeadowProgression.currentTestSkin].character;
                 }
 #endif
                 fullyInit = true;

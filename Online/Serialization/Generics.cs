@@ -286,7 +286,7 @@ namespace RainMeadow.Generics
 
         public override void CustomSerialize(Serializer serializer)
         {
-            serializer.Serialize(ref list);
+            serializer.SerializeByte(ref list);
             if (serializer.IsDelta) serializer.Serialize(ref removed);
         }
     }
@@ -298,8 +298,8 @@ namespace RainMeadow.Generics
 
         public override void CustomSerialize(Serializer serializer)
         {
-            serializer.Serialize(ref list);
-            if (serializer.IsDelta) serializer.Serialize(ref removed);
+            serializer.SerializeByte(ref list);
+            if (serializer.IsDelta) serializer.SerializeByte(ref removed);
         }
     }
 
@@ -310,8 +310,8 @@ namespace RainMeadow.Generics
 
         public override void CustomSerialize(Serializer serializer)
         {
-            serializer.SerializePolyStates(ref list);
-            if (serializer.IsDelta) serializer.Serialize(ref removed);
+            serializer.SerializePolyStatesShort(ref list);
+            if (serializer.IsDelta) serializer.SerializeByte(ref removed);
         }
     }
 
@@ -334,8 +334,8 @@ namespace RainMeadow.Generics
 
         public override void CustomSerialize(Serializer serializer)
         {
-            serializer.Serialize(ref list);
-            if (serializer.IsDelta) serializer.Serialize(ref removed);
+            serializer.SerializeByte(ref list);
+            if (serializer.IsDelta) serializer.SerializeByte(ref removed);
         }
     }
 
@@ -346,7 +346,7 @@ namespace RainMeadow.Generics
 
         public override void CustomSerialize(Serializer serializer)
         {
-            serializer.Serialize(ref list);
+            serializer.SerializeByte(ref list);
             if (serializer.IsDelta)
             {
                 serializer.Serialize(ref listIndexes);
@@ -393,7 +393,7 @@ namespace RainMeadow.Generics
 
         public override void CustomSerialize(Serializer serializer)
         {
-            serializer.Serialize(ref list);
+            serializer.SerializeByte(ref list);
             if (serializer.IsDelta)
             {
                 serializer.Serialize(ref listIndexes);
@@ -425,7 +425,7 @@ namespace RainMeadow.Generics
 
         public override void CustomSerialize(Serializer serializer)
         {
-            serializer.SerializePolyStates(ref list);
+            serializer.SerializePolyStatesShort(ref list);
             if (serializer.IsDelta)
             {
                 serializer.Serialize(ref listIndexes);

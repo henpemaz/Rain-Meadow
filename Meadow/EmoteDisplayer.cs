@@ -29,6 +29,7 @@ namespace RainMeadow
         private byte localVersion;
 
         // this weird thing isn't a uad, it sort of follows the creature and gets updated when the creature updates
+        // the "tiles" it adds though are UADs
         public EmoteDisplayer(Creature owner, OnlineCreature ownerEntity, MeadowCreatureData creatureData, MeadowAvatarCustomization customization)
         {
             RainMeadow.Debug($"EmoteDisplayer created for {owner}");
@@ -146,6 +147,7 @@ namespace RainMeadow
             }
             else
             {
+                timeToLive = initialLifetime;
                 this.creatureData.emotesLife = initialLifetime; // refresh
             }
 
@@ -234,7 +236,7 @@ namespace RainMeadow
                 this.pos = holder.GetPos(index);
                 lastAlpha = alpha;
                 alpha = holder.alpha;
-                if (holder.owner.abstractPhysicalObject.Room.realizedRoom != this.room) { RainMeadow.Debug("EmoteTile destroyed"); Destroy(); }
+                if (holder.owner.abstractPhysicalObject.Room is AbstractRoom absroom && absroom.realizedRoom != this.room) { RainMeadow.Debug("EmoteTile destroyed"); Destroy(); }
                 base.Update(eu);
             }
 

@@ -2,37 +2,44 @@
 {
     public class OnlinePebblesPearl : OnlineConsumable
     {
-        public OnlinePebblesPearl(OnlinePebblesPearlDefinition entityDefinition, AbstractPhysicalObject apo) : base(entityDefinition, apo) { }
+        public class OnlinePebblesPearlDefinition : OnlineConsumableDefinition
+        {
+            [OnlineField]
+            //Color is only ever the numbers -4 to 4 based on DataPearl::ApplyPalette
+            public sbyte originalColor;
+            [OnlineField]
+            //This is probably safe. We might need to use an actual Int if number is actually big....
+            public short originalNumber;
+            public OnlinePebblesPearlDefinition() { }
+
+            public OnlinePebblesPearlDefinition(OnlinePebblesPearl onlinePebblesPearl, OnlineResource inResource) : base(onlinePebblesPearl, inResource)
+            {
+                this.originalColor = (sbyte)onlinePebblesPearl.AbstractPebblesPearl.color;
+                this.originalNumber = (short)onlinePebblesPearl.AbstractPebblesPearl.number;
+            }
+
+            public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
+            {
+                return new OnlinePebblesPearl(this, inResource, (OnlineConsumableState)initialState);
+            }
+        }
+
+        public OnlinePebblesPearl(OnlinePebblesPearlDefinition entityDefinition, OnlineResource inResource, OnlineConsumableState initialState) : base(entityDefinition, inResource, initialState)
+        {
+            AbstractPebblesPearl.color = entityDefinition.originalColor;
+            AbstractPebblesPearl.number = entityDefinition.originalNumber;
+        }
+
+        public OnlinePebblesPearl(AbstractConsumable ac, EntityId id, OnlinePlayer owner, bool isTransferable) : base(ac, id, owner, isTransferable)
+        {
+
+        }
+
+        internal override EntityDefinition MakeDefinition(OnlineResource onlineResource)
+        {
+            return new OnlinePebblesPearlDefinition(this, onlineResource);
+        }
 
         public PebblesPearl.AbstractPebblesPearl AbstractPebblesPearl => apo as PebblesPearl.AbstractPebblesPearl;
-
-        public static OnlineEntity FromDefinition(OnlinePebblesPearlDefinition newObjectEvent, OnlineResource inResource)
-        {
-            World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
-            EntityID id = world.game.GetNewID();
-            id.altSeed = newObjectEvent.seed;
-
-            RainMeadow.Debug("serializedObject: " + newObjectEvent.serializedObject);
-            var app = (PebblesPearl.AbstractPebblesPearl)SaveState.AbstractPhysicalObjectFromString(world, newObjectEvent.serializedObject);
-            app.ID = id;
-            app.originRoom = newObjectEvent.originRoom;
-            app.placedObjectIndex = newObjectEvent.placedObjectIndex;
-            app.isConsumed = newObjectEvent.originallyConsumed;
-            app.color = newObjectEvent.originalColor;
-            app.number = newObjectEvent.originalNumber;
-
-            return new OnlinePebblesPearl(newObjectEvent, app);
-        }
-
-        protected override EntityState MakeState(uint tick, OnlineResource inResource)
-        {
-            return new OnlineConsumableState(this, inResource, tick);
-        }
-
-        public override void OnJoinedResource(OnlineResource inResource)
-        {
-            base.OnJoinedResource(inResource);
-            // ?
-        }
     }
 }

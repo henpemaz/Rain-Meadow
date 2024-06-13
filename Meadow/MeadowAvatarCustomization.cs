@@ -9,8 +9,9 @@ namespace RainMeadow
     public class MeadowAvatarCustomization : ClientSettings.AvatarCustomization
     {
         public MeadowProgression.Skin skin;
-        private MeadowProgression.SkinData skinData;
-        private MeadowProgression.CharacterData characterData;
+        public MeadowProgression.SkinData skinData;
+        public MeadowProgression.Character character;
+        public MeadowProgression.CharacterData characterData;
         public Color tint;
         public float tintAmount;
 
@@ -23,7 +24,9 @@ namespace RainMeadow
         {
             this.skin = skin;
             this.skinData = MeadowProgression.skinData[skin];
+            this.character = skinData.character;
             this.characterData = MeadowProgression.characterData[skinData.character];
+
             this.tint = new(tint.r, tint.g, tint.b);
             this.tintAmount = tintAmount * skinData.tintFactor;
 
@@ -31,6 +34,7 @@ namespace RainMeadow
             symbolBgColor = Color.white;
             emoteColor = Color.white;
             var v = RWCustom.Custom.RGB2HSL(Color.Lerp(Color.white, this.tint, this.tintAmount));
+            // there used to be some hsl maths here
             symbolColor = new HSLColor(v[0], v[1], v[2]).rgb;
         }
 
@@ -39,7 +43,6 @@ namespace RainMeadow
 
         internal override void ModifyBodyColor(ref Color originalBodyColor)
         {
-            if (skinData.statsName != null) originalBodyColor = PlayerGraphics.SlugcatColor(skinData.statsName);
             if (skinData.baseColor.HasValue) originalBodyColor = skinData.baseColor.Value;
             originalBodyColor = Color.Lerp(originalBodyColor, tint, tintAmount);
         }

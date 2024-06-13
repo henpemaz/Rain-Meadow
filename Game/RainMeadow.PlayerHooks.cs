@@ -192,6 +192,7 @@ public partial class RainMeadow
         {
             story.storyClientSettings.isDead = true;
         }
+        if (OnlineManager.lobby.gameMode is MeadowGameMode) return; // do not run
         orig(self);
     }
 

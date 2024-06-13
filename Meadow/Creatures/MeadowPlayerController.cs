@@ -31,7 +31,7 @@ namespace RainMeadow
 
         private static void Player_MovementUpdate(On.Player.orig_MovementUpdate orig, Player self, bool eu)
         {
-            if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+            if (creatureControllers.TryGetValue(self, out var p))
             {
                 p.ConsciousUpdate();
             }
@@ -40,7 +40,7 @@ namespace RainMeadow
 
         private static void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {
-            if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+            if (creatureControllers.TryGetValue(self, out var p))
             {
                 if(OnlineManager.lobby.gameMode is MeadowGameMode)
                 {
@@ -51,15 +51,9 @@ namespace RainMeadow
             orig(self, eu);
         }
 
-        public override bool GrabImpl(PhysicalObject pickUpCandidate)
-        {
-            //throw new NotImplementedException();
-            return false;
-        }
-
         protected override void LookImpl(Vector2 pos)
         {
-            (player.graphicsModule as PlayerGraphics).LookAtPoint(pos, 1000f);
+            if(player.graphicsModule != null) (player.graphicsModule as PlayerGraphics).LookAtPoint(pos, 1000f);
         }
 
         protected override void Resting()
@@ -70,7 +64,13 @@ namespace RainMeadow
         protected override void Moving(float magnitude)
         {
             // no op
-        } 
+        }
+
+        internal override void ConsciousUpdate()
+        {
+            base.ConsciousUpdate();
+            player.pickUpCandidate = null; // prevent whiplash grab
+        }
 
         public MeadowPlayerController(Player player, OnlineCreature oc, int playerNumber) : base(player, oc, playerNumber)
         {
@@ -89,7 +89,10 @@ namespace RainMeadow
 
             public override Player.InputPackage GetInput()
             {
-                return mpc.input[0];
+                var input = mpc.input[0];
+                input.pckp = false;
+                input.thrw = false;
+                return input;
             }
         }
     }

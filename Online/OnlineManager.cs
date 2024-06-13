@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Mono.Cecil;
 using Steamworks;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -43,7 +44,7 @@ namespace RainMeadow
             currentlyJoiningLobby = default;
             if (ok)
             {
-                manager.RequestMainProcessSwitch(lobby.gameMode.MenuProcessId());
+                // manager.RequestMainProcessSwitch(lobby.gameMode.MenuProcessId());
             }
             else
             {
@@ -341,6 +342,17 @@ namespace RainMeadow
             }
             RainMeadow.Error("resource not found : " + rid);
             return null;
+        }
+
+        internal static void QuitWithError(string v)
+        {
+            RainMeadow.Error(v);
+            if (lobby != null && instance.manager.upcomingProcess != ProcessManager.ProcessID.MainMenu)
+            {
+                instance.manager.upcomingProcess = null;
+                instance.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
+                instance.manager.ShowDialog(new Menu.DialogNotify(v, "Leaving Lobby", new Vector2(240, 320), instance.manager, () => { }));
+            }
         }
     }
 }

@@ -10,8 +10,7 @@ namespace RainMeadow
 {
     public abstract class CreatureController : IOwnAHUD
     {
-        public DebugDestinationVisualizer debugDestinationVisualizer;
-        public static ConditionalWeakTable<AbstractCreature, CreatureController> creatureControllers = new();
+        public static ConditionalWeakTable<Creature, CreatureController> creatureControllers = new();
         internal static void BindAvatar(Creature creature, OnlineCreature oc)
         {
             if (creature is Player player)
@@ -49,32 +48,26 @@ namespace RainMeadow
         }
 
         public Creature creature;
+        public CreatureTemplate template;
         public OnlineCreature onlineCreature;
         public MeadowCreatureData mcd;
-        public RainWorld rainWorld;
 
         public CreatureController(Creature creature, OnlineCreature oc, int playerNumber)
         {
             this.creature = creature;
+            this.template = creature.Template;
             this.onlineCreature = oc;
             this.mcd = oc.GetData<MeadowCreatureData>();
             this.playerNumber = playerNumber;
 
-            rainWorld = creature.abstractCreature.world.game.rainWorld;
-
-            if (creatureControllers.TryGetValue(creature.abstractCreature, out _))
-            {
-                RainMeadow.Error($"Creature was already bound to a controller! {creature} {oc}");
-                creatureControllers.Remove(creature.abstractCreature);
-            }
-            creatureControllers.Add(creature.abstractCreature, this);
+            creatureControllers.Add(creature, this);
 
             standStillOnMapButton = creature.abstractCreature.world.game.IsStorySession;
             flipDirection = 1;
 
             RainMeadow.Debug(this + " added!");
 
-            if (creature.Template.AI && creature.abstractCreature.world.GetAbstractRoom(creature.abstractCreature.pos) != null)
+            if (oc.isMine && template.AI && creature.abstractCreature.world.GetAbstractRoom(creature.abstractCreature.pos) != null)
             {
                 //creature.abstractCreature.abstractAI.RealAI.pathFinder.visualize = true;
                 debugDestinationVisualizer = new DebugDestinationVisualizer(creature.abstractCreature.world.game.abstractSpaceVisualizer, creature.abstractCreature.world, creature.abstractCreature.abstractAI.RealAI.pathFinder, Color.green);
@@ -103,6 +96,8 @@ namespace RainMeadow
         public int eatCounter;
         public int dontEatExternalFoodSourceCounter;
         public int eatExternalFoodSourceCounter;
+
+        public DebugDestinationVisualizer debugDestinationVisualizer;
 
         public SpecialInput[] specialInput = new SpecialInput[2];
 
@@ -134,14 +129,6 @@ namespace RainMeadow
         public bool MapDiscoveryActive => this.creature.Consious && this.creature.room != null && !this.creature.room.world.singleRoomWorld && this.creature.mainBodyChunk.pos.x > 0f && this.creature.mainBodyChunk.pos.x < this.creature.room.PixelWidth && this.creature.mainBodyChunk.pos.y > 0f && this.creature.mainBodyChunk.pos.y < this.creature.room.PixelHeight;
         // IOwnAHUD
         public int MapOwnerRoom => this.creature.abstractPhysicalObject.pos.room;
-
-        public virtual WorldCoordinate CurrentPathfindingPosition
-        {
-            get
-            {
-                return creature.room.GetWorldCoordinate(creature.mainBodyChunk.pos);
-            }
-        }
         // IOwnAHUD
         public void PlayHUDSound(SoundID soundID)
         {
@@ -151,8 +138,11 @@ namespace RainMeadow
         public void FoodCountDownDone() { }
         // IOwnAHUD
         public static HUD.HUD.OwnerType controlledCreatureHudOwner = new("MeadowControlledCreature", true);
-        public bool lockInPlace;
 
+        public bool lockInPlace;
+        public bool standStill;
+
+        // IOwnAHUD
         public HUD.HUD.OwnerType GetOwnerType() => controlledCreatureHudOwner;
 
         public virtual void CheckInput()
@@ -166,11 +156,11 @@ namespace RainMeadow
             {
                 if (creature.stun == 0 && !creature.dead)
                 {
-                    this.input[0] = RWInput.PlayerInput(playerNumber, rainWorld);
+                    this.input[0] = RWInput.PlayerInput(playerNumber);
                 }
                 else
                 {
-                    this.input[0] = new Player.InputPackage(rainWorld.options.controls[playerNumber].gamePad, rainWorld.options.controls[playerNumber].GetActivePreset(), 0, 0, false, false, false, false, false);
+                    this.input[0] = new Player.InputPackage(Custom.rainWorld.options.controls[playerNumber].gamePad, Custom.rainWorld.options.controls[playerNumber].GetActivePreset(), 0, 0, false, false, false, false, false);
                 }
 
                 mcd.input = this.input[0];
@@ -187,7 +177,7 @@ namespace RainMeadow
 
             if (onlineCreature.isMine)
             {
-                this.specialInput[0] = GetSpecialInput(creature.DangerPos - creature.room.game.cameras[0].pos, playerNumber, rainWorld);
+                this.specialInput[0] = GetSpecialInput(creature.DangerPos - creature.room.game.cameras[0].pos, playerNumber);
 
                 mcd.specialInput = this.specialInput[0];
             }
@@ -197,7 +187,7 @@ namespace RainMeadow
             }
 
             rawInput = this.input[0];
-            if ((this.standStillOnMapButton && this.input[0].mp) || this.sleepCounter != 0)
+            if (this.standStill || (this.standStillOnMapButton && this.input[0].mp) || this.sleepCounter != 0)
             {
                 this.input[0].x = 0;
                 this.input[0].y = 0;
@@ -219,11 +209,11 @@ namespace RainMeadow
             }
         }
 
-        private SpecialInput GetSpecialInput(Vector2 referencePoint, int playerNumber, RainWorld rainWorld)
+        private SpecialInput GetSpecialInput(Vector2 referencePoint, int playerNumber)
         {
             SpecialInput specialInput = default;
             //var controllerPreset = rainWorld.options.controls[playerNumber].GetActivePreset();
-            var controller = rainWorld.options.controls[playerNumber].GetActiveController();
+            var controller = Custom.rainWorld.options.controls[playerNumber].GetActiveController();
             if(controller is Joystick joystick)
             {
                 //if(controllerPreset == Options.ControlSetup.Preset.XBox)
@@ -247,6 +237,16 @@ namespace RainMeadow
             {
                 serializer.SerializeHalf(ref direction.x);
                 serializer.SerializeHalf(ref direction.y);
+            }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is SpecialInput input && direction.Equals(input.direction);
+            }
+
+            public override int GetHashCode()
+            {
+                return direction.GetHashCode();
             }
 
             public static bool operator ==(SpecialInput self, SpecialInput other)
@@ -274,13 +274,12 @@ namespace RainMeadow
                 : input[0].IntVec.ToVector2().magnitude > 0.2 ? input[0].IntVec.ToVector2().normalized
                 : Vector2.zero;
 
-
-            // a lot of things copypasted from from p.update
             if (this.wantToJump > 0) this.wantToJump--;
             if (this.wantToPickUp > 0) this.wantToPickUp--;
             if (this.wantToThrow > 0) this.wantToThrow--;
 
-
+            #region unimplemented
+            // a lot of things copypasted from from p.update
             // bunch of unimplemented story things
             // relevant to story
             //// shelter activation
@@ -427,6 +426,7 @@ namespace RainMeadow
             //        }
             //    }
             //}
+            #endregion
 
             // Void melt so damn annoying
             if (creature.room?.roomSettings.GetEffect(RoomSettings.RoomEffect.Type.VoidMelt) is RoomSettings.RoomEffect effect)
@@ -470,7 +470,12 @@ namespace RainMeadow
                 this.debugDestinationVisualizer.sprite2.sprite.isVisible = visibility;
                 this.debugDestinationVisualizer.sprite3.sprite.isVisible = visibility;
                 this.debugDestinationVisualizer.sprite4.sprite.isVisible = visibility;
-                if (debugDestinationVisualizer.room != creature.room) debugDestinationVisualizer.ChangeRooms(creature.room);
+                
+                if (debugDestinationVisualizer.room != creature.room && creature.room != null)
+                {
+                    debugDestinationVisualizer.pathfinder = this.creature.abstractCreature.abstractAI.RealAI.pathFinder;
+                    debugDestinationVisualizer.ChangeRooms(creature.room);
+                }
                 this.debugDestinationVisualizer.Update();
             }
         }
@@ -481,19 +486,23 @@ namespace RainMeadow
             {
                 mcd.destination = coord;
             }
-            var absAI = creature.abstractCreature.abstractAI;
-            absAI.SetDestination(coord);
-            var realAI = absAI.RealAI;
-            if(realAI != null)
+            else
             {
-                // pathfinder has some "optimizations" that need bypassing
-                realAI.pathFinder.nextDestination = null;
-                realAI.pathFinder.currentlyFollowingDestination = coord;
-                realAI.pathFinder.AbortCurrentGenerationPathFinding();
-                realAI.pathFinder.AssignNewDestination(coord);
+                if (!creature.abstractCreature.world.IsRoomInRegion(coord.room)) return;
             }
+            var absAI = creature.abstractCreature.abstractAI;
+            absAI.destination = coord; // we don't run the setter
+            
+            // pathfinder has some "optimizations" that need bypassing
+            var pathFinder = absAI.RealAI.pathFinder;
+            pathFinder.nextDestination = null;
+            pathFinder.AssignNewDestination(coord);
+            pathFinder.ForceNextDestination();
         }
 
+        #region grabcode
+        // Disabled for now
+        /*
         public virtual PhysicalObject PickupCandidate(float favorSpears)
         {
             PhysicalObject result = null;
@@ -723,13 +732,22 @@ namespace RainMeadow
         }
 
         public abstract bool GrabImpl(PhysicalObject pickUpCandidate);
+        */
+        #endregion
+
+        public virtual WorldCoordinate CurrentPathfindingPosition
+        {
+            get
+            {
+                return creature.room.GetWorldCoordinate(creature.mainBodyChunk.pos);
+            }
+        }
 
         internal virtual void ConsciousUpdate()
         {
             var room = creature.room;
             var chunks = creature.bodyChunks;
             var nc = chunks.Length;
-            var template = creature.Template;
 
             bool localTrace = Input.GetKey(KeyCode.L);
 
@@ -744,10 +762,9 @@ namespace RainMeadow
 
             if (onlineCreature.isMine)
             {
-                GrabUpdate();
+                //GrabUpdate(); // currently disabled
 
                 // player direct into holes simplified equivalent
-                // seems to not work too well for lizards because 3 chunks middle chunk causes stuckiness
                 if ((input[0].x == 0 || input[0].y == 0) && input[0].x != input[0].y) // a straight direction
                 {
                     for (int n = 0; n < nc; n++)
@@ -755,8 +772,15 @@ namespace RainMeadow
                         if (room.GetTile(chunks[n].pos + input[0].IntVec.ToVector2() * 40f).Terrain == Room.Tile.TerrainType.ShortcutEntrance
                             || room.GetTile(chunks[n].pos + input[0].IntVec.ToVector2() * 20f).Terrain == Room.Tile.TerrainType.ShortcutEntrance)
                         {
-                            chunks[0].vel += (room.MiddleOfTile(chunks[0].pos + new Vector2(20f * (float)input[0].x, 20f * (float)input[0].y)) - chunks[0].pos) / 10f;
-                            chunks[n].vel += (room.MiddleOfTile(chunks[n].pos + new Vector2(20f * (float)input[0].x, 20f * (float)input[0].y)) - chunks[n].pos) / 10f;
+                            if (n == 0 || n == nc - 1) // go ahead
+                            {
+                                chunks[n].vel += (room.MiddleOfTile(chunks[n].pos + new Vector2(20f * (float)input[0].x, 20f * (float)input[0].y)) - chunks[n].pos) / 10f;
+                            }
+                            else // back out
+                            {
+                                chunks[n].vel -= (room.MiddleOfTile(chunks[n].pos + new Vector2(20f * (float)input[0].x, 20f * (float)input[0].y)) - chunks[n].pos) / 10f;
+                                chunks[0].vel += (room.MiddleOfTile(chunks[n].pos + new Vector2(10f * (float)input[0].x, 10f * (float)input[0].y)) - chunks[0].pos) / 10f;
+                            }
                             break;
                         }
                     }
@@ -769,12 +793,12 @@ namespace RainMeadow
                     {
                         LookImpl(creature.DangerPos + 200 * inputDir);
                     }
-                    // todo have remote send us this instead of pathfinding for remote entities
                     if (FindDestination(basecoord, out var toPos, out float magnitude))
                     {
+                        if (localTrace) RainMeadow.Debug($"moving: {toPos.Tile}");
                         Moving(magnitude);
                         mcd.moveSpeed = magnitude;
-                        if (template.AI && toPos != creature.abstractCreature.abstractAI.destination)
+                        if (template.AI && toPos != creature.abstractCreature.abstractAI.RealAI.pathFinder.destination)
                         {
                             if (localTrace) RainMeadow.Debug($"new destination {toPos.Tile}");
                             this.ForceAIDestination(toPos);
@@ -783,9 +807,10 @@ namespace RainMeadow
                     }
                     else
                     {
+                        if (localTrace) RainMeadow.Debug($"resting: {basecoord.Tile}");
                         Resting();
                         mcd.moveSpeed = 0f;
-                        if (template.AI && basecoord != creature.abstractCreature.abstractAI.destination)
+                        if (template.AI && basecoord != creature.abstractCreature.abstractAI.RealAI.pathFinder.destination)
                         {
                             if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"resting at {basecoord.Tile}");
                             this.ForceAIDestination(basecoord);
@@ -797,7 +822,7 @@ namespace RainMeadow
                 {
                     Resting();
                     mcd.moveSpeed = 0f;
-                    if (template.AI && basecoord != creature.abstractCreature.abstractAI.destination)
+                    if (template.AI && basecoord != creature.abstractCreature.abstractAI.RealAI.pathFinder.destination)
                     {
                         if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"resting at {basecoord.Tile}");
                         this.ForceAIDestination(basecoord);
@@ -815,13 +840,14 @@ namespace RainMeadow
                 {
                     Resting();
                 }
-                if (template.AI && mcd.destination != creature.abstractCreature.abstractAI.destination)
+                if (template.AI && mcd.destination != creature.abstractCreature.abstractAI.RealAI.pathFinder.destination)
                 {
                     this.ForceAIDestination(mcd.destination);
                 }
             }
 
             lockInPlace = false;
+            standStill = false;
         }
 
 
@@ -831,7 +857,6 @@ namespace RainMeadow
                 ai.pathFinder.accessibilityStepsPerFrame = creature.room.Tiles.Length; // faster, damn it. on entering a new room this needs to complete before it can pathfind
             else ai.pathFinder.accessibilityStepsPerFrame = 10;
             ai.pathFinder.Update(); // basic movement uses this
-            ai.tracker.Update(); // creature looker uses this
             ai.timeInRoom++;
         }
 
@@ -849,7 +874,7 @@ namespace RainMeadow
             magnitude = 0.5f;
             var previousAccessibility = room.aimap.getAItile(basecoord).acc;
 
-            // prio 1: entering shortcut
+            // entering shortcut
             if (creature.enteringShortCut == null && creature.shortcutDelay < 1)
             {
                 for (int i = 0; i < nc; i++)

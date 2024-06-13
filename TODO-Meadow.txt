@@ -1,96 +1,101 @@
-items todo
-	items could be a little higher from the ground
-		too high up becomes a problem for liz though?
-			could be property of avatar, how high off the ground it hovers
-		/done-ish
-	slugcar collision could be better, lower body doesnt hit
-		/done
-
-progression todo
-	could have first few creature unlocks be easier the rest harder
-		nahhh
-
-Save system
-	save selected skin of character / done
-	save color/tint of characters / done
-	
-Menu todo
-	hide tint on locked character / done
-	use saved colors / done
-
-	tint resulting color preview
-
-emotes todo
-"wish I could "stop" an emote block and start a new one, instead of having to wait out the fade"
-	maybe pressing backspace? should it clear or not clear the current group? /ok
-	what about controller?
-mapping going to 0 - = is a bit weird
-	- = don't work on most euro layouts /can'tfix
-		an alternative would be to skip unity and go straight to user32 key events that are virtualkey based
-		here's hoping that the next update has better unity version or even usephisicalkeys who knows
-		try getting presses through rewired-keyboard? maybe it's good there?
-	but but but 12 emotes...
-	rethink the whole thing damn it
-radial menu
-	/ should be working on xbox
-	todo sort out mappings for dualshock (ps 3 4 5) and switchpro
-	need to swap between the two inputs as needed not have the two / done
-	maybe more than 8 per page? this thing has a lot of pages...
-		12 per page would be interesting/ideal, but no keyboard support...
-rethink kb input
-	one configurable hotbar with 10 the rest on mouse?
-	really really wish I could support "fully keyboard input"
-		maybe the radial?
-	study Meadow update, they've cooked it enough
-
-teleporting
-	to outskirts
-	to hub of [current region]
-	to home
-		home is initially set to thematic region
-		creatures otherwise spawn in outskirts
-
 
 creature todo
-- shelter activation? does nothing atm anyways
-- other story-mode things?
-- any ways to die left?
-	player (slugcat) can drown /done
 - can get stuck
 	some rooms will get fixed
+		eventually :tm:
+	climb-only critters have a rough time without wall-jumps hmm
+	will add universal pole-tip jump
 - show creature pipes
 	some rooms are only solvable with them, they aren't well known
-- allow creature to change the creature-pipe they're going to
-
-walking down falsefloor
-	groundctrl might need to check for y<0 && tile.isfloor
+- allow creature to change the creature-pipe they're going to mid-flight
+- need to sample color of creature and have it in skindata
+	- requires final-ish seeds
 
 player grabbing cicada = laggy physics
-
-really hard to enter pipe sometimes
-	still the case, needs body shrinkage?
+	some mechanism for lending/borrowing control over an entity
+	main entity would sim both,
+		side who leased would still sim self attached to main
+	grabbing disabled for now
 
 lizard todo
 - charge
-- find a good seed for our buddies
 - fall + diagdown = slide
+- sometimes fails to grab poles when holding up
+- find a good seed for our buddies
 
-lizard on first load doesn't get colors assigned ?? firstload in realize room vs load far and walk in?
+scav todo
+- jump from tip of pole / done
+- won't jump on slopes / check again
+- hands look silly when walking on falsefloor
+- jumping off ledge wack because regains footing too quick?
 	
 slugcat in meadow mode
-- lookdir input like the others / done
 - point things
-- go through creature pipes / done
+
+squidcicada todo
+button for spin/dance
 
 eggbug
-	update art
+	update art / done
 	pick seeds and names
+	jump impl
+		missing let go of ground
 
 noot
 	make art
 	pick seeds and names
+	movement feels a tad boring
+		make tail float around more?
+
+	scream
+
+lantermouse
+	move n jump
 
 water controls for lizard and scav etc
 	needs to be there, crossing DS etc
 	SU_A12
 	I think the pathing logic breaks, water "isn't accessible" but it is. Istileaccessibletocreature accounts for it, some of my logic might not
+
+
+feedback
+cheat button freezes / done
+lizard can get stuck on poletip unable to jump / done?
+lizard entering pipe jitters in place (outside of pipe) / done, issue was RPCs
+lizard often misses grabbing pole on jump
+creature pipe indicators would be really helpful /done
+
+scav movement overshoots
+
+controller-disconnedted popup might be inconsistent
+
+visualize selected skin
+	will get color previews
+	but could have tiny screenshots
+
+rat can't beat 3-tiles-tall jump
+	maybe vertfact/horizfact to help
+
+tint implementation missing in most creatures
+eggbug collapses on room transition (wolfy dms has logs)
+
+eggbug feels slow
+eggbug should have super jump at all times not just pounce, match how jumpy they are in game
+
+noodle has hard time going into pipes
+noodle could have a "grounded" state like cada
+
+"creature emotions" need addressing
+lizards shouldn't open mouth to bite
+rats shouldn't panic
+
+creature select can be inconsistent at times: I have big noodlefly selected, i enter the game, i'm small, i log off and click big again, now i'm big
+
+emote preview background color is really bad right now
+
+your avatar is marked as non-transferable, but on a gate it's re-registered in the new region and that flag is missing / no longer re-registered, should be ok
+
+sandbox unlock items still present in meadow lmao
+
+passage but the map isn't saving
+passage holds you in black screen for too long

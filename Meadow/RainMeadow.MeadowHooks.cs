@@ -41,6 +41,8 @@ namespace RainMeadow
 
             On.Room.LoadFromDataString += Room_LoadFromDataString1; // places of spawning items
 
+            On.Menu.FastTravelScreen.Singal += FastTravelScreen_Singal;
+
             // open gate
             new Hook(typeof(RegionGate).GetProperty("MeetRequirement").GetGetMethod(), this.RegionGate_MeetRequirement);
             new Hook(typeof(WaterGate).GetProperty("EnergyEnoughToOpen").GetGetMethod(), this.RegionGate_EnergyEnoughToOpen);
@@ -50,6 +52,74 @@ namespace RainMeadow
 
             On.WormGrass.Worm.ctor += Worm_ctor; // only cosmetic worms
 
+            IL.ScavengerOutpost.ctor += ScavengerOutpost_ctor;
+
+            On.ShortcutGraphics.GenerateSprites += ShortcutGraphics_GenerateSprites;
+
+        }
+
+        private void ShortcutGraphics_GenerateSprites(On.ShortcutGraphics.orig_GenerateSprites orig, ShortcutGraphics self)
+        {
+            orig(self);
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                for (int l = 0; l < self.room.shortcuts.Length; l++)
+                {
+                    if (self.room.shortcuts[l].shortCutType == ShortcutData.Type.NPCTransportation && self.entranceSprites[l, 0] == null)
+                    {
+                        self.entranceSprites[l, 0] = new FSprite("Pebble10", true);
+                        self.entranceSprites[l, 0].rotation = RWCustom.Custom.AimFromOneVectorToAnother(new Vector2(0f, 0f), -RWCustom.IntVector2.ToVector2(self.room.ShorcutEntranceHoleDirection(self.room.shortcuts[l].StartTile)));
+                        self.entranceSpriteLocations[l] = self.room.MiddleOfTile(self.room.shortcuts[l].StartTile) + RWCustom.IntVector2.ToVector2(self.room.ShorcutEntranceHoleDirection(self.room.shortcuts[l].StartTile)) * 15f;
+                        if ((ModManager.MMF && MoreSlugcats.MMF.cfgShowUnderwaterShortcuts.Value) || (self.room.water && self.room.waterInFrontOfTerrain && self.room.PointSubmerged(self.entranceSpriteLocations[l] + new Vector2(0f, 5f))))
+                        {
+                            self.camera.ReturnFContainer((ModManager.MMF && MoreSlugcats.MMF.cfgShowUnderwaterShortcuts.Value) ? "GrabShaders" : "Items").AddChild(self.entranceSprites[l, 0]);
+                        }
+                        else
+                        {
+                            self.camera.ReturnFContainer("Shortcuts").AddChild(self.entranceSprites[l, 0]);
+                            self.camera.ReturnFContainer("Water").AddChild(self.entranceSprites[l, 1]);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void ScavengerOutpost_ctor(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                ILLabel skip = null;
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdarg(2),
+                    i => i.MatchCallOrCallvirt(out _),
+                    i => i.MatchLdfld<AbstractRoom>("firstTimeRealized"),
+                    i => i.MatchBrfalse(out skip)
+                    );
+                c.EmitDelegate(() => !(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode));
+                c.Emit(OpCodes.Brfalse, skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void FastTravelScreen_Singal(On.Menu.FastTravelScreen.orig_Singal orig, Menu.FastTravelScreen self, Menu.MenuObject sender, string message)
+        {
+            if (OnlineManager.lobby?.gameMode is MeadowGameMode mgm)
+            {
+                if (message == "HOLD TO START")
+                {
+                    self.manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.RegionSelect;
+                    MeadowProgression.progressionData.currentCharacterProgress.saveLocation = new WorldCoordinate(self.selectedShelter, -1, -1, 0);
+                }
+                if (message == "BACK")
+                {
+                    self.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.MeadowMenu);
+                }
+            }
+            orig(self, sender, message);
         }
 
         private void Worm_ctor(On.WormGrass.Worm.orig_ctor orig, WormGrass.Worm self, WormGrass wormGrass, WormGrass.WormGrassPatch patch, Vector2 basePos, float reachHeight, float iFac, float lengthFac, bool cosmeticOnly)
@@ -118,7 +188,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
             {
-                if(CreatureController.creatureControllers.TryGetValue(mgm.avatar.creature, out var c))
+                if (mgm.avatar.realizedCreature != null && CreatureController.creatureControllers.TryGetValue(mgm.avatar.realizedCreature, out var c))
                 {
                     return c.touchedNoInputCounter > 20;
                 }
@@ -130,7 +200,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
             {
-                if (CreatureController.creatureControllers.TryGetValue(mgm.avatar.creature, out var c))
+                if (mgm.avatar.realizedCreature != null && CreatureController.creatureControllers.TryGetValue(mgm.avatar.realizedCreature, out var c))
                 {
                     return self.DetectZone(c.creature.abstractCreature);
                 }
@@ -244,12 +314,13 @@ namespace RainMeadow
                     {
                         self.ReturnFContainer("HUD"),
                         self.ReturnFContainer("HUD2")
-                    }, self.room.game.rainWorld, CreatureController.creatureControllers.TryGetValue(owner.abstractCreature, out var controller) ? controller : throw new InvalidProgrammerException("Not player nor controlled creature"));
+                    }, self.room.game.rainWorld, CreatureController.creatureControllers.GetValue(owner, (c) => throw new InvalidProgrammerException("Not controlled creature: " + c)));
 
                     var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
                     self.hud.AddPart(new HUD.TextPrompt(self.hud)); // game assumes this never null
                     self.hud.AddPart(new HUD.Map(self.hud, new HUD.Map.MapData(self.room.world, self.room.game.rainWorld))); // game assumes this too :/
-                    self.hud.AddPart(new EmoteHandler(self.hud, self, owner));
+                    self.hud.AddPart(new MeadowProgressionHud(self.hud));
+                    self.hud.AddPart(new MeadowEmoteHud(self.hud, self, owner));
                     self.hud.AddPart(new MeadowHud(self.hud, self, owner));
                 }
             }

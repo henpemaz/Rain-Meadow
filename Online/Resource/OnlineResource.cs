@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 
 namespace RainMeadow
@@ -9,7 +10,8 @@ namespace RainMeadow
     // The owner of the resource coordinates states, distributes subresources and solves conflicts
     public abstract partial class OnlineResource
     {
-        public OnlineResource super; // the resource above this (ie lobby for a world, world for a room)
+        public readonly OnlineResource super; // the resource above this (ie lobby for a world, world for a room)
+        public readonly List<OnlineResource> chain; // cached tree chain
         public OnlinePlayer owner; // the current owner of this resource, can perform certain operations
         public Dictionary<OnlinePlayer, PlayerMemebership> participants = new(); // all the players in the resource, owner included
 
@@ -31,6 +33,20 @@ namespace RainMeadow
 
         public uint lastModified; // local tick used locally only
         // if it were to be sync'd for 'versioning' then instead should be a tickref (player+tick)
+
+        public OnlineResource(OnlineResource super)
+        {
+            if(super != null)
+            {
+                this.super = super;
+                this.chain = super.chain.Append(this).ToList();
+            }
+            else
+            {
+                this.super = this;
+                chain = new() { this };
+            }
+        }
 
         internal virtual void Tick(uint tick)
         {
@@ -96,6 +112,11 @@ namespace RainMeadow
 
             if (latestState != null && !isOwner)
             {
+                if (latestState is ResourceWithSubresourcesState withSubresources && withSubresources.subleaseState.list.Count != subresources.Count)
+                {
+                    OnlineManager.QuitWithError("subresources missmatch");
+                    return;
+                }
                 latestState.ReadTo(this);
             }
             else if (!isOwner)
@@ -285,11 +306,18 @@ namespace RainMeadow
             {
                 part.memberSinceTick = newTick;
             }
+            foreach(var entityDefs in registeredEntities.Values)
+            {
+                entityDefs.tickReference = newTick;
+            }
+            foreach(var entity in entities.Values)
+            {
+                entity.memberSinceTick = newTick;
+            }
         }
 
         public void UpdateParticipants(List<OnlinePlayer> newParticipants)
         {
-            //RainMeadow.Debug(this);
             var originalParticipants = participants.Keys.ToArray();
             foreach (var p in newParticipants.Except(originalParticipants))
             {
@@ -514,11 +542,20 @@ namespace RainMeadow
             return other == this || (this is not Lobby && other is not Lobby && this.super == other.super);
         }
 
+        public OnlineResource CommonAncestor(OnlineResource other, out List<OnlineResource> chainA, out List<OnlineResource> chainB)
+        {
+            var root = chain.Last(x => other.chain.Contains(x));
+            chainA = chain.SkipWhile(x => x != root).ToList();
+            chainB = other.chain.SkipWhile(x => x != root).ToList();
+            return root;
+        }
+
         public bool IsSubresourceOf(OnlineResource other)
         {
+            if (other == this) return false;
             if (this == super) return false;
             if (other == super) return true;
-            return super.IsSubresourceOf(other);
+            return chain.Contains(other);
         }
 
         public abstract OnlineResource SubresourceFromShortId(ushort shortId);

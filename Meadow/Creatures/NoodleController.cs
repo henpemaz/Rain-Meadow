@@ -42,7 +42,7 @@ namespace RainMeadow
             c.Emit(OpCodes.Ldloc, loc);
             c.EmitDelegate<Func<NeedleWorm, bool, bool>>((self, orig) =>
             {
-                if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+                if (creatureControllers.TryGetValue(self, out var p))
                 {
                     return orig || (p as NoodleController).forceMove;
                 }
@@ -67,7 +67,7 @@ namespace RainMeadow
             c.Emit(OpCodes.Ldarg_0);
             c.EmitDelegate<Action<NeedleWorm>>((self) =>
             {
-                if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+                if (creatureControllers.TryGetValue(self, out var p))
                 {
                     self.extraMovementForce = 0f; // ZERO this weird guy out
                 }
@@ -87,7 +87,7 @@ namespace RainMeadow
             c.Emit(OpCodes.Ldloc, loc);
             c.EmitDelegate<Func<NeedleWorm, float, float>>((self, orig) =>
             {
-                if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+                if (creatureControllers.TryGetValue(self, out var p))
                 {
                     return self.SlowFlySpeed; // use the original value not your weird compensated thing thanks
                 }
@@ -129,7 +129,7 @@ namespace RainMeadow
 
         private static void SmallNeedleWormAI_Update(On.SmallNeedleWormAI.orig_Update orig, SmallNeedleWormAI self)
         {
-            if (creatureControllers.TryGetValue(self.creature, out var p))
+            if (creatureControllers.TryGetValue(self.creature.realizedCreature, out var p))
             {
                 p.AIUpdate(self);
             }
@@ -141,7 +141,7 @@ namespace RainMeadow
 
         private static void SmallNeedleWorm_Act(On.SmallNeedleWorm.orig_Act orig, SmallNeedleWorm self)
         {
-            if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+            if (creatureControllers.TryGetValue(self, out var p))
             {
                 (p as NoodleController).actLock = true;
                 p.ConsciousUpdate();
@@ -153,7 +153,7 @@ namespace RainMeadow
 
         private static void SmallNeedleWorm_Update(On.SmallNeedleWorm.orig_Update orig, SmallNeedleWorm self, bool eu)
         {
-            if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+            if (creatureControllers.TryGetValue(self, out var p))
             {
                 p.Update(eu);
             }
@@ -163,7 +163,7 @@ namespace RainMeadow
 
         private static void NeedleWorm_Act(On.NeedleWorm.orig_Act orig, NeedleWorm self)
         {
-            if (creatureControllers.TryGetValue(self.abstractCreature, out var p) && !(p as NoodleController).actLock)
+            if (creatureControllers.TryGetValue(self, out var p) && !(p as NoodleController).actLock)
             {
                 p.ConsciousUpdate();
             }
@@ -173,7 +173,7 @@ namespace RainMeadow
 
         private static void BigNeedleWormAI_Update(On.BigNeedleWormAI.orig_Update orig, BigNeedleWormAI self)
         {
-            if (creatureControllers.TryGetValue(self.creature, out var p))
+            if (creatureControllers.TryGetValue(self.creature.realizedCreature, out var p))
             {
                 p.AIUpdate(self);
             }
@@ -185,7 +185,7 @@ namespace RainMeadow
 
         private static void BigNeedleWorm_Update(On.BigNeedleWorm.orig_Update orig, BigNeedleWorm self, bool eu)
         {
-            if (creatureControllers.TryGetValue(self.abstractCreature, out var p))
+            if (creatureControllers.TryGetValue(self, out var p))
             {
                 p.Update(eu);
             }
@@ -197,12 +197,6 @@ namespace RainMeadow
 
         public NoodleController(Creature creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber)
         {
-        }
-
-        public override bool GrabImpl(PhysicalObject pickUpCandidate)
-        {
-            // todo
-            return false;
         }
 
         protected override void LookImpl(Vector2 pos)

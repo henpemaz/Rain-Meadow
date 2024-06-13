@@ -1,6 +1,6 @@
 ﻿namespace RainMeadow
 {
-    public partial class OnlineEntity
+    public abstract partial class OnlineEntity
     {
         public class EntityId : System.IEquatable<EntityId>, Serializer.ICustomSerializable // How we refer to a game entity online
         {

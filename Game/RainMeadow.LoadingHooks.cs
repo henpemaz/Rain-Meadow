@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+using System.Threading;
 
 namespace RainMeadow
 {
@@ -201,7 +200,7 @@ namespace RainMeadow
         // World wait, activate
         private void WorldLoader_Update(On.WorldLoader.orig_Update orig, WorldLoader self)
         {
-            if (OnlineManager.lobby != null && WorldSession.map.TryGetValue(self.world, out var ws0))
+            if (OnlineManager.lobby != null && self.game != null && WorldSession.map.TryGetValue(self.world, out var ws0))
             {
                 if (!ws0.isAvailable)
                 {
@@ -220,7 +219,7 @@ namespace RainMeadow
                 }
             }
             orig(self);
-            if (OnlineManager.lobby != null && WorldSession.map.TryGetValue(self.world, out var ws))
+            if (OnlineManager.lobby != null && self.game != null && WorldSession.map.TryGetValue(self.world, out var ws))
             {
                 if (self.game.overWorld?.worldLoader != self) // force-load scenario
                 {
@@ -274,15 +273,13 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
-                setupValues.worldCreaturesSpawn = false;
                 playerCharacter = OnlineManager.lobby.gameMode.LoadWorldAs(game);
             }
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
-            if (OnlineManager.lobby != null)
+            if (OnlineManager.lobby != null && self.game != null)
             {
                 WorldSession ws = null;
-
-                if (isArenaMode(out var _))
+                if (game != null && game.IsArenaSession)
                 {
                     ws = OnlineManager.lobby.worldSessions["arena"];
 
@@ -292,8 +289,14 @@ namespace RainMeadow
                     Debug("Requesting new region: " + region.name);
                     ws = OnlineManager.lobby.worldSessions[region.name];
                 }
-
-
+                if (ws.isAvailable && ws.releaseWhenPossible) // mid-release
+                {
+                    while(ws.isAvailable && OnlineManager.lobby != null)
+                    {
+                        OnlineManager.ForceLoadUpdate();
+                        Thread.Sleep(1);
+                    }
+                }
                 ws.Request();
                 ws.BindWorld(self.world);
                 self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);

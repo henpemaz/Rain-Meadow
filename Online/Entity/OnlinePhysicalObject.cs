@@ -1,15 +1,30 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text.RegularExpressions;
 
 namespace RainMeadow
 {
     public class OnlinePhysicalObject : OnlineEntity
     {
+        public class OnlinePhysicalObjectDefinition : EntityDefinition
+        {
+            [OnlineField]
+            public string serializedObject;
+
+            public OnlinePhysicalObjectDefinition() { }
+
+            public OnlinePhysicalObjectDefinition(OnlinePhysicalObject onlinePhysicalObject, OnlineResource inResource) : base(onlinePhysicalObject, inResource)
+            {
+                serializedObject = onlinePhysicalObject.apo.ToString();
+            }
+
+            public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
+            {
+                return new OnlinePhysicalObject(this, inResource, (PhysicalObjectEntityState)initialState);
+            }
+        }
+
         public readonly AbstractPhysicalObject apo;
-        public readonly int seed;
         public bool realized;
 
         public bool beingMoved;
@@ -39,71 +54,70 @@ namespace RainMeadow
                 RainMeadow.Error($"set as: {entityId}");
             }
 
-            var opoDef = new OnlinePhysicalObjectDefinition(apo.ID.RandomSeed, apo.realizedObject != null, apo.ToString(), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
-            RainMeadow.Debug("ONLINE PHYS OBJ DEF: " + opoDef);
-
-
             switch (apo)
             {
-                case AbstractSpear:
-                    //may break with downpour
-                    return new OnlinePhysicalObject(opoDef, apo);
-                case VultureMask.AbstractVultureMask:
-                    //May break with downpour
-                    return new OnlinePhysicalObject(opoDef, apo);
+                case AbstractMeadowCollectible:
+                    return new OnlineMeadowCollectible(apo, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 case AbstractCreature ac:
-                    OnlineCreatureDefinition acDef;
-                    if (RainMeadow.isArenaMode(out var _))
-                    {
-                        acDef = new OnlineCreatureDefinition(ac.ID.RandomSeed, ac.realizedObject != null, SaveState.AbstractCreatureToStringSingleRoomWorld(ac), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
-
-                    }
-                    else
-                    {
-                        acDef = new OnlineCreatureDefinition(ac.ID.RandomSeed, ac.realizedObject != null, SaveState.AbstractCreatureToStringStoryWorld(ac), entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
-
-                    }
-                    
-                    return new OnlineCreature(acDef, ac);
-
+                    return new OnlineCreature(ac, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 case AbstractConsumable acm:
-                    return OnlineConsumableFromAcm(acm, opoDef);
+                    return OnlineConsumableFromAcm(acm, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 default:
-                    return new OnlinePhysicalObject(opoDef, apo);
+                    return new OnlinePhysicalObject(apo, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 case null:
                     throw new ArgumentNullException(nameof(apo));
             }
         }
 
-        private static OnlineConsumable OnlineConsumableFromAcm(AbstractConsumable acm, OnlinePhysicalObjectDefinition opoDef)
+        private static OnlineConsumable OnlineConsumableFromAcm(AbstractConsumable acm, EntityId entityId, OnlinePlayer owner, bool isTransferable) 
         {
-            var ocmDef = new OnlineConsumableDefinition(opoDef, acm);
-            switch (acm)
-            {
+            switch (acm) {
                 case BubbleGrass.AbstractBubbleGrass abg:
-                    var abgDef = new OnlineBubbleGrassDefinition(ocmDef, abg);
-                    return new OnlineBubbleGrass(abgDef, abg);
+                    return new OnlineBubbleGrass(abg, entityId, owner, isTransferable);
                 case SeedCob.AbstractSeedCob asc:
-                    var ascDef = new OnlineSeedCobDefinition(ocmDef, asc);
-                    return new OnlineSeedCob(ascDef, asc);
+                    return new OnlineSeedCob(asc, entityId, owner, isTransferable);
                 case SporePlant.AbstractSporePlant asp:
-                    var aspDef = new OnlineSporePlantDefinition(ocmDef, asp);
-                    return new OnlineSporePlant(aspDef, asp);
+                    return new OnlineSporePlant(asp, entityId, owner, isTransferable);
                 case PebblesPearl.AbstractPebblesPearl app:
-                    var appDef = new OnlinePebblesPearlDefinition(ocmDef, app);
-                    return new OnlinePebblesPearl(appDef, app);
+                    return new OnlinePebblesPearl(app, entityId, owner, isTransferable);
                 default:
-                    return new OnlineConsumable(ocmDef, acm);
+                    return new OnlineConsumable(acm, entityId, owner, isTransferable);
                 case null:
                     throw new ArgumentNullException(nameof(acm));
             }
         }
-        public OnlinePhysicalObject(OnlinePhysicalObjectDefinition entityDefinition, AbstractPhysicalObject apo) : base(entityDefinition)
+
+        protected virtual AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, PhysicalObjectEntityState initialState)
+        {
+            World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
+            EntityID id = world.game.GetNewID();
+
+            RainMeadow.Debug("serializedObject: " + newObjectEvent.serializedObject);
+
+            var apo = SaveState.AbstractPhysicalObjectFromString(world, newObjectEvent.serializedObject);
+            id.altSeed = apo.ID.RandomSeed;
+            apo.ID = id;
+            apo.pos = initialState.pos;
+            return apo;
+        }
+
+        public OnlinePhysicalObject(AbstractPhysicalObject apo, EntityId id, OnlinePlayer owner, bool isTransferable) : base(id, owner, isTransferable)
         {
             this.apo = apo;
-            this.seed = entityDefinition.seed;
-            this.realized = entityDefinition.realized;
+            realized = apo.realizedObject != null;
             map.Add(apo, this);
+        }
+
+        public OnlinePhysicalObject(OnlinePhysicalObjectDefinition entityDefinition, OnlineResource inResource, PhysicalObjectEntityState initialState) : base(entityDefinition, inResource, initialState)
+        {
+            this.apo = ApoFromDef(entityDefinition, inResource, initialState);
+            realized = initialState.realized;
+            map.Add(apo, this);
+        }
+
+        internal override EntityDefinition MakeDefinition(OnlineResource onlineResource)
+        {
+            return new OnlinePhysicalObjectDefinition(this, onlineResource);
         }
 
         public override void NewOwner(OnlinePlayer newOwner)
@@ -113,40 +127,6 @@ namespace RainMeadow
             {
                 realized = apo.realizedObject != null; // owner is responsible for upkeeping this
             }
-        }
-
-        public static OnlineEntity FromDefinition(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource)
-        {
-            World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
-            EntityID id = world.game.GetNewID();
-            id.altSeed = newObjectEvent.seed;
-
-            RainMeadow.Debug("serializedObject: " + newObjectEvent.serializedObject);
-
-            var apo = SaveState.AbstractPhysicalObjectFromString(world, newObjectEvent.serializedObject);
-            apo.ID = id;
-            if (!world.IsRoomInRegion(apo.pos.room))
-            {
-                RainMeadow.Debug("Room not in region: " + apo.pos.room);
-                // most common cause is gates which are ambiguous room names, solve for current region instead of global
-                string[] obarray = Regex.Split(newObjectEvent.serializedObject, "<oA>");
-                string[] wcarray = obarray[2].Split('.');
-                AbstractRoom room = world.GetAbstractRoom(wcarray[0]);
-                if (room != null)
-                {
-                    RainMeadow.Debug($"fixing room index -> {room.index}");
-                    apo.pos.room = room.index;
-                }
-                else
-                {
-                    RainMeadow.Error("Couldn't find room in region: " + wcarray[0]);
-                }
-            }
-
-            RainMeadow.Debug($"room index -> {apo.pos.room} in region? {world.IsRoomInRegion(apo.pos.room)}");
-
-
-            return new OnlinePhysicalObject(newObjectEvent, apo);
         }
 
         public override void ReadState(EntityState entityState, OnlineResource inResource)
