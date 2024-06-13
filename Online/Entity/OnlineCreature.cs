@@ -14,7 +14,14 @@ namespace RainMeadow
 
             public OnlineCreatureDefinition(OnlineCreature onlineCreature, OnlineResource inResource) : base(onlineCreature, inResource)
             {
+
+                if (RainMeadow.isArenaMode(out var _)) {
+
+                   this.serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature);
+
+                } else {
                 this.serializedObject = SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
+                }
             }
 
             public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
