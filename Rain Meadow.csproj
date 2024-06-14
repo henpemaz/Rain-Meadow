@@ -29,71 +29,140 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="lib\*.dll" />
+    <Reference Include="0Harmony">
+      <HintPath>lib\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>lib\Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="BepInEx">
+      <HintPath>lib\BepInEx.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="com.rlabrecque.steamworks.net">
+      <HintPath>lib\com.rlabrecque.steamworks.net.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HarmonyXInterop">
+      <HintPath>lib\HarmonyXInterop.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HOOKS-Assembly-CSharp">
+      <HintPath>lib\HOOKS-Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\BepInEx.Harmony.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\BepInEx.Preloader.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\GoKit.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\Mono.Cecil.Mdb.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\Mono.Cecil.Pdb.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\Mono.Cecil.Rocks.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\Newtonsoft.Json.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\Rewired.Runtime.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\Rewired_Core.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\Unity.Mathematics.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\UnityEngine.AssetBundleModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\UnityEngine.AudioModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\UnityEngine.ImageConversionModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\UnityEngine.InputLegacyModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\UnityEngine.JSONSerializeModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\UnityEngine.LocalizationModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\UnityEngine.UI.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\UnityEngine.UIElementsNativeModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\UnityEngine.UIModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\UnityEngine.UnityWebRequestAssetBundleModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\UnityEngine.UnityWebRequestAudioModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\UnityEngine.UnityWebRequestModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\UnityEngine.UnityWebRequestTextureModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="lib\UnityEngine.UnityWebRequestWWWModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil">
+      <HintPath>lib\Mono.Cecil.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MonoMod">
+      <HintPath>lib\MonoMod.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MonoMod.RuntimeDetour">
+      <HintPath>lib\MonoMod.RuntimeDetour.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MonoMod.Utils">
+      <HintPath>lib\MonoMod.Utils.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>lib\PUBLIC-Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>lib\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>lib\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputModule">
+      <HintPath>lib\UnityEngine.InputModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
     <None Remove=".gitattributes" />
     <None Remove=".gitignore" />
     <None Remove="Menu\MeadowMenu.cs~RF8b0fc40.TMP" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="0Harmony">
-      <HintPath>..\..\..\Downloads\Created Folders\Transport\References\0Harmony.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\Downloads\Created Folders\Transport\References\Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>..\..\..\Downloads\Created Folders\Transport\References\Assembly-CSharp-firstpass.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="BepInEx">
-      <HintPath>..\..\..\Downloads\Created Folders\Transport\References\BepInEx.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="com.rlabrecque.steamworks.net">
-      <HintPath>..\..\..\Downloads\Created Folders\Transport\References\com.rlabrecque.steamworks.net.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="HarmonyXInterop">
-      <HintPath>..\..\..\Downloads\Created Folders\Transport\References\HarmonyXInterop.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="HOOKS-Assembly-CSharp">
-      <HintPath>..\..\..\Downloads\Created Folders\Transport\References\HOOKS-Assembly-CSharp.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Mono.Cecil">
-      <HintPath>..\..\..\Downloads\Created Folders\Transport\References\Mono.Cecil.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="MonoMod">
-      <HintPath>..\..\..\Downloads\Created Folders\Transport\References\MonoMod.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="MonoMod.RuntimeDetour">
-      <HintPath>..\..\..\Downloads\Created Folders\Transport\References\MonoMod.RuntimeDetour.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="MonoMod.Utils">
-      <HintPath>..\..\..\Downloads\Created Folders\Transport\References\MonoMod.Utils.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>..\..\..\Downloads\Created Folders\Transport\References\UnityEngine.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\..\Downloads\Created Folders\Transport\References\UnityEngine.CoreModule.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine.InputModule">
-      <HintPath>..\..\..\Downloads\Created Folders\Transport\References\UnityEngine.InputModule.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>

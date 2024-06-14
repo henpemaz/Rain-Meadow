@@ -750,9 +750,10 @@ namespace RainMeadow
             //virtualMicrophone.PlaySound(Note, 0f, intensity*0.5f, speed);
 
             float pan = (float)(UnityEngine.Random.Range(-350, 351) / 1000f);
-            float vol = velocity * 0.5f;
+            //float vol = velocity * 0.5f;
+            float vol = (float)MeadowMusic.vibeIntensity*0.5f;
             float pitch = speed;
-            //RainMeadow.Debug($"Trying to play a {Note}");
+            RainMeadow. Debug($"Trying to play a {Note}, at {vol} volume, with {pan} pan");
             try
             {
                 if (virtualMicrophone.visualize)
@@ -1779,10 +1780,10 @@ namespace RainMeadow
 
             fichtean = Mathf.PerlinNoise(debugstopwatch / 1000f, debugstopwatch / 4000f);
             fichtean = thenumber;
-            RainMeadow.Debug("This Goes Hard");
+            //RainMeadow.Debug("This Goes Hard");
             //RainMeadow.Debug("Fichtean: " + fichtean + " Yeah");
             //RainMeadow.Debug("Chordexhaustion: " + chordexhaustion + " Yeah");
-            PlayEntry(mic);
+            if (MeadowMusic.AllowPlopping) PlayEntry(mic);
             /*
             string hallo = "    ";
             hallo += chordtimer.ToString();

@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using Music;
 using System.Linq;
 using RWCustom;
+using IL.MoreSlugcats;
+using System;
+using IL;
 
 namespace RainMeadow
 {
@@ -31,9 +34,11 @@ namespace RainMeadow
         static bool timerStopped = true;
 
         static VibeZone? activeZone = null;
+        public static bool AllowPlopping;
 
-        static float? vibeIntensity = null;
+        public static float? vibeIntensity = null;
         //public static float? vibePan = null;
+        static bool UpdateIntensity;
 
         internal struct VibeZone
         {
@@ -50,7 +55,7 @@ namespace RainMeadow
             public string songName;
             public string sampleUsed;
         }
-
+        static VibeZone az = new VibeZone();
         static void GameCtorPatch(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
         {
             orig.Invoke(self, manager);
@@ -103,47 +108,88 @@ namespace RainMeadow
 
             MusicPlayer musicPlayer = self.manager.musicPlayer;
 
+            if (UpdateIntensity)
+            {
+                //vibeIntensity = Custom.LerpMap(minDist, az.radius, 0, 0f, 1f);
+
+
+                //Vector2 vector = Custom.RestrictInRect(worldPos, FloatRect.MakeFromVector2(this.world.RoomToWorldPos(default(Vector2), this.ghostRoom.index), this.world.RoomToWorldPos(this.ghostRoom.size.ToVector2() * 20f, this.ghostRoom.index)));
+
+
+                //self.roomRealizer.world.RoomToWorldPos() //lol i guessed
+                //self.player.mainBodyChunk.pos
+                //testroom is the place you're in
+                
+                /*
+                float num2 = Mathf.Pow(
+                             Mathf.InverseLerp(4000f, 500f, 
+                             Vector2.Distance(worldPos, vector)
+                             ), 
+                             2f) 
+                           * Custom.LerpMap((float)num, 1f, 3f, 0.6f, 0.15f) 
+                           * ((testRoom.layer == this.ghostRoom.layer) ? 1f : 0.6f);
+                */
+
+                RainMeadow.Debug("IsFased");
+
+                Vector2 LOL = self.world.RoomToWorldPos(self.world.GetAbstractRoom(closestVibe).size.ToVector2() * 10f, closestVibe);
+                Vector2 lol = self.world.RoomToWorldPos(MyGuyMic.listenerPoint, RoomImIn.abstractRoom.index);
+
+                RainMeadow.Debug("IsZased");
+                
+                vibeIntensity = Mathf.Pow(
+                             Mathf.InverseLerp(az.radius, 666f, Vector2.Distance(lol, LOL)),
+                             1.75f)
+                           * Custom.LerpMap((float)DegreesOfAwayness, 1f, 3f, 0.6f, 0.15f)
+                           * ((RoomImIn.abstractRoom.layer == self.world.GetAbstractRoom(closestVibe).layer) ? 1f : 0.6f);
+
+                RainMeadow.Debug("IsBased");
+                if (musicPlayer != null && musicPlayer.song != null) musicPlayer.song.baseVolume = (1f - (float)vibeIntensity) * 0.3f;
+                RainMeadow.Debug("IsMased");
+            }
             if (musicPlayer != null && musicPlayer.song == null && self.world.rainCycle.RainApproaching > 0.5f)
             {
                 timerStopped = false;
                 if (time > waitSecs)
                 {
-                    if (activeZone == null)
-                    {
+                    RainMeadow.Debug("But here's the overthetimer");
+                    //if (activeZone == null)
+                    //{
                         if (ambienceSongArray != null)
                         {
                             RainMeadow.Debug("Meadow Music:  Playing ambient song");
-                            Song song = new(musicPlayer, ambienceSongArray[(int)Random.Range(0f, ambienceSongArray.Length - 0.1f)], MusicPlayer.MusicContext.StoryMode)
+                            Song song = new(musicPlayer, ambienceSongArray[(int)UnityEngine.Random.Range(0f, ambienceSongArray.Length - 0.1f)], MusicPlayer.MusicContext.StoryMode)
                             {
                                 playWhenReady = true,
                                 volume = 1,
-                                fadeInTime = 40f
+                                fadeInTime = 1f
                             };
                             musicPlayer.song = song;
                         }
                         //Nitpick: if we are outside a vibe zone and the current region has no ambience list, this results in exiting this if-stack with no song playing
                         //Therefore these checks will be repeated for every waitSecs seconds
-                    }
-                    else
-                    {
-                        RainMeadow.Debug("Meadow Music:  Playing vibe song...");
-                        Song song = new Song(musicPlayer, ((VibeZone)activeZone).songName, MusicPlayer.MusicContext.StoryMode)
-                        {
-                            playWhenReady = true,
-                            volume = 1,
-                            fadeInTime = 40f
-                        };
-                        musicPlayer.song = song;
-                    }
+                    //}
+                    //else
+                    //{
+                    //    RainMeadow.Debug("Meadow Music:  Playing vibe song...");
+                    //    Song song = new Song(musicPlayer, ((VibeZone)activeZone).songName, MusicPlayer.MusicContext.StoryMode)
+                    //    {
+                    //        playWhenReady = true,
+                    //        volume = 1,
+                    //        fadeInTime = 40f
+                    //    };
+                    //    musicPlayer.song = song;
+                    //}
                 }
+                RainMeadow.Debug("AAAAAAAAAAAAa");
             }
             else
             {
+                RainMeadow.Debug("Bitch Else");
                 time = 0f;
                 timerStopped = true;
             }
         }
-
         static void WorldLoadedPatch(On.OverWorld.orig_WorldLoaded orig, OverWorld self)
         {
             orig.Invoke(self);
@@ -152,10 +198,63 @@ namespace RainMeadow
 
             AnalyzeRegion(self.activeWorld);
         }
+        static int closestVibe;
+        static Room? RoomImIn;
+        static int DegreesOfAwayness;
+        static int CalculateDegreesOfAwayness(AbstractRoom testRoom)
+        {
+            var vibeRoom = testRoom.world.GetAbstractRoom(az.room);
+            if (vibeRoom == null) return -1;
 
+            if (testRoom.index == vibeRoom.index)
+            {
+                return 0;
+            }
+            int num = 100;
+            for (int i = 0; i < vibeRoom.connections.Length; i++)
+            {
+                if (vibeRoom.connections[i] == testRoom.index)
+                {
+                    return 1;
+                }
+                if (vibeRoom.connections[i] > -1)
+                {
+                    AbstractRoom abstractRoom = testRoom.world.GetAbstractRoom(vibeRoom.connections[i]);
+                    for (int j = 0; j < abstractRoom.connections.Length; j++)
+                    {
+                        if (abstractRoom.connections[j] == testRoom.index)
+                        {
+                            num = Math.Min(num, 2);
+                            break;
+                        }
+                        if (abstractRoom.connections[j] > -1)
+                        {
+                            AbstractRoom abstractRoom2 = testRoom.world.GetAbstractRoom(abstractRoom.connections[j]);
+                            for (int k = 0; k < abstractRoom2.connections.Length; k++)
+                            {
+                                if (abstractRoom2.connections[k] == testRoom.index)
+                                {
+                                    num = Math.Min(num, 3);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (num > 3)
+            {
+                return -1;
+            }
+            return num;
+        }
+        static VirtualMicrophone MyGuyMic;
         static void NewRoomPatch(On.VirtualMicrophone.orig_NewRoom orig, VirtualMicrophone self, Room room)
         {
             orig.Invoke(self, room);
+
+            MyGuyMic = self;
+            RoomImIn = room;
 
             if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode) return;
 
@@ -164,9 +263,9 @@ namespace RainMeadow
             if (musicPlayer != null && musicPlayer.song != null && activeZonesDict != null)
             {
                 //activezonedict has the room ids of each vibe zone's room as keys
-                int[] rooms = activeZonesDict.Keys.ToArray();
+                int[] rooms = activeZonesDict.Keys.ToArray(); //why does it have to be the keys? can't this just be a list and have the id defined in class vibezone?
                 float minDist = float.MaxValue;
-                int closestVibe = -1;
+                closestVibe = -1;
                 //find the closest one
                 for (int i = 0; i < rooms.Length; i++)
                 {
@@ -181,33 +280,35 @@ namespace RainMeadow
                         minDist = dist;
                         closestVibe = rooms[i];
                     }
-                }
+                }   
                 //and just grab its corresponding vibezone from the dict
-                VibeZone az = activeZonesDict[closestVibe];
+                az = activeZonesDict[closestVibe];
                 //if this active zone's song is currently playing, and we are beyond the zone's radius
-                if (musicPlayer.song.name == az.songName && minDist > az.radius)
+                if (minDist > az.radius)
                 {
-                    RainMeadow.Debug("Meadow Music:  Fading echo song...");
-                    musicPlayer.song.FadeOut(40f);
-                    activeZone = null;
-                    vibeIntensity = null;
+                    //RainMeadow.Debug("Meadow Music:  Fading echo song...");
+                    //musicPlayer.song.FadeOut(40f);
+                    //activeZone = null;
+                    vibeIntensity = 0f;
+                    musicPlayer.song.baseVolume = 0.3f;
+                    AllowPlopping = false;
+                    UpdateIntensity = false;
                     //vibePan = null;
-                }
-                //if this active zone's song is not currently playing, and we are within its radius
-                else if (musicPlayer.song.name != az.songName && minDist < az.radius)
-                {
-                    RainMeadow.Debug("Meadow Music:  Fading ambience song...");
-                    musicPlayer.song.FadeOut(40f);
-                    activeZone = az;
                 }
                 //if this active zone's song is currently playing (we can assume this at this point) and are within its radius
                 else if (minDist < az.radius)
                 {
-                    vibeIntensity = Custom.LerpMap(minDist, az.radius, 0, 0.5f, 1);
+                    AllowPlopping = true;
+                    //activeZone = az;
                     //vibePan = Custom.LerpMap(pan, -az.radius, az.radius, -1, 1) * (1 - vibeIntensity);
-                    musicPlayer.song.baseVolume = Custom.LerpMap(minDist, az.radius, 0, 0.5f, 1) * 0.3f;
+
+                    UpdateIntensity = true;
+                    
+                    RainMeadow.Debug($"So we've decided the thing is now: {vibeIntensity}, {vibeIntensity}");
                 }
             }
+            RainMeadow.Debug($":D :D  Yuri  {closestVibe}");
+            DegreesOfAwayness = CalculateDegreesOfAwayness(room.abstractRoom);
         }
 
         static void AnalyzeRegion(World world)
