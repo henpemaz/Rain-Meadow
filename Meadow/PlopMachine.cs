@@ -707,8 +707,8 @@ namespace RainMeadow
 
             float pan = (float)(UnityEngine.Random.Range(-350, 351) / 1000f);
             //float vol = velocity * 0.5f;
-            //float vol = MeadowMusic.vibeIntensity == null ? 0 : Mathf.Pow((float)MeadowMusic.vibeIntensity, 2f) * 0.5f * velocity;
-            float vol = MeadowMusic.plopIntensity * velocity;
+            float vol = MeadowMusic.vibeIntensity == null ? 0 : Mathf.Pow((float)MeadowMusic.vibeIntensity, 1.65f) * 0.5f * velocity;
+            //float vol = MeadowMusic.plopIntensity * velocity;
             float pitch = speed;
             RainMeadow. Debug($"Trying to play a {Note}, at {vol} volume, with {pan} pan");
             try
@@ -1736,7 +1736,7 @@ namespace RainMeadow
             CurrentRegion ??= "sl";
 
             fichtean = Mathf.PerlinNoise(debugstopwatch / 1000f, debugstopwatch / 4000f);
-            fichtean = thenumber;
+            //fichtean = thenumber;
             //RainMeadow.Debug("This Goes Hard");
             //RainMeadow.Debug("Fichtean: " + fichtean + " Yeah");
             //RainMeadow.Debug("Chordexhaustion: " + chordexhaustion + " Yeah");

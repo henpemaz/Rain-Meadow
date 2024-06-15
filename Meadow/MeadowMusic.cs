@@ -116,35 +116,28 @@ namespace RainMeadow
 
                 RainMeadow.Debug("IsZased");
                 
-                vibeIntensity = Mathf.Pow(
-                             Mathf.InverseLerp(az.radius, 666f, Vector2.Distance(lol, LOL)),
-                             1.65f)
+                float vibeIntensityTarget = 
+                             Mathf.Pow(Mathf.InverseLerp(az.radius, 666f, Vector2.Distance(lol, LOL)), 1.65f)
                            * Custom.LerpMap((float)DegreesOfAwayness, 0f, 3f, 1f, 0.15f)
                            //* Custom.LerpMap((float)DegreesOfAwayness, 1f, 3f, 0.6f, 0.15f)
                            * ((RoomImIn.abstractRoom.layer == self.world.GetAbstractRoom(closestVibe).layer) ? 1f : 0.75f);
 
                 RainMeadow.Debug("IsBased");
 
-
-
-
-                float floattargetplop = Mathf.Pow((float)MeadowMusic.vibeIntensity, 1.6f) * 0.5f;
-                floattargetplop = Custom.LerpAndTick(plopIntensity, floattargetplop, 0.002f, 0.001f);
-                plopIntensity = floattargetplop;
+                //float floattargetplop = Mathf.Pow((float)MeadowMusic.vibeIntensity, 1.6f) * 0.5f;
+                vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? 0 : (float)vibeIntensity, vibeIntensityTarget, 0.025f, 0.002f);
+                vibeIntensity = vibeIntensityTarget;
 
                 if (musicPlayer != null && musicPlayer.song != null)
                 {
-                    float floattarget = 0f;
                     if ((float)vibeIntensity > 0.9f)
                     {
-                        floattarget = 0f;
+                        musicPlayer.song.baseVolume = 0f;
                     }
                     else
                     {
-                        floattarget = Mathf.Pow((1f - (float)vibeIntensity), 2f) * 0.3f;
+                        musicPlayer.song.baseVolume = Mathf.Pow(1f - (float)vibeIntensity, 2f) * 0.3f;
                     }
-                    floattarget = Custom.LerpAndTick(musicPlayer.song.baseVolume, floattarget, 0.002f, 0.001f);
-                    musicPlayer.song.baseVolume = floattarget;
                 }
                 
                 RainMeadow.Debug("IsMased");
