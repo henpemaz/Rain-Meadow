@@ -24,7 +24,7 @@ namespace RainMeadow
         static readonly Dictionary<string, string[]> ambientDict = new();
         static readonly Dictionary<string, VibeZone[]> vibeZonesDict = new();
 
-        internal static Dictionary<int, VibeZone> activeZonesDict = null;
+        static Dictionary<int, VibeZone> activeZonesDict = null;
         static string[] ambienceSongArray = null;
 
         static float time = 0f;
@@ -35,7 +35,7 @@ namespace RainMeadow
         static float? vibeIntensity = null;
         static float? vibePan = null;
 
-        internal struct VibeZone
+        struct VibeZone
         {
             public VibeZone(string room, float radius, string songName)
             {
@@ -65,10 +65,10 @@ namespace RainMeadow
                     string path = dir + Path.DirectorySeparatorChar + "playlist.txt";
                     if (regName.Length == 2 && File.Exists(path) && !ambientDict.ContainsKey(regName))
                     {
-                        string[] lines = File.ReadAllLines(path).Where(l => l != string.Empty).ToArray();
+                        string[] lines = File.ReadAllLines(path);
                         foreach (string line in lines)
                         {
-                            RainMeadow.Debug("Meadow Music:  Registered song " + line + " in " + dir);
+                            Debug.Log("Meadow Music:  Registered song " + line + " in " + dir);
                         }
                         ambientDict.Add(regName, lines);
                     }
@@ -87,10 +87,10 @@ namespace RainMeadow
                 }
 
                 filesChecked = true;
+                AnalyzeRegion(self.world);
+                time = 0f;
+                timerStopped = true;
             }
-            AnalyzeRegion(self.world);
-            time = 0f;
-            timerStopped = true;
         }
 
         static void RawUpdatePatch(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
@@ -110,7 +110,7 @@ namespace RainMeadow
                     {
                         if (ambienceSongArray != null)
                         {
-                            RainMeadow.Debug("Meadow Music:  Playing ambient song");
+                            Debug.Log("Meadow Music:  Playing ambient song");
                             Song song = new(musicPlayer, ambienceSongArray[(int)Random.Range(0f, ambienceSongArray.Length - 0.1f)], MusicPlayer.MusicContext.StoryMode)
                             {
                                 playWhenReady = true,
@@ -124,7 +124,7 @@ namespace RainMeadow
                     }
                     else
                     {
-                        RainMeadow.Debug("Meadow Music:  Playing vibe song...");
+                        Debug.Log("Meadow Music:  Playing vibe song...");
                         Song song = new Song(musicPlayer, ((VibeZone)activeZone).songName, MusicPlayer.MusicContext.StoryMode)
                         {
                             playWhenReady = true,
@@ -161,11 +161,12 @@ namespace RainMeadow
 
             if (musicPlayer != null && musicPlayer.song != null && activeZonesDict != null)
             {
+                //TODO: probably a better way to do all this
+
                 //activezonedict has the room ids of each vibe zone's room as keys
                 int[] rooms = activeZonesDict.Keys.ToArray();
-                float minDist = float.MaxValue;
-                int closestVibe = -1;
-                //find the closest one
+                float[] dists = new float[rooms.Length];
+                //this for loop populates the dist array with the distances of the player to each of the vibe zone rooms
                 for (int i = 0; i < rooms.Length; i++)
                 {
                     //yoink the coordinates of the player's current room
@@ -173,19 +174,17 @@ namespace RainMeadow
                     //yoink the coordinates of the vibe zone room
                     Vector2 v2 = room.world.RoomToWorldPos(Vector2.zero, rooms[i]);
                     //calculate the flat distance between these two vectors
-                    var dist = (v2 - v1).magnitude;
-                    if (dist < minDist)
-                    {
-                        minDist = dist;
-                        closestVibe = rooms[i];
-                    }
+                    dists[i] = (v2 - v1).magnitude;
                 }
+                float minDist = Mathf.Min(dists);
+                //we now have the smallest of all the distances, aka the one closest to the player. grab this smallest distance's corresponding room id
+                int closestVibe = rooms[dists.ToList().IndexOf(minDist)];
                 //and just grab its corresponding vibezone from the dict
                 VibeZone az = activeZonesDict[closestVibe];
                 //if this active zone's song is currently playing, and we are beyond the zone's radius
                 if (musicPlayer.song.name == az.songName && minDist > az.radius)
                 {
-                    RainMeadow.Debug("Meadow Music:  Fading echo song...");
+                    Debug.Log("Meadow Music:  Fading echo song...");
                     musicPlayer.song.FadeOut(40f);
                     activeZone = null;
                     vibeIntensity = null;
@@ -194,7 +193,7 @@ namespace RainMeadow
                 //if this active zone's song is not currently playing, and we are within its radius
                 else if (musicPlayer.song.name != az.songName && minDist < az.radius)
                 {
-                    RainMeadow.Debug("Meadow Music:  Fading ambience song...");
+                    Debug.Log("Meadow Music:  Fading ambience song...");
                     musicPlayer.song.FadeOut(40f);
                     activeZone = az;
                 }
@@ -210,42 +209,26 @@ namespace RainMeadow
 
         static void AnalyzeRegion(World world)
         {
-            RainMeadow.Debug("Meadow Music:  Analyzing " + world.name);
             VibeZone[] vzArray;
             activeZonesDict = null;
             if (vibeZonesDict.TryGetValue(world.region.name, out vzArray))
             {
-                RainMeadow.Debug("Meadow Music:  found zones " + vzArray.Length);
                 activeZonesDict = new Dictionary<int, VibeZone>();
                 foreach(VibeZone vz in vzArray)
                 {
                     foreach (AbstractRoom room in world.abstractRooms)
                     {
-                        RainMeadow.Debug("Meadow Music:  looking for room " + vz.room);
                         if (room.name == vz.room)
                         {
-                            RainMeadow.Debug("Meadow Music:  found hub " + room.name);
                             activeZonesDict.Add(room.index, vz);
                             break;
                         }
                     }
                 }
-                if (activeZonesDict.Count == 0)
-                {
-                    RainMeadow.Debug("Meadow Music:  no hubs found");
-                    activeZonesDict = null;
-                }
+                if (activeZonesDict.Count == 0) activeZonesDict = null;
             }
-            if (ambientDict.TryGetValue(world.region.name, out string[] songArr))
-            {
-                RainMeadow.Debug("Meadow Music:  ambiences loaded");
-                ambienceSongArray = songArr;
-            }
-            else
-            {
-                RainMeadow.Debug("Meadow Music:  no ambiences for region");
-                ambienceSongArray = null;
-            }
+            if (ambientDict.TryGetValue(world.region.name, out string[] songArr)) ambienceSongArray = songArr;
+            else ambienceSongArray = null;
         }
     }
 }
