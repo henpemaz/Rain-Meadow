@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using IL.RWCustom;
+using System;
 
 namespace RainMeadow
 {
@@ -94,6 +95,7 @@ namespace RainMeadow
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.DeathScreen);
         }
 
+
         [RPCMethod]
         public static void MovePlayersToGhostScreen(string ghostID)
         {
@@ -121,6 +123,35 @@ namespace RainMeadow
                 return;
             }
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.KarmaToMaxScreen);
+        }
+
+        [RPCMethod]
+        public static void Arena_NextLevelCall()
+        {
+            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            if (game.manager.upcomingProcess != null)
+            {
+                return;
+            }
+            game.GetArenaGameSession.arenaSitting.NextLevel(game.manager);
+            game.arenaOverlay.nextLevelCall = true;
+        }
+
+        [RPCMethod]
+        public static void AddShortCutVessel(RWCustom.IntVector2 pos, OnlinePhysicalObject crit, RoomSession roomSess, int wait)
+        {
+
+            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            if (game.manager.upcomingProcess != null)
+            {
+                return;
+            }
+            var creature = (crit?.apo.realizedObject as Creature);
+            var room = roomSess.absroom.world;
+            var roomPos = room.GetAbstractRoom(0);
+            var shortCutVessel = new ShortcutHandler.ShortCutVessel(pos, creature, roomPos, wait);
+            game.GetArenaGameSession.exitManager.playersInDens.Add(shortCutVessel);
+
         }
     }
 }

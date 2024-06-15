@@ -124,7 +124,7 @@ namespace RainMeadow
 
         internal virtual void NewEntity(OnlineEntity oe, OnlineResource inResource)
         {
-            
+
         }
 
         internal virtual void AddAvatarSettings()
@@ -143,12 +143,12 @@ namespace RainMeadow
 
         internal virtual void ResourceAvailable(OnlineResource onlineResource)
         {
-            
+
         }
 
         internal virtual void ResourceActive(OnlineResource onlineResource)
         {
-            if(onlineResource is Lobby)
+            if (onlineResource is Lobby)
             {
                 AddAvatarSettings();
                 OnlineManager.instance.manager.RequestMainProcessSwitch(MenuProcessId());
@@ -160,14 +160,14 @@ namespace RainMeadow
             return true;
         }
 
-        public virtual void LobbyReadyCheck() 
-        { 
-            
+        public virtual void LobbyReadyCheck()
+        {
+
         }
 
         internal virtual void PlayerLeftLobby(OnlinePlayer player)
         {
-            
+
         }
 
         internal virtual void NewPlayerInLobby(OnlinePlayer player)
@@ -177,12 +177,12 @@ namespace RainMeadow
 
         internal virtual void LobbyTick(uint tick)
         {
-            
+
         }
 
         internal virtual void Customize(Creature creature, OnlineCreature oc)
         {
-            if (lobby.playerAvatars.Any(a=>a.Value == oc.id))
+            if (lobby.playerAvatars.Any(a => a.Value == oc.id))
             {
                 RainMeadow.Debug($"Customizing avatar {creature} for {oc.owner}");
                 var settings = lobby.entities.Values.First(em => em.entity is ClientSettings avs && avs.avatarId == oc.id).entity as ClientSettings;
@@ -190,7 +190,7 @@ namespace RainMeadow
                 // this adds the entry in the CWT
                 var mcc = RainMeadow.creatureCustomizations.GetValue(creature, (c) => settings.MakeCustomization());
 
-                if(creature is Player player && !oc.isMine)
+                if (creature is Player player && !oc.isMine)
                 {
                     player.controller = new OnlineController(oc, player);
                 }
