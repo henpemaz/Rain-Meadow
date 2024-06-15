@@ -37,7 +37,7 @@ namespace RainMeadow
         public static bool AllowPlopping;
 
         public static float? vibeIntensity = null;
-        //public static float? vibePan = null;
+        static float? vibePan = null;
         static bool UpdateIntensity;
 
         internal struct VibeZone
@@ -279,6 +279,16 @@ namespace RainMeadow
                 //and just grab its corresponding vibezone from the dict
                 az = activeZonesDict[closestVibe];
                 //if this active zone's song is currently playing, and we are beyond the zone's radius
+                //if (musicPlayer.song.name == az.songName && minDist > az.radius)
+                //{
+                //    RainMeadow.Debug("Meadow Music:  Fading echo song...");
+                //    musicPlayer.song.FadeOut(40f);
+                //    activeZone = null;
+                //    vibeIntensity = null;
+                //    vibePan = null;
+                //}
+                ////if this active zone's song is not currently playing, and we are within its radius
+                //else if (musicPlayer.song.name != az.songName && minDist < az.radius)
                 if (minDist > az.radius)
                 {
                     //RainMeadow.Debug("Meadow Music:  Fading echo song...");
@@ -293,11 +303,14 @@ namespace RainMeadow
                 //if this active zone's song is currently playing (we can assume this at this point) and are within its radius
                 else if (minDist < az.radius)
                 {
+                    //vibeIntensity = Custom.LerpMap(minDist, az.radius, 0, 0.5f, 1);
+                    vibePan = Vector2.Dot((room.world.RoomToWorldPos(Vector2.zero, rooms[closestVibe]) - room.world.RoomToWorldPos(Vector2.zero, room.abstractRoom.index)).normalized, Vector2.right);
+                    //musicPlayer.song.baseVolume = Custom.LerpMap(minDist, az.radius, 0, 0.5f, 1) * 0.3f;
+                    UpdateIntensity = true;
                     AllowPlopping = true;
                     //activeZone = az;
                     //vibePan = Custom.LerpMap(pan, -az.radius, az.radius, -1, 1) * (1 - vibeIntensity);
 
-                    UpdateIntensity = true;
                     
                     RainMeadow.Debug($"So we've decided the thing is now: {vibeIntensity}, {vibeIntensity}");
                 }
