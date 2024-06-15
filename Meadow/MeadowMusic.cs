@@ -37,7 +37,7 @@ namespace RainMeadow
         public static bool AllowPlopping;
 
         public static float? vibeIntensity = null;
-        static float? vibePan = null;
+        public static float? vibePan = null;
         static bool UpdateIntensity;
 
         internal struct VibeZone
@@ -110,6 +110,8 @@ namespace RainMeadow
 
             if (UpdateIntensity)
             {
+                vibePan = Vector2.Dot((RoomImIn.world.RoomToWorldPos(Vector2.zero, closestVibe) - RoomImIn.world.RoomToWorldPos(Vector2.zero, RoomImIn.abstractRoom.index)).normalized, Vector2.right);
+
                 RainMeadow.Debug("IsFased");
                 Vector2 LOL = self.world.RoomToWorldPos(self.world.GetAbstractRoom(closestVibe).size.ToVector2() * 10f, closestVibe);
                 Vector2 lol = self.world.RoomToWorldPos(MyGuyMic.listenerPoint, RoomImIn.abstractRoom.index);
@@ -118,7 +120,7 @@ namespace RainMeadow
                 
                 float vibeIntensityTarget = 
                              Mathf.Pow(Mathf.InverseLerp(az.radius, 666f, Vector2.Distance(lol, LOL)), 1.65f)
-                           * Custom.LerpMap((float)DegreesOfAwayness, 0f, 3f, 1f, 0.15f)
+                           * Custom.LerpMap((float)DegreesOfAwayness, 0f, 2f, 1f, 0.15f)
                            //* Custom.LerpMap((float)DegreesOfAwayness, 1f, 3f, 0.6f, 0.15f)
                            * ((RoomImIn.abstractRoom.layer == self.world.GetAbstractRoom(closestVibe).layer) ? 1f : 0.75f);
 
@@ -127,6 +129,15 @@ namespace RainMeadow
                 //float floattargetplop = Mathf.Pow((float)MeadowMusic.vibeIntensity, 1.6f) * 0.5f;
                 vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? 0 : (float)vibeIntensity, vibeIntensityTarget, 0.025f, 0.002f);
                 vibeIntensity = vibeIntensityTarget;
+
+                if (vibeIntensity.Value < 0.2f)
+                {
+                    AllowPlopping = false;
+                }
+                else
+                {
+                    AllowPlopping = true;
+                }
 
                 if (musicPlayer != null && musicPlayer.song != null)
                 {
@@ -303,15 +314,11 @@ namespace RainMeadow
                 //if this active zone's song is currently playing (we can assume this at this point) and are within its radius
                 else if (minDist < az.radius)
                 {
-                    //vibeIntensity = Custom.LerpMap(minDist, az.radius, 0, 0.5f, 1);
-                    vibePan = Vector2.Dot((room.world.RoomToWorldPos(Vector2.zero, rooms[closestVibe]) - room.world.RoomToWorldPos(Vector2.zero, room.abstractRoom.index)).normalized, Vector2.right);
-                    //musicPlayer.song.baseVolume = Custom.LerpMap(minDist, az.radius, 0, 0.5f, 1) * 0.3f;
                     UpdateIntensity = true;
                     AllowPlopping = true;
+                    //vibePan = Vector2.Dot((room.world.RoomToWorldPos(Vector2.zero, rooms[closestVibe]) - room.world.RoomToWorldPos(Vector2.zero, room.abstractRoom.index)).normalized, Vector2.right);
                     //activeZone = az;
-                    //vibePan = Custom.LerpMap(pan, -az.radius, az.radius, -1, 1) * (1 - vibeIntensity);
 
-                    
                     RainMeadow.Debug($"So we've decided the thing is now: {vibeIntensity}, {vibeIntensity}");
                 }
             }

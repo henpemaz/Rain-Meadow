@@ -705,7 +705,8 @@ namespace RainMeadow
         {
             //virtualMicrophone.PlaySound(Note, 0f, intensity*0.5f, speed);
 
-            float pan = (float)(UnityEngine.Random.Range(-350, 351) / 1000f);
+            //float pan = (float)(UnityEngine.Random.Range(-350, 351) / 1000f);
+            float pan = MeadowMusic.vibePan == null ? 0 : (float)MeadowMusic.vibePan * (Mathf.Pow((float)MeadowMusic.vibeIntensity.Value*0.7f+0.125f, 1.65f));
             //float vol = velocity * 0.5f;
             float vol = MeadowMusic.vibeIntensity == null ? 0 : Mathf.Pow((float)MeadowMusic.vibeIntensity, 1.65f) * 0.5f * velocity;
             //float vol = MeadowMusic.plopIntensity * velocity;
