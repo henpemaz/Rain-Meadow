@@ -550,49 +550,6 @@ namespace RainMeadow
             PlayThing(sampleused, humanizingrandomnessinvelocitylol, speeed, mic);
 
         }
-        private void Plip(string input, float velocity, VirtualMicrophone mic)
-        {
-            //hellllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll
-            myblue += velocity * 0.5f;
-            string s = input.ToString();
-
-            string[] parts = s.Split('-');
-
-            string slib = parts[0]; //either L for Long, M for Medium, or S for Short
-            int oct = int.Parse(parts[1]);
-            int ind;
-            bool intiseasy = int.TryParse(parts[2], out ind);
-            int extratranspose = 0;
-            if (!intiseasy)
-            {
-                string appends = parts[2].Substring(1);
-                foreach (char letter in appends)
-                {
-                    switch (letter)
-                    {
-                        case 'b':
-                            extratranspose--;
-                            break;
-                        case '#':
-                            extratranspose++;
-                            break;
-                    }
-                }
-                ind = int.Parse(parts[2].Substring(0, 1));
-            }
-            SoundID[] slopb = SampDict(slib);
-            SoundID sampleused = slopb[oct - 1];
-            int transposition = IndexTOCKInt(ind);
-            //if (!intiseasy)
-            //{
-            //    transposition += extratranspose;
-            //    if (transposition > 11) { transposition -= 12; }
-            //    if (transposition < 0) { transposition += 12; }
-            //}
-            transposition += extratranspose;
-            float speeed = 1 * Mathf.Pow(magicnumber, transposition);
-            PlayThing(sampleused, velocity, speeed, mic);
-        }
         private void PushKeyModulation(int diff)
         {
             CurrentKey += diff;
@@ -746,12 +703,12 @@ namespace RainMeadow
         }
         private void PlayThing(SoundID Note, float velocity, float speed, VirtualMicrophone virtualMicrophone)
         {
-
             //virtualMicrophone.PlaySound(Note, 0f, intensity*0.5f, speed);
 
             float pan = (float)(UnityEngine.Random.Range(-350, 351) / 1000f);
             //float vol = velocity * 0.5f;
-            float vol = (float)MeadowMusic.vibeIntensity*0.5f;
+            //float vol = MeadowMusic.vibeIntensity == null ? 0 : Mathf.Pow((float)MeadowMusic.vibeIntensity, 2f) * 0.5f * velocity;
+            float vol = MeadowMusic.plopIntensity * velocity;
             float pitch = speed;
             RainMeadow. Debug($"Trying to play a {Note}, at {vol} volume, with {pan} pan");
             try

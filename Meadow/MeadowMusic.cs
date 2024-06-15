@@ -99,7 +99,7 @@ namespace RainMeadow
             time = 0f;
             timerStopped = true;
         }
-
+        static public float plopIntensity;
         static void RawUpdatePatch(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
         {
             orig.Invoke(self, dt);
@@ -110,28 +110,7 @@ namespace RainMeadow
 
             if (UpdateIntensity)
             {
-                //vibeIntensity = Custom.LerpMap(minDist, az.radius, 0, 0f, 1f);
-
-
-                //Vector2 vector = Custom.RestrictInRect(worldPos, FloatRect.MakeFromVector2(this.world.RoomToWorldPos(default(Vector2), this.ghostRoom.index), this.world.RoomToWorldPos(this.ghostRoom.size.ToVector2() * 20f, this.ghostRoom.index)));
-
-
-                //self.roomRealizer.world.RoomToWorldPos() //lol i guessed
-                //self.player.mainBodyChunk.pos
-                //testroom is the place you're in
-                
-                /*
-                float num2 = Mathf.Pow(
-                             Mathf.InverseLerp(4000f, 500f, 
-                             Vector2.Distance(worldPos, vector)
-                             ), 
-                             2f) 
-                           * Custom.LerpMap((float)num, 1f, 3f, 0.6f, 0.15f) 
-                           * ((testRoom.layer == this.ghostRoom.layer) ? 1f : 0.6f);
-                */
-
                 RainMeadow.Debug("IsFased");
-
                 Vector2 LOL = self.world.RoomToWorldPos(self.world.GetAbstractRoom(closestVibe).size.ToVector2() * 10f, closestVibe);
                 Vector2 lol = self.world.RoomToWorldPos(MyGuyMic.listenerPoint, RoomImIn.abstractRoom.index);
 
@@ -139,12 +118,35 @@ namespace RainMeadow
                 
                 vibeIntensity = Mathf.Pow(
                              Mathf.InverseLerp(az.radius, 666f, Vector2.Distance(lol, LOL)),
-                             1.75f)
-                           * Custom.LerpMap((float)DegreesOfAwayness, 1f, 3f, 0.6f, 0.15f)
-                           * ((RoomImIn.abstractRoom.layer == self.world.GetAbstractRoom(closestVibe).layer) ? 1f : 0.6f);
+                             1.65f)
+                           * Custom.LerpMap((float)DegreesOfAwayness, 0f, 3f, 1f, 0.15f)
+                           //* Custom.LerpMap((float)DegreesOfAwayness, 1f, 3f, 0.6f, 0.15f)
+                           * ((RoomImIn.abstractRoom.layer == self.world.GetAbstractRoom(closestVibe).layer) ? 1f : 0.75f);
 
                 RainMeadow.Debug("IsBased");
-                if (musicPlayer != null && musicPlayer.song != null) musicPlayer.song.baseVolume = (1f - (float)vibeIntensity) * 0.3f;
+
+
+
+
+                float floattargetplop = Mathf.Pow((float)MeadowMusic.vibeIntensity, 1.6f) * 0.5f;
+                floattargetplop = Custom.LerpAndTick(plopIntensity, floattargetplop, 0.002f, 0.001f);
+                plopIntensity = floattargetplop;
+
+                if (musicPlayer != null && musicPlayer.song != null)
+                {
+                    float floattarget = 0f;
+                    if ((float)vibeIntensity > 0.9f)
+                    {
+                        floattarget = 0f;
+                    }
+                    else
+                    {
+                        floattarget = Mathf.Pow((1f - (float)vibeIntensity), 2f) * 0.3f;
+                    }
+                    floattarget = Custom.LerpAndTick(musicPlayer.song.baseVolume, floattarget, 0.002f, 0.001f);
+                    musicPlayer.song.baseVolume = floattarget;
+                }
+                
                 RainMeadow.Debug("IsMased");
             }
             if (musicPlayer != null && musicPlayer.song == null && self.world.rainCycle.RainApproaching > 0.5f)
