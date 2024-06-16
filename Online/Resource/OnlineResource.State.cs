@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static RainMeadow.OnlineResource.ResourceData;
 
 namespace RainMeadow
 {
@@ -170,8 +171,10 @@ namespace RainMeadow
             internal virtual ResourceDataState MakeState() { return null; }
 
             [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
-            public abstract class ResourceDataState : OnlineState
+            public abstract class ResourceDataState : OnlineState, IIdentifiable<byte>
             {
+                public byte ID => (byte)handler.stateType.index;
+
                 public ResourceDataState() { }
 
                 internal abstract void ReadTo(ResourceData data);
@@ -190,7 +193,7 @@ namespace RainMeadow
             [OnlineField(nullable = true, group = "entities")]
             public DeltaStates<OnlineEntity.EntityState, OnlineState, OnlineEntity.EntityId> entityStates;
             [OnlineField(nullable = true, group = "data")]
-            public AddRemoveSortedStates<ResourceData.ResourceDataState> resourceDataStates;
+            public DeltaDataStates<ResourceDataState> resourceDataStates;
 
             protected ResourceState() : base() { }
             protected ResourceState(OnlineResource resource, uint ts) : base(ts)

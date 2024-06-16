@@ -3,6 +3,7 @@ using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static RainMeadow.OnlineEntity.EntityData;
 
 namespace RainMeadow
 {
@@ -429,9 +430,11 @@ namespace RainMeadow
             internal abstract EntityDataState MakeState(OnlineResource inResource);
 
             [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
-            public abstract class EntityDataState : OnlineState
+            public abstract class EntityDataState : OnlineState, IIdentifiable<byte>
             {
                 protected EntityDataState() { }
+
+                public byte ID => (byte)handler.stateType.index;
 
                 internal abstract void ReadTo(OnlineEntity onlineEntity);
             }
@@ -442,7 +445,7 @@ namespace RainMeadow
             [OnlineField(always: true)]
             public OnlineEntity.EntityId entityId;
             [OnlineField(nullable: true, polymorphic: true)]
-            public AddRemoveSortedStates<OnlineEntity.EntityData.EntityDataState> entityDataStates;
+            public DeltaDataStates<EntityDataState> entityDataStates;
             public OnlineEntity.EntityId ID => entityId;
 
             protected EntityState() : base() { }
@@ -457,7 +460,6 @@ namespace RainMeadow
                 entityDataStates.list.ForEach(d => d.ReadTo(onlineEntity));
             }
         }
-
 
         public override string ToString()
         {
