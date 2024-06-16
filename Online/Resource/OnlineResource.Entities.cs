@@ -187,7 +187,7 @@ namespace RainMeadow
                 oe.EnterResource(this);
                 oe.ReadState(initialState, this);
             }
-            oe.OnJoinedResource(this);
+            oe.OnJoinedResource(this, initialState);
         }
 
         public void LocalEntityLeft(OnlineEntity oe)
@@ -254,7 +254,7 @@ namespace RainMeadow
             registeredEntities.Remove(oe.id);
             entities.Remove(oe.id);
             if (isOwner) lastModified = OnlineManager.mePlayer.tick;
-            if (!oe.isMine) oe.LeaveResource(this);
+            if (!oe.isMine) oe.ExitResource(this);
             oe.OnLeftResource(this);
         }
 

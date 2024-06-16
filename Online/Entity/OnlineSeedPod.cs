@@ -54,12 +54,6 @@
             return new OnlineSeedCobState(this, inResource, tick);
         }
 
-        public override void OnJoinedResource(OnlineResource inResource)
-        {
-            base.OnJoinedResource(inResource);
-            // ?
-        }
-
         public class OnlineSeedCobState : OnlineConsumableState
         {
             [OnlineField]

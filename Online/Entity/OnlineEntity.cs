@@ -92,7 +92,7 @@ namespace RainMeadow
             RainMeadow.Debug($"{this} entering {resource}");
             if (enteredResources.Count != 0 && resource.super != currentlyEnteredResource)
             {
-                var primary = enteredResources[0];
+                var primary = currentlyEnteredResource.chain.First(r => enteredResources.Contains(r));
                 var commonAncestor = currentlyEnteredResource.CommonAncestor(resource, out List<OnlineResource> chainA, out List<OnlineResource> chainB);
                 // roll up
                 while (enteredResources.Count != 0 && currentlyEnteredResource != commonAncestor)
@@ -117,15 +117,12 @@ namespace RainMeadow
         /// leave a resource locally, will automatically leave in online space
         /// </summary>
         /// <param name="resource"></param>
-        public void LeaveResource(OnlineResource resource)
+        public void ExitResource(OnlineResource resource)
         {
             if (!enteredResources.Contains(resource)) { return; }
-            RainMeadow.Debug($"{this} left {resource}");
-            if (resource != currentlyEnteredResource)
-            {
-                RainMeadow.Error($"Not the right resource {this} - {resource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
-            }
-            enteredResources.Remove(resource);
+            RainMeadow.Debug($"{this} exiting {resource}");
+            var index = enteredResources.IndexOf(resource);
+            enteredResources.RemoveRange(index, enteredResources.Count - index);
             if (isMine) JoinOrLeavePending();
         }
 
@@ -154,13 +151,13 @@ namespace RainMeadow
             }
         }
 
-        public virtual void OnJoinedResource(OnlineResource inResource)
+        public void OnJoinedResource(OnlineResource inResource, EntityState initialState)
         {
-            RainMeadow.Debug(this);
+            RainMeadow.Debug($"{this} joining {inResource}");
             if (inResource == currentlyJoinedResource) return;
             if (joinedResources.Contains(inResource))
             {
-                RainMeadow.Error($"Not the right resource {this} - {inResource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
+                RainMeadow.Error($"Already in resource {this} - {inResource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
                 return;
             }
             if (!isMine && this.currentlyJoinedResource != null && currentlyJoinedResource.IsSibling(inResource))
@@ -169,6 +166,9 @@ namespace RainMeadow
             }
             joinedResources.Add(inResource);
             incomingState.Add(inResource, new Queue<EntityState>());
+
+            if (!isMine) JoinImpl(inResource, initialState);
+
             if (isMine)
             {
                 if (!inResource.isOwner)
@@ -177,26 +177,29 @@ namespace RainMeadow
             }
         }
 
-        public virtual void OnLeftResource(OnlineResource inResource)
+        protected virtual void JoinImpl(OnlineResource inResource, EntityState initialState)
         {
-            RainMeadow.Debug($"{this} left {inResource}");
+
+        }
+
+        public void OnLeftResource(OnlineResource inResource)
+        {
+            RainMeadow.Debug($"{this} leaving {inResource}");
             if (!joinedResources.Contains(inResource))
             {
-                RainMeadow.Debug($"Entity already left: {this} {inResource}");
+                RainMeadow.Error($"Entity already left: {this} {inResource}");
                 return;
             }
 
-            if (inResource != currentlyJoinedResource)
-            {
-                RainMeadow.Debug($"Entity leaving resource in wrong order: {this} was in {currentlyJoinedResource} wants to leave {inResource}");
-            }
-
-            joinedResources.ToArray().Do(r => { if (r.IsSubresourceOf(inResource)) r.EntityLeftResource(this); });
-            //while (currentlyJoinedResource != inResource) currentlyJoinedResource.EntityLeftResource(this);
+            // if any subresources to leave do that first for consistency 
+            joinedResources.Reverse<OnlineResource>().ToArray().Do(r => { if (r.IsSubresourceOf(inResource)) r.EntityLeftResource(this); });
 
             joinedResources.Remove(inResource);
             lastStates.Remove(inResource);
             incomingState.Remove(inResource);
+
+            if (!isMine) LeaveImpl(inResource);
+
             if (isMine)
             {
                 OnlineManager.RemoveFeed(inResource, this);
@@ -206,6 +209,11 @@ namespace RainMeadow
             {
                 Deregister();
             }
+        }
+
+        protected virtual void LeaveImpl(OnlineResource inResource)
+        {
+
         }
 
         public virtual void Deregister()
@@ -221,7 +229,6 @@ namespace RainMeadow
             var wasOwner = owner;
             if (wasOwner == newOwner) return;
             owner = newOwner;
-            //definition.owner = newOwner.inLobbyId;
             primaryResource.registeredEntities[id].owner = newOwner.inLobbyId;
 
             if (wasOwner.isMe)
@@ -248,6 +255,7 @@ namespace RainMeadow
             RainMeadow.Debug($"{this} in {onlineResource}");
             enteredResources.Remove(onlineResource);
             joinedResources.Remove(onlineResource);
+            lastStates.Remove(onlineResource);
             incomingState.Remove(onlineResource);
             if (pendingRequest is RPCEvent rpc && rpc.target == onlineResource) pendingRequest = null;
             if (isMine)
@@ -266,9 +274,9 @@ namespace RainMeadow
             if (entityState == null) throw new InvalidProgrammerException("state is null");
             if (entityState.isDelta) throw new InvalidProgrammerException("state delta");
             lastStates[inResource] = entityState;
-            if (inResource != currentlyEnteredResource)
+            if (inResource != currentlyJoinedResource)
             {
-                // RainMeadow.Debug($"Skipping state for wrong resource" + Environment.StackTrace);
+                RainMeadow.Trace($"Skipping state for wrong resource: received {inResource} wanted {currentlyJoinedResource}");
                 // since we send both region state and room state even if it's the same guy owning both, this gets spammed a lot
                 // todo supress sending if more specialized state being sent to the same person
                 return;
@@ -314,7 +322,12 @@ namespace RainMeadow
             stateQueue.Enqueue(newState);
             if(newState.from == owner)
             {
+                RainMeadow.Trace($"processing received state {newState} in resource {inResource}");
                 ReadState(newState, inResource);
+            }
+            else
+            {
+                RainMeadow.Trace($"skipping state from {newState.from}, wanted {owner}");
             }
         }
 

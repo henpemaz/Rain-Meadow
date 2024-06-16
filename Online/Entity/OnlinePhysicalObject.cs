@@ -141,10 +141,10 @@ namespace RainMeadow
             return new PhysicalObjectEntityState(this, inResource, tick);
         }
 
-        public override void OnJoinedResource(OnlineResource inResource)
+        protected override void JoinImpl(OnlineResource inResource, EntityState initialState)
         {
-            base.OnJoinedResource(inResource);
-            if (isMine) return; // already moved
+            var poState = initialState as PhysicalObjectEntityState;
+            apo.pos = poState.pos;
             RainMeadow.Debug($"{this} moving in {inResource}");
             if (inResource is WorldSession ws)
             {
@@ -200,6 +200,7 @@ namespace RainMeadow
                         RainMeadow.Debug("added directly to the room");
                         beingMoved = true;
                         creature.RealizeInRoom(); // places in room
+                        creature.realizedCreature.inShortcut = false; // might have been reused realized creature
                         beingMoved = false;
                     }
                     else if (apo.pos.NodeDefined)
@@ -247,39 +248,34 @@ namespace RainMeadow
             }
         }
 
-        public override void OnLeftResource(OnlineResource inResource)
+        protected override void LeaveImpl(OnlineResource inResource)
         {
-            base.OnLeftResource(inResource);
-            if (!isMine)
+            if (inResource is RoomSession rs)
             {
-                if (inResource is RoomSession rs)
+                RainMeadow.Debug("Removing entity from room: " + this);
+                beingMoved = true;
+                rs.absroom.RemoveEntity(apo);
+                if (apo.realizedObject is PhysicalObject po)
                 {
-                    RainMeadow.Debug("Removing entity from room: " + this);
-                    beingMoved = true;
-                    rs.absroom.RemoveEntity(apo);
-                    if (apo.realizedObject is PhysicalObject po)
+                    if (rs.absroom.realizedRoom is Room room)
                     {
-                        if (rs.absroom.realizedRoom is Room room)
-                        {
-                            room.RemoveObject(po);
-                            room.CleanOutObjectNotInThisRoom(po);
-                        }
-                        if (po is Creature c && c.inShortcut && !joinedResources.Any(r => r is RoomSession))
-                        {
-                            if (c.RemoveFromShortcuts()) c.inShortcut = false;
-                        }
+                        room.RemoveObject(po);
+                        room.CleanOutObjectNotInThisRoom(po);
                     }
-                    beingMoved = false;
+                    if (po is Creature c && c.inShortcut && !joinedResources.Any(r => r is RoomSession))
+                    {
+                        if (c.RemoveFromShortcuts()) c.inShortcut = false;
+                    }
                 }
-                if (primaryResource == null) // gone
-                {
-                    RainMeadow.Debug("Removing entity from game: " + this);
-                    beingMoved = true;
-                    //apo.Destroy();
-                    apo.LoseAllStuckObjects();
-                    apo.Room?.RemoveEntity(apo);
-                    beingMoved = false;
-                }
+                beingMoved = false;
+            }
+            if (primaryResource == null) // gone
+            {
+                RainMeadow.Debug("Removing entity from game: " + this);
+                beingMoved = true;
+                apo.LoseAllStuckObjects();
+                apo.Room?.RemoveEntity(apo);
+                beingMoved = false;
             }
         }
 

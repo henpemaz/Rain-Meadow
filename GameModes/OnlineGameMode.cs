@@ -190,11 +190,6 @@ namespace RainMeadow
                 // this adds the entry in the CWT
                 var mcc = RainMeadow.creatureCustomizations.GetValue(creature, (c) => settings.MakeCustomization());
 
-                if(creature is Player player && !oc.isMine)
-                {
-                    player.controller = new OnlineController(oc, player);
-                }
-
                 // todo one day come back to making emote support universal
                 //if (oc.TryGetData<MeadowCreatureData>(out var mcd))
                 //{

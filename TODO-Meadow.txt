@@ -21,6 +21,7 @@ lizard todo
 - charge
 - fall + diagdown = slide
 - sometimes fails to grab poles when holding up
+- cyan-jump from any state
 - find a good seed for our buddies
 
 scav todo
@@ -99,3 +100,7 @@ sandbox unlock items still present in meadow lmao
 
 passage but the map isn't saving
 passage holds you in black screen for too long
+
+following others around is hard
+	need map implemented
+	could use pipes flashing colors if room inhabited

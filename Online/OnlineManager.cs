@@ -106,17 +106,6 @@ namespace RainMeadow
         {
             if (lobby != null)
             {
-#if TRACING
-                if (RainMeadow.tracing && players.Count == 1)
-                {
-                    var ls0 = lobby.GetState(0);
-                    var ls1 = lobby.GetState(1);
-                    var ds = ls1.Delta(ls0);
-                    mePlayer.OutgoingStates.Enqueue(ds);
-                    serializer.WriteData(mePlayer);
-                }
-#endif
-
                 foreach (OnlinePlayer player in players)
                 {
                     player.Update();
@@ -337,6 +326,8 @@ namespace RainMeadow
                 instance.manager.upcomingProcess = null;
                 instance.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
                 instance.manager.ShowDialog(new Menu.DialogNotify(v, "Leaving Lobby", new Vector2(240, 320), instance.manager, () => { }));
+                LeaveLobby();
+                throw new Exception(v);
             }
         }
     }

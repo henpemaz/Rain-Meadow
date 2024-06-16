@@ -203,8 +203,6 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 DebugOverlay.RemoveOverlay(self);
-                // some cleanup CAN be done
-                OnlineManager.recentEntities = OnlineManager.recentEntities.Where(kvp => !(kvp.Value is OnlinePhysicalObject)).ToDictionary();
 
                 OnlineManager.lobby.gameMode.clientSettings.inGame = false;
 

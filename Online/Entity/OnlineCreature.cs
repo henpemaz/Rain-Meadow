@@ -161,10 +161,11 @@ namespace RainMeadow
         [RPCMethod]
         public void SuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
         {
+            RainMeadow.Debug(this);
             enteringShortCut = true;
             var creature = (apo.realizedObject as Creature);
             var room = creature.room;
-            creature?.SuckedIntoShortCut(entrancePos, carriedByOther);
+            creature.SuckedIntoShortCut(entrancePos, carriedByOther);
             if (creature.graphicsModule != null)
 			{
                 Vector2 vector = room.MiddleOfTile(entrancePos) + Custom.IntVector2ToVector2(room.ShorcutEntranceHoleDirection(entrancePos)) * -5f;

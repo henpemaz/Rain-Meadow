@@ -40,7 +40,7 @@ namespace RainMeadow
             {
                 RainMeadow.Debug("Expired:" + online);
                 this.Destroy();
-                this.Room.RemoveEntity(this);
+                this.Room.entities.Remove(this);
             }
         }
 

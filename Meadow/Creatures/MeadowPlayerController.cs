@@ -49,6 +49,13 @@ namespace RainMeadow
                 p.Update(eu);
             }
             orig(self, eu);
+            if(OnlineManager.lobby != null)
+            {
+                if (RainMeadow.tracing)
+                {
+                    RainMeadow.Dump(self);
+                }
+            }
         }
 
         protected override void LookImpl(Vector2 pos)
