@@ -378,9 +378,21 @@ namespace RainMeadow
 
                 array[num]++;
 
+
+                RainMeadow.Debug("Trying to create an abstract creature");
+
+                sSpawningAvatar = true;
+
                 AbstractCreature abstractCreature = new AbstractCreature(self.game.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(0, -1, -1, -1), new EntityID(-1, list[l].playerNumber));
+                sSpawningAvatar = false;
+
+                RainMeadow.Debug("assigned ac, moving to den");
+
 
                 AbstractRoom_Arena_MoveEntityToDen(self.game.world, abstractCreature.Room, abstractCreature); // Arena adds abstract creature then realizes it later
+                RainMeadow.Debug("moved, setting online creature");
+
+
                 SetOnlineCreature(abstractCreature);
                 if (OnlineManager.lobby.isActive)
                 {
