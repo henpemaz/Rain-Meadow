@@ -341,18 +341,20 @@ namespace RainMeadow
         static void ShuffleSongs()
         {
             shuffleindex = 0;
-            //int shufflelastbuffle = shufflequeue[shufflequeue.Length - 1];
+            bool isfirstshuffle = shufflequeue.Length == 0;
+            int shufflelastbuffle = 0;
+            if (!isfirstshuffle) shufflelastbuffle = shufflequeue[shufflequeue.Length - 1];
             shufflequeue = new int[ambienceSongArray.Length];
             List<int> Hah = new List<int>();
             for (int i = 0; i < ambienceSongArray.Length; i++) { Hah.Add(i); }
-            //Hah.Remove(shufflelastbuffle);
+            if (!isfirstshuffle) Hah.Remove(shufflelastbuffle);
             int j = 0;
             while (j < shufflequeue.Length) 
             {
                 int RandomInt = UnityEngine.Random.Range(0, Hah.Count);
                 shufflequeue[j] = Hah[RandomInt];
                 Hah.RemoveAt(RandomInt);
-                //if (j == 0) Hah.Add( shufflelastbuffle ); 
+                if (j == 0 && !isfirstshuffle) Hah.Add( shufflelastbuffle ); 
                 j++;
             }
         }
