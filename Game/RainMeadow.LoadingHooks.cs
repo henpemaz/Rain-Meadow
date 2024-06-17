@@ -288,7 +288,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && self.game != null)
             {
                 WorldSession ws = null;
-                if (game != null && game.IsArenaSession)
+                if (game != null && RainMeadow.isArenaMode(out var _))
                 {
                     ws = OnlineManager.lobby.worldSessions["arena"];
 

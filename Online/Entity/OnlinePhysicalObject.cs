@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using static RainMeadow.OnlineCreature;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace RainMeadow
 {
@@ -59,6 +61,7 @@ namespace RainMeadow
                 case AbstractMeadowCollectible:
                     return new OnlineMeadowCollectible(apo, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 case AbstractCreature ac:
+                    OnlineCreatureDefinition acDef;
                     return new OnlineCreature(ac, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 case AbstractConsumable acm:
                     return OnlineConsumableFromAcm(acm, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
