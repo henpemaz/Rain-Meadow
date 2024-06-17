@@ -1,1 +1,1 @@
-LF_D06,3000,Vibezones2,Clar
+LF_D06,5000,Vibezones2,Clar

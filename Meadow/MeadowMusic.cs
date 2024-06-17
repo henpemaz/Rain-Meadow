@@ -30,6 +30,9 @@ namespace RainMeadow
         internal static Dictionary<int, VibeZone> activeZonesDict = null;
         static string[] ambienceSongArray = null;
 
+        static int[] shufflequeue = new int[0];
+        static int shuffleindex = int.MaxValue - 69;
+
         static float time = 0f;
         static bool timerStopped = true;
 
@@ -130,14 +133,7 @@ namespace RainMeadow
                 vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? 0 : (float)vibeIntensity, vibeIntensityTarget, 0.025f, 0.002f);
                 vibeIntensity = vibeIntensityTarget;
 
-                if (vibeIntensity.Value < 0.2f)
-                {
-                    AllowPlopping = false;
-                }
-                else
-                {
-                    AllowPlopping = true;
-                }
+                AllowPlopping = vibeIntensity.Value >= 0.2f;
 
                 if (musicPlayer != null && musicPlayer.song != null)
                 {
@@ -164,7 +160,7 @@ namespace RainMeadow
                         if (ambienceSongArray != null)
                         {
                             RainMeadow.Debug("Meadow Music:  Playing ambient song");
-                            Song song = new(musicPlayer, ambienceSongArray[(int)UnityEngine.Random.Range(0f, ambienceSongArray.Length - 0.1f)], MusicPlayer.MusicContext.StoryMode)
+                            Song song = new(musicPlayer, ambienceSongArray[NewSong()], MusicPlayer.MusicContext.StoryMode)
                             {
                                 playWhenReady = true,
                                 volume = 1,
@@ -187,11 +183,11 @@ namespace RainMeadow
                     //    musicPlayer.song = song;
                     //}
                 }
-                RainMeadow.Debug("AAAAAAAAAAAAa");
+                //RainMeadow.Debug("AAAAAAAAAAAAa");
             }
             else
             {
-                RainMeadow.Debug("Bitch Else");
+                //RainMeadow.Debug("Bitch Else");
                 time = 0f;
                 timerStopped = true;
             }
@@ -325,7 +321,41 @@ namespace RainMeadow
             RainMeadow.Debug($":D :D  Yuri  {closestVibe}");
             DegreesOfAwayness = CalculateDegreesOfAwayness(room.abstractRoom);
         }
-
+        static int NewSong()
+        {
+            RainMeadow.Debug("calling all hoes");
+            if (shuffleindex + 1 >= shufflequeue.Length)
+            {
+                RainMeadow.Debug("calling all of them hoes");
+                ShuffleSongs();
+            }
+            else
+            {
+                shuffleindex++;
+                RainMeadow.Debug("New number" + shuffleindex);
+            }
+            RainMeadow.Debug("From this it " + shuffleindex);
+            RainMeadow.Debug("I'm calling the number " + shufflequeue[shuffleindex]);
+            return shufflequeue[shuffleindex];
+        }
+        static void ShuffleSongs()
+        {
+            shuffleindex = 0;
+            //int shufflelastbuffle = shufflequeue[shufflequeue.Length - 1];
+            shufflequeue = new int[ambienceSongArray.Length];
+            List<int> Hah = new List<int>();
+            for (int i = 0; i < ambienceSongArray.Length; i++) { Hah.Add(i); }
+            //Hah.Remove(shufflelastbuffle);
+            int j = 0;
+            while (j < shufflequeue.Length) 
+            {
+                int RandomInt = UnityEngine.Random.Range(0, Hah.Count);
+                shufflequeue[j] = Hah[RandomInt];
+                Hah.RemoveAt(RandomInt);
+                //if (j == 0) Hah.Add( shufflelastbuffle ); 
+                j++;
+            }
+        }
         static void AnalyzeRegion(World world)
         {
             RainMeadow.Debug("Meadow Music:  Analyzing " + world.name);
@@ -358,6 +388,7 @@ namespace RainMeadow
             {
                 RainMeadow.Debug("Meadow Music:  ambiences loaded");
                 ambienceSongArray = songArr;
+                ShuffleSongs();
             }
             else
             {
