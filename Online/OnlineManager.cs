@@ -15,7 +15,6 @@ namespace RainMeadow
         public static List<ResourceSubscription> subscriptions;
         public static List<EntityFeed> feeds;
         public static Dictionary<OnlineEntity.EntityId, OnlineEntity> recentEntities;
-        public static HashSet<OnlineEvent> waitingEvents;
         public static float lastSend;
         public static float lastReceive;
         public static OnlinePlayer mePlayer;
@@ -58,7 +57,6 @@ namespace RainMeadow
             subscriptions = new();
             feeds = new();
             recentEntities = new();
-            waitingEvents = new(4);
 
             WorldSession.map = new();
             RoomSession.map = new();
@@ -137,7 +135,6 @@ namespace RainMeadow
                 }
 
                 lastSend = UnityEngine.Time.realtimeSinceStartup;
-                RainMeadow.tracing = false; // tracing captures one tick
             }
         }
 
@@ -176,41 +173,13 @@ namespace RainMeadow
             {
                 RainMeadow.Debug($"New event {onlineEvent} from {fromPlayer}, processing...");
                 fromPlayer.lastEventFromRemote = onlineEvent.eventId;
-                if (onlineEvent.CanBeProcessed())
+                try
                 {
-                    try
-                    {
-                        onlineEvent.Process();
-                    }
-                    catch (Exception e)
-                    {
-                        RainMeadow.Error(e);
-                    }
-                    MaybeProcessWaitingEvents();
+                    onlineEvent.Process();
                 }
-                else if (!onlineEvent.ShouldBeDiscarded())
+                catch (Exception e)
                 {
-                    waitingEvents.Add(onlineEvent);
-                }
-            }
-        }
-
-        public static void MaybeProcessWaitingEvents()
-        {
-            if (waitingEvents.Count > 0)
-            {
-                waitingEvents.RemoveWhere(ev => ev.ShouldBeDiscarded());
-                while (waitingEvents.FirstOrDefault(ev => ev.CanBeProcessed()) is OnlineEvent ev)
-                {
-                    try
-                    {
-                        ev.Process();
-                    }
-                    catch (Exception e)
-                    {
-                        RainMeadow.Error(e);
-                    }
-                    waitingEvents.Remove(ev);
+                    RainMeadow.Error(e);
                 }
             }
         }

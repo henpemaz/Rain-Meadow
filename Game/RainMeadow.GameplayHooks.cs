@@ -73,7 +73,7 @@ namespace RainMeadow
             if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
             {
                 //for now force all players to be in the shelter to close the door.
-                var playerIDs = OnlineManager.lobby.participants.Keys.Select(p => p.inLobbyId).ToList();
+                var playerIDs = OnlineManager.lobby.participants.Select(p => p.inLobbyId).ToList();
                 var readyWinPlayers = storyGameMode.readyForWinPlayers.ToList();
 
                 foreach (var playerID in playerIDs) {

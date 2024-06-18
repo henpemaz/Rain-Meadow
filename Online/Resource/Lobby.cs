@@ -92,7 +92,7 @@ namespace RainMeadow
 
         internal override void Tick(uint tick)
         {
-            clientSettings = entities.Values.Where(em => em.entity is ClientSettings).ToDictionary(e => e.entity.owner, e => e.entity as ClientSettings);
+            clientSettings = activeEntities.Where(e => e is ClientSettings).ToDictionary(e => e.owner, e => e as ClientSettings);
             playerAvatars = clientSettings.ToDictionary(e => e.Key, e => e.Value.avatarId);
             gameMode.LobbyTick(tick);
             base.Tick(tick);
@@ -166,8 +166,8 @@ namespace RainMeadow
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
                 nextId = lobby.nextId;
-                players = new(lobby.participants.Keys.Select(p => p.id).ToList());
-                inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
+                players = new(lobby.participants.Select(p => p.id).ToList());
+                inLobbyIds = new(lobby.participants.Select(p => p.inLobbyId).ToList());
                 mods = lobby.mods;
             }
 

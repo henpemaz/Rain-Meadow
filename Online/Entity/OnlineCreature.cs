@@ -150,9 +150,9 @@ namespace RainMeadow
                 if (id.type == 0) throw new InvalidProgrammerException("here");
                 foreach (var participant in room.participants)
                 {
-                    if (!participant.Key.isMe)
+                    if (!participant.isMe)
                     {
-                        participant.Key.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
+                        participant.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
                     }
                 }
             }

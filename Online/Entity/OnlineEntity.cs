@@ -19,7 +19,7 @@ namespace RainMeadow
             [OnlineField]
             public bool isTransferable;
             [OnlineField]
-            public TickReference tickReference;
+            internal ushort version;
 
             public EntityDefinition() : base() { }
 
@@ -28,7 +28,7 @@ namespace RainMeadow
                 this.entityId = entity.id;
                 this.owner = entity.owner.inLobbyId;
                 this.isTransferable = entity.isTransferable;
-                this.tickReference = inResource.supervisor.MakeTickReference();
+                this.version = entity.version;
             }
 
             public abstract OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState);
@@ -46,6 +46,9 @@ namespace RainMeadow
         public OnlinePlayer owner;
         public readonly EntityId id;
         public readonly bool isTransferable;
+
+        internal ushort version;
+        internal bool everRegistered;
 
         public bool isMine => owner.isMe;
 
@@ -70,6 +73,7 @@ namespace RainMeadow
             this.id = id;
             this.owner = owner;
             this.isTransferable = isTransferable;
+            this.version = 1;
 
             OnlineManager.recentEntities.Add(id, this);
         }
@@ -79,6 +83,7 @@ namespace RainMeadow
             this.id = entityDefinition.entityId;
             this.owner = OnlineManager.lobby.PlayerFromId(entityDefinition.owner);
             this.isTransferable = entityDefinition.isTransferable;
+            this.version = entityDefinition.version;
 
             OnlineManager.recentEntities.Add(id, this);
         }
@@ -134,12 +139,13 @@ namespace RainMeadow
             RainMeadow.Debug(this);
 
             enteredResources.RemoveAll(r => !r.isActive);
-            joinedResources.RemoveAll(r => !r.isAvailable || !r.entities.ContainsKey(this.id));
+            joinedResources.RemoveAll(r => !r.isAvailable || !r.joinedEntities.ContainsKey(this.id));
 
             // any resources to leave
             var pending = joinedResources.LastOrDefault(r => !enteredResources.Contains(r));
             if (pending != null)
             {
+                version++;
                 pending.LocalEntityLeft(this);
                 return;
             }
@@ -147,6 +153,7 @@ namespace RainMeadow
             pending = enteredResources.FirstOrDefault(r => !joinedResources.Contains(r));
             if (pending != null)
             {
+                version++;
                 pending.LocalEntityEntered(this);
                 return;
             }
@@ -230,7 +237,7 @@ namespace RainMeadow
             var wasOwner = owner;
             if (wasOwner == newOwner) return;
             owner = newOwner;
-            primaryResource.registeredEntities[id].owner = newOwner.inLobbyId;
+            primaryResource.registeredEntities[id] = MakeDefinition(primaryResource);
 
             if (wasOwner.isMe)
             {
@@ -355,7 +362,6 @@ namespace RainMeadow
         }
 
         private List<EntityData> entityData = new();
-        internal bool everRegistered;
 
         internal T AddData<T>(bool ignoreDuplicate = false) where T : EntityData, new()
         {
@@ -444,6 +450,8 @@ namespace RainMeadow
         {
             [OnlineField(always: true)]
             public OnlineEntity.EntityId entityId;
+            [OnlineField(group: "meta")]
+            public ushort version;
             [OnlineField(nullable: true, polymorphic: true)]
             public DeltaDataStates<EntityDataState> entityDataStates;
             public OnlineEntity.EntityId ID => entityId;
@@ -452,11 +460,13 @@ namespace RainMeadow
             protected EntityState(OnlineEntity onlineEntity, OnlineResource inResource, uint ts) : base(ts)
             {
                 this.entityId = onlineEntity.id;
+                this.version = onlineEntity.version;
                 this.entityDataStates = new(onlineEntity.entityData.Select(d => d.MakeState(inResource)).Where(s => s != null).ToList());
             }
 
             public virtual void ReadTo(OnlineEntity onlineEntity)
             {
+                onlineEntity.version = version;
                 entityDataStates.list.ForEach(d => d.ReadTo(onlineEntity));
             }
         }

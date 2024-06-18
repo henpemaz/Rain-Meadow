@@ -106,7 +106,7 @@ namespace RainMeadow
             {
                 if (!oe.isMine && !oe.realized && oe.isTransferable && !oe.isPending)
                 {
-                    if (oe.roomSession == null || !oe.roomSession.participants.ContainsKey(oe.owner)) //if owner of oe is subscribed (is participant) do not request
+                    if (oe.roomSession == null || !oe.roomSession.participants.Contains(oe.owner)) //if owner of oe is subscribed (is participant) do not request
                     {
                         oe.Request();
                     }
@@ -127,7 +127,7 @@ namespace RainMeadow
             {
                 if (!oe.isMine && !oe.realized && oe.isTransferable && !oe.isPending)
                 {
-                    if (oe.roomSession == null || !oe.roomSession.participants.ContainsKey(oe.owner)) //if owner of oe is subscribed (is participant) do not request
+                    if (oe.roomSession == null || !oe.roomSession.participants.Contains(oe.owner)) //if owner of oe is subscribed (is participant) do not request
                     {
                         oe.Request();
                     }
@@ -182,7 +182,7 @@ namespace RainMeadow
             orig(self, coord);
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out oe))
             {
-                if (oe.realized && oe.isTransferable && oe.isMine && !oe.isPending)
+                if (oe.isMine && oe.isTransferable && !oe.isPending)
                 {
                     oe.Release();
                 }

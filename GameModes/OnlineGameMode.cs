@@ -185,7 +185,7 @@ namespace RainMeadow
             if (lobby.playerAvatars.Any(a=>a.Value == oc.id))
             {
                 RainMeadow.Debug($"Customizing avatar {creature} for {oc.owner}");
-                var settings = lobby.entities.Values.First(em => em.entity is ClientSettings avs && avs.avatarId == oc.id).entity as ClientSettings;
+                var settings = lobby.activeEntities.First(em => em is ClientSettings avs && avs.avatarId == oc.id) as ClientSettings;
 
                 // this adds the entry in the CWT
                 var mcc = RainMeadow.creatureCustomizations.GetValue(creature, (c) => settings.MakeCustomization());
