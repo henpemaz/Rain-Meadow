@@ -242,7 +242,7 @@ namespace RainMeadow
 
             uint ne = BeginReadEvents();
             fromPlayer.eventsRead = ne > 0; // something is being read, record for debug
-            //RainMeadow.Debug($"Receiving {ne} events from player {fromPlayer}");
+            RainMeadow.Trace($"Receiving {ne} events from player {fromPlayer}");
             for (uint ie = 0; ie < ne; ie++)
             {
                 OnlineManager.ProcessIncomingEvent(ReadEvent());
@@ -250,7 +250,7 @@ namespace RainMeadow
 
             uint ns = BeginReadStates();
             fromPlayer.statesRead = ns > 0; // something is being read, record for debug
-            //RainMeadow.Debug($"Receiving {ns} states");
+            RainMeadow.Trace($"Receiving {ns} states");
             for (uint ist = 0; ist < ns; ist++)
             {
                 OnlineManager.ProcessIncomingState(ReadState());

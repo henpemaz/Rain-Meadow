@@ -150,9 +150,9 @@ namespace RainMeadow
                 if (id.type == 0) throw new InvalidProgrammerException("here");
                 foreach (var participant in room.participants)
                 {
-                    if (!participant.Key.isMe)
+                    if (!participant.isMe)
                     {
-                        participant.Key.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
+                        participant.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
                     }
                 }
             }
@@ -161,10 +161,11 @@ namespace RainMeadow
         [RPCMethod]
         public void SuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
         {
+            RainMeadow.Debug(this);
             enteringShortCut = true;
             var creature = (apo.realizedObject as Creature);
             var room = creature.room;
-            creature?.SuckedIntoShortCut(entrancePos, carriedByOther);
+            creature.SuckedIntoShortCut(entrancePos, carriedByOther);
             if (creature.graphicsModule != null)
 			{
                 Vector2 vector = room.MiddleOfTile(entrancePos) + Custom.IntVector2ToVector2(room.ShorcutEntranceHoleDirection(entrancePos)) * -5f;

@@ -312,7 +312,7 @@ namespace RainMeadow
             if (lobby.playerAvatars[oc.owner] == oc.id)
             {
                 RainMeadow.Debug($"Customizing avatar {creature} for {oc.owner}");
-                var settings = lobby.entities.Values.First(em => em.entity is ClientSettings avs && avs.avatarId == oc.id).entity as MeadowAvatarSettings;
+                var settings = lobby.activeEntities.First(em => em is ClientSettings avs && avs.avatarId == oc.id) as MeadowAvatarSettings;
 
                 var mcc = (MeadowAvatarCustomization)RainMeadow.creatureCustomizations.GetValue(creature, (c) => settings.MakeCustomization());
 

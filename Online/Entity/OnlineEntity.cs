@@ -3,6 +3,7 @@ using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static RainMeadow.OnlineEntity.EntityData;
 
 namespace RainMeadow
 {
@@ -18,7 +19,7 @@ namespace RainMeadow
             [OnlineField]
             public bool isTransferable;
             [OnlineField]
-            public TickReference tickReference;
+            internal ushort version;
 
             public EntityDefinition() : base() { }
 
@@ -27,7 +28,7 @@ namespace RainMeadow
                 this.entityId = entity.id;
                 this.owner = entity.owner.inLobbyId;
                 this.isTransferable = entity.isTransferable;
-                this.tickReference = inResource.supervisor.MakeTickReference();
+                this.version = entity.version;
             }
 
             public abstract OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState);
@@ -45,6 +46,9 @@ namespace RainMeadow
         public OnlinePlayer owner;
         public readonly EntityId id;
         public readonly bool isTransferable;
+
+        internal ushort version;
+        internal bool everRegistered;
 
         public bool isMine => owner.isMe;
 
@@ -69,6 +73,7 @@ namespace RainMeadow
             this.id = id;
             this.owner = owner;
             this.isTransferable = isTransferable;
+            this.version = 1;
 
             OnlineManager.recentEntities.Add(id, this);
         }
@@ -78,6 +83,7 @@ namespace RainMeadow
             this.id = entityDefinition.entityId;
             this.owner = OnlineManager.lobby.PlayerFromId(entityDefinition.owner);
             this.isTransferable = entityDefinition.isTransferable;
+            this.version = entityDefinition.version;
 
             OnlineManager.recentEntities.Add(id, this);
         }
@@ -92,7 +98,7 @@ namespace RainMeadow
             RainMeadow.Debug($"{this} entering {resource}");
             if (enteredResources.Count != 0 && resource.super != currentlyEnteredResource)
             {
-                var primary = enteredResources[0];
+                var primary = currentlyEnteredResource.chain.First(r => enteredResources.Contains(r));
                 var commonAncestor = currentlyEnteredResource.CommonAncestor(resource, out List<OnlineResource> chainA, out List<OnlineResource> chainB);
                 // roll up
                 while (enteredResources.Count != 0 && currentlyEnteredResource != commonAncestor)
@@ -117,15 +123,12 @@ namespace RainMeadow
         /// leave a resource locally, will automatically leave in online space
         /// </summary>
         /// <param name="resource"></param>
-        public void LeaveResource(OnlineResource resource)
+        public void ExitResource(OnlineResource resource)
         {
             if (!enteredResources.Contains(resource)) { return; }
-            RainMeadow.Debug($"{this} left {resource}");
-            if (resource != currentlyEnteredResource)
-            {
-                RainMeadow.Error($"Not the right resource {this} - {resource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
-            }
-            enteredResources.Remove(resource);
+            RainMeadow.Debug($"{this} exiting {resource}");
+            var index = enteredResources.IndexOf(resource);
+            enteredResources.RemoveRange(index, enteredResources.Count - index);
             if (isMine) JoinOrLeavePending();
         }
 
@@ -136,12 +139,13 @@ namespace RainMeadow
             RainMeadow.Debug(this);
 
             enteredResources.RemoveAll(r => !r.isActive);
-            joinedResources.RemoveAll(r => !r.isAvailable || !r.entities.ContainsKey(this.id));
+            joinedResources.RemoveAll(r => !r.isAvailable || !r.joinedEntities.ContainsKey(this.id));
 
             // any resources to leave
             var pending = joinedResources.LastOrDefault(r => !enteredResources.Contains(r));
             if (pending != null)
             {
+                version++;
                 pending.LocalEntityLeft(this);
                 return;
             }
@@ -149,18 +153,19 @@ namespace RainMeadow
             pending = enteredResources.FirstOrDefault(r => !joinedResources.Contains(r));
             if (pending != null)
             {
+                version++;
                 pending.LocalEntityEntered(this);
                 return;
             }
         }
 
-        public virtual void OnJoinedResource(OnlineResource inResource)
+        public void OnJoinedResource(OnlineResource inResource, EntityState initialState)
         {
-            RainMeadow.Debug(this);
+            RainMeadow.Debug($"{this} joining {inResource}");
             if (inResource == currentlyJoinedResource) return;
             if (joinedResources.Contains(inResource))
             {
-                RainMeadow.Error($"Not the right resource {this} - {inResource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
+                RainMeadow.Error($"Already in resource {this} - {inResource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
                 return;
             }
             if (!isMine && this.currentlyJoinedResource != null && currentlyJoinedResource.IsSibling(inResource))
@@ -169,6 +174,9 @@ namespace RainMeadow
             }
             joinedResources.Add(inResource);
             incomingState.Add(inResource, new Queue<EntityState>());
+
+            if (!isMine) JoinImpl(inResource, initialState);
+
             if (isMine)
             {
                 if (!inResource.isOwner)
@@ -177,26 +185,29 @@ namespace RainMeadow
             }
         }
 
-        public virtual void OnLeftResource(OnlineResource inResource)
+        protected virtual void JoinImpl(OnlineResource inResource, EntityState initialState)
         {
-            RainMeadow.Debug($"{this} left {inResource}");
+
+        }
+
+        public void OnLeftResource(OnlineResource inResource)
+        {
+            RainMeadow.Debug($"{this} leaving {inResource}");
             if (!joinedResources.Contains(inResource))
             {
-                RainMeadow.Debug($"Entity already left: {this} {inResource}");
+                RainMeadow.Error($"Entity already left: {this} {inResource}");
                 return;
             }
 
-            if (inResource != currentlyJoinedResource)
-            {
-                RainMeadow.Debug($"Entity leaving resource in wrong order: {this} was in {currentlyJoinedResource} wants to leave {inResource}");
-            }
-
-            joinedResources.ToArray().Do(r => { if (r.IsSubresourceOf(inResource)) r.EntityLeftResource(this); });
-            //while (currentlyJoinedResource != inResource) currentlyJoinedResource.EntityLeftResource(this);
+            // if any subresources to leave do that first for consistency 
+            joinedResources.Reverse<OnlineResource>().ToArray().Do(r => { if (r.IsSubresourceOf(inResource)) r.EntityLeftResource(this); });
 
             joinedResources.Remove(inResource);
             lastStates.Remove(inResource);
             incomingState.Remove(inResource);
+
+            if (!isMine) LeaveImpl(inResource);
+
             if (isMine)
             {
                 OnlineManager.RemoveFeed(inResource, this);
@@ -206,6 +217,11 @@ namespace RainMeadow
             {
                 Deregister();
             }
+        }
+
+        protected virtual void LeaveImpl(OnlineResource inResource)
+        {
+
         }
 
         public virtual void Deregister()
@@ -221,8 +237,7 @@ namespace RainMeadow
             var wasOwner = owner;
             if (wasOwner == newOwner) return;
             owner = newOwner;
-            //definition.owner = newOwner.inLobbyId;
-            primaryResource.registeredEntities[id].owner = newOwner.inLobbyId;
+            primaryResource.registeredEntities[id] = MakeDefinition(primaryResource);
 
             if (wasOwner.isMe)
             {
@@ -248,6 +263,7 @@ namespace RainMeadow
             RainMeadow.Debug($"{this} in {onlineResource}");
             enteredResources.Remove(onlineResource);
             joinedResources.Remove(onlineResource);
+            lastStates.Remove(onlineResource);
             incomingState.Remove(onlineResource);
             if (pendingRequest is RPCEvent rpc && rpc.target == onlineResource) pendingRequest = null;
             if (isMine)
@@ -266,9 +282,9 @@ namespace RainMeadow
             if (entityState == null) throw new InvalidProgrammerException("state is null");
             if (entityState.isDelta) throw new InvalidProgrammerException("state delta");
             lastStates[inResource] = entityState;
-            if (inResource != currentlyEnteredResource)
+            if (inResource != currentlyJoinedResource)
             {
-                // RainMeadow.Debug($"Skipping state for wrong resource" + Environment.StackTrace);
+                RainMeadow.Trace($"Skipping state for wrong resource: received {inResource} wanted {currentlyJoinedResource}");
                 // since we send both region state and room state even if it's the same guy owning both, this gets spammed a lot
                 // todo supress sending if more specialized state being sent to the same person
                 return;
@@ -314,7 +330,12 @@ namespace RainMeadow
             stateQueue.Enqueue(newState);
             if(newState.from == owner)
             {
+                RainMeadow.Trace($"processing received state {newState} in resource {inResource}");
                 ReadState(newState, inResource);
+            }
+            else
+            {
+                RainMeadow.Trace($"skipping state from {newState.from}, wanted {owner}");
             }
         }
 
@@ -341,7 +362,6 @@ namespace RainMeadow
         }
 
         private List<EntityData> entityData = new();
-        internal bool everRegistered;
 
         internal T AddData<T>(bool ignoreDuplicate = false) where T : EntityData, new()
         {
@@ -416,9 +436,11 @@ namespace RainMeadow
             internal abstract EntityDataState MakeState(OnlineResource inResource);
 
             [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
-            public abstract class EntityDataState : OnlineState
+            public abstract class EntityDataState : OnlineState, IIdentifiable<byte>
             {
                 protected EntityDataState() { }
+
+                public byte ID => (byte)handler.stateType.index;
 
                 internal abstract void ReadTo(OnlineEntity onlineEntity);
             }
@@ -428,23 +450,26 @@ namespace RainMeadow
         {
             [OnlineField(always: true)]
             public OnlineEntity.EntityId entityId;
+            [OnlineField(group: "meta")]
+            public ushort version;
             [OnlineField(nullable: true, polymorphic: true)]
-            public AddRemoveSortedStates<OnlineEntity.EntityData.EntityDataState> entityDataStates;
+            public DeltaDataStates<EntityDataState> entityDataStates;
             public OnlineEntity.EntityId ID => entityId;
 
             protected EntityState() : base() { }
             protected EntityState(OnlineEntity onlineEntity, OnlineResource inResource, uint ts) : base(ts)
             {
                 this.entityId = onlineEntity.id;
+                this.version = onlineEntity.version;
                 this.entityDataStates = new(onlineEntity.entityData.Select(d => d.MakeState(inResource)).Where(s => s != null).ToList());
             }
 
             public virtual void ReadTo(OnlineEntity onlineEntity)
             {
+                onlineEntity.version = version;
                 entityDataStates.list.ForEach(d => d.ReadTo(onlineEntity));
             }
         }
-
 
         public override string ToString()
         {

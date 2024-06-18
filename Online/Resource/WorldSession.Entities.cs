@@ -13,12 +13,6 @@ namespace RainMeadow
             if (!isAvailable) throw new InvalidOperationException("not available");
             if (!OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) // New to me
             {
-                if(OnlineManager.lobby.gameMode.avatar != null && OnlineManager.lobby.gameMode.avatar.apo == apo)
-                {
-                    oe = OnlineManager.lobby.gameMode.avatar; // reuse this
-                    OnlinePhysicalObject.map.Add(apo, oe);
-                    OnlineManager.recentEntities.Add(oe.id, oe);
-                }
                 if (isActive)
                 {
                     RainMeadow.Debug($"{this} - registering {apo}");
@@ -36,14 +30,13 @@ namespace RainMeadow
 
         public void ApoLeavingWorld(AbstractPhysicalObject apo)
         {
-            RainMeadow.Debug(this);
             if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
             {
-                oe.LeaveResource(this);
+                oe.ExitResource(this);
             }
             else
             {
-                RainMeadow.Error("Unregistered entity leaving");
+                RainMeadow.Error($"Unregistered entity leaving {this} : {apo} - {Environment.StackTrace}");
             }
         }
     }

@@ -32,6 +32,7 @@ namespace RainMeadow
                     if (rs.isPending)
                     {
                         Debug("Room pending: " + self.name);
+                        rs.abstractOnDeactivate = true;
                         rs.releaseWhenPossible = true;
                         return;
                     }

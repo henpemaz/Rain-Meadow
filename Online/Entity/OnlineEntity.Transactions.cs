@@ -10,7 +10,7 @@
             if (!isTransferable) throw new InvalidProgrammerException("cannot be transfered");
             if (isPending) throw new InvalidProgrammerException("this entity has a pending request");
             if (!currentlyJoinedResource.isAvailable) throw new InvalidProgrammerException("in unavailable resource");
-            if (!owner.hasLeft && currentlyJoinedResource.participants.ContainsKey(owner))
+            if (!owner.hasLeft && currentlyJoinedResource.participants.Contains(owner))
             {
                 pendingRequest = owner.InvokeRPC(this.Requested).Then(this.ResolveRequest);
             }
@@ -31,7 +31,7 @@
                 request.from.QueueEvent(new GenericResult.Ok(request)); // your request was well received, now please be patient while I transfer it
                 this.primaryResource.LocalEntityTransfered(this, request.from);
             }
-            else if (isTransferable && (owner.hasLeft || !currentlyJoinedResource.participants.ContainsKey(owner)) && this.primaryResource.isOwner)
+            else if (isTransferable && (owner.hasLeft || !currentlyJoinedResource.participants.Contains(owner)) && this.primaryResource.isOwner)
             {
                 request.from.QueueEvent(new GenericResult.Ok(request));
                 this.primaryResource.LocalEntityTransfered(this, request.from);
@@ -117,12 +117,15 @@
             if (result.referencedEvent == pendingRequest) pendingRequest = null;
             if (result is GenericResult.Ok)
             {
-                // ?
+                // no op
             }
             else if (result is GenericResult.Error) // Something went wrong, I should retry
             {
-                // todo retry logic
                 RainMeadow.Error("request failed for " + this);
+                if (isTransferable && isMine && !isPending)
+                {
+                    Release();
+                }
             }
         }
     }

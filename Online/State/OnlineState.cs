@@ -246,7 +246,7 @@ namespace RainMeadow
                     this.type = type;
                     this.deltaSupport = type.GetCustomAttribute<DeltaSupportAttribute>()?.level ?? DeltaSupport.None;
 
-                    if (deltaSupport == DeltaSupport.None) RainMeadow.Error("No delta support for type: " + type.Name);
+                    if (deltaSupport == DeltaSupport.None) RainMeadow.Debug("No delta support for type: " + type.Name);
 
                     BindingFlags anyInstance = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 

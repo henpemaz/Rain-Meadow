@@ -111,9 +111,7 @@ namespace RainMeadow
         {
             try
             {
-                //#if TRACING
-                tracing |= Input.GetKeyDown("l");
-                //#endif
+                tracing = Input.GetKey("l");
                 orig(self);
             }
             catch (Exception e)

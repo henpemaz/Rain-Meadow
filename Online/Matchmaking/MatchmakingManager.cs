@@ -57,11 +57,11 @@ namespace RainMeadow
             return OnlineManager.players.FirstOrDefault(p => p.id == id);
         }
 
-        public virtual OnlinePlayer BestTransferCandidate(OnlineResource onlineResource, Dictionary<OnlinePlayer, PlayerMemebership> subscribers)
+        public virtual OnlinePlayer BestTransferCandidate(OnlineResource onlineResource, List<OnlinePlayer> subscribers)
         {
-            if (subscribers.Keys.Contains(OnlineManager.mePlayer)) return OnlineManager.mePlayer;
+            if (subscribers.Contains(OnlineManager.mePlayer)) return OnlineManager.mePlayer;
             if (subscribers.Count < 1) return null;
-            return subscribers.FirstOrDefault(p => !p.Key.hasLeft).Key;
+            return subscribers.FirstOrDefault(p => !p.hasLeft);
         }
 
         public abstract MeadowPlayerId GetEmptyId();

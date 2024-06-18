@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace RainMeadow
@@ -55,8 +56,29 @@ namespace RainMeadow
             return e;
         }
 
+        [Conditional("TRACING")]
+        public void TraceOutgoingState(OnlineStateMessage stateMessage)
+        {
+            if (RainMeadow.tracing)
+            {
+                switch (stateMessage.state)
+                {
+                    case EntityFeedState entityFeedState:
+                        RainMeadow.Trace($"{entityFeedState}:{entityFeedState.entityState.ID} for {this}");
+                        break;
+                    case OnlineResource.ResourceState resourceState:
+                        RainMeadow.Trace($"{resourceState}:{resourceState.resource.Id()} for {this}");
+                        break;
+                    default:
+                        RainMeadow.Trace($"{stateMessage.state} for {this}");
+                        break;
+                }
+            }
+        }
+
         public OnlineStateMessage QueueStateMessage(OnlineStateMessage stateMessage)
         {
+            TraceOutgoingState(stateMessage);
             OutgoingStates.Enqueue(stateMessage);
             return stateMessage;
         }
@@ -73,8 +95,8 @@ namespace RainMeadow
             recentTicks.Enqueue(tick);
             recentTicksToAckBitpack = recentTicks.Select(t => (int)(uint)(tick - t)).Aggregate((ushort)0, (s, e) => (ushort)(s | (ushort)(1 << e)));
             needsAck = true;
-            //RainMeadow.Debug(tick);
-            //RainMeadow.Debug(Convert.ToString(recentTicksToAckBitpack, 2));
+            RainMeadow.Trace(this + " - " + tick);
+            RainMeadow.Trace(Convert.ToString(recentTicksToAckBitpack, 2));
         }
 
         public void EventAckFromRemote(ushort lastAck)

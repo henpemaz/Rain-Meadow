@@ -8,7 +8,6 @@ namespace RainMeadow
         public OnlinePlayer from;// not serialized
         public OnlinePlayer to;// not serialized
         public ushort eventId;
-        public TickReference dependsOnTick; // not serialized but universally supported, serialize if used for your event type
 
         public override string ToString()
         {
@@ -22,19 +21,9 @@ namespace RainMeadow
             RainMeadow.Trace($"{this} took {serializer.Position - wasPos}");
         }
 
-        public virtual bool CanBeProcessed() // I've been received but I might be early
-        {
-            return dependsOnTick == null || dependsOnTick.ChecksOut();
-        }
-
-        public virtual bool ShouldBeDiscarded() // I've been received but I might be stale/unprocessable
-        {
-            return dependsOnTick != null && dependsOnTick.Invalid();
-        }
-
         public abstract void Process(); // I've been received and I do something
 
-        public virtual void Abort() // I was not acknowledged and the other guy left, what do
+        public virtual void Abort() // I was not acknowledged and the other guy left, what do, can be run on local or on remote
         {
             RainMeadow.Error($"Aborted {this}");
         }
