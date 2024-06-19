@@ -1,1 +1,1 @@
-SS_I03,6000,Vibezones4,Litri
+SS_I03,6000,1300,Litri

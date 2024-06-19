@@ -45,17 +45,17 @@ namespace RainMeadow
 
         internal struct VibeZone
         {
-            public VibeZone(string room, float radius, string songName, string sampleUsed)
+            public VibeZone(string room, float radius, float minradius, string sampleUsed)
             {
                 this.room = room;
                 this.radius = radius;
-                this.songName = songName;
+                this.minradius = minradius;
                 this.sampleUsed = sampleUsed;
             }
 
             public string room;
             public float radius;
-            public string songName;
+            public float minradius;
             public string sampleUsed;
         }
         static VibeZone az = new VibeZone();
@@ -90,7 +90,7 @@ namespace RainMeadow
                         for (int i = 0; i < lines.Length; i++)
                         {
                             string[] arr = lines[i].Split(',');
-                            zones[i] = new VibeZone(arr[0], float.Parse(arr[1]), arr[2], arr[3]);
+                            zones[i] = new VibeZone(arr[0], float.Parse(arr[1]), float.Parse(arr[2]), arr[3]);
                         }
                         vibeZonesDict.Add(regName, zones);
                     }
@@ -115,19 +115,19 @@ namespace RainMeadow
             {
                 vibePan = Vector2.Dot((RoomImIn.world.RoomToWorldPos(Vector2.zero, closestVibe) - RoomImIn.world.RoomToWorldPos(Vector2.zero, RoomImIn.abstractRoom.index)).normalized, Vector2.right);
 
-                RainMeadow.Debug("IsFased");
+                //RainMeadow.Debug("IsFased");
                 Vector2 LOL = self.world.RoomToWorldPos(self.world.GetAbstractRoom(closestVibe).size.ToVector2() * 10f, closestVibe);
                 Vector2 lol = self.world.RoomToWorldPos(MyGuyMic.listenerPoint, RoomImIn.abstractRoom.index);
 
-                RainMeadow.Debug("IsZased");
+                //RainMeadow.Debug("IsZased");
                 
                 float vibeIntensityTarget = 
-                             Mathf.Pow(Mathf.InverseLerp(az.radius, 666f, Vector2.Distance(lol, LOL)), 1.65f)
-                           * Custom.LerpMap((float)DegreesOfAwayness, 0f, 2f, 1f, 0.15f)
+                             Mathf.Pow(Mathf.InverseLerp(az.radius, az.minradius, Vector2.Distance(lol, LOL)), 1.425f)
+                           * Custom.LerpMap((float)DegreesOfAwayness, 0f, 3f, 1f, 0.15f)
                            //* Custom.LerpMap((float)DegreesOfAwayness, 1f, 3f, 0.6f, 0.15f)
                            * ((RoomImIn.abstractRoom.layer == self.world.GetAbstractRoom(closestVibe).layer) ? 1f : 0.75f);
 
-                RainMeadow.Debug("IsBased");
+                //RainMeadow.Debug("IsBased");
 
                 //float floattargetplop = Mathf.Pow((float)MeadowMusic.vibeIntensity, 1.6f) * 0.5f;
                 vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? 0 : (float)vibeIntensity, vibeIntensityTarget, 0.025f, 0.002f);
@@ -187,7 +187,6 @@ namespace RainMeadow
             }
             else
             {
-                //RainMeadow.Debug("Bitch Else");
                 time = 0f;
                 timerStopped = true;
             }

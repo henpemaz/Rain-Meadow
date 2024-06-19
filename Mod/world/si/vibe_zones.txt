@@ -1,1 +1,1 @@
-SI_D01,3000,Vibezones1,Sine
+SI_D01,3000,900,Sine
