@@ -104,3 +104,14 @@ passage holds you in black screen for too long
 following others around is hard
 	need map implemented
 	could use pipes flashing colors if room inhabited
+
+
+certain creatures crash
+	need to filter creatures
+		prio filter
+	eventually fix them
+		needlebugai requires 2 fields
+		deer horn grabbing thing
+			might be same as 5p tendrils issue
+				player animation mode expects non-null climb-position, not synched
+
