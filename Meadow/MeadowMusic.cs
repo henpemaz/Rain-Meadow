@@ -7,6 +7,7 @@ using RWCustom;
 using IL.MoreSlugcats;
 using System;
 using IL;
+using Steamworks;
 
 namespace RainMeadow
 {
@@ -31,7 +32,7 @@ namespace RainMeadow
         static string[] ambienceSongArray = null;
 
         static int[] shufflequeue = new int[0];
-        static int shuffleindex = int.MaxValue - 69;
+        static int shuffleindex = 0;
 
         static float time = 0f;
         static bool timerStopped = true;
@@ -43,6 +44,29 @@ namespace RainMeadow
         public static float? vibePan = null;
         static bool UpdateIntensity;
 
+        static FOLK[] Folks = new FOLK[0];
+        static FOLK MeFolk;
+
+        struct FOLK
+        {
+            public FOLK(string CurrentRoom, bool IsHost, int? GroupID, float? TimeLeft, string ProvidedSong, bool LockedIn)
+            {
+                this.CurrentRoom = CurrentRoom;
+                this.IsHost= IsHost;
+                this.GroupID = GroupID;
+                this.TimeLeft = TimeLeft;
+                TimeProvidedAt = 0;
+                this.ProvidedSong = ProvidedSong;
+                this.LockedIn = LockedIn;
+            }
+            public string CurrentRoom;
+            public bool IsHost;
+            public int? GroupID;
+            public float? TimeLeft;
+            public float TimeProvidedAt;
+            public string ProvidedSong;
+            public bool LockedIn;
+        }
         internal struct VibeZone
         {
             public VibeZone(string room, float radius, float minradius, string sampleUsed)
@@ -59,6 +83,7 @@ namespace RainMeadow
             public string sampleUsed;
         }
         static VibeZone az = new VibeZone();
+        static Dictionary<string, float> SongLengths = new();
         static void GameCtorPatch(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
         {
             orig.Invoke(self, manager);
@@ -96,99 +121,181 @@ namespace RainMeadow
                     }
                 }
 
+
+                dirs = AssetManager.ListDirectory("music", false, true);
+
+                foreach (string dir in dirs)
+                {
+                    string filename = dir.Split(Path.DirectorySeparatorChar)[dir.Split(Path.DirectorySeparatorChar).Length - 1];
+                    if (filename == "MeadowSongLengths.txt")
+                    {
+                        string[] lines = File.ReadAllLines(dir);
+                        Dictionary<string, float> DictTho = new();
+                        foreach (string line in lines)
+                        {
+                            string[] arr = line.Split(new char[] { ':' });
+                            DictTho.Add(arr[0], float.Parse(arr[1]));
+                        }
+                        SongLengths = DictTho;
+                    }
+                }
+                //In the Future, maybe highjack the reading and read the time directly from it? 
                 filesChecked = true;
             }
             AnalyzeRegion(self.world);
             time = 0f;
             timerStopped = true;
         }
-        static public float plopIntensity;
         static void RawUpdatePatch(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
         {
             orig.Invoke(self, dt);
             if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode) return;
             if (!timerStopped) time += dt;
+            MeFolk.TimeLeft -= dt;
 
             MusicPlayer musicPlayer = self.manager.musicPlayer;
 
             if (UpdateIntensity)
             {
+                //i have NO idea how it'll fuck up when the region has not got a vibezone but idccccccccccccccc. oh wait it wont cuz it won't activate updateintensity cuz it'll never go close to one.
                 vibePan = Vector2.Dot((RoomImIn.world.RoomToWorldPos(Vector2.zero, closestVibe) - RoomImIn.world.RoomToWorldPos(Vector2.zero, RoomImIn.abstractRoom.index)).normalized, Vector2.right);
-
                 //RainMeadow.Debug("IsFased");
                 Vector2 LOL = self.world.RoomToWorldPos(self.world.GetAbstractRoom(closestVibe).size.ToVector2() * 10f, closestVibe);
                 Vector2 lol = self.world.RoomToWorldPos(MyGuyMic.listenerPoint, RoomImIn.abstractRoom.index);
-
                 //RainMeadow.Debug("IsZased");
-                
                 float vibeIntensityTarget = 
                              Mathf.Pow(Mathf.InverseLerp(az.radius, az.minradius, Vector2.Distance(lol, LOL)), 1.425f)
-                           * Custom.LerpMap((float)DegreesOfAwayness, 0f, 3f, 1f, 0.15f)
-                           //* Custom.LerpMap((float)DegreesOfAwayness, 1f, 3f, 0.6f, 0.15f)
+                           * Custom.LerpMap((float)DegreesOfAwayness, 0f, 3f, 1f, 0.15f) //* Custom.LerpMap((float)DegreesOfAwayness, 1f, 3f, 0.6f, 0.15f)
                            * ((RoomImIn.abstractRoom.layer == self.world.GetAbstractRoom(closestVibe).layer) ? 1f : 0.75f);
-
                 //RainMeadow.Debug("IsBased");
-
-                //float floattargetplop = Mathf.Pow((float)MeadowMusic.vibeIntensity, 1.6f) * 0.5f;
                 vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? 0 : (float)vibeIntensity, vibeIntensityTarget, 0.025f, 0.002f);
                 vibeIntensity = vibeIntensityTarget;
-
                 AllowPlopping = vibeIntensity.Value >= 0.2f;
-
                 if (musicPlayer != null && musicPlayer.song != null)
                 {
-                    if ((float)vibeIntensity > 0.9f)
-                    {
-                        musicPlayer.song.baseVolume = 0f;
-                    }
-                    else
-                    {
-                        musicPlayer.song.baseVolume = Mathf.Pow(1f - (float)vibeIntensity, 2f) * 0.3f;
-                    }
-                }
-                
+                    if ((float)vibeIntensity > 0.9f) { musicPlayer.song.baseVolume = 0f; }
+                    else { musicPlayer.song.baseVolume = Mathf.Pow(1f - (float)vibeIntensity, 2f) * 0.3f; }
+                }                
                 RainMeadow.Debug("IsMased");
             }
+
             if (musicPlayer != null && musicPlayer.song == null && self.world.rainCycle.RainApproaching > 0.5f)
             {
                 timerStopped = false;
                 if (time > waitSecs)
                 {
-                    RainMeadow.Debug("But here's the overthetimer");
-                    //if (activeZone == null)
-                    //{
-                        if (ambienceSongArray != null)
+                    if (ambienceSongArray != null)
+                    {
+                        if (!MeFolk.LockedIn)
                         {
-                            RainMeadow.Debug("Meadow Music:  Playing ambient song");
-                            Song song = new(musicPlayer, ambienceSongArray[NewSong()], MusicPlayer.MusicContext.StoryMode)
+                            if (MeFolk.GroupID == -1 || MeFolk.GroupID == null)
                             {
-                                playWhenReady = true,
-                                volume = 1,
-                                fadeInTime = 1f
-                            };
-                            musicPlayer.song = song;
+
+                                RainMeadow.Debug("Meadow Music:  Playing ambient song");
+                                NewSong();
+                                
+                                Song song = new(musicPlayer, MeFolk.ProvidedSong, MusicPlayer.MusicContext.StoryMode)
+                                {
+                                    playWhenReady = true,
+                                    volume = 1,
+                                    fadeInTime = 1f
+                                };
+                                musicPlayer.song = song;
+                                MeFolk.TimeLeft = SongLengths[MeFolk.ProvidedSong];
+                                
+                            }
+                            else
+                            {
+                                if (MeFolk.IsHost) NewSong();
+
+                                float MaxTimeLeft = 0;
+                                foreach (FOLK Folk in Folks)
+                                {
+                                    //this thing can be recalculated to like, use the time provided at
+                                    //oh wait just realized that whenever you do the thing reference thing for a FOLK you set the time then
+                                    if (MaxTimeLeft < Folk.TimeLeft) MaxTimeLeft = (float)Folk.TimeLeft; // ok actually what if it's 0?
+                                }
+                                
+                                List<string> list = new List<string>(); //KeyValuePair<string, string> entry 
+                                float longestsongtime = 999;
+                                string longestsong = " ";
+                                foreach (var entry in SongLengths)
+                                {
+                                    if (MaxTimeLeft > entry.Value) 
+                                    { 
+                                        list.Add(entry.Key);
+                                        if (entry.Value > longestsongtime)
+                                        {
+                                            longestsongtime = entry.Value;
+                                            longestsong = entry.Key;
+                                        }
+                                    }
+                                }
+
+                                if (list.Count > 0)
+                                {
+                                    //string PickedSong = list[UnityEngine.Random.Range(0, list.Count - 1)]; //random method, but i could do longest song instead
+                                    string PickedSong = longestsong;
+
+                                    Song song = new(musicPlayer, PickedSong, MusicPlayer.MusicContext.StoryMode)
+                                    {
+                                        playWhenReady = true,
+                                        volume = 1,
+                                        fadeInTime = 1f
+                                    };
+                                    musicPlayer.song = song;
+                                    MeFolk.TimeLeft = SongLengths[PickedSong];
+                                }
+                                else
+                                {
+                                    MeFolk.LockedIn = true;
+                                }
+                            }
                         }
-                        //Nitpick: if we are outside a vibe zone and the current region has no ambience list, this results in exiting this if-stack with no song playing
-                        //Therefore these checks will be repeated for every waitSecs seconds
-                    //}
-                    //else
-                    //{
-                    //    RainMeadow.Debug("Meadow Music:  Playing vibe song...");
-                    //    Song song = new Song(musicPlayer, ((VibeZone)activeZone).songName, MusicPlayer.MusicContext.StoryMode)
-                    //    {
-                    //        playWhenReady = true,
-                    //        volume = 1,
-                    //        fadeInTime = 40f
-                    //    };
-                    //    musicPlayer.song = song;
-                    //}
+                        else
+                        {
+                            bool Yayyyyy = true;
+                            string? PickedSong = null;
+                            foreach (FOLK folk in Folks)
+                            {
+                                if (!folk.LockedIn) 
+                                { 
+                                    Yayyyyy = false; 
+                                    break;
+                                }
+                            }//this checks it every fucking frame, pretty lot isnt it
+                            if (Yayyyyy)
+                            {
+                                foreach (FOLK folk in Folks)
+                                {
+                                    if (folk.IsHost) 
+                                    {
+                                        PickedSong = folk.ProvidedSong;
+                                        break; 
+                                    }
+                                }
+
+                                if (PickedSong != null)
+                                {
+                                    Song song = new(musicPlayer, PickedSong, MusicPlayer.MusicContext.StoryMode)
+                                    {
+                                        playWhenReady = true,
+                                        volume = 1,
+                                        fadeInTime = 1f
+                                    };
+                                    musicPlayer.song = song;
+                                    MeFolk.TimeLeft = SongLengths[PickedSong];
+                                }
+                            }
+                        }
+                    }
                 }
-                //RainMeadow.Debug("AAAAAAAAAAAAa");
             }
             else
             {
                 time = 0f;
                 timerStopped = true;
+                MeFolk.LockedIn = false;
             }
         }
         static void WorldLoadedPatch(On.OverWorld.orig_WorldLoaded orig, OverWorld self)
@@ -198,6 +305,7 @@ namespace RainMeadow
             if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode) return;
 
             AnalyzeRegion(self.activeWorld);
+            UpdateIntensity = true;
         }
         static int closestVibe;
         static Room? RoomImIn;
@@ -249,7 +357,7 @@ namespace RainMeadow
             }
             return num;
         }
-        static VirtualMicrophone MyGuyMic;
+        static VirtualMicrophone? MyGuyMic;
         static void NewRoomPatch(On.VirtualMicrophone.orig_NewRoom orig, VirtualMicrophone self, Room room)
         {
             orig.Invoke(self, room);
@@ -317,25 +425,21 @@ namespace RainMeadow
                     RainMeadow.Debug($"So we've decided the thing is now: {vibeIntensity}, {vibeIntensity}");
                 }
             }
-            RainMeadow.Debug($":D :D  Yuri  {closestVibe}");
             DegreesOfAwayness = CalculateDegreesOfAwayness(room.abstractRoom);
         }
-        static int NewSong()
+        static void NewSong()
         {
             RainMeadow.Debug("calling all hoes");
+
             if (shuffleindex + 1 >= shufflequeue.Length)
             {
-                RainMeadow.Debug("calling all of them hoes");
                 ShuffleSongs();
             }
             else
             {
                 shuffleindex++;
-                RainMeadow.Debug("New number" + shuffleindex);
             }
-            RainMeadow.Debug("From this it " + shuffleindex);
-            RainMeadow.Debug("I'm calling the number " + shufflequeue[shuffleindex]);
-            return shufflequeue[shuffleindex];
+            MeFolk.ProvidedSong = ambienceSongArray[shufflequeue[shuffleindex]];
         }
         static void ShuffleSongs()
         {
