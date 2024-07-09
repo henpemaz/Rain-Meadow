@@ -107,19 +107,7 @@ namespace RainMeadow
         protected override void ActivateImpl()
         {
             if (RainMeadow.isArenaMode(out var _)) // Arena
-            if (RainMeadow.isArenaMode(out var _)) // Arena
             {
-
-
-                Region arenaRegion = new Region("arena", 0, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer);
-
-                var ws = new WorldSession(arenaRegion, this);
-                worldSessions.Add(arenaRegion.name, ws);
-                subresources.Add(ws);
-
-                RainMeadow.Debug(subresources.Count);
-
-
 
                 Region arenaRegion = new Region("arena", 0, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer);
 
@@ -130,7 +118,6 @@ namespace RainMeadow
                 RainMeadow.Debug(subresources.Count);
 
             }
-            else
             else
             {
                 foreach (var r in Region.LoadAllRegions(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer))

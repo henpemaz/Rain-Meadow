@@ -95,7 +95,6 @@ namespace RainMeadow
 
             public static readonly StateType MeadowAvatarSettingsDefinition = new ("MeadowAvatarSettings.Definition", typeof(MeadowAvatarSettings.Definition));
             public static readonly StateType SlugcatAvatarSettingsDefinition = new ("SlugcatAvatarSettings.Definition", typeof(StoryClientSettings.Definition));
-            public static readonly StateType ArenaAvatarSettingsDefinition = new("ArenaAvatarSettings.Definition", typeof(ArenaClientSettings.Definition));
 
             public static readonly StateType OnlineMeadowCollectibleDefinition = new ("OnlineMeadowCollectible.Definition", typeof(OnlineMeadowCollectible.Definition));
             public static readonly StateType OnlineMeadowCollectibleMeadowCollectibleState = new ("MeadowCollectibleState", typeof(OnlineMeadowCollectible.MeadowCollectibleState));

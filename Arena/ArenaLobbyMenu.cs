@@ -19,7 +19,6 @@ namespace RainMeadow
         private static float num2 = 0f;
         private static float num3 = num - num2;
         public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
-        private ArenaClientSettings personaSettings;
 
         public ArenaLobbyMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
         {

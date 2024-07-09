@@ -336,7 +336,6 @@ namespace RainMeadow
                 c.EmitDelegate((Room self) =>
                 {
                     return OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.abstractRoom, out var roomSession) && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.game, roomSession);
-                    return OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.abstractRoom, out var roomSession) && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.game, roomSession);
                 }
                 );
                 c.Emit(OpCodes.Brtrue, skip);
@@ -367,10 +366,8 @@ namespace RainMeadow
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((Room self) =>
-                c.EmitDelegate((Room self) =>
                 {
                     // during room.loaded the RoomSession isn't available yet so no point in passing self?
-                    return OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.abstractRoom, out var roomSession) && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.game, roomSession);
                     return OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.abstractRoom, out var roomSession) && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.game, roomSession);
                 });
                 c.Emit(OpCodes.Brtrue, skip);

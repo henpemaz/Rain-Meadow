@@ -165,11 +165,7 @@ namespace RainMeadow
         public virtual void LobbyReadyCheck()
         {
 
-        public virtual void LobbyReadyCheck()
-        {
-
         }
-
         internal virtual void PlayerLeftLobby(OnlinePlayer player)
         {
 
