@@ -106,7 +106,7 @@ namespace RainMeadow
             {
                 if (!oe.isMine && !oe.realized && oe.isTransferable && !oe.isPending)
                 {
-                    if (oe.roomSession == null || !oe.roomSession.participants.ContainsKey(oe.owner)) //if owner of oe is subscribed (is participant) do not request
+                    if (oe.roomSession == null || !oe.roomSession.participants.Contains(oe.owner)) //if owner of oe is subscribed (is participant) do not request
                     {
                         oe.Request();
                     }
@@ -127,7 +127,7 @@ namespace RainMeadow
             {
                 if (!oe.isMine && !oe.realized && oe.isTransferable && !oe.isPending)
                 {
-                    if (oe.roomSession == null || !oe.roomSession.participants.ContainsKey(oe.owner)) //if owner of oe is subscribed (is participant) do not request
+                    if (oe.roomSession == null || !oe.roomSession.participants.Contains(oe.owner)) //if owner of oe is subscribed (is participant) do not request
                     {
                         oe.Request();
                     }
@@ -182,7 +182,7 @@ namespace RainMeadow
             orig(self, coord);
             if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out oe))
             {
-                if (oe.realized && oe.isTransferable && oe.isMine && !oe.isPending)
+                if (oe.isMine && oe.isTransferable && !oe.isPending)
                 {
                     oe.Release();
                 }
@@ -305,7 +305,7 @@ namespace RainMeadow
                                 oe.beingMoved = true;
                                 if (oe.apo.realizedObject is Creature c && c.inShortcut)
                                 {
-                                    if (c.RemoveFromShortcuts()) c.inShortcut = false;
+                                    c.RemoveFromShortcuts();
                                 }
                                 entities.Remove(oe.apo);
                                 room.abstractRoom.creatures.Remove(oe.apo as AbstractCreature);
@@ -330,7 +330,7 @@ namespace RainMeadow
                     {
                         if (entitiesFromNewRoom[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
                         {
-                            oe.OnJoinedResource(roomSession2);
+                            oe.OnJoinedResource(roomSession2, null);
                         }
                     }
 

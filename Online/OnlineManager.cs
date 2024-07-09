@@ -17,7 +17,6 @@ namespace RainMeadow
         public static List<ResourceSubscription> subscriptions;
         public static List<EntityFeed> feeds;
         public static Dictionary<OnlineEntity.EntityId, OnlineEntity> recentEntities;
-        public static HashSet<OnlineEvent> waitingEvents;
         public static float lastSend;
         public static float lastReceive;
         public static OnlinePlayer mePlayer;
@@ -60,7 +59,6 @@ namespace RainMeadow
             subscriptions = new();
             feeds = new();
             recentEntities = new();
-            waitingEvents = new(4);
 
             WorldSession.map = new();
             RoomSession.map = new();
@@ -108,17 +106,6 @@ namespace RainMeadow
         {
             if (lobby != null)
             {
-#if TRACING
-                if (RainMeadow.tracing && players.Count == 1)
-                {
-                    var ls0 = lobby.GetState(0);
-                    var ls1 = lobby.GetState(1);
-                    var ds = ls1.Delta(ls0);
-                    mePlayer.OutgoingStates.Enqueue(ds);
-                    serializer.WriteData(mePlayer);
-                }
-#endif
-
                 foreach (OnlinePlayer player in players)
                 {
                     player.Update();
@@ -150,7 +137,6 @@ namespace RainMeadow
                 }
 
                 lastSend = UnityEngine.Time.realtimeSinceStartup;
-                RainMeadow.tracing = false; // tracing captures one tick
             }
         }
 
@@ -189,41 +175,13 @@ namespace RainMeadow
             {
                 RainMeadow.Debug($"New event {onlineEvent} from {fromPlayer}, processing...");
                 fromPlayer.lastEventFromRemote = onlineEvent.eventId;
-                if (onlineEvent.CanBeProcessed())
+                try
                 {
-                    try
-                    {
-                        onlineEvent.Process();
-                    }
-                    catch (Exception e)
-                    {
-                        RainMeadow.Error(e);
-                    }
-                    MaybeProcessWaitingEvents();
+                    onlineEvent.Process();
                 }
-                else if (!onlineEvent.ShouldBeDiscarded())
+                catch (Exception e)
                 {
-                    waitingEvents.Add(onlineEvent);
-                }
-            }
-        }
-
-        public static void MaybeProcessWaitingEvents()
-        {
-            if (waitingEvents.Count > 0)
-            {
-                waitingEvents.RemoveWhere(ev => ev.ShouldBeDiscarded());
-                while (waitingEvents.FirstOrDefault(ev => ev.CanBeProcessed()) is OnlineEvent ev)
-                {
-                    try
-                    {
-                        ev.Process();
-                    }
-                    catch (Exception e)
-                    {
-                        RainMeadow.Error(e);
-                    }
-                    waitingEvents.Remove(ev);
+                    RainMeadow.Error(e);
                 }
             }
         }
@@ -352,6 +310,8 @@ namespace RainMeadow
                 instance.manager.upcomingProcess = null;
                 instance.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
                 instance.manager.ShowDialog(new Menu.DialogNotify(v, "Leaving Lobby", new Vector2(240, 320), instance.manager, () => { }));
+                LeaveLobby();
+                throw new Exception(v);
             }
         }
     }

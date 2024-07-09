@@ -117,7 +117,7 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             if (isSupervisor)
             {
-                if (participants.ContainsKey(request.from)) // they are already in this
+                if (participants.Contains(request.from)) // they are already in this
                 {
                     request.from.QueueEvent(new GenericResult.Error(request));
                     return;
@@ -152,7 +152,7 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             if (isSupervisor)
             {
-                if (!participants.ContainsKey(request.from)) // they are already out?
+                if (!participants.Contains(request.from)) // they are already out?
                 {
                     request.from.QueueEvent(new GenericResult.Error(request));
                     return;
@@ -275,17 +275,17 @@ namespace RainMeadow
         public void ResolveTransfer(GenericResult transferResult)
         {
             RainMeadow.Debug(this);
-            if (pendingRequest == transferResult.referencedEvent) pendingRequest = null;
-            else RainMeadow.Error($"Weird event situation, pending is {pendingRequest} and referenced is {transferResult.referencedEvent}");
-
             if (transferResult is GenericResult.Ok) // New owner accepted it
             {
                 // no op
             }
             else if (transferResult is GenericResult.Error) // I should retry
             {
-                // todo retry logic
                 RainMeadow.Error("transfer failed for " + this);
+                if (super.isActive && isSupervisor)
+                {
+                    PickNewOwner();
+                }
             }
         }
     }

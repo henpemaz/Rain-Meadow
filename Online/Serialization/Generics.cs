@@ -87,7 +87,7 @@ namespace RainMeadow.Generics
 
 
     /// <summary>
-    /// Dynamic list, order-aware
+    /// Dynamic list, order-aware, no subdelta
     /// </summary>
     public abstract class AddRemoveSortedList<T, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp : AddRemoveSortedList<T, Imp>, new()
     {
@@ -136,7 +136,7 @@ namespace RainMeadow.Generics
     }
 
     /// <summary>
-    /// Fixed ordered list
+    /// Fixed ordered list, no subdelta
     /// </summary>
     public abstract class FixedOrderedList<T, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp : FixedOrderedList<T, Imp>, new()
     {
@@ -311,7 +311,19 @@ namespace RainMeadow.Generics
         public override void CustomSerialize(Serializer serializer)
         {
             serializer.SerializePolyStatesShort(ref list);
-            if (serializer.IsDelta) serializer.SerializeByte(ref removed);
+            if (serializer.IsDelta) serializer.SerializeByte(ref removed); // this could potentially break actually
+        }
+    }
+
+    public class DeltaDataStates<T>: IdentifiablesAddRemovePrimaryDeltaList<T, byte, OnlineState, DeltaDataStates<T>> where T: OnlineState, IIdentifiable<byte>
+    {
+        public DeltaDataStates() : base() { }
+        public DeltaDataStates(List<T> list) : base(list) { }
+
+        public override void CustomSerialize(Serializer serializer)
+        {
+            serializer.SerializePolyStatesByte(ref list);
+            if (serializer.IsDelta) serializer.Serialize(ref removed);
         }
     }
 

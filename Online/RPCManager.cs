@@ -186,8 +186,6 @@ namespace RainMeadow
         public object target;
         public object[] args;
 
-        //private RPCArguments arguments;
-
         public RPCEvent() { }
 
         public RPCEvent(Delegate del, object[] args)
@@ -217,22 +215,23 @@ namespace RainMeadow
 
         public override void Process()
         {
-            if(!handler.isStatic && target == null)
-            {
-                RainMeadow.Error($"Target of RPC not found for " + handler.summary);
-                from.QueueEvent(new GenericResult.Error(this));
-                return;
-            }
-
-            RainMeadow.Debug($"Processing RPC: {handler.summary}");
-            if (handler.eventArgIndex > -1)
-            {
-                var newArgs = args.ToList();
-                newArgs.Insert(handler.eventArgIndex, this);
-                args = newArgs.ToArray();
-            }
             try
             {
+                if (!handler.isStatic && target == null)
+                {
+                    RainMeadow.Error($"Target of RPC not found for " + handler.summary);
+                    from.QueueEvent(new GenericResult.Error(this));
+                    return;
+                }
+
+                RainMeadow.Debug($"Processing RPC: {handler.summary}");
+                if (handler.eventArgIndex > -1)
+                {
+                    var newArgs = args.ToList();
+                    newArgs.Insert(handler.eventArgIndex, this);
+                    args = newArgs.ToArray();
+                }
+
                 var nout = from.OutgoingEvents.Count;
                 var result = handler.method.Invoke(target, args);
                 if (from.OutgoingEvents.Count != nout && from.OutgoingEvents.Any(e => e is GenericResult gr && gr.referencedEvent == this)) return;
@@ -255,15 +254,22 @@ namespace RainMeadow
             return this;
         }
 
-        internal RPCEvent NotBefore(TickReference notbefore)
-        {
-            this.dependsOnTick = notbefore;
-            return this;
-        }
-
         public void Resolve(GenericResult genericResult)
         {
-            this.OnResolve?.Invoke(genericResult);
+            try
+            {
+                this.OnResolve?.Invoke(genericResult);
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+            }
+        }
+
+        public override void Abort()
+        {
+            base.Abort();
+            this.Resolve(new GenericResult.Error(this));
         }
 
         internal bool IsIdentical(Delegate del, params object[] args)

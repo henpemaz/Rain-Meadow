@@ -123,6 +123,36 @@ namespace RainMeadow
             }
         }
 
+        private void PauseMenu_ctor(On.Menu.PauseMenu.orig_ctor orig, Menu.PauseMenu self, ProcessManager manager, RainWorldGame game)
+        {
+            orig(self, manager, game);
+            if (OnlineManager.lobby != null)
+            {
+                if (OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+                {
+                    self.pauseWarningActive = false;
+                    game.cameras[0].hud.textPrompt.pausedWarningText = false;
+                    SimplerButton unstuckButton;
+                    self.pages[0].subObjects.Add(unstuckButton = new SimplerButton(self, self.pages[0], self.Translate("UNSTUCK"),
+                        new Vector2(manager.rainWorld.options.SafeScreenOffset.x + 70f, Mathf.Max(manager.rainWorld.options.SafeScreenOffset.y, 15f)),
+                        new Vector2(110f, 30f)));
+                    unstuckButton.OnClick += (_) =>
+                    {
+                        var creature = mgm.avatar.realizedCreature;
+                        if (creature.room != null)
+                        {
+                            var room = creature.room;
+                            creature.RemoveFromRoom();
+                            room.CleanOutObjectNotInThisRoom(creature); // we need it this frame
+                            var node = creature.coord.abstractNode;
+                            if (node > room.abstractRoom.exits) node = UnityEngine.Random.Range(0, room.abstractRoom.exits);
+                            creature.SpitOutOfShortCut(room.ShortcutLeadingToNode(node).startCoord.Tile, room, true);
+                        }
+                    };
+                }
+            }
+        }
+
         public bool RainWorldGame_GamePaused(Func<RainWorldGame, bool> orig, RainWorldGame self)
         {
             if (OnlineManager.lobby != null)
@@ -204,10 +234,12 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 DebugOverlay.RemoveOverlay(self);
-                // some cleanup CAN be done
-                OnlineManager.recentEntities = OnlineManager.recentEntities.Where(kvp => !(kvp.Value is OnlinePhysicalObject)).ToDictionary();
 
                 OnlineManager.lobby.gameMode.clientSettings.inGame = false;
+                if (isStoryMode(out var story))
+                {
+                    story.storyClientSettings.inGame = false;
+                }
 
                 if (OnlineManager.lobby.gameMode is MeadowGameMode mgm)
                 {
@@ -216,10 +248,10 @@ namespace RainMeadow
                     self.rainWorld.progression.SaveToDisk(false, true, false); // save maps
                 }
 
-                if (WorldSession.map.TryGetValue(self.world, out var ws))
-                {
-                    ws.FullyReleaseResource();
-                }
+                if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
+
+                ws.FullyReleaseResource();
+
             }
         }
 
@@ -265,6 +297,7 @@ namespace RainMeadow
                     self.saveState.pendingObjects.Clear();
                 }
             }
+
 
             orig(self);
         }
@@ -361,12 +394,13 @@ namespace RainMeadow
                 return;
             }
 
+
             if (WorldSession.map.TryGetValue(self.game.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, player))
             {
                 ws.ApoEnteringWorld(player);
                 ws.roomSessions.First().Value.ApoEnteringRoom(player, player.pos);
 
-            };
+            }
         }
     }
 }

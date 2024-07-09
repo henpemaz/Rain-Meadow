@@ -14,10 +14,9 @@ namespace RainMeadow
 
             public OnlineCreatureDefinition(OnlineCreature onlineCreature, OnlineResource inResource) : base(onlineCreature, inResource)
             {
-
                 if (RainMeadow.isArenaMode(out var _)) {
+                this.serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature);
 
-                   this.serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature);
 
                 } else {
                 this.serializedObject = SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
@@ -52,8 +51,16 @@ namespace RainMeadow
 
         public static AbstractCreature AbstractCreatureFromString(World world, string creatureString)
         {
+            RainMeadow.Debug("The creature is" + creatureString);
+
+            RainMeadow.Debug("The world is" + world);
+            RainMeadow.Debug("The creature is" + creatureString);
+
+            RainMeadow.Debug("The world is" + world);
             string[] array = Regex.Split(creatureString, "<cA>");
             CreatureTemplate.Type type = new CreatureTemplate.Type(array[0], false);
+
+
 
 
             if (type.Index == -1)
@@ -68,21 +75,25 @@ namespace RainMeadow
 
 
 
+
+
+
             EntityID id = EntityID.FromString(array[1]);
+
 
             int? num = BackwardsCompatibilityRemix.ParseRoomIndex(array2[0]);
 
             if (num == null || !world.IsRoomInRegion(num.Value))
             {
 
-                num = world.GetAbstractRoom(array2[0]).index;  
-
-
+                num = world.GetAbstractRoom(array2[0]).index;
 
             }
 
+
             WorldCoordinate den = new WorldCoordinate(num.Value, -1, -1, int.Parse(array2[1], NumberStyles.Any, CultureInfo.InvariantCulture));
             AbstractCreature abstractCreature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, den, id);
+
             if (world != null)
             {
                 abstractCreature.state.LoadFromString(Regex.Split(array[3], "<cB>"));
@@ -169,9 +180,9 @@ namespace RainMeadow
                 if (id.type == 0) throw new InvalidProgrammerException("here");
                 foreach (var participant in room.participants)
                 {
-                    if (!participant.Key.isMe)
+                    if (!participant.isMe)
                     {
-                        participant.Key.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
+                        participant.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
                     }
                 }
             }
@@ -180,14 +191,17 @@ namespace RainMeadow
         [RPCMethod]
         public void SuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
         {
+            RainMeadow.Debug(this);
             enteringShortCut = true;
             var creature = (apo.realizedObject as Creature);
             var room = creature.room;
-            creature?.SuckedIntoShortCut(entrancePos, carriedByOther);
+            creature.SuckedIntoShortCut(entrancePos, carriedByOther);
             if (creature.graphicsModule != null)
+            {
             {
                 Vector2 vector = room.MiddleOfTile(entrancePos) + Custom.IntVector2ToVector2(room.ShorcutEntranceHoleDirection(entrancePos)) * -5f;
                 creature.graphicsModule.SuckedIntoShortCut(vector);
+            }
             }
             enteringShortCut = false;
         }

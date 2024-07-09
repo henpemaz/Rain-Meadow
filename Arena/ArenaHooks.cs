@@ -117,7 +117,17 @@ namespace RainMeadow
             self.thisFrameActivePlayers = OnlineManager.players.Count;
 
 
+            On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
+        }
 
+        private void ProcessManager_RequestMainProcessSwitch_ProcessID(On.ProcessManager.orig_RequestMainProcessSwitch_ProcessID orig, ProcessManager self, ProcessManager.ProcessID ID)
+        {
+            if (ID == ProcessManager.ProcessID.MultiplayerMenu && self.currentMainLoop.ID == ProcessManager.ProcessID.Game && isArenaMode(out _))
+            {
+                ID = Ext_ProcessID.ArenaLobbyMenu;
+            }
+
+            orig(self, ID);
         }
 
         private void ArenaGameBehavior_Update(On.ArenaBehaviors.ArenaGameBehavior.orig_Update orig, ArenaBehaviors.ArenaGameBehavior self)
@@ -368,9 +378,21 @@ namespace RainMeadow
 
                 array[num]++;
 
+
+                RainMeadow.Debug("Trying to create an abstract creature");
+
+                sSpawningAvatar = true;
+
                 AbstractCreature abstractCreature = new AbstractCreature(self.game.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(0, -1, -1, -1), new EntityID(-1, list[l].playerNumber));
+                sSpawningAvatar = false;
+
+                RainMeadow.Debug("assigned ac, moving to den");
+
 
                 AbstractRoom_Arena_MoveEntityToDen(self.game.world, abstractCreature.Room, abstractCreature); // Arena adds abstract creature then realizes it later
+                RainMeadow.Debug("moved, setting online creature");
+
+
                 SetOnlineCreature(abstractCreature);
                 if (OnlineManager.lobby.isActive)
                 {
@@ -422,6 +444,7 @@ namespace RainMeadow
             self.playersSpawned = true;
 
         }
+
 
         private void SetOnlineCreature(AbstractCreature abstractCreature)
         {

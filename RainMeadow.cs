@@ -14,7 +14,7 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.0.63";
+        public const string MeadowVersionStr = "0.0.1";
         public static RainMeadow instance;
         private bool init;
         public bool fullyInit;
@@ -111,9 +111,7 @@ namespace RainMeadow
         {
             try
             {
-                //#if TRACING
-                tracing |= Input.GetKeyDown("l");
-                //#endif
+                tracing = Input.GetKey("l");
                 orig(self);
             }
             catch (Exception e)

@@ -37,7 +37,6 @@ namespace RainMeadow
             this.placePos = placeRoom.MiddleOfTile(this.abstractPhysicalObject.pos);
             firstChunk.HardSetPosition(placePos);
 
-            if (abstractCollectible.collectedLocally) return;
             base.PlaceInRoom(placeRoom);
         }
     }

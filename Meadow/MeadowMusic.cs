@@ -33,6 +33,7 @@ namespace RainMeadow
         static VibeZone? activeZone = null;
 
         static float? vibeIntensity = null;
+        static float? vibePan = null;
 
         internal struct VibeZone
         {
@@ -188,6 +189,7 @@ namespace RainMeadow
                     musicPlayer.song.FadeOut(40f);
                     activeZone = null;
                     vibeIntensity = null;
+                    vibePan = null;
                 }
                 //if this active zone's song is not currently playing, and we are within its radius
                 else if (musicPlayer.song.name != az.songName && minDist < az.radius)
@@ -200,6 +202,7 @@ namespace RainMeadow
                 else if (minDist < az.radius)
                 {
                     vibeIntensity = Custom.LerpMap(minDist, az.radius, 0, 0.5f, 1);
+                    vibePan = Vector2.Dot((room.world.RoomToWorldPos(Vector2.zero, rooms[closestVibe]) - room.world.RoomToWorldPos(Vector2.zero, room.abstractRoom.index)).normalized, Vector2.right);
                     musicPlayer.song.baseVolume = Custom.LerpMap(minDist, az.radius, 0, 0.5f, 1) * 0.3f;
                 }
             }
