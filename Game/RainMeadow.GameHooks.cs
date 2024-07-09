@@ -156,7 +156,6 @@ namespace RainMeadow
         public bool RainWorldGame_GamePaused(Func<RainWorldGame, bool> orig, RainWorldGame self)
         {
             if (OnlineManager.lobby != null)
-            if (OnlineManager.lobby != null)
             {
                 // todo we could do very fancy things with the (story) lobby owner being able to pause etc
                 return false; // it's online mom
@@ -183,7 +182,6 @@ namespace RainMeadow
                     }
                 }
             }
-            orig(self, critType);
             orig(self, critType);
         }
 
@@ -224,7 +222,6 @@ namespace RainMeadow
         private void RainWorldGame_RawUpdate(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
         {
             orig(self, dt);
-            if (OnlineManager.lobby != null)
             if (OnlineManager.lobby != null)
             {
                 DebugOverlay.Update(self, dt);

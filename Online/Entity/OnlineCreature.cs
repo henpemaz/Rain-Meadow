@@ -82,21 +82,11 @@ namespace RainMeadow
 
 
             int? num = BackwardsCompatibilityRemix.ParseRoomIndex(array2[0]);
-            RainMeadow.Debug("NUM " + num);
-
-            RainMeadow.Debug("ROOM ARRAY" + array2);
-
-            if (num == null || !world.IsRoomInRegion(num.Value))
-            RainMeadow.Debug("NUM " + num);
-
-            RainMeadow.Debug("ROOM ARRAY" + array2);
 
             if (num == null || !world.IsRoomInRegion(num.Value))
             {
 
                 num = world.GetAbstractRoom(array2[0]).index;
-
-
 
             }
 
@@ -104,9 +94,6 @@ namespace RainMeadow
             WorldCoordinate den = new WorldCoordinate(num.Value, -1, -1, int.Parse(array2[1], NumberStyles.Any, CultureInfo.InvariantCulture));
             AbstractCreature abstractCreature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, den, id);
 
-            RainMeadow.Debug("ABS CREATURE: " + abstractCreature);
-
-            RainMeadow.Debug("ABS CREATURE: " + abstractCreature);
             if (world != null)
             {
                 abstractCreature.state.LoadFromString(Regex.Split(array[3], "<cB>"));
@@ -167,7 +154,6 @@ namespace RainMeadow
         {
             var castShareability = new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(graspRef.Shareability));
             var other = graspRef.OnlineGrabbed.FindEntity(quiet: true) as OnlinePhysicalObject;
-            if (other != null && other.apo.realizedObject != null)
             if (other != null && other.apo.realizedObject != null)
             {
                 var grabber = (Creature)this.apo.realizedObject;
