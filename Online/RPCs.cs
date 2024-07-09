@@ -95,6 +95,7 @@ namespace RainMeadow
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.DeathScreen);
         }
 
+
         [RPCMethod]
         public static void MovePlayersToGhostScreen(string ghostID)
         {
