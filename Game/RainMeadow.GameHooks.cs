@@ -358,8 +358,13 @@ namespace RainMeadow
                 return;
             }
 
-            OnlineManager.lobby.worldSessions["arena"].ApoEnteringWorld(player);
-            OnlineManager.lobby.worldSessions["arena"].roomSessions.First().Value.ApoEnteringRoom(player, player.pos);
+
+            if (WorldSession.map.TryGetValue(self.game.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, player))
+            {
+                ws.ApoEnteringWorld(player);
+                ws.roomSessions.First().Value.ApoEnteringRoom(player, player.pos);
+
+            }
         }
     }
 }

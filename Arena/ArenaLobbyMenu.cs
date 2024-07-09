@@ -2,6 +2,7 @@
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
+using RainMeadow.GameModes;
 using RWCustom;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,8 @@ namespace RainMeadow
     public class ArenaLobbyMenu : SmartMenu
     {
         public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
+        private ArenaClientSettings personaSettings;
+
         public ArenaLobbyMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
         {
             RainMeadow.DebugMe();
@@ -30,6 +33,9 @@ namespace RainMeadow
             UninitializeInheritedScene();
 
             BuildLayout();
+
+            BindSettings();
+
         }
 
         void UninitializeInheritedScene()
@@ -255,15 +261,15 @@ namespace RainMeadow
             mm.Update();
             //base.Update();
 
-			if (mm.GetGameTypeSetup.playList.Count * mm.GetGameTypeSetup.levelRepeats > 0)
-			{
-				mm.playButton.buttonBehav.greyedOut = false;
-			}
-			else
-			{
-				mm.playButton.buttonBehav.greyedOut = OnlineManager.lobby.isAvailable;
-			}
-		}
+            if (mm.GetGameTypeSetup.playList.Count * mm.GetGameTypeSetup.levelRepeats > 0)
+            {
+                mm.playButton.buttonBehav.greyedOut = false;
+            }
+            else
+            {
+                mm.playButton.buttonBehav.greyedOut = OnlineManager.lobby.isAvailable;
+            }
+        }
 
 
         public override void Singal(MenuObject sender, string message)
@@ -426,6 +432,15 @@ namespace RainMeadow
                 OnlineManager.LeaveLobby();
             }
             base.ShutDownProcess();
+        }
+
+        private void BindSettings()
+        {
+            this.personaSettings = (ArenaClientSettings)OnlineManager.lobby.gameMode.clientSettings;
+            personaSettings.bodyColor = UnityEngine.Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
+
+            personaSettings.eyeColor = UnityEngine.Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
+
         }
     }
 }
