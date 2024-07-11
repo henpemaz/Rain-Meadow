@@ -94,6 +94,8 @@ creature select can be inconsistent at times: I have big noodlefly selected, i e
 
 emote preview background color is really bad right now
 
+emote mapping on keyboard 1 throug 8 missing
+
 your avatar is marked as non-transferable, but on a gate it's re-registered in the new region and that flag is missing / no longer re-registered, should be ok
 
 sandbox unlock items still present in meadow lmao

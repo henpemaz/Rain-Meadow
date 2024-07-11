@@ -212,33 +212,60 @@ namespace RainMeadow.Generics
     {
         public List<T> list;
         public List<U> removed;
+        private Dictionary<U, T> lookup;
+        private HashSet<U> removedLookup;
         public IdentifiablesAddRemoveDeltaList() { }
         public IdentifiablesAddRemoveDeltaList(List<T> list)
         {
             this.list = list;
+            BuildLookup();
+        }
+
+        private void BuildLookup()
+        {
+            this.lookup = list.Select(e => new KeyValuePair<U, T>(e.ID, e)).ToDictionary();
+            removedLookup = removed == null ? null : new HashSet<U>(removed);
         }
 
         public virtual Imp Delta(Imp other)
         {
             if (other == null) { return (Imp)this; }
             Imp delta = new();
-            delta.list = list.Select(sl => (T)sl.Delta(other.list.FirstOrDefault(osl => osl.ID.Equals(sl.ID)))).Where(sl => sl != null).ToList();
-            delta.removed = other.list.Except(list, new IdentityComparer<T, U>()).Select(e => e.ID).ToList();
+            delta.list = list.Select(sl => other.lookup.TryGetValue(sl.ID, out var b) ? (T)sl.Delta(b) : sl).Where(sl => sl != null).ToList();
+            delta.removed = other.list.Select(e => e.ID).Where(e => !lookup.ContainsKey(e)).ToList();
+            delta.BuildLookup();
             return (delta.list.Count == 0 && delta.removed.Count == 0) ? null : delta;
         }
 
         public virtual Imp ApplyDelta(Imp other)
         {
             Imp result = new();
-            result.list = other == null ? list :
-                list.Where(e => !other.removed.Contains(e.ID))
-                    .Select(e => other.list.FirstOrDefault(o => e.ID.Equals(o.ID)) is T b ? (T)e.ApplyDelta(b) : e)
-                    .Concat(other.list.Where(o => list.FirstOrDefault(e => e.ID.Equals(o.ID)) == null))
+            if (other == null)
+            {
+                result.list = list;
+            }
+            else
+            {
+                result.list =
+                list.Where(e => !other.removedLookup.Contains(e.ID)) // remove
+                    .Select(e => other.lookup.TryGetValue(e.ID, out var o) ? (T)e.ApplyDelta(o) : e) // keep or update
+                    .Concat(other.list.Where(o => !lookup.ContainsKey(o.ID))) // add new
                     .ToList();
+            }
+            result.BuildLookup();
             return result;
         }
 
-        public abstract void CustomSerialize(Serializer serializer);
+        public void CustomSerialize(Serializer serializer)
+        {
+            SerializeImpl(serializer);
+            if (serializer.IsReading)
+            {
+                BuildLookup();
+            }
+        }
+
+        public abstract void SerializeImpl(Serializer serializer);
     }
 
     /// <summary>
@@ -248,35 +275,61 @@ namespace RainMeadow.Generics
     {
         public List<T> list;
         public List<U> removed;
+        private Dictionary<U, T> lookup;
+        private HashSet<U> removedLookup;
+
         public IdentifiablesAddRemovePrimaryDeltaList() { }
         public IdentifiablesAddRemovePrimaryDeltaList(List<T> list)
         {
             this.list = list;
+            BuildLookup();
+        }
+
+        private void BuildLookup()
+        {
+            this.lookup = list.Select(e => new KeyValuePair<U, T>(e.ID, e)).ToDictionary();
+            removedLookup = removed == null ? null : new HashSet<U>(removed);
         }
 
         public virtual Imp Delta(Imp baseline)
         {
             if (baseline == null) { return (Imp)this; }
             Imp delta = new();
-            delta.list = list.Select(newstate =>
-                baseline.list.FirstOrDefault(basestate => basestate.ID.Equals(newstate.ID)) is T basestate ? (T)newstate.Delta(basestate) : newstate
-            ).Where(sl => !sl.IsEmptyDelta).ToList();
-            delta.removed = baseline.list.Except(list, new IdentityComparer<T, U>()).Select(e => e.ID).ToList();
+            delta.list = list.Select(e => baseline.lookup.TryGetValue(e.ID, out var b) ? (T)e.Delta(b) : e).Where(sl => !sl.IsEmptyDelta).ToList();
+            delta.removed = baseline.list.Select(e => e.ID).Where(e => !lookup.ContainsKey(e)).ToList();
+            delta.BuildLookup();
             return (delta.list.Count == 0 && delta.removed.Count == 0) ? null : delta;
         }
 
         public virtual Imp ApplyDelta(Imp incoming)
         {
             Imp result = new();
-            result.list = incoming == null ? list :
-                list.Where(e => !incoming.removed.Contains(e.ID)) // remove
-                    .Select(e => incoming.list.FirstOrDefault(o => e.ID.Equals(o.ID)) is T o ? (T)e.ApplyDelta(o) : e) // keep or update
-                    .Concat(incoming.list.Where(o => list.FirstOrDefault(e => e.ID.Equals(o.ID)) == null)) // add new
+            if(incoming == null)
+            {
+                result.list = list;
+            }
+            else
+            {
+                result.list =
+                list.Where(e => !incoming.removedLookup.Contains(e.ID)) // remove
+                    .Select(e => incoming.lookup.TryGetValue(e.ID, out var o) ? (T)e.ApplyDelta(o) : e) // keep or update
+                    .Concat(incoming.list.Where(o => !lookup.ContainsKey(o.ID))) // add new
                     .ToList();
+            }
+            result.BuildLookup();
             return result;
         }
 
-        public abstract void CustomSerialize(Serializer serializer);
+        public void CustomSerialize(Serializer serializer)
+        {
+            SerializeImpl(serializer);
+            if (serializer.IsReading)
+            {
+                BuildLookup();
+            }
+        }
+
+        public abstract void SerializeImpl(Serializer serializer);
     }
 
     public class IdentifiablesAddRemoveDeltaListByUSort<T, W> : IdentifiablesAddRemoveDeltaList<T, ushort, W, IdentifiablesAddRemoveDeltaListByUSort<T, W>> where T : class, Serializer.ICustomSerializable, IDelta<W>, W, IIdentifiable<ushort>, new()
@@ -284,7 +337,7 @@ namespace RainMeadow.Generics
         public IdentifiablesAddRemoveDeltaListByUSort() : base() { }
         public IdentifiablesAddRemoveDeltaListByUSort(List<T> list) : base(list) { }
 
-        public override void CustomSerialize(Serializer serializer)
+        public override void SerializeImpl(Serializer serializer)
         {
             serializer.SerializeByte(ref list);
             if (serializer.IsDelta) serializer.Serialize(ref removed);
@@ -296,7 +349,7 @@ namespace RainMeadow.Generics
         public IdentifiablesAddRemoveDeltaListByCustomSeri() : base() { }
         public IdentifiablesAddRemoveDeltaListByCustomSeri(List<T> list) : base(list) { }
 
-        public override void CustomSerialize(Serializer serializer)
+        public override void SerializeImpl(Serializer serializer)
         {
             serializer.SerializeByte(ref list);
             if (serializer.IsDelta) serializer.SerializeByte(ref removed);
@@ -308,7 +361,7 @@ namespace RainMeadow.Generics
         public DeltaStates() : base() { }
         public DeltaStates(List<T> list) : base(list) { }
 
-        public override void CustomSerialize(Serializer serializer)
+        public override void SerializeImpl(Serializer serializer)
         {
             serializer.SerializePolyStatesShort(ref list);
             if (serializer.IsDelta) serializer.SerializeByte(ref removed); // this could potentially break actually
@@ -320,7 +373,7 @@ namespace RainMeadow.Generics
         public DeltaDataStates() : base() { }
         public DeltaDataStates(List<T> list) : base(list) { }
 
-        public override void CustomSerialize(Serializer serializer)
+        public override void SerializeImpl(Serializer serializer)
         {
             serializer.SerializePolyStatesByte(ref list);
             if (serializer.IsDelta) serializer.Serialize(ref removed);

@@ -17,7 +17,7 @@ namespace RainMeadow
         {
             this.resource = resource;
             this.player = player;
-            if (resource is Lobby or WorldSession) basecooldown = 3;
+            if (resource is Lobby or WorldSession) basecooldown = 5;
             if (!resource.isAvailable) throw new InvalidOperationException("not available");
             if (player.isMe) throw new InvalidOperationException("subscribed to self");
         }
@@ -47,12 +47,6 @@ namespace RainMeadow
                     RainMeadow.Trace("Considering candidate:" + OutgoingStates.Peek().tick);
                     lastAcknoledgedState = (OnlineResource.ResourceState)OutgoingStates.Dequeue().sourceState; // use most recent available
                 }
-            }
-                
-            if (lastAcknoledgedState != null && !player.recentlyAckdTicks.Contains(lastAcknoledgedState.tick))
-            {
-                RainMeadow.Trace("invalid candidate for delta:" + lastAcknoledgedState.tick);
-                lastAcknoledgedState = null; // not available
             }
 
             var newState = resource.GetState(tick);
