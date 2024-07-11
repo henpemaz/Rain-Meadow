@@ -109,7 +109,7 @@ namespace RainMeadow
                 }
                 // roll down
                 var mergeTarget = chainB.Contains(currentlyEnteredResource) ? currentlyEnteredResource : chainB.First(e => e.IsSibling(primary));
-                foreach (var res in chainB.SkipWhile(r => r != mergeTarget))
+                foreach (var res in chainB.SkipWhile(r => r != mergeTarget).SkipWhile(r => enteredResources.Contains(r)))
                 {
                     RainMeadow.Debug("actually entering: " + res);
                     enteredResources.Add(res);
