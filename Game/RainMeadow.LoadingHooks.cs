@@ -49,6 +49,7 @@ namespace RainMeadow
             {
                 if (RoomSession.map.TryGetValue(self.room.abstractRoom, out RoomSession rs))
                 {
+                    RainMeadow.Trace($"{rs} : {rs.isPending} {rs.isAvailable} {rs.isActive}");
                     if (true) // force load scenario ????
                     {
                         OnlineManager.ForceLoadUpdate();
@@ -75,6 +76,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && self.game != null && WorldSession.map.TryGetValue(self.world, out var ws0))
             {
+                RainMeadow.Trace($"{ws0} : {ws0.isPending} {ws0.isAvailable} {ws0.isActive}");
                 if (!ws0.isAvailable)
                 {
                     lock (self) {
