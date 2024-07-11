@@ -22,16 +22,18 @@ namespace RainMeadow
         public static Lobby lobby;
 
         public static LobbyInfo currentlyJoiningLobby;
+        public int milisecondsPerFrame;
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
             instance = this;
             framesPerSecond = 20; // alternatively, run as fast as we can for the receiving stuff, but send on a lower tickrate?
-
+            milisecondsPerFrame = 1000 / framesPerSecond;
             MatchmakingManager.InitLobbyManager();
             LeaveLobby();
             MatchmakingManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
             RainMeadow.Debug("OnlineManager Created");
+
         }
 
 

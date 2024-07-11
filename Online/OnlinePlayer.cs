@@ -91,12 +91,13 @@ namespace RainMeadow
         internal void NewTick(uint newTick)
         {
             tick = newTick;
-            if (recentTicks.Count >= 16) recentTicks.Dequeue();
             recentTicks.Enqueue(tick);
+            var windowstart = tick - 15;
+            while (NetIO.IsNewer(windowstart, recentTicks.Peek())) recentTicks.Dequeue();
             recentTicksToAckBitpack = recentTicks.Select(t => (int)(uint)(tick - t)).Aggregate((ushort)0, (s, e) => (ushort)(s | (ushort)(1 << e)));
             needsAck = true;
             RainMeadow.Trace(this + " - " + tick);
-            RainMeadow.Trace(Convert.ToString(recentTicksToAckBitpack, 2));
+            RainMeadow.Trace(Convert.ToString(recentTicksToAckBitpack, 2).PadLeft(16, '0'));
         }
 
         public void EventAckFromRemote(ushort lastAck)
@@ -114,23 +115,23 @@ namespace RainMeadow
         public void TickAckFromRemote(uint tickAck, ushort recentTickAcks)
         {
             var timeSinceLastTick = (int)Math.Floor(Math.Max(1, (UnityEngine.Time.realtimeSinceStartup - OnlineManager.lastReceive) * 1000));
-            ping = (int)(OnlineManager.mePlayer.tick - tickAck) * 50 + timeSinceLastTick;
+            ping = (int)(OnlineManager.mePlayer.tick - tickAck) * OnlineManager.instance.milisecondsPerFrame + timeSinceLastTick;
 
-            if (NetIO.IsNewerOrEqual(tickAck, latestTickAck))
+            if (NetIO.IsNewerOrEqual(tickAck, latestTickAck) && (recentTickAcks & 1) == 1)
             {
                 //RainMeadow.Debug(tickAck);
                 //RainMeadow.Debug(Convert.ToString(recentTickAcks, 2));
                 this.latestTickAck = tickAck;
-                this.oldestTickToConsider = tickAck;
-                recentlyAckdTicks = new();
+                this.oldestTickToConsider = tickAck - 64;
+                recentlyAckdTicks.RemoveWhere(t => NetIO.IsNewer(oldestTickToConsider, t)); // keep a bigger window from previous acks
                 for (int i = 0; i < 16; i++)
                 {
                     if ((recentTickAcks & (1 << i)) != 0)
                     {
                         recentlyAckdTicks.Add(tickAck - (uint)i);
-                        oldestTickToConsider = tickAck - (uint)i;
                     }
                 }
+                while (!recentlyAckdTicks.Contains(oldestTickToConsider)) oldestTickToConsider++;
             }
         }
 

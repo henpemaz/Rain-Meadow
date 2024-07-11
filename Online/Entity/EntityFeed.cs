@@ -35,20 +35,18 @@ namespace RainMeadow
             }
             player = resource.owner;
 
-            if (player.recentlyAckdTicks.Count > 0) while (OutgoingStates.Count > 0 && NetIO.IsNewer(player.oldestTickToConsider, OutgoingStates.Peek().tick))
+            if (player.recentlyAckdTicks.Count > 0)
+            {
+                while (OutgoingStates.Count > 0 && NetIO.IsNewer(player.oldestTickToConsider, OutgoingStates.Peek().tick))
                 {
                     RainMeadow.Trace("Discarding obsolete:" + OutgoingStates.Peek().tick);
                     OutgoingStates.Dequeue(); // discard obsolete
                 }
-            if (player.recentlyAckdTicks.Count > 0) while (OutgoingStates.Count > 0 && player.recentlyAckdTicks.Contains(OutgoingStates.Peek().tick))
+                while (OutgoingStates.Count > 0 && player.recentlyAckdTicks.Contains(OutgoingStates.Peek().tick))
                 {
                     RainMeadow.Trace("Considering candidate:" + OutgoingStates.Peek().tick);
                     lastAcknoledgedState = (OnlineEntity.EntityState)OutgoingStates.Dequeue().sourceState; // use most recent available
                 }
-            if (lastAcknoledgedState != null && !player.recentlyAckdTicks.Contains(lastAcknoledgedState.tick))
-            {
-                RainMeadow.Trace("invalid:" + lastAcknoledgedState.tick);
-                lastAcknoledgedState = null; // not available
             }
 
             var newState = entity.GetState(tick, resource);
