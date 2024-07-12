@@ -1,4 +1,5 @@
-﻿using Kittehface.Framework20;
+﻿using HUD;
+using Kittehface.Framework20;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
@@ -18,6 +19,8 @@ namespace RainMeadow
         private static float num = 120f;
         private static float num2 = 0f;
         private static float num3 = num - num2;
+        private List<string> sharedPlayList = new List<string>();
+
         public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
 
         public ArenaLobbyMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
@@ -210,6 +213,25 @@ namespace RainMeadow
                     }
                 }
             }
+
+
+
+            // Host dictates playlist
+
+            if (OnlineManager.lobby.isOwner)
+            {
+                sharedPlayList = manager.arenaSitting.levelPlaylist;
+                RainMeadow.Debug("COUNT OF HOST MAPS:" + sharedPlayList.Count);
+
+            }
+
+            // Client retrieves playlist
+            else
+            {
+                manager.arenaSitting.levelPlaylist = sharedPlayList;
+                RainMeadow.Debug("COUNT OF MAPS CLIENT:" + sharedPlayList.Count);
+
+            }
         }
 
         private void StartGame()
@@ -217,16 +239,34 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
-            InitializeSitting();
+            if (!OnlineManager.lobby.isOwner) return;
 
 
-            manager.rainWorld.progression.ClearOutSaveStateFromMemory();
+            foreach (OnlinePlayer player in OnlineManager.players)
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    // Give the owner a head start
+                    StartArena(sharedPlayList);
 
-            // temp
-            UserInput.SetUserCount(OnlineManager.players.Count);
-            UserInput.SetForceDisconnectControllers(forceDisconnect: false);
+                    if (!player.isMe)
+                    {
+                        player.InvokeRPC(StartArena, sharedPlayList);
+                    }
+                }
 
-            manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
+            }
+
+            //InitializeSitting();
+
+
+            /*            manager.rainWorld.progression.ClearOutSaveStateFromMemory();
+
+                        // temp
+                        UserInput.SetUserCount(OnlineManager.players.Count);
+                        UserInput.SetForceDisconnectControllers(forceDisconnect: false);
+
+                        manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);*/
         }
 
         public override void Update()
@@ -244,6 +284,7 @@ namespace RainMeadow
             {
                 mm.playButton.buttonBehav.greyedOut = OnlineManager.lobby.isAvailable;
             }
+
         }
 
 
@@ -502,6 +543,39 @@ namespace RainMeadow
             }
 
             AddPlayerButtons();
+
+
+        }
+
+        [RPCMethod]
+        public static void StartArena(List<string> hostPlaylist)
+        {
+            RainMeadow.Debug("got startarena rpc");
+
+            var process = RWCustom.Custom.rainWorld.processManager.currentMainLoop;
+            if (process is not ArenaLobbyMenu)
+            {
+                Debug.Log("game is not arena lobby menu");
+                return;
+            }
+            var menu = process as ArenaLobbyMenu;
+
+            menu.InitializeSitting();
+
+            if (!OnlineManager.lobby.isOwner)
+            {
+                menu.manager.arenaSitting.levelPlaylist = hostPlaylist;
+            }
+
+            RainMeadow.Debug("PLAYLIST COUNT: " + menu.manager.arenaSitting.levelPlaylist.Count);
+
+
+            menu.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
+
+            // temp
+            UserInput.SetUserCount(OnlineManager.players.Count);
+            UserInput.SetForceDisconnectControllers(forceDisconnect: false);
+            menu.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
 
     }

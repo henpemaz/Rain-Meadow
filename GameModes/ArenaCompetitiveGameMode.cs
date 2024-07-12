@@ -6,8 +6,6 @@ namespace RainMeadow
 {
     public class ArenaCompetitiveGameMode : OnlineGameMode
     {
-        public List<string> playList = new List<string>();
-
 
         public ArenaCompetitiveGameMode(Lobby lobby) : base(lobby)
         {
