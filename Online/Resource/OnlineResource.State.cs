@@ -52,7 +52,7 @@ namespace RainMeadow
                 {
                     RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.baseline}");
                     RainMeadow.Error($"Available ticks are: [{string.Join(", ", incomingState.Where(s => s.from == newState.from).Select(s => s.tick))}]");
-                    if (!newState.from.OutgoingEvents.Any(e=>e is RPCEvent rpc && rpc.IsIdentical(RPCs.DeltaReset, this, null)))
+                    if (!newState.from.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.DeltaReset, this, null)))
                     {
                         newState.from.InvokeRPC(RPCs.DeltaReset, this, null);
                     }
@@ -327,11 +327,13 @@ namespace RainMeadow
                 base.ReadTo(resource);
                 if (resource.isActive)
                 {
+
                     foreach (var item in subleaseState.list)
                     {
-                        var subresource = resource.SubresourceFromShortId(item.resourceId);
+                        var subresource = resource.SubresourceFromShortId(item.resourceId);  
                         var itemOwner = OnlineManager.lobby.PlayerFromId(item.owner);
                         if (subresource.owner != itemOwner) subresource.NewOwner(itemOwner);
+
                         subresource.UpdateParticipants(item.participants.list.Select(OnlineManager.lobby.PlayerFromId).Where(p => p != null).ToList());
                     }
                 }

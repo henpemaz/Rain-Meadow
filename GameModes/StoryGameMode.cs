@@ -92,7 +92,7 @@ namespace RainMeadow
         internal override void ResourceAvailable(OnlineResource onlineResource)
         {
             base.ResourceAvailable(onlineResource);
-            if(onlineResource is Lobby lobby)
+            if (onlineResource is Lobby lobby)
             {
                 lobby.AddData<StoryLobbyData>(true);
             }
@@ -106,5 +106,6 @@ namespace RainMeadow
                 (sas.readyForWin || !sas.inGame || sas.isDead)
             ).Select(e => e.owner.inLobbyId).ToList();
         }
+
     }
 }

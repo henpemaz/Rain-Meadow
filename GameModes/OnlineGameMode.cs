@@ -124,7 +124,8 @@ namespace RainMeadow
 
         internal virtual void NewEntity(OnlineEntity oe, OnlineResource inResource)
         {
-            
+
+
         }
 
         internal virtual void AddAvatarSettings()
@@ -143,12 +144,13 @@ namespace RainMeadow
 
         internal virtual void ResourceAvailable(OnlineResource onlineResource)
         {
-            
+
+
         }
 
         internal virtual void ResourceActive(OnlineResource onlineResource)
         {
-            if(onlineResource is Lobby)
+            if (onlineResource is Lobby)
             {
                 AddAvatarSettings();
                 OnlineManager.instance.manager.RequestMainProcessSwitch(MenuProcessId());
@@ -160,14 +162,14 @@ namespace RainMeadow
             return true;
         }
 
-        public virtual void LobbyReadyCheck() 
-        { 
-            
-        }
+        public virtual void LobbyReadyCheck()
+        {
 
+        }
         internal virtual void PlayerLeftLobby(OnlinePlayer player)
         {
-            
+
+
         }
 
         internal virtual void NewPlayerInLobby(OnlinePlayer player)
@@ -177,12 +179,14 @@ namespace RainMeadow
 
         internal virtual void LobbyTick(uint tick)
         {
-            
+
+
         }
 
         internal virtual void Customize(Creature creature, OnlineCreature oc)
         {
-            if (lobby.playerAvatars.Any(a=>a.Value == oc.id))
+            if (lobby.playerAvatars.Any(a => a.Value == oc.id))
+            if (lobby.playerAvatars.Any(a => a.Value == oc.id))
             {
                 RainMeadow.Debug($"Customizing avatar {creature} for {oc.owner}");
                 var settings = lobby.activeEntities.First(em => em is ClientSettings avs && avs.avatarId == oc.id) as ClientSettings;

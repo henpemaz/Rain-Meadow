@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
+using Mono.Cecil;
 using Steamworks;
 using UnityEngine;
 
@@ -282,6 +284,19 @@ namespace RainMeadow
             if (lobby != null)
             {
                 if (rid == ".") return lobby;
+
+                if (rid == "arena" && lobby.worldSessions.TryGetValue(rid, out var arenaRegionz)) return arenaRegionz;
+
+                if (rid.Contains("arena"))
+                {
+                    string modifiedRid = rid.Replace("arena", "");
+
+                    if (lobby.worldSessions["arena"].roomSessions.TryGetValue(modifiedRid, out var roomSession))
+                    {
+                        return roomSession;
+                    }
+                }
+
                 if (rid.Length == 2 && lobby.worldSessions.TryGetValue(rid, out var r)) return r;
                 if (rid.Length > 2 && lobby.worldSessions.TryGetValue(rid.Substring(0, 2), out var r2) && r2.roomSessions.TryGetValue(rid.Substring(2), out var room)) return room;
             }

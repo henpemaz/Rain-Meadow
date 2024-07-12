@@ -6,23 +6,23 @@ using HarmonyLib;
 
 namespace RainMeadow
 {
-    public class OnlineStoryHud : HudPart
+    public class OnlineHUD : HudPart
     {
         private List<PlayerSpecificOnlineHud> indicators = new();
 
         private RoomCamera camera;
-        private readonly StoryGameMode storyGameMode;
+        private readonly OnlineGameMode onlineGameMode;
 
-        public OnlineStoryHud(HUD.HUD hud, RoomCamera camera, StoryGameMode storyGameMode) : base(hud)
+        public OnlineHUD(HUD.HUD hud, RoomCamera camera, OnlineGameMode onlineGameMode) : base(hud)
         {
             this.camera = camera;
-            this.storyGameMode = storyGameMode;
+            this.onlineGameMode = onlineGameMode;
             UpdatePlayers();
         }
 
         public void UpdatePlayers()
         {
-            var clientSettings = OnlineManager.lobby.clientSettings.Values.OfType<StoryClientSettings>();
+            var clientSettings = OnlineManager.lobby.clientSettings.Values.OfType<ClientSettings>();
             var currentSettings = indicators.Select(i => i.clientSettings).ToList();
 
             clientSettings.Except(currentSettings).Do(PlayerAdded); 
@@ -30,15 +30,15 @@ namespace RainMeadow
 
         }
 
-        public void PlayerAdded(StoryClientSettings clientSettings)
+        public void PlayerAdded(ClientSettings clientSettings)
         {
             RainMeadow.DebugMe();
-            PlayerSpecificOnlineHud indicator = new PlayerSpecificOnlineHud(hud, camera, storyGameMode, clientSettings);
+            PlayerSpecificOnlineHud indicator = new PlayerSpecificOnlineHud(hud, camera, onlineGameMode, clientSettings);
             this.indicators.Add(indicator);
             hud.AddPart(indicator);
         }
 
-        public void PlayerRemoved(StoryClientSettings clientSettings)
+        public void PlayerRemoved(ClientSettings clientSettings)
         {
             RainMeadow.DebugMe();
             var indicator = this.indicators.First(i => i.clientSettings == clientSettings);

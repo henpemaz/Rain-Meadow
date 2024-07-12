@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using static RainMeadow.OnlineCreature;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace RainMeadow
 {
@@ -59,6 +61,7 @@ namespace RainMeadow
                 case AbstractMeadowCollectible:
                     return new OnlineMeadowCollectible(apo, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 case AbstractCreature ac:
+                    OnlineCreatureDefinition acDef;
                     return new OnlineCreature(ac, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 case AbstractConsumable acm:
                     return OnlineConsumableFromAcm(acm, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
@@ -168,7 +171,7 @@ namespace RainMeadow
                         }
 
                         // todo carried by other won't pick up if entering from abstract, how fix?
-                        if(apo.realizedObject != null && apo.realizedObject.grabbedBy.Count > 0)
+                        if (apo.realizedObject != null && apo.realizedObject.grabbedBy.Count > 0)
                         {
                             RainMeadow.Debug($"Entity {this} carried by other, not adding!");
                             return;
@@ -299,7 +302,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void HitByExplosion(OnlinePhysicalObject objectHit, float hitfac)
         {
-            objectHit?.apo.realizedObject.HitByExplosion(hitfac,null,0);
+            objectHit?.apo.realizedObject.HitByExplosion(hitfac, null, 0);
         }
     }
 }
