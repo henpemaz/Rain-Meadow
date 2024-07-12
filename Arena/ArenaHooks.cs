@@ -27,18 +27,43 @@ namespace RainMeadow
             On.ArenaGameSession.SpawnPlayers += ArenaGameSession_SpawnPlayers;
             On.ArenaGameSession.Update += ArenaGameSession_Update;
             On.ArenaGameSession.ctor += ArenaGameSession_ctor;
+            On.ArenaGameSession.AddHUD += ArenaGameSession_AddHUD;
+
             On.ArenaBehaviors.ExitManager.ExitsOpen += ExitManager_ExitsOpen;
             On.ArenaBehaviors.ExitManager.Update += ExitManager_Update;
             On.ArenaBehaviors.ExitManager.PlayerTryingToEnterDen += ExitManager_PlayerTryingToEnterDen;
             On.ArenaBehaviors.Evilifier.Update += Evilifier_Update;
             On.ArenaBehaviors.RespawnFlies.Update += RespawnFlies_Update;
             On.ArenaBehaviors.ArenaGameBehavior.Update += ArenaGameBehavior_Update;
-            On.ArenaGameSession.AddHUD += ArenaGameSession_AddHUD;
+            On.Menu.MultiplayerMenu.Update += MultiplayerMenu_Update;
+            
+
+
+
             On.HUD.PlayerSpecificMultiplayerHud.ctor += PlayerSpecificMultiplayerHud_ctor;
-
-
+            On.HUD.HUD.InitMultiplayerHud += HUD_InitMultiplayerHud;
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
+        }
+
+        private void HUD_InitMultiplayerHud(On.HUD.HUD.orig_InitMultiplayerHud orig, HUD.HUD self, ArenaGameSession session)
+        {
+            self.AddPart(new TextPrompt(self));
+/*            AddPart(new GeneralMultiplayerHud(this, session));
+            for (int i = 0; i < session.Players.Count; i++)
+            {
+                PlayerSpecificMultiplayerHud playerSpecificMultiplayerHud = new PlayerSpecificMultiplayerHud(this, session, session.Players[i]);
+                AddPart(playerSpecificMultiplayerHud);
+                if (ModManager.MSC)
+                {
+                    AddPart(new AmmoMeter(this, playerSpecificMultiplayerHud, fContainers[1]));
+                }
+            }
+
+            if (session.Players.Count > 0 && ModManager.MSC && session.arenaSitting.gameTypeSetup.gameType == MoreSlugcatsEnums.GameTypeID.Challenge && ModManager.MMF && MMF.cfgBreathTimeVisualIndicator.Value)
+            {
+                AddPart(new BreathMeter(this, fContainers[1], session.Players[0]));
+            }*/
         }
 
         private void PlayerSpecificMultiplayerHud_ctor(On.HUD.PlayerSpecificMultiplayerHud.orig_ctor orig, HUD.PlayerSpecificMultiplayerHud self, HUD.HUD hud, ArenaGameSession session, AbstractCreature abstractPlayer)

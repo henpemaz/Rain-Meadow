@@ -6,6 +6,7 @@ namespace RainMeadow
 {
     public class ArenaCompetitiveGameMode : OnlineGameMode
     {
+        public bool dummyData = true;
 
         public ArenaCompetitiveGameMode(Lobby lobby) : base(lobby)
         {
