@@ -1,5 +1,8 @@
 ﻿using IL.RWCustom;
 using System;
+using System.Collections.Generic;
+using Kittehface.Framework20;
+using IL.Menu;
 
 namespace RainMeadow
 {
@@ -58,7 +61,7 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void PlayReinforceKarmaAnimation() 
+        public static void PlayReinforceKarmaAnimation()
         {
             (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).cameras[0].hud.karmaMeter.reinforceAnimation = 0;
         }
@@ -71,7 +74,8 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void MovePlayersToDeathScreen() {
+        public static void MovePlayersToDeathScreen()
+        {
             foreach (OnlinePlayer player in OnlineManager.players)
             {
                 player.InvokeRPC(RPCs.GoToDeathScreen);
@@ -101,7 +105,7 @@ namespace RainMeadow
         {
             foreach (OnlinePlayer player in OnlineManager.players)
             {
-                player.InvokeRPC(RPCs.GoToGhostScreen,ghostID);
+                player.InvokeRPC(RPCs.GoToGhostScreen, ghostID);
             }
         }
 
@@ -153,5 +157,41 @@ namespace RainMeadow
             game.GetArenaGameSession.exitManager.playersInDens.Add(shortCutVessel);
 
         }
+
+        [RPCMethod]
+        public static void StartArena(List<string> hostPlaylist)
+        {
+            RainMeadow.Debug("got startarena rpc");
+
+            var process = RWCustom.Custom.rainWorld.processManager.currentMainLoop;
+            if (process is not ArenaLobbyMenu)
+            {
+                Debug.Log("game is not arena lobby menu");
+                return;
+            }
+            var menu = process as ArenaLobbyMenu;
+
+
+
+            menu.InitializeSitting(hostPlaylist);
+
+
+            if (!OnlineManager.lobby.isOwner)
+            {
+                menu.manager.arenaSitting.levelPlaylist = hostPlaylist;
+            }
+
+            RainMeadow.Debug("PLAYLIST COUNT: " + menu.manager.arenaSitting.levelPlaylist.Count);
+
+
+            menu.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
+
+            // temp
+            UserInput.SetUserCount(OnlineManager.players.Count);
+            UserInput.SetForceDisconnectControllers(forceDisconnect: false);
+            menu.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
+        }
+
+
     }
 }

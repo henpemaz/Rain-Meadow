@@ -16,12 +16,14 @@ namespace RainMeadow
         internal class State : ResourceDataState
         {
             [OnlineField]
-            public List<string> arenaPlaylist;
+            public bool dummyData;
 
 
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
+                ArenaCompetitiveGameMode arena = (onlineResource as Lobby).gameMode as ArenaCompetitiveGameMode;
+                dummyData = arena.dummyData;
 
             }
 
@@ -29,7 +31,8 @@ namespace RainMeadow
 
             internal override void ReadTo(OnlineResource.ResourceData data)
             {
-                //var lobby = (data.resource as Lobby);
+                var lobby = (data.resource as Lobby);
+                (lobby.gameMode as ArenaCompetitiveGameMode).dummyData = dummyData;
             }
         }
     }
