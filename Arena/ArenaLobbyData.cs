@@ -22,9 +22,6 @@ namespace RainMeadow
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
-                ArenaCompetitiveGameMode arenaGameMode = (onlineResource as Lobby).gameMode as ArenaCompetitiveGameMode;
-                arenaPlaylist = arenaGameMode.playList;
-
 
             }
 
@@ -32,8 +29,7 @@ namespace RainMeadow
 
             internal override void ReadTo(OnlineResource.ResourceData data)
             {
-                var lobby = (data.resource as Lobby);
-                (lobby.gameMode as ArenaCompetitiveGameMode).playList = arenaPlaylist;
+                //var lobby = (data.resource as Lobby);
             }
         }
     }
