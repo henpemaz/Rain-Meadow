@@ -562,7 +562,10 @@ namespace RainMeadow
 
             menu.InitializeSitting();
 
-            menu.manager.arenaSitting.levelPlaylist = hostPlaylist;
+            if (!OnlineManager.lobby.isOwner)
+            {
+                menu.manager.arenaSitting.levelPlaylist = hostPlaylist;
+            }
 
             RainMeadow.Debug("PLAYLIST COUNT: " + menu.manager.arenaSitting.levelPlaylist.Count);
 
