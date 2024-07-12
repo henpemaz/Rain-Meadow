@@ -79,7 +79,7 @@ namespace RainMeadow
 
             pages[0].subObjects.Add(mm.arenaSettingsInterface);
             pages[0].subObjects.Add(mm.levelSelector);
-            
+
 
             mm.init = true;
         }
@@ -247,8 +247,10 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner) return;
 
 
+
             foreach (OnlinePlayer player in OnlineManager.players)
             {
+
                 if (OnlineManager.lobby.isOwner)
                 {
                     // Give the owner a head start
@@ -259,6 +261,7 @@ namespace RainMeadow
                         player.InvokeRPC(RPCs.StartArena, sharedPlayList);
                     }
                 }
+
 
             }
 
@@ -276,6 +279,7 @@ namespace RainMeadow
             else
             {
                 mm.playButton.buttonBehav.greyedOut = OnlineManager.lobby.isAvailable;
+                
             }
 
         }
@@ -322,11 +326,11 @@ namespace RainMeadow
             {
                 if (message == "CLASSCHANGE" + num6)
                 {
-                    mm.GetArenaSetup.playerClass[0] = mm.NextClass(mm.GetArenaSetup.playerClass[0]);
-                    playerClassButtons[0].menuLabel.text = Translate(SlugcatStats.getSlugcatName(mm.GetArenaSetup.playerClass[0]));
-                    playerJoinButtons[0].portrait.fileName = mm.ArenaImage(mm.GetArenaSetup.playerClass[0], 0);
-                    playerJoinButtons[0].portrait.LoadFile();
-                    playerJoinButtons[0].portrait.sprite.SetElementByName(playerJoinButtons[0].portrait.fileName);
+                    mm.GetArenaSetup.playerClass[num6] = mm.NextClass(mm.GetArenaSetup.playerClass[0]);
+                    playerClassButtons[num6].menuLabel.text = Translate(SlugcatStats.getSlugcatName(mm.GetArenaSetup.playerClass[0]));
+                    playerJoinButtons[num6].portrait.fileName = mm.ArenaImage(mm.GetArenaSetup.playerClass[0], 0);
+                    playerJoinButtons[num6].portrait.LoadFile();
+                    playerJoinButtons[num6].portrait.sprite.SetElementByName(playerJoinButtons[0].portrait.fileName);
                     PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
                 }
             }
@@ -473,15 +477,15 @@ namespace RainMeadow
 
                 playerClassButtons[k] = new SimplerButton(mm, pages[0], name, new Vector2(600f + k * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * playerClassButtons.Length, 40f), new Vector2(num - 20f, 30f));
 
-                (playerClassButtons[0] as SimplerButton).OnClick += (_) =>
+                (playerClassButtons[k] as SimplerButton).OnClick += (_) =>
                 {
 
-                    mm.GetArenaSetup.playerClass[0] = mm.GetArenaSetup.playerClass[0];
+                    mm.GetArenaSetup.playerClass[k] = mm.GetArenaSetup.playerClass[0];
                     //mm.NextClass(mm.GetArenaSetup.playerClass[0]);
-                    playerClassButtons[0].menuLabel.text = OnlineManager.players[0].id.name;
+                    playerClassButtons[k].menuLabel.text = OnlineManager.players[0].id.name;
 
-                    playerJoinButtons[0].portrait.fileName = playerJoinButtons[0].portrait.fileName;
-                    //mm.ArenaImage(mm.GetArenaSetup.playerClass[k], k);
+                    playerJoinButtons[k].portrait.fileName = playerJoinButtons[0].portrait.fileName;
+                    mm.ArenaImage(mm.GetArenaSetup.playerClass[0], 0);
                     // playerJoinButtons[0].portrait.LoadFile();
                     // playerJoinButtons[0].portrait.sprite.SetElementByName(playerJoinButtons[0].portrait.fileName);
                     PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
@@ -507,9 +511,9 @@ namespace RainMeadow
 
                 if (ModManager.MSC)
                 {
-                    playerJoinButtons[l].portrait.fileName = mm.ArenaImage(manager.arenaSetup.playerClass[l], l);
+                    playerJoinButtons[l].portrait.fileName = mm.ArenaImage(manager.arenaSetup.playerClass[0], 0);
                     playerJoinButtons[l].portrait.LoadFile();
-                    playerJoinButtons[l].portrait.sprite.SetElementByName(playerJoinButtons[l].portrait.fileName);
+                    playerJoinButtons[l].portrait.sprite.SetElementByName(playerJoinButtons[0].portrait.fileName);
                     MutualVerticalButtonBind(playerClassButtons[l], playerJoinButtons[l]);
                 }
 
