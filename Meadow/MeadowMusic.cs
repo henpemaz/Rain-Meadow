@@ -139,7 +139,7 @@ namespace RainMeadow
                         SongLengths = DictTho;
                     }
                 }
-                //In the Future, maybe highjack the reading and read the time directly from it? 
+                //In the Future, maybe highjack reading a song and get the float time directly from the metadata? 
                 filesChecked = true;
             }
             AnalyzeRegion(self.world);
@@ -190,7 +190,6 @@ namespace RainMeadow
                         {
                             if (MeFolk.GroupID == -1 || MeFolk.GroupID == null)
                             {
-
                                 RainMeadow.Debug("Meadow Music:  Playing ambient song");
                                 NewSong();
                                 
@@ -290,12 +289,15 @@ namespace RainMeadow
                         }
                     }
                 }
+                else
+                {
+                    MeFolk.LockedIn = false;
+                }
             }
             else
             {
                 time = 0f;
                 timerStopped = true;
-                MeFolk.LockedIn = false;
             }
         }
         static void WorldLoadedPatch(On.OverWorld.orig_WorldLoaded orig, OverWorld self)
