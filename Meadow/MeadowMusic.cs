@@ -184,6 +184,22 @@ namespace RainMeadow
                 timerStopped = false;
                 if (time > waitSecs)
                 {
+                    var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
+                    var creature = mgm.avatar;
+                    var musicdata = creature.GetData<MeadowMusicData>();
+
+                    // use musicdata
+                    // this is my own music data
+
+                    foreach (var other in OnlineManager.lobby.playerAvatars.Values.Where(v => v != null))
+                    {
+                        if (other.FindEntity() is OnlineCreature oc && !oc.owner.isMe)
+                        {
+                            var otherdata = oc.GetData<MeadowMusicData>();
+                            // proccess other data
+                        }
+                    }
+
                     if (ambienceSongArray != null)
                     {
                         if (!MeFolk.LockedIn)

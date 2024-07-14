@@ -28,6 +28,7 @@ namespace RainMeadow
             {
                 RainMeadow.Debug("Registering new creature: " + oc);
                 oe.AddData(new MeadowCreatureData(oc));
+                oe.AddData(new MeadowMusicData(oc));
                 if (oc.realizedCreature != null && EmoteDisplayer.map.TryGetValue(oc.realizedCreature, out var d))
                 {
                     d.ownerEntity = oc;
