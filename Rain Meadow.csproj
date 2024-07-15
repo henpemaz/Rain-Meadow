@@ -28,10 +28,6 @@
     <DefineConstants>$(DefineConstants)TRACE</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <PathMap>$(MSBuildThisFileDirectory.Replace(',', ',,').Replace('=', '=='))=/</PathMap>
-  </PropertyGroup>
-
   <ItemGroup>
     <Reference Include="lib\*.dll" />
   </ItemGroup>

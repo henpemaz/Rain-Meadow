@@ -17,7 +17,7 @@ Rain Meadow is a mod that can be loaded as just any mod. Each player launches th
 
 We're currently still refining the engine. It's a totally custom engine, since RW doesn't use Unity stuff much. We've started fronts on customizations for each game-mode as well.
 
-![roadmap](/Docs/roadmap_w.png)
+![roadmap](/Docs/roadmap_20240529.png)
 
 ## Can I play it / Where can I find more
 
@@ -60,6 +60,9 @@ Instructions on how to install the mod into your game:
         1. Open the pinned messages and download the latest version
         2. Extract downloaded zip file
         3. If you see a single folder named 'rainmeadow', copy the folder into your game mods folder
+     
+## Steam Deck / Proton
+In order for Rain Meadow to work on Steam Deck, you will need to install [Proton](https://docs.bepinex.dev/articles/advanced/proton_wine.html).
 
 
 # Contributions

@@ -14,7 +14,13 @@ namespace RainMeadow
 
             public OnlineCreatureDefinition(OnlineCreature onlineCreature, OnlineResource inResource) : base(onlineCreature, inResource)
             {
+                if (RainMeadow.isArenaMode(out var _)) {
+                this.serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature);
+
+
+                } else {
                 this.serializedObject = SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
+                }
             }
 
             public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
@@ -45,8 +51,18 @@ namespace RainMeadow
 
         public static AbstractCreature AbstractCreatureFromString(World world, string creatureString)
         {
+            RainMeadow.Debug("The creature is" + creatureString);
+
+            RainMeadow.Debug("The world is" + world);
+            RainMeadow.Debug("The creature is" + creatureString);
+
+            RainMeadow.Debug("The world is" + world);
             string[] array = Regex.Split(creatureString, "<cA>");
             CreatureTemplate.Type type = new CreatureTemplate.Type(array[0], false);
+
+
+
+
             if (type.Index == -1)
             {
                 RainMeadow.Debug("Unknown creature: " + array[0] + " creature not spawning");
@@ -56,14 +72,28 @@ namespace RainMeadow
             {
             '.'
             });
+
+
+
+
+
+
             EntityID id = EntityID.FromString(array[1]);
+
+
             int? num = BackwardsCompatibilityRemix.ParseRoomIndex(array2[0]);
-            if(num == null || !world.IsRoomInRegion(num.Value))
+
+            if (num == null || !world.IsRoomInRegion(num.Value))
             {
+
                 num = world.GetAbstractRoom(array2[0]).index;
+
             }
+
+
             WorldCoordinate den = new WorldCoordinate(num.Value, -1, -1, int.Parse(array2[1], NumberStyles.Any, CultureInfo.InvariantCulture));
             AbstractCreature abstractCreature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, den, id);
+
             if (world != null)
             {
                 abstractCreature.state.LoadFromString(Regex.Split(array[3], "<cB>"));
@@ -124,7 +154,7 @@ namespace RainMeadow
         {
             var castShareability = new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(graspRef.Shareability));
             var other = graspRef.OnlineGrabbed.FindEntity(quiet: true) as OnlinePhysicalObject;
-            if(other != null && other.apo.realizedObject != null)
+            if (other != null && other.apo.realizedObject != null)
             {
                 var grabber = (Creature)this.apo.realizedObject;
                 var grabbedThing = other.apo.realizedObject;
@@ -167,10 +197,12 @@ namespace RainMeadow
             var room = creature.room;
             creature.SuckedIntoShortCut(entrancePos, carriedByOther);
             if (creature.graphicsModule != null)
-			{
+            {
+            {
                 Vector2 vector = room.MiddleOfTile(entrancePos) + Custom.IntVector2ToVector2(room.ShorcutEntranceHoleDirection(entrancePos)) * -5f;
                 creature.graphicsModule.SuckedIntoShortCut(vector);
-			}
+            }
+            }
             enteringShortCut = false;
         }
 

@@ -302,7 +302,7 @@ namespace RainMeadow
             orig(self, cam);
             if (isStoryMode(out var gameMode))
             {
-                self.AddPart(new OnlineStoryHud(self, cam, gameMode));
+                self.AddPart(new OnlineHUD(self, cam, gameMode));
             }
         }
         private void RainWorldGame_GhostShutDown(On.RainWorldGame.orig_GhostShutDown orig, RainWorldGame self, GhostWorldPresence.GhostID ghostID)
@@ -515,7 +515,7 @@ namespace RainMeadow
 
                 }
 
-                self.room.game.cameras[0].hud.parts.Add(new OnlineStoryHud(self.room.game.cameras[0].hud, self.room.game.cameras[0], storyGameMode));
+                self.room.game.cameras[0].hud.parts.Add(new OnlineHUD(self.room.game.cameras[0].hud, self.room.game.cameras[0], storyGameMode));
 
                 return true;
             }
@@ -580,7 +580,7 @@ namespace RainMeadow
 
                 foreach (HudPart part in self.room.game.cameras[0].hud.parts)
                 {
-                    if (part is OnlineStoryHud || part is PlayerSpecificOnlineHud)
+                    if (part is OnlineHUD || part is PlayerSpecificOnlineHud)
                     {
 
                         partsToRemove.Add(part);
