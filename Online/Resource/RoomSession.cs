@@ -46,7 +46,7 @@ namespace RainMeadow
 
         protected override void DeactivateImpl()
         {
-            if (abstractOnDeactivate)
+            if (abstractOnDeactivate && absroom.realizedRoom != null)
             {
                 for (int i = 0; i < absroom.entities.Count; i++)
                 {
@@ -56,6 +56,7 @@ namespace RainMeadow
                         ent.beingMoved = true;
                     }
                 }
+                absroom.world.loadingRooms.RemoveAll(rl => rl.room == absroom.realizedRoom);
                 absroom.Abstractize();
                 for (int i = 0; i < absroom.entities.Count; i++)
                 {
@@ -68,6 +69,7 @@ namespace RainMeadow
                 abstractOnDeactivate = false;
             }
         }
+
         public override string Id()
         {
             return super.Id() + absroom.name;
