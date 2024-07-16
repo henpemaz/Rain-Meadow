@@ -106,7 +106,11 @@ namespace RainMeadow
             if (OnlineManager.lobby?.gameMode is MeadowGameMode)
             {
                 // fast travel init means save-and-restart on load, which uses player[0]
-                if(self.manager.menuSetup.FastTravelInitCondition) self.manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
+                if (self.manager.menuSetup.FastTravelInitCondition)
+                {
+                    self.manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
+                    self.manager.blackDelay = 0;
+                }
             }
             
             orig(self);

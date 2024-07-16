@@ -111,7 +111,7 @@ namespace RainMeadow
             {
                 if (message == "HOLD TO START")
                 {
-                    self.manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.RegionSelect;
+                    self.initiateCharacterFastTravel = true;
                     MeadowProgression.progressionData.currentCharacterProgress.saveLocation = new WorldCoordinate(self.selectedShelter, -1, -1, 0);
                 }
                 if (message == "BACK")
