@@ -51,12 +51,6 @@ namespace RainMeadow
 
         public static AbstractCreature AbstractCreatureFromString(World world, string creatureString)
         {
-            RainMeadow.Debug("The creature is" + creatureString);
-
-            RainMeadow.Debug("The world is" + world);
-            RainMeadow.Debug("The creature is" + creatureString);
-
-            RainMeadow.Debug("The world is" + world);
             string[] array = Regex.Split(creatureString, "<cA>");
             CreatureTemplate.Type type = new CreatureTemplate.Type(array[0], false);
 
