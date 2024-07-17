@@ -52,6 +52,7 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby.isOwner)
                 {
+                    RainMeadow.Debug("Spawning creature");
                     orig(game, wildLifeSetting, ref availableCreatures, ref unlocks);
                 }
                 else
@@ -71,6 +72,8 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby.isOwner)
                 {
+                    RainMeadow.Debug("Spawning creature");
+
                     orig(self);
                 } else
                 {

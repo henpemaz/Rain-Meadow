@@ -272,6 +272,10 @@ namespace RainMeadow
 
         public void LocalEntityTransfered(OnlineEntity oe, OnlinePlayer to)
         {
+            if (RainMeadow.isArenaMode(out var _)) {
+                RainMeadow.Debug("No transferring");
+                return;
+            }
             RainMeadow.Debug($"{oe} : {this} : to {to}");
             if (!isActive) throw new InvalidOperationException("not active");
             if (oe.primaryResource != this) throw new InvalidOperationException("transfered in wrong resource");
