@@ -81,17 +81,20 @@ namespace RainMeadow
 
             UnlockAndLoadLevels();
 
+
             // very convenient
             mm.arenaSettingsInterface = new ArenaSettingsInterface(mm, pages[0]);
             mm.arenaSettingsInterface.pos += Vector2.down * 40;
+            pages[0].subObjects.Add(mm.arenaSettingsInterface);
+            
 
             mm.levelSelector = new LevelSelector(mm, pages[0], false);
-
-            pages[0].subObjects.Add(mm.arenaSettingsInterface);
             pages[0].subObjects.Add(mm.levelSelector);
-
-
             mm.init = true;
+
+
+
+
         }
 
         void UnlockAndLoadLevels()
@@ -282,7 +285,7 @@ namespace RainMeadow
             else
             {
                 mm.playButton.buttonBehav.greyedOut = OnlineManager.lobby.isAvailable;
-                
+
             }
 
         }

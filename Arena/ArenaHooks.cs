@@ -28,6 +28,7 @@ namespace RainMeadow
             On.ArenaGameSession.Update += ArenaGameSession_Update;
             On.ArenaGameSession.ctor += ArenaGameSession_ctor;
             On.ArenaGameSession.AddHUD += ArenaGameSession_AddHUD;
+            On.ArenaGameSession.SpawnCreatures += ArenaGameSession_SpawnCreatures;
 
             On.ArenaBehaviors.ExitManager.ExitsOpen += ExitManager_ExitsOpen;
             On.ArenaBehaviors.ExitManager.Update += ExitManager_Update;
@@ -35,6 +36,8 @@ namespace RainMeadow
             On.ArenaBehaviors.Evilifier.Update += Evilifier_Update;
             On.ArenaBehaviors.RespawnFlies.Update += RespawnFlies_Update;
             On.ArenaBehaviors.ArenaGameBehavior.Update += ArenaGameBehavior_Update;
+            On.ArenaCreatureSpawner.SpawnArenaCreatures += ArenaCreatureSpawner_SpawnArenaCreatures;
+            
             
 
 
@@ -43,9 +46,56 @@ namespace RainMeadow
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
         }
 
+        private void ArenaCreatureSpawner_SpawnArenaCreatures(On.ArenaCreatureSpawner.orig_SpawnArenaCreatures orig, RainWorldGame game, ArenaSetup.GameTypeSetup.WildLifeSetting wildLifeSetting, ref List<AbstractCreature> availableCreatures, ref MultiplayerUnlocks unlocks)
+        {
+            if (isArenaMode(out var _))
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    orig(game, wildLifeSetting, ref availableCreatures, ref unlocks);
+                }
+                else
+                {
+                    RainMeadow.Debug("Prevented client from spawning excess creatures");
+                }
+            }
+            else
+            {
+                orig(game, wildLifeSetting, ref availableCreatures, ref unlocks);
+            }
+        }
+
+        private void ArenaGameSession_SpawnCreatures(On.ArenaGameSession.orig_SpawnCreatures orig, ArenaGameSession self)
+        {
+            if (isArenaMode(out var _))
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    orig(self);
+                } else
+                {
+                    RainMeadow.Debug("Prevented client from spawning excess creatures");
+                }
+
+
+            } else
+            {
+                orig(self);
+            }
+        }
+
         private void HUD_InitMultiplayerHud(On.HUD.HUD.orig_InitMultiplayerHud orig, HUD.HUD self, ArenaGameSession session)
         {
-            self.AddPart(new TextPrompt(self));
+
+
+            if (isArenaMode(out var _))
+            {
+                self.AddPart(new TextPrompt(self));
+            }
+            else
+            {
+                orig(self, session);
+            }
 
         }
 
