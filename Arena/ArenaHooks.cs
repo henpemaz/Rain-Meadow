@@ -38,12 +38,39 @@ namespace RainMeadow
             On.ArenaBehaviors.ArenaGameBehavior.Update += ArenaGameBehavior_Update;
             On.ArenaCreatureSpawner.SpawnArenaCreatures += ArenaCreatureSpawner_SpawnArenaCreatures;
             
-            
-
-
             On.HUD.HUD.InitMultiplayerHud += HUD_InitMultiplayerHud;
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
+
+            On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
+            On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
+            
+        }
+
+        private void MultiplayerResults_ctor(On.Menu.MultiplayerResults.orig_ctor orig, Menu.MultiplayerResults self, ProcessManager manager)
+        {
+            orig(self, manager);
+            var exitButton = new Menu.SimpleButton(self, self.pages[0], self.Translate("EXIT"), "EXIT", new Vector2(856f, 50f), new Vector2(110f, 30f));
+            self.pages[0].subObjects.Add(exitButton);
+        }
+
+        private void MultiplayerResults_Singal(On.Menu.MultiplayerResults.orig_Singal orig, Menu.MultiplayerResults self, Menu.MenuObject sender, string message)
+        {
+            if (message != null && message == "CONTINUE")
+            {
+                self.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
+                self.manager.rainWorld.options.DeleteArenaSitting();
+                self.PlaySound(SoundID.MENU_Switch_Page_In);
+            }
+
+            if (message != null && message == "EXIT")
+            {
+
+                self.manager.rainWorld.options.DeleteArenaSitting();
+                OnlineManager.LeaveLobby();
+                self.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+                self.PlaySound(SoundID.MENU_Switch_Page_In);
+            }
         }
 
         private void ArenaCreatureSpawner_SpawnArenaCreatures(On.ArenaCreatureSpawner.orig_SpawnArenaCreatures orig, RainWorldGame game, ArenaSetup.GameTypeSetup.WildLifeSetting wildLifeSetting, ref List<AbstractCreature> availableCreatures, ref MultiplayerUnlocks unlocks)
