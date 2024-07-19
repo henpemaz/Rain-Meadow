@@ -7,6 +7,8 @@ namespace RainMeadow
         [OnlineField]
         public WorldCoordinate pos;
         [OnlineField]
+        public bool inDen;
+        [OnlineField]
         public bool realized;
         [OnlineField(group = "realized", nullable = true, polymorphic = true)]
         public RealizedPhysicalObjectState realizedObjectState;
@@ -20,12 +22,18 @@ namespace RainMeadow
             if (realizedState && onlineEntity.isMine && onlineEntity.apo.realizedObject != null && !onlineEntity.realized) { RainMeadow.Error($"have realized object, but not entity not marked as realized??: {onlineEntity} in resource {inResource}"); }
             if (realizedState && onlineEntity.isMine && !onlineEntity.realized)
             {
-                //RainMeadow.Error($"asked for realized state, not realized: {onlineEntity} in resource {inResource}");
+                RainMeadow.Trace($"asked for realized state, not realized: {onlineEntity} in resource {inResource}");
+                realizedState = false;
+            }
+            if(realizedState && onlineEntity.apo.realizedObject == null)
+            {
+                RainMeadow.Error($"asked for realized state, not realized: {onlineEntity} in resource {inResource}");
                 realizedState = false;
             }
             RainMeadow.Trace($"{onlineEntity} sending realized state? {realizedState} entity realized ? {onlineEntity.realized}");
 
             this.pos = onlineEntity.apo.pos;
+            this.inDen = onlineEntity.apo.InDen;
             this.realized = onlineEntity.realized; // now now, oe.realized means its realized in the owners world
                                                    // not necessarily whether we're getting a real state or not
             if (realizedState) this.realizedObjectState = GetRealizedState(onlineEntity);
@@ -50,24 +58,29 @@ namespace RainMeadow
             if (onlineEntity.isPending) { RainMeadow.Debug($"not syncing {this} because pending"); return; }; // Don't sync if pending, reduces visibility and effect of lag
 
             var onlineObject = onlineEntity as OnlinePhysicalObject;
+            var apo = onlineObject.apo;
             RainMeadow.Trace($"{onlineEntity} received realized state? {realizedObjectState != null} entity realized?{onlineObject.realized}");
 
-            onlineObject.beingMoved = true;
-            var wasPos = onlineObject.apo.pos;
+            var wasPos = apo.pos;
             try
             {
-                onlineObject.apo.Move(pos);
+                if (inDen != apo.InDen)
+                {
+                    if (inDen) apo.IsEnteringDen(pos);
+                    else apo.IsExitingDen();
+                }
+                apo.Move(pos);
             }
             catch (Exception e)
             {
                 RainMeadow.Error($"{onlineEntity} failed to move from {wasPos} to {pos}, hard-setting position: " + e);
-                onlineObject.apo.pos = pos;
-                if (onlineObject.apo.world.IsRoomInRegion(pos.room)) onlineObject.apo.world.GetAbstractRoom(pos).AddEntity(onlineObject.apo);
+                if (apo.world.IsRoomInRegion(apo.pos.room)) apo.world.GetAbstractRoom(apo.pos).RemoveEntity(apo);
+                apo.pos = pos;
+                if (apo.world.IsRoomInRegion(pos.room)) apo.world.GetAbstractRoom(pos).AddEntity(apo);
                 //throw;
             }
             
             onlineObject.apo.pos = pos; // pos isn't updated if compareDisregardingTile, but please, do
-            onlineObject.beingMoved = false;
             onlineObject.realized = this.realized;
             if (onlineObject.apo.realizedObject != null)
             {

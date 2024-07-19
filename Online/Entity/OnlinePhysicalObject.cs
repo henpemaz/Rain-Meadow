@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Runtime.CompilerServices;
 using static RainMeadow.OnlineCreature;
-using System.Runtime.InteropServices.ComTypes;
 
 namespace RainMeadow
 {
@@ -134,9 +133,9 @@ namespace RainMeadow
 
         public override void ReadState(EntityState entityState, OnlineResource inResource)
         {
-            beingMoved = true;
+            AllMoving(true);
             base.ReadState(entityState, inResource);
-            beingMoved = false;
+            AllMoving(false);
         }
 
         protected override EntityState MakeState(uint tick, OnlineResource inResource)
@@ -176,57 +175,21 @@ namespace RainMeadow
                 if (inResource is WorldSession ws)
                 {
                     RainMeadow.Debug($"world join");
-                    apo.Move(topos);
+                    apo.pos = poState.pos;
+                    ws.world.GetAbstractRoom(topos)?.AddEntity(apo);
+                    if (poState.inDen) ws.world.GetAbstractRoom(topos).MoveEntityToDen(apo);
                 }
                 else if (inResource is RoomSession newRoom)
                 {
                     RainMeadow.Debug($"room join");
-                    if (apo.realizedObject is PhysicalObject po)
+                    apo.Move(topos);
+                    if(apo is not AbstractCreature ac || ac.AllowedToExistInRoom(newRoom.absroom.realizedRoom))
                     {
-                        RainMeadow.Debug($"already realized");
-                        apo.Move(topos);
-                        if (apo is AbstractCreature ac)
-                        {
-                            topos = QuickConnectivity.DefineNodeOfLocalCoordinate(poState.pos, ac.world, ac.creatureTemplate);
-                            if (ac.AllowedToExistInRoom(newRoom.absroom.realizedRoom))
-                            {
-                                RainMeadow.Debug($"late creature");
-                                ac.realizedCreature.inShortcut = true;
-                                ac.world.game.shortcuts.CreatureEnterFromAbstractRoom(ac.realizedCreature, newRoom.absroom, topos.abstractNode);
-                            }
-                            else
-                            {
-                                RainMeadow.Debug($"early creature");
-                                ac.Abstractize(topos);
-                            }
-                        }
-                        else
-                        {
-                            RainMeadow.Debug($"object to place");
-                            po.PlaceInRoom(newRoom.absroom.realizedRoom);
-                        }
+                        apo.RealizeInRoom();
                     }
-                    else // apo.realizedObject == null
+                    else
                     {
-                        RainMeadow.Debug($"not realized");
-                        if (apo is AbstractCreature ac)
-                        {
-                            RainMeadow.Debug($"creature enter");
-                            // creatures will properly enter from node, gnuff specially if we add spit-out-of-sc events
-                            topos = QuickConnectivity.DefineNodeOfLocalCoordinate(poState.pos, ac.world, ac.creatureTemplate);
-                            if (topos.CompareDisregardingTile(ac.pos))
-                            {
-                                ac.ChangeRooms(topos);
-                            }
-                            else { ac.Move(topos); }
-                        }
-                        else
-                        {
-                            RainMeadow.Debug($"obj enter");
-                            // regular apos do not
-                            apo.Move(topos);
-                            if (apo.realizedObject == null && !apo.InDen && !apo.GetAllConnectedObjects().Any(other => other is AbstractCreature)) apo.RealizeInRoom();
-                        }
+                        apo.Abstractize(topos);
                     }
                 }
                 AllMoving(false);
