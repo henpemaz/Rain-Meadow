@@ -144,141 +144,142 @@ namespace RainMeadow
             return new PhysicalObjectEntityState(this, inResource, tick);
         }
 
+        protected void AllMoving(bool set)
+        {
+            var all = apo.GetAllConnectedObjects();
+            for (int i = 0; i < all.Count; i++)
+            {
+                var otherapo = all[i];
+                if (otherapo != null && map.TryGetValue(otherapo, out var otheropo))
+                {
+                    otheropo.beingMoved = set;
+                }
+            }
+        }
+
         protected override void JoinImpl(OnlineResource inResource, EntityState initialState)
         {
             var poState = initialState as PhysicalObjectEntityState;
-            apo.pos = poState.pos;
-            RainMeadow.Debug($"{this} moving in {inResource}");
-            if (inResource is WorldSession ws)
+            var topos = poState.pos;
+            var waspos = apo.pos;
+
+            // so here I was thinking maybe we disconnect everything as things get moved so the game doesn't chain-move them?
+            // basically on joinimpl AND leaveimpl always de-stuck any sticks both abstract and real
+            // but right now we're missing most of the tech for recreating them though pretty much we only handle creaturegrasps?
+            // if we want to re-stick things then that information needs to go through somehow and needs to be move versatile than the current thing
+            
+            RainMeadow.Debug($"{this} joining {inResource}");
+            RainMeadow.Debug($"from {waspos} to {poState.pos}");
+            try
             {
-                beingMoved = true;
-                ws.world.GetAbstractRoom(this.apo.pos).AddEntity(apo);
-                beingMoved = false;
-            }
-            else if (inResource is RoomSession newRoom)
-            {
-                beingMoved = true;
-                newRoom.World.GetAbstractRoom(this.apo.pos).AddEntity(apo);
-                beingMoved = false;
-                if (apo is not AbstractCreature creature)
+                AllMoving(true);
+                if (inResource is WorldSession ws)
                 {
-                    if (newRoom.absroom.realizedRoom is Room realizedRoom && realizedRoom.shortCutsReady)
-                    {
-                        if (apo.realizedObject != null && realizedRoom.updateList.Contains(apo.realizedObject))
-                        {
-                            RainMeadow.Debug($"Entity {this} already in the room {newRoom.absroom.name}, not adding!");
-                            return;
-                        }
-
-                        // todo carried by other won't pick up if entering from abstract, how fix?
-                        if (apo.realizedObject != null && apo.realizedObject.grabbedBy.Count > 0)
-                        {
-                            RainMeadow.Debug($"Entity {this} carried by other, not adding!");
-                            return;
-                        }
-
-                        RainMeadow.Debug($"Spawning entity: {apo.ID}");
-                        beingMoved = true;
-                        apo.RealizeInRoom();
-                        beingMoved = false;
-                    }
-                    return;
+                    RainMeadow.Debug($"world join");
+                    apo.Move(topos);
                 }
-
-                if (newRoom.absroom.realizedRoom is Room realRoom && creature.AllowedToExistInRoom(realRoom))
+                else if (inResource is RoomSession newRoom)
                 {
-                    if (creature.realizedCreature != null && realRoom.updateList.Contains(creature.realizedCreature))
+                    RainMeadow.Debug($"room join");
+                    if (apo.realizedObject is PhysicalObject po)
                     {
-                        RainMeadow.Debug($"Creature {creature.ID} already in the room {newRoom.absroom.name}, not adding!");
-                        return;
-                    }
-
-                    // TODO creature carrying objects should marks objects as being moved so they run move code
-                    //  right now this spits more errors than it should
-                    // TODO creature spawning from abstract needs grasp data available to do the object-carrying
-
-                    RainMeadow.Debug("spawning creature " + creature);
-                    if (apo.pos.TileDefined)
-                    {
-                        RainMeadow.Debug("added directly to the room");
-                        beingMoved = true;
-                        creature.RealizeInRoom(); // places in room
-                        creature.realizedCreature.inShortcut = false; // might have been reused realized creature
-                        beingMoved = false;
-                    }
-                    else if (apo.pos.NodeDefined)
-                    {
-                        RainMeadow.Debug("added directly to shortcut system");
-                        beingMoved = true;
-                        creature.Realize();
-                        beingMoved = false;
-                        creature.realizedCreature.RemoveFromShortcuts();
-                        creature.realizedCreature.inShortcut = true;
-                        // this calls MOVE on the next tick which remove-adds
-                        newRoom.absroom.world.game.shortcuts.CreatureEnterFromAbstractRoom(creature.realizedCreature, newRoom.absroom, apo.pos.abstractNode);
-                    }
-                    else
-                    {
-                        RainMeadow.Debug("INVALID POS??" + apo.pos);
-                        throw new InvalidOperationException("entity must have a vaild position");
-                    }
-                }
-                else
-                {
-                    RainMeadow.Debug("not spawning creature " + creature);
-                    RainMeadow.Debug($"reasons {newRoom.absroom.realizedRoom is not null} {(newRoom.absroom.realizedRoom != null && creature.AllowedToExistInRoom(newRoom.absroom.realizedRoom))}");
-                    if (creature.realizedCreature != null)
-                    {
-                        if (!apo.pos.TileDefined && apo.pos.NodeDefined && newRoom.absroom.realizedRoom != null && newRoom.absroom.realizedRoom.shortCutsReady)
+                        RainMeadow.Debug($"already realized");
+                        apo.Move(topos);
+                        if (apo is AbstractCreature ac)
                         {
-                            RainMeadow.Debug("added realized creature to shortcut system");
-                            creature.realizedCreature.inShortcut = true;
-                            // this calls MOVE on the next tick which remove-adds, this could be bad?
-                            newRoom.absroom.world.game.shortcuts.CreatureEnterFromAbstractRoom(creature.realizedCreature, newRoom.absroom, apo.pos.abstractNode);
+                            topos = QuickConnectivity.DefineNodeOfLocalCoordinate(poState.pos, ac.world, ac.creatureTemplate);
+                            if (ac.AllowedToExistInRoom(newRoom.absroom.realizedRoom))
+                            {
+                                RainMeadow.Debug($"late creature");
+                                ac.realizedCreature.inShortcut = true;
+                                ac.world.game.shortcuts.CreatureEnterFromAbstractRoom(ac.realizedCreature, newRoom.absroom, topos.abstractNode);
+                            }
+                            else
+                            {
+                                RainMeadow.Debug($"early creature");
+                                ac.Abstractize(topos);
+                            }
                         }
                         else
                         {
-                            // can't abstractize properly because previous location is lost
-                            RainMeadow.Debug("cleared realized creature and added to absroom as abstract entity");
-                            creature.realizedCreature = null;
+                            RainMeadow.Debug($"object to place");
+                            po.PlaceInRoom(newRoom.absroom.realizedRoom);
                         }
                     }
-                    else
+                    else // apo.realizedObject == null
                     {
-                        RainMeadow.Debug("added to absroom as abstract entity");
+                        RainMeadow.Debug($"not realized");
+                        if (apo is AbstractCreature ac)
+                        {
+                            RainMeadow.Debug($"creature enter");
+                            // creatures will properly enter from node, gnuff specially if we add spit-out-of-sc events
+                            topos = QuickConnectivity.DefineNodeOfLocalCoordinate(poState.pos, ac.world, ac.creatureTemplate);
+                            if (topos.CompareDisregardingTile(ac.pos))
+                            {
+                                ac.ChangeRooms(topos);
+                            }
+                            else { ac.Move(topos); }
+                        }
+                        else
+                        {
+                            RainMeadow.Debug($"obj enter");
+                            // regular apos do not
+                            apo.Move(topos);
+                            if (apo.realizedObject == null && !apo.InDen && !apo.GetAllConnectedObjects().Any(other => other is AbstractCreature)) apo.RealizeInRoom();
+                        }
                     }
                 }
+                AllMoving(false);
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                apo.world.GetAbstractRoom(apo.pos)?.RemoveEntity(apo); // safe enough
+                apo.world.GetAbstractRoom(poState.pos)?.AddEntity(apo);
+                apo.pos = poState.pos;
+                AllMoving(false);
+                //throw;
             }
         }
 
         protected override void LeaveImpl(OnlineResource inResource)
         {
-            if (inResource is RoomSession rs)
+            RainMeadow.Debug($"{this} leaving {inResource}");
+            try
             {
-                RainMeadow.Debug("Removing entity from room: " + this);
-                beingMoved = true;
-                rs.absroom.RemoveEntity(apo);
-                if (apo.realizedObject is PhysicalObject po)
+                AllMoving(true);
+                if (primaryResource == null) // gone
                 {
-                    if (rs.absroom.realizedRoom is Room room)
+                    RainMeadow.Debug("Removing entity from game: " + this);
+                    apo.LoseAllStuckObjects();
+                    apo.Room?.RemoveEntity(apo);
+                }
+                if (inResource is RoomSession rs)
+                {
+                    RainMeadow.Debug("Removing entity from room: " + this);
+                    rs.absroom.RemoveEntity(apo);
+                    if (apo.realizedObject is PhysicalObject po)
                     {
-                        room.RemoveObject(po);
-                        room.CleanOutObjectNotInThisRoom(po);
-                    }
-                    if (po is Creature c && c.inShortcut && !joinedResources.Any(r => r is RoomSession))
-                    {
-                        if (c.RemoveFromShortcuts()) c.inShortcut = false;
+                        if (rs.absroom.realizedRoom is Room room)
+                        {
+                            room.RemoveObject(po);
+                            room.CleanOutObjectNotInThisRoom(po);
+                        }
+                        if (po is Creature c && c.inShortcut)
+                        {
+                            c.RemoveFromShortcuts();
+                        }
                     }
                 }
-                beingMoved = false;
+                AllMoving(false);
             }
-            if (primaryResource == null) // gone
+            catch (Exception e)
             {
-                RainMeadow.Debug("Removing entity from game: " + this);
-                beingMoved = true;
-                apo.LoseAllStuckObjects();
-                apo.Room?.RemoveEntity(apo);
-                beingMoved = false;
+                RainMeadow.Error(e);
+                apo.realizedObject?.RemoveFromRoom();
+                apo.world.GetAbstractRoom(apo.pos)?.RemoveEntity(apo);
+                AllMoving(false);
+                //throw;
             }
         }
 
