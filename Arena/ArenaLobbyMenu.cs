@@ -14,11 +14,22 @@ namespace RainMeadow
 {
     public class ArenaLobbyMenu : SmartMenu
     {
+        public SymbolButton infoButton;
+
         private ArenaClientSettings personaSettings;
         private static float num = 120f;
         private static float num2 = 0f;
         private static float num3 = num - num2;
         private List<string> sharedPlayList = new List<string>();
+
+        OpSliderTick playerCountSlider;
+        UIelementWrapper playerCountWrapper;
+
+        int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x; // been using 1360 as ref
+
+        SimpleButton[] playerClassButtons;
+        PlayerJoinButton[] playerJoinButtons;
+        MultiplayerMenu mm;
 
         public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
 
@@ -57,7 +68,6 @@ namespace RainMeadow
             };
         }
 
-        MultiplayerMenu mm;
 
         void FakeInitializeMultiplayerMenu()
         {
@@ -71,17 +81,20 @@ namespace RainMeadow
 
             UnlockAndLoadLevels();
 
+
             // very convenient
             mm.arenaSettingsInterface = new ArenaSettingsInterface(mm, pages[0]);
             mm.arenaSettingsInterface.pos += Vector2.down * 40;
+            pages[0].subObjects.Add(mm.arenaSettingsInterface);
+            
 
             mm.levelSelector = new LevelSelector(mm, pages[0], false);
-
-            pages[0].subObjects.Add(mm.arenaSettingsInterface);
             pages[0].subObjects.Add(mm.levelSelector);
-
-
             mm.init = true;
+
+
+
+
         }
 
         void UnlockAndLoadLevels()
@@ -120,7 +133,6 @@ namespace RainMeadow
             return b;
         }
 
-        int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x; // been using 1360 as ref
         void BuildLayout()
         {
             scene.AddIllustration(new MenuIllustration(mm, scene, "", "CompetitiveShadow", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
@@ -136,13 +148,7 @@ namespace RainMeadow
             AddAbovePlayText();
         }
 
-        OpSliderTick playerCountSlider;
-        UIelementWrapper playerCountWrapper;
 
-        public SymbolButton infoButton;
-
-        SimpleButton[] playerClassButtons;
-        PlayerJoinButton[] playerJoinButtons;
 
         void BuildPlayerSlots()
         {
@@ -279,7 +285,7 @@ namespace RainMeadow
             else
             {
                 mm.playButton.buttonBehav.greyedOut = OnlineManager.lobby.isAvailable;
-                
+
             }
 
         }
@@ -345,96 +351,7 @@ namespace RainMeadow
             return base.UpdateInfoText();
         }
 
-        void MultiplayerMenuUpdate()
-        {
-            if (!mm.requestingControllerConnections && !mm.exiting)
-            {
-                for (int i = 0; i < 4; i++)
-                {
-                    if (i != 0)
-                    {
-                        manager.arenaSetup.playersJoined[i] = manager.rainWorld.GetPlayerHandler(i) != null;
-                        _ = manager.arenaSetup.playersJoined[i];
-                        //manager.rainWorld.GetPlayerSigningIn(i);
-                    }
-                }
-            }
 
-            base.Update();
-
-            bool flag = RWInput.CheckPauseButton(0, manager.rainWorld);
-            if (flag && !mm.lastPauseButton && manager.dialog == null)
-            {
-                mm.OnExit();
-            }
-
-            mm.lastPauseButton = flag;
-            mm.lastBlackFade = mm.blackFade;
-
-            var num = 0;
-            if (mm.blackFade < num)
-            {
-                mm.blackFade = Custom.LerpAndTick(mm.blackFade, num, 0.05f, 71f / (339f * (float)Math.PI));
-            }
-            else
-            {
-                mm.blackFade = Custom.LerpAndTick(mm.blackFade, num, 0.05f, 0.125f);
-            }
-
-            bool flag2 = false;
-            int num2 = 0;
-            for (int j = 0; j < mm.GetArenaSetup.playersJoined.Length; j++)
-            {
-                if (mm.GetArenaSetup.playersJoined[j])
-                {
-                    num2++;
-                }
-            }
-
-            if (num2 == 0)
-            {
-                mm.abovePlayButtonLabel.text = Translate("No players joined!");
-            }
-            else
-            {
-                if (mm.levelSelector.levelsPlaylist != null && mm.levelSelector.levelsPlaylist.mismatchCounter > 20)
-                {
-                    mm.abovePlayButtonLabel.text = Translate("ERROR");
-                }
-                else
-                {
-                    int num3 = mm.GetGameTypeSetup.playList.Count * mm.GetGameTypeSetup.levelRepeats;
-                    if (num3 == 0)
-                    {
-                        mm.abovePlayButtonLabel.text = Regex.Replace(Translate("Select which levels to play<LINE>in the level selector"), "<LINE>", "\r\n");
-                    }
-                    else
-                    {
-                        int num4 = mm.ApproximatePlayTime();
-                        string text;
-                        text = ((num3 == 1) ? Translate("ROUND SESSION") : ((num3 < 2 && num3 > 4) ? Translate("ROUNDS SESSION") : Translate("ROUNDS SESSION-ru2")));
-                        text = ((!text.Contains("#")) ? (num3 + " " + text) : text.Replace("#", num3.ToString()));
-                        mm.abovePlayButtonLabel.text = text + ((num4 > 0) ? ("\r\n" + Translate("Approximately") + " " + num4 + " " + ((num4 == 1) ? Translate("minute") : Translate("minutes"))) : "");
-                        flag2 = true;
-                    }
-                }
-            }
-
-            mm.APBLLastSin = mm.APBLSin;
-            mm.APBLLastPulse = mm.APBLPulse;
-
-            if (!flag2)
-            {
-                mm.APBLSin += 1f;
-                mm.APBLPulse = Custom.LerpAndTick(mm.APBLPulse, 1f, 0.04f, 0.025f);
-                mm.playButton.buttonBehav.greyedOut = true;
-            }
-            else
-            {
-                mm.APBLPulse = Custom.LerpAndTick(mm.APBLPulse, 0f, 0.04f, 0.025f);
-                mm.playButton.buttonBehav.greyedOut = false;
-            }
-        }
 
         public override void ShutDownProcess()
         {
@@ -544,24 +461,25 @@ namespace RainMeadow
 
         }
 
-/*        public void ClearAndRefreshLevelSelect()
-        {
+        /// TODO: Share level selection visibly with client
+        /*        public void ClearAndRefreshLevelSelect()
+                {
 
-            for (int i = 0; i < manager.arenaSitting.levelPlaylist.Count; i++)
-            {
-                mm.levelSelector.LevelFromPlayList(i);
+                    for (int i = 0; i < manager.arenaSitting.levelPlaylist.Count; i++)
+                    {
+                        mm.levelSelector.LevelFromPlayList(i);
 
-            }
+                    }
 
-            foreach (var level in manager.arenaSitting.levelPlaylist)
-            {
+                    foreach (var level in manager.arenaSitting.levelPlaylist)
+                    {
 
-                mm.levelSelector.LevelToPlaylist(level);
+                        mm.levelSelector.LevelToPlaylist(level);
 
 
-            }
+                    }
 
-        }*/
+                }*/
 
     }
 }

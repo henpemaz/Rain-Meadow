@@ -181,9 +181,6 @@ namespace RainMeadow
                 menu.manager.arenaSitting.levelPlaylist = hostPlaylist;
             }
 
-            RainMeadow.Debug("PLAYLIST COUNT: " + menu.manager.arenaSitting.levelPlaylist.Count);
-
-
             menu.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
 
             // temp
