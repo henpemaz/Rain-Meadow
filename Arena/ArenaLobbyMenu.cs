@@ -4,6 +4,7 @@ using Menu.Remix;
 using Menu.Remix.MixedUI;
 using RainMeadow.GameModes;
 using RWCustom;
+using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,7 +22,8 @@ namespace RainMeadow
         private static float num2 = 0f;
         private static float num3 = num - num2;
         private List<string> sharedPlayList = new List<string>();
-
+        private OpTinyColorPicker bodyColorPicker;
+        private OpTinyColorPicker eyeColorPicker;
         OpSliderTick playerCountSlider;
         UIelementWrapper playerCountWrapper;
 
@@ -386,6 +388,15 @@ namespace RainMeadow
             for (int k = 0; k < playerClassButtons.Length; k++)
             {
                 string name = OnlineManager.players[k].id.name;
+                CSteamID playerId;
+                if (OnlineManager.players[k].id is LocalMatchmakingManager.LocalPlayerId)
+                {
+                    playerId = default;
+                }
+                else
+                {
+                    playerId = (OnlineManager.players[k].id as SteamMatchmakingManager.SteamPlayerId).steamID;
+                }
 
                 if (ModManager.MSC)
                 {
@@ -396,8 +407,9 @@ namespace RainMeadow
 
                 (playerClassButtons[k] as SimplerButton).OnClick += (_) =>
                 {
-
-                    mm.GetArenaSetup.playerClass[k] = mm.GetArenaSetup.playerClass[0];
+                    string url = $"https://steamcommunity.com/profiles/{playerId}";
+                    SteamFriends.ActivateGameOverlayToWebPage(url);
+/*                    mm.GetArenaSetup.playerClass[k] = mm.GetArenaSetup.playerClass[0];
                     //mm.NextClass(mm.GetArenaSetup.playerClass[0]);
                     playerClassButtons[k].menuLabel.text = OnlineManager.players[0].id.name;
 
@@ -405,7 +417,7 @@ namespace RainMeadow
                     mm.ArenaImage(mm.GetArenaSetup.playerClass[0], 0);
                     // playerJoinButtons[0].portrait.LoadFile();
                     // playerJoinButtons[0].portrait.sprite.SetElementByName(playerJoinButtons[0].portrait.fileName);
-                    PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
+                    PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);*/
 
                 };
 
@@ -420,7 +432,7 @@ namespace RainMeadow
                 pages[0].subObjects.Add(playerClassButtons[k]);
             }
 
-            playerJoinButtons = new PlayerJoinButton[OnlineManager.players.Count];
+/*            playerJoinButtons = new PlayerJoinButton[OnlineManager.players.Count];
             for (int l = 0; l < playerJoinButtons.Length; l++)
             {
                 playerJoinButtons[l] = new PlayerJoinButton(mm, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * playerJoinButtons.Length, 40f), l);
@@ -435,7 +447,7 @@ namespace RainMeadow
                 }
 
                 pages[0].subObjects.Add(playerJoinButtons[l]);
-            }
+            }*/
 
         }
 
@@ -449,16 +461,45 @@ namespace RainMeadow
                 mainPage.RemoveSubObject(playerbtn);
             }
 
-            for (int i = 0; i < playerJoinButtons.Length; i++)
+/*            for (int i = 0; i < playerJoinButtons.Length; i++)
             {
                 var playerbtn = playerJoinButtons[i];
                 playerbtn.RemoveSprites();
                 mainPage.RemoveSubObject(playerbtn);
-            }
+            }*/
 
             AddPlayerButtons();
 
 
+        }
+
+        private void SetupCharacterCustomization()
+        {
+            var bodyLabel = new MenuLabel(this, pages[0], Translate("Body color"), new Vector2(800, 353), new(0, 30), false);
+            bodyLabel.label.alignment = FLabelAlignment.Right;
+            this.pages[0].subObjects.Add(bodyLabel);
+
+
+            var eyeLabel = new MenuLabel(this, pages[0], Translate("Eye color"), new Vector2(900, 353), new(0, 30), false);
+            eyeLabel.label.alignment = FLabelAlignment.Right;
+            this.pages[0].subObjects.Add(eyeLabel);
+
+            bodyColorPicker = new OpTinyColorPicker(this, new Vector2(705, 353), "FFFFFF");
+            var wrapper = new UIelementWrapper(tabWrapper, bodyColorPicker);
+            bodyColorPicker.OnValueChangedEvent += ColorPicker_OnValueChangedEvent;
+
+            eyeColorPicker = new OpTinyColorPicker(this, new Vector2(810, 353), "000000");
+            var wrapper2 = new UIelementWrapper(tabWrapper, eyeColorPicker);
+            eyeColorPicker.OnValueChangedEvent += ColorPicker_OnValueChangedEvent;
+
+            pages[0].subObjects.Add(wrapper);
+            pages[0].subObjects.Add(wrapper2);
+        }
+
+        private void ColorPicker_OnValueChangedEvent()
+        {
+            if (personaSettings != null) personaSettings.bodyColor = bodyColorPicker.valuecolor;
+            if (personaSettings != null) personaSettings.eyeColor = eyeColorPicker.valuecolor;
         }
 
         /// TODO: Share level selection visibly with client
