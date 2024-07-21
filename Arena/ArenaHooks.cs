@@ -24,6 +24,8 @@ namespace RainMeadow
         private void ArenaHooks()
         {
 
+            On.Spear.Update += Spear_Update;
+
             On.ArenaGameSession.SpawnPlayers += ArenaGameSession_SpawnPlayers;
             On.ArenaGameSession.Update += ArenaGameSession_Update;
             On.ArenaGameSession.ctor += ArenaGameSession_ctor;
@@ -37,14 +39,43 @@ namespace RainMeadow
             On.ArenaBehaviors.RespawnFlies.Update += RespawnFlies_Update;
             On.ArenaBehaviors.ArenaGameBehavior.Update += ArenaGameBehavior_Update;
             On.ArenaCreatureSpawner.SpawnArenaCreatures += ArenaCreatureSpawner_SpawnArenaCreatures;
-            
+
             On.HUD.HUD.InitMultiplayerHud += HUD_InitMultiplayerHud;
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
 
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
-            
+
+        }
+
+        private void Spear_Update(On.Spear.orig_Update orig, Spear self, bool eu)
+        {
+
+            if (RainMeadow.isArenaMode(out var _))
+            {
+                if (self == null)
+                {
+                    RainMeadow.Debug("Spear is null");
+                    return;
+                }
+
+                if (self.mode == Weapon.Mode.StuckInCreature && self.stuckInObject == null)
+                {
+                    RainMeadow.Debug("Creature fell off map with spear in them");
+                    return;
+                }
+
+                orig(self, eu);
+
+
+
+            }
+            else
+            {
+                orig(self, eu);
+            }
+
         }
 
         private void MultiplayerResults_ctor(On.Menu.MultiplayerResults.orig_ctor orig, Menu.MultiplayerResults self, ProcessManager manager)
@@ -102,13 +133,15 @@ namespace RainMeadow
                     RainMeadow.Debug("Spawning creature");
 
                     orig(self);
-                } else
+                }
+                else
                 {
                     RainMeadow.Debug("Prevented client from spawning excess creatures");
                 }
 
 
-            } else
+            }
+            else
             {
                 orig(self);
             }
