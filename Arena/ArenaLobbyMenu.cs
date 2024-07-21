@@ -2,6 +2,7 @@
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
+using RainMeadow.Arena;
 using RainMeadow.GameModes;
 using RWCustom;
 using Steamworks;
@@ -555,7 +556,7 @@ namespace RainMeadow
                 }
 
 
-                if (StorySaveManager.nonCampaignSlugcats.Contains(slugcatName))
+                if (ArenaSetupOverrides.nonArenaSlugs.Contains(slugcatName))
                 {
                     continue;
                 }
