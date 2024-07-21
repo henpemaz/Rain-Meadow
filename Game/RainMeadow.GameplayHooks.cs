@@ -26,8 +26,8 @@ namespace RainMeadow
                 // unmap so they're re-created and detected as different instances by shallow delta
                 var a = self.grasps[fromGrasp];
                 var b = self.grasps[toGrasp];
-                GraspRef.map.Remove(a);
-                GraspRef.map.Remove(b);
+                if (a != null) GraspRef.map.Remove(a);
+                if (b != null) GraspRef.map.Remove(b);
                 for (int j = 0; j < self.abstractCreature.stuckObjects.Count; j++)
                 {
                     if (self.abstractCreature.stuckObjects[j] is AbstractPhysicalObject.CreatureGripStick cgs && cgs.A == self.abstractCreature)

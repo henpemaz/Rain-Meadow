@@ -37,7 +37,8 @@ namespace RainMeadow
             {
                 if (allConnectedObjects[j].realizedObject is Creature other && other != creature)
                 {
-                    return false; // can't be removed because connected to other
+                    RainMeadow.Debug("can't be removed because connected to other");
+                    return false;
                 }
             }
             for (int i = 0; i < handler.transportVessels.Count; i++)
@@ -67,6 +68,7 @@ namespace RainMeadow
                     return true;
                 }
             }
+            RainMeadow.Debug("not found");
             return false; // not found??
         }
 

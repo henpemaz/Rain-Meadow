@@ -62,8 +62,9 @@ namespace RainMeadow
         public void MakeGrasp(Creature creature, PhysicalObject obj)
         {
             RainMeadow.Debug(this);
-            foreach (Creature.Grasp grasp in obj.grabbedBy) // handle already grabbed
+            for (int i = obj.grabbedBy.Count - 1; i >= 0; i--) // handle already grabbed
             {
+                Creature.Grasp grasp = obj.grabbedBy[i];
                 if (grasp.grabber == creature)
                 {
                     creature.ReleaseGrasp(grasp.graspUsed);
