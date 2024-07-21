@@ -14,7 +14,7 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.0.65";
+        public const string MeadowVersionStr = "0.0.66";
         public static RainMeadow instance;
         private bool init;
         public bool fullyInit;
@@ -206,6 +206,7 @@ namespace RainMeadow
                     MeadowProgression.progressionData.currentlySelectedCharacter = MeadowProgression.skinData[MeadowProgression.currentTestSkin].character;
                 }
 #endif
+
                 fullyInit = true;
             }
             catch (Exception e)

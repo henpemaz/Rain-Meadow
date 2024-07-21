@@ -51,9 +51,9 @@
         {
             RainMeadow.Debug(this);
             if (requestResult.referencedEvent == pendingRequest) pendingRequest = null;
-            if (requestResult is GenericResult.Ok) // I'm the new owner of this entity (comes as separate event though)
+            if (requestResult is GenericResult.Ok) // I'm the new owner of this entity
             {
-                // confirm pending grasps?
+                NewOwner(OnlineManager.mePlayer);
             }
             else if (requestResult is GenericResult.Error) // Something went wrong, I should retry
             {

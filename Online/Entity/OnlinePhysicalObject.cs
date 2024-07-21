@@ -191,6 +191,10 @@ namespace RainMeadow
                     {
                         apo.Abstractize(topos);
                     }
+                    if (apo.realizedObject is Creature creature)
+                    {
+                        if (creature.room != null && creature.inShortcut) creature.inShortcut = false;
+                    }
                 }
                 AllMoving(false);
             }

@@ -93,6 +93,13 @@ namespace RainMeadow
             public static readonly StateType OnlineSporePlantDefinition = new("OnlineSporePlantDefinition", typeof(OnlineSporePlant.OnlineSporePlantDefinition));
             public static readonly StateType OnlineCreatureDefinition = new("OnlineCreatureDefinition", typeof(OnlineCreature.OnlineCreatureDefinition));
 
+            public static readonly StateType GraspRef = new("GraspRef", typeof(GraspRef));
+            public static readonly StateType AbstractObjStickReprSpearStick = new("AbstractObjStickRepr.SpearStick", typeof(AbstractObjStickRepr.SpearStick));
+            public static readonly StateType AbstractObjStickReprSpearAppendageStick = new("AbstractObjStickRepr.SpearAppendageStick", typeof(AbstractObjStickRepr.SpearAppendageStick));
+            public static readonly StateType AbstractObjStickReprImpaledOnSpearStick = new("AbstractObjStickRepr.ImpaledOnSpearStick", typeof(AbstractObjStickRepr.ImpaledOnSpearStick));
+            public static readonly StateType AbstractObjStickReprOnBackStick = new("AbstractObjStickRepr.OnBackStick", typeof(AbstractObjStickRepr.OnBackStick));
+            public static readonly StateType AbstractObjStickReprCreatureGripStick = new ("AbstractObjStickRepr.CreatureGripStick", typeof(AbstractObjStickRepr.CreatureGripStick));
+
             public static readonly StateType MeadowAvatarSettingsDefinition = new ("MeadowAvatarSettings.Definition", typeof(MeadowAvatarSettings.Definition));
             public static readonly StateType SlugcatAvatarSettingsDefinition = new ("SlugcatAvatarSettings.Definition", typeof(StoryClientSettings.Definition));
 
@@ -201,6 +208,11 @@ namespace RainMeadow
 
             public virtual Expression ComparisonMethod(FieldInfo f, MemberExpression currentField, MemberExpression baselineField)
             {
+                if (f.FieldType.IsArray) return Expression.Call(
+                    typeof(Enumerable).GetMethods().First(m=> m.Name == "SequenceEqual" && m.IsGenericMethodDefinition && m.GetParameters().Length == 2).MakeGenericMethod(f.FieldType.GetElementType()),
+                    Expression.Convert(currentField, typeof(IEnumerable<>).MakeGenericType(f.FieldType.GetElementType())),
+                    Expression.Convert(baselineField, typeof(IEnumerable<>).MakeGenericType(f.FieldType.GetElementType()))
+                    );
                 return Expression.Equal(currentField, baselineField);
             }
         }

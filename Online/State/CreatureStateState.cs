@@ -1,6 +1,4 @@
-using RainMeadow.Generics;
 using System;
-using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -23,12 +21,21 @@ namespace RainMeadow
 
         public virtual void ReadTo(AbstractCreature abstractCreature)
         {
-            abstractCreature.state.alive = this.alive;
             abstractCreature.state.meatLeft = this.meatLeft;
-            if (abstractCreature.realizedCreature is Creature realCreature)
+            if (abstractCreature.realizedCreature is Creature creature)
             {
-                realCreature.dead = !this.alive;
+                if (alive && creature.dead)
+                {
+                    if(creature is BigSpider spoder && spoder.CanIBeRevived) spoder.Revive();
+                    else
+                    {
+                        creature.dead = false;
+                        abstractCreature.state.alive = this.alive;
+                    }
+                }
+                if (!alive && !creature.dead) creature.Die();
             }
+            else abstractCreature.state.alive = this.alive;
         }
     }
 }

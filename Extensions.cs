@@ -134,17 +134,17 @@ namespace RainMeadow
             throw new ArgumentException("no elements in sequence");
         }
 
-        public static bool CloseEnoughZeroSnap(this Vector2 a, Vector2 b, float tolerance)
+        public static bool CloseEnoughZeroSnap(this Vector2 a, Vector2 b, float sqrltol)
         {
             if (a == b) return true;
             if (a.x == 0 && a.y == 0) return false; // zero and non-zero situation!
             if (b.x == 0 && b.y == 0) return false;
-            return (a - b).sqrMagnitude < tolerance * tolerance;
+            return (a - b).sqrMagnitude < sqrltol;
         }
 
-        public static bool CloseEnough(this Vector2 a, Vector2 b, float tolerance)
+        public static bool CloseEnough(this Vector2 a, Vector2 b, float sqrtol)
         {
-            return a == b || (a - b).sqrMagnitude < tolerance * tolerance;
+            return a == b || (a - b).sqrMagnitude < sqrtol;
         }
 
         public static HSLColor ToHSL(this Color c)

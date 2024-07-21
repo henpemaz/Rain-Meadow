@@ -55,14 +55,15 @@ namespace RainMeadow
             if (!stuckInWall.HasValue)
                 spear.addPoles = false;
 
-            spear.stuckInObject = (stuckInObject?.FindEntity() as OnlinePhysicalObject)?.apo.realizedObject;
-            if (spear.stuckInObject != null)
+            var stuckInEntity = stuckInObject?.FindEntity() as OnlinePhysicalObject;
+            if (stuckInEntity != null)
             {
-                spear.stuckInChunkIndex = stuckInChunkIndex;
-                spear.stuckInAppendage = stuckInAppendage?.GetAppendagePos(stuckInObject.FindEntity() as OnlinePhysicalObject);
-                spear.stuckBodyPart = stuckBodyPart;
-                spear.stuckRotation = stuckRotation;
+                spear.stuckInObject = stuckInEntity.apo.realizedObject;
+                spear.stuckInAppendage = stuckInAppendage?.GetAppendagePos(stuckInEntity);
             }
+            spear.stuckInChunkIndex = stuckInChunkIndex;
+            spear.stuckBodyPart = stuckBodyPart;
+            spear.stuckRotation = stuckRotation;
 
             base.ReadTo(onlineEntity);
             var newMode = new Weapon.Mode(Weapon.Mode.values.GetEntry(mode));
