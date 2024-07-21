@@ -56,7 +56,7 @@ namespace RainMeadow
             {
                 if (self == null)
                 {
-                    RainMeadow.Debug("Creature fell off map with spear in them");
+                    RainMeadow.Debug("Spear is null");
                     return;
                 }
 
@@ -66,13 +66,12 @@ namespace RainMeadow
                     return;
                 }
 
-                else
-                {
-                    orig(self, eu);
+                orig(self, eu);
 
-                }
 
-            } else
+
+            }
+            else
             {
                 orig(self, eu);
             }
