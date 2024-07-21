@@ -1,4 +1,5 @@
 ﻿using HUD;
+using RainMeadow.GameModes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,6 +41,7 @@ namespace RainMeadow
             On.ArenaBehaviors.ArenaGameBehavior.Update += ArenaGameBehavior_Update;
             On.ArenaCreatureSpawner.SpawnArenaCreatures += ArenaCreatureSpawner_SpawnArenaCreatures;
 
+
             On.HUD.HUD.InitMultiplayerHud += HUD_InitMultiplayerHud;
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
@@ -80,6 +82,19 @@ namespace RainMeadow
                 orig(self, eu);
             }
 
+
+            On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1;
+
+        }
+
+        private void Player_GetInitialSlugcatClass1(On.Player.orig_GetInitialSlugcatClass orig, Player self)
+        {
+            orig(self);
+            if (isArenaMode(out var arena))
+            {
+                self.SlugCatClass = (arena.clientSettings as ArenaClientSettings).playingAs;
+
+            }
         }
 
         private void MultiplayerResults_ctor(On.Menu.MultiplayerResults.orig_ctor orig, Menu.MultiplayerResults self, ProcessManager manager)
