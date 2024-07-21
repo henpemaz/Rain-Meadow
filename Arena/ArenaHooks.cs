@@ -52,11 +52,6 @@ namespace RainMeadow
         private void Spear_Update(On.Spear.orig_Update orig, Spear self, bool eu)
         {
 
-            if (OnlineManager.lobby == null)
-            {
-                orig(self, eu);
-            }
-
             if (RainMeadow.isArenaMode(out var _))
             {
                 if (self == null)
@@ -77,6 +72,9 @@ namespace RainMeadow
 
                 }
 
+            } else
+            {
+                orig(self, eu);
             }
 
         }
