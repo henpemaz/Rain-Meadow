@@ -15,15 +15,24 @@ namespace RainMeadow
         // this way we can have them be fed through the delta mechanism whith just plain referenceequals comparisons which is peak efficiency
 
         [OnlineField]
-        public OnlinePhysicalObject B;
-        private OnlinePhysicalObject b => B;
-        
+        public OnlineEntity.EntityId B;
+
+        private OnlinePhysicalObject _b;
+        public OnlinePhysicalObject b
+        {
+            get {
+                if (_b == null) _b = B.FindEntity() as OnlinePhysicalObject;
+                return _b;
+            }
+        }
+
 
         public AbstractObjStickRepr() { }
 
         protected AbstractObjStickRepr(OnlinePhysicalObject b)
         {
-            B = b;
+            _b = b;
+            B = b.id;
             RainMeadow.Debug("new stick! " + this);
         }
 

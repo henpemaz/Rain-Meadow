@@ -243,6 +243,11 @@ namespace RainMeadow
             owner = newOwner;
             primaryResource.registeredEntities[id] = MakeDefinition(primaryResource);
 
+            foreach(var key in incomingState.Keys.ToList())
+            {
+                incomingState[key] = new Queue<EntityState>();
+            }
+
             if (wasOwner.isMe)
             {
                 foreach (var res in joinedResources)
@@ -306,11 +311,17 @@ namespace RainMeadow
                 RainMeadow.Trace($"Received state for resource the entity isn't in {this} {inResource}, currently in {this.currentlyJoinedResource}");
                 return;
             }
+            if (newState.from != owner)
+            {
+                RainMeadow.Trace($"skipping state from {newState.from}, wanted {owner}");
+                return;
+            }
+            RainMeadow.Trace($"processing received state {newState} in resource {inResource}");
             var stateQueue = incomingState[inResource];
             if (newState.isDelta)
             {
                 RainMeadow.Trace($"received delta state for tick {newState.tick} referencing baseline {newState.baseline}");
-                while (stateQueue.Count > 0 && (newState.from != stateQueue.Peek().from || NetIO.IsNewer(newState.baseline, stateQueue.Peek().tick)))
+                while (stateQueue.Count > 0 && NetIO.IsNewer(newState.baseline, stateQueue.Peek().tick))
                 {
                     var discarded = stateQueue.Dequeue();
                     RainMeadow.Trace("discarding old event from tick " + discarded.tick);
@@ -318,7 +329,7 @@ namespace RainMeadow
                 if (stateQueue.Count == 0 || newState.baseline != stateQueue.Peek().tick)
                 {
                     RainMeadow.Error($"Received unprocessable delta for {this} in {entityFeedState.inResource} from {newState.from}, tick {newState.tick} referencing baseline {newState.baseline}");
-                    RainMeadow.Error($"Available ticks are: [{string.Join(", ", stateQueue.Where(s => s.from == newState.from).Select(s => s.tick))}]");
+                    RainMeadow.Error($"Available ticks are: [{string.Join(", ", stateQueue.Select(s => s.tick))}]");
                     if (!newState.from.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.DeltaReset, inResource, this.id)))
                     {
                         newState.from.InvokeRPC(RPCs.DeltaReset, inResource, this.id);
@@ -332,15 +343,7 @@ namespace RainMeadow
                 RainMeadow.Trace("received absolute state for tick " + newState.tick);
             }
             stateQueue.Enqueue(newState);
-            if(newState.from == owner)
-            {
-                RainMeadow.Trace($"processing received state {newState} in resource {inResource}");
-                ReadState(newState, inResource);
-            }
-            else
-            {
-                RainMeadow.Trace($"skipping state from {newState.from}, wanted {owner}");
-            }
+            ReadState(newState, inResource);
         }
 
         protected abstract EntityState MakeState(uint tick, OnlineResource inResource);

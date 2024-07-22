@@ -270,6 +270,19 @@ namespace RainMeadow
                     RainMeadow.Debug("Removing entity from game: " + this);
                     apo.LoseAllStuckObjects();
                     apo.Room?.RemoveEntity(apo);
+                    if(apo.realizedObject is PhysicalObject po)
+                    {
+                        if (apo.Room?.realizedRoom is Room room)
+                        {
+                            room.RemoveObject(po);
+                            room.CleanOutObjectNotInThisRoom(po);
+                        }
+                        if (po is Creature c && c.inShortcut)
+                        {
+                            RainMeadow.Debug("removing from shortcuts");
+                            c.RemoveFromShortcuts();
+                        }
+                    }
                 }
                 if (inResource is RoomSession rs)
                 {
@@ -311,7 +324,7 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return apo.ToString() + base.ToString();
+            return $"{apo.type} {base.ToString()}";
         }
 
         [RPCMethod]

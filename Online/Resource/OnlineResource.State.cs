@@ -1,4 +1,5 @@
-﻿using RainMeadow.Generics;
+﻿using Mono.Cecil;
+using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace RainMeadow
             return latestState;
         }
 
-        protected Queue<ResourceState> incomingState = new(32);
+        protected Queue<ResourceState> incomingState = new(8);
         protected abstract ResourceState MakeState(uint ts);
         public void ReadState(ResourceState newState)
         {
@@ -39,11 +40,16 @@ namespace RainMeadow
                 RainMeadow.Trace($"received state for inactive resource");
                 return;
             }
-            // this has a flaw when there's multiple players talking to me.
+            if (newState.from != owner)
+            {
+                RainMeadow.Trace($"received state from {newState.from} but owner is {owner}");
+                return;
+            }
+            RainMeadow.Trace($"processing received state {newState} in resource {this}");
             if (newState.isDelta)
             {
                 RainMeadow.Trace($"received delta state from {newState.from} for tick {newState.tick} referencing baseline {newState.baseline}");
-                while (incomingState.Count > 0 && (owner != incomingState.Peek().from || NetIO.IsNewer(newState.baseline, incomingState.Peek().tick)))
+                while (incomingState.Count > 0 && NetIO.IsNewer(newState.baseline, incomingState.Peek().tick))
                 {
                     var discarded = incomingState.Dequeue();
                     RainMeadow.Trace("discarding old state from tick " + discarded.tick);
@@ -51,7 +57,7 @@ namespace RainMeadow
                 if (incomingState.Count == 0 || newState.baseline != incomingState.Peek().tick)
                 {
                     RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.baseline}");
-                    RainMeadow.Error($"Available ticks are: [{string.Join(", ", incomingState.Where(s => s.from == newState.from).Select(s => s.tick))}]");
+                    RainMeadow.Error($"Available ticks are: [{string.Join(", ", incomingState.Select(s => s.tick))}]");
                     if (!newState.from.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.DeltaReset, this, null)))
                     {
                         newState.from.InvokeRPC(RPCs.DeltaReset, this, null);
@@ -65,18 +71,11 @@ namespace RainMeadow
                 RainMeadow.Trace($"received absolute state from {newState.from} for tick " + newState.tick);
             }
             incomingState.Enqueue(newState);
-            if (newState.from == owner)
+            latestState = newState;
+            if (isWaitingForState || isAvailable) newState.ReadTo(this);
+            if (isWaitingForState)
             {
-                latestState = newState;
-                if (isWaitingForState || isAvailable) newState.ReadTo(this);
-                if (isWaitingForState) 
-                {
-                    Available();
-                }
-            }
-            else
-            {
-                RainMeadow.Trace($"received state from {newState.from} but owner is {owner}");
+                Available();
             }
         }
 

@@ -156,13 +156,14 @@ namespace RainMeadow
         public void OnEntityJoinRequest(RPCEvent rpcEvent, OnlineEntity oe, OnlineEntity.EntityState initialState)
         {
             RainMeadow.Debug($"{oe} : {this}");
-            if (isOwner && isActive)
+            if (oe != null && isOwner && isActive)
             {
                 EntityJoinedResource(oe, initialState);
                 rpcEvent.from.QueueEvent(new GenericResult.Ok(rpcEvent));
             }
             else
             {
+                RainMeadow.Debug($"failed with reasons: {oe != null} {isOwner} {isActive}");
                 rpcEvent.from.QueueEvent(new GenericResult.Error(rpcEvent));
             }
         }
@@ -228,13 +229,14 @@ namespace RainMeadow
         public void OnEntityLeaveRequest(RPCEvent rpcEvent, OnlineEntity oe)
         {
             RainMeadow.Debug($"{oe} : {this}");
-            if (oe.owner == rpcEvent.from && isOwner && isActive)
+            if (oe != null && oe.owner == rpcEvent.from && isOwner && isActive)
             {
                 EntityLeftResource(oe);
                 rpcEvent.from.QueueEvent(new GenericResult.Ok(rpcEvent));
             }
             else
             {
+                RainMeadow.Debug($"failed with reasons: {oe != null} {oe.owner == rpcEvent.from} {isOwner} {isActive}");
                 rpcEvent.from.QueueEvent(new GenericResult.Error(rpcEvent));
             }
         }
@@ -298,13 +300,14 @@ namespace RainMeadow
         public void OnEntityTransferRequest(RPCEvent entityTransferRequest, OnlineEntity oe, OnlinePlayer newOwner)
         {
             RainMeadow.Debug($"{oe} : {this} : to {newOwner}");
-            if (isOwner && isActive)
+            if (oe != null && isOwner && isActive) // shouldn't there be an extra ownership test here?
             {
                 EntityTransfered(oe, newOwner);
                 entityTransferRequest.from.QueueEvent(new GenericResult.Ok(entityTransferRequest));
             }
             else
             {
+                RainMeadow.Debug($"failed with reasons: {oe != null} {isOwner} {isActive}");
                 entityTransferRequest.from.QueueEvent(new GenericResult.Error(entityTransferRequest));
             }
         }

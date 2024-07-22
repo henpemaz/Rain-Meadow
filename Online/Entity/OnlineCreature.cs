@@ -15,11 +15,11 @@ namespace RainMeadow
             public OnlineCreatureDefinition(OnlineCreature onlineCreature, OnlineResource inResource) : base(onlineCreature, inResource)
             {
                 if (RainMeadow.isArenaMode(out var _)) {
-                this.serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature);
+                    this.serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature);
 
 
                 } else {
-                this.serializedObject = SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
+                    this.serializedObject = SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
                 }
             }
 
@@ -171,20 +171,29 @@ namespace RainMeadow
             enteringShortCut = true;
             var creature = (apo.realizedObject as Creature);
             var room = creature.room;
-            creature.SuckedIntoShortCut(entrancePos, carriedByOther);
-            if (creature.graphicsModule != null)
+            try
             {
-            {
-                Vector2 vector = room.MiddleOfTile(entrancePos) + Custom.IntVector2ToVector2(room.ShorcutEntranceHoleDirection(entrancePos)) * -5f;
-                creature.graphicsModule.SuckedIntoShortCut(vector);
+                if (creature != null)
+                {
+                    creature.SuckedIntoShortCut(entrancePos, carriedByOther);
+                    if (creature.graphicsModule != null && room != null)
+                    {
+                        Vector2 vector = room.MiddleOfTile(entrancePos) + Custom.IntVector2ToVector2(room.ShorcutEntranceHoleDirection(entrancePos)) * -5f;
+                        creature.graphicsModule.SuckedIntoShortCut(vector);
+                    }
+                }
             }
+            catch (Exception)
+            {
+                enteringShortCut = false;
+                throw;
             }
             enteringShortCut = false;
         }
 
         public override string ToString()
         {
-            return (this.apo as AbstractCreature).creatureTemplate.ToString() + base.ToString();
+            return $"{abstractCreature.creatureTemplate.type} {base.ToString()}";
         }
     }
 }
