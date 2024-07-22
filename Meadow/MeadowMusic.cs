@@ -83,7 +83,7 @@ namespace RainMeadow
             public string sampleUsed;
         }
         static VibeZone az = new VibeZone();
-        static Dictionary<string, float> SongLengths = new();
+        static Dictionary<string, float> SongLengthsDict = new();
         static void GameCtorPatch(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
         {
             orig.Invoke(self, manager);
@@ -121,25 +121,25 @@ namespace RainMeadow
                     }
                 }
 
-
-                dirs = AssetManager.ListDirectory("music", false, true);
-
-                foreach (string dir in dirs)
+                Dictionary<string, float> DictTho = new();
+                string[] thesongs = AssetManager.ListDirectory("songs", false, true);
+                foreach (string song in thesongs)
                 {
-                    string filename = dir.Split(Path.DirectorySeparatorChar)[dir.Split(Path.DirectorySeparatorChar).Length - 1];
-                    if (filename == "MeadowSongLengths.txt")
-                    {
-                        string[] lines = File.ReadAllLines(dir);
-                        Dictionary<string, float> DictTho = new();
-                        foreach (string line in lines)
-                        {
-                            string[] arr = line.Split(new char[] { ':' });
-                            DictTho.Add(arr[0], float.Parse(arr[1]));
-                        }
-                        SongLengths = DictTho;
-                    }
+                    //AudioClip? thing = AssetManager.SafeWWWAudioClip("file://" + song, false, false, AudioType.OGGVORBIS); 
+                    //float howlonghorse = thing.length; //this is a little scary cuz it gives the dict ALL of the songs in rain world 
+                    //actually this might be shit because it'll take like one million years loading every single song...
+                    //actually, cute story. previously i thought that getting the "clip.source.length" of whatever song i point at was not possible, cuz it was always pointed from song.subtrack[0].
+                    //now that i am reading how the game does it, i see that i am calling the same function *as what the game sets MusicPiece.source.clip to be*, from MusicPiece line 210.
+                    //buuut it was all thrown in the shitter after Bro told me this better way which doesn't load the sound of every single song individually and freeze the game lmao. "Yeah i know a bit of audio programming" my ass
+                    WWW www = new WWW("file://" + song);
+                    AudioClip? thing2 = www.GetAudioClip(false, true, AudioType.OGGVORBIS);
+                    float howlonghorse = thing2.length;
+                    string filename = song.Split(Path.DirectorySeparatorChar)[song.Split(Path.DirectorySeparatorChar).Length - 1];
+                    RainMeadow.Debug("Meadow Music:  Registered song " + filename + " to be of length " + howlonghorse);
+                    DictTho.Add(filename, howlonghorse);
                 }
-                //In the Future, maybe highjack reading a song and get the float time directly from the metadata? 
+                //The Future is here, and it's way dumber than i imagined.
+                SongLengthsDict = DictTho;
                 filesChecked = true;
             }
             AnalyzeRegion(self.world);
@@ -151,9 +151,8 @@ namespace RainMeadow
             orig.Invoke(self, dt);
             if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode) return;
             if (!timerStopped) time += dt;
-            MeFolk.TimeLeft -= dt;
-
             MusicPlayer musicPlayer = self.manager.musicPlayer;
+            MeFolk.TimeLeft = musicPlayer.song.subTracks[0].source.time;
 
             if (UpdateIntensity)
             {
@@ -216,8 +215,9 @@ namespace RainMeadow
                                     fadeInTime = 1f
                                 };
                                 musicPlayer.song = song;
-                                MeFolk.TimeLeft = SongLengths[MeFolk.ProvidedSong];
-                                
+                                MeFolk.TimeLeft = musicPlayer.song.subTracks[0].source.clip.length;
+                                //actually calling it would just need 
+                                MeFolk.TimeLeft = musicPlayer.song.subTracks[0].source.clip.length - musicPlayer.song.subTracks[0].source.time;
                             }
                             else
                             {
@@ -234,7 +234,7 @@ namespace RainMeadow
                                 List<string> list = new List<string>(); //KeyValuePair<string, string> entry 
                                 float longestsongtime = 999;
                                 string longestsong = " ";
-                                foreach (var entry in SongLengths)
+                                foreach (var entry in SongLengthsDict)
                                 {
                                     if (MaxTimeLeft > entry.Value) 
                                     { 
@@ -259,7 +259,7 @@ namespace RainMeadow
                                         fadeInTime = 1f
                                     };
                                     musicPlayer.song = song;
-                                    MeFolk.TimeLeft = SongLengths[PickedSong];
+                                    MeFolk.TimeLeft = SongLengthsDict[PickedSong];
                                 }
                                 else
                                 {
@@ -299,7 +299,7 @@ namespace RainMeadow
                                         fadeInTime = 1f
                                     };
                                     musicPlayer.song = song;
-                                    MeFolk.TimeLeft = SongLengths[PickedSong];
+                                    MeFolk.TimeLeft = SongLengthsDict[PickedSong];
                                 }
                             }
                         }
