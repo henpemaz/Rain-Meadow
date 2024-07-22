@@ -191,6 +191,7 @@ namespace RainMeadow
                 LoadingHooks();
                 StoryHooks();
                 ArenaHooks();
+                ItemHooks();
 
                 MeadowMusic.EnableMusic();
 

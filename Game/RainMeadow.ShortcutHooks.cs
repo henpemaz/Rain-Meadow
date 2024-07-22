@@ -131,7 +131,7 @@ namespace RainMeadow
             if (onlineEntity.isMine) return result; // If entity is ours, game handles it normally.
             if (onlineEntity.roomSession?.absroom != vessel.room)
             {
-                Debug($"Denied because in wrong room: vessel at {vessel.room.name}:{vessel.room.index} entity at:{onlineEntity.roomSession?.absroom.name ?? "null"}{onlineEntity.roomSession?.absroom.index.ToString() ?? "null"}");
+                Trace($"Denied because in wrong room: vessel at {vessel.room.name}:{vessel.room.index} entity at:{onlineEntity.roomSession?.absroom.name ?? "null"}{onlineEntity.roomSession?.absroom.index.ToString() ?? "null"}");
                 result = false; // If OnlineEntity is not yet in the room, keep waiting.
             }
 
@@ -142,7 +142,7 @@ namespace RainMeadow
                 {
                     if (innerOnlineEntity.roomSession?.absroom != vessel.room)
                     {
-                        Debug($"Denied because of connected object: {innerOnlineEntity}");
+                        Trace($"Denied because of connected object: {innerOnlineEntity}");
                         result = false; // Same for all connected entities
                     }
                 }
@@ -153,7 +153,7 @@ namespace RainMeadow
                 }
             }
 
-            if (result == false) Debug($"OnlineEntity {onlineEntity} not yet in destination room, keeping hostage...");
+            if (result == false) Trace($"OnlineEntity {onlineEntity} not yet in destination room, keeping hostage...");
             return result;
         }
 
