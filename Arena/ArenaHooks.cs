@@ -24,10 +24,13 @@ namespace RainMeadow
         private void ArenaHooks()
         {
 
+            On.Spear.Update += Spear_Update;
+
             On.ArenaGameSession.SpawnPlayers += ArenaGameSession_SpawnPlayers;
             On.ArenaGameSession.Update += ArenaGameSession_Update;
             On.ArenaGameSession.ctor += ArenaGameSession_ctor;
             On.ArenaGameSession.AddHUD += ArenaGameSession_AddHUD;
+            On.ArenaGameSession.SpawnCreatures += ArenaGameSession_SpawnCreatures;
 
             On.ArenaBehaviors.ExitManager.ExitsOpen += ExitManager_ExitsOpen;
             On.ArenaBehaviors.ExitManager.Update += ExitManager_Update;
@@ -35,17 +38,127 @@ namespace RainMeadow
             On.ArenaBehaviors.Evilifier.Update += Evilifier_Update;
             On.ArenaBehaviors.RespawnFlies.Update += RespawnFlies_Update;
             On.ArenaBehaviors.ArenaGameBehavior.Update += ArenaGameBehavior_Update;
-            
-
+            On.ArenaCreatureSpawner.SpawnArenaCreatures += ArenaCreatureSpawner_SpawnArenaCreatures;
 
             On.HUD.HUD.InitMultiplayerHud += HUD_InitMultiplayerHud;
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
+
+            On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
+            On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
+
+        }
+
+        private void Spear_Update(On.Spear.orig_Update orig, Spear self, bool eu)
+        {
+
+            if (RainMeadow.isArenaMode(out var _))
+            {
+                if (self == null)
+                {
+                    RainMeadow.Debug("Spear is null");
+                    return;
+                }
+
+                if (self.mode == Weapon.Mode.StuckInCreature && self.stuckInObject == null)
+                {
+                    RainMeadow.Debug("Creature fell off map with spear in them");
+                    return;
+                }
+
+                orig(self, eu);
+
+
+
+            }
+            else
+            {
+                orig(self, eu);
+            }
+
+        }
+
+        private void MultiplayerResults_ctor(On.Menu.MultiplayerResults.orig_ctor orig, Menu.MultiplayerResults self, ProcessManager manager)
+        {
+            orig(self, manager);
+            var exitButton = new Menu.SimpleButton(self, self.pages[0], self.Translate("EXIT"), "EXIT", new Vector2(856f, 50f), new Vector2(110f, 30f));
+            self.pages[0].subObjects.Add(exitButton);
+        }
+
+        private void MultiplayerResults_Singal(On.Menu.MultiplayerResults.orig_Singal orig, Menu.MultiplayerResults self, Menu.MenuObject sender, string message)
+        {
+            if (message != null && message == "CONTINUE")
+            {
+                self.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
+                self.manager.rainWorld.options.DeleteArenaSitting();
+                self.PlaySound(SoundID.MENU_Switch_Page_In);
+            }
+
+            if (message != null && message == "EXIT")
+            {
+
+                self.manager.rainWorld.options.DeleteArenaSitting();
+                OnlineManager.LeaveLobby();
+                self.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+                self.PlaySound(SoundID.MENU_Switch_Page_In);
+            }
+        }
+
+        private void ArenaCreatureSpawner_SpawnArenaCreatures(On.ArenaCreatureSpawner.orig_SpawnArenaCreatures orig, RainWorldGame game, ArenaSetup.GameTypeSetup.WildLifeSetting wildLifeSetting, ref List<AbstractCreature> availableCreatures, ref MultiplayerUnlocks unlocks)
+        {
+            if (isArenaMode(out var _))
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    RainMeadow.Debug("Spawning creature");
+                    orig(game, wildLifeSetting, ref availableCreatures, ref unlocks);
+                }
+                else
+                {
+                    RainMeadow.Debug("Prevented client from spawning excess creatures");
+                }
+            }
+            else
+            {
+                orig(game, wildLifeSetting, ref availableCreatures, ref unlocks);
+            }
+        }
+
+        private void ArenaGameSession_SpawnCreatures(On.ArenaGameSession.orig_SpawnCreatures orig, ArenaGameSession self)
+        {
+            if (isArenaMode(out var _))
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    RainMeadow.Debug("Spawning creature");
+
+                    orig(self);
+                }
+                else
+                {
+                    RainMeadow.Debug("Prevented client from spawning excess creatures");
+                }
+
+
+            }
+            else
+            {
+                orig(self);
+            }
         }
 
         private void HUD_InitMultiplayerHud(On.HUD.HUD.orig_InitMultiplayerHud orig, HUD.HUD self, ArenaGameSession session)
         {
-            self.AddPart(new TextPrompt(self));
+
+
+            if (isArenaMode(out var _))
+            {
+                self.AddPart(new TextPrompt(self));
+            }
+            else
+            {
+                orig(self, session);
+            }
 
         }
 
