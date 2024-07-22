@@ -311,7 +311,7 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return apo.ToString() + base.ToString();
+            return $"{apo.type} {base.ToString()}";
         }
 
         [RPCMethod]
