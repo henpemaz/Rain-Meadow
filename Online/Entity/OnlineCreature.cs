@@ -15,11 +15,11 @@ namespace RainMeadow
             public OnlineCreatureDefinition(OnlineCreature onlineCreature, OnlineResource inResource) : base(onlineCreature, inResource)
             {
                 if (RainMeadow.isArenaMode(out var _)) {
-                this.serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature);
+                    this.serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature);
 
 
                 } else {
-                this.serializedObject = SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
+                    this.serializedObject = SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
                 }
             }
 
@@ -173,7 +173,7 @@ namespace RainMeadow
             var room = creature.room;
             try
             {
-                if(creature != null)
+                if (creature != null)
                 {
                     creature.SuckedIntoShortCut(entrancePos, carriedByOther);
                     if (creature.graphicsModule != null && room != null)
@@ -193,7 +193,7 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return (this.apo as AbstractCreature).creatureTemplate.ToString() + base.ToString();
+            return $"{abstractCreature.creatureTemplate.type} {base.ToString()}";
         }
     }
 }

@@ -241,9 +241,7 @@ namespace RainMeadow
             if (newOwner == owner && newOwner != null)
                 if (RainMeadow.isArenaMode(out var _))
                 {
-
                     RainMeadow.Debug("Assigned to host"); // Lobby owner control
-
                 }
                 else
                 {
@@ -253,6 +251,8 @@ namespace RainMeadow
             if (isAvailable && newOwner == null && (pendingRequest is not RPCEvent rc || rc.handler.method.Name != nameof(this.Released))) throw new InvalidOperationException("No owner for available resource");
             var oldOwner = owner;
             owner = newOwner;
+
+            incomingState = new(8); // used for delta-encoding stream
 
             if (owner != null) NewParticipant(owner);
 
@@ -477,15 +477,12 @@ namespace RainMeadow
             if (RainMeadow.isArenaMode(out var _))
             {
                 newOwner = OnlineManager.lobby.owner; // Host always owns
-
             }
             else
             {
                 newOwner = MatchmakingManager.instance.BestTransferCandidate(this, participants);
-
             }
-
-            NewOwner(newOwner);
+            if (newOwner != owner) NewOwner(newOwner);
             if (newOwner != null && !isPending)
             {
                 newOwner.InvokeRPC(this.Transfered).Then(this.ResolveTransfer);
