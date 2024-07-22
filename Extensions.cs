@@ -25,22 +25,13 @@ namespace RainMeadow
 
         public static OnlineCreature GetOnlineCreature(this AbstractCreature ac)
         {
-            return (OnlineCreature)OnlineCreature.map.GetValue(ac, (ac) => throw new KeyNotFoundException($"Creature{ac} not found"));
+            return (OnlineCreature)OnlineCreature.map.GetValue(ac, (ac) => throw new KeyNotFoundException($"Creature {ac} not found"));
         }
 
         public static bool RemoveFromShortcuts(this Creature creature)
         {
             if (!creature.inShortcut) return true;
             var handler = creature.abstractCreature.world.game.shortcuts;
-            var allConnectedObjects = creature.abstractCreature.GetAllConnectedObjects();
-            for (int j = 0; j < allConnectedObjects.Count; j++)
-            {
-                if (allConnectedObjects[j].realizedObject is Creature other && other != creature)
-                {
-                    RainMeadow.Debug("can't be removed because connected to other");
-                    return false;
-                }
-            }
             for (int i = 0; i < handler.transportVessels.Count; i++)
             {
                 if (handler.transportVessels[i].creature == creature)
@@ -69,7 +60,7 @@ namespace RainMeadow
                 }
             }
             RainMeadow.Debug("not found");
-            return false; // not found??
+            return false;
         }
 
         // suck it, linq

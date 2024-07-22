@@ -11,6 +11,7 @@ namespace RainMeadow
         {
             On.Room.AddObject += RoomOnAddObject; // Prevent adding item to update list twice
 
+            IL.ShortcutHandler.Update += ShortcutHandler_Update; // cleanup of entities in shortcut system
             On.ShortcutHandler.VesselAllowedInRoom += ShortcutHandlerOnVesselAllowedInRoom; // Prevent creatures from entering a room if their online counterpart has not yet entered!
 
             On.Creature.SuckedIntoShortCut += CreatureSuckedIntoShortCut;
@@ -31,6 +32,88 @@ namespace RainMeadow
                 return;
             }
             orig(self, obj);
+        }
+
+        // removes entities that should be deleted when going between rooms
+        // not very robust also currently only handles creatures, should check recursively for grasps/connections
+        private void ShortcutHandler_Update(ILContext il)
+        {
+            try
+            {
+                
+                var c = new ILCursor(il);
+
+
+                //// cleanup betweenroomswaitinglobby of wandering entities
+                //// this is right before the forloop on betweenRoomsWaitingLobby
+                //c.GotoNext(moveType: MoveType.Before,
+                //    i => i.MatchLdarg(0),
+                //    i => i.MatchLdfld<ShortcutHandler>("betweenRoomsWaitingLobby"),
+                //    i => i.MatchCallOrCallvirt(out _),
+                //    i => i.MatchLdcI4(1)
+                //    );
+                //c.MoveAfterLabels();
+                //c.Emit(OpCodes.Ldarg_0);
+                //c.EmitDelegate((ShortcutHandler self) =>
+                //{
+                //    if (OnlineManager.lobby != null)
+                //    {
+                //        for (var i = self.betweenRoomsWaitingLobby.Count - 1; i >= 0; i--)
+                //        {
+                //            var vessel = self.betweenRoomsWaitingLobby[i];
+                //            if (OnlinePhysicalObject.map.TryGetValue(vessel.creature.abstractPhysicalObject, out var oe))
+                //            {
+                //                if (!oe.isMine && oe.roomSession?.absroom != vessel.room)
+                //                {
+                //                    self.betweenRoomsWaitingLobby.Remove(vessel);
+                //                    foreach (var obj in vessel.creature.abstractCreature.GetAllConnectedObjects())
+                //                    {
+                //                        if (obj.realizedObject is Creature c) c.inShortcut = false;
+                //                    }
+                //                }
+                //            }
+                //        }
+                //    }
+                //});
+
+
+                // if (this.betweenRoomsWaitingLobby[k].room.realizedRoom == null)
+                // becomes if (this.betweenRoomsWaitingLobby[k].room.realizedRoom == null && ...)
+                int indexvar = default;
+                ILLabel skip = default;
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<ShortcutHandler>("betweenRoomsWaitingLobby"),
+                    i => i.MatchLdloc(out indexvar),
+                    i => i.MatchCallOrCallvirt(out _),
+                    i => i.MatchLdfld<ShortcutHandler.Vessel>("room"),
+                    i => i.MatchLdfld<AbstractRoom>("realizedRoom"),
+                    i => i.MatchBrtrue(out skip)
+                    );
+
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldloc, indexvar);
+                c.EmitDelegate((ShortcutHandler self, int i) =>
+                {
+                    if (OnlineManager.lobby != null)
+                    {
+                        var vessel = self.betweenRoomsWaitingLobby[i];
+                        if (OnlinePhysicalObject.map.TryGetValue(vessel.creature.abstractPhysicalObject, out var oe))
+                        {
+                            if (!oe.isMine && oe.roomSession?.absroom != vessel.room)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                });
+                c.Emit(OpCodes.Brtrue, skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
         }
 
         // Prevent creatures from entering a room if their online counterpart has not yet entered!

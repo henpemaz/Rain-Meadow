@@ -68,9 +68,9 @@ namespace RainMeadow
                     if (opoA.isMine)
                     {
                         // try transfer "grabbed" side
-                        if (!opoB.isMine && !opoB.isPending)
+                        if (!opoB.isMine)
                         {
-                            RainMeadow.Debug("my object connecting to object that isn't mine");
+                            RainMeadow.Debug("my object connecting to group that isn't mine");
                             var bentities = B.GetAllConnectedObjects().Select(o => OnlinePhysicalObject.map.TryGetValue(o, out var opo) ? opo : null).Where(o => o != null).ToList();
                             bool btransferable = bentities.All(e => e.isTransferable);
                             if (btransferable)
@@ -89,12 +89,40 @@ namespace RainMeadow
                             {
                                 RainMeadow.Debug("can't request object because group not transferable");
                             }
-                        }
+                        } // else: both groups mine nothing to do
                     }
-                    else if (opoB.isMine)
+                    else if (opoB.isMine) // A not mine, B mine
                     {
-                        RainMeadow.Debug("object that isn't mine, unhandled");
+                        RainMeadow.Debug("grabbed group is mine");
                         // grabber isn't mine, THEY need to request me tho
+                        var bentities = B.GetAllConnectedObjects().Select(o => OnlinePhysicalObject.map.TryGetValue(o, out var opo) ? opo : null).Where(o => o != null).ToList();
+                        bool btransferable = bentities.All(e => e.isTransferable);
+                        if (btransferable)
+                        {
+                            RainMeadow.Debug("grabbed group is transferable"); // other will request
+                        }
+                        else
+                        {
+                            RainMeadow.Debug("grabbed group is NOT transferable");
+                            var aentities = A.GetAllConnectedObjects().Select(o => OnlinePhysicalObject.map.TryGetValue(o, out var opo) ? opo : null).Where(o => o != null).ToList();
+                            bool atransferable = aentities.All(e => e.isTransferable);
+                            if (atransferable)
+                            {
+                                RainMeadow.Debug("requesting all connected objects");
+                                foreach (var item in aentities)
+                                {
+                                    if (!item.isPending) item.Request();
+                                    else
+                                    {
+                                        RainMeadow.Debug($"can't request {item} because pending");
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                RainMeadow.Debug("can't request grabber group because group not transferable");
+                            }
+                        }
                     }
                 }
             }

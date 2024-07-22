@@ -190,7 +190,7 @@ namespace RainMeadow
                         OnlineManager.ForceLoadUpdate();
                     }
                     if (!rs.isAvailable) return;
-                    if (!rs.isActive) rs.Activate();
+                    if ((self.requestShortcutsReady || self.room.shortCutsReady) && !rs.isActive) rs.Activate();
                 }
             }
             orig(self);
