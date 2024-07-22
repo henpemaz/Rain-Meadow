@@ -53,10 +53,6 @@ namespace RainMeadow
         {
             string[] array = Regex.Split(creatureString, "<cA>");
             CreatureTemplate.Type type = new CreatureTemplate.Type(array[0], false);
-
-
-
-
             if (type.Index == -1)
             {
                 RainMeadow.Debug("Unknown creature: " + array[0] + " creature not spawning");
@@ -66,28 +62,14 @@ namespace RainMeadow
             {
             '.'
             });
-
-
-
-
-
-
             EntityID id = EntityID.FromString(array[1]);
-
-
             int? num = BackwardsCompatibilityRemix.ParseRoomIndex(array2[0]);
-
             if (num == null || !world.IsRoomInRegion(num.Value))
             {
-
                 num = world.GetAbstractRoom(array2[0]).index;
-
             }
-
-
             WorldCoordinate den = new WorldCoordinate(num.Value, -1, -1, int.Parse(array2[1], NumberStyles.Any, CultureInfo.InvariantCulture));
             AbstractCreature abstractCreature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, den, id);
-
             if (world != null)
             {
                 abstractCreature.state.LoadFromString(Regex.Split(array[3], "<cB>"));
@@ -144,27 +126,27 @@ namespace RainMeadow
             creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, hitChunk, victimAppendage, damageType, damage, stunBonus);
         }
 
-        public void ForceGrab(GraspRef graspRef)
-        {
-            var castShareability = new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(graspRef.Shareability));
-            var other = graspRef.OnlineGrabbed.FindEntity(quiet: true) as OnlinePhysicalObject;
-            if (other != null && other.apo.realizedObject != null)
-            {
-                var grabber = (Creature)this.apo.realizedObject;
-                var grabbedThing = other.apo.realizedObject;
-                var graspUsed = graspRef.GraspUsed;
+        //public void ForceGrab(GraspRef graspRef)
+        //{
+        //    var castShareability = new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(graspRef.Shareability));
+        //    var other = graspRef.OnlineGrabbed.FindEntity(quiet: true) as OnlinePhysicalObject;
+        //    if (other != null && other.apo.realizedObject != null)
+        //    {
+        //        var grabber = (Creature)this.apo.realizedObject;
+        //        var grabbedThing = other.apo.realizedObject;
+        //        var graspUsed = graspRef.GraspUsed;
 
-                if (grabber.grasps[graspUsed] != null)
-                {
-                    if (grabber.grasps[graspUsed].grabbed == grabbedThing) return;
-                    grabber.grasps[graspUsed].Release();
-                }
-                grabber.grasps[graspUsed] = new Creature.Grasp(grabber, grabbedThing, graspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
-                grabbedThing.room = grabber.room;
-                grabbedThing.Grabbed(grabber.grasps[graspUsed]);
-                new AbstractPhysicalObject.CreatureGripStick(grabber.abstractCreature, grabbedThing.abstractPhysicalObject, graspUsed, graspRef.Pacifying || grabbedThing.TotalMass < grabber.TotalMass);
-            }
-        }
+        //        if (grabber.grasps[graspUsed] != null)
+        //        {
+        //            if (grabber.grasps[graspUsed].grabbed == grabbedThing) return;
+        //            grabber.grasps[graspUsed].Release();
+        //        }
+        //        grabber.grasps[graspUsed] = new Creature.Grasp(grabber, grabbedThing, graspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
+        //        grabbedThing.room = grabber.room;
+        //        grabbedThing.Grabbed(grabber.grasps[graspUsed]);
+        //        new AbstractPhysicalObject.CreatureGripStick(grabber.abstractCreature, grabbedThing.abstractPhysicalObject, graspUsed, graspRef.Pacifying || grabbedThing.TotalMass < grabber.TotalMass);
+        //    }
+        //}
 
         public void BroadcastSuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
         {

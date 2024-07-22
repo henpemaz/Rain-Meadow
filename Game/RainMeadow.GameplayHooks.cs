@@ -11,10 +11,122 @@ namespace RainMeadow
             On.ShelterDoor.Close += ShelterDoorOnClose;
             On.Creature.Update += CreatureOnUpdate;
             On.Creature.Violence += CreatureOnViolence;
-            On.Creature.Grasp.ctor += GraspOnctor;
-            On.PhysicalObject.Grabbed += PhysicalObjectOnGrabbed;
             On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
+
+            On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor;
+            On.Creature.SwitchGrasps += Creature_SwitchGrasps;
+        }
+
+        private static void Creature_SwitchGrasps(On.Creature.orig_SwitchGrasps orig, Creature self, int fromGrasp, int toGrasp)
+        {
+            orig(self, fromGrasp, toGrasp);
+            if (OnlineManager.lobby != null)
+            {
+                // unmap so they're re-created and detected as different instances by shallow delta
+                var a = self.grasps[fromGrasp];
+                var b = self.grasps[toGrasp];
+                if (a != null) GraspRef.map.Remove(a);
+                if (b != null) GraspRef.map.Remove(b);
+                for (int j = 0; j < self.abstractCreature.stuckObjects.Count; j++)
+                {
+                    if (self.abstractCreature.stuckObjects[j] is AbstractPhysicalObject.CreatureGripStick cgs && cgs.A == self.abstractCreature)
+                    {
+                        if (a != null && a.graspUsed == cgs.grasp)
+                        {
+                            AbstractObjStickRepr.map.Remove(cgs);
+                        }
+                        else if (b != null && b.graspUsed == cgs.grasp)
+                        {
+                            AbstractObjStickRepr.map.Remove(cgs);
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void AbstractObjectStick_ctor(On.AbstractPhysicalObject.AbstractObjectStick.orig_ctor orig, AbstractPhysicalObject.AbstractObjectStick self, AbstractPhysicalObject A, AbstractPhysicalObject B)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                // issue: abstractsticks are often duplicated
+                for (int i = A.stuckObjects.Count - 1; i >= 0; i--)
+                {
+                    var other = A.stuckObjects[i];
+                    if (other.A == A && other.B == B && other.GetType() == self.GetType())
+                    {
+                        if (AbstractObjStickRepr.map.TryGetValue(other, out var otherRep))
+                        {
+                            AbstractObjStickRepr.map.Add(self, otherRep);
+                        }
+                        other.Deactivate();
+                    }
+                }
+                // issue: connecting things that belong to different players is troublesome
+                if (OnlinePhysicalObject.map.TryGetValue(A, out var opoA) && OnlinePhysicalObject.map.TryGetValue(B, out var opoB)) // both online
+                {
+                    if (opoA.isMine)
+                    {
+                        // try transfer "grabbed" side
+                        if (!opoB.isMine)
+                        {
+                            RainMeadow.Debug("my object connecting to group that isn't mine");
+                            var bentities = B.GetAllConnectedObjects().Select(o => OnlinePhysicalObject.map.TryGetValue(o, out var opo) ? opo : null).Where(o => o != null).ToList();
+                            bool btransferable = bentities.All(e => e.isTransferable);
+                            if (btransferable)
+                            {
+                                RainMeadow.Debug("requesting all connected objects");
+                                foreach (var item in bentities)
+                                {
+                                    if (!item.isPending) item.Request();
+                                    else
+                                    {
+                                        RainMeadow.Debug($"can't request {item} because pending");
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                RainMeadow.Debug("can't request object because group not transferable");
+                            }
+                        } // else: both groups mine nothing to do
+                    }
+                    else if (opoB.isMine) // A not mine, B mine
+                    {
+                        RainMeadow.Debug("grabbed group is mine");
+                        // grabber isn't mine, THEY need to request me tho
+                        var bentities = B.GetAllConnectedObjects().Select(o => OnlinePhysicalObject.map.TryGetValue(o, out var opo) ? opo : null).Where(o => o != null).ToList();
+                        bool btransferable = bentities.All(e => e.isTransferable);
+                        if (btransferable)
+                        {
+                            RainMeadow.Debug("grabbed group is transferable"); // other will request
+                        }
+                        else
+                        {
+                            RainMeadow.Debug("grabbed group is NOT transferable");
+                            var aentities = A.GetAllConnectedObjects().Select(o => OnlinePhysicalObject.map.TryGetValue(o, out var opo) ? opo : null).Where(o => o != null).ToList();
+                            bool atransferable = aentities.All(e => e.isTransferable);
+                            if (atransferable)
+                            {
+                                RainMeadow.Debug("requesting all connected objects");
+                                foreach (var item in aentities)
+                                {
+                                    if (!item.isPending) item.Request();
+                                    else
+                                    {
+                                        RainMeadow.Debug($"can't request {item} because pending");
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                RainMeadow.Debug("can't request grabber group because group not transferable");
+                            }
+                        }
+                    }
+                }
+            }
+            orig(self, A, B);
         }
 
         private void PhysicalObject_HitByExplosion(On.PhysicalObject.orig_HitByExplosion orig, PhysicalObject self, float hitFac, Explosion explosion, int hitChunk)
@@ -170,6 +282,7 @@ namespace RainMeadow
                 }
             }
 
+            // this is here as a safegard because we don't transfer full detail grasp data
             if (onlineCreature.isMine && self.grasps != null)
             {
                 foreach (var grasp in self.grasps)
@@ -180,12 +293,12 @@ namespace RainMeadow
                         Error($"Grabbed object {grasp.grabbed.abstractPhysicalObject} {grasp.grabbed.abstractPhysicalObject.ID} doesn't exist in online space!");
                         continue;
                     }
-                    if (!onlineGrabbed.isMine && onlineGrabbed.isTransferable && !onlineGrabbed.isPending)
+                    if (!onlineGrabbed.isMine && onlineGrabbed.isTransferable && !onlineGrabbed.isPending) // been leased to someone else
                     {
                         if (grasp.grabbed is not Creature) // Non-Creetchers cannot be grabbed by multiple creatures
                         {
-                            grasp.Release();
-                            return;
+                            self.ReleaseGrasp(grasp.graspUsed);
+                            continue;
                         }
 
                         var grabbersOtherThanMe = grasp.grabbed.grabbedBy.Select(x => x.grabber).Where(x => x != self);
@@ -196,7 +309,7 @@ namespace RainMeadow
                                 Error($"Other grabber {grabbers.abstractPhysicalObject} {grabbers.abstractPhysicalObject.ID} doesn't exist in online space!");
                                 continue;
                             }
-                            if (!tempEntity.isMine) return;
+                            if (!tempEntity.isMine) continue;
                         }
                         // If no remotes holding the entity, request it
                         onlineGrabbed.Request();
@@ -250,35 +363,6 @@ namespace RainMeadow
                 }
             }
             orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
-        }
-
-        private void GraspOnctor(On.Creature.Grasp.orig_ctor orig, Creature.Grasp self, Creature grabber, PhysicalObject grabbed, int graspused, int chunkgrabbed, Creature.Grasp.Shareability shareability, float dominance, bool pacifying)
-        {
-            orig(self, grabber, grabbed, graspused, chunkgrabbed, shareability, dominance, pacifying);
-            if (OnlineManager.lobby == null) return;
-            if (!OnlinePhysicalObject.map.TryGetValue(grabber.abstractPhysicalObject, out var onlineGrabber)) throw new InvalidOperationException("Grabber doesn't exist in online space!");
-            if (!OnlinePhysicalObject.map.TryGetValue(grabbed.abstractPhysicalObject, out var onlineGrabbed)) throw new InvalidOperationException("Grabbed thing doesn't exist in online space!");
-
-            if (onlineGrabber.isMine && !onlineGrabbed.isMine && onlineGrabbed.isTransferable && !onlineGrabbed.isPending)
-            {
-                onlineGrabbed.Request();
-            }
-        }
-
-        private void PhysicalObjectOnGrabbed(On.PhysicalObject.orig_Grabbed orig, PhysicalObject self, Creature.Grasp grasp)
-        {
-            orig(self, grasp);
-            if (OnlineManager.lobby == null) return;
-            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidOperationException("Entity doesn't exist in online space!");
-            if (!OnlinePhysicalObject.map.TryGetValue(grasp.grabber.abstractPhysicalObject, out var onlineGrabber)) throw new InvalidOperationException("Grabber doesn't exist in online space!");
-
-            if (!onlineEntity.isTransferable && onlineEntity.isMine)
-            {
-                if (!onlineGrabber.isMine && onlineGrabber.isTransferable && !onlineGrabber.isPending)
-                {
-                    onlineGrabber.Request(); // If I've been grabbed and I'm not transferrable, but my grabber is, request him
-                }
-            }
         }
     }
 }

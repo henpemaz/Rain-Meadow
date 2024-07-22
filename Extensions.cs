@@ -25,21 +25,13 @@ namespace RainMeadow
 
         public static OnlineCreature GetOnlineCreature(this AbstractCreature ac)
         {
-            return (OnlineCreature)OnlineCreature.map.GetValue(ac, (ac) => throw new KeyNotFoundException($"Creature{ac} not found"));
+            return (OnlineCreature)OnlineCreature.map.GetValue(ac, (ac) => throw new KeyNotFoundException($"Creature {ac} not found"));
         }
 
         public static bool RemoveFromShortcuts(this Creature creature)
         {
             if (!creature.inShortcut) return true;
             var handler = creature.abstractCreature.world.game.shortcuts;
-            var allConnectedObjects = creature.abstractCreature.GetAllConnectedObjects();
-            for (int j = 0; j < allConnectedObjects.Count; j++)
-            {
-                if (allConnectedObjects[j].realizedObject is Creature other && other != creature)
-                {
-                    return false; // can't be removed because connected to other
-                }
-            }
             for (int i = 0; i < handler.transportVessels.Count; i++)
             {
                 if (handler.transportVessels[i].creature == creature)
@@ -67,7 +59,8 @@ namespace RainMeadow
                     return true;
                 }
             }
-            return false; // not found??
+            RainMeadow.Debug("not found");
+            return false;
         }
 
         // suck it, linq
@@ -134,17 +127,17 @@ namespace RainMeadow
             throw new ArgumentException("no elements in sequence");
         }
 
-        public static bool CloseEnoughZeroSnap(this Vector2 a, Vector2 b, float tolerance)
+        public static bool CloseEnoughZeroSnap(this Vector2 a, Vector2 b, float sqrltol)
         {
             if (a == b) return true;
             if (a.x == 0 && a.y == 0) return false; // zero and non-zero situation!
             if (b.x == 0 && b.y == 0) return false;
-            return (a - b).sqrMagnitude < tolerance * tolerance;
+            return (a - b).sqrMagnitude < sqrltol;
         }
 
-        public static bool CloseEnough(this Vector2 a, Vector2 b, float tolerance)
+        public static bool CloseEnough(this Vector2 a, Vector2 b, float sqrtol)
         {
-            return a == b || (a - b).sqrMagnitude < tolerance * tolerance;
+            return a == b || (a - b).sqrMagnitude < sqrtol;
         }
 
         public static HSLColor ToHSL(this Color c)

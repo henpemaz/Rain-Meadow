@@ -68,7 +68,17 @@ namespace RainMeadow
         public bool Equals(ChunkState other)
         {
             //return other != null && pos == other.pos && vel == other.vel;
-            return other != null && pos.CloseEnough(other.pos, 1f) && vel.CloseEnoughZeroSnap(other.vel, 1f);
+            return other as object != null && pos.CloseEnough(other.pos, 1f) && vel.CloseEnoughZeroSnap(other.vel, 1f);
+        }
+
+        public static bool operator ==(ChunkState lhs, ChunkState rhs)
+        {
+            return lhs as object != null && lhs.Equals(rhs);
+        }
+
+        public static bool operator !=(ChunkState lhs, ChunkState rhs)
+        {
+            return !(lhs == rhs);
         }
 
         public override int GetHashCode()

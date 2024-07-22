@@ -11,7 +11,7 @@ namespace RainMeadow
         {
             On.Room.AddObject += RoomOnAddObject; // Prevent adding item to update list twice
 
-            IL.ShortcutHandler.Update += ShortcutHandler_Update; // cleanup of deleted entities in shortcut system
+            IL.ShortcutHandler.Update += ShortcutHandler_Update; // cleanup of entities in shortcut system
             On.ShortcutHandler.VesselAllowedInRoom += ShortcutHandlerOnVesselAllowedInRoom; // Prevent creatures from entering a room if their online counterpart has not yet entered!
 
             On.Creature.SuckedIntoShortCut += CreatureSuckedIntoShortCut;
@@ -27,7 +27,7 @@ namespace RainMeadow
             {
                 Debug($"Object {obj} - {(obj is PhysicalObject po ? po.abstractPhysicalObject.ID : obj)} already in the update list! Skipping...");
                 var stackTrace = Environment.StackTrace;
-                if (!stackTrace.Contains("Creature.PlaceInRoom") && !stackTrace.Contains("AbstractSpaceVisualizer")) // We know about this
+                if (!stackTrace.Contains("AbstractSpaceVisualizer")) // We know about this
                     Error(Environment.StackTrace); // Log cases that we still haven't found 
                 return;
             }
@@ -40,34 +40,75 @@ namespace RainMeadow
         {
             try
             {
-                // cleanup betweenroomswaitinglobby of wandering entities
+                
                 var c = new ILCursor(il);
 
-                c.GotoNext(moveType: MoveType.Before,
+
+                //// cleanup betweenroomswaitinglobby of wandering entities
+                //// this is right before the forloop on betweenRoomsWaitingLobby
+                //c.GotoNext(moveType: MoveType.Before,
+                //    i => i.MatchLdarg(0),
+                //    i => i.MatchLdfld<ShortcutHandler>("betweenRoomsWaitingLobby"),
+                //    i => i.MatchCallOrCallvirt(out _),
+                //    i => i.MatchLdcI4(1)
+                //    );
+                //c.MoveAfterLabels();
+                //c.Emit(OpCodes.Ldarg_0);
+                //c.EmitDelegate((ShortcutHandler self) =>
+                //{
+                //    if (OnlineManager.lobby != null)
+                //    {
+                //        for (var i = self.betweenRoomsWaitingLobby.Count - 1; i >= 0; i--)
+                //        {
+                //            var vessel = self.betweenRoomsWaitingLobby[i];
+                //            if (OnlinePhysicalObject.map.TryGetValue(vessel.creature.abstractPhysicalObject, out var oe))
+                //            {
+                //                if (!oe.isMine && oe.roomSession?.absroom != vessel.room)
+                //                {
+                //                    self.betweenRoomsWaitingLobby.Remove(vessel);
+                //                    foreach (var obj in vessel.creature.abstractCreature.GetAllConnectedObjects())
+                //                    {
+                //                        if (obj.realizedObject is Creature c) c.inShortcut = false;
+                //                    }
+                //                }
+                //            }
+                //        }
+                //    }
+                //});
+
+
+                // if (this.betweenRoomsWaitingLobby[k].room.realizedRoom == null)
+                // becomes if (this.betweenRoomsWaitingLobby[k].room.realizedRoom == null && ...)
+                int indexvar = default;
+                ILLabel skip = default;
+                c.GotoNext(moveType: MoveType.After,
                     i => i.MatchLdarg(0),
                     i => i.MatchLdfld<ShortcutHandler>("betweenRoomsWaitingLobby"),
+                    i => i.MatchLdloc(out indexvar),
                     i => i.MatchCallOrCallvirt(out _),
-                    i => i.MatchLdcI4(1)
+                    i => i.MatchLdfld<ShortcutHandler.Vessel>("room"),
+                    i => i.MatchLdfld<AbstractRoom>("realizedRoom"),
+                    i => i.MatchBrtrue(out skip)
                     );
-                c.MoveAfterLabels();
+
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((ShortcutHandler self) =>
+                c.Emit(OpCodes.Ldloc, indexvar);
+                c.EmitDelegate((ShortcutHandler self, int i) =>
                 {
                     if (OnlineManager.lobby != null)
                     {
-                        for (var i = self.betweenRoomsWaitingLobby.Count - 1; i >= 0; i--)
+                        var vessel = self.betweenRoomsWaitingLobby[i];
+                        if (OnlinePhysicalObject.map.TryGetValue(vessel.creature.abstractPhysicalObject, out var oe))
                         {
-                            var vessel = self.betweenRoomsWaitingLobby[i];
-                            if (OnlinePhysicalObject.map.TryGetValue(vessel.creature.abstractPhysicalObject, out var oe))
+                            if (!oe.isMine && oe.roomSession?.absroom != vessel.room)
                             {
-                                if (!oe.isMine && oe.roomSession?.absroom != vessel.room)
-                                {
-                                    self.betweenRoomsWaitingLobby.Remove(vessel);
-                                }
+                                return true;
                             }
                         }
                     }
+                    return false;
                 });
+                c.Emit(OpCodes.Brtrue, skip);
             }
             catch (Exception e)
             {

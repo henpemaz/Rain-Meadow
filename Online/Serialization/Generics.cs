@@ -332,10 +332,22 @@ namespace RainMeadow.Generics
         public abstract void SerializeImpl(Serializer serializer);
     }
 
-    public class IdentifiablesAddRemoveDeltaListByUSort<T, W> : IdentifiablesAddRemoveDeltaList<T, ushort, W, IdentifiablesAddRemoveDeltaListByUSort<T, W>> where T : class, Serializer.ICustomSerializable, IDelta<W>, W, IIdentifiable<ushort>, new()
+    public class IdentifiablesAddRemoveDeltaListByByte<T, W> : IdentifiablesAddRemoveDeltaList<T, byte, W, IdentifiablesAddRemoveDeltaListByByte<T, W>> where T : class, Serializer.ICustomSerializable, IDelta<W>, W, IIdentifiable<byte>, new()
     {
-        public IdentifiablesAddRemoveDeltaListByUSort() : base() { }
-        public IdentifiablesAddRemoveDeltaListByUSort(List<T> list) : base(list) { }
+        public IdentifiablesAddRemoveDeltaListByByte() : base() { }
+        public IdentifiablesAddRemoveDeltaListByByte(List<T> list) : base(list) { }
+
+        public override void SerializeImpl(Serializer serializer)
+        {
+            serializer.SerializeByte(ref list);
+            if (serializer.IsDelta) serializer.Serialize(ref removed);
+        }
+    }
+
+    public class IdentifiablesAddRemoveDeltaListByUShort<T, W> : IdentifiablesAddRemoveDeltaList<T, ushort, W, IdentifiablesAddRemoveDeltaListByUShort<T, W>> where T : class, Serializer.ICustomSerializable, IDelta<W>, W, IIdentifiable<ushort>, new()
+    {
+        public IdentifiablesAddRemoveDeltaListByUShort() : base() { }
+        public IdentifiablesAddRemoveDeltaListByUShort(List<T> list) : base(list) { }
 
         public override void SerializeImpl(Serializer serializer)
         {
