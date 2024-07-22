@@ -93,7 +93,7 @@ namespace RainMeadow
             {
                 var stick = sticks.list[i];
                 var a = onlineObject;
-                var b = stick.B;
+                var b = stick.b;
                 if (a == null || b == null) continue;
                 var foundat = apo.stuckObjects.FindIndex(s => stick.StickEquals(s, a, b));
                 if (foundat == -1)
