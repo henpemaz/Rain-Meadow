@@ -44,29 +44,13 @@ namespace RainMeadow
         public static float? vibePan = null;
         static bool UpdateIntensity;
 
-        static FOLK[] Folks = new FOLK[0];
-        static FOLK MeFolk;
+        static MeadowMusicData? musicDataBuffer;
+        static bool ivebeenpatientlywaiting = false;
 
-        struct FOLK
-        {
-            public FOLK(string CurrentRoom, bool IsHost, int? GroupID, float? TimeLeft, string ProvidedSong, bool LockedIn)
-            {
-                this.CurrentRoom = CurrentRoom;
-                this.IsHost= IsHost;
-                this.GroupID = GroupID;
-                this.TimeLeft = TimeLeft;
-                TimeProvidedAt = 0;
-                this.ProvidedSong = ProvidedSong;
-                this.LockedIn = LockedIn;
-            }
-            public string CurrentRoom;
-            public bool IsHost;
-            public int? GroupID;
-            public float? TimeLeft;
-            public float TimeProvidedAt;
-            public string ProvidedSong;
-            public bool LockedIn;
-        }
+        static float? demiseTimer;
+        static float? groupdemiseTimer;
+        static float? joinTimer;
+
         internal struct VibeZone
         {
             public VibeZone(string room, float radius, float minradius, string sampleUsed)
@@ -125,7 +109,7 @@ namespace RainMeadow
                 string[] thesongs = AssetManager.ListDirectory("songs", false, true);
                 foreach (string song in thesongs)
                 {
-                    //AudioClip? thing = AssetManager.SafeWWWAudioClip("file://" + song, false, false, AudioType.OGGVORBIS); 
+                    //AudioClip? thing = AssetManager.SafeWWWAudioClip("file://" + song, false, true, AudioType.OGGVORBIS); 
                     //float howlonghorse = thing.length; //this is a little scary cuz it gives the dict ALL of the songs in rain world 
                     //actually this might be shit because it'll take like one million years loading every single song...
                     //actually, cute story. previously i thought that getting the "clip.source.length" of whatever song i point at was not possible, cuz it was always pointed from song.subtrack[0].
@@ -145,16 +129,70 @@ namespace RainMeadow
             AnalyzeRegion(self.world);
             time = 0f;
             timerStopped = true;
+            //OnlineManager.lobby.owner.InvokeRPC(AskNowJoinPlayer, 3); // the ordering
         }
+        
+        static void TheThingTHatsCalledWhenPlayersUpdated()
+        {
+
+        }
+
+        [RPCMethod]
+        static void AskNowJoinPlayer(RPCEvent rpcEvent, int balls) //the server serving
+        {
+            int newgroup = 3;
+            bool isdj = true; 
+
+            rpcEvent.from.InvokeRPC(TellNowJoinPlayer, newgroup, isdj);
+        }
+        [RPCMethod]
+        static void TellNowJoinPlayer(int newgroup, bool isdj) //the eating that shit up
+        {
+            //nullcheks :3
+            var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
+            var creature = mgm.avatar;
+            var musicdata = creature.GetData<MeadowMusicData>();
+            musicdata.isDJ = isdj;
+            musicdata.inGroup = newgroup;
+        }
+
         static void RawUpdatePatch(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
         {
             orig.Invoke(self, dt);
             if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode) return;
             if (!timerStopped) time += dt;
             MusicPlayer musicPlayer = self.manager.musicPlayer;
-            MeFolk.TimeLeft = musicPlayer.song.subTracks[0].source.time;
 
-            if (UpdateIntensity)
+            if (demiseTimer != null)
+            {
+                demiseTimer -= dt;
+                if (demiseTimer < 0)
+                {
+                    //LeaveGroup
+                    demiseTimer = null;
+                }
+            }
+            if (groupdemiseTimer != null)
+            {
+                groupdemiseTimer -= dt;
+                if (groupdemiseTimer < 0)
+                {
+                    //JoinNewGroup
+                    groupdemiseTimer = null;
+                }
+            }
+            if (joinTimer != null)
+            {
+                joinTimer -= dt;
+                if (joinTimer < 0)
+                {
+                    //If there's other IDs here, join the predominant one if it exists
+                    //else, join a random other player
+                    joinTimer = null;
+                }
+            }
+
+            if (UpdateIntensity && RoomImIn != null && MyGuyMic != null)
             {
                 //i have NO idea how it'll fuck up when the region has not got a vibezone but idccccccccccccccc. oh wait it wont cuz it won't activate updateintensity cuz it'll never go close to one.
                 vibePan = Vector2.Dot((RoomImIn.world.RoomToWorldPos(Vector2.zero, closestVibe) - RoomImIn.world.RoomToWorldPos(Vector2.zero, RoomImIn.abstractRoom.index)).normalized, Vector2.right);
@@ -178,128 +216,97 @@ namespace RainMeadow
                 RainMeadow.Debug("IsMased");
             }
 
+            var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
+            var creature = mgm.avatar;
+            var musicdata = creature.GetData<MeadowMusicData>();
+            // use musicdata
+            // this is my own music data
+            if (musicDataBuffer == null) musicDataBuffer = musicdata;
+
+            if (musicdata.inGroup != -1 && musicDataBuffer.inGroup == -1 && !musicdata.isDJ)
+            {
+                if (musicPlayer != null && musicPlayer.song != null)
+                {
+                    musicPlayer.song.FadeOut(40f);
+                }
+            }
+            musicDataBuffer = musicdata;
+            
             if (musicPlayer != null && musicPlayer.song == null && self.world.rainCycle.RainApproaching > 0.5f)
             {
+                musicdata.providedSong = null;
                 timerStopped = false;
                 if (time > waitSecs)
                 {
-                    var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
-                    var creature = mgm.avatar;
-                    var musicdata = creature.GetData<MeadowMusicData>();
-
-                    // use musicdata
-                    // this is my own music data
-
-                    foreach (var other in OnlineManager.lobby.playerAvatars.Values.Where(v => v != null))
-                    {
-                        if (other.FindEntity() is OnlineCreature oc && !oc.owner.isMe)
-                        {
-                            var otherdata = oc.GetData<MeadowMusicData>();
-                            // proccess other data
-                        }
-                    }
-
                     if (ambienceSongArray != null)
                     {
-                        if (!MeFolk.LockedIn)
+                        if (musicdata.isDJ)
                         {
-                            if (MeFolk.GroupID == -1 || MeFolk.GroupID == null)
+                            RainMeadow.Debug("Meadow Music:  Playing ambient song");
+                            
+                            if (shuffleindex + 1 >= shufflequeue.Length) { ShuffleSongs(); }
+                            else { shuffleindex++; }
+                            musicdata.providedSong = ambienceSongArray[shufflequeue[shuffleindex]];
+                            musicdata.startedPlayingAt = LobbyTime();
+                            Song song = new(musicPlayer, musicdata.providedSong, MusicPlayer.MusicContext.StoryMode)
                             {
-                                RainMeadow.Debug("Meadow Music:  Playing ambient song");
-                                NewSong();
-                                
-                                Song song = new(musicPlayer, MeFolk.ProvidedSong, MusicPlayer.MusicContext.StoryMode)
-                                {
-                                    playWhenReady = true,
-                                    volume = 1,
-                                    fadeInTime = 1f
-                                };
-                                musicPlayer.song = song;
-                                MeFolk.TimeLeft = musicPlayer.song.subTracks[0].source.clip.length;
-                                //actually calling it would just need 
-                                MeFolk.TimeLeft = musicPlayer.song.subTracks[0].source.clip.length - musicPlayer.song.subTracks[0].source.time;
-                            }
-                            else
-                            {
-                                if (MeFolk.IsHost) NewSong();
-
-                                float MaxTimeLeft = 0;
-                                foreach (FOLK Folk in Folks)
-                                {
-                                    //this thing can be recalculated to like, use the time provided at
-                                    //oh wait just realized that whenever you do the thing reference thing for a FOLK you set the time then
-                                    if (MaxTimeLeft < Folk.TimeLeft) MaxTimeLeft = (float)Folk.TimeLeft; // ok actually what if it's 0?
-                                }
-                                
-                                List<string> list = new List<string>(); //KeyValuePair<string, string> entry 
-                                float longestsongtime = 999;
-                                string longestsong = " ";
-                                foreach (var entry in SongLengthsDict)
-                                {
-                                    if (MaxTimeLeft > entry.Value) 
-                                    { 
-                                        list.Add(entry.Key);
-                                        if (entry.Value > longestsongtime)
-                                        {
-                                            longestsongtime = entry.Value;
-                                            longestsong = entry.Key;
-                                        }
-                                    }
-                                }
-
-                                if (list.Count > 0)
-                                {
-                                    //string PickedSong = list[UnityEngine.Random.Range(0, list.Count - 1)]; //random method, but i could do longest song instead
-                                    string PickedSong = longestsong;
-
-                                    Song song = new(musicPlayer, PickedSong, MusicPlayer.MusicContext.StoryMode)
-                                    {
-                                        playWhenReady = true,
-                                        volume = 1,
-                                        fadeInTime = 1f
-                                    };
-                                    musicPlayer.song = song;
-                                    MeFolk.TimeLeft = SongLengthsDict[PickedSong];
-                                }
-                                else
-                                {
-                                    MeFolk.LockedIn = true;
-                                }
-                            }
+                                playWhenReady = true,
+                                volume = 1,
+                                fadeInTime = 1f
+                            };
+                            musicPlayer.song = song;
                         }
                         else
                         {
-                            bool Yayyyyy = true;
-                            string? PickedSong = null;
-                            foreach (FOLK folk in Folks)
+                            MeadowMusicData? myDJsdata = musicdata; //just to make line 226 shut up + if noone else is, then i am
+                            foreach (var other in OnlineManager.lobby.playerAvatars.Values.Where(v => v != null))
                             {
-                                if (!folk.LockedIn) 
-                                { 
-                                    Yayyyyy = false; 
-                                    break;
-                                }
-                            }//this checks it every fucking frame, pretty lot isnt it
-                            if (Yayyyyy)
-                            {
-                                foreach (FOLK folk in Folks)
+                                if (other.FindEntity() is OnlineCreature oc && !oc.owner.isMe)
                                 {
-                                    if (folk.IsHost) 
+                                    var otherdata = oc.GetData<MeadowMusicData>();
+                                    // proccess other data
+                                    if (otherdata.inGroup == musicdata.inGroup && otherdata.isDJ)
                                     {
-                                        PickedSong = folk.ProvidedSong;
-                                        break; 
+                                        myDJsdata = otherdata;
                                     }
                                 }
-
-                                if (PickedSong != null)
+                            }
+                            if (myDJsdata != null)
+                            {
+                                if (myDJsdata.providedSong != null)
                                 {
-                                    Song song = new(musicPlayer, PickedSong, MusicPlayer.MusicContext.StoryMode)
+                                    float lobbydottime = LobbyTime();
+                                    float hoststartedat = (float)myDJsdata.startedPlayingAt; //if it is providing a song, it should be providing a time
+                                    float hostsonglength = SongLengthsDict[myDJsdata.providedSong];
+
+                                    float hostsongprogress = ( lobbydottime - hoststartedat ) / hostsonglength;
+                                    if ( hostsongprogress < 0.95f )
                                     {
-                                        playWhenReady = true,
-                                        volume = 1,
-                                        fadeInTime = 1f
-                                    };
-                                    musicPlayer.song = song;
-                                    MeFolk.TimeLeft = SongLengthsDict[PickedSong];
+                                        Song song = new(musicPlayer, myDJsdata.providedSong, MusicPlayer.MusicContext.StoryMode)
+                                        {
+                                            playWhenReady = true,
+                                            volume = 1,
+                                            fadeInTime = 1f
+                                        };
+                                        musicPlayer.song = song;
+
+                                        if (ivebeenpatientlywaiting)
+                                        {
+                                            ivebeenpatientlywaiting = false;
+                                        }
+                                        else
+                                        {
+                                            musicPlayer.song.subTracks[0].source.time = lobbydottime - hoststartedat;
+                                        }   
+                                    }
+                                    else
+                                    { 
+                                        ivebeenpatientlywaiting = true;
+                                    }
+                                }
+                                else
+                                {
+                                    ivebeenpatientlywaiting = true;
                                 }
                             }
                         }
@@ -307,7 +314,7 @@ namespace RainMeadow
                 }
                 else
                 {
-                    MeFolk.LockedIn = false;
+
                 }
             }
             else
@@ -315,6 +322,11 @@ namespace RainMeadow
                 time = 0f;
                 timerStopped = true;
             }
+        }
+        static float LobbyTime()
+        {
+            //do some shit that sends back the current time of the lobby host
+            return 2000000000000f;
         }
         static void WorldLoadedPatch(On.OverWorld.orig_WorldLoaded orig, OverWorld self)
         {
@@ -444,20 +456,6 @@ namespace RainMeadow
                 }
             }
             DegreesOfAwayness = CalculateDegreesOfAwayness(room.abstractRoom);
-        }
-        static void NewSong()
-        {
-            RainMeadow.Debug("calling all hoes");
-
-            if (shuffleindex + 1 >= shufflequeue.Length)
-            {
-                ShuffleSongs();
-            }
-            else
-            {
-                shuffleindex++;
-            }
-            MeFolk.ProvidedSong = ambienceSongArray[shufflequeue[shuffleindex]];
         }
         static void ShuffleSongs()
         {
