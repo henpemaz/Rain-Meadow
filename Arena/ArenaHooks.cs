@@ -520,9 +520,9 @@ namespace RainMeadow
                 RainMeadow.Debug("Trying to create an abstract creature");
 
                 sSpawningAvatar = true;
+                AbstractCreature abstractCreature = new AbstractCreature(self.game.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(0, -1, -1, -1), new EntityID(-1, 0));
 
-                AbstractCreature abstractCreature = new AbstractCreature(self.game.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(0, -1, -1, -1), new EntityID(-1, list[l].playerNumber));
-                sSpawningAvatar = false;
+
 
                 RainMeadow.Debug("assigned ac, moving to den");
 
@@ -532,6 +532,9 @@ namespace RainMeadow
 
 
                 SetOnlineCreature(abstractCreature);
+
+                sSpawningAvatar = false;
+
                 if (OnlineManager.lobby.isActive)
                 {
                     OnlineManager.instance.Update(); // Subresources are active, gamemode is online, ticks are happening. Not sure why we'd need this here
