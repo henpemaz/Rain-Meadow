@@ -202,7 +202,7 @@ namespace RainMeadow
                 else if (minDist < az.radius)
                 {
                     vibeIntensity = Custom.LerpMap(minDist, az.radius, 0, 0.5f, 1);
-                    vibePan = Vector2.Dot((room.world.RoomToWorldPos(Vector2.zero, rooms[closestVibe]) - room.world.RoomToWorldPos(Vector2.zero, room.abstractRoom.index)).normalized, Vector2.right);
+                    vibePan = Vector2.Dot((room.world.RoomToWorldPos(Vector2.zero, closestVibe) - room.world.RoomToWorldPos(Vector2.zero, room.abstractRoom.index)).normalized, Vector2.right);
                     musicPlayer.song.baseVolume = Custom.LerpMap(minDist, az.radius, 0, 0.5f, 1) * 0.3f;
                 }
             }

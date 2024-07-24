@@ -192,11 +192,11 @@ namespace RainMeadow
             [OnlineField(always = true)]
             public OnlineResource resource;
             [OnlineField(nullable = true, group = "entitydefs")]
-            public AddRemoveSortedCustomSerializables<EntityMembership> entitiesJoined;
+            public DynamicIdentifiablesICustomSerializables<EntityMembership, OnlineEntity.EntityId> entitiesJoined;
             [OnlineField(nullable = true, group = "entitydefs")]
-            public DeltaStates<OnlineEntity.EntityDefinition, OnlineState, OnlineEntity.EntityId> registeredEntities;
+            public DeltaStates<OnlineEntity.EntityDefinition, OnlineEntity.EntityId> registeredEntities;
             [OnlineField(nullable = true, group = "entities")]
-            public DeltaStates<OnlineEntity.EntityState, OnlineState, OnlineEntity.EntityId> entityStates;
+            public DeltaStates<OnlineEntity.EntityState, OnlineEntity.EntityId> entityStates;
             [OnlineField(nullable = true, group = "data")]
             public DeltaDataStates<ResourceDataState> resourceDataStates;
 
@@ -298,7 +298,7 @@ namespace RainMeadow
             }
         }
 
-        public class LeaseList : IdentifiablesDeltaList<SubleaseState, ushort, SubleaseState, LeaseList>
+        public class LeaseList : FixedIdentifiablesDeltaList<SubleaseState, ushort, SubleaseState, LeaseList>
         {
             public LeaseList() { }
 
@@ -344,7 +344,7 @@ namespace RainMeadow
         {
             public ushort resourceId;
             public ushort owner;
-            public Generics.AddRemoveUnsortedUshorts participants;
+            public Generics.DynamicUnorderedUshorts participants;
 
             public ushort ID => resourceId;
 
@@ -353,7 +353,7 @@ namespace RainMeadow
             {
                 this.resourceId = resource.ShortId();
                 this.owner = resource.owner?.inLobbyId ?? default;
-                this.participants = new Generics.AddRemoveUnsortedUshorts(resource.participants.Select(p => p.inLobbyId).ToList());
+                this.participants = new Generics.DynamicUnorderedUshorts(resource.participants.Select(p => p.inLobbyId).ToList());
             }
             public virtual SubleaseState EmptyDelta() => new();
 
@@ -362,7 +362,7 @@ namespace RainMeadow
                 var result = EmptyDelta();
                 result.resourceId = resourceId;
                 result.owner = other?.owner ?? owner;
-                result.participants = (Generics.AddRemoveUnsortedUshorts)participants.ApplyDelta(other?.participants);
+                result.participants = (Generics.DynamicUnorderedUshorts)participants.ApplyDelta(other?.participants);
                 return result;
             }
 
@@ -372,7 +372,7 @@ namespace RainMeadow
                 var delta = EmptyDelta();
                 delta.resourceId = resourceId;
                 delta.owner = owner;
-                delta.participants = (Generics.AddRemoveUnsortedUshorts)participants.Delta(other.participants);
+                delta.participants = (Generics.DynamicUnorderedUshorts)participants.Delta(other.participants);
                 return (owner == other.owner && delta.participants == null) ? null : delta;
             }
 

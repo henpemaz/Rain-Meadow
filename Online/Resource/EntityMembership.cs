@@ -3,7 +3,7 @@ using System;
 
 namespace RainMeadow
 {
-    public class EntityMembership : Serializer.ICustomSerializable, IEquatable<EntityMembership>
+    public class EntityMembership : Serializer.ICustomSerializable, IIdentifiable<OnlineEntity.EntityId>, IEquatable<EntityMembership>
     {
         public OnlineEntity.EntityId entityId;
         public uint version;
@@ -14,6 +14,8 @@ namespace RainMeadow
             this.entityId = entity.id;
             this.version = entity.version;
         }
+
+        public OnlineEntity.EntityId ID => entityId;
 
         public void CustomSerialize(Serializer serializer)
         {

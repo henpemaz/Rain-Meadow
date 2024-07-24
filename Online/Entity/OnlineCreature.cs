@@ -170,23 +170,23 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             enteringShortCut = true;
             var creature = (apo.realizedObject as Creature);
-            var room = creature.room;
-            try
+            if(creature != null && creature.room != null)
             {
-                if (creature != null)
+                try
                 {
+                    var room = creature.room;
                     creature.SuckedIntoShortCut(entrancePos, carriedByOther);
-                    if (creature.graphicsModule != null && room != null)
+                    if (creature.graphicsModule != null)
                     {
                         Vector2 vector = room.MiddleOfTile(entrancePos) + Custom.IntVector2ToVector2(room.ShorcutEntranceHoleDirection(entrancePos)) * -5f;
                         creature.graphicsModule.SuckedIntoShortCut(vector);
                     }
                 }
-            }
-            catch (Exception)
-            {
-                enteringShortCut = false;
-                throw;
+                catch (Exception)
+                {
+                    enteringShortCut = false;
+                    throw;
+                }
             }
             enteringShortCut = false;
         }

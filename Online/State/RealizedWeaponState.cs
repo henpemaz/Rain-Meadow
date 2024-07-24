@@ -42,6 +42,7 @@ namespace RainMeadow
             {
                 RainMeadow.Debug($"{onlineEntity} new mode : {newMode}");
                 weapon.ChangeMode(newMode);
+                weapon.throwModeFrames = -1; // not synched, behaves as "infinite"
             }
             weapon.tailPos = tailPos;
             weapon.setRotation = setRotation;

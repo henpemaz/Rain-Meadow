@@ -66,10 +66,15 @@ namespace RainMeadow
             spear.stuckRotation = stuckRotation;
 
             base.ReadTo(onlineEntity);
-            var newMode = new Weapon.Mode(Weapon.Mode.values.GetEntry(mode));
-            if (newMode == Weapon.Mode.StuckInWall && !stuckInWall.HasValue)
+            if (spear.mode == Weapon.Mode.StuckInWall && !spear.stuckInWall.HasValue)
             {
                 RainMeadow.Error("Stuck in wall but has no value!");
+                spear.ChangeMode(Weapon.Mode.Free);
+            }
+            if (spear.mode == Weapon.Mode.StuckInCreature && (stuckInEntity == null || stuckInEntity.apo.realizedObject == null ))
+            {
+                RainMeadow.Error("Stuck in creature but no creature");
+                spear.ChangeMode(Weapon.Mode.Free);
             }
         }
     }
