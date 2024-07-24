@@ -10,7 +10,7 @@ namespace RainMeadow
         [OnlineField]
         public bool inDen;
         [OnlineField(nullable=true)]
-        public Generics.AddRemoveSortedStates<AbstractObjStickRepr> sticks;
+        public Generics.DynamicOrderedStates<AbstractObjStickRepr> sticks;
         [OnlineField]
         public bool realized;
         [OnlineField(group = "realized", nullable = true, polymorphic = true)]

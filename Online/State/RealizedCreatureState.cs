@@ -8,7 +8,7 @@ namespace RainMeadow
     public class RealizedCreatureState : RealizedPhysicalObjectState
     {
         [OnlineField(nullable = true)]
-        private AddRemoveSortedStates<GraspRef> grasps;
+        private DynamicOrderedStates<GraspRef> grasps;
         [OnlineField]
         public short stun;
         [OnlineField(nullable = true)]

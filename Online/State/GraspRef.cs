@@ -2,7 +2,7 @@
 
 namespace RainMeadow
 {
-    [DeltaSupport(level = StateHandler.DeltaSupport.None)]
+    [DeltaSupport(level = StateHandler.DeltaSupport.None)] // no subdelta, there are compared by reference
     public class GraspRef : OnlineState
     {
         public static ConditionalWeakTable<Creature.Grasp, GraspRef> map = new(); // these are generated "once per grasp" and reused with this map
@@ -61,7 +61,6 @@ namespace RainMeadow
 
         public void MakeGrasp(Creature creature, PhysicalObject obj)
         {
-            RainMeadow.Debug(this);
             for (int i = obj.grabbedBy.Count - 1; i >= 0; i--) // handle already grabbed
             {
                 Creature.Grasp grasp = obj.grabbedBy[i];
@@ -70,6 +69,12 @@ namespace RainMeadow
                     creature.ReleaseGrasp(grasp.graspUsed);
                 }
             }
+            if(obj.room == null) // lots of "grabbed" code assumes a room for SFX
+            {
+                if (creature.room == null) return;
+                creature.room.AddObject(obj);
+            }
+            RainMeadow.Debug(this);
             creature.Grab(obj, graspUsed, chunkGrabbed, new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(shareability)), dominance, false, pacifying);
         }
 
@@ -77,6 +82,11 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             grasp.grabber.ReleaseGrasp(grasp.graspUsed);
+        }
+
+        public override string ToString()
+        {
+            return $"{base.ToString()}: {graspUsed}:{onlineGrabbed}";
         }
     }
 }

@@ -11,9 +11,11 @@ namespace RainMeadow.Generics
     /// by convention returns object with IsEmptyDelta set on same-value delta (ease for polymorphism)
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public interface IPrimaryDelta<T> : IDelta<T>
+    public interface IPrimaryDelta<T>
     {
         public bool IsEmptyDelta { get; }
+        public T Delta(T other);
+        public T ApplyDelta(T other);
     }
 
     /// <summary>
@@ -53,15 +55,17 @@ namespace RainMeadow.Generics
     }
 
     /// <summary>
-    /// Dynamic list, order-unaware
+    /// Dynamic list, order-unaware, no subdelta, no repeated elements
+    /// 1 + T * x on fullsend
+    /// 1 + T * x' + 1 + T * x" on delta
     /// </summary>
-    public abstract class AddRemoveUnsortedList<T, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp : AddRemoveUnsortedList<T, Imp>, new()
+    public abstract class DynamicUnorderedList<T, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp : DynamicUnorderedList<T, Imp>, new()
     {
         public List<T> list;
         public List<T> removed;
 
-        public AddRemoveUnsortedList() { }
-        public AddRemoveUnsortedList(List<T> list)
+        public DynamicUnorderedList() { }
+        public DynamicUnorderedList(List<T> list)
         {
             this.list = list;
         }
@@ -85,18 +89,19 @@ namespace RainMeadow.Generics
         public abstract void CustomSerialize(Serializer serializer);
     }
 
-
     /// <summary>
-    /// Dynamic list, order-aware, no subdelta
+    /// Dynamic list, order-aware, no subdelta, no repeated elements
+    /// 1 + T * x on fullsend
+    /// 1 + (T + 1) * x' + 1 + 1 * x" on delta
     /// </summary>
-    public abstract class AddRemoveSortedList<T, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp : AddRemoveSortedList<T, Imp>, new()
+    public abstract class DynamicOrderedList<T, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp : DynamicOrderedList<T, Imp>, new()
     {
         public List<T> list;
         public List<byte> listIndexes;
         public List<byte> removedIndexes;
 
-        public AddRemoveSortedList() { }
-        public AddRemoveSortedList(List<T> list)
+        public DynamicOrderedList() { }
+        public DynamicOrderedList(List<T> list)
         {
             this.list = list;
         }
@@ -137,6 +142,8 @@ namespace RainMeadow.Generics
 
     /// <summary>
     /// Fixed ordered list, no subdelta
+    /// 1 + T * x on fullsend
+    /// 1 + (T+1) * x' on delta
     /// </summary>
     public abstract class FixedOrderedList<T, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp : FixedOrderedList<T, Imp>, new()
     {
@@ -178,11 +185,11 @@ namespace RainMeadow.Generics
     /// <summary>
     /// Static list, no adds/removes supported, id-elementwise delta
     /// </summary>
-    public abstract class IdentifiablesDeltaList<T, U, V, Imp> : Serializer.ICustomSerializable, IDelta<Imp> where T : IDelta<V>, V, IIdentifiable<U> where U : IEquatable<U> where Imp : IdentifiablesDeltaList<T, U, V, Imp>, new()
+    public abstract class FixedIdentifiablesDeltaList<T, U, V, Imp> : Serializer.ICustomSerializable, IDelta<Imp> where T : IDelta<V>, V, IIdentifiable<U> where U : IEquatable<U> where Imp : FixedIdentifiablesDeltaList<T, U, V, Imp>, new()
     {
         public List<T> list;
-        public IdentifiablesDeltaList() { }
-        public IdentifiablesDeltaList(List<T> list)
+        public FixedIdentifiablesDeltaList() { }
+        public FixedIdentifiablesDeltaList(List<T> list)
         {
             this.list = list;
         }
@@ -205,17 +212,81 @@ namespace RainMeadow.Generics
         public abstract void CustomSerialize(Serializer serializer);
     }
 
+
     /// <summary>
-    /// Dynamic list, id-elementwise delta
+    /// Dynamic list, id-elementwise comparison, no subdelta
     /// </summary>
-    public abstract class IdentifiablesAddRemoveDeltaList<T, U, W, Imp> : Serializer.ICustomSerializable, IDelta<Imp> where T : class, IDelta<W>, W, IIdentifiable<U> where U : IEquatable<U> where Imp : IdentifiablesAddRemoveDeltaList<T, U, W, Imp>, new()
+    public abstract class DynamicIdentifiablesList<T, U, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp : DynamicIdentifiablesList<T, U, Imp>, new() where T : class, IIdentifiable<U> where U : IEquatable<U>
     {
         public List<T> list;
         public List<U> removed;
         private Dictionary<U, T> lookup;
         private HashSet<U> removedLookup;
-        public IdentifiablesAddRemoveDeltaList() { }
-        public IdentifiablesAddRemoveDeltaList(List<T> list)
+        public DynamicIdentifiablesList() { }
+        public DynamicIdentifiablesList(List<T> list)
+        {
+            this.list = list;
+            BuildLookup();
+        }
+
+        private void BuildLookup()
+        {
+            this.lookup = list.Select(e => new KeyValuePair<U, T>(e.ID, e)).ToDictionary();
+            removedLookup = removed == null ? null : new HashSet<U>(removed);
+        }
+
+        public virtual Imp Delta(Imp other)
+        {
+            if (other == null) { return (Imp)this; }
+            Imp delta = new();
+            delta.list = list.Select(sl => other.lookup.TryGetValue(sl.ID, out var b) ? (b.Equals(sl) ? null : sl) : sl).Where(sl => sl != null).ToList();
+            delta.removed = other.list.Select(e => e.ID).Where(e => !lookup.ContainsKey(e)).ToList();
+            delta.BuildLookup();
+            return (delta.list.Count == 0 && delta.removed.Count == 0) ? null : delta;
+        }
+
+        public virtual Imp ApplyDelta(Imp other)
+        {
+            Imp result = new();
+            if (other == null)
+            {
+                result.list = list;
+            }
+            else
+            {
+                result.list =
+                list.Where(e => !other.removedLookup.Contains(e.ID)) // remove
+                    .Select(e => other.lookup.TryGetValue(e.ID, out var o) ? o : e) // keep or update
+                    .Concat(other.list.Where(o => !lookup.ContainsKey(o.ID))) // add new
+                    .ToList();
+            }
+            result.BuildLookup();
+            return result;
+        }
+
+        public void CustomSerialize(Serializer serializer)
+        {
+            SerializeImpl(serializer);
+            if (serializer.IsReading)
+            {
+                BuildLookup();
+            }
+        }
+
+        public abstract void SerializeImpl(Serializer serializer);
+    }
+
+    /// <summary>
+    /// Dynamic list, id-elementwise delta
+    /// </summary>
+    public abstract class DynamicIdentifiablesDeltaList<T, U, W, Imp> : Serializer.ICustomSerializable, IDelta<Imp> where T : class, IDelta<W>, W, IIdentifiable<U> where U : IEquatable<U> where Imp : DynamicIdentifiablesDeltaList<T, U, W, Imp>, new()
+    {
+        public List<T> list;
+        public List<U> removed;
+        private Dictionary<U, T> lookup;
+        private HashSet<U> removedLookup;
+        public DynamicIdentifiablesDeltaList() { }
+        public DynamicIdentifiablesDeltaList(List<T> list)
         {
             this.list = list;
             BuildLookup();
@@ -271,15 +342,15 @@ namespace RainMeadow.Generics
     /// <summary>
     /// Dynamic list, id-elementwise delta
     /// </summary>
-    public abstract class IdentifiablesAddRemovePrimaryDeltaList<T, U, W, Imp> : Serializer.ICustomSerializable, IDelta<Imp> where T : class, IPrimaryDelta<W>, W, IIdentifiable<U> where U : IEquatable<U> where Imp : IdentifiablesAddRemovePrimaryDeltaList<T, U, W, Imp>, new()
+    public abstract class DynamicIdentifiablesPrimaryDeltaList<T, U, W, Imp> : Serializer.ICustomSerializable, IDelta<Imp> where T : class, IPrimaryDelta<W>, W, IIdentifiable<U> where U : IEquatable<U> where Imp : DynamicIdentifiablesPrimaryDeltaList<T, U, W, Imp>, new()
     {
         public List<T> list;
         public List<U> removed;
         private Dictionary<U, T> lookup;
         private HashSet<U> removedLookup;
 
-        public IdentifiablesAddRemovePrimaryDeltaList() { }
-        public IdentifiablesAddRemovePrimaryDeltaList(List<T> list)
+        public DynamicIdentifiablesPrimaryDeltaList() { }
+        public DynamicIdentifiablesPrimaryDeltaList(List<T> list)
         {
             this.list = list;
             BuildLookup();
@@ -304,7 +375,7 @@ namespace RainMeadow.Generics
         public virtual Imp ApplyDelta(Imp incoming)
         {
             Imp result = new();
-            if(incoming == null)
+            if (incoming == null)
             {
                 result.list = list;
             }
@@ -332,43 +403,7 @@ namespace RainMeadow.Generics
         public abstract void SerializeImpl(Serializer serializer);
     }
 
-    public class IdentifiablesAddRemoveDeltaListByByte<T, W> : IdentifiablesAddRemoveDeltaList<T, byte, W, IdentifiablesAddRemoveDeltaListByByte<T, W>> where T : class, Serializer.ICustomSerializable, IDelta<W>, W, IIdentifiable<byte>, new()
-    {
-        public IdentifiablesAddRemoveDeltaListByByte() : base() { }
-        public IdentifiablesAddRemoveDeltaListByByte(List<T> list) : base(list) { }
-
-        public override void SerializeImpl(Serializer serializer)
-        {
-            serializer.SerializeByte(ref list);
-            if (serializer.IsDelta) serializer.Serialize(ref removed);
-        }
-    }
-
-    public class IdentifiablesAddRemoveDeltaListByUShort<T, W> : IdentifiablesAddRemoveDeltaList<T, ushort, W, IdentifiablesAddRemoveDeltaListByUShort<T, W>> where T : class, Serializer.ICustomSerializable, IDelta<W>, W, IIdentifiable<ushort>, new()
-    {
-        public IdentifiablesAddRemoveDeltaListByUShort() : base() { }
-        public IdentifiablesAddRemoveDeltaListByUShort(List<T> list) : base(list) { }
-
-        public override void SerializeImpl(Serializer serializer)
-        {
-            serializer.SerializeByte(ref list);
-            if (serializer.IsDelta) serializer.Serialize(ref removed);
-        }
-    }
-
-    public class IdentifiablesAddRemoveDeltaListByCustomSeri<T, U, W> : IdentifiablesAddRemoveDeltaList<T, U, W, IdentifiablesAddRemoveDeltaListByCustomSeri<T, U, W>> where T : class, Serializer.ICustomSerializable, IDelta<W>, W, IIdentifiable<U>, new() where U : Serializer.ICustomSerializable, IEquatable<U>, new()
-    {
-        public IdentifiablesAddRemoveDeltaListByCustomSeri() : base() { }
-        public IdentifiablesAddRemoveDeltaListByCustomSeri(List<T> list) : base(list) { }
-
-        public override void SerializeImpl(Serializer serializer)
-        {
-            serializer.SerializeByte(ref list);
-            if (serializer.IsDelta) serializer.SerializeByte(ref removed);
-        }
-    }
-
-    public class DeltaStates<T, W, U> : IdentifiablesAddRemovePrimaryDeltaList<T, U, W, DeltaStates<T, W, U>> where T : OnlineState, IPrimaryDelta<W>, W, IIdentifiable<U> where U : Serializer.ICustomSerializable, IEquatable<U>, new()
+    public class DeltaStates<T, U> : DynamicIdentifiablesPrimaryDeltaList<T, U, OnlineState, DeltaStates<T, U>> where T : OnlineState, IIdentifiable<U> where U : Serializer.ICustomSerializable, IEquatable<U>, new()
     {
         public DeltaStates() : base() { }
         public DeltaStates(List<T> list) : base(list) { }
@@ -376,11 +411,11 @@ namespace RainMeadow.Generics
         public override void SerializeImpl(Serializer serializer)
         {
             serializer.SerializePolyStatesShort(ref list);
-            if (serializer.IsDelta) serializer.SerializeByte(ref removed); // this could potentially break actually
+            if (serializer.IsDelta) serializer.SerializeShort(ref removed);
         }
     }
 
-    public class DeltaDataStates<T>: IdentifiablesAddRemovePrimaryDeltaList<T, byte, OnlineState, DeltaDataStates<T>> where T: OnlineState, IIdentifiable<byte>
+    public class DeltaDataStates<T> : DynamicIdentifiablesPrimaryDeltaList<T, byte, OnlineState, DeltaDataStates<T>> where T : OnlineState, IIdentifiable<byte>
     {
         public DeltaDataStates() : base() { }
         public DeltaDataStates(List<T> list) : base(list) { }
@@ -392,10 +427,23 @@ namespace RainMeadow.Generics
         }
     }
 
-    public class AddRemoveUnsortedUshorts : AddRemoveUnsortedList<ushort, AddRemoveUnsortedUshorts>
+    public class DynamicIdentifiablesICustomSerializables<T, U> : DynamicIdentifiablesList<T, U, DynamicIdentifiablesICustomSerializables<T, U>> where T : class, IIdentifiable<U>, Serializer.ICustomSerializable, new() where U : IEquatable<U>, Serializer.ICustomSerializable, new()
     {
-        public AddRemoveUnsortedUshorts() { }
-        public AddRemoveUnsortedUshorts(List<ushort> list) : base(list) { }
+        public DynamicIdentifiablesICustomSerializables() { }
+
+        public DynamicIdentifiablesICustomSerializables(List<T> list) : base(list) { }
+
+        public override void SerializeImpl(Serializer serializer)
+        {
+            serializer.SerializeShort(ref list);
+            if (serializer.IsDelta) serializer.SerializeShort(ref removed);
+        }
+    }
+
+    public class DynamicUnorderedUshorts : DynamicUnorderedList<ushort, DynamicUnorderedUshorts>
+    {
+        public DynamicUnorderedUshorts() { }
+        public DynamicUnorderedUshorts(List<ushort> list) : base(list) { }
 
         public override void CustomSerialize(Serializer serializer)
         {
@@ -404,22 +452,10 @@ namespace RainMeadow.Generics
         }
     }
 
-    public class AddRemoveUnsortedCustomSerializables<T> : AddRemoveUnsortedList<T, AddRemoveUnsortedCustomSerializables<T>> where T : Serializer.ICustomSerializable, new()
+    public class DynamicOrderedCustomSerializables<T> : DynamicOrderedList<T, DynamicOrderedCustomSerializables<T>> where T : Serializer.ICustomSerializable, new()
     {
-        public AddRemoveUnsortedCustomSerializables() { }
-        public AddRemoveUnsortedCustomSerializables(List<T> list) : base(list) { }
-
-        public override void CustomSerialize(Serializer serializer)
-        {
-            serializer.SerializeByte(ref list);
-            if (serializer.IsDelta) serializer.SerializeByte(ref removed);
-        }
-    }
-
-    public class AddRemoveSortedCustomSerializables<T> : AddRemoveSortedList<T, AddRemoveSortedCustomSerializables<T>> where T : Serializer.ICustomSerializable, new()
-    {
-        public AddRemoveSortedCustomSerializables() { }
-        public AddRemoveSortedCustomSerializables(List<T> list) : base(list) { }
+        public DynamicOrderedCustomSerializables() { }
+        public DynamicOrderedCustomSerializables(List<T> list) : base(list) { }
 
         public override void CustomSerialize(Serializer serializer)
         {
@@ -431,10 +467,10 @@ namespace RainMeadow.Generics
             }
         }
     }
-    public class AddRemoveSortedExtEnums<T> : AddRemoveSortedList<T, AddRemoveSortedExtEnums<T>> where T : ExtEnum<T>
+    public class DynamicOrderedExtEnums<T> : DynamicOrderedList<T, DynamicOrderedExtEnums<T>> where T : ExtEnum<T>
     {
-        public AddRemoveSortedExtEnums() { }
-        public AddRemoveSortedExtEnums(List<T> list) : base(list) { }
+        public DynamicOrderedExtEnums() { }
+        public DynamicOrderedExtEnums(List<T> list) : base(list) { }
 
         public override void CustomSerialize(Serializer serializer)
         {
@@ -447,10 +483,10 @@ namespace RainMeadow.Generics
         }
     }
 
-    public class AddRemoveSortedPlayerIDs : AddRemoveSortedList<MeadowPlayerId, AddRemoveSortedPlayerIDs>
+    public class DynamicOrderedPlayerIDs : DynamicOrderedList<MeadowPlayerId, DynamicOrderedPlayerIDs>
     {
-        public AddRemoveSortedPlayerIDs() { }
-        public AddRemoveSortedPlayerIDs(List<MeadowPlayerId> list) : base(list) { }
+        public DynamicOrderedPlayerIDs() { }
+        public DynamicOrderedPlayerIDs(List<MeadowPlayerId> list) : base(list) { }
 
         public override void CustomSerialize(Serializer serializer)
         {
@@ -463,10 +499,10 @@ namespace RainMeadow.Generics
         }
     }
 
-    public class AddRemoveSortedEntityIDs : AddRemoveSortedList<OnlineEntity.EntityId, AddRemoveSortedEntityIDs>
+    public class DynamicOrderedEntityIDs : DynamicOrderedList<OnlineEntity.EntityId, DynamicOrderedEntityIDs>
     {
-        public AddRemoveSortedEntityIDs() { }
-        public AddRemoveSortedEntityIDs(List<OnlineEntity.EntityId> list) : base(list) { }
+        public DynamicOrderedEntityIDs() { }
+        public DynamicOrderedEntityIDs(List<OnlineEntity.EntityId> list) : base(list) { }
 
         public override void CustomSerialize(Serializer serializer)
         {
@@ -479,10 +515,10 @@ namespace RainMeadow.Generics
         }
     }
 
-    public class AddRemoveSortedEvents<T> : AddRemoveSortedList<T, AddRemoveSortedEvents<T>> where T : OnlineEvent
+    public class DynamicOrderedEvents<T> : DynamicOrderedList<T, DynamicOrderedEvents<T>> where T : OnlineEvent
     {
-        public AddRemoveSortedEvents() { }
-        public AddRemoveSortedEvents(List<T> list) : base(list) { }
+        public DynamicOrderedEvents() { }
+        public DynamicOrderedEvents(List<T> list) : base(list) { }
 
         public override void CustomSerialize(Serializer serializer)
         {
@@ -495,14 +531,14 @@ namespace RainMeadow.Generics
         }
     }
 
-    public class AddRemoveSortedStates<T> : AddRemoveSortedList<T, AddRemoveSortedStates<T>> where T : OnlineState
+    public class DynamicOrderedStates<T> : DynamicOrderedList<T, DynamicOrderedStates<T>> where T : OnlineState
     {
-        public AddRemoveSortedStates() { }
-        public AddRemoveSortedStates(List<T> list) : base(list) { }
+        public DynamicOrderedStates() { }
+        public DynamicOrderedStates(List<T> list) : base(list) { }
 
         public override void CustomSerialize(Serializer serializer)
         {
-            serializer.SerializePolyStatesShort(ref list);
+            serializer.SerializePolyStatesByte(ref list);
             if (serializer.IsDelta)
             {
                 serializer.Serialize(ref listIndexes);
@@ -511,10 +547,10 @@ namespace RainMeadow.Generics
         }
     }
 
-    public class AddRemoveSortedStrings : AddRemoveSortedList<string, AddRemoveSortedStrings>
+    public class DynamicOrderedStrings : DynamicOrderedList<string, DynamicOrderedStrings>
     {
-        public AddRemoveSortedStrings() { }
-        public AddRemoveSortedStrings(List<string> list) : base(list) { }
+        public DynamicOrderedStrings() { }
+        public DynamicOrderedStrings(List<string> list) : base(list) { }
 
         public override void CustomSerialize(Serializer serializer)
         {
@@ -527,10 +563,10 @@ namespace RainMeadow.Generics
         }
     }
 
-    public class AddRemoveSortedUshorts : AddRemoveSortedList<ushort, AddRemoveSortedUshorts>
+    public class DynamicOrderedUshorts : DynamicOrderedList<ushort, DynamicOrderedUshorts>
     {
-        public AddRemoveSortedUshorts() { }
-        public AddRemoveSortedUshorts(List<ushort> list) : base(list) { }
+        public DynamicOrderedUshorts() { }
+        public DynamicOrderedUshorts(List<ushort> list) : base(list) { }
 
         public override void CustomSerialize(Serializer serializer)
         {

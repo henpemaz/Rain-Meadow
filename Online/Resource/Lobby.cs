@@ -170,9 +170,9 @@ namespace RainMeadow
             [OnlineField]
             public string[] mods;
             [OnlineField(nullable = true)]
-            public Generics.AddRemoveSortedPlayerIDs players;
+            public Generics.DynamicOrderedPlayerIDs players;
             [OnlineField(nullable = true)]
-            public Generics.AddRemoveSortedUshorts inLobbyIds;
+            public Generics.DynamicOrderedUshorts inLobbyIds;
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
