@@ -158,37 +158,5 @@ namespace RainMeadow
 
         }
 
-        [RPCMethod]
-        public static void StartArena(List<string> hostPlaylist)
-        {
-            RainMeadow.Debug("got startarena rpc");
-
-            var process = RWCustom.Custom.rainWorld.processManager.currentMainLoop;
-            if (process is not ArenaLobbyMenu)
-            {
-                Debug.Log("game is not arena lobby menu");
-                return;
-            }
-            var menu = process as ArenaLobbyMenu;
-
-
-
-            menu.InitializeSitting(hostPlaylist);
-
-
-            if (!OnlineManager.lobby.isOwner)
-            {
-                menu.manager.arenaSitting.levelPlaylist = hostPlaylist;
-            }
-
-            menu.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
-
-            // temp
-            UserInput.SetUserCount(OnlineManager.players.Count);
-            UserInput.SetForceDisconnectControllers(forceDisconnect: false);
-            menu.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
-        }
-
-
     }
 }

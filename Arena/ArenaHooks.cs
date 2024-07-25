@@ -47,6 +47,10 @@ namespace RainMeadow
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
 
+
+
+
+
         }
 
         private void Spear_Update(On.Spear.orig_Update orig, Spear self, bool eu)
@@ -318,40 +322,43 @@ namespace RainMeadow
             {
                 orig(self);
             }
-
-            if (self.countdownToNextRound == 0 && !self.nextLevelCall)
+            if (isArenaMode(out var arena))
             {
 
-                ArenaGameSession getArenaGameSession = (self.manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
-                AbstractRoom absRoom = getArenaGameSession.game.world.abstractRooms[0];
-                if (RoomSession.map.TryGetValue(absRoom, out var roomSession))
+                if (self.countdownToNextRound == 0 && !self.nextLevelCall)
                 {
 
-                    foreach (OnlinePlayer player in OnlineManager.players)
+                    ArenaGameSession getArenaGameSession = (self.manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
+                    AbstractRoom absRoom = getArenaGameSession.game.world.abstractRooms[0];
+
+                    if (RoomSession.map.TryGetValue(absRoom, out var roomSession))
                     {
-                        if (roomSession.isOwner)
+                        foreach (OnlinePlayer player in OnlineManager.players)
                         {
-                            // Give the owner a head start
-                            RPCs.Arena_NextLevelCall();
-
-                            if (!player.isMe)
+                            if (OnlineManager.lobby.isOwner && !arena.hostLeftForNextLevel)
                             {
-                                player.InvokeRPC(RPCs.Arena_NextLevelCall);
+                                RPCs.Arena_NextLevelCall();
                             }
-                        }
 
+                           if (!player.isMe)
+                            {
+                                player.InvokeRPC(RPCs.Arena_NextLevelCall); // Ugly animations, on menu overlay while it does it's return
+                                
+                            }
+
+                        }
                     }
+
+
                 }
 
+                if (self.nextLevelCall)
+                {
+                    return;
+                }
 
+                orig(self);
             }
-
-            if (self.nextLevelCall)
-            {
-                return;
-            }
-
-            orig(self);
 
 
         }
