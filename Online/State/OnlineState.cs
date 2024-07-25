@@ -431,7 +431,7 @@ namespace RainMeadow
                         {
                             // fields have already been copied, this is for sub-deltas
 
-                            if (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(Generics.IDelta<>)))
+                            if (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && (x.GetGenericTypeDefinition() == typeof(Generics.IDelta<>) || x.GetGenericTypeDefinition() == typeof(Generics.IPrimaryDelta<>))))
                             {
                                 // IPrimaryDelta:   o.f = this.f ? (b.f ? this.f.delta(b.f) : this.f) : null // can this be simplified?
                                 //                        b.f != null ? f?.delta(b.f) : f;
@@ -542,7 +542,7 @@ namespace RainMeadow
                                         // IDelta:          o.f = f ? f.applydelta(i.f) : i.f
 
                                         f => Expression.Assign(Expression.Field(output, f),
-                                            (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(Generics.IDelta<>))) ?
+                                            (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && (x.GetGenericTypeDefinition() == typeof(Generics.IDelta<>) || x.GetGenericTypeDefinition() == typeof(Generics.IPrimaryDelta<>)))) ?
                                             Expression.Condition(Expression.Equal(Expression.Field(selfConverted, f), Expression.Constant(null, f.FieldType)),
                                                 Expression.Field(incomingConverted, f),
                                                 (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(Generics.IPrimaryDelta<>))) ?

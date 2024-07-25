@@ -21,8 +21,6 @@ namespace RainMeadow
             MeadowPlayerController.Enable();
             LanternMouseController.EnableMouse();
 
-            AbstractMeadowCollectible.Enable();
-
             On.RoomCamera.Update += RoomCamera_Update; // init meadow hud
 
             IL.HUD.Map.ctor += Map_OwnerFixup; // support non-slug owner
