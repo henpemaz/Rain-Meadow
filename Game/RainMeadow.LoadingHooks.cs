@@ -26,13 +26,13 @@ namespace RainMeadow
                 ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
                 if (OnlineManager.lobby.isOwner)
                 {
-                    arena.hostLeftForNextLevel = true;
+                   
                     arena.isInGame = false;
                 }
 
                 while (!OnlineManager.lobby.isOwner && !arena.isInGame)
                 {
-                    RainMeadow.Debug("Waiting for host...");
+                    RainMeadow.Debug("Arena: Waiting for host to establish world session...");
                     self.NextLevel(manager);
                     return;
                 }

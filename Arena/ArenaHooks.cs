@@ -335,7 +335,7 @@ namespace RainMeadow
                     {
                         foreach (OnlinePlayer player in OnlineManager.players)
                         {
-                            if (OnlineManager.lobby.isOwner && !arena.hostLeftForNextLevel)
+                            if (OnlineManager.lobby.isOwner)
                             {
                                 RPCs.Arena_NextLevelCall();
                             }

@@ -18,8 +18,6 @@ namespace RainMeadow
             [OnlineField]
             public bool isInGame;
             [OnlineField]
-            public bool hostLeftForNextLevel;
-            [OnlineField]
             public List<string> playList;
 
 
@@ -28,7 +26,6 @@ namespace RainMeadow
             {
                 ArenaCompetitiveGameMode arena = (onlineResource as Lobby).gameMode as ArenaCompetitiveGameMode;
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
-                hostLeftForNextLevel = arena.hostLeftForNextLevel;
 
                 playList = arena.playList;
 
@@ -41,7 +38,6 @@ namespace RainMeadow
             {
                 var lobby = (data.resource as Lobby);
                 (lobby.gameMode as ArenaCompetitiveGameMode).isInGame = isInGame;
-                (lobby.gameMode as ArenaCompetitiveGameMode).hostLeftForNextLevel = hostLeftForNextLevel;
 
                 (lobby.gameMode as ArenaCompetitiveGameMode).playList = playList;
 
