@@ -296,7 +296,25 @@ namespace RainMeadow
 
             if (musicdata.inGroup == -1)
             {
-                bool theresotherbozoes = true;
+                bool theresotherbozoes = false;
+                List<OnlineCreature> RoomWithMe = new List<OnlineCreature>();
+                foreach (var entity in RoomImIn.abstractRoom.creatures)
+                {
+                    foreach (var other in OnlineManager.lobby.playerAvatars.Values.Where(v => v != null))
+                    {
+                        if (other.FindEntity() is OnlineCreature oc)
+                        {
+                            if (oc.creature == entity)
+                            {
+                                theresotherbozoes = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (theresotherbozoes) break;
+                }
+                //eventually i just wanna see if the people in my room have a isplayer qualifier or is owned by another guy
+
                 if (theresotherbozoes)
                 {
                     joinTimer = 5;
@@ -308,18 +326,58 @@ namespace RainMeadow
             }
             else
             {
-                //checks one degree of seperation 
-                bool theresbozoeshereorthere = true;
-                if (!theresbozoeshereorthere) 
+                //checks one degree of seperation for anyone
+
+
+                List<OnlineCreature> RoomWithMe = new List<OnlineCreature>();
+                foreach (var entity in RoomImIn.abstractRoom.creatures)
+                {
+
+                    foreach (var other in OnlineManager.lobby.playerAvatars.Values.Where(v => v != null))
+                    {
+                        if (other.FindEntity() is OnlineCreature oc)
+                        {
+                            if (oc.creature == entity) RoomWithMe.Add(oc);
+                        }
+                    }
+                    //this is sooooooooooo slowwww i'm sooooooo sorryyyyyyyy like o(N*N) slow 
+                    //i just wanna know if the creatures i am in is also owned by a guyyy
+                }
+                bool IAmWithMyFriends = RoomWithMe.Count(v => v.GetData<MeadowMusicData>().inGroup == musicdata.inGroup) != 0;
+                //if (vibeRoom == null) return -1;
+                if (!IAmWithMyFriends)
+                {
+                    List<OnlineCreature> GangNextDoor = new List<OnlineCreature>();
+                    var vibeRoom = RoomImIn.world.GetAbstractRoom(az.room);
+                    for (int i = 0; i < vibeRoom.connections.Length; i++)
+                    {
+                        var game = vibeRoom.connections[i];
+                        AbstractRoom abstractRoom = RoomImIn.world.GetAbstractRoom(vibeRoom.connections[i]);
+
+                        foreach (var entity in abstractRoom.creatures)
+                        {
+                            foreach (var other in OnlineManager.lobby.playerAvatars.Values.Where(v => v != null))
+                            {
+                                if (other.FindEntity() is OnlineCreature oc)
+                                {
+                                    if (oc.creature == entity) GangNextDoor.Add(oc);
+                                }
+                            }
+                        }
+                    }
+                    IAmWithMyFriends = GangNextDoor.Count(v => v.GetData<MeadowMusicData>().inGroup == musicdata.inGroup) != 0;
+                }
+
+                if (!IAmWithMyFriends) 
                 {
                     if (demiseTimer == null) demiseTimer = 12.5f;
+                    groupdemiseTimer = null;
                 }
                 else
                 {
                     //checks if the host is in the same region as you
-
-                    /*
-                    MeadowMusicData? myDJsdata = musicdata; //just to make line 226 shut up + if noone else is, then i am
+                    bool djinsameregion = false;
+                    MeadowMusicData? myDJsdata = musicdata; //just to make another line shut up + if noone else is, then i am
                     foreach (var other in OnlineManager.lobby.playerAvatars.Values.Where(v => v != null))
                     {
                         if (other.FindEntity() is OnlineCreature oc && !oc.owner.isMe)
@@ -328,13 +386,13 @@ namespace RainMeadow
                             // proccess other data
                             if (otherdata.inGroup == musicdata.inGroup && otherdata.isDJ)
                             {
-                                myDJsdata = otherdata;
+                                //myDJsdata = otherdata;
+                                djinsameregion = oc.abstractCreature.world.region.name == creature.abstractCreature.world.region.name;
                             }
                         }
                     }
-                    */
+                    
                     //if mydj is in same region as me
-                    bool djinsameregion = true;
                     if (!djinsameregion)
                     {
                         if (demiseTimer == null) demiseTimer = 12.5f;
@@ -342,11 +400,42 @@ namespace RainMeadow
                     else
                     {
                         //check the amount 
-                    
-                    
-                                            
-                    
-                    
+                        
+                        List<int> IDs = RoomWithMe.ToList().ConvertAll(v => v.GetData<MeadowMusicData>().inGroup);
+                        IDs.RemoveAll(v => v == -1);
+                        var g = IDs.GroupBy(v => v);
+                        var result = g.OrderByDescending(v => v).ToList();
+                        if (result.Count > 1)
+                        {
+                            if (result[0].Count() == result[1].Count())
+                            {
+                                if (result[0].Key == musicdata.inGroup || result[1].Key == musicdata.inGroup)
+                                {
+                                    //groupdemistimer thingy
+                                    groupdemiseTimer = (result[0].Count() + result[1].Count()) * 6f;
+                                    demiseTimer = null;
+                                }
+                                else
+                                {
+                                    if (demiseTimer != null) demiseTimer = 12.5f; //*X being group
+                                    groupdemiseTimer = null;
+                                }
+
+                            }
+                            else
+                            {
+                                if (result[0].Key == musicdata.inGroup)
+                                {
+                                    groupdemiseTimer = null;
+                                    demiseTimer = null;
+                                }
+                                else 
+                                {
+                                    if (demiseTimer != null) demiseTimer = 12.5f; //*X being group
+                                    groupdemiseTimer = null;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -392,8 +481,9 @@ namespace RainMeadow
                             {
                                 if (oc.creature == entity) RoomWithMe.Add(oc);
                             }
-                        }//this is sooooooooooo slowwww i'm sooooooo sorryyyyyyyy like o(N*N) slow 
-                         //i just wanna know if the creatures i am in is also owned by a guyyy
+                        }
+                        //this is sooooooooooo slowwww i'm sooooooo sorryyyyyyyy like o(N*N) slow 
+                        //i just wanna know if the creatures i am in is also owned by a guyyy
                     }
                     MeadowPlayerId[] ballers = RoomWithMe.ToList().ConvertAll(v => v.owner.id).ToArray();
                     OnlineManager.lobby.owner.InvokeRPC(AskNowSquashPlayers, ballers);
