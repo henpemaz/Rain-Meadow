@@ -162,7 +162,9 @@ namespace RainMeadow
                             if (otherdata.inGroup == HostOf) 
                             {
                                 OnlinePlayer ThePlayer = oc.owner;
-                                ThePlayer.QueueEvent(rpcEvent.to.InvokeRPC(TellNowJoinPlayer, otherdata.inGroup, true));
+                                //ThePlayer.QueueEvent(rpcEvent.to.InvokeRPC(TellNowJoinPlayer, otherdata.inGroup, true));
+                                ThePlayer.InvokeRPC(TellNowJoinPlayer, otherdata.inGroup, true);
+
                                 break;
                             }
                         }
@@ -240,6 +242,7 @@ namespace RainMeadow
 
             rpcEvent.from.InvokeRPC(TellNowJoinPlayer, newgroup, StartUnique);
         }
+        [RPCMethod]
         static void AskNowSquashPlayers(RPCEvent rpcEvent, params OnlinePlayer[] playersinquestion)
         {
             //make unique ID and feed it to all the people
@@ -272,11 +275,10 @@ namespace RainMeadow
             {
                 //send a request to playersinquestion[j]
                 //rpcEvent.to.QueueEvent
-                playersinquestion[j].QueueEvent(rpcEvent.to.InvokeRPC(TellNowJoinPlayer, i, j == 0));
+                //playersinquestion[j].QueueEvent(rpcEvent.to.InvokeRPC(TellNowJoinPlayer, i, j == 0));
+                playersinquestion[j].InvokeRPC(TellNowJoinPlayer, i, j == 0);
             }
         }
-
-
         [RPCMethod]
         static void TellNowJoinPlayer(int newgroup, bool isdj) //the eating that shit up
         {
@@ -500,7 +502,7 @@ namespace RainMeadow
                     List<OnlineCreature> RoomWithMe = new List<OnlineCreature>();
                     foreach(var entity in RoomImIn.abstractRoom.creatures)
                     {
-                        
+
                         foreach (var other in OnlineManager.lobby.playerAvatars.Values.Where(v => v != null))
                         {
                             if (other.FindEntity() is OnlineCreature oc)
