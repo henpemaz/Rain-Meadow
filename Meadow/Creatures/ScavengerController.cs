@@ -119,7 +119,9 @@ namespace RainMeadow
         public ScavengerController(Scavenger scav, OnlineCreature oc, int playerNumber) : base(scav, oc, playerNumber) 
         {
             scavenger = scav;
-            scavenger.abstractCreature.personality.energy = 1f; // no being lazy
+
+            // this actually changes their colors lmao
+            //scavenger.abstractCreature.personality.energy = 1f; // no being lazy
 
             jumpFactor = 1.6f;
         }

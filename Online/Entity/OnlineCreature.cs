@@ -14,7 +14,13 @@ namespace RainMeadow
 
             public OnlineCreatureDefinition(OnlineCreature onlineCreature, OnlineResource inResource) : base(onlineCreature, inResource)
             {
-                this.serializedObject = SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
+                if (RainMeadow.isArenaMode(out var _)) {
+                    this.serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature);
+
+
+                } else {
+                    this.serializedObject = SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
+                }
             }
 
             public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
@@ -58,7 +64,7 @@ namespace RainMeadow
             });
             EntityID id = EntityID.FromString(array[1]);
             int? num = BackwardsCompatibilityRemix.ParseRoomIndex(array2[0]);
-            if(num == null || !world.IsRoomInRegion(num.Value))
+            if (num == null || !world.IsRoomInRegion(num.Value))
             {
                 num = world.GetAbstractRoom(array2[0]).index;
             }
@@ -120,27 +126,27 @@ namespace RainMeadow
             creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, hitChunk, victimAppendage, damageType, damage, stunBonus);
         }
 
-        public void ForceGrab(GraspRef graspRef)
-        {
-            var castShareability = new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(graspRef.Shareability));
-            var other = graspRef.OnlineGrabbed.FindEntity(quiet: true) as OnlinePhysicalObject;
-            if(other != null && other.apo.realizedObject != null)
-            {
-                var grabber = (Creature)this.apo.realizedObject;
-                var grabbedThing = other.apo.realizedObject;
-                var graspUsed = graspRef.GraspUsed;
+        //public void ForceGrab(GraspRef graspRef)
+        //{
+        //    var castShareability = new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(graspRef.Shareability));
+        //    var other = graspRef.OnlineGrabbed.FindEntity(quiet: true) as OnlinePhysicalObject;
+        //    if (other != null && other.apo.realizedObject != null)
+        //    {
+        //        var grabber = (Creature)this.apo.realizedObject;
+        //        var grabbedThing = other.apo.realizedObject;
+        //        var graspUsed = graspRef.GraspUsed;
 
-                if (grabber.grasps[graspUsed] != null)
-                {
-                    if (grabber.grasps[graspUsed].grabbed == grabbedThing) return;
-                    grabber.grasps[graspUsed].Release();
-                }
-                grabber.grasps[graspUsed] = new Creature.Grasp(grabber, grabbedThing, graspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
-                grabbedThing.room = grabber.room;
-                grabbedThing.Grabbed(grabber.grasps[graspUsed]);
-                new AbstractPhysicalObject.CreatureGripStick(grabber.abstractCreature, grabbedThing.abstractPhysicalObject, graspUsed, graspRef.Pacifying || grabbedThing.TotalMass < grabber.TotalMass);
-            }
-        }
+        //        if (grabber.grasps[graspUsed] != null)
+        //        {
+        //            if (grabber.grasps[graspUsed].grabbed == grabbedThing) return;
+        //            grabber.grasps[graspUsed].Release();
+        //        }
+        //        grabber.grasps[graspUsed] = new Creature.Grasp(grabber, grabbedThing, graspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
+        //        grabbedThing.room = grabber.room;
+        //        grabbedThing.Grabbed(grabber.grasps[graspUsed]);
+        //        new AbstractPhysicalObject.CreatureGripStick(grabber.abstractCreature, grabbedThing.abstractPhysicalObject, graspUsed, graspRef.Pacifying || grabbedThing.TotalMass < grabber.TotalMass);
+        //    }
+        //}
 
         public void BroadcastSuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
         {
@@ -150,9 +156,9 @@ namespace RainMeadow
                 if (id.type == 0) throw new InvalidProgrammerException("here");
                 foreach (var participant in room.participants)
                 {
-                    if (!participant.Key.isMe)
+                    if (!participant.isMe)
                     {
-                        participant.Key.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
+                        participant.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
                     }
                 }
             }
@@ -161,21 +167,33 @@ namespace RainMeadow
         [RPCMethod]
         public void SuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
         {
+            RainMeadow.Debug(this);
             enteringShortCut = true;
             var creature = (apo.realizedObject as Creature);
-            var room = creature.room;
-            creature?.SuckedIntoShortCut(entrancePos, carriedByOther);
-            if (creature.graphicsModule != null)
-			{
-                Vector2 vector = room.MiddleOfTile(entrancePos) + Custom.IntVector2ToVector2(room.ShorcutEntranceHoleDirection(entrancePos)) * -5f;
-                creature.graphicsModule.SuckedIntoShortCut(vector);
-			}
+            if(creature != null && creature.room != null)
+            {
+                try
+                {
+                    var room = creature.room;
+                    creature.SuckedIntoShortCut(entrancePos, carriedByOther);
+                    if (creature.graphicsModule != null)
+                    {
+                        Vector2 vector = room.MiddleOfTile(entrancePos) + Custom.IntVector2ToVector2(room.ShorcutEntranceHoleDirection(entrancePos)) * -5f;
+                        creature.graphicsModule.SuckedIntoShortCut(vector);
+                    }
+                }
+                catch (Exception)
+                {
+                    enteringShortCut = false;
+                    throw;
+                }
+            }
             enteringShortCut = false;
         }
 
         public override string ToString()
         {
-            return (this.apo as AbstractCreature).creatureTemplate.ToString() + base.ToString();
+            return $"{abstractCreature.creatureTemplate.type} {base.ToString()}";
         }
     }
 }

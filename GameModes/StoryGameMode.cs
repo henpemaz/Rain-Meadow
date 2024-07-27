@@ -92,7 +92,7 @@ namespace RainMeadow
         internal override void ResourceAvailable(OnlineResource onlineResource)
         {
             base.ResourceAvailable(onlineResource);
-            if(onlineResource is Lobby lobby)
+            if (onlineResource is Lobby lobby)
             {
                 lobby.AddData<StoryLobbyData>(true);
             }
@@ -101,10 +101,11 @@ namespace RainMeadow
         internal override void LobbyTick(uint tick)
         {
             base.LobbyTick(tick);
-            readyForWinPlayers = lobby.entities.Values.Where(
-                e => e.entity is StoryClientSettings sas && 
+            readyForWinPlayers = lobby.activeEntities.Where(
+                e => e is StoryClientSettings sas && 
                 (sas.readyForWin || !sas.inGame || sas.isDead)
-            ).Select(e => e.entity.owner.inLobbyId).ToList();
+            ).Select(e => e.owner.inLobbyId).ToList();
         }
+
     }
 }

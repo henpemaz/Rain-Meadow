@@ -1,5 +1,11 @@
-﻿using System;
+﻿using Menu;
+using On;
+using Menu;
+using On;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Globalization;
 using System.Linq;
 
 namespace RainMeadow
@@ -92,7 +98,7 @@ namespace RainMeadow
 
         internal override void Tick(uint tick)
         {
-            clientSettings = entities.Values.Where(em => em.entity is ClientSettings).ToDictionary(e => e.entity.owner, e => e.entity as ClientSettings);
+            clientSettings = activeEntities.Where(e => e is ClientSettings).ToDictionary(e => e.owner, e => e as ClientSettings);
             playerAvatars = clientSettings.ToDictionary(e => e.Key, e => e.Value.avatarId);
             gameMode.LobbyTick(tick);
             base.Tick(tick);
@@ -100,14 +106,19 @@ namespace RainMeadow
 
         protected override void ActivateImpl()
         {
-            if (gameModeType == OnlineGameMode.OnlineGameModeType.ArenaCompetitive) // Arena
+            if (RainMeadow.isArenaMode(out var _)) // Arena
             {
-                var nr = new Region("arena", 0, -1, null);
-                var ns = new WorldSession(nr, this);
-                worldSessions.Add(nr.name, ns);
-                subresources.Add(ns);
+
+                Region arenaRegion = new Region("arena", 0, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer);
+
+                var ws = new WorldSession(arenaRegion, this);
+                worldSessions.Add(arenaRegion.name, ws);
+                subresources.Add(ws);
+
+                RainMeadow.Debug(subresources.Count);
+
             }
-            else // story mode
+            else
             {
                 foreach (var r in Region.LoadAllRegions(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer))
                 {
@@ -159,15 +170,15 @@ namespace RainMeadow
             [OnlineField]
             public string[] mods;
             [OnlineField(nullable = true)]
-            public Generics.AddRemoveSortedPlayerIDs players;
+            public Generics.DynamicOrderedPlayerIDs players;
             [OnlineField(nullable = true)]
-            public Generics.AddRemoveSortedUshorts inLobbyIds;
+            public Generics.DynamicOrderedUshorts inLobbyIds;
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
                 nextId = lobby.nextId;
-                players = new(lobby.participants.Keys.Select(p => p.id).ToList());
-                inLobbyIds = new(lobby.participants.Keys.Select(p => p.inLobbyId).ToList());
+                players = new(lobby.participants.Select(p => p.id).ToList());
+                inLobbyIds = new(lobby.participants.Select(p => p.inLobbyId).ToList());
                 mods = lobby.mods;
             }
 

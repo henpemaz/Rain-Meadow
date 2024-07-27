@@ -8,7 +8,7 @@ namespace RainMeadow
     public class RealizedCreatureState : RealizedPhysicalObjectState
     {
         [OnlineField(nullable = true)]
-        private Generics.AddRemoveUnsortedCustomSerializables<GraspRef> Grasps;
+        private DynamicOrderedStates<GraspRef> grasps;
         [OnlineField]
         public short stun;
         [OnlineField(nullable = true)]
@@ -18,7 +18,7 @@ namespace RainMeadow
         public RealizedCreatureState(OnlineCreature onlineCreature) : base(onlineCreature)
         {
             var creature = onlineCreature.apo.realizedObject as Creature;
-            Grasps = new(creature.grasps?.Where(g => g != null).Select(GraspRef.FromGrasp).ToList() ?? new());
+            grasps = new(creature.grasps?.Where(g => g != null).Select(g => GraspRef.map.GetValue(g,GraspRef.FromGrasp)).Where(g => g != null).ToList() ?? new());
             stun = (short)creature.stun;
             enteringShortcut = creature.enteringShortCut;
         }
@@ -27,83 +27,43 @@ namespace RainMeadow
         {
             base.ReadTo(onlineEntity);
             if (onlineEntity.owner.isMe || onlineEntity.isPending) { RainMeadow.Debug($"not syncing {this} because mine?{onlineEntity.owner.isMe} pending?{onlineEntity.isPending}"); return; }; // Don't sync if pending, reduces visibility and effect of lag
-            if (onlineEntity is not OnlineCreature onlineCreature) return;
-            if (onlineCreature.apo.realizedObject is not Creature creature) return;
+            if (onlineEntity is not OnlineCreature onlineCreature) { RainMeadow.Error("target not onlinecreature: " + onlineEntity); return; }
+            if (onlineCreature.apo.realizedObject is not Creature creature) { RainMeadow.Trace("target not realized: " + onlineEntity); return; }
 
             creature.stun = stun;
             creature.enteringShortCut = enteringShortcut;
 
-            if (creature.grasps == null) return;
-            for (var i = 0; i < creature.grasps.Length; i++)
+            if (creature.grasps != null)
             {
-                var newGrasp = Grasps.list.FirstOrDefault(x => x.GraspUsed == i);
-                if (newGrasp != null)
+                bool[] found = new bool[creature.grasps.Length];
+                RainMeadow.Trace($"incoming grasps for {onlineEntity}: " + grasps.list.Count);
+                for (int i = 0; i < grasps.list.Count; i++)
                 {
-                    onlineCreature.ForceGrab(newGrasp);
+                    var grasp = grasps.list[i];
+                    var grabbed = (grasp.onlineGrabbed.FindEntity() as OnlinePhysicalObject)?.apo.realizedObject; // lookup once, use multiple times
+                    if (grabbed == null) continue;
+                    var foundat = Array.FindIndex(creature.grasps, s => grasp.EqualsGrasp(s, grabbed));
+                    if (foundat == -1)
+                    {
+                        RainMeadow.Trace("incoming grasps not found: " + grasp);
+                        grasp.MakeGrasp(creature, grabbed);
+                        found[grasp.graspUsed] = true;
+                    }
+                    else
+                    {
+                        RainMeadow.Trace("incoming grasps found: " + grasp + " at index " + foundat);
+                        found[foundat] = true;
+                    }
                 }
-                else
+                for (int i = found.Length - 1; i >= 0; i--)
                 {
-                    creature.grasps[i]?.Release();
+                    if (!found[i] && creature.grasps[i] != null)
+                    {
+                        RainMeadow.Trace("releasing grasp because not found at index " + i);
+                        GraspRef.map.GetValue(creature.grasps[i], GraspRef.FromGrasp).Release(creature.grasps[i]);
+                    }
                 }
             }
         }
-    }
-
-    public class GraspRef : Serializer.ICustomSerializable, IIdentifiable<byte>, IEquatable<GraspRef>
-    {
-        public OnlineEntity.EntityId OnlineGrabber; // unused and could be removed?
-        public byte GraspUsed;
-        public OnlineEntity.EntityId OnlineGrabbed;
-        public byte ChunkGrabbed;
-        public byte Shareability;
-        public float Dominance;
-        public bool Pacifying;
-
-        public byte ID => GraspUsed;
-
-        public GraspRef() { }
-        public GraspRef(OnlinePhysicalObject onlineGrabber, OnlinePhysicalObject onlineGrabbed, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool pacifying)
-        {
-            OnlineGrabber = onlineGrabber.id;
-            GraspUsed = (byte)graspUsed;
-            OnlineGrabbed = onlineGrabbed.id;
-            ChunkGrabbed = (byte)chunkGrabbed;
-            Shareability = (byte)shareability;
-            Dominance = dominance;
-            Pacifying = pacifying;
-        }
-
-        public void CustomSerialize(Serializer serializer)
-        {
-            serializer.Serialize(ref OnlineGrabber);
-            serializer.Serialize(ref GraspUsed);
-            serializer.Serialize(ref OnlineGrabbed);
-            serializer.Serialize(ref ChunkGrabbed);
-            serializer.Serialize(ref Shareability);
-            serializer.Serialize(ref Dominance);
-            serializer.Serialize(ref Pacifying);
-        }
-
-        public static GraspRef FromGrasp(Creature.Grasp grasp)
-        {
-            if (!OnlinePhysicalObject.map.TryGetValue(grasp.grabber.abstractPhysicalObject, out var onlineGrabber)) throw new InvalidOperationException("Grabber doesn't exist in online space!");
-            if (!OnlinePhysicalObject.map.TryGetValue(grasp.grabbed.abstractPhysicalObject, out var onlineGrabbed)) throw new InvalidOperationException("Grabbed tjing doesn't exist in online space!");
-            return new GraspRef(onlineGrabber, onlineGrabbed, grasp.graspUsed, grasp.chunkGrabbed, grasp.shareability, grasp.dominance, grasp.pacifying);
-        }
-
-        public bool Equals(GraspRef other)
-        {
-            return other != null
-                && OnlineGrabber == other.OnlineGrabber
-                && GraspUsed == other.GraspUsed
-                && OnlineGrabbed == other.OnlineGrabbed
-                && ChunkGrabbed == other.ChunkGrabbed
-                && Shareability == other.Shareability
-                && Dominance == other.Dominance
-                && Pacifying == other.Pacifying;
-        }
-
-        public override bool Equals(object obj) => Equals(obj as GraspRef);
-        public override int GetHashCode() => GraspUsed + OnlineGrabbed.GetHashCode();
     }
 }

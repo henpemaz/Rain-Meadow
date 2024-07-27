@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace RainMeadow
 {
@@ -25,6 +24,7 @@ namespace RainMeadow
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
         {
+            RainMeadow.Trace(this + " - " + onlineEntity);
             Player p = onlineEntity.apo.realizedObject as Player;
             animationIndex = (byte)p.animation.Index;
             animationFrame = (short)p.animationFrame;
@@ -49,6 +49,7 @@ namespace RainMeadow
         }
         public Player.InputPackage GetInput()
         {
+            RainMeadow.Trace(inputs);
             Player.InputPackage i = default;
             if (((inputs >> 0) & 1) != 0) i.x = 1;
             if (((inputs >> 1) & 1) != 0) i.x = -1;
@@ -67,6 +68,7 @@ namespace RainMeadow
 
         public override void ReadTo(OnlineEntity onlineEntity)
         {
+            RainMeadow.Trace(this + " - " + onlineEntity);
             base.ReadTo(onlineEntity);
             if ((onlineEntity as OnlineCreature).apo.realizedObject is Player pl)
             {
@@ -76,6 +78,10 @@ namespace RainMeadow
                 pl.bodyMode = new Player.BodyModeIndex(Player.BodyModeIndex.values.GetEntry(bodyModeIndex));
                 pl.standing = standing;
                 pl.glowing = glowing;
+            }
+            else
+            {
+                RainMeadow.Error("target not realized: " + onlineEntity);
             }
         }
     }

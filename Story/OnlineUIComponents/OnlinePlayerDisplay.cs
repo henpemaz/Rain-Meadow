@@ -1,4 +1,5 @@
-﻿using RWCustom;
+﻿using RainMeadow.GameModes;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
@@ -22,6 +23,8 @@ namespace RainMeadow
         public OnlinePlayerDisplay(PlayerSpecificOnlineHud owner) : base(owner)
         {
             this.owner = owner;
+
+
             this.pos = new Vector2(-1000f, -1000f);
             this.lastPos = this.pos;
             this.gradient = new FSprite("Futile_White", true);
@@ -31,36 +34,58 @@ namespace RainMeadow
             this.gradient.alpha = 0f;
             this.gradient.x = -1000f;
             this.label = new FLabel(Custom.GetFont(), owner.clientSettings.owner.id.name);
-            this.label.color = owner.clientSettings.SlugcatColor();
+            this.label.color = Color.white;
+
+
+
             owner.hud.fContainers[0].AddChild(this.label);
             this.label.alpha = 0f;
             this.label.x = -1000f;
             this.arrowSprite = new FSprite("Multiplayer_Arrow", true);
-            this.arrowSprite.color = owner.clientSettings.SlugcatColor();
             owner.hud.fContainers[0].AddChild(this.arrowSprite);
             this.arrowSprite.alpha = 0f;
             this.arrowSprite.x = -1000f;
-
+            this.arrowSprite.color = Color.white;
             this.slugIcon = new FSprite("Kill_Slugcat", true);
-            this.slugIcon.color = owner.clientSettings.SlugcatColor();
             owner.hud.fContainers[0].AddChild(this.slugIcon);
             this.slugIcon.alpha = 0f;
             this.slugIcon.x = -1000f;
+                        this.slugIcon.color = Color.white;
 
             this.blink = 1f;
             this.switchedToDeathIcon = false;
 
             this.isButtonToggled = false;
+
+            if (RainMeadow.isStoryMode(out var _))
+            {
+                this.label.color = (owner.clientSettings as StoryClientSettings).SlugcatColor(); ;
+                this.arrowSprite.color = (owner.clientSettings as StoryClientSettings).SlugcatColor(); ;
+                this.slugIcon.color = (owner.clientSettings as StoryClientSettings).SlugcatColor(); ;
+
+
+            }
+
+            if (RainMeadow.isArenaMode(out var _))
+            {
+                this.label.color = (owner.clientSettings as ArenaClientSettings).SlugcatColor();
+
+                this.arrowSprite.color = (owner.clientSettings as ArenaClientSettings).SlugcatColor();
+                this.slugIcon.color = (owner.clientSettings as ArenaClientSettings).SlugcatColor();
+
+
+            }
         }
 
         public override void Update()
         {
             base.Update();
 
-            if (RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value && Input.GetKeyDown(RainMeadow.rainMeadowOptions.FriendsListKey.Value)) {
+            if (RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value && Input.GetKeyDown(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
+            {
                 this.isButtonToggled = !this.isButtonToggled;
-            } 
-            
+            }
+
             if (isButtonToggled || (!RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value && Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value)))
             {
                 this.lastAlpha = this.alpha;
@@ -102,6 +127,7 @@ namespace RainMeadow
 
         public override void Draw(float timeStacker)
         {
+
             Vector2 vector = Vector2.Lerp(this.lastPos, this.pos, timeStacker) + new Vector2(0.01f, 0.01f);
             float num = Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(this.lastAlpha, this.alpha, timeStacker)), 0.7f);
             this.gradient.x = vector.x;
@@ -117,7 +143,17 @@ namespace RainMeadow
 
             this.label.x = vector.x;
             this.label.y = vector.y + 20f;
-            Color color = owner.clientSettings.SlugcatColor();
+            Color color = Color.white;
+
+            if (RainMeadow.isStoryMode(out var _))
+            {
+                color = (owner.clientSettings as StoryClientSettings).SlugcatColor();
+
+            }
+            if (RainMeadow.isArenaMode(out var _))
+            {
+                color = (owner.clientSettings as ArenaClientSettings).SlugcatColor();
+            }
             if (this.counter % 6 < 2 && this.lastBlink > 0f)
             {
                 if (((Vector3)(Vector4)color).magnitude > 1.56f)

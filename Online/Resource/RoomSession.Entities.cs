@@ -1,4 +1,6 @@
-﻿namespace RainMeadow
+﻿using System;
+
+namespace RainMeadow
 {
     public partial class RoomSession
     {
@@ -19,11 +21,11 @@
             if (!isAvailable || !isActive) return;
             if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
             {
-                oe.LeaveResource(this);
+                oe.ExitResource(this);
             }
             else
             {
-                RainMeadow.Error("Unregistered entity leaving");
+                RainMeadow.Error($"Unregistered entity leaving {this} : {apo} - {Environment.StackTrace}");
             }
         }
     }

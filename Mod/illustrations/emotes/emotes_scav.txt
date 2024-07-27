@@ -1,0 +1,255 @@
+{
+	"frames": {
+		"scav_emoteamazed.png": {
+			"frame": {
+				"x": 1,
+				"y": 1,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"scav_emoteangry.png": {
+			"frame": {
+				"x": 243,
+				"y": 1,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"scav_emoteconfused.png": {
+			"frame": {
+				"x": 485,
+				"y": 1,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"scav_emotedead.png": {
+			"frame": {
+				"x": 1,
+				"y": 243,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"scav_emotegoofy.png": {
+			"frame": {
+				"x": 243,
+				"y": 243,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"scav_emotehappy.png": {
+			"frame": {
+				"x": 485,
+				"y": 243,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"scav_emotehello.png": {
+			"frame": {
+				"x": 1,
+				"y": 485,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"scav_emotehug.png": {
+			"frame": {
+				"x": 243,
+				"y": 485,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"scav_emotemischievous.png": {
+			"frame": {
+				"x": 485,
+				"y": 485,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"scav_emotesad.png": {
+			"frame": {
+				"x": 727,
+				"y": 1,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"scav_emoteshrug.png": {
+			"frame": {
+				"x": 727,
+				"y": 243,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"scav_emotewink.png": {
+			"frame": {
+				"x": 727,
+				"y": 485,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		}
+	},
+	"meta": {
+		"app": "http://www.codeandweb.com/texturepacker",
+		"version": "1.0",
+		"image": "spritesheet.png",
+		"format": "RGBA8888",
+		"size": {
+			"w": 968,
+			"h": 726
+		},
+		"scale": "1"
+	}
+}

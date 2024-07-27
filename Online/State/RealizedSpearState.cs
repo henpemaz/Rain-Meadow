@@ -26,7 +26,19 @@ namespace RainMeadow
 
             if (spear.stuckInObject != null)
             {
-                if (!OnlinePhysicalObject.map.TryGetValue(spear.stuckInObject.abstractPhysicalObject, out var onlineStuckEntity)) throw new InvalidOperationException("Stuck to a non-synced creature!");
+                if (!OnlinePhysicalObject.map.TryGetValue(spear.stuckInObject.abstractPhysicalObject, out var onlineStuckEntity))
+
+                    if (RainMeadow.isArenaMode(out var _))
+                    {
+
+                        RainMeadow.Debug("Stuck in creature while switching worlds");
+
+                    }
+
+                    else
+                    {
+                        throw new InvalidOperationException("Stuck to a non-synced creature!");
+                    }
                 stuckInObject = onlineStuckEntity?.id;
                 stuckInChunkIndex = (byte)spear.stuckInChunkIndex;
                 stuckInAppendage = spear.stuckInAppendage != null ? new AppendageRef(spear.stuckInAppendage) : null;
@@ -43,20 +55,26 @@ namespace RainMeadow
             if (!stuckInWall.HasValue)
                 spear.addPoles = false;
 
-            spear.stuckInObject = (stuckInObject?.FindEntity() as OnlinePhysicalObject)?.apo.realizedObject;
-            if (spear.stuckInObject != null)
+            var stuckInEntity = stuckInObject?.FindEntity() as OnlinePhysicalObject;
+            if (stuckInEntity != null)
             {
-                spear.stuckInChunkIndex = stuckInChunkIndex;
-                spear.stuckInAppendage = stuckInAppendage?.GetAppendagePos(stuckInObject.FindEntity() as OnlinePhysicalObject);
-                spear.stuckBodyPart = stuckBodyPart;
-                spear.stuckRotation = stuckRotation;
+                spear.stuckInObject = stuckInEntity.apo.realizedObject;
+                spear.stuckInAppendage = stuckInAppendage?.GetAppendagePos(stuckInEntity);
             }
+            spear.stuckInChunkIndex = stuckInChunkIndex;
+            spear.stuckBodyPart = stuckBodyPart;
+            spear.stuckRotation = stuckRotation;
 
             base.ReadTo(onlineEntity);
-            var newMode = new Weapon.Mode(Weapon.Mode.values.GetEntry(mode));
-            if (newMode == Weapon.Mode.StuckInWall && !stuckInWall.HasValue)
+            if (spear.mode == Weapon.Mode.StuckInWall && !spear.stuckInWall.HasValue)
             {
                 RainMeadow.Error("Stuck in wall but has no value!");
+                spear.ChangeMode(Weapon.Mode.Free);
+            }
+            if (spear.mode == Weapon.Mode.StuckInCreature && (stuckInEntity == null || stuckInEntity.apo.realizedObject == null ))
+            {
+                RainMeadow.Error("Stuck in creature but no creature");
+                spear.ChangeMode(Weapon.Mode.Free);
             }
         }
     }

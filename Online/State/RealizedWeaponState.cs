@@ -38,7 +38,12 @@ namespace RainMeadow
             base.ReadTo(onlineEntity);
             var weapon = (Weapon)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             var newMode = new Weapon.Mode(Weapon.Mode.values.GetEntry(mode));
-            if (weapon.room != null && weapon.mode != newMode) weapon.ChangeMode(newMode);
+            if (weapon.room != null && weapon.mode != newMode)
+            {
+                RainMeadow.Debug($"{onlineEntity} new mode : {newMode}");
+                weapon.ChangeMode(newMode);
+                weapon.throwModeFrames = -1; // not synched, behaves as "infinite"
+            }
             weapon.tailPos = tailPos;
             weapon.setRotation = setRotation;
             weapon.rotation = rotation;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -29,6 +30,7 @@ namespace RainMeadow
             instance.Logger.LogError($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}:{data}");
         }
 
+        [Conditional("TRACING")]
         public static void Stacktrace()
         {
             var stacktrace = Environment.StackTrace;
@@ -37,10 +39,16 @@ namespace RainMeadow
             instance.Logger.LogInfo(stacktrace);
         }
 
-        //#if TRACING
+        [Conditional("TRACING")]
+        public static void Dump(object data, [CallerFilePath] string callerFile = "", [CallerMemberName] string callerName = "")
+        {
+            instance.Logger.LogInfo($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}:{JsonConvert.SerializeObject(data, Formatting.Indented, new ShallowJsonDump())}");
+        }
+
         // tracing stays on for one net-frame after pressing L
         public static bool tracing;
         // this better captures the caller member info for delegates/lambdas at the cost of using the stackframe
+        [Conditional("TRACING")]
         public static void Trace(object data, [CallerFilePath] string callerFile = "")
         {
             if (tracing)
@@ -48,6 +56,5 @@ namespace RainMeadow
                 instance.Logger.LogInfo($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{new StackFrame(1, false).GetMethod()}:{data}");
             }
         }
-//#endif
     }
 }

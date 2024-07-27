@@ -1,4 +1,5 @@
-﻿using RainMeadow.Generics;
+﻿using RainMeadow.GameModes;
+using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,11 +73,17 @@ namespace RainMeadow
 
             public static readonly StateType MeadowPersonaSettingsState = new("MeadowPersonaSettings.State", typeof(MeadowAvatarSettings.State));
             public static readonly StateType SlugcatAvatarSettingsState = new("SlugcatAvatarSettings.State", typeof(StoryClientSettings.State));
+
+            public static readonly StateType ArenaAvatarSettingsDefinition = new("ArenaAvatarSettings.Definition", typeof(ArenaClientSettings.Definition));
+            public static readonly StateType ArenaCustomization = new("ArenaAvatarCustomization.State", typeof(ArenaClientSettings.State));
+            public static readonly StateType ArenaLobbyDataState = new("ArenaLobbyDataState", typeof(ArenaLobbyData.State));
+
             //public static readonly StateType GamemodeDataState = new("GamemodeDataState", typeof(GamemodeDataState)); // abstract
             public static readonly StateType MeadowCreatureDataState = new("MeadowCreatureDataState", typeof(MeadowCreatureData.State));
             public static readonly StateType MeadowLobbyState = new("MeadowLobbyState", typeof(MeadowLobbyData.State));
 
             public static readonly StateType StoryLobbyDataState = new("StoryLobbyDataState", typeof(StoryLobbyData.State));
+
 
             public static readonly StateType OnlinePhysicalObjectDefinition = new("OnlinePhysicalObjectDefinition", typeof(OnlinePhysicalObject.OnlinePhysicalObjectDefinition));
             public static readonly StateType OnlineConsumableDefinition = new("OnlineConsumableDefinition", typeof(OnlineConsumable.OnlineConsumableDefinition));
@@ -85,8 +92,17 @@ namespace RainMeadow
             public static readonly StateType OnlineBubbleGrassDefinition = new("OnlineBubbleGrassDefinition", typeof(OnlineBubbleGrass.OnlineBubbleGrassDefinition));
             public static readonly StateType OnlineSporePlantDefinition = new("OnlineSporePlantDefinition", typeof(OnlineSporePlant.OnlineSporePlantDefinition));
             public static readonly StateType OnlineCreatureDefinition = new("OnlineCreatureDefinition", typeof(OnlineCreature.OnlineCreatureDefinition));
+
+            public static readonly StateType GraspRef = new("GraspRef", typeof(GraspRef));
+            public static readonly StateType AbstractObjStickReprSpearStick = new("AbstractObjStickRepr.SpearStick", typeof(AbstractObjStickRepr.SpearStick));
+            public static readonly StateType AbstractObjStickReprSpearAppendageStick = new("AbstractObjStickRepr.SpearAppendageStick", typeof(AbstractObjStickRepr.SpearAppendageStick));
+            public static readonly StateType AbstractObjStickReprImpaledOnSpearStick = new("AbstractObjStickRepr.ImpaledOnSpearStick", typeof(AbstractObjStickRepr.ImpaledOnSpearStick));
+            public static readonly StateType AbstractObjStickReprOnBackStick = new("AbstractObjStickRepr.OnBackStick", typeof(AbstractObjStickRepr.OnBackStick));
+            public static readonly StateType AbstractObjStickReprCreatureGripStick = new ("AbstractObjStickRepr.CreatureGripStick", typeof(AbstractObjStickRepr.CreatureGripStick));
+
             public static readonly StateType MeadowAvatarSettingsDefinition = new ("MeadowAvatarSettings.Definition", typeof(MeadowAvatarSettings.Definition));
             public static readonly StateType SlugcatAvatarSettingsDefinition = new ("SlugcatAvatarSettings.Definition", typeof(StoryClientSettings.Definition));
+
             public static readonly StateType OnlineMeadowCollectibleDefinition = new ("OnlineMeadowCollectible.Definition", typeof(OnlineMeadowCollectible.Definition));
             public static readonly StateType OnlineMeadowCollectibleMeadowCollectibleState = new ("MeadowCollectibleState", typeof(OnlineMeadowCollectible.MeadowCollectibleState));
 
@@ -105,7 +121,7 @@ namespace RainMeadow
 
         private static Dictionary<StateType, StateHandler> handlersByEnum = new Dictionary<StateType, StateHandler>();
         private static Dictionary<Type, StateHandler> handlersByType = new Dictionary<Type, StateHandler>();
-        
+
         public static void RegisterState(StateType stateType, Type type)
         {
             if (!handlersByEnum.ContainsKey(stateType)) { handlersByEnum[stateType] = handlersByType[type] = new StateHandler(stateType, type); }
@@ -192,6 +208,11 @@ namespace RainMeadow
 
             public virtual Expression ComparisonMethod(FieldInfo f, MemberExpression currentField, MemberExpression baselineField)
             {
+                if (f.FieldType.IsArray) return Expression.Call(
+                    typeof(Enumerable).GetMethods().First(m=> m.Name == "SequenceEqual" && m.IsGenericMethodDefinition && m.GetParameters().Length == 2).MakeGenericMethod(f.FieldType.GetElementType()),
+                    Expression.Convert(currentField, typeof(IEnumerable<>).MakeGenericType(f.FieldType.GetElementType())),
+                    Expression.Convert(baselineField, typeof(IEnumerable<>).MakeGenericType(f.FieldType.GetElementType()))
+                    );
                 return Expression.Equal(currentField, baselineField);
             }
         }
@@ -246,7 +267,7 @@ namespace RainMeadow
                     this.type = type;
                     this.deltaSupport = type.GetCustomAttribute<DeltaSupportAttribute>()?.level ?? DeltaSupport.None;
 
-                    if (deltaSupport == DeltaSupport.None) RainMeadow.Error("No delta support for type: " + type.Name);
+                    if (deltaSupport == DeltaSupport.None) RainMeadow.Debug("No delta support for type: " + type.Name);
 
                     BindingFlags anyInstance = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
@@ -410,7 +431,7 @@ namespace RainMeadow
                         {
                             // fields have already been copied, this is for sub-deltas
 
-                            if (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(Generics.IDelta<>)))
+                            if (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && (x.GetGenericTypeDefinition() == typeof(Generics.IDelta<>) || x.GetGenericTypeDefinition() == typeof(Generics.IPrimaryDelta<>))))
                             {
                                 // IPrimaryDelta:   o.f = this.f ? (b.f ? this.f.delta(b.f) : this.f) : null // can this be simplified?
                                 //                        b.f != null ? f?.delta(b.f) : f;
@@ -521,7 +542,7 @@ namespace RainMeadow
                                         // IDelta:          o.f = f ? f.applydelta(i.f) : i.f
 
                                         f => Expression.Assign(Expression.Field(output, f),
-                                            (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(Generics.IDelta<>))) ?
+                                            (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && (x.GetGenericTypeDefinition() == typeof(Generics.IDelta<>) || x.GetGenericTypeDefinition() == typeof(Generics.IPrimaryDelta<>)))) ?
                                             Expression.Condition(Expression.Equal(Expression.Field(selfConverted, f), Expression.Constant(null, f.FieldType)),
                                                 Expression.Field(incomingConverted, f),
                                                 (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(Generics.IPrimaryDelta<>))) ?

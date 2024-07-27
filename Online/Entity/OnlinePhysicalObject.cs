@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using static RainMeadow.OnlineCreature;
 
 namespace RainMeadow
 {
@@ -59,6 +60,7 @@ namespace RainMeadow
                 case AbstractMeadowCollectible:
                     return new OnlineMeadowCollectible(apo, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 case AbstractCreature ac:
+                    OnlineCreatureDefinition acDef;
                     return new OnlineCreature(ac, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 case AbstractConsumable acm:
                     return OnlineConsumableFromAcm(acm, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
@@ -131,9 +133,9 @@ namespace RainMeadow
 
         public override void ReadState(EntityState entityState, OnlineResource inResource)
         {
-            beingMoved = true;
+            AllMoving(true);
             base.ReadState(entityState, inResource);
-            beingMoved = false;
+            AllMoving(false);
         }
 
         protected override EntityState MakeState(uint tick, OnlineResource inResource)
@@ -141,122 +143,150 @@ namespace RainMeadow
             return new PhysicalObjectEntityState(this, inResource, tick);
         }
 
-        public override void OnJoinedResource(OnlineResource inResource)
+        protected void AllMoving(bool set)
         {
-            base.OnJoinedResource(inResource);
-            if (isMine) return; // already moved
-            RainMeadow.Debug($"{this} moving in {inResource}");
-            if (inResource is WorldSession ws)
+            var all = apo.GetAllConnectedObjects();
+            for (int i = 0; i < all.Count; i++)
             {
-                beingMoved = true;
-                ws.world.GetAbstractRoom(this.apo.pos).AddEntity(apo);
-                beingMoved = false;
-            }
-            else if (inResource is RoomSession newRoom)
-            {
-                beingMoved = true;
-                newRoom.World.GetAbstractRoom(this.apo.pos).AddEntity(apo);
-                beingMoved = false;
-                if (apo is not AbstractCreature creature)
+                var otherapo = all[i];
+                if (otherapo != null && map.TryGetValue(otherapo, out var otheropo))
                 {
-                    if (newRoom.absroom.realizedRoom is Room realizedRoom && realizedRoom.shortCutsReady)
-                    {
-                        if (apo.realizedObject != null && realizedRoom.updateList.Contains(apo.realizedObject))
-                        {
-                            RainMeadow.Debug($"Entity {this} already in the room {newRoom.absroom.name}, not adding!");
-                            return;
-                        }
-
-                        // todo carried by other won't pick up if entering from abstract, how fix?
-                        if(apo.realizedObject != null && apo.realizedObject.grabbedBy.Count > 0)
-                        {
-                            RainMeadow.Debug($"Entity {this} carried by other, not adding!");
-                            return;
-                        }
-
-                        RainMeadow.Debug($"Spawning entity: {apo.ID}");
-                        beingMoved = true;
-                        apo.RealizeInRoom();
-                        beingMoved = false;
-                    }
-                    return;
-                }
-
-                if (newRoom.absroom.realizedRoom is Room realRoom && creature.AllowedToExistInRoom(realRoom))
-                {
-                    if (creature.realizedCreature != null && realRoom.updateList.Contains(creature.realizedCreature))
-                    {
-                        RainMeadow.Debug($"Creature {creature.ID} already in the room {newRoom.absroom.name}, not adding!");
-                        return;
-                    }
-
-                    // TODO creature carrying objects should marks objects as being moved so they run move code
-                    //  right now this spits more errors than it should
-                    // TODO creature spawning from abstract needs grasp data available to do the object-carrying
-
-                    RainMeadow.Debug("spawning creature " + creature);
-                    if (apo.pos.TileDefined)
-                    {
-                        RainMeadow.Debug("added directly to the room");
-                        beingMoved = true;
-                        creature.RealizeInRoom(); // places in room
-                        beingMoved = false;
-                    }
-                    else if (apo.pos.NodeDefined)
-                    {
-                        RainMeadow.Debug("added directly to shortcut system");
-                        beingMoved = true;
-                        creature.Realize();
-                        beingMoved = false;
-                        creature.realizedCreature.RemoveFromShortcuts();
-                        creature.realizedCreature.inShortcut = true;
-                        // this calls MOVE on the next tick which remove-adds
-                        newRoom.absroom.world.game.shortcuts.CreatureEnterFromAbstractRoom(creature.realizedCreature, newRoom.absroom, apo.pos.abstractNode);
-                    }
-                    else
-                    {
-                        RainMeadow.Debug("INVALID POS??" + apo.pos);
-                        throw new InvalidOperationException("entity must have a vaild position");
-                    }
-                }
-                else
-                {
-                    RainMeadow.Debug("not spawning creature " + creature);
-                    RainMeadow.Debug($"reasons {newRoom.absroom.realizedRoom is not null} {(newRoom.absroom.realizedRoom != null && creature.AllowedToExistInRoom(newRoom.absroom.realizedRoom))}");
-                    if (creature.realizedCreature != null)
-                    {
-                        if (!apo.pos.TileDefined && apo.pos.NodeDefined && newRoom.absroom.realizedRoom != null && newRoom.absroom.realizedRoom.shortCutsReady)
-                        {
-                            RainMeadow.Debug("added realized creature to shortcut system");
-                            creature.realizedCreature.inShortcut = true;
-                            // this calls MOVE on the next tick which remove-adds, this could be bad?
-                            newRoom.absroom.world.game.shortcuts.CreatureEnterFromAbstractRoom(creature.realizedCreature, newRoom.absroom, apo.pos.abstractNode);
-                        }
-                        else
-                        {
-                            // can't abstractize properly because previous location is lost
-                            RainMeadow.Debug("cleared realized creature and added to absroom as abstract entity");
-                            creature.realizedCreature = null;
-                        }
-                    }
-                    else
-                    {
-                        RainMeadow.Debug("added to absroom as abstract entity");
-                    }
+                    otheropo.beingMoved = set;
                 }
             }
         }
 
-        public override void OnLeftResource(OnlineResource inResource)
+        protected override void JoinImpl(OnlineResource inResource, EntityState initialState)
         {
-            base.OnLeftResource(inResource);
-            if (!isMine)
+            var poState = initialState as PhysicalObjectEntityState;
+            var topos = poState.pos;
+            var waspos = apo.pos;
+
+            // so here I was thinking maybe we disconnect everything as things get moved so the game doesn't chain-move them?
+            // basically on joinimpl AND leaveimpl always de-stuck any sticks both abstract and real
+            // but right now we're missing most of the tech for recreating them though pretty much we only handle creaturegrasps?
+            // if we want to re-stick things then that information needs to go through somehow and needs to be move versatile than the current thing
+            
+            RainMeadow.Debug($"{this} joining {inResource}");
+            RainMeadow.Debug($"from {waspos} to {poState.pos}");
+            try
             {
+                AllMoving(true);
+                if (inResource is WorldSession ws)
+                {
+                    RainMeadow.Debug($"world join");
+                    apo.pos = poState.pos;
+                    ws.world.GetAbstractRoom(topos)?.AddEntity(apo);
+                    if (poState.inDen) ws.world.GetAbstractRoom(topos).MoveEntityToDen(apo);
+                }
+                else if (inResource is RoomSession newRoom)
+                {
+                    RainMeadow.Debug($"room join");
+                    if (apo is AbstractCreature ac && !ac.AllowedToExistInRoom(newRoom.absroom.realizedRoom))
+                    {
+                        RainMeadow.Debug($"early creature");
+                        apo.Move(topos);
+                        if (apo.realizedObject is PhysicalObject po)
+                        {
+                            po.slatedForDeletetion = true; // if it ends up in a room somehow (dragged by other?), duplicates = bad
+                            po.RemoveFromRoom();
+                        }
+                        if (apo.realizedObject is Creature c)
+                        {
+                            c.RemoveFromShortcuts();
+                        }
+                        apo.Abstractize(topos);
+                    }
+                    else // creature allowed or notcreature
+                    {
+                        if (apo.realizedObject is Creature c)
+                        {
+                            c.RemoveFromShortcuts();
+                        }
+
+                        if (topos.TileDefined)
+                        {
+                            apo.Move(topos);
+                            if(newRoom.absroom.realizedRoom.shortCutsReady)
+                            {
+                                RainMeadow.Debug($"spawning in room");
+                                apo.RealizeInRoom(); // placesinroom
+                            }
+                            else
+                            {
+                                RainMeadow.Debug($"early entity"); // room loading will place it
+                            }
+                        }
+                        else // nodedefined
+                        {
+                            RainMeadow.Debug("node defined");
+                            apo.Move(topos);
+                            if (apo is AbstractCreature ac2) // Creature.ChangeRoom didn't run, so we do it manually
+                            {
+                                RainMeadow.Debug("creature moved");
+                                if (ac2.realizedCreature == null || !ac2.realizedCreature.inShortcut)
+                                {
+                                    RainMeadow.Debug($"spawning in shortcuts");
+                                    ac2.Realize();
+                                    ac2.realizedCreature.inShortcut = true;
+                                    ac2.world.game.shortcuts.CreatureEnterFromAbstractRoom(ac2.realizedCreature, ac2.world.GetAbstractRoom(topos), topos.abstractNode);
+                                }
+                                else
+                                {
+                                    RainMeadow.Debug($"supposedly already spawning in shortcuts");
+                                    RainMeadow.Debug("found in shortcuts? " + (ac2.realizedCreature != null && apo.world.game.shortcuts.betweenRoomsWaitingLobby.Any(v => v.creature.abstractCreature.GetAllConnectedObjects().Any(o => o.realizedObject == ac2.realizedCreature))));
+                                }
+                            }
+                            else
+                            {
+                                RainMeadow.Debug($"regular item, spawning off-room");
+                                apo.Realize(); 
+                                // and lets leave it at that, some creechur will connect to it and drag it in-room
+                            }
+                        }
+                    }
+                }
+                AllMoving(false);
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                apo.world.GetAbstractRoom(apo.pos)?.RemoveEntity(apo); // safe enough
+                apo.world.GetAbstractRoom(poState.pos)?.AddEntity(apo);
+                apo.pos = poState.pos;
+                AllMoving(false);
+                //throw;
+            }
+        }
+
+        protected override void LeaveImpl(OnlineResource inResource)
+        {
+            RainMeadow.Debug($"{this} leaving {inResource}");
+            try
+            {
+                AllMoving(true);
+                if (primaryResource == null) // gone
+                {
+                    RainMeadow.Debug("Removing entity from game: " + this);
+                    apo.LoseAllStuckObjects();
+                    apo.Room?.RemoveEntity(apo);
+                    if(apo.realizedObject is PhysicalObject po)
+                    {
+                        if (apo.Room?.realizedRoom is Room room)
+                        {
+                            room.RemoveObject(po);
+                            room.CleanOutObjectNotInThisRoom(po);
+                        }
+                        if (po is Creature c && c.inShortcut)
+                        {
+                            RainMeadow.Debug("removing from shortcuts");
+                            c.RemoveFromShortcuts();
+                        }
+                    }
+                }
                 if (inResource is RoomSession rs)
                 {
                     RainMeadow.Debug("Removing entity from room: " + this);
-                    beingMoved = true;
-                    rs.absroom.RemoveEntity(apo);
                     if (apo.realizedObject is PhysicalObject po)
                     {
                         if (rs.absroom.realizedRoom is Room room)
@@ -264,22 +294,24 @@ namespace RainMeadow
                             room.RemoveObject(po);
                             room.CleanOutObjectNotInThisRoom(po);
                         }
-                        if (po is Creature c && c.inShortcut && !joinedResources.Any(r => r is RoomSession))
+                        if (po is Creature c && c.inShortcut)
                         {
-                            if (c.RemoveFromShortcuts()) c.inShortcut = false;
+                            RainMeadow.Debug("removing from shortcuts");
+                            c.RemoveFromShortcuts();
                         }
                     }
-                    beingMoved = false;
+                    rs.absroom.RemoveEntity(apo);
                 }
-                if (primaryResource == null) // gone
-                {
-                    RainMeadow.Debug("Removing entity from game: " + this);
-                    beingMoved = true;
-                    //apo.Destroy();
-                    apo.LoseAllStuckObjects();
-                    apo.Room?.RemoveEntity(apo);
-                    beingMoved = false;
-                }
+                AllMoving(false);
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                apo.realizedObject?.RemoveFromRoom();
+                (apo.realizedObject as Creature)?.RemoveFromShortcuts();
+                apo.world.GetAbstractRoom(apo.pos)?.RemoveEntity(apo);
+                AllMoving(false);
+                //throw;
             }
         }
 
@@ -292,7 +324,7 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return apo.ToString() + base.ToString();
+            return $"{apo.type} {base.ToString()}";
         }
 
         [RPCMethod]
@@ -303,7 +335,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void HitByExplosion(OnlinePhysicalObject objectHit, float hitfac)
         {
-            objectHit?.apo.realizedObject.HitByExplosion(hitfac,null,0);
+            objectHit?.apo.realizedObject.HitByExplosion(hitfac, null, 0);
         }
     }
 }

@@ -21,8 +21,6 @@ namespace RainMeadow
             MeadowPlayerController.Enable();
             LanternMouseController.EnableMouse();
 
-            AbstractMeadowCollectible.Enable();
-
             On.RoomCamera.Update += RoomCamera_Update; // init meadow hud
 
             IL.HUD.Map.ctor += Map_OwnerFixup; // support non-slug owner
@@ -111,7 +109,7 @@ namespace RainMeadow
             {
                 if (message == "HOLD TO START")
                 {
-                    self.manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.RegionSelect;
+                    self.initiateCharacterFastTravel = true;
                     MeadowProgression.progressionData.currentCharacterProgress.saveLocation = new WorldCoordinate(self.selectedShelter, -1, -1, 0);
                 }
                 if (message == "BACK")

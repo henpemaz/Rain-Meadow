@@ -3,7 +3,7 @@ using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static RainMeadow.OnlineResource;
+using static RainMeadow.OnlineResource.ResourceData;
 
 namespace RainMeadow
 {
@@ -30,15 +30,26 @@ namespace RainMeadow
             return latestState;
         }
 
-        protected Queue<ResourceState> incomingState = new(32);
+        protected Queue<ResourceState> incomingState = new(8);
         protected abstract ResourceState MakeState(uint ts);
         public void ReadState(ResourceState newState)
         {
-            // this has a flaw when there's multiple players talking to me.
+            RainMeadow.Trace(this);
+            if(!isAvailable && !isWaitingForState && !isPending)
+            {
+                RainMeadow.Trace($"received state for inactive resource");
+                return;
+            }
+            if (newState.from != owner)
+            {
+                RainMeadow.Trace($"received state from {newState.from} but owner is {owner}");
+                return;
+            }
+            RainMeadow.Trace($"processing received state {newState} in resource {this}");
             if (newState.isDelta)
             {
                 RainMeadow.Trace($"received delta state from {newState.from} for tick {newState.tick} referencing baseline {newState.baseline}");
-                while (incomingState.Count > 0 && (owner != incomingState.Peek().from || NetIO.IsNewer(newState.baseline, incomingState.Peek().tick)))
+                while (incomingState.Count > 0 && NetIO.IsNewer(newState.baseline, incomingState.Peek().tick))
                 {
                     var discarded = incomingState.Dequeue();
                     RainMeadow.Trace("discarding old state from tick " + discarded.tick);
@@ -46,8 +57,8 @@ namespace RainMeadow
                 if (incomingState.Count == 0 || newState.baseline != incomingState.Peek().tick)
                 {
                     RainMeadow.Error($"Received unprocessable delta for {this} from {newState.from}, tick {newState.tick} referencing baseline {newState.baseline}");
-                    RainMeadow.Error($"Available ticks are: [{string.Join(", ", incomingState.Where(s => s.from == newState.from).Select(s => s.tick))}]");
-                    if (!newState.from.OutgoingEvents.Any(e=>e is RPCEvent rpc && rpc.IsIdentical(RPCs.DeltaReset, this, null)))
+                    RainMeadow.Error($"Available ticks are: [{string.Join(", ", incomingState.Select(s => s.tick))}]");
+                    if (!newState.from.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.DeltaReset, this, null)))
                     {
                         newState.from.InvokeRPC(RPCs.DeltaReset, this, null);
                     }
@@ -60,18 +71,11 @@ namespace RainMeadow
                 RainMeadow.Trace($"received absolute state from {newState.from} for tick " + newState.tick);
             }
             incomingState.Enqueue(newState);
-            if (newState.from == owner)
+            latestState = newState;
+            if (isWaitingForState || isAvailable) newState.ReadTo(this);
+            if (isWaitingForState)
             {
-                latestState = newState;
-                if (isWaitingForState || isAvailable) newState.ReadTo(this);
-                if (isWaitingForState) 
-                {
-                    Available();
-                }
-            }
-            else
-            {
-                RainMeadow.Trace($"received state from {newState.from} but owner is {owner}");
+                Available();
             }
         }
 
@@ -172,8 +176,10 @@ namespace RainMeadow
             internal virtual ResourceDataState MakeState() { return null; }
 
             [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
-            public abstract class ResourceDataState : OnlineState
+            public abstract class ResourceDataState : OnlineState, IIdentifiable<byte>
             {
+                public byte ID => (byte)handler.stateType.index;
+
                 public ResourceDataState() { }
 
                 internal abstract void ReadTo(ResourceData data);
@@ -186,21 +192,21 @@ namespace RainMeadow
             [OnlineField(always = true)]
             public OnlineResource resource;
             [OnlineField(nullable = true, group = "entitydefs")]
-            public AddRemoveSortedCustomSerializables<OnlineEntity.EntityId> entitiesJoined;
+            public DynamicIdentifiablesICustomSerializables<EntityMembership, OnlineEntity.EntityId> entitiesJoined;
             [OnlineField(nullable = true, group = "entitydefs")]
-            public DeltaStates<OnlineEntity.EntityDefinition, OnlineState, OnlineEntity.EntityId> registeredEntities;
+            public DeltaStates<OnlineEntity.EntityDefinition, OnlineEntity.EntityId> registeredEntities;
             [OnlineField(nullable = true, group = "entities")]
-            public DeltaStates<OnlineEntity.EntityState, OnlineState, OnlineEntity.EntityId> entityStates;
+            public DeltaStates<OnlineEntity.EntityState, OnlineEntity.EntityId> entityStates;
             [OnlineField(nullable = true, group = "data")]
-            public AddRemoveSortedStates<ResourceData.ResourceDataState> resourceDataStates;
+            public DeltaDataStates<ResourceDataState> resourceDataStates;
 
             protected ResourceState() : base() { }
             protected ResourceState(OnlineResource resource, uint ts) : base(ts)
             {
                 this.resource = resource;
-                entitiesJoined = new(resource.entities.Keys.ToList());
-                registeredEntities = new(resource.registeredEntities.Values.Select(def => def.Clone() as OnlineEntity.EntityDefinition).ToList());
-                entityStates = new(resource.entities.Select(e => e.Value.entity.GetState(ts, resource)).ToList());
+                registeredEntities = new(resource.registeredEntities.Values.ToList());
+                entitiesJoined = new(resource.joinedEntities.Values.ToList());
+                entityStates = new(resource.activeEntities.Select(e => e.GetState(ts, resource)).ToList());
                 resourceDataStates = new(resource.resourceData.Select(d => d.MakeState()).Where(s => s != null).ToList());
             }
             public virtual void ReadTo(OnlineResource resource)
@@ -215,39 +221,49 @@ namespace RainMeadow
                         }
                     }
 
-                    foreach (var entityId in entitiesJoined.list)
+                    foreach (var entityJoin in entitiesJoined.list)
                     {
-                        if (!resource.entities.ContainsKey(entityId))
+                        if (!resource.joinedEntities.ContainsKey(entityJoin.entityId) && resource.super.joinedEntities.ContainsKey(entityJoin.entityId))
                         {
-                            // there might be some timing considerations to this, entity from higher up not being available locally yet
-                            var ent = entityId.FindEntity();
+                            // todo preventing re-adding if inhabiting sibling resource "more rencetly"
+                            var ent = entityJoin.entityId.FindEntity();
+
                             if (ent != null)
                             {
-                                resource.EntityJoinedResource(ent, entityStates.list.Find(es => es.entityId == entityId));
+                                var inResource = ent.currentlyJoinedResource;
+                                // in super, or in other but older there
+                                if (inResource == resource.super || (resource.IsSibling(inResource) && inResource.joinedEntities.TryGetValue(ent.id, out var otherJoin) && NetIO.IsNewer(entityJoin.version, otherJoin.version)))
+                                {
+                                    resource.EntityJoinedResource(ent, entityStates.list.Find(es => es.entityId == entityJoin.entityId));
+                                }
+                                else
+                                {
+                                    RainMeadow.Trace($"Entity not added. in super? {inResource == resource.super} - in sibling? {resource.IsSibling(inResource)}");
+                                }
                             }
                             else
                             {
-                                RainMeadow.Error($"Entity in resource {this} missing: " + entityId);
+                                RainMeadow.Error($"Entity in resource {this} missing: " + entityJoin.entityId);
                             }
                         }
                     }
 
-                    foreach (var kvp in resource.entities.ToList())
+                    HashSet<OnlineEntity.EntityId> joinedHash = new HashSet<OnlineEntity.EntityId>(entitiesJoined.list.Select(e => e.entityId));
+                    foreach (var kvp in resource.joinedEntities.ToList())
                     {
-                        // this would be better as a set not a list
-                        if (!entitiesJoined.list.Contains(kvp.Key))
+                        if (!joinedHash.Contains(kvp.Key))
                         {
-                            resource.EntityLeftResource(kvp.Value.entity);
+                            resource.EntityLeftResource(kvp.Key.FindEntity());
                         }
                     }
 
                     foreach (var def in registeredEntities.list)
                     {
-                        if (resource.entities.TryGetValue(def.entityId, out var ent)) // hmm
+                        if (def.entityId.FindEntity() is var ent)
                         {
-                            if (def.owner != ent.entity.owner.inLobbyId && OnlineManager.lobby.PlayerFromId(def.owner) is OnlinePlayer newOwner)
+                            if (def.owner != ent.owner.inLobbyId && OnlineManager.lobby.PlayerFromId(def.owner) is OnlinePlayer newOwner)
                             {
-                                ent.entity.NewOwner(newOwner);
+                                ent.NewOwner(newOwner);
                             }
                         }
                         else
@@ -282,7 +298,7 @@ namespace RainMeadow
             }
         }
 
-        public class LeaseList : IdentifiablesDeltaList<SubleaseState, ushort, SubleaseState, LeaseList>
+        public class LeaseList : FixedIdentifiablesDeltaList<SubleaseState, ushort, SubleaseState, LeaseList>
         {
             public LeaseList() { }
 
@@ -310,11 +326,13 @@ namespace RainMeadow
                 base.ReadTo(resource);
                 if (resource.isActive)
                 {
+
                     foreach (var item in subleaseState.list)
                     {
-                        var subresource = resource.SubresourceFromShortId(item.resourceId);
+                        var subresource = resource.SubresourceFromShortId(item.resourceId);  
                         var itemOwner = OnlineManager.lobby.PlayerFromId(item.owner);
                         if (subresource.owner != itemOwner) subresource.NewOwner(itemOwner);
+
                         subresource.UpdateParticipants(item.participants.list.Select(OnlineManager.lobby.PlayerFromId).Where(p => p != null).ToList());
                     }
                 }
@@ -326,7 +344,7 @@ namespace RainMeadow
         {
             public ushort resourceId;
             public ushort owner;
-            public Generics.AddRemoveUnsortedUshorts participants;
+            public Generics.DynamicUnorderedUshorts participants;
 
             public ushort ID => resourceId;
 
@@ -335,7 +353,7 @@ namespace RainMeadow
             {
                 this.resourceId = resource.ShortId();
                 this.owner = resource.owner?.inLobbyId ?? default;
-                this.participants = new Generics.AddRemoveUnsortedUshorts(resource.participants.Keys.Select(p => p.inLobbyId).ToList());
+                this.participants = new Generics.DynamicUnorderedUshorts(resource.participants.Select(p => p.inLobbyId).ToList());
             }
             public virtual SubleaseState EmptyDelta() => new();
 
@@ -344,7 +362,7 @@ namespace RainMeadow
                 var result = EmptyDelta();
                 result.resourceId = resourceId;
                 result.owner = other?.owner ?? owner;
-                result.participants = (Generics.AddRemoveUnsortedUshorts)participants.ApplyDelta(other?.participants);
+                result.participants = (Generics.DynamicUnorderedUshorts)participants.ApplyDelta(other?.participants);
                 return result;
             }
 
@@ -354,7 +372,7 @@ namespace RainMeadow
                 var delta = EmptyDelta();
                 delta.resourceId = resourceId;
                 delta.owner = owner;
-                delta.participants = (Generics.AddRemoveUnsortedUshorts)participants.Delta(other.participants);
+                delta.participants = (Generics.DynamicUnorderedUshorts)participants.Delta(other.participants);
                 return (owner == other.owner && delta.participants == null) ? null : delta;
             }
 

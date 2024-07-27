@@ -60,6 +60,9 @@ Instructions on how to install the mod into your game:
         1. Open the pinned messages and download the latest version
         2. Extract downloaded zip file
         3. If you see a single folder named 'rainmeadow', copy the folder into your game mods folder
+     
+## Steam Deck / Proton
+In order for Rain Meadow to work on Steam Deck, you will need to install [Proton](https://docs.bepinex.dev/articles/advanced/proton_wine.html).
 
 
 # Contributions

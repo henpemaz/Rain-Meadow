@@ -14,7 +14,7 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.0.62";
+        public const string MeadowVersionStr = "0.0.68";
         public static RainMeadow instance;
         private bool init;
         public bool fullyInit;
@@ -112,9 +112,7 @@ namespace RainMeadow
         {
             try
             {
-                //#if TRACING
-                tracing |= Input.GetKeyDown("l");
-                //#endif
+                tracing = Input.GetKey("l");
                 orig(self);
             }
             catch (Exception e)
@@ -193,6 +191,9 @@ namespace RainMeadow
                 MeadowHooks();
                 LoadingHooks();
                 StoryHooks();
+                ArenaHooks();
+                ItemHooks();
+                ObjectHooks();
 
                 MeadowMusic.EnableMusic();
                 this.PlopMachine = new PlopMachine();
@@ -210,6 +211,7 @@ namespace RainMeadow
                     MeadowProgression.progressionData.currentlySelectedCharacter = MeadowProgression.skinData[MeadowProgression.currentTestSkin].character;
                 }
 #endif
+
                 fullyInit = true;
             }
             catch (Exception e)

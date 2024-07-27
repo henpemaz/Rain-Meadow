@@ -10,11 +10,14 @@ namespace RainMeadow
         public OnlinePlayer player;
         public Queue<OnlineStateMessage> OutgoingStates = new(32);
         public OnlineResource.ResourceState lastAcknoledgedState;
+        private int basecooldown;
+        private int cooldown;
 
         public ResourceSubscription(OnlineResource resource, OnlinePlayer player)
         {
             this.resource = resource;
             this.player = player;
+            if (resource is Lobby or WorldSession) basecooldown = 5;
             if (!resource.isAvailable) throw new InvalidOperationException("not available");
             if (player.isMe) throw new InvalidOperationException("subscribed to self");
         }
@@ -24,21 +27,26 @@ namespace RainMeadow
             if (!resource.isAvailable) throw new InvalidOperationException("not available");
             if (!resource.isOwner) throw new InvalidOperationException("not owner");
             if (!resource.isActive) return; // resource not ready yet
+            if (cooldown > 0)
+            {
+                cooldown--;
+                return;
+            }
+            cooldown = basecooldown;
+            cooldown--;
 
-            if (player.recentlyAckdTicks.Count > 0) while (OutgoingStates.Count > 0 && NetIO.IsNewer(player.oldestTickToConsider, OutgoingStates.Peek().tick))
+            if (player.recentlyAckdTicks.Count > 0)
+            {
+                while (OutgoingStates.Count > 0 && NetIO.IsNewer(player.oldestTickToConsider, OutgoingStates.Peek().tick))
                 {
                     RainMeadow.Trace("Discarding obsolete:" + OutgoingStates.Peek().tick);
                     OutgoingStates.Dequeue(); // discard obsolete
                 }
-            if (player.recentlyAckdTicks.Count > 0) while (OutgoingStates.Count > 0 && player.recentlyAckdTicks.Contains(OutgoingStates.Peek().tick))
+                while (OutgoingStates.Count > 0 && player.recentlyAckdTicks.Contains(OutgoingStates.Peek().tick))
                 {
                     RainMeadow.Trace("Considering candidate:" + OutgoingStates.Peek().tick);
                     lastAcknoledgedState = (OnlineResource.ResourceState)OutgoingStates.Dequeue().sourceState; // use most recent available
                 }
-            if (lastAcknoledgedState != null && !player.recentlyAckdTicks.Contains(lastAcknoledgedState.tick))
-            {
-                RainMeadow.Trace("invalid:" + lastAcknoledgedState.tick);
-                lastAcknoledgedState = null; // not available
             }
 
             var newState = resource.GetState(tick);

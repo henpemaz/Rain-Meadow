@@ -237,7 +237,7 @@ namespace RainMeadow
             
             if (!fieldType.IsValueType && fieldType != typeof(string))
             {
-                RainMeadow.Error($"{fieldType} not handled by SerializerCallMethod");
+                RainMeadow.Debug($"{fieldType} not handled by SerializerCallMethod");
             }
             return typeof(Serializer).GetMethod(nullable ? "SerializeNullable" : "Serialize", new[] { fieldType.MakeByRefType() });
         }

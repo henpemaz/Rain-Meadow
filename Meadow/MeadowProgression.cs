@@ -22,7 +22,7 @@ namespace RainMeadow
                 _ = Character.Slugcat;
                 _ = Skin.Slugcat_Survivor;
                 _ = Emote.emoteHello;
-                currentTestSkin = Skin.Scavenger_Acorn;
+                currentTestSkin = Skin.Scavenger_Twigs;
 
                 RainMeadow.Debug($"characters loaded: {Character.values.Count}");
                 RainMeadow.Debug($"skins loaded: {Skin.values.Count}");
@@ -92,9 +92,9 @@ namespace RainMeadow
             public static Character Scavenger = new("Scavenger", true, new()
             {
                 displayName = "SCAVENGER",
-                emotePrefix = "sc_", // "scav_"
-                emoteAtlas = "emotes_slugcat",//"emotes_scav",
-                emoteColor = new Color(232, 187, 200, 255f) / 255f,
+                emotePrefix = "scav_",
+                emoteAtlas = "emotes_scav",
+                emoteColor = new Color(80,87,80,255) / 255f,
                 selectSpriteIndexes = new[] { 1 },
                 startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["GW_A11"], 26, 22, -1),
             });

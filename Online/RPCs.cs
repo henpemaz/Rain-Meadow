@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿using IL.RWCustom;
+using System;
+using System.Collections.Generic;
+using Kittehface.Framework20;
+using IL.Menu;
 
 namespace RainMeadow
 {
@@ -57,7 +61,7 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void PlayReinforceKarmaAnimation() 
+        public static void PlayReinforceKarmaAnimation()
         {
             (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).cameras[0].hud.karmaMeter.reinforceAnimation = 0;
         }
@@ -70,7 +74,8 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void MovePlayersToDeathScreen() {
+        public static void MovePlayersToDeathScreen()
+        {
             foreach (OnlinePlayer player in OnlineManager.players)
             {
                 player.InvokeRPC(RPCs.GoToDeathScreen);
@@ -94,12 +99,13 @@ namespace RainMeadow
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.DeathScreen);
         }
 
+
         [RPCMethod]
         public static void MovePlayersToGhostScreen(string ghostID)
         {
             foreach (OnlinePlayer player in OnlineManager.players)
             {
-                player.InvokeRPC(RPCs.GoToGhostScreen,ghostID);
+                player.InvokeRPC(RPCs.GoToGhostScreen, ghostID);
             }
         }
 
@@ -122,5 +128,67 @@ namespace RainMeadow
             }
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.KarmaToMaxScreen);
         }
+
+        [RPCMethod]
+        public static void Arena_NextLevelCall()
+        {
+            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            if (game.manager.upcomingProcess != null)
+            {
+                return;
+            }
+            game.GetArenaGameSession.arenaSitting.NextLevel(game.manager);
+            game.arenaOverlay.nextLevelCall = true;
+        }
+
+        [RPCMethod]
+        public static void AddShortCutVessel(RWCustom.IntVector2 pos, OnlinePhysicalObject crit, RoomSession roomSess, int wait)
+        {
+
+            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            if (game.manager.upcomingProcess != null)
+            {
+                return;
+            }
+            var creature = (crit?.apo.realizedObject as Creature);
+            var room = roomSess.absroom.world;
+            var roomPos = room.GetAbstractRoom(0);
+            var shortCutVessel = new ShortcutHandler.ShortCutVessel(pos, creature, roomPos, wait);
+            game.GetArenaGameSession.exitManager.playersInDens.Add(shortCutVessel);
+
+        }
+
+        [RPCMethod]
+        public static void StartArena(List<string> hostPlaylist)
+        {
+            RainMeadow.Debug("got startarena rpc");
+
+            var process = RWCustom.Custom.rainWorld.processManager.currentMainLoop;
+            if (process is not ArenaLobbyMenu)
+            {
+                Debug.Log("game is not arena lobby menu");
+                return;
+            }
+            var menu = process as ArenaLobbyMenu;
+
+
+
+            menu.InitializeSitting(hostPlaylist);
+
+
+            if (!OnlineManager.lobby.isOwner)
+            {
+                menu.manager.arenaSitting.levelPlaylist = hostPlaylist;
+            }
+
+            menu.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
+
+            // temp
+            UserInput.SetUserCount(OnlineManager.players.Count);
+            UserInput.SetForceDisconnectControllers(forceDisconnect: false);
+            menu.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
+        }
+
+
     }
 }

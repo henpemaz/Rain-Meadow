@@ -12,7 +12,7 @@ namespace RainMeadow
         internal List<MeadowProgression.Emote> emotes = new();
         internal byte emotesVersion;
         internal Player.InputPackage input;
-        internal CreatureController.SpecialInput specialInput; // todo todo todo
+        internal CreatureController.SpecialInput specialInput;
         internal WorldCoordinate destination;
         internal float moveSpeed;
 
@@ -26,8 +26,10 @@ namespace RainMeadow
         {
             if(inResource is RoomSession)
             {
+                RainMeadow.Trace($"{this} for {owner} making state in {inResource}");
                 return new State(this);
             }
+            RainMeadow.Trace($"{this} for {owner} skipping state in {inResource}");
             return null;
         }
 
@@ -35,7 +37,7 @@ namespace RainMeadow
         public class State : EntityDataState
         {
             [OnlineField(nullable = true, group = "emotes")]
-            public Generics.AddRemoveSortedExtEnums<MeadowProgression.Emote> emotes;
+            public Generics.DynamicOrderedExtEnums<MeadowProgression.Emote> emotes;
             [OnlineField(group = "emotes")]
             public TickReference emotesTick;
             [OnlineFieldHalf(group = "emotes")]
@@ -58,6 +60,7 @@ namespace RainMeadow
             public State() { }
             public State(MeadowCreatureData mcd)
             {
+                RainMeadow.Trace(mcd);
                 emotes = new(mcd.emotes.ToList());
                 emotesVersion = mcd.emotesVersion;
                 emotesLife = mcd.emotesLife;
@@ -85,6 +88,7 @@ namespace RainMeadow
 
             internal override void ReadTo(OnlineEntity onlineEntity)
             {
+                RainMeadow.Trace(onlineEntity);
                 if (onlineEntity is OnlineCreature oc && oc.TryGetData<MeadowCreatureData>(out var mcd))
                 {
                     mcd.emotes = emotes.list;
