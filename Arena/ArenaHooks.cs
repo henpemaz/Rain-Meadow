@@ -1,4 +1,5 @@
 ﻿using HUD;
+using RainMeadow.GameModes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,13 +47,19 @@ namespace RainMeadow
 
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
-
-
-
-
+            On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1;
 
         }
 
+        private void Player_GetInitialSlugcatClass1(On.Player.orig_GetInitialSlugcatClass orig, Player self)
+        {
+            orig(self);
+            if (isArenaMode(out var arena))
+            {
+                self.SlugCatClass = (arena.clientSettings as ArenaClientSettings).playingAs;
+
+            }
+        }
         private void Spear_Update(On.Spear.orig_Update orig, Spear self, bool eu)
         {
 
