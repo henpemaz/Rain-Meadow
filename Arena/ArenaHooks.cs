@@ -42,12 +42,26 @@ namespace RainMeadow
             On.ArenaCreatureSpawner.SpawnArenaCreatures += ArenaCreatureSpawner_SpawnArenaCreatures;
 
 
+
             On.HUD.HUD.InitMultiplayerHud += HUD_InitMultiplayerHud;
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
 
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
+
+            On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1;
+
+        }
+
+        private void Player_GetInitialSlugcatClass1(On.Player.orig_GetInitialSlugcatClass orig, Player self)
+        {
+            orig(self);
+            if (isArenaMode(out var arena))
+            {
+                self.SlugCatClass = (arena.clientSettings as ArenaClientSettings).playingAs;
+
+            }
 
 
 
