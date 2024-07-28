@@ -202,7 +202,18 @@ namespace RainMeadow
         public void FullyReleaseResource()
         {
             RainMeadow.Debug(this);
-            if (!isAvailable) { throw new InvalidOperationException("not available"); }
+            if (!isAvailable) {
+
+                if (RainMeadow.isArenaMode(out var _))
+                {
+                    RainMeadow.Error("Could not release resource but trying to continue...");
+                }
+                else
+                {
+
+                    throw new InvalidOperationException("not available");
+                }
+            }
             if (isActive)
             {
                 foreach (var sub in subresources)

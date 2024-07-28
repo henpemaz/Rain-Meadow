@@ -26,7 +26,7 @@ namespace RainMeadow
                 ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
                 if (OnlineManager.lobby.isOwner)
                 {
-                   
+
                     arena.isInGame = false;
                 }
 
@@ -88,8 +88,24 @@ namespace RainMeadow
 
                     if (!OnlineManager.lobby.isOwner)
                     {
-                        roomSession.FullyReleaseResource();
-                        roomSession.worldSession.FullyReleaseResource();
+                        try
+                        {
+                            roomSession.FullyReleaseResource();
+                        }
+                        catch
+                        {
+                            RainMeadow.Error("Could not release room session");
+                        }
+                        try
+                        {
+                            roomSession.worldSession.FullyReleaseResource();
+
+                        }
+                        catch
+                        {
+                            RainMeadow.Error("Could not release world sesesion");
+                        }
+
                     }
 
 
