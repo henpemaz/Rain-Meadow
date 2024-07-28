@@ -70,7 +70,6 @@ namespace Menu
             float num = 0f;
             menuLabel = new MenuLabel(menu, this, menu.Translate("PLAYER") + (InGameTranslator.LanguageID.UsesSpaces(menu.CurrLang) ? " " : "") + (index + 1) + "\r\n" + text, new Vector2(0.01f, 0.1f + num), size, bigText: false);
             subObjects.Add(menuLabel);
-            string text2 = "";
 
         }
 
