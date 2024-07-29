@@ -1,4 +1,5 @@
 ﻿using HUD;
+using RainMeadow.GameModes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,9 +47,19 @@ namespace RainMeadow
 
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
+            On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1;
 
         }
 
+        private void Player_GetInitialSlugcatClass1(On.Player.orig_GetInitialSlugcatClass orig, Player self)
+        {
+            orig(self);
+            if (isArenaMode(out var arena))
+            {
+                self.SlugCatClass = (arena.clientSettings as ArenaClientSettings).playingAs;
+
+            }
+        }
         private void Spear_Update(On.Spear.orig_Update orig, Spear self, bool eu)
         {
 
@@ -318,40 +329,43 @@ namespace RainMeadow
             {
                 orig(self);
             }
-
-            if (self.countdownToNextRound == 0 && !self.nextLevelCall)
+            if (isArenaMode(out var arena))
             {
 
-                ArenaGameSession getArenaGameSession = (self.manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
-                AbstractRoom absRoom = getArenaGameSession.game.world.abstractRooms[0];
-                if (RoomSession.map.TryGetValue(absRoom, out var roomSession))
+                if (self.countdownToNextRound == 0 && !self.nextLevelCall)
                 {
 
-                    foreach (OnlinePlayer player in OnlineManager.players)
+                    ArenaGameSession getArenaGameSession = (self.manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
+                    AbstractRoom absRoom = getArenaGameSession.game.world.abstractRooms[0];
+
+                    if (RoomSession.map.TryGetValue(absRoom, out var roomSession))
                     {
-                        if (roomSession.isOwner)
+                        foreach (OnlinePlayer player in OnlineManager.players)
                         {
-                            // Give the owner a head start
-                            RPCs.Arena_NextLevelCall();
-
-                            if (!player.isMe)
+                            if (OnlineManager.lobby.isOwner)
                             {
-                                player.InvokeRPC(RPCs.Arena_NextLevelCall);
+                                RPCs.Arena_NextLevelCall();
                             }
-                        }
 
+                           if (!player.isMe)
+                            {
+                                player.InvokeRPC(RPCs.Arena_NextLevelCall); // Ugly animations, on menu overlay while it does it's return
+                                
+                            }
+
+                        }
                     }
+
+
                 }
 
+                if (self.nextLevelCall)
+                {
+                    return;
+                }
 
+                orig(self);
             }
-
-            if (self.nextLevelCall)
-            {
-                return;
-            }
-
-            orig(self);
 
 
         }
@@ -520,9 +534,9 @@ namespace RainMeadow
                 RainMeadow.Debug("Trying to create an abstract creature");
 
                 sSpawningAvatar = true;
+                AbstractCreature abstractCreature = new AbstractCreature(self.game.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(0, -1, -1, -1), new EntityID(-1, 0));
 
-                AbstractCreature abstractCreature = new AbstractCreature(self.game.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(0, -1, -1, -1), new EntityID(-1, list[l].playerNumber));
-                sSpawningAvatar = false;
+
 
                 RainMeadow.Debug("assigned ac, moving to den");
 
@@ -532,6 +546,9 @@ namespace RainMeadow
 
 
                 SetOnlineCreature(abstractCreature);
+
+                sSpawningAvatar = false;
+
                 if (OnlineManager.lobby.isActive)
                 {
                     OnlineManager.instance.Update(); // Subresources are active, gamemode is online, ticks are happening. Not sure why we'd need this here

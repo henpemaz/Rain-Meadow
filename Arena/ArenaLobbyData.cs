@@ -16,14 +16,19 @@ namespace RainMeadow
         internal class State : ResourceDataState
         {
             [OnlineField]
-            public bool dummyData;
+            public bool isInGame;
+            [OnlineField]
+            public List<string> playList;
 
 
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
                 ArenaCompetitiveGameMode arena = (onlineResource as Lobby).gameMode as ArenaCompetitiveGameMode;
-                dummyData = arena.dummyData;
+                isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
+
+                playList = arena.playList;
+
 
             }
 
@@ -32,7 +37,11 @@ namespace RainMeadow
             internal override void ReadTo(OnlineResource.ResourceData data)
             {
                 var lobby = (data.resource as Lobby);
-                (lobby.gameMode as ArenaCompetitiveGameMode).dummyData = dummyData;
+                (lobby.gameMode as ArenaCompetitiveGameMode).isInGame = isInGame;
+
+                (lobby.gameMode as ArenaCompetitiveGameMode).playList = playList;
+
+
             }
         }
     }

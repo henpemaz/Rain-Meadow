@@ -2,20 +2,22 @@
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
+using RainMeadow.Arena;
 using RainMeadow.GameModes;
 using RWCustom;
 using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.RegularExpressions;
 using UnityEngine;
+using Kittehface.Framework20;
 
 namespace RainMeadow
 {
     public class ArenaLobbyMenu : SmartMenu
     {
         public SymbolButton infoButton;
+        private ArenaCompetitiveGameMode gameMode => (ArenaCompetitiveGameMode)OnlineManager.lobby.gameMode;
 
         private ArenaClientSettings personaSettings;
         private static float num = 120f;
@@ -29,8 +31,8 @@ namespace RainMeadow
 
         int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x; // been using 1360 as ref
 
-        SimpleButton[] playerClassButtons;
-        PlayerJoinButton[] playerJoinButtons;
+        SimpleButton[] usernameButtons;
+        ArenaOnlinePlayerJoinButton[] classButtons;
         MultiplayerMenu mm;
 
         public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
@@ -50,9 +52,11 @@ namespace RainMeadow
 
             UninitializeInheritedScene();
 
+            BindSettings();
+
+
             BuildLayout();
 
-            BindSettings();
 
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
 
@@ -63,7 +67,7 @@ namespace RainMeadow
         {
             mainPage.subObjects.Remove(this.backObject);
 
-            mainPage.subObjects.Add(this.backObject = new SimplerButton(mm, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f)));
+            mainPage.subObjects.Add(this.backObject = new SimplerButton(this, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f)));
             (backObject as SimplerButton).OnClick += (btn) =>
             {
                 manager.RequestMainProcessSwitch(this.backTarget);
@@ -88,15 +92,36 @@ namespace RainMeadow
             mm.arenaSettingsInterface = new ArenaSettingsInterface(mm, pages[0]);
             mm.arenaSettingsInterface.pos += Vector2.down * 40;
             pages[0].subObjects.Add(mm.arenaSettingsInterface);
-            
+
 
             mm.levelSelector = new LevelSelector(mm, pages[0], false);
             pages[0].subObjects.Add(mm.levelSelector);
             mm.init = true;
 
+        }
 
+        void BuildLayout()
+        {
+            scene.AddIllustration(new MenuIllustration(mm, scene, "", "CompetitiveShadow", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
+            scene.AddIllustration(new MenuIllustration(mm, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
+            scene.flatIllustrations[scene.flatIllustrations.Count - 1].sprite.shader = manager.rainWorld.Shaders["MenuText"];
 
+            var startButtonText = "";
+            if (OnlineManager.lobby.isOwner)
+            {
+                startButtonText = "START";
+            } else
+            {
+                startButtonText = "ENTER";
+            }
+           
+            mm.playButton = CreateButton(startButtonText, new Vector2(ScreenWidth - 304, 50), new Vector2(110, 30), self => StartGame());
 
+            infoButton = new SymbolButton(mm, pages[0], "Menu_InfoI", "INFO", new Vector2(1142f, 624f));
+            pages[0].subObjects.Add(infoButton);
+
+            BuildPlayerSlots();
+            AddAbovePlayText();
         }
 
         void UnlockAndLoadLevels()
@@ -135,20 +160,6 @@ namespace RainMeadow
             return b;
         }
 
-        void BuildLayout()
-        {
-            scene.AddIllustration(new MenuIllustration(mm, scene, "", "CompetitiveShadow", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
-            scene.AddIllustration(new MenuIllustration(mm, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
-            scene.flatIllustrations[scene.flatIllustrations.Count - 1].sprite.shader = manager.rainWorld.Shaders["MenuText"];
-
-            mm.playButton = CreateButton("START", new Vector2(ScreenWidth - 304, 50), new Vector2(110, 30), self => StartGame());
-
-            infoButton = new SymbolButton(mm, pages[0], "Menu_InfoI", "INFO", new Vector2(1142f, 624f));
-            pages[0].subObjects.Add(infoButton);
-
-            BuildPlayerSlots();
-            AddAbovePlayText();
-        }
 
 
 
@@ -167,7 +178,8 @@ namespace RainMeadow
             playerCountSlider = new OpSliderTick(new Configurable<int>(2, new ConfigAcceptableRange<int>(1, 31)), new Vector2(710, 550), 450);
             pages[0].subObjects.Add(playerCountWrapper = new UIelementWrapper(tabWrapper, playerCountSlider));
 
-            AddPlayerButtons();
+            AddClassButtons();
+            AddUsernameButtons();
 
             mm.GetArenaSetup.playersJoined[0] = true; // host should be part of game
         }
@@ -185,7 +197,7 @@ namespace RainMeadow
             }
         }
 
-        public void InitializeSitting(List<string> hostPlaylist)
+        public void InitializeSitting()
         {
             manager.arenaSitting = new ArenaSitting(mm.GetGameTypeSetup, mm.multiplayerUnlocks);
 
@@ -222,28 +234,20 @@ namespace RainMeadow
                 }
             }
 
-
             // Host dictates playlist
 
             if (OnlineManager.lobby.isOwner)
             {
-                sharedPlayList = manager.arenaSitting.levelPlaylist;
-                RainMeadow.Debug("COUNT OF HOST MAPS:" + sharedPlayList.Count);
+                gameMode.playList = manager.arenaSitting.levelPlaylist;
 
             }
 
             // Client retrieves playlist
             else
             {
-                manager.arenaSitting.levelPlaylist = hostPlaylist;
-                RainMeadow.Debug("COUNT OF MAPS CLIENT:" + hostPlaylist.Count);
-
-
-
+                manager.arenaSitting.levelPlaylist = gameMode.playList;
 
             }
-
-
 
         }
 
@@ -252,26 +256,16 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
-            if (!OnlineManager.lobby.isOwner) return;
+
+            InitializeSitting();
 
 
+            mm.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
 
-            foreach (OnlinePlayer player in OnlineManager.players)
-            {
-
-                if (OnlineManager.lobby.isOwner)
-                {
-                    // Give the owner a head start
-                    RPCs.StartArena(sharedPlayList);
-
-                    if (!player.isMe)
-                    {
-                        player.InvokeRPC(RPCs.StartArena, sharedPlayList);
-                    }
-                }
-
-
-            }
+            // temp
+            UserInput.SetUserCount(OnlineManager.players.Count);
+            UserInput.SetForceDisconnectControllers(forceDisconnect: false);
+            mm.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
 
         }
 
@@ -288,6 +282,15 @@ namespace RainMeadow
             {
                 mm.playButton.buttonBehav.greyedOut = OnlineManager.lobby.isAvailable;
 
+            }
+
+            if (mm.playButton != null)
+            {
+
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    mm.playButton.buttonBehav.greyedOut = !gameMode.isInGame;
+                }
             }
 
         }
@@ -330,25 +333,11 @@ namespace RainMeadow
                 return;
             }
 
-            for (int num6 = 0; num6 < playerClassButtons.Length; num6++)
-            {
-                if (message == "CLASSCHANGE" + num6)
-                {
-                    mm.GetArenaSetup.playerClass[num6] = mm.NextClass(mm.GetArenaSetup.playerClass[0]);
-                    playerClassButtons[num6].menuLabel.text = Translate(SlugcatStats.getSlugcatName(mm.GetArenaSetup.playerClass[0]));
-                    playerJoinButtons[num6].portrait.fileName = mm.ArenaImage(mm.GetArenaSetup.playerClass[0], 0);
-                    playerJoinButtons[num6].portrait.LoadFile();
-                    playerJoinButtons[num6].portrait.sprite.SetElementByName(playerJoinButtons[0].portrait.fileName);
-                    PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-                }
-            }
-
             base.Singal(sender, message);
         }
 
         public override string UpdateInfoText()
         {
-            //mm.UpdateInfoText();
 
             return base.UpdateInfoText();
         }
@@ -369,24 +358,22 @@ namespace RainMeadow
         {
             this.personaSettings = (ArenaClientSettings)OnlineManager.lobby.gameMode.clientSettings;
             personaSettings.bodyColor = UnityEngine.Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
-
             personaSettings.eyeColor = UnityEngine.Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
+            personaSettings.playingAs = SlugcatStats.Name.White;
 
         }
 
-        private void AddPlayerButtons()
+        public void AddUsernameButtons()
         {
-            mm.GetArenaSetup.playerClass = new SlugcatStats.Name[4];
+            var SlugList = AllSlugcats();
+            mm.GetArenaSetup.playerClass = SlugList.ToArray();
 
-            for (int i = 0; i < mm.GetArenaSetup.playerClass.Length; i++)
+            usernameButtons = new SimplerButton[OnlineManager.players.Count];
+
+
+            for (int k = 0; k < usernameButtons.Length; k++)
             {
-                mm.GetArenaSetup.playerClass[i] = SlugcatStats.Name.White;
-            }
 
-            playerClassButtons = new SimplerButton[OnlineManager.players.Count];
-
-            for (int k = 0; k < playerClassButtons.Length; k++)
-            {
                 string name = OnlineManager.players[k].id.name;
                 CSteamID playerId;
                 if (OnlineManager.players[k].id is LocalMatchmakingManager.LocalPlayerId)
@@ -403,22 +390,11 @@ namespace RainMeadow
                     name = OnlineManager.players[k].id.name;
                 }
 
-                playerClassButtons[k] = new SimplerButton(mm, pages[0], name, new Vector2(600f + k * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * playerClassButtons.Length, 40f), new Vector2(num - 20f, 30f));
-
-                (playerClassButtons[k] as SimplerButton).OnClick += (_) =>
+                usernameButtons[k] = new SimplerButton(mm, pages[0], name, new Vector2(600f + k * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * usernameButtons.Length, 40f), new Vector2(num - 20f, 30f));
+                (usernameButtons[0] as SimplerButton).OnClick += (_) =>
                 {
                     string url = $"https://steamcommunity.com/profiles/{playerId}";
                     SteamFriends.ActivateGameOverlayToWebPage(url);
-/*                    mm.GetArenaSetup.playerClass[k] = mm.GetArenaSetup.playerClass[0];
-                    //mm.NextClass(mm.GetArenaSetup.playerClass[0]);
-                    playerClassButtons[k].menuLabel.text = OnlineManager.players[0].id.name;
-
-                    playerJoinButtons[k].portrait.fileName = playerJoinButtons[0].portrait.fileName;
-                    mm.ArenaImage(mm.GetArenaSetup.playerClass[0], 0);
-                    // playerJoinButtons[0].portrait.LoadFile();
-                    // playerJoinButtons[0].portrait.sprite.SetElementByName(playerJoinButtons[0].portrait.fileName);
-                    PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);*/
-
                 };
 
 
@@ -426,50 +402,77 @@ namespace RainMeadow
 
                 if (!ModManager.MSC)
                 {
-                    playerClassButtons[k].buttonBehav.greyedOut = false;
+                    usernameButtons[k].buttonBehav.greyedOut = false;
                 }
 
-                pages[0].subObjects.Add(playerClassButtons[k]);
+                pages[0].subObjects.Add(usernameButtons[k]);
             }
+        }
 
-/*            playerJoinButtons = new PlayerJoinButton[OnlineManager.players.Count];
-            for (int l = 0; l < playerJoinButtons.Length; l++)
+        private void AddClassButtons()
+        {
+
+
+            classButtons = new ArenaOnlinePlayerJoinButton[OnlineManager.players.Count];
+
+            for (int l = 0; l < classButtons.Length; l++)
             {
-                playerJoinButtons[l] = new PlayerJoinButton(mm, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * playerJoinButtons.Length, 40f), l);
-                playerJoinButtons[l].buttonBehav.greyedOut = false;
+                classButtons[l] = new ArenaOnlinePlayerJoinButton(mm, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
+                classButtons[l].buttonBehav.greyedOut = false;
+                var currentColorIndex = 0;
+
+                classButtons[0].OnClick += (_) =>
+                {
+
+                    currentColorIndex = (currentColorIndex + 1) % mm.GetArenaSetup.playerClass.Length;
+
+                    mm.GetArenaSetup.playerClass[currentColorIndex] = mm.GetArenaSetup.playerClass[currentColorIndex];
+                    classButtons[0].portrait.fileName = "MultiplayerPortrait" + currentColorIndex + "1";
+                    classButtons[0].portrait.LoadFile();
+                    classButtons[0].portrait.sprite.SetElementByName(classButtons[0].portrait.fileName);
+                    PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
+
+                    personaSettings.playingAs = mm.GetArenaSetup.playerClass[currentColorIndex];
+
+                };
+
 
                 if (ModManager.MSC)
                 {
-                    playerJoinButtons[l].portrait.fileName = mm.ArenaImage(manager.arenaSetup.playerClass[0], 0);
-                    playerJoinButtons[l].portrait.LoadFile();
-                    playerJoinButtons[l].portrait.sprite.SetElementByName(playerJoinButtons[0].portrait.fileName);
-                    MutualVerticalButtonBind(playerClassButtons[l], playerJoinButtons[l]);
+                    classButtons[l].portrait.fileName = mm.ArenaImage(manager.arenaSetup.playerClass[0], 0);
+                    classButtons[l].portrait.LoadFile();
+                    classButtons[l].portrait.sprite.SetElementByName(classButtons[0].portrait.fileName);
+                    MutualVerticalButtonBind(usernameButtons[l], classButtons[l]);
                 }
 
-                pages[0].subObjects.Add(playerJoinButtons[l]);
-            }*/
+                pages[0].subObjects.Add(classButtons[l]);
+            }
 
         }
 
         private void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
         {
             RainMeadow.Debug(players);
-            for (int i = 0; i < playerClassButtons.Length; i++)
+            for (int i = 0; i < usernameButtons.Length; i++)
             {
-                var playerbtn = playerClassButtons[i];
+                var playerbtn = usernameButtons[i];
                 playerbtn.RemoveSprites();
                 mainPage.RemoveSubObject(playerbtn);
             }
 
-/*            for (int i = 0; i < playerJoinButtons.Length; i++)
+            for (int i = 0; i < classButtons.Length; i++)
             {
-                var playerbtn = playerJoinButtons[i];
+                if (i == 0)
+                {
+                    continue;
+                }
+                var playerbtn = classButtons[i];
                 playerbtn.RemoveSprites();
                 mainPage.RemoveSubObject(playerbtn);
-            }*/
+            }
 
-            AddPlayerButtons();
-
+            AddClassButtons();
+            AddUsernameButtons();
 
         }
 
@@ -494,6 +497,8 @@ namespace RainMeadow
 
             pages[0].subObjects.Add(wrapper);
             pages[0].subObjects.Add(wrapper2);
+
+
         }
 
         private void ColorPicker_OnValueChangedEvent()
@@ -521,6 +526,35 @@ namespace RainMeadow
                     }
 
                 }*/
+
+        public static List<SlugcatStats.Name> AllSlugcats()
+        {
+            var filteredList = new List<SlugcatStats.Name>();
+            for (int i = 0; i < SlugcatStats.Name.values.entries.Count; i++)
+            {
+                var slugcatName = SlugcatStats.Name.values.entries[i];
+
+                if (slugcatName.Contains(":"))
+                {
+                    continue;
+                }
+
+
+                if (ArenaSetupOverrides.nonArenaSlugs.Contains(slugcatName))
+                {
+                    continue;
+                }
+
+
+                if (ExtEnumBase.TryParse(typeof(SlugcatStats.Name), slugcatName, false, out var enumBase))
+                {
+                    var temp = (SlugcatStats.Name)enumBase;
+                    RainMeadow.Debug("Filtered list:" + slugcatName);
+                    filteredList.Add(temp);
+                }
+            }
+            return filteredList;
+        }
 
     }
 }
