@@ -150,9 +150,9 @@ namespace RainMeadow
                         }
                     }
 
-                    self.currentLevel = (self.currentLevel + 1) % self.levelPlaylist.Count;
+                    self.currentLevel++;
 
-                    if (self.currentLevel >= self.levelPlaylist.Count && !self.gameTypeSetup.repeatSingleLevelForever)
+                    if (self.currentLevel >= arena.playList.Count && !self.gameTypeSetup.repeatSingleLevelForever)
                     {
                         manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
                         return;
@@ -322,17 +322,28 @@ namespace RainMeadow
             if (isArenaMode(out var _))
             {
 
-                if (OnlineManager.lobby.worldSessions["arena"].isAvailable && OnlineManager.lobby.isOwner)
+                if (OnlineManager.lobby.worldSessions["arena"].isAvailable)
                 {
 
-                    if (OnlineManager.lobby.worldSessions["arena"].isActive)
+                    if (OnlineManager.lobby.isOwner)
                     {
-                        OnlineManager.lobby.worldSessions["arena"].Deactivate();
-                    }
-                    else
-                    {
-                        OnlineManager.lobby.worldSessions["arena"].releaseWhenPossible = true;
 
+                        if (OnlineManager.lobby.worldSessions["arena"].isActive)
+                        {
+                            for (int i = 0; i < OnlineManager.lobby.worldSessions["arena"].subresources.Count; i++)
+                            {
+                                if (OnlineManager.lobby.worldSessions["arena"].subresources[i].isActive) {
+                                    OnlineManager.lobby.worldSessions["arena"].subresources[i].Deactivate();
+                                };
+                               
+                            }
+                            OnlineManager.lobby.worldSessions["arena"].Deactivate();
+                        }
+                        else
+                        {
+                            OnlineManager.lobby.worldSessions["arena"].releaseWhenPossible = true;
+
+                        }
                     }
 
                 }
