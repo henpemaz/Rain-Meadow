@@ -9,12 +9,12 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (isPending)
-                if (RainMeadow.isArenaMode(out var _))
+/*                if (RainMeadow.isArenaMode(out var _))
                 {
                     this.releaseWhenPossible = true;
                 }
 
-                else
+                else*/
                 {
                     throw new InvalidOperationException("pending");
                 }
@@ -23,19 +23,21 @@ namespace RainMeadow
             {
                 if (RainMeadow.isArenaMode(out var _))
                 {
-
-                    foreach (var s in this.subresources)
+/*                    if (this.subresources != null)
                     {
-                        if (s.isAvailable)
+                        foreach (var s in this.subresources)
                         {
-                            s.Unavailable();
+                            if (s.isAvailable)
+                            {
+                                s.Unavailable();
 
+                            }
                         }
-                    }
-                    this.Unavailable();
+                    }*/
+                    // this.Unavailable();
 
 
-                    while (this.isActive)
+/*                    while (this.isActive)
                     {
                         try
                         {
@@ -46,7 +48,7 @@ namespace RainMeadow
                         {
                             RainMeadow.Debug("Resources released quickly");
                         }
-                    }
+                    }*/
 
 
                 }
@@ -257,7 +259,8 @@ namespace RainMeadow
                 if (this.isAvailable)
                 {
 
-                    Unavailable();
+                    Release();
+                    //Unavailable();
                 }
 
 

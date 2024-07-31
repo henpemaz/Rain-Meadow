@@ -159,10 +159,7 @@ namespace RainMeadow
 
 
                     manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
-                    if (OnlineManager.lobby.isOwner)
-                    {
-                        arena.isInGame = true;
-                    }
+
 
                     if (self.gameTypeSetup.savingAndLoadingSession)
                     {
@@ -318,34 +315,30 @@ namespace RainMeadow
                 playerCharacter = OnlineManager.lobby.gameMode.LoadWorldAs(game);
             }
 
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var _) && OnlineManager.lobby.worldSessions["arena"].isAvailable && OnlineManager.lobby.isOwner)
             {
 
-                if (OnlineManager.lobby.worldSessions["arena"].isAvailable)
+
+                if (OnlineManager.lobby.worldSessions["arena"].isActive)
                 {
-
-                    if (OnlineManager.lobby.isOwner)
+                    for (int i = 0; i < OnlineManager.lobby.worldSessions["arena"].subresources.Count; i++)
                     {
-
-                        if (OnlineManager.lobby.worldSessions["arena"].isActive)
+                        if (OnlineManager.lobby.worldSessions["arena"].subresources[i].isActive)
                         {
-                            for (int i = 0; i < OnlineManager.lobby.worldSessions["arena"].subresources.Count; i++)
-                            {
-                                if (OnlineManager.lobby.worldSessions["arena"].subresources[i].isActive) {
-                                    OnlineManager.lobby.worldSessions["arena"].subresources[i].Deactivate();
-                                }
-                               
-                            }
-                            OnlineManager.lobby.worldSessions["arena"].Deactivate();
+                            OnlineManager.lobby.worldSessions["arena"].subresources[i].Deactivate();
                         }
-                        else
-                        {
-                            OnlineManager.lobby.worldSessions["arena"].releaseWhenPossible = true;
 
-                        }
                     }
+                    OnlineManager.lobby.worldSessions["arena"].Deactivate();
+                }
+                else
+                {
+                    
+                    OnlineManager.lobby.worldSessions["arena"].FullyReleaseResource();
 
                 }
+
+
             }
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
             if (OnlineManager.lobby != null && self.game != null)
@@ -371,10 +364,21 @@ namespace RainMeadow
                         Thread.Sleep(1);
                     }
                 }
+                RainMeadow.Debug("Arean: About to request");
                 ws.Request();
+                RainMeadow.Debug("Arean: POST request");
+
                 ws.BindWorld(self.world);
                 self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);
 
+                if (RainMeadow.isArenaMode(out var arena))
+                {
+                    if (OnlineManager.lobby.isOwner)
+                    {
+
+                        arena.isInGame = true;
+                    }
+                }
 
             }
         }
