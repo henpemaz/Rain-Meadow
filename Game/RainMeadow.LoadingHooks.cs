@@ -22,7 +22,6 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-                WorldSession newWorld;
                 ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
                 if (OnlineManager.lobby.isOwner)
                 {
@@ -332,9 +331,8 @@ namespace RainMeadow
                         {
                             for (int i = 0; i < OnlineManager.lobby.worldSessions["arena"].subresources.Count; i++)
                             {
-                                var subRs = OnlineManager.lobby.worldSessions["arena"].subresources[i];
-                                if (subRs.isActive) {
-                                    subRs.Deactivate();
+                                if (OnlineManager.lobby.worldSessions["arena"].subresources[i].isActive) {
+                                    OnlineManager.lobby.worldSessions["arena"].subresources[i].Deactivate();
                                 }
                                
                             }
