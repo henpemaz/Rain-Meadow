@@ -332,9 +332,10 @@ namespace RainMeadow
                         {
                             for (int i = 0; i < OnlineManager.lobby.worldSessions["arena"].subresources.Count; i++)
                             {
-                                if (OnlineManager.lobby.worldSessions["arena"].subresources[i].isActive) {
-                                    OnlineManager.lobby.worldSessions["arena"].subresources[i].Deactivate();
-                                };
+                                var subRs = OnlineManager.lobby.worldSessions["arena"].subresources[i];
+                                if (subRs.isActive) {
+                                    subRs.Deactivate();
+                                }
                                
                             }
                             OnlineManager.lobby.worldSessions["arena"].Deactivate();
