@@ -22,7 +22,7 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-
+                WorldSession newWorld;
                 ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
                 if (OnlineManager.lobby.isOwner)
                 {
@@ -150,7 +150,7 @@ namespace RainMeadow
                         }
                     }
 
-                    self.currentLevel++;
+                    self.currentLevel = (self.currentLevel + 1) % self.levelPlaylist.Count;
 
                     if (self.currentLevel >= self.levelPlaylist.Count && !self.gameTypeSetup.repeatSingleLevelForever)
                     {
@@ -172,6 +172,8 @@ namespace RainMeadow
 
 
                 }
+
+
             }
             else
             {
@@ -315,6 +317,25 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 playerCharacter = OnlineManager.lobby.gameMode.LoadWorldAs(game);
+            }
+
+            if (isArenaMode(out var _))
+            {
+
+                if (OnlineManager.lobby.worldSessions["arena"].isAvailable && OnlineManager.lobby.isOwner)
+                {
+
+                    if (OnlineManager.lobby.worldSessions["arena"].isActive)
+                    {
+                        OnlineManager.lobby.worldSessions["arena"].Deactivate();
+                    }
+                    else
+                    {
+                        OnlineManager.lobby.worldSessions["arena"].releaseWhenPossible = true;
+
+                    }
+
+                }
             }
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
             if (OnlineManager.lobby != null && self.game != null)
