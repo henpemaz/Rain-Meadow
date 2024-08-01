@@ -29,12 +29,7 @@ namespace RainMeadow
                     arena.isInGame = false;
                 }
 
-                while (!OnlineManager.lobby.isOwner && !arena.isInGame)
-                {
-                    RainMeadow.Debug("Arena: Waiting for host to establish world session...");
-                    self.NextLevel(manager);
-                    return;
-                }
+
 
                 // We need to kick everyone out
 
@@ -315,6 +310,15 @@ namespace RainMeadow
                 playerCharacter = OnlineManager.lobby.gameMode.LoadWorldAs(game);
             }
 
+            if (isArenaMode(out var arena))
+            {
+                while (!OnlineManager.lobby.isOwner && !arena.isInGame)
+                {
+                    RainMeadow.Debug("Arena: Waiting for host to establish world session...");
+
+                }
+            }
+
             if (isArenaMode(out var _) && OnlineManager.lobby.worldSessions["arena"].isAvailable && OnlineManager.lobby.isOwner)
             {
 
@@ -371,7 +375,7 @@ namespace RainMeadow
                 ws.BindWorld(self.world);
                 self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);
 
-                if (RainMeadow.isArenaMode(out var arena))
+                if (RainMeadow.isArenaMode(out var _))
                 {
                     if (OnlineManager.lobby.isOwner)
                     {
