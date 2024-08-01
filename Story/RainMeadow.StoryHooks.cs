@@ -327,14 +327,21 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                if (!OnlineManager.lobby.isOwner)
+                foreach (OnlinePlayer player in OnlineManager.players)
                 {
-                    OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToDeathScreen);
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        RPCs.GoToDeathScreen();
+                    }
+
+                    if (!player.isMe)
+                    {
+                        player.InvokeRPC(RPCs.GoToDeathScreen);
+
+                    }
+
                 }
-                else
-                {
-                    RPCs.MovePlayersToDeathScreen();
-                }
+
             }
             else
             {
