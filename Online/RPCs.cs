@@ -82,6 +82,31 @@ namespace RainMeadow
             }
         }
 
+
+        [RPCMethod]
+        public static void IncrementPlayersLeftt()
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                RainMeadow.Debug("Is: " + arena.clientWaiting);
+                arena.clientWaiting = arena.clientWaiting+1;
+                RainMeadow.Debug("Now:" + arena.clientWaiting);
+
+            }
+
+        }
+
+        [RPCMethod]
+        public static void ResetPlayersLeft()
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                arena.clientWaiting = 0;
+
+            }
+
+        }
+
         [RPCMethod]
         public static void GoToDeathScreen()
         {

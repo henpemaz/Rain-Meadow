@@ -22,20 +22,14 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-
                 ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
+
                 if (OnlineManager.lobby.isOwner)
                 {
-
-                    arena.isInGame = false;
+                    arena.nextLevel = true;
                 }
 
-                while (!OnlineManager.lobby.isOwner && !arena.isInGame)
-                {
-                    RainMeadow.Debug("Arena: Waiting for host to establish world session...");
-                    self.NextLevel(manager);
-                    return;
-                }
+
 
                 // We need to kick everyone out
 
@@ -81,32 +75,12 @@ namespace RainMeadow
                                 oe.ExitResource(roomSession);
                                 oe.ExitResource(roomSession.worldSession);
 
+
                             }
                         }
                     }
 
 
-                    if (!OnlineManager.lobby.isOwner)
-                    {
-                        try
-                        {
-                            roomSession.FullyReleaseResource();
-                        }
-                        catch
-                        {
-                            RainMeadow.Error("Could not release room session");
-                        }
-                        try
-                        {
-                            roomSession.worldSession.FullyReleaseResource();
-
-                        }
-                        catch
-                        {
-                            RainMeadow.Error("Could not release world sesesion");
-                        }
-
-                    }
 
 
                     if (manager.currentMainLoop is RainWorldGame)
@@ -152,18 +126,23 @@ namespace RainMeadow
 
                     self.currentLevel++;
 
-                    if (self.currentLevel >= self.levelPlaylist.Count && !self.gameTypeSetup.repeatSingleLevelForever)
+                    if (!OnlineManager.lobby.isOwner)
                     {
+                        OnlineManager.lobby.owner.InvokeRPC(RPCs.IncrementPlayersLeftt);
+                    }
+
+                    if (self.currentLevel >= arena.playList.Count && !self.gameTypeSetup.repeatSingleLevelForever)
+                    {
+
+                        arena.nextLevel = false;
+
                         manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
                         return;
                     }
 
 
                     manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
-                    if (OnlineManager.lobby.isOwner)
-                    {
-                        arena.isInGame = true;
-                    }
+
 
                     if (self.gameTypeSetup.savingAndLoadingSession)
                     {
@@ -172,6 +151,8 @@ namespace RainMeadow
 
 
                 }
+
+
             }
             else
             {
@@ -316,6 +297,13 @@ namespace RainMeadow
             {
                 playerCharacter = OnlineManager.lobby.gameMode.LoadWorldAs(game);
             }
+
+
+            if (isArenaMode(out var arena))
+            {
+                ArenaHelpers.CheckHostClientStates(arena);
+
+            }
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
             if (OnlineManager.lobby != null && self.game != null)
             {
@@ -341,11 +329,16 @@ namespace RainMeadow
                     }
                 }
                 ws.Request();
+
                 ws.BindWorld(self.world);
                 self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);
 
 
             }
         }
+
+
+
     }
+
 }

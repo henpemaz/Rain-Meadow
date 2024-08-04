@@ -342,15 +342,15 @@ namespace RainMeadow
                     {
                         foreach (OnlinePlayer player in OnlineManager.players)
                         {
-                            if (OnlineManager.lobby.isOwner)
+                            if (player.id == OnlineManager.lobby.owner.id)
                             {
                                 RPCs.Arena_NextLevelCall();
                             }
 
-                           if (!player.isMe)
+                            else
                             {
                                 player.InvokeRPC(RPCs.Arena_NextLevelCall); // Ugly animations, on menu overlay while it does it's return
-                                
+
                             }
 
                         }
@@ -430,7 +430,16 @@ namespace RainMeadow
             {
                 orig(self);
             }
+
+            if (self == null)
+            {
+                return;
+            }
             if (self.room == null)
+            {
+                return;
+            }
+            if (self.room.shortcuts == null)
             {
                 return;
             }
@@ -474,39 +483,39 @@ namespace RainMeadow
                 orig(self, room, suggestedDens);
                 return;
             }
-
-            List<ArenaSitting.ArenaPlayer> list = new List<ArenaSitting.ArenaPlayer>();
-
-
-            List<ArenaSitting.ArenaPlayer> list2 = new List<ArenaSitting.ArenaPlayer>();
-            for (int j = 0; j < self.arenaSitting.players.Count; j++)
+            if (RainMeadow.isArenaMode(out var arena))
             {
-                list2.Add(self.arenaSitting.players[j]);
-            }
 
-            while (list2.Count > 0)
-            {
-                int index = UnityEngine.Random.Range(0, list2.Count);
-                list.Add(list2[index]);
-                list2.RemoveAt(index);
-            }
+                List<ArenaSitting.ArenaPlayer> list = new List<ArenaSitting.ArenaPlayer>();
 
 
-            int exits = self.game.world.GetAbstractRoom(0).exits;
-            int[] array = new int[exits];
-            if (suggestedDens != null)
-            {
-                for (int k = 0; k < suggestedDens.Count; k++)
+                List<ArenaSitting.ArenaPlayer> list2 = new List<ArenaSitting.ArenaPlayer>();
+                for (int j = 0; j < self.arenaSitting.players.Count; j++)
                 {
-                    if (suggestedDens[k] >= 0 && suggestedDens[k] < array.Length)
+                    list2.Add(self.arenaSitting.players[j]);
+                }
+
+                while (list2.Count > 0)
+                {
+                    int index = UnityEngine.Random.Range(0, list2.Count);
+                    list.Add(list2[index]);
+                    list2.RemoveAt(index);
+                }
+
+
+                int exits = self.game.world.GetAbstractRoom(0).exits;
+                int[] array = new int[exits];
+                if (suggestedDens != null)
+                {
+                    for (int k = 0; k < suggestedDens.Count; k++)
                     {
-                        array[suggestedDens[k]] -= 1000;
+                        if (suggestedDens[k] >= 0 && suggestedDens[k] < array.Length)
+                        {
+                            array[suggestedDens[k]] -= 1000;
+                        }
                     }
                 }
-            }
 
-            for (int l = 0; l < list.Count; l++)
-            {
                 int num = UnityEngine.Random.Range(0, exits);
                 float num2 = float.MinValue;
                 for (int m = 0; m < exits; m++)
@@ -555,18 +564,18 @@ namespace RainMeadow
                 }
 
 
-                if (ModManager.MSC && l == 0)
+                if (ModManager.MSC)
                 {
                     self.game.cameras[0].followAbstractCreature = abstractCreature;
                 }
 
                 if (self.chMeta != null)
                 {
-                    abstractCreature.state = new PlayerState(abstractCreature, list[l].playerNumber, self.characterStats_Mplayer[0].name, isGhost: false);
+                    abstractCreature.state = new PlayerState(abstractCreature, list[0].playerNumber, self.characterStats_Mplayer[0].name, isGhost: false);
                 }
                 else
                 {
-                    abstractCreature.state = new PlayerState(abstractCreature, list[l].playerNumber, new SlugcatStats.Name(ExtEnum<SlugcatStats.Name>.values.GetEntry(list[l].playerNumber)), isGhost: false);
+                    abstractCreature.state = new PlayerState(abstractCreature, list[0].playerNumber, new SlugcatStats.Name(ExtEnum<SlugcatStats.Name>.values.GetEntry(list[0].playerNumber)), isGhost: false);
                 }
 
 
@@ -582,21 +591,29 @@ namespace RainMeadow
                 {
                     if ((abstractCreature.realizedCreature as Player).SlugCatClass == SlugcatStats.Name.Red)
                     {
-                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.All, -1, l, -0.75f);
-                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Scavengers, -1, l, 0.5f);
+                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.All, -1, 0, -0.75f);
+                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Scavengers, -1, 0, 0.5f);
                     }
 
                     if ((abstractCreature.realizedCreature as Player).SlugCatClass == SlugcatStats.Name.Yellow)
                     {
-                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.All, -1, l, 0.75f);
-                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Scavengers, -1, l, 0.3f);
+                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.All, -1, 0, 0.75f);
+                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Scavengers, -1, 0, 0.3f);
                     }
 
 
                 }
-            }
 
-            self.playersSpawned = true;
+
+                self.playersSpawned = true;
+
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    OnlineManager.lobby.owner.InvokeRPC(RPCs.ResetPlayersLeft);
+                    arena.nextLevel = false;
+                }
+
+            }
 
         }
 
