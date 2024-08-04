@@ -26,8 +26,9 @@ namespace RainMeadow
             {
                 ArenaCompetitiveGameMode arena = (onlineResource as Lobby).gameMode as ArenaCompetitiveGameMode;
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
-
                 playList = arena.playList;
+
+
 
 
             }
