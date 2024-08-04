@@ -378,7 +378,6 @@ namespace RainMeadow
                 return;
             }
 
-            RainMeadow.Debug(OnlineManager.lobby.worldSessions["arena"].isAvailable);
             if (self.Players.Count < OnlineManager.players.Count)
             {
                 foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
@@ -607,13 +606,11 @@ namespace RainMeadow
 
 
                 self.playersSpawned = true;
-                if (OnlineManager.lobby.isOwner)
-                {
-                    arena.isInGame = true;
-                }
+
                 if (!OnlineManager.lobby.isOwner)
                 {
                     OnlineManager.lobby.owner.InvokeRPC(RPCs.ResetPlayersLeft);
+                    arena.nextLevel = false;
                 }
 
             }

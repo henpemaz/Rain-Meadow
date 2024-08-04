@@ -7,6 +7,8 @@ namespace RainMeadow
     public class ArenaCompetitiveGameMode : OnlineGameMode
     {
         public bool isInGame = false;
+        public bool nextLevel = false;
+
         public int clientWaiting = 0;
 
         public List<string> playList = new List<string>();

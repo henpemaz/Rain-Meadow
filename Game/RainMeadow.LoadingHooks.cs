@@ -26,7 +26,7 @@ namespace RainMeadow
 
                 if (OnlineManager.lobby.isOwner)
                 {
-                    arena.isInGame = false;
+                    arena.nextLevel = true;
                 }
 
 
@@ -74,7 +74,7 @@ namespace RainMeadow
                                 Debug("removing my entity from online " + oe);
                                 oe.ExitResource(roomSession);
                                 oe.ExitResource(roomSession.worldSession);
-                                
+
 
                             }
                         }
@@ -128,33 +128,14 @@ namespace RainMeadow
 
                     if (!OnlineManager.lobby.isOwner)
                     {
-                        try
-                        {
-                            roomSession.FullyReleaseResource();
-                        }
-                        catch
-                        {
-                            RainMeadow.Error("Could not release room session");
-                        }
-                        try
-                        {
-                            roomSession.worldSession.FullyReleaseResource();
-
-                        }
-                        catch
-                        {
-                            RainMeadow.Error("Could not release world sesesion");
-                        }
-
-                    }
-
-                    if (!OnlineManager.lobby.isOwner)
-                    {
                         OnlineManager.lobby.owner.InvokeRPC(RPCs.IncrementPlayersLeftt);
                     }
 
                     if (self.currentLevel >= arena.playList.Count && !self.gameTypeSetup.repeatSingleLevelForever)
                     {
+
+                        arena.nextLevel = false;
+
                         manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
                         return;
                     }
@@ -320,32 +301,7 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
-                CheckHostClientStates(arena);
-
-
-/*                if (OnlineManager.lobby.worldSessions["arena"].isAvailable && OnlineManager.lobby.isOwner)
-                {
-
-                    if (OnlineManager.lobby.worldSessions["arena"].isActive)
-                    {
-                        for (int i = 0; i < OnlineManager.lobby.worldSessions["arena"].subresources.Count; i++)
-                        {
-                            if (OnlineManager.lobby.worldSessions["arena"].subresources[i].isActive)
-                            {
-                                OnlineManager.lobby.worldSessions["arena"].subresources[i].Deactivate();
-                            }
-
-                        }
-                        OnlineManager.lobby.worldSessions["arena"].Deactivate();
-                    }
-                    else
-                    {
-
-                        OnlineManager.lobby.worldSessions["arena"].FullyReleaseResource();
-
-                    }
-                }*/
-
+                ArenaHelpers.CheckHostClientStates(arena);
 
             }
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
@@ -372,9 +328,7 @@ namespace RainMeadow
                         Thread.Sleep(1);
                     }
                 }
-                RainMeadow.Debug("Arean: About to request");
                 ws.Request();
-                RainMeadow.Debug("Arean: POST request");
 
                 ws.BindWorld(self.world);
                 self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);
@@ -384,30 +338,7 @@ namespace RainMeadow
         }
 
 
-        private void CheckHostClientStates(ArenaCompetitiveGameMode arena)
-        {
 
-            if (!OnlineManager.lobby.isOwner && (!arena.isInGame || OnlineManager.lobby.worldSessions["arena"].isPending)) // clients are waiting for host to finish.
-            {
-                RainMeadow.Debug("isInGame?" + arena.isInGame);
-                RainMeadow.Debug("isPending? " + OnlineManager.lobby.worldSessions["arena"].isPending);
-                
-                CheckHostClientStates(arena);
-                return;
-            }
-
-
-            if (OnlineManager.lobby.isOwner && arena.clientWaiting != 0 && arena.clientWaiting != OnlineManager.players.Count - 1) // host is waiting for clients.
-            {
-                RainMeadow.Debug("Owner waiting : " + OnlineManager.lobby.worldSessions["arena"].participants.Count);
-                RainMeadow.Debug("Owner count : " + arena.clientWaiting);
-                CheckHostClientStates(arena);
-                return;
-
-            }
-
-
-        }
     }
 
 }
