@@ -73,15 +73,6 @@ namespace RainMeadow
             (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.cameras[0].hud.InitGameOverMode(null, 0, player.pos.room, new UnityEngine.Vector2(0f, 0f));
         }
 
-        [RPCMethod]
-        public static void MovePlayersToDeathScreen()
-        {
-            foreach (OnlinePlayer player in OnlineManager.players)
-            {
-                player.InvokeRPC(RPCs.GoToDeathScreen);
-            }
-        }
-
 
         [RPCMethod]
         public static void IncrementPlayersLeftt()
