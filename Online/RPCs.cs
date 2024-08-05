@@ -79,9 +79,7 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                RainMeadow.Debug("Is: " + arena.clientWaiting);
                 arena.clientWaiting = arena.clientWaiting+1;
-                RainMeadow.Debug("Now:" + arena.clientWaiting);
 
             }
 
