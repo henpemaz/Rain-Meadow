@@ -349,7 +349,7 @@ namespace RainMeadow
 
                             else
                             {
-                                player.InvokeRPC(RPCs.Arena_NextLevelCall); // Ugly animations, on menu overlay while it does it's return
+                                player.InvokeRPC(RPCs.Arena_NextLevelCall); 
 
                             }
 

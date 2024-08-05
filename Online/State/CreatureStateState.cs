@@ -38,7 +38,7 @@ namespace RainMeadow
                 if (!alive && !creature.dead)
                 {
                     creature.Die();
-                    creature.dead = !this.alive; // violence may call Die() first
+                    creature.dead = !this.alive;
 
                 }
 
