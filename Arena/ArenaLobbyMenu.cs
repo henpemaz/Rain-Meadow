@@ -109,11 +109,12 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
                 startButtonText = "START";
-            } else
+            }
+            else
             {
                 startButtonText = "ENTER";
             }
-           
+
             mm.playButton = CreateButton(startButtonText, new Vector2(ScreenWidth - 304, 50), new Vector2(110, 30), self => StartGame());
 
             infoButton = new SymbolButton(mm, pages[0], "Menu_InfoI", "INFO", new Vector2(1142f, 624f));
@@ -384,11 +385,6 @@ namespace RainMeadow
                     playerId = (OnlineManager.players[k].id as SteamMatchmakingManager.SteamPlayerId).steamID;
                 }
 
-                if (ModManager.MSC)
-                {
-                    name = OnlineManager.players[k].id.name;
-                }
-
                 usernameButtons[k] = new SimplerButton(mm, pages[0], name, new Vector2(600f + k * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * usernameButtons.Length, 40f), new Vector2(num - 20f, 30f));
                 (usernameButtons[0] as SimplerButton).OnClick += (_) =>
                 {
@@ -396,13 +392,8 @@ namespace RainMeadow
                     SteamFriends.ActivateGameOverlayToWebPage(url);
                 };
 
+                usernameButtons[k].buttonBehav.greyedOut = false;
 
-
-
-                if (!ModManager.MSC)
-                {
-                    usernameButtons[k].buttonBehav.greyedOut = false;
-                }
 
                 pages[0].subObjects.Add(usernameButtons[k]);
             }
@@ -426,7 +417,18 @@ namespace RainMeadow
                     currentColorIndex = (currentColorIndex + 1) % mm.GetArenaSetup.playerClass.Length;
 
                     mm.GetArenaSetup.playerClass[currentColorIndex] = mm.GetArenaSetup.playerClass[currentColorIndex];
-                    classButtons[0].portrait.fileName = "MultiplayerPortrait" + currentColorIndex + "1";
+
+                    if (currentColorIndex > 3 && ModManager.MSC)
+                    {
+                        classButtons[0].portrait.fileName = "MultiplayerPortrait" + "41-" + mm.GetArenaSetup.playerClass[currentColorIndex];
+
+                    }
+                    else
+                    {
+                        classButtons[0].portrait.fileName = "MultiplayerPortrait" + currentColorIndex + "1";
+                    }
+
+
                     classButtons[0].portrait.LoadFile();
                     classButtons[0].portrait.sprite.SetElementByName(classButtons[0].portrait.fileName);
                     PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
@@ -436,14 +438,14 @@ namespace RainMeadow
                 };
 
 
-                if (ModManager.MSC)
-                {
-                    classButtons[l].portrait.fileName = mm.ArenaImage(manager.arenaSetup.playerClass[0], 0);
-                    classButtons[l].portrait.LoadFile();
-                    classButtons[l].portrait.sprite.SetElementByName(classButtons[0].portrait.fileName);
-                    MutualVerticalButtonBind(usernameButtons[l], classButtons[l]);
-                }
-
+                /*                if (ModManager.MSC)
+                                {
+                                    classButtons[l].portrait.fileName = mm.ArenaImage(manager.arenaSetup.playerClass[0], 0);
+                                    classButtons[l].portrait.LoadFile();
+                                    classButtons[l].portrait.sprite.SetElementByName(classButtons[0].portrait.fileName);
+                                    MutualVerticalButtonBind(usernameButtons[l], classButtons[l]);
+                                }
+                */
                 pages[0].subObjects.Add(classButtons[l]);
             }
 
