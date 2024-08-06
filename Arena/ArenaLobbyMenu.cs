@@ -436,16 +436,6 @@ namespace RainMeadow
                     personaSettings.playingAs = mm.GetArenaSetup.playerClass[currentColorIndex];
 
                 };
-
-
-                /*                if (ModManager.MSC)
-                                {
-                                    classButtons[l].portrait.fileName = mm.ArenaImage(manager.arenaSetup.playerClass[0], 0);
-                                    classButtons[l].portrait.LoadFile();
-                                    classButtons[l].portrait.sprite.SetElementByName(classButtons[0].portrait.fileName);
-                                    MutualVerticalButtonBind(usernameButtons[l], classButtons[l]);
-                                }
-                */
                 pages[0].subObjects.Add(classButtons[l]);
             }
 
