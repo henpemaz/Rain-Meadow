@@ -13,9 +13,67 @@ namespace RainMeadow
             On.Creature.Violence += CreatureOnViolence;
             On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
+            On.ScavengerBomb.HitSomething += ScavengerBomb_HitSomething;
 
             On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor;
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
+        }
+
+
+
+        private bool ScavengerBomb_HitSomething(On.ScavengerBomb.orig_HitSomething orig, ScavengerBomb self, SharedPhysics.CollisionResult result, bool eu)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                return orig(self, result, eu);
+
+            }
+
+            if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
+            {
+                Error("Error getting room for scav explosion!");
+
+            }
+            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+
+
+                if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var scavBombAbstract))
+
+                {
+                    Error("Error getting target of explosion object hit");
+
+                }
+
+                if (result.obj == null)
+                {
+                    return false;
+                }
+
+
+                if (result.obj == null)
+                {
+                    return false;
+                }
+
+                if (!OnlinePhysicalObject.map.TryGetValue(result.obj.abstractPhysicalObject, out var objectHit))
+
+                {
+                    Error("Error getting target of explosion object hit");
+
+                }
+
+
+                if (scavBombAbstract != null)
+                {
+                    if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.ScavengerBombHitSomething, scavBombAbstract, objectHit, result.hitSomething, result.collisionPoint, eu)))
+                    {
+                        room.owner.InvokeRPC(OnlinePhysicalObject.ScavengerBombHitSomething, scavBombAbstract, objectHit, result.hitSomething, result.collisionPoint, eu);
+                    }
+                }
+            }
+            return orig(self, result, eu);
+
         }
 
         private static void Creature_SwitchGrasps(On.Creature.orig_SwitchGrasps orig, Creature self, int fromGrasp, int toGrasp)
