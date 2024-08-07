@@ -34,7 +34,7 @@ namespace RainMeadow
                 Error("Error getting room for scav explosion!");
 
             }
-            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            if (!room.isOwner)
             {
 
 
