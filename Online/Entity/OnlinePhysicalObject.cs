@@ -337,5 +337,16 @@ namespace RainMeadow
         {
             objectHit?.apo.realizedObject.HitByExplosion(hitfac, null, 0);
         }
+
+        [RPCMethod]
+        public static void ScavengerBombHitSomething(OnlinePhysicalObject objectHitting, OnlinePhysicalObject objectHit, bool hitSomething, UnityEngine.Vector2 collisionPoint, bool eu)
+        {
+            var realizedObject = objectHitting.apo.realizedObject;
+            var realizedObjectHit = objectHit?.apo.realizedObject;
+
+            var result = new SharedPhysics.CollisionResult(realizedObjectHit, null, null, hitSomething, collisionPoint);
+            (realizedObject as ScavengerBomb).HitSomething(result, eu);
+
+        }
     }
 }
