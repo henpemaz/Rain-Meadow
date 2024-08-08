@@ -20,10 +20,14 @@ namespace RainMeadow
 
         private void ArenaSitting_NextLevel(On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager manager)
         {
-            if (OnlineManager.lobby != null)
+            if (isArenaMode(out var arena))
             {
                 ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
 
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.nextLevel = true;
+                }
 
 
 
@@ -71,16 +75,12 @@ namespace RainMeadow
                                 oe.ExitResource(roomSession);
                                 oe.ExitResource(roomSession.worldSession);
 
+
                             }
                         }
                     }
 
 
-                    if (!OnlineManager.lobby.isOwner)
-                    {
-                        roomSession.FullyReleaseResource();
-                        roomSession.worldSession.FullyReleaseResource();
-                    }
 
 
                     if (manager.currentMainLoop is RainWorldGame)
@@ -126,16 +126,23 @@ namespace RainMeadow
 
                     self.currentLevel++;
 
-
-
-                    if (self.currentLevel >= self.levelPlaylist.Count && !self.gameTypeSetup.repeatSingleLevelForever)
+                    if (!OnlineManager.lobby.isOwner)
                     {
+                        OnlineManager.lobby.owner.InvokeRPC(RPCs.IncrementPlayersLeftt);
+                    }
+
+                    if (self.currentLevel >= arena.playList.Count && !self.gameTypeSetup.repeatSingleLevelForever)
+                    {
+
+                        arena.nextLevel = false;
+
                         manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
                         return;
                     }
 
 
                     manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
+
 
                     if (self.gameTypeSetup.savingAndLoadingSession)
                     {
@@ -144,6 +151,8 @@ namespace RainMeadow
 
 
                 }
+
+
             }
             else
             {
@@ -216,108 +225,120 @@ namespace RainMeadow
                 RainMeadow.Trace($"{ws0} : {ws0.isPending} {ws0.isAvailable} {ws0.isActive}");
                 if (!ws0.isAvailable)
                 {
-                        lock (self)
-                        {
-                            self.requestCreateWorld = false;
-                            orig(self);
-                        }
-                        OnlineManager.ForceLoadUpdate();
-                        return;
+                    lock (self)
+                    {
+                        self.requestCreateWorld = false;
+                        orig(self);
                     }
-                else if (self.requestCreateWorld)
-                            {
-                                self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws0);
-                                Debug($"world loading creating new world, worldCreaturesSpawn? {self.setupValues.worldCreaturesSpawn}");
-                            }
+                    OnlineManager.ForceLoadUpdate();
+                    return;
                 }
-                orig(self);
-                if (OnlineManager.lobby != null && self.game != null && WorldSession.map.TryGetValue(self.world, out var ws))
+                else if (self.requestCreateWorld)
                 {
-                    if (self.game.overWorld?.worldLoader != self) // force-load scenario
-                    {
-                        OnlineManager.ForceLoadUpdate();
-                    }
+                    self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws0);
+                    Debug($"world loading creating new world, worldCreaturesSpawn? {self.setupValues.worldCreaturesSpawn}");
+                }
+            }
+            orig(self);
+            if (OnlineManager.lobby != null && self.game != null && WorldSession.map.TryGetValue(self.world, out var ws))
+            {
+                if (self.game.overWorld?.worldLoader != self) // force-load scenario
+                {
+                    OnlineManager.ForceLoadUpdate();
+                }
 
-                    // wait until new world state available
-                    if (self.Finished && !ws.isAvailable)
+                // wait until new world state available
+                if (self.Finished && !ws.isAvailable)
+                {
+                    RainMeadow.Error("Region loading finished before online resource is available");
+                    self.Finished = false;
+                    return;
+                }
+
+                // now we need to wait for it before further actions
+                if (!self.Finished)
+                {
+                    return;
+                }
+
+
+
+                // activate the new world
+                if (self.Finished && !ws.isActive)
+                {
+                    Debug("world loading activating new world");
+                    ws.Activate();
+                }
+
+                // if there is a gate, the gate's room will be reused, it needs to be made available
+                if (self.game.overWorld?.reportBackToGate is RegionGate gate)
+                {
+
+                    var newRoom = ws.roomSessions[gate.room.abstractRoom.name];
+                    if (!newRoom.isAvailable)
                     {
-                        RainMeadow.Error("Region loading finished before online resource is available");
+                        if (!newRoom.isPending)
+                        {
+                            Debug("world loading requesting new room in next region");
+                            newRoom.Request();
+                        }
                         self.Finished = false;
                         return;
                     }
-
-                    // now we need to wait for it before further actions
-                    if (!self.Finished)
-                    {
-                        return;
-                    }
-
-
-
-                    // activate the new world
-                    if (self.Finished && !ws.isActive)
-                    {
-                        Debug("world loading activating new world");
-                        ws.Activate();
-                    }
-
-                    // if there is a gate, the gate's room will be reused, it needs to be made available
-                    if (self.game.overWorld?.reportBackToGate is RegionGate gate)
-                    {
-
-                        var newRoom = ws.roomSessions[gate.room.abstractRoom.name];
-                        if (!newRoom.isAvailable)
-                        {
-                            if (!newRoom.isPending)
-                            {
-                                Debug("world loading requesting new room in next region");
-                                newRoom.Request();
-                            }
-                            self.Finished = false;
-                            return;
-                        }
-                    }
-                }
-            }
-
-
-            // World request/release
-            private void WorldLoader_ctor(On.WorldLoader.orig_ctor_RainWorldGame_Name_bool_string_Region_SetupValues orig, WorldLoader self, RainWorldGame game, SlugcatStats.Name playerCharacter, bool singleRoomWorld, string worldName, Region region, RainWorldGame.SetupValues setupValues)
-            {
-                if (OnlineManager.lobby != null)
-                {
-                    playerCharacter = OnlineManager.lobby.gameMode.LoadWorldAs(game);
-                }
-                orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
-                if (OnlineManager.lobby != null && self.game != null)
-                {
-                    WorldSession ws = null;
-
-                    if (isArenaMode(out var _))
-                    {
-                        ws = OnlineManager.lobby.worldSessions["arena"];
-
-
-                    }
-                    else
-                    {
-                        Debug("Requesting new region: " + region.name);
-                        ws = OnlineManager.lobby.worldSessions[region.name];
-                    }
-                    if (ws.isAvailable && ws.releaseWhenPossible) // mid-release
-                    {
-                        while (ws.isAvailable && OnlineManager.lobby != null)
-                        {
-                            OnlineManager.ForceLoadUpdate();
-                            Thread.Sleep(1);
-                        }
-                    }
-                    ws.Request();
-                    ws.BindWorld(self.world);
-                    self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);
-
-
                 }
             }
         }
+
+
+        // World request/release
+        private void WorldLoader_ctor(On.WorldLoader.orig_ctor_RainWorldGame_Name_bool_string_Region_SetupValues orig, WorldLoader self, RainWorldGame game, SlugcatStats.Name playerCharacter, bool singleRoomWorld, string worldName, Region region, RainWorldGame.SetupValues setupValues)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                playerCharacter = OnlineManager.lobby.gameMode.LoadWorldAs(game);
+            }
+
+
+            if (isArenaMode(out var arena))
+            {
+                ArenaHelpers.CheckHostClientStates(arena);
+
+            }
+            orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
+            if (OnlineManager.lobby != null && self.game != null)
+            {
+                WorldSession ws = null;
+
+                if (isArenaMode(out var _))
+                {
+                    ws = OnlineManager.lobby.worldSessions["arena"];
+
+
+                }
+                else
+                {
+                    Debug("Requesting new region: " + region.name);
+                    ws = OnlineManager.lobby.worldSessions[region.name];
+                }
+                if (ws.isAvailable && ws.releaseWhenPossible) // mid-release
+                {
+                    while (ws.isAvailable && OnlineManager.lobby != null)
+                    {
+                        OnlineManager.ForceLoadUpdate();
+                        Thread.Sleep(1);
+                    }
+                }
+                ws.Request();
+
+                ws.BindWorld(self.world);
+                self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);
+
+
+            }
+        }
+
+
+
     }
+
+}

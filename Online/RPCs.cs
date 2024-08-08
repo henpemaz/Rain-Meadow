@@ -73,6 +73,29 @@ namespace RainMeadow
             (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.cameras[0].hud.InitGameOverMode(null, 0, player.pos.room, new UnityEngine.Vector2(0f, 0f));
         }
 
+
+        [RPCMethod]
+        public static void IncrementPlayersLeftt()
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                arena.clientWaiting = arena.clientWaiting+1;
+
+            }
+
+        }
+
+        [RPCMethod]
+        public static void ResetPlayersLeft()
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                arena.clientWaiting = 0;
+
+            }
+
+        }
+
         [RPCMethod]
         public static void GoToDeathScreen()
         {
@@ -148,38 +171,6 @@ namespace RainMeadow
             game.GetArenaGameSession.exitManager.playersInDens.Add(shortCutVessel);
 
         }
-
-        [RPCMethod]
-        public static void StartArena(List<string> hostPlaylist)
-        {
-            RainMeadow.Debug("got startarena rpc");
-
-            var process = RWCustom.Custom.rainWorld.processManager.currentMainLoop;
-            if (process is not ArenaLobbyMenu)
-            {
-                Debug.Log("game is not arena lobby menu");
-                return;
-            }
-            var menu = process as ArenaLobbyMenu;
-
-
-
-            menu.InitializeSitting(hostPlaylist);
-
-
-            if (!OnlineManager.lobby.isOwner)
-            {
-                menu.manager.arenaSitting.levelPlaylist = hostPlaylist;
-            }
-
-            menu.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
-
-            // temp
-            UserInput.SetUserCount(OnlineManager.players.Count);
-            UserInput.SetForceDisconnectControllers(forceDisconnect: false);
-            menu.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
-        }
-
 
     }
 }
