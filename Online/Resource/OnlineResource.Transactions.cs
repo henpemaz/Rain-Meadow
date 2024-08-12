@@ -117,13 +117,13 @@ namespace RainMeadow
         public void Transfered(RPCEvent request)
         {
             RainMeadow.Debug(this);
-            if (isAvailable && isActive && request.from == supervisor) // I am a subscriber with a valid state who now owns this resource
+            if (isAvailable && (isActive || participants.Count == 1) && request.from == supervisor) // I am a subscriber with a valid state who now owns this resource
             {
                 request.from.QueueEvent(new GenericResult.Ok(request));
                 return;
             }
 
-            RainMeadow.Error($"Transfer error : {isAvailable} {isActive} {request.from == supervisor}");
+            RainMeadow.Error($"Transfer error : {isAvailable} {(isActive || participants.Count == 1)} {request.from == supervisor}");
             request.from.QueueEvent(new GenericResult.Error(request)); // super should retry with someone else
         }
 
@@ -198,6 +198,12 @@ namespace RainMeadow
                 RainMeadow.Error("transfer failed for " + this);
                 if (super.isActive && isSupervisor)
                 {
+                    // re-add problematic guy at end of list so not picked again
+                    if (participants.Contains(transferResult.from))
+                    {
+                        participants.Remove(transferResult.from);
+                        participants.Add(transferResult.from);
+                    }
                     PickNewOwner();
                 }
             }
