@@ -161,8 +161,7 @@ namespace RainMeadow
                 return;
             }
 
-            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
-            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            if (RoomSession.map.TryGetValue(self.abstractPhysicalObject.Room, out var room) && !room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
                 OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var abstWeapon);

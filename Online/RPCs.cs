@@ -100,7 +100,7 @@ namespace RainMeadow
         public static void GoToDeathScreen()
         {
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-            if (game.manager.upcomingProcess != null)
+            if (game == null || game.manager.upcomingProcess != null)
             {
                 return;
             }
