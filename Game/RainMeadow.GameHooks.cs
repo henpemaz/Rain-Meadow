@@ -127,36 +127,6 @@ namespace RainMeadow
             }
         }
 
-        private void PauseMenu_ctor(On.Menu.PauseMenu.orig_ctor orig, Menu.PauseMenu self, ProcessManager manager, RainWorldGame game)
-        {
-            orig(self, manager, game);
-            if (OnlineManager.lobby != null)
-            {
-                if (OnlineManager.lobby.gameMode is MeadowGameMode mgm)
-                {
-                    self.pauseWarningActive = false;
-                    game.cameras[0].hud.textPrompt.pausedWarningText = false;
-                    SimplerButton unstuckButton;
-                    self.pages[0].subObjects.Add(unstuckButton = new SimplerButton(self, self.pages[0], self.Translate("UNSTUCK"),
-                        new Vector2(manager.rainWorld.options.SafeScreenOffset.x + 70f, Mathf.Max(manager.rainWorld.options.SafeScreenOffset.y, 15f)),
-                        new Vector2(110f, 30f)));
-                    unstuckButton.OnClick += (_) =>
-                    {
-                        var creature = mgm.avatar.realizedCreature;
-                        if (creature.room != null)
-                        {
-                            var room = creature.room;
-                            creature.RemoveFromRoom();
-                            room.CleanOutObjectNotInThisRoom(creature); // we need it this frame
-                            var node = creature.coord.abstractNode;
-                            if (node > room.abstractRoom.exits) node = UnityEngine.Random.Range(0, room.abstractRoom.exits);
-                            creature.SpitOutOfShortCut(room.ShortcutLeadingToNode(node).startCoord.Tile, room, true);
-                        }
-                    };
-                }
-            }
-        }
-
         public bool RainWorldGame_GamePaused(Func<RainWorldGame, bool> orig, RainWorldGame self)
         {
             if (OnlineManager.lobby != null)
