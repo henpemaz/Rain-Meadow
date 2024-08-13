@@ -266,19 +266,19 @@ namespace RainMeadow
                 RainMeadow.Debug($"Item consumed: {OnlineManager.lobby.subresources[region].Id()} {type} from {evt.from}");
                 var lobbyData = OnlineManager.lobby.GetData<MeadowLobbyData>();
                 var newRegion = RandomIndexFromWeightedList(lobbyData.regionSpawnWeights);
-                if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
+                if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed && lobbyData.regionRedTokensGoal[region] > 0)
                 {
                     lobbyData.regionRedTokensGoal[region] -= 1;
                     lobbyData.regionRedTokensGoal[newRegion] += 1;
                     OnlineManager.lobby.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
                 }
-                if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue)
+                if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue && lobbyData.regionBlueTokensGoal[region] > 0)
                 {
                     lobbyData.regionBlueTokensGoal[region] -= 1;
                     lobbyData.regionBlueTokensGoal[newRegion] += 1;
                     OnlineManager.lobby.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
                 }
-                if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold)
+                if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold && lobbyData.regionGoldTokensGoal[region] > 0)
                 {
                     lobbyData.regionGoldTokensGoal[region] -= 1;
                     lobbyData.regionGoldTokensGoal[newRegion] += 1;
