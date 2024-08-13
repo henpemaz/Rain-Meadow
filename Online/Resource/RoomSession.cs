@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace RainMeadow
 {
@@ -21,7 +22,7 @@ namespace RainMeadow
         {
             if (isOwner)
             {
-                foreach (var ent in absroom.entities)
+                foreach (var ent in absroom.entities.Concat(absroom.entitiesInDens))
                 {
                     if (ent is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe)
                          && !oe.realized && !oe.isMine && oe.isTransferable && !oe.isPending)
@@ -34,7 +35,7 @@ namespace RainMeadow
 
         protected override void ActivateImpl()
         {
-            foreach (var ent in absroom.entities)
+            foreach (var ent in absroom.entities.Concat(absroom.entitiesInDens))
             {
                 if (ent is AbstractPhysicalObject apo)
                 {
@@ -48,19 +49,17 @@ namespace RainMeadow
         {
             if (abstractOnDeactivate && absroom.realizedRoom != null)
             {
-                for (int i = 0; i < absroom.entities.Count; i++)
+                foreach (AbstractWorldEntity? item in absroom.entities.Concat(absroom.entitiesInDens))
                 {
-                    AbstractWorldEntity? item = absroom.entities[i];
-                    if(item is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var ent))
+                    if (item is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var ent))
                     {
                         ent.beingMoved = true;
                     }
                 }
                 absroom.world.loadingRooms.RemoveAll(rl => rl.room == absroom.realizedRoom);
                 absroom.Abstractize();
-                for (int i = 0; i < absroom.entities.Count; i++)
+                foreach (AbstractWorldEntity? item in absroom.entities.Concat(absroom.entitiesInDens))
                 {
-                    AbstractWorldEntity? item = absroom.entities[i];
                     if (item is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var ent))
                     {
                         ent.beingMoved = false;
