@@ -3,6 +3,7 @@ using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using static RainMeadow.OnlineResource.ResourceData;
 
 namespace RainMeadow
@@ -217,7 +218,15 @@ namespace RainMeadow
                     {
                         if (!resource.registeredEntities.ContainsKey(def.entityId))
                         {
-                            resource.OnNewRemoteEntity(def, entityStates.list.Find(es => es.entityId == def.entityId));
+                            try
+                            {
+                                resource.OnNewRemoteEntity(def, entityStates.list.Find(es => es.entityId == def.entityId));
+                            }
+                            catch (Exception e)
+                            {
+                                RainMeadow.Error($"Failed to read new remote entity in {resource} : {def}");
+                                RainMeadow.Error(e);
+                            }
                         }
                     }
 
@@ -234,7 +243,15 @@ namespace RainMeadow
                                 // in super, or in other but older there
                                 if (inResource == resource.super || (resource.IsSibling(inResource) && inResource.joinedEntities.TryGetValue(ent.id, out var otherJoin) && NetIO.IsNewer(entityJoin.version, otherJoin.version)))
                                 {
-                                    resource.EntityJoinedResource(ent, entityStates.list.Find(es => es.entityId == entityJoin.entityId));
+                                    try
+                                    {
+                                        resource.EntityJoinedResource(ent, entityStates.list.Find(es => es.entityId == entityJoin.entityId));
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        RainMeadow.Error($"Failed to join with entity in {resource} : {ent}");
+                                        RainMeadow.Error(e);
+                                    }
                                 }
                                 else
                                 {
@@ -253,7 +270,15 @@ namespace RainMeadow
                     {
                         if (!joinedHash.Contains(kvp.Key))
                         {
-                            resource.EntityLeftResource(kvp.Key.FindEntity());
+                            try
+                            {
+                                resource.EntityLeftResource(kvp.Key.FindEntity());
+                            }
+                            catch (Exception e)
+                            {
+                                RainMeadow.Error($"Failed to leave with entity in {resource} : {kvp.Key.FindEntity()}");
+                                RainMeadow.Error(e);
+                            }
                         }
                     }
 
@@ -263,7 +288,15 @@ namespace RainMeadow
                         {
                             if (def.owner != ent.owner.inLobbyId && OnlineManager.lobby.PlayerFromId(def.owner) is OnlinePlayer newOwner)
                             {
-                                ent.NewOwner(newOwner);
+                                try
+                                {
+                                    ent.NewOwner(newOwner);
+                                }
+                                catch (Exception e)
+                                {
+                                    RainMeadow.Error($"Failed assign new owner to entity in {resource} : {ent}");
+                                    RainMeadow.Error(e);
+                                }
                             }
                         }
                         else
@@ -285,7 +318,15 @@ namespace RainMeadow
                             if (entity.isMine) continue; // not interested
                             if (entity.currentlyJoinedResource == resource) // this resource is the most "detailed" provider
                             {
-                                entity.ReadState(entityState, resource);
+                                try
+                                {
+                                    entity.ReadState(entityState, resource);
+                                }
+                                catch (Exception e)
+                                {
+                                    RainMeadow.Error($"Failed to read state to entity in {resource} : {entity}");
+                                    RainMeadow.Error(e);
+                                }
                             }
                         }
                         else
