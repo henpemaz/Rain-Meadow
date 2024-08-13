@@ -416,8 +416,10 @@ namespace RainMeadow
                 {
                     if (OnlineManager.lobby.isOwner)
                     {
+                        RainMeadow.Debug("Continue - host");
                         gameMode.didStartCycle = true;
                     }
+                    RainMeadow.Debug("Continue - client");
                 }
             }
             orig(self, sender, message);
@@ -468,7 +470,6 @@ namespace RainMeadow
 
         private void SleepAndDeathScreen_ctor(On.Menu.SleepAndDeathScreen.orig_ctor orig, Menu.SleepAndDeathScreen self, ProcessManager manager, ProcessManager.ProcessID ID)
         {
-
             RainMeadow.Debug("In SleepAndDeath Screen");
             orig(self, manager, ID);
 
@@ -488,7 +489,6 @@ namespace RainMeadow
                 self.pages[0].subObjects.Add(readyButton);
                 readyButton.black = 0;
                 self.pages[0].lastSelectedObject = readyButton;
-
             }
         }
 
@@ -496,6 +496,7 @@ namespace RainMeadow
         {
             if ((isStoryMode(out var gameMode) && gameMode.didStartCycle == true) || OnlineManager.lobby.isOwner)
             {
+                RainMeadow.Debug("Ready!");
                 isPlayerReady = true;
             }
         }
