@@ -186,6 +186,11 @@ namespace RainMeadow
         public object target;
         public object[] args;
 
+        public override string ToString()
+        {
+            return $"{base.ToString()}:{handler.method.Name}";
+        }
+
         public RPCEvent() { }
 
         public RPCEvent(Delegate del, object[] args)
