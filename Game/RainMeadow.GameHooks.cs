@@ -27,7 +27,6 @@ namespace RainMeadow
             On.Room.ctor += Room_ctor;
             IL.Room.LoadFromDataString += Room_LoadFromDataString;
             IL.Room.Loaded += Room_Loaded;
-            On.Room.Loaded += Room_LoadedCheck;
             On.Room.PlaceQuantifiedCreaturesInRoom += Room_PlaceQuantifiedCreaturesInRoom;
 
             On.FliesWorldAI.AddFlyToSwarmRoom += FliesWorldAI_AddFlyToSwarmRoom;
@@ -159,27 +158,6 @@ namespace RainMeadow
             orig(self, critType);
         }
 
-        private void Room_LoadedCheck(On.Room.orig_Loaded orig, Room self)
-        {
-            var isFirstTimeRealized = self.abstractRoom.firstTimeRealized;
-            orig(self);
-
-            if (OnlineManager.lobby != null)
-            {
-                if (!RoomSession.map.TryGetValue(self.abstractRoom, out var rs)) return;
-                if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
-
-                if (!ws.isOwner)
-                {
-
-                    if (self.abstractRoom.firstTimeRealized != isFirstTimeRealized)
-                    {
-                        ws.owner.InvokeRPC(rs.AbstractRoomFirstTimeRealized);
-                    }
-                }
-            }
-        }
-
         private void StoryGameSession_ctor(On.StoryGameSession.orig_ctor orig, StoryGameSession self, SlugcatStats.Name saveStateNumber, RainWorldGame game)
         {
             if (OnlineManager.lobby != null)
@@ -293,7 +271,7 @@ namespace RainMeadow
             {
                 // if (this.world != null && this.game != null && this.abstractRoom.firstTimeRealized && (!this.game.IsArenaSession || this.game.GetArenaGameSession.GameTypeSetup.levelItems))
                 //becomes
-                // if (this.world != null && this.game != null && this.abstractRoom.firstTimeRealized && (!this.game.IsOnlineSession || session.ShouldSpawnItems()) && (!this.game.IsArenaSession || this.game.GetArenaGameSession.GameTypeSetup.levelItems))
+                // if (this.world != null && this.game != null && this.abstractRoom.firstTimeRealized && (!this.game.IsOnlineSession) && (!this.game.IsArenaSession || this.game.GetArenaGameSession.GameTypeSetup.levelItems))
                 var c = new ILCursor(il);
                 var skip = il.DefineLabel();
                 c.GotoNext(moveType: MoveType.After,
@@ -306,7 +284,8 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((Room self) =>
                 {
-                    return OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.abstractRoom, out var roomSession) && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.game, roomSession);
+                    // not ran at all for online, we re-run it later if appropriate
+                    return OnlineManager.lobby != null;
                 }
                 );
                 c.Emit(OpCodes.Brtrue, skip);
@@ -338,7 +317,6 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((Room self) =>
                 {
-                    // during room.loaded the RoomSession isn't available yet so no point in passing self?
                     return OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.abstractRoom, out var roomSession) && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.game, roomSession);
                 });
                 c.Emit(OpCodes.Brtrue, skip);

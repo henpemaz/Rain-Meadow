@@ -37,8 +37,6 @@ namespace RainMeadow
 
             On.AbstractCreature.ChangeRooms += AbstractCreature_ChangeRooms; // displayer follow creature
 
-            On.Room.LoadFromDataString += Room_LoadFromDataString1; // places of spawning items
-
             On.Menu.FastTravelScreen.Singal += FastTravelScreen_Singal;
 
             // open gate
@@ -204,16 +202,6 @@ namespace RainMeadow
                 }
             }
             return orig(self);
-        }
-
-        public static ConditionalWeakTable<Room, string> line5 = new();
-        private void Room_LoadFromDataString1(On.Room.orig_LoadFromDataString orig, Room self, string[] lines)
-        {
-            orig(self, lines);
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm && RoomSession.map.TryGetValue(self.abstractRoom, out var rs))
-            {
-                line5.Add(self, lines[5]);
-            }
         }
 
         private void AbstractCreature_ChangeRooms(On.AbstractCreature.orig_ChangeRooms orig, AbstractCreature self, WorldCoordinate newCoord)

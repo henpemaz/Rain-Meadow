@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading;
+using System.Runtime.CompilerServices;
+using System;
+using System.Globalization;
 namespace RainMeadow
 {
 
@@ -16,6 +19,48 @@ namespace RainMeadow
             On.AbstractRoom.Abstractize += AbstractRoom_Abstractize;
             On.ArenaSitting.NextLevel += ArenaSitting_NextLevel;
 
+            On.Room.Loaded += Room_Loaded1;
+            On.Room.LoadFromDataString += Room_LoadFromDataString1; // places of spawning items
+
+        }
+
+        public static ConditionalWeakTable<Room, string> line5 = new();
+        private void Room_LoadFromDataString1(On.Room.orig_LoadFromDataString orig, Room self, string[] lines)
+        {
+            orig(self, lines);
+            if (OnlineManager.lobby != null)
+            {
+                line5.Add(self, lines[5]);
+            }
+        }
+
+        private void Room_Loaded1(On.Room.orig_Loaded orig, Room self)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                var rs = self.abstractRoom.GetResource();
+                if (!rs.isAvailable)
+                {
+                    self.ceilingTiles = new RWCustom.IntVector2[0];
+                    return;
+                }
+                
+                var isFirstTimeRealized = self.abstractRoom.firstTimeRealized;
+                orig(self);
+
+                var ws = self.world.GetResource();
+                if (!ws.isOwner)
+                {
+                    if (self.abstractRoom.firstTimeRealized != isFirstTimeRealized)
+                    {
+                        ws.owner.InvokeRPC(rs.AbstractRoomFirstTimeRealized);
+                    }
+                }
+            }
+            else
+            {
+                orig(self);
+            }
         }
 
         private void ArenaSitting_NextLevel(On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager manager)
@@ -28,8 +73,6 @@ namespace RainMeadow
                 {
                     arena.nextLevel = true;
                 }
-
-
 
                 // We need to kick everyone out
 
@@ -201,10 +244,53 @@ namespace RainMeadow
                         OnlineManager.ForceLoadUpdate();
                     }
                     if (!rs.isAvailable) return;
+                    if (self.thread == null) // available this tick
+                    {
+                        if (OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.room.game, rs)) SpawnRoomItems(self.room);
+                        self.room.Loaded();
+                    }
                     if ((self.requestShortcutsReady || self.room.shortCutsReady) && !rs.isActive) rs.Activate();
                 }
             }
             orig(self);
+        }
+
+        private void SpawnRoomItems(Room room)
+        {
+            var lines5 = line5.GetValue(room, (r) => throw new KeyNotFoundException());
+            if (room.world != null && room.game != null && room.abstractRoom.firstTimeRealized && (!room.game.IsArenaSession || room.game.GetArenaGameSession.GameTypeSetup.levelItems))
+            {
+                string[] array4 = lines5.Split(new char[] { '|' });
+                for (int j = 0; j < array4.Length - 1; j++)
+                {
+                    RWCustom.IntVector2 intVector = new RWCustom.IntVector2(Convert.ToInt32(array4[j].Split(new char[] { ',' })[1], CultureInfo.InvariantCulture) - 1, room.Height - Convert.ToInt32(array4[j].Split(new char[] { ',' })[2], CultureInfo.InvariantCulture));
+                    bool flag;
+                    if (Convert.ToInt32(array4[j].Split(new char[] { ',' })[0], CultureInfo.InvariantCulture) == 1)
+                    {
+                        flag = global::UnityEngine.Random.value < 0.6f;
+                    }
+                    else
+                    {
+                        flag = global::UnityEngine.Random.value < 0.75f;
+                    }
+                    if (flag)
+                    {
+                        EntityID newID = room.game.GetNewID(-room.abstractRoom.index);
+                        int num = Convert.ToInt32(array4[j].Split(new char[] { ',' })[0], CultureInfo.InvariantCulture);
+                        if (num != 0)
+                        {
+                            if (num == 1)
+                            {
+                                room.abstractRoom.AddEntity(new AbstractSpear(room.world, null, new WorldCoordinate(room.abstractRoom.index, intVector.x, intVector.y, -1), newID, false));
+                            }
+                        }
+                        else
+                        {
+                            room.abstractRoom.AddEntity(new AbstractPhysicalObject(room.world, AbstractPhysicalObject.AbstractObjectType.Rock, null, new WorldCoordinate(room.abstractRoom.index, intVector.x, intVector.y, -1), newID));
+                        }
+                    }
+                }
+            }
         }
 
         // Room request
