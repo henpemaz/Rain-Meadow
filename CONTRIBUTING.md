@@ -16,17 +16,33 @@ Before you will be able to make a mod, you need the following:
 > Remove the plugins file in "Mod/" and replace with a folder named 'plugins' for the build output to work correctly
 
 ### Assemblies
-You will need to add the following references at minimum to your VS project for Rain World:
+You will need to add the following assemblies to the `lib/` folder:
 
-* BepInEx/core/BepInEx.dll
-* BepInEx/plugins/HOOKS-Assembly-CSharp.dll
-* Assembly-stripped.dll -- Discord link: https://discord.com/channels/291184728944410624/431534164932689921/1089696571005874206
-* RainWorld_Data/Managed/UnityEngine.dll
-* RainWorld_Data/Managed/UnityEngine.CoreModule.dll
-* RainWorld_Data/Managed/Assembly.csharp.firstpass
-* com.rlabrecque.steamworks.net
-
-> Note that certain mods may need more functionality from Unity. In the RainWorld_Data/Managed folder you will find DLL files prefixed with UnityEngine. - these are different parts of the Unity engine that allow doing different things, such as UnityEngine.AssetBundleModule for loading asset bundles built in the Unity editor. 
+```
+BepInEx/core/0Harmony.dll
+BepInEx/core/BepInEx.Harmony.dll
+BepInEx/core/BepInEx.dll
+BepInEx/core/HarmonyXInterop.dll
+BepInEx/core/Mono.Cecil.dll
+BepInEx/core/MonoMod.RuntimeDetour.dll
+BepInEx/core/MonoMod.Utils.dll
+BepInEx/core/MonoMod.dll
+BepInEx/plugins/HOOKS-Assembly-CSharp.dll
+BepInEx/utils/PUBLIC-Assembly-CSharp.dll
+RainWorld_Data/Managed/Assembly-CSharp-firstpass.dll
+RainWorld_Data/Managed/Mono.Cecil.dll
+RainWorld_Data/Managed/MonoMod.RuntimeDetour.dll
+RainWorld_Data/Managed/MonoMod.Utils.dll
+RainWorld_Data/Managed/Newtonsoft.Json.dll
+RainWorld_Data/Managed/Rewired_Core.dll
+RainWorld_Data/Managed/Unity.Mathematics.dll
+RainWorld_Data/Managed/UnityEngine.AssetBundleModule.dll
+RainWorld_Data/Managed/UnityEngine.CoreModule.dll
+RainWorld_Data/Managed/UnityEngine.InputLegacyModule.dll
+RainWorld_Data/Managed/UnityEngine.JSONSerializeModule.dll
+RainWorld_Data/Managed/UnityEngine.dll
+RainWorld_Data/Managed/com.rlabrecque.steamworks.net.dll
+```
 
 ## Guidelines
 ###### Advice for development
