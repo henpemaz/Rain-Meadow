@@ -233,9 +233,9 @@ namespace RainMeadow
             {
                 return typeof(Serializer).GetMethods().Single(m =>
                 m.Name == "SerializeExtEnum" && m.IsGenericMethod).MakeGenericMethod(fieldType);
-            } 
-            
-            if (!fieldType.IsValueType && fieldType != typeof(string))
+            }
+
+            if (!(fieldType.IsValueType || (fieldType.IsArray && fieldType.GetElementType().IsValueType)) && fieldType != typeof(string))
             {
                 RainMeadow.Debug($"{fieldType} not handled by SerializerCallMethod");
             }

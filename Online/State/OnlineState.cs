@@ -80,6 +80,7 @@ namespace RainMeadow
 
             //public static readonly StateType GamemodeDataState = new("GamemodeDataState", typeof(GamemodeDataState)); // abstract
             public static readonly StateType MeadowCreatureDataState = new("MeadowCreatureDataState", typeof(MeadowCreatureData.State));
+            public static readonly StateType MeadowMusicDataState = new("MeadowMusicDataState", typeof(MeadowMusicData.State));
             public static readonly StateType MeadowLobbyState = new("MeadowLobbyState", typeof(MeadowLobbyData.State));
 
             public static readonly StateType StoryLobbyDataState = new("StoryLobbyDataState", typeof(StoryLobbyData.State));

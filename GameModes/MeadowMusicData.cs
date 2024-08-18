@@ -1,12 +1,14 @@
-﻿namespace RainMeadow
+﻿using System.Linq;
+
+namespace RainMeadow
 {
     internal class MeadowMusicData : OnlineEntity.EntityData
     {
         private OnlineCreature oc;
-        public int inGroup;
-        public bool isDJ;
-        public string? providedSong;
-        public float? startedPlayingAt;
+        public int inGroup = -1;
+        public bool isDJ = true;
+        public string providedSong;
+        public float startedPlayingAt;
         public MeadowMusicData(OnlineCreature oc)
         {
             this.oc = oc;
@@ -14,7 +16,55 @@
 
         internal override EntityDataState MakeState(OnlineResource inResource)
         {
-            throw new System.NotImplementedException();
+            if (inResource is WorldSession)
+            {
+                RainMeadow.Trace($"{this} for {oc} making state in {inResource}");
+                return new State(this);
+            }
+            RainMeadow.Trace($"{this} for {oc} skipping state in {inResource}");
+            return null;
+        }
+
+        public class State : EntityDataState
+        {
+            [OnlineField(group = "music")]
+            public int inGroup;
+            [OnlineField(group = "music")]
+            public bool isDJ;
+            [OnlineField(group = "music", nullable = true)]
+            public string providedSong;
+            [OnlineField(group = "music")]
+            public float startedPlayingAt;
+
+            public State() { }
+            public State(MeadowMusicData mcd)
+            {
+                RainMeadow.Debug("From Data to State " + mcd);
+                //Copy From data to state
+                //state = data;
+                inGroup = mcd.inGroup;
+                isDJ = mcd.isDJ;
+                providedSong = mcd.providedSong;
+                startedPlayingAt = mcd.startedPlayingAt;
+            }
+
+            internal override void ReadTo(OnlineEntity onlineEntity)
+            {
+                RainMeadow.Debug("From state to data " + onlineEntity);
+                if (onlineEntity is OnlineCreature oc && oc.TryGetData<MeadowMusicData>(out var mcd))
+                {
+                    //Read from state to data
+
+                    mcd.inGroup = inGroup;
+                    mcd.isDJ = isDJ;
+                    mcd.providedSong = providedSong;
+                    mcd.startedPlayingAt = startedPlayingAt;
+                }
+                else
+                {
+                    RainMeadow.Error("Failed to read MeadowMusicDataState into " + onlineEntity);
+                }
+            }
         }
     }
 }
