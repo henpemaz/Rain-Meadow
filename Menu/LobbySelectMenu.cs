@@ -113,6 +113,7 @@ namespace RainMeadow
             where.y -= 5;
             lobbyLimitNumberTextBox = new OpTextBox(new Configurable<int>(maxPlayerCount = 4), where, 160f);
             lobbyLimitNumberTextBox.accept = OpTextBox.Accept.Int;
+            lobbyLimitNumberTextBox.description = "The Max of the Players for the Lobby (up to 32)";
             new UIelementWrapper(this.tabWrapper, lobbyLimitNumberTextBox);
             where.y += 5;
 
