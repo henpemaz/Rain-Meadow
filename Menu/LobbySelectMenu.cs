@@ -113,6 +113,7 @@ namespace RainMeadow
             where.y -= 5;
             lobbyLimitNumberTextBox = new OpTextBox(new Configurable<int>(maxPlayerCount = 4), where, 160f);
             lobbyLimitNumberTextBox.accept = OpTextBox.Accept.Int;
+            lobbyLimitNumberTextBox.description = "The Max of the Players for the Lobby (up to 32)";
             new UIelementWrapper(this.tabWrapper, lobbyLimitNumberTextBox);
             where.y += 5;
 
@@ -182,7 +183,7 @@ namespace RainMeadow
             enablePasswordCheckbox.buttonBehav.greyedOut = this.currentlySelectedCard != 0;
             lobbyLimitNumberTextBox.greyedOut = this.currentlySelectedCard != 0;
             playButton.menuLabel.text = (this.currentlySelectedCard == 0) ? "CREATE!" : "JOIN!";
-            if (lobbyLimitNumberTextBox.value != "")
+            if (lobbyLimitNumberTextBox.value != "" && !lobbyLimitNumberTextBox.Focused)
             {
                 maxPlayerCount = lobbyLimitNumberTextBox.valueInt;
                 if (lobbyLimitNumberTextBox.valueInt > 32) lobbyLimitNumberTextBox.valueInt = 32;
