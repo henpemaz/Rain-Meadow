@@ -1,7 +1,52 @@
 
 multi-player item
+- echo object
+- 3-ish per region
+- placed in "valid" spot with extra constraints
+	- need to be above a ground-creature-accessible tile
+	- 3-wide space
+- blue aura only, no particles, no palette change
+- on approach, floating foodpips show up
+- on staying close, pips update
+	- alternatively, on "bark"
+- on pips full, trigger
+- if triggered, plays paletteswap animation, particles fall from above, players gain gains
+- this plays "locally" so people entering the room late will still see it animate and reward
+
 
 what are the player-player interactions?
+- spot eachother
+- greet eachother
+- greet others
+- decide on what to do
+	- likely want to go somewhere, what other options
+	- echo-hunting
+	- go to one of the extremes of the map
+		- pebbles, moon, SI or Depths
+	- games
+		- hide and seek
+- decide on where to go
+	- a direction, a landmark, something unambiguous
+	- anywhere
+	- follow me, follow the leader
+
+- move together
+- spot things, comment on things
+- tell others to come over here
+- tell others to go back, not come
+
+
+handholding
+	"it's of uttermost importance to me that one cannot troll others with this"
+	either:
+		- invite and accept-to-be-held; or
+		- be grabbed by, with no consequences
+			you are not heavier nor locked out of anything, no downsides
+			Sky has both, with the invite system, but also the "follow"->"hold hand"
+
+
+teleports that go in game might need to spinlock waiting for unload/release
+right now might crash because requested while pending release
 
 creature todo
 - remove collisions ?
@@ -87,6 +132,8 @@ rats shouldn't panic
 creature select can be inconsistent at times: I have big noodlefly selected, i enter the game, i'm small, i log off and click big again, now i'm big
 
 emote preview background color is really bad right now
+
+emote keybind not rebindable
 
 emote mapping on keyboard 1 throug 8 missing
 
