@@ -63,7 +63,7 @@ namespace RainMeadow
                     (self as InteractiveMenuScene).idleDepths.Add(1.5f);
                 }
             }
-            if (self.sceneID == RainMeadow.Ext_SceneID.Slugcat_MeadowLizard)
+            else if (self.sceneID == RainMeadow.Ext_SceneID.Slugcat_MeadowLizard)
             {
                 self.sceneFolder = "Scenes" + Path.DirectorySeparatorChar.ToString() + "meadow - lizard";
                 if (self.flatMode)
@@ -83,7 +83,7 @@ namespace RainMeadow
                     (self as InteractiveMenuScene).idleDepths.Add(1.5f);
                 }
             }
-            if (self.sceneID == RainMeadow.Ext_SceneID.Slugcat_MeadowScav)
+            else if (self.sceneID == RainMeadow.Ext_SceneID.Slugcat_MeadowScav)
             {
                 self.sceneFolder = "Scenes" + Path.DirectorySeparatorChar.ToString() + "meadow - scav";
                 if (self.flatMode)
@@ -102,7 +102,7 @@ namespace RainMeadow
                     (self as InteractiveMenuScene).idleDepths.Add(1.5f);
                 }
             }
-            if (self.sceneID == RainMeadow.Ext_SceneID.Slugcat_MeadowEggbug)
+            else if (self.sceneID == RainMeadow.Ext_SceneID.Slugcat_MeadowEggbug)
             {
                 self.sceneFolder = "Scenes" + Path.DirectorySeparatorChar.ToString() + "meadow - eggbug";
                 if (self.flatMode)
@@ -120,6 +120,26 @@ namespace RainMeadow
                     (self as InteractiveMenuScene).idleDepths.Add(2.1f);
                     (self as InteractiveMenuScene).idleDepths.Add(2.0f);
                     (self as InteractiveMenuScene).idleDepths.Add(1.5f);
+                }
+            }
+            else if (self.sceneID == RainMeadow.Ext_SceneID.Slugcat_MeadowNoot)
+            {
+                self.sceneFolder = "Scenes" + Path.DirectorySeparatorChar.ToString() + "meadow - noot";
+                if (self.flatMode)
+                {
+                    self.AddIllustration(new MenuIllustration(self.menu, self, self.sceneFolder, "MeadowNoot - Flat", new Vector2(683f, 384f), false, true));
+                }
+                else
+                {
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmnoot bg", new Vector2(0f, 0f), 3.5f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmnoot mg", new Vector2(0f, 0f), 2.8f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmnoot noot", new Vector2(0f, 0f), 2.2f, MenuDepthIllustration.MenuShader.LightEdges));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmnoot fg", new Vector2(0f, 0f), 1.8f, MenuDepthIllustration.MenuShader.LightEdges));
+                    (self as InteractiveMenuScene).idleDepths.Add(3.2f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.6f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.5f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.4f);
+                    //(self as InteractiveMenuScene).idleDepths.Add(1.5f);
                 }
             }
             if (string.IsNullOrEmpty(self.sceneFolder))
@@ -187,6 +207,12 @@ namespace RainMeadow
                     else if (mcsp.character == MeadowProgression.Character.Eggbug)
                     {
                         sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowEggbug;
+                        self.sceneOffset = new Vector2(-10f, 100f);
+                        self.slugcatDepth = 3.1000001f;
+                    }
+                    else if (mcsp.character == MeadowProgression.Character.Noodlefly)
+                    {
+                        sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowNoot;
                         self.sceneOffset = new Vector2(-10f, 100f);
                         self.slugcatDepth = 3.1000001f;
                     }
