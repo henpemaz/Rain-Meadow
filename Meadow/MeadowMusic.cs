@@ -16,6 +16,7 @@ namespace RainMeadow
             On.RainWorldGame.ctor += GameCtorPatch;
             On.RainWorldGame.RawUpdate += RawUpdatePatch;
             On.OverWorld.WorldLoaded += WorldLoadedPatch;
+            On.OverWorld.LoadFirstWorld += OverWorld_LoadFirstWorld;
             On.VirtualMicrophone.NewRoom += NewRoomPatch;
         }
 
@@ -149,10 +150,22 @@ namespace RainMeadow
         {
             orig.Invoke(self);
 
-            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode) return;
-
-            AnalyzeRegion(self.activeWorld);
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                AnalyzeRegion(self.activeWorld);
+            }
         }
+
+        static void OverWorld_LoadFirstWorld(On.OverWorld.orig_LoadFirstWorld orig, OverWorld self)
+        {
+            orig.Invoke(self);
+
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                AnalyzeRegion(self.activeWorld);
+            }
+        }
+
 
         static void NewRoomPatch(On.VirtualMicrophone.orig_NewRoom orig, VirtualMicrophone self, Room room)
         {
