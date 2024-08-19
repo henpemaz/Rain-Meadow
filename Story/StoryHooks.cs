@@ -57,6 +57,26 @@ namespace RainMeadow
             On.CoralBrain.CoralNeuronSystem.PlaceSwarmers += OnCoralNeuronSystem_PlaceSwarmers;
             On.SSOracleSwarmer.NewRoom += SSOracleSwarmer_NewRoom;
 
+            On.HUD.TextPrompt.Update += TextPrompt_Update;
+        }
+
+        private void TextPrompt_Update(On.HUD.TextPrompt.orig_Update orig, TextPrompt self)
+        {
+            if (OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+
+                if (OnlineManager.lobby.isOwner)
+                {
+                    orig(self);
+                }
+                else
+                {
+                    orig(self);
+                    self.restartNotAllowed = 1;
+                    self.gameOverString = "Please wait for host to die or sleep...";
+
+                }
+            }
         }
 
         private void SSOracleSwarmer_NewRoom(On.SSOracleSwarmer.orig_NewRoom orig, SSOracleSwarmer self, Room newRoom)

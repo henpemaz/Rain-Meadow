@@ -196,34 +196,38 @@ public partial class RainMeadow
         }
         if (OnlineManager.lobby.gameMode is MeadowGameMode) return; // do not run
 
-        // Initialize a variable to hold the non-dead AbstractCreature
-        AbstractCreature nonDeadCreature = null;
-
-        // First pass: Find a non-dead AbstractCreature
-        foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+        // manage camera for normal difficulty in story
+        if (OnlineManager.lobby.gameMode is StoryGameMode)
         {
-            if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue;
+            // Initialize a variable to hold the non-dead AbstractCreature
+            AbstractCreature nonDeadCreature = null;
 
-            if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+            // First pass: Find a non-dead AbstractCreature
+            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
             {
-                if (!ac.state.dead)
+                if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue;
+
+                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
                 {
-                    nonDeadCreature = ac;
-                    RainMeadow.Debug("Found alive creature " + ac);
-                    break; // Stop searching once we find a non-dead creature
+                    if (!ac.state.dead)
+                    {
+                        nonDeadCreature = ac;
+                        RainMeadow.Debug("Found alive creature " + ac);
+                        break; // Stop searching once we find a non-dead creature
+                    }
                 }
             }
-        }
 
-        // Second pass: Set all dead creatures to follow the found non-dead creature
-        if (nonDeadCreature != null)
-        {
-            if (!self.abstractCreature.realizedCreature.State.alive)
+            // Second pass: Set all dead creatures to follow the found non-dead creature
+            if (nonDeadCreature != null)
             {
-                RainMeadow.Debug("Setting dead creature camera to follow alive creature" + nonDeadCreature);
-                self.abstractCreature.world.game.cameras[0].followAbstractCreature = nonDeadCreature;
-                //self.room.game.cameras[0].MoveCamera(nonDeadCreature.Room.realizedRoom, -1);
+                if (!self.abstractCreature.realizedCreature.State.alive)
+                {
+                    RainMeadow.Debug("Setting dead creature camera to follow alive creature" + nonDeadCreature);
+                    self.abstractCreature.world.game.cameras[0].followAbstractCreature = nonDeadCreature;
+                    
 
+                }
             }
         }
         orig(self);
