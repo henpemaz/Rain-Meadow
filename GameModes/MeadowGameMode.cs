@@ -332,5 +332,25 @@ namespace RainMeadow
                 RainMeadow.Error("creature not avatar ?? " + oc);
             }
         }
+
+        static bool IsRelevant(AbstractPhysicalObject apo)
+        {
+            if (apo.type == AbstractPhysicalObject.AbstractObjectType.Creature) return true;
+            if (apo.type == RainMeadow.Ext_PhysicalObjectType.MeadowPlant) return true;
+            if (apo.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue) return true;
+            if (apo.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed) return true;
+            if (apo.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold) return true;
+            return false;
+        }
+
+        public override bool ShouldSyncObjectInRoom(RoomSession rs, AbstractPhysicalObject apo)
+        {
+            return IsRelevant(apo);
+        }
+
+        public override bool ShouldSyncObjectInWorld(WorldSession ws, AbstractPhysicalObject apo)
+        {
+            return IsRelevant(apo);
+        }
     }
 }
