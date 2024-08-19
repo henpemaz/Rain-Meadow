@@ -118,9 +118,14 @@ namespace RainMeadow
             where.y += 5;
 
             // display version
-            var versionPos = new Vector2(5f, 0f);
+            var versionPos = new Vector2(1366f - manager.rainWorld.screenSize.x, 0f);
+            MenuLabel versionLabel = new MenuLabel(this, this.pages[0], $"Rain Meadow Version: {RainMeadow.MeadowVersionStr}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f), new Vector2(200f, 20f), false, null);
+            versionLabel.size = new Vector2(versionLabel.label.textRect.width, versionLabel.size.y);
             var meadowVer = new ProperlyAlignedMenuLabel(this, mainPage, Translate($"Rain Meadow Version: {RainMeadow.MeadowVersionStr}"), versionPos, new Vector2(0f, 20f), false, null);
             mainPage.subObjects.Add(meadowVer);
+            mainPage.subObjects.Add(versionLabel);
+            RainMeadow.Debug($"Meadow version {versionPos}");
+            RainMeadow.Debug($"Screen size x {manager.rainWorld.options.ScreenSize.x}");
 
             // left lobby selector
             // bg
@@ -243,7 +248,7 @@ namespace RainMeadow
                     this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, "Private", new(260, 20), new(10, 50), false));
                 }
                 this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, $"{lobbyInfo.maxPlayerCount} max", new(260, 5), new(10, 50), false));
-                RainMeadow.Debug($"This card has {lobbyInfo.maxPlayerCount} max");
+                RainMeadow.Debug($"{lobbyInfo.name} card has {lobbyInfo.maxPlayerCount} max");
                 this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.mode, new(5, 20), new(10, 50), false));
                 this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.playerCount + " player" + (lobbyInfo.playerCount == 1 ? "" : "s"), new(5, 5), new(10, 50), false));
             }
