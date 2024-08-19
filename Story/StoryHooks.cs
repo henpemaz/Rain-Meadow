@@ -354,26 +354,19 @@ namespace RainMeadow
         {
             if (isStoryMode(out var gameMode))
             {
-                //Initiate death whenever any player dies.
-                //foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
-                //{
-                //
-                //    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                //    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                //    {
-                //        if (ac.state.alive) return;
-                //    }
-                //}
                 //INITIATE DEATH
                 foreach (OnlinePlayer player in OnlineManager.players)
                 {
-                    if (!player.isMe)
+
+                    if (player.id == OnlineManager.lobby.owner.id)
                     {
-                        player.InvokeRPC(RPCs.InitGameOver);
+                        RPCs.InitGameOver();
                     }
+
                     else
                     {
-                        orig(self, dependentOnGrasp);
+
+                        player.InvokeRPC(RPCs.InitGameOver);
                     }
                 }
             }

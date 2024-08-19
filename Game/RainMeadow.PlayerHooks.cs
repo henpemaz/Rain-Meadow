@@ -28,7 +28,8 @@ public partial class RainMeadow
         orig(self, grasp, eu);
         if (OnlineManager.lobby.gameMode is StoryGameMode)
         {
-            if (self.bites < 1) {
+            if (self.bites < 1)
+            {
                 if (!OnlineManager.lobby.isOwner)
                 {
                     OnlineManager.lobby.owner.InvokeRPC(RPCs.ReinforceKarma);
@@ -46,7 +47,7 @@ public partial class RainMeadow
 
     private void PlayerGraphics_DrawSprites1(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
     {
-        if(OnlineManager.lobby != null)
+        if (OnlineManager.lobby != null)
         {
             try
             {
@@ -61,7 +62,7 @@ public partial class RainMeadow
         {
             orig(self, sLeaser, rCam, timeStacker, camPos);
         }
-        
+
     }
 
     private void Player_AddQuarterFood(On.Player.orig_AddQuarterFood orig, Player self)
@@ -84,7 +85,8 @@ public partial class RainMeadow
     {
         orig(self, add);
 
-        if (OnlineManager.lobby != null) {
+        if (OnlineManager.lobby != null)
+        {
             if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
             if (!onlineEntity.isMine) return;
 
@@ -128,7 +130,7 @@ public partial class RainMeadow
             if (ac == null) ac = orig(self, player1, player2, player3, player4, location);
             sSpawningAvatar = false;
 
-            if(OnlineCreature.map.TryGetValue(ac, out var onlineCreature))
+            if (OnlineCreature.map.TryGetValue(ac, out var onlineCreature))
             {
                 OnlineManager.lobby.gameMode.SetAvatar(onlineCreature as OnlineCreature);
             }
@@ -147,7 +149,7 @@ public partial class RainMeadow
         orig(self, abstractCreature, world);
         if (OnlineManager.lobby != null)
         {
-            if(OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var ent))
+            if (OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var ent))
             {
                 // remote player
                 if (!ent.isMine)
@@ -193,6 +195,37 @@ public partial class RainMeadow
             story.storyClientSettings.isDead = true;
         }
         if (OnlineManager.lobby.gameMode is MeadowGameMode) return; // do not run
+
+        // Initialize a variable to hold the non-dead AbstractCreature
+        AbstractCreature nonDeadCreature = null;
+
+        // First pass: Find a non-dead AbstractCreature
+        foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+        {
+            if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue;
+
+            if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+            {
+                if (!ac.state.dead)
+                {
+                    nonDeadCreature = ac;
+                    RainMeadow.Debug("Found alive creature " + ac);
+                    break; // Stop searching once we find a non-dead creature
+                }
+            }
+        }
+
+        // Second pass: Set all dead creatures to follow the found non-dead creature
+        if (nonDeadCreature != null)
+        {
+            if (!self.abstractCreature.realizedCreature.State.alive)
+            {
+                RainMeadow.Debug("Setting dead creature camera to follow alive creature" + nonDeadCreature);
+                self.abstractCreature.world.game.cameras[0].followAbstractCreature = nonDeadCreature;
+                //self.room.game.cameras[0].MoveCamera(nonDeadCreature.Room.realizedRoom, -1);
+
+            }
+        }
         orig(self);
     }
 
@@ -225,4 +258,6 @@ public partial class RainMeadow
             self.throwingSkill = 1;
         }
     }
+
+
 }
