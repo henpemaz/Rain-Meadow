@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Kittehface.Framework20;
 using IL.Menu;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -101,7 +102,9 @@ namespace RainMeadow
         {
             foreach (OnlinePlayer player in OnlineManager.players)
             {
-                player.InvokeRPC(RPCs.GoToDeathScreen);
+                if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToDeathScreen))) {
+                    player.InvokeRPC(RPCs.GoToDeathScreen);
+                }
             }
         }
 

@@ -329,7 +329,9 @@ namespace RainMeadow
             {
                 if (!OnlineManager.lobby.isOwner)
                 {
-                    OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToDeathScreen);
+                    if (!OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.MovePlayersToDeathScreen))) {
+                        OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToDeathScreen);
+                    }
                 }
                 else
                 {
