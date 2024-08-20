@@ -42,6 +42,7 @@ namespace RainMeadow
 
             On.RainWorldGame.GhostShutDown += RainWorldGame_GhostShutDown;
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
+            On.RainWorldGame.Win += RainWorldGame_Win;
             On.RainWorldGame.GameOver += RainWorldGame_GameOver;
 
             On.WaterNut.Swell += WaterNut_Swell;
@@ -341,6 +342,28 @@ namespace RainMeadow
             else
             {
                 orig(self);
+            }
+        }
+
+        private void RainWorldGame_Win(On.RainWorldGame.orig_Win orig, RainWorldGame self, bool malnourished)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    if (!OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.MovePlayersToWinScreen, malnourished)))
+                    {
+                        OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToWinScreen, malnourished);
+                    }
+                }
+                else
+                {
+                    RPCs.MovePlayersToWinScreen(malnourished);
+                }
+            }
+            else
+            {
+                orig(self,malnourished);
             }
         }
 

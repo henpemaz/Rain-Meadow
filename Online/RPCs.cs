@@ -125,6 +125,51 @@ namespace RainMeadow
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.DeathScreen);
         }
 
+        [RPCMethod]
+        public static void MovePlayersToWinScreen(bool malnurished)
+        {
+            foreach (OnlinePlayer player in OnlineManager.players)
+            {
+                if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToWinScreen, malnurished)))
+                {
+                    player.InvokeRPC(RPCs.GoToWinScreen, malnurished);
+                }
+            }
+        }
+
+        //Assumed to be called for storymode only
+        [RPCMethod]
+        public static void GoToWinScreen(bool malnourished)
+        {
+            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            if (game == null || game.manager.upcomingProcess != null)
+            {
+                return;
+            }
+
+            if (!malnourished && !game.rainWorld.saveBackedUp)
+            {
+                game.rainWorld.saveBackedUp = true;
+                game.rainWorld.progression.BackUpSave("_Backup");
+            }
+
+            //This needs to be called after shelterDoor::Close and game state synced for this to be accurate.
+            var denPos = (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos;
+
+            //TODO: need to sync p5 and l2m deam events. Not doing it rn.
+            DreamsState dreamsState = game.GetStorySession.saveState.dreamsState;
+
+            if (dreamsState != null)
+            {
+                dreamsState.EndOfCycleProgress(game.GetStorySession.saveState, game.world.region.name, denPos);
+            }
+
+            game.GetStorySession.saveState.SessionEnded(game, true, malnourished);
+
+            dreamsState.EndOfCycleProgress(game.GetStorySession.saveState, game.world.region.name, denPos);
+            game.manager.RequestMainProcessSwitch((dreamsState != null && dreamsState.AnyDreamComingUp && !malnourished) ? ProcessManager.ProcessID.Dream : ProcessManager.ProcessID.SleepScreen);
+        }
+
 
         [RPCMethod]
         public static void MovePlayersToGhostScreen(string ghostID)
