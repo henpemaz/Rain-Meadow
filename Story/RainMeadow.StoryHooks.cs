@@ -62,13 +62,6 @@ namespace RainMeadow
 
         private void TextPrompt_Update(On.HUD.TextPrompt.orig_Update orig, TextPrompt self)
         {
-
-            if (OnlineManager.lobby == null)
-            {
-                orig(self);
-                return;
-            }
-            
             if (OnlineManager.lobby.gameMode is StoryGameMode)
             {
 
@@ -83,6 +76,8 @@ namespace RainMeadow
                     self.gameOverString = "Please wait for host to die, sleep, or rescue you...";
 
                 }
+            } else {
+                orig(self);
             }
         }
 
