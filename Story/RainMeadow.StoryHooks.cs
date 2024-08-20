@@ -330,15 +330,8 @@ namespace RainMeadow
                 foreach (OnlinePlayer player in OnlineManager.players)
                 {
 
-                    if (player.id == OnlineManager.lobby.owner.id)
-                    {
-                        RPCs.GoToDeathScreen();
-                    }
-                    else
-                    {
+                    player.InvokeRPC(RPCs.GoToDeathScreen);
 
-                        player.InvokeRPC(RPCs.GoToDeathScreen);
-                    }
 
 
                 }
