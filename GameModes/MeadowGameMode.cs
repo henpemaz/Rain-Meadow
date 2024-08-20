@@ -326,6 +326,10 @@ namespace RainMeadow
                 }
                 // playable creatures
                 CreatureController.BindAvatar(creature, oc);
+
+                creature.abstractCreature.tentacleImmune = true;
+                creature.abstractCreature.lavaImmune = true;
+                creature.abstractCreature.HypothermiaImmune = true;
             }
             else
             {
