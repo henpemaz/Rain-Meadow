@@ -46,6 +46,7 @@ namespace RainMeadow
                 isDJ = mcd.isDJ;
                 providedSong = mcd.providedSong;
                 startedPlayingAt = mcd.startedPlayingAt;
+                RainMeadow.Debug("Sent: " + inGroup + " " + isDJ + " " + providedSong + " " + startedPlayingAt);
             }
 
             internal override void ReadTo(OnlineEntity onlineEntity)
@@ -54,7 +55,7 @@ namespace RainMeadow
                 if (onlineEntity is OnlineCreature oc && oc.TryGetData<MeadowMusicData>(out var mcd))
                 {
                     //Read from state to data
-
+                    RainMeadow.Debug("Recieved: " + inGroup + " " + isDJ + " " + providedSong + " " + startedPlayingAt);
                     mcd.inGroup = inGroup;
                     mcd.isDJ = isDJ;
                     mcd.providedSong = providedSong;

@@ -282,6 +282,7 @@ namespace RainMeadow
                     foreach (var entity in creature.roomSession.activeEntities.Where(v => v != null))
                     {
                         var thing = entity.owner;
+                        RainMeadow.Debug(thing.inLobbyId + "HHAH");
                         if (OnlineManager.lobby.playerAvatars[thing].FindEntity() is OnlineCreature oc && !oc.owner.isMe)//yay
                         {
                             theresotherbozoes = true;
@@ -519,6 +520,9 @@ namespace RainMeadow
                 }
             }
 
+            //RainMeadow.Debug("I am in a room aye? " + RoomImIn + " Yeah room, and is it not null? " + RoomImIn != null);
+            RainMeadow.Debug("Am i going to calculate stuffs? " + UpdateIntensity);
+
             if (UpdateIntensity && RoomImIn != null && MyGuyMic != null)
             {
                 //i have NO idea how it'll fuck up when the region has not got a vibezone but idccccccccccccccc. oh wait it wont cuz it won't activate updateintensity cuz it'll never go close to one.
@@ -669,6 +673,7 @@ namespace RainMeadow
                 timerStopped = true;
             }
         }
+        
         static float LobbyTime()
         {
             //do some shit that sends back the current time of the lobby host
@@ -677,15 +682,20 @@ namespace RainMeadow
         static void WorldLoadedPatch(On.OverWorld.orig_WorldLoaded orig, OverWorld self)
         {
             orig.Invoke(self);
+            RainMeadow.Debug("This code is ran like yeah1");
 
             if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode) return;
 
+            RainMeadow.Debug("This code is ran like yeah2");
             AnalyzeRegion(self.activeWorld);
+            RainMeadow.Debug("This code is ran like yeah3");
             UpdateIntensity = true;
+            //ok so this code just doesn't run??
         }
         static int closestVibe;
         static Room? RoomImIn;
         static int DegreesOfAwayness;
+        static bool ItchingForKnowledge = false;
         static int CalculateDegreesOfAwayness(AbstractRoom testRoom)
         {
             var vibeRoom = testRoom.world.GetAbstractRoom(az.room);
@@ -737,6 +747,7 @@ namespace RainMeadow
         static void NewRoomPatch(On.VirtualMicrophone.orig_NewRoom orig, VirtualMicrophone self, Room room)
         {
             orig.Invoke(self, room);
+            RainMeadow.Debug("The normal method is done");
             HelloNewRoom(self, room);
         }
 
@@ -745,65 +756,90 @@ namespace RainMeadow
             RainMeadow.Debug("New room is being checked"); 
             MyGuyMic = self;
             RoomImIn = room;
+            RainMeadow.Debug("I am in room " + room.abstractRoom.name);
 
             if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode) return;
 
+            RainMeadow.Debug("Does it stop here?");
             MusicPlayer musicPlayer = room.game.manager.musicPlayer;
+            RainMeadow.Debug("Does it stop here2?");
+            RainMeadow.Debug((musicPlayer != null) + " " + (musicPlayer.song != null) + " " + (activeZonesDict != null));
+            if (musicPlayer.song != null) { RainMeadow.Debug(musicPlayer.song.name); }
+            
+            // i only want to do these things if 
+            // - i know where all the vibezones are
+            // - there is a musicplayer to play songs on.
+            /// - I don't need to check if i'm playing a song, as we no longer *fade out* songs
+            
+            // i want to do all the calculations below when: 
+            // - I've just loaded into the world 
+            // - When a new room is loaded, ~~and a song is playing~~ redundant cuz i wanna know if i should start plopping
 
-            if (musicPlayer != null && musicPlayer.song != null && activeZonesDict != null)
+            // If i don't know the activezones, do it immediately when you do know
+
+            if (musicPlayer != null)
             {
-                //activezonedict has the room ids of each vibe zone's room as keys
-                int[] rooms = activeZonesDict.Keys.ToArray(); //why does it have to be the keys? can't this just be a list and have the id defined in class vibezone?
-                float minDist = float.MaxValue;
-                closestVibe = -1;
-                //find the closest one
-                for (int i = 0; i < rooms.Length; i++)
+                if (activeZonesDict == null)
                 {
-                    //yoink the coordinates of the player's current room
-                    Vector2 v1 = room.world.RoomToWorldPos(Vector2.zero, room.abstractRoom.index);
-                    //yoink the coordinates of the vibe zone room
-                    Vector2 v2 = room.world.RoomToWorldPos(Vector2.zero, rooms[i]);
-                    //calculate the flat distance between these two vectors
-                    var dist = (v2 - v1).magnitude;
-                    if (dist < minDist)
+                    ItchingForKnowledge = true;
+                    //BrushForSound = self;
+                    //BrushForSpace = room;
+                }
+                else
+                {
+                    //activezonedict has the room ids of each vibe zone's room as keys
+                    int[] rooms = activeZonesDict.Keys.ToArray(); //why does it have to be the keys? can't this just be a list and have the id defined in class vibezone?
+                    float minDist = float.MaxValue;
+                    closestVibe = -1;
+                    //find the closest one
+                    for (int i = 0; i < rooms.Length; i++)
                     {
-                        minDist = dist;
-                        closestVibe = rooms[i];
+                        //yoink the coordinates of the player's current room
+                        Vector2 v1 = room.world.RoomToWorldPos(Vector2.zero, room.abstractRoom.index);
+                        //yoink the coordinates of the vibe zone room
+                        Vector2 v2 = room.world.RoomToWorldPos(Vector2.zero, rooms[i]);
+                        //calculate the flat distance between these two vectors
+                        var dist = (v2 - v1).magnitude;
+                        if (dist < minDist)
+                        {
+                            minDist = dist;
+                            closestVibe = rooms[i];
+                        }
                     }
-                }
-                //and just grab its corresponding vibezone from the dict
-                az = activeZonesDict[closestVibe];
-                //if this active zone's song is currently playing, and we are beyond the zone's radius
-                //if (musicPlayer.song.name == az.songName && minDist > az.radius)
-                //{
-                //    RainMeadow.Debug("Meadow Music:  Fading echo song...");
-                //    musicPlayer.song.FadeOut(40f);
-                //    activeZone = null;
-                //    vibeIntensity = null;
-                //    vibePan = null;
-                //}
-                ////if this active zone's song is not currently playing, and we are within its radius
-                //else if (musicPlayer.song.name != az.songName && minDist < az.radius)
-                if (minDist > az.radius)
-                {
-                    //RainMeadow.Debug("Meadow Music:  Fading echo song...");
-                    //musicPlayer.song.FadeOut(40f);
-                    //activeZone = null;
-                    vibeIntensity = 0f;
-                    musicPlayer.song.baseVolume = 0.3f;
-                    AllowPlopping = false;
-                    UpdateIntensity = false;
-                    //vibePan = null;
-                }
-                //if this active zone's song is currently playing (we can assume this at this point) and are within its radius
-                else if (minDist < az.radius)
-                {
-                    UpdateIntensity = true;
-                    AllowPlopping = true;
-                    //vibePan = Vector2.Dot((room.world.RoomToWorldPos(Vector2.zero, rooms[closestVibe]) - room.world.RoomToWorldPos(Vector2.zero, room.abstractRoom.index)).normalized, Vector2.right);
-                    //activeZone = az;
+                    //and just grab its corresponding vibezone from the dict
+                    az = activeZonesDict[closestVibe];
+                    //if this active zone's song is currently playing, and we are beyond the zone's radius
+                    //if (musicPlayer.song.name == az.songName && minDist > az.radius)
+                    //{
+                    //    RainMeadow.Debug("Meadow Music:  Fading echo song...");
+                    //    musicPlayer.song.FadeOut(40f);
+                    //    activeZone = null;
+                    //    vibeIntensity = null;
+                    //    vibePan = null;
+                    //}
+                    ////if this active zone's song is not currently playing, and we are within its radius
+                    //else if (musicPlayer.song.name != az.songName && minDist < az.radius)
+                    if (minDist > az.radius)
+                    {
+                        RainMeadow.Debug("Meadow Music: Out of Vibezone Radius, Disabled plopping, stopped updating intensity, and volume set to max... ");
+                        //musicPlayer.song.FadeOut(40f);
+                        //activeZone = null;
+                        vibeIntensity = 0f;
+                        if (musicPlayer.song != null) musicPlayer.song.baseVolume = 0.3f;
+                        AllowPlopping = false;
+                        UpdateIntensity = false;
+                        //vibePan = null;
+                    }
+                    //if this active zone's song is currently playing (we can assume this at this point) and are within its radius
+                    else if (minDist < az.radius)
+                    {
+                        RainMeadow.Debug("Meadow Music: Started updating intensity and allowing plopping... ");
+                        UpdateIntensity = true;
+                        AllowPlopping = true;
+                        //vibePan = Vector2.Dot((room.world.RoomToWorldPos(Vector2.zero, rooms[closestVibe]) - room.world.RoomToWorldPos(Vector2.zero, room.abstractRoom.index)).normalized, Vector2.right);
+                        //activeZone = az;
 
-                    RainMeadow.Debug($"So we've decided the thing is now: {vibeIntensity}, {vibeIntensity}");
+                    }
                 }
             }
             DegreesOfAwayness = CalculateDegreesOfAwayness(room.abstractRoom);
@@ -855,6 +891,11 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("Meadow Music:  no hubs found");
                     activeZonesDict = null;
+                }
+                if (ItchingForKnowledge)
+                {
+                    HelloNewRoom(MyGuyMic, RoomImIn); //Nah, those variables were set right before the itch started.
+                    ItchingForKnowledge = false;
                 }
             }
             if (ambientDict.TryGetValue(world.region.name, out string[] songArr))
