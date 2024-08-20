@@ -155,6 +155,15 @@ namespace RainMeadow
 
             //This needs to be called after shelterDoor::Close and game state synced for this to be accurate.
             var denPos = (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos;
+            if (denPos == null) {
+                AbstractCreature firstAlivePlayer = game.FirstAlivePlayer;
+                denPos = game.world.GetAbstractRoom(firstAlivePlayer.pos).name;
+            }
+
+            //TODO: Having soft-win on makes this very difficult. For now I'm (Turtle) locking it down so that you can only win if the host is alive
+            if (OnlineManager.lobby.isOwner) {
+                game.GetStorySession.saveState.SessionEnded(game, true, malnourished);
+            }
 
             //TODO: need to sync p5 and l2m deam events. Not doing it rn.
             DreamsState dreamsState = game.GetStorySession.saveState.dreamsState;
@@ -162,12 +171,13 @@ namespace RainMeadow
             if (dreamsState != null)
             {
                 dreamsState.EndOfCycleProgress(game.GetStorySession.saveState, game.world.region.name, denPos);
+                if (dreamsState.AnyDreamComingUp && !malnourished) {
+                    game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Dream);
+                    return;
+                }
             }
-
-            game.GetStorySession.saveState.SessionEnded(game, true, malnourished);
-
-            dreamsState.EndOfCycleProgress(game.GetStorySession.saveState, game.world.region.name, denPos);
-            game.manager.RequestMainProcessSwitch((dreamsState != null && dreamsState.AnyDreamComingUp && !malnourished) ? ProcessManager.ProcessID.Dream : ProcessManager.ProcessID.SleepScreen);
+            RainMeadow.Debug("I am moving to the sleepscreen");
+            game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.SleepScreen);
         }
 
 
