@@ -65,7 +65,8 @@ namespace RainMeadow
             {
                 if ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.Spear)
                 {
-                    abstractObjectType = AbstractPhysicalObject.AbstractObjectType.Spear;
+                    abstractObjectType = AbstractPhysicalObject.AbstractObjectType.ScavengerBomb;
+                    flag = true;
                 }
                 else if ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.ExplosiveSpear)
                 {
@@ -75,7 +76,7 @@ namespace RainMeadow
                 else if ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.Bomb)
                 {
                     // OVERRIDE TO PREVENT CRASH
-                    abstractObjectType = AbstractPhysicalObject.AbstractObjectType.Spear;
+                    abstractObjectType = AbstractPhysicalObject.AbstractObjectType.ScavengerBomb;
                 }
                 else if ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.SporePlant)
                 {

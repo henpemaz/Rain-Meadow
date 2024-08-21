@@ -50,12 +50,6 @@ namespace RainMeadow
                     return false;
                 }
 
-
-                if (result.obj == null)
-                {
-                    return false;
-                }
-
                 if (!OnlinePhysicalObject.map.TryGetValue(result.obj.abstractPhysicalObject, out var objectHit))
 
                 {
@@ -196,7 +190,7 @@ namespace RainMeadow
             }
 
             RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
-            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            if (!room.isOwner)
             {
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
                 if (objectHit != null)
@@ -220,7 +214,7 @@ namespace RainMeadow
             }
 
             RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
-            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            if (!room.isOwner)
             {
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
                 OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var abstWeapon);

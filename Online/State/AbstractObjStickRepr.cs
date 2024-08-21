@@ -98,7 +98,6 @@ namespace RainMeadow
 
             internal override void MakeStick(AbstractPhysicalObject A)
             {
-                RainMeadow.Debug(this);
                 if (OnlinePhysicalObject.map.TryGetValue(A, out OnlinePhysicalObject a) && a.owner == b.owner && !a.isPending && !b.isPending)
                 {
                     var stick = new AbstractPhysicalObject.AbstractSpearStick(a.apo, b.apo, chunk, bodyPart, angle);
@@ -130,7 +129,6 @@ namespace RainMeadow
 
             internal override void MakeStick(AbstractPhysicalObject A)
             {
-                RainMeadow.Debug(this);
                 if (OnlinePhysicalObject.map.TryGetValue(A, out OnlinePhysicalObject a) && a.owner == b.owner && !a.isPending && !b.isPending)
                 {
                     var stick = new AbstractPhysicalObject.AbstractSpearAppendageStick(a.apo, b.apo, appendage, prevSeg, distanceToNext, angle);
@@ -155,7 +153,6 @@ namespace RainMeadow
 
             internal override void MakeStick(AbstractPhysicalObject A)
             {
-                RainMeadow.Debug(this);
                 if (OnlinePhysicalObject.map.TryGetValue(A, out OnlinePhysicalObject a) && a.owner == b.owner && !a.isPending && !b.isPending)
                 {
                     var stick = new AbstractPhysicalObject.ImpaledOnSpearStick(a.apo, b.apo, chunk, onSpearPosition);

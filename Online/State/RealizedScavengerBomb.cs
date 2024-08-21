@@ -10,13 +10,6 @@ namespace RainMeadow
     public class RealizedScavengerBombState : RealizedPhysicalObjectState
     {
 
-
-        [OnlineFieldColorRgb]
-        Color explosionColor;
-
-        [OnlineFieldColorRgb]
-        Color color;
-
         [OnlineField]
         Vector2 pos;
 
@@ -28,8 +21,6 @@ namespace RainMeadow
         public RealizedScavengerBombState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
             var scavBomb = (ScavengerBomb)onlineEntity.apo.realizedObject;
-            explosionColor = scavBomb.explodeColor;
-            color = scavBomb.color;
             scavBomb.firstChunk.pos = pos;
             scavBomb.firstChunk.lastPos = lastPos;
 
@@ -40,8 +31,6 @@ namespace RainMeadow
         {
             base.ReadTo(onlineEntity);
             var scavBomb = (ScavengerBomb)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
-            scavBomb.explodeColor = explosionColor;
-            scavBomb.color = color;
             scavBomb.firstChunk.pos = pos;
             scavBomb.firstChunk.lastPos = lastPos;
 
