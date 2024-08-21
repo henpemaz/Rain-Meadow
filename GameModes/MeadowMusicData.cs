@@ -16,7 +16,7 @@ namespace RainMeadow
 
         internal override EntityDataState MakeState(OnlineResource inResource)
         {
-            if (inResource is WorldSession)
+            if (inResource is RoomSession)
             {
                 RainMeadow.Trace($"{this} for {oc} making state in {inResource}");
                 return new State(this);
@@ -39,7 +39,7 @@ namespace RainMeadow
             public State() { }
             public State(MeadowMusicData mcd)
             {
-                RainMeadow.Debug("From Data to State " + mcd);
+                RainMeadow.Trace("From Data to State " + mcd);
                 //Copy From data to state
                 //state = data;
                 inGroup = mcd.inGroup;
@@ -51,7 +51,7 @@ namespace RainMeadow
 
             internal override void ReadTo(OnlineEntity onlineEntity)
             {
-                RainMeadow.Debug("From state to data " + onlineEntity);
+                RainMeadow.Trace("From state to data " + onlineEntity);
                 if (onlineEntity is OnlineCreature oc && oc.TryGetData<MeadowMusicData>(out var mcd))
                 {
                     //Read from state to data

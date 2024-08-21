@@ -140,6 +140,8 @@ namespace RainMeadow
                 {
                     OnlineManager.lobby.gameMode.Customize(self.realizedCreature, oc);
                 }
+
+                MeadowMusic.TheThingTHatsCalledWhenPlayersUpdated();
             }
         }
 

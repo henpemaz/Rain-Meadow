@@ -40,7 +40,6 @@ namespace RainMeadow
             MeadowPlayerIndicator indicator = new MeadowPlayerIndicator(hud, camera, avatarSettings, this);
             this.indicators.Add(indicator);
             hud.AddPart(indicator);
-            MeadowMusic.TheThingTHatsCalledWhenPlayersUpdated();
         }
 
         public void PlayerRemoved(MeadowAvatarSettings avatarSettings)
@@ -49,7 +48,6 @@ namespace RainMeadow
             var indicator = this.indicators.First(i => i.avatarSettings == avatarSettings);
             this.indicators.Remove(indicator);
             indicator.slatedForDeletion = true;
-            MeadowMusic.TheThingTHatsCalledWhenPlayersUpdated();
         }
 
         public override void Update()
