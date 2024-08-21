@@ -33,6 +33,10 @@ namespace RainMeadow
 
         protected override EntityState MakeState(uint tick, OnlineResource inResource)
         {
+            if (apo.type == RainMeadow.Ext_PhysicalObjectType.MeadowGhost)
+            {
+                return new MeadowGhostState(this, inResource, tick);
+            }
             return new MeadowCollectibleState(this, inResource, tick);
         }
 
@@ -66,6 +70,26 @@ namespace RainMeadow
                     collectible.collectedTR = this.collectedTR;
                     collectible.collectedAt = collectible.world.game.clock - (int)(40 * collectedTR.TimeSinceTick());
                 }
+            }
+        }
+
+        public class MeadowGhostState : MeadowCollectibleState
+        {
+            [OnlineField]
+            private byte currentCount;
+
+            public MeadowGhostState() : base() { }
+            public MeadowGhostState(OnlinePhysicalObject onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
+            {
+                var ghost = onlineEntity.apo as AbstractMeadowGhost;
+                currentCount = (byte)ghost.currentCount;
+            }
+
+            public override void ReadTo(OnlineEntity onlineEntity)
+            {
+                base.ReadTo(onlineEntity);
+                var ghost = (onlineEntity as OnlinePhysicalObject).apo as AbstractMeadowGhost;
+                ghost.currentCount = currentCount;
             }
         }
     }

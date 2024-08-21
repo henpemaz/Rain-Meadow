@@ -519,8 +519,17 @@ namespace RainMeadow
                 meadowHud.AnimateEmote();
                 if(EmoteProgress() is Emote emote) meadowHud.NewEmoteUnlocked(emote);
             }
-            
-            AutosaveProgression(); // will be skipped if already saved
+            else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowGhost)
+            {
+                meadowHud.AnimateChar();
+                meadowHud.AnimateSkin();
+                meadowHud.AnimateEmote();
+                if (CharacterProgress() is Character character) meadowHud.NewCharacterUnlocked(character);
+                if (SkinProgress() is Skin skin) meadowHud.NewSkinUnlocked(skin);
+                if (EmoteProgress() is Emote emote) meadowHud.NewEmoteUnlocked(emote);
+            }
+
+                AutosaveProgression(); // will be skipped if already saved
         }
 
         public static Color TokenRedColor = new Color(248f / 255f, 89f / 255f, 93f / 255f);
