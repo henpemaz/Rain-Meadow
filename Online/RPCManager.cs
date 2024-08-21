@@ -49,7 +49,7 @@ namespace RainMeadow
         static FieldInfo rpcEventArgsAccessor = typeof(RPCEvent).GetField(nameof(RPCEvent.args));
         static PropertyInfo serializerIsReadingProp = typeof(Serializer).GetProperty(nameof(Serializer.IsReading));
         static MethodInfo serializeResourceByRef = typeof(Serializer).GetMethod(nameof(Serializer.SerializeResourceByReference));
-        static MethodInfo serializeEntityById = typeof(Serializer).GetMethod(nameof(Serializer.SerializEntityById));
+        static MethodInfo serializeEntityById = typeof(Serializer).GetMethod(nameof(Serializer.SerializeEntityById));
 
         public static void RegisterRPCs(Type targetType)
         {
@@ -214,8 +214,15 @@ namespace RainMeadow
             {
                 handler = RPCManager.defsByIndex[serializer.reader.ReadUInt16()];
             }
-
-            handler.serialize(this, serializer);
+            try
+            {
+                handler.serialize(this, serializer);
+            }
+            catch (Exception)
+            {
+                RainMeadow.Error($"Error serializing RPC {this}");
+                throw;
+            }
         }
 
         public override void Process()
