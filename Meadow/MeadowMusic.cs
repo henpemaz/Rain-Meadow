@@ -11,6 +11,7 @@ using Steamworks;
 using UnityEngine.Assertions.Must;
 using HarmonyLib;
 using System.Net.NetworkInformation;
+using On;
 
 namespace RainMeadow
 {
@@ -310,7 +311,7 @@ namespace RainMeadow
                         RainMeadow.Debug("I see " + thing + " " + entity);
                         if (OnlineManager.lobby.playerAvatars[thing].FindEntity() is OnlineCreature oc && !oc.owner.isMe) //yay
                         {
-                            if (!oc.isTransferable) //if it's not transferrable ig it'd be a players?
+                            if (!oc.isTransferable) //if it's not transferrable ig it'd be a players? Henp please fix
                             {
                                 theresotherbozoes = true;
                                 RainMeadow.Debug("Yay!");
@@ -319,6 +320,7 @@ namespace RainMeadow
                         }
                     }
                 }
+                //, fix trans-room perspective awareness
                 else
                 {
                     RainMeadow.Debug("So the bugger,,,, is still here.....");
@@ -563,6 +565,31 @@ namespace RainMeadow
                 }
             }
 
+            
+            if (dontskiptopoint)
+            {
+                if (musicPlayer != null && musicPlayer.song != null)
+                {
+                    if (playfromstart)
+                    {
+                        RainMeadow.Debug("Playing from start");
+                    }
+                    else
+                    {
+                        self.manager.musicPlayer.song.subTracks[0].source.time = LobbyTime() - DJstartedat;   
+                        RainMeadow.Debug("Playing from a point " + LobbyTime() +" "+ DJstartedat);
+                    }
+                    ivebeenpatientlywaiting = true;
+                    dontskiptopoint = false;
+                    playfromstart = false;
+                }
+            }
+            else
+            {
+
+            }
+            
+
             //RainMeadow.Debug("Roomsessionshit " + (creature.roomSession != null) + "    Group of" + musicdata.inGroup);
 
             //RainMeadow.Debug("I am in a room aye? " + RoomImIn + " Yeah room, and is it not null? " + RoomImIn != null);
@@ -661,42 +688,32 @@ namespace RainMeadow
                                     RainMeadow.Debug("My host has a song, gonna try playing it");
                                     
                                     float lobbydottime = LobbyTime();
-                                    float hoststartedat = (float)myDJsdata.startedPlayingAt; //if it is providing a song, it should be providing a time
+                                    DJstartedat = (float)myDJsdata.startedPlayingAt; //if it is providing a song, it should be providing a time
                                     string tring = myDJsdata.providedSong + ".ogg";
                                     RainMeadow.Debug(tring);
                                     bool IHaveThisSong = SongLengthsDict.TryGetValue(tring, out float hostsonglength);
                                     RainMeadow.Debug(IHaveThisSong);
                                     if (IHaveThisSong && hostsonglength != 0)
                                     {
-                                        float hostsongprogress = ( lobbydottime - hoststartedat ) / hostsonglength;
-                                        if ( hostsongprogress < 0.95f )
+                                        float hostsongprogress = ( lobbydottime - DJstartedat ) / hostsonglength;
+                                        if ( hostsongprogress < 0.95f)
                                         {
+                                            if (hostsongprogress < 0.05f) playfromstart = true; 
                                             RainMeadow.Debug("Meadow Music: Playing my DJs provided song");
 
                                             Song song = new(musicPlayer, myDJsdata.providedSong, MusicPlayer.MusicContext.StoryMode)
                                             {
                                                 playWhenReady = true,
                                                 volume = 1,
-                                                fadeInTime = 1f,
+                                                fadeInTime = ivebeenpatientlywaiting ? 1f : 120f
                                             };
                                             musicPlayer.song = song;
-
-                                            RainMeadow.Debug(lobbydottime + " " + hoststartedat);
-
-                                            if (ivebeenpatientlywaiting) 
-                                            {
-                                                RainMeadow.Debug("What");
-                                                ivebeenpatientlywaiting = false;
-                                            }
-                                            else 
-                                            {
-                                                musicPlayer.song.subTracks[0].source.time = lobbydottime - hoststartedat;
-                                            }   
+                                            RainMeadow.Debug(lobbydottime + " " + DJstartedat);
+                                            dontskiptopoint = !ivebeenpatientlywaiting;
                                         }
                                         else
                                         {
                                             RainMeadow.Debug("Meadow Music: DJs soon done, i'll wait");
-                                            
                                             ivebeenpatientlywaiting = true;
                                         }
                                     }
@@ -809,6 +826,10 @@ namespace RainMeadow
         }
         static VirtualMicrophone? MyGuyMic;
         private static bool FadeThatShitOut;
+        public static float playthissongat;
+        private static float DJstartedat;
+        private static bool dontskiptopoint;
+        private static bool playfromstart;
 
         static void NewRoomPatch(On.VirtualMicrophone.orig_NewRoom orig, VirtualMicrophone self, Room room)
         {

@@ -19,7 +19,7 @@ namespace RainMeadow
             if (inResource is RoomSession)
             {
                 RainMeadow.Trace($"{this} for {oc} making state in {inResource}");
-                return new State(this);
+                return new State(this); //todo, don't send every fucking frame dude.
             }
             RainMeadow.Trace($"{this} for {oc} skipping state in {inResource}");
             return null;
@@ -39,7 +39,7 @@ namespace RainMeadow
             public State() { }
             public State(MeadowMusicData mcd)
             {
-                RainMeadow.Trace("From Data to State " + mcd);
+                RainMeadow.Trace("From Data to State " + mcd); 
                 //Copy From data to state
                 //state = data;
                 inGroup = mcd.inGroup;
