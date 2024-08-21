@@ -126,26 +126,41 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void MovePlayersToWinScreen(bool malnurished)
+        public static void MovePlayersToWinScreen(bool malnourished, string denPos)
         {
+            RainMeadow.Debug($"MovePlayersToWinScreen({malnourished}, {denPos}");
+            if (denPos == null) {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+                if (game == null || game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+                denPos = game.world.GetAbstractRoom(game.FirstAlivePlayer.pos).name;
+            }
             foreach (OnlinePlayer player in OnlineManager.players)
             {
-                if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToWinScreen, malnurished)))
+                if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToWinScreen, malnourished, denPos)))
                 {
-                    player.InvokeRPC(RPCs.GoToWinScreen, malnurished);
+                    player.InvokeRPC(RPCs.GoToWinScreen, malnourished, denPos);
                 }
             }
         }
 
         //Assumed to be called for storymode only
         [RPCMethod]
-        public static void GoToWinScreen(bool malnourished)
+        public static void GoToWinScreen(bool malnourished, string denPos)
         {
+            RainMeadow.Debug($"GoToWinScreen({malnourished}, {denPos}");
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-            if (game == null || game.manager.upcomingProcess != null)
+
+            if (game == null)
             {
+                RainMeadow.Debug($"game is null");
                 return;
             }
+
+            if (game.manager.upcomingProcess != null)
+                RainMeadow.Debug($"game has upcomming process");
 
             if (!malnourished && !game.rainWorld.saveBackedUp)
             {
@@ -153,15 +168,10 @@ namespace RainMeadow
                 game.rainWorld.progression.BackUpSave("_Backup");
             }
 
-            //This needs to be called after shelterDoor::Close and game state synced for this to be accurate.
-            var denPos = (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos;
-            if (denPos == null) {
-                AbstractCreature firstAlivePlayer = game.FirstAlivePlayer;
-                denPos = game.world.GetAbstractRoom(firstAlivePlayer.pos).name;
-            }
-
-            //TODO: Having soft-win on makes this very difficult. For now I'm (Turtle) locking it down so that you can only win if the host is alive
             if (OnlineManager.lobby.isOwner) {
+                if (denPos != null) {
+                    game.GetStorySession.saveState.denPosition = denPos;
+                }
                 game.GetStorySession.saveState.SessionEnded(game, true, malnourished);
             }
 
