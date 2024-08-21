@@ -331,7 +331,7 @@ namespace RainMeadow
         }
 
         // serializes entity.id and finds reference
-        public void SerializEntityById<T>(ref T onlineEntity) where T : OnlineEntity
+        public void SerializeEntityById<T>(ref T onlineEntity) where T : OnlineEntity
         {
             if (IsWriting)
             {
@@ -342,6 +342,28 @@ namespace RainMeadow
                 OnlineEntity.EntityId id = new();
                 id.CustomSerialize(this);
                 onlineEntity = (T)id.FindEntity();
+            }
+        }
+
+        // serializes entity.id and finds reference
+        public void SerializeNullableEntityById<T>(ref T onlineEntity) where T : OnlineEntity
+        {
+            if (IsWriting)
+            {
+                writer.Write(onlineEntity != null);
+                if (onlineEntity != null)
+                {
+                    onlineEntity.id.CustomSerialize(this);
+                }
+            }
+            if (IsReading)
+            {
+                if (reader.ReadBoolean())
+                {
+                    OnlineEntity.EntityId id = new();
+                    id.CustomSerialize(this);
+                    onlineEntity = (T)id.FindEntity();
+                }
             }
         }
 
