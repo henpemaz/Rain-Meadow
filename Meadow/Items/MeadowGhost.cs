@@ -135,7 +135,7 @@ namespace RainMeadow
             // logic
 
             // if not activated yet and is owner
-            if (!abstractCollectible.collected && abstractCollectible.online.isMine)
+            if (!abstractCollectible.collected && abstractCollectible.online != null && abstractCollectible.online.isMine)
             {
                 // counting players nearby
                 int count = 0;
