@@ -15,7 +15,10 @@ namespace RainMeadow
 
             public OnlinePhysicalObjectDefinition(OnlinePhysicalObject onlinePhysicalObject, OnlineResource inResource) : base(onlinePhysicalObject, inResource)
             {
+                var wasId = onlinePhysicalObject.apo.ID.number;
+                onlinePhysicalObject.apo.ID.number = onlinePhysicalObject.apo.ID.RandomSeed;
                 serializedObject = onlinePhysicalObject.apo.ToString();
+                onlinePhysicalObject.apo.ID.number = wasId;
             }
 
             public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
