@@ -62,20 +62,16 @@ namespace RainMeadow
 
         private void TextPrompt_Update(On.HUD.TextPrompt.orig_Update orig, TextPrompt self)
         {
+            orig(self);
             if (OnlineManager.lobby.gameMode is StoryGameMode)
             {
 
-                if (OnlineManager.lobby.isOwner)
+                if (!OnlineManager.lobby.isOwner)
                 {
-                    orig(self);
-                }
-                else
-                {
-                    orig(self);
-                    self.restartNotAllowed = 1;
+                    self.restartNotAllowed = 1; // block clients from GoToDeathScreen
                     self.gameOverString = "Please wait for host to die, sleep, or rescue you...";
-
                 }
+
             } else {
                 orig(self);
             }
