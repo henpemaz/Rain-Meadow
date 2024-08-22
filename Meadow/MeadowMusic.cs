@@ -75,7 +75,7 @@ namespace RainMeadow
         }
         static VibeZone az = new VibeZone();
         static Dictionary<string, float> SongLengthsDict = new();
-        static void GameCtorPatch(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
+        private static void CheckFiles()
         {
             if (!filesChecked)
             {
@@ -766,23 +766,23 @@ namespace RainMeadow
         static void WorldLoadedPatch(On.OverWorld.orig_WorldLoaded orig, OverWorld self)
         {
             orig.Invoke(self);
-            RainMeadow.Debug("This code is ran like yeah1");
 
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
             {
                 AnalyzeRegion(self.activeWorld);
             }
+            UpdateIntensity = true;
         }
 
         static void OverWorld_LoadFirstWorld(On.OverWorld.orig_LoadFirstWorld orig, OverWorld self)
         {
             orig.Invoke(self);
 
-            RainMeadow.Debug("This code is ran like yeah2");
-            AnalyzeRegion(self.activeWorld);
-            RainMeadow.Debug("This code is ran like yeah3");
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                AnalyzeRegion(self.activeWorld);
+            }
             UpdateIntensity = true;
-            //ok does this code just not run??
         }
         static int closestVibe;
         static Room? RoomImIn;
