@@ -2,6 +2,7 @@
 using UnityEngine;
 using RWCustom;
 using System;
+using HarmonyLib;
 
 namespace RainMeadow
 {
@@ -12,7 +13,7 @@ namespace RainMeadow
         public AbstractMeadowGhost(World world, AbstractObjectType type, WorldCoordinate pos, EntityID ID) : base(world, type, pos, ID)
         {
             duration = 40 * 60; // a minute
-            targetCount = 2;
+            targetCount = 3;
         }
 
         public override void Realize()
@@ -38,7 +39,7 @@ namespace RainMeadow
     internal class MeadowGhost : MeadowCollectible, IDrawable
     {
         Vector2 pos;
-        float voffset = 60f;
+        float voffset = 40f;
         public AbstractMeadowGhost abstractGhost => this.abstractPhysicalObject as AbstractMeadowGhost;
 
         public override void PlaceInRoom(Room placeRoom)
@@ -52,6 +53,14 @@ namespace RainMeadow
         {
             this.scale = 0.25f;
             this.lightSpriteScale = 2f;
+
+            this.ncircles = abstractGhost.targetCount;
+            this.ringOffsets = new Vector2[ncircles];
+            var left = (-30f * (ncircles - 1)) / 2f;
+            for (int i = 0; i < ncircles; i++)
+            {
+                ringOffsets[i] = new Vector2(left + i * 30f, 60f);
+            }
             
             this.spine = new MeadowGhost.Part[this.spineSegments];
             for (int i = 0; i < this.spine.Length; i++)
@@ -70,8 +79,9 @@ namespace RainMeadow
             this.LoadElement("ghostPlates");
             this.LoadElement("ghostBand");
             this.totalSprites = 1;
+            this.totalSprites += 2 * ncircles;
             this.rags = new MeadowGhost.Rags(this, this.totalSprites);
-            this.behindBodySprites = 1 + this.rags.totalSprites;
+            this.behindBodySprites = totalSprites + this.rags.totalSprites;
             this.totalSprites = this.behindBodySprites + this.totalStaticSprites;
             this.chains = new MeadowGhost.Chains(this, this.totalSprites);
             this.totalSprites += this.chains.totalSprites;
@@ -154,6 +164,7 @@ namespace RainMeadow
             // if activated
             if (abstractCollectible.collected)
             {
+                abstractGhost.currentCount = abstractGhost.targetCount;
             //      if not collected locally
                 if (!abstractCollectible.collectedLocally)
                 {
@@ -171,12 +182,18 @@ namespace RainMeadow
                 }
             }
 
+            // ghostiness
+            this.ghostinessGoal = 0.3f + 0.7f * (abstractGhost.currentCount / (float)abstractGhost.targetCount) - fadeOut;
+            this.ghostiness = Mathf.Lerp(this.ghostiness, this.ghostinessGoal, 0.004f + fadeOut);
+            this.room.game.cameras.Do(c => { if (c.room == this.room) c.ghostMode = this.ghostiness; });
+
             // if animating
             if (this.fadeOut > 0f)
             {
                 this.fadeOut = Mathf.Min(1f, this.fadeOut + 0.0125f);
                 if (this.fadeOut == 1f)
                 {
+                    RainMeadow.Debug("complete: ");
                     this.RemoveFromRoom();
                     return;
                 }
@@ -278,6 +295,9 @@ namespace RainMeadow
             }
         }
 
+        int RingSprite(int index) => 1 + index;
+        int CircleSprite(int index) => 1 + ncircles + index;
+
         public int BodyMeshSprite
         {
             get
@@ -354,6 +374,13 @@ namespace RainMeadow
             sLeaser.sprites[this.FadeSprite].x = rCam.game.rainWorld.screenSize.x / 2f;
             sLeaser.sprites[this.FadeSprite].y = rCam.game.rainWorld.screenSize.y / 2f;
             sLeaser.sprites[this.FadeSprite].isVisible = false;
+
+            for (int i = 0; i < ncircles; i++)
+            {
+                sLeaser.sprites[RingSprite(i)] = new FSprite("FoodCircleA");
+                sLeaser.sprites[CircleSprite(i)] = new FSprite("FoodCircleB");
+            }
+
             for (int i = 0; i < this.legs.GetLength(0); i++)
             {
                 sLeaser.sprites[this.ThightSprite(i)] = TriangleMesh.MakeLongMesh(this.thighSegments, false, true, "ghostBand");
@@ -385,6 +412,10 @@ namespace RainMeadow
                 else if (i == this.FadeSprite)
                 {
                     rCam.ReturnFContainer("Bloom").AddChild(sLeaser.sprites[i]);
+                }
+                else if (i <= CircleSprite(ncircles - 1))
+                {
+                    rCam.ReturnFContainer("HUD").AddChild(sLeaser.sprites[i]);
                 }
                 else
                 {
@@ -450,6 +481,15 @@ namespace RainMeadow
             lightSprite.x = vector9.x - camPos.x;
             lightSprite.y = vector9.y - camPos.y;
             lightSprite.scale = 500f * this.lightSpriteScale / 16f;
+
+            for (int i = 0; i < ncircles; i++)
+            {
+                var cpos = vector9 + ringOffsets[i] - camPos;
+                sLeaser.sprites[RingSprite(i)].SetPosition(cpos);
+                sLeaser.sprites[CircleSprite(i)].SetPosition(cpos);
+                sLeaser.sprites[CircleSprite(i)].isVisible = i < abstractGhost.currentCount;
+            }
+
             vector4 = Vector2.Lerp(this.spine[this.spineBendPoint].lastPos, this.spine[this.spineBendPoint].pos, timeStacker);
             vector4 += Custom.DirVec(Vector2.Lerp(this.spine[this.spineBendPoint + 1].lastPos, this.spine[this.spineBendPoint + 1].pos, timeStacker), vector4);
             vector4 += vector8;
@@ -709,26 +749,11 @@ namespace RainMeadow
             }
         }
 
-        public string ReplaceParts(string s)
-        {
-            return s;
-        }
-
-        public RainWorld rainWorld
-        {
-            get
-            {
-                return this.room.game.rainWorld;
-            }
-        }
-
-        public void SpecialEvent(string eventName)
-        {
-        }
-
         private float scale;
 
         private float lightSpriteScale;
+        private int ncircles;
+        private Vector2[] ringOffsets;
 
         public int totalStaticSprites = 11;
 
@@ -777,7 +802,8 @@ namespace RainMeadow
         public float fadeOut;
 
         public float lastFadeOut;
-
+        private float ghostinessGoal;
+        private float ghostiness;
 
         public class Part
         {
