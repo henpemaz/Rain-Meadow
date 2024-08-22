@@ -12,6 +12,7 @@ using UnityEngine.Assertions.Must;
 using HarmonyLib;
 using System.Net.NetworkInformation;
 using On;
+using UnityEngine.UI;
 
 namespace RainMeadow
 {
@@ -292,7 +293,7 @@ namespace RainMeadow
             musicdata.inGroup = newgroup;
         }
         static bool HasCheckedPlayers = false;
-        static public void TheThingTHatsCalledWhenPlayersUpdated()
+        public static void TheThingTHatsCalledWhenPlayersUpdated()
         {
             HasCheckedPlayers = true;
             RainMeadow.Debug("Amount of players have been updated");
@@ -320,7 +321,6 @@ namespace RainMeadow
                         }
                     }
                 }
-                //, fix trans-room perspective awareness
                 else
                 {
                     RainMeadow.Debug("So the bugger,,,, is still here.....");
@@ -467,7 +467,6 @@ namespace RainMeadow
                 }
             }
         }
-        static float DebugTimer = 5f;
         static bool ItchingForRoomSession = false;
         static void RawUpdatePatch(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
         {
@@ -559,8 +558,8 @@ namespace RainMeadow
             {
 
                 if(creature.roomSession != null)
-                        {
-                TheThingTHatsCalledWhenPlayersUpdated();
+                {
+                    TheThingTHatsCalledWhenPlayersUpdated();
                     ItchingForRoomSession = false;
                 }
             }
@@ -705,7 +704,7 @@ namespace RainMeadow
                                             {
                                                 playWhenReady = true,
                                                 volume = 1,
-                                                fadeInTime = ivebeenpatientlywaiting ? 1f : 120f
+                                                fadeInTime = ivebeenpatientlywaiting && !playfromstart ? 1f : 120f
                                             };
                                             musicPlayer.song = song;
                                             RainMeadow.Debug(lobbydottime + " " + DJstartedat);
