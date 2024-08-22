@@ -41,7 +41,7 @@ namespace RainMeadow
             if (location.room == MeadowProgression.progressionData.currentCharacterProgress.saveLocation.room) location = MeadowProgression.progressionData.currentCharacterProgress.saveLocation;
             var settings = (clientSettings as MeadowAvatarSettings);
             var skinData = MeadowProgression.skinData[settings.skin];
-            var abstractCreature = new AbstractCreature(game.world, StaticWorld.GetCreatureTemplate(skinData.creatureType), null, location, new EntityID(-1, 0) { altSeed = skinData.randomSeed });
+            var abstractCreature = new AbstractCreature(game.world, StaticWorld.GetCreatureTemplate(skinData.creatureType), null, location, new EntityID(-1, skinData.randomSeed)); // altseed not sync'd because not serialized by game smh
             if (skinData.creatureType == CreatureTemplate.Type.Slugcat)
             {
                 abstractCreature.state = new PlayerState(abstractCreature, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer, false);
@@ -102,6 +102,7 @@ namespace RainMeadow
                     lobbyData.regionRedTokensGoal = new ushort[totalRegions];
                     lobbyData.regionBlueTokensGoal = new ushort[totalRegions];
                     lobbyData.regionGoldTokensGoal = new ushort[totalRegions];
+                    lobbyData.regionGhostsGoal = new ushort[totalRegions];
                 } // otherwise the above is initialized on state receive
                     
                 for (int i = 0; i < totalRegions; i++)
@@ -110,13 +111,18 @@ namespace RainMeadow
                     totalRooms += region.numberOfRooms;
                 }
 
-                // around 2 items per room
-                lobbyData.redTokensGoal = (int)(16 * totalRegions + 0.8f * totalRooms);
-                lobbyData.blueTokensGoal = (int)(12 * totalRegions + 0.6f * totalRooms);
-                lobbyData.goldTokensGoal = (int)(8 * totalRegions + 0.4f * totalRooms);
+                // around 60 per region, or 1 per room
+                lobbyData.redTokensGoal = (int)(16 * totalRegions + 0.4f * totalRooms);
+                lobbyData.blueTokensGoal = (int)(8 * totalRegions + 0.2f * totalRooms);
+                lobbyData.goldTokensGoal = (int)(4 * totalRegions + 0.1f * totalRooms);
+
+                // around 7 per region
+                lobbyData.ghostsGoal = (int)(5 * totalRegions + 0.05f * totalRooms);
+
                 for (int i = 0; i < totalRegions; i++)
                 {
                     var region = (lobby.subresources[i] as WorldSession).region;
+                    // weighted half by region plus half by relative number of rooms
                     var spawnWeight = 0.5f / totalRegions + 0.5f * region.numberOfRooms / (float)totalRooms;
 
                     lobbyData.regionSpawnWeights[i] = spawnWeight;
@@ -126,6 +132,7 @@ namespace RainMeadow
                         lobbyData.regionRedTokensGoal[i] = (ushort)(lobbyData.redTokensGoal * spawnWeight);
                         lobbyData.regionBlueTokensGoal[i] = (ushort)(lobbyData.blueTokensGoal * spawnWeight);
                         lobbyData.regionGoldTokensGoal[i] = (ushort)(lobbyData.goldTokensGoal * spawnWeight);
+                        lobbyData.regionGhostsGoal[i] = (ushort)(lobbyData.ghostsGoal * spawnWeight);
                     } // otherwise received from owner
                 }
             }
@@ -152,8 +159,11 @@ namespace RainMeadow
                     int SpawnItems(int toSpawn, AbstractPhysicalObject.AbstractObjectType type)
                     {
                         RainMeadow.Debug($"Spawning {toSpawn} {type}");
-                        var spawnedItems = validRooms.Select(r=>r.entities.Count(e=>e is AbstractPhysicalObject apo && apo.type == type)).Sum();
+                        var spawnedItems = validRooms.Select(r => r.entities.Count(e => e is AbstractMeadowCollectible amc && amc.type == type && !amc.collected)).Sum();
                         toSpawn -= spawnedItems;
+                        if (toSpawn < 0) return 0;
+
+                        bool isghost = type == RainMeadow.Ext_PhysicalObjectType.MeadowGhost;
 
                         var perRoom = 0.5 * toSpawn / (double)roomCount;
                         var perNode = 0.5 * toSpawn / (double)nodeCount;
@@ -165,7 +175,9 @@ namespace RainMeadow
                             var n = (ushort)stacker;
                             for (int k = 0; k < n; k++)
                             {
-                                var e = new AbstractMeadowCollectible(r.world, type, new WorldCoordinate(r.index, -1, -1, 0), r.world.game.GetNewID());
+                                var e = isghost ? 
+                                    new AbstractMeadowGhost(r.world, type, new WorldCoordinate(r.index, -1, -1, 0), r.world.game.GetNewID())
+                                    : new AbstractMeadowCollectible(r.world, type, new WorldCoordinate(r.index, -1, -1, 0), r.world.game.GetNewID());
                                 r.AddEntity(e);
                                 spawnedItems += 1;
                             }
@@ -175,9 +187,11 @@ namespace RainMeadow
                     }
 
                     var lobbyData = (ws.super as Lobby).GetData<MeadowLobbyData>();
-                    SpawnItems(lobbyData.regionRedTokensGoal[ws.ShortId()], RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed);
-                    SpawnItems(lobbyData.regionGoldTokensGoal[ws.ShortId()], RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue);
-                    SpawnItems(lobbyData.regionBlueTokensGoal[ws.ShortId()], RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold);
+                    ushort regionId = ws.ShortId();
+                    SpawnItems(lobbyData.regionRedTokensGoal[regionId], RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed);
+                    SpawnItems(lobbyData.regionBlueTokensGoal[regionId], RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue);
+                    SpawnItems(lobbyData.regionGoldTokensGoal[regionId], RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold);
+                    SpawnItems(lobbyData.regionGhostsGoal[regionId], RainMeadow.Ext_PhysicalObjectType.MeadowGhost);
                 }
             }
             else if (res is RoomSession rs)
@@ -266,23 +280,41 @@ namespace RainMeadow
                 RainMeadow.Debug($"Item consumed: {OnlineManager.lobby.subresources[region].Id()} {type} from {evt.from}");
                 var lobbyData = OnlineManager.lobby.GetData<MeadowLobbyData>();
                 var newRegion = RandomIndexFromWeightedList(lobbyData.regionSpawnWeights);
-                if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed && lobbyData.regionRedTokensGoal[region] > 0)
+                if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
                 {
-                    lobbyData.regionRedTokensGoal[region] -= 1;
-                    lobbyData.regionRedTokensGoal[newRegion] += 1;
-                    OnlineManager.lobby.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
+                    if (lobbyData.regionRedTokensGoal[region] > 0)
+                    {
+                        lobbyData.regionRedTokensGoal[region] -= 1;
+                        lobbyData.regionRedTokensGoal[newRegion] += 1;
+                        OnlineManager.lobby.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
+                    }
                 }
-                if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue && lobbyData.regionBlueTokensGoal[region] > 0)
+                else if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue)
                 {
-                    lobbyData.regionBlueTokensGoal[region] -= 1;
-                    lobbyData.regionBlueTokensGoal[newRegion] += 1;
-                    OnlineManager.lobby.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
+                    if (lobbyData.regionBlueTokensGoal[region] > 0)
+                    {
+                        lobbyData.regionBlueTokensGoal[region] -= 1;
+                        lobbyData.regionBlueTokensGoal[newRegion] += 1;
+                        OnlineManager.lobby.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
+                    }
                 }
-                if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold && lobbyData.regionGoldTokensGoal[region] > 0)
+                else if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold)
                 {
-                    lobbyData.regionGoldTokensGoal[region] -= 1;
-                    lobbyData.regionGoldTokensGoal[newRegion] += 1;
-                    OnlineManager.lobby.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
+                    if (lobbyData.regionGoldTokensGoal[region] > 0)
+                    {
+                        lobbyData.regionGoldTokensGoal[region] -= 1;
+                        lobbyData.regionGoldTokensGoal[newRegion] += 1;
+                        OnlineManager.lobby.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
+                    }
+                }
+                else if (type == RainMeadow.Ext_PhysicalObjectType.MeadowGhost)
+                {
+                    if (lobbyData.regionGhostsGoal[region] > 0)
+                    {
+                        lobbyData.regionGhostsGoal[region] -= 1;
+                        lobbyData.regionGhostsGoal[newRegion] += 1;
+                        OnlineManager.lobby.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
+                    }
                 }
             }
         }
@@ -333,28 +365,40 @@ namespace RainMeadow
             }
             else
             {
+                // note to self, this *might* happen with sufficiently bad timing, avatar data comes from lobby, entity join is in world
+                // that is potentially two separate people you're talking to, lobby might not have sent it to you yet
                 RainMeadow.Error("creature not avatar ?? " + oc);
             }
         }
 
-        static bool IsRelevant(AbstractPhysicalObject apo)
+        static HashSet<AbstractPhysicalObject.AbstractObjectType> relevantTypes = new()
         {
-            if (apo.type == AbstractPhysicalObject.AbstractObjectType.Creature) return true;
-            if (apo.type == RainMeadow.Ext_PhysicalObjectType.MeadowPlant) return true;
-            if (apo.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue) return true;
-            if (apo.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed) return true;
-            if (apo.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold) return true;
-            return false;
-        }
+            AbstractPhysicalObject.AbstractObjectType.Creature,
+            RainMeadow.Ext_PhysicalObjectType.MeadowPlant,
+            RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue,
+            RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed,
+            RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold,
+            RainMeadow.Ext_PhysicalObjectType.MeadowGhost
+        };
 
         public override bool ShouldSyncObjectInRoom(RoomSession rs, AbstractPhysicalObject apo)
         {
-            return IsRelevant(apo);
+            return relevantTypes.Contains(apo.type);
         }
 
         public override bool ShouldSyncObjectInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
-            return IsRelevant(apo);
+            return relevantTypes.Contains(apo.type);
         }
+
+        public override bool AllowedInMode(PlacedObject item)
+        {
+            return !excludedItems.Contains(item.type) && base.AllowedInMode(item);
+        }
+
+        static HashSet<PlacedObject.Type> excludedItems = new()
+        {
+            PlacedObject.Type.GhostSpot
+        };
     }
 }

@@ -37,6 +37,7 @@ namespace RainMeadow
             public static AbstractPhysicalObject.AbstractObjectType MeadowTokenRed = new("MeadowTokenRed", true);
             public static AbstractPhysicalObject.AbstractObjectType MeadowTokenBlue = new("MeadowTokenBlue", true);
             public static AbstractPhysicalObject.AbstractObjectType MeadowTokenGold = new("MeadowTokenGold", true);
+            public static AbstractPhysicalObject.AbstractObjectType MeadowGhost = new("MeadowGhost", true);
         }
     }
 }

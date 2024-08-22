@@ -105,6 +105,7 @@ namespace RainMeadow
 
             public static readonly StateType OnlineMeadowCollectibleDefinition = new ("OnlineMeadowCollectible.Definition", typeof(OnlineMeadowCollectible.Definition));
             public static readonly StateType OnlineMeadowCollectibleMeadowCollectibleState = new ("MeadowCollectibleState", typeof(OnlineMeadowCollectible.MeadowCollectibleState));
+            public static readonly StateType OnlineMeadowCollectibleMeadowGhostState = new ("MeadowGhostState", typeof(OnlineMeadowCollectible.MeadowGhostState));
 
             public static readonly StateType DeflateState = new("DeflateState", typeof(DeflateState)); // used in serializer for wrapping large states
         }
