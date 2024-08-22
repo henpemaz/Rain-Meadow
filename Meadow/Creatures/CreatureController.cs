@@ -759,6 +759,10 @@ namespace RainMeadow
             {
                 LookImpl(creature.DangerPos + 500f * this.specialInput[0].direction);
             }
+            if (this.inputDir != Vector2.zero && specialInput[0].direction.magnitude < 0.2f)
+            {
+                LookImpl(creature.DangerPos + 200 * inputDir);
+            }
 
             if (onlineCreature.isMine)
             {
@@ -789,10 +793,6 @@ namespace RainMeadow
                 var basecoord = CurrentPathfindingPosition;
                 if (!lockInPlace && this.inputDir != Vector2.zero)
                 {
-                    if (specialInput[0].direction.magnitude < 0.2f)
-                    {
-                        LookImpl(creature.DangerPos + 200 * inputDir);
-                    }
                     if (FindDestination(basecoord, out var toPos, out float magnitude))
                     {
                         if (localTrace) RainMeadow.Debug($"moving: {toPos.Tile}");
