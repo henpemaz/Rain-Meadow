@@ -312,22 +312,19 @@ namespace RainMeadow
                 {
                     foreach (var entity in creature.roomSession.activeEntities.Where(v => v != null))
                     {
-                        var thing = entity.owner;
-                        RainMeadow.Debug("I see " + thing + " " + entity);
-                        if (OnlineManager.lobby.playerAvatars[thing].FindEntity() is OnlineCreature oc && !oc.owner.isMe) //yay
+                        RainMeadow.Debug("I see " + entity);
+                        if (entity.GetType() == typeof(OnlineCreature) && !entity.isMine)
                         {
-                            if (!oc.isTransferable) //if it's not transferrable ig it'd be a players? Henp please fix
-                            {
-                                theresotherbozoes = true;
-                                RainMeadow.Debug("Yay!");
-                                //break;
-                            }
+                            //if (OnlineManager.lobby.playerAvatars[thing].FindEntity() is OnlineCreature oc && !oc.owner.isMe) 
+                            theresotherbozoes = true;
+                            RainMeadow.Debug("Yay!");
+                            //break;
                         }
                     }
                 }
                 else
                 {
-                    RainMeadow.Debug("So the bugger,,,, is still here.....");
+                    RainMeadow.Debug("There's no roomsession, gonna wait until there is then try again");
                     //until they do their magic with fixing roomsessions or whatever
                     ItchingForRoomSession = true;
                 }
@@ -472,6 +469,7 @@ namespace RainMeadow
             }
         }
         static bool ItchingForRoomSession = false;
+        static int AmountOfOtherFolksHere = 0;
         static void RawUpdatePatch(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
         {
             orig.Invoke(self, dt);
@@ -482,7 +480,29 @@ namespace RainMeadow
             var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
             var creature = mgm.avatar;
             var musicdata = creature.GetData<MeadowMusicData>();
-            HasCheckedPlayers = false;
+
+            int AndNow = 0;
+            foreach (var other in OnlineManager.lobby.playerAvatars.Values.Where(v => v != null))
+            {
+                if (other.FindEntity() is OnlineCreature oc && !oc.owner.isMe)
+                {
+                    if(oc != null)
+                    {
+                        if (oc.realizedCreature != null)
+                        {
+                            if (oc.realizedCreature.room == self.cameras[0].room)
+                            {
+                                AndNow++;
+                            }
+                        }
+                    }
+                }
+            }
+            if(AndNow != AmountOfOtherFolksHere) 
+            { 
+                TheThingTHatsCalledWhenPlayersUpdated(); 
+                AmountOfOtherFolksHere = AndNow; 
+            }
 
             if (demiseTimer != null)
             {
@@ -560,7 +580,6 @@ namespace RainMeadow
             }
             if (ItchingForRoomSession)
             {
-
                 if(creature.roomSession != null)
                 {
                     TheThingTHatsCalledWhenPlayersUpdated();

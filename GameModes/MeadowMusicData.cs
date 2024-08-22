@@ -7,7 +7,7 @@ namespace RainMeadow
         private OnlineCreature oc;
         public int inGroup = -1;
         public bool isDJ = true;
-        public string providedSong;
+        public string? providedSong;
         public float startedPlayingAt;
         public MeadowMusicData(OnlineCreature oc)
         {
