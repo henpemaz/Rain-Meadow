@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Kittehface.Framework20;
 using IL.Menu;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -73,12 +74,37 @@ namespace RainMeadow
             (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.cameras[0].hud.InitGameOverMode(null, 0, player.pos.room, new UnityEngine.Vector2(0f, 0f));
         }
 
+
+        [RPCMethod]
+        public static void IncrementPlayersLeftt()
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                arena.clientWaiting = arena.clientWaiting+1;
+
+            }
+
+        }
+
+        [RPCMethod]
+        public static void ResetPlayersLeft()
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                arena.clientWaiting = 0;
+
+            }
+
+        }
+
         [RPCMethod]
         public static void MovePlayersToDeathScreen()
         {
             foreach (OnlinePlayer player in OnlineManager.players)
             {
-                player.InvokeRPC(RPCs.GoToDeathScreen);
+                if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToDeathScreen))) {
+                    player.InvokeRPC(RPCs.GoToDeathScreen);
+                }
             }
         }
 
@@ -86,7 +112,7 @@ namespace RainMeadow
         public static void GoToDeathScreen()
         {
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-            if (game.manager.upcomingProcess != null)
+            if (game == null || game.manager.upcomingProcess != null)
             {
                 return;
             }
@@ -97,6 +123,61 @@ namespace RainMeadow
             }
             game.GetStorySession.saveState.SessionEnded(game, false, false);
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.DeathScreen);
+        }
+
+        [RPCMethod]
+        public static void MovePlayersToWinScreen(bool malnurished)
+        {
+            foreach (OnlinePlayer player in OnlineManager.players)
+            {
+                if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToWinScreen, malnurished)))
+                {
+                    player.InvokeRPC(RPCs.GoToWinScreen, malnurished);
+                }
+            }
+        }
+
+        //Assumed to be called for storymode only
+        [RPCMethod]
+        public static void GoToWinScreen(bool malnourished)
+        {
+            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            if (game == null || game.manager.upcomingProcess != null)
+            {
+                return;
+            }
+
+            if (!malnourished && !game.rainWorld.saveBackedUp)
+            {
+                game.rainWorld.saveBackedUp = true;
+                game.rainWorld.progression.BackUpSave("_Backup");
+            }
+
+            //This needs to be called after shelterDoor::Close and game state synced for this to be accurate.
+            var denPos = (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos;
+            if (denPos == null) {
+                AbstractCreature firstAlivePlayer = game.FirstAlivePlayer;
+                denPos = game.world.GetAbstractRoom(firstAlivePlayer.pos).name;
+            }
+
+            //TODO: Having soft-win on makes this very difficult. For now I'm (Turtle) locking it down so that you can only win if the host is alive
+            if (OnlineManager.lobby.isOwner) {
+                game.GetStorySession.saveState.SessionEnded(game, true, malnourished);
+            }
+
+            //TODO: need to sync p5 and l2m deam events. Not doing it rn.
+            DreamsState dreamsState = game.GetStorySession.saveState.dreamsState;
+
+            if (dreamsState != null)
+            {
+                dreamsState.EndOfCycleProgress(game.GetStorySession.saveState, game.world.region.name, denPos);
+                if (dreamsState.AnyDreamComingUp && !malnourished) {
+                    game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Dream);
+                    return;
+                }
+            }
+            RainMeadow.Debug("I am moving to the sleepscreen");
+            game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.SleepScreen);
         }
 
 
@@ -157,38 +238,6 @@ namespace RainMeadow
             game.GetArenaGameSession.exitManager.playersInDens.Add(shortCutVessel);
 
         }
-
-        [RPCMethod]
-        public static void StartArena(List<string> hostPlaylist)
-        {
-            RainMeadow.Debug("got startarena rpc");
-
-            var process = RWCustom.Custom.rainWorld.processManager.currentMainLoop;
-            if (process is not ArenaLobbyMenu)
-            {
-                Debug.Log("game is not arena lobby menu");
-                return;
-            }
-            var menu = process as ArenaLobbyMenu;
-
-
-
-            menu.InitializeSitting(hostPlaylist);
-
-
-            if (!OnlineManager.lobby.isOwner)
-            {
-                menu.manager.arenaSitting.levelPlaylist = hostPlaylist;
-            }
-
-            menu.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
-
-            // temp
-            UserInput.SetUserCount(OnlineManager.players.Count);
-            UserInput.SetForceDisconnectControllers(forceDisconnect: false);
-            menu.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
-        }
-
 
     }
 }

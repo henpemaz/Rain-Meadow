@@ -9,53 +9,15 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (isPending)
-                if (RainMeadow.isArenaMode(out var _))
-                {
-                    this.releaseWhenPossible = true;
-                }
 
-                else
-                {
-                    throw new InvalidOperationException("pending");
-                }
+            {
+                throw new InvalidOperationException("pending");
+            }
 
             if (isAvailable)
             {
-                if (RainMeadow.isArenaMode(out var _))
-                {
 
-                    foreach (var s in this.subresources)
-                    {
-                        if (s.isAvailable)
-                        {
-                            s.Unavailable();
-
-                        }
-                    }
-                    this.Unavailable();
-
-
-                    while (this.isActive)
-                    {
-                        try
-                        {
-                            this.Deactivate();
-
-                        }
-                        catch
-                        {
-                            RainMeadow.Debug("Resources released quickly");
-                        }
-                    }
-
-
-                }
-                else
-                {
-                    throw new InvalidOperationException("available");
-
-                }
-
+                throw new InvalidOperationException("available");
 
             }
 
@@ -69,43 +31,19 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             if (isPending)
             {
-                if (RainMeadow.isArenaMode(out var _))
-                {
-                    this.releaseWhenPossible = true;
-                }
-
-                else
-                {
-                    throw new InvalidOperationException("pending");
-
-                }
+                throw new InvalidOperationException("pending");
 
             }
 
             if (!isAvailable)
-
-                if (RainMeadow.isArenaMode(out var _))
-                {
-                    this.releaseWhenPossible = true;
-                }
-
-                else
-                {
-                    throw new InvalidOperationException("not available");
-
-                }
+            {
+                throw new InvalidOperationException("not available");
+            }
             if (!canRelease)
 
-                if (RainMeadow.isArenaMode(out var _))
-                {
-                    this.releaseWhenPossible = true;
-                }
-
-                else
-                {
-                    throw new InvalidOperationException("cant be released in current state");
-
-                }
+            {
+                throw new InvalidOperationException("cant be released in current state");
+            }
 
             pendingRequest = supervisor.InvokeRPC(this.Released).Then(this.ResolveRelease);
         }
@@ -179,13 +117,13 @@ namespace RainMeadow
         public void Transfered(RPCEvent request)
         {
             RainMeadow.Debug(this);
-            if (isAvailable && isActive && request.from == supervisor) // I am a subscriber with a valid state who now owns this resource
+            if (isAvailable && (isActive || participants.Count == 1) && request.from == supervisor) // I am a subscriber with a valid state who now owns this resource
             {
                 request.from.QueueEvent(new GenericResult.Ok(request));
                 return;
             }
 
-            RainMeadow.Error($"Transfer error : {isAvailable} {isActive} {request.from == supervisor}");
+            RainMeadow.Error($"Transfer error : {isAvailable} {(isActive || participants.Count == 1)} {request.from == supervisor}");
             request.from.QueueEvent(new GenericResult.Error(request)); // super should retry with someone else
         }
 
@@ -218,20 +156,7 @@ namespace RainMeadow
                     }
                 }
             }
-            
-            else if (RainMeadow.isArenaMode(out var _))
-            {
-                WaitingForState();
-                if (isOwner)
-                {
-                    RainMeadow.Debug("Claimed resource");
-                    Available();
-                }
-                else
-                {
-                    RainMeadow.Debug("Joined resource");
-                }
-            }
+
             else if (requestResult is GenericResult.Error) // I should retry
             {
                 Request();
@@ -251,17 +176,6 @@ namespace RainMeadow
                 Unavailable();
             }
 
-            if (RainMeadow.isArenaMode(out var _))
-            {
-
-                if (this.isAvailable)
-                {
-
-                    Unavailable();
-                }
-
-
-            }
             else if (releaseResult is GenericResult.Error) // I should retry
             {
                 RainMeadow.Error("released failed for " + this);
@@ -284,6 +198,12 @@ namespace RainMeadow
                 RainMeadow.Error("transfer failed for " + this);
                 if (super.isActive && isSupervisor)
                 {
+                    // re-add problematic guy at end of list so not picked again
+                    if (participants.Contains(transferResult.from))
+                    {
+                        participants.Remove(transferResult.from);
+                        participants.Add(transferResult.from);
+                    }
                     PickNewOwner();
                 }
             }

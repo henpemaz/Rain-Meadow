@@ -161,8 +161,7 @@ namespace RainMeadow
                 return;
             }
 
-            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
-            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            if (RoomSession.map.TryGetValue(self.abstractPhysicalObject.Room, out var room) && !room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
                 OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var abstWeapon);
@@ -184,9 +183,13 @@ namespace RainMeadow
 
             if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
             {
-                //for now force all players to be in the shelter to close the door.
                 var playerIDs = OnlineManager.lobby.participants.Select(p => p.inLobbyId).ToList();
                 var readyWinPlayers = storyGameMode.readyForWinPlayers.ToList();
+
+                //TODO see RPC GoToWinScreen. Host MUST be alive to go to the next cycle
+                if (!readyWinPlayers.Contains(OnlineManager.lobby.owner.inLobbyId)) {
+                    return;
+                }
 
                 foreach (var playerID in playerIDs)
                 {

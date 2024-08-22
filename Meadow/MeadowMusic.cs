@@ -20,9 +20,12 @@ namespace RainMeadow
     {
         public static void EnableMusic()
         {
+            CheckFiles();
+
             On.RainWorldGame.ctor += GameCtorPatch;
             On.RainWorldGame.RawUpdate += RawUpdatePatch;
             On.OverWorld.WorldLoaded += WorldLoadedPatch;
+            On.OverWorld.LoadFirstWorld += OverWorld_LoadFirstWorld;
             On.VirtualMicrophone.NewRoom += NewRoomPatch;
         }
 
@@ -74,11 +77,6 @@ namespace RainMeadow
         static Dictionary<string, float> SongLengthsDict = new();
         static void GameCtorPatch(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
         {
-            orig.Invoke(self, manager);
-
-            //Arena mode, etc... won't have Meadow Music, so no point checking the files
-            if (!self.IsStorySession) return;
-
             if (!filesChecked)
             {
                 string[] dirs = AssetManager.ListDirectory("world", true, true);
@@ -91,7 +89,7 @@ namespace RainMeadow
                         string[] lines = File.ReadAllLines(path).Where(l => l != string.Empty).ToArray();
                         foreach (string line in lines)
                         {
-                            RainMeadow.Debug("Meadow Music:  Registered song " + line + " in " + dir);
+                            RainMeadow.Debug("Meadow Music: Registered song " + line + " in " + regName);
                         }
                         ambientDict.Add(regName, lines);
                     }
@@ -124,7 +122,13 @@ namespace RainMeadow
                 SongLengthsDict = DictTho;
                 filesChecked = true;
             }
-            AnalyzeRegion(self.world);
+        }
+
+        static void GameCtorPatch(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
+        {
+            orig.Invoke(self, manager);
+            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode) return;
+
             time = 0f;
             timerStopped = true;
         }
@@ -764,7 +768,15 @@ namespace RainMeadow
             orig.Invoke(self);
             RainMeadow.Debug("This code is ran like yeah1");
 
-            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode) return;
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                AnalyzeRegion(self.activeWorld);
+            }
+        }
+
+        static void OverWorld_LoadFirstWorld(On.OverWorld.orig_LoadFirstWorld orig, OverWorld self)
+        {
+            orig.Invoke(self);
 
             RainMeadow.Debug("This code is ran like yeah2");
             AnalyzeRegion(self.activeWorld);
@@ -829,6 +841,7 @@ namespace RainMeadow
         private static float DJstartedat;
         private static bool dontskiptopoint;
         private static bool playfromstart;
+
 
         static void NewRoomPatch(On.VirtualMicrophone.orig_NewRoom orig, VirtualMicrophone self, Room room)
         {
@@ -925,21 +938,21 @@ namespace RainMeadow
         }
         static void AnalyzeRegion(World world)
         {
-            RainMeadow.Debug("Meadow Music:  Analyzing " + world.name);
+            RainMeadow.Debug("Meadow Music: Analyzing " + world.name);
             VibeZone[] vzArray;
             activeZonesDict = null;
             if (vibeZonesDict.TryGetValue(world.region.name, out vzArray))
             {
-                RainMeadow.Debug("Meadow Music:  found zones " + vzArray.Length);
+                RainMeadow.Debug("Meadow Music: found zones " + vzArray.Length);
                 activeZonesDict = new Dictionary<int, VibeZone>();
                 foreach(VibeZone vz in vzArray)
                 {
+                    RainMeadow.Debug("Meadow Music: looking for room " + vz.room);
                     foreach (AbstractRoom room in world.abstractRooms)
                     {
-                        RainMeadow.Debug("Meadow Music:  looking for room " + vz.room);
                         if (room.name == vz.room)
                         {
-                            RainMeadow.Debug("Meadow Music:  found hub " + room.name);
+                            RainMeadow.Debug("Meadow Music: found hub " + room.name);
                             activeZonesDict.Add(room.index, vz);
                             break;
                         }
@@ -947,7 +960,7 @@ namespace RainMeadow
                 }
                 if (activeZonesDict.Count == 0)
                 {
-                    RainMeadow.Debug("Meadow Music:  no hubs found");
+                    RainMeadow.Debug("Meadow Music: no hubs found");
                     activeZonesDict = null;
                 }
                 if (ItchingForKnowledge)
@@ -958,13 +971,13 @@ namespace RainMeadow
             }
             if (ambientDict.TryGetValue(world.region.name, out string[] songArr))
             {
-                RainMeadow.Debug("Meadow Music:  ambiences loaded");
+                RainMeadow.Debug("Meadow Music: ambiences loaded");
                 ambienceSongArray = songArr;
                 ShuffleSongs();
             }
             else
             {
-                RainMeadow.Debug("Meadow Music:  no ambiences for region");
+                RainMeadow.Debug("Meadow Music: no ambiences for region");
                 ambienceSongArray = null;
             }
         }

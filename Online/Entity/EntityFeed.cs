@@ -69,7 +69,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug($"delta reset for {entity} in {resource} -> {player}");
             RainMeadow.Debug($"recent states were [{string.Join(", ", OutgoingStates.Select(s => s.sentAsDelta ? $"{s.tick}d{s.baseline}" : $"{s.tick}"))}]");
-
+            lastAcknoledgedState = null;
             OutgoingStates = new Queue<OnlineStateMessage>(OutgoingStates.Where(x => !x.sentAsDelta && x.tick > player.latestTickAck));
         }
 

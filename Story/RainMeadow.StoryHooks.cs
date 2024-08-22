@@ -42,6 +42,7 @@ namespace RainMeadow
 
             On.RainWorldGame.GhostShutDown += RainWorldGame_GhostShutDown;
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
+            On.RainWorldGame.Win += RainWorldGame_Win;
             On.RainWorldGame.GameOver += RainWorldGame_GameOver;
 
             On.WaterNut.Swell += WaterNut_Swell;
@@ -329,7 +330,9 @@ namespace RainMeadow
             {
                 if (!OnlineManager.lobby.isOwner)
                 {
-                    OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToDeathScreen);
+                    if (!OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.MovePlayersToDeathScreen))) {
+                        OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToDeathScreen);
+                    }
                 }
                 else
                 {
@@ -339,6 +342,28 @@ namespace RainMeadow
             else
             {
                 orig(self);
+            }
+        }
+
+        private void RainWorldGame_Win(On.RainWorldGame.orig_Win orig, RainWorldGame self, bool malnourished)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    if (!OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.MovePlayersToWinScreen, malnourished)))
+                    {
+                        OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToWinScreen, malnourished);
+                    }
+                }
+                else
+                {
+                    RPCs.MovePlayersToWinScreen(malnourished);
+                }
+            }
+            else
+            {
+                orig(self,malnourished);
             }
         }
 
@@ -408,8 +433,10 @@ namespace RainMeadow
                 {
                     if (OnlineManager.lobby.isOwner)
                     {
+                        RainMeadow.Debug("Continue - host");
                         gameMode.didStartCycle = true;
                     }
+                    RainMeadow.Debug("Continue - client");
                 }
             }
             orig(self, sender, message);
@@ -460,7 +487,6 @@ namespace RainMeadow
 
         private void SleepAndDeathScreen_ctor(On.Menu.SleepAndDeathScreen.orig_ctor orig, Menu.SleepAndDeathScreen self, ProcessManager manager, ProcessManager.ProcessID ID)
         {
-
             RainMeadow.Debug("In SleepAndDeath Screen");
             orig(self, manager, ID);
 
@@ -480,7 +506,6 @@ namespace RainMeadow
                 self.pages[0].subObjects.Add(readyButton);
                 readyButton.black = 0;
                 self.pages[0].lastSelectedObject = readyButton;
-
             }
         }
 
@@ -488,6 +513,7 @@ namespace RainMeadow
         {
             if ((isStoryMode(out var gameMode) && gameMode.didStartCycle == true) || OnlineManager.lobby.isOwner)
             {
+                RainMeadow.Debug("Ready!");
                 isPlayerReady = true;
             }
         }

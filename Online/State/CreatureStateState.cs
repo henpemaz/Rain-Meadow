@@ -22,20 +22,30 @@ namespace RainMeadow
         public virtual void ReadTo(AbstractCreature abstractCreature)
         {
             abstractCreature.state.meatLeft = this.meatLeft;
+            abstractCreature.state.alive = this.alive;
             if (abstractCreature.realizedCreature is Creature creature)
             {
+
                 if (alive && creature.dead)
                 {
-                    if(creature is BigSpider spoder && spoder.CanIBeRevived) spoder.Revive();
+                    if (creature is BigSpider spoder && spoder.CanIBeRevived) spoder.Revive();
                     else
                     {
                         creature.dead = false;
                         abstractCreature.state.alive = this.alive;
                     }
                 }
-                if (!alive && !creature.dead) creature.Die();
+                if (!alive && !creature.dead)
+                {
+                    creature.Die();
+                    creature.dead = !this.alive;
+
+                }
+
+
+
+
             }
-            else abstractCreature.state.alive = this.alive;
         }
     }
 }

@@ -1,15 +1,7 @@
-﻿using Mono.Cecil.Cil;
-using MonoMod.Cil;
-using MonoMod.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace RainMeadow
 {
-    // todo plug into progression system
-
-    // todo progression system prototype
     public class AbstractMeadowCollectible : AbstractPhysicalObject
     {
         public bool placed;

@@ -74,30 +74,35 @@ namespace RainMeadow
 
         private void Continue(SimplerButton button)
         {
+            RainMeadow.DebugMe();
             this.wantToContinue = true;
             base.PlaySound(SoundID.HUD_Unpause_Game);
         }
 
         private void ToMainMenu(SimplerButton button)
         {
+            RainMeadow.DebugMe();
             base.PlaySound(SoundID.HUD_Exit_Game);
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
         }
 
         private void ToLobby(SimplerButton button)
         {
+            RainMeadow.DebugMe();
             base.PlaySound(SoundID.HUD_Exit_Game);
             manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.MeadowMenu);
         }
 
         private void Passage(SimplerButton button)
         {
+            RainMeadow.DebugMe();
             this.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.FastTravelScreen);
             base.PlaySound(SoundID.MENU_Passage_Button);
         }
 
         private void ToOutskirts(SimplerButton button)
         {
+            RainMeadow.DebugMe();
             MeadowProgression.progressionData.currentCharacterProgress.saveLocation = new WorldCoordinate(suco4, -1, -1, 0);
             manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.RegionSelect;
             manager.menuSetup.regionSelectRoom = MeadowProgression.progressionData.currentCharacterProgress.saveLocation.ResolveRoomName();
@@ -106,6 +111,7 @@ namespace RainMeadow
 
         private void ToHub(SimplerButton button)
         {
+            RainMeadow.DebugMe();
             MeadowProgression.progressionData.currentCharacterProgress.saveLocation = new WorldCoordinate(targetHub, -1, -1, 0);
             manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.RegionSelect;
             manager.menuSetup.regionSelectRoom = MeadowProgression.progressionData.currentCharacterProgress.saveLocation.ResolveRoomName();
@@ -114,9 +120,11 @@ namespace RainMeadow
 
         private void Unstuck(SimplerButton button)
         {
+            RainMeadow.DebugMe();
             var creature = mgm.avatar.realizedCreature;
             if (creature.room != null)
             {
+                RainMeadow.Debug("found in room");
                 var room = creature.room;
                 creature.RemoveFromRoom();
                 room.CleanOutObjectNotInThisRoom(creature); // we need it this frame
