@@ -100,7 +100,7 @@ namespace RainMeadow
             RainMeadow.Debug("serializedObject: " + newObjectEvent.serializedObject);
 
             var apo = SaveState.AbstractPhysicalObjectFromString(world, newObjectEvent.serializedObject);
-            id.altSeed = apo.ID.RandomSeed;
+            id.altSeed = apo.ID.RandomSeed; // this becomes a problem on transfers, the altSeed field is not used by vanila serialize, need to be sent as new field
             apo.ID = id;
             apo.pos = initialState.pos;
             return apo;
