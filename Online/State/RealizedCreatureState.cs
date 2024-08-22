@@ -18,7 +18,9 @@ namespace RainMeadow
         public RealizedCreatureState(OnlineCreature onlineCreature) : base(onlineCreature)
         {
             var creature = onlineCreature.apo.realizedObject as Creature;
-            grasps = new(creature.grasps?.Where(g => g != null).Select(g => GraspRef.map.GetValue(g,GraspRef.FromGrasp)).Where(g => g != null).ToList() ?? new());
+            grasps = new(creature.grasps?.Where(g => g != null && OnlinePhysicalObject.map.TryGetValue(g.grabbed.abstractPhysicalObject, out _))
+                                        .Select(g => GraspRef.map.GetValue(g, GraspRef.FromGrasp))
+                                        .ToList() ?? new());
             stun = (short)creature.stun;
             enteringShortcut = creature.enteringShortCut;
         }
@@ -57,7 +59,7 @@ namespace RainMeadow
                 }
                 for (int i = found.Length - 1; i >= 0; i--)
                 {
-                    if (!found[i] && creature.grasps[i] != null)
+                    if (!found[i] && creature.grasps[i] != null && OnlinePhysicalObject.map.TryGetValue(creature.grasps[i].grabbed.abstractPhysicalObject, out _))
                     {
                         RainMeadow.Trace("releasing grasp because not found at index " + i);
                         GraspRef.map.GetValue(creature.grasps[i], GraspRef.FromGrasp).Release(creature.grasps[i]);

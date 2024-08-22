@@ -1,5 +1,6 @@
 ﻿using RWCustom;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -180,6 +181,23 @@ namespace RainMeadow
                     {
                         Vector2 vector = room.MiddleOfTile(entrancePos) + Custom.IntVector2ToVector2(room.ShorcutEntranceHoleDirection(entrancePos)) * -5f;
                         creature.graphicsModule.SuckedIntoShortCut(vector);
+                    }
+
+                    // required since noramally objects are removed "imediatelly after"
+                    // switching camera into a room with an object with obj.room = null crashes
+                    List<AbstractPhysicalObject> allConnectedObjects = this.abstractCreature.GetAllConnectedObjects();
+                    for (int i = 0; i < allConnectedObjects.Count; i++)
+                    {
+                        AbstractPhysicalObject obj = allConnectedObjects[i];
+                        if (obj.realizedObject != null)
+                        {
+                            if (obj.realizedObject is Creature)
+                            {
+                                (obj.realizedObject as Creature).inShortcut = true;
+                            }
+                            room.RemoveObject(obj.realizedObject);
+                            room.CleanOutObjectNotInThisRoom(obj.realizedObject); // very important
+                        }
                     }
                 }
                 catch (Exception)

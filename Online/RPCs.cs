@@ -97,10 +97,19 @@ namespace RainMeadow
         }
 
         [RPCMethod]
+        public static void MovePlayersToDeathScreen()
+        {
+            foreach (OnlinePlayer player in OnlineManager.players)
+            {
+                player.InvokeRPC(RPCs.GoToDeathScreen);
+            }
+        }
+
+        [RPCMethod]
         public static void GoToDeathScreen()
         {
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-            if (game.manager.upcomingProcess != null)
+            if (game == null || game.manager.upcomingProcess != null)
             {
                 return;
             }

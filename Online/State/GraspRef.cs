@@ -32,19 +32,9 @@ namespace RainMeadow
             this.pacifying = pacifying;
         }
 
-        public void CustomSerialize(Serializer serializer)
-        {
-            serializer.Serialize(ref graspUsed);
-            serializer.Serialize(ref onlineGrabbed);
-            serializer.Serialize(ref chunkGrabbed);
-            serializer.Serialize(ref shareability);
-            serializer.Serialize(ref dominance);
-            serializer.Serialize(ref pacifying);
-        }
-
         public static GraspRef FromGrasp(Creature.Grasp grasp)
         {
-            if (!OnlinePhysicalObject.map.TryGetValue(grasp.grabbed.abstractPhysicalObject, out var onlineGrabbed)) { RainMeadow.Error("Grabbed tjing doesn't exist in online space!"); return null; }
+            if (!OnlinePhysicalObject.map.TryGetValue(grasp.grabbed.abstractPhysicalObject, out var onlineGrabbed)) { throw new InvalidProgrammerException("Grabbed tjing doesn't exist in online space! " + grasp.grabbed.abstractPhysicalObject); }
             return new GraspRef(onlineGrabbed, grasp.graspUsed, grasp.chunkGrabbed, grasp.shareability, grasp.dominance, grasp.pacifying);
         }
 

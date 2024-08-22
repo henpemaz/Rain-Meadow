@@ -78,7 +78,10 @@ namespace RainMeadow
 
             if (registerResult is GenericResult.Ok) // success
             {
-                EntityRegisteredInResource(oe, nee, ini);
+                if (isAvailable)
+                {
+                    EntityRegisteredInResource(oe, nee, ini);
+                }
             }
             else if (registerResult is GenericResult.Error) // retry
             {
@@ -178,7 +181,10 @@ namespace RainMeadow
 
             if (entityJoinResult is GenericResult.Ok) // success
             {
-                EntityJoinedResource(oe, ini);
+                if (isAvailable)
+                {
+                    EntityJoinedResource(oe, ini);
+                }
             }
             else if (entityJoinResult is GenericResult.Error) // retry
             {
@@ -250,7 +256,10 @@ namespace RainMeadow
 
             if (entityLeaveResult is GenericResult.Ok) // success
             {
-                EntityLeftResource(oe);
+                if (isAvailable)
+                {
+                    EntityLeftResource(oe);
+                }
             }
             else if (entityLeaveResult is GenericResult.Error) // retry
             {

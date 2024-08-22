@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using static RainMeadow.OnlineCreature;
 
 namespace RainMeadow
 {
@@ -60,10 +59,14 @@ namespace RainMeadow
                 case AbstractMeadowCollectible:
                     return new OnlineMeadowCollectible(apo, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 case AbstractCreature ac:
-                    OnlineCreatureDefinition acDef;
                     return new OnlineCreature(ac, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 case AbstractConsumable acm:
-                    return OnlineConsumableFromAcm(acm, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+                    if (AbstractConsumable.IsTypeConsumable(apo.type)) return OnlineConsumableFromAcm(acm, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+                    else
+                    {
+                        RainMeadow.Debug("object has AbstractConsumable but type is not consumable: " + apo.type);
+                        goto default; // screw you, trader-spawned scavengerbomb
+                    }
                 default:
                     return new OnlinePhysicalObject(apo, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
                 case null:
@@ -324,18 +327,18 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return $"{apo.type} {base.ToString()}";
+            return $"{apo?.type} {base.ToString()}";
         }
 
         [RPCMethod]
         public static void HitByWeapon(OnlinePhysicalObject objectHit, OnlinePhysicalObject weapon)
         {
-            objectHit?.apo.realizedObject.HitByWeapon(weapon.apo.realizedObject as Weapon);
+            objectHit?.apo.realizedObject?.HitByWeapon(weapon.apo.realizedObject as Weapon);
         }
         [RPCMethod]
         public static void HitByExplosion(OnlinePhysicalObject objectHit, float hitfac)
         {
-            objectHit?.apo.realizedObject.HitByExplosion(hitfac, null, 0);
+            objectHit?.apo.realizedObject?.HitByExplosion(hitfac, null, 0);
         }
 
         [RPCMethod]

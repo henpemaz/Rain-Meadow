@@ -63,7 +63,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby == null)
             {
-                orig(self, newRoom);
+                orig(self,newRoom);
                 return;
             }
 
@@ -101,19 +101,19 @@ namespace RainMeadow
         private void OracleSwarmer_BitByPlayer(On.OracleSwarmer.orig_BitByPlayer orig, OracleSwarmer self, Creature.Grasp grasp, bool eu)
         {
             orig(self, grasp, eu);
-            if (self.slatedForDeletetion == true)
+            if (self.slatedForDeletetion == true) 
             {
                 SwarmerEaten();
             }
         }
 
-        private void SwarmerEaten()
+        private void SwarmerEaten() 
         {
             if (OnlineManager.lobby == null) return;
             if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                if (!OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(ConsumableRPCs.enableTheGlow)))
-                {
+                if (!OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(ConsumableRPCs.enableTheGlow))) 
+                { 
                     OnlineManager.lobby.owner.InvokeRPC(ConsumableRPCs.enableTheGlow);
                 }
             }
@@ -131,7 +131,7 @@ namespace RainMeadow
             if (room.isOwner)
             {
                 orig(self); //Only setup the room if we are the room owner.
-                foreach (var swamer in self.mySwarmers)
+                foreach (var swamer in self.mySwarmers) 
                 {
                     var apo = swamer.abstractPhysicalObject;
                     if (WorldSession.map.TryGetValue(self.room.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.ApoEnteringWorld(apo);
@@ -151,7 +151,7 @@ namespace RainMeadow
             RoomSession.map.TryGetValue(self.room.abstractRoom, out var onlineRoom);
             OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineSporePlant);
 
-            if (onlineSporePlant.isMine)
+            if (onlineSporePlant.isMine) 
             {
                 foreach (var kv in OnlineManager.lobby.playerAvatars)
                 {
@@ -161,7 +161,7 @@ namespace RainMeadow
                     {
                         if (ac.Room == self.room.abstractRoom)
                         {
-                            if (!opo.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(ConsumableRPCs.explodePuffBall, onlineSporePlant, self.bodyChunks[0].pos)))
+                            if (!opo.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(ConsumableRPCs.explodePuffBall, onlineSporePlant, self.bodyChunks[0].pos))) 
                             {
                                 opo.owner.InvokeRPC(ConsumableRPCs.explodePuffBall, onlineRoom, self.bodyChunks[0].pos, self.sporeColor, self.color);
                             }
@@ -192,7 +192,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby == null)
             {
-                orig(self, orbitObj, ps, circle, dist, color);
+                orig(self,orbitObj,ps,circle,dist,color);
                 return;
             }
 
@@ -238,7 +238,7 @@ namespace RainMeadow
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineSporePlant);
                 room.owner.InvokeRPC(ConsumableRPCs.pacifySporePlant, onlineSporePlant);
             }
-            else
+            else 
             {
                 orig(self);
             }
@@ -320,29 +320,21 @@ namespace RainMeadow
             }
             else
             {
-                orig(self, ghostID);
+                orig(self,ghostID);
             }
         }
         private void RainWorldGame_GoToDeathScreen(On.RainWorldGame.orig_GoToDeathScreen orig, RainWorldGame self)
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                foreach (OnlinePlayer player in OnlineManager.players)
+                if (!OnlineManager.lobby.isOwner)
                 {
-
-                    if (player.id == OnlineManager.lobby.owner.id)
-                    {
-                        RPCs.GoToDeathScreen();
-                    }
-                    else
-                    {
-
-                        player.InvokeRPC(RPCs.GoToDeathScreen);
-                    }
-
-
+                    OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToDeathScreen);
                 }
-
+                else
+                {
+                    RPCs.MovePlayersToDeathScreen();
+                }
             }
             else
             {
@@ -398,7 +390,7 @@ namespace RainMeadow
                     origSaveState.denPosition = (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos;
                 }
 
-                if (OnlineManager.lobby.isOwner)
+                if (OnlineManager.lobby.isOwner) 
                 {
                     (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos = origSaveState.denPosition;
                 }
@@ -416,8 +408,10 @@ namespace RainMeadow
                 {
                     if (OnlineManager.lobby.isOwner)
                     {
+                        RainMeadow.Debug("Continue - host");
                         gameMode.didStartCycle = true;
                     }
+                    RainMeadow.Debug("Continue - client");
                 }
             }
             orig(self, sender, message);
@@ -468,7 +462,6 @@ namespace RainMeadow
 
         private void SleepAndDeathScreen_ctor(On.Menu.SleepAndDeathScreen.orig_ctor orig, Menu.SleepAndDeathScreen self, ProcessManager manager, ProcessManager.ProcessID ID)
         {
-
             RainMeadow.Debug("In SleepAndDeath Screen");
             orig(self, manager, ID);
 
@@ -488,7 +481,6 @@ namespace RainMeadow
                 self.pages[0].subObjects.Add(readyButton);
                 readyButton.black = 0;
                 self.pages[0].lastSelectedObject = readyButton;
-
             }
         }
 
@@ -496,6 +488,7 @@ namespace RainMeadow
         {
             if ((isStoryMode(out var gameMode) && gameMode.didStartCycle == true) || OnlineManager.lobby.isOwner)
             {
+                RainMeadow.Debug("Ready!");
                 isPlayerReady = true;
             }
         }

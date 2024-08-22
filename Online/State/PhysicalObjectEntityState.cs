@@ -71,8 +71,16 @@ namespace RainMeadow
             {
                 if (inDen != apo.InDen)
                 {
-                    if (inDen) apo.IsEnteringDen(pos);
-                    else apo.IsExitingDen();
+                    if (inDen)
+                    {
+                        RainMeadow.Debug("moving to den: " + onlineObject);
+                        apo.IsEnteringDen(pos);
+                    }
+                    else
+                    {
+                        RainMeadow.Debug("moving out of den: " + onlineObject);
+                        apo.IsExitingDen();
+                    }
                 }
                 apo.Move(pos);
             }

@@ -16,9 +16,7 @@ namespace RainMeadow
 
         public virtual void CustomSerialize(Serializer serializer)
         {
-            long wasPos = serializer.Position;
             serializer.Serialize(ref eventId);
-            RainMeadow.Trace($"{this} took {serializer.Position - wasPos}");
         }
 
         public abstract void Process(); // I've been received and I do something
