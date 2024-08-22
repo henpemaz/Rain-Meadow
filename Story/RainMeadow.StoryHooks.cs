@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using HUD;
@@ -72,8 +72,6 @@ namespace RainMeadow
                     self.gameOverString = "Please wait for host to die, sleep, or rescue you...";
                 }
 
-            } else {
-                orig(self);
             }
         }
 
