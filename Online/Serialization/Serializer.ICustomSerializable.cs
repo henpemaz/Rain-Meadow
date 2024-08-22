@@ -218,7 +218,7 @@ namespace RainMeadow
             }
             if (typeof(OnlineEntity).IsAssignableFrom(fieldType))
             {
-                return typeof(Serializer).GetMethod(nameof(Serializer.SerializEntityById)).MakeGenericMethod(fieldType);
+                return typeof(Serializer).GetMethod(nullable ? nameof(Serializer.SerializeNullableEntityById) : nameof(Serializer.SerializeEntityById)).MakeGenericMethod(fieldType);
             }
             if (typeof(OnlinePlayer).IsAssignableFrom(fieldType))
             {
