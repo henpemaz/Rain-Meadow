@@ -58,6 +58,23 @@ namespace RainMeadow
             On.CoralBrain.CoralNeuronSystem.PlaceSwarmers += OnCoralNeuronSystem_PlaceSwarmers;
             On.SSOracleSwarmer.NewRoom += SSOracleSwarmer_NewRoom;
             On.HUD.TextPrompt.Update += TextPrompt_Update;
+
+            On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
+        }
+
+
+        private void TextPrompt_UpdateGameOverString(On.HUD.TextPrompt.orig_UpdateGameOverString orig, TextPrompt self, Options.ControlSetup.Preset controllerType)
+        {
+            if (OnlineManager.lobby.gameMode is StoryGameMode && !OnlineManager.lobby.isOwner)
+            {
+                self.gameOverString = "Please wait for host to die or sleep, or another slugcat to rescue you...";
+            }
+            else
+            {
+                orig(self, controllerType);
+
+            }
+
         }
 
         private void TextPrompt_Update(On.HUD.TextPrompt.orig_Update orig, TextPrompt self)
@@ -66,10 +83,9 @@ namespace RainMeadow
             if (OnlineManager.lobby.gameMode is StoryGameMode)
             {
 
-                if (!OnlineManager.lobby.isOwner)
+                if (!OnlineManager.lobby.isOwner && self.currentlyShowing == TextPrompt.InfoID.GameOver)
                 {
                     self.restartNotAllowed = 1; // block clients from GoToDeathScreen
-                    self.gameOverString = "Please wait for host to die, sleep, or rescue you...";
                 }
 
             }
