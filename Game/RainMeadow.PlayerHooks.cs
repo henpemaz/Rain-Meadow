@@ -196,40 +196,6 @@ public partial class RainMeadow
         }
         if (OnlineManager.lobby.gameMode is MeadowGameMode) return; // do not run
 
-        // manage camera for normal difficulty in story
-        if (OnlineManager.lobby.gameMode is StoryGameMode)
-        {
-            // Initialize a variable to hold the non-dead AbstractCreature
-            AbstractCreature nonDeadCreature = null;
-
-            // First pass: Find a non-dead AbstractCreature
-            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
-            {
-                if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue;
-
-                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                {
-                    if (!ac.state.dead)
-                    {
-                        nonDeadCreature = ac;
-                        RainMeadow.Debug("Found alive creature " + ac);
-                        break; // Stop searching once we find a non-dead creature
-                    }
-                }
-            }
-
-            // Second pass: Set all dead creatures to follow the found non-dead creature
-            if (nonDeadCreature != null)
-            {
-                if (!self.abstractCreature.realizedCreature.State.alive)
-                {
-                    RainMeadow.Debug("Setting dead creature camera to follow alive creature" + nonDeadCreature);
-                    self.abstractCreature.world.game.cameras[0].followAbstractCreature = nonDeadCreature;
-                    
-
-                }
-            }
-        }
         orig(self);
     }
 
