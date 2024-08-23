@@ -129,38 +129,6 @@ namespace RainMeadow
                         self.game.cameras[0].MoveCamera(acList[currentIdx].Room.realizedRoom, -1);
                     };
                 }
-
-
-                ///
-
-
-                //for (int i = 0; i < result.Count; i++)
-                //{
-
-                //    OnlinePhysicalObject.map.TryGetValue(result[i].realizedCreature.abstractPhysicalObject, out var alivePlayer);
-
-                //    var username = "";
-                //    try
-                //    {
-                //        username = (alivePlayer.owner.id as SteamMatchmakingManager.SteamPlayerId).steamID.ToString();
-                //    }
-                //    catch
-                //    {
-                //        username = "Unknown user";
-                //    };
-
-                //    self.pages[0].subObjects.Add(new Menu.MenuLabel(self, self.pages[0], self.Translate("ALIVE PLAYERS"), new Vector2(1190, 553), new(110, 30), true));
-                //    var playerCameraButton = new EventfulSelectOneButton(self, self.pages[0], username, "CAMSWITCH", new Vector2(1190, 515) - i * new Vector2(0, 38), new Vector2(110f, 30f));
-
-
-                //    self.pages[0].subObjects.Add(playerCameraButton);
-                //    playerCameraButton.nextSelectable[1] = playerCameraButton;
-                //    playerCameraButton.nextSelectable[3] = playerCameraButton;
-                //}
-
-
-
-
             }
         }
 

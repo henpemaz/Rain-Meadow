@@ -29,9 +29,6 @@ namespace RainMeadow
         private WorldCoordinate lastWorldPos;
         private int lastCameraPos;
         private int lastAbstractRoom;
-        private List<AbstractCreature> abstractCreatureList;
-        private int spectatorIndex;
-        private int spectatorCoolDownTimerCamChange;
 
         public float DeadFade
         {
