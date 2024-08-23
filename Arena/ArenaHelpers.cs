@@ -11,7 +11,6 @@ namespace RainMeadow
 
             if (!OnlineManager.lobby.isOwner && arena.nextLevel && !OnlineManager.lobby.worldSessions["arena"].isAvailable) // clients are waiting for host to finish.
             {
-                RainMeadow.Debug("isPending? " + OnlineManager.lobby.worldSessions["arena"].isPending);
                 CheckHostClientStates(arena);
                 return;
             }
