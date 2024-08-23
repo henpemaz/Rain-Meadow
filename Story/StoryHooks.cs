@@ -66,10 +66,19 @@ namespace RainMeadow
 
         private void TextPrompt_UpdateGameOverString(On.HUD.TextPrompt.orig_UpdateGameOverString orig, TextPrompt self, Options.ControlSetup.Preset controllerType)
         {
-            if (OnlineManager.lobby.gameMode is StoryGameMode && !OnlineManager.lobby.isOwner)
+            if (OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                self.gameOverString = "A slugcat has fallen. Perform a rescue, lament, or wait for host to sleep or die";
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    self.gameOverString = "A slugcat has fallen. Perform a rescue, or wait for host to shelter or die";
 
+                }
+
+                if (OnlineManager.lobby.isOwner)
+                {
+                    self.gameOverString = "A slugcat has fallen. Perform a rescue, shelter, or press PAUSE BUTTON to restart";
+
+                }
             }
             else
             {
