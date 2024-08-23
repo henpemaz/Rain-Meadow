@@ -51,9 +51,6 @@ namespace RainMeadow
             this.parts.Add(this.playerDisplay);
 
             needed = true;
-            this.spectatorIndex = 0;
-            this.spectatorCoolDownTimerCamChange = 20;
-            this.abstractCreatureList = new List<AbstractCreature>();
         }
 
         public bool PlayerConsideredDead
