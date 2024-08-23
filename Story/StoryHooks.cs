@@ -430,16 +430,13 @@ namespace RainMeadow
                 //INITIATE DEATH
                 foreach (OnlinePlayer player in OnlineManager.players)
                 {
-
-                    if (player.id == OnlineManager.lobby.owner.id)
+                    if (!player.isMe)
                     {
-                        RPCs.InitGameOver();
+                        player.InvokeRPC(RPCs.InitGameOver);
                     }
-
                     else
                     {
-
-                        player.InvokeRPC(RPCs.InitGameOver);
+                        orig(self, dependentOnGrasp);
                     }
                 }
             }
