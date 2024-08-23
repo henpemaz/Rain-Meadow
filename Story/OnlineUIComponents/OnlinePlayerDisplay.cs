@@ -57,6 +57,7 @@ namespace RainMeadow
 
             this.isButtonToggled = false;
 
+
             if (RainMeadow.isStoryMode(out var _))
             {
                 this.label.color = (owner.clientSettings as StoryClientSettings).SlugcatColor(); ;

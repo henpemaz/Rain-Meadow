@@ -205,46 +205,6 @@ namespace RainMeadow
                     }
                 }
             }
-
-            // camera cycling
-            if (spectatorCoolDownTimerCamChange > 0)
-            {
-                spectatorCoolDownTimerCamChange--;
-            }
-
-            if (spectatorCoolDownTimerCamChange <= 0)
-            {
-                // TODO: Build this out a more. Test with larger group
-                    if (found && Input.GetKey(KeyCode.RightArrow))
-                    {
-                        spectatorCoolDownTimerCamChange = 20;
-                        
-
-                        RainMeadow.Debug("Was following: " + camera.followAbstractCreature);
-                        int newCameraFollow = (spectatorIndex + 1) % abstractCreatureList.Count;
-
-                        camera.followAbstractCreature = abstractCreatureList[newCameraFollow];
-
-
-                        spectatorIndex = newCameraFollow;
-                        RainMeadow.Debug("Now following: " + camera.followAbstractCreature);
-
-                    }
-
-                    if (found && Input.GetKey(KeyCode.LeftArrow))
-                    {
-                        spectatorCoolDownTimerCamChange = 20;
-                        RainMeadow.Debug("Was following: " + camera.followAbstractCreature);
-                        int newIndex = (spectatorIndex - 1) % abstractCreatureList.Count;
-
-                        camera.followAbstractCreature = abstractCreatureList[newIndex];
-
-                        spectatorIndex = newIndex;
-                        RainMeadow.Debug("Now following: " + camera.followAbstractCreature);
-                    }
-            }
-
-
             lastWorldPos = abstractPlayer.pos;
             lastCameraPos = camera.currentCameraPosition;
             lastAbstractRoom = camera.room.abstractRoom.index;

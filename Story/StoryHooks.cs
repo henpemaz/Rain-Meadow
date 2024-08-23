@@ -5,6 +5,8 @@ using HUD;
 using MonoMod.Cil;
 using System;
 using Mono.Cecil.Cil;
+using Mono.Cecil;
+using Steamworks;
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -57,25 +59,108 @@ namespace RainMeadow
             On.CoralBrain.CoralNeuronSystem.PlaceSwarmers += OnCoralNeuronSystem_PlaceSwarmers;
             On.SSOracleSwarmer.NewRoom += SSOracleSwarmer_NewRoom;
 
-            On.HUD.TextPrompt.Update += TextPrompt_Update;
+            On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons;
+
         }
 
-        private void TextPrompt_Update(On.HUD.TextPrompt.orig_Update orig, TextPrompt self)
+
+
+
+
+        private void PauseMenu_SpawnExitContinueButtons(On.Menu.PauseMenu.orig_SpawnExitContinueButtons orig, Menu.PauseMenu self)
         {
+            orig(self);
+
             if (OnlineManager.lobby.gameMode is StoryGameMode)
             {
+                var result = self.game.AlivePlayers;
+                List<AbstractCreature> acList = new List<AbstractCreature>();
 
-                if (OnlineManager.lobby.isOwner)
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
                 {
-                    orig(self);
+                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                    {
+                        if (ac.state.alive)
+                        {
+                            acList.Add(ac);
+                        }
+                    }
                 }
-                else
-                {
-                    orig(self);
-                    self.restartNotAllowed = 1;
-                    self.gameOverString = "Please wait for host to die or sleep...";
 
+
+                   for (int i = 0; i < acList.Count; i++)
+                {
+                    OnlinePhysicalObject.map.TryGetValue(acList[i].realizedCreature.abstractPhysicalObject, out var alivePlayer);
+
+                    var username = "";
+                    try
+                    {
+                        username = (alivePlayer.owner.id as SteamMatchmakingManager.SteamPlayerId).name;
+                    }
+                    catch
+                    {
+                        username = $"{acList[i]}";
+                    };
+
+                    self.pages[0].subObjects.Add(new Menu.MenuLabel(self, self.pages[0], self.Translate("ALIVE PLAYERS"), new Vector2(1190, 553), new(110, 30), true));
+                    var btn = new SimplerButton(self, self.pages[0], username, new Vector2(1190, 515) - i * new Vector2(0, 38), new(110, 30));
+                    self.pages[0].subObjects.Add(btn);
+                    btn.toggled = false;
+
+                    // Introduce a local variable to hold the current index
+                    int currentIdx = i;
+
+                    btn.OnClick += (_) =>
+                    {
+                        btn.toggled = !btn.toggled;
+
+                        // Set all other buttons to false
+                        foreach (var otherBtn in self.pages[0].subObjects.OfType<SimplerButton>())
+                        {
+                            if (otherBtn != btn)
+                            {
+                                otherBtn.toggled = false;
+                            }
+                        }
+
+                        self.game.cameras[0].followAbstractCreature = acList[currentIdx];
+                        RainMeadow.Debug("Following " + acList[currentIdx]); 
+                        self.game.cameras[0].MoveCamera(acList[currentIdx].Room.realizedRoom, -1);
+                    };
                 }
+
+
+                ///
+
+
+                //for (int i = 0; i < result.Count; i++)
+                //{
+
+                //    OnlinePhysicalObject.map.TryGetValue(result[i].realizedCreature.abstractPhysicalObject, out var alivePlayer);
+
+                //    var username = "";
+                //    try
+                //    {
+                //        username = (alivePlayer.owner.id as SteamMatchmakingManager.SteamPlayerId).steamID.ToString();
+                //    }
+                //    catch
+                //    {
+                //        username = "Unknown user";
+                //    };
+
+                //    self.pages[0].subObjects.Add(new Menu.MenuLabel(self, self.pages[0], self.Translate("ALIVE PLAYERS"), new Vector2(1190, 553), new(110, 30), true));
+                //    var playerCameraButton = new EventfulSelectOneButton(self, self.pages[0], username, "CAMSWITCH", new Vector2(1190, 515) - i * new Vector2(0, 38), new Vector2(110f, 30f));
+
+
+                //    self.pages[0].subObjects.Add(playerCameraButton);
+                //    playerCameraButton.nextSelectable[1] = playerCameraButton;
+                //    playerCameraButton.nextSelectable[3] = playerCameraButton;
+                //}
+
+
+
+
             }
         }
 
