@@ -1,6 +1,7 @@
 ﻿using Menu;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -8,10 +9,15 @@ namespace RainMeadow
     internal class ModApplier : ModManager.ModApplyer
     {
         public DialogAsyncWait dialogBox;
+        public DialogConfirm checkUserConfirmation;
         public DialogNotify requiresRestartDialog;
+        public string modMismatchString;
+
+
         private readonly Menu.Menu menu;
         private List<ModManager.Mod> modsToEnable;
         private List<ModManager.Mod> modsToDisable;
+        private List<string> unknownMods;
 
 
         public event Action<ModApplier> OnFinish;
@@ -23,6 +29,7 @@ namespace RainMeadow
             menu = (Menu.Menu)manager.currentMainLoop;
             this.modsToDisable = new List<ModManager.Mod>();
             this.modsToEnable = new List<ModManager.Mod>();
+            this.unknownMods = new List<string>();
 
         }
 
@@ -30,14 +37,20 @@ namespace RainMeadow
         {
             if (modsToDisable.Count > 0)
             {
+
                 for (int i = 0; i < modsToDisable.Count; i++)
                 {
-                    int installedModIndex = ModManager.InstalledMods.FindIndex(mod => mod.id == modsToDisable[i].id);
-                    if (installedModIndex != -1)
+
+                    var matchingMod = ModManager.InstalledMods.FirstOrDefault(m => m.id == modsToDisable[i].id);
+                    if (matchingMod != null)
                     {
-                        ModManager.InstalledMods[installedModIndex].enabled = false;
-                        pendingEnabled[installedModIndex] = false;
+                        if (pendingEnabled[i] != matchingMod.enabled)
+                        {
+                            pendingEnabled[i] = false;
+                        }
+
                     }
+
                 }
             }
 
@@ -45,11 +58,12 @@ namespace RainMeadow
             {
                 for (int i = 0; i < modsToEnable.Count; i++)
                 {
-                    int installedModIndex = ModManager.InstalledMods.FindIndex(mod => mod.id == modsToEnable[i].id);
-                    if (installedModIndex != -1)
+
+                    var matchingMod = ModManager.InstalledMods.FirstOrDefault(m => m.id == modsToEnable[i].id);
+
+                    if (matchingMod != null)
                     {
-                        ModManager.InstalledMods[installedModIndex].enabled = false;
-                        pendingEnabled[installedModIndex] = true;
+                        matchingMod.enabled = false;
                     }
                 }
             }
@@ -91,42 +105,72 @@ namespace RainMeadow
 
         public void ShowConfirmation(List<ModManager.Mod> modsToEnable, List<ModManager.Mod> modsToDisable, List<string> unknownMods)
         {
-            string text = menu.Translate("Mod mismatch detected.") + Environment.NewLine;
+
+            modMismatchString = menu.Translate("Mod mismatch detected.") + Environment.NewLine;
+
 
             if (modsToEnable.Count > 0)
             {
-                text += Environment.NewLine + menu.Translate("Mods that will be enabled: ") + string.Join(", ", modsToEnable.ConvertAll(mod => mod.LocalizedName));
+                modMismatchString += Environment.NewLine + menu.Translate("Mods that will be enabled: ") + string.Join(", ", modsToEnable.ConvertAll(mod => mod.LocalizedName));
                 this.modsToEnable = modsToEnable;
             }
             if (modsToDisable.Count > 0)
             {
-                text += Environment.NewLine + menu.Translate("Mods that will be disabled: ") + string.Join(", ", modsToDisable.ConvertAll(mod => mod.LocalizedName));
+                modMismatchString += Environment.NewLine + menu.Translate("Mods that will be disabled: ") + string.Join(", ", modsToDisable.ConvertAll(mod => mod.LocalizedName));
                 this.modsToDisable = modsToDisable;
             }
             if (unknownMods.Count > 0)
             {
-                text += Environment.NewLine + menu.Translate("Unable to find the following mods, please install them: ") + string.Join(", ", unknownMods);
+                modMismatchString += Environment.NewLine + menu.Translate("Unable to find the following mods, please install them: ") + string.Join(", ", unknownMods);
+                this.unknownMods = unknownMods;
             }
 
-            text += Environment.NewLine + Environment.NewLine + menu.Translate("Rain World may be restarted for these changes to take effect");
+            modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("Please confirm to auto-apply these changes, or cancel and return to lobby");
 
-            requiresRestartDialog = new DialogNotify(text, new Vector2(480f, 320f), manager, () =>
+            Action confirmProceed = () =>
             {
-                Start(false);
-            });
 
-            manager.ShowDialog(requiresRestartDialog);
+                Start(filesInBadState);
+
+            };
+
+            Action cancelProceed = () =>
+            {
+                manager.dialog = null;
+                requiresRestartDialog = null;
+                OnlineManager.LeaveLobby();
+                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+
+            };
+
+
+
+            checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, cancelProceed);
+
+            manager.ShowDialog(checkUserConfirmation);
+
+
+
         }
 
         public new void Start(bool filesInBadState)
         {
 
+            if (unknownMods.Count > 0)
+            {
+                manager.dialog = null;
+                requiresRestartDialog = null;
+                OnlineManager.LeaveLobby();
+                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+                return;
+            }
 
             if (requiresRestartDialog != null)
             {
                 manager.dialog = null;
                 manager.ShowNextDialog();
                 requiresRestartDialog = null;
+
             }
             base.Start(filesInBadState);
 
