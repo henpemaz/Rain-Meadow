@@ -21,6 +21,8 @@ namespace RainMeadow
             public bool nextLevel;
             [OnlineField]
             public List<string> playList;
+            [OnlineField]
+            public int denChoice;
 
 
             public State() { }
@@ -30,7 +32,7 @@ namespace RainMeadow
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
                 nextLevel = arena.nextLevel;
                 playList = arena.playList;
-
+                denChoice = arena.denChoice;
 
 
 
@@ -45,6 +47,8 @@ namespace RainMeadow
 
                 (lobby.gameMode as ArenaCompetitiveGameMode).playList = playList;
                 (lobby.gameMode as ArenaCompetitiveGameMode).nextLevel = nextLevel;
+                (lobby.gameMode as ArenaCompetitiveGameMode).denChoice = denChoice;
+
 
 
             }

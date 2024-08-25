@@ -10,6 +10,7 @@ namespace RainMeadow
         public bool nextLevel = false;
 
         public int clientWaiting = 0;
+        public int denChoice = 0;
 
         public List<string> playList = new List<string>();
 

@@ -74,13 +74,33 @@ namespace RainMeadow
             (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.cameras[0].hud.InitGameOverMode(null, 0, player.pos.room, new UnityEngine.Vector2(0f, 0f));
         }
 
+        [RPCMethod]
+        public static void IncrementDenOption(int denChoice)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+                if (game == null)
+                {
+                    return;
+                }
+                int exits = game.world.GetAbstractRoom(0).exits;
+
+                RainMeadow.Debug("=====================BEFORE " + arena.denChoice);
+                arena.denChoice = arena.denChoice + 1 % exits;
+                RainMeadow.Debug("=====================AFTER " + arena.denChoice);
+
+
+            }
+        }
+
 
         [RPCMethod]
         public static void IncrementPlayersLeftt()
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                arena.clientWaiting = arena.clientWaiting+1;
+                arena.clientWaiting = arena.clientWaiting + 1;
 
             }
 
@@ -102,7 +122,8 @@ namespace RainMeadow
         {
             foreach (OnlinePlayer player in OnlineManager.players)
             {
-                if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToDeathScreen))) {
+                if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToDeathScreen)))
+                {
                     player.InvokeRPC(RPCs.GoToDeathScreen);
                 }
             }
@@ -155,13 +176,15 @@ namespace RainMeadow
 
             //This needs to be called after shelterDoor::Close and game state synced for this to be accurate.
             var denPos = (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos;
-            if (denPos == null) {
+            if (denPos == null)
+            {
                 AbstractCreature firstAlivePlayer = game.FirstAlivePlayer;
                 denPos = game.world.GetAbstractRoom(firstAlivePlayer.pos).name;
             }
 
             //TODO: Having soft-win on makes this very difficult. For now I'm (Turtle) locking it down so that you can only win if the host is alive
-            if (OnlineManager.lobby.isOwner) {
+            if (OnlineManager.lobby.isOwner)
+            {
                 game.GetStorySession.saveState.SessionEnded(game, true, malnourished);
             }
 
@@ -171,7 +194,8 @@ namespace RainMeadow
             if (dreamsState != null)
             {
                 dreamsState.EndOfCycleProgress(game.GetStorySession.saveState, game.world.region.name, denPos);
-                if (dreamsState.AnyDreamComingUp && !malnourished) {
+                if (dreamsState.AnyDreamComingUp && !malnourished)
+                {
                     game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Dream);
                     return;
                 }
