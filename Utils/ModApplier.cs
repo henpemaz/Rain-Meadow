@@ -1,7 +1,9 @@
 ﻿using Menu;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using static RainMeadow.OnlineResource;
 using static RainMeadow.RainMeadow;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -10,14 +12,16 @@ namespace RainMeadow
     internal class ModApplier : ModManager.ModApplyer
     {
         public DialogAsyncWait dialogBox;
-        public DialogNotify checkUserConfirmation; 
+        public DialogConfirm checkUserConfirmation;
         public DialogNotify requiresRestartDialog;
         public DialogNotify restartText;
         public string modMismatchString;
 
+
         private readonly Menu.Menu menu;
         private List<ModManager.Mod> modsToEnable;
         private List<ModManager.Mod> modsToDisable;
+        private List<string> unknownMods;
 
 
         public event Action<ModApplier> OnFinish;
@@ -40,12 +44,20 @@ namespace RainMeadow
                 for (int i = 0; i < modsToDisable.Count; i++)
                 {
 
-                    int installedModIndex = ModManager.InstalledMods.FindIndex(mod => mod.id == modsToDisable[i].id);
-                    if (installedModIndex != -1)
+                    var matchingMod = ModManager.InstalledMods.Where(m => m.id == modsToDisable[i].id).FirstOrDefault();
+
+                    if (matchingMod != null)
                     {
-                        ModManager.InstalledMods[installedModIndex].enabled = false;
-                        self.pendingEnabled[installedModIndex] = false;
+                        ModManager.InstalledMods[i].enabled = false;
+                        pendingEnabled[i] = false;
                     }
+
+                    //int installedModIndex = ModManager.InstalledMods.FindIndex(mod => mod.id == modsToDisable[i].id);
+                    //if (installedModIndex != -1)
+                    //{
+                    //    ModManager.InstalledMods[installedModIndex].enabled = false;
+                    //    self.pendingEnabled[installedModIndex] = false;
+                    //}
                 }
             }
 
@@ -53,12 +65,23 @@ namespace RainMeadow
             {
                 for (int i = 0; i < modsToEnable.Count; i++)
                 {
-                    int installedModIndex = ModManager.InstalledMods.FindIndex(mod => mod.id == modsToEnable[i].id);
-                    if (installedModIndex != -1)
+
+                    var matchingMod = ModManager.InstalledMods.Where(m => m.id == modsToEnable[i].id).FirstOrDefault();
+
+                    if (matchingMod != null)
                     {
-                        // ModManager.InstalledMods[installedModIndex].enabled = false;
-                        self.pendingEnabled[installedModIndex] = true;
+                        ModManager.InstalledMods[i].enabled = false;
+                        pendingEnabled[i] = true;
                     }
+
+
+                    //int installedModIndex = ModManager.InstalledMods.FindIndex(mod => mod.id == modsToEnable[i].id);
+                    //if (installedModIndex != -1)
+                    //{
+
+                    //    ModManager.InstalledMods[installedModIndex].enabled = false;
+                    //    self.pendingEnabled[i] = true;
+                    //}
                 }
             }
             orig(self);
@@ -110,32 +133,22 @@ namespace RainMeadow
             }
             if (modsToDisable.Count > 0)
             {
-                modMismatchString += Environment.NewLine + menu.Translate("Mods that need to be disabled: ") + string.Join(", ", modsToDisable.ConvertAll(mod => mod.LocalizedName));
+                modMismatchString += Environment.NewLine + menu.Translate("Mods that will be disabled: ") + string.Join(", ", modsToDisable.ConvertAll(mod => mod.LocalizedName));
                 this.modsToDisable = modsToDisable;
             }
             if (unknownMods.Count > 0)
             {
                 modMismatchString += Environment.NewLine + menu.Translate("Unable to find the following mods, please install them: ") + string.Join(", ", unknownMods);
+                this.unknownMods = unknownMods;
             }
-            // modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("Rain World may be restarted for these changes to take effect");
 
-            modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("You must match the host's mod list to proceed");
+            modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("Please confirm to auto-apply these changes, or cancel and return to lobby");
 
             Action confirmProceed = () =>
             {
-                if (OnlineManager.instance == null)
-                {
-                    manager.dialog = null;
-                    manager.ShowNextDialog();
-                    requiresRestartDialog = null;
-                    OnlineManager.LeaveLobby();
-                    manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
-                }
-                else
-                {
-                   
-                    Start(filesInBadState);
-                }
+
+                Start(filesInBadState);
+
             };
 
             Action cancelProceed = () =>
@@ -148,27 +161,33 @@ namespace RainMeadow
             };
 
 
-            if (OnlineManager.instance == null)
-            {
-                modMismatchString = "Error joining lobby";
-            }
 
-
-            checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager,  cancelProceed);
+            checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, cancelProceed);
 
             manager.ShowDialog(checkUserConfirmation);
+
+
+
         }
 
         public new void Start(bool filesInBadState)
         {
+
+            if (unknownMods.Count > 0)
+            {
+                manager.dialog = null;
+                requiresRestartDialog = null;
+                OnlineManager.LeaveLobby();
+                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+                return;
+            }
 
             if (requiresRestartDialog != null)
             {
                 manager.dialog = null;
                 manager.ShowNextDialog();
                 requiresRestartDialog = null;
-                OnlineManager.LeaveLobby();
-                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+
             }
             base.Start(filesInBadState);
 

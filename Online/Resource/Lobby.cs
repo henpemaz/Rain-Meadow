@@ -133,7 +133,7 @@ namespace RainMeadow
 
         protected override void AvailableImpl()
         {
-            
+
         }
 
         protected override void DeactivateImpl()
@@ -203,7 +203,7 @@ namespace RainMeadow
 
                 if (!lobby.modsChecked)
                 {
-                    RainMeadowModManager.CheckMods(this.mods, lobby.mods);
+                   RainMeadowModManager.CheckMods(this.mods, lobby.mods);
                     lobby.modsChecked = true;
                 }
 

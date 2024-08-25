@@ -69,7 +69,7 @@ namespace RainMeadow
 
                 ModApplier modApplyer = new(RWCustom.Custom.rainWorld.processManager, mods.ToList(), loadOrder);
 
-                modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
+                modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods, makeThemQuit);
 
                 modApplyer.OnFinish += (ModApplier modApplyer) =>
                 {
