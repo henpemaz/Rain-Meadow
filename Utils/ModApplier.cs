@@ -33,6 +33,7 @@ namespace RainMeadow
             menu = (Menu.Menu)manager.currentMainLoop;
             this.modsToDisable = new List<ModManager.Mod>();
             this.modsToEnable = new List<ModManager.Mod>();
+            this.unknownMods = new List<string>();
 
         }
 
@@ -44,20 +45,16 @@ namespace RainMeadow
                 for (int i = 0; i < modsToDisable.Count; i++)
                 {
 
-                    var matchingMod = ModManager.InstalledMods.Where(m => m.id == modsToDisable[i].id).FirstOrDefault();
-
+                    var matchingMod = ModManager.InstalledMods.FirstOrDefault(m => m.id == modsToDisable[i].id);
                     if (matchingMod != null)
                     {
-                        ModManager.InstalledMods[i].enabled = false;
-                        pendingEnabled[i] = false;
+                        if (pendingEnabled[i] != matchingMod.enabled)
+                        {
+                            pendingEnabled[i] = false;
+                        }
+
                     }
 
-                    //int installedModIndex = ModManager.InstalledMods.FindIndex(mod => mod.id == modsToDisable[i].id);
-                    //if (installedModIndex != -1)
-                    //{
-                    //    ModManager.InstalledMods[installedModIndex].enabled = false;
-                    //    self.pendingEnabled[installedModIndex] = false;
-                    //}
                 }
             }
 
@@ -66,22 +63,12 @@ namespace RainMeadow
                 for (int i = 0; i < modsToEnable.Count; i++)
                 {
 
-                    var matchingMod = ModManager.InstalledMods.Where(m => m.id == modsToEnable[i].id).FirstOrDefault();
+                    var matchingMod = ModManager.InstalledMods.FirstOrDefault(m => m.id == modsToEnable[i].id);
 
                     if (matchingMod != null)
                     {
-                        ModManager.InstalledMods[i].enabled = false;
-                        pendingEnabled[i] = true;
+                        matchingMod.enabled = false;
                     }
-
-
-                    //int installedModIndex = ModManager.InstalledMods.FindIndex(mod => mod.id == modsToEnable[i].id);
-                    //if (installedModIndex != -1)
-                    //{
-
-                    //    ModManager.InstalledMods[installedModIndex].enabled = false;
-                    //    self.pendingEnabled[i] = true;
-                    //}
                 }
             }
             orig(self);
