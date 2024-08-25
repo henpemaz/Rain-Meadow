@@ -3,9 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static RainMeadow.OnlineResource;
-using static RainMeadow.RainMeadow;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace RainMeadow
 {
@@ -14,7 +11,6 @@ namespace RainMeadow
         public DialogAsyncWait dialogBox;
         public DialogConfirm checkUserConfirmation;
         public DialogNotify requiresRestartDialog;
-        public DialogNotify restartText;
         public string modMismatchString;
 
 
@@ -115,7 +111,7 @@ namespace RainMeadow
 
             if (modsToEnable.Count > 0)
             {
-                modMismatchString += Environment.NewLine + menu.Translate("Mods currently enabled: ") + string.Join(", ", modsToEnable.ConvertAll(mod => mod.LocalizedName));
+                modMismatchString += Environment.NewLine + menu.Translate("Mods that will be enabled: ") + string.Join(", ", modsToEnable.ConvertAll(mod => mod.LocalizedName));
                 this.modsToEnable = modsToEnable;
             }
             if (modsToDisable.Count > 0)
