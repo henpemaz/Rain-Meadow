@@ -11,35 +11,35 @@ namespace RainMeadow
     public abstract class CreatureController : IOwnAHUD
     {
         public static ConditionalWeakTable<Creature, CreatureController> creatureControllers = new();
-        internal static void BindAvatar(Creature creature, OnlineCreature oc)
+        internal static void BindAvatar(Creature creature, OnlineCreature oc, MeadowAvatarCustomization customization)
         {
             if (creature is Player player)
             {
-                new MeadowPlayerController(player, oc, 0);
+                new MeadowPlayerController(player, oc, 0, customization);
             }
             else if(creature is Cicada cada)
             {
-                new CicadaController(cada, oc, 0);
+                new CicadaController(cada, oc, 0, customization);
             }
             else if (creature is Lizard liz)
             {
-                new LizardController(liz, oc, 0);
+                new LizardController(liz, oc, 0, customization);
             }
             else if (creature is Scavenger scav)
             {
-                new ScavengerController(scav, oc, 0);
+                new ScavengerController(scav, oc, 0, customization);
             }
             else if (creature is NeedleWorm noodle)
             {
-                new NoodleController(noodle, oc, 0);
+                new NoodleController(noodle, oc, 0, customization);
             }
             else if (creature is EggBug bug)
             {
-                new EggbugController(bug, oc, 0);
+                new EggbugController(bug, oc, 0, customization);
             }
             else if (creature is LanternMouse mouse)
             {
-                new LanternMouseController(mouse, oc, 0);
+                new LanternMouseController(mouse, oc, 0, customization);
             }
             else
             {
@@ -51,14 +51,19 @@ namespace RainMeadow
         public CreatureTemplate template;
         public OnlineCreature onlineCreature;
         public MeadowCreatureData mcd;
+        public MeadowVoice voice;
+        public MeadowAvatarCustomization customization;
 
-        public CreatureController(Creature creature, OnlineCreature oc, int playerNumber)
+
+        public CreatureController(Creature creature, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization)
         {
             this.creature = creature;
             this.template = creature.Template;
             this.onlineCreature = oc;
             this.mcd = oc.GetData<MeadowCreatureData>();
             this.playerNumber = playerNumber;
+            this.customization = customization;
+            this.voice = new(this);
 
             creatureControllers.Add(creature, this);
 
@@ -277,6 +282,8 @@ namespace RainMeadow
             if (this.wantToJump > 0) this.wantToJump--;
             if (this.wantToPickUp > 0) this.wantToPickUp--;
             if (this.wantToThrow > 0) this.wantToThrow--;
+
+            this.voice.Update();
 
             #region unimplemented
             // a lot of things copypasted from from p.update
@@ -762,6 +769,12 @@ namespace RainMeadow
             if (this.inputDir != Vector2.zero && specialInput[0].direction.magnitude < 0.2f)
             {
                 LookImpl(creature.DangerPos + 200 * inputDir);
+            }
+
+            if(wantToThrow > 0)
+            {
+                wantToThrow = 0;
+                this.voice.Call();
             }
 
             if (onlineCreature.isMine)

@@ -79,7 +79,7 @@ namespace RainMeadow
             player.pickUpCandidate = null; // prevent whiplash grab
         }
 
-        public MeadowPlayerController(Player player, OnlineCreature oc, int playerNumber) : base(player, oc, playerNumber)
+        public MeadowPlayerController(Player player, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(player, oc, playerNumber, customization)
         {
             player.controller = new ProxyController(this);
             this.player = player;

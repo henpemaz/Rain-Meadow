@@ -13,6 +13,8 @@ namespace RainMeadow
     {
         private void MeadowHooks()
         {
+            _ = Ext_SoundID.RM_Slugcat_Call; //load
+
             CicadaController.EnableCicada();
             LizardController.EnableLizard();
             ScavengerController.EnableScavenger();

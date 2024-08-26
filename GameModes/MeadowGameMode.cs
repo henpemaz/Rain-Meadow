@@ -357,7 +357,7 @@ namespace RainMeadow
                     RainMeadow.Error("missing mcd?? " + oc);
                 }
                 // playable creatures
-                CreatureController.BindAvatar(creature, oc);
+                CreatureController.BindAvatar(creature, oc, mcc);
 
                 creature.abstractCreature.tentacleImmune = true;
                 creature.abstractCreature.lavaImmune = true;

@@ -185,7 +185,8 @@ namespace RainMeadow
                 self.lizard.effectColor = col;
             }
         }
-        public LizardController(Lizard lizard, OnlineCreature oc, int playerNumber) : base(lizard, oc, playerNumber){
+
+        public LizardController(Lizard lizard, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(lizard, oc, playerNumber, customization){
 
             this.lizard = lizard;
             lizard.abstractCreature.personality.energy = 1f; // stop being lazy

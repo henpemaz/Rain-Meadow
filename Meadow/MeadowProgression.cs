@@ -45,6 +45,7 @@ namespace RainMeadow
             public string emotePrefix; // for emote sprites
             public string emoteAtlas; // atlas name
             public Color emoteColor; // emote tile color (pre-tint)
+            public SoundID voiceId;
             public List<Skin> skins = new();
             public int[] selectSpriteIndexes; // sprites to darken on character locked in select screen
             public WorldCoordinate startingCoords; // first spawn pos
@@ -68,6 +69,7 @@ namespace RainMeadow
                 emotePrefix = "sc_",
                 emoteAtlas = "emotes_slugcat",
                 emoteColor = new Color(85f, 120f, 120f, 255f) / 255f,
+                voiceId = RainMeadow.Ext_SoundID.RM_Slugcat_Call,
                 selectSpriteIndexes = new[] { 2 },
                 startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["SU_C04"], 7, 28, -1),
             });
@@ -77,6 +79,7 @@ namespace RainMeadow
                 emotePrefix = "liz_",
                 emoteAtlas = "emotes_lizard",
                 emoteColor = new Color(197, 220, 232, 255f) / 255f,
+                voiceId = RainMeadow.Ext_SoundID.RM_Lizard_Call,
                 selectSpriteIndexes = new[] { 1, 2 },
                 startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["DS_A06"], 12, 16, -1),
             });
@@ -86,6 +89,7 @@ namespace RainMeadow
                 emotePrefix = "squid_",
                 emoteAtlas = "emotes_squid",
                 emoteColor = new Color(81f, 81f, 81f, 255f) / 255f,
+                voiceId = RainMeadow.Ext_SoundID.RM_Cicada_Call,
                 selectSpriteIndexes = new[] { 2 },
                 startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["SI_D05"], 32, 18, -1),
             });
@@ -95,6 +99,7 @@ namespace RainMeadow
                 emotePrefix = "scav_",
                 emoteAtlas = "emotes_scav",
                 emoteColor = new Color(80,87,80,255) / 255f,
+                voiceId = RainMeadow.Ext_SoundID.RM_Scav_Call,
                 selectSpriteIndexes = new[] { 1 },
                 startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["GW_A11"], 26, 22, -1),
             });
@@ -104,6 +109,7 @@ namespace RainMeadow
                 emotePrefix = "sc_", // "noot_"
                 emoteAtlas = "emotes_slugcat",//"emotes_noot",
                 emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
+                voiceId = RainMeadow.Ext_SoundID.RM_Noot_Call,
                 selectSpriteIndexes = new int[0],
                 startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["LF_F02"], 63, 43, -1),
             });
@@ -113,6 +119,7 @@ namespace RainMeadow
                 emotePrefix = "sc_", // "noot_"
                 emoteAtlas = "emotes_slugcat",//"emotes_noot",
                 emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
+                voiceId = RainMeadow.Ext_SoundID.RM_Eggbug_Call,
                 selectSpriteIndexes = new[] { 2 },
                 startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["HI_B04"], 32, 18, -1),
             });
@@ -122,6 +129,7 @@ namespace RainMeadow
                 emotePrefix = "sc_", // "noot_"
                 emoteAtlas = "emotes_slugcat",//"emotes_noot",
                 emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
+                voiceId = RainMeadow.Ext_SoundID.RM_Mouse_Call,
                 selectSpriteIndexes = new int[0],
                 startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["SH_A21"], 32, 26, -1),
             });

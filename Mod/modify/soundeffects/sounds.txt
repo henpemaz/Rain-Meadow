@@ -1,0 +1,7 @@
+[ADD]RM_Slugcat_Call : rmslugcall/minVol=0.3/maxVol=0.4/minPitch=1.1/maxPitch=1.4
+[ADD]RM_Cicada_Call : rmcicadacall/minVol=0.3/maxVol=0.4/minPitch=0.6/maxPitch=1.0
+[ADD]RM_Lizard_Call : rmlizardcall/minVol=0.3/maxVol=0.4/minPitch=0.9/maxPitch=1.3
+[ADD]RM_Scav_Call : rmscavcall/minVol=0.3/maxVol=0.4/minPitch=0.8/maxPitch=1.2
+[ADD]RM_Noot_Call : rmnootcall/minVol=0.3/maxVol=0.4/minPitch=0.7/maxPitch=1.1
+[ADD]RM_Eggbug_Call : rmeggbugcall/minVol=0.3/maxVol=0.4/minPitch=0.9/maxPitch=1.5
+[ADD]RM_Mouse_Call : rmmousecall/minVol=0.3/maxVol=0.4/minPitch=0.8/maxPitch=1.2
