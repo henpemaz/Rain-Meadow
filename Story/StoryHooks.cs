@@ -93,7 +93,9 @@ namespace RainMeadow
                 {
                     OnlinePhysicalObject.map.TryGetValue(acList[i].realizedCreature.abstractPhysicalObject, out var alivePlayer);
 
+
                     var username = "";
+
                     try
                     {
                         username = (alivePlayer.owner.id as SteamMatchmakingManager.SteamPlayerId).name;
@@ -103,6 +105,7 @@ namespace RainMeadow
                         username = $"{acList[i]}";
                     };
 
+
                     self.pages[0].subObjects.Add(new Menu.MenuLabel(self, self.pages[0], self.Translate("FOUND PLAYERS"), new Vector2(1190, 553), new(110, 30), true));
                     var btn = new SimplerButton(self, self.pages[0], username, new Vector2(1190, 515) - i * new Vector2(0, 38), new(110, 30));
                     self.pages[0].subObjects.Add(btn);
@@ -111,7 +114,7 @@ namespace RainMeadow
                     // Introduce a local variable to hold the current index
                     int currentIdx = i;
 
-                    if ((acList[currentIdx].Room.realizedRoom == null))
+                    if (self.game.cameras[0].room.abstractRoom == acList[currentIdx].Room || acList[currentIdx].Room.realizedRoom == null)
                     {
                         btn.inactive = true;
                     }
