@@ -81,7 +81,7 @@ namespace RainMeadow
                     if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
                     if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
                     {
-                        if (ac.state.alive)
+                        if (ac.state.alive && ac.realizedCreature != null)
                         {
                             acList.Add(ac);
                         }
@@ -89,7 +89,7 @@ namespace RainMeadow
                 }
 
 
-                   for (int i = 0; i < acList.Count; i++)
+                for (int i = 0; i < acList.Count; i++)
                 {
                     OnlinePhysicalObject.map.TryGetValue(acList[i].realizedCreature.abstractPhysicalObject, out var alivePlayer);
 
@@ -103,7 +103,7 @@ namespace RainMeadow
                         username = $"{acList[i]}";
                     };
 
-                    self.pages[0].subObjects.Add(new Menu.MenuLabel(self, self.pages[0], self.Translate("ALIVE PLAYERS"), new Vector2(1190, 553), new(110, 30), true));
+                    self.pages[0].subObjects.Add(new Menu.MenuLabel(self, self.pages[0], self.Translate("FOUND PLAYERS"), new Vector2(1190, 553), new(110, 30), true));
                     var btn = new SimplerButton(self, self.pages[0], username, new Vector2(1190, 515) - i * new Vector2(0, 38), new(110, 30));
                     self.pages[0].subObjects.Add(btn);
                     btn.toggled = false;
@@ -111,22 +111,40 @@ namespace RainMeadow
                     // Introduce a local variable to hold the current index
                     int currentIdx = i;
 
+                    if ((acList[currentIdx].Room.realizedRoom == null))
+                    {
+                        btn.inactive = true;
+                    }
+                    else
+                    {
+                        btn.inactive = false;
+                    }
+
+
                     btn.OnClick += (_) =>
                     {
-                        btn.toggled = !btn.toggled;
 
-                        // Set all other buttons to false
-                        foreach (var otherBtn in self.pages[0].subObjects.OfType<SimplerButton>())
+                        if ((self.game.cameras[0].room.abstractRoom != acList[currentIdx].Room) && acList[currentIdx].Room.realizedRoom != null)
                         {
-                            if (otherBtn != btn)
+                            self.game.cameras[0].followAbstractCreature = acList[currentIdx];
+                            RainMeadow.Debug("Following " + acList[currentIdx]);
+                            self.game.cameras[0].MoveCamera(acList[currentIdx].Room.realizedRoom, -1);
+                            btn.toggled = !btn.toggled;
+
+
+                            // Set all other buttons to false
+                            foreach (var otherBtn in self.pages[0].subObjects.OfType<SimplerButton>())
                             {
-                                otherBtn.toggled = false;
+                                if (otherBtn != btn)
+                                {
+                                    otherBtn.toggled = false;
+                                }
                             }
                         }
-
-                        self.game.cameras[0].followAbstractCreature = acList[currentIdx];
-                        RainMeadow.Debug("Following " + acList[currentIdx]); 
-                        self.game.cameras[0].MoveCamera(acList[currentIdx].Room.realizedRoom, -1);
+                        else
+                        {
+                            return;
+                        }
                     };
                 }
             }

@@ -101,10 +101,6 @@ namespace RainMeadow
                 if (clientSettings.avatarId.FindEntity(true) is OnlineCreature oc)
                 {
                     abstractPlayer = oc.abstractCreature;
-                    if (abstractPlayer.state.alive)
-                    {
-                        abstractCreatureList.Add(abstractPlayer);
-                    }
                 }
                 return;
             }
