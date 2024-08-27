@@ -16,6 +16,7 @@ public partial class RainMeadow
         On.Player.Grabability += PlayerOnGrabability;
         On.Player.AddFood += Player_AddFood;
         On.Player.AddQuarterFood += Player_AddQuarterFood;
+        On.Player.FoodInRoom_bool += Player_FoodInRoom;
         On.Mushroom.BitByPlayer += Mushroom_BitByPlayer;
         On.KarmaFlower.BitByPlayer += KarmaFlower_BitByPlayer;
         On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites1;
@@ -93,6 +94,16 @@ public partial class RainMeadow
                 OnlineManager.lobby.owner.InvokeRPC(RPCs.AddFood, (short)add);
             }
         }
+    }
+
+    private int Player_FoodInRoom(On.Player.orig_FoodInRoom_bool orig, Player self, bool eatAndDestroy)
+    {
+        if (OnlineManager.lobby != null) {
+            if (self.dead) {
+                return self.FoodInStomach;
+            }
+        }
+        return orig(self, eatAndDestroy);
     }
 
     private void Mushroom_BitByPlayer(On.Mushroom.orig_BitByPlayer orig, Mushroom self, Creature.Grasp grasp, bool eu)

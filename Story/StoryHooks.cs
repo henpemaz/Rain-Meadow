@@ -411,6 +411,14 @@ namespace RainMeadow
         {
             if (isStoryMode(out var gameMode))
             {
+                /*
+                 * sets game to null and causes GoToWinScreen to fail
+                if (OnlineManager.lobby.isOwner)
+                {
+                    RPCs.InitGameOver();
+                    return;
+                }
+                */
                 //Initiate death whenever any player dies.
                 foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
                 {
@@ -445,21 +453,23 @@ namespace RainMeadow
             if (isStoryMode(out var gameMode))
             {
                 var storyClientSettings = gameMode.clientSettings as StoryClientSettings;
-                if (storyClientSettings.myLastDenPos != null)
-                {
-                    origSaveState.denPosition = storyClientSettings.myLastDenPos;
-                }
-                else if (!OnlineManager.lobby.isOwner)
-                {
-                    origSaveState.denPosition = (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos;
-                }
+                    RainMeadow.Debug($"origDenPos: {origSaveState.denPosition}");
+                    RainMeadow.Debug($"lastDenPos: {storyClientSettings.myLastDenPos}");
+                    RainMeadow.Debug($"defaultDenPos: {gameMode.defaultDenPos}");
 
                 if (OnlineManager.lobby.isOwner)
                 {
-                    (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos = origSaveState.denPosition;
+                    RainMeadow.Debug($"setting defaultDenPos to {origSaveState.denPosition}");
+                    gameMode.defaultDenPos = origSaveState.denPosition;
                 }
-
-                return origSaveState;
+                else if (storyClientSettings.myLastDenPos != null)
+                {
+                    origSaveState.denPosition = storyClientSettings.myLastDenPos;
+                }
+                else if (gameMode.defaultDenPos != null)
+                {
+                    origSaveState.denPosition = gameMode.defaultDenPos;
+                }
             }
             return origSaveState;
         }
