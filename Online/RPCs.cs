@@ -128,7 +128,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void MovePlayersToWinScreen(bool malnourished, string denPos)
         {
-            RainMeadow.Debug($"MovePlayersToWinScreen({malnourished}, {denPos}");
+            RainMeadow.Debug($"MovePlayersToWinScreen({malnourished}, {denPos})");
             if (denPos == null) {
                 var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
                 if (game == null || game.manager.upcomingProcess != null)
@@ -150,7 +150,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void GoToWinScreen(bool malnourished, string denPos)
         {
-            RainMeadow.Debug($"GoToWinScreen({malnourished}, {denPos}");
+            RainMeadow.Debug($"GoToWinScreen({malnourished}, {denPos})");
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
 
             if (game == null)
