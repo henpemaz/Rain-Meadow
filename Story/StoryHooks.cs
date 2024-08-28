@@ -43,6 +43,8 @@ namespace RainMeadow
             On.RainWorldGame.Win += RainWorldGame_Win;
             On.RainWorldGame.GameOver += RainWorldGame_GameOver;
 
+            On.SaveState.BringUpToDate += SaveState_BringUpToDate;
+
             On.WaterNut.Swell += WaterNut_Swell;
             On.SporePlant.Pacify += SporePlant_Pacify;
 
@@ -360,17 +362,29 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                if (!OnlineManager.lobby.isOwner)
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+                {
+                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                    {
+                        if (ac.state.alive)
+                            RainMeadow.Debug($"still alive: {playerAvatar}");
+                    }
+                }
+
+                if (OnlineManager.lobby.isOwner)
+                {
+                    RPCs.MovePlayersToDeathScreen();
+                }
+                /* ignore if not owner
+                else
                 {
                     if (!OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.MovePlayersToDeathScreen)))
                     {
                         OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToDeathScreen);
                     }
                 }
-                else
-                {
-                    RPCs.MovePlayersToDeathScreen();
-                }
+                */
             }
             else
             {
@@ -391,6 +405,7 @@ namespace RainMeadow
                         denPos = self.world.GetAbstractRoom(ac.pos).name;
                     }
                 }
+                RainMeadow.Debug($"({malnourished}, {denPos})");
                 if (OnlineManager.lobby.isOwner)
                 {
                     RPCs.MovePlayersToWinScreen(malnourished, denPos);
@@ -411,14 +426,14 @@ namespace RainMeadow
         {
             if (isStoryMode(out var gameMode))
             {
-                /*
-                 * sets game to null and causes GoToWinScreen to fail
+                //*
+                // * sets game to null and causes GoToWinScreen to fail
                 if (OnlineManager.lobby.isOwner)
                 {
                     RPCs.InitGameOver();
                     return;
                 }
-                */
+                //*/
                 //Initiate death whenever any player dies.
                 foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
                 {
@@ -472,6 +487,15 @@ namespace RainMeadow
                 }
             }
             return origSaveState;
+        }
+
+        private void SaveState_BringUpToDate(On.SaveState.orig_BringUpToDate orig, SaveState self, RainWorldGame game)
+        {
+            var denPos = self.denPosition;
+            orig(self, game);
+            if (isStoryMode(out var gameMode)) {
+                self.denPosition = denPos;
+            }
         }
 
         private void KarmaLadderScreen_Singal(On.Menu.KarmaLadderScreen.orig_Singal orig, Menu.KarmaLadderScreen self, Menu.MenuObject sender, string message)

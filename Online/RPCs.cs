@@ -128,7 +128,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void MovePlayersToWinScreen(bool malnourished, string denPos)
         {
-            RainMeadow.Debug($"MovePlayersToWinScreen({malnourished}, {denPos})");
+            RainMeadow.Debug($"({malnourished}, {denPos})");
             if (denPos == null) {
                 var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
                 if (game == null || game.manager.upcomingProcess != null)
@@ -141,7 +141,14 @@ namespace RainMeadow
             {
                 if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToWinScreen, malnourished, denPos)))
                 {
-                    player.InvokeRPC(RPCs.GoToWinScreen, malnourished, denPos);
+                    if (player.isMe)
+                    {
+                        GoToWinScreen(malnourished, denPos);
+                    }
+                    else
+                    {
+                        player.InvokeRPC(RPCs.GoToWinScreen, malnourished, denPos);
+                    }
                 }
             }
         }
@@ -150,8 +157,10 @@ namespace RainMeadow
         [RPCMethod]
         public static void GoToWinScreen(bool malnourished, string denPos)
         {
-            RainMeadow.Debug($"GoToWinScreen({malnourished}, {denPos})");
+            RainMeadow.Debug($"({malnourished}, {denPos})");
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+
+            RainMeadow.Debug($"RainWorldGame = {RWCustom.Custom.rainWorld.processManager.currentMainLoop}");
 
             if (game == null)
             {
@@ -160,7 +169,10 @@ namespace RainMeadow
             }
 
             if (game.manager.upcomingProcess != null)
-                RainMeadow.Debug($"game has upcomming process");
+            {
+                RainMeadow.Debug($"game has upcoming process");
+                return;
+            }
 
             if (!malnourished && !game.rainWorld.saveBackedUp)
             {
