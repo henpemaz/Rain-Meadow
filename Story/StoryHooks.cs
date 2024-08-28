@@ -468,9 +468,9 @@ namespace RainMeadow
             if (isStoryMode(out var gameMode))
             {
                 var storyClientSettings = gameMode.clientSettings as StoryClientSettings;
-                    RainMeadow.Debug($"origDenPos: {origSaveState.denPosition}");
-                    RainMeadow.Debug($"lastDenPos: {storyClientSettings.myLastDenPos}");
-                    RainMeadow.Debug($"defaultDenPos: {gameMode.defaultDenPos}");
+                RainMeadow.Debug($"origDenPos: {origSaveState.denPosition}");
+                RainMeadow.Debug($"lastDenPos: {storyClientSettings.myLastDenPos}");
+                RainMeadow.Debug($"defaultDenPos: {gameMode.defaultDenPos}");
 
                 if (OnlineManager.lobby.isOwner)
                 {

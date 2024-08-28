@@ -129,13 +129,21 @@ namespace RainMeadow
         public static void MovePlayersToWinScreen(bool malnourished, string denPos)
         {
             RainMeadow.Debug($"({malnourished}, {denPos})");
-            if (denPos == null) {
-                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-                if (game == null || game.manager.upcomingProcess != null)
+            if (OnlineManager.lobby.playerAvatars.TryGetValue(OnlineManager.mePlayer, out var playerAvatar))
+            {
+                if (playerAvatar.type != (byte)OnlineEntity.EntityId.IdType.none
+                    && playerAvatar.FindEntity(true) is OnlinePhysicalObject opo
+                    && opo.apo is AbstractCreature ac
+                    && ac.Room.shelter)
                 {
-                    return;
+                    denPos = ac.Room.name;
                 }
-                denPos = game.world.GetAbstractRoom(game.FirstAlivePlayer.pos).name;
+            }
+            if (denPos != null)
+            {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+                game.GetStorySession.saveState.denPosition = denPos;
+                (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos = denPos;
             }
             foreach (OnlinePlayer player in OnlineManager.players)
             {
@@ -157,7 +165,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void GoToWinScreen(bool malnourished, string denPos)
         {
-            RainMeadow.Debug($"({malnourished}, {denPos})");
+            RainMeadow.Debug($"({malnourished})");
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
 
             RainMeadow.Debug($"RainWorldGame = {RWCustom.Custom.rainWorld.processManager.currentMainLoop}");
@@ -174,17 +182,21 @@ namespace RainMeadow
                 return;
             }
 
-            if (!malnourished && !game.rainWorld.saveBackedUp)
-            {
-                game.rainWorld.saveBackedUp = true;
-                game.rainWorld.progression.BackUpSave("_Backup");
-            }
-
             if (OnlineManager.lobby.isOwner) {
-                if (denPos != null) {
-                    game.GetStorySession.saveState.denPosition = denPos;
+                if (!malnourished && !game.rainWorld.saveBackedUp)
+                {
+                    game.rainWorld.saveBackedUp = true;
+                    game.rainWorld.progression.BackUpSave("_Backup");
                 }
                 game.GetStorySession.saveState.SessionEnded(game, true, malnourished);
+            }
+            else
+            {
+                var storyClientSettings = OnlineManager.lobby.gameMode.clientSettings as StoryClientSettings;
+                if (storyClientSettings.isDead)
+                {
+                    storyClientSettings.myLastDenPos = null;
+                }
             }
 
             //TODO: need to sync p5 and l2m deam events. Not doing it rn.
