@@ -299,35 +299,30 @@ namespace RainMeadow
         }
         public static void TheThingTHatsCalledWhenPlayersUpdated()
         {
-            RainMeadow.Debug("Amount of players have been updated");
+            //ok so... flaw: if you just stay still in your one room alone, you'll be connected forever as this isn't called
+            //i'm thinkin of just hooking this onto whenever anything moves a room, maybe whenever anyone joins any room. whatever
             var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
             var creature = mgm.avatar;
             var musicdata = creature.GetData<MeadowMusicData>();
-            
+            if (creature.roomSession == null) return;
+            RainMeadow.Debug("Checking Players");
+
             if (musicdata.inGroup == -1)
             {
                 bool theresotherbozoes = false;
-                if (creature.roomSession != null) 
+                
+                foreach (var entity in creature.roomSession.activeEntities.Where(v => v != null))
                 {
-                    foreach (var entity in creature.roomSession.activeEntities.Where(v => v != null))
+                    RainMeadow.Debug("I see " + entity);
+                    if (entity.GetType() == typeof(OnlineCreature) && !entity.isMine)
                     {
-                        RainMeadow.Debug("I see " + entity);
-                        if (entity.GetType() == typeof(OnlineCreature) && !entity.isMine)
-                        {
-                            theresotherbozoes = true;
-                            RainMeadow.Debug("There are other people here!");
-                            break;
-                            //if (OnlineManager.lobby.playerAvatars[thing].FindEntity() is OnlineCreature oc && !oc.owner.isMe) 
-                        }
+                        theresotherbozoes = true;
+                        RainMeadow.Debug("There are other people here!");
+                        break;
+                        //if (OnlineManager.lobby.playerAvatars[thing].FindEntity() is OnlineCreature oc && !oc.owner.isMe) 
                     }
                 }
-                else
-                {
-                    RainMeadow.Debug("There's no roomsession, gonna wait until there is then try again");
-                    //until they do their magic with fixing roomsessions or whatever
-                    ItchingForRoomSession = true;
-                }
-
+            
                 if (theresotherbozoes)
                 {
                     joinTimer = 5;
@@ -339,51 +334,57 @@ namespace RainMeadow
             }
             else
             {
-                RainMeadow.Debug("Checking my room for equal groupIDs");
+                RainMeadow.Debug("Checking onlinecreatures for belonging in the same room");
+
                 List<int> IDsWithMe = new List<int>();
-                if (creature.roomSession != null)
+                foreach (var other in OnlineManager.lobby.playerAvatars.Values.Where(v => v != null))
                 {
-                    foreach (var entity in creature.roomSession.activeEntities.Where(v => v != null))
+                    if (other.FindEntity() is OnlineCreature oc)
                     {
-                        RainMeadow.Debug("T = " + entity);
-                        if (entity.GetType() == typeof(OnlineCreature))//&& !entity.isMine
+                        if (oc != null && oc.realizedCreature != null)
                         {
-                            RainMeadow.Debug("Person = " + entity); 
-                            IDsWithMe.Add(entity.GetData<MeadowMusicData>().inGroup);
-                        } //When entering a room again it doesn't see other onlinecreatures that are already in that room
+                            if (oc.realizedCreature.room == RoomImIn)
+                            {
+                                IDsWithMe.Add(oc.GetData<MeadowMusicData>().inGroup);
+                            }
+                        }
                     }
-                }
+                }//can be optimised aka don't need to check this cuz i already know from what made me do this
 
                 bool IAmWithMyFriends = IDsWithMe.Count(v => v == musicdata.inGroup) > 1;
                 //if (vibeRoom == null) return -1;
                 if (!IAmWithMyFriends)
                 {
-                    RainMeadow.Debug("checks one degree of seperation for anyone, Roomimin: " + RoomImIn.abstractRoom.name);
+                    RainMeadow.Debug("No dice, checks one degree of seperation for anyone, Roomimin: " + RoomImIn.abstractRoom.name);
                     List<int> GangNextDoor = new List<int>();
-
-                    for (int i = 0; i < RoomImIn.abstractRoom.connections.Length - 1; i++)
+                    RainMeadow.Debug("And it thinks that my connections are " + Newtonsoft.Json.JsonConvert.SerializeObject(RoomImIn.abstractRoom.connections));
+                    foreach (int connection in RoomImIn.abstractRoom.connections)
                     {
                         //var game = vibeRoom.connections[i];
-                        AbstractRoom abstractRoom = RoomImIn.world.GetAbstractRoom(RoomImIn.abstractRoom.connections[i]);
-                        RainMeadow.Debug("My neighbor " + abstractRoom.name);
+                        RainMeadow.Debug("Pointing towards connection: " + connection);
+                        if (connection != -1)
+                        {
+                            AbstractRoom abstractRoom = RoomImIn.world.GetAbstractRoom(connection); //ok so this says that there's no people because the people haven't joined the new resource yet so they just don't exist
+                            RainMeadow.Debug("My neighbor " + abstractRoom.name); //this is having an error because it's saying one of the connections is -1
 
-                        if (abstractRoom != null)
-                        { 
-                            if (abstractRoom.creatures.Count() != 0)
-                            {   
-                                RainMeadow.Debug("Hey this room has people in it");
-                                foreach (var entity in abstractRoom.creatures)
-                                {
-                                    RainMeadow.Debug(entity);
-                                    
-                                    foreach (var other in OnlineManager.lobby.playerAvatars.Values.Where(v => v != null))
+                            if (abstractRoom != null) //worry more about how connection can be -1 than an abstractroom being null.  
+                            { 
+                                if (abstractRoom.creatures.Count() != 0)
+                                {   
+                                    RainMeadow.Debug("Hey this room has creatures in it");
+                                    foreach (var entity in abstractRoom.creatures)
                                     {
-                                        if (other.FindEntity() is OnlineCreature oc)
+                                        RainMeadow.Debug(entity);
+                                        
+                                        foreach (var other in OnlineManager.lobby.playerAvatars.Values.Where(v => v != null))
                                         {
-                                            if (oc.creature == entity) 
+                                            if (other.FindEntity() is OnlineCreature oc)
                                             {
-                                                GangNextDoor.Add(oc.GetData<MeadowMusicData>().inGroup);
-                                                RainMeadow.Debug("Yeah i can find this guy's thingy");
+                                                if (oc.creature == entity) 
+                                                {
+                                                    GangNextDoor.Add(oc.GetData<MeadowMusicData>().inGroup);
+                                                    RainMeadow.Debug("Yeah i can find this guy's thingy");
+                                                }
                                             }
                                         }
                                     }
@@ -392,7 +393,7 @@ namespace RainMeadow
                         }
                     }
                     IAmWithMyFriends = GangNextDoor.Count(v => v == musicdata.inGroup) != 0;
-                    if (IAmWithMyFriends) RainMeadow.Debug("I don't believe anyone around me is my guys");
+                    if (!IAmWithMyFriends) RainMeadow.Debug("I don't believe anyone around me is my guys");
                 }
                 
                 if (!IAmWithMyFriends) 
@@ -486,8 +487,8 @@ namespace RainMeadow
                 }
             }
         }
-        static bool ItchingForRoomSession = false;
         static int AmountOfOtherFolksHere = 0;
+        static float? counterTimer;
         static void RawUpdatePatch(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
         {
             orig.Invoke(self, dt);
@@ -517,13 +518,41 @@ namespace RainMeadow
                 }
             }
             //ok so, player 2 enters a new room, but it's player 1 that leaves
-            RainMeadow.Debug(AmountOfOtherFolksHere);
-            if(AndNow != AmountOfOtherFolksHere) 
-            { 
-                TheThingTHatsCalledWhenPlayersUpdated(); 
+            //RainMeadow.Debug(AmountOfOtherFolksHere);
+            if(AndNow == AmountOfOtherFolksHere) 
+            {
+                //even if new people join the neighboring rooms, the people here are too intently staring at each other...
+            }
+            else
+            {
+                if(AndNow > AmountOfOtherFolksHere)
+                {
+                    //DUCKTAPEEEEEE 
+                    //because for some reason it doesn't see the people in my room???
+                    //and so maybe they only get registered in the list after (i) have joined that room??
+                    counterTimer = 4;
+                }
+                else
+                {
+                    //The amount of people here has decremented, which means somebody left for another room.
+                    //I will thus want to wait for them to actually enter the neighboring room.
+                    //...
+                    //I LOOOOOOOVE DUCKTAPEEEEEEEE
+                    counterTimer = 5;
+                }
                 AmountOfOtherFolksHere = AndNow; 
             }
 
+            if (counterTimer != null)
+            {
+                counterTimer -= dt;
+                if (counterTimer < 0)
+                {
+                    RainMeadow.Debug("Amount of players have been updated");
+                    TheThingTHatsCalledWhenPlayersUpdated();
+                    counterTimer = null;
+                }
+            }
             if (demiseTimer != null)
             {
                 demiseTimer -= dt;
@@ -545,8 +574,8 @@ namespace RainMeadow
                     //generate an array of all the players in your current room and feed that tooooooooooo
                     //MeadowPlayerId[] ballers = new MeadowPlayerId[4]; //temp
 
+                    self.cameras[0].virtualMicrophone.PlaySound(SoundID.Leviathan_Bite, 0f, 1, 1);
                     List<OnlineCreature> InThisRoom = new List<OnlineCreature>();
-
                     foreach (var entity in creature.roomSession.activeEntities.Where(v => v != null))
                     {
                         var thing = entity.owner;
@@ -568,6 +597,7 @@ namespace RainMeadow
                     //If there's other IDs here, join the predominant one if one exists
                     //else, join a random other player
                     List<OnlineCreature> RoomWithMe = new List<OnlineCreature>();
+                    self.cameras[0].virtualMicrophone.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, 0f, 1, 1);
 
                     foreach (var entity in creature.roomSession.activeEntities.Where(v => v != null))
                     {
@@ -597,14 +627,6 @@ namespace RainMeadow
                         RainMeadow.Debug("I will ask to join this player named " + RoomWithMe[rand].id);
                     }
                     joinTimer = null;
-                }
-            }
-            if (ItchingForRoomSession)
-            {
-                if(creature.roomSession != null)
-                {
-                    TheThingTHatsCalledWhenPlayersUpdated();
-                    ItchingForRoomSession = false;
                 }
             }
 
@@ -662,6 +684,10 @@ namespace RainMeadow
                     ivebeenpatientlywaiting = false;
                 }
             }
+
+            //note for tomorrow: previous method of checking only when your rooms playercount changes or when you switch room is bad, since it doesn't get called by players sticking to one room, nor when my fellow goes outside of my range of view.
+            //so adjust *when* updateplayerthing is called: have it be called when players tranfer rooms and *are in a room* (so when it has joined resource).
+            //Won't care about joinedresource's of things other than *creatures* of *players* in *my game* in *my region*. but maybe that's already taken care of? :)
 
             //RainMeadow.Debug("It's gotten this far, " + musicdata.inGroup + " " + musicdata.isDJ + " " + musicdata.providedSong + " " + musicdata.startedPlayingAt);
 
@@ -882,10 +908,15 @@ namespace RainMeadow
         public static void HelloNewRoom(VirtualMicrophone self, Room room)
         {
             RainMeadow.Debug("New room is being checked"); 
+
+            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode) return;
+            
             MyGuyMic = self;
             RoomImIn = room;
 
-            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode) return;
+            var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
+            var creature = mgm.avatar;
+            if (creature.roomSession != null) TheThingTHatsCalledWhenPlayersUpdated();
 
             MusicPlayer musicPlayer = room.game.manager.musicPlayer;
 
