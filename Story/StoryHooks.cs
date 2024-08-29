@@ -426,15 +426,12 @@ namespace RainMeadow
         {
             if (isStoryMode(out var gameMode))
             {
-                //*
-                // * sets game to null and causes GoToWinScreen to fail
                 if (OnlineManager.lobby.isOwner)
                 {
                     RPCs.InitGameOver();
                     return;
                 }
-                //*/
-                //Initiate death whenever any player dies.
+                //Initiate death only when all players are dead
                 foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
                 {
                     if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
@@ -443,7 +440,6 @@ namespace RainMeadow
                         if (ac.state.alive) return;
                     }
                 }
-                //INITIATE DEATH
                 foreach (OnlinePlayer player in OnlineManager.players)
                 {
                     if (!player.isMe)

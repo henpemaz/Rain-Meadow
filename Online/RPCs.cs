@@ -121,7 +121,10 @@ namespace RainMeadow
                 game.GoToRedsGameOver();
                 return;
             }
-            game.GetStorySession.saveState.SessionEnded(game, false, false);
+            if (OnlineManager.lobby.isOwner) {
+                game.GetStorySession.saveState.SessionEnded(game, false, false);
+            }
+            RainMeadow.Debug("I am moving to the deathscreen");
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.DeathScreen);
         }
 
