@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Xml.Schema;
+using RWCustom;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -341,6 +345,7 @@ namespace RainMeadow
             objectHit?.apo.realizedObject?.HitByExplosion(hitfac, null, 0);
         }
 
+
         [RPCMethod]
         public static void ScavengerBombHitSomething(OnlinePhysicalObject objectHitting, OnlinePhysicalObject objectHit, bool hitSomething, UnityEngine.Vector2 collisionPoint, bool eu)
         {
@@ -349,6 +354,16 @@ namespace RainMeadow
 
             var result = new SharedPhysics.CollisionResult(realizedObjectHit, null, null, hitSomething, collisionPoint);
             (realizedObject as ScavengerBomb).HitSomething(result, eu);
+
+
+        }
+
+        [RPCMethod]
+        public static void ScavengerBombExplode(OnlinePhysicalObject scavBomb)
+        {
+            var realizedObject = scavBomb.apo.realizedObject;
+
+            (realizedObject as ScavengerBomb).Explode(null);
 
         }
     }

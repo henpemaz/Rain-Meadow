@@ -13,13 +13,55 @@ namespace RainMeadow
             On.Creature.Violence += CreatureOnViolence;
             On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
-            On.ScavengerBomb.HitSomething += ScavengerBomb_HitSomething;
+            // On.ScavengerBomb.HitSomething += ScavengerBomb_HitSomething;
+            On.ScavengerBomb.Explode += ScavengerBomb_Explode;
+            
 
             On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor;
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
         }
 
 
+
+        private void ScavengerBomb_Explode(On.ScavengerBomb.orig_Explode orig, ScavengerBomb self, BodyChunk hitChunk)
+        {
+            if (OnlineManager.lobby != null)
+            {
+
+                if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
+                {
+                    Error("Error getting room for scav explosion!");
+
+                }
+                if (!room.isOwner)
+                {
+
+
+                    if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var scavBombAbstract))
+
+                    {
+                        Error("Error getting target of explosion object hit");
+
+                    }
+
+
+                    if (scavBombAbstract != null)
+                    {
+                        if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract)))
+                        {
+                            room.owner.InvokeRPC(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract);
+                        }
+                    }
+                }
+
+                orig(self, hitChunk);
+            }
+            else
+            {
+                orig(self, hitChunk);
+            }
+        
+    }
 
         private bool ScavengerBomb_HitSomething(On.ScavengerBomb.orig_HitSomething orig, ScavengerBomb self, SharedPhysics.CollisionResult result, bool eu)
         {
@@ -59,11 +101,16 @@ namespace RainMeadow
                     {
                         if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.ScavengerBombHitSomething, scavBombAbstract, objectHit, result.hitSomething, result.collisionPoint, eu)))
                         {
+                            for (int l = 0; l < 6; l++)
+                            {
+                                self.room.AddObject(new ScavengerBomb.BombFragment(result.collisionPoint, Custom.DegToVec(((float)l + UnityEngine.Random.value) / 6f * 360f) * Mathf.Lerp(18f, 38f, UnityEngine.Random.value)));
+
+                            }
+
                             room.owner.InvokeRPC(OnlinePhysicalObject.ScavengerBombHitSomething, scavBombAbstract, objectHit, result.hitSomething, result.collisionPoint, eu);
                         }
                     }
                 }
-
                 return orig(self, result, eu);
             }
             else
