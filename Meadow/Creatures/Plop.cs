@@ -43,7 +43,7 @@ namespace RainMeadow
             this.life -= 1f / this.lifeTime;
             this.fade = Mathf.Pow(this.life, 0.5f) * 0.15f;
 
-            if (creature.abstractPhysicalObject.Room != room.abstractRoom) Destroy();
+            if (life < 0f || creature.abstractPhysicalObject.Room != room.abstractRoom) Destroy();
         }
 
         public override void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
