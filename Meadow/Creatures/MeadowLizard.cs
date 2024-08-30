@@ -417,5 +417,14 @@ namespace RainMeadow
         {
             lizard.commitedToDropConnection = default(MovementConnection);
         }
+
+        protected override void OnCall()
+        {
+            if (lizard.graphicsModule is LizardGraphics lg && !lg.culled)
+            {
+                lizard.bubble = Math.Max(this.lizard.bubble, 10);
+                lizard.bubbleIntensity = Mathf.Max(0.4f, lizard.bubbleIntensity);
+            }
+        }
     }
 }

@@ -47,6 +47,7 @@ namespace RainMeadow
             internal static SoundID RM_Lizard_Call = new("RM_Lizard_Call", true);
             internal static SoundID RM_Scav_Call = new("RM_Scav_Call", true);
             internal static SoundID RM_Noot_Call = new("RM_Noot_Call", true);
+            internal static SoundID RM_SmallNoot_Call = new("RM_SmallNoot_Call", true);
             internal static SoundID RM_Eggbug_Call = new("RM_Eggbug_Call", true);
             internal static SoundID RM_Mouse_Call = new("RM_Mouse_Call", true);
         }

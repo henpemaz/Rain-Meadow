@@ -774,7 +774,7 @@ namespace RainMeadow
             if(wantToThrow > 0)
             {
                 wantToThrow = 0;
-                this.voice.Call();
+                Call();
             }
 
             if (onlineCreature.isMine)
@@ -863,6 +863,15 @@ namespace RainMeadow
             standStill = false;
         }
 
+        private void Call()
+        {
+            this.voice.Call();
+            if (creature.room != null && voice.Display)
+            {
+                creature.room.AddObject(new Plop(creature, 10f, 10f, 0.82f, 30f, 4f));
+            }
+            this.OnCall();
+        }
 
         internal void AIUpdate(ArtificialIntelligence ai)
         {
@@ -874,6 +883,7 @@ namespace RainMeadow
         }
 
         protected abstract void LookImpl(Vector2 pos);
+        protected abstract void OnCall();
 
         internal virtual bool FindDestination(WorldCoordinate basecoord, out WorldCoordinate toPos, out float magnitude)
         {

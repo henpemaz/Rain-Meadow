@@ -218,5 +218,10 @@ namespace RainMeadow
             noodle.AI.flySpeed = Custom.LerpAndTick(noodle.AI.flySpeed, 0, 0.4f, 0.1f);
             forceMove = false;
         }
+
+        protected override void OnCall()
+        {
+            noodle.screaming = 0.5f;
+        }
     }
 }

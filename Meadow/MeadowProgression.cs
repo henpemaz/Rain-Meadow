@@ -151,6 +151,7 @@ namespace RainMeadow
             public string emoteAtlasOverride;
             public string emotePrefixOverride;
             public Color? emoteColorOverride;
+            public SoundID? voiceIdOverride;
         }
 
         [TypeConverter(typeof(ExtEnumTypeConverter<Skin>))]
@@ -320,6 +321,7 @@ namespace RainMeadow
                 character = Character.Noodlefly,
                 displayName = "Small",
                 creatureType = CreatureTemplate.Type.SmallNeedleWorm,
+                voiceIdOverride = RainMeadow.Ext_SoundID.RM_SmallNoot_Call
             });
 
             public static Skin Eggbug_Blue = new("Eggbug_Blue", true, new()

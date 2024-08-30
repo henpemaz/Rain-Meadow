@@ -362,5 +362,13 @@ namespace RainMeadow
         {
             scavenger.lookPoint = pos;
         }
+
+        protected override void OnCall()
+        {
+            if (scavenger.graphicsModule is ScavengerGraphics sg)
+            {
+                sg.ShockReaction(0.4f);
+            }
+        }
     }
 }

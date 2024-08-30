@@ -143,5 +143,19 @@ namespace RainMeadow
                 eggbug.bodyChunks[1].vel.x -= flipDirection;
             }
         }
+
+        protected override void OnCall()
+        {
+            if(eggbug.graphicsModule is EggBugGraphics ebg && !ebg.culled)
+            {
+                Vector2 tohead = Custom.DirVec(eggbug.bodyChunks[1].pos, eggbug.bodyChunks[0].pos);
+                for (int i = 0; i < ebg.legs.GetLength(0); i++)
+                {
+                    ebg.legs[0, i].vel += tohead;
+                }
+                eggbug.shake = Math.Max(eggbug.shake, 5);
+                if (voice.Display) ebg.Squirt(voice.Volume * 0.33f);
+            }
+        }
     }
 }

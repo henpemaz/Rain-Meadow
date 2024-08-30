@@ -136,5 +136,23 @@ namespace RainMeadow
 
             mouse.voiceCounter = 10; // shh
         }
+
+        protected override void OnCall()
+        {
+            if (mouse.graphicsModule is MouseGraphics mg)
+            {
+                mg.head.vel += Custom.DirVec(mouse.bodyChunks[1].pos, mouse.bodyChunks[0].pos);
+                mg.ouchEyes = Mathf.Max(12, mg.ouchEyes);
+
+                if (voice.Display)
+                {
+                    int amount = Mathf.FloorToInt(Mathf.Lerp(2, 4, voice.Volume));
+                    for (int i = 0; i < amount; i++)
+                    {
+                        this.mouse.room.AddObject(new MouseSpark(this.mouse.mainBodyChunk.pos, this.mouse.mainBodyChunk.vel + Custom.DegToVec(360f * Random.value) * 6f * Random.value, 40f, mg.BodyColor));
+                    }
+                }
+            }
+        }
     }
 }
