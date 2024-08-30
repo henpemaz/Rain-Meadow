@@ -487,10 +487,12 @@ namespace RainMeadow
 
         private void SaveState_BringUpToDate(On.SaveState.orig_BringUpToDate orig, SaveState self, RainWorldGame game)
         {
-            var denPos = self.denPosition;
-            orig(self, game);
             if (isStoryMode(out var gameMode)) {
+                var denPos = self.denPosition;
+                orig(self, game);
                 self.denPosition = denPos;
+            } else {
+                orig(self, game);
             }
         }
 

@@ -185,7 +185,8 @@ namespace RainMeadow
                 return;
             }
 
-            if (OnlineManager.lobby.isOwner) {
+            if (OnlineManager.lobby.isOwner)
+            {
                 if (!malnourished && !game.rainWorld.saveBackedUp)
                 {
                     game.rainWorld.saveBackedUp = true;
@@ -198,7 +199,7 @@ namespace RainMeadow
                 var storyClientSettings = OnlineManager.lobby.gameMode.clientSettings as StoryClientSettings;
                 if (storyClientSettings.isDead)
                 {
-                    storyClientSettings.myLastDenPos = null;
+                    storyClientSettings.myLastDenPos = denPos;
                 }
             }
 
