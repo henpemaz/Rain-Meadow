@@ -13,7 +13,6 @@ namespace RainMeadow
             On.Creature.Violence += CreatureOnViolence;
             On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
-            // On.ScavengerBomb.HitSomething += ScavengerBomb_HitSomething;
             On.ScavengerBomb.Explode += ScavengerBomb_Explode;
             
 
@@ -62,62 +61,6 @@ namespace RainMeadow
             }
         
     }
-
-        private bool ScavengerBomb_HitSomething(On.ScavengerBomb.orig_HitSomething orig, ScavengerBomb self, SharedPhysics.CollisionResult result, bool eu)
-        {
-            if (OnlineManager.lobby != null)
-            {
-
-                if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
-                {
-                    Error("Error getting room for scav explosion!");
-
-                }
-                if (!room.isOwner)
-                {
-
-
-                    if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var scavBombAbstract))
-
-                    {
-                        Error("Error getting target of explosion object hit");
-
-                    }
-
-                    if (result.obj == null)
-                    {
-                        return false;
-                    }
-
-                    if (!OnlinePhysicalObject.map.TryGetValue(result.obj.abstractPhysicalObject, out var objectHit))
-
-                    {
-                        Error("Error getting target of explosion object hit");
-
-                    }
-
-
-                    if (scavBombAbstract != null)
-                    {
-                        if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.ScavengerBombHitSomething, scavBombAbstract, objectHit, result.hitSomething, result.collisionPoint, eu)))
-                        {
-                            for (int l = 0; l < 6; l++)
-                            {
-                                self.room.AddObject(new ScavengerBomb.BombFragment(result.collisionPoint, Custom.DegToVec(((float)l + UnityEngine.Random.value) / 6f * 360f) * Mathf.Lerp(18f, 38f, UnityEngine.Random.value)));
-
-                            }
-
-                            room.owner.InvokeRPC(OnlinePhysicalObject.ScavengerBombHitSomething, scavBombAbstract, objectHit, result.hitSomething, result.collisionPoint, eu);
-                        }
-                    }
-                }
-                return orig(self, result, eu);
-            }
-            else
-            {
-                return orig(self, result, eu);
-            }
-        }
 
         private static void Creature_SwitchGrasps(On.Creature.orig_SwitchGrasps orig, Creature self, int fromGrasp, int toGrasp)
         {
@@ -447,6 +390,13 @@ namespace RainMeadow
                 {
                     if (!OnlinePhysicalObject.map.TryGetValue(trueVillain.abstractPhysicalObject, out var onlineTrueVillain))
                     {
+                        if (trueVillain.abstractPhysicalObject.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb)
+                        {
+                            // scav bombs exit quickly, and that's ok.
+                            OnlinePhysicalObject onlineVillain = null;
+                            (onlineVictim as OnlineCreature).RPCCreatureViolence(onlineVillain, hitchunk?.index, hitappendage, directionandmomentum, type, damage, stunbonus);
+                            return;
+                        }
                         Error($"True villain {trueVillain} - {trueVillain.abstractPhysicalObject.ID} doesn't exist in online space!");
                         orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
                         return;
