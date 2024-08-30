@@ -237,7 +237,8 @@
 	</ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		@@ -242,4 +329,4 @@
+		<ItemGroup>
+			<BuildFiles Include="$(Outdir)\*" />
 		</ItemGroup>
 		<Copy SourceFiles="@(BuildFiles)" DestinationFolder="$(ProjectDir)Mod\plugins" />
 	</Target>
