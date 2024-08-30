@@ -7,7 +7,7 @@ namespace RainMeadow
 {
     public abstract class GroundCreatureController : CreatureController
     {
-        public GroundCreatureController(Creature creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber)
+        public GroundCreatureController(Creature creature, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(creature, oc, playerNumber, customization)
         {
             this._wallClimber = creature.Template.AccessibilityResistance(AItile.Accessibility.Wall).Allowed;
         }

@@ -185,7 +185,8 @@ namespace RainMeadow
                 self.lizard.effectColor = col;
             }
         }
-        public LizardController(Lizard lizard, OnlineCreature oc, int playerNumber) : base(lizard, oc, playerNumber){
+
+        public LizardController(Lizard lizard, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(lizard, oc, playerNumber, customization){
 
             this.lizard = lizard;
             lizard.abstractCreature.personality.energy = 1f; // stop being lazy
@@ -415,6 +416,15 @@ namespace RainMeadow
         protected override void ClearMovementOverride()
         {
             lizard.commitedToDropConnection = default(MovementConnection);
+        }
+
+        protected override void OnCall()
+        {
+            if (lizard.graphicsModule is LizardGraphics lg && !lg.culled)
+            {
+                lizard.bubble = Math.Max(this.lizard.bubble, 10);
+                lizard.bubbleIntensity = Mathf.Max(0.4f, lizard.bubbleIntensity);
+            }
         }
     }
 }

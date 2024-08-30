@@ -8,7 +8,7 @@ namespace RainMeadow
 {
     class CicadaController : AirCreatureController
     {
-        public CicadaController(Cicada creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber) { }
+        public CicadaController(Cicada creature, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(creature, oc, playerNumber, customization) { }
 
         public Cicada cicada => creature as Cicada;
 
@@ -443,6 +443,23 @@ namespace RainMeadow
         protected override void Moving(float magnitude)
         {
             cicada.AI.behavior = CicadaAI.Behavior.GetUnstuck; // helps with sitting behavior
+        }
+
+        protected override void OnCall()
+        {
+            if (cicada.graphicsModule is CicadaGraphics cg)
+            {
+                cg.blinkCounter = Math.Max(5, cg.blinkCounter);
+
+                for (int m = 0; m < 2; m++)
+                {
+                    for (int n = 0; n < 2; n++)
+                    {
+                        Limb limb = cg.tentacles[m, n];
+                        limb.vel += (cicada.bodyChunks[0].pos - cicada.bodyChunks[1].pos) + (limb.pos - cicada.bodyChunks[0].pos);
+                    }
+                }
+            }
         }
     }
 }

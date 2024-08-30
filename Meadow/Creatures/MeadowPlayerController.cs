@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using RWCustom;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -79,7 +80,16 @@ namespace RainMeadow
             player.pickUpCandidate = null; // prevent whiplash grab
         }
 
-        public MeadowPlayerController(Player player, OnlineCreature oc, int playerNumber) : base(player, oc, playerNumber)
+        protected override void OnCall()
+        {
+            if(player.graphicsModule is PlayerGraphics pg)
+            {
+                player.Blink(10);
+                pg.head.vel += 2f * Custom.DirVec(player.bodyChunks[1].pos, player.bodyChunks[0].pos);
+            }
+        }
+
+        public MeadowPlayerController(Player player, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(player, oc, playerNumber, customization)
         {
             player.controller = new ProxyController(this);
             this.player = player;
