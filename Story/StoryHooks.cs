@@ -22,6 +22,7 @@ namespace RainMeadow
         private void StoryHooks()
         {
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
+            On.PlayerProgression.SaveToDisk += PlayerProgression_SaveToDisk;
             On.Menu.SleepAndDeathScreen.ctor += SleepAndDeathScreen_ctor;
             On.Menu.SleepAndDeathScreen.Update += SleepAndDeathScreen_Update;
             On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
@@ -483,6 +484,12 @@ namespace RainMeadow
                 }
             }
             return origSaveState;
+        }
+
+        private bool PlayerProgression_SaveToDisk(On.PlayerProgression.orig_SaveToDisk orig, PlayerProgression self, bool saveCurrentState, bool saveMaps, bool saveMiscProg)
+        {
+            if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner) return false;
+            return orig(self, saveCurrentState, saveMaps, saveMiscProg);
         }
 
         private void SaveState_BringUpToDate(On.SaveState.orig_BringUpToDate orig, SaveState self, RainWorldGame game)

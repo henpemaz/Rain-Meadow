@@ -134,14 +134,7 @@ namespace RainMeadow
             RainMeadow.Debug($"({malnourished}, {denPos})");
 
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-            if (game == null || game.manager.upcomingProcess != null)
-            {
-                if (game == null)
-                    RainMeadow.Debug("game is null");
-                else
-                    RainMeadow.Debug($"game has upcoming process {game.manager.upcomingProcess}");
-                return;
-            }
+            if (game == null || game.manager.upcomingProcess != null) return;
 
             if (OnlineManager.lobby.playerAvatars.TryGetValue(OnlineManager.mePlayer, out var playerAvatar))
             {
@@ -158,17 +151,6 @@ namespace RainMeadow
             {
                 game.GetStorySession.saveState.denPosition = denPos;
                 (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos = denPos;
-            }
-
-            if (OnlineManager.lobby.isOwner)
-            {
-                if (!malnourished && !game.rainWorld.saveBackedUp)
-                {
-                    game.rainWorld.saveBackedUp = true;
-                    game.rainWorld.progression.BackUpSave("_Backup");
-                }
-                // TODO: handle null realized players (removed from game e.g. fall out of world / creature den)
-                game.GetStorySession.saveState.SessionEnded(game, true, malnourished);
             }
 
             foreach (OnlinePlayer player in OnlineManager.players)
@@ -198,7 +180,15 @@ namespace RainMeadow
                 return;
             }
 
-            if (!OnlineManager.lobby.isOwner)
+            if (OnlineManager.lobby.isOwner)
+            {
+                if (!malnourished && !game.rainWorld.saveBackedUp)
+                {
+                    game.rainWorld.saveBackedUp = true;
+                    game.rainWorld.progression.BackUpSave("_Backup");
+                }
+            }
+            else
             {
                 var storyClientSettings = OnlineManager.lobby.gameMode.clientSettings as StoryClientSettings;
                 if (storyClientSettings.isDead)
@@ -206,6 +196,8 @@ namespace RainMeadow
                     storyClientSettings.myLastDenPos = denPos;
                 }
             }
+
+            game.GetStorySession.saveState.SessionEnded(game, true, malnourished);
 
             //TODO: need to sync p5 and l2m deam events. Not doing it rn.
             DreamsState dreamsState = game.GetStorySession.saveState.dreamsState;
