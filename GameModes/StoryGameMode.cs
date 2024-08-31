@@ -41,7 +41,7 @@ namespace RainMeadow
             // todo if two join at once, this first check is faulty
         }
 
-        public override bool ShouldSyncObjectInWorld(WorldSession ws, AbstractPhysicalObject apo)
+        public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
             return true;
         }

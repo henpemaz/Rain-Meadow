@@ -8,12 +8,17 @@ namespace RainMeadow
         public void ApoEnteringRoom(AbstractPhysicalObject apo, WorldCoordinate pos)
         {
             if (!isAvailable || !isActive) return; // don't need to queue, easy enough to list on activation
-            if (!OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) // New to me
+            if (!OnlineManager.lobby.gameMode.ShouldSyncAPOInRoom(this, apo)) return;
+            if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+            {
+                oe.EnterResource(this);
+            }
+            else if (OnlineManager.lobby.gameMode.ShouldRegisterAPO(this, apo))
             {
                 RainMeadow.Debug($"{this} - registering {apo}");
                 oe = OnlinePhysicalObject.RegisterPhysicalObject(apo);
+                oe.EnterResource(this);
             }
-            oe.EnterResource(this);
         }
 
         public void ApoLeavingRoom(AbstractPhysicalObject apo)
@@ -25,7 +30,10 @@ namespace RainMeadow
             }
             else
             {
-                RainMeadow.Error($"Unregistered entity leaving {this} : {apo} - {Environment.StackTrace}");
+                if (OnlineManager.lobby.gameMode.ShouldSyncAPOInRoom(this, apo))
+                {
+                    RainMeadow.Error($"Unregistered entity leaving {this} : {apo} - {Environment.StackTrace}");
+                }
             }
         }
     }

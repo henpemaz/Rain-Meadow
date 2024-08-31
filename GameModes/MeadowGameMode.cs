@@ -362,6 +362,8 @@ namespace RainMeadow
                 creature.abstractCreature.tentacleImmune = true;
                 creature.abstractCreature.lavaImmune = true;
                 creature.abstractCreature.HypothermiaImmune = true;
+
+                creature.collisionLayer = 0; //collisions off
             }
             else
             {
@@ -381,14 +383,19 @@ namespace RainMeadow
             RainMeadow.Ext_PhysicalObjectType.MeadowGhost
         };
 
-        public override bool ShouldSyncObjectInRoom(RoomSession rs, AbstractPhysicalObject apo)
+        public override bool ShouldSyncAPOInRoom(RoomSession rs, AbstractPhysicalObject apo)
         {
             return relevantTypes.Contains(apo.type);
         }
 
-        public override bool ShouldSyncObjectInWorld(WorldSession ws, AbstractPhysicalObject apo)
+        public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
             return relevantTypes.Contains(apo.type);
+        }
+
+        public override bool ShouldRegisterAPO(OnlineResource resource, AbstractPhysicalObject apo)
+        {
+            return relevantTypes.Contains(apo.type) && (apo.type != AbstractPhysicalObject.AbstractObjectType.Creature || RainMeadow.sSpawningAvatar);
         }
 
         public override bool AllowedInMode(PlacedObject item)
@@ -398,7 +405,7 @@ namespace RainMeadow
 
         static HashSet<PlacedObject.Type> excludedItems = new()
         {
-            PlacedObject.Type.GhostSpot
+            PlacedObject.Type.GhostSpot,
         };
     }
 }

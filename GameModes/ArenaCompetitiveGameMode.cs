@@ -30,7 +30,7 @@ namespace RainMeadow
             return RainMeadow.Ext_ProcessID.ArenaLobbyMenu;
         }
 
-        public override bool ShouldSyncObjectInWorld(WorldSession ws, AbstractPhysicalObject apo)
+        public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
             return true;
         }
