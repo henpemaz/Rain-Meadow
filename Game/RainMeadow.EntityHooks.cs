@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MonoMod.RuntimeDetour;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -27,6 +28,20 @@ namespace RainMeadow
 
             On.AbstractCreature.Move += AbstractCreature_Move; // I'm watching your every step
             On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // I'm watching your every step
+
+            new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
+        }
+
+        private bool AbstractCreature_Quantify(Func<AbstractCreature, bool> orig, AbstractCreature self)
+        {
+            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
+            {
+                if (!oe.isMine)
+                {
+                    return false; // do not attempt to delete remote creatures
+                }
+            }
+            return orig(self);
         }
 
         private void AbstractCreature_ChangeRooms1(On.AbstractCreature.orig_ChangeRooms orig, AbstractCreature self, WorldCoordinate newCoord)
