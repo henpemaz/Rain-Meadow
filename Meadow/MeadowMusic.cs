@@ -137,10 +137,11 @@ namespace RainMeadow
         {
             RainMeadow.Debug("A player is asking to leave");
             int? HostOf = null;
-            var oc2 = OnlineManager.lobby.playerAvatars[OnlineManager.lobby.PlayerFromId(meadowLobbyPlayerId)]?.FindEntity();
+            var myoc = OnlineManager.lobby.playerAvatars[OnlineManager.lobby.PlayerFromId(meadowLobbyPlayerId)]?.FindEntity();
 
-            var ootherdata = oc2.GetData<MeadowMusicData>();
-            if (ootherdata.isDJ) { HostOf = ootherdata.inGroup; }
+            MeadowMusicData mydata = myoc.GetData<MeadowMusicData>();
+            if (mydata.isDJ) { HostOf = mydata.inGroup; }
+            rpcEvent.from.InvokeRPC(TellNowJoinPlayer, -1, true);
 
             if (HostOf != null)
             {
@@ -161,8 +162,6 @@ namespace RainMeadow
                     }
                 }
             }
-
-            rpcEvent.from.InvokeRPC(TellNowJoinPlayer, -1, true);
         }
         [RPCMethod]
         static void AskNowJoinID(RPCEvent rpcEvent, int RequestedID) //the server serving
@@ -188,12 +187,9 @@ namespace RainMeadow
         static void AskNowJoinPlayer(RPCEvent rpcEvent, OnlineEntity.EntityId entityid) //the server serving
         {
             RainMeadow.Debug("A player is asking to join another Player named " + entityid);
-            OnlineCreature? JoingingThisGuy = entityid.FindEntity() as OnlineCreature; //actually this'll have to just be a name eventually.
+            if (entityid.FindEntity() is not OnlineCreature JoingingThisGuy) return; //im scared
             int? newgroup = null;
             bool StartUnique = false;
-            
-
-            if (JoingingThisGuy == null) return; //henp this is fucked up im scared
             
             var TheirData = JoingingThisGuy.GetData<MeadowMusicData>();
             if (TheirData.inGroup == -1)
@@ -292,19 +288,23 @@ namespace RainMeadow
             int oldgroup = musicdata.inGroup;
             if (newgroup != -1 && oldgroup == -1 && !isdj)
             {
-                FadeThatShitOut = true;
+                IntegrationToNewGroup = true;
             }
             musicdata.isDJ = isdj;
             musicdata.inGroup = newgroup;
         }
+        //[RPCMethod]
+        //static void TellNowCheckRoom() //Call When somebody updates their Group or DJ
+        //{
+        //    TheThingTHatsCalledWhenPlayersUpdated();
+        //}
         public static void TheThingTHatsCalledWhenPlayersUpdated()
         {
-            //ok so... flaw: if you just stay still in your one room alone, you'll be connected forever as this isn't called
-            //i'm thinkin of just hooking this onto whenever anything moves a room, maybe whenever anyone joins any room. whatever
             var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
             var creature = mgm.avatar;
             var musicdata = creature.GetData<MeadowMusicData>();
             if (creature.roomSession == null) return;
+
             RainMeadow.Debug("Checking Players");
 
             if (musicdata.inGroup == -1)
@@ -355,16 +355,17 @@ namespace RainMeadow
                 //if (vibeRoom == null) return -1;
                 if (!IAmWithMyFriends)
                 {
-                    RainMeadow.Debug("No dice, checks one degree of seperation for anyone, Roomimin: " + RoomImIn.abstractRoom.name);
+                    RainMeadow.Debug("No dice, checks one degree of seperation for anyone, Room creature is in: " + creature.abstractCreature.Room.name);
                     List<int> GangNextDoor = new List<int>();
-                    RainMeadow.Debug("And it thinks that my connections are " + Newtonsoft.Json.JsonConvert.SerializeObject(RoomImIn.abstractRoom.connections));
-                    foreach (int connection in RoomImIn.abstractRoom.connections)
+                    
+                    RainMeadow.Debug("And it thinks that my connections are " + Newtonsoft.Json.JsonConvert.SerializeObject(creature.abstractCreature.Room.connections));
+                    foreach (int connection in creature.abstractCreature.Room.connections)
                     {
                         //var game = vibeRoom.connections[i];
                         RainMeadow.Debug("Pointing towards connection: " + connection);
                         if (connection != -1)
                         {
-                            AbstractRoom abstractRoom = RoomImIn.world.GetAbstractRoom(connection); //ok so this says that there's no people because the people haven't joined the new resource yet so they just don't exist
+                            AbstractRoom abstractRoom = creature.abstractCreature.Room.world.GetAbstractRoom(connection); //ok so this says that there's no people because the people haven't joined the new resource yet so they just don't exist
                             RainMeadow.Debug("My neighbor " + abstractRoom.name); //this is having an error because it's saying one of the connections is -1
 
                             if (abstractRoom != null) //worry more about how connection can be -1 than an abstractroom being null.  
@@ -437,7 +438,7 @@ namespace RainMeadow
                         var g = IDs.GroupBy(v => v);
                         var result = g.OrderByDescending(v => v).ToList();
                         if (result.Count > 1)
-                        {
+                        {//dramaaa~
                             if (result[0].Count() == result[1].Count())
                             {
                                 if (result[0].Key == musicdata.inGroup || result[1].Key == musicdata.inGroup)
@@ -483,12 +484,18 @@ namespace RainMeadow
                                 }
                             }
                         }
+                        else
+                        {
+                            //well, should just be my group here then, aye?     
+                            demiseTimer = null;
+                            groupdemiseTimer = null;
+                        }
                     }
                 }
             }
         }
-        static int AmountOfOtherFolksHere = 0;
-        static float? counterTimer;
+        //we don't check if players just leave, and don't rejoin. which is something they do, due to me not really caring about them when they're so far away, so they don't join for me.
+        //also, newroompatch will no longer call to updateplayers, since it'd already get called by my request to JoinThisResource.
         static void RawUpdatePatch(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
         {
             orig.Invoke(self, dt);
@@ -499,60 +506,7 @@ namespace RainMeadow
             var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
             var creature = mgm.avatar;
             var musicdata = creature.GetData<MeadowMusicData>();
-
-            int AndNow = 0;
-            foreach (var other in OnlineManager.lobby.playerAvatars.Values.Where(v => v != null))
-            {
-                if (other.FindEntity() is OnlineCreature oc && !oc.owner.isMe)
-                {
-                    if(oc != null)
-                    {
-                        if (oc.realizedCreature != null)
-                        {
-                            if (oc.realizedCreature.room == self.cameras[0].room)
-                            {
-                                AndNow++;
-                            }
-                        }
-                    }
-                }
-            }
-            //ok so, player 2 enters a new room, but it's player 1 that leaves
-            //RainMeadow.Debug(AmountOfOtherFolksHere);
-            if(AndNow == AmountOfOtherFolksHere) 
-            {
-                //even if new people join the neighboring rooms, the people here are too intently staring at each other...
-            }
-            else
-            {
-                if(AndNow > AmountOfOtherFolksHere)
-                {
-                    //DUCKTAPEEEEEE 
-                    //because for some reason it doesn't see the people in my room???
-                    //and so maybe they only get registered in the list after (i) have joined that room??
-                    counterTimer = 4;
-                }
-                else
-                {
-                    //The amount of people here has decremented, which means somebody left for another room.
-                    //I will thus want to wait for them to actually enter the neighboring room.
-                    //...
-                    //I LOOOOOOOVE DUCKTAPEEEEEEEE
-                    counterTimer = 5;
-                }
-                AmountOfOtherFolksHere = AndNow; 
-            }
-
-            if (counterTimer != null)
-            {
-                counterTimer -= dt;
-                if (counterTimer < 0)
-                {
-                    RainMeadow.Debug("Amount of players have been updated");
-                    TheThingTHatsCalledWhenPlayersUpdated();
-                    counterTimer = null;
-                }
-            }
+            
             if (demiseTimer != null)
             {
                 demiseTimer -= dt;
@@ -560,7 +514,7 @@ namespace RainMeadow
                 {
                     //LeaveGroup
                     RainMeadow.Debug("I will be asking to leave");
-                    self.cameras[0].virtualMicrophone.PlaySound(SoundID.Snail_Pop, 0f, 1, 1);
+                    self.cameras[0].virtualMicrophone.PlaySound(SoundID.Snail_Pop, creature.owner.inLobbyId == 1 ? -0.8f : 0.8f, 1, 1);
                     OnlineManager.lobby.owner.InvokeRPC(AskNowLeave, creature.owner.inLobbyId);
                     demiseTimer = null;
                 }
@@ -574,7 +528,7 @@ namespace RainMeadow
                     //generate an array of all the players in your current room and feed that tooooooooooo
                     //MeadowPlayerId[] ballers = new MeadowPlayerId[4]; //temp
 
-                    self.cameras[0].virtualMicrophone.PlaySound(SoundID.Leviathan_Bite, 0f, 1, 1);
+                    self.cameras[0].virtualMicrophone.PlaySound(SoundID.Leviathan_Bite, creature.owner.inLobbyId == 1 ? -0.8f : 0.8f, 1, 1);
                     List<OnlineCreature> InThisRoom = new List<OnlineCreature>();
                     foreach (var entity in creature.roomSession.activeEntities.Where(v => v != null))
                     {
@@ -597,7 +551,7 @@ namespace RainMeadow
                     //If there's other IDs here, join the predominant one if one exists
                     //else, join a random other player
                     List<OnlineCreature> RoomWithMe = new List<OnlineCreature>();
-                    self.cameras[0].virtualMicrophone.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, 0f, 1, 1);
+                    self.cameras[0].virtualMicrophone.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, creature.owner.inLobbyId == 1 ? -0.8f : 0.8f, 1, 1);
 
                     foreach (var entity in creature.roomSession.activeEntities.Where(v => v != null))
                     {
@@ -654,13 +608,37 @@ namespace RainMeadow
                 //RainMeadow.Debug("IsMased");
             }
 
-            if (FadeThatShitOut)
+            if (IntegrationToNewGroup)
             {
-                if (musicPlayer != null && musicPlayer.song != null)
+                MeadowMusicData? myDJsdata = musicdata; //just to make line 627 shut up + if noone else is a DJ, then i am
+                foreach (var other in OnlineManager.lobby.playerAvatars.Values.Where(v => v != null))
                 {
-                    musicPlayer.song.FadeOut(40f);
+                    if (other.FindEntity() is OnlineCreature oc && !oc.owner.isMe)
+                    {
+                        var otherdata = oc.GetData<MeadowMusicData>();
+                        // proccess other data  
+                        RainMeadow.Debug("Checking who else might be DJ dude");
+
+                        if (otherdata.inGroup == musicdata.inGroup && otherdata.isDJ)
+                        {
+                            RainMeadow.Debug("Yeah this guy");
+                            myDJsdata = otherdata;
+                        }
+                    }
                 }
-                FadeThatShitOut = false;
+
+                RainMeadow.Debug($"So do our songs match? {musicdata.providedSong} == {myDJsdata.providedSong}? And how far apart are we then? {musicdata.startedPlayingAt}, {myDJsdata.startedPlayingAt}");
+                if (musicdata.providedSong != myDJsdata.providedSong || Math.Max(musicdata.startedPlayingAt, myDJsdata.startedPlayingAt) - Math.Min(musicdata.startedPlayingAt, myDJsdata.startedPlayingAt) > 5)
+                {
+                    RainMeadow.Debug($"Yeah let's swtich gears dude");
+                    if (musicPlayer != null && musicPlayer.song != null)
+                    {
+                        musicPlayer.song.FadeOut(40f);
+                        skiptopoint = !ivebeenpatientlywaiting;
+                    }
+                }
+
+                IntegrationToNewGroup = false;
             }
 
             if (musicPlayer != null && musicPlayer.song != null && !musicPlayer.song.FadingOut)
@@ -669,6 +647,7 @@ namespace RainMeadow
                 {
                     if (musicPlayer.song.subTracks[0].source.time == 0)
                     {
+                        musicdata.startedPlayingAt = DJstartedat;
                         float calculatedthing = LobbyTime() - DJstartedat;
                         musicPlayer.song.subTracks[0].source.time = calculatedthing;
                         RainMeadow.Debug("Playing from a point " + LobbyTime() + " " + DJstartedat + " which amounts to " + calculatedthing);
@@ -721,7 +700,7 @@ namespace RainMeadow
                         {
                             RainMeadow.Debug("Trying to get host");
 
-                            MeadowMusicData? myDJsdata = musicdata; //just to make line 226 shut up + if noone else is a DJ, then i am
+                            MeadowMusicData? myDJsdata = musicdata;
                             foreach (var other in OnlineManager.lobby.playerAvatars.Values.Where(v => v != null))
                             {
                                 if (other.FindEntity() is OnlineCreature oc && !oc.owner.isMe)
@@ -745,7 +724,6 @@ namespace RainMeadow
                                 {
                                     RainMeadow.Debug("My host has a song, gonna try playing it");
                                     
-                                    float lobbydottime = LobbyTime();
                                     DJstartedat = (float)myDJsdata.startedPlayingAt; //if it is providing a song, it should be providing a time
                                     string tring = myDJsdata.providedSong + ".ogg";
                                     RainMeadow.Debug(tring);
@@ -753,7 +731,7 @@ namespace RainMeadow
                                     RainMeadow.Debug(IHaveThisSong);
                                     if (IHaveThisSong && hostsonglength != 0)
                                     {
-                                        float hostsongprogress = ( lobbydottime - DJstartedat ) / hostsonglength;
+                                        float hostsongprogress = ( LobbyTime() - DJstartedat ) / hostsonglength;
                                         if ( hostsongprogress < 0.95f)
                                         {
                                             RainMeadow.Debug("Meadow Music: Playing my DJs provided song: " + myDJsdata.providedSong + (ivebeenpatientlywaiting ? " supposedly from the beginning, after patiently waiting": " from a specific point, since i haven't waited") );
@@ -767,12 +745,11 @@ namespace RainMeadow
                                             musicPlayer.song = song;
                                             musicdata.providedSong = myDJsdata.providedSong;
 
-                                            RainMeadow.Debug(lobbydottime + " " + DJstartedat);
-                                            skiptopoint = !ivebeenpatientlywaiting;
+                                            RainMeadow.Debug( LobbyTime() + " " + DJstartedat);
                                         }
                                         else
                                         {
-                                            RainMeadow.Debug("Meadow Music: DJ is soon done, i'll wait");
+                                            RainMeadow.Debug("Meadow Music: DJ is soon done, i'll wait to play my song from the start");
                                             ivebeenpatientlywaiting = true;
                                         }
                                     }
@@ -795,7 +772,7 @@ namespace RainMeadow
                                 }
                                 else
                                 {
-                                    RainMeadow.Debug("Meadow Music: DJ isn't providing a song, i'll wait");
+                                    RainMeadow.Debug("Meadow Music: DJ isn't providing a song, i'll wait from the start");
                                     ivebeenpatientlywaiting = true;
                                 }
                             }
@@ -891,13 +868,12 @@ namespace RainMeadow
             }
             return num;
         }
+
         static VirtualMicrophone? MyGuyMic;
-        private static bool FadeThatShitOut;
+        private static bool IntegrationToNewGroup;
         public static float playthissongat;
         private static float DJstartedat;
         private static bool skiptopoint;
-
-
         static void NewRoomPatch(On.VirtualMicrophone.orig_NewRoom orig, VirtualMicrophone self, Room room)
         {
             orig.Invoke(self, room);
@@ -913,10 +889,6 @@ namespace RainMeadow
             
             MyGuyMic = self;
             RoomImIn = room;
-
-            var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
-            var creature = mgm.avatar;
-            if (creature.roomSession != null) TheThingTHatsCalledWhenPlayersUpdated();
 
             MusicPlayer musicPlayer = room.game.manager.musicPlayer;
 

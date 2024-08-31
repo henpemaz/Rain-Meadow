@@ -187,6 +187,15 @@ namespace RainMeadow
                     OnlineManager.AddFeed(inResource, this);
                 JoinOrLeavePending();
             }
+
+            if (inResource is RoomSession newRoom)
+            {
+                if (this is OnlineCreature)
+                {
+                    RainMeadow.Debug("So it is going to do the thing due to me being " + this);
+                    MeadowMusic.TheThingTHatsCalledWhenPlayersUpdated(); //do nullchecked returns :)
+                }
+            }
         }
 
         protected virtual void JoinImpl(OnlineResource inResource, EntityState initialState)
@@ -220,6 +229,15 @@ namespace RainMeadow
             if (primaryResource == null && !isPending)
             {
                 Deregister();
+            }
+
+            if (inResource is RoomSession newRoom)
+            {
+                if (this is OnlineCreature)
+                {
+                    RainMeadow.Debug("So it is going to do the thing due to me being " + this);
+                    MeadowMusic.TheThingTHatsCalledWhenPlayersUpdated(); //ok something needs to be changed :)
+                }
             }
         }
 
