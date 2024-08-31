@@ -132,6 +132,17 @@ namespace RainMeadow
         public static void MovePlayersToWinScreen(bool malnourished, string denPos)
         {
             RainMeadow.Debug($"({malnourished}, {denPos})");
+
+            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            if (game == null || game.manager.upcomingProcess != null)
+            {
+                if (game == null)
+                    RainMeadow.Debug("game is null");
+                else
+                    RainMeadow.Debug($"game has upcoming process {game.manager.upcomingProcess}");
+                return;
+            }
+
             if (OnlineManager.lobby.playerAvatars.TryGetValue(OnlineManager.mePlayer, out var playerAvatar))
             {
                 if (playerAvatar.type != (byte)OnlineEntity.EntityId.IdType.none
@@ -142,12 +153,23 @@ namespace RainMeadow
                     denPos = ac.Room.name;
                 }
             }
+
             if (denPos != null)
             {
-                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
                 game.GetStorySession.saveState.denPosition = denPos;
                 (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos = denPos;
             }
+
+            if (OnlineManager.lobby.isOwner)
+            {
+                if (!malnourished && !game.rainWorld.saveBackedUp)
+                {
+                    game.rainWorld.saveBackedUp = true;
+                    game.rainWorld.progression.BackUpSave("_Backup");
+                }
+                game.GetStorySession.saveState.SessionEnded(game, true, malnourished);
+            }
+
             foreach (OnlinePlayer player in OnlineManager.players)
             {
                 if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToWinScreen, malnourished, denPos)))
@@ -170,31 +192,12 @@ namespace RainMeadow
         {
             RainMeadow.Debug($"({malnourished})");
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-
-            RainMeadow.Debug($"RainWorldGame = {RWCustom.Custom.rainWorld.processManager.currentMainLoop}");
-
-            if (game == null)
+            if (game == null || game.manager.upcomingProcess != null)
             {
-                RainMeadow.Debug($"game is null");
                 return;
             }
 
-            if (game.manager.upcomingProcess != null)
-            {
-                RainMeadow.Debug($"game has upcoming process");
-                return;
-            }
-
-            if (OnlineManager.lobby.isOwner)
-            {
-                if (!malnourished && !game.rainWorld.saveBackedUp)
-                {
-                    game.rainWorld.saveBackedUp = true;
-                    game.rainWorld.progression.BackUpSave("_Backup");
-                }
-                game.GetStorySession.saveState.SessionEnded(game, true, malnourished);
-            }
-            else
+            if (!OnlineManager.lobby.isOwner)
             {
                 var storyClientSettings = OnlineManager.lobby.gameMode.clientSettings as StoryClientSettings;
                 if (storyClientSettings.isDead)
