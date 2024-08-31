@@ -2,9 +2,7 @@
 using System.Linq;
 using UnityEngine;
 using HUD;
-using MonoMod.Cil;
-using System;
-using Mono.Cecil.Cil;
+
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -135,8 +133,8 @@ namespace RainMeadow
                 foreach (var swamer in self.mySwarmers) 
                 {
                     var apo = swamer.abstractPhysicalObject;
-                    if (WorldSession.map.TryGetValue(self.room.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.ApoEnteringWorld(apo);
-                    if (RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoEnteringRoom(apo, apo.pos);
+                    self.room.world.GetResource().ApoEnteringWorld(apo);
+                    self.room.abstractRoom.GetResource().ApoEnteringRoom(apo, apo.pos);
                 }
             }
         }
@@ -625,9 +623,3 @@ namespace RainMeadow
         }
     }
 }
-
-
-
-
-
-

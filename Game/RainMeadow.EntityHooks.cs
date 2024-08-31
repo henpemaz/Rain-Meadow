@@ -73,11 +73,8 @@ namespace RainMeadow
             {
                 // leaving room is handled in absroom.removeentity
                 // adding to room is handled here so the position is updated properly
-                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, self)) ws.ApoEnteringWorld(self);
-                if (RoomSession.map.TryGetValue(self.world.GetAbstractRoom(newCoord.room), out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, self))
-                {
-                    rs.ApoEnteringRoom(self, newCoord);
-                }
+                self.world.GetResource().ApoEnteringWorld(self);
+                self.world.GetAbstractRoom(newCoord.room).GetResource().ApoEnteringRoom(self, newCoord);
             }
         }
 
@@ -210,8 +207,8 @@ namespace RainMeadow
             orig(self, ent);
             if (OnlineManager.lobby != null && ent is AbstractPhysicalObject apo && apo.pos.room == self.index) // skips apos being apo.Move'd
             {
-                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.ApoEnteringWorld(apo);
-                if (RoomSession.map.TryGetValue(self, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoEnteringRoom(apo, apo.pos);
+                self.world.GetResource().ApoEnteringWorld(apo);
+                if (RoomSession.map.TryGetValue(self, out var rs)) rs.ApoEnteringRoom(apo, apo.pos); // might not be registered yet
             }
         }
 
@@ -227,9 +224,9 @@ namespace RainMeadow
                 }
             }
             orig(self, entity);
-            if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo && RoomSession.map.TryGetValue(self, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo))
+            if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo)
             {
-                rs.ApoLeavingRoom(apo);
+                self.GetResource().ApoLeavingRoom(apo);
             }
         }
 
@@ -246,8 +243,8 @@ namespace RainMeadow
             orig(self);
             if (OnlineManager.lobby != null && self is AbstractPhysicalObject apo)
             {
-                if (RoomSession.map.TryGetValue(self.Room, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoLeavingRoom(apo);
-                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.ApoLeavingWorld(apo);
+                self.Room.GetResource().ApoLeavingRoom(apo);
+                self.world.GetResource().ApoLeavingWorld(apo);
             }
         }
 
@@ -265,8 +262,8 @@ namespace RainMeadow
             orig(self, entity);
             if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo)
             {
-                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.ApoEnteringWorld(apo);
-                if (RoomSession.map.TryGetValue(self, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoLeavingRoom(apo);
+                self.world.GetResource().ApoEnteringWorld(apo);
+                if (RoomSession.map.TryGetValue(self, out var rs)) rs.ApoLeavingRoom(apo); // rs might not be registered yet
             }
         }
 
