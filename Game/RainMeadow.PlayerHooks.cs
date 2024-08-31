@@ -98,7 +98,7 @@ public partial class RainMeadow
 
     private int Player_FoodInRoom(On.Player.orig_FoodInRoom_bool orig, Player self, bool eatAndDestroy)
     {
-        if (OnlineManager.lobby != null) {
+        if (OnlineManager.lobby != null  && OnlineManager.lobby.gameMode is StoryGameMode) {
             if (self.dead) {
                 return self.FoodInStomach;
             }

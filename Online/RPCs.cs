@@ -167,6 +167,7 @@ namespace RainMeadow
                     game.rainWorld.saveBackedUp = true;
                     game.rainWorld.progression.BackUpSave("_Backup");
                 }
+                // TODO: handle null realized players (removed from game e.g. fall out of world / creature den)
                 game.GetStorySession.saveState.SessionEnded(game, true, malnourished);
             }
 
