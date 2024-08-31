@@ -25,7 +25,7 @@ namespace RainMeadow
         private static void SubTrack_StopAndDestroy(On.Music.MusicPiece.SubTrack.orig_StopAndDestroy orig, MusicPiece.SubTrack self)
         {
             orig(self);
-            self.source.clip.UnloadAudioData();
+            self.source?.clip?.UnloadAudioData();
         }
 
         const int waitSecs = 5;
