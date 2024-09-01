@@ -199,7 +199,7 @@ namespace RainMeadow
             RainMeadow.Debug($"{oe} : {this}");
             joinedEntities.Add(oe.id, new EntityMembership(oe));
             activeEntities.Add(oe);
-            if (isOwner) lastModified = OnlineManager.mePlayer.tick;
+            EntitiesModified();
             if (!oe.isMine)
             {
                 oe.EnterResource(this);
@@ -276,7 +276,7 @@ namespace RainMeadow
             registeredEntities.Remove(oe.id);
             joinedEntities.Remove(oe.id);
             activeEntities.Remove(oe);
-            if (isOwner) lastModified = OnlineManager.mePlayer.tick;
+            EntitiesModified();
             if (!oe.isMine) oe.ExitResource(this);
             oe.OnLeftResource(this);
         }
@@ -346,7 +346,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug($"{oe} : {this} : to {to}");
             oe.NewOwner(to);
-            if (isOwner) lastModified = OnlineManager.mePlayer.tick;
+            EntitiesModified();
         }
     }
 }

@@ -1,11 +1,5 @@
-﻿using Menu;
-using On;
-using Menu;
-using On;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Globalization;
 using System.Linq;
 
 namespace RainMeadow
@@ -53,7 +47,8 @@ namespace RainMeadow
             if (isPending) throw new InvalidOperationException("pending");
             if (isAvailable) throw new InvalidOperationException("available");
             ClearIncommingBuffers();
-            pendingRequest = supervisor.InvokeRPC(RequestedLobby, key).Then(ResolveLobbyRequest);
+            isRequesting = true;
+            supervisor.InvokeRPC(RequestedLobby, key).Then(ResolveLobbyRequest);
         }
 
         [RPCMethod]
@@ -73,9 +68,7 @@ namespace RainMeadow
         public void ResolveLobbyRequest(GenericResult requestResult)
         {
             RainMeadow.Debug(this);
-            if (requestResult.referencedEvent == pendingRequest) pendingRequest = null;
-            else RainMeadow.Error($"Weird event situation, pending is {pendingRequest} and referenced is {requestResult.referencedEvent}");
-
+            isRequesting = false;
             if (requestResult is GenericResult.Ok)
             {
                 MatchmakingManager.instance.JoinLobby(true);
@@ -112,7 +105,6 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var _)) // Arena
             {
-
                 Region arenaRegion = new Region("arena", 0, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer);
 
                 var ws = new WorldSession(arenaRegion, this);
@@ -120,7 +112,6 @@ namespace RainMeadow
                 subresources.Add(ws);
 
                 RainMeadow.Debug(subresources.Count);
-
             }
             else
             {

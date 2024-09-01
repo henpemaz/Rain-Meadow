@@ -57,11 +57,12 @@ namespace RainMeadow
             return OnlineManager.players.FirstOrDefault(p => p.id == id);
         }
 
+        // the idea here was to decide by ping some day
         public virtual OnlinePlayer BestTransferCandidate(OnlineResource onlineResource, List<OnlinePlayer> subscribers)
         {
             if (onlineResource.isAvailable && subscribers.Contains(OnlineManager.mePlayer)) return OnlineManager.mePlayer;
             if (subscribers.Count < 1) return null;
-            return subscribers.FirstOrDefault(p => !p.hasLeft);
+            return subscribers.FirstOrDefault(p => !p.hasLeft && OnlineManager.lobby.gameMode.PlayerCanOwnResource(p, onlineResource));
         }
 
         public abstract MeadowPlayerId GetEmptyId();
