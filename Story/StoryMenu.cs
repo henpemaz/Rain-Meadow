@@ -329,19 +329,19 @@ namespace RainMeadow
             bodyLabel.label.alignment = FLabelAlignment.Right;
             this.pages[0].subObjects.Add(bodyLabel);
 
-
             var eyeLabel = new MenuLabel(this, mainPage, this.Translate("Eye color"), new Vector2(1181, 500), new(0, 30), false);
             eyeLabel.label.alignment = FLabelAlignment.Right;
             this.pages[0].subObjects.Add(eyeLabel);
 
-            bodyColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 553), "FFFFFF");
+            bodyColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 553), ColorUtility.ToHtmlStringRGB(RainMeadow.rainMeadowOptions.BodyColor.Value));
             var wrapper = new UIelementWrapper(this.tabWrapper, bodyColorPicker);
             bodyColorPicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
 
-            eyeColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 500), "000000");
+            eyeColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 500), ColorUtility.ToHtmlStringRGB(RainMeadow.rainMeadowOptions.EyeColor.Value));
             var wrapper2 = new UIelementWrapper(this.tabWrapper, eyeColorPicker);
             eyeColorPicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
         }
+
         private void SetupMenuItems()
         {
             // Music
@@ -443,15 +443,17 @@ namespace RainMeadow
         {
             this.personaSettings = (StoryClientSettings)OnlineManager.lobby.gameMode.clientSettings;
             personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
-            personaSettings.bodyColor = Color.white;
-            personaSettings.eyeColor = Color.black;
+            personaSettings.bodyColor = RainMeadow.rainMeadowOptions.BodyColor.Value;
+            personaSettings.eyeColor = RainMeadow.rainMeadowOptions.EyeColor.Value;
         }
 
         private void Colorpicker_OnValueChangedEvent()
         {
             if (personaSettings != null) personaSettings.bodyColor = bodyColorPicker.valuecolor;
             if (personaSettings != null) personaSettings.eyeColor = eyeColorPicker.valuecolor;
-
+            RainMeadow.rainMeadowOptions.BodyColor.Value = bodyColorPicker.valuecolor;
+            RainMeadow.rainMeadowOptions.EyeColor.Value = eyeColorPicker.valuecolor;
+            RainMeadow.rainMeadowOptions._SaveConfigFile();
         }
 
         private List<SlugcatStats.Name> AllSlugcats()
