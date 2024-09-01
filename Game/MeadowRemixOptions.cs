@@ -7,17 +7,17 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<KeyCode> FriendsListKey;
     public readonly Configurable<bool> SlugcatCustomToggle; 
     public readonly Configurable<bool> FriendViewClickToActivate;
+    public readonly Configurable<Color> BodyColor;
+    public readonly Configurable<Color> EyeColor;
     private UIelement[] UIArrPlayerOptions;
-    
-
 
     public RainMeadowOptions(global::RainMeadow.RainMeadow instance)
     {
-
         FriendsListKey = config.Bind("OpenMenuKey", KeyCode.J);
         SlugcatCustomToggle = config.Bind("SlugToggle", false);
         FriendViewClickToActivate = config.Bind("FriendViewHoldOrToggle", false);
-
+        BodyColor = config.Bind("BodyColor", Color.white);
+        EyeColor = config.Bind("EyeColor", Color.black);
     }
 
     public override void Initialize()
@@ -26,16 +26,12 @@ public class RainMeadowOptions : OptionInterface
         {
             OpTab opTab = new OpTab(this, "Options");
             Tabs = new OpTab[1] { opTab };
-
-
             UIArrPlayerOptions = new UIelement[11]
             {
-
                 new OpLabel(10f, 550f, "Options", bigText: true),
 
                 new OpLabel(10, 500f, "Key used for viewing friends' usernames"),
                 new OpKeyBinder(FriendsListKey, new Vector2(10f, 460f), new Vector2(150f, 30f)),
-
 
                 new OpLabel(10f, 410f, "Username Toggle", bigText: false),
                 new OpCheckBox(FriendViewClickToActivate, new Vector2(10f, 380f)),
@@ -51,9 +47,9 @@ public class RainMeadowOptions : OptionInterface
                 {
                     verticalAlignment = OpLabel.LabelVAlignment.Center
                 }
-};
+            };
+
             opTab.AddItems(UIArrPlayerOptions);
-          
         }
         catch (Exception ex)
         {
@@ -63,6 +59,5 @@ public class RainMeadowOptions : OptionInterface
 
     public override void Update()
     {
-
     }
 }
