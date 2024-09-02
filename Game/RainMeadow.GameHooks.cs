@@ -225,7 +225,13 @@ namespace RainMeadow
                 if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
 
                 ws.FullyReleaseResource();
-
+                if (self.manager.upcomingProcess != ProcessManager.ProcessID.MainMenu) // quit directly, otherwise wait release
+                {
+                    while (ws.isAvailable)
+                    {
+                        OnlineManager.ForceLoadUpdate();
+                    }
+                }
             }
         }
 
