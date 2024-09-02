@@ -436,8 +436,9 @@ namespace RainMeadow
                     }
                     else if (!gameMode.didStartCycle)
                     {
-                        RainMeadow.Debug("Ready!");
-                        isPlayerReady = true;
+                        sender.toggled = !sender.toggled;
+                        isPlayerReady = sender.toggled;
+                        RainMeadow.Debug(sender.toggled ? "Ready!" : "Cancelled!");
                         return;
                     }
                     RainMeadow.Debug("Continue - client");
