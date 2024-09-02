@@ -27,7 +27,7 @@ namespace RainMeadow
         public bool isPending => isRequesting || isReleasing || isWaitingForState; // Ongoing op
 
         public bool canRelease => !isPending // no ongoing transaction
-            && isActive && !subresources.Any(s => s.isAvailable || s.isPending) // no subresource available or pending
+            && (!isActive || !subresources.Any(s => s.isAvailable || s.isPending)) // no subresource available or pending
             && (!isOwner || participants.All(p => p.isMe || p.recentlyAckdTicks.Any(rt => NetIO.IsNewer(rt, lastModified)))); // state broadcasted
 
         public uint lastModified; // local tick used locally by owner only to ensure state is broadcasted
@@ -145,9 +145,8 @@ namespace RainMeadow
         protected void Unavailable()
         {
             RainMeadow.Debug(this);
-            if (!isActive) { throw new InvalidOperationException("resource is inactive, should have been unleased first"); }
             if (!isAvailable) { throw new InvalidOperationException("resource is already not available"); }
-            if (subresources.Any(s => s.isAvailable)) throw new InvalidOperationException("has available subresources");
+            if (isActive && subresources.Any(s => s.isAvailable)) throw new InvalidOperationException("has available subresources");
             isAvailable = false;
             isReleasing = false;
             releaseWhenPossible = false;
@@ -156,23 +155,9 @@ namespace RainMeadow
 
             ClearIncommingBuffers();
             OnlineManager.RemoveSubscriptions(this);
-
-            foreach (var ent in activeEntities)
-            {
-                ent.Deactivated(this);
-            }
-            OnlineManager.RemoveFeeds(this);
-
-            registeredEntities.Clear();
-            joinedEntities.Clear();
-            activeEntities.Clear();
-            registeredEntities = null;
-            joinedEntities = null;
-            activeEntities = null;
-
             latestState = null;
 
-            if (deactivateOnRelease)
+            if (isActive && deactivateOnRelease)
             {
                 Deactivate();
             }
@@ -188,11 +173,23 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             if (!isActive) { throw new InvalidOperationException("resource is already inactive"); }
             if (isAvailable) { throw new InvalidOperationException("resource is still available"); }
-            if (subresources.Any(s => s.isActive)) throw new InvalidOperationException("has active subresources");
             isActive = false;
             DeactivateImpl();
+
+            foreach (var ent in activeEntities)
+            {
+                ent.Deactivated(this);
+            }
+            OnlineManager.RemoveFeeds(this);
+
             subresources.Clear();
+            registeredEntities.Clear();
+            joinedEntities.Clear();
+            activeEntities.Clear();
             subresources = null;
+            registeredEntities = null;
+            joinedEntities = null;
+            activeEntities = null;
         }
 
         // Recursivelly release resources
@@ -262,7 +259,7 @@ namespace RainMeadow
                         if (player.isMe || player.hasLeft) continue;
                         Subscribed(player);
                     }
-                    ClaimAbandonedEntitiesAndResources(); // can this cause a recursion that I didn't intend when sorting out a leaving player?
+                    if (isActive) ClaimAbandonedEntitiesAndResources(); // can this cause a recursion that I didn't intend when sorting out a leaving player?
                 }
 
                 if (isWaitingForState) // I am the authority for the state of this

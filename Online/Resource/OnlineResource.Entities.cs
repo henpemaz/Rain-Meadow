@@ -79,7 +79,7 @@ namespace RainMeadow
 
             if (registerResult is GenericResult.Ok) // success
             {
-                if (isAvailable)
+                if (isActive)
                 {
                     EntityRegisteredInResource(oe, nee, ini);
                 }
@@ -182,7 +182,7 @@ namespace RainMeadow
 
             if (entityJoinResult is GenericResult.Ok) // success
             {
-                if (isAvailable)
+                if (isActive)
                 {
                     EntityJoinedResource(oe, ini);
                 }
@@ -257,7 +257,7 @@ namespace RainMeadow
 
             if (entityLeaveResult is GenericResult.Ok) // success
             {
-                if (isAvailable)
+                if (isActive)
                 {
                     EntityLeftResource(oe);
                 }
