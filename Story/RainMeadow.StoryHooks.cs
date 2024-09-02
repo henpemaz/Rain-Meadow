@@ -484,13 +484,22 @@ namespace RainMeadow
         {
             orig(self);
 
-            if (isStoryMode(out var gameMode))
+            if (isStoryMode(out var gameMode) && !OnlineManager.lobby.isOwner)
             {
-                if (isPlayerReady && gameMode.didStartCycle)
+                if (gameMode.didStartCycle)
                 {
-                    // HACK: doesn't seem like sender is ever used but still
-                    // maybe we could replay the sender of the intercepted CONTINUE signal?
-                    self.Singal(null, "CONTINUE");
+                    if (isPlayerReady)
+                    {
+                        self.Singal(self.continueButton, "CONTINUE");
+                    }
+                    else if (self.continueButton != null)
+                    {
+                        self.continueButton.menuLabel.text = self.Translate("CONTINUE");
+                    }
+                }
+                else if (self.continueButton != null)
+                {
+                    self.continueButton.menuLabel.text = self.Translate("READY");
                 }
             }
         }
