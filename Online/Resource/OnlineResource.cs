@@ -56,14 +56,9 @@ namespace RainMeadow
                 }
             }
 
-            if (releaseWhenPossible && canRelease) // somehow slipped out of the events system
+            if (releaseWhenPossible && canRelease) // delayed release, typical if owner and needs to wait for changes to broadcast
             {
                 Release();
-                releaseWhenPossible = false;
-            }
-            if (releaseWhenPossible && !canRelease)
-            {
-                RainMeadow.Trace($"Can't release {this} from {owner}, reasons: {!isPending} {isActive} {!subresources.Any(s => s.isAvailable || s.isPending)} {(!isOwner || participants.All(p => p.isMe || p.recentlyAckdTicks.Any(rt => NetIO.IsNewer(rt, lastModified))))}");
             }
         }
 
@@ -192,45 +187,23 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (!isActive) { throw new InvalidOperationException("resource is already inactive"); }
-            if (isAvailable)
-            {
-                if (RainMeadow.isArenaMode(out var _))
-                {
-                    this.releaseWhenPossible = true;
-                } else
-                {
-                    throw new InvalidOperationException("resource is still available");
-                }
-            }
+            if (isAvailable) { throw new InvalidOperationException("resource is still available"); }
             if (subresources.Any(s => s.isActive)) throw new InvalidOperationException("has active subresources");
             isActive = false;
             DeactivateImpl();
             subresources.Clear();
             subresources = null;
-            releaseWhenPossible = false;
         }
 
         // Recursivelly release resources
         public void FullyReleaseResource()
         {
             RainMeadow.Debug(this);
-            if (!isAvailable) {
-
-                if (RainMeadow.isArenaMode(out var _))
-                {
-                    RainMeadow.Error("Could not release resource but trying to continue...");
-                }
-                else
-                {
-                    throw new InvalidOperationException("not available");
-                }
-            }
             if (isActive)
             {
                 foreach (var sub in subresources)
                 {
-                    if (sub.isPending) { sub.releaseWhenPossible = true; }
-                    if (sub.isAvailable) sub.FullyReleaseResource();
+                    if (sub.isAvailable || sub.isPending) sub.FullyReleaseResource();
                 }
             }
 

@@ -149,18 +149,11 @@ namespace RainMeadow
             {
                 if (RoomSession.map.TryGetValue(self, out RoomSession rs))
                 {
-                    if (rs.isAvailable)
+                    if (rs.isAvailable || rs.isPending)
                     {
                         Debug("Queueing room release: " + self.name);
                         rs.abstractOnDeactivate = true;
                         rs.FullyReleaseResource();
-                        return;
-                    }
-                    if (rs.isPending)
-                    {
-                        Debug("Room pending: " + self.name);
-                        rs.abstractOnDeactivate = true;
-                        rs.releaseWhenPossible = true;
                         return;
                     }
                     Debug("Room released: " + self.name);
