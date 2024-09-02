@@ -125,7 +125,7 @@ namespace RainMeadow
                     OnlineResource res = subresources[i];
                     if (res.participants.Contains(OnlineManager.mePlayer))
                     {
-                        owner.InvokeRPC(res.Released);
+                        res.ForceRelease();
                     }
                 }
             }

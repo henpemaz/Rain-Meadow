@@ -43,6 +43,14 @@ namespace RainMeadow
             supervisor.InvokeRPC(this.Released).Then(this.ResolveRelease);
         }
 
+        // Ask the engine architects before using this
+        // emergency release for resources I wasn't meant to be subscribed to
+        private void ForceRelease()
+        {
+            isReleasing = true;
+            supervisor.InvokeRPC(this.Released).Then(this.ResolveRelease);
+        }
+
         // Someone requested this resource, if I supervise it I'll lease it
         [RPCMethod]
         public void Requested(RPCEvent request)
