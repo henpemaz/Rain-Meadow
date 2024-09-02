@@ -56,7 +56,7 @@ namespace RainMeadow
         public void Requested(RPCEvent request)
         {
             RainMeadow.Debug(this);
-            if (isSupervisor)
+            if (isSupervisor && !super.isReleasing)
             {
                 if (owner == null)
                 {
@@ -84,7 +84,7 @@ namespace RainMeadow
         public void Released(RPCEvent request)
         {
             RainMeadow.Debug(this);
-            if (isSupervisor)
+            if (isSupervisor && !super.isReleasing)
             {
                 request.from.QueueEvent(new GenericResult.Ok(request));
                 ParticipantLeft(request.from);
@@ -98,13 +98,13 @@ namespace RainMeadow
         public void Transfered(RPCEvent request)
         {
             RainMeadow.Debug(this);
-            if (isAvailable && (isActive || participants.Count == 1) && request.from == supervisor) // I am a subscriber with a valid state who now owns this resource
+            if (isAvailable && !isReleasing && (isActive || participants.Count == 1) && request.from == supervisor) // I am a subscriber with a valid state who now owns this resource
             {
                 request.from.QueueEvent(new GenericResult.Ok(request));
                 return;
             }
 
-            RainMeadow.Error($"Transfer error : {isAvailable} {(isActive || participants.Count == 1)} {request.from == supervisor}");
+            RainMeadow.Error($"Transfer error : {isAvailable} {!isReleasing} {(isActive || participants.Count == 1)} {request.from == supervisor}");
             request.from.QueueEvent(new GenericResult.Error(request)); // super should retry with someone else
         }
 
