@@ -434,6 +434,12 @@ namespace RainMeadow
                         RainMeadow.Debug("Continue - host");
                         gameMode.didStartCycle = true;
                     }
+                    else if (!gameMode.didStartCycle)
+                    {
+                        RainMeadow.Debug("Ready!");
+                        isPlayerReady = true;
+                        return;
+                    }
                     RainMeadow.Debug("Continue - client");
                 }
             }
@@ -477,9 +483,14 @@ namespace RainMeadow
         {
             orig(self);
 
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
+            if (isStoryMode(out var gameMode))
             {
-                self.continueButton.buttonBehav.greyedOut = !isPlayerReady;
+                if (isPlayerReady && gameMode.didStartCycle)
+                {
+                    // HACK: doesn't seem like sender is ever used but still
+                    // maybe we could replay the sender of the intercepted CONTINUE signal?
+                    self.Singal(null, "CONTINUE");
+                }
             }
         }
 
@@ -488,31 +499,10 @@ namespace RainMeadow
             RainMeadow.Debug("In SleepAndDeath Screen");
             orig(self, manager, ID);
 
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
+            if (isStoryMode(out var gameMode))
             {
                 isPlayerReady = false;
-                storyGameMode.didStartCycle = false;
-                //Create the READY button
-                var buttonPosX = self.ContinueAndExitButtonsXPos - 180f - self.manager.rainWorld.options.SafeScreenOffset.x;
-                var buttonPosY = Mathf.Max(self.manager.rainWorld.options.SafeScreenOffset.y, 53f);
-                var readyButton = new SimplerButton(self, self.pages[0], "READY",
-                    new Vector2(buttonPosX, buttonPosY),
-                    new Vector2(110f, 30f));
-
-                readyButton.OnClick += ReadyButton_OnClick;
-
-                self.pages[0].subObjects.Add(readyButton);
-                readyButton.black = 0;
-                self.pages[0].lastSelectedObject = readyButton;
-            }
-        }
-
-        private void ReadyButton_OnClick(SimplerButton obj)
-        {
-            if ((isStoryMode(out var gameMode) && gameMode.didStartCycle == true) || OnlineManager.lobby.isOwner)
-            {
-                RainMeadow.Debug("Ready!");
-                isPlayerReady = true;
+                gameMode.didStartCycle = false;
             }
         }
 
