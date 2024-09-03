@@ -348,9 +348,8 @@ namespace RainMeadow
         [RPCMethod]
         public static void ScavengerBombExplode(OnlinePhysicalObject scavBomb)
         {
-            var realizedObject = scavBomb.apo.realizedObject;
 
-            (realizedObject as ScavengerBomb).Explode(null);
+            (scavBomb.apo.realizedObject as ScavengerBomb)?.Explode(null);
 
         }
     }
