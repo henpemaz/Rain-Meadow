@@ -195,7 +195,7 @@ namespace RainMeadow
             RainMeadow.Trace($"atDestThisFrame? {self.atDestThisFrame}");
         }
 
-        public NoodleController(Creature creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber)
+        public NoodleController(Creature creature, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(creature, oc, playerNumber, customization)
         {
         }
 
@@ -217,6 +217,11 @@ namespace RainMeadow
             noodle.AI.behavior = NeedleWormAI.Behavior.Idle;
             noodle.AI.flySpeed = Custom.LerpAndTick(noodle.AI.flySpeed, 0, 0.4f, 0.1f);
             forceMove = false;
+        }
+
+        protected override void OnCall()
+        {
+            noodle.screaming = 0.5f;
         }
     }
 }

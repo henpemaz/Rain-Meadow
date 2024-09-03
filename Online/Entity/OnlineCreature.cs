@@ -15,6 +15,8 @@ namespace RainMeadow
 
             public OnlineCreatureDefinition(OnlineCreature onlineCreature, OnlineResource inResource) : base(onlineCreature, inResource)
             {
+                var wasId = onlineCreature.apo.ID.number;
+                onlineCreature.apo.ID.number = onlineCreature.apo.ID.RandomSeed;
                 if (RainMeadow.isArenaMode(out var _)) {
                     this.serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature);
 
@@ -22,6 +24,7 @@ namespace RainMeadow
                 } else {
                     this.serializedObject = SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
                 }
+                onlineCreature.apo.ID.number = wasId;
             }
 
             public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)

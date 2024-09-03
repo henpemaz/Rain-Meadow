@@ -264,7 +264,7 @@ namespace RainMeadow
             if (OnlineManager.lobby == null) return;
             if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineCreature))
             {
-                Error($"Creature {self} {self.abstractPhysicalObject.ID} doesn't exist in online space!");
+                Trace($"Creature {self} {self.abstractPhysicalObject.ID} doesn't exist in online space!");
                 return;
             }
             if (OnlineManager.lobby.gameMode is MeadowGameMode)
@@ -338,7 +338,7 @@ namespace RainMeadow
                     if (grasp == null) continue;
                     if (!OnlinePhysicalObject.map.TryGetValue(grasp.grabbed.abstractPhysicalObject, out var onlineGrabbed))
                     {
-                        Error($"Grabbed object {grasp.grabbed.abstractPhysicalObject} {grasp.grabbed.abstractPhysicalObject.ID} doesn't exist in online space!");
+                        Trace($"Grabbed object {grasp.grabbed.abstractPhysicalObject} {grasp.grabbed.abstractPhysicalObject.ID} doesn't exist in online space!");
                         continue;
                     }
                     if (!onlineGrabbed.isMine && onlineGrabbed.isTransferable && !onlineGrabbed.isPending) // been leased to someone else
@@ -354,7 +354,7 @@ namespace RainMeadow
                         {
                             if (!OnlinePhysicalObject.map.TryGetValue(grabbers.abstractPhysicalObject, out var tempEntity))
                             {
-                                Error($"Other grabber {grabbers.abstractPhysicalObject} {grabbers.abstractPhysicalObject.ID} doesn't exist in online space!");
+                                Trace($"Other grabber {grabbers.abstractPhysicalObject} {grabbers.abstractPhysicalObject.ID} doesn't exist in online space!");
                                 continue;
                             }
                             if (!tempEntity.isMine) continue;

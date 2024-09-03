@@ -72,6 +72,10 @@ namespace RainMeadow
 
         public void ResolveLobbyRequest(GenericResult requestResult)
         {
+            RainMeadow.Debug(this);
+            if (requestResult.referencedEvent == pendingRequest) pendingRequest = null;
+            else RainMeadow.Error($"Weird event situation, pending is {pendingRequest} and referenced is {requestResult.referencedEvent}");
+
             if (requestResult is GenericResult.Ok)
             {
                 MatchmakingManager.instance.JoinLobby(true);
@@ -91,7 +95,7 @@ namespace RainMeadow
             }
             else if (requestResult is GenericResult.Error) // I should retry
             {
-                Request();
+                RequestLobby((requestResult.referencedEvent as RPCEvent).args[0] as string);
                 RainMeadow.Error("request failed for " + this);
             }
         }
@@ -133,7 +137,7 @@ namespace RainMeadow
 
         protected override void AvailableImpl()
         {
-            
+
         }
 
         protected override void DeactivateImpl()
@@ -203,7 +207,7 @@ namespace RainMeadow
 
                 if (!lobby.modsChecked)
                 {
-                    RainMeadowModManager.CheckMods(this.mods, lobby.mods);
+                   RainMeadowModManager.CheckMods(this.mods, lobby.mods);
                     lobby.modsChecked = true;
                 }
 

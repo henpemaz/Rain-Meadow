@@ -15,7 +15,10 @@ namespace RainMeadow
 
             public OnlinePhysicalObjectDefinition(OnlinePhysicalObject onlinePhysicalObject, OnlineResource inResource) : base(onlinePhysicalObject, inResource)
             {
+                var wasId = onlinePhysicalObject.apo.ID.number;
+                onlinePhysicalObject.apo.ID.number = onlinePhysicalObject.apo.ID.RandomSeed;
                 serializedObject = onlinePhysicalObject.apo.ToString();
+                onlinePhysicalObject.apo.ID.number = wasId;
             }
 
             public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
@@ -100,7 +103,7 @@ namespace RainMeadow
             RainMeadow.Debug("serializedObject: " + newObjectEvent.serializedObject);
 
             var apo = SaveState.AbstractPhysicalObjectFromString(world, newObjectEvent.serializedObject);
-            id.altSeed = apo.ID.RandomSeed;
+            id.altSeed = apo.ID.RandomSeed; // this becomes a problem on transfers, the altSeed field is not used by vanila serialize, need to be sent as new field
             apo.ID = id;
             apo.pos = initialState.pos;
             return apo;

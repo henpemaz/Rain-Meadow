@@ -716,8 +716,8 @@ namespace RainMeadow
 
             if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo)
             {
-                if (WorldSession.map.TryGetValue(world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.ApoEnteringWorld(apo);
-                if (RoomSession.map.TryGetValue(asbtRoom, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoLeavingRoom(apo);
+                if (WorldSession.map.TryGetValue(world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncAPOInWorld(ws, apo)) ws.ApoEnteringWorld(apo);
+                if (RoomSession.map.TryGetValue(asbtRoom, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncAPOInRoom(rs, apo)) rs.ApoLeavingRoom(apo);
             }
         }
 

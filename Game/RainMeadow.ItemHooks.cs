@@ -36,6 +36,10 @@ namespace RainMeadow
             {
                 return new AbstractMeadowCollectible(world, apoType, pos, entityID);
             }
+            else if (apoType == RainMeadow.Ext_PhysicalObjectType.MeadowGhost)
+            {
+                return new AbstractMeadowGhost(world, apoType, pos, entityID);
+            }
             else if (apoType == RainMeadow.Ext_PhysicalObjectType.MeadowPlant)
             {
                 return new AbstractMeadowCollectible(world, apoType, pos, entityID);

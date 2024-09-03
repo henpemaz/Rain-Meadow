@@ -110,6 +110,7 @@ namespace RainMeadow
 
             var cheatButton = new SimplerButton(this, mainPage, "CHEAT", new Vector2(200f, 90f), new Vector2(110f, 30f));
             cheatButton.OnClick += (_) => {
+                if (manager.upcomingProcess != null) return;
                 for (int i = 0; i < 80; i++)
                 {
                     MeadowProgression.CharacterProgress();
@@ -130,8 +131,11 @@ namespace RainMeadow
 
             var resetButton = new SimplerButton(this, mainPage, "RESET", new Vector2(200f, 140f), new Vector2(110f, 30f));
             resetButton.OnClick += (_) => {
+                if (manager.upcomingProcess != null) return;
                 MeadowProgression.progressionData = null;
                 MeadowProgression.LoadDefaultProgression();
+                playableCharacters = MeadowProgression.AllAvailableCharacters();
+                ssm.slugcatPageIndex = 0;
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.MeadowMenu);
             };
             mainPage.subObjects.Add(resetButton);

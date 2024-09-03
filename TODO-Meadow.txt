@@ -1,19 +1,4 @@
 
-multi-player item
-- echo object
-- 3-ish per region
-- placed in "valid" spot with extra constraints
-	- need to be above a ground-creature-accessible tile
-	- 3-wide space
-- blue aura only, no particles, no palette change
-- on approach, floating foodpips show up
-- on staying close, pips update
-	- alternatively, on "bark"
-- on pips full, trigger
-- if triggered, plays paletteswap animation, particles fall from above, players gain gains
-- this plays "locally" so people entering the room late will still see it animate and reward
-
-
 what are the player-player interactions?
 - spot eachother
 - greet eachother
@@ -35,8 +20,10 @@ what are the player-player interactions?
 - tell others to come over here
 - tell others to go back, not come
 
+disable spawning things that aren't avatar
 
 handholding
+	would be so nice to grab cicada be carried by liz etc etc
 	"it's of uttermost importance to me that one cannot troll others with this"
 	either:
 		- invite and accept-to-be-held; or
@@ -44,11 +31,9 @@ handholding
 			you are not heavier nor locked out of anything, no downsides
 			Sky has both, with the invite system, but also the "follow"->"hold hand"
 
-
-teleports that go in game might need to spinlock waiting for unload/release
-right now might crash because requested while pending release
-
 creature todo
+- call prototype
+	meow knock zip bzz
 - remove collisions ?
 - can get stuck
 	some rooms will get fixed
@@ -57,12 +42,11 @@ creature todo
 - allow creature to change the creature-pipe they're going to mid-flight
 - need to sample color of creature and have it in skindata
 	- requires final-ish seeds
-
-player grabbing cicada = laggy physics
-	some mechanism for lending/borrowing control over an entity
-	main entity would sim both,
-		side who leased would still sim self attached to main
-	grabbing disabled for now
+- lightsource for dark areas
+- water controls for lizard and scav etc
+	needs to be there, crossing DS etc
+	SU_A12
+	I think the pathing logic breaks, water "isn't accessible" but it is. Istileaccessibletocreature accounts for it, some of my logic might not
 
 lizard todo
 - sometimes fails to grab poles when holding up
@@ -86,35 +70,18 @@ eggbug
 	pick seeds and names
 
 noot
-	make art
 	pick seeds and names
-	movement feels a tad boring
-		make tail float around more?
-
-	scream
 
 lantermouse
 	jump too small
+	seeds and names
 
-water controls for lizard and scav etc
-	needs to be there, crossing DS etc
-	SU_A12
-	I think the pathing logic breaks, water "isn't accessible" but it is. Istileaccessibletocreature accounts for it, some of my logic might not
-
-
-feedback
-lizard often misses grabbing pole on jump
-
-scav movement overshoots
 
 controller-disconnedted popup might be inconsistent
 
 visualize selected skin
 	will get color previews
 	but could have tiny screenshots
-
-rat can't beat 3-tiles-tall jump
-	maybe vertfact/horizfact to help
 
 tint implementation missing in most creatures
 eggbug collapses on room transition (wolfy dms has logs)
@@ -144,14 +111,4 @@ passage but the map isn't saving
 following others around is hard
 	need map implemented
 	could use pipes flashing colors if room inhabited
-
-
-certain creatures crash
-	need to filter creatures
-		prio filter
-	eventually fix them
-		needlebugai requires 2 fields
-		deer horn grabbing thing
-			might be same as 5p tendrils issue
-				player animation mode expects non-null climb-position, not synched
-
+	player list on passage screen

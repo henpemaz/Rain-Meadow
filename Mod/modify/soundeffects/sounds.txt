@@ -1,0 +1,9 @@
+[ADD]// Rainmeadow
+[ADD]RM_Slugcat_Call : rmslugcall/minVol=0.3/maxVol=0.4/minPitch=1.0/maxPitch=1.4
+[ADD]RM_Cicada_Call : rmcicadacall/minVol=0.4/maxVol=0.5/minPitch=1.4/maxPitch=2
+[ADD]RM_Lizard_Call : rmlizardcall/minVol=0.3/maxVol=0.4/minPitch=0.9/maxPitch=1.3
+[ADD]RM_Scav_Call : rmscavcall/minVol=0.3/maxVol=0.4/minPitch=0.8/maxPitch=1.2
+[ADD]RM_Noot_Call/minPitch=0.6/maxPitch=0.8/minVol=0.3/maxVol=0.4/rangeFac=0.7 : bighonk1, bighonk2, bighonk3, bighonk4, bighonk5, bighonk6
+[ADD]RM_SmallNoot_Call/minVol=0.2/maxVol=0.4/pitch=1.4 : honk1, honk2, honk3, honk4, honk5, honk6, honk7
+[ADD]RM_Eggbug_Call : ShriekB/minVol=0.2/maxVol=0.3/minPitch=0.6/maxPitch=1.0
+[ADD]RM_Mouse_Call : ShriekA/minVol=0.2/maxVol=0.3/minPitch=0.8/maxPitch=1.2

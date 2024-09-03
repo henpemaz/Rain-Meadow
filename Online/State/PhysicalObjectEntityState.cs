@@ -19,8 +19,6 @@ namespace RainMeadow
         public PhysicalObjectEntityState() : base() { }
         public PhysicalObjectEntityState(OnlinePhysicalObject onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
         {
-            if (inResource is WorldSession ws && !OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, onlineEntity.apo)) throw new InvalidOperationException("asked for world state, not synched");
-            if (inResource is RoomSession rs && !OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, onlineEntity.apo)) throw new InvalidOperationException("asked for room state, not synched");
             var realizedState = inResource is RoomSession;
             if (realizedState && onlineEntity.isMine && onlineEntity.apo.realizedObject != null && !onlineEntity.realized) { RainMeadow.Error($"have realized object, but not entity not marked as realized??: {onlineEntity} in resource {inResource}"); }
             if (realizedState && onlineEntity.isMine && !onlineEntity.realized)

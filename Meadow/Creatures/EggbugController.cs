@@ -65,7 +65,7 @@ namespace RainMeadow
             orig(self, eu);
         }
 
-        public EggbugController(EggBug creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber)
+        public EggbugController(EggBug creature, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(creature, oc, playerNumber, customization)
         {
             if (creature.grasps == null) creature.grasps = new Creature.Grasp[1];
             eggbug = creature;
@@ -141,6 +141,20 @@ namespace RainMeadow
                 eggbug.mainBodyChunk.vel.x += flipDirection;
                 eggbug.bodyChunks[1].vel.y += 1f;
                 eggbug.bodyChunks[1].vel.x -= flipDirection;
+            }
+        }
+
+        protected override void OnCall()
+        {
+            if(eggbug.graphicsModule is EggBugGraphics ebg && !ebg.culled)
+            {
+                Vector2 tohead = Custom.DirVec(eggbug.bodyChunks[1].pos, eggbug.bodyChunks[0].pos);
+                for (int i = 0; i < ebg.legs.GetLength(0); i++)
+                {
+                    ebg.legs[0, i].vel += tohead;
+                }
+                eggbug.shake = Math.Max(eggbug.shake, 5);
+                if (voice.Display) ebg.Squirt(voice.Volume * 0.33f);
             }
         }
     }

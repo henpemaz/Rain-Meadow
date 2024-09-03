@@ -9,10 +9,12 @@ namespace RainMeadow
         public ushort[] regionRedTokensGoal;
         public ushort[] regionBlueTokensGoal;
         public ushort[] regionGoldTokensGoal;
+        public ushort[] regionGhostsGoal;
 
         public int redTokensGoal;
         public int blueTokensGoal;
         public int goldTokensGoal;
+        public int ghostsGoal;
 
         public MeadowLobbyData(OnlineResource resource) : base(resource) { }
 
@@ -29,21 +31,26 @@ namespace RainMeadow
             Generics.FixedOrderedUshorts regionBlueTokensGoal;
             [OnlineField]
             Generics.FixedOrderedUshorts regionGoldTokensGoal;
+            [OnlineField]
+            Generics.FixedOrderedUshorts regionGhostsGoal;
             public State() { }
             public State(MeadowLobbyData meadowLobbyData)
             {
                 regionRedTokensGoal = new(meadowLobbyData.regionRedTokensGoal.ToList());
                 regionBlueTokensGoal = new(meadowLobbyData.regionBlueTokensGoal.ToList());
                 regionGoldTokensGoal = new(meadowLobbyData.regionGoldTokensGoal.ToList());
+                regionGhostsGoal = new(meadowLobbyData.regionGhostsGoal.ToList());
             }
 
             internal override Type GetDataType() => typeof(MeadowLobbyData);
 
             internal override void ReadTo(OnlineResource.ResourceData data)
             {
-                (data as MeadowLobbyData).regionRedTokensGoal = regionRedTokensGoal.list.ToArray();
-                (data as MeadowLobbyData).regionBlueTokensGoal = regionBlueTokensGoal.list.ToArray();
-                (data as MeadowLobbyData).regionGoldTokensGoal = regionGoldTokensGoal.list.ToArray();
+                MeadowLobbyData? meadowLobbyData = (data as MeadowLobbyData);
+                meadowLobbyData.regionRedTokensGoal = regionRedTokensGoal.list.ToArray();
+                meadowLobbyData.regionBlueTokensGoal = regionBlueTokensGoal.list.ToArray();
+                meadowLobbyData.regionGoldTokensGoal = regionGoldTokensGoal.list.ToArray();
+                meadowLobbyData.regionGhostsGoal = regionGhostsGoal.list.ToArray();
             }
         }
     }
