@@ -1,5 +1,4 @@
-﻿using IL.RWCustom;
-using UnityEngine;
+﻿using UnityEngine;
 namespace RainMeadow
 {
     public class RealizedScavengerBombState : RealizedPhysicalObjectState
@@ -54,13 +53,6 @@ namespace RainMeadow
             scavBomb.ignited = ignited;
             scavBomb.burn = burn;
             scavBomb.spikes = spikes;
-
-
-            // TODO: Scab Bomb is not printing
-            RainMeadow.Debug(scavBomb.CollideWithTerrain);
-
-
-
         }
     }
 }
