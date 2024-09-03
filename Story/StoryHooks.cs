@@ -363,29 +363,10 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
-                {
-                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                    {
-                        if (ac.state.alive)
-                            RainMeadow.Debug($"still alive: {playerAvatar}");
-                    }
-                }
-
                 if (OnlineManager.lobby.isOwner)
                 {
                     RPCs.MovePlayersToDeathScreen();
                 }
-                /* ignore if not owner
-                else
-                {
-                    if (!OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.MovePlayersToDeathScreen)))
-                    {
-                        OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToDeathScreen);
-                    }
-                }
-                */
             }
             else
             {
@@ -465,13 +446,9 @@ namespace RainMeadow
             if (isStoryMode(out var gameMode))
             {
                 var storyClientSettings = gameMode.clientSettings as StoryClientSettings;
-                RainMeadow.Debug($"origDenPos: {origSaveState.denPosition}");
-                RainMeadow.Debug($"lastDenPos: {storyClientSettings.myLastDenPos}");
-                RainMeadow.Debug($"defaultDenPos: {gameMode.defaultDenPos}");
 
                 if (OnlineManager.lobby.isOwner)
                 {
-                    RainMeadow.Debug($"setting defaultDenPos to {origSaveState.denPosition}");
                     gameMode.defaultDenPos = origSaveState.denPosition;
                 }
                 else if (storyClientSettings.myLastDenPos != null)
