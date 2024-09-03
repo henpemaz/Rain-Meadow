@@ -116,7 +116,7 @@ namespace RainMeadow
             }
         }
 
-        public ScavengerController(Scavenger scav, OnlineCreature oc, int playerNumber) : base(scav, oc, playerNumber) 
+        public ScavengerController(Scavenger scav, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(scav, oc, playerNumber, customization) 
         {
             scavenger = scav;
 
@@ -361,6 +361,14 @@ namespace RainMeadow
         protected override void LookImpl(Vector2 pos)
         {
             scavenger.lookPoint = pos;
+        }
+
+        protected override void OnCall()
+        {
+            if (scavenger.graphicsModule is ScavengerGraphics sg)
+            {
+                sg.ShockReaction(0.4f);
+            }
         }
     }
 }

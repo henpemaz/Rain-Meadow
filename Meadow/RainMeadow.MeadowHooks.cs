@@ -13,6 +13,8 @@ namespace RainMeadow
     {
         private void MeadowHooks()
         {
+            _ = Ext_SoundID.RM_Slugcat_Call; //load
+
             CicadaController.EnableCicada();
             LizardController.EnableLizard();
             ScavengerController.EnableScavenger();
@@ -54,6 +56,16 @@ namespace RainMeadow
 
             On.ShortcutGraphics.GenerateSprites += ShortcutGraphics_GenerateSprites;
 
+            On.World.SpawnGhost += World_SpawnGhost;
+        }
+
+        private void World_SpawnGhost(On.World.orig_SpawnGhost orig, World self)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                return; // no ghosts
+            }
+            orig(self);
         }
 
         private void ShortcutGraphics_GenerateSprites(On.ShortcutGraphics.orig_GenerateSprites orig, ShortcutGraphics self)

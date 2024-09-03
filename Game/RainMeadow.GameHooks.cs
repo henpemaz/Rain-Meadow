@@ -369,11 +369,10 @@ namespace RainMeadow
             }
 
 
-            if (WorldSession.map.TryGetValue(self.game.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, player))
+            if (WorldSession.map.TryGetValue(self.game.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncAPOInWorld(ws, player))
             {
                 ws.ApoEnteringWorld(player);
                 ws.roomSessions.First().Value.ApoEnteringRoom(player, player.pos);
-
             }
         }
     }

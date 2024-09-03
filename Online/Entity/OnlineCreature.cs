@@ -1,5 +1,6 @@
 ﻿using RWCustom;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -14,6 +15,8 @@ namespace RainMeadow
 
             public OnlineCreatureDefinition(OnlineCreature onlineCreature, OnlineResource inResource) : base(onlineCreature, inResource)
             {
+                var wasId = onlineCreature.apo.ID.number;
+                onlineCreature.apo.ID.number = onlineCreature.apo.ID.RandomSeed;
                 if (RainMeadow.isArenaMode(out var _)) {
                     this.serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature);
 
@@ -21,6 +24,7 @@ namespace RainMeadow
                 } else {
                     this.serializedObject = SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
                 }
+                onlineCreature.apo.ID.number = wasId;
             }
 
             public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
@@ -180,6 +184,23 @@ namespace RainMeadow
                     {
                         Vector2 vector = room.MiddleOfTile(entrancePos) + Custom.IntVector2ToVector2(room.ShorcutEntranceHoleDirection(entrancePos)) * -5f;
                         creature.graphicsModule.SuckedIntoShortCut(vector);
+                    }
+
+                    // required since noramally objects are removed "imediatelly after"
+                    // switching camera into a room with an object with obj.room = null crashes
+                    List<AbstractPhysicalObject> allConnectedObjects = this.abstractCreature.GetAllConnectedObjects();
+                    for (int i = 0; i < allConnectedObjects.Count; i++)
+                    {
+                        AbstractPhysicalObject obj = allConnectedObjects[i];
+                        if (obj.realizedObject != null)
+                        {
+                            if (obj.realizedObject is Creature)
+                            {
+                                (obj.realizedObject as Creature).inShortcut = true;
+                            }
+                            room.RemoveObject(obj.realizedObject);
+                            room.CleanOutObjectNotInThisRoom(obj.realizedObject); // very important
+                        }
                     }
                 }
                 catch (Exception)

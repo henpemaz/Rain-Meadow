@@ -11,12 +11,18 @@ namespace RainMeadow
         public void ApoEnteringWorld(AbstractPhysicalObject apo)
         {
             if (!isAvailable) throw new InvalidOperationException("not available");
-            if (!OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) // New to me
+            if (!OnlineManager.lobby.gameMode.ShouldSyncAPOInWorld(this, apo)) return;
+            if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+            {
+                oe.EnterResource(this);
+            }
+            else if (OnlineManager.lobby.gameMode.ShouldRegisterAPO(this, apo)) // New to me
             {
                 if (isActive)
                 {
                     RainMeadow.Debug($"{this} - registering {apo}");
                     oe = OnlinePhysicalObject.RegisterPhysicalObject(apo);
+                    oe.EnterResource(this);
                 }
                 else // world population generates before this can be activated // can't we simply mark it as active earlier?
                 {
@@ -25,7 +31,6 @@ namespace RainMeadow
                     return;
                 }
             }
-            oe.EnterResource(this);
         }
 
         public void ApoLeavingWorld(AbstractPhysicalObject apo)
@@ -36,7 +41,10 @@ namespace RainMeadow
             }
             else
             {
-                RainMeadow.Error($"Unregistered entity leaving {this} : {apo} - {Environment.StackTrace}");
+                if (OnlineManager.lobby.gameMode.ShouldSyncAPOInWorld(this, apo))
+                {
+                    RainMeadow.Error($"Unregistered entity leaving {this} : {apo} - {Environment.StackTrace}");
+                }
             }
         }
     }

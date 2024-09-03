@@ -37,6 +37,19 @@ namespace RainMeadow
             public static AbstractPhysicalObject.AbstractObjectType MeadowTokenRed = new("MeadowTokenRed", true);
             public static AbstractPhysicalObject.AbstractObjectType MeadowTokenBlue = new("MeadowTokenBlue", true);
             public static AbstractPhysicalObject.AbstractObjectType MeadowTokenGold = new("MeadowTokenGold", true);
+            public static AbstractPhysicalObject.AbstractObjectType MeadowGhost = new("MeadowGhost", true);
+        }
+
+        public class Ext_SoundID
+        {
+            internal static SoundID RM_Slugcat_Call = new("RM_Slugcat_Call", true);
+            internal static SoundID RM_Cicada_Call = new("RM_Cicada_Call", true);
+            internal static SoundID RM_Lizard_Call = new("RM_Lizard_Call", true);
+            internal static SoundID RM_Scav_Call = new("RM_Scav_Call", true);
+            internal static SoundID RM_Noot_Call = new("RM_Noot_Call", true);
+            internal static SoundID RM_SmallNoot_Call = new("RM_SmallNoot_Call", true);
+            internal static SoundID RM_Eggbug_Call = new("RM_Eggbug_Call", true);
+            internal static SoundID RM_Mouse_Call = new("RM_Mouse_Call", true);
         }
     }
 }

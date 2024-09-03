@@ -40,6 +40,7 @@ namespace RainMeadow
 
         internal string EmoteAtlas => skinData.emoteAtlasOverride ?? characterData.emoteAtlas;
         internal string EmotePrefix => skinData.emotePrefixOverride ?? characterData.emotePrefix;
+        public SoundID VoiceId => skinData.voiceIdOverride ?? characterData.voiceId;
 
         internal override void ModifyBodyColor(ref Color originalBodyColor)
         {

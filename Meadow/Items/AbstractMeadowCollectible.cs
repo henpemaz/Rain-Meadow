@@ -9,7 +9,7 @@ namespace RainMeadow
         public bool collected;
         public TickReference collectedTR;
         public int collectedAt;
-        const int duration = 40 * 10;
+        protected int duration = 40 * 10;
         public OnlinePhysicalObject online;
 
         internal bool Expired => collected && world.game.clock > collectedAt + duration;
@@ -54,7 +54,7 @@ namespace RainMeadow
             }
         }
 
-        private void NowCollected()
+        protected void NowCollected()
         {
             if (!online.isMine) { throw new InvalidProgrammerException("not owner: " + online); }
             if (collected) { return; }
@@ -92,7 +92,7 @@ namespace RainMeadow
             {
                 this.realizedObject = new MeadowPlant(this);
             }
-            if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed
+            else if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed
                 || type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue
                 || type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold
                 )

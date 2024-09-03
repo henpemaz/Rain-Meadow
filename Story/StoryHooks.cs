@@ -2,10 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using HUD;
-using MonoMod.Cil;
-using System;
-using Mono.Cecil.Cil;
-using static Rewired.ComponentControls.Effects.RotateAroundAxis;
+
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -97,17 +94,6 @@ namespace RainMeadow
                 if (!OnlineManager.lobby.isOwner && self.currentlyShowing == TextPrompt.InfoID.GameOver)
                 {
                     self.restartNotAllowed = 1; // block clients from GoToDeathScreen
-                    bool touchedInput = false;
-
-                    // let clients still have access to pause menu
-                    for (int j = 0; j < self.hud.rainWorld.options.controls.Length; j++)
-                    {
-                        touchedInput = ((self.hud.rainWorld.options.controls[j].gamePad || !self.defaultMapControls[j]) ? (touchedInput || self.hud.rainWorld.options.controls[j].GetButton(5) || RWInput.CheckPauseButton(0, inMenu: false)) : (touchedInput || self.hud.rainWorld.options.controls[j].GetButton(11)));
-                    }
-                    if (touchedInput)
-                    {
-                        self.gameOverMode = false;
-                    }
 
                 }
 
@@ -189,8 +175,8 @@ namespace RainMeadow
                 foreach (var swamer in self.mySwarmers)
                 {
                     var apo = swamer.abstractPhysicalObject;
-                    if (WorldSession.map.TryGetValue(self.room.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.ApoEnteringWorld(apo);
-                    if (RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoEnteringRoom(apo, apo.pos);
+                    self.room.world.GetResource().ApoEnteringWorld(apo);
+                    self.room.abstractRoom.GetResource().ApoEnteringRoom(apo, apo.pos);
                 }
             }
         }
@@ -491,6 +477,13 @@ namespace RainMeadow
                         RainMeadow.Debug("Continue - host");
                         gameMode.didStartCycle = true;
                     }
+                    else if (!gameMode.didStartCycle)
+                    {
+                        sender.toggled = !sender.toggled;
+                        isPlayerReady = sender.toggled;
+                        RainMeadow.Debug(sender.toggled ? "Ready!" : "Cancelled!");
+                        return;
+                    }
                     RainMeadow.Debug("Continue - client");
                 }
             }
@@ -534,9 +527,30 @@ namespace RainMeadow
         {
             orig(self);
 
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
+            if (isStoryMode(out var gameMode))
             {
-                self.continueButton.buttonBehav.greyedOut = !isPlayerReady;
+                if (OnlineManager.lobby.isOwner)
+                {
+                    self.continueButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
+                }
+                else
+                {
+                    if (gameMode.didStartCycle)
+                    {
+                        if (isPlayerReady)
+                        {
+                            self.Singal(self.continueButton, "CONTINUE");
+                        }
+                        else if (self.continueButton != null)
+                        {
+                            self.continueButton.menuLabel.text = self.Translate("CONTINUE");
+                        }
+                    }
+                    else if (self.continueButton != null)
+                    {
+                        self.continueButton.menuLabel.text = self.Translate("READY");
+                    }
+                }
             }
         }
 
@@ -545,31 +559,10 @@ namespace RainMeadow
             RainMeadow.Debug("In SleepAndDeath Screen");
             orig(self, manager, ID);
 
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
+            if (isStoryMode(out var gameMode))
             {
                 isPlayerReady = false;
-                storyGameMode.didStartCycle = false;
-                //Create the READY button
-                var buttonPosX = self.ContinueAndExitButtonsXPos - 180f - self.manager.rainWorld.options.SafeScreenOffset.x;
-                var buttonPosY = Mathf.Max(self.manager.rainWorld.options.SafeScreenOffset.y, 53f);
-                var readyButton = new SimplerButton(self, self.pages[0], "READY",
-                    new Vector2(buttonPosX, buttonPosY),
-                    new Vector2(110f, 30f));
-
-                readyButton.OnClick += ReadyButton_OnClick;
-
-                self.pages[0].subObjects.Add(readyButton);
-                readyButton.black = 0;
-                self.pages[0].lastSelectedObject = readyButton;
-            }
-        }
-
-        private void ReadyButton_OnClick(SimplerButton obj)
-        {
-            if ((isStoryMode(out var gameMode) && gameMode.didStartCycle == true) || OnlineManager.lobby.isOwner)
-            {
-                RainMeadow.Debug("Ready!");
-                isPlayerReady = true;
+                gameMode.didStartCycle = false;
             }
         }
 
@@ -680,9 +673,3 @@ namespace RainMeadow
         }
     }
 }
-
-
-
-
-
-

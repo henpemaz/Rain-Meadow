@@ -17,12 +17,15 @@ namespace RainMeadow
         private sbyte stuckBodyPart;
         [OnlineField(group = "spear")]
         private float stuckRotation;
+        [OnlineField(group = "spear")]
+        private int stuckInWallCycles;
 
         public RealizedSpearState() { }
         public RealizedSpearState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
             var spear = (Spear)onlineEntity.apo.realizedObject;
             stuckInWall = spear.stuckInWall;
+            stuckInWallCycles = spear.abstractSpear.stuckInWallCycles;
 
             if (spear.stuckInObject != null)
             {
@@ -52,6 +55,7 @@ namespace RainMeadow
             if (!onlineEntity.owner.isMe && onlineEntity.isPending) return; // Don't sync if pending, reduces visibility and effect of lag
             var spear = (Spear)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             spear.stuckInWall = stuckInWall;
+            spear.abstractSpear.stuckInWallCycles = stuckInWallCycles;
             if (!stuckInWall.HasValue)
                 spear.addPoles = false;
 
