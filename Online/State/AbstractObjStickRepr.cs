@@ -20,7 +20,8 @@ namespace RainMeadow
         private OnlinePhysicalObject _b;
         public OnlinePhysicalObject b
         {
-            get {
+            get
+            {
                 if (_b == null) _b = B.FindEntity() as OnlinePhysicalObject;
                 return _b;
             }
@@ -44,7 +45,7 @@ namespace RainMeadow
         public static AbstractObjStickRepr FromStick(AbstractPhysicalObject.AbstractObjectStick stick)
         {
             OnlinePhysicalObject b = null;
-            if(!OnlinePhysicalObject.map.TryGetValue(stick.A, out var a) || !OnlinePhysicalObject.map.TryGetValue(stick.B, out b))
+            if (!OnlinePhysicalObject.map.TryGetValue(stick.A, out var a) || !OnlinePhysicalObject.map.TryGetValue(stick.B, out b))
             {
                 RainMeadow.Error($"skipping stick because creatures not found online: {stick.A} {a} {stick.B} {b}");
                 return null;
@@ -98,6 +99,7 @@ namespace RainMeadow
 
             internal override void MakeStick(AbstractPhysicalObject A)
             {
+                RainMeadow.Debug(this);
                 if (OnlinePhysicalObject.map.TryGetValue(A, out OnlinePhysicalObject a) && a.owner == b.owner && !a.isPending && !b.isPending)
                 {
                     var stick = new AbstractPhysicalObject.AbstractSpearStick(a.apo, b.apo, chunk, bodyPart, angle);
@@ -129,6 +131,7 @@ namespace RainMeadow
 
             internal override void MakeStick(AbstractPhysicalObject A)
             {
+                RainMeadow.Debug(this);
                 if (OnlinePhysicalObject.map.TryGetValue(A, out OnlinePhysicalObject a) && a.owner == b.owner && !a.isPending && !b.isPending)
                 {
                     var stick = new AbstractPhysicalObject.AbstractSpearAppendageStick(a.apo, b.apo, appendage, prevSeg, distanceToNext, angle);
@@ -153,6 +156,7 @@ namespace RainMeadow
 
             internal override void MakeStick(AbstractPhysicalObject A)
             {
+                RainMeadow.Debug(this);
                 if (OnlinePhysicalObject.map.TryGetValue(A, out OnlinePhysicalObject a) && a.owner == b.owner && !a.isPending && !b.isPending)
                 {
                     var stick = new AbstractPhysicalObject.ImpaledOnSpearStick(a.apo, b.apo, chunk, onSpearPosition);
