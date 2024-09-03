@@ -48,15 +48,18 @@ namespace RainMeadow
 
         internal virtual void Tick(uint tick)
         {
-            foreach (var subresource in subresources)
+            if (isActive)
             {
-                if (subresource.isActive)
+                foreach (var subresource in subresources)
                 {
-                    subresource.Tick(tick);
+                    if (subresource.isAvailable)
+                    {
+                        subresource.Tick(tick);
+                    }
                 }
             }
 
-            if (releaseWhenPossible && canRelease) // delayed release, typical if owner and needs to wait for changes to broadcast
+            if (releaseWhenPossible && canRelease) // delayed release, typical if owner needs to wait for changes to broadcast
             {
                 Release();
             }
@@ -87,6 +90,8 @@ namespace RainMeadow
             OnlineManager.lobby.gameMode.ResourceAvailable(this);
 
             if (this.activateOnAvailable) Activate();
+
+            if (releaseWhenPossible) FullyReleaseResource(); // my bad I don't want it anymore
         }
 
         protected abstract void ActivateImpl();
@@ -130,9 +135,6 @@ namespace RainMeadow
             }
 
             OnlineManager.lobby.gameMode.ResourceActive(this);
-
-            if (releaseWhenPossible) FullyReleaseResource(); // my bad I don't want it anymore
-            else if (owner.hasLeft) OnPlayerDisconnect(owner); // I might be late to the party but if I'm the only one here I can claim it now
         }
 
         public bool deactivateOnRelease = true; // hmm turns out we always do this
