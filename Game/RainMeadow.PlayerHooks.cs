@@ -26,7 +26,7 @@ public partial class RainMeadow
     private void KarmaFlower_BitByPlayer(On.KarmaFlower.orig_BitByPlayer orig, KarmaFlower self, Creature.Grasp grasp, bool eu)
     {
         orig(self, grasp, eu);
-        if (OnlineManager.lobby.gameMode is StoryGameMode)
+        if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
         {
             if (self.bites < 1) {
                 if (!OnlineManager.lobby.isOwner)
