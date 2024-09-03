@@ -98,7 +98,7 @@ public partial class RainMeadow
     private void Mushroom_BitByPlayer(On.Mushroom.orig_BitByPlayer orig, Mushroom self, Creature.Grasp grasp, bool eu)
     {
         orig(self, grasp, eu);
-        if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+        if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
         {
             OnlineManager.lobby.owner.InvokeRPC(RPCs.AddMushroomCounter);
         }
