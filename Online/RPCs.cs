@@ -121,9 +121,7 @@ namespace RainMeadow
                 game.GoToRedsGameOver();
                 return;
             }
-            if (OnlineManager.lobby.isOwner) {
-                game.GetStorySession.saveState.SessionEnded(game, false, false);
-            }
+            game.GetStorySession.saveState.SessionEnded(game, false, false);
             RainMeadow.Debug("I am moving to the deathscreen");
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.DeathScreen);
         }
@@ -197,6 +195,7 @@ namespace RainMeadow
                 }
             }
 
+            // TODO: investigate client save desync (e.g. swallowed items)
             game.GetStorySession.saveState.SessionEnded(game, true, malnourished);
 
             //TODO: need to sync p5 and l2m deam events. Not doing it rn.
