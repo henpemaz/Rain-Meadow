@@ -120,6 +120,10 @@ namespace RainMeadow
                 {
                     lobby.Tick(mePlayer.tick);
                 }
+                else if (lobby.isAvailable)
+                {
+                    lobby.Activate();
+                }
 
                 // Prepare outgoing messages
                 foreach (var subscription in subscriptions)

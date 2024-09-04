@@ -91,6 +91,7 @@ namespace RainMeadow
             base.ResourceActive(res);
             if (res is Lobby lobby)
             {
+                RainMeadow.Debug("Setting up lobby data");
                 MeadowLobbyData lobbyData = lobby.GetData<MeadowLobbyData>();
 
                 var totalRooms = 0;
@@ -99,6 +100,7 @@ namespace RainMeadow
                 lobbyData.regionSpawnWeights = new float[totalRegions];
                 if (lobby.isOwner)
                 {
+                    RainMeadow.Debug($"Goal setup for {totalRegions} regions");
                     lobbyData.regionRedTokensGoal = new ushort[totalRegions];
                     lobbyData.regionBlueTokensGoal = new ushort[totalRegions];
                     lobbyData.regionGoldTokensGoal = new ushort[totalRegions];

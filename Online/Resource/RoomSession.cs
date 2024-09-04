@@ -20,17 +20,7 @@ namespace RainMeadow
 
         protected override void AvailableImpl()
         {
-            if (isOwner)
-            {
-                foreach (var ent in absroom.entities.Concat(absroom.entitiesInDens))
-                {
-                    if (ent is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe)
-                         && !oe.realized && !oe.isMine && oe.isTransferable && !oe.isPending)
-                    {
-                        oe.Request(); // I am realizing this entity, let me have it
-                    }
-                }
-            }
+
         }
 
         protected override void ActivateImpl()
@@ -41,6 +31,18 @@ namespace RainMeadow
                 {
                     worldSession.ApoEnteringWorld(apo);
                     ApoEnteringRoom(apo, apo.pos);
+                }
+            }
+
+            if (isOwner)
+            {
+                foreach (var ent in absroom.entities.Concat(absroom.entitiesInDens))
+                {
+                    if (ent is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe)
+                         && !oe.realized && !oe.isMine && oe.isTransferable && !oe.isPending)
+                    {
+                        oe.Request(); // I am realizing this entity, let me have it
+                    }
                 }
             }
         }
@@ -67,6 +69,11 @@ namespace RainMeadow
                 }
                 abstractOnDeactivate = false;
             }
+        }
+
+        protected override void UnavailableImpl()
+        {
+            if (isActive) Deactivate();
         }
 
         public override string Id()

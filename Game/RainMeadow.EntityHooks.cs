@@ -346,7 +346,7 @@ namespace RainMeadow
                         }
                     }
 
-                    oldWorldSession.FullyReleaseResource(); // done? let go
+                    oldWorldSession.NotNeeded(); // done? let go
                 }
                 if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode) 
                 {

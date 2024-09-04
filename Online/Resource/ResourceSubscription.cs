@@ -17,7 +17,7 @@ namespace RainMeadow
         {
             this.resource = resource;
             this.player = player;
-            if (resource is Lobby or WorldSession) basecooldown = 5;
+            if (resource is Lobby or WorldSession) basecooldown = 5; // 0 for room
             if (!resource.isAvailable) throw new InvalidOperationException("not available");
             if (player.isMe) throw new InvalidOperationException("subscribed to self");
         }
@@ -27,11 +27,16 @@ namespace RainMeadow
             if (!resource.isAvailable) throw new InvalidOperationException("not available");
             if (!resource.isOwner) throw new InvalidOperationException("not owner");
             if (!resource.isActive) return; // resource not ready yet
-            if (cooldown > 0)
+
+            if (NetIO.IsNewerOrEqual(player.latestTickAck, resource.lastModified)) // player has acked latest relevant changes
             {
-                cooldown--;
-                return;
+                if (cooldown > 0) // don't spam
+                {
+                    cooldown--;
+                    return;
+                }
             }
+
             cooldown = basecooldown;
             cooldown--;
 

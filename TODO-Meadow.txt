@@ -20,8 +20,6 @@ what are the player-player interactions?
 - tell others to come over here
 - tell others to go back, not come
 
-disable spawning things that aren't avatar
-
 handholding
 	would be so nice to grab cicada be carried by liz etc etc
 	"it's of uttermost importance to me that one cannot troll others with this"
@@ -32,9 +30,6 @@ handholding
 			Sky has both, with the invite system, but also the "follow"->"hold hand"
 
 creature todo
-- call prototype
-	meow knock zip bzz
-- remove collisions ?
 - can get stuck
 	some rooms will get fixed
 		eventually :tm:
@@ -58,7 +53,7 @@ scav todo
 - leap sometimes goes up/back
 - hands look silly when walking on falsefloor
 - jumping off ledge wack because regains footing too quick?
-	
+
 slugcat in meadow mode
 - point things
 
@@ -112,3 +107,13 @@ following others around is hard
 	need map implemented
 	could use pipes flashing colors if room inhabited
 	player list on passage screen
+
+wormgrass can still eat you (big patches in FA)
+
+rat can spawn with tail attached
+
+sometimes one loads in the wrong region? might have to do with enabling mods shifting region indexes
+
+echo sky animation is too slow needs to converge
+
+echo reward anim is bad, fade to white is bad, no confetti??
