@@ -29,7 +29,8 @@ namespace RainMeadow
             if (owner == null) throw new Exception("No lobby owner");
             NewOwner(owner);
 
-            activateOnAvailable = true;
+            isNeeded = true;
+
             if (isOwner)
             {
                 this.password = password;
@@ -134,6 +135,11 @@ namespace RainMeadow
         protected override void DeactivateImpl()
         {
             throw new InvalidOperationException("cant deactivate");
+        }
+
+        protected override void UnavailableImpl()
+        {
+
         }
 
         protected override ResourceState MakeState(uint ts)

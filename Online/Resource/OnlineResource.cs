@@ -19,6 +19,7 @@ namespace RainMeadow
         public bool isSupervisor => super.isOwner;
         public OnlinePlayer supervisor => super.owner;
 
+        public bool isNeeded { get; protected set; } // The game is using this resource
         public bool isRequesting { get; protected set; } // Ongoing request op
         public bool isActive { get; protected set; } // The respective in-game resource is loaded
         public bool isAvailable { get; protected set; } // The resource state is available
@@ -59,14 +60,35 @@ namespace RainMeadow
                 }
             }
 
-            if (releaseWhenPossible && canRelease) // delayed release, typical if owner needs to wait for changes to broadcast
+            if (isAvailable && !isNeeded && canRelease) // delayed release, typical if owner needs to wait for changes to broadcast
             {
                 Release();
             }
         }
 
-        // The online resource has been leased
-        public void WaitingForState()
+        public void Needed()
+        {
+            isNeeded = true;
+            if (!isAvailable && !isPending) Request();
+        }
+
+        public void NotNeeded()
+        {
+            isNeeded = false;
+            if (isActive)
+            {
+                foreach (var res in subresources)
+                {
+                    res.NotNeeded();
+                }
+            }
+
+            if (isAvailable && canRelease) Release();
+        }
+
+
+        // The online resource has been leased by the supervisor, now owner needs to send a feed
+        protected void WaitingForState()
         {
             RainMeadow.Debug(this);
             if (isAvailable) { throw new InvalidOperationException("Resource is already available"); }
@@ -85,13 +107,10 @@ namespace RainMeadow
             if (isActive) { throw new InvalidOperationException("Resource is already active"); }
             isWaitingForState = false;
             isAvailable = true;
+
             AvailableImpl();
 
             OnlineManager.lobby.gameMode.ResourceAvailable(this);
-
-            if (this.activateOnAvailable) Activate();
-
-            if (releaseWhenPossible) FullyReleaseResource(); // my bad I don't want it anymore
         }
 
         protected abstract void ActivateImpl();
@@ -110,7 +129,7 @@ namespace RainMeadow
 
             ActivateImpl();
 
-            if (latestState != null && !isOwner)
+            if (latestState != null && !isOwner) // re-read since now resources are enumerated
             {
                 if (latestState is ResourceWithSubresourcesState withSubresources && withSubresources.subleaseState.list.Count != subresources.Count)
                 {
@@ -137,11 +156,7 @@ namespace RainMeadow
             OnlineManager.lobby.gameMode.ResourceActive(this);
         }
 
-        public bool deactivateOnRelease = true; // hmm turns out we always do this
-        public bool activateOnAvailable;
-        public bool releaseWhenPossible;
-
-        protected virtual void UnavailableImpl() { }
+        protected abstract void UnavailableImpl();
 
         // The online resource has been unleased
         protected void Unavailable()
@@ -151,7 +166,6 @@ namespace RainMeadow
             if (isActive && subresources.Any(s => s.isAvailable)) throw new InvalidOperationException("has available subresources");
             isAvailable = false;
             isReleasing = false;
-            releaseWhenPossible = false;
 
             UnavailableImpl();
 
@@ -159,10 +173,6 @@ namespace RainMeadow
             OnlineManager.RemoveSubscriptions(this);
             latestState = null;
 
-            if (isActive && deactivateOnRelease)
-            {
-                Deactivate();
-            }
             super.SubresourcesUnloaded(); // I've released, notify super if super is waiting
         }
 
@@ -174,7 +184,6 @@ namespace RainMeadow
         {
             RainMeadow.Debug(this);
             if (!isActive) { throw new InvalidOperationException("resource is already inactive"); }
-            if (isAvailable) { throw new InvalidOperationException("resource is still available"); }
             isActive = false;
             DeactivateImpl();
 
@@ -194,25 +203,9 @@ namespace RainMeadow
             activeEntities = null;
         }
 
-        // Recursivelly release resources
-        public void FullyReleaseResource()
+        protected void SubresourcesUnloaded() // callback-ish for resources freeing up
         {
-            RainMeadow.Debug(this);
-            if (isActive)
-            {
-                foreach (var sub in subresources)
-                {
-                    if (sub.isAvailable || sub.isPending) sub.FullyReleaseResource();
-                }
-            }
-
-            if (canRelease) { Release(); }
-            else { releaseWhenPossible = true; }
-        }
-
-        public void SubresourcesUnloaded() // callback-ish for resources freeing up
-        {
-            if (releaseWhenPossible && canRelease)
+            if (!isNeeded && canRelease)
             {
                 Release();
             }
@@ -370,7 +363,7 @@ namespace RainMeadow
             ParticipantLeftImpl(participant);
         }
 
-        public void ClaimAbandonedEntitiesAndResources()
+        protected void ClaimAbandonedEntitiesAndResources()
         {
             RainMeadow.Debug(this);
             if (!isActive) throw new InvalidOperationException("not active");

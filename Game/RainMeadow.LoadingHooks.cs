@@ -12,6 +12,7 @@ namespace RainMeadow
             On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues += WorldLoader_ctor;
             On.WorldLoader.Update += WorldLoader_Update;
             On.RoomPreparer.Update += RoomPreparer_Update;
+            On.RoomPreparer.ctor += RoomPreparer_ctor;
             On.AbstractRoom.Abstractize += AbstractRoom_Abstractize;
             On.ArenaSitting.NextLevel += ArenaSitting_NextLevel;
         }
@@ -149,14 +150,10 @@ namespace RainMeadow
             {
                 if (RoomSession.map.TryGetValue(self, out RoomSession rs))
                 {
-                    if (rs.isAvailable || rs.isPending)
-                    {
-                        Debug("Queueing room release: " + self.name);
-                        rs.abstractOnDeactivate = true;
-                        rs.FullyReleaseResource();
-                        return;
-                    }
+                    rs.NotNeeded();
+                    if (rs.isActive) rs.Deactivate();
                     Debug("Room released: " + self.name);
+                    // room release needs to be instant, because the game just checks room != null in realizer logic
                 }
             }
             orig(self);
@@ -170,16 +167,22 @@ namespace RainMeadow
                 if (RoomSession.map.TryGetValue(self.room.abstractRoom, out RoomSession rs))
                 {
                     RainMeadow.Trace($"{rs} : {rs.isPending} {rs.isAvailable} {rs.isActive}");
-                    if (!rs.isAvailable && !rs.isPending) rs.Request();
-                    if (true) // force load scenario ????
-                    {
-                        OnlineManager.ForceLoadUpdate();
-                    }
+                    rs.Needed();
                     if (!rs.isAvailable) return;
                     if ((self.requestShortcutsReady || self.room.shortCutsReady) && !rs.isActive) rs.Activate();
                 }
             }
             orig(self);
+        }
+
+        // Room request
+        private void RoomPreparer_ctor(On.RoomPreparer.orig_ctor orig, RoomPreparer self, Room room, bool loadAiHeatMaps, bool falseBake, bool shortcutsOnly)
+        {
+            orig(self, room, loadAiHeatMaps, falseBake, shortcutsOnly);
+            if (!shortcutsOnly && room.game != null && OnlineManager.lobby != null && RoomSession.map.TryGetValue(room.abstractRoom, out var rs))
+            {
+                rs.Needed();
+            }
         }
 
         // World wait, activate
@@ -190,13 +193,16 @@ namespace RainMeadow
                 RainMeadow.Trace($"{ws0} : {ws0.isPending} {ws0.isAvailable} {ws0.isActive}");
                 if (!ws0.isAvailable)
                 {
-                    if (!ws0.isPending) ws0.Request();
+                    ws0.Needed();
                     lock (self)
                     {
                         self.requestCreateWorld = false;
                         orig(self);
                     }
-                    OnlineManager.ForceLoadUpdate();
+                    if (self.game.overWorld == null)
+                    {
+                        OnlineManager.ForceLoadUpdate();
+                    }
                     return;
                 }
                 else if (self.requestCreateWorld)
@@ -208,25 +214,6 @@ namespace RainMeadow
             orig(self);
             if (OnlineManager.lobby != null && self.game != null && WorldSession.map.TryGetValue(self.world, out var ws))
             {
-                if (self.game.overWorld?.worldLoader != self) // force-load scenario
-                {
-                    OnlineManager.ForceLoadUpdate();
-                }
-
-                // wait until new world state available
-                if (self.Finished && !ws.isAvailable)
-                {
-                    RainMeadow.Error("Region loading finished before online resource is available");
-                    self.Finished = false;
-                    return;
-                }
-
-                // now we need to wait for it before further actions
-                if (!self.Finished)
-                {
-                    return;
-                }
-
                 // activate the new world
                 if (self.Finished && !ws.isActive)
                 {
@@ -235,16 +222,12 @@ namespace RainMeadow
                 }
 
                 // if there is a gate, the gate's room will be reused, it needs to be made available
-                if (self.game.overWorld?.reportBackToGate is RegionGate gate)
+                if (self.Finished && self.game.overWorld?.reportBackToGate is RegionGate gate)
                 {
                     var newRoom = ws.roomSessions[gate.room.abstractRoom.name];
+                    newRoom.Needed();
                     if (!newRoom.isAvailable)
                     {
-                        if (!newRoom.isPending)
-                        {
-                            Debug("world loading requesting new room in next region");
-                            newRoom.Request();
-                        }
                         self.Finished = false;
                         return;
                     }

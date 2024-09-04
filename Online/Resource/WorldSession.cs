@@ -52,6 +52,11 @@ namespace RainMeadow
             world = null;
         }
 
+        protected override void UnavailableImpl()
+        {
+            if (isActive) Deactivate();
+        }
+
         protected override ResourceState MakeState(uint ts)
         {
             return new WorldState(this, ts);

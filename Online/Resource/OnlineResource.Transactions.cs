@@ -5,7 +5,7 @@ namespace RainMeadow
     public abstract partial class OnlineResource
     {
         // I request this resource, so I can have either ownership or subscription
-        public void Request()
+        private void Request()
         {
             RainMeadow.Debug(this);
             if (isPending)
@@ -53,7 +53,7 @@ namespace RainMeadow
 
         // Someone requested this resource, if I supervise it I'll lease it
         [RPCMethod]
-        public void Requested(RPCEvent request)
+        protected void Requested(RPCEvent request)
         {
             RainMeadow.Debug(this);
             if (isSupervisor && !super.isReleasing)
@@ -81,7 +81,7 @@ namespace RainMeadow
 
         // Someone is trying to release this resource, if I supervise it, I'll handle it
         [RPCMethod]
-        public void Released(RPCEvent request)
+        private void Released(RPCEvent request)
         {
             RainMeadow.Debug(this);
             if (isSupervisor && !super.isReleasing)
@@ -95,7 +95,7 @@ namespace RainMeadow
 
         // The previous owner has left and I've been assigned (by super) as the new owner
         [RPCMethod]
-        public void Transfered(RPCEvent request)
+        private void Transfered(RPCEvent request)
         {
             RainMeadow.Debug(this);
             if (isAvailable && !isReleasing && (isActive || participants.Count == 1) && request.from == supervisor) // I am a subscriber with a valid state who now owns this resource
@@ -109,7 +109,7 @@ namespace RainMeadow
         }
 
         // A pending request was answered to
-        public void ResolveRequest(GenericResult requestResult)
+        private void ResolveRequest(GenericResult requestResult)
         {
             RainMeadow.Debug(this);
             isRequesting = false;
@@ -141,7 +141,7 @@ namespace RainMeadow
         }
 
         // A pending release was answered to
-        public void ResolveRelease(GenericResult releaseResult)
+        private void ResolveRelease(GenericResult releaseResult)
         {
             RainMeadow.Debug(this);
             isReleasing = false;
@@ -157,7 +157,7 @@ namespace RainMeadow
         }
 
         // A pending transfer was asnwered to
-        public void ResolveTransfer(GenericResult transferResult)
+        private void ResolveTransfer(GenericResult transferResult)
         {
             RainMeadow.Debug(this);
             if (transferResult is GenericResult.Ok) // New owner accepted it
