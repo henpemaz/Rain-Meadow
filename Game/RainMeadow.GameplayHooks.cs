@@ -46,9 +46,9 @@ namespace RainMeadow
 
                     if (scavBombAbstract != null)
                     {
-                        if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract)))
+                        if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract, self.bodyChunks[0].pos)))
                         {
-                            room.owner.InvokeRPC(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract);
+                            room.owner.InvokeRPC(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract, self.bodyChunks[0].pos);
                         }
                     }
                 }
@@ -304,7 +304,7 @@ namespace RainMeadow
                 }
             }
 
-            if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode) // Need to test this with creatures on
+            if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode) 
             {
                 if (self.room != null)
                 {
