@@ -168,7 +168,7 @@ namespace RainMeadow
                 {
                     RainMeadow.Trace($"{rs} : {rs.isPending} {rs.isAvailable} {rs.isActive}");
                     rs.Needed();
-                    if (!rs.isAvailable) return;
+                    if (!rs.isAvailable || rs.isPending) return;
                     if ((self.requestShortcutsReady || self.room.shortCutsReady) && !rs.isActive) rs.Activate();
                 }
             }
@@ -191,9 +191,9 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && self.game != null && WorldSession.map.TryGetValue(self.world, out var ws0))
             {
                 RainMeadow.Trace($"{ws0} : {ws0.isPending} {ws0.isAvailable} {ws0.isActive}");
-                if (!ws0.isAvailable)
+                ws0.Needed();
+                if (!ws0.isAvailable || ws0.isPending)
                 {
-                    ws0.Needed();
                     lock (self)
                     {
                         self.requestCreateWorld = false;
