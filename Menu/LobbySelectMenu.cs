@@ -184,12 +184,14 @@ namespace RainMeadow
             enablePasswordCheckbox.buttonBehav.greyedOut = this.currentlySelectedCard != 0;
             lobbyLimitNumberTextBox.greyedOut = this.currentlySelectedCard != 0;
             playButton.menuLabel.text = (this.currentlySelectedCard == 0) ? "CREATE!" : "JOIN!";
-            if (lobbyLimitNumberTextBox.value != "" && !lobbyLimitNumberTextBox.Focused)
-            {
-                maxPlayerCount = lobbyLimitNumberTextBox.valueInt;
-                if (lobbyLimitNumberTextBox.valueInt > 32) lobbyLimitNumberTextBox.valueInt = 32;
-                if (lobbyLimitNumberTextBox.valueInt < 2) lobbyLimitNumberTextBox.valueInt = 2;
-            }
+            if (lobbyLimitNumberTextBox.value != "" && !lobbyLimitNumberTextBox.held) ApplyLobbyLimit();
+        }
+
+        private void ApplyLobbyLimit()
+        {
+            maxPlayerCount = lobbyLimitNumberTextBox.valueInt;
+            if (lobbyLimitNumberTextBox.valueInt > 32) lobbyLimitNumberTextBox.valueInt = 32;
+            if (lobbyLimitNumberTextBox.valueInt < 2) lobbyLimitNumberTextBox.valueInt = 2;
         }
 
         private void BumpPlayButton(EventfulSelectOneButton obj)
@@ -270,6 +272,8 @@ namespace RainMeadow
             if (currentlySelectedCard == 0)
             {
                 ShowLoadingDialog("Creating lobby...");
+                ApplyLobbyLimit();
+                RainMeadow.Debug($"Creating a lobby with a max player limit of {maxPlayerCount}");
                 RequestLobbyCreate();
             }
             else
@@ -305,7 +309,6 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             Enum.TryParse<MatchmakingManager.LobbyVisibility>(visibilityDropDown.value, out var value);
             MatchmakingManager.instance.CreateLobby(value, modeDropDown.value, setpassword ? passwordInputBox.value : null, maxPlayerCount);
-            RainMeadow.Debug($"Creating a lobby with a max player limit of {maxPlayerCount}");
         }
 
         private void RequestLobbyJoin(LobbyInfo lobby, string? password = null)
