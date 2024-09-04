@@ -63,40 +63,32 @@ namespace RainMeadow
 
         private void TextPrompt_UpdateGameOverString(On.HUD.TextPrompt.orig_UpdateGameOverString orig, TextPrompt self, Options.ControlSetup.Preset controllerType)
         {
-            if (OnlineManager.lobby.gameMode is StoryGameMode)
+            if (isStoryMode(out var storyGameMode))
             {
-                if (!OnlineManager.lobby.isOwner)
-                {
-                    self.gameOverString = "A slugcat has fallen. Perform a rescue, or wait for host to shelter or die";
-
-                }
-
                 if (OnlineManager.lobby.isOwner)
                 {
                     self.gameOverString = "A slugcat has fallen. Perform a rescue, shelter, or press PAUSE BUTTON to restart";
-
+                }
+                else
+                {
+                    self.gameOverString = "A slugcat has fallen. Perform a rescue, or wait for host to shelter or die";
                 }
             }
             else
             {
                 orig(self, controllerType);
-
             }
-
         }
 
         private void TextPrompt_Update(On.HUD.TextPrompt.orig_Update orig, TextPrompt self)
         {
             orig(self);
-            if (OnlineManager.lobby.gameMode is StoryGameMode)
+            if (isStoryMode(out var storyGameMode))
             {
-
                 if (!OnlineManager.lobby.isOwner && self.currentlyShowing == TextPrompt.InfoID.GameOver)
                 {
                     self.restartNotAllowed = 1; // block clients from GoToDeathScreen
-
                 }
-
             }
         }
 
