@@ -32,7 +32,6 @@ namespace RainMeadow
             On.ArenaGameSession.ctor += ArenaGameSession_ctor;
             On.ArenaGameSession.AddHUD += ArenaGameSession_AddHUD;
             On.ArenaGameSession.SpawnCreatures += ArenaGameSession_SpawnCreatures;
-            On.ArenaGameSession.SpawnItem += ArenaGameSession_SpawnItem;
 
             On.ArenaBehaviors.ExitManager.ExitsOpen += ExitManager_ExitsOpen;
             On.ArenaBehaviors.ExitManager.Update += ExitManager_Update;
@@ -49,77 +48,6 @@ namespace RainMeadow
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
             On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1;
-
-        }
-
-        private void ArenaGameSession_SpawnItem(On.ArenaGameSession.orig_SpawnItem orig, ArenaGameSession self, Room room, PlacedObject placedObj)
-        {
-            if (!self.SpawnDefaultRoomItems || UnityEngine.Random.value > (placedObj.data as PlacedObject.MultiplayerItemData).chance)
-            {
-                return;
-            }
-
-            AbstractPhysicalObject.AbstractObjectType abstractObjectType = AbstractPhysicalObject.AbstractObjectType.Rock;
-            bool flag = false;
-            if (!((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.Rock))
-            {
-                if ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.Spear)
-                {
-                    abstractObjectType = AbstractPhysicalObject.AbstractObjectType.ScavengerBomb;
-                    flag = true;
-                }
-                else if ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.ExplosiveSpear)
-                {
-                    abstractObjectType = AbstractPhysicalObject.AbstractObjectType.Spear;
-                    flag = true;
-                }
-                else if ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.Bomb)
-                {
-                    // OVERRIDE TO PREVENT CRASH
-                    abstractObjectType = AbstractPhysicalObject.AbstractObjectType.ScavengerBomb;
-                }
-                else if ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.SporePlant)
-                {
-                    abstractObjectType = AbstractPhysicalObject.AbstractObjectType.SporePlant;
-                }
-            }
-
-            if (self.arenaSitting.multiplayerUnlocks.ExoticItems < 1f && (placedObj.data as PlacedObject.MultiplayerItemData).type != PlacedObject.MultiplayerItemData.Type.Rock && (placedObj.data as PlacedObject.MultiplayerItemData).type != PlacedObject.MultiplayerItemData.Type.Spear)
-            {
-                MultiplayerUnlocks.SandboxUnlockID sandboxUnlockID = MultiplayerUnlocks.SandboxUnlockForSymbolData(new IconSymbol.IconSymbolData(CreatureTemplate.Type.StandardGroundCreature, abstractObjectType, (abstractObjectType == AbstractPhysicalObject.AbstractObjectType.Spear && flag) ? 1 : 0));
-                if (sandboxUnlockID == MultiplayerUnlocks.SandboxUnlockID.Slugcat)
-                {
-                    return;
-                }
-
-                if (!self.arenaSitting.multiplayerUnlocks.SandboxItemUnlocked(sandboxUnlockID) && UnityEngine.Random.value > self.arenaSitting.multiplayerUnlocks.ExoticItems)
-                {
-                    abstractObjectType = AbstractPhysicalObject.AbstractObjectType.Spear;
-                    flag = false;
-                }
-            }
-
-            if (abstractObjectType == AbstractPhysicalObject.AbstractObjectType.Spear)
-            {
-                AbstractSpear item = new AbstractSpear(room.world, null, room.GetWorldCoordinate(placedObj.pos), self.game.GetNewID(), flag);
-                room.abstractRoom.entities.Add(item);
-            }
-            else if (abstractObjectType == AbstractPhysicalObject.AbstractObjectType.Rock)
-            {
-                AbstractPhysicalObject item2 = new AbstractPhysicalObject(room.world, AbstractPhysicalObject.AbstractObjectType.Rock, null, room.GetWorldCoordinate(placedObj.pos), self.game.GetNewID());
-                room.abstractRoom.entities.Add(item2);
-            }
-            else if (abstractObjectType == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb)
-            {
-                AbstractPhysicalObject item3 = new AbstractPhysicalObject(room.world, AbstractPhysicalObject.AbstractObjectType.ScavengerBomb, null, room.GetWorldCoordinate(placedObj.pos), self.game.GetNewID());
-                room.abstractRoom.entities.Add(item3);
-            }
-            else if (abstractObjectType == AbstractPhysicalObject.AbstractObjectType.SporePlant)
-            {
-                AbstractPhysicalObject item4 = new SporePlant.AbstractSporePlant(room.world, null, room.GetWorldCoordinate(placedObj.pos), self.game.GetNewID(), -2, -2, null, used: false, pacified: true);
-                room.abstractRoom.entities.Add(item4);
-            }
-
 
         }
 
