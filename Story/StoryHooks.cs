@@ -60,12 +60,36 @@ namespace RainMeadow
             On.SSOracleSwarmer.NewRoom += SSOracleSwarmer_NewRoom;
 
             On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons;
+            On.HUD.TextPrompt.Update += TextPrompt_Update;
 
         }
 
+        private void TextPrompt_Update(On.HUD.TextPrompt.orig_Update orig, TextPrompt self)
+        {
+            orig(self);
+            if (OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+
+                if (!OnlineManager.lobby.isOwner && self.currentlyShowing == TextPrompt.InfoID.GameOver)
+                {
+
+                    self.restartNotAllowed = 1; // block clients from GoToDeathScreen     
+
+                    bool touchedInput = false; // let clients still have access to pause menu
+                    for (int j = 0; j < self.hud.rainWorld.options.controls.Length; j++)
+                    {
+                        touchedInput = ((self.hud.rainWorld.options.controls[j].gamePad || !self.defaultMapControls[j]) ? (touchedInput || self.hud.rainWorld.options.controls[j].GetButton(5) || RWInput.CheckPauseButton(0, inMenu: false)) : (touchedInput || self.hud.rainWorld.options.controls[j].GetButton(11)));
+                    }
+                    if (touchedInput)
+                    {
+                        self.gameOverMode = false;
+
+                    }
+                }
 
 
-
+            }
+        }
 
         private void PauseMenu_SpawnExitContinueButtons(On.Menu.PauseMenu.orig_SpawnExitContinueButtons orig, Menu.PauseMenu self)
         {
@@ -73,10 +97,6 @@ namespace RainMeadow
 
             if (OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                if (self.game.cameras[0].hud.textPrompt.gameOverMode)
-                {
-                    self.game.cameras[0].hud.textPrompt.gameOverMode = false;
-                }
 
                 List<AbstractCreature> acList = new List<AbstractCreature>();
 
