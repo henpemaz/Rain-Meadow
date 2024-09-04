@@ -32,6 +32,8 @@ namespace RainMeadow
 
             On.RoomSettings.ctor += RoomSettings_ctor;
 
+            IL.RoomSpecificScript.SS_E08GradientGravity.Update += RoomSpecificScript_SS_E08GradientGravity_Update;
+
             On.FliesWorldAI.AddFlyToSwarmRoom += FliesWorldAI_AddFlyToSwarmRoom;
 
             // can't pause it's online mom
@@ -190,6 +192,34 @@ namespace RainMeadow
             }
 
             orig(self, name, region, template, firstTemplate, playerChar);
+        }
+
+        private void RoomSpecificScript_SS_E08GradientGravity_Update(ILContext il)
+        {
+            try
+            {
+                // if (room.physicalObjects[i][j] is Player)
+                //becomes
+                // if (room.physicalObjects[i][j] is Player && !(OnlineManager.lobby != null && !(OnlinePhysicalObject.map.TryGetValue(self.room.physicalObjects[i][j].abstractPhysicalObject, out var oe) && oe.isMine)))
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchIsinst<Player>(),
+                    i => i.MatchBrfalse(out skip)
+                    );
+                c.MoveAfterLabels();
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldloc_0);
+                c.Emit(OpCodes.Ldloc_1);
+                c.EmitDelegate((RoomSpecificScript.SS_E08GradientGravity self, int i, int j) => {
+                    return OnlineManager.lobby != null && !(OnlinePhysicalObject.map.TryGetValue(self.room.physicalObjects[i][j].abstractPhysicalObject, out var oe) && oe.isMine);
+                });
+                c.Emit(OpCodes.Brtrue, skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
         }
 
         private void StoryGameSession_ctor(On.StoryGameSession.orig_ctor orig, StoryGameSession self, SlugcatStats.Name saveStateNumber, RainWorldGame game)
