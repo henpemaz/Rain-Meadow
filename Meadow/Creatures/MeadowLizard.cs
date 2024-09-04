@@ -190,6 +190,8 @@ namespace RainMeadow
 
             this.lizard = lizard;
             lizard.abstractCreature.personality.energy = 1f; // stop being lazy
+            // this.needsLight = false; // has builtin light
+            // or so I thought but vanilla light is too small, give it two!
         }
 
         public Lizard lizard;

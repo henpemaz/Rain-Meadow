@@ -1,7 +1,5 @@
 ﻿using RWCustom;
 using System;
-using System.Drawing.Printing;
-using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -15,12 +13,9 @@ namespace RainMeadow
             this.owner = owner;
             volume = 1f;
             myId = owner.customization.VoiceId;
-            myColor = owner.creature.ShortCutColor();
-            owner.customization.ModifyBodyColor(ref myColor);
         }
 
         SoundID myId;
-        Color myColor;
         float volume;
         float spam;
         float silence;
@@ -49,7 +44,7 @@ namespace RainMeadow
                             IntVector2 startTile = cam.room.ShortcutLeadingToNode(neighborIndex).StartTile;
                             var shortcut = cam.room.shortcutsIndex.IndexfOf(startTile);
                             cam.room.BlinkShortCut(shortcut, -1, 1f);
-                            cam.shortcutGraphics.ColorEntrance(shortcut, myColor);
+                            cam.shortcutGraphics.ColorEntrance(shortcut, owner.effectColor);
                             if(UnityEngine.Random.value < volume)
                             {
                                 cam.room.PlaySound(myId, cam.room.MiddleOfTile(startTile), volume / 2f, 1.0f);
