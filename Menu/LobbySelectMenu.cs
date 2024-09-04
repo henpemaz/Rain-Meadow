@@ -113,6 +113,7 @@ namespace RainMeadow
             where.y -= 5;
             lobbyLimitNumberTextBox = new OpTextBox(new Configurable<int>(maxPlayerCount = 4), where, 160f);
             lobbyLimitNumberTextBox.accept = OpTextBox.Accept.Int;
+            lobbyLimitNumberTextBox.maxLength = 2;
             lobbyLimitNumberTextBox.description = "The Max of the Players for the Lobby (up to 32)";
             new UIelementWrapper(this.tabWrapper, lobbyLimitNumberTextBox);
             where.y += 5;
@@ -183,12 +184,14 @@ namespace RainMeadow
             enablePasswordCheckbox.buttonBehav.greyedOut = this.currentlySelectedCard != 0;
             lobbyLimitNumberTextBox.greyedOut = this.currentlySelectedCard != 0;
             playButton.menuLabel.text = (this.currentlySelectedCard == 0) ? "CREATE!" : "JOIN!";
-            if (lobbyLimitNumberTextBox.value != "" && !lobbyLimitNumberTextBox.Focused)
-            {
-                maxPlayerCount = lobbyLimitNumberTextBox.valueInt;
-                if (lobbyLimitNumberTextBox.valueInt > 32) lobbyLimitNumberTextBox.valueInt = 32;
-                if (lobbyLimitNumberTextBox.valueInt < 2) lobbyLimitNumberTextBox.valueInt = 2;
-            }
+            if (lobbyLimitNumberTextBox.value != "" && !lobbyLimitNumberTextBox.held) ApplyLobbyLimit();
+        }
+
+        private void ApplyLobbyLimit()
+        {
+            maxPlayerCount = lobbyLimitNumberTextBox.valueInt;
+            if (lobbyLimitNumberTextBox.valueInt > 32) lobbyLimitNumberTextBox.valueInt = 32;
+            if (lobbyLimitNumberTextBox.valueInt < 2) lobbyLimitNumberTextBox.valueInt = 2;
         }
 
         private void BumpPlayButton(EventfulSelectOneButton obj)
@@ -269,6 +272,8 @@ namespace RainMeadow
             if (currentlySelectedCard == 0)
             {
                 ShowLoadingDialog("Creating lobby...");
+                ApplyLobbyLimit();
+                RainMeadow.Debug($"Creating a lobby with a max player limit of {maxPlayerCount}");
                 RequestLobbyCreate();
             }
             else
@@ -304,7 +309,6 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             Enum.TryParse<MatchmakingManager.LobbyVisibility>(visibilityDropDown.value, out var value);
             MatchmakingManager.instance.CreateLobby(value, modeDropDown.value, setpassword ? passwordInputBox.value : null, maxPlayerCount);
-            RainMeadow.Debug($"Creating a lobby with a max player limit of {maxPlayerCount}");
         }
 
         private void RequestLobbyJoin(LobbyInfo lobby, string? password = null)
@@ -358,7 +362,7 @@ namespace RainMeadow
         public void ShowPasswordRequestDialog() {
             if (popupDialog != null) HideDialog();
 
-            popupDialog = new CustomInputDialogueBox(this, mainPage, "Password Required", "HIDE_PASSWORD", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f, 224f), new Vector2(480f, 320f));
+            popupDialog = new CustomInputDialogueBox(this, mainPage, "Password Required", "HIDE_PASSWORD", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
             mainPage.subObjects.Add(popupDialog);
         }
 

@@ -30,6 +30,8 @@ namespace RainMeadow
             On.Room.Loaded += Room_LoadedCheck;
             On.Room.PlaceQuantifiedCreaturesInRoom += Room_PlaceQuantifiedCreaturesInRoom;
 
+            On.RoomSettings.ctor += RoomSettings_ctor;
+
             On.FliesWorldAI.AddFlyToSwarmRoom += FliesWorldAI_AddFlyToSwarmRoom;
 
             // can't pause it's online mom
@@ -178,6 +180,16 @@ namespace RainMeadow
                     }
                 }
             }
+        }
+
+        private void RoomSettings_ctor(On.RoomSettings.orig_ctor orig, RoomSettings self, string name, Region region, bool template, bool firstTemplate, SlugcatStats.Name playerChar)
+        {
+            if (isStoryMode(out var storyGameMode))
+            {
+                playerChar = storyGameMode.currentCampaign;
+            }
+
+            orig(self, name, region, template, firstTemplate, playerChar);
         }
 
         private void StoryGameSession_ctor(On.StoryGameSession.orig_ctor orig, StoryGameSession self, SlugcatStats.Name saveStateNumber, RainWorldGame game)
