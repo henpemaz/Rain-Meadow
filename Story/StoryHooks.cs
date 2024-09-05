@@ -12,6 +12,7 @@ namespace RainMeadow
     public partial class RainMeadow
     {
         private bool isPlayerReady = false;
+        public Menu.Menu spectatorMode;
         public static bool isStoryMode(out StoryGameMode gameMode)
         {
             gameMode = null;
@@ -59,9 +60,58 @@ namespace RainMeadow
             On.CoralBrain.CoralNeuronSystem.PlaceSwarmers += OnCoralNeuronSystem_PlaceSwarmers;
             On.SSOracleSwarmer.NewRoom += SSOracleSwarmer_NewRoom;
 
-            On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons;
+            //On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons;
+            On.RainWorldGame.Update += RainWorldGame_Update2;
+            On.RainWorldGame.ShutDownProcess += RainWorldGame_ShutDownProcess1;
+            On.RainWorldGame.GrafUpdate += RainWorldGame_GrafUpdate;
             On.HUD.TextPrompt.Update += TextPrompt_Update;
 
+        }
+
+        private void RainWorldGame_GrafUpdate(On.RainWorldGame.orig_GrafUpdate orig, RainWorldGame self, float timeStacker)
+        {
+            orig(self, timeStacker);
+            if (spectatorMode != null)
+            {
+                spectatorMode.GrafUpdate(timeStacker);
+            }
+        }
+
+        private void RainWorldGame_ShutDownProcess1(On.RainWorldGame.orig_ShutDownProcess orig, RainWorldGame self)
+        {
+            orig(self);
+            if (OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                if (spectatorMode != null)
+                {
+                    spectatorMode.ShutDownProcess();
+                }
+            }
+        }
+
+        private void RainWorldGame_Update2(On.RainWorldGame.orig_Update orig, RainWorldGame self)
+        {
+            orig(self);
+            if (OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                if (Input.GetKeyDown(KeyCode.S) && spectatorMode == null)
+                {
+                    RainMeadow.Debug("Trying to create spectator");
+                    spectatorMode = new TestSpec(self.manager, self);
+                }
+
+                if (Input.GetKeyDown(KeyCode.S) && spectatorMode != null)
+                {
+                    RainMeadow.Debug("Spectate destroy!");
+                    spectatorMode = null;
+                }
+
+                if (spectatorMode != null)
+                {
+                    spectatorMode.Update();
+                }
+
+            }
         }
 
         private void TextPrompt_Update(On.HUD.TextPrompt.orig_Update orig, TextPrompt self)
@@ -123,7 +173,7 @@ namespace RainMeadow
                     catch
                     {
                         username = $"{acList[i]}";
-                    };
+                    }
 
                     self.pages[0].subObjects.Add(new Menu.MenuLabel(self, self.pages[0], self.Translate("PLAYERS"), new Vector2(1190, 553), new(110, 30), true));
                     var btn = new SimplerButton(self, self.pages[0], username, new Vector2(1190, 515) - i * new Vector2(0, 38), new(110, 30));
@@ -171,7 +221,7 @@ namespace RainMeadow
                             }
 
                         };
-                    };
+                    }
                 }
             }
         }
@@ -420,6 +470,7 @@ namespace RainMeadow
             if (isStoryMode(out var gameMode))
             {
                 self.AddPart(new OnlineHUD(self, cam, gameMode));
+                
             }
         }
         private void RainWorldGame_GhostShutDown(On.RainWorldGame.orig_GhostShutDown orig, RainWorldGame self, GhostWorldPresence.GhostID ghostID)
@@ -715,7 +766,6 @@ namespace RainMeadow
         }
     }
 }
-
 
 
 
