@@ -7,6 +7,8 @@ using System;
 using Mono.Cecil.Cil;
 using Mono.Cecil;
 using Steamworks;
+using IL.Menu;
+
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -100,9 +102,11 @@ namespace RainMeadow
                     spectatorMode = new TestSpec(self.manager, self);
                 }
 
-                if (Input.GetKeyDown(KeyCode.S) && spectatorMode != null)
+                if (Input.GetKeyDown(KeyCode.T) && spectatorMode != null)
                 {
                     RainMeadow.Debug("Spectate destroy!");
+                    spectatorMode.ShutDownProcess();
+                    
                     spectatorMode = null;
                 }
 

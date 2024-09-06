@@ -27,6 +27,11 @@ namespace RainMeadow
             base.Update();
         }
 
+        public override void GrafUpdate(float timeStacker)
+        {
+            base.GrafUpdate(timeStacker);
+        }
+
         public void InitSpectatorMode()
         {
 
