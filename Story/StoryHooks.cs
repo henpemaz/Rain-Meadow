@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using HUD;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
 
 namespace RainMeadow
 {
@@ -45,6 +48,7 @@ namespace RainMeadow
             On.RainWorldGame.GameOver += RainWorldGame_GameOver;
 
             On.SaveState.BringUpToDate += SaveState_BringUpToDate;
+            IL.SaveState.SessionEnded += SaveState_SessionEnded;
 
             On.WaterNut.Swell += WaterNut_Swell;
             On.SporePlant.Pacify += SporePlant_Pacify;
@@ -467,6 +471,48 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner) return false;
             return orig(self, saveCurrentState, saveMaps, saveMiscProg);
+        }
+
+        private void SaveState_SessionEnded(ILContext il)
+        {
+            // food += (game.session.Players[i].realizedCreature as Player).FoodInRoom(eatAndDestroy: true);
+            //becomes
+            // food += (game.session.Players[i].realizedCreature as Player)?.FoodInRoom(eatAndDestroy: true);
+            try
+            {
+                var c = new ILCursor(il);
+                var vanilla = il.DefineLabel();
+                var isinstplayer = il.DefineLabel();
+                var postadd = il.DefineLabel();
+                var postdup = il.DefineLabel();
+                var postpop = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdsfld<ModManager>("CoopAvailable"),
+                    i => i.MatchBrfalse(out vanilla)
+                    );
+                c.GotoLabel(vanilla);
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchIsinst<Player>()
+                    );
+                c.MarkLabel(isinstplayer);
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchCallOrCallvirt<Player>("FoodInRoom"),
+                    i => i.MatchAdd()
+                    );
+                c.MarkLabel(postadd);
+                c.GotoLabel(isinstplayer);
+                c.Emit(OpCodes.Dup);
+                c.MarkLabel(postdup);
+                c.Emit(OpCodes.Pop);
+                c.Emit(OpCodes.Br, postadd);
+                c.MarkLabel(postpop);
+                c.GotoLabel(postdup);
+                c.Emit(OpCodes.Brtrue, postpop);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
         }
 
         private void SaveState_BringUpToDate(On.SaveState.orig_BringUpToDate orig, SaveState self, RainWorldGame game)
