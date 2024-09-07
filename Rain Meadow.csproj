@@ -1,245 +1,245 @@
-﻿﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFramework>net48</TargetFramework>
-		<Version>2.0.8</Version>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <Version>2.0.8</Version>
 		<LangVersion>10.0</LangVersion>
-		<Nullable>enable</Nullable>
-		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-		<Configurations>Debug;Release;LocalP2P;ArenaP2P;StoryP2P;FreeRoamP2P</Configurations>
-		<RootNamespace>RainMeadow</RootNamespace>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<DefineConstants>$(DefineConstants);TRACE</DefineConstants>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='LocalP2P|AnyCPU'">
-		<DefineConstants>$(DefineConstants);TRACE;LOCAL_P2P</DefineConstants>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StoryP2P|AnyCPU'">
-		<DefineConstants>$(DefineConstants);TRACE;LOCAL_P2P</DefineConstants>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FreeRoamP2P|AnyCPU'">
-		<DefineConstants>$(DefineConstants);TRACE;LOCAL_P2P</DefineConstants>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ArenaP2P|AnyCPU'">
-		<DefineConstants>$(DefineConstants);TRACE;LOCAL_P2P</DefineConstants>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<DefineConstants>$(DefineConstants);TRACE</DefineConstants>
-	</PropertyGroup>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Configurations>Debug;Release;LocalP2P;ArenaP2P;StoryP2P;FreeRoamP2P</Configurations>
+    <RootNamespace>RainMeadow</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='LocalP2P|AnyCPU'">
+    <DefineConstants>$(DefineConstants);TRACE;LOCAL_P2P</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StoryP2P|AnyCPU'">
+    <DefineConstants>$(DefineConstants);TRACE;LOCAL_P2P</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FreeRoamP2P|AnyCPU'">
+    <DefineConstants>$(DefineConstants);TRACE;LOCAL_P2P</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ArenaP2P|AnyCPU'">
+    <DefineConstants>$(DefineConstants);TRACE;LOCAL_P2P</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<Reference Include="lib\*.dll" />
-	</ItemGroup>
+  <ItemGroup>
+    <Reference Include="lib\*.dll" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<None Remove=".gitattributes" />
-		<None Remove=".gitignore" />
-		<None Remove="Menu\MeadowMenu.cs~RF8b0fc40.TMP" />
-	</ItemGroup>
+  <ItemGroup>
+    <None Remove=".gitattributes" />
+    <None Remove=".gitignore" />
+    <None Remove="Menu\MeadowMenu.cs~RF8b0fc40.TMP" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<Compile Update="Properties\Settings.Designer.cs">
-			<DesignTimeSharedInput>True</DesignTimeSharedInput>
-			<AutoGen>True</AutoGen>
-			<DependentUpon>Settings.settings</DependentUpon>
-		</Compile>
-	</ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
 
-	<ItemGroup>
-		<None Update="Properties\Settings.settings">
-			<Generator>SettingsSingleFileGenerator</Generator>
-			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
-		</None>
-	</ItemGroup>
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
 
-	<ItemGroup>
-		<Reference Update="lib\0Harmony.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\0Harmony20.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\Assembly-CSharp-firstpass.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\Assembly-CSharp-nstrip.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\BepInEx.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\BepInEx.Harmony.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\BepInEx.Preloader.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\com.rlabrecque.steamworks.net.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\GoKit.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\HarmonyXInterop.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\HOOKS-Assembly-CSharp.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\Mono.Cecil.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\Mono.Cecil.Mdb.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\Mono.Cecil.Pdb.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\Mono.Cecil.Rocks.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\MonoMod.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\MonoMod.RuntimeDetour.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\MonoMod.Utils.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\Newtonsoft.Json.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\PUBLIC-Assembly-CSharp.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\Rewired.Runtime.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\Rewired_Core.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\Rewired_Windows.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\stripped-assembly-csharp.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\Unity.Mathematics.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\UnityEngine.AssetBundleModule.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\UnityEngine.AudioModule.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\UnityEngine.CoreModule.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\UnityEngine.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\UnityEngine.ImageConversionModule.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\UnityEngine.InputLegacyModule.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\UnityEngine.InputModule.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\UnityEngine.JSONSerializeModule.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\UnityEngine.LocalizationModule.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\UnityEngine.UI.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\UnityEngine.UIElementsNativeModule.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\UnityEngine.UIModule.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\UnityEngine.UnityWebRequestAssetBundleModule.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\UnityEngine.UnityWebRequestAudioModule.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\UnityEngine.UnityWebRequestModule.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\UnityEngine.UnityWebRequestTextureModule.dll">
-			<Private>False</Private>
-		</Reference>
-		<Reference Update="lib\UnityEngine.UnityWebRequestWWWModule.dll">
-			<Private>False</Private>
-		</Reference>
-	</ItemGroup>
+  <ItemGroup>
+    <Reference Update="lib\0Harmony.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\0Harmony20.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Assembly-CSharp-firstpass.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Assembly-CSharp-nstrip.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\BepInEx.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\BepInEx.Harmony.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\BepInEx.Preloader.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\com.rlabrecque.steamworks.net.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\GoKit.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\HarmonyXInterop.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\HOOKS-Assembly-CSharp.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Mono.Cecil.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Mono.Cecil.Mdb.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Mono.Cecil.Pdb.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Mono.Cecil.Rocks.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\MonoMod.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\MonoMod.RuntimeDetour.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\MonoMod.Utils.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Newtonsoft.Json.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\PUBLIC-Assembly-CSharp.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Rewired.Runtime.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Rewired_Core.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Rewired_Windows.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\stripped-assembly-csharp.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\Unity.Mathematics.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.AssetBundleModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.AudioModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.CoreModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.ImageConversionModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.InputLegacyModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.InputModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.JSONSerializeModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.LocalizationModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.UI.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.UIElementsNativeModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.UIModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.UnityWebRequestAssetBundleModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.UnityWebRequestAudioModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.UnityWebRequestModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.UnityWebRequestTextureModule.dll">
+      <Private>False</Private>
+    </Reference>
+    <Reference Update="lib\UnityEngine.UnityWebRequestWWWModule.dll">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
 
-	<ItemGroup>
-		<Reference Update="System">
-			<Private>False</Private>
-		</Reference>
-	</ItemGroup>
+  <ItemGroup>
+    <Reference Update="System">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
 
-	<ItemGroup>
-		<Reference Update="System.Core">
-			<Private>False</Private>
-		</Reference>
-	</ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Core">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
 
-	<ItemGroup>
-		<Reference Update="System.Data">
-			<Private>False</Private>
-		</Reference>
-	</ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Data">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
 
-	<ItemGroup>
-		<Reference Update="System.Drawing">
-			<Private>False</Private>
-		</Reference>
-	</ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Drawing">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
 
-	<ItemGroup>
-		<Reference Update="System.IO.Compression.FileSystem">
-			<Private>False</Private>
-		</Reference>
-	</ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.IO.Compression.FileSystem">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
 
-	<ItemGroup>
-		<Reference Update="System.Numerics">
-			<Private>False</Private>
-		</Reference>
-	</ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Numerics">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
 
-	<ItemGroup>
-		<Reference Update="System.Runtime.Serialization">
-			<Private>False</Private>
-		</Reference>
-	</ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Runtime.Serialization">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
 
-	<ItemGroup>
-		<Reference Update="System.Xml">
-			<Private>False</Private>
-		</Reference>
-	</ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Xml">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
 
-	<ItemGroup>
-		<Reference Update="System.Xml.Linq">
-			<Private>False</Private>
-		</Reference>
-	</ItemGroup>
+  <ItemGroup>
+    <Reference Update="System.Xml.Linq">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
 
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<ItemGroup>
-			<BuildFiles Include="$(Outdir)\*" />
-		</ItemGroup>
-		<Copy SourceFiles="@(BuildFiles)" DestinationFolder="$(ProjectDir)Mod\plugins" />
-	</Target>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <ItemGroup>
+      <BuildFiles Include="$(Outdir)\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(BuildFiles)" DestinationFolder="$(ProjectDir)Mod\plugins" />
+  </Target>
 </Project>
