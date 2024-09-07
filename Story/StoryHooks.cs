@@ -104,7 +104,7 @@ namespace RainMeadow
                     spectatorMode.ShutDownProcess();
                     spectatorMode = null;
                 }
-                if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.Joystick1Button11) && spectatorMode == null)
+                if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value) && spectatorMode == null)
                 {
 
                     RainMeadow.Debug("Creating spectator overlay");
@@ -122,7 +122,7 @@ namespace RainMeadow
                     }
                 }
 
-                if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.Joystick1Button11) && spectatorMode != null && spectateInitCoolDown == 0)
+                if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value) && spectatorMode != null && spectateInitCoolDown == 0)
                 {
                     RainMeadow.Debug("Spectate destroy!");
                     spectatorMode.ShutDownProcess();
