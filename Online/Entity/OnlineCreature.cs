@@ -115,7 +115,10 @@ namespace RainMeadow
             {
                 foreach (var item in critter.grasps)
                 {
-                    GraspRef.map.Remove(item);
+                    if(item != null)
+                    {
+                        GraspRef.map.Remove(item);
+                    }
                 }
             }
         }
