@@ -1,10 +1,6 @@
-﻿using HUD;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 using System.Linq;
-using HarmonyLib;
 using Menu;
-using System.Numerics;
 
 namespace RainMeadow
 {
@@ -59,8 +55,8 @@ namespace RainMeadow
                         username = $"{acList[i]}";
                     }
 
-                    this.pages[0].subObjects.Add(new Menu.MenuLabel(this, this.pages[0], this.Translate("PLAYERS"), new Vector2(1190, 553), new(110, 30), true));
-                    var btn = new SimplerButton(this, this.pages[0], username, new Vector2(1190, 515) - i * new Vector2(0, 38), new(110, 30));
+                    this.pages[0].subObjects.Add(new Menu.MenuLabel(this, this.pages[0], this.Translate("PLAYERS"), new UnityEngine.Vector2(1190, 553), new(110, 30), true));
+                    var btn = new SimplerButton(this, this.pages[0], username, new UnityEngine.Vector2(1190, 515) - i * new UnityEngine.Vector2(0, 38), new(110, 30));
                     this.pages[0].subObjects.Add(btn);
                     btn.toggled = false;
 
