@@ -43,7 +43,7 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(40f, 385, RWCustom.Custom.ReplaceLineDelimeters("If selected, replaces holding to toggling to view usernames")),
 
                 new OpLabel(10, 320f, "Key used for toggling spectator mode"),
-                new OpKeyBinder(SpectatorKey, new Vector2(10f, 300f), new Vector2(150f, 30f)),
+                new OpKeyBinder(SpectatorKey, new Vector2(10f, 280f), new Vector2(150f, 30f)),
 
                 new OpLabel(10f, 230f, "[Experimental Features]", bigText: true),
                 new OpLabel(10f, 215f, "WARNING: Experimental features may cause data corruption, back up your saves", bigText: false),
