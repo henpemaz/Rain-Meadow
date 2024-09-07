@@ -8,13 +8,15 @@ using Mono.Cecil.Cil;
 using Mono.Cecil;
 using Steamworks;
 using IL.Menu;
+using Rewired;
 
 namespace RainMeadow
 {
     public partial class RainMeadow
     {
         private bool isPlayerReady = false;
-        public Menu.Menu spectatorMode;
+        private Menu.Menu spectatorMode;
+        private int spectateInitCoolDown;
         public static bool isStoryMode(out StoryGameMode gameMode)
         {
             gameMode = null;
@@ -62,7 +64,6 @@ namespace RainMeadow
             On.CoralBrain.CoralNeuronSystem.PlaceSwarmers += OnCoralNeuronSystem_PlaceSwarmers;
             On.SSOracleSwarmer.NewRoom += SSOracleSwarmer_NewRoom;
 
-            //On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons;
             On.RainWorldGame.Update += RainWorldGame_Update2;
             On.RainWorldGame.ShutDownProcess += RainWorldGame_ShutDownProcess1;
             On.RainWorldGame.GrafUpdate += RainWorldGame_GrafUpdate;
@@ -96,23 +97,35 @@ namespace RainMeadow
             orig(self);
             if (OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                if (Input.GetKeyDown(KeyCode.S) && spectatorMode == null)
+                if (self.pauseMenu != null && spectatorMode != null)
                 {
-                    RainMeadow.Debug("Trying to create spectator");
-                    spectatorMode = new TestSpec(self.manager, self);
-                }
-
-                if (Input.GetKeyDown(KeyCode.T) && spectatorMode != null)
-                {
-                    RainMeadow.Debug("Spectate destroy!");
                     spectatorMode.ShutDownProcess();
-                    
                     spectatorMode = null;
                 }
+                if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.Joystick1Button11) && spectatorMode == null)
+                {
+                    
+                    RainMeadow.Debug("Trying to create spectator");
+                    spectatorMode = new SpectatorOverlay(self.manager, self);
+                    spectateInitCoolDown = 20;
+                }
+
 
                 if (spectatorMode != null)
                 {
                     spectatorMode.Update();
+                    if (spectateInitCoolDown > 0)
+                    {
+                        spectateInitCoolDown--;
+                    }
+                }
+
+                if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.Joystick1Button11) && spectatorMode != null && spectateInitCoolDown == 0)
+                {
+                    RainMeadow.Debug("Spectate destroy!");
+                    spectatorMode.ShutDownProcess();
+
+                    spectatorMode = null;
                 }
 
             }
@@ -142,91 +155,6 @@ namespace RainMeadow
                 }
 
 
-            }
-        }
-
-        private void PauseMenu_SpawnExitContinueButtons(On.Menu.PauseMenu.orig_SpawnExitContinueButtons orig, Menu.PauseMenu self)
-        {
-            orig(self);
-
-            if (OnlineManager.lobby.gameMode is StoryGameMode)
-            {
-
-                List<AbstractCreature> acList = new List<AbstractCreature>();
-
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
-                {
-                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue;
-                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                    {
-
-                        acList.Add(ac);
-
-                    }
-                }
-
-
-                for (int i = 0; i < acList.Count; i++)
-                {
-                    var username = "";
-                    try
-                    {
-                        OnlinePhysicalObject.map.TryGetValue(acList[i], out var alivePlayer);
-                        username = (alivePlayer.owner.id as SteamMatchmakingManager.SteamPlayerId).name;
-                    }
-                    catch
-                    {
-                        username = $"{acList[i]}";
-                    }
-
-                    self.pages[0].subObjects.Add(new Menu.MenuLabel(self, self.pages[0], self.Translate("PLAYERS"), new Vector2(1190, 553), new(110, 30), true));
-                    var btn = new SimplerButton(self, self.pages[0], username, new Vector2(1190, 515) - i * new Vector2(0, 38), new(110, 30));
-                    self.pages[0].subObjects.Add(btn);
-                    btn.toggled = false;
-
-                    // Introduce a local variable to hold the current index
-                    int currentCreature = i;
-                    if (acList[currentCreature].state.dead)
-                    {
-                        btn.inactive = true;
-                        btn.OnClick += (_) =>
-                        {
-                            return;
-                        };
-                    }
-                    else
-                    {
-                        btn.inactive = false;
-                        btn.OnClick += (_) =>
-                        {
-
-                            if (acList[currentCreature].Room.realizedRoom == null)
-                            {
-                                self.game.world.ActivateRoom(acList[currentCreature].Room);
-                            }
-                            self.game.cameras[0].followAbstractCreature = acList[currentCreature];
-
-                            RainMeadow.Debug("Following " + acList[currentCreature]);
-
-                            if ((self.game.cameras[0].room.abstractRoom != acList[currentCreature].Room))
-                            {
-                                self.game.cameras[0].MoveCamera(acList[currentCreature].Room.realizedRoom, -1);
-                            }
-                            btn.toggled = !btn.toggled;
-
-
-                            // Set all other buttons to false
-                            foreach (var otherBtn in self.pages[0].subObjects.OfType<SimplerButton>())
-                            {
-                                if (otherBtn != btn)
-                                {
-                                    otherBtn.toggled = false;
-                                }
-                            }
-
-                        };
-                    }
-                }
             }
         }
 
@@ -474,7 +402,7 @@ namespace RainMeadow
             if (isStoryMode(out var gameMode))
             {
                 self.AddPart(new OnlineHUD(self, cam, gameMode));
-                
+
             }
         }
         private void RainWorldGame_GhostShutDown(On.RainWorldGame.orig_GhostShutDown orig, RainWorldGame self, GhostWorldPresence.GhostID ghostID)

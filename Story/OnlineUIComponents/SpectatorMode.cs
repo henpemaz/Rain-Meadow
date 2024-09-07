@@ -9,32 +9,21 @@ namespace RainMeadow
 {
     public class SpectatorOverlay : Menu.Menu
     {
-        private List<PlayerSpecificOnlineHud> indicators = new();
-
         public RainWorldGame game;
 
         public SpectatorOverlay(ProcessManager manager, RainWorldGame game) : base(manager, RainMeadow.Ext_ProcessID.SpectatorMode)
 
-        {
-            // WarpPreInit(game);
-            
+        {           
             this.game = game;
-            pages.Add(new Page(this, null, "main", 0));
+            pages.Add(new Page(this, null, "spectator", 0));
             InitSpectatorMode();
             selectedObject = null;
-            /*            blackSprite = new FSprite("pixel");
-                        blackSprite.color = Menu.MenuRGB(MenuColors.Black);
-                        blackSprite.scaleX = 1400f;
-                        blackSprite.scaleY = 800f;
-                        blackSprite.x = manager.rainWorld.options.ScreenSize.x / 2f;
-                        blackSprite.y = manager.rainWorld.options.ScreenSize.y / 2f;
-                        blackSprite.alpha = 0.5f;
-                        pages[0].Container.AddChild(blackSprite);*/
         }
 
         public override void Update()
         {
             base.Update();
+
         }
 
         public void InitSpectatorMode()
@@ -119,7 +108,5 @@ namespace RainMeadow
                 }
             }
         }
-
-
     }
 }
