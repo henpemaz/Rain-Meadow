@@ -53,7 +53,7 @@ namespace RainMeadow
 
         protected override void UnavailableImpl()
         {
-            
+            if (isActive) Deactivate();
         }
 
         public override string Id()
