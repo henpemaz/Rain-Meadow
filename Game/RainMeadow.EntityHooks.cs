@@ -223,7 +223,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && ent is AbstractPhysicalObject apo && apo.pos.room == self.index) // skips apos being apo.Move'd
             {
                 self.world.GetResource().ApoEnteringWorld(apo);
-                if (RoomSession.map.TryGetValue(self, out var rs)) rs.ApoEnteringRoom(apo, apo.pos); // might not be registered yet
+                self.GetResource()?.ApoEnteringRoom(apo, apo.pos);
             }
         }
 
@@ -241,7 +241,7 @@ namespace RainMeadow
             orig(self, entity);
             if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo)
             {
-                self.GetResource().ApoLeavingRoom(apo);
+                self.GetResource()?.ApoLeavingRoom(apo);
             }
         }
 
@@ -258,7 +258,7 @@ namespace RainMeadow
             orig(self);
             if (OnlineManager.lobby != null && self is AbstractPhysicalObject apo)
             {
-                self.Room.GetResource().ApoLeavingRoom(apo);
+                self.Room.GetResource()?.ApoLeavingRoom(apo);
                 self.world.GetResource().ApoLeavingWorld(apo);
             }
         }
@@ -278,7 +278,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo)
             {
                 self.world.GetResource().ApoEnteringWorld(apo);
-                if (RoomSession.map.TryGetValue(self, out var rs)) rs.ApoLeavingRoom(apo); // rs might not be registered yet
+                self.GetResource()?.ApoLeavingRoom(apo); // rs might not be registered yet
             }
         }
 
