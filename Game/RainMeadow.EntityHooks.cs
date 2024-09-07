@@ -89,7 +89,7 @@ namespace RainMeadow
                 // leaving room is handled in absroom.removeentity
                 // adding to room is handled here so the position is updated properly
                 self.world.GetResource().ApoEnteringWorld(self);
-                self.world.GetAbstractRoom(newCoord.room).GetResource().ApoEnteringRoom(self, newCoord);
+                self.world.GetAbstractRoom(newCoord.room).GetResource()?.ApoEnteringRoom(self, newCoord);
             }
         }
 
