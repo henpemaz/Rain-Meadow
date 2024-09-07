@@ -6,7 +6,6 @@ namespace RainMeadow
     public partial class RoomSession : OnlineResource
     {
         public AbstractRoom absroom;
-        public bool abstractOnDeactivate;
         public static ConditionalWeakTable<AbstractRoom, RoomSession> map = new();
 
         public WorldSession worldSession => super as WorldSession;
@@ -49,31 +48,12 @@ namespace RainMeadow
 
         protected override void DeactivateImpl()
         {
-            if (abstractOnDeactivate && absroom.realizedRoom != null)
-            {
-                foreach (AbstractWorldEntity? item in absroom.entities.Concat(absroom.entitiesInDens))
-                {
-                    if (item is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var ent))
-                    {
-                        ent.beingMoved = true;
-                    }
-                }
-                absroom.world.loadingRooms.RemoveAll(rl => rl.room == absroom.realizedRoom);
-                absroom.Abstractize();
-                foreach (AbstractWorldEntity? item in absroom.entities.Concat(absroom.entitiesInDens))
-                {
-                    if (item is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var ent))
-                    {
-                        ent.beingMoved = false;
-                    }
-                }
-                abstractOnDeactivate = false;
-            }
+
         }
 
         protected override void UnavailableImpl()
         {
-            if (isActive) Deactivate();
+            
         }
 
         public override string Id()
