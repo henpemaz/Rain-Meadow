@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using UnityEngine;
 using System.Runtime.CompilerServices;
 
 namespace RainMeadow
@@ -342,6 +343,17 @@ namespace RainMeadow
         public static void HitByExplosion(OnlinePhysicalObject objectHit, float hitfac)
         {
             objectHit?.apo.realizedObject?.HitByExplosion(hitfac, null, 0);
+        }
+
+
+        [RPCMethod]
+        public static void ScavengerBombExplode(OnlinePhysicalObject scavBomb, Vector2 pos)
+        {
+            if (scavBomb == null) return;
+
+            (scavBomb.apo.realizedObject as ScavengerBomb).bodyChunks[0].pos = pos;
+            (scavBomb.apo.realizedObject as ScavengerBomb)?.Explode(null);
+
         }
     }
 }

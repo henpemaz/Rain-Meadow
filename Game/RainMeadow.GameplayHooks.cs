@@ -13,10 +13,54 @@ namespace RainMeadow
             On.Creature.Violence += CreatureOnViolence;
             On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
+            On.ScavengerBomb.Explode += ScavengerBomb_Explode;
+            
 
             On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor;
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
         }
+
+
+
+        private void ScavengerBomb_Explode(On.ScavengerBomb.orig_Explode orig, ScavengerBomb self, BodyChunk hitChunk)
+        {
+            if (OnlineManager.lobby != null)
+            {
+
+                if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
+                {
+                    Error("Error getting room for scav explosion!");
+
+                }
+                if (!room.isOwner)
+                {
+
+
+                    if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var scavBombAbstract))
+
+                    {
+                        Error("Error getting target of explosion object hit");
+
+                    }
+
+
+                    if (scavBombAbstract != null)
+                    {
+                        if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract, self.bodyChunks[0].pos)))
+                        {
+                            room.owner.InvokeRPC(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract, self.bodyChunks[0].pos);
+                        }
+                    }
+                }
+
+                orig(self, hitChunk);
+            }
+            else
+            {
+                orig(self, hitChunk);
+            }
+        
+    }
 
         private static void Creature_SwitchGrasps(On.Creature.orig_SwitchGrasps orig, Creature self, int fromGrasp, int toGrasp)
         {
@@ -138,7 +182,7 @@ namespace RainMeadow
             }
 
             RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
-            if (!room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            if (!room.isOwner)
             {
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
                 if (objectHit != null)
@@ -161,7 +205,8 @@ namespace RainMeadow
                 return;
             }
 
-            if (RoomSession.map.TryGetValue(self.abstractPhysicalObject.Room, out var room) && !room.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            if (!room.isOwner)
             {
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
                 OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var abstWeapon);
@@ -259,7 +304,7 @@ namespace RainMeadow
                 }
             }
 
-            if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode) // Need to test this with creatures on
+            if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode) 
             {
                 if (self.room != null)
                 {
@@ -345,6 +390,13 @@ namespace RainMeadow
                 {
                     if (!OnlinePhysicalObject.map.TryGetValue(trueVillain.abstractPhysicalObject, out var onlineTrueVillain))
                     {
+                        if (trueVillain.abstractPhysicalObject.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb)
+                        {
+                            // scav bombs exit quickly, and that's ok.
+                            OnlinePhysicalObject onlineVillain = null;
+                            (onlineVictim as OnlineCreature).RPCCreatureViolence(onlineVillain, hitchunk?.index, hitappendage, directionandmomentum, type, damage, stunbonus);
+                            return;
+                        }
                         Error($"True villain {trueVillain} - {trueVillain.abstractPhysicalObject.ID} doesn't exist in online space!");
                         orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
                         return;
