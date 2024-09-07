@@ -327,6 +327,10 @@ namespace RainMeadow
             base.Deregister();
             RainMeadow.Debug("Removing entity from OnlinePhysicalObject.map: " + this);
             map.Remove(apo);
+            foreach (var item in apo.stuckObjects)
+            {
+                AbstractObjStickRepr.map.Remove(item);
+            }
         }
 
         public override string ToString()
