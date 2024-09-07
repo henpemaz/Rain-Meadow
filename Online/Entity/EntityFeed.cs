@@ -34,6 +34,7 @@ namespace RainMeadow
                 lastAcknoledgedState = null;
             }
             player = resource.owner;
+            if (player == null) return; // resource owner might be null while unloading
 
             if (player.recentlyAckdTicks.Count > 0)
             {

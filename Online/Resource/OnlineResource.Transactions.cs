@@ -18,8 +18,16 @@ namespace RainMeadow
             }
 
             ClearIncommingBuffers();
-            isRequesting = true;
-            supervisor.InvokeRPC(this.Requested).Then(this.ResolveRequest);
+            if(supervisor == null)
+            {
+                RainMeadow.Debug("Resolving request with no supervisor");
+                Available();
+            }
+            else
+            {
+                isRequesting = true;
+                supervisor.InvokeRPC(this.Requested).Then(this.ResolveRequest);
+            }
         }
 
         // I no longer need this resource, supervisor can coordinate its transfer if needed
@@ -39,8 +47,16 @@ namespace RainMeadow
                 throw new InvalidOperationException("cant be released in current state");
             }
 
-            isReleasing = true;
-            supervisor.InvokeRPC(this.Released).Then(this.ResolveRelease);
+            if (supervisor == null)
+            {
+                RainMeadow.Debug("Resolving release with no supervisor");
+                Unavailable();
+            }
+            else
+            {
+                isReleasing = true;
+                supervisor.InvokeRPC(this.Released).Then(this.ResolveRelease);
+            }
         }
 
         // Ask the engine architects before using this
@@ -135,8 +151,8 @@ namespace RainMeadow
             }
             else if (requestResult is GenericResult.Error) // I should retry
             {
-                Request();
                 RainMeadow.Error("request failed for " + this);
+                Request();
             }
         }
 

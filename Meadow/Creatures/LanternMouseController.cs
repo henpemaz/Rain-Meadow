@@ -12,6 +12,17 @@ namespace RainMeadow
             On.LanternMouse.Hang += LanternMouse_Hang;
 
             On.MouseAI.Update += MouseAI_Update;
+            On.MouseAI.DangleTile += MouseAI_DangleTile; // no dangling
+
+        }
+
+        private static MouseAI.Dangle? MouseAI_DangleTile(On.MouseAI.orig_DangleTile orig, MouseAI self, IntVector2 tile, bool noAccessMap)
+        {
+            if (creatureControllers.TryGetValue(self.creature.realizedCreature, out var p))
+            {
+                return null;
+            }
+            return orig(self, tile, noAccessMap);
         }
 
         private static void MouseAI_Update(On.MouseAI.orig_Update orig, MouseAI self)

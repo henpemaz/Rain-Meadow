@@ -60,10 +60,8 @@ namespace RainMeadow
                 }
             }
 
-            if (isAvailable && !isNeeded && canRelease) // delayed release, typical if owner needs to wait for changes to broadcast
-            {
-                Release();
-            }
+            if (isNeeded) Needed();
+            else NotNeeded();
         }
 
         public void Needed()
@@ -105,6 +103,7 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             if (isAvailable) { throw new InvalidOperationException("Resource is already available"); }
             if (isActive) { throw new InvalidOperationException("Resource is already active"); }
+            isRequesting = false;
             isWaitingForState = false;
             isAvailable = true;
 
@@ -222,17 +221,9 @@ namespace RainMeadow
             RainMeadow.Debug($"{this} - '{(newOwner != null ? newOwner : "null")}'");
             if (newOwner == owner && newOwner != null)
             {
-                if (RainMeadow.isArenaMode(out var _))
-                {
-                    RainMeadow.Debug("Assigned to host"); // Lobby owner control
-                }
-                else
-                {
-                    throw new InvalidOperationException("Re-assigned to the same owner");
-                }
+                throw new InvalidOperationException("Re-assigned to the same owner");
             }
 
-            if (isAvailable && newOwner == null && !isReleasing) throw new InvalidOperationException("No owner for available resource");
             var oldOwner = owner;
             owner = newOwner;
             LeaseModified();
@@ -240,6 +231,11 @@ namespace RainMeadow
             incomingState = new(8); // used for delta-encoding stream
 
             if (owner != null) NewParticipant(owner);
+            else
+            {
+                // cannot operate resource without an owner
+                NotNeeded();
+            }
 
             if (isOwner)
             {
@@ -261,7 +257,6 @@ namespace RainMeadow
                 {
                     Available();
                 }
-
             }
             else if (oldOwner != null && oldOwner.isMe) // no longer responsible for sending data
             {

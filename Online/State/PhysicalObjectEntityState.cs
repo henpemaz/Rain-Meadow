@@ -5,7 +5,7 @@ namespace RainMeadow
 {
     public class PhysicalObjectEntityState : OnlineEntity.EntityState
     {
-        [OnlineField]
+        [OnlineField(group = "realized")]
         public WorldCoordinate pos;
         [OnlineField]
         public bool inDen;
