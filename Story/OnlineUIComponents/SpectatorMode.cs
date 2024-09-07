@@ -78,12 +78,12 @@ namespace RainMeadow
                         btn.inactive = false;
                         btn.OnClick += (_) =>
                         {
+                            this.game.cameras[0].followAbstractCreature = acList[currentCreature];
 
                             if (acList[currentCreature].Room.realizedRoom == null)
                             {
                                 this.game.world.ActivateRoom(acList[currentCreature].Room);
                             }
-                            this.game.cameras[0].followAbstractCreature = acList[currentCreature];
 
                             RainMeadow.Debug("Following " + acList[currentCreature]);
 
