@@ -92,7 +92,7 @@ namespace RainMeadow
                 }
             }
 
-            if (camera.room == null) return;
+            if (camera.room == null || !camera.room.shortCutsReady) return;
             if (!clientSettings.inGame) return;
             if (abstractPlayer == null)
             {
