@@ -5,6 +5,7 @@ using UnityEngine;
 using HUD;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace RainMeadow
 {
@@ -65,10 +66,77 @@ namespace RainMeadow
             On.HUD.TextPrompt.Update += TextPrompt_Update;
 
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
+            On.RainWorldGame.Update += RainWorldGame_Update2;
+            On.RainWorldGame.ShutDownProcess += RainWorldGame_ShutDownProcess1;
+            On.RainWorldGame.GrafUpdate += RainWorldGame_GrafUpdate;
         }
 
 
-        private void TextPrompt_UpdateGameOverString(On.HUD.TextPrompt.orig_UpdateGameOverString orig, TextPrompt self, Options.ControlSetup.Preset controllerType)
+
+        }
+
+    private void RainWorldGame_GrafUpdate(On.RainWorldGame.orig_GrafUpdate orig, RainWorldGame self, float timeStacker)
+    {
+        orig(self, timeStacker);
+        if (spectatorMode != null)
+        {
+            spectatorMode.GrafUpdate(timeStacker);
+        }
+    }
+
+    private void RainWorldGame_ShutDownProcess1(On.RainWorldGame.orig_ShutDownProcess orig, RainWorldGame self)
+    {
+        orig(self);
+        if (OnlineManager.lobby.gameMode is StoryGameMode)
+        {
+            if (spectatorMode != null)
+            {
+                spectatorMode.ShutDownProcess();
+            }
+        }
+    }
+
+    private void RainWorldGame_Update2(On.RainWorldGame.orig_Update orig, RainWorldGame self)
+    {
+        orig(self);
+        if (OnlineManager.lobby.gameMode is StoryGameMode)
+        {
+            if (self.pauseMenu != null && spectatorMode != null)
+            {
+                spectatorMode.ShutDownProcess();
+                spectatorMode = null;
+            }
+            if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.Joystick1Button11) && spectatorMode == null)
+            {
+
+                RainMeadow.Debug("Trying to create spectator");
+                spectatorMode = new SpectatorOverlay(self.manager, self);
+                spectateInitCoolDown = 20;
+            }
+
+
+            if (spectatorMode != null)
+            {
+                spectatorMode.Update();
+                if (spectateInitCoolDown > 0)
+                {
+                    spectateInitCoolDown--;
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.Joystick1Button11) && spectatorMode != null && spectateInitCoolDown == 0)
+            {
+                RainMeadow.Debug("Spectate destroy!");
+                spectatorMode.ShutDownProcess();
+
+                spectatorMode = null;
+            }
+
+        }
+    }
+
+
+    private void TextPrompt_UpdateGameOverString(On.HUD.TextPrompt.orig_UpdateGameOverString orig, TextPrompt self, Options.ControlSetup.Preset controllerType)
         {
             if (isStoryMode(out var storyGameMode))
             {
