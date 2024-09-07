@@ -527,10 +527,11 @@ namespace RainMeadow
             absAI.destination = coord; // we don't run the setter
             
             // pathfinder has some "optimizations" that need bypassing
+            // the setter tries to find a new coord that is inside the mapped area and reachable
+            // too bad mapped area doesnt include water in most cases
             var pathFinder = absAI.RealAI.pathFinder;
             pathFinder.nextDestination = null;
             pathFinder.AssignNewDestination(coord);
-            pathFinder.ForceNextDestination();
         }
 
         #region grabcode

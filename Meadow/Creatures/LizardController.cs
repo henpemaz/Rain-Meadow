@@ -3,6 +3,7 @@ using System;
 using RWCustom;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
+using System.Runtime.CompilerServices;
 
 namespace RainMeadow
 {
@@ -16,6 +17,11 @@ namespace RainMeadow
             On.LizardAI.Update += LizardAI_Update;
             // don't drop it
             IL.Lizard.CarryObject += Lizard_CarryObject1;
+            // swim, bastard
+            IL.Lizard.SwimBehavior += Lizard_SwimBehavior;
+
+            On.Lizard.SwimBehavior += Lizard_SwimBehavior1;
+
             // color
             On.LizardGraphics.ctor += LizardGraphics_ctor;
             // pounce visuals
@@ -30,6 +36,75 @@ namespace RainMeadow
             On.LizardJumpModule.Jump += LizardJumpModule_Jump;
 
             On.LizardBreedParams.TerrainSpeed += LizardBreedParams_TerrainSpeed;
+        }
+
+        private static void Lizard_SwimBehavior1(On.Lizard.orig_SwimBehavior orig, Lizard self)
+        {
+            orig(self);
+            if (creatureControllers.TryGetValue(self, out var c))
+            {
+                if (self.followingConnection.distance == 0)
+                {
+                    if (Input.GetKey(KeyCode.L)) RainMeadow.Error("following null connection");
+                    var originPos = self.room.GetWorldCoordinate(self.mainBodyChunk.pos);
+                    self.followingConnection = new MovementConnection(MovementConnection.MovementType.Standard, originPos, WorldCoordinate.AddIntVector(originPos, new IntVector2(c.input[0].x, c.input[0].y)), 1);
+                }
+            }
+        }
+
+        private static void Lizard_SwimBehavior(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+
+                // replace "is salamander" checks with custom
+
+                // if (base.Template.type == CreatureTemplate.Type.Salamander || ...
+                ILLabel norun = null;
+                c.GotoNext(moveType: MoveType.After,
+                     i => i.MatchLdarg(0),
+                     i => i.MatchCall<Creature>("get_Template"),
+                     i => i.MatchLdfld<CreatureTemplate>("type"),
+                     i => i.MatchLdsfld<CreatureTemplate.Type>("Salamander"),
+                     i => i.MatchCall("ExtEnum`1<CreatureTemplate/Type>", "op_Inequality"),
+                     i => i.MatchBrfalse(out norun)
+                     );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((Lizard self) => {
+                    if (creatureControllers.TryGetValue(self, out var controller))
+                    {
+                        return false;
+                    }
+                    return true;
+                });
+                c.Emit(OpCodes.Brfalse, norun);
+
+                // if (base.Template.type == CreatureTemplate.Type.Salamander || ...
+                ILLabel run = null;
+                c.GotoNext(moveType: MoveType.After,
+                     i => i.MatchLdarg(0),
+                     i => i.MatchCall<Creature>("get_Template"),
+                     i => i.MatchLdfld<CreatureTemplate>("type"),
+                     i => i.MatchLdsfld<CreatureTemplate.Type>("Salamander"),
+                     i => i.MatchCall("ExtEnum`1<CreatureTemplate/Type>", "op_Equality"),
+                     i => i.MatchBrtrue(out run)
+                     );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((Lizard self) => {
+                    if (creatureControllers.TryGetValue(self, out var controller))
+                    {
+                        return true;
+                    }
+                    return false;
+                });
+                c.Emit(OpCodes.Brtrue, run);
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                throw;
+            }
         }
 
         private static LizardBreedParams.SpeedMultiplier LizardBreedParams_TerrainSpeed(On.LizardBreedParams.orig_TerrainSpeed orig, LizardBreedParams self, AItile.Accessibility acc)
@@ -57,11 +132,13 @@ namespace RainMeadow
 
         private static void Lizard_Act(On.Lizard.orig_Act orig, Lizard self)
         {
+            if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"liz act pre");
             if (creatureControllers.TryGetValue(self, out var c) && c is LizardController l)
             {
                 l.ConsciousUpdate();
             }
             orig(self);
+            if (Input.GetKey(KeyCode.L)) RainMeadow.Debug($"liz act post");
         }
 
         private static void LizardAI_Update(On.LizardAI.orig_Update orig, LizardAI self)
@@ -99,8 +176,12 @@ namespace RainMeadow
         {
             if (creatureControllers.TryGetValue(self.creature.realizedCreature, out var c))
             {
-                if (originPos == self.destination)// such a silly behavior...
-                    return new MovementConnection(MovementConnection.MovementType.Standard, originPos, WorldCoordinate.AddIntVector(originPos, new IntVector2(c.input[0].x, c.input[0].y)), 1);
+                if (originPos == self.destination || (actuallyFollowingThisPath && self.lookingForImpossiblePath))
+                {
+                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("returning override");
+                    return new MovementConnection(MovementConnection.MovementType.Standard, originPos, self.destination, 1);
+                }
+                return orig(self, originPos, bodyDirection, actuallyFollowingThisPath);
             }
 
             return orig(self, originPos, bodyDirection, actuallyFollowingThisPath);

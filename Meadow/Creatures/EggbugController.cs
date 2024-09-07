@@ -1,4 +1,6 @@
-﻿using RWCustom;
+﻿using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using RWCustom;
 using System;
 using UnityEngine;
 
@@ -14,19 +16,110 @@ namespace RainMeadow
 
             On.EggBugAI.Update += EggBugAI_Update;
             On.EggBug.Run += EggBug_Run;
+
+            IL.EggBug.Swim += EggBug_Swim1;
+            IL.EggBug.Update += EggBug_Update1;
+        }
+
+        private static void EggBug_Update1(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+
+                // if (base.graphicsModule != null && this.room != null etc etc
+                // then do the leg pulling thing if out-of-medium
+                // instead skip that if controlled and submerged
+
+                ILLabel skip = null;
+                c.GotoNext(i => i.MatchCallOrCallvirt<InsectoidCreature>("Update"));
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchCall<PhysicalObject>("get_graphicsModule"),
+                    i => i.MatchBrfalse(out skip)
+                    );
+                c.MoveAfterLabels();
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((EggBug self) => {
+                    if (creatureControllers.TryGetValue(self, out var controller))
+                    {
+                        if (self.mainBodyChunk.submersion >= 1)
+                        {
+                            return false;
+                        }
+                    }
+                    return true;
+                });
+                c.Emit(OpCodes.Brfalse, skip);
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                throw;
+            }
+        }
+
+        private static void EggBug_Swim1(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+
+                // tricky to describe but decompiled code says "if (!(movementConnection != default(movementConnection)))"
+                // but in practice it's the opposite, just a much longer if body
+                // if ((movementConnection != default(MovementConnection)))
+                // becomes
+                // if (meadowOverride || (movementConnection != default(MovementConnection)))
+
+                c.GotoNext(i => i.MatchCallOrCallvirt<PhysicalObject>("get_graphicsModule"));
+                c.GotoPrev(moveType: MoveType.After,
+                    i => i.MatchLdloc(0),
+                    i => i.MatchLdloca(1),
+                    i => i.MatchInitobj<MovementConnection>(),
+                    i => i.MatchLdloc(1),
+                    i => i.MatchCall(out _),
+                    i => i.MatchBrfalse(out _)
+                    );
+                var skip = c.MarkLabel();
+                c.Index -= 6;
+                c.MoveAfterLabels();
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldloca, 0);
+                c.EmitDelegate((EggBug self, ref MovementConnection movementConnection) => {
+                    if (creatureControllers.TryGetValue(self, out var controller))
+                    {
+                        var coord = controller.creature.coord;
+                        var to = controller.creature.abstractCreature.abstractAI.RealAI.pathFinder.destination;
+                        movementConnection = new MovementConnection(MovementConnection.MovementType.Standard, coord, to, 1);
+
+                        if(self.mainBodyChunk.submersion >= 1)
+                        {
+                            self.mainBodyChunk.vel += 1.2f * controller.inputDir; // here some help
+                        }
+
+                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("overriding");
+                        return false;
+                    }
+                    return true;
+                });
+                c.Emit(OpCodes.Brfalse, skip);
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                throw;
+            }
         }
 
         private static void EggBug_Swim(On.EggBug.orig_Swim orig, EggBug self)
         {
-            if (creatureControllers.TryGetValue(self, out var p))
-            {
-                p.ConsciousUpdate();
-            }
+            if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("swim");
             orig(self);
         }
 
         private static void EggBug_Run(On.EggBug.orig_Run orig, EggBug self, MovementConnection followingConnection)
         {
+            if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("run: " + followingConnection);
             if (creatureControllers.TryGetValue(self, out var c))
             {
                 if (followingConnection.startCoord == self.abstractCreature.abstractAI.destination)

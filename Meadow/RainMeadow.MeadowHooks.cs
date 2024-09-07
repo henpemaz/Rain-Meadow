@@ -2,6 +2,7 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
+using RWCustom;
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -57,6 +58,23 @@ namespace RainMeadow
             On.ShortcutGraphics.GenerateSprites += ShortcutGraphics_GenerateSprites;
 
             On.World.SpawnGhost += World_SpawnGhost;
+
+            On.StandardPather.FollowPath += StandardPather_FollowPath;
+        }
+
+        private MovementConnection StandardPather_FollowPath(On.StandardPather.orig_FollowPath orig, StandardPather self, WorldCoordinate originPos, bool actuallyFollowingThisPath)
+        {
+            if (CreatureController.creatureControllers.TryGetValue(self.creature.realizedCreature, out var c))
+            {
+                if (originPos == self.destination || (actuallyFollowingThisPath && self.lookingForImpossiblePath))
+                {
+                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("returning override");
+                    return new MovementConnection(MovementConnection.MovementType.Standard, originPos, self.destination, 1);
+                }
+                return orig(self, originPos, actuallyFollowingThisPath);
+            }
+
+            return orig(self, originPos, actuallyFollowingThisPath);
         }
 
         private void World_SpawnGhost(On.World.orig_SpawnGhost orig, World self)
