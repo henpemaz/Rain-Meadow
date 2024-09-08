@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 
 namespace RainMeadow
 {
@@ -9,23 +10,29 @@ namespace RainMeadow
         public static void CheckHostClientStates(ArenaCompetitiveGameMode arena)
         {
 
-            if (!OnlineManager.lobby.isOwner && arena.nextLevel && !OnlineManager.lobby.worldSessions["arena"].isAvailable) // clients are waiting for host to finish.
-            {
-                CheckHostClientStates(arena);
-                return;
-            }
 
-
-            if (OnlineManager.lobby.isOwner && arena.clientWaiting != 0 && arena.clientWaiting != OnlineManager.players.Count - 1) // host is waiting for clients.
+            if (!OnlineManager.lobby.isOwner) // client
             {
-                RainMeadow.Debug("Owner waiting : " + OnlineManager.lobby.worldSessions["arena"].participants.Count);
-                RainMeadow.Debug("Owner count : " + arena.clientWaiting);
-                CheckHostClientStates(arena);
-                return;
+                while (arena.nextLevel && !OnlineManager.lobby.worldSessions["arena"].isAvailable)
+                {
+                    RainMeadow.Debug("Arena: Client waiting...");
+                    Thread.Sleep(250);
+                }
 
             }
 
+            if (OnlineManager.lobby.isOwner)
+            {
 
+                while (arena.clientWaiting != 0 && arena.clientWaiting != OnlineManager.players.Count - 1) // host is waiting for clients.
+                {
+                    RainMeadow.Debug("Arena: Host waiting...");
+                    Thread.Sleep(250);
+
+                }
+
+
+            }
         }
     }
 
