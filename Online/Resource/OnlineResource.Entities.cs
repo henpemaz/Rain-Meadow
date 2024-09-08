@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Mono.Cecil;
+using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 
 namespace RainMeadow
 {
@@ -100,8 +102,20 @@ namespace RainMeadow
                 RainMeadow.Error($"Owner not found for entitydefinition: {entityDefinition} : {entityDefinition.owner}");
                 return;
             }
-            OnlineEntity oe = entityDefinition.entityId.FindEntity(quiet: true) ?? entityDefinition.MakeEntity(this, initialState);
-            if(oe.primaryResource == this)
+            OnlineEntity oe = null;
+            try
+            {
+                oe = entityDefinition.entityId.FindEntity(quiet: true) ?? entityDefinition.MakeEntity(this, initialState);
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error($"Failed to spawn new remote entity in {this} : {entityDefinition}");
+                RainMeadow.Error(e);
+                OnlineManager.recentEntities.Remove(entityDefinition.entityId); // no spurious entries
+                entityDefinition.failedToSpawn = true;
+                return;
+            }
+            if (oe.primaryResource == this)
             {
                 RainMeadow.Error($"Already registered: " + oe);
                 return;

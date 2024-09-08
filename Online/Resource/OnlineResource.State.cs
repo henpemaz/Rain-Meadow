@@ -214,7 +214,7 @@ namespace RainMeadow
                 {
                     foreach (var def in registeredEntities.list)
                     {
-                        if (!resource.registeredEntities.ContainsKey(def.entityId))
+                        if (!resource.registeredEntities.ContainsKey(def.entityId) && !def.failedToSpawn)
                         {
                             try
                             {

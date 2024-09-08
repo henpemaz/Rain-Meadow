@@ -21,6 +21,8 @@ namespace RainMeadow
             [OnlineField]
             internal ushort version;
 
+            internal bool failedToSpawn; // tracked locally
+
             public EntityDefinition() : base() { }
 
             public EntityDefinition(OnlineEntity entity, OnlineResource inResource)
