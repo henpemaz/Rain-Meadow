@@ -17,11 +17,12 @@ namespace RainMeadow
             {
                 var wasId = onlineCreature.apo.ID.number;
                 onlineCreature.apo.ID.number = onlineCreature.apo.ID.RandomSeed;
-                if (RainMeadow.isArenaMode(out var _)) {
+                if (RainMeadow.isArenaMode(out var _))
+                {
                     this.serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature);
-
-
-                } else {
+                }
+                else
+                {
                     this.serializedObject = SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
                 }
                 onlineCreature.apo.ID.number = wasId;
@@ -55,6 +56,7 @@ namespace RainMeadow
 
         public static AbstractCreature AbstractCreatureFromString(World world, string creatureString)
         {
+            // copy-paste-addapt from vanilla
             string[] array = Regex.Split(creatureString, "<cA>");
             CreatureTemplate.Type type = new CreatureTemplate.Type(array[0], false);
             if (type.Index == -1)
@@ -68,29 +70,32 @@ namespace RainMeadow
             });
             EntityID id = EntityID.FromString(array[1]);
             int? num = BackwardsCompatibilityRemix.ParseRoomIndex(array2[0]);
-            if (num == null || !world.IsRoomInRegion(num.Value))
+            if (num == null || !world.IsRoomInRegion(num.Value)) // handle non-unique (GATE) roomcodes
             {
                 num = world.GetAbstractRoom(array2[0]).index;
             }
             WorldCoordinate den = new WorldCoordinate(num.Value, -1, -1, int.Parse(array2[1], NumberStyles.Any, CultureInfo.InvariantCulture));
             AbstractCreature abstractCreature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, den, id);
-            if (world != null)
+
+            foreach (var item in abstractCreature.stuckObjects) // Some (dropbug) creatures spawn with random items attached
             {
-                abstractCreature.state.LoadFromString(Regex.Split(array[3], "<cB>"));
-                if (abstractCreature.Room == null)
-                {
-                    RainMeadow.Debug(string.Concat(new string[]
-                        {
+                item.Deactivate();
+            }
+
+            abstractCreature.state.LoadFromString(Regex.Split(array[3], "<cB>"));
+            if (abstractCreature.Room == null)
+            {
+                RainMeadow.Debug(string.Concat(new string[]
+                    {
                         "Spawn room does not exist: ",
                         array2[0],
                         " ~ ",
                         id.spawner.ToString(),
                         " creature not spawning"
-                        }));
-                    return null;
-                }
-                abstractCreature.setCustomFlags();
+                    }));
+                return null;
             }
+            abstractCreature.setCustomFlags();
             return abstractCreature;
         }
 
