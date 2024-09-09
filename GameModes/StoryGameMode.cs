@@ -46,12 +46,11 @@ namespace RainMeadow
             return true;
         }
 
-        public override SlugcatStats.Name GetStorySessionPlayer(RainWorldGame self) 
+        public override SlugcatStats.Name GetStorySessionPlayer(RainWorldGame game)
         {
-            // Return the save slot slugcatStats name
-            // TODO: Handle client side saves. As in don't do anything savestate related, just get from host.
-            return currentSaveSlot?.save ?? RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;
+            return currentCampaign;
         }
+
         public override SlugcatStats.Name LoadWorldAs(RainWorldGame game)
         {
             return currentCampaign;

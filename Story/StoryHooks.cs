@@ -446,9 +446,14 @@ namespace RainMeadow
 
         private SaveState PlayerProgression_GetOrInitiateSaveState(On.PlayerProgression.orig_GetOrInitiateSaveState orig, PlayerProgression self, SlugcatStats.Name saveStateNumber, RainWorldGame game, ProcessManager.MenuSetup setup, bool saveAsDeathOrQuit)
         {
-            var origSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
             if (isStoryMode(out var gameMode))
             {
+                // TODO: find a nice way to wrap these
+                var origSaveStateNumber = self.currentSaveState.saveStateNumber;
+                self.currentSaveState.saveStateNumber = GetSaveStateNumber();
+                var origSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
+                self.currentSaveState.saveStateNumber = origSaveStateNumber;
+
                 var storyClientSettings = gameMode.clientSettings as StoryClientSettings;
 
                 if (OnlineManager.lobby.isOwner)
@@ -463,13 +468,40 @@ namespace RainMeadow
                 {
                     origSaveState.denPosition = gameMode.defaultDenPos;
                 }
+                return origSaveState;
             }
-            return origSaveState;
+            return orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
+        }
+
+        private SlugcatStats.Name GetSaveStateNumber()
+        {
+            return (OnlineManager.lobby?.gameMode as StoryGameMode)?.currentSaveSlot?.save ?? RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;
+        }
+
+        private SaveState PlayerProgression_LoadGameState(On.PlayerProgression.orig_LoadGameState orig, PlayerProgression self, string saveFilePath, RainWorldGame game, bool saveAsDeathOrQuit)
+        {
+            if (isStoryMode(out var storyGameMode))
+            {
+                var origSaveStateNumber = self.currentSaveState.saveStateNumber;
+                self.currentSaveState.saveStateNumber = GetSaveStateNumber();
+                var result = orig(self, saveFilePath, game, saveAsDeathOrQuit);
+                self.currentSaveState.saveStateNumber = origSaveStateNumber;
+                return result;
+            }
+            return orig(self, saveFilePath, game, saveAsDeathOrQuit);
         }
 
         private bool PlayerProgression_SaveToDisk(On.PlayerProgression.orig_SaveToDisk orig, PlayerProgression self, bool saveCurrentState, bool saveMaps, bool saveMiscProg)
         {
-            if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner) return false;
+            if (isStoryMode(out var storyGameMode))
+            {
+                if (storyGameMode.currentSaveSlot == null) return false;
+                var origSaveStateNumber = self.currentSaveState.saveStateNumber;
+                self.currentSaveState.saveStateNumber = GetSaveStateNumber();
+                var result = orig(self, saveCurrentState, saveMaps, saveMiscProg);
+                self.currentSaveState.saveStateNumber = origSaveStateNumber;
+                return result;
+            }
             return orig(self, saveCurrentState, saveMaps, saveMiscProg);
         }
 
