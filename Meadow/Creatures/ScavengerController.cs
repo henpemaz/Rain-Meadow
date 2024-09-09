@@ -33,11 +33,12 @@ namespace RainMeadow
             return orig(self, origin, actuallyFollowingThisPath);
         }
 
-        // fix "will only move if target > 3 tiles away" issue
+        
         private static void Scavenger_Act1(ILContext il)
         {
             try
             {
+                // fix "will only move if target > 3 tiles away" issue
                 var c = new ILCursor(il);
                 c.GotoNext(MoveType.After,
                     i => i.MatchLdcI4(1),
@@ -96,6 +97,65 @@ namespace RainMeadow
                     }
                     return aimFor;
                 });
+
+                // swim handling
+                // happens in 2 spots smh
+                // else if (this.movMode == Scavenger.MovementMode.Swim)
+                //      if (this.moving)
+                //      into (moving && !meadowSpecialSwimCode())
+                ILLabel skip = null;
+                c.GotoPrev(MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<Scavenger>("movMode"),
+                    i => i.MatchLdsfld<Scavenger.MovementMode>("Swim"),
+                    i => i.MatchCall("ExtEnum`1<Scavenger/MovementMode>", "op_Equality"),
+                    i => i.MatchBrfalse(out skip),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<Scavenger>("moving"),
+                    i => i.MatchBrfalse(out _)
+                    );
+
+                c.Index -= 3;
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldloc_2);
+
+                c.EmitDelegate((Scavenger self, MovementConnection connection) =>
+                {
+                    if (creatureControllers.TryGetValue(self, out var c)) // controlled swim
+                    {
+                        self.mainBodyChunk.vel.x *= 0.6f;
+                        self.mainBodyChunk.vel.y *= 0.9f;
+                        self.mainBodyChunk.vel += Custom.DirVec(self.mainBodyChunk.pos, self.room.MiddleOfTile(connection.destinationCoord)) * 0.5f;
+                        return false;
+                    }
+                    return true;
+                });
+                c.Emit(OpCodes.Brfalse, skip);
+
+                c.GotoNext(MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<Scavenger>("movMode"),
+                    i => i.MatchLdsfld<Scavenger.MovementMode>("Swim"),
+                    i => i.MatchCall("ExtEnum`1<Scavenger/MovementMode>", "op_Equality"),
+                    i => i.MatchBrfalse(out skip)
+                    );
+
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((Scavenger self) =>
+                {
+                    if (creatureControllers.TryGetValue(self, out var c)) // controlled swim
+                    {
+                        if(self.commitToMoveCounter > 0)
+                        {
+                            self.mainBodyChunk.vel.x *= 0.6f;
+                            self.mainBodyChunk.vel.y *= 0.9f;
+                            self.mainBodyChunk.vel += Custom.DirVec(self.mainBodyChunk.pos, self.room.MiddleOfTile(self.commitedToMove.destinationCoord)) * 0.5f;
+                            return false;
+                        }
+                    }
+                    return true;
+                });
+                c.Emit(OpCodes.Brfalse, skip);
             }
             catch (Exception e)
             {
