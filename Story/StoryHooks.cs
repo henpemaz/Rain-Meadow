@@ -5,14 +5,15 @@ using UnityEngine;
 using HUD;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
+using static UnityEngine.UI.AspectRatioFitter;
 
 namespace RainMeadow
 {
     public partial class RainMeadow
     {
         private bool isPlayerReady = false;
-        private Menu.Menu spectatorMode;
-        private int spectateInitCoolDown;
+
         public static bool isStoryMode(out StoryGameMode gameMode)
         {
             gameMode = null;
@@ -65,71 +66,8 @@ namespace RainMeadow
             On.CoralBrain.CoralNeuronSystem.PlaceSwarmers += OnCoralNeuronSystem_PlaceSwarmers;
             On.SSOracleSwarmer.NewRoom += SSOracleSwarmer_NewRoom;
             On.HUD.TextPrompt.Update += TextPrompt_Update;
-
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
-            On.RainWorldGame.Update += RainWorldGame_Update2;
-            On.RainWorldGame.ShutDownProcess += RainWorldGame_ShutDownProcess1;
-            On.RainWorldGame.GrafUpdate += RainWorldGame_GrafUpdate;
-        }
-
-
-        private void RainWorldGame_GrafUpdate(On.RainWorldGame.orig_GrafUpdate orig, RainWorldGame self, float timeStacker)
-        {
-            orig(self, timeStacker);
-            if (spectatorMode != null)
-            {
-                spectatorMode.GrafUpdate(timeStacker);
-            }
-        }
-
-        private void RainWorldGame_ShutDownProcess1(On.RainWorldGame.orig_ShutDownProcess orig, RainWorldGame self)
-        {
-            orig(self);
-            if (OnlineManager.lobby.gameMode is StoryGameMode)
-            {
-                if (spectatorMode != null)
-                {
-                    spectatorMode.ShutDownProcess();
-                }
-            }
-        }
-
-        private void RainWorldGame_Update2(On.RainWorldGame.orig_Update orig, RainWorldGame self)
-        {
-            orig(self);
-            if (OnlineManager.lobby.gameMode is StoryGameMode)
-            {
-                if (self.pauseMenu != null && spectatorMode != null)
-                {
-                    spectatorMode.ShutDownProcess();
-                    spectatorMode = null;
-                }
-                if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value) && spectatorMode == null)
-                {
-
-                    RainMeadow.Debug("Creating spectator overlay");
-                    spectatorMode = new SpectatorOverlay(self.manager, self);
-                    spectateInitCoolDown = 20;
-                }
-
-
-                if (spectatorMode != null)
-                {
-                    spectatorMode.Update();
-                    if (spectateInitCoolDown > 0)
-                    {
-                        spectateInitCoolDown--;
-                    }
-                }
-
-                if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value) && spectatorMode != null && spectateInitCoolDown == 0)
-                {
-                    RainMeadow.Debug("Spectate destroy!");
-                    spectatorMode.ShutDownProcess();
-                    spectatorMode = null;
-                }
-
-            }
+            
         }
 
 
@@ -408,6 +346,8 @@ namespace RainMeadow
             if (isStoryMode(out var gameMode))
             {
                 self.AddPart(new OnlineHUD(self, cam, gameMode));
+                self.AddPart(new SpectatorHud(self, cam, gameMode));
+
             }
         }
         private void RainWorldGame_GhostShutDown(On.RainWorldGame.orig_GhostShutDown orig, RainWorldGame self, GhostWorldPresence.GhostID ghostID)

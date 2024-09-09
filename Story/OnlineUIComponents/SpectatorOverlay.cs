@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Menu;
 
@@ -7,37 +8,42 @@ namespace RainMeadow
     public class SpectatorOverlay : Menu.Menu
     {
         public RainWorldGame game;
+        private List<AbstractCreature> acList;
+        public SpectatorOverlay spectatorOverlay;
 
         public SpectatorOverlay(ProcessManager manager, RainWorldGame game) : base(manager, RainMeadow.Ext_ProcessID.SpectatorMode)
 
         {
             this.game = game;
-            pages.Add(new Page(this, null, "spectator", 0));
+            this.pages.Add(new Page(this, null, "spectator", 0));
+            this.selectedObject = null;
+            this.acList = new List<AbstractCreature>();
             InitSpectatorMode();
-            selectedObject = null;
+
+
+
         }
 
         public override void Update()
         {
             base.Update();
 
-        }
+            //InitSpectatorMode();
 
+
+        }
         public void InitSpectatorMode()
         {
             if (OnlineManager.lobby.gameMode is StoryGameMode)
             {
 
-                List<AbstractCreature> acList = new List<AbstractCreature>();
-
                 foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
                 {
                     if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue;
-                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !acList.Contains(ac))
                     {
 
                         acList.Add(ac);
-
                     }
                 }
 
@@ -104,6 +110,7 @@ namespace RainMeadow
                     }
                 }
             }
+
         }
     }
 }
