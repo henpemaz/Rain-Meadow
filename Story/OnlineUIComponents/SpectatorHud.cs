@@ -21,7 +21,6 @@ namespace RainMeadow
         {
             this.camera = camera;
             this.onlineGameMode = onlineGameMode;
-            //this.spectatorMode = new SpectatorOverlay(camera.game.manager, camera.game);
             acList = new List<AbstractCreature>();
             this.game = camera.game;
         }
