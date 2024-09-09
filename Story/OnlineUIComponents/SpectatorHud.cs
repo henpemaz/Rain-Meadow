@@ -40,8 +40,10 @@ namespace RainMeadow
             base.Update();
             if (OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                if (game.pauseMenu != null && spectatorMode != null)
+                if ((game.pauseMenu != null || camera.hud.map.visible) && spectatorMode != null)
                 {
+                    RainMeadow.Debug("Shutting down spectator overlay due to another process request");
+
                     spectatorMode.ShutDownProcess();
                     spectatorMode = null;
                 }
