@@ -32,10 +32,13 @@ namespace RainMeadow
 
 
         }
+
         public void InitSpectatorMode()
         {
             if (OnlineManager.lobby.gameMode is StoryGameMode)
             {
+
+                List<AbstractCreature> acList = new List<AbstractCreature>();
 
                 foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
                 {
@@ -44,6 +47,7 @@ namespace RainMeadow
                     {
 
                         acList.Add(ac);
+
                     }
                 }
 
