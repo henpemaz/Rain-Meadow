@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Menu;
@@ -8,19 +7,17 @@ namespace RainMeadow
     public class SpectatorOverlay : Menu.Menu
     {
         public RainWorldGame game;
-        private List<AbstractCreature> acList;
         public SpectatorOverlay spectatorOverlay;
-
+        public HashSet<AbstractCreature> uniqueACs;
         public SpectatorOverlay(ProcessManager manager, RainWorldGame game) : base(manager, RainMeadow.Ext_ProcessID.SpectatorMode)
 
         {
             this.game = game;
             this.pages.Add(new Page(this, null, "spectator", 0));
             this.selectedObject = null;
-            this.acList = new List<AbstractCreature>();
+            uniqueACs = new HashSet<AbstractCreature>();
+
             InitSpectatorMode();
-
-
 
         }
 
@@ -28,37 +25,96 @@ namespace RainMeadow
         {
             base.Update();
 
-            //InitSpectatorMode();
-
-
-        }
-        public void InitSpectatorMode()
-        {
-            if (OnlineManager.lobby.gameMode is StoryGameMode)
+            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
             {
+                if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue;
 
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
                 {
-                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue;
-                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !acList.Contains(ac))
-                    {
+                    uniqueACs.Add(ac);
+                }
+            }
 
-                        acList.Add(ac);
-                    }
+            List<SimplerButton> existingButtons = this.pages[0].subObjects.OfType<SimplerButton>().ToList();
+            int existingButtonCount = existingButtons.Count;
+            int newAcListCount = uniqueACs.Count;
+
+            if (existingButtonCount != newAcListCount)
+            {
+                // Remove all existing buttons when our AC list changes
+                foreach (var button in existingButtons)
+                {
+                    button.RemoveSprites();
+                    this.pages[0].RemoveSubObject(button);
                 }
 
-
-                for (int i = 0; i < acList.Count; i++)
+                // Create and add new buttons
+                for (int i = 0; i < newAcListCount; i++)
                 {
+                    var ac = uniqueACs.ElementAt(i);
                     var username = "";
                     try
                     {
-                        OnlinePhysicalObject.map.TryGetValue(acList[i], out var alivePlayer);
+                        OnlinePhysicalObject.map.TryGetValue(uniqueACs.ElementAt(i), out var alivePlayer);
                         username = (alivePlayer.owner.id as SteamMatchmakingManager.SteamPlayerId).name;
                     }
                     catch
                     {
-                        username = $"{acList[i]}";
+                        username = $"{uniqueACs.ElementAt(i)}";
+                    }
+
+                    this.pages[0].subObjects.Add(new Menu.MenuLabel(this, this.pages[0], this.Translate("PLAYERS"), new UnityEngine.Vector2(1190, 553), new(110, 30), true));
+                    var btn = new SimplerButton(this, this.pages[0], username, new UnityEngine.Vector2(1190, 515) - i * new UnityEngine.Vector2(0, 38), new(110, 30));
+                    this.pages[0].subObjects.Add(btn);
+                    btn.toggled = false;
+                }
+            }
+
+            // Update button states
+            for (int i = 0; i < newAcListCount; i++)
+            {
+                var ac = uniqueACs.ElementAt(i);
+                var button = this.pages[0].subObjects.OfType<SimplerButton>().ElementAt(i);
+
+                if (ac.state.dead || (ac.realizedCreature != null && ac.realizedCreature.State.dead))
+                {
+                    button.inactive = true;
+                    button.OnClick += (_) => { /* No action on click, slugs are dead */ };
+                }
+                else
+                {
+                    button.inactive = false;
+                }
+            }
+        }
+
+        public void InitSpectatorMode()
+        {
+            if (OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+                {
+                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue;
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !uniqueACs.Contains(ac))
+                    {
+
+                        uniqueACs.Add(ac);
+
+                    }
+                }
+
+
+                for (int i = 0; i < uniqueACs.Count; i++)
+                {
+                    var username = "";
+                    try
+                    {
+                        OnlinePhysicalObject.map.TryGetValue(uniqueACs.ElementAt(i), out var alivePlayer);
+                        username = (alivePlayer.owner.id as SteamMatchmakingManager.SteamPlayerId).name;
+                    }
+                    catch
+                    {
+                        username = $"{uniqueACs.ElementAt(i)}";
                     }
 
                     this.pages[0].subObjects.Add(new Menu.MenuLabel(this, this.pages[0], this.Translate("PLAYERS"), new UnityEngine.Vector2(1190, 553), new(110, 30), true));
@@ -68,12 +124,12 @@ namespace RainMeadow
 
                     // Introduce a local variable to hold the current index
                     int currentCreature = i;
-                    if (acList[currentCreature].state.dead)
+                    if (uniqueACs.ElementAt(currentCreature).state.dead || uniqueACs.ElementAt(currentCreature).realizedCreature != null && uniqueACs.ElementAt(currentCreature).realizedCreature.State.dead)
                     {
                         btn.inactive = true;
                         btn.OnClick += (_) =>
                         {
-                            return;
+                            { /* No action on click */ };
                         };
                     }
                     else
@@ -81,18 +137,18 @@ namespace RainMeadow
                         btn.inactive = false;
                         btn.OnClick += (_) =>
                         {
-                            this.game.cameras[0].followAbstractCreature = acList[currentCreature];
+                            this.game.cameras[0].followAbstractCreature = uniqueACs.ElementAt(currentCreature);
 
-                            if (acList[currentCreature].Room.realizedRoom == null)
+                            if (uniqueACs.ElementAt(currentCreature).Room.realizedRoom == null)
                             {
-                                this.game.world.ActivateRoom(acList[currentCreature].Room);
+                                this.game.world.ActivateRoom(uniqueACs.ElementAt(currentCreature).Room);
                             }
 
-                            RainMeadow.Debug("Following " + acList[currentCreature]);
+                            RainMeadow.Debug("Following " + uniqueACs.ElementAt(currentCreature));
 
-                            if ((this.game.cameras[0].room.abstractRoom != acList[currentCreature].Room))
+                            if ((this.game.cameras[0].room.abstractRoom != uniqueACs.ElementAt(currentCreature).Room))
                             {
-                                this.game.cameras[0].MoveCamera(acList[currentCreature].Room.realizedRoom, -1);
+                                this.game.cameras[0].MoveCamera(uniqueACs.ElementAt(currentCreature).Room.realizedRoom, -1);
                             }
                             btn.toggled = !btn.toggled;
 
