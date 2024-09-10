@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using UnityEngine;
 using System.Runtime.CompilerServices;
 
 namespace RainMeadow
@@ -205,15 +206,14 @@ namespace RainMeadow
                     }
                     else // creature allowed or notcreature
                     {
-                        if (apo.realizedObject is Creature c)
-                        {
-                            c.RemoveFromShortcuts();
-                        }
-
                         if (topos.TileDefined)
                         {
                             apo.Move(topos);
-                            if(newRoom.absroom.realizedRoom.shortCutsReady)
+                            if (apo.realizedObject is Creature c)
+                            {
+                                c.RemoveFromShortcuts();
+                            }
+                            if (newRoom.absroom.realizedRoom.shortCutsReady)
                             {
                                 RainMeadow.Debug($"spawning in room");
                                 apo.RealizeInRoom(); // placesinroom
@@ -227,6 +227,10 @@ namespace RainMeadow
                         {
                             RainMeadow.Debug("node defined");
                             apo.Move(topos);
+                            if (apo.realizedObject is Creature c)
+                            {
+                                c.RemoveFromShortcuts();
+                            }
                             if (apo is AbstractCreature ac2) // Creature.ChangeRoom didn't run, so we do it manually
                             {
                                 RainMeadow.Debug("creature moved");
@@ -326,6 +330,10 @@ namespace RainMeadow
             base.Deregister();
             RainMeadow.Debug("Removing entity from OnlinePhysicalObject.map: " + this);
             map.Remove(apo);
+            foreach (var item in apo.stuckObjects)
+            {
+                AbstractObjStickRepr.map.Remove(item);
+            }
         }
 
         public override string ToString()
@@ -342,6 +350,17 @@ namespace RainMeadow
         public static void HitByExplosion(OnlinePhysicalObject objectHit, float hitfac)
         {
             objectHit?.apo.realizedObject?.HitByExplosion(hitfac, null, 0);
+        }
+
+
+        [RPCMethod]
+        public static void ScavengerBombExplode(OnlinePhysicalObject scavBomb, Vector2 pos)
+        {
+            if (scavBomb == null) return;
+
+            (scavBomb.apo.realizedObject as ScavengerBomb).bodyChunks[0].pos = pos;
+            (scavBomb.apo.realizedObject as ScavengerBomb)?.Explode(null);
+
         }
     }
 }

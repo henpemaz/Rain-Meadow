@@ -108,6 +108,21 @@ namespace RainMeadow
             return apo;
         }
 
+        public override void Deregister()
+        {
+            base.Deregister();
+            if(apo.realizedObject is Creature critter && critter.grasps != null)
+            {
+                foreach (var item in critter.grasps)
+                {
+                    if(item != null)
+                    {
+                        GraspRef.map.Remove(item);
+                    }
+                }
+            }
+        }
+
         protected override EntityState MakeState(uint tick, OnlineResource inResource)
         {
             return new AbstractCreatureState(this, inResource, tick);

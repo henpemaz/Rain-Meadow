@@ -5,10 +5,13 @@ using UnityEngine;
 public class RainMeadowOptions : OptionInterface
 {
     public readonly Configurable<KeyCode> FriendsListKey;
-    public readonly Configurable<bool> SlugcatCustomToggle; 
+    public readonly Configurable<bool> SlugcatCustomToggle;
     public readonly Configurable<bool> FriendViewClickToActivate;
     public readonly Configurable<Color> BodyColor;
     public readonly Configurable<Color> EyeColor;
+    public readonly Configurable<KeyCode> SpectatorKey;
+
+
     private UIelement[] UIArrPlayerOptions;
 
     public RainMeadowOptions(global::RainMeadow.RainMeadow instance)
@@ -18,6 +21,8 @@ public class RainMeadowOptions : OptionInterface
         FriendViewClickToActivate = config.Bind("FriendViewHoldOrToggle", false);
         BodyColor = config.Bind("BodyColor", Color.white);
         EyeColor = config.Bind("EyeColor", Color.black);
+        SpectatorKey = config.Bind("SpectatorKey", KeyCode.S);
+
     }
 
     public override void Initialize()
@@ -26,7 +31,7 @@ public class RainMeadowOptions : OptionInterface
         {
             OpTab opTab = new OpTab(this, "Options");
             Tabs = new OpTab[1] { opTab };
-            UIArrPlayerOptions = new UIelement[11]
+            UIArrPlayerOptions = new UIelement[13]
             {
                 new OpLabel(10f, 550f, "Options", bigText: true),
 
@@ -36,6 +41,9 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10f, 410f, "Username Toggle", bigText: false),
                 new OpCheckBox(FriendViewClickToActivate, new Vector2(10f, 380f)),
                 new OpLabel(40f, 385, RWCustom.Custom.ReplaceLineDelimeters("If selected, replaces holding to toggling to view usernames")),
+
+                new OpLabel(10, 320f, "Key used for toggling spectator mode"),
+                new OpKeyBinder(SpectatorKey, new Vector2(10f, 280f), new Vector2(150f, 30f)),
 
                 new OpLabel(10f, 230f, "[Experimental Features]", bigText: true),
                 new OpLabel(10f, 215f, "WARNING: Experimental features may cause data corruption, back up your saves", bigText: false),

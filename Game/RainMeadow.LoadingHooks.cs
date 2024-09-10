@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading;
+using System.Linq;
 namespace RainMeadow
 {
 
@@ -154,6 +155,23 @@ namespace RainMeadow
                     if (rs.isActive) rs.Deactivate();
                     Debug("Room released: " + self.name);
                     // room release needs to be instant, because the game just checks room != null in realizer logic
+                    foreach (AbstractWorldEntity? item in self.entities.Concat(self.entitiesInDens))
+                    {
+                        if (item is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var ent))
+                        {
+                            ent.beingMoved = true;
+                        }
+                    }
+                    self.world.loadingRooms.RemoveAll(rl => rl.room == self.realizedRoom);
+                    orig(self);
+                    foreach (AbstractWorldEntity? item in self.entities.Concat(self.entitiesInDens))
+                    {
+                        if (item is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var ent))
+                        {
+                            ent.beingMoved = false;
+                        }
+                    }
+                    return;
                 }
             }
             orig(self);

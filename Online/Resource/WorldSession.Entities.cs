@@ -10,7 +10,7 @@ namespace RainMeadow
         // Something entered this resource, check if it needs registering
         public void ApoEnteringWorld(AbstractPhysicalObject apo)
         {
-            if (!isAvailable) throw new InvalidOperationException("not available");
+            if (!isAvailable) RainMeadow.Error($"Apo {apo} moving in unavailable resource {this}");
             if (!OnlineManager.lobby.gameMode.ShouldSyncAPOInWorld(this, apo)) return;
             if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
             {

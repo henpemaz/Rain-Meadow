@@ -122,48 +122,81 @@ namespace RainMeadow
                 return;
             }
             game.GetStorySession.saveState.SessionEnded(game, false, false);
+            RainMeadow.Debug("I am moving to the deathscreen");
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.DeathScreen);
         }
 
         [RPCMethod]
-        public static void MovePlayersToWinScreen(bool malnurished)
+        public static void MovePlayersToWinScreen(bool malnourished, string denPos)
         {
+            RainMeadow.Debug($"({malnourished}, {denPos})");
+
+            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            if (game == null || game.manager.upcomingProcess != null) return;
+
+            if (OnlineManager.lobby.playerAvatars.TryGetValue(OnlineManager.mePlayer, out var playerAvatar))
+            {
+                if (playerAvatar.type != (byte)OnlineEntity.EntityId.IdType.none
+                    && playerAvatar.FindEntity(true) is OnlinePhysicalObject opo
+                    && opo.apo is AbstractCreature ac
+                    && ac.Room.shelter)
+                {
+                    denPos = ac.Room.name;
+                }
+            }
+
+            if (denPos != null)
+            {
+                game.GetStorySession.saveState.denPosition = denPos;
+                (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos = denPos;
+            }
+
             foreach (OnlinePlayer player in OnlineManager.players)
             {
-                if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToWinScreen, malnurished)))
+                if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToWinScreen, malnourished, denPos)))
                 {
-                    player.InvokeRPC(RPCs.GoToWinScreen, malnurished);
+                    if (player.isMe)
+                    {
+                        GoToWinScreen(malnourished, denPos);
+                    }
+                    else
+                    {
+                        player.InvokeRPC(RPCs.GoToWinScreen, malnourished, denPos);
+                    }
                 }
             }
         }
 
         //Assumed to be called for storymode only
         [RPCMethod]
-        public static void GoToWinScreen(bool malnourished)
+        public static void GoToWinScreen(bool malnourished, string denPos)
         {
+            RainMeadow.Debug($"({malnourished})");
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
             if (game == null || game.manager.upcomingProcess != null)
             {
                 return;
             }
 
-            if (!malnourished && !game.rainWorld.saveBackedUp)
+            if (OnlineManager.lobby.isOwner)
             {
-                game.rainWorld.saveBackedUp = true;
-                game.rainWorld.progression.BackUpSave("_Backup");
+                if (!malnourished && !game.rainWorld.saveBackedUp)
+                {
+                    game.rainWorld.saveBackedUp = true;
+                    game.rainWorld.progression.BackUpSave("_Backup");
+                }
+            }
+            else
+            {
+                var storyClientSettings = OnlineManager.lobby.gameMode.clientSettings as StoryClientSettings;
+                if (storyClientSettings.isDead)
+                {
+                    storyClientSettings.myLastDenPos = denPos;
+                }
             }
 
-            //This needs to be called after shelterDoor::Close and game state synced for this to be accurate.
-            var denPos = (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos;
-            if (denPos == null) {
-                AbstractCreature firstAlivePlayer = game.FirstAlivePlayer;
-                denPos = game.world.GetAbstractRoom(firstAlivePlayer.pos).name;
-            }
-
-            //TODO: Having soft-win on makes this very difficult. For now I'm (Turtle) locking it down so that you can only win if the host is alive
-            if (OnlineManager.lobby.isOwner) {
-                game.GetStorySession.saveState.SessionEnded(game, true, malnourished);
-            }
+            // TODO: investigate client save desync (e.g. swallowed items)
+            game.GetStorySession.saveState.SessionEnded(game, true, malnourished);
 
             //TODO: need to sync p5 and l2m deam events. Not doing it rn.
             DreamsState dreamsState = game.GetStorySession.saveState.dreamsState;

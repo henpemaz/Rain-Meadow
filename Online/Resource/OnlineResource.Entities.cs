@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Mono.Cecil;
+using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 
 namespace RainMeadow
 {
@@ -44,7 +46,7 @@ namespace RainMeadow
             {
                 EntityRegisteredInResource(oe, oe.MakeDefinition(this), null);
             }
-            else // request to register
+            else if (owner != null) // request to register
             {
                 oe.pendingRequest = owner.InvokeRPC(this.OnEntityRegisterRequest, oe.MakeDefinition(this), oe.GetState(oe.owner.tick, this)).Then(OnRegisterResolve);
             }
@@ -100,8 +102,20 @@ namespace RainMeadow
                 RainMeadow.Error($"Owner not found for entitydefinition: {entityDefinition} : {entityDefinition.owner}");
                 return;
             }
-            OnlineEntity oe = entityDefinition.entityId.FindEntity(quiet: true) ?? entityDefinition.MakeEntity(this, initialState);
-            if(oe.primaryResource == this)
+            OnlineEntity oe = null;
+            try
+            {
+                oe = entityDefinition.entityId.FindEntity(quiet: true) ?? entityDefinition.MakeEntity(this, initialState);
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error($"Failed to spawn new remote entity in {this} : {entityDefinition}");
+                RainMeadow.Error(e);
+                OnlineManager.recentEntities.Remove(entityDefinition.entityId); // no spurious entries
+                entityDefinition.failedToSpawn = true;
+                return;
+            }
+            if (oe.primaryResource == this)
             {
                 RainMeadow.Error($"Already registered: " + oe);
                 return;
@@ -142,7 +156,7 @@ namespace RainMeadow
             {
                 EntityJoinedResource(oe, null);
             }
-            else // request to join
+            else if (owner != null) // request to join
             {
                 RequestJoinEntity(oe);
             }
@@ -219,7 +233,7 @@ namespace RainMeadow
             {
                 EntityLeftResource(oe);
             }
-            else // request to leave
+            else if (owner != null) // request to leave
             {
                 RequestEntityLeave(oe);
             }
@@ -293,7 +307,7 @@ namespace RainMeadow
             {
                 EntityTransfered(oe, to);
             }
-            else // request to transfer
+            else if (owner != null) // request to transfer
             {
                 RequestEntityTransfer(oe, to);
             }

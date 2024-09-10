@@ -37,7 +37,6 @@ creature todo
 - allow creature to change the creature-pipe they're going to mid-flight
 - need to sample color of creature and have it in skindata
 	- requires final-ish seeds
-- lightsource for dark areas
 - water controls for lizard and scav etc
 	needs to be there, crossing DS etc
 	SU_A12
@@ -70,6 +69,7 @@ noot
 lantermouse
 	jump too small
 	seeds and names
+	add emotes
 
 
 controller-disconnedted popup might be inconsistent

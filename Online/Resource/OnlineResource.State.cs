@@ -214,7 +214,7 @@ namespace RainMeadow
                 {
                     foreach (var def in registeredEntities.list)
                     {
-                        if (!resource.registeredEntities.ContainsKey(def.entityId))
+                        if (!resource.registeredEntities.ContainsKey(def.entityId) && !def.failedToSpawn)
                         {
                             try
                             {
@@ -263,10 +263,10 @@ namespace RainMeadow
                         }
                     }
 
-                    HashSet<OnlineEntity.EntityId> joinedHash = new HashSet<OnlineEntity.EntityId>(entitiesJoined.list.Select(e => e.entityId));
+                    var joinedHash = entitiesJoined.lookup;
                     foreach (var kvp in resource.joinedEntities.ToList())
                     {
-                        if (!joinedHash.Contains(kvp.Key))
+                        if (!joinedHash.ContainsKey(kvp.Key))
                         {
                             try
                             {

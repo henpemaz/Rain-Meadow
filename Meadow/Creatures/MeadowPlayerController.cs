@@ -93,6 +93,8 @@ namespace RainMeadow
         {
             player.controller = new ProxyController(this);
             this.player = player;
+            this.needsLight = false; // doesn't make much of a difference plus slightly different color logic
+            player.glowing = true;
         }
 
         private class ProxyController : Player.PlayerController

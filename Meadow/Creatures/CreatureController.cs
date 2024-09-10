@@ -63,7 +63,10 @@ namespace RainMeadow
             this.mcd = oc.GetData<MeadowCreatureData>();
             this.playerNumber = playerNumber;
             this.customization = customization;
+            
             this.voice = new(this);
+            this.effectColor = creature.ShortCutColor();
+            this.needsLight = true;
 
             creatureControllers.Add(creature, this);
 
@@ -101,6 +104,10 @@ namespace RainMeadow
         public int eatCounter;
         public int dontEatExternalFoodSourceCounter;
         public int eatExternalFoodSourceCounter;
+
+        public Color effectColor;
+        public LightSource lightSource;
+        public bool needsLight;
 
         public DebugDestinationVisualizer debugDestinationVisualizer;
 
@@ -284,6 +291,25 @@ namespace RainMeadow
             if (this.wantToThrow > 0) this.wantToThrow--;
 
             this.voice.Update();
+
+            var mainPos = creature.mainBodyChunk.pos;
+            if (this.lightSource != null)
+            {
+                this.lightSource.stayAlive = true;
+                this.lightSource.setPos = new Vector2?(mainPos);
+                if (this.lightSource.slatedForDeletetion || this.creature.room.Darkness(mainPos) == 0f)
+                {
+                    this.lightSource = null;
+                }
+            }
+            else if (needsLight && this.creature.room.Darkness(mainPos) > 0f)
+            {
+                this.lightSource = new LightSource(mainPos, false, Color.Lerp(new Color(1f, 1f, 1f), this.effectColor, 0.5f), this.creature);
+                this.lightSource.requireUpKeep = true;
+                this.lightSource.setRad = new float?(300f);
+                this.lightSource.setAlpha = new float?(1f);
+                this.creature.room.AddObject(this.lightSource);
+            }
 
             #region unimplemented
             // a lot of things copypasted from from p.update
@@ -501,10 +527,11 @@ namespace RainMeadow
             absAI.destination = coord; // we don't run the setter
             
             // pathfinder has some "optimizations" that need bypassing
+            // the setter tries to find a new coord that is inside the mapped area and reachable
+            // too bad mapped area doesnt include water in most cases
             var pathFinder = absAI.RealAI.pathFinder;
             pathFinder.nextDestination = null;
             pathFinder.AssignNewDestination(coord);
-            pathFinder.ForceNextDestination();
         }
 
         #region grabcode

@@ -1,13 +1,17 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using HUD;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
 
 namespace RainMeadow
 {
     public partial class RainMeadow
     {
         private bool isPlayerReady = false;
+
         public static bool isStoryMode(out StoryGameMode gameMode)
         {
             gameMode = null;
@@ -22,6 +26,7 @@ namespace RainMeadow
         private void StoryHooks()
         {
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
+            On.PlayerProgression.SaveToDisk += PlayerProgression_SaveToDisk;
             On.Menu.SleepAndDeathScreen.ctor += SleepAndDeathScreen_ctor;
             On.Menu.SleepAndDeathScreen.Update += SleepAndDeathScreen_Update;
             On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
@@ -43,6 +48,9 @@ namespace RainMeadow
             On.RainWorldGame.Win += RainWorldGame_Win;
             On.RainWorldGame.GameOver += RainWorldGame_GameOver;
 
+            On.SaveState.BringUpToDate += SaveState_BringUpToDate;
+            IL.SaveState.SessionEnded += SaveState_SessionEnded;
+
             On.WaterNut.Swell += WaterNut_Swell;
             On.SporePlant.Pacify += SporePlant_Pacify;
 
@@ -56,8 +64,8 @@ namespace RainMeadow
             On.CoralBrain.CoralNeuronSystem.PlaceSwarmers += OnCoralNeuronSystem_PlaceSwarmers;
             On.SSOracleSwarmer.NewRoom += SSOracleSwarmer_NewRoom;
             On.HUD.TextPrompt.Update += TextPrompt_Update;
-
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
+
         }
 
 
@@ -346,6 +354,8 @@ namespace RainMeadow
             if (isStoryMode(out var gameMode))
             {
                 self.AddPart(new OnlineHUD(self, cam, gameMode));
+                self.AddPart(new SpectatorHud(self, cam, gameMode));
+
             }
         }
         private void RainWorldGame_GhostShutDown(On.RainWorldGame.orig_GhostShutDown orig, RainWorldGame self, GhostWorldPresence.GhostID ghostID)
@@ -370,14 +380,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                if (!OnlineManager.lobby.isOwner)
-                {
-                    if (!OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.MovePlayersToDeathScreen)))
-                    {
-                        OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToDeathScreen);
-                    }
-                }
-                else
+                if (OnlineManager.lobby.isOwner)
                 {
                     RPCs.MovePlayersToDeathScreen();
                 }
@@ -392,16 +395,24 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                if (!OnlineManager.lobby.isOwner)
+                string denPos = null;
+                if (OnlineManager.lobby.playerAvatars.TryGetValue(OnlineManager.mePlayer, out var playerAvatar))
                 {
-                    if (!OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.MovePlayersToWinScreen, malnourished)))
+                    if (playerAvatar.type != (byte)OnlineEntity.EntityId.IdType.none
+                        && (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac))
                     {
-                        OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToWinScreen, malnourished);
+                        denPos = self.world.GetAbstractRoom(ac.pos).name;
                     }
                 }
-                else
+                RainMeadow.Debug($"({malnourished}, {denPos})");
+                if (OnlineManager.lobby.isOwner)
                 {
-                    RPCs.MovePlayersToWinScreen(malnourished);
+                    RPCs.MovePlayersToWinScreen(malnourished, denPos);
+                }
+                else if (!OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc
+                    && rpc.IsIdentical(RPCs.MovePlayersToWinScreen, malnourished, denPos)))
+                {
+                    OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToWinScreen, malnourished, denPos);
                 }
             }
             else
@@ -414,17 +425,20 @@ namespace RainMeadow
         {
             if (isStoryMode(out var gameMode))
             {
-                //Initiate death whenever any player dies.
-                //foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
-                //{
-                //
-                //    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                //    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                //    {
-                //        if (ac.state.alive) return;
-                //    }
-                //}
-                //INITIATE DEATH
+                if (OnlineManager.lobby.isOwner)
+                {
+                    RPCs.InitGameOver();
+                    return;
+                }
+                //Initiate death only when all players are dead
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+                {
+                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                    {
+                        if (ac.state.alive) return;
+                    }
+                }
                 foreach (OnlinePlayer player in OnlineManager.players)
                 {
                     if (!player.isMe)
@@ -449,23 +463,83 @@ namespace RainMeadow
             if (isStoryMode(out var gameMode))
             {
                 var storyClientSettings = gameMode.clientSettings as StoryClientSettings;
-                if (storyClientSettings.myLastDenPos != null)
-                {
-                    origSaveState.denPosition = storyClientSettings.myLastDenPos;
-                }
-                else if (!OnlineManager.lobby.isOwner)
-                {
-                    origSaveState.denPosition = (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos;
-                }
 
                 if (OnlineManager.lobby.isOwner)
                 {
-                    (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos = origSaveState.denPosition;
+                    gameMode.defaultDenPos = origSaveState.denPosition;
                 }
-
-                return origSaveState;
+                else if (storyClientSettings.myLastDenPos != null)
+                {
+                    origSaveState.denPosition = storyClientSettings.myLastDenPos;
+                }
+                else if (gameMode.defaultDenPos != null)
+                {
+                    origSaveState.denPosition = gameMode.defaultDenPos;
+                }
             }
             return origSaveState;
+        }
+
+        private bool PlayerProgression_SaveToDisk(On.PlayerProgression.orig_SaveToDisk orig, PlayerProgression self, bool saveCurrentState, bool saveMaps, bool saveMiscProg)
+        {
+            if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner) return false;
+            return orig(self, saveCurrentState, saveMaps, saveMiscProg);
+        }
+
+        private void SaveState_SessionEnded(ILContext il)
+        {
+            // food += (game.session.Players[i].realizedCreature as Player).FoodInRoom(eatAndDestroy: true);
+            //becomes
+            // food += (game.session.Players[i].realizedCreature as Player)?.FoodInRoom(eatAndDestroy: true);
+            try
+            {
+                var c = new ILCursor(il);
+                var vanilla = il.DefineLabel();
+                var isinstplayer = il.DefineLabel();
+                var postadd = il.DefineLabel();
+                var postdup = il.DefineLabel();
+                var postpop = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdsfld<ModManager>("CoopAvailable"),
+                    i => i.MatchBrfalse(out vanilla)
+                    );
+                c.GotoLabel(vanilla);
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchIsinst<Player>()
+                    );
+                c.MarkLabel(isinstplayer);
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchCallOrCallvirt<Player>("FoodInRoom"),
+                    i => i.MatchAdd()
+                    );
+                c.MarkLabel(postadd);
+                c.GotoLabel(isinstplayer);
+                c.Emit(OpCodes.Dup);
+                c.MarkLabel(postdup);
+                c.Emit(OpCodes.Pop);
+                c.Emit(OpCodes.Br, postadd);
+                c.MarkLabel(postpop);
+                c.GotoLabel(postdup);
+                c.Emit(OpCodes.Brtrue, postpop);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void SaveState_BringUpToDate(On.SaveState.orig_BringUpToDate orig, SaveState self, RainWorldGame game)
+        {
+            if (isStoryMode(out var gameMode))
+            {
+                var denPos = self.denPosition;
+                orig(self, game);
+                self.denPosition = denPos;
+            }
+            else
+            {
+                orig(self, game);
+            }
         }
 
         private void KarmaLadderScreen_Singal(On.Menu.KarmaLadderScreen.orig_Singal orig, Menu.KarmaLadderScreen self, Menu.MenuObject sender, string message)
@@ -592,6 +666,7 @@ namespace RainMeadow
                 }
 
                 self.room.game.cameras[0].hud.parts.Add(new OnlineHUD(self.room.game.cameras[0].hud, self.room.game.cameras[0], storyGameMode));
+                self.room.game.cameras[0].hud.parts.Add(new SpectatorHud(self.room.game.cameras[0].hud, self.room.game.cameras[0], storyGameMode));
 
                 return true;
             }
