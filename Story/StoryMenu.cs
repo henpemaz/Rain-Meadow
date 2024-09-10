@@ -398,7 +398,7 @@ namespace RainMeadow
                 var btn = new SimplerButton(this, mainPage, SlugcatStats.getSlugcatName(slug), new Vector2(394, 515) - i * new Vector2(0, 38), new Vector2(110, 30));
                 btn.toggled = false;
                 mainPage.subObjects.Add(btn);
-
+                customSelectedSlugcat = slugList[0]; // default as Survivor so no sleep walking scugs
                 // Store the current button in a variable accessible by the lambda
                 var currentBtn = btn;
                 btn.OnClick += (_) =>
