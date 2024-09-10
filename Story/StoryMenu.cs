@@ -38,7 +38,7 @@ namespace RainMeadow
 
         private OpComboBox2 saveSelectDropdown;
 
-        private SlugcatStats.Name customSelectedSlugcat;
+        private SlugcatStats.Name customSelectedSlugcat = SlugcatStats.Name.White;
 
         public override MenuScene.SceneID GetScene => null;
         public StoryMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.StoryMenu)

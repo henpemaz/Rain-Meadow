@@ -73,13 +73,14 @@ namespace RainMeadow
         {
             if (isStoryMode(out var _))
             {
+           
                 if (OnlineManager.lobby.isOwner)
                 {
-                    self.gameOverString = $"A slugcat has fallen. Perform a rescue, shelter, press  {RainMeadow.rainMeadowOptions.SpectatorKey.Value} to spectate, or press PAUSE BUTTON to restart";
+                    self.gameOverString = $"Wait for others to shelter or rescue you, press  {RainMeadow.rainMeadowOptions.SpectatorKey.Value} to spectate, or press PAUSE BUTTON to restart";
                 }
                 else
                 {
-                    self.gameOverString = $"A slugcat has fallen. Perform a rescue, shelter, or press {RainMeadow.rainMeadowOptions.SpectatorKey.Value} to spectate";
+                    self.gameOverString = $"Wait for others to shelter or rescue you, press {RainMeadow.rainMeadowOptions.SpectatorKey.Value} to spectate, or press PAUSE BUTTON to dismiss message";
                 }
             }
 
@@ -438,6 +439,9 @@ namespace RainMeadow
                     if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
                     if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
                     {
+                        
+                        ac.Room.realizedRoom.game.cameras[0].hud.textPrompt.gameOverMode = true;
+                        
                         if (ac.state.alive) return;
                     }
                 }
