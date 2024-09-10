@@ -38,7 +38,7 @@ namespace RainMeadow
 
         private OpComboBox2 saveSelectDropdown;
 
-        private SlugcatStats.Name customSelectedSlugcat;
+        private SlugcatStats.Name customSelectedSlugcat = SlugcatStats.Name.White;
 
         public override MenuScene.SceneID GetScene => null;
         public StoryMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.StoryMenu)
@@ -398,7 +398,7 @@ namespace RainMeadow
                 var btn = new SimplerButton(this, mainPage, SlugcatStats.getSlugcatName(slug), new Vector2(394, 515) - i * new Vector2(0, 38), new Vector2(110, 30));
                 btn.toggled = false;
                 mainPage.subObjects.Add(btn);
-                customSelectedSlugcat = slugList[0]; // default as Survivor so no sleep walking scugs
+
                 // Store the current button in a variable accessible by the lambda
                 var currentBtn = btn;
                 btn.OnClick += (_) =>
