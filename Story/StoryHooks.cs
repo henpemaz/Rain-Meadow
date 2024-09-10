@@ -11,6 +11,7 @@ namespace RainMeadow
     public partial class RainMeadow
     {
         private bool isPlayerReady = false;
+
         public static bool isStoryMode(out StoryGameMode gameMode)
         {
             gameMode = null;
@@ -63,8 +64,8 @@ namespace RainMeadow
             On.CoralBrain.CoralNeuronSystem.PlaceSwarmers += OnCoralNeuronSystem_PlaceSwarmers;
             On.SSOracleSwarmer.NewRoom += SSOracleSwarmer_NewRoom;
             On.HUD.TextPrompt.Update += TextPrompt_Update;
-
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
+
         }
 
 
@@ -343,6 +344,8 @@ namespace RainMeadow
             if (isStoryMode(out var gameMode))
             {
                 self.AddPart(new OnlineHUD(self, cam, gameMode));
+                self.AddPart(new SpectatorHud(self, cam, gameMode));
+
             }
         }
         private void RainWorldGame_GhostShutDown(On.RainWorldGame.orig_GhostShutDown orig, RainWorldGame self, GhostWorldPresence.GhostID ghostID)
@@ -517,11 +520,14 @@ namespace RainMeadow
 
         private void SaveState_BringUpToDate(On.SaveState.orig_BringUpToDate orig, SaveState self, RainWorldGame game)
         {
-            if (isStoryMode(out var gameMode)) {
+            if (isStoryMode(out var gameMode))
+            {
                 var denPos = self.denPosition;
                 orig(self, game);
                 self.denPosition = denPos;
-            } else {
+            }
+            else
+            {
                 orig(self, game);
             }
         }
@@ -650,6 +656,7 @@ namespace RainMeadow
                 }
 
                 self.room.game.cameras[0].hud.parts.Add(new OnlineHUD(self.room.game.cameras[0].hud, self.room.game.cameras[0], storyGameMode));
+                self.room.game.cameras[0].hud.parts.Add(new SpectatorHud(self.room.game.cameras[0].hud, self.room.game.cameras[0], storyGameMode));
 
                 return true;
             }
