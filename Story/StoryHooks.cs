@@ -5,6 +5,7 @@ using UnityEngine;
 using HUD;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 
 namespace RainMeadow
 {
@@ -39,6 +40,9 @@ namespace RainMeadow
             On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass;
             On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
 
+            IL.HardmodeStart.ctor += HardmodeStart_ctor;
+            new Hook(typeof(HardmodeStart.HardmodePlayer).GetProperty("MainPlayer").GetGetMethod(), this.HardmodeStart_HardmodePlayer_MainPlayer);
+            IL.HardmodeStart.SinglePlayerUpdate += HardmodeStart_SinglePlayerUpdate;
 
             On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide;
             On.RegionGate.PlayersStandingStill += PlayersStandingStill;
@@ -47,6 +51,8 @@ namespace RainMeadow
             On.RainWorldGame.GhostShutDown += RainWorldGame_GhostShutDown;
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
             On.RainWorldGame.Win += RainWorldGame_Win;
+
+            On.SaveState.GetStoryDenPosition += SaveState_GetStoryDenPosition;
 
             On.SaveState.BringUpToDate += SaveState_BringUpToDate;
             IL.SaveState.SessionEnded += SaveState_SessionEnded;
@@ -351,6 +357,76 @@ namespace RainMeadow
                 return orig(slugcat);
             }
 
+        private void HardmodeStart_ctor(ILContext il)
+        {
+            // don't spawn things if not host
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchStfld<RoomCamera>("followAbstractCreature")
+                    );
+                c.EmitDelegate(() => OnlineManager.lobby != null && !OnlineManager.lobby.isOwner);
+                c.Emit(OpCodes.Brtrue, skip);
+                c.GotoNext(
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdarg(1),
+                    i => i.MatchLdfld<Room>("game"),
+                    i => i.MatchCallOrCallvirt<RainWorldGame>("get_Players")
+                    );
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private bool HardmodeStart_HardmodePlayer_MainPlayer(Func<HardmodeStart.HardmodePlayer, bool> orig, HardmodeStart.HardmodePlayer self)
+        {
+            if (isStoryMode(out var storyGameMode))
+            {
+                return OnlineManager.lobby.isOwner;
+            }
+            return orig(self);
+        }
+
+        private void HardmodeStart_SinglePlayerUpdate(ILContext il)
+        {
+            // don't spawn stomach pearl
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdloc(0),
+                    i => i.MatchBrfalse(out _),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<HardmodeStart>("playerPosCorrect"),
+                    i => i.MatchBrtrue(out _)
+                    );
+                c.GotoNext(
+                    i => i.MatchLdloc(0),
+                    i => i.MatchCallOrCallvirt<Player>("get_playerState"),
+                    i => i.MatchLdcI4(out _),
+                    i => i.MatchStfld<PlayerState>("foodInStomach")
+                    );
+                c.EmitDelegate(() => OnlineManager.lobby != null && !OnlineManager.lobby.isOwner);
+                c.Emit(OpCodes.Brtrue, skip);
+                c.GotoNext(
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<HardmodeStart>("camPosCorrect"),
+                    i => i.MatchBrfalse(out _)
+                    );
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
         private void HUD_InitSinglePlayerHud(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam)
         {
             orig(self, cam);
@@ -452,6 +528,16 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner) return false;
             return orig(self, saveCurrentState, saveMaps, saveMiscProg);
+        }
+
+        private string SaveState_GetStoryDenPosition(On.SaveState.orig_GetStoryDenPosition orig, SlugcatStats.Name slugcat, out bool isVanilla)
+        {
+            if (isStoryMode(out var storyGameMode))
+            {
+                slugcat = storyGameMode.currentCampaign;
+            }
+            var denPos = orig(slugcat, out isVanilla);
+            return denPos;
         }
 
         private void SaveState_SessionEnded(ILContext il)
