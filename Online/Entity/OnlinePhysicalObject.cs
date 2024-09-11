@@ -45,6 +45,7 @@ namespace RainMeadow
 
         public static OnlinePhysicalObject NewFromApo(AbstractPhysicalObject apo)
         {
+            bool transferable = !RainMeadow.sSpawningAvatar && apo != OnlineManager.lobby.gameMode.avatar?.apo;
             EntityId entityId = new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number);
             if (OnlineManager.recentEntities.ContainsKey(entityId))
             {
@@ -61,18 +62,18 @@ namespace RainMeadow
             switch (apo)
             {
                 case AbstractMeadowCollectible:
-                    return new OnlineMeadowCollectible(apo, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+                    return new OnlineMeadowCollectible(apo, entityId, OnlineManager.mePlayer, transferable);
                 case AbstractCreature ac:
-                    return new OnlineCreature(ac, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+                    return new OnlineCreature(ac, entityId, OnlineManager.mePlayer, transferable);
                 case AbstractConsumable acm:
-                    if (AbstractConsumable.IsTypeConsumable(apo.type)) return OnlineConsumableFromAcm(acm, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+                    if (AbstractConsumable.IsTypeConsumable(apo.type)) return OnlineConsumableFromAcm(acm, entityId, OnlineManager.mePlayer, transferable);
                     else
                     {
                         RainMeadow.Debug("object has AbstractConsumable but type is not consumable: " + apo.type);
                         goto default; // screw you, trader-spawned scavengerbomb
                     }
                 default:
-                    return new OnlinePhysicalObject(apo, entityId, OnlineManager.mePlayer, !RainMeadow.sSpawningAvatar);
+                    return new OnlinePhysicalObject(apo, entityId, OnlineManager.mePlayer, transferable);
                 case null:
                     throw new ArgumentNullException(nameof(apo));
             }

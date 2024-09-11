@@ -397,7 +397,7 @@ namespace RainMeadow
 
         public override bool ShouldRegisterAPO(OnlineResource resource, AbstractPhysicalObject apo)
         {
-            return relevantTypes.Contains(apo.type) && (apo.type != AbstractPhysicalObject.AbstractObjectType.Creature || RainMeadow.sSpawningAvatar);
+            return relevantTypes.Contains(apo.type) && (apo.type != AbstractPhysicalObject.AbstractObjectType.Creature || RainMeadow.sSpawningAvatar || apo == (OnlineManager.lobby.gameMode.avatar?.apo));
         }
 
         public override bool AllowedInMode(PlacedObject item)

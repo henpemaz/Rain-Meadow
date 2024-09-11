@@ -166,6 +166,17 @@ namespace RainMeadow
             isAvailable = false;
             isReleasing = false;
 
+            if (isActive) // unavailable but active? only my stuff please
+            {
+                foreach (var ent in activeEntities.ToArray())
+                {
+                    if (!ent.isMine && registeredEntities.ContainsKey(ent.id)) // needs to be removed from the game
+                    {
+                        EntityLeftResource(ent);
+                    }
+                }
+            }
+
             UnavailableImpl();
 
             ClearIncommingBuffers();
@@ -177,12 +188,17 @@ namespace RainMeadow
 
         protected abstract void DeactivateImpl();
 
-        // The game resource this corresponds to has been unloaded
-        // or so I thought but: game tring to unload -> release, then deactivate, then let game unload
+        // The game resource this corresponds needs to be unloaded
         public void Deactivate()
         {
             RainMeadow.Debug(this);
             if (!isActive) { throw new InvalidOperationException("resource is already inactive"); }
+
+            foreach (var res in subresources)
+            {
+                if (res.isActive) res.Deactivate();
+            }
+
             isActive = false;
             DeactivateImpl();
 
@@ -234,6 +250,7 @@ namespace RainMeadow
             else
             {
                 // cannot operate resource without an owner
+                RainMeadow.Debug($"Resource cannot be operated, releasing");
                 NotNeeded();
             }
 

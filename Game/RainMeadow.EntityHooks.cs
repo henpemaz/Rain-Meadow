@@ -334,18 +334,11 @@ namespace RainMeadow
                 // post: we add our entities to the new world
                 if (room != null && RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession2))
                 {
-                    roomSession2.Activate(); // adds entities that are already in the room as mine
                     room.abstractRoom.entities.AddRange(entitiesFromNewRoom); // re-add overwritten entities
                     room.abstractRoom.creatures.AddRange(creaturesFromNewRoom);
-                    // room never "loaded" so we handle as entities joining a loaded room
-                    for (int i = 0; i < entitiesFromNewRoom.Count; i++)
-                    {
-                        if (entitiesFromNewRoom[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
-                        {
-                            oe.OnJoinedResource(roomSession2, null);
-                        }
-                    }
-
+                    roomSession2.Activate(); // adds entities that are already in the room as mine
+                    
+                    if (oldWorldSession.isActive) oldWorldSession.Deactivate();
                     oldWorldSession.NotNeeded(); // done? let go
                 }
                 if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode) 

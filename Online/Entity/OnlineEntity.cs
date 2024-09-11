@@ -199,11 +199,7 @@ namespace RainMeadow
         public void OnLeftResource(OnlineResource inResource)
         {
             RainMeadow.Debug($"{this} leaving {inResource}");
-            if (!joinedResources.Contains(inResource))
-            {
-                RainMeadow.Error($"Entity already left: {this} {inResource}");
-                return;
-            }
+            if (!joinedResources.Contains(inResource)) return;
 
             // if any subresources to leave do that first for consistency 
             joinedResources.Reverse<OnlineResource>().ToArray().Do(r => { if (r.IsSubresourceOf(inResource)) r.EntityLeftResource(this); });
@@ -219,7 +215,7 @@ namespace RainMeadow
                 OnlineManager.RemoveFeed(inResource, this);
                 JoinOrLeavePending();
             }
-            if (primaryResource == null && !isPending)
+            if (primaryResource == null && !isPending && this != OnlineManager.lobby.gameMode.avatar)
             {
                 Deregister();
             }
@@ -268,11 +264,15 @@ namespace RainMeadow
         }
 
         // I was in a resource and I was left behind as the resource was released
-        public virtual void Deactivated(OnlineResource onlineResource)
+        public void Deactivated(OnlineResource onlineResource)
         {
             RainMeadow.Debug($"{this} in {onlineResource}");
             if (pendingRequest is RPCEvent rpc && rpc.target == onlineResource) pendingRequest = null;
             if (!joinedResources.Contains(onlineResource)) return;
+
+            // if any subresources to leave do that first for consistency 
+            joinedResources.Reverse<OnlineResource>().ToArray().Do(r => { if (r.IsSubresourceOf(onlineResource)) Deactivated(r); });
+
             enteredResources.Remove(onlineResource);
             joinedResources.Remove(onlineResource);
             lastStates.Remove(onlineResource);
@@ -282,7 +282,8 @@ namespace RainMeadow
                 OnlineManager.RemoveFeed(onlineResource, this);
                 JoinOrLeavePending();
             }
-            if (primaryResource == null && !isPending)
+
+            if (primaryResource == null && !isPending && this != OnlineManager.lobby.gameMode.avatar)
             {
                 Deregister();
             }

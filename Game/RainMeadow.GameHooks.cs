@@ -266,6 +266,7 @@ namespace RainMeadow
 
                 if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
 
+                if (ws.isActive) ws.Deactivate();
                 ws.NotNeeded();
                 if (self.manager.upcomingProcess != ProcessManager.ProcessID.MainMenu) // quit directly, otherwise wait release
                 {
