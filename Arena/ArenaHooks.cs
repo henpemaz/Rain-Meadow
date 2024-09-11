@@ -357,28 +357,22 @@ namespace RainMeadow
 
                 if (self.countdownToNextRound == 0 && !self.nextLevelCall)
                 {
-
-                    ArenaGameSession getArenaGameSession = (self.manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
-                    AbstractRoom absRoom = getArenaGameSession.game.world.abstractRooms[0];
-
-                    if (RoomSession.map.TryGetValue(absRoom, out var roomSession))
+                    foreach (OnlinePlayer player in OnlineManager.players)
                     {
-                        foreach (OnlinePlayer player in OnlineManager.players)
+                        if (player.id == OnlineManager.lobby.owner.id && arena.clientWaiting == OnlineManager.players.Count - 1)
                         {
-                            if (player.id == OnlineManager.lobby.owner.id)
-                            {
-                                RPCs.Arena_NextLevelCall();
-                            }
+                            RPCs.Arena_NextLevelCall();
+                        }
 
-                            else
-                            {
-                                player.InvokeRPC(RPCs.Arena_NextLevelCall);
+                        else
+                        {
+                            player.InvokeRPC(RPCs.IncrementPlayersLeftt);
+                            player.InvokeRPC(RPCs.Arena_NextLevelCall);
 
-                            }
 
                         }
-                    }
 
+                    }
 
                 }
 
@@ -524,13 +518,13 @@ namespace RainMeadow
                 if (RainMeadow.isArenaMode(out var arena))
                 {
 
-                    List<ArenaSitting.ArenaPlayer> list = new List<ArenaSitting.ArenaPlayer>();
+                    List<OnlinePlayer> list = new List<OnlinePlayer>();
 
 
-                    List<ArenaSitting.ArenaPlayer> list2 = new List<ArenaSitting.ArenaPlayer>();
-                    for (int j = 0; j < self.arenaSitting.players.Count; j++)
+                    List<OnlinePlayer> list2 = new List<OnlinePlayer>();
+                    for (int j = 0; j < OnlineManager.players.Count; j++)
                     {
-                        list2.Add(self.arenaSitting.players[j]);
+                        list2.Add(OnlineManager.players[j]);
                     }
 
                     while (list2.Count > 0)
@@ -581,6 +575,7 @@ namespace RainMeadow
                     RainMeadow.Debug("Trying to create an abstract creature");
 
                     sSpawningAvatar = true;
+
                     AbstractCreature abstractCreature = new AbstractCreature(self.game.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(0, -1, -1, -1), new EntityID(-1, 0));
 
 
@@ -609,15 +604,15 @@ namespace RainMeadow
 
                     if (self.chMeta != null)
                     {
-                        abstractCreature.state = new PlayerState(abstractCreature, list[0].playerNumber, self.characterStats_Mplayer[0].name, isGhost: false);
+                        abstractCreature.state = new PlayerState(abstractCreature, 0, self.characterStats_Mplayer[0].name, isGhost: false);
                     }
                     else
                     {
-                        abstractCreature.state = new PlayerState(abstractCreature, list[0].playerNumber, new SlugcatStats.Name(ExtEnum<SlugcatStats.Name>.values.GetEntry(list[0].playerNumber)), isGhost: false);
+                        abstractCreature.state = new PlayerState(abstractCreature, 0, new SlugcatStats.Name(ExtEnum<SlugcatStats.Name>.values.GetEntry(0)), isGhost: false);
                     }
 
 
-
+                    RainMeadow.Debug("Arena: Realize Creature!");
                     abstractCreature.Realize();
                     var shortCutVessel = new ShortcutHandler.ShortCutVessel(new RWCustom.IntVector2(-1, -1), abstractCreature.realizedCreature, self.game.world.GetAbstractRoom(0), 0);
                     shortCutVessel.entranceNode = num;
@@ -642,15 +637,7 @@ namespace RainMeadow
 
                     }
 
-
                     self.playersSpawned = true;
-
-                    if (!OnlineManager.lobby.isOwner)
-                    {
-                        OnlineManager.lobby.owner.InvokeRPC(RPCs.ResetPlayersLeft);
-                        arena.nextLevel = false;
-                    }
-
                 }
             }
             else
