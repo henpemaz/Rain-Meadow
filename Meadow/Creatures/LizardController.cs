@@ -273,6 +273,7 @@ namespace RainMeadow
             lizard.abstractCreature.personality.energy = 1f; // stop being lazy
             // this.needsLight = false; // has builtin light
             // or so I thought but vanilla light is too small, give it two!
+            canZeroGClimb = true;
         }
 
         public Lizard lizard;
@@ -486,7 +487,7 @@ namespace RainMeadow
                 {
                     lizard.bodyChunks[i].vel *= 0.5f;
                 }
-                lizard.inAllowedTerrainCounter = Mathf.Min(lizard.inAllowedTerrainCounter, 5);
+                lizard.inAllowedTerrainCounter = Mathf.Min(lizard.inAllowedTerrainCounter, 15);
             }
         }
 

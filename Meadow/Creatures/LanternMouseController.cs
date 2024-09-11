@@ -74,7 +74,7 @@ namespace RainMeadow
 
         public override bool HasFooting => mouse.Footing;
 
-        public override bool OnPole => !HasFooting && GetTile(0).AnyBeam;
+        public override bool OnPole => GetTile(0).AnyBeam;
 
         public override bool OnGround => IsTileGround(0, 0, -1) || IsTileGround(1, 0, -1);
 

@@ -121,7 +121,7 @@ namespace RainMeadow
                 if (!found[i] && apo.stuckObjects[i].A == apo)
                 {
                     RainMeadow.Trace("releasing stick because not found at index " + i);
-                    AbstractObjStickRepr.map.GetValue(apo.stuckObjects[i], AbstractObjStickRepr.FromStick).Release(apo.stuckObjects[i]);
+                    AbstractObjStickRepr.map.GetValue(apo.stuckObjects[i], AbstractObjStickRepr.FromStick)?.Release(apo.stuckObjects[i]);
                 }
             }
 

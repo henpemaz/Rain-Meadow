@@ -3,6 +3,7 @@ using System;
 using UnityEngine;
 using RWCustom;
 using Mono.Cecil.Cil;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -24,20 +25,26 @@ namespace RainMeadow
         {
             if (creatureControllers.TryGetValue(self, out var c) && c is ScavengerController s)
             {
-                if (origin == self.AI.pathFinder.destination)// such a silly behavior...
-                    // actually scav NEEDS an upcoming connection wtf??
-                    //return new MovementConnection(MovementConnection.MovementType.Standard, origin, WorldCoordinate.AddIntVector(origin, new IntVector2(s.input[0].x, s.input[0].y)), 1);
-                return new MovementConnection(MovementConnection.MovementType.Standard, origin, origin, 1);
+                var pathFinder = self.AI.pathFinder;
+                if (origin == pathFinder.destination || (actuallyFollowingThisPath && pathFinder.lookingForImpossiblePath) || self.movMode == Scavenger.MovementMode.Swim)
+                {
+                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("returning override");
+                    return new MovementConnection(MovementConnection.MovementType.Standard, origin, pathFinder.destination, 1);
+                }
             }
 
             return orig(self, origin, actuallyFollowingThisPath);
         }
 
-        // fix "will only move if target > 3 tiles away" issue
+        
         private static void Scavenger_Act1(ILContext il)
         {
             try
             {
+                var locMov = il.Body.Variables.First(v => v.VariableType.FullName == typeof(MovementConnection).FullName);
+                var locNum2 = il.Body.Variables.First(v => v.VariableType.FullName == typeof(int).FullName);
+
+                // fix "will only move if target > 3 tiles away" issue
                 var c = new ILCursor(il);
                 c.GotoNext(MoveType.After,
                     i => i.MatchLdcI4(1),
@@ -47,10 +54,22 @@ namespace RainMeadow
                     i => i.MatchStfld<Scavenger>("moving")); // occupytile assignment
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((Scavenger self) => {
+                c.Emit(OpCodes.Ldloca, locMov);
+                c.Emit(OpCodes.Ldloca, locNum2);
+
+                c.EmitDelegate((Scavenger self, ref MovementConnection movementConnection, ref int num2) => {
                     if (creatureControllers.TryGetValue(self, out var s))
                     {
-                        self.moving |= (s as ScavengerController).forceMoving;
+                        if ((s as ScavengerController).forceMoving)
+                        {
+                            self.moving = true;
+                            if (self.Submersion >= 1f) // new
+                            {
+                                num2 = 0;
+                                self.occupyTile = self.room.GetTilePosition(self.mainBodyChunk.pos);
+                                movementConnection = self.FollowPath(self.room.GetWorldCoordinate(self.occupyTile), true);
+                            }
+                        }
                     }
                 });
 
@@ -96,6 +115,139 @@ namespace RainMeadow
                     }
                     return aimFor;
                 });
+
+                // swim handling
+                // happens in 2 spots smh
+                // line 515 -> if movementconnection defined
+                // else if (this.movMode == Scavenger.MovementMode.Swim)
+                //      if (this.moving)
+                //      into (moving && !meadowSpecialSwimCode())
+                ILLabel skip = null;
+                c.GotoPrev(MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<Scavenger>("movMode"),
+                    i => i.MatchLdsfld<Scavenger.MovementMode>("Swim"),
+                    i => i.MatchCall("ExtEnum`1<Scavenger/MovementMode>", "op_Equality"),
+                    i => i.MatchBrfalse(out skip),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<Scavenger>("moving"),
+                    i => i.MatchBrfalse(out _)
+                    );
+                // should follow the BR at the end of the block to skip to the end of the ifelse chain
+                int insertat = c.Index - 3;
+                c.GotoLabel(skip); // the else
+                c.GotoPrev(i => i.MatchBr(out skip)); // the br to end of ifelsechain
+
+                c.Index = insertat;
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldloc_2);
+
+                c.EmitDelegate((Scavenger self, MovementConnection movementConnection) =>
+                {
+                    if (creatureControllers.TryGetValue(self, out var c)) // controlled swim
+                    {
+                        //if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("swim A");
+                        if (self.moving)
+                        {
+                            Vector2 vector4 = self.room.MiddleOfTile(movementConnection.destinationCoord);
+                            if (Mathf.Abs(self.mainBodyChunk.vel.x) > 3f)
+                            {
+                                self.mainBodyChunk.vel.x *= 0.8f;
+                            }
+
+                            self.mainBodyChunk.vel += Custom.DirVec(self.mainBodyChunk.pos, vector4) * 0.5f;
+
+                            if (Mathf.Abs(self.mainBodyChunk.pos.x - vector4.x) < 5f)
+                            {
+                                self.flip *= 0.9f;
+                            }
+                            else if (self.mainBodyChunk.pos.x < vector4.x)
+                            {
+                                self.flip = Mathf.Min(self.flip + 0.07f, 1f);
+                            }
+                            else
+                            {
+                                self.flip = Mathf.Max(self.flip - 0.07f, -1f);
+                            }
+                            self.bodyChunks[2].vel *= 0.9f;
+                            self.bodyChunks[2].vel += Vector2.Lerp(Custom.DirVec(self.mainBodyChunk.pos, self.room.MiddleOfTile(self.connections[self.connections.Count - 1].destinationCoord)), new Vector2(0f, 1f), self.bodyChunks[2].submersion) * 2f;
+                        }
+                        else
+                        {
+                            if (self.AllowIdleMoves)
+                            {
+                                self.mainBodyChunk.vel += Vector2.ClampMagnitude(self.room.MiddleOfTile(self.AI.pathFinder.GetDestination) - self.mainBodyChunk.pos, 10f) / 60f;
+                            }
+                            self.flip = Mathf.Lerp(self.flip, Mathf.Clamp(self.HeadLookDir.x * 1.5f, -1f, 1f), 0.1f);
+                        }
+                        return false;
+                    }
+                    return true;
+                });
+                c.Emit(OpCodes.Brfalse, skip);
+
+                // line 670 generic swim movement
+                c.GotoNext(MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<Scavenger>("movMode"),
+                    i => i.MatchLdsfld<Scavenger.MovementMode>("Swim"),
+                    i => i.MatchCall("ExtEnum`1<Scavenger/MovementMode>", "op_Equality"),
+                    i => i.MatchBrfalse(out skip)
+                    );
+
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((Scavenger self) =>
+                {
+                    if (creatureControllers.TryGetValue(self, out var c)) // controlled swim
+                    {
+                        //if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("swim B");
+                        if (self.commitToMoveCounter > 0)
+                        {
+                            //if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("swim B forced");
+
+                            // new
+                            MovementConnection movementConnection = self.commitedToMove;
+                            Vector2 vector4 = self.room.MiddleOfTile(movementConnection.destinationCoord) + 10f * c.inputDir;
+                            if (Mathf.Abs(self.mainBodyChunk.vel.x) > 4f)
+                            {
+                                self.mainBodyChunk.vel.x *= 0.8f;
+                            }
+
+                            self.mainBodyChunk.vel += Custom.DirVec(self.mainBodyChunk.pos, vector4) * 0.50f;
+
+                            if (Mathf.Abs(self.mainBodyChunk.pos.x - vector4.x) < 5f)
+                            {
+                                self.flip *= 0.9f;
+                            }
+                            else if (self.mainBodyChunk.pos.x < vector4.x)
+                            {
+                                self.flip = Mathf.Min(self.flip + 0.07f, 1f);
+                            }
+                            else
+                            {
+                                self.flip = Mathf.Max(self.flip - 0.07f, -1f);
+                            }
+                            self.bodyChunks[2].vel += Custom.DirVec(self.bodyChunks[2].pos, vector4) * 0.25f;
+                            //self.bodyChunks[2].vel *= 0.95f;
+                            //self.bodyChunks[2].vel += Vector2.Lerp(Custom.DirVec(self.mainBodyChunk.pos, self.room.MiddleOfTile(self.connections[self.connections.Count - 1].destinationCoord)), new Vector2(0f, 1f), self.bodyChunks[2].submersion) * 2f;
+                        }
+
+                        // old but modified
+                        //float num15 = Mathf.Lerp(self.room.FloatWaterLevel(self.mainBodyChunk.pos.x), self.room.waterObject.fWaterLevel, 0.5f);
+                        //self.bodyChunks[1].vel.y = self.bodyChunks[1].vel.y - self.gravity * (1f - self.bodyChunks[2].submersion);
+                        self.bodyChunks[2].vel *= Mathf.Lerp(1f, 0.9f, self.mainBodyChunk.submersion);
+                        self.mainBodyChunk.vel.y *= Mathf.Lerp(1f, 0.95f, self.mainBodyChunk.submersion);
+                        self.bodyChunks[1].vel.y *= Mathf.Lerp(1f, 0.95f, self.bodyChunks[1].submersion);
+                        //BodyChunk mainBodyChunk5 = self.mainBodyChunk;
+                        //mainBodyChunk5.vel.y = mainBodyChunk5.vel.y + Mathf.Clamp((num15 - self.mainBodyChunk.pos.y) / 14f, -0.5f, 0.5f);
+                        //BodyChunk bodyChunk10 = self.bodyChunks[1];
+                        //bodyChunk10.vel.y = bodyChunk10.vel.y + Mathf.Clamp((num15 - self.bodyChunkConnections[0].distance - self.bodyChunks[1].pos.y) / 14f, -0.5f, 0.5f);
+
+                        return false;
+                    }
+                    return true;
+                });
+                c.Emit(OpCodes.Brfalse, skip);
             }
             catch (Exception e)
             {
@@ -215,26 +367,7 @@ namespace RainMeadow
 
             if (Input.GetKey(KeyCode.L))
             {
-                RainMeadow.Debug($"current AI destination {scavenger.AI.pathFinder.destination}");
-                RainMeadow.Debug($"moving {scavenger.moving}");
-                RainMeadow.Debug($"movMode {scavenger.movMode}");
-                RainMeadow.Debug($"moveModeChangeCounter {scavenger.moveModeChangeCounter}");
-                RainMeadow.Debug($"animation {scavenger.animation}");
-                RainMeadow.Debug($"drop {scavenger.drop}");
-                RainMeadow.Debug($"commitedToMove {scavenger.commitedToMove}");
-                RainMeadow.Debug($"commitedMoveFollowChunk {scavenger.commitedMoveFollowChunk}");
-                RainMeadow.Debug($"commitToMoveCounter {scavenger.commitToMoveCounter}");
-                RainMeadow.Debug($"ghostCounter {scavenger.ghostCounter}");
-                RainMeadow.Debug($"occupyTile {scavenger.occupyTile}");
-                RainMeadow.Debug($"pathingWithExits {scavenger.pathingWithExits}");
-                RainMeadow.Debug($"pathWithExitsCounter {scavenger.pathWithExitsCounter}");
-                RainMeadow.Debug($"notFollowingPathToCurrentGoalCounter {scavenger.notFollowingPathToCurrentGoalCounter}");
-                RainMeadow.Debug($"swingPos {scavenger.swingPos}");
-                RainMeadow.Debug($"swingProgress {scavenger.swingProgress}");
-                RainMeadow.Debug($"swingClimbCounter {scavenger.swingClimbCounter}");
-                RainMeadow.Debug($"footingCounter {scavenger.footingCounter}");
-                RainMeadow.Debug($"stuckCounter {scavenger.stuckCounter}");
-                RainMeadow.Debug($"stuckOnShortcutCounter {scavenger.stuckOnShortcutCounter}");
+                RainMeadow.Dump(scavenger);
             }
         }
 
@@ -281,7 +414,8 @@ namespace RainMeadow
                 {
                     return creature.room.GetWorldCoordinate(scavenger.occupyTile);
                 }
-                return base.CurrentPathfindingPosition;
+
+                return creature.room.GetWorldCoordinate(creature.bodyChunks[0].pos);
             }
         }
 
@@ -326,7 +460,9 @@ namespace RainMeadow
             scavenger.commitedToMove = movementConnection;
             scavenger.commitToMoveCounter = 10;
             scavenger.commitedMoveFollowChunk = 1;
-            scavenger.drop = true;
+            scavenger.connections.Clear();
+            scavenger.connections.Add(movementConnection);
+            scavenger.drop = false; //input[0].y < 0;
             forceMoving = true;
             scavenger.stuckCounter = Mathf.Min(20, scavenger.stuckCounter);
         }

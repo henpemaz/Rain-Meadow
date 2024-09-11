@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -42,7 +43,13 @@ namespace RainMeadow
         [Conditional("TRACING")]
         public static void Dump(object data, [CallerFilePath] string callerFile = "", [CallerMemberName] string callerName = "")
         {
-            instance.Logger.LogInfo($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}:{JsonConvert.SerializeObject(data, Formatting.Indented, new ShallowJsonDump())}");
+            var dump = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings
+            {
+                ContractResolver = ShallowJsonDump.customResolver,
+                Converters = new List<JsonConverter>() { new ShallowJsonDump() }
+
+            });
+            instance.Logger.LogInfo($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}:{dump}");
         }
 
         // tracing stays on for one net-frame after pressing L
