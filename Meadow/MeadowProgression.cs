@@ -126,8 +126,8 @@ namespace RainMeadow
             public static Character LanternMouse = new("LanternMouse", true, new()
             {
                 displayName = "LANTERN MOUSE",
-                emotePrefix = "sc_", // "noot_"
-                emoteAtlas = "emotes_slugcat",//"emotes_noot",
+                emotePrefix = "maus_",
+                emoteAtlas = "emotes_maus",
                 emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
                 voiceId = RainMeadow.Ext_SoundID.RM_Mouse_Call,
                 selectSpriteIndexes = new int[0],
