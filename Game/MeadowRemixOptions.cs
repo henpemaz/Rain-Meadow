@@ -21,7 +21,7 @@ public class RainMeadowOptions : OptionInterface
         FriendViewClickToActivate = config.Bind("FriendViewHoldOrToggle", false);
         BodyColor = config.Bind("BodyColor", Color.white);
         EyeColor = config.Bind("EyeColor", Color.black);
-        SpectatorKey = config.Bind("SpectatorKey", KeyCode.S);
+        SpectatorKey = config.Bind("SpectatorKey", KeyCode.Tab);
 
     }
 
