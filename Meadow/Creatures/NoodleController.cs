@@ -24,6 +24,24 @@ namespace RainMeadow
             On.SmallNeedleWormAI.Update += SmallNeedleWormAI_Update;
 
             IL.NeedleWorm.Fly += NeedleWorm_Fly;
+            On.NeedleWorm.Fly += NeedleWorm_Fly1;
+        }
+
+        private static void NeedleWorm_Fly1(On.NeedleWorm.orig_Fly orig, NeedleWorm self, MovementConnection followingConnection)
+        {
+            if (creatureControllers.TryGetValue(self, out var controller))
+            {
+                // if water or close to terrain, crawl
+                if ((self.room.GetTile(followingConnection.startCoord).AnyWater || self.room.aimap.getTerrainProximity(followingConnection.startCoord) <= 1) 
+                 && (self.room.GetTile(followingConnection.destinationCoord).AnyWater || self.room.aimap.getTerrainProximity(followingConnection.destinationCoord) <= 1))
+                {
+                    self.Crawl(followingConnection);
+                    return;
+                }
+            }
+
+
+            orig(self, followingConnection);
         }
 
         private static void NeedleWorm_Fly(ILContext il)
