@@ -77,7 +77,7 @@ namespace RainMeadow
             WorldCoordinate den = new WorldCoordinate(num.Value, -1, -1, int.Parse(array2[1], NumberStyles.Any, CultureInfo.InvariantCulture));
             AbstractCreature abstractCreature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, den, id);
 
-            foreach (var item in abstractCreature.stuckObjects) // Some (dropbug) creatures spawn with random items attached
+            foreach (var item in abstractCreature.stuckObjects.ToArray()) // Some (dropbug) creatures spawn with random items attached
             {
                 item.Deactivate();
             }
