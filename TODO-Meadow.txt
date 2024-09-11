@@ -34,7 +34,7 @@ creature todo
 	some rooms will get fixed
 		eventually :tm:
 	need to sort out water movement first before determining what's trully inaccessible
-- allow creature to change the creature-pipe they're going to mid-flight
+- allow creature to change the creature-pipe they're going to mid-flight (very low prio)
 - need to sample color of creature and have it in skindata
 	- requires final-ish seeds
 - water controls for lizard and scav etc
@@ -117,3 +117,5 @@ sometimes one loads in the wrong region? might have to do with enabling mods shi
 echo sky animation is too slow needs to converge
 
 echo reward anim is bad, fade to white is bad, no confetti??
+
+cursor disappears on fullscreen nondevtools etc
