@@ -14,7 +14,7 @@
             {
                 pendingRequest = owner.InvokeRPC(this.Requested).Then(this.ResolveRequest);
             }
-            else
+            else if (primaryResource.owner != null)
             {
                 pendingRequest = primaryResource.owner.InvokeRPC(this.Requested).Then(this.ResolveRequest);
             }
@@ -76,7 +76,7 @@
             {
                 RainMeadow.Debug("Staying as supervisor");
             }
-            else
+            else if (primaryResource.owner != null)
             {
                 this.pendingRequest = primaryResource.owner.InvokeRPC(Released, currentlyJoinedResource).Then(ResolveRelease);
             }
