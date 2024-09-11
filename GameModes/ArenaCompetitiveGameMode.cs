@@ -7,8 +7,6 @@ namespace RainMeadow
     public class ArenaCompetitiveGameMode : OnlineGameMode
     {
         public bool isInGame = false;
-        public bool nextLevel = false;
-
         public int clientWaiting = 0;
 
         public List<string> playList = new List<string>();
@@ -18,7 +16,6 @@ namespace RainMeadow
         }
 
         public ArenaClientSettings arenaClientSettings => clientSettings as ArenaClientSettings;
-
 
         public override bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)
         {

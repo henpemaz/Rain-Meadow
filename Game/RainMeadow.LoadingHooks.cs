@@ -24,12 +24,6 @@ namespace RainMeadow
             {
                 ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
 
-                if (OnlineManager.lobby.isOwner)
-                {
-                    arena.nextLevel = true;
-                }
-
-                // We need to kick everyone out
 
                 AbstractRoom absRoom = getArenaGameSession.game.world.abstractRooms[0];
                 Room room = absRoom.realizedRoom;
@@ -110,23 +104,26 @@ namespace RainMeadow
                         if (ModManager.MSC && getArenaGameSession.challengeCompleted)
                         {
                             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerMenu);
+                            if (!OnlineManager.lobby.isOwner)
+                            {
+                                OnlineManager.lobby.owner.InvokeRPC(RPCs.ResetPlayersLeft);
+                            }
                             return;
                         }
                     }
 
+                    RainMeadow.Debug("Arena: Moving to next level");
                     self.currentLevel++;
 
-                    if (!OnlineManager.lobby.isOwner)
-                    {
-                        OnlineManager.lobby.owner.InvokeRPC(RPCs.IncrementPlayersLeftt);
-                    }
 
                     if (self.currentLevel >= arena.playList.Count && !self.gameTypeSetup.repeatSingleLevelForever)
                     {
 
-                        arena.nextLevel = false;
-
                         manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
+                        if (!OnlineManager.lobby.isOwner)
+                        {
+                            OnlineManager.lobby.owner.InvokeRPC(RPCs.ResetPlayersLeft);
+                        }
                         return;
                     }
 
@@ -259,10 +256,21 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 playerCharacter = OnlineManager.lobby.gameMode.LoadWorldAs(game);
-                if (isArenaMode(out var arena))
-                {
-                    ArenaHelpers.CheckHostClientStates(arena);
+                if (isArenaMode(out var arena)) {
+
+                    if (!OnlineManager.lobby.isOwner)
+                    {
+                        while (OnlineManager.lobby.worldSessions["arena"].isWaitingForState)
+                        {
+                            RainMeadow.Debug("Waiting for next level to be ready...");
+                            Thread.Sleep(200);
+
+                        }
+
+                    }
                 }
+
+
             }
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
             if (OnlineManager.lobby != null && self.game != null)
@@ -270,6 +278,8 @@ namespace RainMeadow
                 WorldSession ws = null;
                 if (isArenaMode(out var _))
                 {
+                    RainMeadow.Debug("Arena: Setting up world session");
+
                     ws = OnlineManager.lobby.worldSessions["arena"];
                 }
                 else
