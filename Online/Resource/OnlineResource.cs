@@ -322,15 +322,21 @@ namespace RainMeadow
         {
             if (participants.Contains(newParticipant)) return;
             RainMeadow.Debug($"{this}-{newParticipant}");
-            if (super != this)
-            {
-                super.NewParticipant(newParticipant);
-            }
+            // this doesn't achieve much, this sort of consistency isn't required
+            // plus it might be overwritten the next few ticks we receive
+            //if (super != this && !super.isOwner) // maybe still has flaws, would need join versioning
+            //{
+            //    super.NewParticipant(newParticipant);
+            //}
             participants.Add(newParticipant);
             LeaseModified();
             if (isAvailable && isOwner && !newParticipant.isMe)
             {
                 Subscribed(newParticipant);
+            }
+            if (newParticipant.isMe && !isAvailable && !isActive)
+            {
+                WaitingForState(); // if unintended, tick the state machine
             }
             NewParticipantImpl(newParticipant);
         }
@@ -340,8 +346,10 @@ namespace RainMeadow
         {
             if (!participants.Contains(participant)) return;
             RainMeadow.Debug($"{this}-{participant}");
-            if (isActive)
+            if (isActive && isOwner)  // maybe still has flaws, would need join/leave versioning maybe even player player cross versioning
             {
+                // I supervise these resources and I "know" this guy just left
+                // "know" as in told by supervisor of this
                 foreach (var resource in subresources)
                 {
                     resource.ParticipantLeft(participant);
@@ -349,28 +357,18 @@ namespace RainMeadow
             }
             participants.Remove(participant);
             LeaseModified();
-            if (RainMeadow.isArenaMode(out var _))
+            if (isSupervisor && participant == owner)
             {
-                if (isSupervisor && participant == owner)
-                {
-                    RainMeadow.Debug("Abandoning Arena resource and not assigning new owner");
-                }
-                if (isAvailable && !participant.isMe)
-                {
-                    Unsubscribed(participant);
-                }
+                PickNewOwner();
             }
-            else
+            if (isAvailable && isOwner && !participant.isMe)
             {
-                if (isSupervisor && participant == owner)
-                {
-                    PickNewOwner();
-                }
-                if (isAvailable && isOwner && !participant.isMe)
-                {
-                    Unsubscribed(participant);
-                    if (isActive) ClaimAbandonedEntitiesAndResources();
-                }
+                Unsubscribed(participant);
+                if (isActive) ClaimAbandonedEntitiesAndResources();
+            }
+            if (participant.isMe && isAvailable)
+            {
+                Unavailable();
             }
             ParticipantLeftImpl(participant);
         }
@@ -460,14 +458,8 @@ namespace RainMeadow
             if (!isSupervisor) throw new InvalidProgrammerException("not supervisor");
             OnlinePlayer newOwner;
 
-            if (RainMeadow.isArenaMode(out var _))
-            {
-                newOwner = OnlineManager.lobby.owner; // Host always owns
-            }
-            else
-            {
-                newOwner = MatchmakingManager.instance.BestTransferCandidate(this, participants);
-            }
+            newOwner = MatchmakingManager.instance.BestTransferCandidate(this, participants);
+
             if (newOwner != owner) NewOwner(newOwner);
             if (newOwner != null)
             {
