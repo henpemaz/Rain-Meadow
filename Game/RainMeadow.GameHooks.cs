@@ -22,6 +22,8 @@ namespace RainMeadow
             On.RainWorldGame.ShutDownProcess += RainWorldGame_ShutDownProcess;
             IL.ShortcutHandler.SuckInCreature += ShortcutHandler_SuckInCreature;
 
+            On.Options.GetSaveFileName_SavOrExp += Options_GetSaveFileName_SavOrExp;
+
             On.RegionState.AdaptWorldToRegionState += RegionState_AdaptWorldToRegionState;
 
             On.World.LoadWorld += World_LoadWorld;
@@ -151,6 +153,14 @@ namespace RainMeadow
             orig(self);
         }
 
+        private string Options_GetSaveFileName_SavOrExp(On.Options.orig_GetSaveFileName_SavOrExp orig, Options self)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                return "online_" + orig(self);
+            }
+            return orig(self);
+        }
 
         private void Room_PlaceQuantifiedCreaturesInRoom(On.Room.orig_PlaceQuantifiedCreaturesInRoom orig, Room self, CreatureTemplate.Type critType)
         {
