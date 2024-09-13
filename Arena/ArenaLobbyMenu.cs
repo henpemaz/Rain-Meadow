@@ -201,7 +201,7 @@ namespace RainMeadow
         {
             manager.arenaSitting = new ArenaSitting(mm.GetGameTypeSetup, mm.multiplayerUnlocks);
 
-            manager.arenaSitting.AddPlayer(0); // placeholder add player
+            // manager.arenaSitting.AddPlayer(0); // placeholder add player
             manager.arenaSitting.levelPlaylist = new List<string>();
 
             if (mm.GetGameTypeSetup.shufflePlaylist)
@@ -434,6 +434,7 @@ namespace RainMeadow
                     PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
 
                     personaSettings.playingAs = mm.GetArenaSetup.playerClass[currentColorIndex];
+                    
 
                 };
                 pages[0].subObjects.Add(classButtons[l]);
