@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using Menu;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -71,21 +73,41 @@ namespace RainMeadow
             }
 
             // Update button states
+            bool hasAnyAcInGateRoom = false;
+
             for (int i = 0; i < newAcListCount; i++)
             {
                 var ac = uniqueACs.ElementAt(i);
                 var button = this.pages[0].subObjects.OfType<SimplerButton>().ElementAt(i);
 
-                if (ac.state.dead || (ac.realizedCreature != null && ac.realizedCreature.State.dead))
+                // Check if any AC is in the gate room
+                if (ac.Room.gate)
+                {
+                    hasAnyAcInGateRoom = true;
+
+                }
+
+                // Disable button if AC is dead or if we're in gate room mode
+                if ((ac.state.dead ||
+                     (ac.realizedCreature != null && ac.realizedCreature.State.dead)) ||
+                    (hasAnyAcInGateRoom && !ac.Room.gate))
                 {
                     button.inactive = true;
-                    button.OnClick += (_) => { /* No action on click, slugs are dead */ };
+                    button.buttonBehav.greyedOut = true;
+                    button.OnClick += (_) =>
+                    {
+                        /* No action on click, slugs are dead or in gate room mode */
+                    };
                 }
                 else
                 {
                     button.inactive = false;
+
                 }
+
             }
+
+
         }
 
         public void InitSpectatorMode()
@@ -122,33 +144,36 @@ namespace RainMeadow
                     this.pages[0].subObjects.Add(btn);
                     btn.toggled = false;
 
-                    // Introduce a local variable to hold the current index
-                    int currentCreature = i;
-                    if (uniqueACs.ElementAt(currentCreature).state.dead || uniqueACs.ElementAt(currentCreature).realizedCreature != null && uniqueACs.ElementAt(currentCreature).realizedCreature.State.dead)
+                    bool hasAnyAcInGateRoom = false;
+                    var ac = uniqueACs.ElementAt(i);
+                    // Disable button if AC is dead or if we're in gate room mode. We cannot have a situation where a realizedCreature becomes null during a room check
+                    if ((ac.state.dead ||
+                    (ac.realizedCreature != null && ac.realizedCreature.State.dead)) ||
+                    (hasAnyAcInGateRoom && !ac.Room.gate))
                     {
                         btn.inactive = true;
-                        btn.OnClick += (_) =>
-                        {
-                            { /* No action on click */ };
-                        };
+                        btn.buttonBehav.greyedOut = true;
+                        btn.OnClick += (_) => { /* No action on click, slugs are dead or in gate room mode */ };
                     }
                     else
                     {
                         btn.inactive = false;
+                        btn.buttonBehav.greyedOut = false;
                         btn.OnClick += (_) =>
                         {
-                            this.game.cameras[0].followAbstractCreature = uniqueACs.ElementAt(currentCreature);
 
-                            if (uniqueACs.ElementAt(currentCreature).Room.realizedRoom == null)
+                            this.game.cameras[0].followAbstractCreature = ac;
+
+                            if (ac.Room.realizedRoom == null)
                             {
-                                this.game.world.ActivateRoom(uniqueACs.ElementAt(currentCreature).Room);
+                                this.game.world.ActivateRoom(ac.Room);
                             }
 
-                            RainMeadow.Debug("Following " + uniqueACs.ElementAt(currentCreature));
+                            RainMeadow.Debug("Following " + ac);
 
-                            if ((this.game.cameras[0].room.abstractRoom != uniqueACs.ElementAt(currentCreature).Room))
+                            if ((this.game.cameras[0].room.abstractRoom != ac.Room))
                             {
-                                this.game.cameras[0].MoveCamera(uniqueACs.ElementAt(currentCreature).Room.realizedRoom, -1);
+                                this.game.cameras[0].MoveCamera(ac.Room.realizedRoom, -1);
                             }
                             btn.toggled = !btn.toggled;
 
