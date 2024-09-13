@@ -141,11 +141,41 @@ namespace RainMeadow
         public void JoinOrLeavePending()
         {
             if (!isMine) { throw new InvalidProgrammerException("not owner"); }
+            
+            // Sanitize
+            for (int i = enteredResources.Count - 1; i >= 0; i--)
+            {
+                if (!enteredResources[i].isActive)
+                {
+                    enteredResources.RemoveAt(i);
+                }
+            }
+            for (int i = joinedResources.Count - 1; i >= 0; i--)
+            {
+                if (!joinedResources[i].isActive)
+                {
+                    RainMeadow.Error("was joined in inactive resource: " + joinedResources[i]);
+                    joinedResources.RemoveAt(i);
+                    continue;
+                }
+                if (!joinedResources[i].joinedEntities.ContainsKey(this.id))
+                {
+                    RainMeadow.Error("was joined in resource but not in entities list: " + joinedResources[i]);
+                    joinedResources.RemoveAt(i);
+                    continue;
+                }
+            }
+            if (pendingRequest is RPCEvent rpc && rpc.target is OnlineResource res)
+            {
+                if(!enteredResources.Contains(res) && !joinedResources.Contains(res))
+                {
+                    RainMeadow.Debug($"dismissing pending request {pendingRequest} for resource {res}");
+                    pendingRequest = null;
+                }
+            }
             if (isPending) { return; } // still pending
             RainMeadow.Debug(this);
 
-            enteredResources.RemoveAll(r => !r.isActive);
-            joinedResources.RemoveAll(r => !r.isAvailable || !r.joinedEntities.ContainsKey(this.id));
 
             // any resources to leave
             var pending = joinedResources.LastOrDefault(r => !enteredResources.Contains(r));

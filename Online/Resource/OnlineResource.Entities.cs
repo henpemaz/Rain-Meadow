@@ -203,7 +203,6 @@ namespace RainMeadow
             }
             else if (entityJoinResult is GenericResult.Error) // retry
             {
-                oe.pendingRequest = null;
                 if (oe.isMine) oe.JoinOrLeavePending();
             }
         }
@@ -278,7 +277,6 @@ namespace RainMeadow
             }
             else if (entityLeaveResult is GenericResult.Error) // retry
             {
-                oe.pendingRequest = null;
                 if (oe.isMine) oe.JoinOrLeavePending();
             }
         }
