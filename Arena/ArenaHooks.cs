@@ -45,27 +45,30 @@ namespace RainMeadow
             On.Menu.ArenaOverlay.ctor += ArenaOverlay_ctor;
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
+            On.Menu.PlayerResultMenu.ctor += PlayerResultMenu_ctor;
+          
+
 
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
             On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1;
-            //On.Menu.PlayerResultBox.ctor += PlayerResultBox_ctor;
 
         }
 
-        //private void PlayerResultBox_ctor(On.Menu.PlayerResultBox.orig_ctor orig, Menu.PlayerResultBox self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, Vector2 size, ArenaSitting.ArenaPlayer player, int index)
-        //{
-        //    orig(self, menu, owner, pos, size, player, index);
-        //    self.result = new List<ArenaSitting.ArenaPlayer>();
-        //    for (int i = 0; i < OnlineManager.players.Count; i++)
-        //    {
-        //        var player = new ArenaSitting.ArenaPlayer(0);
-        //        player.playerClass = (OnlineManager.lobby.clientSettings[OnlineManager.players[0]] as ArenaClientSettings).playingAs;
+        private void PlayerResultMenu_ctor(On.Menu.PlayerResultMenu.orig_ctor orig, Menu.PlayerResultMenu self, ProcessManager manager, ArenaSitting ArenaSitting, List<ArenaSitting.ArenaPlayer> result, ProcessManager.ProcessID processID)
+        {
+            result = new List<ArenaSitting.ArenaPlayer>();
+            for (int i = 0; i < OnlineManager.players.Count; i++)
+            {
+                var player = new ArenaSitting.ArenaPlayer(i);
+                player.playerClass = (OnlineManager.lobby.clientSettings[OnlineManager.players[i]] as ArenaClientSettings).playingAs;
+                result.Add(player);
 
-        //        self.result.Add(player);
+            }
 
-        //    }
-        //}
+            orig(self, manager, ArenaSitting, result, processID);
+
+        }
 
         private void ArenaOverlay_ctor(On.Menu.ArenaOverlay.orig_ctor orig, Menu.ArenaOverlay self, ProcessManager manager, ArenaSitting ArenaSitting, List<ArenaSitting.ArenaPlayer> result)
         {
@@ -84,6 +87,7 @@ namespace RainMeadow
             // I hate this, but it's necessary so we order the players correctly instead of putting the winner on top
             for (int i = self.resultBoxes.Count - 1; i >= 0; i--)
             {
+                self.resultBoxes[i].RemoveSprites();
                 self.pages[0].subObjects.Remove(self.resultBoxes[i]);
             }
             self.resultBoxes = new List<Menu.PlayerResultBox>();
@@ -92,8 +96,6 @@ namespace RainMeadow
                 self.resultBoxes.Add(new Menu.ArenaOverlayResultBox(self, self.pages[0], result[i], i, result[i].winner && result.Count > 1));
                 self.resultBoxes[i].playerNameLabel.text = OnlineManager.players[i].id.name;
                 self.pages[0].subObjects.Add(self.resultBoxes[i]);
-
-
             }
 
 
@@ -139,20 +141,12 @@ namespace RainMeadow
 
         private void MultiplayerResults_ctor(On.Menu.MultiplayerResults.orig_ctor orig, Menu.MultiplayerResults self, ProcessManager manager)
         {
-            //self.result = new List<ArenaSitting.ArenaPlayer>();
-            //for (int i = 0; i < OnlineManager.players.Count; i++)
-            //{
-            //    var player = new ArenaSitting.ArenaPlayer(0);
-            //    player.playerClass = (OnlineManager.lobby.clientSettings[OnlineManager.players[0]] as ArenaClientSettings).playingAs;
-
-            //    self.result.Add(player);
-
-            //}
             orig(self, manager);
             if (isArenaMode(out var _))
             {
                 for (int i = self.resultBoxes.Count - 1; i >= 0; i--)
                 {
+                    self.resultBoxes[i].RemoveSprites();
                     self.pages[0].subObjects.Remove(self.resultBoxes[i]);
                 }
 
@@ -348,8 +342,8 @@ namespace RainMeadow
             {
 
                 self.thisFrameActivePlayers = OnlineManager.players.Count;
-                // TODO
-                self.arenaSitting.players[0].playerClass = (OnlineManager.lobby.clientSettings[OnlineManager.players[0]] as ArenaClientSettings).playingAs; // intercept playerClass here because we bypass in ArenaLobbyMenu
+                
+                //self.arenaSitting.players[0].playerClass = (OnlineManager.lobby.clientSettings[OnlineManager.players[0]] as ArenaClientSettings).playingAs; // intercept playerClass here because we bypass in ArenaLobbyMenu
                 On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
             }
         }
