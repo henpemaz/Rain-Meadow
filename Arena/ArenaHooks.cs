@@ -42,12 +42,60 @@ namespace RainMeadow
             On.ArenaCreatureSpawner.SpawnArenaCreatures += ArenaCreatureSpawner_SpawnArenaCreatures;
 
             On.HUD.HUD.InitMultiplayerHud += HUD_InitMultiplayerHud;
+            On.Menu.ArenaOverlay.ctor += ArenaOverlay_ctor;
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
 
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
             On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1;
+            //On.Menu.PlayerResultBox.ctor += PlayerResultBox_ctor;
+
+        }
+
+        //private void PlayerResultBox_ctor(On.Menu.PlayerResultBox.orig_ctor orig, Menu.PlayerResultBox self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, Vector2 size, ArenaSitting.ArenaPlayer player, int index)
+        //{
+        //    orig(self, menu, owner, pos, size, player, index);
+        //    self.result = new List<ArenaSitting.ArenaPlayer>();
+        //    for (int i = 0; i < OnlineManager.players.Count; i++)
+        //    {
+        //        var player = new ArenaSitting.ArenaPlayer(0);
+        //        player.playerClass = (OnlineManager.lobby.clientSettings[OnlineManager.players[0]] as ArenaClientSettings).playingAs;
+
+        //        self.result.Add(player);
+
+        //    }
+        //}
+
+        private void ArenaOverlay_ctor(On.Menu.ArenaOverlay.orig_ctor orig, Menu.ArenaOverlay self, ProcessManager manager, ArenaSitting ArenaSitting, List<ArenaSitting.ArenaPlayer> result)
+        {
+
+            result = new List<ArenaSitting.ArenaPlayer>();
+            for (int i = 0; i < OnlineManager.players.Count; i++)
+            {
+                var player = new ArenaSitting.ArenaPlayer(i);
+                player.playerClass = (OnlineManager.lobby.clientSettings[OnlineManager.players[i]] as ArenaClientSettings).playingAs;
+
+                result.Add(player);
+
+            }
+            orig(self, manager, ArenaSitting, result);
+
+            // I hate this, but it's necessary so we order the players correctly instead of putting the winner on top
+            for (int i = self.resultBoxes.Count - 1; i >= 0; i--)
+            {
+                self.pages[0].subObjects.Remove(self.resultBoxes[i]);
+            }
+            self.resultBoxes = new List<Menu.PlayerResultBox>();
+            for (int i = 0; i < OnlineManager.players.Count; i++)
+            {
+                self.resultBoxes.Add(new Menu.ArenaOverlayResultBox(self, self.pages[0], result[i], i, result[i].winner && result.Count > 1));
+                self.resultBoxes[i].playerNameLabel.text = OnlineManager.players[i].id.name;
+                self.pages[0].subObjects.Add(self.resultBoxes[i]);
+
+
+            }
+
 
         }
 
@@ -91,9 +139,32 @@ namespace RainMeadow
 
         private void MultiplayerResults_ctor(On.Menu.MultiplayerResults.orig_ctor orig, Menu.MultiplayerResults self, ProcessManager manager)
         {
+            //self.result = new List<ArenaSitting.ArenaPlayer>();
+            //for (int i = 0; i < OnlineManager.players.Count; i++)
+            //{
+            //    var player = new ArenaSitting.ArenaPlayer(0);
+            //    player.playerClass = (OnlineManager.lobby.clientSettings[OnlineManager.players[0]] as ArenaClientSettings).playingAs;
+
+            //    self.result.Add(player);
+
+            //}
             orig(self, manager);
             if (isArenaMode(out var _))
             {
+                for (int i = self.resultBoxes.Count - 1; i >= 0; i--)
+                {
+                    self.pages[0].subObjects.Remove(self.resultBoxes[i]);
+                }
+
+                self.resultBoxes = new List<Menu.PlayerResultBox>();
+                for (int i = 0; i < OnlineManager.players.Count; i++)
+                {
+                    self.resultBoxes.Add(new Menu.FinalResultbox(self, self.pages[0], self.result[i], i));
+                    self.resultBoxes[i].playerNameLabel.text = OnlineManager.players[i].id.name;
+                    self.pages[0].subObjects.Add(self.resultBoxes[i]);
+
+
+                }
                 var exitButton = new Menu.SimpleButton(self, self.pages[0], self.Translate("EXIT"), "EXIT", new Vector2(856f, 50f), new Vector2(110f, 30f));
                 self.pages[0].subObjects.Add(exitButton);
             }
@@ -277,8 +348,8 @@ namespace RainMeadow
             {
 
                 self.thisFrameActivePlayers = OnlineManager.players.Count;
-
-
+                // TODO
+                self.arenaSitting.players[0].playerClass = (OnlineManager.lobby.clientSettings[OnlineManager.players[0]] as ArenaClientSettings).playingAs; // intercept playerClass here because we bypass in ArenaLobbyMenu
                 On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
             }
         }
@@ -332,14 +403,16 @@ namespace RainMeadow
             if (isArenaMode(out var _))
             {
 
-                if (!OnlineManager.lobby.isOwner) // clients cannot initiate next level
+                if (!OnlineManager.lobby.isOwner) // clients cannot initiate next level but should notify host they're ready
                 {
                     self.playersContinueButtons = null;
                     self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
+                    OnlineManager.lobby.owner.InvokeRPC(RPCs.Arena_ReadyForNextLevel, OnlineManager.mePlayer.id.name);
 
                 }
                 else
                 {
+
                     orig(self);
                 }
             }
