@@ -234,13 +234,14 @@ namespace RainMeadow
         [RPCMethod]
         public static void Arena_ReadyForNextLevel(string userIsReady)
         {
+
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
             if (game.manager.upcomingProcess != null)
             {
                 return;
             }
             for (int i = 0; i < OnlineManager.players.Count; i++)
-            {
+                {
                 if (game.arenaOverlay.resultBoxes[i].playerNameLabel.text == userIsReady)
                 {
                     game.arenaOverlay.result[i].readyForNextRound = true;
