@@ -54,7 +54,7 @@ namespace RainMeadow
 
         protected override void UnavailableImpl()
         {
-            if (isActive) Deactivate();
+
         }
 
         protected override ResourceState MakeState(uint ts)

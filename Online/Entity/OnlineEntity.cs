@@ -215,7 +215,7 @@ namespace RainMeadow
                 OnlineManager.RemoveFeed(inResource, this);
                 JoinOrLeavePending();
             }
-            if (primaryResource == null && !isPending && this != OnlineManager.lobby.gameMode.avatar)
+            if (primaryResource == null && !isPending)
             {
                 Deregister();
             }
@@ -283,7 +283,7 @@ namespace RainMeadow
                 JoinOrLeavePending();
             }
 
-            if (primaryResource == null && !isPending && this != OnlineManager.lobby.gameMode.avatar)
+            if (primaryResource == null && !isPending)
             {
                 Deregister();
             }
