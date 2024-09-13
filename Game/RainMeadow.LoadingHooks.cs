@@ -129,10 +129,10 @@ namespace RainMeadow
 
                     manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
 
-                    if (self.gameTypeSetup.savingAndLoadingSession)
-                    {
-                        self.SaveToFile(manager.rainWorld);
-                    }
+                    //if (self.gameTypeSetup.savingAndLoadingSession)
+                    //{
+                    //    self.SaveToFile(manager.rainWorld);
+                    //}
                 }
             }
             else

@@ -1,4 +1,6 @@
 ﻿using HUD;
+using IL.Menu;
+using Menu;
 using RainMeadow.GameModes;
 using System;
 using System.Collections.Generic;
@@ -45,8 +47,6 @@ namespace RainMeadow
             On.Menu.ArenaOverlay.ctor += ArenaOverlay_ctor;
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
-            On.Menu.PlayerResultMenu.ctor += PlayerResultMenu_ctor;
-          
 
 
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
@@ -55,20 +55,6 @@ namespace RainMeadow
 
         }
 
-        private void PlayerResultMenu_ctor(On.Menu.PlayerResultMenu.orig_ctor orig, Menu.PlayerResultMenu self, ProcessManager manager, ArenaSitting ArenaSitting, List<ArenaSitting.ArenaPlayer> result, ProcessManager.ProcessID processID)
-        {
-            result = new List<ArenaSitting.ArenaPlayer>();
-            for (int i = 0; i < OnlineManager.players.Count; i++)
-            {
-                var player = new ArenaSitting.ArenaPlayer(i);
-                player.playerClass = (OnlineManager.lobby.clientSettings[OnlineManager.players[i]] as ArenaClientSettings).playingAs;
-                result.Add(player);
-
-            }
-
-            orig(self, manager, ArenaSitting, result, processID);
-
-        }
 
         private void ArenaOverlay_ctor(On.Menu.ArenaOverlay.orig_ctor orig, Menu.ArenaOverlay self, ProcessManager manager, ArenaSitting ArenaSitting, List<ArenaSitting.ArenaPlayer> result)
         {
@@ -141,9 +127,32 @@ namespace RainMeadow
 
         private void MultiplayerResults_ctor(On.Menu.MultiplayerResults.orig_ctor orig, Menu.MultiplayerResults self, ProcessManager manager)
         {
+            if (isArenaMode(out var _))
+            {
+
+                self.result = new List<ArenaSitting.ArenaPlayer>();
+                for (int i = 0; i < OnlineManager.players.Count; i++)
+                {
+                    var player = new ArenaSitting.ArenaPlayer(i);
+                    player.playerClass = (OnlineManager.lobby.clientSettings[OnlineManager.players[i]] as ArenaClientSettings).playingAs;
+                    self.result.Add(player);
+
+                }
+            }
             orig(self, manager);
             if (isArenaMode(out var _))
             {
+
+                self.result = new List<ArenaSitting.ArenaPlayer>();
+                for (int i = 0; i < OnlineManager.players.Count; i++)
+                {
+                    var player = new ArenaSitting.ArenaPlayer(i);
+                    player.playerClass = (OnlineManager.lobby.clientSettings[OnlineManager.players[i]] as ArenaClientSettings).playingAs;
+                    self.result.Add(player);
+
+                }
+
+
                 for (int i = self.resultBoxes.Count - 1; i >= 0; i--)
                 {
                     self.resultBoxes[i].RemoveSprites();
@@ -342,8 +351,8 @@ namespace RainMeadow
             {
 
                 self.thisFrameActivePlayers = OnlineManager.players.Count;
-                
-                //self.arenaSitting.players[0].playerClass = (OnlineManager.lobby.clientSettings[OnlineManager.players[0]] as ArenaClientSettings).playingAs; // intercept playerClass here because we bypass in ArenaLobbyMenu
+                // TODO: Analyze this here. Might be helpful to keep
+               //  self.arenaSitting.players[0].playerClass = (OnlineManager.lobby.clientSettings[OnlineManager.players[0]] as ArenaClientSettings).playingAs; // intercept playerClass here because we bypass in ArenaLobbyMenu
                 On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
             }
         }
@@ -396,13 +405,24 @@ namespace RainMeadow
         {
             if (isArenaMode(out var _))
             {
+                //self.result = new List<ArenaSitting.ArenaPlayer>();
+                //for (int i = 0; i < OnlineManager.players.Count; i++)
+                //{
+                //    var player = new ArenaSitting.ArenaPlayer(i);
+                //    player.playerClass = (OnlineManager.lobby.clientSettings[OnlineManager.players[i]] as ArenaClientSettings).playingAs;
+                //    self.result.Add(player);
+
+                //}
 
                 if (!OnlineManager.lobby.isOwner) // clients cannot initiate next level but should notify host they're ready
                 {
-                    self.playersContinueButtons = null;
-                    self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
-                    OnlineManager.lobby.owner.InvokeRPC(RPCs.Arena_ReadyForNextLevel, OnlineManager.mePlayer.id.name);
 
+                    //self.playersContinueButtons = null;
+                    if (!OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.Arena_ReadyForNextLevel, OnlineManager.mePlayer.id.name)))
+                    {
+                        OnlineManager.lobby.owner.InvokeRPC(RPCs.Arena_ReadyForNextLevel, OnlineManager.mePlayer.id.name);
+                    }
+                    self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
                 }
                 else
                 {

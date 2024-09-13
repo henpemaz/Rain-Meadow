@@ -78,7 +78,7 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                arena.clientWaiting = arena.clientWaiting+1;
+                arena.clientWaiting = arena.clientWaiting + 1;
 
             }
 
@@ -100,7 +100,8 @@ namespace RainMeadow
         {
             foreach (OnlinePlayer player in OnlineManager.players)
             {
-                if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToDeathScreen))) {
+                if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToDeathScreen)))
+                {
                     player.InvokeRPC(RPCs.GoToDeathScreen);
                 }
             }
@@ -192,7 +193,8 @@ namespace RainMeadow
             if (dreamsState != null)
             {
                 dreamsState.EndOfCycleProgress(game.GetStorySession.saveState, game.world.region.name, denPos);
-                if (dreamsState.AnyDreamComingUp && !malnourished) {
+                if (dreamsState.AnyDreamComingUp && !malnourished)
+                {
                     game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Dream);
                     return;
                 }
@@ -241,7 +243,7 @@ namespace RainMeadow
                 return;
             }
             for (int i = 0; i < OnlineManager.players.Count; i++)
-                {
+            {
                 if (game.arenaOverlay.resultBoxes[i].playerNameLabel.text == userIsReady)
                 {
                     game.arenaOverlay.result[i].readyForNextRound = true;
