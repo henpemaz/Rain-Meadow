@@ -480,7 +480,7 @@ namespace RainMeadow
                 }
                 else if (gameMode.defaultDenPos != null)
                 {
-                    origSaveState.denPosition = gameMode.defaultDenPos;
+                    storyClientSettings.myLastDenPos = origSaveState.denPosition = gameMode.defaultDenPos;
                 }
             }
             return origSaveState;
