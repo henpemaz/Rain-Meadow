@@ -27,6 +27,7 @@ namespace RainMeadow
 
             On.Spear.Update += Spear_Update;
 
+
             On.ArenaGameSession.SpawnPlayers += ArenaGameSession_SpawnPlayers;
             On.ArenaGameSession.Update += ArenaGameSession_Update;
             On.ArenaGameSession.ctor += ArenaGameSession_ctor;
@@ -38,7 +39,9 @@ namespace RainMeadow
             On.ArenaBehaviors.ExitManager.PlayerTryingToEnterDen += ExitManager_PlayerTryingToEnterDen;
             On.ArenaBehaviors.Evilifier.Update += Evilifier_Update;
             On.ArenaBehaviors.RespawnFlies.Update += RespawnFlies_Update;
+
             //On.ArenaBehaviors.ArenaGameBehavior.Update += ArenaGameBehavior_Update;
+
             On.ArenaCreatureSpawner.SpawnArenaCreatures += ArenaCreatureSpawner_SpawnArenaCreatures;
 
             On.HUD.HUD.InitMultiplayerHud += HUD_InitMultiplayerHud;
@@ -52,32 +55,131 @@ namespace RainMeadow
             On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
             On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1;
 
+            On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
+
+            On.ArenaGameSession.PlayerLandSpear += ArenaGameSession_PlayerLandSpear;
+
+        }
+
+        private void ArenaGameSession_PlayerLandSpear(On.ArenaGameSession.orig_PlayerLandSpear orig, ArenaGameSession self, Player player, Creature target)
+        {
+            if (isArenaMode(out var _))
+            {
+                if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var roomSession))
+                {
+                    Error("Error getting exit manager room");
+                }
+
+                if (!OnlinePhysicalObject.map.TryGetValue(player.abstractCreature, out var absPlayerCreature))
+                {
+                    Error("Error getting abs Player Creature");
+                }
+
+                if (!OnlinePhysicalObject.map.TryGetValue(target.abstractCreature, out var targetAbsCreature))
+                {
+                    Error("Error getting targetAbsCreature");
+                }
+
+                if (!roomSession.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.Arena_PlayerLandSpear, absPlayerCreature, targetAbsCreature, OnlineManager.mePlayer.id.name)))
+                {
+                    foreach (OnlinePlayer onlinePlayer in OnlineManager.players)
+                    {
+                        if (roomSession.isOwner)
+                        {
+                            RPCs.Arena_PlayerLandSpear(targetAbsCreature, absPlayerCreature, OnlineManager.mePlayer.id.name);
+                        }
+                        else
+                        {
+                            onlinePlayer.InvokeRPC(RPCs.Arena_PlayerLandSpear, absPlayerCreature, targetAbsCreature, OnlineManager.mePlayer.id.name);
+
+                        }
+                    }
+
+                }
+            }
+            else
+            {
+                orig(self, player, target);
+            }
+
+        }
+
+        private int ArenaGameSession_ScoreOfPlayer(On.ArenaGameSession.orig_ScoreOfPlayer orig, ArenaGameSession self, Player player, bool inHands)
+        {
+            if (isArenaMode(out var _))
+            {
+
+                if (player == null)
+                {
+                    return 0;
+                }
+
+                int num = 0;
+                for (int i = 0; i < self.arenaSitting.players.Count; i++)
+                {
+
+                    float num2 = 0f;
+                    if (inHands && self.arenaSitting.gameTypeSetup.foodScore != 0)
+                    {
+                        for (int j = 0; j < player.grasps.Length; j++)
+                        {
+                            if (player.grasps[j] != null && player.grasps[j].grabbed is IPlayerEdible)
+                            {
+                                IPlayerEdible playerEdible = player.grasps[j].grabbed as IPlayerEdible;
+                                num2 = ((!ModManager.MSC || !(player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint) || (!(playerEdible is JellyFish) && !(playerEdible is Centipede) && !(playerEdible is Fly) && !(playerEdible is VultureGrub) && !(playerEdible is SmallNeedleWorm) && !(playerEdible is Hazer))) ? (num2 + (float)(player.grasps[j].grabbed as IPlayerEdible).FoodPoints) : (num2 + 0f));
+                            }
+                        }
+                    }
+
+                    if (Math.Abs(self.arenaSitting.gameTypeSetup.foodScore) > 99)
+                    {
+                        if (player.FoodInStomach > 0 || num2 > 0f)
+                        {
+                            self.arenaSitting.players[i].AddSandboxScore(self.arenaSitting.gameTypeSetup.foodScore);
+                        }
+
+                        num += self.arenaSitting.players[i].score;
+                    }
+
+                    num += (int)((float)self.arenaSitting.players[i].score + ((float)player.FoodInStomach + num2) * (float)self.arenaSitting.gameTypeSetup.foodScore);
+                }
+
+                return num;
+            }
+            else
+            {
+                return orig(self, player, inHands);
+            }
         }
 
         // TODO
         // Good job you figured out ArenaSitting crap
         // Now you need to:
-        // 1. figure out the ordering of the winner
-        // 2. Figure out why ExitManager Exit logic still wants to keep the doors closed
+        // 1. figure out the ordering of the winner / make the score count for slugs and not for bats
+        // 2. Figure out why ExitManager Exit logic still wants to keep the doors closed -- DONE
         // 3. Make host press continue as well so you can proceed since your RPC works!
+        // 4. 
         private void PlayerResultBox_ctor(On.Menu.PlayerResultBox.orig_ctor orig, Menu.PlayerResultBox self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, Vector2 size, ArenaSitting.ArenaPlayer player, int index)
         {
             orig(self, menu, owner, pos, size, player, index);
-            if (!ModManager.MSC)
+            if (isArenaMode(out var _))
             {
-                self.portrait.RemoveSprites();
-                menu.pages[0].RemoveSubObject(self.portrait);
-                var portaitMapper = (player.playerClass == SlugcatStats.Name.White) ? 0 :
-                      (player.playerClass == SlugcatStats.Name.Yellow) ? 1 :
-                      (player.playerClass == SlugcatStats.Name.Red) ? 2 :
-                      (player.playerClass == SlugcatStats.Name.Night) ? 3 : 0;
+                if (!ModManager.MSC)
+                {
+                    self.portrait.RemoveSprites();
+                    menu.pages[0].RemoveSubObject(self.portrait);
+                    var portaitMapper = (player.playerClass == SlugcatStats.Name.White) ? 0 :
+                          (player.playerClass == SlugcatStats.Name.Yellow) ? 1 :
+                          (player.playerClass == SlugcatStats.Name.Red) ? 2 :
+                          (player.playerClass == SlugcatStats.Name.Night) ? 3 : 0;
 
-                RainMeadow.Debug(player.playerClass);
-                RainMeadow.Debug(portaitMapper);
+                    RainMeadow.Debug(player.playerClass);
+                    RainMeadow.Debug(portaitMapper);
 
 
-                self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + portaitMapper + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
-                self.subObjects.Add(self.portrait);
+                    self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + portaitMapper + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                    self.subObjects.Add(self.portrait);
+                }
             }
 
         }
@@ -95,22 +197,22 @@ namespace RainMeadow
 
             //}
             orig(self, manager, ArenaSitting, result);
-
-            // I hate this, but it's necessary so we order the players correctly instead of putting the winner on top
-            for (int i = self.resultBoxes.Count - 1; i >= 0; i--)
+            if (isArenaMode(out var _))
             {
-                self.resultBoxes[i].RemoveSprites();
-                self.pages[0].subObjects.Remove(self.resultBoxes[i]);
+                // I hate this, but it's necessary so we order the players correctly instead of putting the winner on top
+                for (int i = self.resultBoxes.Count - 1; i >= 0; i--)
+                {
+                    self.resultBoxes[i].RemoveSprites();
+                    self.pages[0].subObjects.Remove(self.resultBoxes[i]);
+                }
+                self.resultBoxes = new List<Menu.PlayerResultBox>();
+                for (int i = 0; i < self.result.Count; i++)
+                {
+                    self.resultBoxes.Add(new Menu.ArenaOverlayResultBox(self, self.pages[0], result[i], i, result[i].winner));
+                    self.resultBoxes[i].playerNameLabel.text = OnlineManager.players[i].id.name;
+                    self.pages[0].subObjects.Add(self.resultBoxes[i]);
+                }
             }
-            self.resultBoxes = new List<Menu.PlayerResultBox>();
-            for (int i = 0; i < self.result.Count; i++)
-            {
-                self.resultBoxes.Add(new Menu.ArenaOverlayResultBox(self, self.pages[0], result[i], i, result[i].winner && result.Count > 1));
-                self.resultBoxes[i].playerNameLabel.text = OnlineManager.players[i].id.name;
-                //
-                self.pages[0].subObjects.Add(self.resultBoxes[i]);
-            }
-
 
         }
 
@@ -120,7 +222,6 @@ namespace RainMeadow
             if (isArenaMode(out var arena))
             {
                 self.SlugCatClass = (arena.clientSettings as ArenaClientSettings).playingAs;
-
             }
         }
         private void Spear_Update(On.Spear.orig_Update orig, Spear self, bool eu)
@@ -534,6 +635,7 @@ namespace RainMeadow
                         if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !self.Players.Contains(ac))
                         {
                             self.Players.Add(ac);
+
                         }
 
 
@@ -551,13 +653,33 @@ namespace RainMeadow
                         self.arenaSitting.players.Add(newPlayer);
 
                     }
+
+
                 }
                 orig(self);
+
+
+
             }
             else
             {
                 orig(self);
             }
+
+            for (int i = 0; i < self.Players.Count; i++)
+            {
+                if (self.Players[i] != null && self.Players[i].realizedCreature != null)
+                {
+                    RainMeadow.Debug(self.ScoreOfPlayer(self.Players[i].realizedCreature as Player, inHands: true));
+                }
+            }
+
+            // Comp score is standard
+            RainMeadow.Debug("DENENTRY " + self.GameTypeSetup.denEntryRule); //0
+            RainMeadow.Debug("SPEAR " + self.GameTypeSetup.spearHitScore); //0
+            RainMeadow.Debug("TOENTER " + self.GameTypeSetup.ScoreToEnterDen);
+
+
 
         }
 
@@ -611,11 +733,14 @@ namespace RainMeadow
                 {
                     return;
                 }
-                if (self.room.shortcuts == null)
+                if (!self.room.shortCutsReady)
                 {
                     return;
                 }
+
                 orig(self);
+                RainMeadow.Debug(self.ExitsOpen());
+                RainMeadow.Debug(self.gameSession.GameTypeSetup.denEntryRule);
             }
             else
             {
@@ -628,26 +753,34 @@ namespace RainMeadow
         private bool ExitManager_ExitsOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
 
-            return orig(self);
-
             if (isArenaMode(out var _))
             {
-                var deadCount = 0;
-
-                foreach (var player in self.gameSession.Players)
-                {
-                    if (player.realizedCreature != null && (player.realizedCreature.State.dead || player.realizedCreature.abstractCreature.state.dead))
-                    {
-                        deadCount++;
-                    }
-                }
-
-                if (deadCount != 0 && deadCount == self.gameSession.Players.Count - 1)
+                if (self.anyPlayerHasEnoughScore)
                 {
                     return true;
                 }
+                return false;
+                //return false;
+                //var deadCount = 0;
 
-                return orig(self);
+                //foreach (var player in self.gameSession.Players)
+                //{
+                //    if (player.realizedCreature != null && (player.realizedCreature.State.dead))
+                //    {
+                //        deadCount++;
+                //    }
+                //}
+
+                //if (deadCount != 0 && deadCount == self.gameSession.Players.Count - 1)
+                //{
+                //    return true;
+                //}
+                //else
+                //{
+                //    return false;
+                //}
+
+
             }
             else
             {
