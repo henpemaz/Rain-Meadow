@@ -265,7 +265,7 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void Arena_PlayerLandSpear(OnlinePhysicalObject absCreaturePlayer, OnlinePhysicalObject target, string username)
+        public static void Arena_Killing(OnlinePhysicalObject absCreaturePlayer, OnlinePhysicalObject target, string username)
         {
 
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
@@ -273,14 +273,18 @@ namespace RainMeadow
             {
                 return;
             }
-            for (int i = 0; i < OnlineManager.players.Count; i++)
-            {
-                if (OnlineManager.players[i].id.name == username)
-                {
-                    game.GetArenaGameSession.arenaSitting.players[i].AddSandboxScore(game.GetArenaGameSession.GameTypeSetup.spearHitScore);
-                }
+            //for (int i = 0; i < game.GetArenaGameSession.arenaSitting.players.Count; i++)
+            //{
+            //    if (OnlineManager.players[i].id.name == username)
+            //    {
+            // not sure yet
+            //IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(target.apo as AbstractCreature);
+            //game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(iconSymbolData);
+            //game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
+            game.GetArenaGameSession.Killing(absCreaturePlayer.apo.realizedObject as Player, target.apo.realizedObject as Creature);
+            //    }
 
-            }
+            //}
 
         }
 

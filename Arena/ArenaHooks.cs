@@ -57,51 +57,98 @@ namespace RainMeadow
 
             On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
 
-            On.ArenaGameSession.PlayerLandSpear += ArenaGameSession_PlayerLandSpear;
+            On.ArenaGameSession.Killing += ArenaGameSession_Killing;
 
         }
 
-        private void ArenaGameSession_PlayerLandSpear(On.ArenaGameSession.orig_PlayerLandSpear orig, ArenaGameSession self, Player player, Creature target)
+        // TODO
+        // Good job you figured out ArenaSitting crap
+        // Now you need to:
+        // 1. figure out the ordering of the winner / make the score count for slugs and not for bats -- kind of works for client
+        // 2. Figure out why ExitManager Exit logic still wants to keep the doors closed -- DONE
+        // 3. Make host press continue as well so you can proceed since your RPC works!
+        // 4. 
+
+        private void ArenaGameSession_Killing(On.ArenaGameSession.orig_Killing orig, ArenaGameSession self, Player player, Creature killedCrit)
         {
             if (isArenaMode(out var _))
             {
+
                 if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var roomSession))
                 {
                     Error("Error getting exit manager room");
                 }
 
-                if (!OnlinePhysicalObject.map.TryGetValue(player.abstractCreature, out var absPlayerCreature))
+                if (!roomSession.isOwner)
                 {
-                    Error("Error getting abs Player Creature");
-                }
 
-                if (!OnlinePhysicalObject.map.TryGetValue(target.abstractCreature, out var targetAbsCreature))
-                {
-                    Error("Error getting targetAbsCreature");
-                }
-
-                if (!roomSession.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.Arena_PlayerLandSpear, absPlayerCreature, targetAbsCreature, OnlineManager.mePlayer.id.name)))
-                {
-                    foreach (OnlinePlayer onlinePlayer in OnlineManager.players)
+                    if (!OnlinePhysicalObject.map.TryGetValue(player.abstractCreature, out var absPlayerCreature))
                     {
-                        if (roomSession.isOwner)
-                        {
-                            RPCs.Arena_PlayerLandSpear(targetAbsCreature, absPlayerCreature, OnlineManager.mePlayer.id.name);
-                        }
-                        else
-                        {
-                            onlinePlayer.InvokeRPC(RPCs.Arena_PlayerLandSpear, absPlayerCreature, targetAbsCreature, OnlineManager.mePlayer.id.name);
-
-                        }
+                        Error("Error getting abs Player Creature");
                     }
 
+                    if (!OnlinePhysicalObject.map.TryGetValue(killedCrit.abstractCreature, out var targetAbsCreature))
+                    {
+                        Error("Error getting targetAbsCreature");
+                    }
+
+                    if (!roomSession.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.Arena_Killing, absPlayerCreature, targetAbsCreature, OnlineManager.mePlayer.id.name)))
+                    {
+                        foreach (OnlinePlayer onlinePlayer in OnlineManager.players)
+                        {
+                            if (roomSession.isOwner)
+                            {
+                                RPCs.Arena_Killing(targetAbsCreature, absPlayerCreature, OnlineManager.mePlayer.id.name);
+                            }
+                            else
+                            {
+                                onlinePlayer.InvokeRPC(RPCs.Arena_Killing, absPlayerCreature, targetAbsCreature, OnlineManager.mePlayer.id.name);
+
+                            }
+                        }
+
+                    }
                 }
+                else
+                {
+                    orig(self, player, killedCrit); // host is getting batfly currently 
+
+                    //// deny orig(self, player, killedCrit due to number logic);
+                    //if (self.sessionEnded || (ModManager.MSC && player.AI != null))
+                    //{
+                    //    return;
+                    //}
+
+                    //IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(killedCrit.abstractCreature);
+                    //for (int i = 0; i < self.arenaSitting.players.Count; i++)
+                    //{
+                    //    // if (self.arenaSitting.players[i].playerNumber == i)
+
+                    //    if (CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.Template.type))
+                    //    {
+                    //        self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
+                    //        self.arenaSitting.players[i].allKills.Add(iconSymbolData);
+                    //    }
+
+                    //    int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
+                    //    if (index >= 0)
+                    //    {
+                    //        self.arenaSitting.players[i].AddSandboxScore(self.arenaSitting.gameTypeSetup.killScores[index]);
+                    //    }
+                    //    else
+                    //    {
+                    //        self.arenaSitting.players[i].AddSandboxScore(0);
+                    //    }
+
+                    //    break;
+                    //}
+                }
+
             }
             else
             {
-                orig(self, player, target);
+                orig(self, player, killedCrit);
             }
-
         }
 
         private int ArenaGameSession_ScoreOfPlayer(On.ArenaGameSession.orig_ScoreOfPlayer orig, ArenaGameSession self, Player player, bool inHands)
@@ -152,13 +199,6 @@ namespace RainMeadow
             }
         }
 
-        // TODO
-        // Good job you figured out ArenaSitting crap
-        // Now you need to:
-        // 1. figure out the ordering of the winner / make the score count for slugs and not for bats
-        // 2. Figure out why ExitManager Exit logic still wants to keep the doors closed -- DONE
-        // 3. Make host press continue as well so you can proceed since your RPC works!
-        // 4. 
         private void PlayerResultBox_ctor(On.Menu.PlayerResultBox.orig_ctor orig, Menu.PlayerResultBox self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, Vector2 size, ArenaSitting.ArenaPlayer player, int index)
         {
             orig(self, menu, owner, pos, size, player, index);
@@ -479,16 +519,37 @@ namespace RainMeadow
             {
 
                 self.thisFrameActivePlayers = OnlineManager.players.Count;
+                if (self.Players.Count != OnlineManager.players.Count)
+                {
+                    self.Players = new List<AbstractCreature>();
+                    foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+                    {
+                        if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !self.Players.Contains(ac))
+                        {
+                            self.Players.Add(ac);
 
-                //self.arenaSitting.players = new List<ArenaSitting.ArenaPlayer>();
-                //for (int i = 0; i < OnlineManager.players.Count; i++)
-                //{
-                //    ArenaSitting.ArenaPlayer player = new ArenaSitting.ArenaPlayer(i);
-                //    player.playerClass = (OnlineManager.lobby.clientSettings[OnlineManager.players[i]] as ArenaClientSettings).playingAs;
-                //    self.arenaSitting.AddPlayerWithClass(i, player.playerClass);
-                //}
-                // TODO: Analyze this here. Might be helpful to keep
-                //  self.arenaSitting.players[0].playerClass = (OnlineManager.lobby.clientSettings[OnlineManager.players[0]] as ArenaClientSettings).playingAs; // intercept playerClass here because we bypass in ArenaLobbyMenu
+                        }
+
+
+                    }
+                }
+
+                if (self.arenaSitting.players.Count != OnlineManager.players.Count)
+                {
+                    self.arenaSitting.players = new List<ArenaSitting.ArenaPlayer>();
+                    for (int i = 0; i < OnlineManager.players.Count; i++)
+                    {
+                        ArenaSitting.ArenaPlayer newPlayer = new ArenaSitting.ArenaPlayer(i);
+                        newPlayer.playerNumber = i;
+                        newPlayer.playerClass = (OnlineManager.lobby.clientSettings[OnlineManager.players[i]] as ArenaClientSettings).playingAs;
+                        newPlayer.hasEnteredGameArea = true;
+                        self.arenaSitting.players.Add(newPlayer);
+
+                    }
+
+
+                }
                 On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
             }
         }
@@ -556,6 +617,8 @@ namespace RainMeadow
         {
             if (isArenaMode(out var _))
             {
+
+                // TODO: Host can't do anything until all clients ready  up / they can't ready up either. 
 
                 if (!OnlineManager.lobby.isOwner) // clients cannot initiate next level but should notify host they're ready
                 {
@@ -626,36 +689,6 @@ namespace RainMeadow
             if (isArenaMode(out var _))
             {
 
-                if (self.Players.Count != OnlineManager.players.Count)
-                {
-                    self.Players = new List<AbstractCreature>();
-                    foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
-                    {
-                        if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !self.Players.Contains(ac))
-                        {
-                            self.Players.Add(ac);
-
-                        }
-
-
-                    }
-                }
-
-                if (self.arenaSitting.players.Count != OnlineManager.players.Count)
-                {
-                    self.arenaSitting.players = new List<ArenaSitting.ArenaPlayer>();
-                    for (int i = 0; i < OnlineManager.players.Count; i++)
-                    {
-                        ArenaSitting.ArenaPlayer newPlayer = new ArenaSitting.ArenaPlayer(i);
-                        newPlayer.playerNumber = i;
-                        newPlayer.playerClass = (OnlineManager.lobby.clientSettings[OnlineManager.players[i]] as ArenaClientSettings).playingAs;
-                        self.arenaSitting.players.Add(newPlayer);
-
-                    }
-
-
-                }
                 orig(self);
 
 
@@ -739,8 +772,6 @@ namespace RainMeadow
                 }
 
                 orig(self);
-                RainMeadow.Debug(self.ExitsOpen());
-                RainMeadow.Debug(self.gameSession.GameTypeSetup.denEntryRule);
             }
             else
             {
@@ -755,31 +786,7 @@ namespace RainMeadow
 
             if (isArenaMode(out var _))
             {
-                if (self.anyPlayerHasEnoughScore)
-                {
-                    return true;
-                }
-                return false;
-                //return false;
-                //var deadCount = 0;
-
-                //foreach (var player in self.gameSession.Players)
-                //{
-                //    if (player.realizedCreature != null && (player.realizedCreature.State.dead))
-                //    {
-                //        deadCount++;
-                //    }
-                //}
-
-                //if (deadCount != 0 && deadCount == self.gameSession.Players.Count - 1)
-                //{
-                //    return true;
-                //}
-                //else
-                //{
-                //    return false;
-                //}
-
+                return orig(self);
 
             }
             else
