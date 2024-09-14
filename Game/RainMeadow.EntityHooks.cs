@@ -338,7 +338,7 @@ namespace RainMeadow
                     room.abstractRoom.creatures.AddRange(creaturesFromNewRoom);
                     roomSession2.Activate(); // adds entities that are already in the room as mine
                     
-                    if (oldWorldSession.isActive) oldWorldSession.Deactivate();
+                    oldWorldSession.Deactivate();
                     oldWorldSession.NotNeeded(); // done? let go
                 }
                 if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode) 

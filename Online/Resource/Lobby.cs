@@ -27,14 +27,11 @@ namespace RainMeadow
             if (gameMode == null) throw new Exception($"Invalid game mode {mode}");
 
             if (owner == null) throw new Exception("No lobby owner");
-            NewOwner(owner);
-
             isNeeded = true;
-
+            NewOwner(owner);
             if (isOwner)
             {
                 this.password = password;
-                Available();
             }
             else
             {

@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using Mono.Cecil;
 using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
@@ -141,11 +142,41 @@ namespace RainMeadow
         public void JoinOrLeavePending()
         {
             if (!isMine) { throw new InvalidProgrammerException("not owner"); }
+            
+            // Sanitize
+            for (int i = enteredResources.Count - 1; i >= 0; i--)
+            {
+                if (!enteredResources[i].isActive)
+                {
+                    enteredResources.RemoveAt(i);
+                }
+            }
+            for (int i = joinedResources.Count - 1; i >= 0; i--)
+            {
+                if (!joinedResources[i].isActive)
+                {
+                    RainMeadow.Error("was joined in inactive resource: " + joinedResources[i]);
+                    joinedResources.RemoveAt(i);
+                    continue;
+                }
+                if (!joinedResources[i].joinedEntities.ContainsKey(this.id))
+                {
+                    RainMeadow.Error("was joined in resource but not in entities list: " + joinedResources[i]);
+                    joinedResources.RemoveAt(i);
+                    continue;
+                }
+            }
+            if (pendingRequest is RPCEvent rpc && rpc.target is OnlineResource res)
+            {
+                if(!enteredResources.Contains(res) && !joinedResources.Contains(res))
+                {
+                    RainMeadow.Debug($"dismissing pending request {pendingRequest} for resource {res}");
+                    pendingRequest = null;
+                }
+            }
             if (isPending) { return; } // still pending
             RainMeadow.Debug(this);
 
-            enteredResources.RemoveAll(r => !r.isActive);
-            joinedResources.RemoveAll(r => !r.isAvailable || !r.joinedEntities.ContainsKey(this.id));
 
             // any resources to leave
             var pending = joinedResources.LastOrDefault(r => !enteredResources.Contains(r));
@@ -215,7 +246,7 @@ namespace RainMeadow
                 OnlineManager.RemoveFeed(inResource, this);
                 JoinOrLeavePending();
             }
-            if (primaryResource == null && !isPending && this != OnlineManager.lobby.gameMode.avatar)
+            if (primaryResource == null && !isPending)
             {
                 Deregister();
             }
@@ -246,6 +277,15 @@ namespace RainMeadow
                 incomingState[key] = new Queue<EntityState>();
             }
 
+            if (newOwner.isMe || wasOwner.isMe)
+            {
+                if (pendingRequest is RPCEvent rpc && rpc.target == this) // dismiss ongoing request/release
+                {
+                    RainMeadow.Debug("Dismissing pending request: " + pendingRequest);
+                    pendingRequest = null;
+                }
+            }
+
             if (wasOwner.isMe)
             {
                 foreach (var res in joinedResources)
@@ -267,23 +307,30 @@ namespace RainMeadow
         public void Deactivated(OnlineResource onlineResource)
         {
             RainMeadow.Debug($"{this} in {onlineResource}");
-            if (pendingRequest is RPCEvent rpc && rpc.target == onlineResource) pendingRequest = null;
+            if (pendingRequest is RPCEvent rpc && rpc.target == onlineResource)
+            {
+                RainMeadow.Debug($"dismissing pending request {pendingRequest}");
+                pendingRequest = null;
+            }
+            
+            var index = enteredResources.IndexOf(onlineResource);
+            enteredResources.RemoveRange(index, enteredResources.Count - index);
+            
             if (!joinedResources.Contains(onlineResource)) return;
-
             // if any subresources to leave do that first for consistency 
             joinedResources.Reverse<OnlineResource>().ToArray().Do(r => { if (r.IsSubresourceOf(onlineResource)) Deactivated(r); });
 
-            enteredResources.Remove(onlineResource);
             joinedResources.Remove(onlineResource);
             lastStates.Remove(onlineResource);
             incomingState.Remove(onlineResource);
+
             if (isMine)
             {
                 OnlineManager.RemoveFeed(onlineResource, this);
                 JoinOrLeavePending();
             }
 
-            if (primaryResource == null && !isPending && this != OnlineManager.lobby.gameMode.avatar)
+            if (primaryResource == null && !isPending)
             {
                 Deregister();
             }

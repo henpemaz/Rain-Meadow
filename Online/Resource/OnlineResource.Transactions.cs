@@ -127,48 +127,30 @@ namespace RainMeadow
         // A pending request was answered to
         private void ResolveRequest(GenericResult requestResult)
         {
-            RainMeadow.Debug(this);
             isRequesting = false;
             if (requestResult is GenericResult.Ok)
             {
-                if (isAvailable) // this was transfered to me because the previous owner left
-                {
-                    RainMeadow.Debug("Claimed abandoned resource");
-                }
-                else
-                {
-                    WaitingForState();
-                    if (isOwner)
-                    {
-                        RainMeadow.Debug("Claimed resource");
-                        Available();
-                    }
-                    else
-                    {
-                        RainMeadow.Debug("Joined resource");
-                    }
-                }
+                RainMeadow.Debug("Joined resource: " + this);
             }
             else if (requestResult is GenericResult.Error) // I should retry
             {
-                RainMeadow.Error("request failed for " + this);
-                Request();
+                RainMeadow.Error("Request failed for " + this);
+                PerformRequests();
             }
         }
 
         // A pending release was answered to
         private void ResolveRelease(GenericResult releaseResult)
         {
-            RainMeadow.Debug(this);
             isReleasing = false;
             if (releaseResult is GenericResult.Ok) // I've let go
             {
-                Unavailable();
+                RainMeadow.Debug("Left resource: " + this);
             }
             else if (releaseResult is GenericResult.Error) // I should retry
             {
-                RainMeadow.Error("released failed for " + this);
-                Release();
+                RainMeadow.Error("Release failed for " + this);
+                PerformRequests();
             }
         }
 
