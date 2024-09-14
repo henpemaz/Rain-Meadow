@@ -77,7 +77,7 @@ namespace RainMeadow
             var oe = nee.entityId.FindEntity();
             RainMeadow.Debug($"{oe} : {this}");
             if (oe.pendingRequest == registerResult.referencedEvent) oe.pendingRequest = null;
-            else RainMeadow.Error($"Weird event situation, pending is {oe.pendingRequest} and referenced is {registerResult.referencedEvent}");
+            else if (isActive) RainMeadow.Error($"Weird event situation, pending is {oe.pendingRequest} and referenced is {registerResult.referencedEvent}");
 
             if (registerResult is GenericResult.Ok) // success
             {
@@ -192,7 +192,7 @@ namespace RainMeadow
             var ini = ((entityJoinResult.referencedEvent as RPCEvent).args[1] as OnlineEntity.EntityState);
             RainMeadow.Debug($"{oe} : {this}");
             if (oe.pendingRequest == entityJoinResult.referencedEvent) oe.pendingRequest = null;
-            else RainMeadow.Error($"Weird event situation, pending is {oe.pendingRequest} and referenced is {entityJoinResult.referencedEvent}");
+            else if (isActive) RainMeadow.Error($"Weird event situation, pending is {oe.pendingRequest} and referenced is {entityJoinResult.referencedEvent}");
 
             if (entityJoinResult is GenericResult.Ok) // success
             {
@@ -266,7 +266,7 @@ namespace RainMeadow
             var oe = (entityLeaveResult.referencedEvent as RPCEvent).args[0] as OnlineEntity;
             RainMeadow.Debug($"{oe} : {this}");
             if (oe.pendingRequest == entityLeaveResult.referencedEvent) oe.pendingRequest = null;
-            else RainMeadow.Error($"Weird event situation, pending is {oe.pendingRequest} and referenced is {entityLeaveResult.referencedEvent}");
+            else if (isActive) RainMeadow.Error($"Weird event situation, pending is {oe.pendingRequest} and referenced is {entityLeaveResult.referencedEvent}");
 
             if (entityLeaveResult is GenericResult.Ok) // success
             {
@@ -341,7 +341,7 @@ namespace RainMeadow
             RainMeadow.Debug($"{oe} : {this}");
             if (!isActive) throw new InvalidOperationException("not active");
             if (oe.pendingRequest == entityTransferResult.referencedEvent) oe.pendingRequest = null;
-            else RainMeadow.Error($"Weird event situation, pending is {oe.pendingRequest} and referenced is {entityTransferResult.referencedEvent}");
+            else if (isActive) RainMeadow.Error($"Weird event situation, pending is {oe.pendingRequest} and referenced is {entityTransferResult.referencedEvent}");
 
             if (entityTransferResult is GenericResult.Ok) // success
             {

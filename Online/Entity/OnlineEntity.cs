@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using Mono.Cecil;
 using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
@@ -276,6 +277,15 @@ namespace RainMeadow
                 incomingState[key] = new Queue<EntityState>();
             }
 
+            if (newOwner.isMe || wasOwner.isMe)
+            {
+                if (pendingRequest is RPCEvent rpc && rpc.target == this) // dismiss ongoing request/release
+                {
+                    RainMeadow.Debug("Dismissing pending request: " + pendingRequest);
+                    pendingRequest = null;
+                }
+            }
+
             if (wasOwner.isMe)
             {
                 foreach (var res in joinedResources)
@@ -297,16 +307,23 @@ namespace RainMeadow
         public void Deactivated(OnlineResource onlineResource)
         {
             RainMeadow.Debug($"{this} in {onlineResource}");
-            if (pendingRequest is RPCEvent rpc && rpc.target == onlineResource) pendingRequest = null;
+            if (pendingRequest is RPCEvent rpc && rpc.target == onlineResource)
+            {
+                RainMeadow.Debug($"dismissing pending request {pendingRequest}");
+                pendingRequest = null;
+            }
+            
+            var index = enteredResources.IndexOf(onlineResource);
+            enteredResources.RemoveRange(index, enteredResources.Count - index);
+            
             if (!joinedResources.Contains(onlineResource)) return;
-
             // if any subresources to leave do that first for consistency 
             joinedResources.Reverse<OnlineResource>().ToArray().Do(r => { if (r.IsSubresourceOf(onlineResource)) Deactivated(r); });
 
-            enteredResources.Remove(onlineResource);
             joinedResources.Remove(onlineResource);
             lastStates.Remove(onlineResource);
             incomingState.Remove(onlineResource);
+
             if (isMine)
             {
                 OnlineManager.RemoveFeed(onlineResource, this);
