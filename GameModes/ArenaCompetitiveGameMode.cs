@@ -11,6 +11,8 @@ namespace RainMeadow
 
         public List<string> playList = new List<string>();
 
+        public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
+
         public ArenaCompetitiveGameMode(Lobby lobby) : base(lobby)
         {
         }

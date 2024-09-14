@@ -247,6 +247,18 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
                 gameMode.playList = manager.arenaSitting.levelPlaylist;
+                if (RainMeadow.isArenaMode(out var arena))
+                {
+                    var newDictionary = new Dictionary<int, OnlinePlayer>();
+
+                    
+                    for (int i = 0; i < OnlineManager.players.Count; i++)
+                    {
+                        arena.arenaSittingOnlineOrder.Add(OnlineManager.players[i].inLobbyId);
+                    }
+
+
+                }
 
             }
 
