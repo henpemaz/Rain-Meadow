@@ -21,11 +21,13 @@ namespace RainMeadow
             [OnlineField(nullable=true)]
             public string? defaultDenPos;
             [OnlineField]
-            public bool isInGame;            
+            public bool isInGame;
             [OnlineField]
             public bool changedRegions;
             [OnlineField]
             public SlugcatStats.Name currentCampaign;
+            [OnlineField]
+            public int cycleNumber;
             [OnlineField]
             public bool didStartCycle;
             [OnlineField]
@@ -68,6 +70,7 @@ namespace RainMeadow
                 didStartCycle = storyGameMode.didStartCycle;
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
+                    cycleNumber = storySession.saveState.cycleNumber;
                     karma = storySession.saveState.deathPersistentSaveData.karma;
                     karmaCap = storySession.saveState.deathPersistentSaveData.karmaCap;
                     theGlow = storySession.saveState.theGlow;
@@ -101,6 +104,7 @@ namespace RainMeadow
 
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
+                    storySession.saveState.cycleNumber = cycleNumber;
                     storySession.saveState.deathPersistentSaveData.karma = karma;
                     storySession.saveState.deathPersistentSaveData.karmaCap = karmaCap;
                     storySession.saveState.deathPersistentSaveData.reinforcedKarma = reinforcedKarma;
