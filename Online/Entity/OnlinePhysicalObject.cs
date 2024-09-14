@@ -72,6 +72,8 @@ namespace RainMeadow
                         RainMeadow.Error("object has AbstractConsumable but type is not consumable: " + apo.type);
                         goto default; // screw you, trader-spawned scavengerbomb
                     }
+                case AbstractSpear asp:
+                    return new OnlineSpear(asp, entityId, OnlineManager.mePlayer, transferable);
                 default:
                     return new OnlinePhysicalObject(apo, entityId, OnlineManager.mePlayer, transferable);
                 case null:
