@@ -265,6 +265,26 @@ namespace RainMeadow
         }
 
         [RPCMethod]
+        public static void Arena_PlayerLandSpear(OnlinePhysicalObject absCreaturePlayer, OnlinePhysicalObject target, string username)
+        {
+
+            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            if (game.manager.upcomingProcess != null)
+            {
+                return;
+            }
+            for (int i = 0; i < OnlineManager.players.Count; i++)
+            {
+                if (OnlineManager.players[i].id.name == username)
+                {
+                    game.GetArenaGameSession.arenaSitting.players[i].AddSandboxScore(game.GetArenaGameSession.GameTypeSetup.spearHitScore);
+                }
+
+            }
+
+        }
+
+        [RPCMethod]
         public static void Arena_NextLevelCall()
         {
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);

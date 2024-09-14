@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using Kittehface.Framework20;
+using ArenaBehaviors;
 
 namespace RainMeadow
 {
@@ -80,6 +81,10 @@ namespace RainMeadow
             mm.ID = ProcessManager.ProcessID.MultiplayerMenu;
             mm.manager = manager;
             mm.currentGameType = mm.nextGameType = ArenaSetup.GameTypeID.Competitive;
+
+            mm.GetGameTypeSetup.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Score;
+            mm.GetGameTypeSetup.spearHitScore = 1;
+
             mm.pages = pages;
             mm.mySoundLoopName = mySoundLoopName;
             mm.mySoundLoopID = mySoundLoopID;
@@ -90,7 +95,9 @@ namespace RainMeadow
             // very convenient
             mm.arenaSettingsInterface = new ArenaSettingsInterface(mm, pages[0]);
             mm.arenaSettingsInterface.pos += Vector2.down * 40;
+
             pages[0].subObjects.Add(mm.arenaSettingsInterface);
+
 
 
             mm.levelSelector = new LevelSelector(mm, pages[0], false);
