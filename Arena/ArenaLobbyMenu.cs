@@ -81,6 +81,7 @@ namespace RainMeadow
             mm.ID = ProcessManager.ProcessID.MultiplayerMenu;
             mm.manager = manager;
             mm.currentGameType = mm.nextGameType = ArenaSetup.GameTypeID.Competitive;
+            
 
             mm.GetGameTypeSetup.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Score;
             mm.GetGameTypeSetup.spearHitScore = 1;
