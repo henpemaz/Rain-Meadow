@@ -48,7 +48,6 @@ namespace RainMeadow
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
             On.Menu.PlayerResultBox.ctor += PlayerResultBox_ctor;
 
-
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
             On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1;
@@ -59,13 +58,16 @@ namespace RainMeadow
 
         }
 
+
+
         // TODO
         // Good job you figured out ArenaSitting crap
         // Now you need to:
         // 1. figure out the ordering of the winner / make the score count for slugs and not for bats -- kind of works for client
         // 2. Figure out why ExitManager Exit logic still wants to keep the doors closed -- DONE
         // 3. Make host press continue as well so you can proceed since your RPC works!
-        // 4. 
+        // 4. You fixed ArenaSitting to use a global list so we can properly match arenasitting player numbers. We can't use it for checking player numbers because that impacts player controllers.
+        // However, we can check the OPO lobby IDs. Might not be useful for tracking scoring yet but at least arena sitting is organized.
 
         private void ArenaGameSession_Killing(On.ArenaGameSession.orig_Killing orig, ArenaGameSession self, Player player, Creature killedCrit)
         {
@@ -310,11 +312,14 @@ namespace RainMeadow
         {
             if (isArenaMode(out var _))
             {
+                self.ArenaSitting.players.Clear();
+
                 if (message != null && message == "CONTINUE")
                 {
                     self.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
                     self.manager.rainWorld.options.DeleteArenaSitting();
                     self.PlaySound(SoundID.MENU_Switch_Page_In);
+
                 }
 
                 if (message != null && message == "EXIT")
@@ -547,22 +552,23 @@ namespace RainMeadow
         {
             if (isArenaMode(out var _))
             {
+                orig(self);
 
-                // TODO: Fix ready up 
-                foreach (var player in OnlineManager.players)
-                {
-                    if (player.isMe)
-                    {
-                        //self.playersContinueButtons = null;
-                        if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.Arena_ReadyForNextLevel, player.id.name)))
-                        {
-                            player.InvokeRPC(RPCs.Arena_ReadyForNextLevel, player.id.name);
-                        }
-                    }
+                //// TODO: Fix ready up 
+                //foreach (var player in OnlineManager.players)
+                //{
+                //    if (player.isMe)
+                //    {
+                //        //self.playersContinueButtons = null;
+                //        if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.Arena_ReadyForNextLevel, player.id.name)))
+                //        {
+                //            player.InvokeRPC(RPCs.Arena_ReadyForNextLevel, player.id.name);
+                //        }
+                //    }
 
-                }
+                //}
 
-                self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
+                //self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
 
 
 
@@ -597,6 +603,7 @@ namespace RainMeadow
                         }
 
                     }
+                    self.ArenaSitting.players.Clear();
 
                 }
 
