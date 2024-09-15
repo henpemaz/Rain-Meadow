@@ -33,6 +33,7 @@ namespace RainMeadow
 
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
 
+            IL.Player.Update += Player_Update1;
             On.Player.Update += Player_Update;
 
             On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass;
@@ -46,7 +47,6 @@ namespace RainMeadow
             On.RainWorldGame.GhostShutDown += RainWorldGame_GhostShutDown;
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
             On.RainWorldGame.Win += RainWorldGame_Win;
-            On.RainWorldGame.GameOver += RainWorldGame_GameOver;
 
             On.SaveState.BringUpToDate += SaveState_BringUpToDate;
             IL.SaveState.SessionEnded += SaveState_SessionEnded;
@@ -361,9 +361,10 @@ namespace RainMeadow
 
             }
         }
+
         private void RainWorldGame_GhostShutDown(On.RainWorldGame.orig_GhostShutDown orig, RainWorldGame self, GhostWorldPresence.GhostID ghostID)
         {
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
+            if (isStoryMode(out var gameMode))
             {
                 if (!OnlineManager.lobby.isOwner)
                 {
@@ -381,7 +382,7 @@ namespace RainMeadow
         }
         private void RainWorldGame_GoToDeathScreen(On.RainWorldGame.orig_GoToDeathScreen orig, RainWorldGame self)
         {
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
+            if (isStoryMode(out var gameMode))
             {
                 if (OnlineManager.lobby.isOwner)
                 {
@@ -396,7 +397,7 @@ namespace RainMeadow
 
         private void RainWorldGame_Win(On.RainWorldGame.orig_Win orig, RainWorldGame self, bool malnourished)
         {
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
+            if (isStoryMode(out var gameMode))
             {
                 string denPos = null;
                 if (OnlineManager.lobby.playerAvatars.TryGetValue(OnlineManager.mePlayer, out var playerAvatar))
@@ -421,45 +422,6 @@ namespace RainMeadow
             else
             {
                 orig(self, malnourished);
-            }
-        }
-
-        private void RainWorldGame_GameOver(On.RainWorldGame.orig_GameOver orig, RainWorldGame self, Creature.Grasp dependentOnGrasp)
-        {
-            if (isStoryMode(out var gameMode))
-            {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    RPCs.InitGameOver();
-                    return;
-                }
-                //Initiate death only when all players are dead
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
-                {
-                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                    {
-                        
-                        ac.Room.realizedRoom.game.cameras[0].hud.textPrompt.gameOverMode = true;
-                        
-                        if (ac.state.alive) return;
-                    }
-                }
-                foreach (OnlinePlayer player in OnlineManager.players)
-                {
-                    if (!player.isMe)
-                    {
-                        player.InvokeRPC(RPCs.InitGameOver);
-                    }
-                    else
-                    {
-                        orig(self, dependentOnGrasp);
-                    }
-                }
-            }
-            else
-            {
-                orig(self, dependentOnGrasp);
             }
         }
 
@@ -566,6 +528,34 @@ namespace RainMeadow
                 orig(self, sender, message);
             }
 
+            private void Player_Update1(ILContext il)
+            {
+                try
+                {
+                    // don't call GameOver if player is not ours
+                    var c = new ILCursor(il);
+                    ILLabel skip = il.DefineLabel();
+                    c.GotoNext(
+                        i => i.MatchLdarg(0),
+                        i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                        i => i.MatchLdfld<Room>("game"),
+                        i => i.MatchLdarg(0),
+                        i => i.MatchLdfld<Player>("dangerGrasp"),
+                        i => i.MatchCallOrCallvirt<RainWorldGame>("GameOver")
+                        );
+                    c.Emit(OpCodes.Ldarg_0);
+                    c.EmitDelegate((Player self) =>
+                        (OnlineManager.lobby != null && !(OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe) && oe.isMine)));
+                    c.Emit(OpCodes.Brtrue, skip);
+                    c.Index += 6;
+                    c.MarkLabel(skip);
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError(e);
+                }
+            }
+
             private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
             {
                 orig(self, eu);
@@ -575,7 +565,7 @@ namespace RainMeadow
                     //fetch the online entity and check if it is mine. 
                     //If it is mine run the below code
                     //If not, update from the lobby state
-                    //self.readyForWin = OnlineMAnager.lobby.playerid === fetch if this is ours. 
+                    //self.readyForWin = OnlineManager.lobby.playerid === fetch if this is ours.
 
                     if (OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe))
                     {

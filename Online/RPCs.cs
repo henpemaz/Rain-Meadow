@@ -68,14 +68,6 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void InitGameOver()
-        {
-            var player = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0]);
-            (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.cameras[0].hud.InitGameOverMode(null, 0, player.pos.room, new UnityEngine.Vector2(0f, 0f));
-        }
-
-
-        [RPCMethod]
         public static void IncrementPlayersLeftt()
         {
             if (RainMeadow.isArenaMode(out var arena))
