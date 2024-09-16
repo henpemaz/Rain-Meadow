@@ -236,17 +236,19 @@ namespace RainMeadow
         [RPCMethod]
         public static void Arena_ReadyForNextLevel(string userIsReady)
         {
-
-            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-            if (game.manager.upcomingProcess != null)
+            if (RainMeadow.isArenaMode(out var arena))
             {
-                return;
-            }
-            for (int i = 0; i < OnlineManager.players.Count; i++)
-            {
-                if (game.arenaOverlay.resultBoxes[i].playerNameLabel.text == userIsReady)
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+                if (game.manager.upcomingProcess != null)
                 {
-                    game.arenaOverlay.result[i].readyForNextRound = true;
+                    return;
+                }
+                for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                {
+                    if (game.arenaOverlay.resultBoxes[i].playerNameLabel.text == userIsReady)
+                    {
+                        game.arenaOverlay.result[i].readyForNextRound = true;
+                    }
                 }
             }
 
@@ -255,14 +257,52 @@ namespace RainMeadow
         [RPCMethod]
         public static void Arena_Killing(OnlinePhysicalObject absCreaturePlayer, OnlinePhysicalObject target, string username)
         {
-
-            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-            if (game.manager.upcomingProcess != null)
+            if (RainMeadow.isArenaMode(out var arena))
             {
-                return;
+
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+
+                if (game.GetArenaGameSession.sessionEnded)
+                {
+                    return;
+                }
+                var killedCrit = (target.apo as AbstractCreature);
+
+                IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(killedCrit);
+
+                for (int i = 0; i < game.GetArenaGameSession.arenaSitting.players.Count; i++)
+                {
+
+                    if (absCreaturePlayer.owner.inLobbyId == arena.arenaSittingOnlineOrder[i])
+                    {
+
+                        if (CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.realizedCreature.Template.type))
+                        {
+                            game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(iconSymbolData);
+                            game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
+                        }
+
+                        int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
+                        if (index >= 0)
+                        {
+                            game.GetArenaGameSession.arenaSitting.players[i].AddSandboxScore(game.GetArenaGameSession.arenaSitting.gameTypeSetup.killScores[index]);
+                        }
+                        else
+                        {
+                            game.GetArenaGameSession.arenaSitting.players[i].AddSandboxScore(0);
+                        }
+
+                        break;
+                    }
+
+                }
             }
 
-            game.GetArenaGameSession.Killing(absCreaturePlayer.apo.realizedObject as Player, target.apo.realizedObject as Creature);
+            //game.GetArenaGameSession.Killing(absCreaturePlayer.apo.realizedObject as Player, target.apo.realizedObject as Creature);
             //    }
 
             //}
