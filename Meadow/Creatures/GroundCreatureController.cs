@@ -16,22 +16,30 @@ namespace RainMeadow
         public float jumpBoost;
         public int forceJump;
         public int canCorridorBoost;
+        public int canWallJump;
         public int canGroundJump;
         public int canPoleJump;
         public int canClimbJump;
+        public int canWaterJump;
         public int superLaunchJump;
 
         public abstract bool HasFooting { get; }
-        public abstract bool OnGround { get; }
-        public abstract bool OnPole { get; }
-        public abstract bool OnCorridor { get; }
+        public abstract bool IsOnGround { get; }
+        public abstract bool IsOnPole { get; }
+        public abstract bool IsOnCorridor { get; }
+        public abstract bool IsOnClimb { get; }
 
-        private const float zeroGTreshold = 0.3f;
+        public virtual int OnWall { get { return creature.mainBodyChunk.contactPoint.x; } }
+        public virtual bool IsOnWaterSurface => creature.mainBodyChunk.submersion is > 0.3f and < 1;
+
+        protected const float zeroGTreshold = 0.3f;
         private readonly bool _wallClimber;
         protected bool canZeroGClimb;
         public bool WallClimber => _wallClimber || (creature.room.gravity <= zeroGTreshold && canZeroGClimb);
 
         private readonly bool _swimWithPathing;
+
+        protected float runSpeed = 4.5f;
 
         public Room.Tile GetTile(int bChunk)
         {
@@ -83,6 +91,7 @@ namespace RainMeadow
                     chunk.vel.y += 6 * jumpFactor;
                 }
                 creature.room.PlaySound(SoundID.Slugcat_Super_Jump, mainBodyChunk, false, 1f, 1f);
+                canGroundJump = 0;
             }
             else if (canPoleJump > 0)
             {
@@ -97,12 +106,15 @@ namespace RainMeadow
                     this.jumpBoost = 8f;
                     flipDirection = this.input[0].x;
                     var dir = new Vector2(this.input[0].x, 2f).normalized;
+                    cs[0].vel *= 0.4f;
                     cs[0].vel += 8f * jumpFactor * dir;
                     for (int i = 1; i < cc; i++)
                     {
+                        cs[i].vel *= 0.4f;
                         cs[i].vel += 7f * jumpFactor * dir;
                     }
                     creature.room.PlaySound(SoundID.Slugcat_From_Vertical_Pole_Jump, mainBodyChunk, false, 1f, 1f);
+                    canPoleJump = 0;
                     return;
                 }
                 if (creature.room.GetTilePosition(cs[0].pos).x == creature.room.GetTilePosition(cs[1].pos).x && // aligned
@@ -115,12 +127,14 @@ namespace RainMeadow
                     this.jumpBoost = 8f;
                     flipDirection = this.input[0].x;
                     var dir = new Vector2(this.input[0].x, this.input[0].y * 2f).normalized;
+                    cs[0].vel *= 0.4f;
                     cs[0].vel += 8f * jumpFactor * dir;
                     for (int i = 1; i < cc; i++)
                     {
                         cs[i].vel += 5f * jumpFactor * dir;
                     }
                     creature.room.PlaySound(SoundID.Slugcat_From_Horizontal_Pole_Jump, mainBodyChunk, false, 1f, 1f);
+                    canPoleJump = 0;
                     return;
                 }
                 if (this.input[0].x != 0)
@@ -137,6 +151,7 @@ namespace RainMeadow
                         cs[i].vel.y = 5f * jumpFactor;
                     }
                     creature.room.PlaySound(SoundID.Slugcat_From_Vertical_Pole_Jump, mainBodyChunk, false, 1f, 1f);
+                    canPoleJump = 0;
                     return;
                 }
                 if (this.input[0].y <= 0)
@@ -149,8 +164,19 @@ namespace RainMeadow
                         mainBodyChunk.vel.x = 2f * jumpFactor * flipDirection;
                     }
                     creature.room.PlaySound(SoundID.Slugcat_From_Vertical_Pole_Jump, mainBodyChunk, false, 0.3f, 1f);
+                    canPoleJump = 0;
                     return;
                 }// no climb boost
+            }
+            else if (canCorridorBoost > 0)
+            {
+                RainMeadow.Debug("corridor jump");
+                OnJump();
+                this.jumpBoost = 6;
+                var jumpdir = (cs[0].pos - cs[1].pos).normalized + inputDir;
+                cs[0].vel += jumpdir * 3f * jumpFactor;
+                creature.room.PlaySound(SoundID.Slugcat_Corridor_Horizontal_Slide_Success, mainBodyChunk, false, 1f, 1f);
+                canCorridorBoost = 0;
             }
             else if (canGroundJump > 0)
             {
@@ -171,38 +197,64 @@ namespace RainMeadow
                         cs[i].vel.x += d * 1.2f * jumpFactor;
                     }
                 }
-
                 creature.room.PlaySound(SoundID.Slugcat_Normal_Jump, mainBodyChunk, false, 1f, 1f);
+                canGroundJump = 0;
+                canWallJump = 0;
+            }
+            else if (canWallJump != 0)
+            {
+                RainMeadow.Debug("wall jump");
+                OnJump();
+                this.jumpBoost = 6f;
+                this.forceBoost = 6;
+                var jumpdir = new Vector2(-Mathf.Sign(canWallJump), 1.74f).normalized;
+                RainMeadow.Debug("jumpdir " + jumpdir);
+                cs[0].vel.y = 0f;
+                cs[0].vel += jumpdir * 8f * jumpFactor;
+                for (int i = 1; i < cc; i++)
+                {
+                    cs[i].vel.y = 0f;
+                    cs[i].vel += jumpdir * 7f * jumpFactor;
+                }
+                this.forceInputDir = new IntVector2((int)Mathf.Sign(jumpdir.x), input[0].y);
+                this.forceInputCounter = 10;
+                this.forceJump = 6;
+                creature.room.PlaySound(SoundID.Slugcat_Wall_Jump, mainBodyChunk, false, 1f, 1f);
+                canWallJump = 0;
+            }
+            else if (canWaterJump > 0)
+            {
+                RainMeadow.Debug("water jump");
+                OnJump();
+                this.jumpBoost = 8f;
+                var jumpdir = (cs[0].pos - cs[1].pos).normalized + inputDir;
+                for (int i = 0; i < cc; i++)
+                {
+                    cs[i].vel *= 0.4f;
+                    cs[i].vel += jumpdir * 8f * jumpFactor;
+                }
+                creature.room.PlaySound(SoundID.Slugcat_Wall_Jump, mainBodyChunk, false, 1f, 1f);
+                canWaterJump = 0;
+                canGroundJump = 0;
             }
             else if (canClimbJump > 0)
             {
-                var submersion = creature.mainBodyChunk.submersion;
-                if (submersion > 0f && submersion < 1)
+                RainMeadow.Debug("climb jump");
+                OnJump();
+                this.jumpBoost = 3f;
+                var jumpdir = (cs[0].pos - cs[1].pos).normalized + inputDir;
+                for (int i = 0; i < cc; i++)
                 {
-                    RainMeadow.Debug("climb jump");
-                    OnJump();
-                    this.jumpBoost = 8f;
-                    var jumpdir = (cs[0].pos - cs[1].pos).normalized + inputDir;
-                    for (int i = 0; i < cc; i++)
-                    {
-                        cs[i].vel += jumpdir * 8f * jumpFactor;
-                    }
-                    creature.room.PlaySound(SoundID.Slugcat_Wall_Jump, mainBodyChunk, false, 1f, 1f);
+                    cs[0].vel *= 0.4f;
+                    cs[i].vel += jumpdir * 3f * jumpFactor;
                 }
-                else
-                {
-                    RainMeadow.Debug("climb jump");
-                    OnJump();
-                    this.jumpBoost = 3f;
-                    var jumpdir = (cs[0].pos - cs[1].pos).normalized + inputDir;
-                    for (int i = 0; i < cc; i++)
-                    {
-                        cs[i].vel += jumpdir * 1.5f * jumpFactor;
-                    }
-                    creature.room.PlaySound(SoundID.Slugcat_Wall_Jump, mainBodyChunk, false, 1f, 1f);
-                }
+                creature.room.PlaySound(SoundID.Slugcat_Wall_Jump, mainBodyChunk, false, 1f, 1f);
+                canClimbJump = 0;
             }
-            else throw new InvalidProgrammerException("can't jump");
+            else
+            {
+                RainMeadow.Debug("Unhandled jump");
+            }
         }
 
         protected bool TileAccessible(Room room, IntVector2 pos)
@@ -211,7 +263,6 @@ namespace RainMeadow
             AItile aitile = room.aimap.getAItile(pos);
             return template.AccessibilityResistance(aitile.acc).Allowed || (aitile.acc != AItile.Accessibility.Solid && (aitile.AnyWater || room.gravity < zeroGTreshold));
         }
-
 
         internal override bool FindDestination(WorldCoordinate basecoord, out WorldCoordinate toPos, out float magnitude)
         {
@@ -258,7 +309,7 @@ namespace RainMeadow
                     RainMeadow.Debug("grip!");
                     GripPole(tile0);
                 }
-                if (tile1.AnyBeam && !tile1.DeepWater && !HasFooting)
+                else if (tile1.AnyBeam && !tile1.DeepWater && !HasFooting)
                 {
                     RainMeadow.Debug("grip!");
                     GripPole(tile1);
@@ -266,9 +317,9 @@ namespace RainMeadow
             }
 
             // climb to beam
+            bool climbing = false;
             if (this.input[0].y > 0 && (previousAccessibility <= AItile.Accessibility.Climb || currentTile.WaterSurface) && !currentTile.DeepWater)
             {
-                bool climbing = false;
                 for (int i = 0; i < 3; i++)
                 {
                     int num = (i > 0) ? ((i == 1) ? -1 : 1) : 0;
@@ -279,6 +330,7 @@ namespace RainMeadow
                         if (localTrace) RainMeadow.Debug("pole close");
                         toPos = WorldCoordinate.AddIntVector(basecoord, new IntVector2(num, 1));
                         climbing = true;
+                        magnitude = 1f;
                         break;
                     }
                 }
@@ -295,18 +347,14 @@ namespace RainMeadow
                             if (localTrace) RainMeadow.Debug("pole far");
                             toPos = WorldCoordinate.AddIntVector(basecoord, new IntVector2(num, 2));
                             climbing = true;
+                            magnitude = 1f;
                             break;
                         }
                     }
                 }
-                if (climbing) return true;
             }
 
-            //var targetAccessibility = currentAccessibility;
-
-            // run once at current accessibility level
-            // if not found and any higher accessibility level available, run again once
-            while (true)
+            if (!climbing)
             {
                 
                 if (this.input[0].x != 0) // to sides
@@ -398,7 +446,7 @@ namespace RainMeadow
                 //    // not found, run again
                 //    continue;
                 //}
-                break;
+                //break;
             }
             var pathFinder = creature.abstractCreature.abstractAI.RealAI.pathFinder;
             if (pathFinder.PathingCellAtWorldCoordinate(basecoord).reachable 
@@ -417,8 +465,10 @@ namespace RainMeadow
                 if (room.aimap.getAItile(toPos).acc < AItile.Accessibility.Solid // no go
                     && (
                         currentAiTile.DeepWater // on water
-                        || ( // otherwise
-                            !OnPole // don't let go of pole mode
+                        ||
+                        climbing // climbing target
+                        ||( // otherwise
+                            !IsOnPole // don't let go of pole mode
                             && (input[0].y != 1 || input[0].x != 0) // not straight up
                             )
                     ) 
@@ -442,35 +492,43 @@ namespace RainMeadow
         {
             base.ConsciousUpdate();
             bool localTrace = UnityEngine.Input.GetKey(KeyCode.L);
-            
-            if(HasFooting)
+
+            if (HasFooting)
             {
-                if (OnCorridor)
+                if (IsOnCorridor)
                 {
                     if (localTrace) RainMeadow.Debug("can corridor boost");
                     this.canCorridorBoost = 5;
                 }
-                if (OnGround)
+                else if (IsOnGround)
                 {
-                    if(localTrace) RainMeadow.Debug("can ground jump");
+                    if (localTrace) RainMeadow.Debug("can ground jump");
                     this.canGroundJump = 5;
                 }
-                else if (OnPole)
+                else if (IsOnPole)
                 {
                     if (localTrace) RainMeadow.Debug("can pole jump");
                     this.canPoleJump = 5;
                 }
-                else
+                else if (IsOnClimb)
                 {
                     if (localTrace) RainMeadow.Debug("can climb jump");
                     this.canClimbJump = 5;
                 }
             }
-            else
+            var wallValue = OnWall;
+            if (!WallClimber && wallValue != 0 && wallValue == input[0].x)
             {
-                if (localTrace) RainMeadow.Debug("no footing");
+                if (localTrace) RainMeadow.Debug("can walljump");
+                this.canWallJump = 5 * wallValue;
+            }
+            if (IsOnWaterSurface)
+            {
+                if (localTrace) RainMeadow.Debug("can water jump");
+                this.canWaterJump = 5;
             }
             
+
             if (this.canGroundJump > 0)
             {
                 if (this.input[0].jmp && (this.superLaunchJump > 10 || (this.input[0].x == 0 && this.input[0].y <= 0)))
@@ -508,14 +566,10 @@ namespace RainMeadow
             }
             else if (this.superLaunchJump > 0) this.superLaunchJump--;
 
-            if (this.wantToJump > 0 && (this.canClimbJump > 0 || this.canPoleJump > 0 || this.canGroundJump > 0))
+            if (this.wantToJump > 0 && (this.canClimbJump > 0 || this.canPoleJump > 0 || this.canGroundJump > 0 || this.canWallJump != 0 || canCorridorBoost > 0 || canWaterJump > 0))
             {
                 if (localTrace) RainMeadow.Debug("jumping");
                 this.Jump();
-                this.canClimbJump = 0;
-                this.canPoleJump = 0;
-                this.canGroundJump = 0;
-                this.superLaunchJump = 0;
                 this.wantToJump = 0;
             }
 
@@ -524,15 +578,31 @@ namespace RainMeadow
                 this.jumpBoost -= 1.5f;
                 var chunks = creature.bodyChunks;
                 var nc = chunks.Length;
-                chunks[0].vel.y += (this.jumpBoost + 1f) * 0.3f;
-                for (int i = 1; i < nc; i++)
+                if (IsOnCorridor)
                 {
-                    chunks[i].vel.y += (this.jumpBoost + 1f) * 0.25f;
+                    chunks[0].vel += (this.jumpBoost + 1f) * 0.3f * RWCustom.Custom.DirVec(chunks[1].pos, chunks[0].pos);
+                }
+                else
+                {
+                    chunks[0].vel.y += (this.jumpBoost + 1f) * 0.3f;
+                    for (int i = 1; i < nc; i++)
+                    {
+                        chunks[i].vel.y += (this.jumpBoost + 1f) * 0.25f;
+                    }
                 }
             }
             else
             {
                 this.jumpBoost = 0f;
+            }
+
+            if (mcd.moveSpeed > 0f)
+            {
+                var mainchunk = creature.mainBodyChunk;
+                if (inputDir.x != 0 && (Mathf.Abs(mainchunk.vel.x) < runSpeed || Mathf.Sign(mainchunk.vel.x) != Mathf.Sign(inputDir.x)))
+                {
+                    mainchunk.vel.x += 0.75f * inputDir.x * mcd.moveSpeed;
+                }
             }
 
             this.flipDirection = GetFlip();
@@ -565,9 +635,13 @@ namespace RainMeadow
         {
             base.Update(eu);
 
+            if (this.canWallJump > 0) this.canWallJump--;
             if (this.canClimbJump > 0) this.canClimbJump--;
             if (this.canPoleJump > 0) this.canPoleJump--;
             if (this.canGroundJump > 0) this.canGroundJump--;
+            if (this.canCorridorBoost > 0) this.canCorridorBoost--;
+            if (this.canWaterJump > 0) this.canWaterJump--;
+
             if (this.forceJump > 0) this.forceJump--;
             if (this.forceBoost > 0) this.forceBoost--;
         }
