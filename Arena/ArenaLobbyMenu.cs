@@ -258,6 +258,25 @@ namespace RainMeadow
                         }
                     }
 
+                    manager.arenaSitting.players = new List<ArenaSitting.ArenaPlayer>();
+                    for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                    {
+
+                        var currentPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+
+                        // Create a new ArenaPlayer
+                        ArenaSitting.ArenaPlayer newPlayer = new ArenaSitting.ArenaPlayer(i)
+                        {
+                            playerNumber = i,
+                            playerClass = ((OnlineManager.lobby.clientSettings[currentPlayer] as ArenaClientSettings).playingAs), // Set the playerClass to the OnlinePlayer
+                            hasEnteredGameArea = true
+                        };
+
+                        // Add the new player to the list
+                        manager.arenaSitting.players.Add(newPlayer);
+
+                    }
+
 
                 }
 

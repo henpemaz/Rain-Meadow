@@ -69,7 +69,8 @@ namespace RainMeadow
         // 3. Make host press continue as well so you can proceed since your RPC works! -- DONE
         // 4. You fixed ArenaSitting to use a global list so we can properly match arenasitting player numbers. We can't use it for checking player numbers because that impacts player controllers.
         // However, we can check the OPO lobby IDs. Might not be useful for tracking scoring yet but at least arena sitting is organized.
-
+        // 5. MSC breaks with something in here now when you try to load the initial player class. Why?
+        // A: It's because the arena_gamesession_ctor is too late to adjust it. Moving it to the lobby level works. Make sure to test it.
         private void ArenaGameSession_Killing(On.ArenaGameSession.orig_Killing orig, ArenaGameSession self, Player player, Creature killedCrit)
         {
             if (isArenaMode(out var arena))
@@ -509,25 +510,6 @@ namespace RainMeadow
                 }
 
 
-                self.arenaSitting.players = new List<ArenaSitting.ArenaPlayer>();
-                for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
-                {
-
-                    var currentPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
-
-                    // Create a new ArenaPlayer
-                    ArenaSitting.ArenaPlayer newPlayer = new ArenaSitting.ArenaPlayer(i)
-                    {
-                        playerNumber = i,
-                        playerClass = ((OnlineManager.lobby.clientSettings[currentPlayer] as ArenaClientSettings).playingAs), // Set the playerClass to the OnlinePlayer
-                        hasEnteredGameArea = true
-                    };
-
-                    // Add the new player to the list
-                    self.arenaSitting.players.Add(newPlayer);
-
-                }
-
 
                 On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
             }
@@ -564,9 +546,9 @@ namespace RainMeadow
                     if (!player.isMe)
                     {
                         //self.playersContinueButtons = null;
-                        if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.Arena_ReadyForNextLevel, player.id.name)))
+                        if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.Arena_ReadyForNextLevel, OnlineManager.mePlayer.id.name)))
                         {
-                            player.InvokeRPC(RPCs.Arena_ReadyForNextLevel, player.id.name);
+                            player.InvokeRPC(RPCs.Arena_ReadyForNextLevel, OnlineManager.mePlayer.id.name);
                         }
                     }
                     else
