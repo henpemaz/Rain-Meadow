@@ -501,11 +501,9 @@ namespace RainMeadow
             {
                 var c = new ILCursor(il);
                 var vanilla = il.DefineLabel();
-                var isinstplayer = il.DefineLabel();
-                var postadd = il.DefineLabel();
-                var postdup = il.DefineLabel();
-                var postpop = il.DefineLabel();
-                c.GotoNext(moveType: MoveType.After,
+                var cont = il.DefineLabel();
+                var skip = il.DefineLabel();
+                c.GotoNext(
                     i => i.MatchLdsfld<ModManager>("CoopAvailable"),
                     i => i.MatchBrfalse(out vanilla)
                     );
@@ -513,20 +511,16 @@ namespace RainMeadow
                 c.GotoNext(moveType: MoveType.After,
                     i => i.MatchIsinst<Player>()
                     );
-                c.MarkLabel(isinstplayer);
+                c.Emit(OpCodes.Dup);
+                c.Emit(OpCodes.Brtrue, cont);
+                c.Emit(OpCodes.Pop);
+                c.Emit(OpCodes.Br, skip);
+                c.MarkLabel(cont);
                 c.GotoNext(moveType: MoveType.After,
                     i => i.MatchCallOrCallvirt<Player>("FoodInRoom"),
                     i => i.MatchAdd()
                     );
-                c.MarkLabel(postadd);
-                c.GotoLabel(isinstplayer);
-                c.Emit(OpCodes.Dup);
-                c.MarkLabel(postdup);
-                c.Emit(OpCodes.Pop);
-                c.Emit(OpCodes.Br, postadd);
-                c.MarkLabel(postpop);
-                c.GotoLabel(postdup);
-                c.Emit(OpCodes.Brtrue, postpop);
+                c.MarkLabel(skip);
             }
             catch (Exception e)
             {
