@@ -17,7 +17,7 @@ namespace RainMeadow
     public class ArenaLobbyMenu : SmartMenu
     {
         public SymbolButton infoButton;
-        private ArenaCompetitiveGameMode gameMode => (ArenaCompetitiveGameMode)OnlineManager.lobby.gameMode;
+        private ArenaCompetitiveGameMode arena => (ArenaCompetitiveGameMode)OnlineManager.lobby.gameMode;
 
         private ArenaClientSettings personaSettings;
         private static float num = 120f;
@@ -81,7 +81,7 @@ namespace RainMeadow
             mm.ID = ProcessManager.ProcessID.MultiplayerMenu;
             mm.manager = manager;
             mm.currentGameType = mm.nextGameType = ArenaSetup.GameTypeID.Competitive;
-            
+
 
             mm.GetGameTypeSetup.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Score;
             mm.GetGameTypeSetup.spearHitScore = 1;
@@ -246,38 +246,15 @@ namespace RainMeadow
 
             if (OnlineManager.lobby.isOwner)
             {
-                gameMode.playList = manager.arenaSitting.levelPlaylist;
-                if (RainMeadow.isArenaMode(out var arena))
+                arena.playList = manager.arenaSitting.levelPlaylist;
+
+
+                for (int i = 0; i < OnlineManager.players.Count; i++)
                 {
-                   
-                    for (int i = 0; i < OnlineManager.players.Count; i++)
+                    if (!arena.arenaSittingOnlineOrder.Contains(OnlineManager.players[i].inLobbyId))
                     {
-                        if (!arena.arenaSittingOnlineOrder.Contains(OnlineManager.players[i].inLobbyId))
-                        {
-                            arena.arenaSittingOnlineOrder.Add(OnlineManager.players[i].inLobbyId);
-                        }
+                        arena.arenaSittingOnlineOrder.Add(OnlineManager.players[i].inLobbyId);
                     }
-
-                    manager.arenaSitting.players = new List<ArenaSitting.ArenaPlayer>();
-                    for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
-                    {
-
-                        var currentPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
-
-                        // Create a new ArenaPlayer
-                        ArenaSitting.ArenaPlayer newPlayer = new ArenaSitting.ArenaPlayer(i)
-                        {
-                            playerNumber = i,
-                            playerClass = ((OnlineManager.lobby.clientSettings[currentPlayer] as ArenaClientSettings).playingAs), // Set the playerClass to the OnlinePlayer
-                            hasEnteredGameArea = true
-                        };
-
-                        // Add the new player to the list
-                        manager.arenaSitting.players.Add(newPlayer);
-
-                    }
-
-
                 }
 
             }
@@ -285,7 +262,7 @@ namespace RainMeadow
             // Client retrieves playlist
             else
             {
-                manager.arenaSitting.levelPlaylist = gameMode.playList;
+                manager.arenaSitting.levelPlaylist = arena.playList;
 
             }
 
@@ -301,6 +278,8 @@ namespace RainMeadow
 
 
             mm.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
+            ArenaHelpers.SetupOnlineArenaStting(arena, mm.manager);
+
 
             // temp
             UserInput.SetUserCount(OnlineManager.players.Count);
@@ -329,7 +308,7 @@ namespace RainMeadow
 
                 if (!OnlineManager.lobby.isOwner)
                 {
-                    mm.playButton.buttonBehav.greyedOut = !gameMode.isInGame;
+                    mm.playButton.buttonBehav.greyedOut = !arena.isInGame;
                 }
             }
 
@@ -405,7 +384,7 @@ namespace RainMeadow
 
         public void AddUsernameButtons()
         {
-            var SlugList = AllSlugcats();
+            var SlugList = ArenaHelpers.AllSlugcats();
             mm.GetArenaSetup.playerClass = SlugList.ToArray();
 
             usernameButtons = new SimplerButton[OnlineManager.players.Count];
@@ -447,6 +426,7 @@ namespace RainMeadow
 
             for (int l = 0; l < classButtons.Length; l++)
             {
+
                 classButtons[l] = new ArenaOnlinePlayerJoinButton(mm, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
                 classButtons[l].buttonBehav.greyedOut = false;
                 var currentColorIndex = 0;
@@ -474,11 +454,12 @@ namespace RainMeadow
                     PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
 
                     personaSettings.playingAs = mm.GetArenaSetup.playerClass[currentColorIndex];
-                    
+
 
                 };
                 pages[0].subObjects.Add(classButtons[l]);
             }
+
 
         }
 
@@ -487,6 +468,7 @@ namespace RainMeadow
             RainMeadow.Debug(players);
             for (int i = 0; i < usernameButtons.Length; i++)
             {
+
                 var playerbtn = usernameButtons[i];
                 playerbtn.RemoveSprites();
                 mainPage.RemoveSubObject(playerbtn);
@@ -494,15 +476,10 @@ namespace RainMeadow
 
             for (int i = 0; i < classButtons.Length; i++)
             {
-                if (i == 0)
-                {
-                    continue;
-                }
                 var playerbtn = classButtons[i];
                 playerbtn.RemoveSprites();
                 mainPage.RemoveSubObject(playerbtn);
             }
-
             AddClassButtons();
             AddUsernameButtons();
 
@@ -559,34 +536,6 @@ namespace RainMeadow
 
                 }*/
 
-        public static List<SlugcatStats.Name> AllSlugcats()
-        {
-            var filteredList = new List<SlugcatStats.Name>();
-            for (int i = 0; i < SlugcatStats.Name.values.entries.Count; i++)
-            {
-                var slugcatName = SlugcatStats.Name.values.entries[i];
-
-                if (slugcatName.Contains(":"))
-                {
-                    continue;
-                }
-
-
-                if (ArenaHelpers.nonArenaSlugs.Contains(slugcatName))
-                {
-                    continue;
-                }
-
-
-                if (ExtEnumBase.TryParse(typeof(SlugcatStats.Name), slugcatName, false, out var enumBase))
-                {
-                    var temp = (SlugcatStats.Name)enumBase;
-                    RainMeadow.Debug("Filtered list:" + slugcatName);
-                    filteredList.Add(temp);
-                }
-            }
-            return filteredList;
-        }
 
     }
 }
