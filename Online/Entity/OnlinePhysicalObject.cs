@@ -183,6 +183,7 @@ namespace RainMeadow
                 if (inResource is WorldSession ws)
                 {
                     RainMeadow.Debug($"world join");
+                    apo.world = ws.world;
                     apo.pos = poState.pos;
                     ws.world.GetAbstractRoom(topos)?.AddEntity(apo);
                     if (poState.inDen) ws.world.GetAbstractRoom(topos).MoveEntityToDen(apo);
