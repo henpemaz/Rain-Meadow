@@ -169,9 +169,22 @@ namespace RainMeadow
         EggBug eggbug;
 
         public override bool HasFooting => eggbug.Footing;
-        public override bool OnGround => IsTileGround(0, 0, -1) || IsTileGround(1, 0, -1);
-        public override bool OnPole => HasFooting && !OnGround && GetTile(0).AnyBeam;
-        public override bool OnCorridor => eggbug.currentlyClimbingCorridor;
+        public override bool IsOnGround => IsTileGround(0, 0, -1) || IsTileGround(1, 0, -1);
+        public override bool IsOnPole => !IsOnGround && GetTile(0).AnyBeam;
+        public override bool IsOnCorridor => eggbug.currentlyClimbingCorridor;
+
+        public override bool IsOnClimb
+        {
+            get
+            {
+                var acc = GetAITile(0).acc;
+                if (acc == AItile.Accessibility.Climb || acc == AItile.Accessibility.Wall)
+                {
+                    return true;
+                }
+                return false;
+            }
+        }
 
         protected override void GripPole(Room.Tile tile0)
         {

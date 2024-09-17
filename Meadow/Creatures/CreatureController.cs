@@ -154,6 +154,9 @@ namespace RainMeadow
         public bool lockInPlace;
         public bool standStill;
 
+        protected IntVector2 forceInputDir;
+        protected int forceInputCounter;
+
         // IOwnAHUD
         public HUD.HUD.OwnerType GetOwnerType() => controlledCreatureHudOwner;
 
@@ -169,6 +172,11 @@ namespace RainMeadow
                 if (creature.stun == 0 && !creature.dead)
                 {
                     this.input[0] = RWInput.PlayerInput(playerNumber);
+                    if (forceInputCounter > 0)
+                    {
+                        this.input[0].x = forceInputDir.x;
+                        this.input[0].y = forceInputDir.y;
+                    }
                 }
                 else
                 {
@@ -285,7 +293,7 @@ namespace RainMeadow
             inputDir = input[0].analogueDir.magnitude > 0.2f ? input[0].analogueDir
                 : input[0].IntVec.ToVector2().magnitude > 0.2 ? input[0].IntVec.ToVector2().normalized
                 : Vector2.zero;
-
+            if (forceInputCounter > 0) forceInputCounter--;
             if (this.wantToJump > 0) this.wantToJump--;
             if (this.wantToPickUp > 0) this.wantToPickUp--;
             if (this.wantToThrow > 0) this.wantToThrow--;

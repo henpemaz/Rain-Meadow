@@ -275,7 +275,7 @@ namespace RainMeadow
             // this actually changes their colors lmao
             //scavenger.abstractCreature.personality.energy = 1f; // no being lazy
 
-            jumpFactor = 1.6f;
+            jumpFactor = 1.33f;
         }
 
         private bool forceMoving;
@@ -314,7 +314,7 @@ namespace RainMeadow
             scavenger.movMode = Scavenger.MovementMode.Run;
             scavenger.footingCounter = 0;
             scavenger.swingPos = null;
-            forceNoFooting = (canGroundJump > 0 && superLaunchJump >= 20) ? 10 : 5;
+            forceNoFooting = 10;
             scavenger.movMode = Scavenger.MovementMode.Run;
         }
 
@@ -387,11 +387,11 @@ namespace RainMeadow
             }
         }
 
-        public override bool OnGround => scavenger.occupyTile != new IntVector2(-1, -1) && creature.room.aimap.getAItile(scavenger.occupyTile).acc == AItile.Accessibility.Floor;
+        public override bool IsOnGround => scavenger.occupyTile != new IntVector2(-1, -1) && creature.room.aimap.getAItile(scavenger.occupyTile).acc == AItile.Accessibility.Floor;
 
-        public override bool OnCorridor => scavenger.movMode == Scavenger.MovementMode.Crawl;
+        public override bool IsOnCorridor => scavenger.movMode == Scavenger.MovementMode.Crawl;
 
-        public override bool OnPole
+        public override bool IsOnPole
         {
             get
             {
@@ -401,6 +401,8 @@ namespace RainMeadow
                 return false;
             }
         }
+
+        public override bool IsOnClimb => false;
 
         public override WorldCoordinate CurrentPathfindingPosition
         {

@@ -74,13 +74,15 @@ namespace RainMeadow
 
         public override bool HasFooting => mouse.Footing;
 
-        public override bool OnPole => GetTile(0).AnyBeam;
+        public override bool IsOnPole => GetTile(0).AnyBeam;
 
-        public override bool OnGround => IsTileGround(0, 0, -1) || IsTileGround(1, 0, -1);
+        public override bool IsOnGround => IsTileGround(0, 0, -1) || IsTileGround(1, 0, -1);
 
-        public override bool OnCorridor => mouse.currentlyClimbingCorridor;
+        public override bool IsOnCorridor => mouse.currentlyClimbingCorridor;
 
-        
+        public override bool IsOnClimb => false;
+
+
         protected override void GripPole(Room.Tile tile0)
         {
             if (mouse.footingCounter < 10)

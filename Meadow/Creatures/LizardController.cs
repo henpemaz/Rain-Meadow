@@ -3,7 +3,6 @@ using System;
 using RWCustom;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
-using System.Runtime.CompilerServices;
 
 namespace RainMeadow
 {
@@ -21,6 +20,7 @@ namespace RainMeadow
             IL.Lizard.SwimBehavior += Lizard_SwimBehavior;
 
             On.Lizard.SwimBehavior += Lizard_SwimBehavior1;
+            On.Lizard.FollowConnection += Lizard_FollowConnection;
 
             // color
             On.LizardGraphics.ctor += LizardGraphics_ctor;
@@ -36,6 +36,15 @@ namespace RainMeadow
             On.LizardJumpModule.Jump += LizardJumpModule_Jump;
 
             On.LizardBreedParams.TerrainSpeed += LizardBreedParams_TerrainSpeed;
+        }
+
+        private static void Lizard_FollowConnection(On.Lizard.orig_FollowConnection orig, Lizard self, float runSpeed)
+        {
+            if (creatureControllers.TryGetValue(self, out var c))
+            {
+                if (Input.GetKey(KeyCode.L)) RainMeadow.Error("following connection: " + self.followingConnection);
+            }
+            orig(self, runSpeed);
         }
 
         private static void Lizard_SwimBehavior1(On.Lizard.orig_SwimBehavior orig, Lizard self)
@@ -178,7 +187,7 @@ namespace RainMeadow
             {
                 if (originPos == self.destination || (actuallyFollowingThisPath && self.lookingForImpossiblePath))
                 {
-                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("returning override");
+                    if (Input.GetKey(KeyCode.L) && actuallyFollowingThisPath) RainMeadow.Debug("returning override. lookingForImpossiblePath? " + self.lookingForImpossiblePath);
                     return new MovementConnection(MovementConnection.MovementType.Standard, originPos, self.destination, 1);
                 }
                 return orig(self, originPos, bodyDirection, actuallyFollowingThisPath);
@@ -277,36 +286,28 @@ namespace RainMeadow
         }
 
         public Lizard lizard;
-        
-        public override bool HasFooting
-        {
-            get
-            {
-                return lizard.inAllowedTerrainCounter > 10 || lizard.gripPoint != null;
-            }
-        }
 
-        public override bool OnGround
-        {
-            get
-            {
-                return IsTileGround(1, 0, -1) || IsTileGround(0, 0, -1) || (!OnPole && IsTileGround(2, 0, -1));
-            }
-        }
+        public override bool HasFooting => lizard.inAllowedTerrainCounter > 10 || lizard.gripPoint != null;
 
-        public override bool OnPole
-        {
-            get
-            {
-                return lizard.gripPoint != null || GetTile(0).AnyBeam || GetTile(1).AnyBeam;
-            }
-        }
+        public override bool IsOnGround => IsTileGround(1, 0, -1) || IsTileGround(0, 0, -1) || (!IsOnPole && IsTileGround(2, 0, -1));
 
-        public override bool OnCorridor
+        public override bool IsOnPole => GetTile(0).AnyBeam || GetTile(1).AnyBeam;
+
+        public override bool IsOnCorridor => GetAITile(0).narrowSpace || GetAITile(1).narrowSpace;
+
+        public override bool IsOnClimb
         {
             get
             {
-                return GetAITile(0).narrowSpace || GetAITile(1).narrowSpace;
+                if (WallClimber)
+                {
+                    var acc = GetAITile(0).acc;
+                    if ((acc == AItile.Accessibility.Climb && !GetTile(0).AnyBeam) || acc == AItile.Accessibility.Wall)
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
         }
 
@@ -399,15 +400,15 @@ namespace RainMeadow
             }
 
             // lost footing doesn't auto-recover
-            if (lizard.inAllowedTerrainCounter < 10)
+            if (lizard.inAllowedTerrainCounter < 10 && creature.room.gravity > zeroGTreshold)
             {
-                if ((forceJump > 0 || input[0].y < 1) && !(creature.bodyChunks[0].contactPoint.y == -1 || creature.bodyChunks[1].contactPoint.y == -1 || creature.IsTileSolid(1, 0, -1) || creature.IsTileSolid(0, 0, -1)))
+                if (!(WallClimber && input[0].y == 1) && lizard.gripPoint == null && creature.bodyChunks[0].contactPoint.y != -1 && creature.bodyChunks[1].contactPoint.y != -1 && !creature.IsTileSolid(1, 0, -1) && !creature.IsTileSolid(0, 0, -1))
                 {
                     lizard.inAllowedTerrainCounter = 0;
                 }
             }
             // footing recovers faster on climbing ledges etc
-            if (lizard.inAllowedTerrainCounter < 20 && input[0].x != 0 && (creature.bodyChunks[0].contactPoint.x == input[0].x || creature.bodyChunks[1].contactPoint.x == input[0].x))
+            if (forceJump <= 0 && lizard.inAllowedTerrainCounter < 20 && input[0].x != 0 && (creature.bodyChunks[0].contactPoint.x == input[0].x || creature.bodyChunks[1].contactPoint.x == input[0].x))
             {
                 if (lizard.inAllowedTerrainCounter > 0) lizard.inAllowedTerrainCounter = Mathf.Max(lizard.inAllowedTerrainCounter + 1, 10);
             }
@@ -417,17 +418,6 @@ namespace RainMeadow
             {
                 creature.bodyChunks[0].vel += inputDir;
                 creature.bodyChunks[2].vel -= inputDir;
-                if (!HasFooting) // some air control
-                {
-                    var bc = creature.bodyChunks[1];
-                    var xpeed = bc.vel.x;
-                    var newspeed = xpeed + inputDir.x * 0.5f;
-                    var abs = Mathf.Abs(xpeed);
-                    if (abs < 6f || abs < Mathf.Abs(xpeed)) // either slow enough or slower than before
-                    {
-                        bc.vel.x = newspeed;
-                    }
-                }
             }
 
             if(lizard.timeSpentTryingThisMove < 20) // don't panic
@@ -447,14 +437,14 @@ namespace RainMeadow
             var tile0 = creature.room.GetTile(creature.bodyChunks[0].pos);
 
             // greater air friction because uhhh didnt feel right
-            if (lizard.applyGravity && creature.room.aimap.TileAccessibleToCreature(tile0.X, tile0.Y, lizard.Template))
+            if (lizard.applyGravity) // && creature.room.aimap.TileAccessibleToCreature(tile0.X, tile0.Y, lizard.Template))
             {
                 for (int i = 0; i < creature.bodyChunks.Length; i++)
                 {
                     BodyChunk bodyChunk = lizard.bodyChunks[i];
                     if (bodyChunk.submersion < 0.5f)
                     {
-                        bodyChunk.vel.x *= 0.95f;
+                        bodyChunk.vel.x *= 0.9f;
                     }
                 }
             }
