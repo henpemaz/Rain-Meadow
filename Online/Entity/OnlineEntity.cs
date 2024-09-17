@@ -134,7 +134,7 @@ namespace RainMeadow
             if (!enteredResources.Contains(resource)) { return; }
             RainMeadow.Debug($"{this} exiting {resource}");
             var index = enteredResources.IndexOf(resource);
-            enteredResources.RemoveRange(index, enteredResources.Count - index);
+            if (index > -1) enteredResources.RemoveRange(index, enteredResources.Count - index);
             RainMeadow.Debug($"now in {currentlyEnteredResource}");
             if (isMine) JoinOrLeavePending();
         }
@@ -314,7 +314,7 @@ namespace RainMeadow
             }
             
             var index = enteredResources.IndexOf(onlineResource);
-            enteredResources.RemoveRange(index, enteredResources.Count - index);
+            if (index > -1) enteredResources.RemoveRange(index, enteredResources.Count - index);
             
             if (!joinedResources.Contains(onlineResource)) return;
             // if any subresources to leave do that first for consistency 
