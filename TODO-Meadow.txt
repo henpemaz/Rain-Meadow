@@ -33,14 +33,9 @@ creature todo
 - can get stuck
 	some rooms will get fixed
 		eventually :tm:
-	need to sort out water movement first before determining what's trully inaccessible
 - allow creature to change the creature-pipe they're going to mid-flight (very low prio)
 - need to sample color of creature and have it in skindata
 	- requires final-ish seeds
-- water controls for lizard and scav etc
-	needs to be there, crossing DS etc
-	SU_A12
-	I think the pathing logic breaks, water "isn't accessible" but it is. Istileaccessibletocreature accounts for it, some of my logic might not
 
 lizard todo
 - sometimes fails to grab poles when holding up
@@ -119,3 +114,27 @@ echo sky animation is too slow needs to converge
 echo reward anim is bad, fade to white is bad, no confetti??
 
 cursor disappears on fullscreen nondevtools etc
+
+wish there was a symbol for outskirts
+
+rat can't go through floors on the floor??
+
+scavenger gets stuck climbing close to top, won't go out of swingmode
+
+double jumps out of the water, way too much speed
+
+liz side of pole jump weak
+
+liz holding down didn't go down floor
+
+ds a09, the crawlspace on left, creatures don't snap to crawling in it
+
+ds c03 exist is at water height wont path
+
+creatures not cleared on enter creature pipe
+
+echo tentacle bounces bet screens in long rooms
+
+scav climbpos doesn't sync
+
+liz pounce problem! pre-moon room, can't clear pounce jump
