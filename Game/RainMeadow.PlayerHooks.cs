@@ -22,6 +22,27 @@ public partial class RainMeadow
         On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites1;
 
         On.AbstractCreature.ctor += AbstractCreature_ctor;
+        On.Player.ShortCutColor += Player_ShortCutColor;
+
+    }
+
+    private UnityEngine.Color Player_ShortCutColor(On.Player.orig_ShortCutColor orig, Player self)
+    {
+
+        if (isArenaMode(out var storyGameMode))
+        {
+            if (self.Template.type == CreatureTemplate.Type.Slugcat)
+            {
+                if (RainMeadow.creatureCustomizations.TryGetValue(self, out var custom))
+                {
+
+                    return custom.GetBodyColor();
+
+                }
+                return orig(self);
+            }
+        }
+        return orig(self);
     }
 
     private void KarmaFlower_BitByPlayer(On.KarmaFlower.orig_BitByPlayer orig, KarmaFlower self, Creature.Grasp grasp, bool eu)
