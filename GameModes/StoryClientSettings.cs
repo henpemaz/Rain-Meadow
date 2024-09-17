@@ -111,7 +111,7 @@ namespace RainMeadow
 
             internal override Color GetBodyColor()
             {
-                return new Color(Mathf.Clamp(settings.bodyColor.r, 0.004f, 0.996f), Mathf.Clamp(settings.bodyColor.g, 0.004f, 0.996f), Mathf.Clamp(settings.bodyColor.b, 0.004f, 0.996f));
+                return settings.bodyColor;
             }
         }
     }
