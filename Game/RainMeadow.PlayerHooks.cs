@@ -22,6 +22,22 @@ public partial class RainMeadow
         On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites1;
 
         On.AbstractCreature.ctor += AbstractCreature_ctor;
+        On.Player.ShortCutColor += Player_ShortCutColor;
+
+    }
+
+    private UnityEngine.Color Player_ShortCutColor(On.Player.orig_ShortCutColor orig, Player self)
+    {
+
+        if (OnlineManager.lobby != null)
+        {
+            if ((self.Template.type == CreatureTemplate.Type.Slugcat || OnlineManager.lobby.gameMode is MeadowGameMode)
+                && RainMeadow.creatureCustomizations.TryGetValue(self, out var custom))
+            {
+                return custom.GetBodyColor();
+            }
+        }
+        return orig(self);
     }
 
     private void KarmaFlower_BitByPlayer(On.KarmaFlower.orig_BitByPlayer orig, KarmaFlower self, Creature.Grasp grasp, bool eu)
@@ -29,7 +45,8 @@ public partial class RainMeadow
         orig(self, grasp, eu);
         if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
         {
-            if (self.bites < 1) {
+            if (self.bites < 1)
+            {
                 if (!OnlineManager.lobby.isOwner)
                 {
                     OnlineManager.lobby.owner.InvokeRPC(RPCs.ReinforceKarma);
@@ -47,7 +64,7 @@ public partial class RainMeadow
 
     private void PlayerGraphics_DrawSprites1(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
     {
-        if(OnlineManager.lobby != null)
+        if (OnlineManager.lobby != null)
         {
             try
             {
@@ -62,7 +79,7 @@ public partial class RainMeadow
         {
             orig(self, sLeaser, rCam, timeStacker, camPos);
         }
-        
+
     }
 
     private void Player_AddQuarterFood(On.Player.orig_AddQuarterFood orig, Player self)
@@ -85,7 +102,8 @@ public partial class RainMeadow
     {
         orig(self, add);
 
-        if (OnlineManager.lobby != null) {
+        if (OnlineManager.lobby != null)
+        {
             if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
             if (!onlineEntity.isMine) return;
 
@@ -98,8 +116,10 @@ public partial class RainMeadow
 
     private int Player_FoodInRoom(On.Player.orig_FoodInRoom_bool orig, Player self, bool eatAndDestroy)
     {
-        if (OnlineManager.lobby != null  && OnlineManager.lobby.gameMode is StoryGameMode) {
-            if (self.dead) {
+        if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
+        {
+            if (self.dead)
+            {
                 return self.FoodInStomach;
             }
         }
@@ -139,7 +159,7 @@ public partial class RainMeadow
             if (ac == null) ac = orig(self, player1, player2, player3, player4, location);
             sSpawningAvatar = false;
 
-            if(OnlineCreature.map.TryGetValue(ac, out var onlineCreature))
+            if (OnlineCreature.map.TryGetValue(ac, out var onlineCreature))
             {
                 OnlineManager.lobby.gameMode.SetAvatar(onlineCreature as OnlineCreature);
             }
@@ -158,7 +178,7 @@ public partial class RainMeadow
         orig(self, abstractCreature, world);
         if (OnlineManager.lobby != null)
         {
-            if(OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var ent))
+            if (OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var ent))
             {
                 // remote player
                 if (!ent.isMine)

@@ -108,6 +108,11 @@ namespace RainMeadow
             {
                 eyeColor = new Color(Mathf.Clamp(settings.eyeColor.r, 0.004f, 0.996f), Mathf.Clamp(settings.eyeColor.g, 0.004f, 0.996f), Mathf.Clamp(settings.eyeColor.b, 0.004f, 0.996f));
             }
+
+            internal override Color GetBodyColor()
+            {
+                return settings.bodyColor;
+            }
         }
     }
 }
