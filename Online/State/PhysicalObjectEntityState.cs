@@ -50,7 +50,6 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject is SporePlant) return new RealizedSporePlantState(onlineObject);
             if (onlineObject.apo.realizedObject is SlimeMold) return new RealizedSlimeMoldState(onlineObject);
             if (onlineObject.apo.realizedObject is VultureGrub) return new RealizedVultureGrubState(onlineObject);
-            if (onlineObject.apo.realizedObject is SeedCob) return new RealizedSeedCobState(onlineObject);
             if (onlineObject.apo.realizedObject is DangleFruit) return new RealizedDangleFruitState(onlineObject);
             if (onlineObject.apo.realizedObject is Weapon) return new RealizedWeaponState(onlineObject); // Order matters here. If your item inherits from another class, that parent class should be lower
 
