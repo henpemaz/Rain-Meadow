@@ -17,11 +17,13 @@ namespace RainMeadow
         }
 
         public Color bodyColor;
-        public Color eyeColor; // unused
+        public Color eyeColor;
         public SlugcatStats.Name? playingAs;
         public bool readyForWin;
-        public string? myLastDenPos = null;
         public bool isDead;
+
+        public string? myLastDenPos = null;
+        public bool hasSheltered = false;
 
         public StoryClientSettings(Definition entityDefinition, OnlineResource inResource, State initialState) : base(entityDefinition, inResource, initialState)
         {

@@ -399,24 +399,14 @@ namespace RainMeadow
         {
             if (isStoryMode(out var gameMode))
             {
-                string denPos = null;
-                if (OnlineManager.lobby.playerAvatars.TryGetValue(OnlineManager.mePlayer, out var playerAvatar))
-                {
-                    if (playerAvatar.type != (byte)OnlineEntity.EntityId.IdType.none
-                        && (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac))
-                    {
-                        denPos = self.world.GetAbstractRoom(ac.pos).name;
-                    }
-                }
-                RainMeadow.Debug($"({malnourished}, {denPos})");
                 if (OnlineManager.lobby.isOwner)
                 {
-                    RPCs.MovePlayersToWinScreen(malnourished, denPos);
+                    RPCs.MovePlayersToWinScreen(malnourished, gameMode.storyClientSettings.myLastDenPos);
                 }
                 else if (!OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc
-                    && rpc.IsIdentical(RPCs.MovePlayersToWinScreen, malnourished, denPos)))
+                    && rpc.IsIdentical(RPCs.MovePlayersToWinScreen, malnourished, gameMode.storyClientSettings.myLastDenPos)))
                 {
-                    OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToWinScreen, malnourished, denPos);
+                    OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToWinScreen, malnourished, gameMode.storyClientSettings.myLastDenPos);
                 }
             }
             else
@@ -432,11 +422,7 @@ namespace RainMeadow
             {
                 var storyClientSettings = gameMode.clientSettings as StoryClientSettings;
 
-                if (OnlineManager.lobby.isOwner)
-                {
-                    gameMode.defaultDenPos = origSaveState.denPosition;
-                }
-                else if (storyClientSettings.myLastDenPos != null)
+                if (storyClientSettings.myLastDenPos != null)
                 {
                     origSaveState.denPosition = storyClientSettings.myLastDenPos;
                 }
@@ -444,6 +430,13 @@ namespace RainMeadow
                 {
                     storyClientSettings.myLastDenPos = origSaveState.denPosition = gameMode.defaultDenPos;
                 }
+                if (OnlineManager.lobby.isOwner)
+                {
+                    gameMode.defaultDenPos = origSaveState.denPosition;
+                }
+
+                storyClientSettings.hasSheltered = false;
+                gameMode.changedRegions = false;
             }
             return origSaveState;
         }
