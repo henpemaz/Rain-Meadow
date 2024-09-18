@@ -255,6 +255,42 @@ namespace RainMeadow
         }
 
         [RPCMethod]
+        public static void Arena_NotifyClassChange(string userIsReady, int currentColorIndex)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+
+               for (int i = 1; i < game.usernameButtons.Length; i++) {
+
+                    if (game.usernameButtons[i].menuLabel.text == userIsReady)
+                    {
+                        if (currentColorIndex > 3 && ModManager.MSC)
+                        {
+                            game.classButtons[i].portrait.fileName = "MultiplayerPortrait" + "41-" + game.mm.GetArenaSetup.playerClass[currentColorIndex];
+
+                        }
+                        else
+                        {
+                            game.classButtons[i].portrait.fileName = "MultiplayerPortrait" + currentColorIndex + "1";
+                        }
+
+
+                        game.classButtons[i].portrait.LoadFile();
+                        game.classButtons[i].portrait.sprite.SetElementByName(game.classButtons[i].portrait.fileName);
+                    }
+
+                }
+
+            }
+
+        }
+
+        [RPCMethod]
         public static void Arena_Killing(OnlinePhysicalObject absCreaturePlayer, OnlinePhysicalObject target, string username)
         {
             if (RainMeadow.isArenaMode(out var arena))
