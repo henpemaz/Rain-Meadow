@@ -68,7 +68,7 @@ namespace RainMeadow
             {
                 if (originPos == self.destination || (actuallyFollowingThisPath && self.lookingForImpossiblePath))
                 {
-                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("returning override");
+                    if (Input.GetKey(KeyCode.L) && actuallyFollowingThisPath) RainMeadow.Debug("returning override. lookingForImpossiblePath? " + self.lookingForImpossiblePath);
                     return new MovementConnection(MovementConnection.MovementType.Standard, originPos, self.destination, 1);
                 }
                 return orig(self, originPos, actuallyFollowingThisPath);

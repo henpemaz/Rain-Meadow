@@ -15,6 +15,8 @@ namespace RainMeadow
 
         public float jumpBoost;
         public int forceJump;
+        public int forceBoost;
+
         public int canCorridorBoost;
         public int canWallJump;
         public int canGroundJump;
@@ -636,6 +638,7 @@ namespace RainMeadow
             base.Update(eu);
 
             if (this.canWallJump > 0) this.canWallJump--;
+            else if (this.canWallJump < 0) this.canWallJump++;
             if (this.canClimbJump > 0) this.canClimbJump--;
             if (this.canPoleJump > 0) this.canPoleJump--;
             if (this.canGroundJump > 0) this.canGroundJump--;
@@ -645,7 +648,5 @@ namespace RainMeadow
             if (this.forceJump > 0) this.forceJump--;
             if (this.forceBoost > 0) this.forceBoost--;
         }
-
-        public int forceBoost;
     }
 }

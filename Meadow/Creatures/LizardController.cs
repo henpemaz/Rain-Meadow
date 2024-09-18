@@ -280,6 +280,7 @@ namespace RainMeadow
 
             this.lizard = lizard;
             lizard.abstractCreature.personality.energy = 1f; // stop being lazy
+            jumpFactor = 1.2f;
             // this.needsLight = false; // has builtin light
             // or so I thought but vanilla light is too small, give it two!
             canZeroGClimb = true;
@@ -416,8 +417,8 @@ namespace RainMeadow
             // body points to input
             if(inputDir.magnitude > 0f && !lockInPlace)
             {
-                creature.bodyChunks[0].vel += inputDir;
-                creature.bodyChunks[2].vel -= inputDir;
+                creature.bodyChunks[0].vel += inputDir * 0.4f;
+                creature.bodyChunks[2].vel -= inputDir * 0.4f;
             }
 
             if(lizard.timeSpentTryingThisMove < 20) // don't panic
@@ -442,9 +443,9 @@ namespace RainMeadow
                 for (int i = 0; i < creature.bodyChunks.Length; i++)
                 {
                     BodyChunk bodyChunk = lizard.bodyChunks[i];
-                    if (bodyChunk.submersion < 0.5f)
+                    if (Mathf.Abs(bodyChunk.vel.x) > runSpeed)
                     {
-                        bodyChunk.vel.x *= 0.9f;
+                        bodyChunk.vel.x *= 0.90f;
                     }
                 }
             }
