@@ -31,9 +31,9 @@ namespace RainMeadow
 
         int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x; // been using 1360 as ref
 
-        SimpleButton[] usernameButtons;
-        ArenaOnlinePlayerJoinButton[] classButtons;
-        MultiplayerMenu mm;
+        public SimpleButton[] usernameButtons;
+        public ArenaOnlinePlayerJoinButton[] classButtons;
+        public MultiplayerMenu mm;
 
         public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
 
@@ -186,8 +186,10 @@ namespace RainMeadow
             playerCountSlider = new OpSliderTick(new Configurable<int>(2, new ConfigAcceptableRange<int>(1, 31)), new Vector2(710, 550), 450);
             pages[0].subObjects.Add(playerCountWrapper = new UIelementWrapper(tabWrapper, playerCountSlider));
 
-            AddClassButtons();
-            AddUsernameButtons();
+            AddMeClassButton();
+            AddMeUsername();
+            AddOtherPlayerClassButtons();
+            AddOtherUsernameButtons();
 
             mm.GetArenaSetup.playersJoined[0] = true; // host should be part of game
         }
@@ -382,107 +384,196 @@ namespace RainMeadow
 
         }
 
-        public void AddUsernameButtons()
+
+        private void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
+        {
+            RainMeadow.Debug(players);
+            for (int i = usernameButtons.Length - 1; i >= 1; i--)
+            {
+                var playerbtn = usernameButtons[i];
+                playerbtn.RemoveSprites();
+                mainPage.RemoveSubObject(playerbtn);
+            }
+
+            for (int i = classButtons.Length - 1; i >= 1; i--)
+            {
+                var playerbtn = classButtons[i];
+                playerbtn.RemoveSprites();
+                mainPage.RemoveSubObject(playerbtn);
+            }
+            AddOtherPlayerClassButtons();
+            AddOtherUsernameButtons();
+
+        }
+
+
+        private void AddMeClassButton() // doing unique stuff with player 0 so less annoying this way
+        {
+
+
+            var myClassButton = new ArenaOnlinePlayerJoinButton[1];
+
+            myClassButton[0] = new ArenaOnlinePlayerJoinButton(mm, pages[0], new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * myClassButton.Length, 40f), 0);
+            myClassButton[0].buttonBehav.greyedOut = false;
+            var currentColorIndex = 0;
+
+            myClassButton[0].OnClick += (_) =>
+            {
+
+                currentColorIndex = (currentColorIndex + 1) % mm.GetArenaSetup.playerClass.Length;
+
+                mm.GetArenaSetup.playerClass[currentColorIndex] = mm.GetArenaSetup.playerClass[currentColorIndex];
+
+                if (currentColorIndex > 3 && ModManager.MSC)
+                {
+                    myClassButton[0].portrait.fileName = "MultiplayerPortrait" + "41-" + mm.GetArenaSetup.playerClass[currentColorIndex];
+
+                }
+                else
+                {
+                    myClassButton[0].portrait.fileName = "MultiplayerPortrait" + currentColorIndex + "1";
+                }
+
+
+                myClassButton[0].portrait.LoadFile();
+                myClassButton[0].portrait.sprite.SetElementByName(myClassButton[0].portrait.fileName);
+                PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
+
+                personaSettings.playingAs = mm.GetArenaSetup.playerClass[currentColorIndex];
+
+                if (OnlineManager.players.Count > 1)
+                {
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (!player.isMe)
+                        {
+                            player.InvokeRPC(RPCs.Arena_NotifyClassChange, OnlineManager.mePlayer.id.name, currentColorIndex);
+
+                        }
+                    }
+                }
+
+
+            };
+            pages[0].subObjects.Add(myClassButton[0]);
+        }
+
+        private void AddMeUsername()
+        {
+
+            var SlugList = ArenaHelpers.AllSlugcats();
+            mm.GetArenaSetup.playerClass = SlugList.ToArray();
+
+            var myUsernameButton = new SimplerButton[1];
+
+
+            string name = OnlineManager.mePlayer.id.name;
+            CSteamID playerId;
+            if (OnlineManager.players[0].id is LocalMatchmakingManager.LocalPlayerId)
+            {
+                playerId = default;
+            }
+            else
+            {
+                playerId = (OnlineManager.mePlayer.id as SteamMatchmakingManager.SteamPlayerId).steamID;
+            }
+
+            myUsernameButton[0] = new SimplerButton(mm, pages[0], name, new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * myUsernameButton.Length, 40f), new Vector2(num - 20f, 30f));
+            (myUsernameButton[0] as SimplerButton).OnClick += (_) =>
+            {
+                string url = $"https://steamcommunity.com/profiles/{playerId}";
+                SteamFriends.ActivateGameOverlayToWebPage(url);
+            };
+
+            myUsernameButton[0].buttonBehav.greyedOut = false;
+
+
+            pages[0].subObjects.Add(myUsernameButton[0]);
+
+
+
+        }
+        private void AddOtherPlayerClassButtons()
+        {
+
+
+            classButtons = new ArenaOnlinePlayerJoinButton[OnlineManager.players.Count];
+            if (OnlineManager.players.Count > 1)
+            {
+                for (int l = 1; l < classButtons.Length; l++)
+                {
+
+                    classButtons[l] = new ArenaOnlinePlayerJoinButton(mm, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
+                    classButtons[l].buttonBehav.greyedOut = false;
+                    //var currentColorIndex = 0;
+
+                    //classButtons[0].OnClick += (_) =>
+                    //{
+
+                    //    currentColorIndex = (currentColorIndex + 1) % mm.GetArenaSetup.playerClass.Length;
+
+                    //    mm.GetArenaSetup.playerClass[currentColorIndex] = mm.GetArenaSetup.playerClass[currentColorIndex];
+
+                    //    if (currentColorIndex > 3 && ModManager.MSC)
+                    //    {
+                    //        classButtons[0].portrait.fileName = "MultiplayerPortrait" + "41-" + mm.GetArenaSetup.playerClass[currentColorIndex];
+
+                    //    }
+                    //    else
+                    //    {
+                    //        classButtons[0].portrait.fileName = "MultiplayerPortrait" + currentColorIndex + "1";
+                    //    }
+
+
+                    //    classButtons[0].portrait.LoadFile();
+                    //    classButtons[0].portrait.sprite.SetElementByName(classButtons[0].portrait.fileName);
+                    //    PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
+
+                    //    personaSettings.playingAs = mm.GetArenaSetup.playerClass[currentColorIndex];
+
+
+                    //};
+                    pages[0].subObjects.Add(classButtons[l]);
+                }
+            }
+        }
+
+        public void AddOtherUsernameButtons()
         {
             var SlugList = ArenaHelpers.AllSlugcats();
             mm.GetArenaSetup.playerClass = SlugList.ToArray();
 
             usernameButtons = new SimplerButton[OnlineManager.players.Count];
 
-
-            for (int k = 0; k < usernameButtons.Length; k++)
+            if (OnlineManager.players.Count > 1)
             {
-
-                string name = OnlineManager.players[k].id.name;
-                CSteamID playerId;
-                if (OnlineManager.players[k].id is LocalMatchmakingManager.LocalPlayerId)
-                {
-                    playerId = default;
-                }
-                else
-                {
-                    playerId = (OnlineManager.players[k].id as SteamMatchmakingManager.SteamPlayerId).steamID;
-                }
-
-                usernameButtons[k] = new SimplerButton(mm, pages[0], name, new Vector2(600f + k * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * usernameButtons.Length, 40f), new Vector2(num - 20f, 30f));
-                (usernameButtons[0] as SimplerButton).OnClick += (_) =>
-                {
-                    string url = $"https://steamcommunity.com/profiles/{playerId}";
-                    SteamFriends.ActivateGameOverlayToWebPage(url);
-                };
-
-                usernameButtons[k].buttonBehav.greyedOut = false;
-
-
-                pages[0].subObjects.Add(usernameButtons[k]);
-            }
-        }
-
-        private void AddClassButtons()
-        {
-
-
-            classButtons = new ArenaOnlinePlayerJoinButton[OnlineManager.players.Count];
-
-            for (int l = 0; l < classButtons.Length; l++)
-            {
-
-                classButtons[l] = new ArenaOnlinePlayerJoinButton(mm, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
-                classButtons[l].buttonBehav.greyedOut = false;
-                var currentColorIndex = 0;
-
-                classButtons[0].OnClick += (_) =>
+                for (int k = 1; k < usernameButtons.Length; k++)
                 {
 
-                    currentColorIndex = (currentColorIndex + 1) % mm.GetArenaSetup.playerClass.Length;
-
-                    mm.GetArenaSetup.playerClass[currentColorIndex] = mm.GetArenaSetup.playerClass[currentColorIndex];
-
-                    if (currentColorIndex > 3 && ModManager.MSC)
+                    string name = OnlineManager.players[k].id.name;
+                    CSteamID playerId;
+                    if (OnlineManager.players[k].id is LocalMatchmakingManager.LocalPlayerId)
                     {
-                        classButtons[0].portrait.fileName = "MultiplayerPortrait" + "41-" + mm.GetArenaSetup.playerClass[currentColorIndex];
-
+                        playerId = default;
                     }
                     else
                     {
-                        classButtons[0].portrait.fileName = "MultiplayerPortrait" + currentColorIndex + "1";
+                        playerId = (OnlineManager.players[k].id as SteamMatchmakingManager.SteamPlayerId).steamID;
                     }
 
+                    usernameButtons[k] = new SimplerButton(mm, pages[0], name, new Vector2(600f + k * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * usernameButtons.Length, 40f), new Vector2(num - 20f, 30f));
+                    (usernameButtons[k] as SimplerButton).OnClick += (_) =>
+                    {
+                        string url = $"https://steamcommunity.com/profiles/{playerId}";
+                        SteamFriends.ActivateGameOverlayToWebPage(url);
+                    };
 
-                    classButtons[0].portrait.LoadFile();
-                    classButtons[0].portrait.sprite.SetElementByName(classButtons[0].portrait.fileName);
-                    PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-
-                    personaSettings.playingAs = mm.GetArenaSetup.playerClass[currentColorIndex];
+                    usernameButtons[k].buttonBehav.greyedOut = false;
 
 
-                };
-                pages[0].subObjects.Add(classButtons[l]);
+                    pages[0].subObjects.Add(usernameButtons[k]);
+                }
             }
-
-
-        }
-
-        private void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
-        {
-            RainMeadow.Debug(players);
-            for (int i = 0; i < usernameButtons.Length; i++)
-            {
-
-                var playerbtn = usernameButtons[i];
-                playerbtn.RemoveSprites();
-                mainPage.RemoveSubObject(playerbtn);
-            }
-
-            for (int i = 0; i < classButtons.Length; i++)
-            {
-                var playerbtn = classButtons[i];
-                playerbtn.RemoveSprites();
-                mainPage.RemoveSubObject(playerbtn);
-            }
-            AddClassButtons();
-            AddUsernameButtons();
-
         }
 
         private void SetupCharacterCustomization()
