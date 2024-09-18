@@ -14,7 +14,58 @@ namespace RainMeadow
             IL.SaveState.AbstractPhysicalObjectFromString += SaveState_AbstractPhysicalObjectFromString;
             
             APOFS += AbstractMeadowCollectible_APOFS;
+
+            // Seedcobs are cursed
             APOFS += SeedCob_APOFS;
+            IL.SeedCob.PlaceInRoom += SeedCob_PlaceInRoom;
+        }
+
+        private void SeedCob_PlaceInRoom(ILContext il)
+        {
+            ILCursor c = new ILCursor(il);
+
+            // basically, move that base() call to the bottom of the method
+
+            // Part 1: don't run base() if online
+            ILLabel skip1 = c.DefineLabel();
+            c.GotoNext(MoveType.AfterLabel,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdarg(1),
+                i => i.MatchCallOrCallvirt<PhysicalObject>("PlaceInRoom")
+                );
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((SeedCob self) =>
+            {
+                if(OnlineManager.lobby != null)
+                {
+                    return false;
+                }
+                return true;
+            });
+            c.Emit(OpCodes.Brfalse, skip1);
+            c.Index += 3;
+            c.MarkLabel(skip1);
+
+
+            // part 2 run at bottom of file
+            ILLabel skip2 = c.DefineLabel();
+            c.Index = c.Instrs.Count;
+            c.GotoPrev(MoveType.AfterLabel,
+                i => i.MatchRet());
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((SeedCob self) =>
+            {
+                if (OnlineManager.lobby != null)
+                {
+                    return true;
+                }
+                return false;
+            });
+            c.Emit(OpCodes.Brfalse, skip2);
+            c.Emit(OpCodes.Ldarg_0);
+            c.Emit(OpCodes.Ldarg_1);
+            c.Emit<PhysicalObject>(OpCodes.Call, "PlaceInRoom");
+            c.MarkLabel(skip2);
         }
 
         // not handled by vanilla apofs for whathever freaking reason
