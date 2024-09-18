@@ -138,3 +138,5 @@ echo tentacle bounces bet screens in long rooms
 scav climbpos doesn't sync
 
 liz pounce problem! pre-moon room, can't clear pounce jump
+
+liz overall air after jump is bad, too much friction, where is it coming from??

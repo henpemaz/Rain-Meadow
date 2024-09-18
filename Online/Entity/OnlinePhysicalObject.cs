@@ -66,10 +66,10 @@ namespace RainMeadow
                 case AbstractCreature ac:
                     return new OnlineCreature(ac, entityId, OnlineManager.mePlayer, transferable);
                 case AbstractConsumable acm:
-                    if (AbstractConsumable.IsTypeConsumable(apo.type)) return OnlineConsumableFromAcm(acm, entityId, OnlineManager.mePlayer, transferable);
+                    if (IsTypeConsumable(apo.type)) return OnlineConsumableFromAcm(acm, entityId, OnlineManager.mePlayer, transferable);
                     else
                     {
-                        RainMeadow.Debug("object has AbstractConsumable but type is not consumable: " + apo.type);
+                        RainMeadow.Error("object has AbstractConsumable but type is not consumable: " + apo.type);
                         goto default; // screw you, trader-spawned scavengerbomb
                     }
                 default:
@@ -77,6 +77,15 @@ namespace RainMeadow
                 case null:
                     throw new ArgumentNullException(nameof(apo));
             }
+        }
+
+        private static bool IsTypeConsumable(AbstractPhysicalObject.AbstractObjectType type)
+        {
+            if(AbstractConsumable.IsTypeConsumable(type)) return true;
+
+            if(type == AbstractPhysicalObject.AbstractObjectType.SeedCob) return true; // un fucking believable
+
+            return false;
         }
 
         private static OnlineConsumable OnlineConsumableFromAcm(AbstractConsumable acm, EntityId entityId, OnlinePlayer owner, bool isTransferable) 
