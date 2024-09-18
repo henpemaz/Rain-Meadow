@@ -1,3 +1,6 @@
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using System;
 
 namespace RainMeadow;
@@ -14,8 +17,9 @@ public partial class RainMeadow
         On.Player.ctor += Player_ctor;
         On.Player.Die += PlayerOnDie;
         On.Player.Grabability += PlayerOnGrabability;
-        On.Player.SwallowObject += Player_SwallowObject;
+        IL.Player.SwallowObject += Player_SwallowObject;
         On.Player.Regurgitate += Player_Regurgitate;
+        IL.Player.Regurgitate += Player_Regurgitate1;
         On.Player.AddFood += Player_AddFood;
         On.Player.AddQuarterFood += Player_AddQuarterFood;
         On.Player.FoodInRoom_bool += Player_FoodInRoom;
@@ -221,17 +225,50 @@ public partial class RainMeadow
         return orig(self, obj);
     }
 
-    private void Player_SwallowObject(On.Player.orig_SwallowObject orig, Player self, int grasp)
+    private void Player_SwallowObject(ILContext il)
     {
-        if (OnlineManager.lobby != null)
+        try
         {
-            if (OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe)
-                && !oe.isMine)
+            var c = new ILCursor(il);
+            var skip = il.DefineLabel();
+            c.GotoNext(moveType: MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdloc(0),
+                i => i.MatchStfld<Player>("objectInStomach")
+                );
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Player self) =>
             {
-                return;
-            }
+                if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
+                {
+                    if (oe.isMine)
+                    {
+                        oe.isTransferable = false;
+                    }
+                    else
+                    {
+                        self.objectInStomach.realizedObject.room.RemoveObject(self.objectInStomach.realizedObject);
+                        self.objectInStomach.realizedObject = null;
+                        return false;
+                    }
+                }
+                return true;
+            });
+            c.Emit(OpCodes.Brfalse, skip);
+            c.GotoNext(moveType: MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<Player>("objectInStomach"),
+                i => i.MatchLdarg(0),
+                i => i.MatchCallOrCallvirt<Creature>("get_abstractCreature"),
+                i => i.MatchLdfld<AbstractWorldEntity>("pos"),
+                i => i.MatchCallOrCallvirt<AbstractWorldEntity>("Abstractize")
+                );
+            c.MarkLabel(skip);
         }
-        orig(self, grasp);
+        catch (Exception e)
+        {
+            Logger.LogError(e);
+        }
     }
 
     private void Player_Regurgitate(On.Player.orig_Regurgitate orig, Player self)
@@ -245,6 +282,34 @@ public partial class RainMeadow
             }
         }
         orig(self);
+    }
+
+    private void Player_Regurgitate1(ILContext il)
+    {
+        try
+        {
+            var c = new ILCursor(il);
+            c.GotoNext(moveType: MoveType.Before,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                i => i.MatchCallOrCallvirt<Room>("get_abstractRoom"),
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<Player>("objectInStomach"),
+                i => i.MatchCallOrCallvirt<AbstractRoom>("AddEntity")
+                );
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Player self) =>
+            {
+                if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.objectInStomach, out var oe))
+                {
+                    oe.isTransferable = true;
+                }
+            });
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e);
+        }
     }
 
     private void SlugcatStats_ctor(On.SlugcatStats.orig_ctor orig, SlugcatStats self, SlugcatStats.Name slugcat, bool malnourished)
