@@ -50,6 +50,12 @@ namespace RainMeadow
         }
 
         [RPCMethod]
+        public static void SubtractFood(short amt)
+        {
+            ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].realizedCreature as Player).SubtractFood(amt);
+        }
+
+        [RPCMethod]
         public static void AddMushroomCounter()
         {
             ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].realizedCreature as Player).mushroomCounter += 320;

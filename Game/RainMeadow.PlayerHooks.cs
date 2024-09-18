@@ -16,6 +16,7 @@ public partial class RainMeadow
         On.Player.Grabability += PlayerOnGrabability;
         On.Player.AddFood += Player_AddFood;
         On.Player.AddQuarterFood += Player_AddQuarterFood;
+        On.Player.SubtractFood += Player_SubtractFood;
         On.Player.FoodInRoom_bool += Player_FoodInRoom;
         On.Mushroom.BitByPlayer += Mushroom_BitByPlayer;
         On.KarmaFlower.BitByPlayer += KarmaFlower_BitByPlayer;
@@ -110,6 +111,22 @@ public partial class RainMeadow
             if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 OnlineManager.lobby.owner.InvokeRPC(RPCs.AddFood, (short)add);
+            }
+        }
+    }
+
+    private void Player_SubtractFood(On.Player.orig_SubtractFood orig, Player self, int add)
+    {
+        orig(self, add);
+
+        if (OnlineManager.lobby != null)
+        {
+            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+            if (!onlineEntity.isMine) return;
+
+            if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                OnlineManager.lobby.owner.InvokeRPC(RPCs.SubtractFood, (short)add);
             }
         }
     }
