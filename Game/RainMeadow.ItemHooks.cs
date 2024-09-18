@@ -53,6 +53,7 @@ namespace RainMeadow
             ILLabel skip = null;
             var cont = c.DefineLabel();
 
+            // resolve locals instead of hardcoding
             var stringArrayType = il.Module.ImportReference(typeof(string[]));
             var arrLoc = il.Body.Variables.First(v => v.VariableType.FullName == stringArrayType.FullName);
             var idType = il.Module.ImportReference(typeof(EntityID));
@@ -64,8 +65,17 @@ namespace RainMeadow
             var abstractObjectType = il.Module.ImportReference(typeof(AbstractPhysicalObject));
             var apoLoc = il.Body.Variables.First(v => v.VariableType.FullName == abstractObjectType.FullName);
 
+            // insert:
+            // else if (MeadowHandledType(...)) { // no op, everything hapens in the call }
+            // else if (IsTypeConsumable) ...
+
+            // navigate to end clause new AbstractPhysicalObject
             c.GotoNext(i => i.MatchNewobj<AbstractPhysicalObject>());
-            c.GotoPrev(MoveType.After, i => i.MatchBr(out skip));
+            c.GotoPrev(MoveType.Before, i => i.MatchLdarg(0)); // start of else body
+            // navigate to generic IsTypeConsumable handling
+            var consumablefail = c.IncomingLabels.First().Branches.First(); // we are in the else to that if
+            c.GotoPrev(MoveType.After, i => i.MatchBr(out skip)); // the instruction before is a jump to the end of the whole ifelse chain, we'll need it too
+
             c.MoveAfterLabels();
             c.Emit(OpCodes.Ldarg_0);
             c.Emit(OpCodes.Ldloc, arrLoc);
