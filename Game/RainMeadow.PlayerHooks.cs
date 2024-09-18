@@ -31,20 +31,13 @@ public partial class RainMeadow
 
         if (OnlineManager.lobby != null)
         {
-            if (self.Template.type == CreatureTemplate.Type.Slugcat || OnlineManager.lobby.gameMode is MeadowGameMode)
+            if ((self.Template.type == CreatureTemplate.Type.Slugcat || OnlineManager.lobby.gameMode is MeadowGameMode)
+                && RainMeadow.creatureCustomizations.TryGetValue(self, out var custom))
             {
-                if (RainMeadow.creatureCustomizations.TryGetValue(self, out var custom))
-                {
-                    return custom.GetBodyColor();
-                }
-                return orig(self);
+                return custom.GetBodyColor();
             }
-            return orig(self);
         }
-        else
-        {
-            return orig(self);
-        }
+        return orig(self);
     }
 
     private void KarmaFlower_BitByPlayer(On.KarmaFlower.orig_BitByPlayer orig, KarmaFlower self, Creature.Grasp grasp, bool eu)
