@@ -65,12 +65,11 @@ namespace RainMeadow
         // Now you need to:
         // 1. figure out the ordering of the winner -- Organized list so far by the master list
         // 1.1  make the score count for slugs and not for bats -- kind of works for client
-        // 2. Figure out why ExitManager Exit logic still wants to keep the doors closed -- DONE
-        // 3. Make host press continue as well so you can proceed since your RPC works! -- DONE
-        // 4. You fixed ArenaSitting to use a global list so we can properly match arenasitting player numbers. We can't use it for checking player numbers because that impacts player controllers.
-        // However, we can check the OPO lobby IDs. Might not be useful for tracking scoring yet but at least arena sitting is organized.
-        // 5. MSC breaks with something in here now when you try to load the initial player class. Why?
-        // A: It's because the arena_gamesession_ctor is too late to adjust it. Moving it to the lobby level works. Make sure to test it.
+        // 3. Make host press continue as well -- When everything is commented out player 0 in the list is still being readied up. Where?
+        // 6. When MSC is turned on, slugs don't die. Is friendly fire on, or are these slugs not ours?
+        // 7. Ensure you resize arena sitting and gamesession playres in case people quit or join
+        // 8. Sometimes the playerresult menu fails to load. Timing issue. Look for where you're removing subobjects. We might not need to do that logic anymore
+
         private void ArenaGameSession_Killing(On.ArenaGameSession.orig_Killing orig, ArenaGameSession self, Player player, Creature killedCrit)
         {
             if (isArenaMode(out var arena))
@@ -220,9 +219,9 @@ namespace RainMeadow
             if (isArenaMode(out var _))
             {
 
-
                 if (!ModManager.MSC)
                 {
+                    // TODO: Test this with recent arenasitting changes
                     self.portrait.RemoveSprites();
                     menu.pages[0].RemoveSubObject(self.portrait);
                     var portaitMapper = (player.playerClass == SlugcatStats.Name.White) ? 0 :
@@ -248,17 +247,17 @@ namespace RainMeadow
                 // I hate this, but it's necessary so we order the players correctly instead of putting the winner on top
                 for (int i = self.resultBoxes.Count - 1; i >= 0; i--)
                 {
-                    self.resultBoxes[i].RemoveSprites();
-                    self.pages[0].subObjects.Remove(self.resultBoxes[i]);
-                }
-                self.resultBoxes = new List<Menu.PlayerResultBox>();
-                for (int i = 0; i < self.result.Count; i++)
-                {
                     var currentName = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
-                    self.resultBoxes.Add(new Menu.ArenaOverlayResultBox(self, self.pages[0], result[i], i, result[i].winner));
                     self.resultBoxes[i].playerNameLabel.text = currentName.id.name;
-                    self.pages[0].subObjects.Add(self.resultBoxes[i]);
                 }
+                //self.resultBoxes = new List<Menu.PlayerResultBox>();
+                //for (int i = 0; i < self.result.Count; i++)
+                //{
+                //    var currentName = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                //    self.resultBoxes.Add(new Menu.ArenaOverlayResultBox(self, self.pages[0], result[i], i, result[i].winner));
+                //    self.resultBoxes[i].playerNameLabel.text = currentName.id.name;
+                //    self.pages[0].subObjects.Add(self.resultBoxes[i]);
+                //}
             }
 
         }
@@ -536,27 +535,33 @@ namespace RainMeadow
 
         private void ArenaOverlay_PlayerPressedContinue(On.Menu.ArenaOverlay.orig_PlayerPressedContinue orig, Menu.ArenaOverlay self)
         {
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
+                // Ok so removing everything still makes player0 hit continue. Look into this.
                 //orig(self);
 
                 //// TODO: Fix ready up 
-                foreach (var player in OnlineManager.players)
-                {
-                    if (!player.isMe)
-                    {
-                        //self.playersContinueButtons = null;
-                        if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.Arena_ReadyForNextLevel, OnlineManager.mePlayer.id.name)))
-                        {
-                            player.InvokeRPC(RPCs.Arena_ReadyForNextLevel, OnlineManager.mePlayer.id.name);
-                        }
-                    }
-                    else
-                    {
-                        orig(self);
-                    }
+                // Clients are sending ready up signals for wrong player. Client sent for host?
+                //foreach (var player in OnlineManager.players)
+                //{
+                //    if (!player.isMe)
+                //    {
+                //        if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.Arena_ReadyForNextLevel, OnlineManager.mePlayer.id.name)))
+                //        {
+                //            player.InvokeRPC(RPCs.Arena_ReadyForNextLevel, OnlineManager.mePlayer.id.name);
+                //        }
+                //    }
 
-                }
+                //}
+                //RainMeadow.Debug(arena.arenaSittingOnlineOrder.Count); // Counted 2
+
+                //for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                //{
+                //    if (self.resultBoxes[i].playerNameLabel.text == OnlineManager.mePlayer.id.name)
+                //    {
+                //        self.result[i].readyForNextRound = true;
+                //    }
+                //}
 
                 //self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
 
@@ -593,7 +598,6 @@ namespace RainMeadow
                         }
 
                     }
-                    self.ArenaSitting.players.Clear();
 
                 }
 
@@ -622,15 +626,6 @@ namespace RainMeadow
             else
             {
                 orig(self);
-            }
-
-            foreach (var player in self.arenaSitting.players)
-            {
-                if (player != null)
-                {
-                    RainMeadow.Debug(player.playerClass);
-                    RainMeadow.Debug(player.playerNumber);
-                }
             }
         }
 

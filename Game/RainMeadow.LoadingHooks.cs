@@ -101,6 +101,7 @@ namespace RainMeadow
                         }
 
                         self.firstGameAfterMenu = false;
+
                         if (ModManager.MSC && getArenaGameSession.challengeCompleted)
                         {
                             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerMenu);
@@ -114,7 +115,6 @@ namespace RainMeadow
 
                     RainMeadow.Debug("Arena: Moving to next level");
                     self.currentLevel++;
-
 
                     if (self.currentLevel >= arena.playList.Count && !self.gameTypeSetup.repeatSingleLevelForever)
                     {
