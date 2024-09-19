@@ -567,7 +567,7 @@ namespace RainMeadow
 
                 if (idstring == "CLEARCLIENTSAVE")
                 {
-                    gameMode. = !gameMode.saveToDisk;
+                    gameMode.saveToDisk = !gameMode.saveToDisk;
                 }
             }
         }
