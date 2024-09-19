@@ -226,7 +226,8 @@ namespace RainMeadow
                 return;
             }
 
-            if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
+            var storyGameMode = OnlineManager.lobby.gameMode as StoryGameMode;
+            if (storyGameMode != null)
             {
                 var playerIDs = OnlineManager.lobby.participants.Select(p => p.inLobbyId).ToList();
                 var readyWinPlayers = storyGameMode.readyForWinPlayers.ToList();
@@ -235,13 +236,6 @@ namespace RainMeadow
                 {
                     if (!readyWinPlayers.Contains(playerID)) return;
                 }
-                var storyClientSettings = storyGameMode.clientSettings as StoryClientSettings;
-                storyClientSettings.myLastDenPos = self.room.abstractRoom.name;
-                if (OnlineManager.lobby.isOwner)
-                {
-                    (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos = self.room.abstractRoom.name;
-                }
-                storyGameMode.changedRegions = false;
             }
             else
             {
@@ -250,7 +244,18 @@ namespace RainMeadow
                 if (realizedScug == null || !self.room.PlayersInRoom.Contains(realizedScug)) return;
                 if (!realizedScug.readyForWin) return;
             }
+
             orig(self);
+
+            if (self.IsClosing)
+            {
+                if (storyGameMode != null)
+                {
+                    var storyClientSettings = storyGameMode.clientSettings as StoryClientSettings;
+                    storyClientSettings.myLastDenPos = self.room.abstractRoom.name;
+                    storyClientSettings.hasSheltered = true;
+                }
+            }
         }
 
         private void CreatureOnUpdate(On.Creature.orig_Update orig, Creature self, bool eu)

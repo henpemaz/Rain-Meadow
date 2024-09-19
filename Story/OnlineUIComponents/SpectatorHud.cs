@@ -28,9 +28,25 @@ namespace RainMeadow
         public override void Draw(float timeStacker)
         {
             base.Draw(timeStacker);
+
+            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value) && spectatorMode == null)
+            {
+
+                RainMeadow.Debug("Creating spectator overlay");
+                spectatorMode = new SpectatorOverlay(game.manager, game);
+                spectateInitCoolDown = 10;
+            }
+
             if (spectatorMode != null)
             {
                 spectatorMode.GrafUpdate(timeStacker);
+            }
+
+            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value) && spectatorMode != null && spectateInitCoolDown == 0)
+            {
+                RainMeadow.Debug("Spectate destroy!");
+                spectatorMode.ShutDownProcess();
+                spectatorMode = null;
             }
         }
 
@@ -47,13 +63,6 @@ namespace RainMeadow
                     spectatorMode.ShutDownProcess();
                     spectatorMode = null;
                 }
-                if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value) && spectatorMode == null)
-                {
-
-                    RainMeadow.Debug("Creating spectator overlay");
-                    spectatorMode = new SpectatorOverlay(game.manager, game);
-                    spectateInitCoolDown = 20;
-                }
 
 
                 if (spectatorMode != null)
@@ -66,12 +75,6 @@ namespace RainMeadow
                     }
                 }
 
-                if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value) && spectatorMode != null && spectateInitCoolDown == 0)
-                {
-                    RainMeadow.Debug("Spectate destroy!");
-                    spectatorMode.ShutDownProcess();
-                    spectatorMode = null;
-                }
 
             }
         }

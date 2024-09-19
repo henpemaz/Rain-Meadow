@@ -121,27 +121,21 @@ namespace RainMeadow
         [RPCMethod]
         public static void MovePlayersToWinScreen(bool malnourished, string denPos)
         {
-            RainMeadow.Debug($"({malnourished}, {denPos})");
-
-            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
             if (game == null || game.manager.upcomingProcess != null) return;
 
-            if (OnlineManager.lobby.playerAvatars.TryGetValue(OnlineManager.mePlayer, out var playerAvatar))
+            var storyGameMode = OnlineManager.lobby.gameMode as StoryGameMode;
+
+            if (storyGameMode.storyClientSettings.hasSheltered)
             {
-                if (playerAvatar.type != (byte)OnlineEntity.EntityId.IdType.none
-                    && playerAvatar.FindEntity(true) is OnlinePhysicalObject opo
-                    && opo.apo is AbstractCreature ac
-                    && ac.Room.shelter)
-                {
-                    denPos = ac.Room.name;
-                }
+                denPos = storyGameMode.storyClientSettings.myLastDenPos;
+            }
+            else
+            {
+                storyGameMode.storyClientSettings.myLastDenPos = denPos;
             }
 
-            if (denPos != null)
-            {
-                game.GetStorySession.saveState.denPosition = denPos;
-                (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos = denPos;
-            }
+            storyGameMode.defaultDenPos = game.GetStorySession.saveState.denPosition = denPos;
 
             foreach (OnlinePlayer player in OnlineManager.players)
             {
@@ -163,12 +157,8 @@ namespace RainMeadow
         [RPCMethod]
         public static void GoToWinScreen(bool malnourished, string denPos)
         {
-            RainMeadow.Debug($"({malnourished})");
-            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-            if (game == null || game.manager.upcomingProcess != null)
-            {
-                return;
-            }
+            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
+            if (game == null || game.manager.upcomingProcess != null) return;
 
             if (OnlineManager.lobby.isOwner)
             {
@@ -180,8 +170,8 @@ namespace RainMeadow
             }
             else
             {
-                var storyClientSettings = OnlineManager.lobby.gameMode.clientSettings as StoryClientSettings;
-                if (storyClientSettings.isDead)
+                var storyClientSettings = (OnlineManager.lobby.gameMode as StoryGameMode).storyClientSettings;
+                if (!storyClientSettings.hasSheltered)
                 {
                     storyClientSettings.myLastDenPos = denPos;
                 }

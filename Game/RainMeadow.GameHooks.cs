@@ -9,6 +9,8 @@ namespace RainMeadow
 {
     public partial class RainMeadow
     {
+        static bool doneCutscene; // HACK: should keep track of local firstTimeRealized for RoomSpecificScripts
+
         // setup things
         // prevent creature spawns
         private void GameHooks()
@@ -31,6 +33,8 @@ namespace RainMeadow
             On.Room.PlaceQuantifiedCreaturesInRoom += Room_PlaceQuantifiedCreaturesInRoom;
 
             On.RoomSettings.ctor += RoomSettings_ctor;
+
+            On.RoomSpecificScript.AddRoomSpecificScript += RoomSpecificScript_AddRoomSpecificScript;
 
             IL.RoomSpecificScript.SS_E08GradientGravity.Update += RoomSpecificScript_SS_E08GradientGravity_Update;
 
@@ -194,6 +198,28 @@ namespace RainMeadow
             orig(self, name, region, template, firstTemplate, playerChar);
         }
 
+        private void RoomSpecificScript_AddRoomSpecificScript(On.RoomSpecificScript.orig_AddRoomSpecificScript orig, Room room)
+        {
+            if (isStoryMode(out var storyGameMode))
+            {
+                var firstTimeRealized = room.abstractRoom.firstTimeRealized;
+                var origSaveStateNumber = room.game.GetStorySession.saveState.saveStateNumber;
+                if (storyGameMode.currentCampaign == SlugcatStats.Name.Red && !doneCutscene && room.abstractRoom.name == "LF_H01")
+                {
+                    if (!OnlineManager.lobby.isOwner) room.abstractRoom.firstTimeRealized = !doneCutscene;
+                    doneCutscene = true;
+                }
+                room.game.GetStorySession.saveState.saveStateNumber = storyGameMode.currentCampaign;
+                orig(room);
+                room.abstractRoom.firstTimeRealized = firstTimeRealized;
+                room.game.GetStorySession.saveState.saveStateNumber = origSaveStateNumber;
+            }
+            else
+            {
+                orig(room);
+            }
+        }
+
         private void RoomSpecificScript_SS_E08GradientGravity_Update(ILContext il)
         {
             try
@@ -226,6 +252,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
+                doneCutscene = false;
                 saveStateNumber = OnlineManager.lobby.gameMode.GetStorySessionPlayer(game);
                 if (isStoryMode(out var story))
                 {
