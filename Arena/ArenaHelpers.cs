@@ -22,6 +22,20 @@ namespace RainMeadow
             return null;
         }
 
+        public static OnlinePlayer FindOnlinePlayerByFakePlayerNumber(ArenaCompetitiveGameMode arena, int playerNumber)
+        {
+
+            for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+            {
+                if (playerNumber == i)
+                {
+                    return ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                }
+            }
+
+            return null;
+        }
+
         public static void SetupOnlineArenaStting(ArenaCompetitiveGameMode arena, ProcessManager manager) {
             manager.arenaSitting.players = new List<ArenaSitting.ArenaPlayer>();
             for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
