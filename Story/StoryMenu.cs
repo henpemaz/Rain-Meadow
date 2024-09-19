@@ -34,6 +34,8 @@ namespace RainMeadow
         private OpTinyColorPicker eyeColorPicker;
         private MenuLabel campaignContainer;
         private CheckBox resetSaveCheckbox;
+        private CheckBox clientWantsToOverwriteSave;
+
         private bool resetSave;
 
         public static List<string> nonCampaignSlugcats = new List<string> { "Night", "Inv", "Slugpup", "MeadowOnline", "MeadowOnlineRemote" };
@@ -83,7 +85,7 @@ namespace RainMeadow
             else
             {
                 SetupClientMenu();
-                if (RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value) 
+                if (RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value)
                 {
                     CustomSlugcatSetup();
                 }
@@ -106,7 +108,7 @@ namespace RainMeadow
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
         }
 
-        private void SetupHostMenu() 
+        private void SetupHostMenu()
         {
             this.hostStartButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
             this.hostStartButton.OnClick += (_) => { StartGame(); };
@@ -164,7 +166,7 @@ namespace RainMeadow
             }
         }
 
-        private void SetupClientMenu() 
+        private void SetupClientMenu()
         {
             campaignContainer = new MenuLabel(this, mainPage, this.Translate(gameMode.currentCampaign.value), new Vector2(583f, sp.imagePos.y - 268f), new Vector2(200f, 30f), true);
 
@@ -184,8 +186,12 @@ namespace RainMeadow
             clientWaitingButton.buttonBehav.greyedOut = !(gameMode.isInGame && !gameMode.changedRegions);
 
             this.pages[0].subObjects.Add(this.clientWaitingButton);
+
+            clientWantsToOverwriteSave = new CheckBox(this, mainPage, this, new Vector2(907, 30f), 70f, Translate("Overwrite save progress"), "OVERWRITECLIENTSAVE", true);
+
+            this.pages[0].subObjects.Add(clientWantsToOverwriteSave);
         }
-        
+
         private void StartGame()
         {
             RainMeadow.DebugMe();
@@ -391,7 +397,8 @@ namespace RainMeadow
             }
         }
 
-        public string GetCurrentCampaignName() {
+        public string GetCurrentCampaignName()
+        {
             return SlugcatStats.getSlugcatName(gameMode.currentCampaign);
         }
 
@@ -541,6 +548,10 @@ namespace RainMeadow
                 {
                     return resetSave;
                 }
+                if (idstring == "OVERWRITECLIENTSAVE")
+                {
+                    return gameMode.saveToDisk;
+                }
             }
             return false;
         }
@@ -552,6 +563,11 @@ namespace RainMeadow
                 if (idstring == "RESETSAVE")
                 {
                     resetSave = !resetSave;
+                }
+
+                if (idstring == "OVERWRITECLIENTSAVE")
+                {
+                    gameMode.saveToDisk = !gameMode.saveToDisk;
                 }
             }
         }
