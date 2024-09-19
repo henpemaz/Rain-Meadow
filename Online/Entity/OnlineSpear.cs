@@ -6,8 +6,8 @@
         {
             [OnlineField]
             public bool explosive; // arti spawns a new AbstractSpear
-            [OnlineField]
-            public float hue;
+            //[OnlineField]
+            //public float hue;
             [OnlineField]
             public bool electric;
             [OnlineField]
@@ -18,7 +18,7 @@
             public OnlineSpearDefinition(OnlineSpear onlineSpear, OnlineResource inResource) : base(onlineSpear, inResource)
             {
                 this.explosive = onlineSpear.AbstractSpear.explosive;
-                this.hue = onlineSpear.AbstractSpear.hue;
+                //this.hue = onlineSpear.AbstractSpear.hue;
                 this.electric = onlineSpear.AbstractSpear.electric;
                 this.needle = onlineSpear.AbstractSpear.needle;
             }
@@ -46,7 +46,7 @@
             var entityDefinition = (OnlineSpearDefinition)newObjectEvent;
             var asp = (AbstractSpear)base.ApoFromDef(newObjectEvent, inResource, initialState);
             asp.explosive = entityDefinition.explosive;
-            asp.hue = entityDefinition.hue;
+            //asp.hue = entityDefinition.hue;
             asp.electric = entityDefinition.electric;
             asp.needle = entityDefinition.needle;
             asp.stuckInWallCycles = (initialState as OnlineSpearState).stuckInWallCycles;
@@ -73,16 +73,16 @@
         public class OnlineSpearState : PhysicalObjectEntityState
         {
             [OnlineField]
-            public int stuckInWallCycles;
+            public sbyte stuckInWallCycles;
             [OnlineField]
-            public int electricCharge;
+            public byte electricCharge;
 
             public OnlineSpearState() { }
 
             public OnlineSpearState(OnlineSpear onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
             {
-                stuckInWallCycles = onlineEntity.AbstractSpear.stuckInWallCycles;
-                electricCharge = onlineEntity.AbstractSpear.electricCharge;
+                stuckInWallCycles = (sbyte)onlineEntity.AbstractSpear.stuckInWallCycles;
+                electricCharge = (byte)onlineEntity.AbstractSpear.electricCharge;
             }
 
             public override void ReadTo(OnlineEntity onlineEntity)
