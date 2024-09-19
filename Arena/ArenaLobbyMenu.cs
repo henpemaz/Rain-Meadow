@@ -83,8 +83,8 @@ namespace RainMeadow
             mm.currentGameType = mm.nextGameType = ArenaSetup.GameTypeID.Competitive;
 
 
-            mm.GetGameTypeSetup.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Score;
-            mm.GetGameTypeSetup.spearHitScore = 1;
+            mm.GetGameTypeSetup.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Standard;
+            mm.GetGameTypeSetup.rainWhenOnePlayerLeft = false; // TODO: IL Hook this to update logic due to level switching
 
             mm.pages = pages;
             mm.mySoundLoopName = mySoundLoopName;

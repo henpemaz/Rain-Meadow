@@ -338,11 +338,6 @@ namespace RainMeadow
                 }
             }
 
-            //game.GetArenaGameSession.Killing(absCreaturePlayer.apo.realizedObject as Player, target.apo.realizedObject as Creature);
-            //    }
-
-            //}
-
         }
 
         [RPCMethod]
