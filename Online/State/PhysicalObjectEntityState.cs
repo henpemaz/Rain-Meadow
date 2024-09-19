@@ -20,7 +20,7 @@ namespace RainMeadow
         public PhysicalObjectEntityState(OnlinePhysicalObject onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
         {
             var realizedState = inResource is RoomSession;
-            if (realizedState && onlineEntity.isMine && onlineEntity.apo.realizedObject != null && !onlineEntity.realized) { RainMeadow.Error($"have realized object, but not entity not marked as realized??: {onlineEntity} in resource {inResource}"); }
+            if (realizedState && onlineEntity.isMine && onlineEntity.apo.realizedObject != null && !onlineEntity.realized) { RainMeadow.Error($"have realized object, but entity not marked as realized??: {onlineEntity} in resource {inResource}"); }
             if (realizedState && onlineEntity.isMine && !onlineEntity.realized)
             {
                 RainMeadow.Trace($"asked for realized state, not realized: {onlineEntity} in resource {inResource}");
@@ -64,6 +64,12 @@ namespace RainMeadow
             var onlineObject = onlineEntity as OnlinePhysicalObject;
             var apo = onlineObject.apo;
             RainMeadow.Trace($"{onlineEntity} received realized state? {realizedObjectState != null} entity realized?{onlineObject.realized}");
+
+            if (!realized && !onlineObject.realized && !onlineEntity.isTransferable)
+            {
+                RainMeadow.Debug($"not syncing {onlineEntity} because untransferable unrealized objectstate:{realizedObjectState}");
+                return;
+            }
 
             var wasPos = apo.pos;
             try

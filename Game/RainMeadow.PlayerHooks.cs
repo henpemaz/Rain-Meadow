@@ -18,6 +18,9 @@ public partial class RainMeadow
         On.Player.Die += PlayerOnDie;
         On.Player.Grabability += PlayerOnGrabability;
         IL.Player.GrabUpdate += Player_GrabUpdate;
+        IL.Player.SwallowObject += Player_SwallowObject;
+        On.Player.Regurgitate += Player_Regurgitate;
+        On.Player.SpitUpCraftedObject += Player_SpitUpCraftedObject;
         On.Player.AddFood += Player_AddFood;
         On.Player.AddQuarterFood += Player_AddQuarterFood;
         On.Player.SubtractFood += Player_SubtractFood;
@@ -299,6 +302,67 @@ public partial class RainMeadow
             }
         }
         return orig(self, obj);
+    }
+
+    private void Player_SwallowObject(ILContext il)
+    {
+        try
+        {
+            var c = new ILCursor(il);
+            var skip = il.DefineLabel();
+            c.GotoNext(moveType: MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdloc(0),
+                i => i.MatchStfld<Player>("objectInStomach")
+                );
+            // right after objectInStomach is set
+            // if player isn't ours then don't abstractize, just play the swallowing sound and return
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Player self) =>
+            {
+                if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
+                {
+                    if (!oe.isMine) return false;
+                    if (OnlinePhysicalObject.map.TryGetValue(self.objectInStomach, out var oeInStomach))
+                        oeInStomach.isTransferable = false; // don't release ownership
+                }
+                return true;
+            });
+            c.Emit(OpCodes.Brfalse, skip);
+            c.GotoNext(moveType: MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<Player>("objectInStomach"),
+                i => i.MatchLdarg(0),
+                i => i.MatchCallOrCallvirt<Creature>("get_abstractCreature"),
+                i => i.MatchLdfld<AbstractWorldEntity>("pos"),
+                i => i.MatchCallOrCallvirt<AbstractWorldEntity>("Abstractize")
+                );
+            c.MarkLabel(skip);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e);
+        }
+    }
+
+    private void Player_Regurgitate(On.Player.orig_Regurgitate orig, Player self)
+    {
+        if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
+        {
+            if (!oe.isMine) return;
+            if (OnlinePhysicalObject.map.TryGetValue(self.objectInStomach, out var oeInStomach))
+                oeInStomach.isTransferable = true;
+        }
+        orig(self);
+    }
+
+    private void Player_SpitUpCraftedObject(On.Player.orig_SpitUpCraftedObject orig, Player self)
+    {
+        if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
+        {
+            if (!oe.isMine) return;
+        }
+        orig(self);
     }
 
     private void SlugcatStats_ctor(On.SlugcatStats.orig_ctor orig, SlugcatStats self, SlugcatStats.Name slugcat, bool malnourished)
