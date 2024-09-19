@@ -105,9 +105,8 @@ following others around is hard
 
 wormgrass can still eat you (big patches in FA)
 
-rat can spawn with tail attached
-
 sometimes one loads in the wrong region? might have to do with enabling mods shifting region indexes
+	roomnames become indexes on load, but players can enable/disable regions before playing, should reload progression on joinlobby
 
 echo sky animation is too slow needs to converge
 
@@ -132,6 +131,7 @@ ds a09, the crawlspace on left, creatures don't snap to crawling in it
 ds c03 exist is at water height wont path
 
 creatures not cleared on enter creature pipe
+	game clears enteringshortcut so they "abort entering" most of the time?
 
 echo tentacle bounces bet screens in long rooms
 
@@ -140,3 +140,5 @@ scav climbpos doesn't sync
 liz pounce problem! pre-moon room, can't clear pounce jump
 
 liz overall air after jump is bad, too much friction, where is it coming from??
+
+need a proper "hide all" ui toggle

@@ -506,12 +506,20 @@ namespace RainMeadow
             }
         }
 
+
+        bool debugHiddenn;
         public override void Draw(float timeStacker)
         {
-            var gamePaused = game.pauseMenu != null;
+            // debug
+            if(game.devToolsActive && Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value))
+            {
+                debugHiddenn = !debugHiddenn;
+            }
+
+            var hideAll = game.pauseMenu != null || debugHiddenn;
             base.Draw(timeStacker);
             
-            if (gamePaused)
+            if (hideAll)
             {
                 gridDisplay.isVisible = false;
                 gridButtonContainer.isVisible = false;
