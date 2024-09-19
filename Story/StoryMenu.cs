@@ -34,9 +34,11 @@ namespace RainMeadow
         private OpTinyColorPicker eyeColorPicker;
         private MenuLabel campaignContainer;
         private CheckBox resetSaveCheckbox;
+        private CheckBox clientWantsToOverwriteSave;
+
         private bool resetSave;
 
-        private OpComboBox2 saveSelectDropdown;
+        public static List<string> nonCampaignSlugcats = new List<string> { "Night", "Inv", "Slugpup", "MeadowOnline", "MeadowOnlineRemote" };
 
         private SlugcatStats.Name customSelectedSlugcat = SlugcatStats.Name.White;
 
@@ -44,6 +46,7 @@ namespace RainMeadow
         public StoryMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.StoryMenu)
         {
             RainMeadow.DebugMe();
+
             this.rainEffect = new RainEffect(this, this.pages[0]);
             this.pages[0].subObjects.Add(this.rainEffect);
             this.rainEffect.rainFade = 0.3f;
@@ -76,12 +79,13 @@ namespace RainMeadow
 
             if (OnlineManager.lobby.isOwner)
             {
+                gameMode.saveToDisk = true;
                 SetupHostMenu();
             }
             else
             {
                 SetupClientMenu();
-                if (RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value) 
+                if (RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value)
                 {
                     CustomSlugcatSetup();
                 }
@@ -104,7 +108,7 @@ namespace RainMeadow
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
         }
 
-        private void SetupHostMenu() 
+        private void SetupHostMenu()
         {
             this.hostStartButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
             this.hostStartButton.OnClick += (_) => { StartGame(); };
@@ -127,14 +131,9 @@ namespace RainMeadow
                 base.PlaySound(SoundID.MENU_Next_Slugcat);
                 var index = ssm.slugcatPageIndex - 1 < 0 ? ssm.slugcatPages.Count - 1 : ssm.slugcatPageIndex - 1;
                 gameMode.currentCampaign = ssm.slugcatPages[index].slugcatNumber;
-                saveSelectDropdown._itemList = StorySaveManager.getListItems(gameMode.currentCampaign).ToArray();
-                saveSelectDropdown._ResetIndex();
-                saveSelectDropdown.defaultValue = saveSelectDropdown._itemList[0].name;
-                saveSelectDropdown.Reset();
-                gameMode.currentSaveSlot = StorySaveManager.GetStorySaveProfile(gameMode.currentCampaign, saveSelectDropdown.value);
+                UpdateStartButton();
             };
             this.pages[0].subObjects.Add(this.prevButton);
-
 
             // Next
             this.nextButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(985f, 50f), 1);
@@ -148,40 +147,16 @@ namespace RainMeadow
                 base.PlaySound(SoundID.MENU_Next_Slugcat);
                 var index = ssm.slugcatPageIndex + 1 >= ssm.slugcatPages.Count ? 0 : ssm.slugcatPageIndex + 1;
                 gameMode.currentCampaign = ssm.slugcatPages[index].slugcatNumber;
-                saveSelectDropdown._itemList = StorySaveManager.getListItems(gameMode.currentCampaign).ToArray();
-                saveSelectDropdown._ResetIndex();
-                saveSelectDropdown.defaultValue = saveSelectDropdown._itemList[0].name;
-                saveSelectDropdown.Reset();
-                gameMode.currentSaveSlot = StorySaveManager.GetStorySaveProfile(gameMode.currentCampaign, saveSelectDropdown.value);
+                UpdateStartButton();
             };
             this.pages[0].subObjects.Add(this.nextButton);
 
-
-            var modeLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Save Select"), new Vector2(1090, 430), new Vector2(200, 20f), true, null);
-            mainPage.subObjects.Add(modeLabel);
-
-            var config = new Configurable<string>(gameMode.currentCampaign.value);
-            saveSelectDropdown = new OpComboBox2(config, new Vector2(1090, 400), 160, StorySaveManager.getListItems(gameMode.currentCampaign)) { colorEdge = MenuColorEffect.rgbWhite };
-            saveSelectDropdown.OnChanged += UpdateCurrentSaveSlot;
-            new UIelementWrapper(this.tabWrapper, saveSelectDropdown);
-
-            gameMode.currentSaveSlot = StorySaveManager.GetStorySaveProfile(gameMode.currentCampaign, saveSelectDropdown.value);
-
-            if (!manager.rainWorld.progression.IsThereASavedGame(gameMode.currentSaveSlot.save))
-            {
-                hostStartButton.menuLabel.text = "NEW GAME";
-            }
-            else
-            {
-                hostStartButton.menuLabel.text = "CONTINUE";
-            }
+            UpdateStartButton();
         }
 
-        private void UpdateCurrentSaveSlot()
+        private void UpdateStartButton()
         {
-            gameMode.currentSaveSlot = StorySaveManager.GetStorySaveProfile(gameMode.currentCampaign, saveSelectDropdown.value);
-
-            if (!manager.rainWorld.progression.IsThereASavedGame(gameMode.currentSaveSlot.save))
+            if (!manager.rainWorld.progression.IsThereASavedGame(gameMode.currentCampaign))
             {
                 hostStartButton.menuLabel.text = "NEW GAME";
             }
@@ -191,7 +166,7 @@ namespace RainMeadow
             }
         }
 
-        private void SetupClientMenu() 
+        private void SetupClientMenu()
         {
             campaignContainer = new MenuLabel(this, mainPage, this.Translate(gameMode.currentCampaign.value), new Vector2(583f, sp.imagePos.y - 268f), new Vector2(200f, 30f), true);
 
@@ -211,8 +186,12 @@ namespace RainMeadow
             clientWaitingButton.buttonBehav.greyedOut = !(gameMode.isInGame && !gameMode.changedRegions);
 
             this.pages[0].subObjects.Add(this.clientWaitingButton);
+
+            clientWantsToOverwriteSave = new CheckBox(this, mainPage, this, new Vector2(907, 30f), 70f, Translate("Overwrite save progress"), "OVERWRITECLIENTSAVE", true);
+
+            this.pages[0].subObjects.Add(clientWantsToOverwriteSave);
         }
-        
+
         private void StartGame()
         {
             RainMeadow.DebugMe();
@@ -239,7 +218,6 @@ namespace RainMeadow
             }
 
             manager.arenaSitting = null;
-            manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             if (resetSave)
             {
                 manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
@@ -419,7 +397,8 @@ namespace RainMeadow
             }
         }
 
-        public string GetCurrentCampaignName() {
+        public string GetCurrentCampaignName()
+        {
             return SlugcatStats.getSlugcatName(gameMode.currentCampaign);
         }
 
@@ -459,16 +438,11 @@ namespace RainMeadow
         private List<SlugcatStats.Name> AllSlugcats()
         {
             var filteredList = new List<SlugcatStats.Name>();
-            for (int i = 0; i < SlugcatStats.Name.values.entries.Count; i++) {
-                var slugcatName = SlugcatStats.Name.values.entries[i];
-                if (StorySaveManager.nonCampaignSlugcats.Contains(slugcatName)) 
+            foreach (var name in SlugcatStats.Name.values.entries.Except(nonCampaignSlugcats))
+            {
+                if (ExtEnumBase.TryParse(typeof(SlugcatStats.Name), name, false, out var rawEnumBase))
                 {
-                    continue;
-                }
-
-                if (ExtEnumBase.TryParse(typeof(SlugcatStats.Name), slugcatName, false, out var enumBase)) {
-                    var temp = (SlugcatStats.Name)enumBase;
-                    filteredList.Add(temp);
+                    filteredList.Add((SlugcatStats.Name)rawEnumBase);
                 }
             }
             return filteredList;
@@ -574,6 +548,10 @@ namespace RainMeadow
                 {
                     return resetSave;
                 }
+                if (idstring == "OVERWRITECLIENTSAVE")
+                {
+                    return gameMode.saveToDisk;
+                }
             }
             return false;
         }
@@ -585,6 +563,11 @@ namespace RainMeadow
                 if (idstring == "RESETSAVE")
                 {
                     resetSave = !resetSave;
+                }
+
+                if (idstring == "OVERWRITECLIENTSAVE")
+                {
+                    gameMode.saveToDisk = !gameMode.saveToDisk;
                 }
             }
         }
