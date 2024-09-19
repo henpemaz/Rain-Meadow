@@ -187,7 +187,7 @@ namespace RainMeadow
 
             this.pages[0].subObjects.Add(this.clientWaitingButton);
 
-            clientWantsToOverwriteSave = new CheckBox(this, mainPage, this, new Vector2(907, 30f), 70f, Translate("Overwrite save progress"), "CLEARCLIENTSAVE", true);
+            clientWantsToOverwriteSave = new CheckBox(this, mainPage, this, new Vector2(907, 30f), 70f, Translate("Overwrite save progress"), "OVERWRITECLIENTSAVE", true);
 
             this.pages[0].subObjects.Add(clientWantsToOverwriteSave);
         }
@@ -548,7 +548,7 @@ namespace RainMeadow
                 {
                     return resetSave;
                 }
-                if (idstring == "CLEARCLIENTSAVE")
+                if (idstring == "OVERWRITECLIENTSAVE")
                 {
                     return gameMode.saveToDisk;
                 }
@@ -565,7 +565,7 @@ namespace RainMeadow
                     resetSave = !resetSave;
                 }
 
-                if (idstring == "CLEARCLIENTSAVE")
+                if (idstring == "OVERWRITECLIENTSAVE")
                 {
                     gameMode.saveToDisk = !gameMode.saveToDisk;
                 }
