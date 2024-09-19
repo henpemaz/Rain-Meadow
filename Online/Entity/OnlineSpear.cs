@@ -51,6 +51,12 @@
             asp.needle = entityDefinition.needle;
             asp.stuckInWallCycles = (initialState as OnlineSpearState).stuckInWallCycles;
             asp.electricCharge = (initialState as OnlineSpearState).electricCharge;
+
+            if (asp.needle && asp.realizedObject is Spear spear)
+            {
+                spear.Spear_makeNeedle(UnityEngine.Random.Range(0, 3), active: true);
+            }
+
             return asp;
         }
 
