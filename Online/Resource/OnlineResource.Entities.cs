@@ -214,11 +214,7 @@ namespace RainMeadow
             joinedEntities.Add(oe.id, new EntityMembership(oe));
             activeEntities.Add(oe);
             EntitiesModified();
-            if (!oe.isMine)
-            {
-                oe.EnterResource(this);
-                oe.ReadState(initialState, this);
-            }
+
             oe.OnJoinedResource(this, initialState);
         }
 

@@ -199,8 +199,7 @@ namespace RainMeadow
         public void OnJoinedResource(OnlineResource inResource, EntityState initialState)
         {
             RainMeadow.Debug($"{this} joining {inResource}");
-            if (inResource == currentlyJoinedResource) return;
-            if (joinedResources.Contains(inResource))
+            if (inResource == currentlyJoinedResource || joinedResources.Contains(inResource))
             {
                 RainMeadow.Error($"Already in resource {this} - {inResource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
                 return;
@@ -212,7 +211,12 @@ namespace RainMeadow
             joinedResources.Add(inResource);
             incomingState.Add(inResource, new Queue<EntityState>());
 
-            if (!isMine) JoinImpl(inResource, initialState);
+            if (!isMine)
+            {
+                EnterResource(inResource);
+                ReadState(initialState, inResource);
+                JoinImpl(inResource, initialState);
+            }
 
             if (isMine)
             {
