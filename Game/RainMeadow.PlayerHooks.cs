@@ -1,3 +1,6 @@
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using System;
 
 namespace RainMeadow;
@@ -14,6 +17,7 @@ public partial class RainMeadow
         On.Player.ctor += Player_ctor;
         On.Player.Die += PlayerOnDie;
         On.Player.Grabability += PlayerOnGrabability;
+        IL.Player.GrabUpdate += Player_GrabUpdate;
         On.Player.AddFood += Player_AddFood;
         On.Player.AddQuarterFood += Player_AddQuarterFood;
         On.Player.FoodInRoom_bool += Player_FoodInRoom;
@@ -80,6 +84,47 @@ public partial class RainMeadow
             orig(self, sLeaser, rCam, timeStacker, camPos);
         }
 
+    }
+
+    private void Player_GrabUpdate(ILContext il)
+    {
+        try
+        {
+            // online spearmaster don't spawn spear
+            var c = new ILCursor(il);
+            var skip = il.DefineLabel();
+            c.GotoNext(
+                i => i.MatchLdloc(16),
+                i => i.MatchLdfld<PlayerGraphics.TailSpeckles>("spearProg"),
+                i => i.MatchLdcR4(1),
+                i => i.MatchBneUn(out skip)
+                );
+            c.GotoNext(
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                i => i.MatchLdfld<Room>("world"),
+                i => i.MatchLdnull(),
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                i => i.MatchLdarg(0),
+                i => i.MatchCallOrCallvirt<Creature>("get_mainBodyChunk"),
+                i => i.MatchLdfld<BodyChunk>("pos"),
+                i => i.MatchCallOrCallvirt<Room>("GetWorldCoordinate"),
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                i => i.MatchLdfld<Room>("game"),
+                i => i.MatchCallOrCallvirt<RainWorldGame>("GetNewID"),
+                i => i.MatchLdcI4(0),
+                i => i.MatchNewobj<AbstractSpear>()
+                );
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Player self) => OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe) && !oe.isMine);
+            c.Emit(OpCodes.Brtrue, skip);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e);
+        }
     }
 
     private void Player_AddQuarterFood(On.Player.orig_AddQuarterFood orig, Player self)
