@@ -267,7 +267,11 @@ namespace RainMeadow
             orig(self);
             if (isArenaMode(out var arena))
             {
-                self.SlugCatClass = (arena.clientSettings as ArenaClientSettings).playingAs;
+                if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
+                    throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+                var scs = OnlineManager.lobby.activeEntities.OfType<ArenaClientSettings>().FirstOrDefault(e => e.owner == oe.owner);
+                if (scs == null) throw new InvalidProgrammerException("OnlinePlayer doesn't have StoryClientSettings!!");
+                self.SlugCatClass = scs.playingAs;
             }
         }
         private void Spear_Update(On.Spear.orig_Update orig, Spear self, bool eu)
