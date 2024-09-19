@@ -53,7 +53,7 @@ namespace RainMeadow
 
                 // Add the new player to the list
                 manager.arenaSitting.players.Add(newPlayer);
-
+               
             }
         }
 
