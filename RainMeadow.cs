@@ -147,11 +147,6 @@ namespace RainMeadow
                 RainMeadow.Debug($"MeadowProgression.InitializeBuiltinTypes: {sw.Elapsed}");
 
                 sw = Stopwatch.StartNew();
-                StorySaveManager.InitializeStorySaves();
-                sw.Stop();
-                RainMeadow.Debug($"StorySaveManager.InitializeSaveFiles: {sw.Elapsed}");
-
-                sw = Stopwatch.StartNew();
                 RPCManager.SetupRPCs();
                 sw.Stop();
                 RainMeadow.Debug($"RPCManager.SetupRPCs: {sw.Elapsed}");
