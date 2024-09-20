@@ -28,10 +28,13 @@ namespace RainMeadow
         private OpTinyColorPicker eyeColorPicker;
         OpSliderTick playerCountSlider;
         UIelementWrapper playerCountWrapper;
+        public bool clientReadiedUp = false;
 
         int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x; // been using 1360 as ref
 
         public SimpleButton[] usernameButtons;
+        public ArenaOnlinePlayerJoinButton meClassButton;
+
         public ArenaOnlinePlayerJoinButton[] classButtons;
         public MultiplayerMenu mm;
 
@@ -84,7 +87,7 @@ namespace RainMeadow
 
 
             mm.GetGameTypeSetup.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Standard;
-            mm.GetGameTypeSetup.rainWhenOnePlayerLeft = false; // TODO: IL Hook this to update logic due to level switching
+            mm.GetGameTypeSetup.rainWhenOnePlayerLeft = false; // TODO:  Hook this to update logic due to level switching if we want it
 
             mm.pages = pages;
             mm.mySoundLoopName = mySoundLoopName;
@@ -93,7 +96,7 @@ namespace RainMeadow
             UnlockAndLoadLevels();
 
 
-            // very convenient
+            // TODO: very convenient, but can't use custom colors with this impl
             mm.arenaSettingsInterface = new ArenaSettingsInterface(mm, pages[0]);
             mm.arenaSettingsInterface.pos += Vector2.down * 40;
 
@@ -112,18 +115,7 @@ namespace RainMeadow
             scene.AddIllustration(new MenuIllustration(mm, scene, "", "CompetitiveShadow", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
             scene.AddIllustration(new MenuIllustration(mm, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
             scene.flatIllustrations[scene.flatIllustrations.Count - 1].sprite.shader = manager.rainWorld.Shaders["MenuText"];
-
-            var startButtonText = "";
-            if (OnlineManager.lobby.isOwner)
-            {
-                startButtonText = "START";
-            }
-            else
-            {
-                startButtonText = "ENTER";
-            }
-
-            mm.playButton = CreateButton(startButtonText, new Vector2(ScreenWidth - 304, 50), new Vector2(110, 30), self => StartGame());
+            mm.playButton = CreateButton("READY?", new Vector2(ScreenWidth - 304, 50), new Vector2(110, 30), self => StartGame());
 
             infoButton = new SymbolButton(mm, pages[0], "Menu_InfoI", "INFO", new Vector2(1142f, 624f));
             pages[0].subObjects.Add(infoButton);
@@ -275,6 +267,33 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
+            if (!arena.allPlayersReadyLockLobby)
+            {
+                arena.clientsAreReadiedUp++;
+
+                if (OnlineManager.players.Count > 1)
+                {
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (!player.isMe)
+                        {
+                            player.InvokeRPC(RPCs.Arena_NotifyLobbyReadyUp, OnlineManager.mePlayer.id.name, arena.clientsAreReadiedUp);
+
+                        }
+                    }
+
+                }
+                mm.playButton.menuLabel.text = "Waiting for others...";
+                mm.playButton.inactive = true;
+
+                return;
+            }
+
+            if (!OnlineManager.lobby.isOwner && !arena.isInGame)
+            {
+                return;
+            }
+
 
             InitializeSitting();
 
@@ -295,26 +314,53 @@ namespace RainMeadow
 
             mm.Update();
 
-            if (mm.GetGameTypeSetup.playList.Count * mm.GetGameTypeSetup.levelRepeats > 0)
+            if (meClassButton != null)
             {
-                mm.playButton.buttonBehav.greyedOut = false;
-            }
-            else
-            {
-                mm.playButton.buttonBehav.greyedOut = OnlineManager.lobby.isAvailable;
+                meClassButton.readyForCombat = true;
 
             }
+
 
             if (mm.playButton != null)
             {
-
-                if (!OnlineManager.lobby.isOwner)
+                if (arena.clientsAreReadiedUp == OnlineManager.players.Count && OnlineManager.players.Count > 1)
                 {
-                    mm.playButton.buttonBehav.greyedOut = !arena.isInGame;
+                    arena.allPlayersReadyLockLobby = true;
+                    mm.playButton.menuLabel.text = "ENTER";
+
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        mm.playButton.inactive = false;
+                    }
+
+                    if (!OnlineManager.lobby.isOwner)
+                    {
+                        if (!arena.isInGame)
+                        {
+                            mm.playButton.inactive = true;
+                        }
+                        else
+                        {
+                            mm.playButton.inactive = false;
+                        }
+
+                    }
+
                 }
             }
 
-        }
+                if (mm.GetGameTypeSetup.playList.Count * mm.GetGameTypeSetup.levelRepeats > 0)
+                {
+                    mm.playButton.buttonBehav.greyedOut = false;
+                }
+                else
+                {
+                    mm.playButton.buttonBehav.greyedOut = OnlineManager.lobby.isAvailable;
+
+                }
+
+
+            }
 
 
         public override void Singal(MenuObject sender, string message)
@@ -410,14 +456,11 @@ namespace RainMeadow
         private void AddMeClassButton() // doing unique stuff with player 0 so less annoying this way
         {
 
-
-            var myClassButton = new ArenaOnlinePlayerJoinButton[1];
-
-            myClassButton[0] = new ArenaOnlinePlayerJoinButton(mm, pages[0], new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * myClassButton.Length, 40f), 0);
-            myClassButton[0].buttonBehav.greyedOut = false;
+            meClassButton = new ArenaOnlinePlayerJoinButton(mm, pages[0], new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f), 40f), 0);
+            meClassButton.buttonBehav.greyedOut = false;
+            // TODO: Figure out what greys out the image so we can use as visual ref for readying up
             var currentColorIndex = 0;
-
-            myClassButton[0].OnClick += (_) =>
+            meClassButton.OnClick += (_) =>
             {
 
                 currentColorIndex = (currentColorIndex + 1) % mm.GetArenaSetup.playerClass.Length;
@@ -426,17 +469,17 @@ namespace RainMeadow
 
                 if (currentColorIndex > 3 && ModManager.MSC)
                 {
-                    myClassButton[0].portrait.fileName = "MultiplayerPortrait" + "41-" + mm.GetArenaSetup.playerClass[currentColorIndex];
+                    meClassButton.portrait.fileName = "MultiplayerPortrait" + "41-" + mm.GetArenaSetup.playerClass[currentColorIndex];
 
                 }
                 else
                 {
-                    myClassButton[0].portrait.fileName = "MultiplayerPortrait" + currentColorIndex + "1";
+                    meClassButton.portrait.fileName = "MultiplayerPortrait" + currentColorIndex + "1";
                 }
 
 
-                myClassButton[0].portrait.LoadFile();
-                myClassButton[0].portrait.sprite.SetElementByName(myClassButton[0].portrait.fileName);
+                meClassButton.portrait.LoadFile();
+                meClassButton.portrait.sprite.SetElementByName(meClassButton.portrait.fileName);
                 PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
 
                 personaSettings.playingAs = mm.GetArenaSetup.playerClass[currentColorIndex];
@@ -454,8 +497,9 @@ namespace RainMeadow
                 }
 
 
+
             };
-            pages[0].subObjects.Add(myClassButton[0]);
+            pages[0].subObjects.Add(meClassButton);
         }
 
         private void AddMeUsername()
@@ -504,35 +548,8 @@ namespace RainMeadow
                 {
 
                     classButtons[l] = new ArenaOnlinePlayerJoinButton(mm, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
-                    classButtons[l].buttonBehav.greyedOut = false;
-                    //var currentColorIndex = 0;
-
-                    //classButtons[0].OnClick += (_) =>
-                    //{
-
-                    //    currentColorIndex = (currentColorIndex + 1) % mm.GetArenaSetup.playerClass.Length;
-
-                    //    mm.GetArenaSetup.playerClass[currentColorIndex] = mm.GetArenaSetup.playerClass[currentColorIndex];
-
-                    //    if (currentColorIndex > 3 && ModManager.MSC)
-                    //    {
-                    //        classButtons[0].portrait.fileName = "MultiplayerPortrait" + "41-" + mm.GetArenaSetup.playerClass[currentColorIndex];
-
-                    //    }
-                    //    else
-                    //    {
-                    //        classButtons[0].portrait.fileName = "MultiplayerPortrait" + currentColorIndex + "1";
-                    //    }
-
-
-                    //    classButtons[0].portrait.LoadFile();
-                    //    classButtons[0].portrait.sprite.SetElementByName(classButtons[0].portrait.fileName);
-                    //    PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-
-                    //    personaSettings.playingAs = mm.GetArenaSetup.playerClass[currentColorIndex];
-
-
-                    //};
+                    classButtons[l].buttonBehav.greyedOut = true;
+                    classButtons[l].portraitBlack = Custom.LerpAndTick(classButtons[l].portraitBlack, 1f, 0.06f, 0.05f);
                     pages[0].subObjects.Add(classButtons[l]);
                 }
             }

@@ -301,6 +301,31 @@ namespace RainMeadow
             }
 
         }
+        [RPCMethod]
+        public static void Arena_NotifyLobbyReadyUp(string userIsReady, int currentColorIndex)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+
+                for (int i = 1; i < game.usernameButtons.Length; i++)
+                {
+
+                    if (game.usernameButtons[i].menuLabel.text == userIsReady)
+                    {
+                        arena.clientsAreReadiedUp++;
+                        game.classButtons[i].readyForCombat = true;
+                    }
+
+                }
+
+            }
+
+        }
 
         [RPCMethod]
         public static void Arena_Killing(OnlinePhysicalObject absCreaturePlayer, OnlinePhysicalObject target, string username)

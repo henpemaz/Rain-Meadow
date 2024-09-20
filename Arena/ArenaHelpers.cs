@@ -43,7 +43,6 @@ namespace RainMeadow
 
                 var currentPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
 
-                // Create a new ArenaPlayer
                 ArenaSitting.ArenaPlayer newPlayer = new ArenaSitting.ArenaPlayer(i)
                 {
                     playerNumber = i,
@@ -51,7 +50,6 @@ namespace RainMeadow
                     hasEnteredGameArea = true
                 };
 
-                // Add the new player to the list
                 manager.arenaSitting.players.Add(newPlayer);
                
             }
