@@ -25,14 +25,17 @@ namespace RainMeadow
 
         public static void ResetReadyUpLogic(ArenaCompetitiveGameMode arena, ArenaLobbyMenu lobby)
         {
-            arena.allPlayersReadyLockLobby = true;
             if (lobby.mm.playButton != null)
             {
                 lobby.mm.playButton.menuLabel.text = "READY?";
                 lobby.mm.playButton.inactive = false;
-                arena.allPlayersReadyLockLobby = false;
-                arena.clientsAreReadiedUp = 0;
+
             }
+            arena.allPlayersReadyLockLobby = false;
+            arena.clientsAreReadiedUp = 0;
+            arena.isInGame = false;
+            arena.returnToLobby = false;
+            lobby.manager.rainWorld.options.DeleteArenaSitting();
 
         }
 
@@ -50,7 +53,8 @@ namespace RainMeadow
             return null;
         }
 
-        public static void SetupOnlineArenaStting(ArenaCompetitiveGameMode arena, ProcessManager manager) {
+        public static void SetupOnlineArenaStting(ArenaCompetitiveGameMode arena, ProcessManager manager)
+        {
             manager.arenaSitting.players = new List<ArenaSitting.ArenaPlayer>();
             for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
             {
@@ -65,7 +69,7 @@ namespace RainMeadow
                 };
 
                 manager.arenaSitting.players.Add(newPlayer);
-               
+
             }
         }
 

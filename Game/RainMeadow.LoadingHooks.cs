@@ -104,7 +104,7 @@ namespace RainMeadow
 
                         if (ModManager.MSC && getArenaGameSession.challengeCompleted)
                         {
-                            manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerMenu);
+                            manager.RequestMainProcessSwitch(Ext_ProcessID.ArenaLobbyMenu);
                             if (!OnlineManager.lobby.isOwner)
                             {
                                 OnlineManager.lobby.owner.InvokeRPC(RPCs.ResetPlayersLeft);
@@ -121,10 +121,12 @@ namespace RainMeadow
                     {
 
                         manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
+
                         if (!OnlineManager.lobby.isOwner)
                         {
                             OnlineManager.lobby.owner.InvokeRPC(RPCs.ResetPlayersLeft);
                         }
+                        
                         return;
                     }
 

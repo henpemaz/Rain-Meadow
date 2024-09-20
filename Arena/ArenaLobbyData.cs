@@ -23,6 +23,8 @@ namespace RainMeadow
             public List<string> playList;
             [OnlineField]
             public List<ushort> arenaSittingOnlineOrder;
+            [OnlineField]
+            public bool returnToLobby;
 
 
             public State() { }
@@ -33,6 +35,7 @@ namespace RainMeadow
                 playList = arena.playList;
                 arenaSittingOnlineOrder = arena.arenaSittingOnlineOrder;
                 allPlayersReadyLockLobby = arena.allPlayersReadyLockLobby;
+                returnToLobby = arena.returnToLobby;
 
             }
 
@@ -45,6 +48,8 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaCompetitiveGameMode).playList = playList;
                 (lobby.gameMode as ArenaCompetitiveGameMode).arenaSittingOnlineOrder = arenaSittingOnlineOrder;
                 (lobby.gameMode as ArenaCompetitiveGameMode).allPlayersReadyLockLobby = allPlayersReadyLockLobby;
+                (lobby.gameMode as ArenaCompetitiveGameMode).returnToLobby = returnToLobby;
+
 
             }
         }

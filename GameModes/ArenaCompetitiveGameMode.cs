@@ -9,7 +9,9 @@ namespace RainMeadow
         public bool isInGame = false;
         public int clientWaiting = 0;
         public int clientsAreReadiedUp = 0;
-        public bool allPlayersReadyLockLobby;
+        public bool allPlayersReadyLockLobby = false;
+        public bool returnToLobby = false;
+
 
         public List<string> playList = new List<string>();
 
