@@ -1,4 +1,5 @@
-﻿using RainMeadow.GameModes;
+﻿using IL.Menu;
+using RainMeadow.GameModes;
 using System.Collections.Generic;
 
 namespace RainMeadow
@@ -20,6 +21,19 @@ namespace RainMeadow
             }
 
             return null;
+        }
+
+        public static void ResetReadyUpLogic(ArenaCompetitiveGameMode arena, ArenaLobbyMenu lobby)
+        {
+            arena.allPlayersReadyLockLobby = true;
+            if (lobby.mm.playButton != null)
+            {
+                lobby.mm.playButton.menuLabel.text = "READY?";
+                lobby.mm.playButton.inactive = false;
+                arena.allPlayersReadyLockLobby = false;
+                arena.clientsAreReadiedUp = 0;
+            }
+
         }
 
         public static OnlinePlayer FindOnlinePlayerByFakePlayerNumber(ArenaCompetitiveGameMode arena, int playerNumber)
