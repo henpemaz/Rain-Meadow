@@ -59,7 +59,7 @@ namespace RainMeadow
 
 
             BuildLayout();
-
+            ArenaHelpers.ResetReadyUpLogic(arena, this);
 
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
 
@@ -107,7 +107,6 @@ namespace RainMeadow
             mm.levelSelector = new LevelSelector(mm, pages[0], false);
             pages[0].subObjects.Add(mm.levelSelector);
             mm.init = true;
-
         }
 
         void BuildLayout()
@@ -281,10 +280,10 @@ namespace RainMeadow
 
                         }
                     }
-
+                    mm.playButton.menuLabel.text = "Waiting for others...";
+                    mm.playButton.inactive = true;
                 }
-                mm.playButton.menuLabel.text = "Waiting for others...";
-                mm.playButton.inactive = true;
+
 
                 return;
             }
@@ -322,7 +321,16 @@ namespace RainMeadow
 
 
             if (mm.playButton != null)
-            {
+            {  
+
+                if (OnlineManager.players.Count == 1)
+                {
+                    arena.allPlayersReadyLockLobby = true;
+                    mm.playButton.menuLabel.text = "ENTER";
+                    mm.playButton.inactive = false;
+
+                }
+
                 if (arena.clientsAreReadiedUp == OnlineManager.players.Count && OnlineManager.players.Count > 1)
                 {
                     arena.allPlayersReadyLockLobby = true;
@@ -449,6 +457,8 @@ namespace RainMeadow
             }
             AddOtherPlayerClassButtons();
             AddOtherUsernameButtons();
+
+            ArenaHelpers.ResetReadyUpLogic(arena, this);
 
         }
 
