@@ -1,5 +1,7 @@
 ﻿using HUD;
 using IL.Menu;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
 using RainMeadow.GameModes;
 using System;
 using System.Collections.Generic;
@@ -45,37 +47,71 @@ namespace RainMeadow
             On.ArenaCreatureSpawner.SpawnArenaCreatures += ArenaCreatureSpawner_SpawnArenaCreatures;
 
             On.HUD.HUD.InitMultiplayerHud += HUD_InitMultiplayerHud;
-            // On.Menu.ArenaOverlay.ctor += ArenaOverlay_ctor;
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
-            // On.Menu.PlayerResultBox.ctor += PlayerResultBox_ctor;
+            On.Menu.PlayerResultBox.ctor += PlayerResultBox_ctor;
 
-            // On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
+            On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
             On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1;
 
             // On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
 
             On.ArenaGameSession.Killing += ArenaGameSession_Killing;
+            IL.CreatureCommunities.ctor += OverwriteArenaPlayerMax;
 
+
+
+        }
+
+
+        private void OverwriteArenaPlayerMax(ILContext il) => OverwriteArenaPlayerMax(il, false);
+
+
+        // Thank you, Dragon-Seeker
+        private void OverwriteArenaPlayerMax(ILContext il, bool checkLdarg = false, int maxReplace = -1)
+        {
+            List<Func<Instruction, bool>> predicates = new List<Func<Instruction, bool>>();
+
+            if (checkLdarg) predicates.Add(i => i.MatchLdarg(0));
+
+            predicates.Add(i => i.MatchLdcI4(4));
+
+            var cursor = new ILCursor(il);
+            var x = 0;
+
+            while (cursor.TryGotoNext(MoveType.After, predicates.ToArray()))
+            {
+                x++;
+
+                cursor.EmitDelegate((int oldNum) => OnlineManager.players.Count);
+
+                if (maxReplace == x) break;
+            }
+
+            if (x == 0)
+            {
+                RainMeadow.Error($"Error in adjusting ArenaPlayerMax at Method: {il.Method.Name}]");
+            }
+            else
+            {
+                RainMeadow.Debug($"Increased player count: Method at {il.Method.Name}]");
+            }
         }
 
         private void ShortcutGraphics_ChangeAllExitsToSheltersOrDots(On.ShortcutGraphics.orig_ChangeAllExitsToSheltersOrDots orig, ShortcutGraphics self, bool toShelters)
         {
+
+            if (self.room == null)
+            {
+                return;
+            }
             if (self.room.shortcuts == null)
             {
                 return;
             }
             orig(self, toShelters);
         }
-
-
-
-        // TODO
-        // 1. figure out the ordering of the winner -- Organized list so far by the arenaonlinesitting list
-        // 3. Make host press continue as well -- When everything is commented out player 0 in the list is still being readied up. Where?
-        // 4. Why are usernames breaking the overlays?
-        // 5. Join in Progress someday maybe
 
         private void ArenaGameSession_Killing(On.ArenaGameSession.orig_Killing orig, ArenaGameSession self, Player player, Creature killedCrit)
         {
@@ -208,46 +244,27 @@ namespace RainMeadow
         {
 
             orig(self, menu, owner, pos, size, player, index); // stupid rectangle
-            if (isArenaMode(out var arena))
+            if (isArenaMode(out var arena) && self.backgroundRect != null)
             {
 
                 var currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
                 self.playerNameLabel.text = currentName.id.name;
 
 
-                //if (!ModManager.MSC)
-                //{
-                //    // TODO: Test this with recent arenasitting changes
-                //    self.portrait.RemoveSprites();
-                //    menu.pages[0].RemoveSubObject(self.portrait);
-                //    var portaitMapper = (player.playerClass == SlugcatStats.Name.White) ? 0 :
-                //          (player.playerClass == SlugcatStats.Name.Yellow) ? 1 :
-                //          (player.playerClass == SlugcatStats.Name.Red) ? 2 :
-                //          (player.playerClass == SlugcatStats.Name.Night) ? 3 : 0;
-
-
-                //    self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + portaitMapper + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
-                //    self.subObjects.Add(self.portrait);
-
-                //}
-            }
-
-        }
-
-        private void ArenaOverlay_ctor(On.Menu.ArenaOverlay.orig_ctor orig, Menu.ArenaOverlay self, ProcessManager manager, ArenaSitting ArenaSitting, List<ArenaSitting.ArenaPlayer> result)
-        {
-
-            orig(self, manager, ArenaSitting, result);
-            if (isArenaMode(out var arena))
-            {
-
-                self.resultBoxes = new List<Menu.PlayerResultBox>();
-                for (int i = 0; i < self.result.Count; i++)
+                if (!ModManager.MSC)
                 {
-                    var currentName = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
-                    self.resultBoxes.Add(new Menu.ArenaOverlayResultBox(self, self.pages[0], result[i], i, result[i].winner));
-                    self.resultBoxes[i].playerNameLabel.text = currentName.id.name;
-                    self.pages[0].subObjects.Add(self.resultBoxes[i]);
+                    // TODO: Test this with recent arenasitting changes
+                    self.portrait.RemoveSprites();
+                    menu.pages[0].RemoveSubObject(self.portrait);
+                    var portaitMapper = (player.playerClass == SlugcatStats.Name.White) ? 0 :
+                          (player.playerClass == SlugcatStats.Name.Yellow) ? 1 :
+                          (player.playerClass == SlugcatStats.Name.Red) ? 2 :
+                          (player.playerClass == SlugcatStats.Name.Night) ? 3 : 0;
+
+
+                    self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + portaitMapper + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                    self.subObjects.Add(self.portrait);
+
                 }
             }
 
@@ -296,11 +313,6 @@ namespace RainMeadow
             orig(self, manager);
             if (isArenaMode(out var arena))
             {
-                for (int i = self.resultBoxes.Count - 1; i >= 0; i--)
-                {
-                    var currentName = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
-                    self.resultBoxes[i].playerNameLabel.text = currentName.id.name;
-                }
 
                 var exitButton = new Menu.SimpleButton(self, self.pages[0], self.Translate("EXIT"), "EXIT", new Vector2(856f, 50f), new Vector2(110f, 30f));
                 self.pages[0].subObjects.Add(exitButton);
@@ -311,24 +323,30 @@ namespace RainMeadow
         {
             if (isArenaMode(out var _))
             {
-                self.ArenaSitting.players.Clear();
 
-                if (message != null && message == "CONTINUE")
+                if (message != null)
                 {
-                    self.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
-                    self.manager.rainWorld.options.DeleteArenaSitting();
-                    self.PlaySound(SoundID.MENU_Switch_Page_In);
+                    self.ArenaSitting.players.Clear();
+                    if (message == "CONTINUE")
+                    {
+                        self.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
+                        self.manager.rainWorld.options.DeleteArenaSitting();
+                        self.PlaySound(SoundID.MENU_Switch_Page_In);
+
+                    }
+
+                    if (message == "EXIT")
+                    {
+
+                        self.manager.rainWorld.options.DeleteArenaSitting();
+                        OnlineManager.LeaveLobby();
+                        self.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+                        self.PlaySound(SoundID.MENU_Switch_Page_In);
+                    }
+
 
                 }
 
-                if (message != null && message == "EXIT")
-                {
-
-                    self.manager.rainWorld.options.DeleteArenaSitting();
-                    OnlineManager.LeaveLobby();
-                    self.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
-                    self.PlaySound(SoundID.MENU_Switch_Page_In);
-                }
             }
             else
             {
@@ -485,26 +503,6 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
-
-                //    self.thisFrameActivePlayers = OnlineManager.players.Count;
-                //    if (self.Players.Count != OnlineManager.players.Count)
-                //    {
-                //        self.Players = new List<AbstractCreature>();
-                //        foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
-                //        {
-                //            if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                //            if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !self.Players.Contains(ac))
-                //            {
-                //                self.Players.Add(ac);
-
-                //            }
-
-
-                //        }
-                //    }
-
-
-
                 On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
             }
 
@@ -537,7 +535,7 @@ namespace RainMeadow
 
 
                 // TODO: Figure out the weird username logic and arenaoverlay
-                if (!OnlineManager.lobby.isOwner) 
+                if (!OnlineManager.lobby.isOwner)
                 {
                     self.playersContinueButtons = null;
                     self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
@@ -643,14 +641,11 @@ namespace RainMeadow
             {
                 orig(self);
 
-                // TODO: At some point maybe we can stream levels instead of using the array
                 if (self.Players.Count != OnlineManager.players.Count)
                 {
-                    // Remove extra players from self.Players
                     var extraPlayers = self.Players.Skip(OnlineManager.players.Count).ToList();
                     self.Players.RemoveAll(p => extraPlayers.Contains(p));
 
-                    // Add new players
                     foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
                     {
                         if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
@@ -660,60 +655,6 @@ namespace RainMeadow
                         }
                     }
                 }
-                // TODO: So much effort for join in progress management. 
-                //if (self.arenaSitting.players.Count != OnlineManager.players.Count)
-                //{
-                //    var difference = Math.Abs(self.arenaSitting.players.Count - OnlineManager.players.Count);
-
-                //    if (self.arenaSitting.players.Count < OnlineManager.players.Count)
-                //    {
-                //        var arenaPlayers = OnlineManager.players;
-                //        for (int i = 0; i < arenaPlayers.Count; i++)
-                //        {
-                //            var currentPlayer = arenaPlayers[i];
-
-                //            // Check if the player exists in arena.arenaSittingOnlineOrder
-                //            int playerIndex = arena.arenaSittingOnlineOrder.IndexOf(currentPlayer.inLobbyId);
-
-                //            ArenaSitting.ArenaPlayer newPlayer;
-                //            if (playerIndex != -1)
-                //            {
-                //                // Player exists in the order, use its index
-                //                newPlayer = new ArenaSitting.ArenaPlayer(playerIndex)
-                //                {
-                //                    playerNumber = playerIndex,
-                //                    playerClass = ((OnlineManager.lobby.clientSettings[currentPlayer] as ArenaClientSettings).playingAs),
-                //                    hasEnteredGameArea = true
-                //                };
-                //            }
-                //            else
-                //            {
-                //                // Player doesn't exist in the order, assign a default index
-                //                newPlayer = new ArenaSitting.ArenaPlayer(arenaPlayers.Count)
-                //                {
-                //                    playerNumber = arenaPlayers.Count,
-                //                    playerClass = ((OnlineManager.lobby.clientSettings[currentPlayer] as ArenaClientSettings).playingAs),
-                //                    hasEnteredGameArea = true
-                //                };
-                //            }
-
-                //            // Add the new player to the list
-                //            self.arenaSitting.players.Add(newPlayer);
-                //        }
-                //    }
-                //    else
-                //    {
-                //        // Remove excess players
-                //        var excessPlayers = self.arenaSitting.players.Skip(OnlineManager.players.Count).ToList();
-
-                //        self.arenaSitting.players.RemoveAll(p => excessPlayers.Contains(p));
-                //        // Remove corresponding players from arena.arenaSittingOnlineOrder
-                //        foreach (var playerId in arena.arenaSittingOnlineOrder.Select(ep => ep))
-                //        {
-                //            arena.arenaSittingOnlineOrder.Remove(playerId);
-                //        }
-                //    }
-                // }
 
 
             }
@@ -803,7 +744,6 @@ namespace RainMeadow
                 {
                     if (player.realizedCreature != null && player.realizedCreature.State.dead || player.state.dead)
                     {
-
 
                         deadCount++;
                     }

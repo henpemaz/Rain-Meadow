@@ -18,6 +18,8 @@ namespace RainMeadow
             [OnlineField]
             public bool isInGame;
             [OnlineField]
+            public bool allPlayersReadyLockLobby;
+            [OnlineField]
             public List<string> playList;
             [OnlineField]
             public List<ushort> arenaSittingOnlineOrder;
@@ -30,6 +32,7 @@ namespace RainMeadow
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
                 playList = arena.playList;
                 arenaSittingOnlineOrder = arena.arenaSittingOnlineOrder;
+                allPlayersReadyLockLobby = arena.allPlayersReadyLockLobby;
 
             }
 
@@ -41,6 +44,8 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaCompetitiveGameMode).isInGame = isInGame;
                 (lobby.gameMode as ArenaCompetitiveGameMode).playList = playList;
                 (lobby.gameMode as ArenaCompetitiveGameMode).arenaSittingOnlineOrder = arenaSittingOnlineOrder;
+                (lobby.gameMode as ArenaCompetitiveGameMode).allPlayersReadyLockLobby = allPlayersReadyLockLobby;
+
             }
         }
     }

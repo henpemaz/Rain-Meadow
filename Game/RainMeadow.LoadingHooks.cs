@@ -109,6 +109,7 @@ namespace RainMeadow
                             {
                                 OnlineManager.lobby.owner.InvokeRPC(RPCs.ResetPlayersLeft);
                             }
+                            self.players.Clear();
                             return;
                         }
                     }
@@ -129,10 +130,6 @@ namespace RainMeadow
 
                     manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
 
-                    //if (self.gameTypeSetup.savingAndLoadingSession)
-                    //{
-                    //    self.SaveToFile(manager.rainWorld);
-                    //}
                 }
             }
             else
