@@ -59,11 +59,12 @@ namespace RainMeadow
 
             On.ArenaGameSession.Killing += ArenaGameSession_Killing;
             IL.CreatureCommunities.ctor += OverwriteArenaPlayerMax;
-
+            
 
 
         }
 
+        // TODO: The game session needs to be cleared. It's not happening right now. Death counter is increasing per level
 
         private void OverwriteArenaPlayerMax(ILContext il) => OverwriteArenaPlayerMax(il, false);
 
@@ -107,6 +108,10 @@ namespace RainMeadow
                 return;
             }
             if (self.room.shortcuts == null)
+            {
+                return;
+            }
+            if (self.entranceSprites == null)
             {
                 return;
             }
@@ -321,7 +326,7 @@ namespace RainMeadow
 
         private void MultiplayerResults_Singal(On.Menu.MultiplayerResults.orig_Singal orig, Menu.MultiplayerResults self, Menu.MenuObject sender, string message)
         {
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
 
                 if (message != null)
@@ -343,7 +348,7 @@ namespace RainMeadow
                         self.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
                         self.PlaySound(SoundID.MENU_Switch_Page_In);
                     }
-
+                    arena.returnToLobby = true;
 
                 }
 
@@ -640,7 +645,6 @@ namespace RainMeadow
             if (isArenaMode(out var arena))
             {
                 orig(self);
-
                 if (self.Players.Count != OnlineManager.players.Count)
                 {
                     var extraPlayers = self.Players.Skip(OnlineManager.players.Count).ToList();
@@ -656,6 +660,7 @@ namespace RainMeadow
                     }
                 }
 
+                RainMeadow.Debug(self.Players.Count);
 
             }
             else
@@ -738,22 +743,23 @@ namespace RainMeadow
 
             if (isArenaMode(out var _))
             {
-
                 var deadCount = 0;
                 foreach (var player in self.gameSession.Players)
                 {
-                    if (player.realizedCreature != null && player.realizedCreature.State.dead || player.state.dead)
+                    if (player.realizedCreature != null && player.realizedCreature.State.dead)
                     {
 
                         deadCount++;
                     }
                 }
+                RainMeadow.Debug(deadCount); // This carries over into the next time you play the same level?
 
                 if (deadCount != 0 && deadCount == self.gameSession.Players.Count - 1)
                 {
 
                     return true;
                 }
+                orig(self);
 
                 return orig(self);
 

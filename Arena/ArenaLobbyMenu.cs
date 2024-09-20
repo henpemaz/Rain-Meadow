@@ -37,6 +37,7 @@ namespace RainMeadow
 
         public ArenaOnlinePlayerJoinButton[] classButtons;
         public MultiplayerMenu mm;
+        private bool flushArenaSittingForWaitingClients = false;
 
         public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
 
@@ -266,6 +267,12 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
+            if (arena.clientsAreReadiedUp != OnlineManager.players.Count && arena.isInGame)
+            {
+                return;
+            }
+
+
             if (!arena.allPlayersReadyLockLobby)
             {
                 arena.clientsAreReadiedUp++;
@@ -284,7 +291,6 @@ namespace RainMeadow
                     mm.playButton.inactive = true;
                 }
 
-
                 return;
             }
 
@@ -299,7 +305,6 @@ namespace RainMeadow
 
             mm.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             ArenaHelpers.SetupOnlineArenaStting(arena, mm.manager);
-
 
             // temp
             UserInput.SetUserCount(OnlineManager.players.Count);
@@ -321,7 +326,7 @@ namespace RainMeadow
 
 
             if (mm.playButton != null)
-            {  
+            {
 
                 if (OnlineManager.players.Count == 1)
                 {
@@ -355,7 +360,21 @@ namespace RainMeadow
                     }
 
                 }
-            }
+
+                
+
+                if (arena.clientsAreReadiedUp != OnlineManager.players.Count && arena.isInGame)
+                {
+                    mm.playButton.inactive = true;
+                    mm.playButton.menuLabel.text = "GAME IN SESSION";
+                }
+
+                if (arena.returnToLobby && !flushArenaSittingForWaitingClients)
+                {
+                    ArenaHelpers.ResetReadyUpLogic(arena, this);
+                    flushArenaSittingForWaitingClients = true;
+                }
+
 
                 if (mm.GetGameTypeSetup.playList.Count * mm.GetGameTypeSetup.levelRepeats > 0)
                 {
@@ -366,9 +385,10 @@ namespace RainMeadow
                     mm.playButton.buttonBehav.greyedOut = OnlineManager.lobby.isAvailable;
 
                 }
-
-
             }
+
+
+        }
 
 
         public override void Singal(MenuObject sender, string message)
@@ -407,7 +427,6 @@ namespace RainMeadow
             {
                 return;
             }
-
             base.Singal(sender, message);
         }
 
@@ -458,8 +477,10 @@ namespace RainMeadow
             AddOtherPlayerClassButtons();
             AddOtherUsernameButtons();
 
-            ArenaHelpers.ResetReadyUpLogic(arena, this);
-
+            if (this != null)
+            {
+                ArenaHelpers.ResetReadyUpLogic(arena, this);
+            }
         }
 
 
