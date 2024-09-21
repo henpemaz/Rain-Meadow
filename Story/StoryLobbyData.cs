@@ -47,6 +47,8 @@ namespace RainMeadow
             [OnlineField]
             public Dictionary<string, int> ghostsTalkedTo;
             [OnlineField]
+            public Dictionary<ushort, ushort[]> consumedItems;
+            [OnlineField]
             public Dictionary<string, bool> storyBoolRemixSettings;
             [OnlineField]
             public Dictionary<string, float> storyFloatRemixSettings;
@@ -63,6 +65,7 @@ namespace RainMeadow
 
                 defaultDenPos = storyGameMode.defaultDenPos;
                 currentCampaign = storyGameMode.currentCampaign;
+                consumedItems = storyGameMode.consumedItems;
                 storyBoolRemixSettings = storyGameMode.storyBoolRemixSettings;
                 storyFloatRemixSettings = storyGameMode.storyFloatRemixSettings;
                 storyIntRemixSettings = storyGameMode.storyIntRemixSettings;
@@ -120,6 +123,7 @@ namespace RainMeadow
                 }
                 (lobby.gameMode as StoryGameMode).currentCampaign = currentCampaign;
                 (lobby.gameMode as StoryGameMode).ghostsTalkedTo = ghostsTalkedTo;
+                (lobby.gameMode as StoryGameMode).consumedItems = consumedItems;
                 (lobby.gameMode as StoryGameMode).storyBoolRemixSettings = storyBoolRemixSettings;
                 (lobby.gameMode as StoryGameMode).storyFloatRemixSettings = storyFloatRemixSettings;
                 (lobby.gameMode as StoryGameMode).storyIntRemixSettings = storyIntRemixSettings;
