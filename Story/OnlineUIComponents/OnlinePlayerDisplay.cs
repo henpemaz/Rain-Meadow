@@ -18,7 +18,7 @@ namespace RainMeadow
         public float lastBlink;
         public bool switchedToDeathIcon;
         private bool isButtonToggled;
-
+        public AbstractCreature abstractPlayer;
 
         public OnlinePlayerDisplay(PlayerSpecificOnlineHud owner) : base(owner)
         {
@@ -35,7 +35,6 @@ namespace RainMeadow
             this.gradient.x = -1000f;
             this.label = new FLabel(Custom.GetFont(), owner.clientSettings.owner.id.name);
             this.label.color = Color.white;
-
 
 
             owner.hud.fContainers[0].AddChild(this.label);
@@ -80,13 +79,14 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
-
+            
             if (RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value && Input.GetKeyDown(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
             {
                 this.isButtonToggled = !this.isButtonToggled;
             }
 
-            if (isButtonToggled || (!RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value && Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value)))
+            
+            if ((this.owner.clientSettings.owner.isMe && this.owner.abstractPlayer != null &&  this.owner.abstractPlayer.realizedCreature as Player != null &&  (this.owner.abstractPlayer.realizedCreature as Player).timeSinceSpawned < 120) || isButtonToggled || (!RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value && Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value)))
             {
                 this.lastAlpha = this.alpha;
                 this.blink = 1f;
