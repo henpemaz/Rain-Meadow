@@ -43,6 +43,9 @@ namespace RainMeadow
             On.ArenaBehaviors.ExitManager.PlayerTryingToEnterDen += ExitManager_PlayerTryingToEnterDen;
             On.ArenaBehaviors.Evilifier.Update += Evilifier_Update;
             On.ArenaBehaviors.RespawnFlies.Update += RespawnFlies_Update;
+            
+
+
             On.ShortcutGraphics.ChangeAllExitsToSheltersOrDots += ShortcutGraphics_ChangeAllExitsToSheltersOrDots;
 
             On.ArenaCreatureSpawner.SpawnArenaCreatures += ArenaCreatureSpawner_SpawnArenaCreatures;
@@ -64,6 +67,8 @@ namespace RainMeadow
 
 
         }
+
+ 
 
         // TODO: There is a rogue process saving arena progress. ExitManager is remembering my local var
         private void ArenaGameSession_ctor(On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
@@ -387,6 +392,7 @@ namespace RainMeadow
                     }
                     arena.returnToLobby = true;
                    
+                   
 
                 }
 
@@ -668,7 +674,6 @@ namespace RainMeadow
                     }
                 }
                 RainMeadow.Debug(self.arenaSitting.players.Count);
-
 
             }
             else

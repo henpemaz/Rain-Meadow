@@ -88,7 +88,9 @@ namespace RainMeadow
 
             mm.GetGameTypeSetup.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Standard;
             mm.GetGameTypeSetup.rainWhenOnePlayerLeft = false; // TODO:  Hook this to update logic due to level switching if we want it
-
+            mm.GetGameTypeSetup.savingAndLoadingSession = false;
+            mm.GetGameTypeSetup.saveCreatures = false;
+            
 
             mm.pages = pages;
             mm.mySoundLoopName = mySoundLoopName;
@@ -100,6 +102,7 @@ namespace RainMeadow
             // TODO: very convenient, but can't use custom colors with this impl
             mm.arenaSettingsInterface = new ArenaSettingsInterface(mm, pages[0]);
             mm.arenaSettingsInterface.pos += Vector2.down * 40;
+            //mm.arenaSettingsInterface.rainTimer.CheckedButton -------- TODO: sync this
 
             pages[0].subObjects.Add(mm.arenaSettingsInterface);
 
@@ -117,8 +120,6 @@ namespace RainMeadow
             scene.flatIllustrations[scene.flatIllustrations.Count - 1].sprite.shader = manager.rainWorld.Shaders["MenuText"];
             mm.playButton = CreateButton("READY?", new Vector2(ScreenWidth - 304, 50), new Vector2(110, 30), self => StartGame());
 
-            infoButton = new SymbolButton(mm, pages[0], "Menu_InfoI", "INFO", new Vector2(1142f, 624f));
-            pages[0].subObjects.Add(infoButton);
 
             BuildPlayerSlots();
             AddAbovePlayText();
@@ -302,7 +303,6 @@ namespace RainMeadow
 
             mm.manager.rainWorld.options.DeleteArenaSitting();
             mm.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
-            mm.GetGameTypeSetup.savingAndLoadingSession = false;
 
             InitializeSitting();
             ArenaHelpers.SetupOnlineArenaStting(arena, mm.manager);
