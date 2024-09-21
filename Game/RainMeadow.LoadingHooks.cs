@@ -70,35 +70,8 @@ namespace RainMeadow
                     if (manager.currentMainLoop is RainWorldGame)
                     {
 
-                        if (self.gameTypeSetup.saveCreatures)
-                        {
-                            for (int i = 0; i < getArenaGameSession.game.world.NumberOfRooms; i++)
-                            {
-                                for (int j = 0; j < getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).creatures.Count; j++)
-                                {
-                                    if (getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).creatures[j].state.alive)
-                                    {
-                                        self.creatures.Add(getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).creatures[j]);
-                                    }
-                                }
-
-                                for (int k = 0; k < getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).entitiesInDens.Count; k++)
-                                {
-                                    if (getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).entitiesInDens[k] is AbstractCreature && (getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).entitiesInDens[k] as AbstractCreature).state.alive)
-                                    {
-                                        self.creatures.Add(getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).entitiesInDens[k] as AbstractCreature);
-                                    }
-                                }
-                            }
-
-                            self.savCommunities = getArenaGameSession.creatureCommunities;
-                            self.savCommunities.session = null;
-                        }
-                        else
-                        {
-                            self.creatures.Clear();
-                            self.savCommunities = null;
-                        }
+                        self.creatures.Clear();
+                        self.savCommunities = null;
 
                         self.firstGameAfterMenu = false;
 
@@ -126,7 +99,7 @@ namespace RainMeadow
                         {
                             OnlineManager.lobby.owner.InvokeRPC(RPCs.ResetPlayersLeft);
                         }
-                        
+
                         return;
                     }
 
@@ -255,7 +228,8 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 playerCharacter = OnlineManager.lobby.gameMode.LoadWorldAs(game);
-                if (isArenaMode(out var arena)) {
+                if (isArenaMode(out var arena))
+                {
 
                     if (!OnlineManager.lobby.isOwner)
                     {
