@@ -67,10 +67,6 @@ namespace RainMeadow
 
 
         }
-
- 
-
-        // TODO: There is a rogue process saving arena progress. ExitManager is remembering my local var
         private void ArenaGameSession_ctor(On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
         {
             orig(self, game);
