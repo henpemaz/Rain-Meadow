@@ -18,7 +18,6 @@ namespace RainMeadow
         public float lastBlink;
         public bool switchedToDeathIcon;
         private bool isButtonToggled;
-        public AbstractCreature abstractPlayer;
 
         public OnlinePlayerDisplay(PlayerSpecificOnlineHud owner) : base(owner)
         {
