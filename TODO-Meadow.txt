@@ -142,3 +142,20 @@ liz pounce problem! pre-moon room, can't clear pounce jump
 liz overall air after jump is bad, too much friction, where is it coming from??
 
 need a proper "hide all" ui toggle
+
+emotes go off-screen too often, need to show them in-screen near the creature when possible
+
+seems to happen just too often that creatures don't customize
+
+If you use movement keys (left/right) while leaping, you kill your own momentum even if it's on the direction you are leaping to. If you leap without pressing anything you go further away.  Momentum should be kept when pressing the same direction you are leaping to
+
+Lantern mouse: They struggle to grab onto poles when jumping, and overall seen hard to walk on horizontal poles. They need to be rail-roaded into poles more strongly, like how lizards/scavengers are
+
+Scavenger: Scavenger's leap seems to only throw you forward if you are at the very edge of a ground. Other creatures can leap from any part of the ground and be launched as normal
+
+Squidcada & slugcat: On the emote tab, the emotion emotes have a white background. For species that are light colored, they blend together with the white background making it harder to read the silhouette/emote. The background color for those cases should be a dark grey/tinted
+I haven't played with slugcat to be sure but for squidcada, I had trouble telling from a glance what emote I wanted to pick, and I was the one who made the emotes so definetelly the white was messing me up lol
+
+General: Tint seems to be having sync issues, people randomly change between the original color of the animal, to their tint color in pure form, to anything in-between (the foo had an example above, they tinted themselves red to look dark orange, but for everyone on the lobby they looked pure red)
+
+QoL: Some sort of display of how the colors should look in-game? The tint system seems to be confusing at first. Nothing too fancy, just a creature symbol that has the main color of the skin, and then applying tint would also apply it to the symbol to show a rough estimate on how it would look!
