@@ -91,7 +91,7 @@ public partial class RainMeadow
     {
         try
         {
-            // online spearmaster don't spawn spear
+            // remote spearmaster don't spawn spear
             var c = new ILCursor(il);
             var skip = il.DefineLabel();
             c.GotoNext(
@@ -130,8 +130,6 @@ public partial class RainMeadow
 
     private void Player_AddQuarterFood(On.Player.orig_AddQuarterFood orig, Player self)
     {
-        orig(self);
-
         if (OnlineManager.lobby != null)
         {
             if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
@@ -142,12 +140,12 @@ public partial class RainMeadow
                 OnlineManager.lobby.owner.InvokeRPC(RPCs.AddQuarterFood);
             }
         }
+
+        orig(self);
     }
 
     private void Player_AddFood(On.Player.orig_AddFood orig, Player self, int add)
     {
-        orig(self, add);
-
         if (OnlineManager.lobby != null)
         {
             if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
@@ -158,12 +156,12 @@ public partial class RainMeadow
                 OnlineManager.lobby.owner.InvokeRPC(RPCs.AddFood, (short)add);
             }
         }
+
+        orig(self, add);
     }
 
     private void Player_SubtractFood(On.Player.orig_SubtractFood orig, Player self, int add)
     {
-        orig(self, add);
-
         if (OnlineManager.lobby != null)
         {
             if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
@@ -174,6 +172,8 @@ public partial class RainMeadow
                 OnlineManager.lobby.owner.InvokeRPC(RPCs.SubtractFood, (short)add);
             }
         }
+
+        orig(self, add);
     }
 
     private int Player_FoodInRoom(On.Player.orig_FoodInRoom_bool orig, Player self, bool eatAndDestroy)
