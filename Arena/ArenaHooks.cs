@@ -669,8 +669,6 @@ namespace RainMeadow
                         }
                     }
                 }
-                RainMeadow.Debug(self.arenaSitting.players.Count);
-                RainMeadow.Debug(self.GameTypeSetup.savingAndLoadingSession);
 
 
             }
@@ -763,7 +761,6 @@ namespace RainMeadow
                         deadCount++;
                     }
                 }
-                RainMeadow.Debug(deadCount); // This carries over into the next time you play the same level?
 
                 if (deadCount != 0 && deadCount == self.gameSession.Players.Count - 1)
                 {
