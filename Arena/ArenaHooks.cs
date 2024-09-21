@@ -373,7 +373,6 @@ namespace RainMeadow
 
                 if (message != null)
                 {
-                    self.ArenaSitting.players.Clear();
                     if (message == "CONTINUE")
                     {
                         self.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
@@ -390,6 +389,7 @@ namespace RainMeadow
                         self.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
                         self.PlaySound(SoundID.MENU_Switch_Page_In);
                     }
+                    self.ArenaSitting.players.Clear();
                     arena.returnToLobby = true;
                    
                    
@@ -674,6 +674,8 @@ namespace RainMeadow
                     }
                 }
                 RainMeadow.Debug(self.arenaSitting.players.Count);
+                RainMeadow.Debug(self.GameTypeSetup.savingAndLoadingSession);
+
 
             }
             else
@@ -759,7 +761,7 @@ namespace RainMeadow
                 var deadCount = 0;
                 foreach (var player in self.gameSession.Players)
                 {
-                    if (player.realizedCreature != null && player.realizedCreature.State.dead)
+                    if (player.realizedCreature != null && (player.realizedCreature.State.dead || player.state.dead))
                     {
 
                         deadCount++;

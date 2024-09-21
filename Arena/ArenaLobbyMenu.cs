@@ -38,6 +38,7 @@ namespace RainMeadow
         public MultiplayerMenu mm;
         private bool flushArenaSittingForWaitingClients = false;
 
+        // TODO: Find out where the map loading comes in. How does game save my preference?
         public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
 
         public ArenaLobbyMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
@@ -48,7 +49,10 @@ namespace RainMeadow
 
             manager.arenaSetup = new ArenaSetup(manager)
             {
-                currentGameType = ArenaSetup.GameTypeID.Competitive
+                currentGameType = ArenaSetup.GameTypeID.Competitive,
+                savFilePath = null,
+                
+               
             };
 
             FakeInitializeMultiplayerMenu();
@@ -110,6 +114,7 @@ namespace RainMeadow
 
             mm.levelSelector = new LevelSelector(mm, pages[0], false);
             pages[0].subObjects.Add(mm.levelSelector);
+           
             mm.init = true;
         }
 
@@ -204,6 +209,8 @@ namespace RainMeadow
         public void InitializeSitting()
         {
             manager.arenaSitting = new ArenaSitting(mm.GetGameTypeSetup, mm.multiplayerUnlocks);
+
+
 
             manager.arenaSitting.levelPlaylist = new List<string>();
 
@@ -300,13 +307,10 @@ namespace RainMeadow
             {
                 return;
             }
-
-            mm.manager.rainWorld.options.DeleteArenaSitting();
-            mm.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
-
             InitializeSitting();
             ArenaHelpers.SetupOnlineArenaStting(arena, mm.manager);
-            mm.manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.Load;
+            mm.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
+            //mm.manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.Load;
 
             // temp
             UserInput.SetUserCount(OnlineManager.players.Count);
