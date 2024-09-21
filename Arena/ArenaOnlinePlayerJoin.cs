@@ -113,7 +113,7 @@ namespace Menu
                 selectRect.sprites[j].alpha = num;
             }
 
-            menuLabel.label.color = Color.Lerp(PlayerGraphics.DefaultSlugcatColor(((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer] as ArenaClientSettings).playingAs)), MyColor(timeStacker), num);
+            menuLabel.label.color = Color.Lerp(PlayerGraphics.DefaultSlugcatColor(SlugcatStats.Name.White), MyColor(timeStacker), num);
 
 
             portrait.sprite.color = Color.Lerp(Color.white, Color.black, Custom.SCurve(Mathf.Lerp(lastPortraitBlack, portraitBlack, timeStacker), 0.5f) * 0.75f);
