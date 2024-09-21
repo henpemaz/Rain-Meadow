@@ -34,6 +34,7 @@ namespace RainMeadow
             On.ArenaGameSession.SpawnPlayers += ArenaGameSession_SpawnPlayers;
             On.ArenaGameSession.Update += ArenaGameSession_Update;
             On.ArenaGameSession.ctor += ArenaGameSession_ctor;
+
             On.ArenaGameSession.AddHUD += ArenaGameSession_AddHUD;
             On.ArenaGameSession.SpawnCreatures += ArenaGameSession_SpawnCreatures;
 
@@ -59,12 +60,40 @@ namespace RainMeadow
 
             On.ArenaGameSession.Killing += ArenaGameSession_Killing;
             IL.CreatureCommunities.ctor += OverwriteArenaPlayerMax;
-            
+
 
 
         }
 
-        // TODO: The game session needs to be cleared. It's not happening right now. Death counter is increasing per level
+        // TODO: There is a rogue process saving arena progress. ExitManager is remembering my local var
+        private void ArenaGameSession_ctor(On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
+        {
+            orig(self, game);
+
+            if (isArenaMode(out var arena))
+            {
+                On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
+            }
+
+
+        }
+        private void ProcessManager_RequestMainProcessSwitch_ProcessID(On.ProcessManager.orig_RequestMainProcessSwitch_ProcessID orig, ProcessManager self, ProcessManager.ProcessID ID)
+        {
+
+            if (isArenaMode(out var _))
+            {
+                if (ID == ProcessManager.ProcessID.MultiplayerMenu && self.currentMainLoop.ID == ProcessManager.ProcessID.Game)
+                {
+                    ID = Ext_ProcessID.ArenaLobbyMenu;
+                }
+                orig(self, ID);
+            }
+            else
+            {
+
+                orig(self, ID);
+            }
+        }
 
         private void OverwriteArenaPlayerMax(ILContext il) => OverwriteArenaPlayerMax(il, false);
 
@@ -72,50 +101,58 @@ namespace RainMeadow
         // Thank you, Dragon-Seeker
         private void OverwriteArenaPlayerMax(ILContext il, bool checkLdarg = false, int maxReplace = -1)
         {
-            List<Func<Instruction, bool>> predicates = new List<Func<Instruction, bool>>();
-
-            if (checkLdarg) predicates.Add(i => i.MatchLdarg(0));
-
-            predicates.Add(i => i.MatchLdcI4(4));
-
-            var cursor = new ILCursor(il);
-            var x = 0;
-
-            while (cursor.TryGotoNext(MoveType.After, predicates.ToArray()))
+            if (isArenaMode(out var arena))
             {
-                x++;
 
-                cursor.EmitDelegate((int oldNum) => OnlineManager.players.Count);
+                List<Func<Instruction, bool>> predicates = new List<Func<Instruction, bool>>();
 
-                if (maxReplace == x) break;
-            }
+                if (checkLdarg) predicates.Add(i => i.MatchLdarg(0));
 
-            if (x == 0)
-            {
-                RainMeadow.Error($"Error in adjusting ArenaPlayerMax at Method: {il.Method.Name}]");
-            }
-            else
-            {
-                RainMeadow.Debug($"Increased player count: Method at {il.Method.Name}]");
+                predicates.Add(i => i.MatchLdcI4(4));
+
+                var cursor = new ILCursor(il);
+                var x = 0;
+
+                while (cursor.TryGotoNext(MoveType.After, predicates.ToArray()))
+                {
+                    x++;
+
+                    cursor.EmitDelegate((int oldNum) => arena.arenaSittingOnlineOrder.Count);
+
+                    if (maxReplace == x) break;
+                }
+
+                if (x == 0)
+                {
+                    RainMeadow.Error($"Error in adjusting ArenaPlayerMax at Method: {il.Method.Name}]");
+                }
+                else
+                {
+                    RainMeadow.Debug($"Increased player count: Method at {il.Method.Name}]");
+                }
             }
         }
 
         private void ShortcutGraphics_ChangeAllExitsToSheltersOrDots(On.ShortcutGraphics.orig_ChangeAllExitsToSheltersOrDots orig, ShortcutGraphics self, bool toShelters)
         {
+            if (isArenaMode(out var arena))
+            {
 
-            if (self.room == null)
-            {
-                return;
+                if (self.room == null)
+                {
+                    return;
+                }
+                if (self.room.shortcuts == null)
+                {
+                    return;
+                }
+
+                orig(self, toShelters);
             }
-            if (self.room.shortcuts == null)
+            else
             {
-                return;
+                orig(self, toShelters);
             }
-            if (self.entranceSprites == null)
-            {
-                return;
-            }
-            orig(self, toShelters);
         }
 
         private void ArenaGameSession_Killing(On.ArenaGameSession.orig_Killing orig, ArenaGameSession self, Player player, Creature killedCrit)
@@ -349,6 +386,7 @@ namespace RainMeadow
                         self.PlaySound(SoundID.MENU_Switch_Page_In);
                     }
                     arena.returnToLobby = true;
+                   
 
                 }
 
@@ -502,36 +540,6 @@ namespace RainMeadow
 
         }
 
-        private void ArenaGameSession_ctor(On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
-        {
-            orig(self, game);
-
-            if (isArenaMode(out var arena))
-            {
-                On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
-            }
-
-
-        }
-        private void ProcessManager_RequestMainProcessSwitch_ProcessID(On.ProcessManager.orig_RequestMainProcessSwitch_ProcessID orig, ProcessManager self, ProcessManager.ProcessID ID)
-        {
-
-            if (isArenaMode(out var _))
-            {
-                if (ID == ProcessManager.ProcessID.MultiplayerMenu && self.currentMainLoop.ID == ProcessManager.ProcessID.Game)
-                {
-                    ID = Ext_ProcessID.ArenaLobbyMenu;
-                }
-                orig(self, ID);
-            }
-            else
-            {
-
-                orig(self, ID);
-            }
-        }
-
-
 
         private void ArenaOverlay_PlayerPressedContinue(On.Menu.ArenaOverlay.orig_PlayerPressedContinue orig, Menu.ArenaOverlay self)
         {
@@ -659,8 +667,8 @@ namespace RainMeadow
                         }
                     }
                 }
+                RainMeadow.Debug(self.arenaSitting.players.Count);
 
-                RainMeadow.Debug(self.Players.Count);
 
             }
             else

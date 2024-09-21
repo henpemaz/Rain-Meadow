@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using Kittehface.Framework20;
-using ArenaBehaviors;
 
 namespace RainMeadow
 {
@@ -89,6 +88,7 @@ namespace RainMeadow
 
             mm.GetGameTypeSetup.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Standard;
             mm.GetGameTypeSetup.rainWhenOnePlayerLeft = false; // TODO:  Hook this to update logic due to level switching if we want it
+
 
             mm.pages = pages;
             mm.mySoundLoopName = mySoundLoopName;
@@ -183,6 +183,7 @@ namespace RainMeadow
             AddOtherPlayerClassButtons();
             AddOtherUsernameButtons();
 
+
             mm.GetArenaSetup.playersJoined[0] = true; // host should be part of game
         }
 
@@ -203,7 +204,6 @@ namespace RainMeadow
         {
             manager.arenaSitting = new ArenaSitting(mm.GetGameTypeSetup, mm.multiplayerUnlocks);
 
-            // manager.arenaSitting.AddPlayer(0); // placeholder add player
             manager.arenaSitting.levelPlaylist = new List<string>();
 
             if (mm.GetGameTypeSetup.shufflePlaylist)
@@ -260,6 +260,7 @@ namespace RainMeadow
 
             }
 
+
         }
 
         private void StartGame()
@@ -299,12 +300,13 @@ namespace RainMeadow
                 return;
             }
 
+            mm.manager.rainWorld.options.DeleteArenaSitting();
+            mm.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
+            mm.GetGameTypeSetup.savingAndLoadingSession = false;
 
             InitializeSitting();
-
-
-            mm.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             ArenaHelpers.SetupOnlineArenaStting(arena, mm.manager);
+            mm.manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.Load;
 
             // temp
             UserInput.SetUserCount(OnlineManager.players.Count);
@@ -361,7 +363,7 @@ namespace RainMeadow
 
                 }
 
-                
+
 
                 if (arena.clientsAreReadiedUp != OnlineManager.players.Count && arena.isInGame)
                 {
@@ -388,52 +390,6 @@ namespace RainMeadow
             }
 
 
-        }
-
-
-        public override void Singal(MenuObject sender, string message)
-        {
-            if (mm.requestingControllerConnections)
-            {
-                return;
-            }
-
-            for (int i = 0; i < 4; i++)
-            {
-                if (manager.rainWorld.GetPlayerSigningIn(i))
-                {
-                    return;
-                }
-            }
-
-            switch (message)
-            {
-                case "INFO":
-                    if (mm.infoWindow != null)
-                    {
-                        mm.infoWindow.wantToGoAway = true;
-                        PlaySound(SoundID.MENU_Remove_Level);
-                    }
-                    else
-                    {
-                        mm.infoWindow = new InfoWindow(mm, sender, new Vector2(0f, 0f));
-                        sender.subObjects.Add(mm.infoWindow);
-                        PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-                    }
-                    break;
-            }
-
-            if (!ModManager.MSC)
-            {
-                return;
-            }
-            base.Singal(sender, message);
-        }
-
-        public override string UpdateInfoText()
-        {
-
-            return base.UpdateInfoText();
         }
 
 
