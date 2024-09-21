@@ -70,37 +70,11 @@ namespace RainMeadow
                     if (manager.currentMainLoop is RainWorldGame)
                     {
 
-                        if (self.gameTypeSetup.saveCreatures)
-                        {
-                            for (int i = 0; i < getArenaGameSession.game.world.NumberOfRooms; i++)
-                            {
-                                for (int j = 0; j < getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).creatures.Count; j++)
-                                {
-                                    if (getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).creatures[j].state.alive)
-                                    {
-                                        self.creatures.Add(getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).creatures[j]);
-                                    }
-                                }
-
-                                for (int k = 0; k < getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).entitiesInDens.Count; k++)
-                                {
-                                    if (getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).entitiesInDens[k] is AbstractCreature && (getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).entitiesInDens[k] as AbstractCreature).state.alive)
-                                    {
-                                        self.creatures.Add(getArenaGameSession.game.world.GetAbstractRoom(getArenaGameSession.game.world.firstRoomIndex + i).entitiesInDens[k] as AbstractCreature);
-                                    }
-                                }
-                            }
-
-                            self.savCommunities = getArenaGameSession.creatureCommunities;
-                            self.savCommunities.session = null;
-                        }
-                        else
-                        {
-                            self.creatures.Clear();
-                            self.savCommunities = null;
-                        }
+                        self.creatures.Clear();
+                        self.savCommunities = null;
 
                         self.firstGameAfterMenu = false;
+
                         if (ModManager.MSC && getArenaGameSession.challengeCompleted)
                         {
                             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerMenu);
@@ -108,6 +82,7 @@ namespace RainMeadow
                             {
                                 OnlineManager.lobby.owner.InvokeRPC(RPCs.ResetPlayersLeft);
                             }
+                            self.players.Clear();
                             return;
                         }
                     }
@@ -115,24 +90,21 @@ namespace RainMeadow
                     RainMeadow.Debug("Arena: Moving to next level");
                     self.currentLevel++;
 
-
                     if (self.currentLevel >= arena.playList.Count && !self.gameTypeSetup.repeatSingleLevelForever)
                     {
 
                         manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
+
                         if (!OnlineManager.lobby.isOwner)
                         {
                             OnlineManager.lobby.owner.InvokeRPC(RPCs.ResetPlayersLeft);
                         }
+
                         return;
                     }
 
                     manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
 
-                    if (self.gameTypeSetup.savingAndLoadingSession)
-                    {
-                        self.SaveToFile(manager.rainWorld);
-                    }
                 }
             }
             else
@@ -256,7 +228,8 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 playerCharacter = OnlineManager.lobby.gameMode.LoadWorldAs(game);
-                if (isArenaMode(out var arena)) {
+                if (isArenaMode(out var arena))
+                {
 
                     if (!OnlineManager.lobby.isOwner)
                     {

@@ -78,7 +78,7 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                arena.clientWaiting = arena.clientWaiting+1;
+                arena.clientWaiting = arena.clientWaiting + 1;
 
             }
 
@@ -100,7 +100,8 @@ namespace RainMeadow
         {
             foreach (OnlinePlayer player in OnlineManager.players)
             {
-                if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToDeathScreen))) {
+                if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToDeathScreen)))
+                {
                     player.InvokeRPC(RPCs.GoToDeathScreen);
                 }
             }
@@ -192,7 +193,8 @@ namespace RainMeadow
             if (dreamsState != null)
             {
                 dreamsState.EndOfCycleProgress(game.GetStorySession.saveState, game.world.region.name, denPos);
-                if (dreamsState.AnyDreamComingUp && !malnourished) {
+                if (dreamsState.AnyDreamComingUp && !malnourished)
+                {
                     game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Dream);
                     return;
                 }
@@ -229,6 +231,138 @@ namespace RainMeadow
                 return;
             }
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.KarmaToMaxScreen);
+        }
+
+        [RPCMethod]
+        public static void Arena_ReadyForNextLevel(string userIsReady)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+                for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                {
+                    if (game.arenaOverlay.resultBoxes[i].playerNameLabel.text == userIsReady)
+                    {
+                        game.arenaOverlay.result[i].readyForNextRound = true;
+                    }
+                }
+            }
+
+        }
+
+        [RPCMethod]
+        public static void Arena_NotifyClassChange(string userIsReady, int currentColorIndex)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+
+               for (int i = 1; i < game.usernameButtons.Length; i++) {
+
+                    if (game.usernameButtons[i].menuLabel.text == userIsReady)
+                    {
+                        if (currentColorIndex > 3 && ModManager.MSC)
+                        {
+                            game.classButtons[i].portrait.fileName = "MultiplayerPortrait" + "41-" + game.mm.GetArenaSetup.playerClass[currentColorIndex];
+
+                        }
+                        else
+                        {
+                            game.classButtons[i].portrait.fileName = "MultiplayerPortrait" + currentColorIndex + "1";
+                        }
+
+
+                        game.classButtons[i].portrait.LoadFile();
+                        game.classButtons[i].portrait.sprite.SetElementByName(game.classButtons[i].portrait.fileName);
+                    }
+
+                }
+
+            }
+
+        }
+        [RPCMethod]
+        public static void Arena_NotifyLobbyReadyUp(string userIsReady, int currentColorIndex)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+
+                for (int i = 1; i < game.usernameButtons.Length; i++)
+                {
+
+                    if (game.usernameButtons[i].menuLabel.text == userIsReady)
+                    {
+                        arena.clientsAreReadiedUp++;
+                        game.classButtons[i].readyForCombat = true;
+                    }
+
+                }
+
+            }
+
+        }
+
+        [RPCMethod]
+        public static void Arena_Killing(OnlinePhysicalObject absCreaturePlayer, OnlinePhysicalObject target, string username)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+
+                if (game.GetArenaGameSession.sessionEnded)
+                {
+                    return;
+                }
+                var killedCrit = (target.apo as AbstractCreature);
+
+                IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(killedCrit);
+
+                for (int i = 0; i < game.GetArenaGameSession.arenaSitting.players.Count; i++)
+                {
+
+                    if (absCreaturePlayer.owner.inLobbyId == arena.arenaSittingOnlineOrder[i])
+                    {
+
+                        if (CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.realizedCreature.Template.type))
+                        {
+                            game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(iconSymbolData);
+                            game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
+                        }
+
+                        int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
+                        if (index >= 0)
+                        {
+                            game.GetArenaGameSession.arenaSitting.players[i].AddSandboxScore(game.GetArenaGameSession.arenaSitting.gameTypeSetup.killScores[index]);
+                        }
+                        else
+                        {
+                            game.GetArenaGameSession.arenaSitting.players[i].AddSandboxScore(0);
+                        }
+
+                        break;
+                    }
+
+                }
+            }
+
         }
 
         [RPCMethod]
