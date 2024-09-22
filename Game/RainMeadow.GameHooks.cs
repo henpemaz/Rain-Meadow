@@ -213,16 +213,13 @@ namespace RainMeadow
             if (isStoryMode(out var storyGameMode))
             {
                 var firstTimeRealized = room.abstractRoom.firstTimeRealized;
-                var origSaveStateNumber = room.game.GetStorySession.saveState.saveStateNumber;
-                if (storyGameMode.currentCampaign == SlugcatStats.Name.Red && !doneCutscene && room.abstractRoom.name == "LF_H01")
+                if (!doneCutscene && room.abstractRoom.name == SaveState.GetStoryDenPosition(storyGameMode.currentCampaign, out _))
                 {
-                    if (!OnlineManager.lobby.isOwner) room.abstractRoom.firstTimeRealized = !doneCutscene;
+                    room.abstractRoom.firstTimeRealized = !doneCutscene;
                     doneCutscene = true;
                 }
-                room.game.GetStorySession.saveState.saveStateNumber = storyGameMode.currentCampaign;
                 orig(room);
                 room.abstractRoom.firstTimeRealized = firstTimeRealized;
-                room.game.GetStorySession.saveState.saveStateNumber = origSaveStateNumber;
             }
             else
             {

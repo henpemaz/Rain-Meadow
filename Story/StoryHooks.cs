@@ -52,8 +52,6 @@ namespace RainMeadow
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
             On.RainWorldGame.Win += RainWorldGame_Win;
 
-            On.SaveState.GetStoryDenPosition += SaveState_GetStoryDenPosition;
-
             On.SaveState.BringUpToDate += SaveState_BringUpToDate;
             IL.SaveState.SessionEnded += SaveState_SessionEnded;
 
@@ -525,16 +523,6 @@ namespace RainMeadow
         {
             if (isStoryMode(out var storyGameMode) && !storyGameMode.saveToDisk) return false;
             return orig(self, saveCurrentState, saveMaps, saveMiscProg);
-        }
-
-        private string SaveState_GetStoryDenPosition(On.SaveState.orig_GetStoryDenPosition orig, SlugcatStats.Name slugcat, out bool isVanilla)
-        {
-            if (isStoryMode(out var storyGameMode))
-            {
-                slugcat = storyGameMode.currentCampaign;
-            }
-            var denPos = orig(slugcat, out isVanilla);
-            return denPos;
         }
 
         private void SaveState_SessionEnded(ILContext il)
