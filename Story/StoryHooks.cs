@@ -44,6 +44,10 @@ namespace RainMeadow
             new Hook(typeof(HardmodeStart.HardmodePlayer).GetProperty("MainPlayer").GetGetMethod(), this.HardmodeStart_HardmodePlayer_MainPlayer);
             IL.HardmodeStart.SinglePlayerUpdate += HardmodeStart_SinglePlayerUpdate;
 
+            IL.MoreSlugcats.MSCRoomSpecificScript.DS_RIVSTARTcutscene.ctor += ClientDisableUAD;
+            IL.MoreSlugcats.CutsceneArtificer.ctor += ClientDisableUAD;
+            IL.MoreSlugcats.CutsceneArtificerRobo.ctor += ClientDisableUAD;
+
             On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide;
             On.RegionGate.PlayersStandingStill += PlayersStandingStill;
             On.RegionGate.PlayersInZone += RegionGate_PlayersInZone;
@@ -421,6 +425,28 @@ namespace RainMeadow
                     i => i.MatchLdfld<HardmodeStart>("camPosCorrect"),
                     i => i.MatchBrfalse(out _)
                     );
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void ClientDisableUAD(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.TryGotoNext(moveType: MoveType.After,
+                        i => i.MatchStfld<UpdatableAndDeletable>("room")
+                        );
+                c.EmitDelegate(() => OnlineManager.lobby != null && !OnlineManager.lobby.isOwner);
+                c.Emit(OpCodes.Brfalse, skip);
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((UpdatableAndDeletable self) => self.Destroy());
+                c.Emit(OpCodes.Ret);
                 c.MarkLabel(skip);
             }
             catch (Exception e)
