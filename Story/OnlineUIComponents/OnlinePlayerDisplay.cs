@@ -18,6 +18,7 @@ namespace RainMeadow
         public float lastBlink;
         public bool switchedToDeathIcon;
         private bool isButtonToggled;
+        public int onlineTimeSinceSpawn;
 
         public OnlinePlayerDisplay(PlayerSpecificOnlineHud owner) : base(owner)
         {
@@ -48,12 +49,13 @@ namespace RainMeadow
             owner.hud.fContainers[0].AddChild(this.slugIcon);
             this.slugIcon.alpha = 0f;
             this.slugIcon.x = -1000f;
-                        this.slugIcon.color = Color.white;
+            this.slugIcon.color = Color.white;
 
             this.blink = 1f;
             this.switchedToDeathIcon = false;
 
             this.isButtonToggled = false;
+
 
             if (RainMeadow.isStoryMode(out var _))
             {
@@ -78,6 +80,7 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
+            onlineTimeSinceSpawn++;
             
             if (RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value && Input.GetKeyDown(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
             {
@@ -85,7 +88,7 @@ namespace RainMeadow
             }
 
             
-            if ((this.owner.clientSettings.owner.isMe && this.owner.abstractPlayer != null &&  this.owner.abstractPlayer.realizedCreature as Player != null &&  (this.owner.abstractPlayer.realizedCreature as Player).timeSinceSpawned < 120) || isButtonToggled || (!RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value && Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value)))
+            if ((this.owner.clientSettings.owner.isMe &&  onlineTimeSinceSpawn < 120) || isButtonToggled || (!RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value && Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value)))
             {
                 this.lastAlpha = this.alpha;
                 this.blink = 1f;
