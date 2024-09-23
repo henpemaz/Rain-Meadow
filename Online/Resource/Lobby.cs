@@ -168,6 +168,8 @@ namespace RainMeadow
             [OnlineField]
             public string[] mods;
             [OnlineField(nullable = true)]
+            public Generics.DynamicOrderedPlayerIDs userBanList;
+            [OnlineField(nullable = true)]
             public Generics.DynamicOrderedPlayerIDs players;
             [OnlineField(nullable = true)]
             public Generics.DynamicOrderedUshorts inLobbyIds;
@@ -178,6 +180,9 @@ namespace RainMeadow
                 players = new(lobby.participants.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Select(p => p.inLobbyId).ToList());
                 mods = lobby.mods;
+                userBanList = new(lobby.participants.Select(p => p.id).ToList());
+                userBanList.list.Clear();
+
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -187,6 +192,14 @@ namespace RainMeadow
 
                 for (int i = 0; i < players.list.Count; i++)
                 {
+                    if (userBanList.list.Contains(players.list[i])) {
+
+                        BanHammer.ShowBan((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).manager);
+                        OnlineManager.LeaveLobby();
+                        return;
+
+                    }
+
                     if (MatchmakingManager.instance.GetPlayer(players.list[i]) is OnlinePlayer p)
                     {
                         if (p.inLobbyId != inLobbyIds.list[i]) RainMeadow.Debug($"Setting player {p} to lobbyId {inLobbyIds.list[i]}");
@@ -201,7 +214,7 @@ namespace RainMeadow
 
                 if (!lobby.modsChecked)
                 {
-                   RainMeadowModManager.CheckMods(this.mods, lobby.mods);
+                    RainMeadowModManager.CheckMods(this.mods, lobby.mods);
                     lobby.modsChecked = true;
                 }
 

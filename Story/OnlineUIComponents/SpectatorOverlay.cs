@@ -11,6 +11,7 @@ namespace RainMeadow
         public RainWorldGame game;
         public SpectatorOverlay spectatorOverlay;
         public HashSet<AbstractCreature> uniqueACs;
+
         public SpectatorOverlay(ProcessManager manager, RainWorldGame game) : base(manager, RainMeadow.Ext_ProcessID.SpectatorMode)
 
         {
@@ -55,18 +56,21 @@ namespace RainMeadow
                 {
                     var ac = uniqueACs.ElementAt(i);
                     var username = "";
-                    try
+                    if (!OnlinePhysicalObject.map.TryGetValue(uniqueACs.ElementAt(i), out var onlinePlayer))
                     {
-                        OnlinePhysicalObject.map.TryGetValue(uniqueACs.ElementAt(i), out var alivePlayer);
-                        username = (alivePlayer.owner.id as SteamMatchmakingManager.SteamPlayerId).name;
-                    }
-                    catch
-                    {
-                        username = $"{uniqueACs.ElementAt(i)}";
+                        RainMeadow.Error("Error getting onlineplayer in spectator hud");
                     }
 
-                    this.pages[0].subObjects.Add(new Menu.MenuLabel(this, this.pages[0], this.Translate("PLAYERS"), new UnityEngine.Vector2(1190, 553), new(110, 30), true));
-                    var btn = new SimplerButton(this, this.pages[0], username, new UnityEngine.Vector2(1190, 515) - i * new UnityEngine.Vector2(0, 38), new(110, 30));
+                    username = onlinePlayer.owner.id.name;
+
+                    this.pages[0].subObjects.Add(new Menu.MenuLabel(this, this.pages[0], this.Translate("PLAYERS"), new UnityEngine.Vector2(1180, 553), new(110, 30), true));
+                    var btn = new SimplerButton(this, this.pages[0], username, new UnityEngine.Vector2(1180, 515) - i * new UnityEngine.Vector2(0, 38), new(110, 30));
+
+                    var kickPlayer = new SimplerSymbolButton(this, this.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", new Vector2(1300, 515) - i * new UnityEngine.Vector2(0, 38));
+                    kickPlayer.OnClick += (_) => KickPlayer(onlinePlayer);
+
+                    this.pages[0].subObjects.Add(kickPlayer);
+
                     this.pages[0].subObjects.Add(btn);
                     btn.toggled = false;
                 }
@@ -129,18 +133,21 @@ namespace RainMeadow
                 for (int i = 0; i < uniqueACs.Count; i++)
                 {
                     var username = "";
-                    try
+                    if (!OnlinePhysicalObject.map.TryGetValue(uniqueACs.ElementAt(i), out var onlinePlayer))
                     {
-                        OnlinePhysicalObject.map.TryGetValue(uniqueACs.ElementAt(i), out var alivePlayer);
-                        username = (alivePlayer.owner.id as SteamMatchmakingManager.SteamPlayerId).name;
-                    }
-                    catch
-                    {
-                        username = $"{uniqueACs.ElementAt(i)}";
+                        RainMeadow.Error("Error getting onlineplayer in spectator hud");
                     }
 
-                    this.pages[0].subObjects.Add(new Menu.MenuLabel(this, this.pages[0], this.Translate("PLAYERS"), new UnityEngine.Vector2(1190, 553), new(110, 30), true));
-                    var btn = new SimplerButton(this, this.pages[0], username, new UnityEngine.Vector2(1190, 515) - i * new UnityEngine.Vector2(0, 38), new(110, 30));
+                    username = onlinePlayer.owner.id.name;
+
+
+                    this.pages[0].subObjects.Add(new Menu.MenuLabel(this, this.pages[0], this.Translate("PLAYERS"), new UnityEngine.Vector2(1180, 553), new(110, 30), true));
+                    var btn = new SimplerButton(this, this.pages[0], username, new UnityEngine.Vector2(1180, 515) - i * new UnityEngine.Vector2(0, 38), new(110, 30));
+                    var kickPlayer = new SimplerSymbolButton(this, this.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", new Vector2(1300, 515) - i * new UnityEngine.Vector2(0, 38));
+
+                    kickPlayer.OnClick += (_) => KickPlayer(onlinePlayer);
+                    this.pages[0].subObjects.Add(kickPlayer);
+
                     this.pages[0].subObjects.Add(btn);
                     btn.toggled = false;
 
@@ -193,5 +200,13 @@ namespace RainMeadow
             }
 
         }
+
+        private void KickPlayer(OnlinePhysicalObject steamUser)
+        {
+            (steamUser.owner as OnlinePlayer).InvokeRPC(RPCs.KickToLobby);
+
+        }
+
+
     }
 }
