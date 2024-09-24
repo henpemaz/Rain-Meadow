@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RainMeadow.Generics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,6 +15,8 @@ namespace RainMeadow
         public Dictionary<OnlinePlayer, OnlineEntity.EntityId> playerAvatars = new(); // should maybe be in GameMode
 
         public string[] mods = RainMeadowModManager.GetActiveMods();
+        public List<string> bannedUsers = new List<string>();
+        
         public bool modsChecked;
 
         public string? password;
@@ -167,8 +170,8 @@ namespace RainMeadow
             public ushort nextId;
             [OnlineField]
             public string[] mods;
-            [OnlineField(nullable = true)]
-            public Generics.DynamicOrderedPlayerIDs userBanList;
+            [OnlineField]
+            public List<string> bannedUsers;
             [OnlineField(nullable = true)]
             public Generics.DynamicOrderedPlayerIDs players;
             [OnlineField(nullable = true)]
@@ -180,8 +183,7 @@ namespace RainMeadow
                 players = new(lobby.participants.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Select(p => p.inLobbyId).ToList());
                 mods = lobby.mods;
-                userBanList = new(lobby.participants.Select(p => p.id).ToList());
-                userBanList.list.Clear();
+                bannedUsers = lobby.bannedUsers;
 
             }
 
@@ -192,10 +194,10 @@ namespace RainMeadow
 
                 for (int i = 0; i < players.list.Count; i++)
                 {
-                    if (userBanList.list.Contains(players.list[i])) {
+                    if (bannedUsers.Contains(players.list[i].name)) {
 
-                        BanHammer.ShowBan((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).manager);
                         OnlineManager.LeaveLobby();
+                        BanHammer.ShowBan((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).manager);
                         return;
 
                     }

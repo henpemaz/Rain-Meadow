@@ -20,7 +20,14 @@ namespace RainMeadow
 
 
             manager.ShowDialog(informBadUser);
-            
+
+        }
+
+        public static void BanUser(OnlinePhysicalObject steamUser)
+        {
+            var onlinePlayer = (steamUser.owner as OnlinePlayer);
+            onlinePlayer.InvokeRPC(RPCs.KickToLobby);
+            OnlineManager.lobby.bannedUsers.Add(onlinePlayer.id.name); //eh
 
         }
 

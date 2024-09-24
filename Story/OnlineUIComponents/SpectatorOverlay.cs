@@ -65,14 +65,17 @@ namespace RainMeadow
 
                     this.pages[0].subObjects.Add(new Menu.MenuLabel(this, this.pages[0], this.Translate("PLAYERS"), new UnityEngine.Vector2(1180, 553), new(110, 30), true));
                     var btn = new SimplerButton(this, this.pages[0], username, new UnityEngine.Vector2(1180, 515) - i * new UnityEngine.Vector2(0, 38), new(110, 30));
-
-                    var kickPlayer = new SimplerSymbolButton(this, this.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", new Vector2(1300, 515) - i * new UnityEngine.Vector2(0, 38));
-                    kickPlayer.OnClick += (_) => KickPlayer(onlinePlayer);
-
-                    this.pages[0].subObjects.Add(kickPlayer);
-
                     this.pages[0].subObjects.Add(btn);
                     btn.toggled = false;
+
+                    if (OnlineManager.lobby.isOwner && i > 0)
+                    {
+
+
+                        var kickPlayer = new SimplerSymbolButton(this, this.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", new Vector2(1300, 515) - i * new UnityEngine.Vector2(0, 38));
+                        kickPlayer.OnClick += (_) => BanHammer.BanUser(onlinePlayer);
+                        this.pages[0].subObjects.Add(kickPlayer);
+                    }
                 }
             }
 
@@ -143,13 +146,16 @@ namespace RainMeadow
 
                     this.pages[0].subObjects.Add(new Menu.MenuLabel(this, this.pages[0], this.Translate("PLAYERS"), new UnityEngine.Vector2(1180, 553), new(110, 30), true));
                     var btn = new SimplerButton(this, this.pages[0], username, new UnityEngine.Vector2(1180, 515) - i * new UnityEngine.Vector2(0, 38), new(110, 30));
-                    var kickPlayer = new SimplerSymbolButton(this, this.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", new Vector2(1300, 515) - i * new UnityEngine.Vector2(0, 38));
-
-                    kickPlayer.OnClick += (_) => KickPlayer(onlinePlayer);
-                    this.pages[0].subObjects.Add(kickPlayer);
-
                     this.pages[0].subObjects.Add(btn);
                     btn.toggled = false;
+
+                    if (OnlineManager.lobby.isOwner && i > 0)
+                    {
+
+                        var kickPlayer = new SimplerSymbolButton(this, this.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", new Vector2(1300, 515) - i * new UnityEngine.Vector2(0, 38));
+                        kickPlayer.OnClick += (_) => BanHammer.BanUser(onlinePlayer);
+                        this.pages[0].subObjects.Add(kickPlayer);
+                    }
 
                     bool hasAnyAcInGateRoom = false;
                     var ac = uniqueACs.ElementAt(i);
@@ -198,12 +204,6 @@ namespace RainMeadow
                     }
                 }
             }
-
-        }
-
-        private void KickPlayer(OnlinePhysicalObject steamUser)
-        {
-            (steamUser.owner as OnlinePlayer).InvokeRPC(RPCs.KickToLobby);
 
         }
 
