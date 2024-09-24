@@ -260,6 +260,7 @@ namespace RainMeadow
                 displayName = "Twigs",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 4481,
+                baseColor = Extensions.ColorFromHex(0x212030),
             });
             public static Skin Scavenger_Acorn = new("Scavenger_Acorn", true, new()
             {
@@ -267,6 +268,7 @@ namespace RainMeadow
                 displayName = "Acorn",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 1213,
+                baseColor = Extensions.ColorFromHex(0x341417),
             });
             public static Skin Scavenger_Oak = new("Scavenger_Oak", true, new()
             {
@@ -274,6 +276,7 @@ namespace RainMeadow
                 displayName = "Oak",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 9503,
+                baseColor = Extensions.ColorFromHex(0xd9bba1),
             });
             public static Skin Scavenger_Shrub = new("Scavenger_Shrub", true, new()
             {
@@ -281,6 +284,7 @@ namespace RainMeadow
                 displayName = "Shrub",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 1139,
+                baseColor = Extensions.ColorFromHex(0x9b765d),
             });
             public static Skin Scavenger_Branches = new("Scavenger_Branches", true, new()
             {
@@ -288,6 +292,7 @@ namespace RainMeadow
                 displayName = "Branches",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 1503,
+                baseColor = Extensions.ColorFromHex(0x912e19),
             });
             public static Skin Scavenger_Sage = new("Scavenger_Sage", true, new()
             {
@@ -295,6 +300,7 @@ namespace RainMeadow
                 displayName = "Sage",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 1184,
+                baseColor = Extensions.ColorFromHex(0x493d3f),
             });
             public static Skin Scavenger_Cherry = new("Scavenger_Cherry", true, new()
             {
@@ -302,6 +308,7 @@ namespace RainMeadow
                 displayName = "Cherry",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 9464,
+                baseColor = Extensions.ColorFromHex(0xa72014),
             });
             public static Skin Scavenger_Lavender = new("Scavenger_Lavender", true, new()
             {
@@ -309,6 +316,7 @@ namespace RainMeadow
                 displayName = "Lavender",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 8201,
+                baseColor = Extensions.ColorFromHex(0x9b81d5),
             });
             public static Skin Scavenger_Peppermint = new("Scavenger_Peppermint", true, new()
             {
@@ -316,6 +324,7 @@ namespace RainMeadow
                 displayName = "Peppermint",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 8750,
+                baseColor = Extensions.ColorFromHex(0xd1ebdb),
             });
             public static Skin Scavenger_Juniper = new("Scavenger_Juniper", true, new()
             {
@@ -323,6 +332,7 @@ namespace RainMeadow
                 displayName = "Juniper",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 4566,
+                baseColor = Extensions.ColorFromHex(0xb8c3ec),
             });
 
             public static Skin Noodlefly_Big = new("Noodlefly_Big", true, new()
