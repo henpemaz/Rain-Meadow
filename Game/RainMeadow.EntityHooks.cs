@@ -336,7 +336,15 @@ namespace RainMeadow
                 {
                     room.abstractRoom.entities.AddRange(entitiesFromNewRoom); // re-add overwritten entities
                     room.abstractRoom.creatures.AddRange(creaturesFromNewRoom);
-                    roomSession2.Activate(); // adds entities that are already in the room as mine
+                    roomSession2.Activate();
+
+                    foreach (var absplayer in self.game.Players)
+                    {
+                        if(absplayer.realizedCreature is Player player && player.objectInStomach is AbstractPhysicalObject apo)
+                        {
+                            newWorldSession.ApoEnteringWorld(apo);
+                        }
+                    }
                     
                     oldWorldSession.Deactivate();
                     oldWorldSession.NotNeeded(); // done? let go

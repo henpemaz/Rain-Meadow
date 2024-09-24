@@ -18,6 +18,9 @@ public partial class RainMeadow
         On.Player.Die += PlayerOnDie;
         On.Player.Grabability += PlayerOnGrabability;
         IL.Player.GrabUpdate += Player_GrabUpdate;
+        On.Player.SwallowObject += Player_SwallowObject;
+        On.Player.Regurgitate += Player_Regurgitate;
+        On.Player.SpitUpCraftedObject += Player_SpitUpCraftedObject;
         On.Player.AddFood += Player_AddFood;
         On.Player.AddQuarterFood += Player_AddQuarterFood;
         On.Player.SubtractFood += Player_SubtractFood;
@@ -293,12 +296,48 @@ public partial class RainMeadow
     {
         if (OnlineManager.lobby != null)
         {
-            if (self.playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer)
+            if (self.playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer) // this might no longer work after class-sync, check
             {
                 return Player.ObjectGrabability.CantGrab;
             }
         }
         return orig(self, obj);
+    }
+
+    private void Player_SwallowObject(On.Player.orig_SwallowObject orig, Player self, int grasp)
+    {
+        OnlinePhysicalObject? oe = null;
+        if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out oe))
+        {
+            if (!oe.isMine && !oe.beingMoved) return; // prevent execution
+        }
+        orig(self, grasp);
+        if (oe != null)
+        {
+            if (oe.isMine && self.objectInStomach != null)
+            {
+                self.objectInStomach.pos.room = -1; // signal not-in-a-room
+            }
+        }
+    }
+
+    private void Player_Regurgitate(On.Player.orig_Regurgitate orig, Player self)
+    {
+        if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
+        {
+            if (!oe.isMine && !oe.beingMoved) return; // prevent execution
+            if (self.objectInStomach != null) self.objectInStomach.pos = self.abstractCreature.pos; // so it picks up in room.addentity hook, otherwise skipped
+        }
+        orig(self);
+    }
+
+    private void Player_SpitUpCraftedObject(On.Player.orig_SpitUpCraftedObject orig, Player self)
+    {
+        if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
+        {
+            if (!oe.isMine) return;
+        }
+        orig(self);
     }
 
     private void SlugcatStats_ctor(On.SlugcatStats.orig_ctor orig, SlugcatStats self, SlugcatStats.Name slugcat, bool malnourished)

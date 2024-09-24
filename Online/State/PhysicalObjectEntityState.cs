@@ -20,7 +20,7 @@ namespace RainMeadow
         public PhysicalObjectEntityState(OnlinePhysicalObject onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
         {
             var realizedState = inResource is RoomSession;
-            if (realizedState && onlineEntity.isMine && onlineEntity.apo.realizedObject != null && !onlineEntity.realized) { RainMeadow.Error($"have realized object, but not entity not marked as realized??: {onlineEntity} in resource {inResource}"); }
+            if (realizedState && onlineEntity.isMine && onlineEntity.apo.realizedObject != null && !onlineEntity.realized) { RainMeadow.Error($"have realized object, but entity not marked as realized??: {onlineEntity} in resource {inResource}"); }
             if (realizedState && onlineEntity.isMine && !onlineEntity.realized)
             {
                 RainMeadow.Trace($"asked for realized state, not realized: {onlineEntity} in resource {inResource}");
@@ -68,20 +68,42 @@ namespace RainMeadow
             var wasPos = apo.pos;
             try
             {
-                if (inDen != apo.InDen)
+                if (pos.room == -1)
                 {
-                    if (inDen)
+                    if (wasPos.room != -1)
                     {
-                        RainMeadow.Debug("moving to den: " + onlineObject);
-                        apo.IsEnteringDen(pos);
+                        if(apo.realizedObject is PhysicalObject po)
+                        {
+                            po.RemoveFromRoom();
+                            apo.Abstractize(wasPos);
+                        }
+                        apo.Room.RemoveEntity(apo);
+                    }
+                }
+                else
+                {
+                    if (inDen != apo.InDen)
+                    {
+                        if (inDen)
+                        {
+                            RainMeadow.Debug("moving to den: " + onlineObject);
+                            apo.IsEnteringDen(pos);
+                        }
+                        else
+                        {
+                            RainMeadow.Debug("moving out of den: " + onlineObject);
+                            apo.IsExitingDen();
+                        }
+                    }
+                    if (wasPos.room != -1)
+                    {
+                        apo.Move(pos);
                     }
                     else
                     {
-                        RainMeadow.Debug("moving out of den: " + onlineObject);
-                        apo.IsExitingDen();
+                        if (apo.world.IsRoomInRegion(pos.room)) apo.world.GetAbstractRoom(pos).AddEntity(apo);
                     }
                 }
-                apo.Move(pos);
             }
             catch (Exception e)
             {
