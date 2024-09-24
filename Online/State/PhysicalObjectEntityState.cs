@@ -65,29 +65,38 @@ namespace RainMeadow
             var apo = onlineObject.apo;
             RainMeadow.Trace($"{onlineEntity} received realized state? {realizedObjectState != null} entity realized?{onlineObject.realized}");
 
-            if (!realized && !onlineObject.realized && !onlineEntity.isTransferable)
-            {
-                RainMeadow.Debug($"not syncing because untransferable unrealized {onlineEntity} with objectstate {realizedObjectState}");
-                return;
-            }
-
             var wasPos = apo.pos;
             try
             {
-                if (inDen != apo.InDen)
+                if (pos.room == -1)
                 {
-                    if (inDen)
+                    if (wasPos.room != -1)
                     {
-                        RainMeadow.Debug("moving to den: " + onlineObject);
-                        apo.IsEnteringDen(pos);
-                    }
-                    else
-                    {
-                        RainMeadow.Debug("moving out of den: " + onlineObject);
-                        apo.IsExitingDen();
+                        if(apo.realizedObject is PhysicalObject po)
+                        {
+                            po.RemoveFromRoom();
+                            apo.Abstractize(wasPos);
+                        }
+                        apo.Room.RemoveEntity(apo);
                     }
                 }
-                apo.Move(pos);
+                else
+                {
+                    if (inDen != apo.InDen)
+                    {
+                        if (inDen)
+                        {
+                            RainMeadow.Debug("moving to den: " + onlineObject);
+                            apo.IsEnteringDen(pos);
+                        }
+                        else
+                        {
+                            RainMeadow.Debug("moving out of den: " + onlineObject);
+                            apo.IsExitingDen();
+                        }
+                    }
+                    apo.Move(pos);
+                }
             }
             catch (Exception e)
             {

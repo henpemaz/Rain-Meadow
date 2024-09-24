@@ -18,7 +18,7 @@ public partial class RainMeadow
         On.Player.Die += PlayerOnDie;
         On.Player.Grabability += PlayerOnGrabability;
         IL.Player.GrabUpdate += Player_GrabUpdate;
-        IL.Player.SwallowObject += Player_SwallowObject;
+        On.Player.SwallowObject += Player_SwallowObject;
         On.Player.Regurgitate += Player_Regurgitate;
         On.Player.SpitUpCraftedObject += Player_SpitUpCraftedObject;
         On.Player.AddFood += Player_AddFood;
@@ -296,7 +296,7 @@ public partial class RainMeadow
     {
         if (OnlineManager.lobby != null)
         {
-            if (self.playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer)
+            if (self.playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer) // this might no longer work after class-sync, check
             {
                 return Player.ObjectGrabability.CantGrab;
             }
@@ -304,42 +304,20 @@ public partial class RainMeadow
         return orig(self, obj);
     }
 
-    private void Player_SwallowObject(ILContext il)
+    private void Player_SwallowObject(On.Player.orig_SwallowObject orig, Player self, int grasp)
     {
-        try
+        OnlinePhysicalObject? oe = null;
+        if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out oe))
         {
-            var c = new ILCursor(il);
-            var skip = il.DefineLabel();
-            c.GotoNext(moveType: MoveType.After,
-                i => i.MatchLdarg(0),
-                i => i.MatchLdloc(0),
-                i => i.MatchStfld<Player>("objectInStomach")
-                );
-            c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((Player self) =>
-            {
-                if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
-                {
-                    if (!oe.isMine) return false;
-                    if (OnlinePhysicalObject.map.TryGetValue(self.objectInStomach, out var oeInStomach))
-                        oeInStomach.isTransferable = false; // don't release ownership
-                }
-                return true;
-            });
-            c.Emit(OpCodes.Brfalse, skip);
-            c.GotoNext(moveType: MoveType.After,
-                i => i.MatchLdarg(0),
-                i => i.MatchLdfld<Player>("objectInStomach"),
-                i => i.MatchLdarg(0),
-                i => i.MatchCallOrCallvirt<Creature>("get_abstractCreature"),
-                i => i.MatchLdfld<AbstractWorldEntity>("pos"),
-                i => i.MatchCallOrCallvirt<AbstractWorldEntity>("Abstractize")
-                );
-            c.MarkLabel(skip);
+            if (!oe.isMine && !oe.beingMoved) return; // prevent execution
         }
-        catch (Exception e)
+        orig(self, grasp);
+        if (oe != null)
         {
-            Logger.LogError(e);
+            if (oe.isMine && self.objectInStomach != null)
+            {
+                self.objectInStomach.pos.room = -1; // signal not-in-a-room
+            }
         }
     }
 
@@ -347,9 +325,8 @@ public partial class RainMeadow
     {
         if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
         {
-            if (!oe.isMine) return;
-            if (OnlinePhysicalObject.map.TryGetValue(self.objectInStomach, out var oeInStomach))
-                oeInStomach.isTransferable = true;
+            if (!oe.isMine && !oe.beingMoved) return; // prevent execution
+            if (self.objectInStomach != null) self.objectInStomach.pos = self.abstractCreature.pos; // so it picks up in room.addentity hook, otherwise skipped
         }
         orig(self);
     }

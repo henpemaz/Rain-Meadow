@@ -48,7 +48,7 @@ namespace RainMeadow
 
         public OnlinePlayer owner;
         public readonly EntityId id;
-        public bool isTransferable;
+        public readonly bool isTransferable;
 
         internal ushort version;
         internal bool everRegistered;
