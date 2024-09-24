@@ -28,18 +28,22 @@ namespace RainMeadow
         {
             base.Update();
 
-            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+            if (OnlineManager.lobby.playerAvatars.Count > uniqueACs.Count)
             {
-                if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue;
-
-                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
                 {
-                    uniqueACs.Add(ac);
+                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue;
+
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                    {
+                        uniqueACs.Add(ac);
+                    }
                 }
             }
 
             List<SimplerButton> existingButtons = this.pages[0].subObjects.OfType<SimplerButton>().ToList();
             int existingButtonCount = existingButtons.Count;
+
             int newAcListCount = uniqueACs.Count;
 
             if (existingButtonCount != newAcListCount)
@@ -73,7 +77,12 @@ namespace RainMeadow
 
 
                         var kickPlayer = new SimplerSymbolButton(this, this.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", new Vector2(1300, 515) - i * new UnityEngine.Vector2(0, 38));
-                        kickPlayer.OnClick += (_) => BanHammer.BanUser(onlinePlayer);
+                        kickPlayer.OnClick += (_) =>
+                        {
+                            BanHammer.BanUser(onlinePlayer);
+  
+                        };
+
                         this.pages[0].subObjects.Add(kickPlayer);
                     }
                 }
@@ -121,16 +130,23 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+                if (OnlineManager.lobby.playerAvatars.Count > uniqueACs.Count)
                 {
-                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue;
-                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !uniqueACs.Contains(ac))
+                    foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
                     {
+                        if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue;
+                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !uniqueACs.Contains(ac))
+                        {
 
-                        uniqueACs.Add(ac);
+                            uniqueACs.Add(ac);
 
+                        }
                     }
                 }
+
+                List<SimplerButton> existingButtons = this.pages[0].subObjects.OfType<SimplerButton>().ToList();
+                int existingButtonCount = existingButtons.Count;
+
 
 
                 for (int i = 0; i < uniqueACs.Count; i++)
@@ -142,6 +158,7 @@ namespace RainMeadow
                     }
 
                     username = onlinePlayer.owner.id.name;
+                    var ac = uniqueACs.ElementAt(i);
 
 
                     this.pages[0].subObjects.Add(new Menu.MenuLabel(this, this.pages[0], this.Translate("PLAYERS"), new UnityEngine.Vector2(1180, 553), new(110, 30), true));
@@ -153,12 +170,16 @@ namespace RainMeadow
                     {
 
                         var kickPlayer = new SimplerSymbolButton(this, this.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", new Vector2(1300, 515) - i * new UnityEngine.Vector2(0, 38));
-                        kickPlayer.OnClick += (_) => BanHammer.BanUser(onlinePlayer);
+                        kickPlayer.OnClick += (_) =>
+                        {
+                            BanHammer.BanUser(onlinePlayer);
+
+
+                        };
                         this.pages[0].subObjects.Add(kickPlayer);
                     }
 
                     bool hasAnyAcInGateRoom = false;
-                    var ac = uniqueACs.ElementAt(i);
                     // Disable button if AC is dead or if we're in gate room mode. We cannot have a situation where a realizedCreature becomes null during a room check
                     if ((ac.state.dead ||
                     (ac.realizedCreature != null && ac.realizedCreature.State.dead)) ||
