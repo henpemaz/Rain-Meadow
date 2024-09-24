@@ -307,8 +307,25 @@ namespace RainMeadow
                     {
                         return true;
                     }
+                    acc = GetAITile(1).acc;
+                    if ((acc == AItile.Accessibility.Climb && !GetTile(1).AnyBeam) || acc == AItile.Accessibility.Wall)
+                    {
+                        return true;
+                    }
                 }
                 return false;
+            }
+        }
+
+        public override bool CanPounce
+        {
+            get
+            {
+                if (lizard.jumpModule != null)
+                {
+                    return HasFooting;
+                }
+                return base.CanPounce;
             }
         }
 

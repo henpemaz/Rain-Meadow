@@ -30,6 +30,7 @@ namespace RainMeadow
         public abstract bool IsOnPole { get; }
         public abstract bool IsOnCorridor { get; }
         public abstract bool IsOnClimb { get; }
+        public virtual bool CanPounce { get { return IsOnGround; } }
 
         public virtual int OnWall { get { return creature.mainBodyChunk.contactPoint.x; } }
         public virtual bool IsOnWaterSurface => creature.mainBodyChunk.submersion is > 0.3f and < 1;
@@ -531,7 +532,7 @@ namespace RainMeadow
             }
             
 
-            if (this.canGroundJump > 0)
+            if (this.CanPounce)
             {
                 if (this.input[0].jmp && (this.superLaunchJump > 10 || (this.input[0].x == 0 && this.input[0].y <= 0)))
                 {
