@@ -287,12 +287,17 @@ namespace RainMeadow
         {
 
             orig(self, menu, owner, pos, size, player, index); // stupid rectangle
+            if (self.backgroundRect == null)
+            {
+                RainMeadow.Debug("Rectangle went missing. Bringing it back");
+                self.backgroundRect = new Menu.RoundedRect(menu, self, new Vector2(0.01f, 0.01f), size, filled: true);
+                self.subObjects.Add(self.backgroundRect);
+            }
             if (isArenaMode(out var arena) && self.backgroundRect != null)
             {
 
                 var currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
                 self.playerNameLabel.text = currentName.id.name;
-
 
                 if (!ModManager.MSC)
                 {
@@ -321,7 +326,7 @@ namespace RainMeadow
                 if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
                     throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
                 var scs = OnlineManager.lobby.activeEntities.OfType<ArenaClientSettings>().FirstOrDefault(e => e.owner == oe.owner);
-                if (scs == null) throw new InvalidProgrammerException("OnlinePlayer doesn't have StoryClientSettings!!");
+                if (scs == null) throw new InvalidProgrammerException("OnlinePlayer doesn't have ArenaClientSettings!!");
                 self.SlugCatClass = scs.playingAs;
             }
         }
