@@ -159,3 +159,13 @@ I haven't played with slugcat to be sure but for squidcada, I had trouble tellin
 General: Tint seems to be having sync issues, people randomly change between the original color of the animal, to their tint color in pure form, to anything in-between (the foo had an example above, they tinted themselves red to look dark orange, but for everyone on the lobby they looked pure red)
 
 QoL: Some sort of display of how the colors should look in-game? The tint system seems to be confusing at first. Nothing too fancy, just a creature symbol that has the main color of the skin, and then applying tint would also apply it to the symbol to show a rough estimate on how it would look!
+
+
+
+
+engine thoughts
+that one crash notchoc posted about a Destroy related to roomjoin
+	so maybe there WAS realized ent duplication and the delete-fallback had side-effects of removing the real deal?
+
+when wolfy crashed on a quick menu-rejoin
+	is it possible that the new deactivate stuff prevented state from broadcasting and as such her or her avatar never got kicked?

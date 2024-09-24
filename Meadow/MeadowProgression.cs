@@ -22,7 +22,7 @@ namespace RainMeadow
                 _ = Character.Slugcat;
                 _ = Skin.Slugcat_Survivor;
                 _ = Emote.emoteHello;
-                currentTestSkin = Skin.Scavenger_Twigs;
+                currentTestSkin = Skin.Lizard_Pink;
 
                 RainMeadow.Debug($"characters loaded: {Character.values.Count}");
                 RainMeadow.Debug($"skins loaded: {Skin.values.Count}");
@@ -213,6 +213,8 @@ namespace RainMeadow
                 character = Character.Lizard,
                 displayName = "Pink",
                 creatureType = CreatureTemplate.Type.PinkLizard,
+                randomSeed = 3401,
+                baseColor = Extensions.ColorFromHex(0xff07ee),
                 tintFactor = 0.5f,
             });
             public static Skin Lizard_Blue = new("Lizard_Blue", true, new()
@@ -220,6 +222,8 @@ namespace RainMeadow
                 character = Character.Lizard,
                 displayName = "Blue",
                 creatureType = CreatureTemplate.Type.BlueLizard,
+                randomSeed = 9659,
+                baseColor = Extensions.ColorFromHex(0x006bed),
                 tintFactor = 0.5f,
             });
             public static Skin Lizard_Yellow = new("Lizard_Yellow", true, new()
@@ -227,7 +231,8 @@ namespace RainMeadow
                 character = Character.Lizard,
                 displayName = "Yellow",
                 creatureType = CreatureTemplate.Type.YellowLizard,
-                randomSeed = 1366,
+                randomSeed = 6526,
+                baseColor = Extensions.ColorFromHex(0xd35503),
                 tintFactor = 0.5f,
             });
             public static Skin Lizard_Cyan = new("Lizard_Cyan", true, new()
@@ -235,7 +240,17 @@ namespace RainMeadow
                 character = Character.Lizard,
                 displayName = "Cyan",
                 creatureType = CreatureTemplate.Type.CyanLizard,
-                randomSeed = 1366,
+                randomSeed = 5243,
+                baseColor = Extensions.ColorFromHex(0x06f5ff),
+                tintFactor = 0.5f,
+            });
+            public static Skin Lizard_Fluffers = new("Lizard_Fluffers", true, new()
+            {
+                character = Character.Lizard,
+                displayName = "Fluffers",
+                creatureType = CreatureTemplate.Type.PinkLizard,
+                randomSeed = 7713,
+                baseColor = Extensions.ColorFromHex(0xff15b3),
                 tintFactor = 0.5f,
             });
 

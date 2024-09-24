@@ -8,6 +8,11 @@ namespace RainMeadow
 {
     public static class Extensions
     {
+        public static Color ColorFromHex(int value)
+        {
+            return new Color(((value >> 16) & 0xff) / 255f, ((value >> 8) & 0xff) / 255f, (value & 0xff) / 255f);
+        }
+
         public static WorldSession? GetResource(this World world)
         {
             return WorldSession.map.TryGetValue(world, out var ws) ? ws : null;
