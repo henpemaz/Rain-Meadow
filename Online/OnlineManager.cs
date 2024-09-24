@@ -13,7 +13,7 @@ namespace RainMeadow
     public class OnlineManager : MainLoopProcess
     {
         public static OnlineManager instance;
-        public static Serializer serializer = new Serializer(32000);
+        public static Serializer serializer = new Serializer(65536);
         public static List<ResourceSubscription> subscriptions;
         public static List<EntityFeed> feeds;
         public static Dictionary<OnlineEntity.EntityId, OnlineEntity> recentEntities;
