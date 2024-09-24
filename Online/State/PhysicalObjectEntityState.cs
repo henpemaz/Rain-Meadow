@@ -95,7 +95,14 @@ namespace RainMeadow
                             apo.IsExitingDen();
                         }
                     }
-                    apo.Move(pos);
+                    if (wasPos.room != -1)
+                    {
+                        apo.Move(pos);
+                    }
+                    else
+                    {
+                        if (apo.world.IsRoomInRegion(pos.room)) apo.world.GetAbstractRoom(pos).AddEntity(apo);
+                    }
                 }
             }
             catch (Exception e)
