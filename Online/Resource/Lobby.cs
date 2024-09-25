@@ -15,7 +15,7 @@ namespace RainMeadow
         public Dictionary<OnlinePlayer, OnlineEntity.EntityId> playerAvatars = new(); // should maybe be in GameMode
 
         public string[] mods = RainMeadowModManager.GetActiveMods();
-        public List<string> bannedUsers = new();
+        public DynamicOrderedPlayerIDs bannedUsers = new();
 
         public bool modsChecked;
         public bool bannedUsersChecked;
@@ -26,6 +26,7 @@ namespace RainMeadow
         public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password) : base(null)
         {
             OnlineManager.lobby = this; // needed for early entity processing
+            bannedUsers.list = new List<MeadowPlayerId>();
             this.gameMode = OnlineGameMode.FromType(mode, this);
             this.gameModeType = mode;
             if (gameMode == null) throw new Exception($"Invalid game mode {mode}");
@@ -176,7 +177,7 @@ namespace RainMeadow
             [OnlineField]
             public string[] mods;
             [OnlineField(nullable = true)]
-            public List<string> bannedUsers;
+            public Generics.DynamicOrderedPlayerIDs bannedUsers;
             [OnlineField(nullable = true)]
             public Generics.DynamicOrderedPlayerIDs players;
             [OnlineField(nullable = true)]
@@ -189,6 +190,7 @@ namespace RainMeadow
                 inLobbyIds = new(lobby.participants.Select(p => p.inLobbyId).ToList());
                 mods = lobby.mods;
                 bannedUsers = lobby.bannedUsers;
+              
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -213,8 +215,8 @@ namespace RainMeadow
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
                 // Need to get the participants before we check
-
-                if (this.bannedUsers != null && this.bannedUsers.Contains(OnlineManager.mePlayer.id.name))
+                RainMeadow.Debug(this.bannedUsers.list);
+                if (this.bannedUsers != null && this.bannedUsers.list.Contains(OnlineManager.mePlayer.id))
                 {
                     lobby.OnPlayerDisconnect(lobby.PlayerFromMeadowID(OnlineManager.mePlayer.id));
                     RWCustom.Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);

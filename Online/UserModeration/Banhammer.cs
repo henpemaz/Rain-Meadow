@@ -35,11 +35,11 @@ namespace RainMeadow
             onlinePlayer.InvokeRPC(RPCs.KickToLobby);
             if (OnlineManager.lobby.bannedUsers == null)
             {
-                OnlineManager.lobby.bannedUsers = new List<string>();
+                OnlineManager.lobby.bannedUsers = new();
             }
-            if (!OnlineManager.lobby.bannedUsers.Contains(onlinePlayer.id.name))
+            if (!OnlineManager.lobby.bannedUsers.list.Contains(onlinePlayer.id))
             {
-                OnlineManager.lobby.bannedUsers.Add(onlinePlayer.id.name);
+                OnlineManager.lobby.bannedUsers.list.Add(onlinePlayer.id);
             }
             OnlineManager.lobby.OnPlayerDisconnect(onlinePlayer);
 
