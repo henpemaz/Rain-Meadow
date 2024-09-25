@@ -38,15 +38,21 @@ creature todo
 	- requires final-ish seeds
 
 lizard todo
-- sometimes fails to grab poles when holding up
-- cyan-jump from any state
-- find a good seed for our buddies
+blues have trouble sticking to the ceiling
+blues have trouble climbing/pathing ledges
 
 scav todo
-- movement tends to overshoot
+- can't let go of pole
+- sometimes goes swing at poletip, can't do poletip jump until reset
+- jump conditions seem ever so slightly off, should maybe check occupytile?
+	- swingpos too
+- leap has no animation
 - leap sometimes goes up/back
+- swimming happens in bursts? like a counter fills?
 - hands look silly when walking on falsefloor
+- hands bad when swimming
 - jumping off ledge wack because regains footing too quick?
+- point things
 
 slugcat in meadow mode
 - point things
@@ -107,6 +113,7 @@ wormgrass can still eat you (big patches in FA)
 
 sometimes one loads in the wrong region? might have to do with enabling mods shifting region indexes
 	roomnames become indexes on load, but players can enable/disable regions before playing, should reload progression on joinlobby
+	logs here https://discord.com/channels/1094716194180841602/1155268800669831270/1288191148547899524
 
 echo sky animation is too slow needs to converge
 
@@ -116,15 +123,11 @@ cursor disappears on fullscreen nondevtools etc
 
 wish there was a symbol for outskirts
 
-rat can't go through floors on the floor??
-
 scavenger gets stuck climbing close to top, won't go out of swingmode
 
 double jumps out of the water, way too much speed
 
 liz side of pole jump weak
-
-liz holding down didn't go down floor
 
 ds a09, the crawlspace on left, creatures don't snap to crawling in it
 
@@ -132,6 +135,7 @@ ds c03 exist is at water height wont path
 
 creatures not cleared on enter creature pipe
 	game clears enteringshortcut so they "abort entering" most of the time?
+	could also be that npcdestination is null so they just bounce?
 
 echo tentacle bounces bet screens in long rooms
 

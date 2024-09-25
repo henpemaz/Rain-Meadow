@@ -16,6 +16,7 @@ namespace RainMeadow
         {
             _ = Ext_SoundID.RM_Slugcat_Call; //load
 
+            GroundCreatureController.Enable();
             CicadaController.EnableCicada();
             LizardController.EnableLizard();
             ScavengerController.EnableScavenger();
@@ -58,23 +59,6 @@ namespace RainMeadow
             On.ShortcutGraphics.GenerateSprites += ShortcutGraphics_GenerateSprites;
 
             On.World.SpawnGhost += World_SpawnGhost;
-
-            On.StandardPather.FollowPath += StandardPather_FollowPath;
-        }
-
-        private MovementConnection StandardPather_FollowPath(On.StandardPather.orig_FollowPath orig, StandardPather self, WorldCoordinate originPos, bool actuallyFollowingThisPath)
-        {
-            if (CreatureController.creatureControllers.TryGetValue(self.creature.realizedCreature, out var c))
-            {
-                if (originPos == self.destination || (actuallyFollowingThisPath && self.lookingForImpossiblePath))
-                {
-                    if (Input.GetKey(KeyCode.L) && actuallyFollowingThisPath) RainMeadow.Debug("returning override. lookingForImpossiblePath? " + self.lookingForImpossiblePath);
-                    return new MovementConnection(MovementConnection.MovementType.Standard, originPos, self.destination, 1);
-                }
-                return orig(self, originPos, actuallyFollowingThisPath);
-            }
-
-            return orig(self, originPos, actuallyFollowingThisPath);
         }
 
         private void World_SpawnGhost(On.World.orig_SpawnGhost orig, World self)

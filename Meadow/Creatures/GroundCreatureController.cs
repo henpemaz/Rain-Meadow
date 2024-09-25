@@ -7,6 +7,42 @@ namespace RainMeadow
 {
     public abstract class GroundCreatureController : CreatureController
     {
+        public static void Enable()
+        {
+            On.StandardPather.FollowPath += StandardPather_FollowPath;
+            On.Creature.Update += Creature_Update;
+        }
+
+        // hookpoint before physics update
+        private static void Creature_Update(On.Creature.orig_Update orig, Creature self, bool eu)
+        {
+            if (CreatureController.creatureControllers.TryGetValue(self, out var c))
+            {
+                if (c.input[0].y == -1)
+                {
+                    self.GoThroughFloors = true; // most creatures set this based on pathfinding movement type *after* act
+                                                 // but we need to override it
+                }
+            }
+
+            orig(self, eu);
+        }
+
+        private static MovementConnection StandardPather_FollowPath(On.StandardPather.orig_FollowPath orig, StandardPather self, WorldCoordinate originPos, bool actuallyFollowingThisPath)
+        {
+            if (CreatureController.creatureControllers.TryGetValue(self.creature.realizedCreature, out var c))
+            {
+                if (originPos == self.destination || (actuallyFollowingThisPath && self.lookingForImpossiblePath))
+                {
+                    if (Input.GetKey(KeyCode.L) && actuallyFollowingThisPath) RainMeadow.Debug("returning override. lookingForImpossiblePath? " + self.lookingForImpossiblePath);
+                    return new MovementConnection(MovementConnection.MovementType.Standard, originPos, self.destination, 1);
+                }
+                return orig(self, originPos, actuallyFollowingThisPath);
+            }
+
+            return orig(self, originPos, actuallyFollowingThisPath);
+        }
+
         public GroundCreatureController(Creature creature, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(creature, oc, playerNumber, customization)
         {
             this._wallClimber = creature.Template.AccessibilityResistance(AItile.Accessibility.Wall).Allowed;
@@ -391,14 +427,14 @@ namespace RainMeadow
                             magnitude = 1f;
                             currentAiTile = room.aimap.getAItile(toPos);
                         }
-                        else if (TileAccessible(room, furtherOut.Tile + new IntVector2(0, 1)) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, 1), 6) > 0)
+                        else if (TileAccessible(room, furtherOut.Tile + new IntVector2(0, 1)) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, 1), 6) > -1)
                         {
                             if (localTrace) RainMeadow.Debug("further up");
                             toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, 1));
                             magnitude = 1f;
                             currentAiTile = room.aimap.getAItile(toPos);
                         }
-                        else if (TileAccessible(room, furtherOut.Tile + new IntVector2(0, -1)) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, -1), 6) > 0)
+                        else if (TileAccessible(room, furtherOut.Tile + new IntVector2(0, -1)) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, -1), 6) > -1)
                         {
                             if (localTrace) RainMeadow.Debug("further down");
                             toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, -1));
@@ -454,13 +490,13 @@ namespace RainMeadow
             var pathFinder = creature.abstractCreature.abstractAI.RealAI.pathFinder;
             if (pathFinder.PathingCellAtWorldCoordinate(basecoord).reachable 
                 && pathFinder.PathingCellAtWorldCoordinate(toPos).reachable 
-                && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, toPos.Tile, 12) > 0) // found and pathfinder-pathable
+                && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, toPos.Tile, 12) > -1) // found and pathfinder-pathable
             {
                 if (localTrace) RainMeadow.Debug("pathable");
                 return true;
             }
             else
-            {
+            { 
                 // no pathing
                 if (localTrace) RainMeadow.Debug("unpathable");
                 pathFinder.OutOfElement();
