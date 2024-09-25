@@ -42,13 +42,6 @@ namespace RainMeadow
             {
                 uniqueACs.Clear();
             }
-            if (OnlineManager.lobby.bannedUsers.list != null)
-            {
-               foreach (var bannedUser in OnlineManager.lobby.bannedUsers.list)
-                {
-                    RainMeadow.Debug(bannedUser.name);
-                };
-            }
         }
 
         private void InitSpectatorMode()

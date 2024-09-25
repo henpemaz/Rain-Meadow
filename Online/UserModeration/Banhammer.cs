@@ -33,13 +33,13 @@ namespace RainMeadow
         {
             var onlinePlayer = (steamUser.owner as OnlinePlayer);
             onlinePlayer.InvokeRPC(RPCs.KickToLobby);
-            if (OnlineManager.lobby.bannedUsers.list == null)
+            if (OnlineManager.lobby.bannedUsers == null)
             {
-                OnlineManager.lobby.bannedUsers.list = new List<MeadowPlayerId>();
+                OnlineManager.lobby.bannedUsers = new List<string>();
             }
-            if (!OnlineManager.lobby.bannedUsers.list.Contains(onlinePlayer.id))
+            if (!OnlineManager.lobby.bannedUsers.Contains(onlinePlayer.id.name))
             {
-                OnlineManager.lobby.bannedUsers.list.Add(onlinePlayer.id);
+                OnlineManager.lobby.bannedUsers.Add(onlinePlayer.id.name);
             }
             OnlineManager.lobby.OnPlayerDisconnect(onlinePlayer);
 

@@ -15,8 +15,8 @@ namespace RainMeadow
         public Dictionary<OnlinePlayer, OnlineEntity.EntityId> playerAvatars = new(); // should maybe be in GameMode
 
         public string[] mods = RainMeadowModManager.GetActiveMods();
-        public DynamicOrderedPlayerIDs bannedUsers = new DynamicOrderedPlayerIDs();
-
+        public List<string> bannedUsers = new();
+        
         public bool modsChecked;
         public bool bannedUsersChecked;
 
@@ -26,7 +26,6 @@ namespace RainMeadow
         public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password) : base(null)
         {
             OnlineManager.lobby = this; // needed for early entity processing
-
             this.gameMode = OnlineGameMode.FromType(mode, this);
             this.gameModeType = mode;
             if (gameMode == null) throw new Exception($"Invalid game mode {mode}");
@@ -34,6 +33,7 @@ namespace RainMeadow
             if (owner == null) throw new Exception("No lobby owner");
             isNeeded = true;
             NewOwner(owner);
+
             if (isOwner)
             {
                 this.password = password;
@@ -42,6 +42,9 @@ namespace RainMeadow
             {
                 RequestLobby(password);
             }
+
+
+            
         }
 
         public void RequestLobby(string? key)
@@ -173,7 +176,7 @@ namespace RainMeadow
             [OnlineField]
             public string[] mods;
             [OnlineField(nullable = true)]
-            public Generics.DynamicOrderedPlayerIDs bannedUsers;
+            public List<string> bannedUsers;
             [OnlineField(nullable = true)]
             public Generics.DynamicOrderedPlayerIDs players;
             [OnlineField(nullable = true)]
@@ -185,9 +188,7 @@ namespace RainMeadow
                 players = new(lobby.participants.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Select(p => p.inLobbyId).ToList());
                 mods = lobby.mods;
-                bannedUsers = new(lobby.participants.Select(p => p.id).ToList());
-
-                // TODO: Clear the list, test booting client out at lobby join
+                bannedUsers = lobby.bannedUsers;
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -211,23 +212,21 @@ namespace RainMeadow
 
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
-
+                // Need to get the participants before we check
+                RainMeadow.Debug(this.bannedUsers);
                 for (int i = 0; i < players.list.Count; i++)
                 {
-                    if (!lobby.bannedUsersChecked)
+                    if (this.bannedUsers != null && this.bannedUsers.Contains(players.list[i].name) && players.list[i] == lobby.participants[i].id && players.list[i] != OnlineManager.lobby.owner.id)
                     {
-                        if (bannedUsers.list.Contains(players.list[i]) && players.list[i] == lobby.participants[i].id && players.list[i] != OnlineManager.lobby.owner.id)
-                        {
 
-                            lobby.OnPlayerDisconnect(lobby.participants[i]);
-                            BanHammer.ShowBan(RWCustom.Custom.rainWorld.processManager);
-                            lobby.bannedUsersChecked = true;
-                            return;
-
-                        }
+                        lobby.OnPlayerDisconnect(lobby.participants[i]);
+                        BanHammer.ShowBan(RWCustom.Custom.rainWorld.processManager);
                         lobby.bannedUsersChecked = true;
+                        return;
 
                     }
+                    lobby.bannedUsersChecked = true;
+
                 }
 
                 if (!lobby.modsChecked)
