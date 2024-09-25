@@ -183,7 +183,6 @@ namespace RainMeadow
                     }
                 }
             }
-
             // Update button states
             bool hasAnyAcInGateRoom = false;
 

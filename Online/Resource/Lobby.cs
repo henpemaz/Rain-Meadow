@@ -16,7 +16,7 @@ namespace RainMeadow
 
         public string[] mods = RainMeadowModManager.GetActiveMods();
         public List<string> bannedUsers = new();
-        
+
         public bool modsChecked;
         public bool bannedUsersChecked;
 
@@ -44,7 +44,7 @@ namespace RainMeadow
             }
 
 
-            
+
         }
 
         public void RequestLobby(string? key)
@@ -213,21 +213,19 @@ namespace RainMeadow
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
                 // Need to get the participants before we check
-                RainMeadow.Debug(this.bannedUsers);
-                for (int i = 0; i < players.list.Count; i++)
+
+                if (this.bannedUsers != null && this.bannedUsers.Contains(OnlineManager.mePlayer.id.name))
                 {
-                    if (this.bannedUsers != null && this.bannedUsers.Contains(players.list[i].name) && players.list[i] == lobby.participants[i].id && players.list[i] != OnlineManager.lobby.owner.id)
-                    {
-
-                        lobby.OnPlayerDisconnect(lobby.participants[i]);
-                        BanHammer.ShowBan(RWCustom.Custom.rainWorld.processManager);
-                        lobby.bannedUsersChecked = true;
-                        return;
-
-                    }
+                    lobby.OnPlayerDisconnect(lobby.PlayerFromMeadowID(OnlineManager.mePlayer.id));
+                    RWCustom.Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+                    BanHammer.ShowBan(RWCustom.Custom.rainWorld.processManager);
                     lobby.bannedUsersChecked = true;
+                    return;
 
                 }
+                lobby.bannedUsersChecked = true;
+
+
 
                 if (!lobby.modsChecked)
                 {
@@ -248,6 +246,11 @@ namespace RainMeadow
         {
             if (id == 0) return null;
             return OnlineManager.players.FirstOrDefault(p => p.inLobbyId == id);
+        }
+
+        public OnlinePlayer PlayerFromMeadowID(MeadowPlayerId id)
+        {
+            return OnlineManager.players.FirstOrDefault(p => p.id == id);
         }
 
         protected override void NewParticipantImpl(OnlinePlayer player)
