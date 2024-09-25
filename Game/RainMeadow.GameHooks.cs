@@ -39,6 +39,7 @@ namespace RainMeadow
             On.RoomSpecificScript.AddRoomSpecificScript += RoomSpecificScript_AddRoomSpecificScript;
 
             IL.RoomSpecificScript.SS_E08GradientGravity.Update += RoomSpecificScript_SS_E08GradientGravity_Update;
+            On.AntiGravity.BrokenAntiGravity.Update += AntiGravity_BrokenAntiGravity_Update;
 
             On.FliesWorldAI.AddFlyToSwarmRoom += FliesWorldAI_AddFlyToSwarmRoom;
 
@@ -256,6 +257,18 @@ namespace RainMeadow
             {
                 Logger.LogError(e);
             }
+        }
+
+        private void AntiGravity_BrokenAntiGravity_Update(On.AntiGravity.BrokenAntiGravity.orig_Update orig, AntiGravity.BrokenAntiGravity self)
+        {
+            if (OnlineManager.lobby != null && self.game.world.GetResource() is WorldSession ws && !ws.isOwner)
+            {
+                if (ws.state != null)
+                {
+                    self.counter = (self.on == (ws.state as WorldSession.WorldState).rainCycleData.antiGravity) ? self.cycleMin * 40 : 0;
+                }
+            }
+            orig(self);
         }
 
         private void StoryGameSession_ctor(On.StoryGameSession.orig_ctor orig, StoryGameSession self, SlugcatStats.Name saveStateNumber, RainWorldGame game)

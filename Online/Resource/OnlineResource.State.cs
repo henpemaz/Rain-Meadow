@@ -10,6 +10,8 @@ namespace RainMeadow
     {
         protected ResourceState latestState;
 
+        public ResourceState? state { get => isAvailable ? latestState : null; }
+
         public ResourceState GetState(uint ts)
         {
             if (!isOwner) { throw new InvalidProgrammerException("not owner"); }
