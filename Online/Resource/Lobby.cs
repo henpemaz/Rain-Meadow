@@ -215,7 +215,6 @@ namespace RainMeadow
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
                 // Need to get the participants before we check
-                RainMeadow.Debug(this.bannedUsers.list);
                 if (this.bannedUsers != null && this.bannedUsers.list.Contains(OnlineManager.mePlayer.id))
                 {
                     lobby.OnPlayerDisconnect(lobby.PlayerFromMeadowID(OnlineManager.mePlayer.id));
