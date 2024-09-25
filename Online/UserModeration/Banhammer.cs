@@ -14,6 +14,7 @@ namespace RainMeadow
             Action confirmProceed = () =>
             {
                 manager.dialog = null;
+                OnlineManager.LeaveLobby(); // kill anything leftover
             };
 
             DialogNotify informBadUser = new DialogNotify("You were removed from the previous online game", manager, confirmProceed);
