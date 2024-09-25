@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Drawing;
-using HUD;
 using Menu;
-using UnityEngine;
+
+using System.Collections.Generic;
+
 
 namespace RainMeadow
 {
@@ -18,6 +18,12 @@ namespace RainMeadow
 
             DialogNotify informBadUser = new DialogNotify("You were removed from the previous online game", manager, confirmProceed);
 
+            if (manager.dialog != null)
+            {
+
+                manager.dialog = null;
+            }
+
 
             manager.ShowDialog(informBadUser);
 
@@ -27,10 +33,17 @@ namespace RainMeadow
         {
             var onlinePlayer = (steamUser.owner as OnlinePlayer);
             onlinePlayer.InvokeRPC(RPCs.KickToLobby);
-            OnlineManager.lobby.bannedUsers.Add(onlinePlayer.id.name); //eh
+            if (OnlineManager.lobby.bannedUsers.list == null)
+            {
+                OnlineManager.lobby.bannedUsers.list = new List<MeadowPlayerId>();
+            }
+            if (!OnlineManager.lobby.bannedUsers.list.Contains(onlinePlayer.id))
+            {
+                OnlineManager.lobby.bannedUsers.list.Add(onlinePlayer.id);
+            }
+            OnlineManager.lobby.OnPlayerDisconnect(onlinePlayer);
 
         }
-
 
     }
 }
