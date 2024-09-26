@@ -377,5 +377,14 @@ namespace RainMeadow
             bomb.bodyChunks[0].pos = pos;
             bomb.Explode(null);
         }
+
+        [RPCMethod]
+        public static void SingularityBombExplode(OnlinePhysicalObject opo, Vector2 pos)
+        {
+            if (opo?.apo.realizedObject is not MoreSlugcats.SingularityBomb bomb) return;
+
+            bomb.bodyChunks[0].pos = pos;
+            bomb.Explode();
+        }
     }
 }

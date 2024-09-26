@@ -14,6 +14,7 @@ namespace RainMeadow
             On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
             On.ScavengerBomb.Explode += ScavengerBomb_Explode;
+            On.MoreSlugcats.SingularityBomb.Explode += SingularityBomb_Explode;
 
             On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor;
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
@@ -35,6 +36,24 @@ namespace RainMeadow
                 }
             }
             orig(self, hitChunk);
+        }
+
+        private void SingularityBomb_Explode(On.MoreSlugcats.SingularityBomb.orig_Explode orig, MoreSlugcats.SingularityBomb self)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+                if (!room.isOwner)
+                {
+                    if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var opo))
+                    {
+                        Error($"Entity {self} doesn't exist in online space!");
+                        return;
+                    }
+                    room.owner.InvokeOnceRPC(OnlinePhysicalObject.SingularityBombExplode, opo, self.bodyChunks[0].pos);
+                }
+            }
+            orig(self);
         }
 
         private static void Creature_SwitchGrasps(On.Creature.orig_SwitchGrasps orig, Creature self, int fromGrasp, int toGrasp)
