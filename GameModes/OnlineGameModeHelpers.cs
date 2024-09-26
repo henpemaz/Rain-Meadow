@@ -89,7 +89,7 @@ namespace RainMeadow
             PlacedObject.Type.FirecrackerPlant,
             PlacedObject.Type.VultureGrub,
             PlacedObject.Type.DeadVultureGrub,
-            //PlacedObject.Type.ScavengerTreasury,  //Spear, Explosive spear, Scav bomb, Pearl, & Laterns
+            PlacedObject.Type.ScavengerTreasury,  //Spear, Explosive spear, Scav bomb, Pearl, & Laterns
             PlacedObject.Type.MultiplayerItem,    //ARENA_SPAWNS for Rock, Spear, ExplosiveSpear, Bomb, SporePlant data
             //PlacedObject.Type.SporePlant,         //abstractConsumable HARD. Need to sync bee's and attached Bee's still
             PlacedObject.Type.ReliableSpear,        //Spears have MSC elements
