@@ -73,7 +73,7 @@ namespace RainMeadow
                         var kickPlayer = new SimplerSymbolButton(this, this.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", new Vector2(1300, 515) - i * new UnityEngine.Vector2(0, 38));
                         kickPlayer.OnClick += (_) =>
                         {
-                            BanHammer.BanUser(onlinePlayer);
+                            BanHammer.BanUser(onlinePlayer.owner as OnlinePlayer);
                         };
                         this.pages[0].subObjects.Add(kickPlayer);
                     }
@@ -175,7 +175,7 @@ namespace RainMeadow
                         var kickPlayer = new SimplerSymbolButton(this, this.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", new Vector2(1300, 515) - i * new UnityEngine.Vector2(0, 38));
                         kickPlayer.OnClick += (_) =>
                         {
-                            BanHammer.BanUser(onlinePlayer);
+                            BanHammer.BanUser(onlinePlayer.owner as OnlinePlayer);
 
                         };
 
