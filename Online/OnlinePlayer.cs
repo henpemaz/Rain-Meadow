@@ -162,6 +162,21 @@ namespace RainMeadow
             return (RPCEvent)this.QueueEvent(RPCManager.BuildRPC(del, args));
         }
 
+        internal RPCEvent InvokeOnceRPC(Delegate del, params object[] args)
+        {
+            foreach (var e in OutgoingEvents)
+                if (e is RPCEvent rpc && rpc.IsIdentical(del, args))
+                    return rpc;
+
+            if (isMe)
+            {
+                del.Method.Invoke(del.Target, args);
+                return null;
+            }
+
+            return (RPCEvent)this.QueueEvent(RPCManager.BuildRPC(del, args));
+        }
+
         internal void Update()
         {
             // Update snapshot cycle for debug overlay and reset for snapshot frame
