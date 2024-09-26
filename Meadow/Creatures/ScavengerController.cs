@@ -275,7 +275,7 @@ namespace RainMeadow
             // this actually changes their colors lmao
             //scavenger.abstractCreature.personality.energy = 1f; // no being lazy
 
-            jumpFactor = 1.33f;
+            jumpFactor = 1.15f;
         }
 
         private bool forceMoving;
@@ -312,10 +312,11 @@ namespace RainMeadow
         {
             scavenger.animation = null;
             scavenger.movMode = Scavenger.MovementMode.Run;
-            scavenger.footingCounter = 0;
+            scavenger.moveModeChangeCounter = -5;
+            scavenger.footingCounter = -5;
             scavenger.swingPos = null;
-            forceNoFooting = 10;
-            scavenger.movMode = Scavenger.MovementMode.Run;
+            scavenger.swingingForbidden = 5;
+            forceNoFooting = 5;
         }
 
         private static void Scavenger_Act(On.Scavenger.orig_Act orig, Scavenger self)
@@ -363,6 +364,22 @@ namespace RainMeadow
             {
                 forceNoFooting--;
                 scavenger.footingCounter = 0;
+                scavenger.swingPos = null;
+                scavenger.nextSwingPos = null;
+                scavenger.footingCounter = 0;
+                scavenger.drop = true;
+                scavenger.commitToMoveCounter = forceNoFooting;
+            }
+
+            if (scavenger.movMode == Scavenger.MovementMode.Climb && input[0].y > 0)
+            {
+                scavenger.swingingForbidden = Mathf.Max(5, scavenger.swingingForbidden);
+                scavenger.stuckCounter = Mathf.Max(5, scavenger.stuckCounter);
+            }
+            // haha monke
+            if (scavenger.movMode == Scavenger.MovementMode.Climb && scavenger.swingPos != null && Vector2.Dot(scavenger.mainBodyChunk.vel, inputDir.normalized) < runSpeed)
+            {
+                scavenger.mainBodyChunk.vel += inputDir * 0.3f;
             }
 
             if (Input.GetKey(KeyCode.L))
@@ -440,10 +457,6 @@ namespace RainMeadow
             scavenger.AI.behavior = ScavengerAI.Behavior.Travel;
             var speed = HasFooting ? 1.0f : 0.4f;
             scavenger.AI.runSpeedGoal = Custom.LerpAndTick(scavenger.AI.runSpeedGoal, speed * Mathf.Pow(magnitude, 2f), 0.2f, 0.05f);
-            if(scavenger.movMode == Scavenger.MovementMode.Climb && input[0].y > 0)
-            {
-                scavenger.stuckCounter = Mathf.Max(12, scavenger.stuckCounter);
-            }
             forceMoving = true;
         }
 
@@ -476,14 +489,16 @@ namespace RainMeadow
 
         protected override void GripPole(Room.Tile tile0)
         {
-            if(scavenger.swingPos == null && scavenger.nextSwingPos == null && creature.mainBodyChunk.vel.y < 0)
+            if(scavenger.swingPos == null && scavenger.movMode != Scavenger.MovementMode.Climb && forceNoFooting < 1)
             {
                 scavenger.swingPos = creature.room.MiddleOfTile(tile0.X, tile0.Y);
-                scavenger.swingRadius = 10f;
-                scavenger.swingClimbCounter = 10;
+                scavenger.swingRadius = (scavenger.mainBodyChunk.pos - scavenger.swingPos.Value).magnitude;
+                scavenger.swingClimbCounter = 15;
+                scavenger.occupyTile = new IntVector2(tile0.X, tile0.Y);
                 scavenger.movMode = Scavenger.MovementMode.Climb;
                 scavenger.drop = false;
-                creature.mainBodyChunk.vel.y = 0f;
+                creature.mainBodyChunk.vel.y *= 0.3f;
+                creature.mainBodyChunk.vel.x *= 0.3f;
             }
         }
 

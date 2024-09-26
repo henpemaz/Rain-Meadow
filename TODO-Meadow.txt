@@ -42,10 +42,6 @@ blues have trouble sticking to the ceiling
 blues have trouble climbing/pathing ledges
 
 scav todo
-- can't let go of pole
-- sometimes goes swing at poletip, can't do poletip jump until reset
-- jump conditions seem ever so slightly off, should maybe check occupytile?
-	- swingpos too
 - leap has no animation
 - leap sometimes goes up/back
 - swimming happens in bursts? like a counter fills?
@@ -164,6 +160,7 @@ General: Tint seems to be having sync issues, people randomly change between the
 
 QoL: Some sort of display of how the colors should look in-game? The tint system seems to be confusing at first. Nothing too fancy, just a creature symbol that has the main color of the skin, and then applying tint would also apply it to the symbol to show a rough estimate on how it would look!
 
+toggle collision as a setting
 
 
 

@@ -78,7 +78,7 @@ namespace RainMeadow
 
         private readonly bool _swimWithPathing;
 
-        protected float runSpeed = 4.5f;
+        protected float runSpeed = 4.2f;
 
         public Room.Tile GetTile(int bChunk)
         {
@@ -338,20 +338,20 @@ namespace RainMeadow
                 return true;
             }
 
-            // problematic when climbing
-            if (this.input[0].y > 0)
+            // grip pole if no footing
+            if (this.input[0].y > 0 && !HasFooting)
             {
-                var tile0 = creature.room.GetTile(chunks[0].pos);
-                var tile1 = creature.room.GetTile(chunks[1].pos);
-                if (tile0.AnyBeam && !tile0.DeepWater && !HasFooting)
+                for (var i = 0; i < nc; i++)
                 {
-                    RainMeadow.Debug("grip!");
-                    GripPole(tile0);
-                }
-                else if (tile1.AnyBeam && !tile1.DeepWater && !HasFooting)
-                {
-                    RainMeadow.Debug("grip!");
-                    GripPole(tile1);
+                    for (int j = 0; j < 5; j++)
+                    {
+                        var tile = creature.room.GetTile(chunks[i].pos + Custom.fourDirectionsAndZero[j].ToVector2() * chunks[i].rad);
+                        if (tile.AnyBeam && !tile.DeepWater)
+                        {
+                            RainMeadow.Debug("grip!");
+                            GripPole(tile);
+                        }
+                    }
                 }
             }
 
@@ -640,7 +640,7 @@ namespace RainMeadow
                 var mainchunk = creature.mainBodyChunk;
                 if (inputDir.x != 0 && (Mathf.Abs(mainchunk.vel.x) < runSpeed || Mathf.Sign(mainchunk.vel.x) != Mathf.Sign(inputDir.x)))
                 {
-                    mainchunk.vel.x += 0.75f * inputDir.x * mcd.moveSpeed;
+                    mainchunk.vel.x += 0.5f * inputDir.x * mcd.moveSpeed;
                 }
             }
 
