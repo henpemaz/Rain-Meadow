@@ -222,7 +222,7 @@ namespace RainMeadow
                 RainMeadow.Debug("normal jump");
                 OnJump();
                 this.jumpBoost = 6;
-                cs[0].vel.y = 4f * jumpFactor;
+                cs[0].vel.y = 4.4f * jumpFactor;
                 for (int i = 1; i < cc; i++)
                 {
                     cs[i].vel.y = 4.5f * jumpFactor;

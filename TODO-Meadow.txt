@@ -42,8 +42,6 @@ blues have trouble sticking to the ceiling
 blues have trouble climbing/pathing ledges
 
 scav todo
-- leap has no animation
-- leap sometimes goes up/back
 - swimming happens in bursts? like a counter fills?
 - hands look silly when walking on falsefloor
 - hands bad when swimming

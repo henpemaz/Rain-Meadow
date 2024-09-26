@@ -18,24 +18,7 @@ namespace RainMeadow
 
             // color
             On.ScavengerGraphics.ctor += ScavengerGraphics_ctor;
-            On.Scavenger.FollowPath += Scavenger_FollowPath;
         }
-
-        private static MovementConnection Scavenger_FollowPath(On.Scavenger.orig_FollowPath orig, Scavenger self, WorldCoordinate origin, bool actuallyFollowingThisPath)
-        {
-            if (creatureControllers.TryGetValue(self, out var c) && c is ScavengerController s)
-            {
-                var pathFinder = self.AI.pathFinder;
-                if (origin == pathFinder.destination || (actuallyFollowingThisPath && pathFinder.lookingForImpossiblePath) || self.movMode == Scavenger.MovementMode.Swim)
-                {
-                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("returning override");
-                    return new MovementConnection(MovementConnection.MovementType.Standard, origin, pathFinder.destination, 1);
-                }
-            }
-
-            return orig(self, origin, actuallyFollowingThisPath);
-        }
-
         
         private static void Scavenger_Act1(ILContext il)
         {
@@ -288,16 +271,15 @@ namespace RainMeadow
             orig(self, ow);
             if (RainMeadow.creatureCustomizations.TryGetValue(ow as Creature, out var c))
             {
-                var color = self.bellyColor.rgb;
+                var color = self.bodyColor.rgb;
                 c.ModifyBodyColor(ref color);
-                self.bellyColor = color.ToHSL();
+                self.bodyColor = color.ToHSL();
                 color = self.headColor.rgb;
                 c.ModifyBodyColor(ref color);
                 self.headColor = color.ToHSL();
                 color = self.bellyColor.rgb;
                 c.ModifyBodyColor(ref color);
                 self.bellyColor = color.ToHSL();
-                // blackcolors 
 
                 color = self.eyeColor.rgb;
                 c.ModifyEyeColor(ref color);
@@ -313,9 +295,6 @@ namespace RainMeadow
             scavenger.animation = null;
             scavenger.movMode = Scavenger.MovementMode.Run;
             scavenger.moveModeChangeCounter = -5;
-            scavenger.footingCounter = -5;
-            scavenger.swingPos = null;
-            scavenger.swingingForbidden = 5;
             forceNoFooting = 5;
         }
 
@@ -366,9 +345,19 @@ namespace RainMeadow
                 scavenger.footingCounter = 0;
                 scavenger.swingPos = null;
                 scavenger.nextSwingPos = null;
+                scavenger.swingingForbidden = forceNoFooting;
                 scavenger.footingCounter = 0;
                 scavenger.drop = true;
                 scavenger.commitToMoveCounter = forceNoFooting;
+            }
+
+            if (superLaunchJump > 5)
+            {
+                scavenger.flip = Mathf.Clamp(scavenger.flip + 0.07f * Mathf.Sign(scavenger.flip), -1, 1);
+                if (superLaunchJump > 10) scavenger.mainBodyChunk.vel *= 0.8f;
+                float amount = 1.5f * Custom.SCurve(Mathf.InverseLerp(-5, 20, superLaunchJump), 0.25f);
+                this.scavenger.WeightedPush(2, 0, new Vector2(0.77f * scavenger.flip, -0.77f), amount);
+                this.scavenger.WeightedPush(0, 1, new Vector2(-0.5f * scavenger.flip, 0.88f), amount);
             }
 
             if (scavenger.movMode == Scavenger.MovementMode.Climb && input[0].y > 0)
