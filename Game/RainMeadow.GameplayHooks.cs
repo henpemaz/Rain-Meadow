@@ -14,50 +14,28 @@ namespace RainMeadow
             On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
             On.ScavengerBomb.Explode += ScavengerBomb_Explode;
-            
 
             On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor;
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
         }
 
-
-
         private void ScavengerBomb_Explode(On.ScavengerBomb.orig_Explode orig, ScavengerBomb self, BodyChunk hitChunk)
         {
             if (OnlineManager.lobby != null)
             {
-
-                if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
-                {
-                    Error("Error getting room for scav explosion!");
-
-                }
+                RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
                 if (!room.isOwner)
                 {
-
-
-                    if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var scavBombAbstract))
-
+                    if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var opo))
                     {
-                        Error("Error getting target of explosion object hit");
-
+                        Error($"Entity {self} doesn't exist in online space!");
+                        return;
                     }
-
-
-                    if (scavBombAbstract != null)
-                    {
-                        room.owner.InvokeOnceRPC(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract, self.bodyChunks[0].pos);
-                    }
+                    room.owner.InvokeOnceRPC(OnlinePhysicalObject.ScavengerBombExplode, opo, self.bodyChunks[0].pos);
                 }
-
-                orig(self, hitChunk);
             }
-            else
-            {
-                orig(self, hitChunk);
-            }
-        
-    }
+            orig(self, hitChunk);
+        }
 
         private static void Creature_SwitchGrasps(On.Creature.orig_SwitchGrasps orig, Creature self, int fromGrasp, int toGrasp)
         {

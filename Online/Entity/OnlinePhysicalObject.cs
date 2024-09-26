@@ -369,15 +369,13 @@ namespace RainMeadow
             objectHit?.apo.realizedObject?.HitByExplosion(hitfac, null, 0);
         }
 
-
         [RPCMethod]
-        public static void ScavengerBombExplode(OnlinePhysicalObject scavBomb, Vector2 pos)
+        public static void ScavengerBombExplode(OnlinePhysicalObject opo, Vector2 pos)
         {
-            if (scavBomb == null) return;
+            if (opo?.apo.realizedObject is not ScavengerBomb bomb) return;
 
-            (scavBomb.apo.realizedObject as ScavengerBomb).bodyChunks[0].pos = pos;
-            (scavBomb.apo.realizedObject as ScavengerBomb)?.Explode(null);
-
+            bomb.bodyChunks[0].pos = pos;
+            bomb.Explode(null);
         }
     }
 }
