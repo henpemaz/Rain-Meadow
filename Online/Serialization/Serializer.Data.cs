@@ -1045,11 +1045,18 @@ namespace RainMeadow
 #endif
             if (IsWriting)
             {
-                writer.Write((byte)data.Count);
-                foreach (var kvp in data)
+                if (data is null)
                 {
-                    writer.Write(kvp.Key);
-                    writer.Write(kvp.Value);
+                    writer.Write((byte)0);
+                }
+                else
+                {
+                    writer.Write((byte)data.Count);
+                    foreach (var kvp in data)
+                    {
+                        writer.Write(kvp.Key);
+                        writer.Write(kvp.Value);
+                    }
                 }
             }
             if (IsReading)
@@ -1076,11 +1083,18 @@ namespace RainMeadow
 #endif
             if (IsWriting)
             {
-                writer.Write((byte)data.Count);
-                foreach (var kvp in data)
+                if (data is null)
                 {
-                    writer.Write(kvp.Key);
-                    writer.Write(kvp.Value);
+                    writer.Write((byte)0);
+                }
+                else
+                {
+                    writer.Write((byte)data.Count);
+                    foreach (var kvp in data)
+                    {
+                        writer.Write(kvp.Key);
+                        writer.Write(kvp.Value);
+                    }
                 }
             }
             if (IsReading)
@@ -1107,11 +1121,18 @@ namespace RainMeadow
 #endif
             if (IsWriting)
             {
-                writer.Write((byte)data.Count);
-                foreach (var kvp in data)
+                if (data is null)
                 {
-                    writer.Write(kvp.Key);
-                    writer.Write(kvp.Value);
+                    writer.Write((byte)0);
+                }
+                else
+                {
+                    writer.Write((byte)data.Count);
+                    foreach (var kvp in data)
+                    {
+                        writer.Write(kvp.Key);
+                        writer.Write(kvp.Value);
+                    }
                 }
             }
             if (IsReading)
