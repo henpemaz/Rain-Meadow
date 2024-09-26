@@ -88,6 +88,13 @@ namespace RainMeadow
             {
                 if (resource.world != null) {
                     RainCycle rainCycle = resource.world.rainCycle;
+                    if (rainCycle.brokenAntiGrav == null)
+                    {
+                        rainCycle.brokenAntiGrav = new AntiGravity.BrokenAntiGravity(
+                            resource.world.game.setupValues.gravityFlickerCycleMin,
+                            resource.world.game.setupValues.gravityFlickerCycleMax,
+                            resource.world.game);
+                    }
                     rainCycleData = new RainCycleData(rainCycle);
                     realizedRooms = new(resource.world.abstractRooms.Where(s => s.firstTimeRealized == false).Select(r => (ushort)r.index).ToList());
                 }
