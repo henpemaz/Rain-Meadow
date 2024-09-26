@@ -265,7 +265,8 @@ namespace RainMeadow
                     return;
                 }
 
-               for (int i = 1; i < game.usernameButtons.Length; i++) {
+                for (int i = 1; i < game.usernameButtons.Length; i++)
+                {
 
                     if (game.usernameButtons[i].menuLabel.text == userIsReady)
                     {
@@ -392,6 +393,27 @@ namespace RainMeadow
             var shortCutVessel = new ShortcutHandler.ShortCutVessel(pos, creature, roomPos, wait);
             game.GetArenaGameSession.exitManager.playersInDens.Add(shortCutVessel);
 
+        }
+
+
+        [RPCMethod]
+        public static void KickToLobby()
+        {
+            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            try
+            {
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+                game.ExitToMenu();
+            } catch
+            {
+                RWCustom.Custom.rainWorld.processManager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
+                
+
+            }
+            BanHammer.ShowBan(RWCustom.Custom.rainWorld.processManager);
         }
 
     }
