@@ -57,13 +57,13 @@ public partial class RainMeadow
             {
                 if (!OnlineManager.lobby.isOwner)
                 {
-                    OnlineManager.lobby.owner.InvokeRPC(RPCs.ReinforceKarma);
+                    OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.ReinforceKarma);
                 }
                 foreach (OnlinePlayer player in OnlineManager.players)
                 {
                     if (!player.isMe)
                     {
-                        player.InvokeRPC(RPCs.PlayReinforceKarmaAnimation);
+                        player.InvokeOnceRPC(RPCs.PlayReinforceKarmaAnimation);
                     }
                 }
             }
@@ -196,7 +196,10 @@ public partial class RainMeadow
         orig(self, grasp, eu);
         if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
         {
-            OnlineManager.lobby.owner.InvokeRPC(RPCs.AddMushroomCounter);
+            if (!OnlinePhysicalObject.map.TryGetValue((grasp.grabber as Player).abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+            if (!onlineEntity.isMine) return;
+
+            OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.AddMushroomCounter);
         }
     }
 

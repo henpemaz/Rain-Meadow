@@ -172,10 +172,7 @@ namespace RainMeadow
                 if (OnlineManager.lobby == null) return;
                 if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
                 {
-                    if (!OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(ConsumableRPCs.enableTheGlow)))
-                    {
-                        OnlineManager.lobby.owner.InvokeRPC(ConsumableRPCs.enableTheGlow);
-                    }
+                    OnlineManager.lobby.owner.InvokeOnceRPC(ConsumableRPCs.enableTheGlow);
                 }
             }
 
@@ -221,10 +218,7 @@ namespace RainMeadow
                         {
                             if (ac.Room == self.room.abstractRoom)
                             {
-                                if (!opo.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(ConsumableRPCs.explodePuffBall, onlineSporePlant, self.bodyChunks[0].pos)))
-                                {
-                                    opo.owner.InvokeRPC(ConsumableRPCs.explodePuffBall, onlineRoom, self.bodyChunks[0].pos, self.sporeColor, self.color);
-                                }
+                                opo.owner.InvokeOnceRPC(ConsumableRPCs.explodePuffBall, onlineRoom, self.bodyChunks[0].pos, self.sporeColor, self.color);
                             }
                         }
                     }
@@ -446,14 +440,7 @@ namespace RainMeadow
         {
             if (isStoryMode(out var gameMode))
             {
-                if (!OnlineManager.lobby.isOwner)
-                {
-                    OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToGhostScreen, ghostID.value);
-                }
-                else
-                {
-                    RPCs.MovePlayersToGhostScreen(ghostID.value);
-                }
+                OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.MovePlayersToGhostScreen, ghostID.value);
             }
             else
             {
@@ -479,15 +466,7 @@ namespace RainMeadow
         {
             if (isStoryMode(out var gameMode))
             {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    RPCs.MovePlayersToWinScreen(malnourished, gameMode.storyClientSettings.myLastDenPos);
-                }
-                else if (!OnlineManager.lobby.owner.OutgoingEvents.Any(e => e is RPCEvent rpc
-                    && rpc.IsIdentical(RPCs.MovePlayersToWinScreen, malnourished, gameMode.storyClientSettings.myLastDenPos)))
-                {
-                    OnlineManager.lobby.owner.InvokeRPC(RPCs.MovePlayersToWinScreen, malnourished, gameMode.storyClientSettings.myLastDenPos);
-                }
+                OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.MovePlayersToWinScreen, malnourished, gameMode.storyClientSettings.myLastDenPos);
             }
             else
             {
