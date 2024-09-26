@@ -40,6 +40,8 @@ namespace RainMeadow
 
         public static List<string> nonCampaignSlugcats = new List<string> { "Night", "Inv", "Slugpup", "MeadowOnline", "MeadowOnlineRemote" };
 
+        public static List<string> nonGameplayRemixSettings = new List<string> { "cfgSpeedrunTimer", "cfgHideRainMeterNoThreat", "cfgLoadingScreenTips", "cfgExtraTutorials", "cfgClearerDeathGradients", "cfgShowUnderwaterShortcuts", "cfgBreathTimeVisualIndicator", "cfgCreatureSense", "cfgTickTock", "cfgFastMapReveal", "cfgThreatMusicPulse", "cfgExtraLizardSounds", "cfgQuieterGates", "cfgDisableScreenShake", "cfgHunterBatflyAutograb", "cfgNoMoreTinnitus" };
+
         private SlugcatStats.Name customSelectedSlugcat = SlugcatStats.Name.White;
 
         public override MenuScene.SceneID GetScene => null;
@@ -515,9 +517,9 @@ namespace RainMeadow
                 FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
                 var sortedFields = fields.OrderBy(f => f.Name);
 
-
                 foreach (FieldInfo field in sortedFields)
                 {
+                    if (nonGameplayRemixSettings.Contains(field.Name)) continue;
                     var reflectedValue = field.GetValue(null);
                     if (reflectedValue is Configurable<bool> boolOption)
                     {
