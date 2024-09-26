@@ -14,7 +14,10 @@ namespace RainMeadow
             Action confirmProceed = () =>
             {
                 manager.dialog = null;
-                OnlineManager.LeaveLobby(); // kill anything leftover
+                if (OnlineManager.lobby != null)
+                {
+                    OnlineManager.LeaveLobby(); // kill anything leftover
+                }
             };
 
             DialogNotify informBadUser = new DialogNotify("You were removed from the previous online game", manager, confirmProceed);
@@ -30,19 +33,18 @@ namespace RainMeadow
 
         }
 
-        public static void BanUser(OnlinePhysicalObject steamUser)
+        public static void BanUser(OnlinePlayer steamUser)
         {
-            var onlinePlayer = (steamUser.owner as OnlinePlayer);
-            onlinePlayer.InvokeRPC(RPCs.KickToLobby);
+            steamUser.InvokeRPC(RPCs.KickToLobby);
             if (OnlineManager.lobby.bannedUsers == null)
             {
                 OnlineManager.lobby.bannedUsers = new();
             }
-            if (!OnlineManager.lobby.bannedUsers.list.Contains(onlinePlayer.id))
+            if (!OnlineManager.lobby.bannedUsers.list.Contains(steamUser.id))
             {
-                OnlineManager.lobby.bannedUsers.list.Add(onlinePlayer.id);
+                OnlineManager.lobby.bannedUsers.list.Add(steamUser.id);
             }
-            OnlineManager.lobby.OnPlayerDisconnect(onlinePlayer);
+            OnlineManager.lobby.OnPlayerDisconnect(steamUser);
 
         }
 

@@ -18,7 +18,7 @@ namespace RainMeadow
         public DynamicOrderedPlayerIDs bannedUsers = new();
 
         public bool modsChecked;
-        public bool bannedUsersChecked;
+        public bool bannedUsersChecked = false;
 
         public string? password;
         public bool hasPassword => password != null;
@@ -27,6 +27,7 @@ namespace RainMeadow
         {
             OnlineManager.lobby = this; // needed for early entity processing
             bannedUsers.list = new List<MeadowPlayerId>();
+
             this.gameMode = OnlineGameMode.FromType(mode, this);
             this.gameModeType = mode;
             if (gameMode == null) throw new Exception($"Invalid game mode {mode}");
@@ -190,7 +191,7 @@ namespace RainMeadow
                 inLobbyIds = new(lobby.participants.Select(p => p.inLobbyId).ToList());
                 mods = lobby.mods;
                 bannedUsers = lobby.bannedUsers;
-              
+
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -214,17 +215,24 @@ namespace RainMeadow
 
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
-                // Need to get the participants before we check
-                if (this.bannedUsers != null && this.bannedUsers.list.Contains(OnlineManager.mePlayer.id))
+                if (lobby.bannedUsersChecked == false)
                 {
-                    lobby.OnPlayerDisconnect(lobby.PlayerFromMeadowID(OnlineManager.mePlayer.id));
-                    RWCustom.Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
-                    BanHammer.ShowBan(RWCustom.Custom.rainWorld.processManager);
-                    lobby.bannedUsersChecked = true;
-                    return;
+                    // Need to get the participants before we check
+                    if (this.bannedUsers != null && this.bannedUsers.list.Contains(OnlineManager.mePlayer.id))
+                    {
 
+                        BanHammer.BanUser(OnlineManager.mePlayer);
+                        if (lobby.participants.Contains(OnlineManager.mePlayer))
+                        {
+                            lobby.OnPlayerDisconnect(lobby.PlayerFromMeadowID(OnlineManager.mePlayer.id));
+                        }
+                        lobby.bannedUsersChecked = true;
+                        return;
+
+                    }
+
+                    lobby.bannedUsersChecked = true;
                 }
-                lobby.bannedUsersChecked = true;
 
 
 

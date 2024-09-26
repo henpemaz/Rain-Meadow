@@ -400,12 +400,20 @@ namespace RainMeadow
         public static void KickToLobby()
         {
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-            if (game.manager.upcomingProcess != null)
+            try
             {
-                return;
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+                game.ExitToMenu();
+            } catch
+            {
+                RWCustom.Custom.rainWorld.processManager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
+                
+
             }
-            game.ExitToMenu();
-            BanHammer.ShowBan(game.manager);
+            BanHammer.ShowBan(RWCustom.Custom.rainWorld.processManager);
         }
 
     }
