@@ -44,6 +44,10 @@ namespace RainMeadow
             new Hook(typeof(HardmodeStart.HardmodePlayer).GetProperty("MainPlayer").GetGetMethod(), this.HardmodeStart_HardmodePlayer_MainPlayer);
             IL.HardmodeStart.SinglePlayerUpdate += HardmodeStart_SinglePlayerUpdate;
 
+            IL.MoreSlugcats.MSCRoomSpecificScript.DS_RIVSTARTcutscene.ctor += ClientDisableUAD;
+            IL.MoreSlugcats.CutsceneArtificer.ctor += ClientDisableUAD;
+            IL.MoreSlugcats.CutsceneArtificerRobo.ctor += ClientDisableUAD;
+
             On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide;
             On.RegionGate.PlayersStandingStill += PlayersStandingStill;
             On.RegionGate.PlayersInZone += RegionGate_PlayersInZone;
@@ -51,8 +55,6 @@ namespace RainMeadow
             On.RainWorldGame.GhostShutDown += RainWorldGame_GhostShutDown;
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
             On.RainWorldGame.Win += RainWorldGame_Win;
-
-            On.SaveState.GetStoryDenPosition += SaveState_GetStoryDenPosition;
 
             On.SaveState.BringUpToDate += SaveState_BringUpToDate;
             IL.SaveState.SessionEnded += SaveState_SessionEnded;
@@ -431,6 +433,28 @@ namespace RainMeadow
             }
         }
 
+        private void ClientDisableUAD(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.TryGotoNext(moveType: MoveType.After,
+                        i => i.MatchStfld<UpdatableAndDeletable>("room")
+                        );
+                c.EmitDelegate(() => OnlineManager.lobby != null && !OnlineManager.lobby.isOwner);
+                c.Emit(OpCodes.Brfalse, skip);
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((UpdatableAndDeletable self) => self.Destroy());
+                c.Emit(OpCodes.Ret);
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
         private void HUD_InitSinglePlayerHud(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam)
         {
             orig(self, cam);
@@ -525,16 +549,6 @@ namespace RainMeadow
         {
             if (isStoryMode(out var storyGameMode) && !storyGameMode.saveToDisk) return false;
             return orig(self, saveCurrentState, saveMaps, saveMiscProg);
-        }
-
-        private string SaveState_GetStoryDenPosition(On.SaveState.orig_GetStoryDenPosition orig, SlugcatStats.Name slugcat, out bool isVanilla)
-        {
-            if (isStoryMode(out var storyGameMode))
-            {
-                slugcat = storyGameMode.currentCampaign;
-            }
-            var denPos = orig(slugcat, out isVanilla);
-            return denPos;
         }
 
         private void SaveState_SessionEnded(ILContext il)
