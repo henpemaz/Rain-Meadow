@@ -180,6 +180,9 @@ namespace RainMeadow
                 return;
             }
 
+            if (self.room == null && (self.room = explosion?.room) == null)
+                return;
+
             RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
             if (!room.isOwner)
             {
@@ -187,6 +190,7 @@ namespace RainMeadow
                 if (objectHit != null)
                 {
                     room.owner.InvokeOnceRPC(OnlinePhysicalObject.HitByExplosion, objectHit, hitFac);
+                    return;
                 }
             }
 
@@ -206,12 +210,14 @@ namespace RainMeadow
             {
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
                 OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var abstWeapon);
-                room.owner.InvokeRPC(OnlinePhysicalObject.HitByWeapon, objectHit, abstWeapon);
+                if (objectHit != null && abstWeapon != null)
+                {
+                    room.owner.InvokeRPC(OnlinePhysicalObject.HitByWeapon, objectHit, abstWeapon);
+                    return;
+                }
             }
-            else
-            {
-                orig(self, weapon);
-            }
+
+            orig(self, weapon);
         }
 
         private void ShelterDoorOnClose(On.ShelterDoor.orig_Close orig, ShelterDoor self)
@@ -386,9 +392,10 @@ namespace RainMeadow
                 {
                     if (!OnlinePhysicalObject.map.TryGetValue(trueVillain.abstractPhysicalObject, out var onlineTrueVillain))
                     {
-                        if (trueVillain.abstractPhysicalObject.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb)
+                        if (trueVillain.abstractPhysicalObject.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb
+                            || trueVillain.abstractPhysicalObject.type == MoreSlugcats.MoreSlugcatsEnums.AbstractObjectType.SingularityBomb)
                         {
-                            // scav bombs exit quickly, and that's ok.
+                            // bombs exit quickly, and that's ok.
                             OnlinePhysicalObject onlineVillain = null;
                             (onlineVictim as OnlineCreature).RPCCreatureViolence(onlineVillain, hitchunk?.index, hitappendage, directionandmomentum, type, damage, stunbonus);
                             return;
