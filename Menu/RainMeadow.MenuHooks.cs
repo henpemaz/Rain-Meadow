@@ -303,7 +303,7 @@ namespace RainMeadow
                     }
                     else // Client
                     {
-                        var result = UnityEngine.Random.Range(0, 4);
+                        var result = UnityEngine.Random.Range(0, 3);
                         switch (result)
                         {
                             case 0:
@@ -312,10 +312,10 @@ namespace RainMeadow
                             case 1:
                                 sceneID = Menu.MenuScene.SceneID.Intro_11_Drowning; 
                                 break;
-                            case 3:
+                            case 2:
                                 sceneID = Menu.MenuScene.SceneID.Intro_8_Climbing;
                                 break;
-                            case 4:
+                            case 3:
                                 sceneID = Menu.MenuScene.SceneID.Intro_6_7_Rain_Drop;
                                 break;
                         }
