@@ -6,6 +6,8 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using Menu;
 using Steamworks;
+using Newtonsoft.Json.Linq;
+using System.Linq.Expressions;
 
 namespace RainMeadow
 {
@@ -28,7 +30,7 @@ namespace RainMeadow
 
         private bool SlugcatSelectMenu_SlugcatUnlocked(On.Menu.SlugcatSelectMenu.orig_SlugcatUnlocked orig, SlugcatSelectMenu self, SlugcatStats.Name i)
         {
-            if (OnlineManager.lobby == null) 
+            if (OnlineManager.lobby == null)
             {
                 return orig(self, i);
             }
@@ -233,7 +235,7 @@ namespace RainMeadow
                             sceneID = Menu.MenuScene.SceneID.Slugcat_White;
                             self.sceneOffset = new Vector2(-10f, 100f);
                             self.slugcatDepth = 3.1000001f;
-                            
+
                         }
 
                         else if (slugcatCustom.slug == SlugcatStats.Name.Yellow)
@@ -266,6 +268,14 @@ namespace RainMeadow
                                 self.sceneOffset = new Vector2(-10f, 100f);
                                 self.slugcatDepth = 3.1000001f;
                             }
+
+                            else if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand)
+                            {
+
+                                sceneID = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID.Slugcat_Gourmand;
+                                self.sceneOffset = new Vector2(-10f, 100f);
+                                self.slugcatDepth = 3.1000001f;
+                            }
                             else if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
                             {
 
@@ -289,16 +299,31 @@ namespace RainMeadow
                                 self.slugcatDepth = 3.1000001f;
                             }
                         }
-                       
+
                     }
                     else // Client
                     {
-                        sceneID = Menu.MenuScene.SceneID.Intro_6_7_Rain_Drop; // TODO: Retrieve current save's region
+                        var result = UnityEngine.Random.Range(0, 3);
+                        switch (result)
+                        {
+                            case 0:
+                                sceneID = Menu.MenuScene.SceneID.Intro_4_Walking; 
+                                break;
+                            case 1:
+                                sceneID = Menu.MenuScene.SceneID.Intro_11_Drowning; 
+                                break;
+                            case 2:
+                                sceneID = Menu.MenuScene.SceneID.Intro_8_Climbing;
+                                break;
+                            case 3:
+                                sceneID = Menu.MenuScene.SceneID.Intro_6_7_Rain_Drop;
+                                break;
+                        }
+
                         self.sceneOffset = new Vector2(-10f, 100f);
                         self.slugcatDepth = 3.1000001f;
 
                     }
-
                 }
 
             });
