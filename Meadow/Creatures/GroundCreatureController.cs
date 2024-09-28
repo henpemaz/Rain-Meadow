@@ -68,7 +68,14 @@ namespace RainMeadow
         public abstract bool IsOnClimb { get; }
         public virtual bool CanPounce { get { return IsOnGround; } }
 
-        public virtual int OnWall { get { return creature.mainBodyChunk.contactPoint.x; } }
+        public virtual int OnWall
+        {
+            get
+            {
+                if (creature.bodyChunks[0].contactPoint.x != 0) return creature.bodyChunks[0].contactPoint.x;
+                return creature.bodyChunks[1].contactPoint.x;
+            }
+        }
         public virtual bool IsOnWaterSurface => creature.mainBodyChunk.submersion is > 0.3f and < 1;
 
         protected const float zeroGTreshold = 0.3f;
@@ -350,6 +357,7 @@ namespace RainMeadow
                         {
                             RainMeadow.Debug("grip!");
                             GripPole(tile);
+                            break;
                         }
                     }
                 }
