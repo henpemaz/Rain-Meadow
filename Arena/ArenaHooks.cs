@@ -181,10 +181,7 @@ namespace RainMeadow
                     if (!onlinePlayer.isMe)
                     {
                         //self.playersContinueButtons = null;
-                        if (!onlinePlayer.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.Arena_Killing, absPlayerCreature, targetAbsCreature, onlinePlayer.id.name)))
-                        {
-                            onlinePlayer.InvokeRPC(RPCs.Arena_Killing, absPlayerCreature, targetAbsCreature, onlinePlayer.id.name);
-                        }
+                        onlinePlayer.InvokeOnceRPC(RPCs.Arena_Killing, absPlayerCreature, targetAbsCreature, onlinePlayer.id.name);
                     }
                     else
                     {

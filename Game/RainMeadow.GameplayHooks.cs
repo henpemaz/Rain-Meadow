@@ -46,10 +46,7 @@ namespace RainMeadow
 
                     if (scavBombAbstract != null)
                     {
-                        if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract, self.bodyChunks[0].pos)))
-                        {
-                            room.owner.InvokeRPC(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract, self.bodyChunks[0].pos);
-                        }
+                        room.owner.InvokeOnceRPC(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract, self.bodyChunks[0].pos);
                     }
                 }
 
@@ -187,10 +184,7 @@ namespace RainMeadow
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
                 if (objectHit != null)
                 {
-                    if (!room.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(OnlinePhysicalObject.HitByExplosion, objectHit, hitFac)))
-                    {
-                        room.owner.InvokeRPC(OnlinePhysicalObject.HitByExplosion, objectHit, hitFac);
-                    }
+                    room.owner.InvokeOnceRPC(OnlinePhysicalObject.HitByExplosion, objectHit, hitFac);
                 }
             }
 
