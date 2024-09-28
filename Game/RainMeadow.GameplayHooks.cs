@@ -42,6 +42,11 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
+                if (self.activateLightning != null)
+                {
+                    self.activateLightning.Destroy();
+                    self.activateLightning = null;
+                }
                 RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
                 if (!room.isOwner)
                 {
