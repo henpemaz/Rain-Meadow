@@ -52,6 +52,8 @@ namespace RainMeadow
             public Dictionary<string, float> storyFloatRemixSettings;
             [OnlineField]
             public Dictionary<string, int> storyIntRemixSettings;
+            [OnlineField(nullable = true)]
+            public string? saveStateString;
 
 
             public State() { }
@@ -71,6 +73,7 @@ namespace RainMeadow
                 changedRegions = storyGameMode.changedRegions;
                 readyForWin = storyGameMode.readyForWin;
                 readyForGate = storyGameMode.readyForGate;
+                saveStateString = storyGameMode.saveStateString;
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
                     cycleNumber = storySession.saveState.cycleNumber;
@@ -131,6 +134,8 @@ namespace RainMeadow
                 (lobby.gameMode as StoryGameMode).readyForGate = readyForGate;
                 (lobby.gameMode as StoryGameMode).friendlyFire = friendlyFire;
                 (lobby.gameMode as StoryGameMode).region = region;
+
+                (lobby.gameMode as StoryGameMode).saveStateString = saveStateString;
             }
         }
     }

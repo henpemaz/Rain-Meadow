@@ -14,6 +14,7 @@ namespace RainMeadow
         public string? defaultDenPos;
         public string? region = null;
         public SlugcatStats.Name currentCampaign;
+        public string? saveStateString;
 
         // TODO: split these out for other gamemodes to reuse (see Story/StoryMenuHelpers for methods)
         public Dictionary<string, bool> storyBoolRemixSettings;
@@ -36,6 +37,7 @@ namespace RainMeadow
             defaultDenPos = null;
             myLastDenPos = null;
             region = null;
+            saveStateString = null;
             storyClientData?.Sanitize();
         }
 
