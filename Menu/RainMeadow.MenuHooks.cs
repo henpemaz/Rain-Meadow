@@ -18,6 +18,7 @@ namespace RainMeadow
             On.Menu.MainMenu.ctor += MainMenu_ctor;
             //On.Menu.InputOptionsMenu.ctor += InputOptionsMenu_ctor;
 
+            On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
             On.ProcessManager.PostSwitchMainProcess += ProcessManager_PostSwitchMainProcess;
 
             IL.Menu.SlugcatSelectMenu.SlugcatPage.AddImage += SlugcatPage_AddImage;
@@ -25,7 +26,6 @@ namespace RainMeadow
             On.Menu.MenuScene.BuildScene += MenuScene_BuildScene;
 
             On.Menu.SlugcatSelectMenu.SlugcatUnlocked += SlugcatSelectMenu_SlugcatUnlocked;
-
         }
 
         private bool SlugcatSelectMenu_SlugcatUnlocked(On.Menu.SlugcatSelectMenu.orig_SlugcatUnlocked orig, SlugcatSelectMenu self, SlugcatStats.Name i)
@@ -353,6 +353,19 @@ namespace RainMeadow
                 }
 
             });
+        }
+
+        private void ProcessManager_RequestMainProcessSwitch_ProcessID(On.ProcessManager.orig_RequestMainProcessSwitch_ProcessID orig, ProcessManager self, ProcessManager.ProcessID ID)
+        {
+            if (OnlineManager.lobby?.gameMode is OnlineGameMode gameMode && RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame)
+            {
+                if (ID == ProcessManager.ProcessID.MainMenu || ID == ProcessManager.ProcessID.MultiplayerMenu)
+                {
+                    ID = gameMode.MenuProcessId();
+                }
+            }
+
+            orig(self, ID);
         }
 
         private void ProcessManager_PostSwitchMainProcess(On.ProcessManager.orig_PostSwitchMainProcess orig, ProcessManager self, ProcessManager.ProcessID ID)

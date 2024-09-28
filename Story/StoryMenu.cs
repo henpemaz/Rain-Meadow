@@ -48,6 +48,7 @@ namespace RainMeadow
         public StoryMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.StoryMenu)
         {
             RainMeadow.DebugMe();
+            this.backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
 
             this.rainEffect = new RainEffect(this, this.pages[0]);
             this.pages[0].subObjects.Add(this.rainEffect);
