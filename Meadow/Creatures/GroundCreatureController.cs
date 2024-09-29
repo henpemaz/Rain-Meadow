@@ -257,11 +257,33 @@ namespace RainMeadow
                     && !GetTile(0, input[0].x, 1).Solid
                     )
                 {
-                    RainMeadow.Debug("ledge climb");
+                    RainMeadow.Debug("ledge climb"); // against ledge
                     OnJump();
                     this.jumpBoost = 3f;
                     // "middle of edge" of air above ledge
                     var towards = creature.room.MiddleOfTile(creature.bodyChunks[0].pos + new Vector2(0f, 20f)) + new Vector2(10f * input[0].x, 0f);
+                    for (int i = 0; i < cc; i++)
+                    {
+                        var pushDir = (towards - cs[i].pos).normalized;
+                        if (Math.Sign(pushDir.x) == input[0].x && pushDir.y > 0f)
+                        {
+                            cs[i].vel += pushDir * 3f * jumpFactor;
+                        }
+                    }
+                    creature.room.PlaySound(SoundID.Slugcat_Wall_Jump, mainBodyChunk, false, 1f, 1f);
+                    canWallJump = 0;
+                }
+                else if (input[0].x != 0 && Math.Sign(canWallJump) == input[0].x
+                    && creature.bodyChunks[0].vel.y < 4f
+                    && GetTile(0, input[0].x, -1).Solid
+                    && !GetTile(0, input[0].x, 0).Solid
+                    )
+                {
+                    RainMeadow.Debug("ledge drag"); // trying to get past ledge
+                    OnJump();
+                    this.jumpBoost = 3f;
+                    // "middle of edge" of air above ledge
+                    var towards = creature.room.MiddleOfTile(creature.bodyChunks[0].pos) + new Vector2(10f * input[0].x, 0f);
                     for (int i = 0; i < cc; i++)
                     {
                         var pushDir = (towards - cs[i].pos).normalized;

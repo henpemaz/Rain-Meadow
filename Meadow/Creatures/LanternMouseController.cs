@@ -1,4 +1,7 @@
-﻿using RWCustom;
+﻿using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using RWCustom;
+using System;
 using UnityEngine;
 
 namespace RainMeadow
@@ -14,6 +17,36 @@ namespace RainMeadow
             On.MouseAI.Update += MouseAI_Update;
             On.MouseAI.DangleTile += MouseAI_DangleTile; // no dangling
 
+            IL.LanternMouse.Update += LanternMouse_Update1;
+        }
+
+        private static void LanternMouse_Update1(MonoMod.Cil.ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                c.GotoNext(MoveType.After,
+                    i => i.MatchCallOrCallvirt<PhysicalObject>("get_gravity")
+                    );
+                var spot = c.Index;
+                int whichLoc = 0; // find the bodychunk
+                c.GotoPrev(o => o.MatchLdloc(out whichLoc));
+                c.Index = spot;
+                c.Emit(OpCodes.Ldarg, 0);
+                c.Emit(OpCodes.Ldloc, whichLoc);
+                c.EmitDelegate( (float gravity, LanternMouse self, int index) => {
+                    if (creatureControllers.TryGetValue(self, out var s))
+                    {
+                        return gravity - self.bodyChunks[index].submersion * self.buoyancy;
+                    }
+                    return gravity;
+                });
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                throw;
+            }
         }
 
         private static MouseAI.Dangle? MouseAI_DangleTile(On.MouseAI.orig_DangleTile orig, MouseAI self, IntVector2 tile, bool noAccessMap)
@@ -69,10 +102,10 @@ namespace RainMeadow
         public LanternMouseController(LanternMouse mouse, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(mouse, oc, playerNumber, customization)
         {
             this.mouse = mouse;
-            jumpFactor = 1.5f; // y u so smol
+            jumpFactor = 1.4f; // y u so smol
         }
 
-        public override bool HasFooting => mouse.Footing;
+        public override bool HasFooting => mouse.footingCounter >= 10;
 
         public override bool IsOnPole => GetTile(0).AnyBeam;
 
@@ -90,7 +123,7 @@ namespace RainMeadow
                 creature.room.PlaySound(SoundID.Mouse_Scurry, creature.mainBodyChunk);
                 for (int i = 0; i < creature.bodyChunks.Length; i++)
                 {
-                    creature.bodyChunks[i].vel *= 0.25f;
+                    creature.bodyChunks[i].vel *= 0.2f;
                 }
                 creature.mainBodyChunk.vel += 0.2f * (creature.room.MiddleOfTile(tile0.X, tile0.Y) - creature.mainBodyChunk.pos);
                 mouse.footingCounter = 10;
@@ -109,7 +142,7 @@ namespace RainMeadow
 
         protected override void MovementOverride(MovementConnection movementConnection)
         {
-            mouse.specialMoveCounter = 15;
+            mouse.specialMoveCounter = 10;
             mouse.specialMoveDestination = movementConnection.DestTile;
         }
 
@@ -135,6 +168,13 @@ namespace RainMeadow
             {
                 mouse.footingCounter = 0;
             }
+            else if(mouse.footingCounter > 0 && mouse.footingCounter < 10)
+            {
+                mouse.footingCounter = 10; // faster initial regain
+            } else
+            {
+                mouse.footingCounter++; // faster
+            }
 
             if(superLaunchJump > 10 && (mouse.room.aimap.getAItile(mouse.bodyChunks[1].pos).acc == AItile.Accessibility.Floor && !mouse.IsTileSolid(0, 0, 1) && !mouse.IsTileSolid(1, 0, 1)))
             {
@@ -145,6 +185,23 @@ namespace RainMeadow
                 mouse.bodyChunks[1].vel.y += 3f;
                 mouse.mainBodyChunk.vel.x += mouse.profileFac;
                 mouse.bodyChunks[1].vel.x -= mouse.profileFac;
+            }
+
+            // climb that damn ledge
+            if (input[0].x != 0)
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    if (creature.bodyChunks[i].contactPoint.x == input[0].x
+                    && creature.bodyChunks[i].vel.y < 4f
+                    && GetTile(i, input[0].x, 0).Solid
+                    && !GetTile(i, 0, 1).Solid
+                    && !GetTile(i, input[0].x, 1).Solid
+                    )
+                    {
+                        creature.bodyChunks[0].vel += new Vector2(0f, 2f);
+                    }
+                }
             }
 
             mouse.voiceCounter = 10; // shh
@@ -162,7 +219,7 @@ namespace RainMeadow
                     int amount = Mathf.FloorToInt(Mathf.Lerp(2, 4, voice.Volume));
                     for (int i = 0; i < amount; i++)
                     {
-                        this.mouse.room.AddObject(new MouseSpark(this.mouse.mainBodyChunk.pos, this.mouse.mainBodyChunk.vel + Custom.DegToVec(360f * Random.value) * 6f * Random.value, 40f, mg.BodyColor));
+                        this.mouse.room.AddObject(new MouseSpark(this.mouse.mainBodyChunk.pos, this.mouse.mainBodyChunk.vel + Custom.DegToVec(360f * UnityEngine.Random.value) * 6f * UnityEngine.Random.value, 40f, mg.BodyColor));
                     }
                 }
             }
