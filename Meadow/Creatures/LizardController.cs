@@ -281,6 +281,7 @@ namespace RainMeadow
             this.lizard = lizard;
             lizard.abstractCreature.personality.energy = 1f; // stop being lazy
             jumpFactor = 1.2f;
+            runSpeed = 4.4f;
             // this.needsLight = false; // has builtin light
             // or so I thought but vanilla light is too small, give it two!
             canZeroGClimb = true;
@@ -294,7 +295,7 @@ namespace RainMeadow
 
         public override bool IsOnPole => GetTile(0).AnyBeam || GetTile(1).AnyBeam;
 
-        public override bool IsOnCorridor => GetAITile(0).narrowSpace || GetAITile(1).narrowSpace;
+        public override bool IsOnCorridor => GetAITile(0).narrowSpace;
 
         public override bool IsOnClimb
         {
@@ -438,7 +439,24 @@ namespace RainMeadow
                 creature.bodyChunks[2].vel -= inputDir * 0.4f;
             }
 
-            if(lizard.timeSpentTryingThisMove < 20) // don't panic
+            // climb that damn ledge
+            if (input[0].x != 0)
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    if (creature.bodyChunks[i].contactPoint.x == input[0].x
+                    && creature.bodyChunks[i].vel.y < 4f
+                    && GetTile(i, input[0].x, 0).Solid
+                    && !GetTile(i, 0, 1).Solid
+                    && !GetTile(i, input[0].x, 1).Solid
+                    )
+                    {
+                        creature.bodyChunks[0].vel += new Vector2(0f, 2f);
+                    }
+                }
+            }
+
+            if (lizard.timeSpentTryingThisMove < 20) // don't panic
             {
                 lizard.desperationSmoother = 0f;
             }
@@ -462,7 +480,7 @@ namespace RainMeadow
                     BodyChunk bodyChunk = lizard.bodyChunks[i];
                     if (Mathf.Abs(bodyChunk.vel.x) > runSpeed)
                     {
-                        bodyChunk.vel.x *= 0.90f;
+                        bodyChunk.vel.x *= 0.98f;
                     }
                 }
             }

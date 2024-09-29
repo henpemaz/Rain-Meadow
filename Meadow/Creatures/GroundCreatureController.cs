@@ -142,7 +142,7 @@ namespace RainMeadow
             else if (canPoleJump > 0)
             {
                 this.jumpBoost = 0f;
-                if (creature.room.GetTilePosition(cs[0].pos).x == creature.room.GetTilePosition(cs[1].pos).x && // aligned
+                if (input[0].y == 1 && creature.room.GetTilePosition(cs[0].pos).x == creature.room.GetTilePosition(cs[1].pos).x && // aligned
                     ((GetTile(0).verticalBeam && !GetTile(0, 0, 1).verticalBeam)
                     || (GetTile(1).verticalBeam && !GetTile(0).verticalBeam)))
                 {
@@ -163,7 +163,7 @@ namespace RainMeadow
                     canPoleJump = 0;
                     return;
                 }
-                if (creature.room.GetTilePosition(cs[0].pos).x == creature.room.GetTilePosition(cs[1].pos).x && // aligned
+                if (input[0].y == 1 && creature.room.GetTilePosition(cs[0].pos).x == creature.room.GetTilePosition(cs[1].pos).x && // aligned
                     ((GetTile(0).horizontalBeam && !GetTile(0, 0, 1).horizontalBeam)
                     || (GetTile(1).horizontalBeam && !GetTile(0).horizontalBeam)))
                 {
