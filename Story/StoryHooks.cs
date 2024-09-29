@@ -500,6 +500,14 @@ namespace RainMeadow
             var origSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
             if (isStoryMode(out var gameMode))
             {
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    origSaveState.deathPersistentSaveData.ghostsTalkedTo.Clear();
+                    foreach (var kvp in gameMode.ghostsTalkedTo)
+                        if (ExtEnumBase.TryParse(typeof(GhostWorldPresence.GhostID), kvp.Key, ignoreCase: false, out var rawEnumBase))
+                            origSaveState.deathPersistentSaveData.ghostsTalkedTo[(GhostWorldPresence.GhostID)rawEnumBase] = kvp.Value;
+                }
+
                 var storyClientSettings = gameMode.clientSettings as StoryClientSettings;
 
                 if (storyClientSettings.myLastDenPos != null)

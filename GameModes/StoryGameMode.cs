@@ -13,6 +13,7 @@ namespace RainMeadow
         public bool didStartCycle = false;
         public string? defaultDenPos;
         public SlugcatStats.Name currentCampaign;
+        public Dictionary<string, int> ghostsTalkedTo;
         public Dictionary<string, bool> storyBoolRemixSettings;
         public Dictionary<string, float> storyFloatRemixSettings;
         public Dictionary<string, int> storyIntRemixSettings;
@@ -94,6 +95,19 @@ namespace RainMeadow
             if (onlineResource is Lobby lobby)
             {
                 lobby.AddData<StoryLobbyData>(true);
+            }
+        }
+
+        internal override void ResourceActive(OnlineResource onlineResource)
+        {
+            base.ResourceActive(onlineResource);
+            if (onlineResource is WorldSession ws)
+            {
+                var regionState = ws.world.regionState;
+                if (this.lobby.isOwner)
+                {
+                    ghostsTalkedTo = regionState.saveState.deathPersistentSaveData.ghostsTalkedTo.ToDictionary(kvp => kvp.Key.value, kvp => kvp.Value);
+                }
             }
         }
 
