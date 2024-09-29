@@ -21,6 +21,7 @@ public partial class RainMeadow
         On.Player.SwallowObject += Player_SwallowObject;
         On.Player.Regurgitate += Player_Regurgitate;
         On.Player.SpitUpCraftedObject += Player_SpitUpCraftedObject;
+        On.Player.ThrowObject += Player_ThrowObject;
         On.Player.AddFood += Player_AddFood;
         On.Player.AddQuarterFood += Player_AddQuarterFood;
         On.Player.SubtractFood += Player_SubtractFood;
@@ -341,6 +342,15 @@ public partial class RainMeadow
             if (!oe.isMine) return;
         }
         orig(self);
+    }
+
+    private void Player_ThrowObject(On.Player.orig_ThrowObject orig, Player self, int grasp, bool eu)
+    {
+        if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
+        {
+            if (!oe.isMine) return;
+        }
+        orig(self, grasp, eu);
     }
 
     private void SlugcatStats_ctor(On.SlugcatStats.orig_ctor orig, SlugcatStats self, SlugcatStats.Name slugcat, bool malnourished)
