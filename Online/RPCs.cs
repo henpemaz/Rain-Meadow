@@ -416,5 +416,16 @@ namespace RainMeadow
             BanHammer.ShowBan(RWCustom.Custom.rainWorld.processManager);
         }
 
+        [RPCMethod]
+        public static void TriggerGhostHunch(string ghostID)
+        {
+            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            ExtEnumBase.TryParse(typeof(GhostWorldPresence.GhostID), ghostID, false, out var rawEnumBase);
+            var ghostNumber = rawEnumBase as GhostWorldPresence.GhostID;
+            if (ghostNumber == null) return;
+            var ghostsTalkedTo = (game.session as StoryGameSession).saveState.deathPersistentSaveData.ghostsTalkedTo;
+            if (!ghostsTalkedTo.ContainsKey(ghostNumber) || ghostsTalkedTo[ghostNumber] < 1)
+                ghostsTalkedTo[ghostNumber] = 1;
+        }
     }
 }

@@ -53,6 +53,8 @@ namespace RainMeadow
             On.RegionGate.PlayersStandingStill += PlayersStandingStill;
             On.RegionGate.PlayersInZone += RegionGate_PlayersInZone;
 
+            On.GhostHunch.Update += GhostHunch_Update;
+
             On.RainWorldGame.GhostShutDown += RainWorldGame_GhostShutDown;
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
             On.RainWorldGame.Win += RainWorldGame_Win;
@@ -816,6 +818,16 @@ namespace RainMeadow
                 return true;
             }
             return orig(self);
+        }
+
+        private void GhostHunch_Update(On.GhostHunch.orig_Update orig, GhostHunch self, bool eu)
+        {
+            orig(self, eu);
+            if (isStoryMode(out _) && !OnlineManager.lobby.isOwner)
+            {
+                if (self.ghostNumber != null && (self.room.game.session as StoryGameSession).saveState.deathPersistentSaveData.ghostsTalkedTo[self.ghostNumber] > 0)
+                    OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.TriggerGhostHunch, self.ghostNumber.value);
+            }
         }
     }
 }
