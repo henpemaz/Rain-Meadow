@@ -33,7 +33,8 @@ namespace RainMeadow
                     // doesn't happen offline but when receiving pos from remove, can happen
                     // pos are equal the frame it's sucked into shortcut
                     // pos are set to different when sput out
-                    // but due to sputout not being hard synched, it migth be sput out and have it's pos overriden with the bad value
+                    // but due to the suckedintoshortcut not removing client-sided when ran by the creature (it waits for the RPC)
+                    // then the bad values do happen
                     self.bug.bodyChunks[1].pos += Vector2.down;
                 }
             }

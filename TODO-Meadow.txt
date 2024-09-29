@@ -42,10 +42,7 @@ blues have trouble sticking to the ceiling
 blues have trouble climbing/pathing ledges
 
 scav todo
-- swimming happens in bursts? like a counter fills?
 - hands look silly when walking on falsefloor
-- hands bad when swimming
-- jumping off ledge wack because regains footing too quick?
 - point things
 
 slugcat in meadow mode
@@ -53,7 +50,6 @@ slugcat in meadow mode
 
 squidcicada todo
 button for spin/dance ?
-remove charge ?
 
 eggbug
 	pick seeds and names
@@ -62,25 +58,17 @@ noot
 	pick seeds and names
 
 lantermouse
-	jump too small
 	seeds and names
-	add emotes
-
 
 controller-disconnedted popup might be inconsistent
 
 visualize selected skin
-	will get color previews
-	but could have tiny screenshots
+	will get color previews once all seeds are picked and sampled
 
 tint implementation missing in most creatures
-eggbug collapses on room transition (wolfy dms has logs)
 
 eggbug feels slow
 eggbug should have super jump at all times not just pounce, match how jumpy they are in game
-
-noodle has hard time going into pipes
-noodle could have a "grounded" state like cada
 
 "creature emotions" need addressing
 lizards shouldn't open mouth to bite
@@ -91,6 +79,9 @@ creature select can be inconsistent at times: I have big noodlefly selected, i e
 emote preview background color is really bad right now
 
 emote keybind not rebindable
+does it need to be its own or would GRAB be ok?
+	depends on what switches pages
+	on controler right side gets busy?
 
 emote mapping on keyboard 1 throug 8 missing
 
@@ -116,8 +107,6 @@ echo reward anim is bad, fade to white is bad, no confetti??
 cursor disappears on fullscreen nondevtools etc
 
 wish there was a symbol for outskirts
-
-scavenger gets stuck climbing close to top, won't go out of swingmode
 
 double jumps out of the water, way too much speed
 
@@ -160,7 +149,7 @@ QoL: Some sort of display of how the colors should look in-game? The tint system
 
 toggle collision as a setting
 
-
+noot gets stuck on water surface, seems to always go left?
 
 engine thoughts
 that one crash notchoc posted about a Destroy related to roomjoin
