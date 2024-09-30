@@ -19,7 +19,7 @@ namespace RainMeadow
         private Vector2 lastRotation;
         [OnlineField]
         private float rotationSpeed;
-        
+
         public RealizedWeaponState() { }
         public RealizedWeaponState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {

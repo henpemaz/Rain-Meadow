@@ -14,50 +14,52 @@ namespace RainMeadow
             On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
             On.ScavengerBomb.Explode += ScavengerBomb_Explode;
-            
+            On.MoreSlugcats.SingularityBomb.Explode += SingularityBomb_Explode;
 
             On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor;
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
         }
 
-
-
         private void ScavengerBomb_Explode(On.ScavengerBomb.orig_Explode orig, ScavengerBomb self, BodyChunk hitChunk)
         {
             if (OnlineManager.lobby != null)
             {
-
-                if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
-                {
-                    Error("Error getting room for scav explosion!");
-
-                }
+                RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
                 if (!room.isOwner)
                 {
-
-
-                    if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var scavBombAbstract))
-
+                    if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var opo))
                     {
-                        Error("Error getting target of explosion object hit");
-
+                        Error($"Entity {self} doesn't exist in online space!");
+                        return;
                     }
-
-
-                    if (scavBombAbstract != null)
-                    {
-                        room.owner.InvokeOnceRPC(OnlinePhysicalObject.ScavengerBombExplode, scavBombAbstract, self.bodyChunks[0].pos);
-                    }
+                    room.owner.InvokeOnceRPC(OnlinePhysicalObject.ScavengerBombExplode, opo, self.bodyChunks[0].pos);
                 }
+            }
+            orig(self, hitChunk);
+        }
 
-                orig(self, hitChunk);
-            }
-            else
+        private void SingularityBomb_Explode(On.MoreSlugcats.SingularityBomb.orig_Explode orig, MoreSlugcats.SingularityBomb self)
+        {
+            if (OnlineManager.lobby != null)
             {
-                orig(self, hitChunk);
+                if (self.activateLightning != null)
+                {
+                    self.activateLightning.Destroy();
+                    self.activateLightning = null;
+                }
+                RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+                if (!room.isOwner)
+                {
+                    if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var opo))
+                    {
+                        Error($"Entity {self} doesn't exist in online space!");
+                        return;
+                    }
+                    room.owner.InvokeOnceRPC(OnlinePhysicalObject.SingularityBombExplode, opo, self.bodyChunks[0].pos);
+                }
             }
-        
-    }
+            orig(self);
+        }
 
         private static void Creature_SwitchGrasps(On.Creature.orig_SwitchGrasps orig, Creature self, int fromGrasp, int toGrasp)
         {
@@ -178,6 +180,9 @@ namespace RainMeadow
                 return;
             }
 
+            if (self.room == null && (self.room = explosion?.room) == null)
+                return;
+
             RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
             if (!room.isOwner)
             {
@@ -185,6 +190,7 @@ namespace RainMeadow
                 if (objectHit != null)
                 {
                     room.owner.InvokeOnceRPC(OnlinePhysicalObject.HitByExplosion, objectHit, hitFac);
+                    return;
                 }
             }
 
@@ -204,12 +210,14 @@ namespace RainMeadow
             {
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
                 OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var abstWeapon);
-                room.owner.InvokeRPC(OnlinePhysicalObject.HitByWeapon, objectHit, abstWeapon);
+                if (objectHit != null && abstWeapon != null)
+                {
+                    room.owner.InvokeRPC(OnlinePhysicalObject.HitByWeapon, objectHit, abstWeapon);
+                    return;
+                }
             }
-            else
-            {
-                orig(self, weapon);
-            }
+
+            orig(self, weapon);
         }
 
         private void ShelterDoorOnClose(On.ShelterDoor.orig_Close orig, ShelterDoor self)
@@ -384,9 +392,10 @@ namespace RainMeadow
                 {
                     if (!OnlinePhysicalObject.map.TryGetValue(trueVillain.abstractPhysicalObject, out var onlineTrueVillain))
                     {
-                        if (trueVillain.abstractPhysicalObject.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb)
+                        if (trueVillain.abstractPhysicalObject.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb
+                            || trueVillain.abstractPhysicalObject.type == MoreSlugcats.MoreSlugcatsEnums.AbstractObjectType.SingularityBomb)
                         {
-                            // scav bombs exit quickly, and that's ok.
+                            // bombs exit quickly, and that's ok.
                             OnlinePhysicalObject onlineVillain = null;
                             (onlineVictim as OnlineCreature).RPCCreatureViolence(onlineVillain, hitchunk?.index, hitappendage, directionandmomentum, type, damage, stunbonus);
                             return;
