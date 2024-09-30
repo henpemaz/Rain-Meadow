@@ -71,7 +71,7 @@ namespace RainMeadow
             //PlacedObject.Type.StuckDaddy,
             //PlacedObject.Type.CentipedeAttractor,
         };
-        public static HashSet<PlacedObject.Type> PlayerGrablableItems = new()
+        public static HashSet<PlacedObject.Type> PlayerGrabbableItems = new()
         {
             PlacedObject.Type.FlareBomb,
             PlacedObject.Type.PuffBall,          //Weird behavior between thrower and everyone else when throwing 

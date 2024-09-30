@@ -29,7 +29,7 @@ namespace RainMeadow
         }
         public override bool AllowedInMode(PlacedObject item)
         {
-            return base.AllowedInMode(item) || OnlineGameModeHelpers.PlayerGrablableItems.Contains(item.type) || OnlineGameModeHelpers.creatureRelatedItems.Contains(item.type);
+            return base.AllowedInMode(item) || OnlineGameModeHelpers.PlayerGrabbableItems.Contains(item.type) || OnlineGameModeHelpers.creatureRelatedItems.Contains(item.type);
         }
         public override bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)
         {
