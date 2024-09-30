@@ -297,12 +297,9 @@ public partial class RainMeadow
 
     private Player.ObjectGrabability PlayerOnGrabability(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
     {
-        if (OnlineManager.lobby != null)
+        if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
         {
-            if (self.playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer) // this might no longer work after class-sync, check
-            {
-                return Player.ObjectGrabability.CantGrab;
-            }
+            if (!oe.isMine) return Player.ObjectGrabability.CantGrab;
         }
         return orig(self, obj);
     }
