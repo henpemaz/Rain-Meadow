@@ -183,7 +183,8 @@ namespace RainMeadow
             if (creature.grasps == null) creature.grasps = new Creature.Grasp[1];
             eggbug = creature;
 
-            jumpFactor = 1.2f;
+            jumpFactor = 2f;
+            runSpeed = 5.4f;
         }
 
         EggBug eggbug;
@@ -227,8 +228,12 @@ namespace RainMeadow
 
         protected override void MovementOverride(MovementConnection movementConnection)
         {
-            eggbug.specialMoveCounter = 15;
-            eggbug.specialMoveDestination = movementConnection.DestTile;
+            if (eggbug.Footing || eggbug.Submersion > 0f)
+            {
+                eggbug.specialMoveCounter = 5;
+                eggbug.specialMoveDestination = movementConnection.DestTile;
+                eggbug.footingCounter = Mathf.Min(eggbug.footingCounter, 20);
+            }
         }
 
         protected override void ClearMovementOverride()
@@ -240,13 +245,16 @@ namespace RainMeadow
         {
             var dir = Custom.DirVec(eggbug.mainBodyChunk.pos, pos);
             eggbug.travelDir = dir;
-            eggbug.bodyChunks[0].vel += dir;
-            eggbug.bodyChunks[1].vel -= dir;
+            if (HasFooting)
+            {
+                eggbug.bodyChunks[0].vel += 0.5f * dir;
+                eggbug.bodyChunks[1].vel -= 0.5f * dir;
+            }
         }
 
         protected override void Moving(float magnitude)
         {
-            eggbug.runSpeed = Custom.LerpAndTick(eggbug.runSpeed, magnitude, 0.2f, 0.05f);
+            eggbug.runSpeed = Custom.LerpAndTick(eggbug.runSpeed, 1.2f * magnitude, 0.2f, 0.05f);
         }
 
         protected override void Resting()
@@ -260,6 +268,10 @@ namespace RainMeadow
             if (eggbug.specialMoveCounter > 0 && !eggbug.room.aimap.TileAccessibleToCreature(eggbug.mainBodyChunk.pos, eggbug.Template) && !eggbug.room.aimap.TileAccessibleToCreature(eggbug.bodyChunks[1].pos, eggbug.Template))
             {
                 eggbug.footingCounter = 0;
+            }
+            else if (eggbug.mainBodyChunk.contactPoint != new IntVector2(0, 0))
+            {
+                eggbug.footingCounter = Mathf.Max(eggbug.footingCounter, 10);
             }
             if (superLaunchJump > 10 && (eggbug.room.aimap.getAItile(eggbug.bodyChunks[1].pos).acc == AItile.Accessibility.Floor && !eggbug.IsTileSolid(0, 0, 1) && !eggbug.IsTileSolid(1, 0, 1)))
             {
