@@ -156,7 +156,7 @@ namespace RainMeadow
                 {
                     if (isArenaMode(out var arena))
                     {
-                        return 8;
+                        return arena.arenaSittingOnlineOrder.Count;
                     }
                     return oldNum;
                 });
