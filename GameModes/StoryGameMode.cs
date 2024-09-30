@@ -9,7 +9,6 @@ namespace RainMeadow
 
         // these are synced by StoryLobbyData
         public bool isInGame = false;
-        public bool changedRegions = false;
         public bool didStartCycle = false;
         public string? defaultDenPos;
         public SlugcatStats.Name currentCampaign;

@@ -23,8 +23,6 @@ namespace RainMeadow
             [OnlineField]
             public bool isInGame;
             [OnlineField]
-            public bool changedRegions;
-            [OnlineField]
             public SlugcatStats.Name currentCampaign;
             [OnlineField]
             public int cycleNumber;
@@ -69,7 +67,6 @@ namespace RainMeadow
                 ghostsTalkedTo = storyGameMode.ghostsTalkedTo;
 
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
-                changedRegions = storyGameMode.changedRegions;
                 didStartCycle = storyGameMode.didStartCycle;
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
@@ -125,7 +122,6 @@ namespace RainMeadow
                 (lobby.gameMode as StoryGameMode).storyIntRemixSettings = storyIntRemixSettings;
 
                 (lobby.gameMode as StoryGameMode).isInGame = isInGame;
-                (lobby.gameMode as StoryGameMode).changedRegions = changedRegions;
                 (lobby.gameMode as StoryGameMode).didStartCycle = didStartCycle;
             }
         }

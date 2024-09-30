@@ -234,9 +234,19 @@ namespace RainMeadow
                 var playerIDs = OnlineManager.lobby.participants.Select(p => p.inLobbyId).ToList();
                 var readyWinPlayers = storyGameMode.readyForWinPlayers.ToList();
 
+                Debug("trying to close shelter door...");
+                var flag = false;
                 foreach (var playerID in playerIDs)
                 {
-                    if (!readyWinPlayers.Contains(playerID)) return;
+                    if (!readyWinPlayers.Contains(playerID))
+                    {
+                        flag = true;
+                        Debug($"{playerID} not in shelter!");
+                    }
+                }
+                if (flag) {
+                    Debug("failed to close door!");
+                    return;
                 }
             }
             else

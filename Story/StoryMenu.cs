@@ -86,6 +86,7 @@ namespace RainMeadow
             }
             else
             {
+                gameMode.storyClientSettings.myLastDenPos = null;
                 SetupClientMenu();
                 if (RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value)
                 {
@@ -185,7 +186,7 @@ namespace RainMeadow
 
             this.clientWaitingButton = new EventfulHoldButton(this, this.pages[0], base.Translate("ENTER"), new Vector2(683f, 85f), 40f);
             this.clientWaitingButton.OnClick += (_) => { StartGame(); };
-            clientWaitingButton.buttonBehav.greyedOut = !(gameMode.isInGame && !gameMode.changedRegions);
+            clientWaitingButton.buttonBehav.greyedOut = true;
 
             this.pages[0].subObjects.Add(this.clientWaitingButton);
 
@@ -249,7 +250,11 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner)
             {
                 campaignContainer.text = $"Current Campaign: The {GetCurrentCampaignName()}";
-                clientWaitingButton.buttonBehav.greyedOut = !(gameMode.isInGame && !gameMode.changedRegions);
+                // TODO: figure out how to borrow LoadFirstWorld logic *without* loading the world
+                var spawnRegion = gameMode.defaultDenPos?.Split('_')[0] ?? "SU";
+                if (spawnRegion == "GATE") spawnRegion = gameMode.defaultDenPos?.Split('_').Last();
+                OnlineManager.lobby.worldSessions.TryGetValue(spawnRegion, out var wsToJoin);
+                clientWaitingButton.buttonBehav.greyedOut = !(gameMode.isInGame && wsToJoin?.owner != null);
             }
 
             if (ssm.scroll == 0f && ssm.lastScroll == 0f)
@@ -422,7 +427,7 @@ namespace RainMeadow
 
         private void BindSettings()
         {
-            this.personaSettings = (StoryClientSettings)OnlineManager.lobby.gameMode.clientSettings;
+            this.personaSettings = gameMode.storyClientSettings;
             personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
             personaSettings.bodyColor = RainMeadow.rainMeadowOptions.BodyColor.Value;
             personaSettings.eyeColor = RainMeadow.rainMeadowOptions.EyeColor.Value;

@@ -526,7 +526,6 @@ namespace RainMeadow
                 }
 
                 storyClientSettings.hasSheltered = false;
-                gameMode.changedRegions = false;
             }
             return origSaveState;
         }
