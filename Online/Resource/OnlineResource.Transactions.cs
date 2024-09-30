@@ -173,8 +173,8 @@ namespace RainMeadow
                         participants.Remove(transferResult.from);
                         participants.Add(transferResult.from);
                     }
-                    PickNewOwner();
                 }
+                PickNewOwner();
             }
         }
     }
