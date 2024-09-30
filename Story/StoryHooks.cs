@@ -28,8 +28,8 @@ namespace RainMeadow
         {
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
             On.PlayerProgression.SaveToDisk += PlayerProgression_SaveToDisk;
-            On.Menu.SleepAndDeathScreen.ctor += SleepAndDeathScreen_ctor;
-            On.Menu.SleepAndDeathScreen.Update += SleepAndDeathScreen_Update;
+            On.Menu.KarmaLadderScreen.ctor += KarmaLadderScreen_ctor;
+            On.Menu.KarmaLadderScreen.Update += KarmaLadderScreen_Update;
             On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
 
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
@@ -672,7 +672,7 @@ namespace RainMeadow
             }
         }
 
-        private void SleepAndDeathScreen_Update(On.Menu.SleepAndDeathScreen.orig_Update orig, Menu.SleepAndDeathScreen self)
+        private void KarmaLadderScreen_Update(On.Menu.KarmaLadderScreen.orig_Update orig, Menu.KarmaLadderScreen self)
         {
             orig(self);
 
@@ -703,9 +703,9 @@ namespace RainMeadow
             }
         }
 
-        private void SleepAndDeathScreen_ctor(On.Menu.SleepAndDeathScreen.orig_ctor orig, Menu.SleepAndDeathScreen self, ProcessManager manager, ProcessManager.ProcessID ID)
+        private void KarmaLadderScreen_ctor(On.Menu.KarmaLadderScreen.orig_ctor orig, Menu.KarmaLadderScreen self, ProcessManager manager, ProcessManager.ProcessID ID)
         {
-            RainMeadow.Debug("In SleepAndDeath Screen");
+            RainMeadow.Debug("In KarmaLadder Screen");
             orig(self, manager, ID);
 
             if (isStoryMode(out var gameMode))
