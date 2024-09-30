@@ -649,6 +649,8 @@ namespace RainMeadow
                     }
                 }
 
+                gameMode.storyClientSettings.isDead = self.dead;
+
                 if (self.readyForWin
                     && self.touchedNoInputCounter > (ModManager.MMF ? 40 : 20)
                     && RWCustom.Custom.ManhattanDistance(self.abstractCreature.pos.Tile, self.room.shortcuts[0].StartTile) > 3)

@@ -269,6 +269,8 @@ public partial class RainMeadow
             return;
         }
 
+        if (OnlineManager.lobby.gameMode is MeadowGameMode) return; // do not run
+
         if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity))
         {
             if (isArenaMode(out var _))
@@ -281,17 +283,7 @@ public partial class RainMeadow
                 throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
             }
         }
-        if (onlineEntity == null) // Handle falling out of world gracefully
-        {
-            orig(self);
-            return;
-        }
-        if (!onlineEntity.isMine) return;
-        if (isStoryMode(out var story))
-        {
-            story.storyClientSettings.isDead = true;
-        }
-        if (OnlineManager.lobby.gameMode is MeadowGameMode) return; // do not run
+        if (onlineEntity != null && !onlineEntity.isMine) return;
         orig(self);
     }
 
