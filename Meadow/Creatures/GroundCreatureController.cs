@@ -247,6 +247,21 @@ namespace RainMeadow
                 canGroundJump = 0;
                 canWallJump = 0;
             }
+            else if (canWaterJump > 0)
+            {
+                RainMeadow.Debug("water jump");
+                OnJump();
+                this.jumpBoost = 8f;
+                var jumpdir = (cs[0].pos - cs[1].pos).normalized + inputDir;
+                for (int i = 0; i < cc; i++)
+                {
+                    cs[i].vel *= 0.4f;
+                    cs[i].vel += jumpdir * 8f * jumpFactor;
+                }
+                creature.room.PlaySound(SoundID.Slugcat_Wall_Jump, mainBodyChunk, false, 1f, 1f);
+                canWaterJump = 0;
+                canGroundJump = 0;
+            }
             else if (canWallJump != 0)
             {
                 // climb that damn ledge
@@ -316,21 +331,6 @@ namespace RainMeadow
                     creature.room.PlaySound(SoundID.Slugcat_Wall_Jump, mainBodyChunk, false, 1f, 1f);
                     canWallJump = 0;
                 }
-            }
-            else if (canWaterJump > 0)
-            {
-                RainMeadow.Debug("water jump");
-                OnJump();
-                this.jumpBoost = 8f;
-                var jumpdir = (cs[0].pos - cs[1].pos).normalized + inputDir;
-                for (int i = 0; i < cc; i++)
-                {
-                    cs[i].vel *= 0.4f;
-                    cs[i].vel += jumpdir * 8f * jumpFactor;
-                }
-                creature.room.PlaySound(SoundID.Slugcat_Wall_Jump, mainBodyChunk, false, 1f, 1f);
-                canWaterJump = 0;
-                canGroundJump = 0;
             }
             else if (canClimbJump > 0)
             {
@@ -676,12 +676,29 @@ namespace RainMeadow
                 this.jumpBoost = 0f;
             }
 
-            if (mcd.moveSpeed > 0f)
+
+            // air control ground control
+            if (mcd.moveSpeed > 0f && inputDir != Vector2.zero)
             {
                 var mainchunk = creature.mainBodyChunk;
-                if (inputDir.x != 0 && (Mathf.Abs(mainchunk.vel.x) < runSpeed || Mathf.Sign(mainchunk.vel.x) != Mathf.Sign(inputDir.x)))
+                if (!HasFooting && creature.room.gravity > zeroGTreshold && creature.mainBodyChunk.submersion < 0.5f)
                 {
-                    mainchunk.vel.x += 0.5f * inputDir.x * mcd.moveSpeed;
+                    // no footing, normal conditions, only X tracking for a bit of air-control
+                    var amount = Math.Min(0.5f, Mathf.Max(runSpeed * 0.5f * Mathf.Abs(inputDir.x) - Mathf.Abs(mainchunk.vel.x), 0));
+                    if (amount > 0f)
+                    {
+                        mainchunk.vel.x += amount * inputDir.x * mcd.moveSpeed;
+                    }
+                }
+                else
+                {
+                    // omnidirectional control
+                    var velInDir = Vector2.Dot(mainchunk.vel, inputDir.normalized);
+                    var amount = Math.Min(0.5f, Mathf.Max(runSpeed * 0.5f - velInDir, 0));
+                    if (amount > 0f)
+                    {
+                        mainchunk.vel += amount * inputDir * mcd.moveSpeed;
+                    }
                 }
             }
 
