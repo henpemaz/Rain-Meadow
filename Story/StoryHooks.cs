@@ -500,6 +500,15 @@ namespace RainMeadow
             var origSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
             if (isStoryMode(out var gameMode))
             {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    gameMode.saveStateString = origSaveState.SaveToString();
+                }
+                else if (gameMode.saveStateString != null)
+                {
+                    origSaveState.LoadGame(gameMode.saveStateString, game);
+                }
+
                 var storyClientSettings = gameMode.clientSettings as StoryClientSettings;
 
                 if (storyClientSettings.myLastDenPos != null)
