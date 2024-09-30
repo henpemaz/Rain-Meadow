@@ -38,7 +38,6 @@ namespace RainMeadow
         public MultiplayerMenu mm;
         private bool flushArenaSittingForWaitingClients = false;
 
-        // TODO: Find out where the map loading comes in. How does game save my preference?
         public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
 
         public ArenaLobbyMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
@@ -441,6 +440,7 @@ namespace RainMeadow
             {
                 ArenaHelpers.ResetReadyUpLogic(arena, this);
             }
+
         }
 
 
