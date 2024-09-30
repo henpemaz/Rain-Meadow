@@ -29,6 +29,7 @@ namespace RainMeadow
         UIelementWrapper playerCountWrapper;
         public bool clientReadiedUp = false;
 
+
         int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x; // been using 1360 as ref
 
         public SimpleButton[] usernameButtons;
@@ -50,8 +51,8 @@ namespace RainMeadow
             {
                 currentGameType = ArenaSetup.GameTypeID.Competitive,
                 savFilePath = null,
-                
-               
+
+
             };
 
             FakeInitializeMultiplayerMenu();
@@ -93,7 +94,7 @@ namespace RainMeadow
             mm.GetGameTypeSetup.rainWhenOnePlayerLeft = false; // TODO:  Hook this to update logic due to level switching if we want it
             mm.GetGameTypeSetup.savingAndLoadingSession = false;
             mm.GetGameTypeSetup.saveCreatures = false;
-            
+
 
             mm.pages = pages;
             mm.mySoundLoopName = mySoundLoopName;
@@ -113,7 +114,7 @@ namespace RainMeadow
 
             mm.levelSelector = new LevelSelector(mm, pages[0], false);
             pages[0].subObjects.Add(mm.levelSelector);
-           
+
             mm.init = true;
         }
 
@@ -535,14 +536,18 @@ namespace RainMeadow
             classButtons = new ArenaOnlinePlayerJoinButton[OnlineManager.players.Count];
             if (OnlineManager.players.Count > 1)
             {
-                for (int l = 1; l < classButtons.Length; l++)
-                {
+            for (int l = 1; l < classButtons.Length; l++)
+            {
 
-                    classButtons[l] = new ArenaOnlinePlayerJoinButton(mm, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
-                    classButtons[l].buttonBehav.greyedOut = true;
-                    classButtons[l].portraitBlack = Custom.LerpAndTick(classButtons[l].portraitBlack, 1f, 0.06f, 0.05f);
-                    pages[0].subObjects.Add(classButtons[l]);
-                }
+                classButtons[l] = new ArenaOnlinePlayerJoinButton(mm, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
+                classButtons[l].buttonBehav.greyedOut = true;
+                classButtons[l].portraitBlack = Custom.LerpAndTick(classButtons[l].portraitBlack, 1f, 0.06f, 0.05f);
+                classButtons[l].portrait.fileName = "MultiplayerPortrait" + "01";
+                classButtons[l].portrait.LoadFile();
+                classButtons[l].portrait.sprite.SetElementByName(classButtons[l].portrait.fileName);
+
+                pages[0].subObjects.Add(classButtons[l]);
+            }
             }
         }
 
