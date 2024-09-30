@@ -43,7 +43,7 @@ namespace RainMeadow
             On.ArenaBehaviors.ExitManager.PlayerTryingToEnterDen += ExitManager_PlayerTryingToEnterDen;
             On.ArenaBehaviors.Evilifier.Update += Evilifier_Update;
             On.ArenaBehaviors.RespawnFlies.Update += RespawnFlies_Update;
-            
+
 
 
             On.ShortcutGraphics.ChangeAllExitsToSheltersOrDots += ShortcutGraphics_ChangeAllExitsToSheltersOrDots;
@@ -62,16 +62,52 @@ namespace RainMeadow
             // On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
 
             On.ArenaGameSession.Killing += ArenaGameSession_Killing;
+
+
             IL.CreatureCommunities.ctor += OverwriteArenaPlayerMax;
-
-
+            IL.ArenaGameSession.ctor += OverwriteArenaPlayerMax;
+            On.RWInput.PlayerRecentController_int += RWInput_PlayerRecentController_int;
+            On.RWInput.PlayerInputLogic_int_int += RWInput_PlayerInputLogic_int_int;
+            On.RWInput.PlayerUIInput_int += RWInput_PlayerUIInput_int;
 
         }
+
+        private Player.InputPackage RWInput_PlayerUIInput_int(On.RWInput.orig_PlayerUIInput_int orig, int playerNumber)
+        {
+            if (isArenaMode(out var _))
+            {
+                playerNumber = 0;
+            }
+            return orig(playerNumber);
+
+        }
+
+        private Player.InputPackage RWInput_PlayerInputLogic_int_int(On.RWInput.orig_PlayerInputLogic_int_int orig, int categoryID, int playerNumber)
+        {
+            if (isArenaMode(out var _))
+            {
+                playerNumber = 0;
+            }
+            return orig(categoryID, playerNumber);
+
+        }
+
+        private Rewired.Controller RWInput_PlayerRecentController_int(On.RWInput.orig_PlayerRecentController_int orig, int playerNumber)
+        {
+            if (isArenaMode(out var _))
+            {
+                playerNumber = 0;
+            }
+            return orig(playerNumber);
+
+        }
+
+
         private void ArenaGameSession_ctor(On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
         {
             orig(self, game);
-
             if (isArenaMode(out var arena))
+
             {
                 On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
             }
@@ -102,37 +138,42 @@ namespace RainMeadow
         // Thank you, Dragon-Seeker
         private void OverwriteArenaPlayerMax(ILContext il, bool checkLdarg = false, int maxReplace = -1)
         {
-            if (isArenaMode(out var arena))
+
+            List<Func<Instruction, bool>> predicates = new List<Func<Instruction, bool>>();
+
+            if (checkLdarg) predicates.Add(i => i.MatchLdarg(0));
+
+            predicates.Add(i => i.MatchLdcI4(4));
+
+            var cursor = new ILCursor(il);
+            var x = 0;
+
+            while (cursor.TryGotoNext(MoveType.After, predicates.ToArray()))
             {
+                x++;
 
-                List<Func<Instruction, bool>> predicates = new List<Func<Instruction, bool>>();
-
-                if (checkLdarg) predicates.Add(i => i.MatchLdarg(0));
-
-                predicates.Add(i => i.MatchLdcI4(4));
-
-                var cursor = new ILCursor(il);
-                var x = 0;
-
-                while (cursor.TryGotoNext(MoveType.After, predicates.ToArray()))
+                cursor.EmitDelegate((int oldNum) =>
                 {
-                    x++;
+                    if (isArenaMode(out var arena))
+                    {
+                        return arena.arenaSittingOnlineOrder.Count;
+                    }
+                    return oldNum;
+                });
 
-                    cursor.EmitDelegate((int oldNum) => arena.arenaSittingOnlineOrder.Count);
+                if (maxReplace == x) break;
+            }
 
-                    if (maxReplace == x) break;
-                }
-
-                if (x == 0)
-                {
-                    RainMeadow.Error($"Error in adjusting ArenaPlayerMax at Method: {il.Method.Name}]");
-                }
-                else
-                {
-                    RainMeadow.Debug($"Increased player count: Method at {il.Method.Name}]");
-                }
+            if (x == 0)
+            {
+                Logger.LogError($"Error in adjusting ArenaPlayerMax at Method: {il.Method.Name}]");
+            }
+            else
+            {
+                Logger.LogInfo($"Increased player count: Method at {il.Method.Name}]");
             }
         }
+
 
         private void ShortcutGraphics_ChangeAllExitsToSheltersOrDots(On.ShortcutGraphics.orig_ChangeAllExitsToSheltersOrDots orig, ShortcutGraphics self, bool toShelters)
         {
@@ -321,9 +362,19 @@ namespace RainMeadow
             if (isArenaMode(out var arena))
             {
                 if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
-                    throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+                {
+                    RainMeadow.Error("Player doesn't have OnlineEntity counterpart!!");
+                    self.SlugCatClass = SlugcatStats.Name.White;
+                    return;
+                }
                 var scs = OnlineManager.lobby.activeEntities.OfType<ArenaClientSettings>().FirstOrDefault(e => e.owner == oe.owner);
-                if (scs == null) throw new InvalidProgrammerException("OnlinePlayer doesn't have ArenaClientSettings!!");
+                if (scs == null)
+                {
+                    RainMeadow.Error("OnlinePlayer doesn't have ArenaClientSettings!!");
+                    self.SlugCatClass = SlugcatStats.Name.White;
+                    return;
+
+                };
                 self.SlugCatClass = scs.playingAs;
             }
         }
@@ -389,8 +440,8 @@ namespace RainMeadow
                     }
                     self.ArenaSitting.players.Clear();
                     arena.returnToLobby = true;
-                   
-                   
+
+
 
                 }
 
@@ -580,7 +631,6 @@ namespace RainMeadow
                 {
                     for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
                     {
-
                         self.result[i].readyForNextRound = true;
 
                     }
@@ -785,134 +835,133 @@ namespace RainMeadow
         private void ArenaGameSession_SpawnPlayers(On.ArenaGameSession.orig_SpawnPlayers orig, ArenaGameSession self, Room room, List<int> suggestedDens)
         {
 
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
-                if (RainMeadow.isArenaMode(out var arena))
+
+                List<OnlinePlayer> list = new List<OnlinePlayer>();
+
+
+                List<OnlinePlayer> list2 = new List<OnlinePlayer>();
+                for (int j = 0; j < arena.arenaSittingOnlineOrder.Count; j++)
+                {
+                    list2.Add(OnlineManager.players[j]);
+                }
+
+                while (list2.Count > 0)
+                {
+                    int index = UnityEngine.Random.Range(0, list2.Count);
+                    list.Add(list2[index]);
+                    list2.RemoveAt(index);
+                }
+
+
+                int exits = self.game.world.GetAbstractRoom(0).exits;
+                int[] array = new int[exits];
+                if (suggestedDens != null)
+                {
+                    for (int k = 0; k < suggestedDens.Count; k++)
+                    {
+                        if (suggestedDens[k] >= 0 && suggestedDens[k] < array.Length)
+                        {
+                            array[suggestedDens[k]] -= 1000;
+                        }
+                    }
+                }
+
+                int num = UnityEngine.Random.Range(0, exits);
+                float num2 = float.MinValue;
+                for (int m = 0; m < exits; m++)
+                {
+                    float num3 = UnityEngine.Random.value - (float)array[m] * 1000f;
+                    RWCustom.IntVector2 startTile = room.ShortcutLeadingToNode(m).StartTile;
+                    for (int n = 0; n < exits; n++)
+                    {
+                        if (n != m && array[n] > 0)
+                        {
+                            num3 += Mathf.Clamp(startTile.FloatDist(room.ShortcutLeadingToNode(n).StartTile), 8f, 17f) * UnityEngine.Random.value;
+                        }
+                    }
+
+                    if (num3 > num2)
+                    {
+                        num = m;
+                        num2 = num3;
+                    }
+                }
+
+                array[num]++;
+
+
+                RainMeadow.Debug("Trying to create an abstract creature");
+
+                sSpawningAvatar = true;
+
+                AbstractCreature abstractCreature = new AbstractCreature(self.game.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(0, -1, -1, -1), new EntityID(-1, 0));
+
+
+
+                RainMeadow.Debug("assigned ac, moving to den");
+
+
+                AbstractRoom_Arena_MoveEntityToDen(self.game.world, abstractCreature.Room, abstractCreature); // Arena adds abstract creature then realizes it later
+                RainMeadow.Debug("moved, setting online creature");
+
+
+                SetOnlineCreature(abstractCreature);
+
+                sSpawningAvatar = false;
+
+                if (OnlineManager.lobby.isActive)
+                {
+                    OnlineManager.instance.Update(); // Subresources are active, gamemode is online, ticks are happening. Not sure why we'd need this here
+                }
+
+
+                if (ModManager.MSC)
+                {
+                    self.game.cameras[0].followAbstractCreature = abstractCreature;
+                }
+
+                if (self.chMeta != null)
                 {
 
-                    List<OnlinePlayer> list = new List<OnlinePlayer>();
-
-
-                    List<OnlinePlayer> list2 = new List<OnlinePlayer>();
-                    for (int j = 0; j < OnlineManager.players.Count; j++)
-                    {
-                        list2.Add(OnlineManager.players[j]);
-                    }
-
-                    while (list2.Count > 0)
-                    {
-                        int index = UnityEngine.Random.Range(0, list2.Count);
-                        list.Add(list2[index]);
-                        list2.RemoveAt(index);
-                    }
-
-
-                    int exits = self.game.world.GetAbstractRoom(0).exits;
-                    int[] array = new int[exits];
-                    if (suggestedDens != null)
-                    {
-                        for (int k = 0; k < suggestedDens.Count; k++)
-                        {
-                            if (suggestedDens[k] >= 0 && suggestedDens[k] < array.Length)
-                            {
-                                array[suggestedDens[k]] -= 1000;
-                            }
-                        }
-                    }
-
-                    int num = UnityEngine.Random.Range(0, exits);
-                    float num2 = float.MinValue;
-                    for (int m = 0; m < exits; m++)
-                    {
-                        float num3 = UnityEngine.Random.value - (float)array[m] * 1000f;
-                        RWCustom.IntVector2 startTile = room.ShortcutLeadingToNode(m).StartTile;
-                        for (int n = 0; n < exits; n++)
-                        {
-                            if (n != m && array[n] > 0)
-                            {
-                                num3 += Mathf.Clamp(startTile.FloatDist(room.ShortcutLeadingToNode(n).StartTile), 8f, 17f) * UnityEngine.Random.value;
-                            }
-                        }
-
-                        if (num3 > num2)
-                        {
-                            num = m;
-                            num2 = num3;
-                        }
-                    }
-
-                    array[num]++;
-
-
-                    RainMeadow.Debug("Trying to create an abstract creature");
-
-                    sSpawningAvatar = true;
-
-                    AbstractCreature abstractCreature = new AbstractCreature(self.game.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(0, -1, -1, -1), new EntityID(-1, 0));
-
-
-
-                    RainMeadow.Debug("assigned ac, moving to den");
-
-
-                    AbstractRoom_Arena_MoveEntityToDen(self.game.world, abstractCreature.Room, abstractCreature); // Arena adds abstract creature then realizes it later
-                    RainMeadow.Debug("moved, setting online creature");
-
-
-                    SetOnlineCreature(abstractCreature);
-
-                    sSpawningAvatar = false;
-
-                    if (OnlineManager.lobby.isActive)
-                    {
-                        OnlineManager.instance.Update(); // Subresources are active, gamemode is online, ticks are happening. Not sure why we'd need this here
-                    }
-
-
-                    if (ModManager.MSC)
-                    {
-                        self.game.cameras[0].followAbstractCreature = abstractCreature;
-                    }
-
-                    if (self.chMeta != null)
-                    {
-                        abstractCreature.state = new PlayerState(abstractCreature, 0, self.characterStats_Mplayer[0].name, isGhost: false);
-                    }
-                    else
-                    {
-                        abstractCreature.state = new PlayerState(abstractCreature, 0, new SlugcatStats.Name(ExtEnum<SlugcatStats.Name>.values.GetEntry(0)), isGhost: false);
-                    }
-
-
-                    RainMeadow.Debug("Arena: Realize Creature!");
-                    abstractCreature.Realize();
-
-                    var shortCutVessel = new ShortcutHandler.ShortCutVessel(new RWCustom.IntVector2(-1, -1), abstractCreature.realizedCreature, self.game.world.GetAbstractRoom(0), 0);
-                    shortCutVessel.entranceNode = num;
-                    shortCutVessel.room = self.game.world.GetAbstractRoom(abstractCreature.Room.name);
-                    abstractCreature.pos.room = self.game.world.offScreenDen.index;
-                    self.game.shortcuts.betweenRoomsWaitingLobby.Add(shortCutVessel);
-                    self.AddPlayer(abstractCreature);
-                    if (ModManager.MSC)
-                    {
-                        if ((abstractCreature.realizedCreature as Player).SlugCatClass == SlugcatStats.Name.Red)
-                        {
-                            self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.All, -1, 0, -0.75f);
-                            self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Scavengers, -1, 0, 0.5f);
-                        }
-
-                        if ((abstractCreature.realizedCreature as Player).SlugCatClass == SlugcatStats.Name.Yellow)
-                        {
-                            self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.All, -1, 0, 0.75f);
-                            self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Scavengers, -1, 0, 0.3f);
-                        }
-
-
-                    }
-
-                    self.playersSpawned = true;
+                    abstractCreature.state = new PlayerState(abstractCreature, 0, self.characterStats_Mplayer[0].name, isGhost: false);
                 }
+                else
+                {
+                    abstractCreature.state = new PlayerState(abstractCreature, 0, new SlugcatStats.Name(ExtEnum<SlugcatStats.Name>.values.GetEntry(0)), isGhost: false);
+                }
+
+
+                RainMeadow.Debug("Arena: Realize Creature!");
+                abstractCreature.Realize();
+
+                var shortCutVessel = new ShortcutHandler.ShortCutVessel(new RWCustom.IntVector2(-1, -1), abstractCreature.realizedCreature, self.game.world.GetAbstractRoom(0), 0);
+                shortCutVessel.entranceNode = num;
+                shortCutVessel.room = self.game.world.GetAbstractRoom(abstractCreature.Room.name);
+                abstractCreature.pos.room = self.game.world.offScreenDen.index;
+                self.game.shortcuts.betweenRoomsWaitingLobby.Add(shortCutVessel);
+                self.AddPlayer(abstractCreature);
+                if (ModManager.MSC)
+                {
+                    if ((abstractCreature.realizedCreature as Player).SlugCatClass == SlugcatStats.Name.Red)
+                    {
+                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.All, -1, 0, -0.75f);
+                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Scavengers, -1, 0, 0.5f);
+                    }
+
+                    if ((abstractCreature.realizedCreature as Player).SlugCatClass == SlugcatStats.Name.Yellow)
+                    {
+                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.All, -1, 0, 0.75f);
+                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Scavengers, -1, 0, 0.3f);
+                    }
+
+
+                }
+
+                self.playersSpawned = true;
             }
+
             else
             {
                 orig(self, room, suggestedDens);
