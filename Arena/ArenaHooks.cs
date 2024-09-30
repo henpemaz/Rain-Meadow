@@ -631,7 +631,6 @@ namespace RainMeadow
                 {
                     for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
                     {
-                        RainMeadow.Debug("Pain");
                         self.result[i].readyForNextRound = true;
 
                     }
