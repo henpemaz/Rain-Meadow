@@ -71,10 +71,6 @@ tint implementation missing in most creatures
 lizards shouldn't open mouth to bite
 rats shouldn't panic
 
-creature select can be inconsistent at times: I have big noodlefly selected, i enter the game, i'm small, i log off and click big again, now i'm big
-
-emote preview background color is really bad right now
-
 emote keybind not rebindable
 does it need to be its own or would GRAB be ok?
 	depends on what switches pages
@@ -92,10 +88,6 @@ following others around is hard
 	player list on passage screen
 
 wormgrass can still eat you (big patches in FA)
-
-sometimes one loads in the wrong region? might have to do with enabling mods shifting region indexes
-	roomnames become indexes on load, but players can enable/disable regions before playing, should reload progression on joinlobby
-	logs here https://discord.com/channels/1094716194180841602/1155268800669831270/1288191148547899524
 
 echo sky animation is too slow needs to converge
 
@@ -126,17 +118,17 @@ emotes go off-screen too often, need to show them in-screen near the creature wh
 seems to happen just too often that creatures don't customize
 
 If you use movement keys (left/right) while leaping, you kill your own momentum even if it's on the direction you are leaping to. If you leap without pressing anything you go further away.  Momentum should be kept when pressing the same direction you are leaping to
+todo check this with all creatures, might be solved already
 
 Lantern mouse: They struggle to grab onto poles when jumping, and overall seen hard to walk on horizontal poles. They need to be rail-roaded into poles more strongly, like how lizards/scavengers are
 
 Scavenger: Scavenger's leap seems to only throw you forward if you are at the very edge of a ground. Other creatures can leap from any part of the ground and be launched as normal
-
-Squidcada & slugcat: On the emote tab, the emotion emotes have a white background. For species that are light colored, they blend together with the white background making it harder to read the silhouette/emote. The background color for those cases should be a dark grey/tinted
-I haven't played with slugcat to be sure but for squidcada, I had trouble telling from a glance what emote I wanted to pick, and I was the one who made the emotes so definetelly the white was messing me up lol
+recheck, might be solved
 
 General: Tint seems to be having sync issues, people randomly change between the original color of the animal, to their tint color in pure form, to anything in-between (the foo had an example above, they tinted themselves red to look dark orange, but for everyone on the lobby they looked pure red)
 
 QoL: Some sort of display of how the colors should look in-game? The tint system seems to be confusing at first. Nothing too fancy, just a creature symbol that has the main color of the skin, and then applying tint would also apply it to the symbol to show a rough estimate on how it would look!
+task: rework into "previewcolor" to make sure we arent accidentally overriding anything, which we might be for scav body tints
 
 toggle collision as a setting
 
