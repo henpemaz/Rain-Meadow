@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using Kittehface.Framework20;
+using System.Runtime.InteropServices;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -27,6 +29,8 @@ namespace RainMeadow
         private OpTinyColorPicker eyeColorPicker;
         OpSliderTick playerCountSlider;
         UIelementWrapper playerCountWrapper;
+        public UIelementWrapper pain1;
+        public UIelementWrapper pain2;
         public bool clientReadiedUp = false;
 
 
@@ -529,18 +533,18 @@ namespace RainMeadow
             classButtons = new ArenaOnlinePlayerJoinButton[OnlineManager.players.Count];
             if (OnlineManager.players.Count > 1)
             {
-            for (int l = 1; l < classButtons.Length; l++)
-            {
+                for (int l = 1; l < classButtons.Length; l++)
+                {
 
-                classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
-                classButtons[l].buttonBehav.greyedOut = true;
-                classButtons[l].portraitBlack = Custom.LerpAndTick(classButtons[l].portraitBlack, 1f, 0.06f, 0.05f);
-                classButtons[l].portrait.fileName = "MultiplayerPortrait" + "01";
-                classButtons[l].portrait.LoadFile();
-                classButtons[l].portrait.sprite.SetElementByName(classButtons[l].portrait.fileName);
+                    classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
+                    classButtons[l].buttonBehav.greyedOut = true;
+                    classButtons[l].portraitBlack = Custom.LerpAndTick(classButtons[l].portraitBlack, 1f, 0.06f, 0.05f);
+                    classButtons[l].portrait.fileName = "MultiplayerPortrait" + "01";
+                    classButtons[l].portrait.LoadFile();
+                    classButtons[l].portrait.sprite.SetElementByName(classButtons[l].portrait.fileName);
 
-                pages[0].subObjects.Add(classButtons[l]);
-            }
+                    pages[0].subObjects.Add(classButtons[l]);
+                }
             }
         }
 
@@ -593,15 +597,15 @@ namespace RainMeadow
             this.pages[0].subObjects.Add(eyeLabel);
 
             bodyColorPicker = new OpTinyColorPicker(this, new Vector2(705, 353), "FFFFFF");
-            var wrapper = new UIelementWrapper(tabWrapper, bodyColorPicker);
+            pain1 = new UIelementWrapper(tabWrapper, bodyColorPicker);
             bodyColorPicker.OnValueChangedEvent += ColorPicker_OnValueChangedEvent;
 
             eyeColorPicker = new OpTinyColorPicker(this, new Vector2(810, 353), "000000");
-            var wrapper2 = new UIelementWrapper(tabWrapper, eyeColorPicker);
+            pain2 = new UIelementWrapper(tabWrapper, eyeColorPicker);
             eyeColorPicker.OnValueChangedEvent += ColorPicker_OnValueChangedEvent;
 
-            pages[0].subObjects.Add(wrapper);
-            pages[0].subObjects.Add(wrapper2);
+            this.mainPage.subObjects.Add(pain1);
+            this.mainPage.subObjects.Add(pain2);
 
 
         }
