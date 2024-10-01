@@ -69,8 +69,11 @@ namespace RainMeadow
         private Player.InputPackage package;
         private float gridLastFade;
 
+        UnityEngine.KeyCode[] alphakeys = new KeyCode[] { KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3, KeyCode.Alpha4, KeyCode.Alpha5, KeyCode.Alpha6, KeyCode.Alpha7, KeyCode.Alpha8 };
+
         public MeadowEmoteHud(HUD.HUD hud, RoomCamera camera, Creature owner) : base(hud)
         {
+
             this.camera = camera;
             this.owner = owner;
             this.game = camera.game;
@@ -510,11 +513,8 @@ namespace RainMeadow
         bool debugHiddenn;
         public override void Draw(float timeStacker)
         {
-            // debug
-            if(game.devToolsActive && Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value))
-            {
-                debugHiddenn = !debugHiddenn;
-            }
+
+            FrameInput();
 
             var hideAll = game.pauseMenu != null || debugHiddenn;
             base.Draw(timeStacker);
@@ -560,6 +560,34 @@ namespace RainMeadow
                 this.knobSprite.y = knobDrawPos.y * (mainWheelRad - 18f) + mainWheelPos.y;
 
                 centerLabel.isVisible = true;
+            }
+        }
+
+        private void FrameInput()
+        {
+            // debug
+            if (game.devToolsActive && Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value))
+            {
+                debugHiddenn = !debugHiddenn;
+            }
+
+            // alpha row
+            for (int i = 0; i < alphakeys.Length; i++)
+            {
+                if (Input.GetKeyDown(alphakeys[i]))
+                {
+                    var selectedEmote = radialEmotes[currentPage][i];
+                    if (selectedEmote != null)
+                    {
+                        EmotePressed(selectedEmote);
+                    }
+                }
+            }
+
+            // backspace
+            if (Input.GetKeyDown(KeyCode.Backspace))
+            {
+                ClearEmotes();
             }
         }
 

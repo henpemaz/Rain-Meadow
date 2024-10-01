@@ -76,8 +76,6 @@ does it need to be its own or would GRAB be ok?
 	depends on what switches pages
 	on controler right side gets busy?
 
-emote mapping on keyboard 1 throug 8 missing
-
 sandbox unlock items still present in meadow lmao
 
 passage but the map isn't saving
@@ -139,6 +137,10 @@ add noot emotes
 add lanternmouse selectscreen
 
 redo scavenger selectscreen
+
+crashes on entering shelter in meadowmode with msc + remix on
+
+emotes sometimes don't stop fading when new emotes are added
 
 engine thoughts
 that one crash notchoc posted about a Destroy related to roomjoin
