@@ -58,6 +58,8 @@ namespace RainMeadow
 
 
             };
+            manager.menuesMouseMode = true;
+            
             FakeInitializeMultiplayerMenu();
             UninitializeInheritedScene();
             BindSettings();
@@ -83,6 +85,7 @@ namespace RainMeadow
 
         void FakeInitializeMultiplayerMenu()
         {
+           
             mm = (MultiplayerMenu)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(MultiplayerMenu));
             mm.ID = ProcessManager.ProcessID.MultiplayerMenu;
             mm.manager = manager;
@@ -98,6 +101,8 @@ namespace RainMeadow
 
             mm.mySoundLoopName = mySoundLoopName;
             mm.mySoundLoopID = mySoundLoopID;
+            
+            mm.manager.menuesMouseMode = true;
 
             UnlockAndLoadLevels();
 
@@ -113,7 +118,6 @@ namespace RainMeadow
 
             mm.levelSelector = new LevelSelector(mm, pages[0], false);
             pages[0].subObjects.Add(mm.levelSelector);
-
             mm.init = true;
         }
 
@@ -322,7 +326,7 @@ namespace RainMeadow
 
         public override void Update()
         {
-            // base.Update();
+            //base.Update();
             mm.Update();
 
 
