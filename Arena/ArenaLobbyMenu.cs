@@ -58,7 +58,7 @@ namespace RainMeadow
             FakeInitializeMultiplayerMenu();
             BindSettings();
 
-
+            // Get this removeinherited back
             BuildLayout();
             ArenaHelpers.ResetReadyUpLogic(arena, this);
 
@@ -152,7 +152,7 @@ namespace RainMeadow
         SimplerButton CreateButton(string text, Vector2 pos, Vector2 size, Action<SimplerButton>? clicked = null, Page? page = null)
         {
             page ??= pages[0];
-            var b = new SimplerButton(mm, page, text, pos, size);
+            var b = new SimplerButton(this, page, text, pos, size);
             if (clicked != null) b.OnClick += clicked;
             page.subObjects.Add(b);
             return b;
@@ -586,7 +586,6 @@ namespace RainMeadow
             var bodyLabel = new MenuLabel(this, pages[0], Translate("Body color"), new Vector2(800, 353), new(0, 30), false);
             bodyLabel.label.alignment = FLabelAlignment.Right;
             this.pages[0].subObjects.Add(bodyLabel);
-
 
             var eyeLabel = new MenuLabel(this, pages[0], Translate("Eye color"), new Vector2(900, 353), new(0, 30), false);
             eyeLabel.label.alignment = FLabelAlignment.Right;
