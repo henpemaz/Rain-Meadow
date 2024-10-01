@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using Kittehface.Framework20;
+using System.Runtime.InteropServices;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -27,6 +29,8 @@ namespace RainMeadow
         private OpTinyColorPicker eyeColorPicker;
         OpSliderTick playerCountSlider;
         UIelementWrapper playerCountWrapper;
+        public UIelementWrapper bodyColor;
+        public UIelementWrapper eyeColor;
         public bool clientReadiedUp = false;
 
 
@@ -54,19 +58,14 @@ namespace RainMeadow
 
 
             };
-
             FakeInitializeMultiplayerMenu();
-
             UninitializeInheritedScene();
-
             BindSettings();
-
-
             BuildLayout();
             ArenaHelpers.ResetReadyUpLogic(arena, this);
 
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
-
+            //SetupCharacterCustomization();
 
         }
 
@@ -95,8 +94,8 @@ namespace RainMeadow
             mm.GetGameTypeSetup.savingAndLoadingSession = false;
             mm.GetGameTypeSetup.saveCreatures = false;
 
-
             mm.pages = pages;
+
             mm.mySoundLoopName = mySoundLoopName;
             mm.mySoundLoopID = mySoundLoopID;
 
@@ -117,6 +116,8 @@ namespace RainMeadow
 
             mm.init = true;
         }
+
+
 
         void BuildLayout()
         {
@@ -321,8 +322,9 @@ namespace RainMeadow
 
         public override void Update()
         {
-
+            // base.Update();
             mm.Update();
+
 
             if (meClassButton != null)
             {
@@ -411,8 +413,8 @@ namespace RainMeadow
         private void BindSettings()
         {
             this.personaSettings = (ArenaClientSettings)OnlineManager.lobby.gameMode.clientSettings;
-            personaSettings.bodyColor = UnityEngine.Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
-            personaSettings.eyeColor = UnityEngine.Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
+            personaSettings.bodyColor = RainMeadow.rainMeadowOptions.BodyColor.Value;
+            personaSettings.eyeColor = RainMeadow.rainMeadowOptions.EyeColor.Value;
             personaSettings.playingAs = SlugcatStats.Name.White;
 
         }
@@ -536,18 +538,18 @@ namespace RainMeadow
             classButtons = new ArenaOnlinePlayerJoinButton[OnlineManager.players.Count];
             if (OnlineManager.players.Count > 1)
             {
-            for (int l = 1; l < classButtons.Length; l++)
-            {
+                for (int l = 1; l < classButtons.Length; l++)
+                {
 
-                classButtons[l] = new ArenaOnlinePlayerJoinButton(mm, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
-                classButtons[l].buttonBehav.greyedOut = true;
-                classButtons[l].portraitBlack = Custom.LerpAndTick(classButtons[l].portraitBlack, 1f, 0.06f, 0.05f);
-                classButtons[l].portrait.fileName = "MultiplayerPortrait" + "01";
-                classButtons[l].portrait.LoadFile();
-                classButtons[l].portrait.sprite.SetElementByName(classButtons[l].portrait.fileName);
+                    classButtons[l] = new ArenaOnlinePlayerJoinButton(mm, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
+                    classButtons[l].buttonBehav.greyedOut = true;
+                    classButtons[l].portraitBlack = Custom.LerpAndTick(classButtons[l].portraitBlack, 1f, 0.06f, 0.05f);
+                    classButtons[l].portrait.fileName = "MultiplayerPortrait" + "01";
+                    classButtons[l].portrait.LoadFile();
+                    classButtons[l].portrait.sprite.SetElementByName(classButtons[l].portrait.fileName);
 
-                pages[0].subObjects.Add(classButtons[l]);
-            }
+                    pages[0].subObjects.Add(classButtons[l]);
+                }
             }
         }
 
@@ -595,21 +597,20 @@ namespace RainMeadow
             bodyLabel.label.alignment = FLabelAlignment.Right;
             this.pages[0].subObjects.Add(bodyLabel);
 
-
             var eyeLabel = new MenuLabel(this, pages[0], Translate("Eye color"), new Vector2(900, 353), new(0, 30), false);
             eyeLabel.label.alignment = FLabelAlignment.Right;
             this.pages[0].subObjects.Add(eyeLabel);
 
             bodyColorPicker = new OpTinyColorPicker(this, new Vector2(705, 353), "FFFFFF");
-            var wrapper = new UIelementWrapper(tabWrapper, bodyColorPicker);
+            bodyColor = new UIelementWrapper(tabWrapper, bodyColorPicker);
             bodyColorPicker.OnValueChangedEvent += ColorPicker_OnValueChangedEvent;
 
             eyeColorPicker = new OpTinyColorPicker(this, new Vector2(810, 353), "000000");
-            var wrapper2 = new UIelementWrapper(tabWrapper, eyeColorPicker);
+            eyeColor = new UIelementWrapper(tabWrapper, eyeColorPicker);
             eyeColorPicker.OnValueChangedEvent += ColorPicker_OnValueChangedEvent;
 
-            pages[0].subObjects.Add(wrapper);
-            pages[0].subObjects.Add(wrapper2);
+            this.mainPage.subObjects.Add(bodyColor);
+            this.mainPage.subObjects.Add(eyeColor);
 
 
         }
