@@ -600,6 +600,13 @@ namespace RainMeadow
             lastSaved = UnityEngine.Time.realtimeSinceStartup;
         }
 
+        public static void ReloadProgression()
+        {
+            RainMeadow.DebugMe();
+            progressionData = null;
+            LoadProgression();
+        }
+
         public static void LoadDefaultProgression()
         {
             RainMeadow.DebugMe();

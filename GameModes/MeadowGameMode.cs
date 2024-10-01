@@ -13,7 +13,7 @@ namespace RainMeadow
 
         public MeadowGameMode(Lobby lobby) : base(lobby)
         {
-            MeadowProgression.LoadProgression();
+
         }
 
         public override ProcessManager.ProcessID MenuProcessId()
@@ -62,6 +62,7 @@ namespace RainMeadow
             base.ResourceAvailable(res);
             if (res is Lobby lobby)
             {
+                MeadowProgression.ReloadProgression();
                 lobby.AddData<MeadowLobbyData>(true);
             }
             else if (res is WorldSession ws)
