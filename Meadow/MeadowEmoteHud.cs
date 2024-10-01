@@ -398,7 +398,7 @@ namespace RainMeadow
             }
             else if (controller is Rewired.Keyboard keyboard)
             {
-                this.radialPickerActive = keyboard.GetKey(KeyCode.C);
+                this.radialPickerActive = package.pckp;
                 if (radialPickerActive)
                 {
                     if (!lastRadialPickerActive)

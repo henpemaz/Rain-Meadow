@@ -71,11 +71,6 @@ tint implementation missing in most creatures
 lizards shouldn't open mouth to bite
 rats shouldn't panic
 
-emote keybind not rebindable
-does it need to be its own or would GRAB be ok?
-	depends on what switches pages
-	on controler right side gets busy?
-
 sandbox unlock items still present in meadow lmao
 
 passage but the map isn't saving
