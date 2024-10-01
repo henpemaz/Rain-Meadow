@@ -67,9 +67,6 @@ visualize selected skin
 
 tint implementation missing in most creatures
 
-eggbug feels slow
-eggbug should have super jump at all times not just pounce, match how jumpy they are in game
-
 "creature emotions" need addressing
 lizards shouldn't open mouth to bite
 rats shouldn't panic
@@ -110,8 +107,6 @@ wish there was a symbol for outskirts
 
 double jumps out of the water, way too much speed
 
-liz side of pole jump weak
-
 ds a09, the crawlspace on left, creatures don't snap to crawling in it
 
 ds c03 exist is at water height wont path
@@ -123,10 +118,6 @@ creatures not cleared on enter creature pipe
 echo tentacle bounces bet screens in long rooms
 
 scav climbpos doesn't sync
-
-liz pounce problem! pre-moon room, can't clear pounce jump
-
-liz overall air after jump is bad, too much friction, where is it coming from??
 
 need a proper "hide all" ui toggle
 
@@ -150,6 +141,12 @@ QoL: Some sort of display of how the colors should look in-game? The tint system
 toggle collision as a setting
 
 noot gets stuck on water surface, seems to always go left?
+
+add noot emotes
+
+add lanternmouse selectscreen
+
+redo scavenger selectscreen
 
 engine thoughts
 that one crash notchoc posted about a Destroy related to roomjoin

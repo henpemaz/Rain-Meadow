@@ -360,7 +360,7 @@ namespace RainMeadow
             // this actually changes their colors lmao
             //scavenger.abstractCreature.personality.energy = 1f; // no being lazy
 
-            jumpFactor = 1.0f;
+            jumpFactor = 1.2f;
         }
 
         private bool forceMoving;

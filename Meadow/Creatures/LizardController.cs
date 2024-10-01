@@ -43,6 +43,10 @@ namespace RainMeadow
             if (creatureControllers.TryGetValue(self, out var c))
             {
                 if (Input.GetKey(KeyCode.L)) RainMeadow.Error("following connection: " + self.followingConnection);
+                if (Input.GetKey(KeyCode.L)) RainMeadow.Error("pre vel: " + self.mainBodyChunk.vel);
+                orig(self, runSpeed);
+                if (Input.GetKey(KeyCode.L)) RainMeadow.Error("post vel: " + self.mainBodyChunk.vel);
+                return;
             }
             orig(self, runSpeed);
         }
@@ -281,7 +285,7 @@ namespace RainMeadow
             this.lizard = lizard;
             lizard.abstractCreature.personality.energy = 1f; // stop being lazy
             jumpFactor = 1.2f;
-            runSpeed = 4.4f;
+            runSpeed = 4.5f;
             // this.needsLight = false; // has builtin light
             // or so I thought but vanilla light is too small, give it two!
             canZeroGClimb = true;
@@ -478,7 +482,7 @@ namespace RainMeadow
                 for (int i = 0; i < creature.bodyChunks.Length; i++)
                 {
                     BodyChunk bodyChunk = lizard.bodyChunks[i];
-                    if (Mathf.Abs(bodyChunk.vel.x) > runSpeed)
+                    if (Mathf.Abs(bodyChunk.vel.x) > runSpeed * 2f)
                     {
                         bodyChunk.vel.x *= 0.98f;
                     }
