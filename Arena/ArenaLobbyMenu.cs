@@ -408,8 +408,8 @@ namespace RainMeadow
         private void BindSettings()
         {
             this.personaSettings = (ArenaClientSettings)OnlineManager.lobby.gameMode.clientSettings;
-            personaSettings.bodyColor = bodyColorPicker.valuecolor;
-            personaSettings.eyeColor = eyeColorPicker.valuecolor;
+            personaSettings.bodyColor = RainMeadow.rainMeadowOptions.BodyColor.Value;
+            personaSettings.eyeColor = RainMeadow.rainMeadowOptions.EyeColor.Value;
             personaSettings.playingAs = SlugcatStats.Name.White;
 
         }
