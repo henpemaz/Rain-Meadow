@@ -56,9 +56,6 @@ namespace RainMeadow
             };
 
             FakeInitializeMultiplayerMenu();
-
-            UninitializeInheritedScene();
-
             BindSettings();
 
 
@@ -66,20 +63,10 @@ namespace RainMeadow
             ArenaHelpers.ResetReadyUpLogic(arena, this);
 
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
-
+            SetupCharacterCustomization();
 
         }
 
-        void UninitializeInheritedScene()
-        {
-            mainPage.subObjects.Remove(this.backObject);
-
-            mainPage.subObjects.Add(this.backObject = new SimplerButton(mm, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f)));
-            (backObject as SimplerButton).OnClick += (btn) =>
-            {
-                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
-            };
-        }
 
 
         void FakeInitializeMultiplayerMenu()
@@ -124,6 +111,11 @@ namespace RainMeadow
             scene.AddIllustration(new MenuIllustration(mm, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
             scene.flatIllustrations[scene.flatIllustrations.Count - 1].sprite.shader = manager.rainWorld.Shaders["MenuText"];
             mm.playButton = CreateButton("READY?", new Vector2(ScreenWidth - 304, 50), new Vector2(110, 30), self => StartGame());
+            mm.backButton = new SimplerButton(this, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f));
+            (backObject as SimplerButton).OnClick += (btn) =>
+            {
+                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+            };
 
 
             BuildPlayerSlots();
