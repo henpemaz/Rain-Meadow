@@ -58,8 +58,10 @@ namespace RainMeadow
 
 
             };
+            manager.menuesMouseMode = true;
+            
             FakeInitializeMultiplayerMenu();
-            //UninitializeInheritedScene();
+            UninitializeInheritedScene();
             BindSettings();
             BuildLayout();
             ArenaHelpers.ResetReadyUpLogic(arena, this);
@@ -73,7 +75,7 @@ namespace RainMeadow
         {
             mainPage.subObjects.Remove(this.backObject);
 
-            mainPage.subObjects.Add(this.backObject = new SimplerButton(this, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f)));
+            mainPage.subObjects.Add(this.backObject = new SimplerButton(mm, pages[0], "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f)));
             (backObject as SimplerButton).OnClick += (btn) =>
             {
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
@@ -83,6 +85,7 @@ namespace RainMeadow
 
         void FakeInitializeMultiplayerMenu()
         {
+           
             mm = (MultiplayerMenu)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(MultiplayerMenu));
             mm.ID = ProcessManager.ProcessID.MultiplayerMenu;
             mm.manager = manager;
@@ -98,6 +101,8 @@ namespace RainMeadow
 
             mm.mySoundLoopName = mySoundLoopName;
             mm.mySoundLoopID = mySoundLoopID;
+            
+            mm.manager.menuesMouseMode = true;
 
             UnlockAndLoadLevels();
 
@@ -113,7 +118,6 @@ namespace RainMeadow
 
             mm.levelSelector = new LevelSelector(mm, pages[0], false);
             pages[0].subObjects.Add(mm.levelSelector);
-
             mm.init = true;
         }
 
@@ -322,7 +326,7 @@ namespace RainMeadow
 
         public override void Update()
         {
-            base.Update();
+            //base.Update();
             mm.Update();
 
 
