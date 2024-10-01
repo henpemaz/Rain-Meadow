@@ -29,8 +29,8 @@ namespace RainMeadow
         private OpTinyColorPicker eyeColorPicker;
         OpSliderTick playerCountSlider;
         UIelementWrapper playerCountWrapper;
-        public UIelementWrapper pain1;
-        public UIelementWrapper pain2;
+        public UIelementWrapper bodyColor;
+        public UIelementWrapper eyeColor;
         public bool clientReadiedUp = false;
 
 
@@ -602,15 +602,15 @@ namespace RainMeadow
             this.pages[0].subObjects.Add(eyeLabel);
 
             bodyColorPicker = new OpTinyColorPicker(this, new Vector2(705, 353), "FFFFFF");
-            pain1 = new UIelementWrapper(tabWrapper, bodyColorPicker);
+            bodyColor = new UIelementWrapper(tabWrapper, bodyColorPicker);
             bodyColorPicker.OnValueChangedEvent += ColorPicker_OnValueChangedEvent;
 
             eyeColorPicker = new OpTinyColorPicker(this, new Vector2(810, 353), "000000");
-            pain2 = new UIelementWrapper(tabWrapper, eyeColorPicker);
+            eyeColor = new UIelementWrapper(tabWrapper, eyeColorPicker);
             eyeColorPicker.OnValueChangedEvent += ColorPicker_OnValueChangedEvent;
 
-            this.mainPage.subObjects.Add(pain1);
-            this.mainPage.subObjects.Add(pain2);
+            this.mainPage.subObjects.Add(bodyColor);
+            this.mainPage.subObjects.Add(eyeColor);
 
 
         }
