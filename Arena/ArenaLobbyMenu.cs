@@ -82,8 +82,8 @@ namespace RainMeadow
             mm.GetGameTypeSetup.savingAndLoadingSession = false;
             mm.GetGameTypeSetup.saveCreatures = false;
 
-
             mm.pages = pages;
+
             mm.mySoundLoopName = mySoundLoopName;
             mm.mySoundLoopID = mySoundLoopID;
 
@@ -313,8 +313,9 @@ namespace RainMeadow
 
         public override void Update()
         {
-
+            base.Update();
             mm.Update();
+
 
             if (meClassButton != null)
             {
@@ -440,7 +441,7 @@ namespace RainMeadow
         private void AddMeClassButton() // doing unique stuff with player 0 so less annoying this way
         {
 
-            meClassButton = new ArenaOnlinePlayerJoinButton(mm, pages[0], new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f), 40f), 0);
+            meClassButton = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f), 40f), 0);
             meClassButton.buttonBehav.greyedOut = false;
             // TODO: Figure out what greys out the image so we can use as visual ref for readying up
             var currentColorIndex = 0;
@@ -506,7 +507,7 @@ namespace RainMeadow
                 playerId = (OnlineManager.mePlayer.id as SteamMatchmakingManager.SteamPlayerId).steamID;
             }
 
-            myUsernameButton[0] = new SimplerButton(mm, pages[0], name, new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * myUsernameButton.Length, 40f), new Vector2(num - 20f, 30f));
+            myUsernameButton[0] = new SimplerButton(this, pages[0], name, new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * myUsernameButton.Length, 40f), new Vector2(num - 20f, 30f));
             (myUsernameButton[0] as SimplerButton).OnClick += (_) =>
             {
                 string url = $"https://steamcommunity.com/profiles/{playerId}";
@@ -531,7 +532,7 @@ namespace RainMeadow
             for (int l = 1; l < classButtons.Length; l++)
             {
 
-                classButtons[l] = new ArenaOnlinePlayerJoinButton(mm, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
+                classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
                 classButtons[l].buttonBehav.greyedOut = true;
                 classButtons[l].portraitBlack = Custom.LerpAndTick(classButtons[l].portraitBlack, 1f, 0.06f, 0.05f);
                 classButtons[l].portrait.fileName = "MultiplayerPortrait" + "01";
@@ -566,7 +567,7 @@ namespace RainMeadow
                         playerId = (OnlineManager.players[k].id as SteamMatchmakingManager.SteamPlayerId).steamID;
                     }
 
-                    usernameButtons[k] = new SimplerButton(mm, pages[0], name, new Vector2(600f + k * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * usernameButtons.Length, 40f), new Vector2(num - 20f, 30f));
+                    usernameButtons[k] = new SimplerButton(this, pages[0], name, new Vector2(600f + k * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * usernameButtons.Length, 40f), new Vector2(num - 20f, 30f));
                     (usernameButtons[k] as SimplerButton).OnClick += (_) =>
                     {
                         string url = $"https://steamcommunity.com/profiles/{playerId}";
