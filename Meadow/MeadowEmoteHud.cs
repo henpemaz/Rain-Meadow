@@ -148,7 +148,7 @@ namespace RainMeadow
             hud.fContainers[1].AddChild(gridButtonContainer);
             gridVisible = true;
 
-            gridNeeded = 80;
+            gridNeeded = 240;
             gridFade = 1f;
 
             RainMeadow.Debug($"grid: done");
@@ -288,7 +288,7 @@ namespace RainMeadow
 
             if(mousePos != lastMousePos || dragging || this.gridHover.x != -1)
             {
-                gridNeeded = 80;
+                gridNeeded = Mathf.Max(gridNeeded, 80);
             }
             gridNeeded = Mathf.Max(gridNeeded - 1, 0);
             gridFade = Custom.LerpAndTick(gridFade, (gridNeeded > 0) ? 1f : 0f, 0.02f, 0.02f);
@@ -296,10 +296,11 @@ namespace RainMeadow
             // grid
             if (mouseDown && !lastMouseDown && gridButtonRect.Contains(mousePos))
             {
-                gridVisible = !gridVisible;
+                if (toggleHidden) { toggleHidden = false; gridVisible = true; }
+                else gridVisible = !gridVisible;
             }
 
-            if (gridVisible && !radialPickerActive)
+            if (!toggleHidden && gridVisible && !radialPickerActive)
             {
                 Vector2 offset = (mousePos - this.gridRect.position - new Vector2(0, gridRect.height)) * new Vector2(1, -1) / (EmoteGridDisplay.emotePreviewSize + EmoteGridDisplay.emotePreviewSpacing);
                 IntVector2 newHover = new IntVector2(Mathf.FloorToInt(offset.x), Mathf.FloorToInt(offset.y));
@@ -329,10 +330,11 @@ namespace RainMeadow
             // radial menu
             if (mouseDown && !lastMouseDown && radialButtonRect.Contains((Vector2)Futile.mousePosition))
             {
-                radialVisible = !radialVisible;
+                if (toggleHidden) { toggleHidden = false; radialVisible = true; }
+                else radialVisible = !radialVisible;
             }
 
-            if (radialVisible && !radialPickerActive) // mouse input
+            if (!toggleHidden && radialVisible && !radialPickerActive) // mouse input
             {
                 Vector2 offset = ((Vector2)Futile.mousePosition - this.mainWheelPos);
                 var mag = offset.magnitude;
@@ -510,13 +512,14 @@ namespace RainMeadow
         }
 
 
-        bool debugHiddenn;
+        bool toggleHidden;
+        bool fullyHidden;
         public override void Draw(float timeStacker)
         {
 
             FrameInput();
 
-            var hideAll = game.pauseMenu != null || debugHiddenn;
+            var hideAll = game.pauseMenu != null || fullyHidden;
             base.Draw(timeStacker);
             
             if (hideAll)
@@ -537,13 +540,13 @@ namespace RainMeadow
             {
                 var gridAlpha = Mathf.Lerp(gridFade, gridLastFade, timeStacker);
                 gridDisplay.alpha = gridAlpha;
-                gridDisplay.isVisible = gridVisible;
+                gridDisplay.isVisible = (gridVisible && !toggleHidden);
                 gridButtonContainer.isVisible = true;
-                gridButtonContainer.alpha = gridVisible ? 0.8f : 0.4f;
+                gridButtonContainer.alpha = (gridVisible && !toggleHidden) ? 0.8f : 0.4f;
 
-                radialDisplayer.isVisible = radialVisible || radialPickerActive;
+                radialDisplayer.isVisible = (radialVisible && !toggleHidden) || radialPickerActive;
                 radialButtonContainer.isVisible = true;
-                radialButtonContainer.alpha = radialVisible ? 0.8f : 0.4f;
+                radialButtonContainer.alpha = (radialVisible && !toggleHidden) ? 0.8f : 0.4f;
 
                 draggedEmote.isVisible = dragging;
                 draggedTile.isVisible = dragging;
@@ -566,9 +569,11 @@ namespace RainMeadow
         private void FrameInput()
         {
             // debug
-            if (game.devToolsActive && Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value))
+            if (Input.GetKeyDown(KeyCode.Tab))
             {
-                debugHiddenn = !debugHiddenn;
+                toggleHidden = !toggleHidden;
+                if (toggleHidden && game.devToolsActive && Input.GetKey(KeyCode.LeftShift)) fullyHidden = true;
+                else fullyHidden = false;
             }
 
             // alpha row
