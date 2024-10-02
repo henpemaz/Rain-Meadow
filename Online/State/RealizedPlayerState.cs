@@ -14,6 +14,10 @@ namespace RainMeadow
         private bool standing;
         [OnlineField]
         private bool glowing;
+        [OnlineField(nullable = true)]
+        private OnlineEntity.EntityId? spearOnBack;
+        //[OnlineField(nullable = true)]
+        //private OnlineEntity.EntityId? slugOnBack;
         [OnlineField(group = "inputs")]
         private ushort inputs;
         [OnlineFieldHalf(group = "inputs")]
@@ -44,16 +48,20 @@ namespace RainMeadow
             bodyModeIndex = (byte)p.bodyMode.Index;
             standing = p.standing;
             glowing = p.glowing;
+            spearOnBack = (p.spearOnBack?.spear?.abstractPhysicalObject is AbstractPhysicalObject apo
+                && OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) ? oe.id : null;
+            //slugOnBack = (p.slugOnBack?.slugcat?.abstractPhysicalObject is AbstractPhysicalObject apo0
+            //    && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe0)) ? oe0.id : null;
             if (p.tongue is Player.Tongue tongue)
             {
                 tongueMode = (byte)tongue.mode;
                 tonguePos = tongue.pos;
                 tongueIdealLength = tongue.idealRopeLength;
                 tongueRequestedLength = tongue.requestedRopeLength;
-                if (tongue.attachedChunk?.owner?.abstractPhysicalObject is AbstractPhysicalObject apo
-                    && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+                if (tongue.attachedChunk?.owner?.abstractPhysicalObject is AbstractPhysicalObject apo1
+                    && OnlinePhysicalObject.map.TryGetValue(apo1, out var oe1))
                 {
-                    tongueAttachedObject = oe.id;
+                    tongueAttachedObject = oe1.id;
                     tongueAttachedChunkIndex = (byte)tongue.attachedChunk.index;
                 }
             }
@@ -104,6 +112,10 @@ namespace RainMeadow
                 pl.bodyMode = new Player.BodyModeIndex(Player.BodyModeIndex.values.GetEntry(bodyModeIndex));
                 pl.standing = standing;
                 pl.glowing = glowing;
+                if (pl.spearOnBack != null)
+                    pl.spearOnBack.spear = (spearOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Spear;
+                //if (pl.slugOnBack != null)
+                //    pl.slugOnBack.slugcat = (slugOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Player;
 
                 if (pl.tongue is Player.Tongue tongue)
                 {
