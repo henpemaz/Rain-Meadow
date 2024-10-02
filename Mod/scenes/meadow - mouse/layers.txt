@@ -1,0 +1,4 @@
+rmmouse bg
+rmmouse lights
+rmmouse mouse
+rmmouse fg
