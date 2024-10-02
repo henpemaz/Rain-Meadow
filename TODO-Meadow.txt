@@ -68,10 +68,10 @@ visualize selected skin
 tint implementation missing in most creatures
 
 "creature emotions" need addressing
-lizards shouldn't open mouth to bite
+lizards shouldn't open mouth to bite -> can't reproduce
 rats shouldn't panic
 
-sandbox unlock items still present in meadow lmao
+sandbox unlock items still present in meadow lmao, seem inactive though
 
 passage but the map isn't saving
 
@@ -122,10 +122,6 @@ task: rework into "previewcolor" to make sure we arent accidentally overriding a
 toggle collision as a setting
 
 noot gets stuck on water surface, seems to always go left?
-
-add noot emotes
-
-add lanternmouse selectscreen
 
 redo scavenger selectscreen
 

@@ -71,7 +71,7 @@ namespace RainMeadow
                 emoteColor = new Color(85f, 120f, 120f, 255f) / 255f,
                 voiceId = RainMeadow.Ext_SoundID.RM_Slugcat_Call,
                 selectSpriteIndexes = new[] { 2 },
-                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["SU_C04"], 7, 28, -1),
+                startingCoords = new WorldCoordinate("SU_C04", 7, 28, -1),
             });
             public static Character Lizard = new("Lizard", true, new()
             {
@@ -81,7 +81,7 @@ namespace RainMeadow
                 emoteColor = new Color(197, 220, 232, 255f) / 255f,
                 voiceId = RainMeadow.Ext_SoundID.RM_Lizard_Call,
                 selectSpriteIndexes = new[] { 1, 2 },
-                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["DS_A06"], 12, 16, -1),
+                startingCoords = new WorldCoordinate("DS_A06", 12, 16, -1),
             });
             public static Character Cicada = new("Cicada", true, new()
             {
@@ -91,7 +91,7 @@ namespace RainMeadow
                 emoteColor = new Color(81f, 81f, 81f, 255f) / 255f,
                 voiceId = RainMeadow.Ext_SoundID.RM_Cicada_Call,
                 selectSpriteIndexes = new[] { 2 },
-                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["SI_D05"], 32, 18, -1),
+                startingCoords = new WorldCoordinate("SI_D05", 32, 18, -1),
             });
             public static Character Scavenger = new("Scavenger", true, new()
             {
@@ -101,37 +101,37 @@ namespace RainMeadow
                 emoteColor = new Color(80,87,80,255) / 255f,
                 voiceId = RainMeadow.Ext_SoundID.RM_Scav_Call,
                 selectSpriteIndexes = new[] { 1 },
-                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["GW_A11"], 26, 22, -1),
+                startingCoords = new WorldCoordinate("GW_A11", 26, 22, -1),
             });
             public static Character Noodlefly = new("Noodlefly", true, new()
             {
                 displayName = "NOODLEFLY",
-                emotePrefix = "sc_", // "noot_"
-                emoteAtlas = "emotes_slugcat",//"emotes_noot",
-                emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
+                emotePrefix = "noot_",
+                emoteAtlas = "emotes_noot",
+                emoteColor = Extensions.ColorFromHex(0x7e6f6a),
                 voiceId = RainMeadow.Ext_SoundID.RM_Noot_Call,
                 selectSpriteIndexes = new int[0],
-                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["LF_F02"], 63, 43, -1),
+                startingCoords = new WorldCoordinate("LF_F02", 63, 43, -1),
             });
             public static Character Eggbug = new("Eggbug", true, new()
             {
                 displayName = "EGGBUG",
-                emotePrefix = "sc_", // "noot_"
-                emoteAtlas = "emotes_slugcat",//"emotes_noot",
+                emotePrefix = "sc_", // "bug_"
+                emoteAtlas = "emotes_slugcat",//"emotes_bug",
                 emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
                 voiceId = RainMeadow.Ext_SoundID.RM_Eggbug_Call,
                 selectSpriteIndexes = new[] { 2 },
-                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["HI_B04"], 32, 18, -1),
+                startingCoords = new WorldCoordinate("HI_B04", 32, 18, -1),
             });
             public static Character LanternMouse = new("LanternMouse", true, new()
             {
                 displayName = "LANTERN MOUSE",
                 emotePrefix = "maus_",
                 emoteAtlas = "emotes_maus",
-                emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
+                emoteColor = Extensions.ColorFromHex(0x79635f),
                 voiceId = RainMeadow.Ext_SoundID.RM_Mouse_Call,
                 selectSpriteIndexes = new int[0],
-                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["SH_A21"], 32, 26, -1),
+                startingCoords = new WorldCoordinate("SH_A21", 32, 26, -1),
             });
         }
 
