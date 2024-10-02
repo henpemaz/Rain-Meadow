@@ -106,9 +106,9 @@ namespace RainMeadow
             public static Character Noodlefly = new("Noodlefly", true, new()
             {
                 displayName = "NOODLEFLY",
-                emotePrefix = "sc_", // "noot_"
-                emoteAtlas = "emotes_slugcat",//"emotes_noot",
-                emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
+                emotePrefix = "noot_",
+                emoteAtlas = "emotes_noot",
+                emoteColor = Extensions.ColorFromHex(0x7e6f6a),
                 voiceId = RainMeadow.Ext_SoundID.RM_Noot_Call,
                 selectSpriteIndexes = new int[0],
                 startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["LF_F02"], 63, 43, -1),
