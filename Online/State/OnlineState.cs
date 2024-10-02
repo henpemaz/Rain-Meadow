@@ -52,6 +52,7 @@ namespace RainMeadow
             public static readonly StateType OnlineSeedCobState = new("OnlineSeedCobState", typeof(OnlineSeedCob.OnlineSeedCobState));
             public static readonly StateType OnlineBubbleGrassState = new("OnlineBubbleGrassState", typeof(OnlineBubbleGrass.OnlineBubbleGrassState));
             public static readonly StateType OnlineSporePlantState = new("OnlineSporePlantState", typeof(OnlineSporePlant.OnlineSporePlantState));
+            public static readonly StateType OnlineSpearState = new("OnlineSpearState", typeof(OnlineSpear.OnlineSpearState));
             public static readonly StateType PlayerStateState = new("PlayerStateState", typeof(PlayerStateState));
             public static readonly StateType AbstractCreatureState = new("AbstractCreatureState", typeof(AbstractCreatureState));
             public static readonly StateType RealizedFlyState = new("RealizedFlyState", typeof(RealizedFlyState));
@@ -93,6 +94,7 @@ namespace RainMeadow
             public static readonly StateType OnlineBubbleGrassDefinition = new("OnlineBubbleGrassDefinition", typeof(OnlineBubbleGrass.OnlineBubbleGrassDefinition));
             public static readonly StateType OnlineSporePlantDefinition = new("OnlineSporePlantDefinition", typeof(OnlineSporePlant.OnlineSporePlantDefinition));
             public static readonly StateType OnlineCreatureDefinition = new("OnlineCreatureDefinition", typeof(OnlineCreature.OnlineCreatureDefinition));
+            public static readonly StateType OnlineSpearDefinition = new("OnlineSpearDefinition", typeof(OnlineSpear.OnlineSpearDefinition));
 
             public static readonly StateType GraspRef = new("GraspRef", typeof(GraspRef));
             public static readonly StateType AbstractObjStickReprSpearStick = new("AbstractObjStickRepr.SpearStick", typeof(AbstractObjStickRepr.SpearStick));
