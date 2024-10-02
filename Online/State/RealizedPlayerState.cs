@@ -21,6 +21,19 @@ namespace RainMeadow
         [OnlineFieldHalf(group = "inputs")]
         private float analogInputY;
 
+        [OnlineField(group = "tongue")]
+        public byte tongueMode;
+        [OnlineField(group = "tongue")]
+        public Vector2 tonguePos;
+        [OnlineFieldHalf(group = "tongue")]
+        public float tongueIdealLength;
+        [OnlineFieldHalf(group = "tongue")]
+        public float tongueRequestedLength;
+        [OnlineField(group = "tongue", nullable = true)]
+        public OnlineEntity.EntityId? tongueAttachedObject;
+        [OnlineField(group = "tongue")]
+        public byte tongueAttachedChunkIndex;
+
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
         {
@@ -31,6 +44,19 @@ namespace RainMeadow
             bodyModeIndex = (byte)p.bodyMode.Index;
             standing = p.standing;
             glowing = p.glowing;
+            if (p.tongue is Player.Tongue tongue)
+            {
+                tongueMode = (byte)tongue.mode;
+                tonguePos = tongue.pos;
+                tongueIdealLength = tongue.idealRopeLength;
+                tongueRequestedLength = tongue.requestedRopeLength;
+                if (tongue.attachedChunk?.owner?.abstractPhysicalObject is AbstractPhysicalObject apo
+                    && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+                {
+                    tongueAttachedObject = oe.id;
+                    tongueAttachedChunkIndex = (byte)tongue.attachedChunk.index;
+                }
+            }
             var i = p.input[0];
             inputs = (ushort)(
                   (i.x == 1 ? 1 << 0 : 0)
@@ -78,6 +104,23 @@ namespace RainMeadow
                 pl.bodyMode = new Player.BodyModeIndex(Player.BodyModeIndex.values.GetEntry(bodyModeIndex));
                 pl.standing = standing;
                 pl.glowing = glowing;
+
+                if (pl.tongue is Player.Tongue tongue)
+                {
+                    tongue.mode = new Player.Tongue.Mode(Player.Tongue.Mode.values.GetEntry(tongueMode));
+                    tongue.pos = tonguePos;
+                    tongue.idealRopeLength = tongueIdealLength;
+                    tongue.requestedRopeLength = tongueRequestedLength;
+                    if (tongue.mode == Player.Tongue.Mode.AttachedToTerrain)
+                    {
+                        tongue.terrainStuckPos = tongue.pos;
+                    }
+                    else if (tongue.mode == Player.Tongue.Mode.AttachedToObject
+                        && (tongueAttachedObject?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject is PhysicalObject po)
+                    {
+                        tongue.attachedChunk = po.bodyChunks[tongueAttachedChunkIndex];
+                    }
+                }
             }
             else
             {
