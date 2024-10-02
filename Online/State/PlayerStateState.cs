@@ -24,6 +24,7 @@ namespace RainMeadow
 
             if ((abstractCreature.realizedCreature as Player)?.objectInStomach is AbstractPhysicalObject apo)
             {
+                apo.pos.room = -1; // signal not-in-a-room
                 if (apo.realizedObject != null) apo.Abstractize(abstractCreature.pos);
                 if (!OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
                 {
