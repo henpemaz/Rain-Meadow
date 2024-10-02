@@ -12,7 +12,7 @@ namespace RainMeadow
         private void ItemHooks()
         {
             IL.SaveState.AbstractPhysicalObjectFromString += SaveState_AbstractPhysicalObjectFromString;
-            
+            On.SaveState.ReportConsumedItem += SaveState_ReportConsumedItem;
             APOFS += AbstractMeadowCollectible_APOFS;
 
             // Seedcobs are cursed
@@ -145,6 +145,14 @@ namespace RainMeadow
             c.MarkLabel(cont);
         }
 
+        private static void SaveState_ReportConsumedItem(On.SaveState.orig_ReportConsumedItem orig, SaveState self, World world, bool karmaFlower, int originroom, int placedObjectIndex, int waitCycles)
+        {
+            orig(self, world, karmaFlower, originroom, placedObjectIndex, waitCycles);
+            if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner)
+            {
+                OnlineManager.lobby.owner.InvokeRPC(ConsumableRPCs.reportConsumedItem, karmaFlower, originroom, placedObjectIndex, waitCycles);
+            }
+        }
 
         public delegate AbstractPhysicalObject APOFSHandler(World world, string[] arr, EntityID entityID, AbstractPhysicalObject.AbstractObjectType apoType, WorldCoordinate pos);
 
