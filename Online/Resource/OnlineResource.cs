@@ -423,6 +423,7 @@ namespace RainMeadow
             if (this is Lobby lobby && owner == player) // lobby owner has left
             {
                 RainMeadow.Debug($"Lobby owner {player} left!!!");
+                ParticipantLeft(player);
                 NewOwner(MatchmakingManager.instance.GetLobbyOwner());
             }
 
