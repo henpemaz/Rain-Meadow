@@ -38,22 +38,18 @@ creature todo
 	- requires final-ish seeds
 
 lizard todo
-- sometimes fails to grab poles when holding up
-- cyan-jump from any state
-- find a good seed for our buddies
+blues have trouble sticking to the ceiling
+blues have trouble climbing/pathing ledges
 
 scav todo
-- movement tends to overshoot
-- leap sometimes goes up/back
 - hands look silly when walking on falsefloor
-- jumping off ledge wack because regains footing too quick?
+- point things
 
 slugcat in meadow mode
 - point things
 
 squidcicada todo
 button for spin/dance ?
-remove charge ?
 
 eggbug
 	pick seeds and names
@@ -62,37 +58,18 @@ noot
 	pick seeds and names
 
 lantermouse
-	jump too small
 	seeds and names
-	add emotes
-
 
 controller-disconnedted popup might be inconsistent
 
 visualize selected skin
-	will get color previews
-	but could have tiny screenshots
+	will get color previews once all seeds are picked and sampled
 
 tint implementation missing in most creatures
-eggbug collapses on room transition (wolfy dms has logs)
-
-eggbug feels slow
-eggbug should have super jump at all times not just pounce, match how jumpy they are in game
-
-noodle has hard time going into pipes
-noodle could have a "grounded" state like cada
 
 "creature emotions" need addressing
 lizards shouldn't open mouth to bite
 rats shouldn't panic
-
-creature select can be inconsistent at times: I have big noodlefly selected, i enter the game, i'm small, i log off and click big again, now i'm big
-
-emote preview background color is really bad right now
-
-emote keybind not rebindable
-
-emote mapping on keyboard 1 throug 8 missing
 
 sandbox unlock items still present in meadow lmao
 
@@ -105,26 +82,13 @@ following others around is hard
 
 wormgrass can still eat you (big patches in FA)
 
-sometimes one loads in the wrong region? might have to do with enabling mods shifting region indexes
-	roomnames become indexes on load, but players can enable/disable regions before playing, should reload progression on joinlobby
-
 echo sky animation is too slow needs to converge
 
 echo reward anim is bad, fade to white is bad, no confetti??
 
-cursor disappears on fullscreen nondevtools etc
-
 wish there was a symbol for outskirts
 
-rat can't go through floors on the floor??
-
-scavenger gets stuck climbing close to top, won't go out of swingmode
-
 double jumps out of the water, way too much speed
-
-liz side of pole jump weak
-
-liz holding down didn't go down floor
 
 ds a09, the crawlspace on left, creatures don't snap to crawling in it
 
@@ -132,13 +96,46 @@ ds c03 exist is at water height wont path
 
 creatures not cleared on enter creature pipe
 	game clears enteringshortcut so they "abort entering" most of the time?
+	could also be that npcdestination is null so they just bounce?
 
 echo tentacle bounces bet screens in long rooms
 
 scav climbpos doesn't sync
 
-liz pounce problem! pre-moon room, can't clear pounce jump
+emotes go off-screen too often, need to show them in-screen near the creature when possible
 
-liz overall air after jump is bad, too much friction, where is it coming from??
+seems to happen just too often that creatures don't customize
 
-need a proper "hide all" ui toggle
+If you use movement keys (left/right) while leaping, you kill your own momentum even if it's on the direction you are leaping to. If you leap without pressing anything you go further away.  Momentum should be kept when pressing the same direction you are leaping to
+todo check this with all creatures, might be solved already
+
+Lantern mouse: They struggle to grab onto poles when jumping, and overall seen hard to walk on horizontal poles. They need to be rail-roaded into poles more strongly, like how lizards/scavengers are
+
+Scavenger: Scavenger's leap seems to only throw you forward if you are at the very edge of a ground. Other creatures can leap from any part of the ground and be launched as normal
+recheck, might be solved
+
+General: Tint seems to be having sync issues, people randomly change between the original color of the animal, to their tint color in pure form, to anything in-between (the foo had an example above, they tinted themselves red to look dark orange, but for everyone on the lobby they looked pure red)
+
+QoL: Some sort of display of how the colors should look in-game? The tint system seems to be confusing at first. Nothing too fancy, just a creature symbol that has the main color of the skin, and then applying tint would also apply it to the symbol to show a rough estimate on how it would look!
+task: rework into "previewcolor" to make sure we arent accidentally overriding anything, which we might be for scav body tints
+
+toggle collision as a setting
+
+noot gets stuck on water surface, seems to always go left?
+
+add noot emotes
+
+add lanternmouse selectscreen
+
+redo scavenger selectscreen
+
+crashes on entering shelter in meadowmode with msc + remix on
+
+emotes sometimes don't stop fading when new emotes are added
+
+engine thoughts
+that one crash notchoc posted about a Destroy related to roomjoin
+	so maybe there WAS realized ent duplication and the delete-fallback had side-effects of removing the real deal?
+
+when wolfy crashed on a quick menu-rejoin
+	is it possible that the new deactivate stuff prevented state from broadcasting and as such her or her avatar never got kicked?

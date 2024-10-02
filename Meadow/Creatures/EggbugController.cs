@@ -19,6 +19,26 @@ namespace RainMeadow
 
             IL.EggBug.Swim += EggBug_Swim1;
             IL.EggBug.Update += EggBug_Update1;
+
+            On.EggBugGraphics.Update += EggBugGraphics_Update;
+        }
+
+        private static void EggBugGraphics_Update(On.EggBugGraphics.orig_Update orig, EggBugGraphics self)
+        {
+            if (creatureControllers.TryGetValue(self.bug, out var p))
+            {
+                if (self.bug.bodyChunks[0].pos == self.bug.bodyChunks[1].pos)
+                {
+                    // eggbug graphics does some line calcs that break if pos0 == pos1
+                    // doesn't happen offline but when receiving pos from remove, can happen
+                    // pos are equal the frame it's sucked into shortcut
+                    // pos are set to different when sput out
+                    // but due to the suckedintoshortcut not removing client-sided when ran by the creature (it waits for the RPC)
+                    // then the bad values do happen
+                    self.bug.bodyChunks[1].pos += Vector2.down;
+                }
+            }
+            orig(self);
         }
 
         private static void EggBug_Update1(ILContext il)
@@ -163,7 +183,8 @@ namespace RainMeadow
             if (creature.grasps == null) creature.grasps = new Creature.Grasp[1];
             eggbug = creature;
 
-            jumpFactor = 1.2f;
+            jumpFactor = 2f;
+            runSpeed = 5.4f;
         }
 
         EggBug eggbug;
@@ -207,8 +228,12 @@ namespace RainMeadow
 
         protected override void MovementOverride(MovementConnection movementConnection)
         {
-            eggbug.specialMoveCounter = 15;
-            eggbug.specialMoveDestination = movementConnection.DestTile;
+            if (eggbug.Footing || eggbug.Submersion > 0f)
+            {
+                eggbug.specialMoveCounter = 5;
+                eggbug.specialMoveDestination = movementConnection.DestTile;
+                eggbug.footingCounter = Mathf.Min(eggbug.footingCounter, 20);
+            }
         }
 
         protected override void ClearMovementOverride()
@@ -220,13 +245,16 @@ namespace RainMeadow
         {
             var dir = Custom.DirVec(eggbug.mainBodyChunk.pos, pos);
             eggbug.travelDir = dir;
-            eggbug.bodyChunks[0].vel += dir;
-            eggbug.bodyChunks[1].vel -= dir;
+            if (HasFooting)
+            {
+                eggbug.bodyChunks[0].vel += 0.5f * dir;
+                eggbug.bodyChunks[1].vel -= 0.5f * dir;
+            }
         }
 
         protected override void Moving(float magnitude)
         {
-            eggbug.runSpeed = Custom.LerpAndTick(eggbug.runSpeed, magnitude, 0.2f, 0.05f);
+            eggbug.runSpeed = Custom.LerpAndTick(eggbug.runSpeed, 1.2f * magnitude, 0.2f, 0.05f);
         }
 
         protected override void Resting()
@@ -240,6 +268,10 @@ namespace RainMeadow
             if (eggbug.specialMoveCounter > 0 && !eggbug.room.aimap.TileAccessibleToCreature(eggbug.mainBodyChunk.pos, eggbug.Template) && !eggbug.room.aimap.TileAccessibleToCreature(eggbug.bodyChunks[1].pos, eggbug.Template))
             {
                 eggbug.footingCounter = 0;
+            }
+            else if (eggbug.mainBodyChunk.contactPoint != new IntVector2(0, 0))
+            {
+                eggbug.footingCounter = Mathf.Max(eggbug.footingCounter, 10);
             }
             if (superLaunchJump > 10 && (eggbug.room.aimap.getAItile(eggbug.bodyChunks[1].pos).acc == AItile.Accessibility.Floor && !eggbug.IsTileSolid(0, 0, 1) && !eggbug.IsTileSolid(1, 0, 1)))
             {

@@ -463,10 +463,13 @@ namespace RainMeadow
 
             newOwner = MatchmakingManager.instance.BestTransferCandidate(this, participants);
 
-            if (newOwner != owner) NewOwner(newOwner);
-            if (newOwner != null)
+            if (newOwner != owner)
             {
-                newOwner.InvokeRPC(this.Transfered).Then(this.ResolveTransfer);
+                NewOwner(newOwner);
+                if (newOwner != null)
+                {
+                    newOwner.InvokeRPC(this.Transfered).Then(this.ResolveTransfer);
+                }
             }
         }
 

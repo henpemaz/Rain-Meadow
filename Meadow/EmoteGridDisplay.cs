@@ -45,11 +45,11 @@ namespace RainMeadow
             this.emoteDisplayers = new FSprite[nc * nr];
             this.emoteTiles = new FSprite[nc * nr];
 
+            var alpha = emotePreviewOpacityInactive;
             for (int j = 0; j < nr; j++)
             {
                 // top to bottom
                 var y = pos.y + (emotePreviewSize + emotePreviewSpacing) * (nr - j - 0.5f);
-                var alpha = emotePreviewOpacityInactive;
                 for (int i = 0; i < nc; i++)
                 {
                     if (emotes[j, i] == null) continue;
@@ -60,14 +60,16 @@ namespace RainMeadow
                         scale = emotePreviewSize / EmoteDisplayer.emoteSourceSize,
                         x = x,
                         y = y,
-                        alpha = alpha
+                        alpha = alpha,
+                        color = customization.EmoteBackgroundColor(emotes[j, i])
                     });
                     container.AddChild(emoteDisplayers[j * nc + i] = new FSprite(customization.GetEmote(emotes[j, i]))
                     {
                         scale = emotePreviewSize / EmoteDisplayer.emoteSourceSize,
                         x = x,
                         y = y,
-                        alpha = alpha
+                        alpha = alpha,
+                        color = customization.EmoteColor(emotes[j, i])
                     });
                 }
             }

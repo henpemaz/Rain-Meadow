@@ -7,6 +7,42 @@ namespace RainMeadow
 {
     public abstract class GroundCreatureController : CreatureController
     {
+        public static void Enable()
+        {
+            On.StandardPather.FollowPath += StandardPather_FollowPath;
+            On.Creature.Update += Creature_Update;
+        }
+
+        // hookpoint before physics update
+        private static void Creature_Update(On.Creature.orig_Update orig, Creature self, bool eu)
+        {
+            if (CreatureController.creatureControllers.TryGetValue(self, out var c))
+            {
+                if (c.input[0].y == -1)
+                {
+                    self.GoThroughFloors = true; // most creatures set this based on pathfinding movement type *after* act
+                                                 // but we need to override it
+                }
+            }
+
+            orig(self, eu);
+        }
+
+        private static MovementConnection StandardPather_FollowPath(On.StandardPather.orig_FollowPath orig, StandardPather self, WorldCoordinate originPos, bool actuallyFollowingThisPath)
+        {
+            if (CreatureController.creatureControllers.TryGetValue(self.creature.realizedCreature, out var c))
+            {
+                if (originPos == self.destination || (actuallyFollowingThisPath && self.lookingForImpossiblePath))
+                {
+                    if (Input.GetKey(KeyCode.L) && actuallyFollowingThisPath) RainMeadow.Debug("returning override. lookingForImpossiblePath? " + self.lookingForImpossiblePath);
+                    return new MovementConnection(MovementConnection.MovementType.Standard, originPos, self.destination, 1);
+                }
+                return orig(self, originPos, actuallyFollowingThisPath);
+            }
+
+            return orig(self, originPos, actuallyFollowingThisPath);
+        }
+
         public GroundCreatureController(Creature creature, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(creature, oc, playerNumber, customization)
         {
             this._wallClimber = creature.Template.AccessibilityResistance(AItile.Accessibility.Wall).Allowed;
@@ -30,8 +66,16 @@ namespace RainMeadow
         public abstract bool IsOnPole { get; }
         public abstract bool IsOnCorridor { get; }
         public abstract bool IsOnClimb { get; }
+        public virtual bool CanPounce { get { return IsOnGround; } }
 
-        public virtual int OnWall { get { return creature.mainBodyChunk.contactPoint.x; } }
+        public virtual int OnWall
+        {
+            get
+            {
+                if (creature.bodyChunks[0].contactPoint.x != 0) return creature.bodyChunks[0].contactPoint.x;
+                return creature.bodyChunks[1].contactPoint.x;
+            }
+        }
         public virtual bool IsOnWaterSurface => creature.mainBodyChunk.submersion is > 0.3f and < 1;
 
         protected const float zeroGTreshold = 0.3f;
@@ -41,7 +85,7 @@ namespace RainMeadow
 
         private readonly bool _swimWithPathing;
 
-        protected float runSpeed = 4.5f;
+        protected float runSpeed = 4.2f;
 
         public Room.Tile GetTile(int bChunk)
         {
@@ -98,7 +142,7 @@ namespace RainMeadow
             else if (canPoleJump > 0)
             {
                 this.jumpBoost = 0f;
-                if (creature.room.GetTilePosition(cs[0].pos).x == creature.room.GetTilePosition(cs[1].pos).x && // aligned
+                if (input[0].y == 1 && creature.room.GetTilePosition(cs[0].pos).x == creature.room.GetTilePosition(cs[1].pos).x && // aligned
                     ((GetTile(0).verticalBeam && !GetTile(0, 0, 1).verticalBeam)
                     || (GetTile(1).verticalBeam && !GetTile(0).verticalBeam)))
                 {
@@ -119,7 +163,7 @@ namespace RainMeadow
                     canPoleJump = 0;
                     return;
                 }
-                if (creature.room.GetTilePosition(cs[0].pos).x == creature.room.GetTilePosition(cs[1].pos).x && // aligned
+                if (input[0].y == 1 && creature.room.GetTilePosition(cs[0].pos).x == creature.room.GetTilePosition(cs[1].pos).x && // aligned
                     ((GetTile(0).horizontalBeam && !GetTile(0, 0, 1).horizontalBeam)
                     || (GetTile(1).horizontalBeam && !GetTile(0).horizontalBeam)))
                 {
@@ -185,7 +229,7 @@ namespace RainMeadow
                 RainMeadow.Debug("normal jump");
                 OnJump();
                 this.jumpBoost = 6;
-                cs[0].vel.y = 4f * jumpFactor;
+                cs[0].vel.y = 4.4f * jumpFactor;
                 for (int i = 1; i < cc; i++)
                 {
                     cs[i].vel.y = 4.5f * jumpFactor;
@@ -203,27 +247,6 @@ namespace RainMeadow
                 canGroundJump = 0;
                 canWallJump = 0;
             }
-            else if (canWallJump != 0)
-            {
-                RainMeadow.Debug("wall jump");
-                OnJump();
-                this.jumpBoost = 6f;
-                this.forceBoost = 6;
-                var jumpdir = new Vector2(-Mathf.Sign(canWallJump), 1.74f).normalized;
-                RainMeadow.Debug("jumpdir " + jumpdir);
-                cs[0].vel.y = 0f;
-                cs[0].vel += jumpdir * 8f * jumpFactor;
-                for (int i = 1; i < cc; i++)
-                {
-                    cs[i].vel.y = 0f;
-                    cs[i].vel += jumpdir * 7f * jumpFactor;
-                }
-                this.forceInputDir = new IntVector2((int)Mathf.Sign(jumpdir.x), input[0].y);
-                this.forceInputCounter = 10;
-                this.forceJump = 6;
-                creature.room.PlaySound(SoundID.Slugcat_Wall_Jump, mainBodyChunk, false, 1f, 1f);
-                canWallJump = 0;
-            }
             else if (canWaterJump > 0)
             {
                 RainMeadow.Debug("water jump");
@@ -238,6 +261,76 @@ namespace RainMeadow
                 creature.room.PlaySound(SoundID.Slugcat_Wall_Jump, mainBodyChunk, false, 1f, 1f);
                 canWaterJump = 0;
                 canGroundJump = 0;
+            }
+            else if (canWallJump != 0)
+            {
+                // climb that damn ledge
+                if (input[0].x != 0 && Math.Sign(canWallJump) == input[0].x
+                    && creature.bodyChunks[0].vel.y < 4f
+                    && GetTile(0, input[0].x, 0).Solid
+                    && !GetTile(0, 0, 1).Solid
+                    && !GetTile(0, input[0].x, 1).Solid
+                    )
+                {
+                    RainMeadow.Debug("ledge climb"); // against ledge
+                    OnJump();
+                    this.jumpBoost = 3f;
+                    // "middle of edge" of air above ledge
+                    var towards = creature.room.MiddleOfTile(creature.bodyChunks[0].pos + new Vector2(0f, 20f)) + new Vector2(10f * input[0].x, 0f);
+                    for (int i = 0; i < cc; i++)
+                    {
+                        var pushDir = (towards - cs[i].pos).normalized;
+                        if (Math.Sign(pushDir.x) == input[0].x && pushDir.y > 0f)
+                        {
+                            cs[i].vel += pushDir * 3f * jumpFactor;
+                        }
+                    }
+                    creature.room.PlaySound(SoundID.Slugcat_Wall_Jump, mainBodyChunk, false, 1f, 1f);
+                    canWallJump = 0;
+                }
+                else if (input[0].x != 0 && Math.Sign(canWallJump) == input[0].x
+                    && creature.bodyChunks[0].vel.y < 4f
+                    && GetTile(0, input[0].x, -1).Solid
+                    && !GetTile(0, input[0].x, 0).Solid
+                    )
+                {
+                    RainMeadow.Debug("ledge drag"); // trying to get past ledge
+                    OnJump();
+                    this.jumpBoost = 3f;
+                    // "middle of edge" of air above ledge
+                    var towards = creature.room.MiddleOfTile(creature.bodyChunks[0].pos) + new Vector2(10f * input[0].x, 0f);
+                    for (int i = 0; i < cc; i++)
+                    {
+                        var pushDir = (towards - cs[i].pos).normalized;
+                        if (Math.Sign(pushDir.x) == input[0].x && pushDir.y > 0f)
+                        {
+                            cs[i].vel += pushDir * 3f * jumpFactor;
+                        }
+                    }
+                    creature.room.PlaySound(SoundID.Slugcat_Wall_Jump, mainBodyChunk, false, 1f, 1f);
+                    canWallJump = 0;
+                }
+                else
+                {
+                    RainMeadow.Debug("wall jump");
+                    OnJump();
+                    this.jumpBoost = 6f;
+                    this.forceBoost = 6;
+                    var jumpdir = new Vector2(-Mathf.Sign(canWallJump), 1.74f).normalized;
+                    RainMeadow.Debug("jumpdir " + jumpdir);
+                    cs[0].vel.y = 0f;
+                    cs[0].vel += jumpdir * 8f * jumpFactor;
+                    for (int i = 1; i < cc; i++)
+                    {
+                        cs[i].vel.y = 0f;
+                        cs[i].vel += jumpdir * 7f * jumpFactor;
+                    }
+                    this.forceInputDir = new IntVector2((int)Mathf.Sign(jumpdir.x), input[0].y);
+                    this.forceInputCounter = 10;
+                    this.forceJump = 6;
+                    creature.room.PlaySound(SoundID.Slugcat_Wall_Jump, mainBodyChunk, false, 1f, 1f);
+                    canWallJump = 0;
+                }
             }
             else if (canClimbJump > 0)
             {
@@ -282,17 +375,6 @@ namespace RainMeadow
             magnitude = 0.5f;
             var previousAccessibility = room.aimap.getAItile(basecoord).acc;
 
-            var currentTile = room.GetTile(basecoord);
-            var currentAiTile = room.aimap.getAItile(toPos);
-            //var currentAccessibility = currentAiTile.acc;
-            //var currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
-            //void NewTile(WorldCoordinate newPos, out AItile currentAiTile, out AItile.Accessibility currentAccessibility, out PathCost.Legality currentLegality)
-            //{
-            //    currentAiTile = room.aimap.getAItile(newPos);
-            //    currentAccessibility = currentAiTile.acc;
-            //    currentLegality = template.AccessibilityResistance(currentAccessibility).legality;
-            //}
-
             if (localTrace) RainMeadow.Debug($"moving from {basecoord.Tile} towards {toPos.Tile}");
             
             if (this.forceJump > 0) // jumping
@@ -301,25 +383,27 @@ namespace RainMeadow
                 return true;
             }
 
-            // problematic when climbing
-            if (this.input[0].y > 0)
+            // grip pole if no footing
+            if (this.input[0].y > 0 && !HasFooting)
             {
-                var tile0 = creature.room.GetTile(chunks[0].pos);
-                var tile1 = creature.room.GetTile(chunks[1].pos);
-                if (tile0.AnyBeam && !tile0.DeepWater && !HasFooting)
+                for (var i = 0; i < nc; i++)
                 {
-                    RainMeadow.Debug("grip!");
-                    GripPole(tile0);
-                }
-                else if (tile1.AnyBeam && !tile1.DeepWater && !HasFooting)
-                {
-                    RainMeadow.Debug("grip!");
-                    GripPole(tile1);
+                    for (int j = 0; j < 5; j++)
+                    {
+                        var tile = creature.room.GetTile(chunks[i].pos + Custom.fourDirectionsAndZero[j].ToVector2() * chunks[i].rad);
+                        if (tile.AnyBeam && !tile.DeepWater)
+                        {
+                            RainMeadow.Debug("grip!");
+                            GripPole(tile);
+                            break;
+                        }
+                    }
                 }
             }
 
             // climb to beam
             bool climbing = false;
+            var currentTile = room.GetTile(basecoord);
             if (this.input[0].y > 0 && (previousAccessibility <= AItile.Accessibility.Climb || currentTile.WaterSurface) && !currentTile.DeepWater)
             {
                 for (int i = 0; i < 3; i++)
@@ -362,47 +446,44 @@ namespace RainMeadow
                 if (this.input[0].x != 0) // to sides
                 {
                     if (localTrace) RainMeadow.Debug("sides");
-                    if (template.AccessibilityResistance(currentAiTile.acc).legality <= PathCost.Legality.Unwanted)
+                    bool aheadAccessible = false;
+                    if (TileAccessible(room, toPos.Tile))
                     {
                         if (localTrace) RainMeadow.Debug("ahead");
+                        aheadAccessible = true;
                     }
                     else if (TileAccessible(room, toPos.Tile + new IntVector2(0, 1))) // try up
                     {
                         if (localTrace) RainMeadow.Debug("up");
                         toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(0, 1));
-                        currentAiTile = room.aimap.getAItile(toPos);
                     }
                     else if (TileAccessible(room, toPos.Tile + new IntVector2(0, -1))) // try down
                     {
                         if (localTrace) RainMeadow.Debug("down");
                         toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(0, -1));
-                        currentAiTile = room.aimap.getAItile(toPos);
                     }
 
-                    if (inputDir.magnitude > 0.75f)
+                    if (inputDir.magnitude > 0.75f && aheadAccessible)
                     {
                         // if can reach further out, it goes faster and smoother
-                        WorldCoordinate furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir.normalized * 3f));
+                        WorldCoordinate furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir.normalized * 2.84f));
                         if (TileAccessible(room, furtherOut.Tile) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile, 6) > 0)
                         {
                             if (localTrace) RainMeadow.Debug("reaching further");
                             toPos = furtherOut;
                             magnitude = 1f;
-                            currentAiTile = room.aimap.getAItile(toPos);
                         }
-                        else if (TileAccessible(room, furtherOut.Tile + new IntVector2(0, 1)) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, 1), 6) > 0)
+                        else if (TileAccessible(room, furtherOut.Tile + new IntVector2(0, 1)) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, 1), 6) > -1)
                         {
                             if (localTrace) RainMeadow.Debug("further up");
                             toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, 1));
                             magnitude = 1f;
-                            currentAiTile = room.aimap.getAItile(toPos);
                         }
-                        else if (TileAccessible(room, furtherOut.Tile + new IntVector2(0, -1)) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, -1), 6) > 0)
+                        else if (TileAccessible(room, furtherOut.Tile + new IntVector2(0, -1)) && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, furtherOut.Tile + new IntVector2(0, -1), 6) > -1)
                         {
                             if (localTrace) RainMeadow.Debug("further down");
                             toPos = WorldCoordinate.AddIntVector(furtherOut, new IntVector2(0, -1));
                             magnitude = 1f;
-                            currentAiTile = room.aimap.getAItile(toPos); ;
                         }
                     }
                 }
@@ -410,7 +491,7 @@ namespace RainMeadow
                 {
                     if (localTrace) RainMeadow.Debug("vertical");
 
-                    if (template.AccessibilityResistance(currentAiTile.acc).legality <= PathCost.Legality.Unwanted)
+                    if (TileAccessible(room, toPos.Tile))
                     {
                         if (localTrace) RainMeadow.Debug("ahead");
                     }
@@ -418,23 +499,20 @@ namespace RainMeadow
                     {
                         if (localTrace) RainMeadow.Debug("right");
                         toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(1, 0));
-                        currentAiTile = room.aimap.getAItile(toPos);
                     }
                     else if (TileAccessible(room, toPos.Tile + new IntVector2(-1, 0))) // left
                     {
                         if (localTrace) RainMeadow.Debug("left");
                         toPos = WorldCoordinate.AddIntVector(toPos, new IntVector2(-1, 0));
-                        currentAiTile = room.aimap.getAItile(toPos);
                     }
                     if (inputDir.magnitude > 0.75f)
                     {
-                        WorldCoordinate furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir.normalized * 2.2f));
+                        WorldCoordinate furtherOut = WorldCoordinate.AddIntVector(basecoord, IntVector2.FromVector2(this.inputDir.normalized * 2.84f));
                         if (!room.GetTile(toPos).Solid && !room.GetTile(furtherOut).Solid && TileAccessible(room, furtherOut.Tile)) // ahead unblocked, move further
                         {
                             if (localTrace) RainMeadow.Debug("reaching");
                             toPos = furtherOut;
                             magnitude = 1f;
-                            currentAiTile = room.aimap.getAItile(toPos);
                         }
                     }
                 }
@@ -453,20 +531,20 @@ namespace RainMeadow
             var pathFinder = creature.abstractCreature.abstractAI.RealAI.pathFinder;
             if (pathFinder.PathingCellAtWorldCoordinate(basecoord).reachable 
                 && pathFinder.PathingCellAtWorldCoordinate(toPos).reachable 
-                && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, toPos.Tile, 12) > 0) // found and pathfinder-pathable
+                && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, toPos.Tile, 12) > -1) // found and pathfinder-pathable
             {
                 if (localTrace) RainMeadow.Debug("pathable");
                 return true;
             }
             else
-            {
+            { 
                 // no pathing
                 if (localTrace) RainMeadow.Debug("unpathable");
                 pathFinder.OutOfElement();
 
                 if (room.aimap.getAItile(toPos).acc < AItile.Accessibility.Solid // no go
                     && (
-                        currentAiTile.DeepWater // on water
+                        room.aimap.getAItile(toPos).DeepWater // on water
                         ||
                         climbing // climbing target
                         ||( // otherwise
@@ -531,7 +609,7 @@ namespace RainMeadow
             }
             
 
-            if (this.canGroundJump > 0)
+            if (this.CanPounce)
             {
                 if (this.input[0].jmp && (this.superLaunchJump > 10 || (this.input[0].x == 0 && this.input[0].y <= 0)))
                 {
@@ -598,12 +676,29 @@ namespace RainMeadow
                 this.jumpBoost = 0f;
             }
 
-            if (mcd.moveSpeed > 0f)
+
+            // air control ground control
+            if (mcd.moveSpeed > 0f && inputDir != Vector2.zero)
             {
                 var mainchunk = creature.mainBodyChunk;
-                if (inputDir.x != 0 && (Mathf.Abs(mainchunk.vel.x) < runSpeed || Mathf.Sign(mainchunk.vel.x) != Mathf.Sign(inputDir.x)))
+                if (!HasFooting && creature.room.gravity > zeroGTreshold && creature.mainBodyChunk.submersion < 0.5f)
                 {
-                    mainchunk.vel.x += 0.75f * inputDir.x * mcd.moveSpeed;
+                    // no footing, normal conditions, only X tracking for a bit of air-control
+                    var amount = Math.Min(0.5f, Mathf.Max(runSpeed * 0.5f * Mathf.Abs(inputDir.x) - Mathf.Abs(mainchunk.vel.x), 0));
+                    if (amount > 0f)
+                    {
+                        mainchunk.vel.x += amount * inputDir.x * mcd.moveSpeed;
+                    }
+                }
+                else
+                {
+                    // omnidirectional control
+                    var velInDir = Vector2.Dot(mainchunk.vel, inputDir.normalized);
+                    var amount = Math.Min(0.5f, Mathf.Max(runSpeed * 0.5f - velInDir, 0));
+                    if (amount > 0f)
+                    {
+                        mainchunk.vel += amount * inputDir * mcd.moveSpeed;
+                    }
                 }
             }
 
