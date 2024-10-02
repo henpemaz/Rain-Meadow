@@ -3,6 +3,7 @@ using Menu.Remix;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using RainMeadow.GameModes;
+using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -436,7 +437,7 @@ namespace RainMeadow
                     {
 
                         self.manager.rainWorld.options.DeleteArenaSitting();
-                        OnlineManager.LeaveLobby();
+                        OnlineManager.lobby.OnPlayerDisconnect(OnlineManager.mePlayer);
                         self.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
                         self.PlaySound(SoundID.MENU_Switch_Page_In);
                     }
