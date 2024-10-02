@@ -20,8 +20,12 @@ public partial class RainMeadow
         IL.Player.GrabUpdate += Player_GrabUpdate;
         On.Player.SwallowObject += Player_SwallowObject;
         On.Player.Regurgitate += Player_Regurgitate;
-        On.Player.SpitUpCraftedObject += Player_SpitUpCraftedObject;
         On.Player.ThrowObject += Player_ThrowObject;
+        On.Player.SpitUpCraftedObject += Player_SpitUpCraftedObject;
+        IL.Player.Collide += Player_Collide;
+        On.Player.SlugSlamConditions += Player_SlugSlamConditions;
+        IL.Player.ClassMechanicsArtificer += Player_ClassMechanicsArtificer;
+        On.Player.CanMaulCreature += Player_CanMaulCreature;
         On.Player.AddFood += Player_AddFood;
         On.Player.AddQuarterFood += Player_AddQuarterFood;
         On.Player.SubtractFood += Player_SubtractFood;
@@ -332,6 +336,15 @@ public partial class RainMeadow
         orig(self);
     }
 
+    private void Player_ThrowObject(On.Player.orig_ThrowObject orig, Player self, int grasp, bool eu)
+    {
+        if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
+        {
+            if (!oe.isMine) return;
+        }
+        orig(self, grasp, eu);
+    }
+
     private void Player_SpitUpCraftedObject(On.Player.orig_SpitUpCraftedObject orig, Player self)
     {
         if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
@@ -341,13 +354,85 @@ public partial class RainMeadow
         orig(self);
     }
 
-    private void Player_ThrowObject(On.Player.orig_ThrowObject orig, Player self, int grasp, bool eu)
+    // TODO: toggleable friendly fire
+    private void Player_Collide(ILContext il)
     {
-        if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
+        try
         {
-            if (!oe.isMine) return;
+            // if (!(otherObject as Creature).dead && (otherObject as Creature).abstractCreature.creatureTemplate.type != MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && !(ModManager.CoopAvailable && flag4))
+            //becomes
+            // if (!(isStoryMode(out _) && otherObject is Player) && !(otherObject as Creature).dead && (otherObject as Creature).abstractCreature.creatureTemplate.type != MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && !(ModManager.CoopAvailable && flag4))
+            var c = new ILCursor(il);
+            var skip = il.DefineLabel();
+            c.GotoNext(
+                i => i.MatchLdarg(1),
+                i => i.MatchIsinst<Creature>(),
+                i => i.MatchBrfalse(out _)
+                );
+            c.GotoNext(
+                i => i.MatchLdsfld<ModManager>("MSC"),
+                i => i.MatchBrfalse(out _)
+                );
+            c.GotoNext(
+                i => i.MatchLdarg(1),
+                i => i.MatchIsinst<Creature>(),
+                i => i.MatchCallOrCallvirt<Creature>("get_dead"),
+                i => i.MatchBrtrue(out skip)
+                );
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((PhysicalObject otherObject) => (isStoryMode(out _) && otherObject is Player));
+            c.Emit(OpCodes.Brtrue, skip);
         }
-        orig(self, grasp, eu);
+        catch (Exception e)
+        {
+            Logger.LogError(e);
+        }
+    }
+
+    private bool Player_SlugSlamConditions(On.Player.orig_SlugSlamConditions orig, Player self, PhysicalObject otherObject)
+    {
+        if (isStoryMode(out _))
+        {
+            if (otherObject is Player) return false;
+        }
+        return orig(self, otherObject);
+    }
+
+    private void Player_ClassMechanicsArtificer(ILContext il)
+    {
+        try
+        {
+            // bool flag3 = !ModManager.CoopAvailable || Custom.rainWorld.options.friendlyFire || !(room.physicalObjects[m][n] is Player player) || player.isNPC;
+            //becomes
+            // bool flag3 = (!isStoryMode(out _) && (!ModManager.CoopAvailable || Custom.rainWorld.options.friendlyFire)) || !(room.physicalObjects[m][n] is Player player) || player.isNPC;
+            var c = new ILCursor(il);
+            var skip = il.DefineLabel();
+            c.GotoNext(MoveType.AfterLabel,
+                i => i.MatchLdsfld<ModManager>("CoopAvailable"),
+                i => i.MatchBrfalse(out _),
+                i => i.MatchLdsfld("RWCustom.Custom", "rainWorld"),
+                i => i.MatchLdfld<RainWorld>("options"),
+                i => i.MatchLdfld<Options>("friendlyFire"),
+                i => i.MatchBrtrue(out _)
+                );
+            c.EmitDelegate(() => isStoryMode(out _));
+            c.Emit(OpCodes.Brtrue, skip);
+            c.Index += 6;
+            c.MarkLabel(skip);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e);
+        }
+    }
+
+    private bool Player_CanMaulCreature(On.Player.orig_CanMaulCreature orig, Player self, Creature crit)
+    {
+        if (isStoryMode(out _))
+        {
+            if (crit is Player) return false;
+        }
+        return orig(self, crit);
     }
 
     private void SlugcatStats_ctor(On.SlugcatStats.orig_ctor orig, SlugcatStats self, SlugcatStats.Name slugcat, bool malnourished)
