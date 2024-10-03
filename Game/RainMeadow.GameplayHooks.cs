@@ -187,7 +187,8 @@ namespace RainMeadow
             if (!room.isOwner)
             {
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
-                if (objectHit != null)
+                OnlinePhysicalObject.map.TryGetValue(explosion?.sourceObject.abstractPhysicalObject, out var explosionSource);
+                if (objectHit != null && (objectHit.isMine || (explosionSource != null && explosionSource.isMine)))
                 {
                     room.owner.InvokeOnceRPC(OnlinePhysicalObject.HitByExplosion, objectHit, hitFac);
                     return;
@@ -210,7 +211,7 @@ namespace RainMeadow
             {
                 OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
                 OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var abstWeapon);
-                if (objectHit != null && abstWeapon != null)
+                if (objectHit != null && abstWeapon != null && (objectHit.isMine || abstWeapon.isMine))
                 {
                     room.owner.InvokeRPC(OnlinePhysicalObject.HitByWeapon, objectHit, abstWeapon);
                     return;
