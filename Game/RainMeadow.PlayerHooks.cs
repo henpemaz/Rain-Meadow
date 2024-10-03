@@ -372,7 +372,7 @@ public partial class RainMeadow
                 i => i.MatchBrtrue(out skip)
                 );
             c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((PhysicalObject otherObject) => (isStoryMode(out _) && otherObject is Player));
+            c.EmitDelegate((PhysicalObject otherObject) => (isStoryMode(out _) && !rainMeadowOptions.FriendlyFire.Value && otherObject is Player));
             c.Emit(OpCodes.Brtrue, skip);
         }
         catch (Exception e)
