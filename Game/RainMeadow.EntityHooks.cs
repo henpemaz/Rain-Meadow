@@ -345,13 +345,9 @@ namespace RainMeadow
                             newWorldSession.ApoEnteringWorld(apo);
                         }
                     }
-                    
+
                     oldWorldSession.Deactivate();
                     oldWorldSession.NotNeeded(); // done? let go
-                }
-                if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode) 
-                {
-                    storyGameMode.changedRegions = true;
                 }
             }
             else
