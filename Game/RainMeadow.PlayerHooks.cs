@@ -15,6 +15,7 @@ public partial class RainMeadow
         On.SlugcatStats.ctor += SlugcatStats_ctor;
 
         On.Player.ctor += Player_ctor;
+        IL.Player.Update += Player_Update1;
         On.Player.Die += PlayerOnDie;
         On.Player.Grabability += PlayerOnGrabability;
         IL.Player.GrabUpdate += Player_GrabUpdate;
@@ -37,6 +38,55 @@ public partial class RainMeadow
         On.AbstractCreature.ctor += AbstractCreature_ctor;
         On.Player.ShortCutColor += Player_ShortCutColor;
 
+    }
+
+    private void Player_Update1(ILContext il)
+    {
+        try
+        {
+            // don't call GameOver if player is not ours
+            var c = new ILCursor(il);
+            ILLabel skip = il.DefineLabel();
+            c.GotoNext(
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                i => i.MatchLdfld<Room>("game"),
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<Player>("dangerGrasp"),
+                i => i.MatchCallOrCallvirt<RainWorldGame>("GameOver")
+                );
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Player self) =>
+                (OnlineManager.lobby != null && !(OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe) && oe.isMine)));
+            c.Emit(OpCodes.Brtrue, skip);
+            c.Index += 6;
+            c.MarkLabel(skip);
+
+            // don't handle shelter for meadow at all
+            // might make sense to do this for all non-local scugs as well
+            c.Index = 0;
+            ILLabel skipShelter = null;
+            c.GotoNext(i => i.MatchCallOrCallvirt<ShelterDoor>("Close"));
+            c.GotoPrev(MoveType.After,
+                i => i.MatchCallOrCallvirt<AbstractRoom>("get_shelter"),
+                i => i.MatchBrfalse(out skipShelter)
+                );
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Player self) =>
+            {
+                // meadow crashes with msc assuming slugpupbars is there
+                if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+                {
+                    return false;
+                }
+                return true;
+            });
+            c.Emit(OpCodes.Brfalse, skipShelter);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e);
+        }
     }
 
     private UnityEngine.Color Player_ShortCutColor(On.Player.orig_ShortCutColor orig, Player self)

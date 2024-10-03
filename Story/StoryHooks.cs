@@ -34,7 +34,6 @@ namespace RainMeadow
 
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
 
-            IL.Player.Update += Player_Update1;
             On.Player.Update += Player_Update;
 
             On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass;
@@ -609,34 +608,6 @@ namespace RainMeadow
                 }
             }
             orig(self, sender, message);
-        }
-
-        private void Player_Update1(ILContext il)
-        {
-            try
-            {
-                // don't call GameOver if player is not ours
-                var c = new ILCursor(il);
-                ILLabel skip = il.DefineLabel();
-                c.GotoNext(
-                    i => i.MatchLdarg(0),
-                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
-                    i => i.MatchLdfld<Room>("game"),
-                    i => i.MatchLdarg(0),
-                    i => i.MatchLdfld<Player>("dangerGrasp"),
-                    i => i.MatchCallOrCallvirt<RainWorldGame>("GameOver")
-                    );
-                c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((Player self) =>
-                    (OnlineManager.lobby != null && !(OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe) && oe.isMine)));
-                c.Emit(OpCodes.Brtrue, skip);
-                c.Index += 6;
-                c.MarkLabel(skip);
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e);
-            }
         }
 
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
