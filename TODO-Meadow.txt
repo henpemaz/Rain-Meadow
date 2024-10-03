@@ -125,9 +125,25 @@ noot gets stuck on water surface, seems to always go left?
 
 redo scavenger selectscreen
 
-crashes on entering shelter in meadowmode with msc + remix on
-
 emotes sometimes don't stop fading when new emotes are added
+
+on meadow-menu or lobby menu, esc doesn't go back
+
+emotes wheel still has wrong colors
+
+scav latching to pole with lots of momentum lets go? shelter room to drainage spot
+
+dsa13 corner up lizard stuck
+
+squid had trouble in dsb06 underwater poles?
+
+scav has trouble walljumping, doesn't count as walljumpable sometimes, hic02 lower spot
+
+backing out of passage screen sends you to main menu
+
+eggbug and lanternmouse are way too fast in zerog
+
+lizard wallclimb is slow, slows you down a lot in zerog movement
 
 engine thoughts
 that one crash notchoc posted about a Destroy related to roomjoin
