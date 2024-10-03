@@ -71,8 +71,53 @@ namespace RainMeadow
             On.RWInput.PlayerInputLogic_int_int += RWInput_PlayerInputLogic_int_int;
             On.RWInput.PlayerUIInput_int += RWInput_PlayerUIInput_int;
 
+            IL.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded;
+
+
         }
 
+        private void ArenaSitting_SessionEnded(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                ILLabel skip = null;
+
+
+                c.GotoNext(moveType: MoveType.After,
+
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<ArenaSitting>("players"),
+                i => i.MatchLdloc(2),
+                i => i.MatchCallvirt<ArenaSitting.ArenaPlayer>("get_Item"),
+                i => i.MatchLdfld<ArenaSitting.ArenaPlayer>("playerNumber"),
+                i => i.MatchLdarg(1),
+                i => i.MatchLdfld<GameSession>("Players"),
+                i => i.MatchLdloc(3),
+                i => i.MatchCallvirt<AbstractCreature>("get_Item"),
+                i => i.MatchLdfld<AbstractCreature>("state"),
+                i => i.MatchIsinst<PlayerState>(),
+                i => i.MatchLdfld<PlayerState>("playerNumber"),
+                i => i.MatchBneUn(out var skip));
+
+                c.Emit(OpCodes.Ldarg_0);
+                //c.EmitDelegate((ArenaSitting self) =>
+                //{
+                //    if (isArenaMode(out var arena))
+                //    {
+                //        return ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.plplayer.playerNumber);
+                //    }
+                //    return player.playerNumber;
+                //});
+                //c.Emit(OpCodes.Brfalse, skip);
+                c.MoveAfterLabels();
+                c.MarkLabel(skip);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex);
+            }
+        }
 
         private Player.InputPackage RWInput_PlayerUIInput_int(On.RWInput.orig_PlayerUIInput_int orig, int playerNumber)
         {
