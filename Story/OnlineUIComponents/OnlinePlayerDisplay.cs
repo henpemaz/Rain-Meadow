@@ -94,21 +94,17 @@ namespace RainMeadow
                 this.blink = 1f;
                 if (owner.found)
                 {
-                    this.alpha = Custom.LerpAndTick(this.alpha, owner.needed ? 1 : 0, 0.08f, 0.033333335f);
+                    this.alpha = owner.PlayerConsideredDead ? 0.5f : Custom.LerpAndTick(this.alpha, owner.needed ? 1 : 0, 0.08f, 0.033333335f);
 
                     this.pos = owner.drawpos;
                     if (owner.pointDir == Vector2.down) pos += new Vector2(0f, 45f);
 
-                    if (owner.PlayerConsideredDead)
+                    if (owner.PlayerConsideredDead != switchedToDeathIcon)
                     {
-                        this.alpha = 0.5f;
-                        if (!switchedToDeathIcon)
-                        {
-                            slugIcon.RemoveFromContainer();
-                            slugIcon = new FSprite("Multiplayer_Death");
-                            owner.hud.fContainers[0].AddChild(slugIcon);
-                            switchedToDeathIcon = true;
-                        }
+                        slugIcon.RemoveFromContainer();
+                        slugIcon = new FSprite(owner.PlayerConsideredDead ? "Multiplayer_Death" : "Kill_Slugcat");
+                        owner.hud.fContainers[0].AddChild(slugIcon);
+                        switchedToDeathIcon = owner.PlayerConsideredDead;
                     }
                 }
                 else
