@@ -418,10 +418,6 @@ namespace RainMeadow
 
                                 if (CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.Template.type))
                                 {
-                                    if (killedCrit.Template.type == CreatureTemplate.Type.Slugcat)
-                                    {
-                                        // TODO: Get individual colors
-                                    }
                                     self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
                                     self.arenaSitting.players[i].allKills.Add(iconSymbolData);
                                 }
