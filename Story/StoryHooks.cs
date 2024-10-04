@@ -649,29 +649,26 @@ namespace RainMeadow
         {
             orig(self);
 
-            if (isStoryMode(out var gameMode))
+            if (isStoryMode(out var gameMode) && self.continueButton != null)
             {
                 if (OnlineManager.lobby.isOwner)
                 {
                     self.continueButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
                 }
+                else if (gameMode.didStartCycle)
+                {
+                    if (isPlayerReady)
+                    {
+                        self.Singal(self.continueButton, "CONTINUE");
+                    }
+                    else
+                    {
+                        self.continueButton.menuLabel.text = self.Translate("CONTINUE");
+                    }
+                }
                 else
                 {
-                    if (gameMode.didStartCycle)
-                    {
-                        if (isPlayerReady)
-                        {
-                            self.Singal(self.continueButton, "CONTINUE");
-                        }
-                        else if (self.continueButton != null)
-                        {
-                            self.continueButton.menuLabel.text = self.Translate("CONTINUE");
-                        }
-                    }
-                    else if (self.continueButton != null)
-                    {
-                        self.continueButton.menuLabel.text = self.Translate("READY");
-                    }
+                    self.continueButton.menuLabel.text = self.Translate("READY");
                 }
             }
         }
