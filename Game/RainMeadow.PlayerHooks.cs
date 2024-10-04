@@ -15,7 +15,7 @@ public partial class RainMeadow
         On.SlugcatStats.ctor += SlugcatStats_ctor;
 
         On.Player.ctor += Player_ctor;
-        IL.Player.Update += Player_Update1;
+        IL.Player.Update += Player_Update;
         On.Player.Die += PlayerOnDie;
         On.Player.Grabability += PlayerOnGrabability;
         IL.Player.GrabUpdate += Player_GrabUpdate;
@@ -40,7 +40,7 @@ public partial class RainMeadow
 
     }
 
-    private void Player_Update1(ILContext il)
+    private void Player_Update(ILContext il)
     {
         try
         {
@@ -62,8 +62,7 @@ public partial class RainMeadow
             c.Index += 6;
             c.MarkLabel(skip);
 
-            // don't handle shelter for meadow at all
-            // might make sense to do this for all non-local scugs as well
+            // don't handle shelter for meadow and remote scugs
             c.Index = 0;
             ILLabel skipShelter = null;
             c.GotoNext(i => i.MatchCallOrCallvirt<ShelterDoor>("Close"));
@@ -74,10 +73,12 @@ public partial class RainMeadow
             c.Emit(OpCodes.Ldarg_0);
             c.EmitDelegate((Player self) =>
             {
-                // meadow crashes with msc assuming slugpupbars is there
-                if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+                if (OnlineManager.lobby != null)
                 {
-                    return false;
+                    if (OnlineManager.lobby.gameMode is MeadowGameMode) // meadow crashes with msc assuming slugpupbars is there
+                        return false;
+                    if (OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe) && !oe.isMine) // don't shelter if remote
+                        return false;
                 }
                 return true;
             });
