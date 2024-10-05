@@ -35,9 +35,14 @@ namespace RainMeadow
             On.ArenaGameSession.SpawnPlayers += ArenaGameSession_SpawnPlayers;
             On.ArenaGameSession.Update += ArenaGameSession_Update;
             On.ArenaGameSession.ctor += ArenaGameSession_ctor;
-
+            On.ArenaGameSession.EndOfSessionLogPlayerAsAlive += ArenaGameSession_EndOfSessionLogPlayerAsAlive;
+            On.ArenaGameSession.Killing += ArenaGameSession_Killing;
             On.ArenaGameSession.AddHUD += ArenaGameSession_AddHUD;
             On.ArenaGameSession.SpawnCreatures += ArenaGameSession_SpawnCreatures;
+
+            On.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded;
+
+
 
             On.ArenaBehaviors.ExitManager.ExitsOpen += ExitManager_ExitsOpen;
             On.ArenaBehaviors.ExitManager.Update += ExitManager_Update;
@@ -62,8 +67,6 @@ namespace RainMeadow
 
             // On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
 
-            On.ArenaGameSession.Killing += ArenaGameSession_Killing;
-
 
             IL.CreatureCommunities.ctor += OverwriteArenaPlayerMax;
             IL.ArenaGameSession.ctor += OverwriteArenaPlayerMax;
@@ -72,9 +75,6 @@ namespace RainMeadow
             On.RWInput.PlayerUIInput_int += RWInput_PlayerUIInput_int;
 
             On.MultiplayerUnlocks.IsLevelUnlocked += MultiplayerUnlocks_IsLevelUnlocked;
-            On.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded1;
-
-            On.ArenaGameSession.EndOfSessionLogPlayerAsAlive += ArenaGameSession_EndOfSessionLogPlayerAsAlive;
 
         }
 
@@ -130,14 +130,13 @@ namespace RainMeadow
             return orig(self, playerNumber);
         }
 
-        private void ArenaSitting_SessionEnded1(On.ArenaSitting.orig_SessionEnded orig, ArenaSitting self, ArenaGameSession session)
+        private void ArenaSitting_SessionEnded(On.ArenaSitting.orig_SessionEnded orig, ArenaSitting self, ArenaGameSession session)
         {
             if (isArenaMode(out var arena))
             {
                 int score = 0;
                 for (int i = 0; i < self.players.Count; i++)
                 {
-                    RainMeadow.Debug("Looking through players on session end");
                     self.players[i].alive = session.EndOfSessionLogPlayerAsAlive(self.players[i].playerNumber);
                     if (self.players[i].alive)
                     {
@@ -408,15 +407,6 @@ namespace RainMeadow
                         {
                             return;
                         }
-
-                        //for (int j = 0; j < self.game.cameras[0].hud.parts.Count; j++)
-                        //{
-                        //    if (self.game.cameras[0].hud.parts[j] is PlayerSpecificMultiplayerHud && (self.game.cameras[0].hud.parts[j] as PlayerSpecificMultiplayerHud).abstractPlayer == player.abstractCreature)
-                        //    {
-                        //        (self.game.cameras[0].hud.parts[j] as PlayerSpecificMultiplayerHud).killsList.Killing(iconSymbolData);
-                        //        break;
-                        //    }
-                        //}
 
                     }
 
