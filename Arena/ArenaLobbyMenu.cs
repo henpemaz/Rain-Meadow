@@ -69,7 +69,7 @@ namespace RainMeadow
                 for (int i = this.playerClassButtons.Length - 1; i >= 0; i--)
                 {
                     this.playerClassButtons[i].RemoveSprites();
-                    this.pages[0].subObjects.Remove(this.playerClassButtons[i]);
+                    this.pages[0].RecursiveRemoveSelectables(playerClassButtons[i]);
                 }
             }
 
@@ -78,12 +78,11 @@ namespace RainMeadow
                 for (int i = this.playerJoinButtons.Length - 1; i >= 0; i--)
                 {
                     this.playerJoinButtons[i].RemoveSprites();
-                    this.pages[0].subObjects.Remove(this.playerJoinButtons[i]);
+                    this.pages[0].RecursiveRemoveSelectables(playerJoinButtons[i]);
+
 
                 }
             }
-
-
 
         }
 
@@ -97,6 +96,7 @@ namespace RainMeadow
             this.nextButton.signalText = "BLACKHOLE";
             this.prevButton.inactive = true;
             this.prevButton.signalText = "BLACKHOLE";
+
             this.backButton.signalText = "BACKTOLOBBY";
             this.playButton.signalText = "STARTARENAONLINEGAME";
 
@@ -386,8 +386,11 @@ namespace RainMeadow
                 playerbtn.RemoveSprites();
                 //mainPage.RemoveSubObject(playerbtn);
             }
-            AddOtherPlayerClassButtons();
-            AddOtherUsernameButtons();
+            if (OnlineManager.players.Count > 1)
+            {
+                AddOtherPlayerClassButtons();
+                AddOtherUsernameButtons();
+            }
 
             if (this != null)
             {
