@@ -139,13 +139,12 @@ namespace RainMeadow
 
                     for (int i = 0; i < this.levelSelector.levelsPlaylist.levelItems.Count; i++)
                     {
-                        if (!arena.playList.Contains(this.levelSelector.levelsPlaylist.levelItems[i].name))
-                        {
-                            this.GetGameTypeSetup.playList.RemoveAt(i);
-                            this.levelSelector.levelsPlaylist.RemoveLevelItem(new Menu.LevelSelector.LevelItem(this, this.levelSelector.levelsPlaylist, this.levelSelector.levelsPlaylist.levelItems[i].name));
-                            this.levelSelector.levelsPlaylist.ScrollPos = this.levelSelector.levelsPlaylist.LastPossibleScroll;
-                            this.levelSelector.levelsPlaylist.ConstrainScroll();
-                        }
+
+                        this.GetGameTypeSetup.playList.RemoveAt(i);
+                        this.levelSelector.levelsPlaylist.RemoveLevelItem(new Menu.LevelSelector.LevelItem(this, this.levelSelector.levelsPlaylist, this.levelSelector.levelsPlaylist.levelItems[i].name));
+                        this.levelSelector.levelsPlaylist.ScrollPos = this.levelSelector.levelsPlaylist.LastPossibleScroll;
+                        this.levelSelector.levelsPlaylist.ConstrainScroll();
+
 
                     }
                     foreach (var level in arena.playList)
