@@ -100,8 +100,6 @@ namespace RainMeadow
             this.backButton.signalText = "BACKTOLOBBY";
             this.playButton.signalText = "STARTARENAONLINEGAME";
 
-
-
             this.GetGameTypeSetup.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Standard;
             this.GetGameTypeSetup.rainWhenOnePlayerLeft = false; // TODO:  Hook this to update logic due to level switching if we want it
             this.GetGameTypeSetup.savingAndLoadingSession = false;
@@ -365,6 +363,11 @@ namespace RainMeadow
             if (message == "STARTARENAONLINEGAME")
             {
                 StartGame();
+            }
+
+            if (message == "INFO" && infoWindow != null)
+            {
+                infoWindow.label.text = "Welcome to Arena Online! All players must ready up in the lobby before combat can begin.";
             }
         }
 
