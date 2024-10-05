@@ -375,29 +375,32 @@ namespace RainMeadow
 
         private void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
         {
-            RainMeadow.Debug(players);
-            for (int i = usernameButtons.Length - 1; i >= 1; i--)
+            if (RainMeadow.isArenaMode(out var _))
             {
-                var playerbtn = usernameButtons[i];
-                playerbtn.RemoveSprites();
-                //mainPage.RemoveSubObject(playerbtn);
-            }
+                RainMeadow.Debug(players);
+                for (int i = usernameButtons.Length - 1; i >= 1; i--)
+                {
+                    var playerbtn = usernameButtons[i];
+                    playerbtn.RemoveSprites();
+                    //mainPage.RemoveSubObject(playerbtn);
+                }
 
-            for (int i = classButtons.Length - 1; i >= 1; i--)
-            {
-                var playerbtn = classButtons[i];
-                playerbtn.RemoveSprites();
-                //mainPage.RemoveSubObject(playerbtn);
-            }
-            if (OnlineManager.players.Count > 1)
-            {
-                AddOtherPlayerClassButtons();
-                AddOtherUsernameButtons();
-            }
+                for (int i = classButtons.Length - 1; i >= 1; i--)
+                {
+                    var playerbtn = classButtons[i];
+                    playerbtn.RemoveSprites();
+                    //mainPage.RemoveSubObject(playerbtn);
+                }
+                if (OnlineManager.players.Count > 1)
+                {
+                    AddOtherPlayerClassButtons();
+                    AddOtherUsernameButtons();
+                }
 
-            if (this != null)
-            {
-                ArenaHelpers.ResetReadyUpLogic(arena, this);
+                if (this != null)
+                {
+                    ArenaHelpers.ResetReadyUpLogic(arena, this);
+                }
             }
 
         }
