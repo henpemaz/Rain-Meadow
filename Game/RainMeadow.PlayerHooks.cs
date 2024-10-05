@@ -340,10 +340,6 @@ public partial class RainMeadow
             }
         }
         if (onlineEntity != null && !onlineEntity.isMine) return;
-        if (isArenaMode(out var _))
-        {
-            self.killTag = self.abstractCreature;
-        }
         orig(self);
     }
 
