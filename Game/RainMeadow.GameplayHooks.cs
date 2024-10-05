@@ -230,14 +230,18 @@ namespace RainMeadow
             }
 
             var storyGameMode = OnlineManager.lobby.gameMode as StoryGameMode;
+            var storyClientSettings = storyGameMode?.storyClientSettings;
             if (storyGameMode != null)
             {
-                var playerIDs = OnlineManager.lobby.participants.Select(p => p.inLobbyId).ToList();
-                var readyWinPlayers = storyGameMode.readyForWinPlayers.ToList();
+                storyClientSettings.readyForWin = true;
 
-                foreach (var playerID in playerIDs)
+                foreach (var scs in OnlineManager.lobby.clientSettings.Values.Cast<StoryClientSettings>())
+                    RainMeadow.Debug($"player {scs.owner} inGame:{scs.inGame} isDead:{scs.isDead} readyForWin:{scs.readyForWin}");
+
+                if (OnlineManager.lobby.clientSettings.Values.Cast<StoryClientSettings>()
+                    .Any(scs => scs.inGame && !scs.isDead && !scs.readyForWin))
                 {
-                    if (!readyWinPlayers.Contains(playerID)) return;
+                    return;
                 }
             }
             else
@@ -254,7 +258,6 @@ namespace RainMeadow
             {
                 if (storyGameMode != null)
                 {
-                    var storyClientSettings = storyGameMode.clientSettings as StoryClientSettings;
                     storyClientSettings.myLastDenPos = self.room.abstractRoom.name;
                     storyClientSettings.hasSheltered = true;
                 }
