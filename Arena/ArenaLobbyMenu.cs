@@ -83,6 +83,11 @@ namespace RainMeadow
 
                 }
             }
+            if (this.resumeButton != null)
+            {
+                this.resumeButton.RemoveSprites();
+                this.pages[0].RecursiveRemoveSelectables(this.resumeButton);
+            }
 
         }
 
