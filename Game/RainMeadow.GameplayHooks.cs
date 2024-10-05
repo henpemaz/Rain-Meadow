@@ -310,7 +310,7 @@ namespace RainMeadow
                 }
             }
 
-            if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode) 
+            if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode || OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 if (self.room != null)
                 {
