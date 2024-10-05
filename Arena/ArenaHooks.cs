@@ -72,7 +72,72 @@ namespace RainMeadow
             On.RWInput.PlayerUIInput_int += RWInput_PlayerUIInput_int;
 
             On.MultiplayerUnlocks.IsLevelUnlocked += MultiplayerUnlocks_IsLevelUnlocked;
+            On.Menu.LevelSelector.LevelToPlaylist += LevelSelector_LevelToPlaylist;
+            On.Menu.LevelSelector.LevelFromPlayList += LevelSelector_LevelFromPlayList;
 
+        }
+
+        private void LevelSelector_LevelFromPlayList(On.Menu.LevelSelector.orig_LevelFromPlayList orig, Menu.LevelSelector self, int index)
+        {
+            if (isArenaMode(out var arena))
+            {
+                foreach (var player in OnlineManager.players)
+                {
+                    if (player.id == OnlineManager.lobby.owner.id || player.isMe)
+                    {
+                        continue;
+                    }
+                    player.InvokeOnceRPC(ArenaRPCs.Arena_LevelFromPlaylist, index, self.levelsPlaylist.levelItems[index].name);
+
+                }
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    return;
+                }
+
+
+            }
+            orig(self, index);
+            if (isArenaMode(out var _))
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    try
+                    {
+                        arena.playList.RemoveAt(index);
+                    }
+                    catch
+                    {
+                        RainMeadow.Debug("Arena: Empty playlist");
+                    }
+                }
+            }
+        }
+
+        private void LevelSelector_LevelToPlaylist(On.Menu.LevelSelector.orig_LevelToPlaylist orig, Menu.LevelSelector self, string levelName)
+        {
+            if (isArenaMode(out var arena))
+            {
+                foreach (var player in OnlineManager.players)
+                {
+                    if (player.id == OnlineManager.lobby.owner.id || player.isMe)
+                    {
+                        continue;
+                    }
+                    player.InvokeOnceRPC(ArenaRPCs.Arena_LevelToPlaylist, levelName);
+
+                }
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    return;
+                }
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.playList.Add(levelName);
+                }
+            }
+            orig(self, levelName);
+            
         }
 
         private bool MultiplayerUnlocks_IsLevelUnlocked(On.MultiplayerUnlocks.orig_IsLevelUnlocked orig, MultiplayerUnlocks self, string levelName)
@@ -236,7 +301,7 @@ namespace RainMeadow
                     if (!onlinePlayer.isMe)
                     {
                         //self.playersContinueButtons = null;
-                        onlinePlayer.InvokeOnceRPC(RPCs.Arena_Killing, absPlayerCreature, targetAbsCreature, onlinePlayer.id.name);
+                        onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_Killing, absPlayerCreature, targetAbsCreature, onlinePlayer.id.name);
                     }
                     else
                     {
@@ -580,18 +645,18 @@ namespace RainMeadow
                         Error("Error getting exit manager room");
                     }
 
-                    if (!roomSession.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.AddShortCutVessel, new RWCustom.IntVector2(-1, -1), onlineVessel, roomSession, 0)))
+                    if (!roomSession.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(ArenaRPCs.AddShortCutVessel, new RWCustom.IntVector2(-1, -1), onlineVessel, roomSession, 0)))
                     {
                         foreach (OnlinePlayer player in OnlineManager.players)
                         {
                             if (roomSession.isOwner)
                             {
 
-                                RPCs.AddShortCutVessel(new RWCustom.IntVector2(-1, -1), onlineVessel, roomSession, 0);
+                                ArenaRPCs.AddShortCutVessel(new RWCustom.IntVector2(-1, -1), onlineVessel, roomSession, 0);
                             }
                             else
                             {
-                                player.InvokeRPC(RPCs.AddShortCutVessel, new RWCustom.IntVector2(-1, -1), onlineVessel, roomSession, 0);
+                                player.InvokeRPC(ArenaRPCs.AddShortCutVessel, new RWCustom.IntVector2(-1, -1), onlineVessel, roomSession, 0);
 
                             }
                         }
@@ -686,13 +751,13 @@ namespace RainMeadow
                     {
                         if (player.id == OnlineManager.lobby.owner.id && arena.clientWaiting == OnlineManager.players.Count - 1)
                         {
-                            RPCs.Arena_NextLevelCall();
+                            ArenaRPCs.Arena_NextLevelCall();
                         }
 
                         else
                         {
-                            player.InvokeRPC(RPCs.IncrementPlayersLeftt);
-                            player.InvokeRPC(RPCs.Arena_NextLevelCall);
+                            player.InvokeRPC(ArenaRPCs.Arena_IncrementPlayersLeftt);
+                            player.InvokeRPC(ArenaRPCs.Arena_NextLevelCall);
 
 
                         }

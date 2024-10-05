@@ -59,6 +59,7 @@ namespace RainMeadow
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
             //SetupCharacterCustomization();
 
+
         }
 
 
@@ -110,7 +111,6 @@ namespace RainMeadow
             this.GetGameTypeSetup.savingAndLoadingSession = false;
             this.GetGameTypeSetup.saveCreatures = false;
 
-
         }
 
         private void BindSettings()
@@ -126,6 +126,38 @@ namespace RainMeadow
         {
             BuildPlayerSlots();
             AddAbovePlayText();
+
+            if (this.levelSelector != null)
+            {
+
+                if (this.levelSelector.levelsPlaylist.levelItems.Count > 0 && OnlineManager.lobby.isOwner)
+                {
+                    this.levelSelector.levelsPlaylist.clearAllCounter = 1;
+                }
+                if (!OnlineManager.lobby.isOwner)
+                {
+
+                    for (int i = 0; i < this.levelSelector.levelsPlaylist.levelItems.Count; i++)
+                    {
+                        if (!arena.playList.Contains(this.levelSelector.levelsPlaylist.levelItems[i].name))
+                        {
+                            this.GetGameTypeSetup.playList.RemoveAt(i);
+                            this.levelSelector.levelsPlaylist.RemoveLevelItem(new Menu.LevelSelector.LevelItem(this, this.levelSelector.levelsPlaylist, this.levelSelector.levelsPlaylist.levelItems[i].name));
+                            this.levelSelector.levelsPlaylist.ScrollPos = this.levelSelector.levelsPlaylist.LastPossibleScroll;
+                            this.levelSelector.levelsPlaylist.ConstrainScroll();
+                        }
+
+                    }
+                    foreach (var level in arena.playList)
+                    {
+                        this.GetGameTypeSetup.playList.Add(level);
+                        this.levelSelector.levelsPlaylist.AddLevelItem(new Menu.LevelSelector.LevelItem(this, this.levelSelector.levelsPlaylist, level));
+                        this.levelSelector.levelsPlaylist.ScrollPos = this.levelSelector.levelsPlaylist.LastPossibleScroll;
+                        this.levelSelector.levelsPlaylist.ConstrainScroll();
+                    }
+                }
+
+            }
         }
 
         SimplerButton CreateButton(string text, Vector2 pos, Vector2 size, Action<SimplerButton>? clicked = null, Page? page = null)
@@ -249,7 +281,7 @@ namespace RainMeadow
                     {
                         if (!player.isMe)
                         {
-                            player.InvokeRPC(RPCs.Arena_NotifyLobbyReadyUp, OnlineManager.mePlayer.id.name, arena.clientsAreReadiedUp);
+                            player.InvokeRPC(ArenaRPCs.Arena_NotifyLobbyReadyUp, OnlineManager.mePlayer.id.name, arena.clientsAreReadiedUp);
 
                         }
                     }
@@ -420,6 +452,7 @@ namespace RainMeadow
                 {
                     ArenaHelpers.ResetReadyUpLogic(arena, this);
                 }
+
             }
 
         }
@@ -462,7 +495,7 @@ namespace RainMeadow
                     {
                         if (!player.isMe)
                         {
-                            player.InvokeRPC(RPCs.Arena_NotifyClassChange, OnlineManager.mePlayer.id.name, currentColorIndex);
+                            player.InvokeRPC(ArenaRPCs.Arena_NotifyClassChange, OnlineManager.mePlayer.id.name, currentColorIndex);
 
                         }
                     }
