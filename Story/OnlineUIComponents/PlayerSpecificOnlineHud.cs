@@ -58,13 +58,9 @@ namespace RainMeadow
         {
             get
             {
-                return clientSettings.inGame && abstractPlayer != null
-                    && (
-                        abstractPlayer.state.dead ||
-                        (
-                            abstractPlayer.realizedCreature is Player player &&
-                            player.dangerGrasp != null && player.dangerGraspTime > 20
-                        )
+                return clientSettings.inGame && abstractPlayer != null && (
+                    abstractPlayer.state.dead
+                    || (RealizedPlayer?.dangerGrasp != null && RealizedPlayer.dangerGraspTime > 20)
                     );
             }
         }
