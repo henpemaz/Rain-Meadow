@@ -5,8 +5,6 @@ namespace RainMeadow
 {
     public class StoryGameMode : OnlineGameMode
     {
-        public List<ushort> readyForWinPlayers = new List<ushort>();
-
         // these are synced by StoryLobbyData
         public bool isInGame = false;
         public bool changedRegions = false;
@@ -121,15 +119,5 @@ namespace RainMeadow
                 }
             }
         }
-
-        internal override void LobbyTick(uint tick)
-        {
-            base.LobbyTick(tick);
-            readyForWinPlayers = lobby.activeEntities.Where(
-                e => e is StoryClientSettings sas && 
-                (sas.readyForWin || !sas.inGame || sas.isDead)
-            ).Select(e => e.owner.inLobbyId).ToList();
-        }
-
     }
 }

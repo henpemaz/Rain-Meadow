@@ -34,7 +34,6 @@ namespace RainMeadow
 
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
 
-            IL.Player.Update += Player_Update1;
             On.Player.Update += Player_Update;
 
             On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass;
@@ -611,96 +610,37 @@ namespace RainMeadow
             orig(self, sender, message);
         }
 
-        private void Player_Update1(ILContext il)
-        {
-            try
-            {
-                // don't call GameOver if player is not ours
-                var c = new ILCursor(il);
-                ILLabel skip = il.DefineLabel();
-                c.GotoNext(
-                    i => i.MatchLdarg(0),
-                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
-                    i => i.MatchLdfld<Room>("game"),
-                    i => i.MatchLdarg(0),
-                    i => i.MatchLdfld<Player>("dangerGrasp"),
-                    i => i.MatchCallOrCallvirt<RainWorldGame>("GameOver")
-                    );
-                c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((Player self) =>
-                    (OnlineManager.lobby != null && !(OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe) && oe.isMine)));
-                c.Emit(OpCodes.Brtrue, skip);
-                c.Index += 6;
-                c.MarkLabel(skip);
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e);
-            }
-        }
-
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {
+            if (isStoryMode(out var gameMode) && OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe) && oe.isMine)
+                gameMode.storyClientSettings.readyForWin = false;
             orig(self, eu);
-            if (isStoryMode(out var gameMode))
-            {
-
-                //fetch the online entity and check if it is mine.
-                //If it is mine run the below code
-                //If not, update from the lobby state
-                //self.readyForWin = OnlineManager.lobby.playerid === fetch if this is ours.
-
-                if (OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe))
-                {
-                    if (!oe.isMine)
-                    {
-                        self.readyForWin = gameMode.readyForWinPlayers.Contains(oe.owner.inLobbyId);
-                        return;
-                    }
-                }
-
-                gameMode.storyClientSettings.isDead = self.dead;
-
-                if (self.readyForWin
-                    && self.touchedNoInputCounter > (ModManager.MMF ? 40 : 20)
-                    && RWCustom.Custom.ManhattanDistance(self.abstractCreature.pos.Tile, self.room.shortcuts[0].StartTile) > 3)
-                {
-                    gameMode.storyClientSettings.readyForWin = true;
-                }
-                else
-                {
-                    gameMode.storyClientSettings.readyForWin = false;
-                }
-            }
         }
 
         private void KarmaLadderScreen_Update(On.Menu.KarmaLadderScreen.orig_Update orig, Menu.KarmaLadderScreen self)
         {
             orig(self);
 
-            if (isStoryMode(out var gameMode))
+            if (isStoryMode(out var gameMode) && self.continueButton != null)
             {
                 if (OnlineManager.lobby.isOwner)
                 {
                     self.continueButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
                 }
+                else if (gameMode.didStartCycle)
+                {
+                    if (isPlayerReady)
+                    {
+                        self.Singal(self.continueButton, "CONTINUE");
+                    }
+                    else
+                    {
+                        self.continueButton.menuLabel.text = self.Translate("CONTINUE");
+                    }
+                }
                 else
                 {
-                    if (gameMode.didStartCycle)
-                    {
-                        if (isPlayerReady)
-                        {
-                            self.Singal(self.continueButton, "CONTINUE");
-                        }
-                        else if (self.continueButton != null)
-                        {
-                            self.continueButton.menuLabel.text = self.Translate("CONTINUE");
-                        }
-                    }
-                    else if (self.continueButton != null)
-                    {
-                        self.continueButton.menuLabel.text = self.Translate("READY");
-                    }
+                    self.continueButton.menuLabel.text = self.Translate("READY");
                 }
             }
         }

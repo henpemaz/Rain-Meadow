@@ -25,10 +25,10 @@ namespace RainMeadow
 
         public static void ResetReadyUpLogic(ArenaCompetitiveGameMode arena, ArenaLobbyMenu lobby)
         {
-            if (lobby.mm.playButton != null)
+            if (lobby.playButton != null)
             {
-                lobby.mm.playButton.menuLabel.text = "READY?";
-                lobby.mm.playButton.inactive = false;
+                lobby.playButton.menuLabel.text = "READY?";
+                lobby.playButton.inactive = false;
 
             }
             arena.allPlayersReadyLockLobby = false;

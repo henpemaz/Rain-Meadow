@@ -15,6 +15,7 @@ public partial class RainMeadow
         On.SlugcatStats.ctor += SlugcatStats_ctor;
 
         On.Player.ctor += Player_ctor;
+        IL.Player.Update += Player_Update;
         On.Player.Die += PlayerOnDie;
         On.Player.Grabability += PlayerOnGrabability;
         IL.Player.GrabUpdate += Player_GrabUpdate;
@@ -37,6 +38,56 @@ public partial class RainMeadow
         On.AbstractCreature.ctor += AbstractCreature_ctor;
         On.Player.ShortCutColor += Player_ShortCutColor;
 
+    }
+
+    private void Player_Update(ILContext il)
+    {
+        try
+        {
+            // don't call GameOver if player is not ours
+            var c = new ILCursor(il);
+            ILLabel skip = il.DefineLabel();
+            c.GotoNext(
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                i => i.MatchLdfld<Room>("game"),
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<Player>("dangerGrasp"),
+                i => i.MatchCallOrCallvirt<RainWorldGame>("GameOver")
+                );
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Player self) =>
+                (OnlineManager.lobby != null && !(OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe) && oe.isMine)));
+            c.Emit(OpCodes.Brtrue, skip);
+            c.Index += 6;
+            c.MarkLabel(skip);
+
+            // don't handle shelter for meadow and remote scugs
+            c.Index = 0;
+            ILLabel skipShelter = null;
+            c.GotoNext(i => i.MatchCallOrCallvirt<ShelterDoor>("Close"));
+            c.GotoPrev(MoveType.After,
+                i => i.MatchCallOrCallvirt<AbstractRoom>("get_shelter"),
+                i => i.MatchBrfalse(out skipShelter)
+                );
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Player self) =>
+            {
+                if (OnlineManager.lobby != null)
+                {
+                    if (OnlineManager.lobby.gameMode is MeadowGameMode) // meadow crashes with msc assuming slugpupbars is there
+                        return false;
+                    if (OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe) && !oe.isMine) // don't shelter if remote
+                        return false;
+                }
+                return true;
+            });
+            c.Emit(OpCodes.Brfalse, skipShelter);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e);
+        }
     }
 
     private UnityEngine.Color Player_ShortCutColor(On.Player.orig_ShortCutColor orig, Player self)

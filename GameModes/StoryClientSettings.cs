@@ -75,7 +75,7 @@ namespace RainMeadow
                 eyeColor = onlineEntity.eyeColor;
                 playingAs = onlineEntity.playingAs?.value;
                 readyForWin = onlineEntity.readyForWin;
-                isDead = onlineEntity.isDead;
+                isDead = (onlineEntity.avatarId.FindEntity() as OnlineCreature)?.creature?.state.dead ?? true;
             }
 
             public override void ReadTo(OnlineEntity onlineEntity)

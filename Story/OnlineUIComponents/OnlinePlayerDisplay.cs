@@ -17,13 +17,11 @@ namespace RainMeadow
         public float blink;
         public float lastBlink;
         public bool switchedToDeathIcon;
-        private bool isButtonToggled;
         public int onlineTimeSinceSpawn;
 
         public OnlinePlayerDisplay(PlayerSpecificOnlineHud owner) : base(owner)
         {
             this.owner = owner;
-
 
             this.pos = new Vector2(-1000f, -1000f);
             this.lastPos = this.pos;
@@ -54,9 +52,6 @@ namespace RainMeadow
             this.blink = 1f;
             this.switchedToDeathIcon = false;
 
-            this.isButtonToggled = false;
-
-
             if (RainMeadow.isStoryMode(out var _))
             {
                 this.label.color = (owner.clientSettings as StoryClientSettings).SlugcatColor(); ;
@@ -81,34 +76,29 @@ namespace RainMeadow
         {
             base.Update();
             onlineTimeSinceSpawn++;
-            
-            if (RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value && Input.GetKeyDown(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
-            {
-                this.isButtonToggled = !this.isButtonToggled;
-            }
 
-            
-            if ((this.owner.clientSettings.owner.isMe &&  onlineTimeSinceSpawn < 120) || isButtonToggled || (!RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value && Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value)))
+            bool show = owner.owner.showFriends || (owner.clientSettings.owner.isMe && onlineTimeSinceSpawn < 120);
+            if (show || this.alpha > 0)
             {
                 this.lastAlpha = this.alpha;
                 this.blink = 1f;
+                this.alpha = Custom.LerpAndTick(this.alpha, owner.needed && show ? 1 : 0, 0.08f, 0.033333335f);
+
                 if (owner.found)
                 {
-                    this.alpha = Custom.LerpAndTick(this.alpha, owner.needed ? 1 : 0, 0.08f, 0.033333335f);
-
                     this.pos = owner.drawpos;
                     if (owner.pointDir == Vector2.down) pos += new Vector2(0f, 45f);
 
-                    if (owner.PlayerConsideredDead)
+                    if (this.lastAlpha == 0) this.lastPos = pos;
+
+                    if (owner.PlayerConsideredDead) this.alpha = Mathf.Min(this.alpha, 0.5f);
+
+                    if (owner.PlayerConsideredDead != switchedToDeathIcon)
                     {
-                        this.alpha = 0.5f;
-                        if (!switchedToDeathIcon)
-                        {
-                            slugIcon.RemoveFromContainer();
-                            slugIcon = new FSprite("Multiplayer_Death");
-                            owner.hud.fContainers[0].AddChild(slugIcon);
-                            switchedToDeathIcon = true;
-                        }
+                        slugIcon.RemoveFromContainer();
+                        slugIcon = new FSprite(owner.PlayerConsideredDead ? "Multiplayer_Death" : "Kill_Slugcat");
+                        owner.hud.fContainers[0].AddChild(slugIcon);
+                        switchedToDeathIcon = owner.PlayerConsideredDead;
                     }
                 }
                 else
@@ -118,18 +108,11 @@ namespace RainMeadow
 
                 this.counter++;
             }
-            else
-            {
-                this.alpha = Custom.LerpAndTick(this.alpha, owner.needed ? 0 : 1, 0.08f, 0.0033333335f);
-                this.lastAlpha = this.alpha;
-
-            }
-
+            if (!show) this.lastAlpha = this.alpha;
         }
 
         public override void Draw(float timeStacker)
         {
-
             Vector2 vector = Vector2.Lerp(this.lastPos, this.pos, timeStacker) + new Vector2(0.01f, 0.01f);
             float num = Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(this.lastAlpha, this.alpha, timeStacker)), 0.7f);
             this.gradient.x = vector.x;
