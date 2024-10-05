@@ -330,17 +330,31 @@ namespace RainMeadow
                     ArenaHelpers.ResetReadyUpLogic(arena, this);
                     flushArenaSittingForWaitingClients = true;
                 }
-
-
-                if (this.GetGameTypeSetup.playList.Count * this.GetGameTypeSetup.levelRepeats > 0)
+                if (!OnlineManager.lobby.isOwner)
                 {
-                    this.playButton.buttonBehav.greyedOut = false;
+                    if (this.GetGameTypeSetup.playList.Count * this.GetGameTypeSetup.levelRepeats >= 0)
+                    {
+                        if (this.abovePlayButtonLabel != null)
+                        {
+                            this.abovePlayButtonLabel.RemoveSprites();
+                            this.pages[0].RemoveSubObject(this.abovePlayButtonLabel);
+                        }
+
+                        this.playButton.buttonBehav.greyedOut = false;
+                    }
+
+
                 }
                 else
                 {
-                    this.playButton.buttonBehav.greyedOut = OnlineManager.lobby.isAvailable;
 
+                    if (this.GetGameTypeSetup.playList.Count * this.GetGameTypeSetup.levelRepeats > 0)
+                    {
+                        this.playButton.buttonBehav.greyedOut = false;
+                    }
                 }
+
+
             }
 
 
