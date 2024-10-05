@@ -71,8 +71,20 @@ namespace RainMeadow
             On.RWInput.PlayerInputLogic_int_int += RWInput_PlayerInputLogic_int_int;
             On.RWInput.PlayerUIInput_int += RWInput_PlayerUIInput_int;
 
+            On.MultiplayerUnlocks.IsLevelUnlocked += MultiplayerUnlocks_IsLevelUnlocked;
+
         }
 
+        private bool MultiplayerUnlocks_IsLevelUnlocked(On.MultiplayerUnlocks.orig_IsLevelUnlocked orig, MultiplayerUnlocks self, string levelName)
+        {
+            if (isArenaMode(out var _))
+            {
+
+                return true;
+
+            }
+            return orig(self, levelName);
+        }
 
         private Player.InputPackage RWInput_PlayerUIInput_int(On.RWInput.orig_PlayerUIInput_int orig, int playerNumber)
         {
