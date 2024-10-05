@@ -17,6 +17,7 @@ public partial class RainMeadow
         On.Player.ctor += Player_ctor;
         IL.Player.Update += Player_Update;
         On.Player.Die += PlayerOnDie;
+        On.Player.Destroy += Player_Destroy;
         On.Player.Grabability += PlayerOnGrabability;
         IL.Player.GrabUpdate += Player_GrabUpdate;
         On.Player.SwallowObject += Player_SwallowObject;
@@ -333,13 +334,27 @@ public partial class RainMeadow
             {
                 RainMeadow.Error("Tried to get OnlineEntity counterpart. Die() may have been called earlier");
             }
-
             else
             {
                 throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
             }
         }
         if (onlineEntity != null && !onlineEntity.isMine) return;
+        RainMeadow.Debug($"``` DIE {onlineEntity}");
+        orig(self);
+    }
+
+    private void Player_Destroy(On.Player.orig_Destroy orig, Player self)
+    {
+        if (OnlineManager.lobby == null)
+        {
+            orig(self);
+            return;
+        }
+
+        OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe);
+        RainMeadow.Debug($"``` DESTROY {oe}");
+
         orig(self);
     }
 
