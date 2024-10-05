@@ -72,6 +72,9 @@ namespace RainMeadow
             On.RWInput.PlayerUIInput_int += RWInput_PlayerUIInput_int;
 
             On.MultiplayerUnlocks.IsLevelUnlocked += MultiplayerUnlocks_IsLevelUnlocked;
+            On.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded1;
+
+            On.ArenaGameSession.EndOfSessionLogPlayerAsAlive += ArenaGameSession_EndOfSessionLogPlayerAsAlive;
 
         }
 
@@ -85,13 +88,7 @@ namespace RainMeadow
             }
             return orig(self, levelName);
         }
-            //IL.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded;
-            On.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded1;
 
-            On.ArenaGameSession.EndOfSessionLogPlayerAsAlive += ArenaGameSession_EndOfSessionLogPlayerAsAlive;
-
-
-        }
 
         private bool ArenaGameSession_EndOfSessionLogPlayerAsAlive(On.ArenaGameSession.orig_EndOfSessionLogPlayerAsAlive orig, ArenaGameSession self, int playerNumber)
         {
@@ -218,49 +215,6 @@ namespace RainMeadow
                 orig(self, session);
             }
 
-        }
-
-        private void ArenaSitting_SessionEnded(ILContext il)
-        {
-            try
-            {
-                var c = new ILCursor(il);
-                ILLabel skip = null;
-
-
-                c.GotoNext(moveType: MoveType.After,
-
-                i => i.MatchLdarg(0),
-                i => i.MatchLdfld<ArenaSitting>("players"),
-                i => i.MatchLdloc(2),
-                i => i.MatchCallvirt<ArenaSitting.ArenaPlayer>("get_Item"),
-                i => i.MatchLdfld<ArenaSitting.ArenaPlayer>("playerNumber"),
-                i => i.MatchLdarg(1),
-                i => i.MatchLdfld<GameSession>("Players"),
-                i => i.MatchLdloc(3),
-                i => i.MatchCallvirt<AbstractCreature>("get_Item"),
-                i => i.MatchLdfld<AbstractCreature>("state"),
-                i => i.MatchIsinst<PlayerState>(),
-                i => i.MatchLdfld<PlayerState>("playerNumber"),
-                i => i.MatchBneUn(out var skip));
-
-                c.Emit(OpCodes.Ldarg_0);
-                //c.EmitDelegate((ArenaSitting self) =>
-                //{
-                //    if (isArenaMode(out var arena))
-                //    {
-                //        return ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.plplayer.playerNumber);
-                //    }
-                //    return player.playerNumber;
-                //});
-                //c.Emit(OpCodes.Brfalse, skip);
-                c.MoveAfterLabels();
-                c.MarkLabel(skip);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex);
-            }
         }
 
         private Player.InputPackage RWInput_PlayerUIInput_int(On.RWInput.orig_PlayerUIInput_int orig, int playerNumber)
