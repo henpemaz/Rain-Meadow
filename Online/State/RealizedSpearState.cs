@@ -17,31 +17,26 @@ namespace RainMeadow
         private sbyte stuckBodyPart;
         [OnlineField(group = "spear")]
         private float stuckRotation;
-        [OnlineField(group = "spear")]
-        private int stuckInWallCycles;
 
         public RealizedSpearState() { }
         public RealizedSpearState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
             var spear = (Spear)onlineEntity.apo.realizedObject;
             stuckInWall = spear.stuckInWall;
-            stuckInWallCycles = spear.abstractSpear.stuckInWallCycles;
 
             if (spear.stuckInObject != null)
             {
                 if (!OnlinePhysicalObject.map.TryGetValue(spear.stuckInObject.abstractPhysicalObject, out var onlineStuckEntity))
-
+                {
                     if (RainMeadow.isArenaMode(out var _))
                     {
-
                         RainMeadow.Debug("Stuck in creature while switching worlds");
-
                     }
-
                     else
                     {
                         throw new InvalidOperationException("Stuck to a non-synced creature!");
                     }
+                }
                 stuckInObject = onlineStuckEntity?.id;
                 stuckInChunkIndex = (byte)spear.stuckInChunkIndex;
                 stuckInAppendage = spear.stuckInAppendage != null ? new AppendageRef(spear.stuckInAppendage) : null;
@@ -54,8 +49,9 @@ namespace RainMeadow
         {
             if (!onlineEntity.owner.isMe && onlineEntity.isPending) return; // Don't sync if pending, reduces visibility and effect of lag
             var spear = (Spear)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
+            if (spear.stuckInWall?.HasValue is true && stuckInWall?.HasValue is not true)
+                spear.resetHorizontalBeamState();
             spear.stuckInWall = stuckInWall;
-            spear.abstractSpear.stuckInWallCycles = stuckInWallCycles;
             if (!stuckInWall.HasValue)
                 spear.addPoles = false;
 
