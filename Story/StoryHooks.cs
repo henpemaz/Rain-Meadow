@@ -91,12 +91,12 @@ namespace RainMeadow
                 var c = new ILCursor(il);
                 var skip = il.DefineLabel();
                 c.GotoNext(moveType: MoveType.After,
-                    i => i.MatchLdsfld<ModManager>("CoopAvailable"),
+                    i => i.MatchLdsfld("ModManager", "CoopAvailable"),
                     i => i.MatchBrfalse(out _),
-                    i => i.MatchLdfld("RWCustom.Custom", "rainworld"),
+                    i => i.MatchLdsfld("RWCustom.Custom", "rainWorld"),
                     i => i.MatchLdfld<RainWorld>("options"),
                     i => i.MatchLdfld<Options>("friendlyFire"),
-                    i => i.MatchBrtrue(out _)
+                    i => i.MatchBr(out _)
                     );
                 c.EmitDelegate(() => isStoryMode(out var _) && rainMeadowOptions.FriendlyFire.Value);
 
