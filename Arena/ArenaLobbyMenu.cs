@@ -58,6 +58,11 @@ namespace RainMeadow
             BindSettings();
             BuildLayout();
             ArenaHelpers.ResetReadyUpLogic(arena, this);
+            if (OnlineManager.lobby.isOwner)
+            {
+                arena.arenaSittingOnlineOrder = new List<ushort>();
+
+            }
 
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
             //SetupCharacterCustomization();
