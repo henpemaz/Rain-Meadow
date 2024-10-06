@@ -90,6 +90,7 @@ namespace RainMeadow
             {
                 var c = new ILCursor(il);
                 var skip = il.DefineLabel();
+                var jumpToDelegate = il.DefineLabel();
                 c.GotoNext(moveType: MoveType.After,
                     i => i.MatchLdsfld("ModManager", "CoopAvailable"),
                     i => i.MatchBrfalse(out _),
@@ -98,10 +99,17 @@ namespace RainMeadow
                     i => i.MatchLdfld<Options>("friendlyFire"),
                     i => i.MatchBr(out _)
                     );
+                // Emit delegate call
                 c.EmitDelegate(() => isStoryMode(out var _) && rainMeadowOptions.FriendlyFire.Value);
+                c.Emit(OpCodes.Brtrue, jumpToDelegate); // Branch if delegate is true
 
-                c.Emit(OpCodes.Brtrue, skip);
-                c.MoveAfterLabels();
+                // Emit false case for the AND operation
+                c.Emit(OpCodes.Ldc_I4_0);
+                c.Emit(OpCodes.Br, skip); // Skip to end if both conditions are false
+
+                c.MarkLabel(jumpToDelegate);
+                c.Emit(OpCodes.Ldc_I4_1); // Push true if delegate returns true
+
                 c.MarkLabel(skip);
             }
 
