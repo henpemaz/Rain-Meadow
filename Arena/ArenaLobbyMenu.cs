@@ -38,6 +38,7 @@ namespace RainMeadow
 
         public ArenaOnlinePlayerJoinButton[] classButtons;
         private bool flushArenaSittingForWaitingClients = false;
+        
 
         public ArenaLobbyMenu(ProcessManager manager) : base(manager)
         {
@@ -47,11 +48,12 @@ namespace RainMeadow
 
             manager.arenaSetup = new ArenaSetup(manager)
             {
+
                 currentGameType = ArenaSetup.GameTypeID.Competitive,
                 savFilePath = null,
 
-
             };
+
             OverrideMultiplayerMenu();
             BindSettings();
             BuildLayout();
@@ -96,6 +98,7 @@ namespace RainMeadow
 
         void OverrideMultiplayerMenu()
         {
+
             RemoveExcessArenaObjects();
 
             this.currentGameType = this.nextGameType = ArenaSetup.GameTypeID.Competitive;
@@ -106,12 +109,10 @@ namespace RainMeadow
 
             this.backButton.signalText = "BACKTOLOBBY";
             this.playButton.signalText = "STARTARENAONLINEGAME";
-
             this.GetGameTypeSetup.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Standard;
             this.GetGameTypeSetup.rainWhenOnePlayerLeft = false; // TODO:  Hook this to update logic due to level switching if we want it
             this.GetGameTypeSetup.savingAndLoadingSession = false;
             this.GetGameTypeSetup.saveCreatures = false;
-
         }
 
         private void BindSettings()
@@ -128,7 +129,7 @@ namespace RainMeadow
             BuildPlayerSlots();
             AddAbovePlayText();
 
-            if (this.levelSelector != null)
+            if (this.levelSelector != null && this.levelSelector.levelsPlaylist != null)
             {
 
                 if (this.levelSelector.levelsPlaylist.levelItems.Count > 0 && OnlineManager.lobby.isOwner)
