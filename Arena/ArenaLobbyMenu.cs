@@ -11,6 +11,7 @@ using System.IO;
 using UnityEngine;
 using Kittehface.Framework20;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace RainMeadow
 {
@@ -417,7 +418,7 @@ namespace RainMeadow
 
             if (message == "INFO" && infoWindow != null)
             {
-                infoWindow.label.text = "Welcome to Arena Online! All players must ready up in the lobby before combat can begin.";
+                infoWindow.label.text = Regex.Replace(this.Translate("Welcome to Arena Online!<LINE>All players must ready up to begin."), "<LINE>", "\r\n");
             }
         }
 
