@@ -75,6 +75,21 @@ namespace RainMeadow
             On.SSOracleSwarmer.NewRoom += SSOracleSwarmer_NewRoom;
             On.HUD.TextPrompt.Update += TextPrompt_Update;
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
+
+            On.Weapon.HitThisObject += Weapon_HitThisObject;
+        }
+
+        private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
+        {
+            bool num = obj is Player && this is Spear && self.thrownBy != null && self.thrownBy is Player;
+            bool flag = (ModManager.CoopAvailable && RWCustom.Custom.rainWorld.options.friendlyFire) || (rainMeadowOptions.FriendlyFire.Value);
+            bool flag2 = self.room.game.IsArenaSession && self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.spearsHitPlayers;
+            if (num)
+            {
+                return flag || flag2;
+            }
+
+            return true;
         }
 
         private void TextPrompt_UpdateGameOverString(On.HUD.TextPrompt.orig_UpdateGameOverString orig, TextPrompt self, Options.ControlSetup.Preset controllerType)

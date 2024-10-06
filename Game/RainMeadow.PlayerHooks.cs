@@ -383,7 +383,7 @@ public partial class RainMeadow
 
     private bool Player_SlugSlamConditions(On.Player.orig_SlugSlamConditions orig, Player self, PhysicalObject otherObject)
     {
-        if (isStoryMode(out _))
+        if (isStoryMode(out _) && !rainMeadowOptions.FriendlyFire.Value)
         {
             if (otherObject is Player) return false;
         }
@@ -407,7 +407,7 @@ public partial class RainMeadow
                 i => i.MatchLdfld<Options>("friendlyFire"),
                 i => i.MatchBrtrue(out _)
                 );
-            c.EmitDelegate(() => isStoryMode(out _));
+            c.EmitDelegate(() => isStoryMode(out _)  && !rainMeadowOptions.FriendlyFire.Value); // TODO: Come back to this when I'm not tired thinking through this
             c.Emit(OpCodes.Brtrue, skip);
             c.Index += 6;
             c.MarkLabel(skip);
@@ -420,7 +420,7 @@ public partial class RainMeadow
 
     private bool Player_CanMaulCreature(On.Player.orig_CanMaulCreature orig, Player self, Creature crit)
     {
-        if (isStoryMode(out _))
+        if (isStoryMode(out _) && !rainMeadowOptions.FriendlyFire.Value)
         {
             if (crit is Player) return false;
         }
