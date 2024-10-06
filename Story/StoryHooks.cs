@@ -6,6 +6,8 @@ using HUD;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
+using static RainMeadow.MeadowProgression;
+using IL;
 
 namespace RainMeadow
 {
@@ -76,20 +78,38 @@ namespace RainMeadow
             On.HUD.TextPrompt.Update += TextPrompt_Update;
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
 
-            On.Weapon.HitThisObject += Weapon_HitThisObject;
+            IL.Weapon.HitThisObject += Weapon_HitThisObject;
         }
 
-        private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
+        // bool flag2 = ModManager.CoopAvailable && Custom.rainWorld.options.friendlyFire;
+        // becomes
+        // bool flag2 = ModManager.CoopAvailable && Custom.rainWorld.options.friendlyFire || isStoryMode && rainmeadowOptions.FriendlyFire.Value;
+        private void Weapon_HitThisObject(ILContext il)
         {
-            bool num = obj is Player && this is Spear && self.thrownBy != null && self.thrownBy is Player;
-            bool flag = (ModManager.CoopAvailable && RWCustom.Custom.rainWorld.options.friendlyFire) || (rainMeadowOptions.FriendlyFire.Value);
-            bool flag2 = self.room.game.IsArenaSession && self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.spearsHitPlayers;
-            if (num)
+            try
             {
-                return flag || flag2;
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdsfld<ModManager>("CoopAvailable"),
+                    i => i.MatchBrfalse(out _),
+                    i => i.MatchLdfld("RWCustom.Custom", "rainworld"),
+                    i => i.MatchLdfld<RainWorld>("options"),
+                    i => i.MatchLdfld<Options>("friendlyFire"),
+                    i => i.MatchBrtrue(out _)
+                    );
+                c.EmitDelegate(() => isStoryMode(out var _) && rainMeadowOptions.FriendlyFire.Value);
+
+                c.Emit(OpCodes.Brtrue, skip);
+                c.MoveAfterLabels();
+                c.MarkLabel(skip);
             }
 
-            return true;
+
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
         }
 
         private void TextPrompt_UpdateGameOverString(On.HUD.TextPrompt.orig_UpdateGameOverString orig, TextPrompt self, Options.ControlSetup.Preset controllerType)
