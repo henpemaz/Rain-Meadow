@@ -99,16 +99,17 @@ namespace RainMeadow
                     i => i.MatchLdfld<Options>("friendlyFire"),
                     i => i.MatchBr(out _)
                     );
-                // Emit delegate call
-                c.EmitDelegate(() => isStoryMode(out var _) && rainMeadowOptions.FriendlyFire.Value);
-                c.Emit(OpCodes.Brtrue, jumpToDelegate); // Branch if delegate is true
+                // Emit check for isStoryMode
+                c.EmitDelegate(() => isStoryMode(out var _));
+                c.Emit(OpCodes.Brtrue, jumpToDelegate); // If isStoryMode is true, branch to the jump label
 
-                // Emit false case for the AND operation
-                c.Emit(OpCodes.Ldc_I4_0);
-                c.Emit(OpCodes.Br, skip); // Skip to end if both conditions are false
+                // If both conditions are false, push false
+                c.Emit(OpCodes.Ldc_I4_0); // Push false
+                c.Emit(OpCodes.Br, skip);   // Skip to the end
 
+                // Label for when isStoryMode is true
                 c.MarkLabel(jumpToDelegate);
-                c.Emit(OpCodes.Ldc_I4_1); // Push true if delegate returns true
+                c.Emit(OpCodes.Ldc_I4_1); // Push true
 
                 c.MarkLabel(skip);
             }
