@@ -134,6 +134,7 @@ namespace RainMeadow
                 {
                     this.levelSelector.levelsPlaylist.clearAllCounter = 1;
                 }
+                // TODO: clients are finnicky with when they add or remove versus the host
                 if (!OnlineManager.lobby.isOwner)
                 {
 
@@ -309,7 +310,6 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
-
 
             if (this.playButton != null)
             {
