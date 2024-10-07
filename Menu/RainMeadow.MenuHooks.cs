@@ -362,6 +362,12 @@ namespace RainMeadow
                 if (ID == ProcessManager.ProcessID.MainMenu || ID == ProcessManager.ProcessID.MultiplayerMenu)
                 {
                     ID = gameMode.MenuProcessId();
+
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        foreach (OnlinePlayer player in OnlineManager.players)
+                            if (!player.isMe) player.InvokeOnceRPC(RPCs.ExitToGameModeMenu);
+                    }
                 }
             }
 
