@@ -342,7 +342,7 @@ public partial class RainMeadow
             }
         }
         if (onlineEntity != null && !onlineEntity.isMine) return;
-        RainMeadow.Debug($"``` DIE {onlineEntity}");
+        RainMeadow.Debug($"%%% DIE {onlineEntity}");
         orig(self);
     }
 
@@ -355,7 +355,7 @@ public partial class RainMeadow
         }
 
         OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe);
-        RainMeadow.Debug($"``` DESTROY {oe}");
+        RainMeadow.Debug($"%%% DESTROY {oe}");
 
         orig(self);
     }
