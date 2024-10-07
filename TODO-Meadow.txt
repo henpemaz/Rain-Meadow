@@ -36,6 +36,7 @@ creature todo
 - allow creature to change the creature-pipe they're going to mid-flight (very low prio)
 - need to sample color of creature and have it in skindata
 	- requires final-ish seeds
+- the shortcut indicators dont work in downpour
 
 lizard todo
 blues have trouble sticking to the ceiling
@@ -50,6 +51,7 @@ slugcat in meadow mode
 
 squidcicada todo
 button for spin/dance ?
+can probably point things too with a tentacle
 
 eggbug
 	pick seeds and names
@@ -70,8 +72,7 @@ tint implementation missing in most creatures
 "creature emotions" need addressing
 lizards shouldn't open mouth to bite -> can't reproduce
 rats shouldn't panic
-
-sandbox unlock items still present in meadow lmao, seem inactive though
+slugcat arm reaches to threat
 
 passage but the map isn't saving
 
@@ -81,6 +82,7 @@ following others around is hard
 	player list on passage screen
 
 wormgrass can still eat you (big patches in FA)
+prevents pathing still
 
 echo sky animation is too slow needs to converge
 
@@ -139,11 +141,15 @@ squid had trouble in dsb06 underwater poles?
 
 scav has trouble walljumping, doesn't count as walljumpable sometimes, hic02 lower spot
 
-backing out of passage screen sends you to main menu
+backing out of passage screen sends you to main menu? unconfirmed
 
 eggbug and lanternmouse are way too fast in zerog
 
 lizard wallclimb is slow, slows you down a lot in zerog movement
+
+rebindable keybinds for everything meadow
+- controller emote input
+- tab
 
 engine thoughts
 that one crash notchoc posted about a Destroy related to roomjoin

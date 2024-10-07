@@ -403,41 +403,51 @@ namespace RainMeadow
             public static Emote emoteHello = new("emoteHello", true);
             public static Emote emoteHappy = new("emoteHappy", true);
             public static Emote emoteSad = new("emoteSad", true);
+
             public static Emote emoteConfused = new("emoteConfused", true);
             public static Emote emoteGoofy = new("emoteGoofy", true);
             public static Emote emoteDead = new("emoteDead", true);
+
             public static Emote emoteAmazed = new("emoteAmazed", true);
             public static Emote emoteShrug = new("emoteShrug", true);
             public static Emote emoteHug = new("emoteHug", true);
+
             public static Emote emoteAngry = new("emoteAngry", true);
             public static Emote emoteWink = new("emoteWink", true);
             public static Emote emoteMischievous = new("emoteMischievous", true);
 
-            // ideas
+            // symbols (displayed 3 per column)
             public static Emote symbolYes = new("symbolYes", true);
             public static Emote symbolNo = new("symbolNo", true);
             public static Emote symbolQuestion = new("symbolQuestion", true);
-            public static Emote symbolTime = new("symbolTime", true);
-            public static Emote symbolSurvivor = new("symbolSurvivor", true);
-            public static Emote symbolFriends = new("symbolFriends", true);
-            public static Emote symbolGroup = new("symbolGroup", true);
-            public static Emote symbolKnoledge = new("symbolKnoledge", true);
-            public static Emote symbolTravel = new("symbolTravel", true);
-            public static Emote symbolMartyr = new("symbolMartyr", true);
 
-            // things
+            public static Emote symbolExclamation = new("symbolExclamation", true);
+            public static Emote symbolArrow = new("symbolArrow", true);
+            public static Emote symbolTime = new("symbolTime", true);
+
+            public static Emote symbolTravel = new("symbolTravel", true);
+            public static Emote symbolGroup = new("symbolGroup", true);
+            public static Emote symbolFollow = new("symbolFollow", true);
+            
+            public static Emote symbolFriends = new("symbolFriends", true);
             public static Emote symbolCollectible = new("symbolCollectible", true);
-            public static Emote symbolFood = new("symbolFood", true);
-            public static Emote symbolLight = new("symbolLight", true);
+            public static Emote symbolEcho = new("symbolEcho", true);
+            
             public static Emote symbolShelter = new("symbolShelter", true);
             public static Emote symbolGate = new("symbolGate", true);
-            public static Emote symbolEcho = new("symbolEcho", true);
-            public static Emote symbolPointOfInterest = new("symbolPointOfInterest", true);
             public static Emote symbolTree = new("symbolTree", true);
-            public static Emote symbolIterator = new("symbolIterator", true);
+            
+            public static Emote symbolSurvivor = new("symbolSurvivor", true);
+            public static Emote symbolWanderer = new("symbolWanderer", true);
+            public static Emote symbolHigh = new("symbolHigh", true);
 
-            // verbs
-            // todo
+            public static Emote symbolIterator = new("symbolIterator", true);
+            public static Emote symbolLight = new("symbolLight", true);
+            public static Emote symbolPlants = new("symbolPlants", true);
+
+            public static Emote symbolMetal = new("symbolMetal", true);
+            public static Emote symbolPipes = new("symbolPipes", true);
+            public static Emote symbolWater = new("symbolWater", true);
         }
 
         public static List<Emote> emoteEmotes = new();
