@@ -2,6 +2,7 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using System;
+using System.Linq;
 
 namespace RainMeadow;
 
@@ -23,6 +24,7 @@ public partial class RainMeadow
         On.Player.SwallowObject += Player_SwallowObject;
         On.Player.Regurgitate += Player_Regurgitate;
         On.Player.ThrowObject += Player_ThrowObject;
+        On.Player.CanIPickThisUp += Player_CanIPickThisUp;
         On.Player.SpitUpCraftedObject += Player_SpitUpCraftedObject;
         IL.Player.Collide += Player_Collide;
         On.Player.SlugSlamConditions += Player_SlugSlamConditions;
@@ -401,6 +403,13 @@ public partial class RainMeadow
             if (!oe.isMine) return;
         }
         orig(self, grasp, eu);
+    }
+
+    // TODO: toggleable friendly steal
+    private bool Player_CanIPickThisUp(On.Player.orig_CanIPickThisUp orig, Player self, PhysicalObject obj)
+    {
+        if (isStoryMode(out _) && obj.grabbedBy.Any(x => x.grabber is Player)) return false;
+        return orig(self, obj);
     }
 
     private void Player_SpitUpCraftedObject(On.Player.orig_SpitUpCraftedObject orig, Player self)
