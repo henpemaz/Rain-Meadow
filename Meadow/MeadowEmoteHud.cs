@@ -511,6 +511,10 @@ namespace RainMeadow
                 dragging = false;
                 clickedEmote = null;
             }
+            if(mouseDown && clickedEmote != null)
+            {
+                creatureController.preventMouseInput = true;
+            }
         }
 
 

@@ -156,6 +156,7 @@ namespace RainMeadow
 
         protected IntVector2 forceInputDir;
         protected int forceInputCounter;
+        internal bool preventMouseInput;
 
         // IOwnAHUD
         public HUD.HUD.OwnerType GetOwnerType() => controlledCreatureHudOwner;
@@ -241,10 +242,11 @@ namespace RainMeadow
             }
             else
             {
-                if(Input.GetMouseButton(0))
+                if(!preventMouseInput && Input.GetMouseButton(0))
                 {
                     specialInput.direction = Vector2.ClampMagnitude((((Vector2)Futile.mousePosition) - referencePoint) / 500f, 1f);
                 }
+                preventMouseInput = false;
             }
             return specialInput;
         }
