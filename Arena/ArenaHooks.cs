@@ -515,6 +515,8 @@ namespace RainMeadow
             if (isArenaMode(out var _))
             {
                 self.AddPart(new TextPrompt(self));
+                self.AddPart(new Pointing(self));
+
             }
             else
             {
