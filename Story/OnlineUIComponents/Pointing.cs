@@ -59,13 +59,6 @@ namespace RainMeadow
             }
         }
 
-
-        public override void Update()
-        {
-            base.Update();
-
-        }
-
         public Vector2 OnlinePointing()
         {
 
