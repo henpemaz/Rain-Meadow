@@ -152,11 +152,13 @@ namespace RainMeadow
         public static HUD.HUD.OwnerType controlledCreatureHudOwner = new("MeadowControlledCreature", true);
 
         public bool lockInPlace;
-        public bool standStill;
+        public bool preventInput;
 
         protected IntVector2 forceInputDir;
         protected int forceInputCounter;
         internal bool preventMouseInput;
+        public bool pointing;
+        protected int pointCounter;
 
         // IOwnAHUD
         public HUD.HUD.OwnerType GetOwnerType() => controlledCreatureHudOwner;
@@ -208,7 +210,7 @@ namespace RainMeadow
             }
 
             rawInput = this.input[0];
-            if (this.standStill || (this.standStillOnMapButton && this.input[0].mp) || this.sleepCounter != 0)
+            if (this.preventInput || (this.standStillOnMapButton && this.input[0].mp) || this.sleepCounter != 0)
             {
                 this.input[0].x = 0;
                 this.input[0].y = 0;
@@ -523,6 +525,11 @@ namespace RainMeadow
             }
         }
 
+        protected virtual void PointImpl(Vector2 dir)
+        {
+
+        }
+
         public virtual void ForceAIDestination(WorldCoordinate coord)
         {
             if (onlineCreature.isMine)
@@ -814,6 +821,36 @@ namespace RainMeadow
                 Call();
             }
 
+            if (input[0].thrw)
+            {
+                pointCounter++;
+
+            }
+            else
+            {
+                pointCounter = 0;
+            }
+
+            var pointDir = specialInput[0].direction;
+            if (pointDir == Vector2.zero) pointDir = inputDir;
+
+            if (pointDir != Vector2.zero || pointCounter > 10)
+            {
+                if (pointDir != Vector2.zero && (input[0].thrw || pointCounter > 10))
+                {
+                    pointing = true;
+                    if(pointCounter > 10) lockInPlace = true;
+                }
+                if (pointing)
+                {
+                    PointImpl(pointDir);
+                }
+            }
+            else
+            {
+                pointing = false;
+            }
+
             if (onlineCreature.isMine)
             {
                 //GrabUpdate(); // currently disabled
@@ -898,7 +935,7 @@ namespace RainMeadow
             }
 
             lockInPlace = false;
-            standStill = false;
+            preventInput = false;
         }
 
         private void Call()

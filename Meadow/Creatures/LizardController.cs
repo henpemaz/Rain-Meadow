@@ -540,5 +540,14 @@ namespace RainMeadow
                 lizard.bubbleIntensity = Mathf.Max(0.4f, lizard.bubbleIntensity);
             }
         }
+
+        protected override void PointImpl(Vector2 dir)
+        {
+            if (lizard.graphicsModule is LizardGraphics lg && !lg.culled)
+            {
+                lg.limbs[0].mode = Limb.Mode.HuntAbsolutePosition;
+                lg.limbs[0].absoluteHuntPos = lizard.DangerPos + dir * 100f;
+            }
+        }
     }
 }
