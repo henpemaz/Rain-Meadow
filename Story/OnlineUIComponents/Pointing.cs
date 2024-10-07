@@ -4,39 +4,47 @@ using UnityEngine;
 using System.Linq;
 using HarmonyLib;
 using static RainMeadow.CreatureController;
+using RainMeadow.GameModes;
 
 namespace RainMeadow
 {
     public class Pointing : HudPart
     {
-
-        Player playerPointing;
+        public Creature realizedPlayer;
         int hand;
-
+        Vector2 pointDirection;
+        public ClientSettings clientSettings;
 
         public Pointing(HUD.HUD hud) : base(hud)
         {
-            playerPointing = (hud.owner as Player);
-
 
         }
 
         public override void Draw(float timeStacker)
         {
             base.Draw(timeStacker);
+
             if (Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
             {
+                if (OnlineManager.lobby.playerAvatars[OnlineManager.mePlayer].FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                {
+                    realizedPlayer = ac.realizedCreature;
+
+                } else
+                {
+                    return;
+                }
+
                 Vector2 vector = OnlinePointing();
                 if (vector == Vector2.zero)
                 {
                     return;
                 }
 
-
                 for (int handy = 1; handy >= 0; handy--)
                 {
                     // Arena hates player grasps for some reason
-                    if ((playerPointing.grasps[handy] == null || playerPointing.grasps[handy].grabbed is Weapon) && (playerPointing.graphicsModule as PlayerGraphics).hands[1 - handy].reachedSnapPosition)
+                    if ((realizedPlayer.grasps[handy] == null || realizedPlayer.grasps[handy].grabbed is Weapon) && (realizedPlayer.graphicsModule as PlayerGraphics).hands[1 - handy].reachedSnapPosition)
                     {
                         hand = handy;
                     }
@@ -45,12 +53,12 @@ namespace RainMeadow
                 float num3 = 100f;
 
 
-                Vector2 vector2 = new Vector2(playerPointing.mainBodyChunk.pos.x + vector.x * num3, playerPointing.mainBodyChunk.pos.y + vector.y * num3);
-                (playerPointing.graphicsModule as PlayerGraphics).LookAtPoint(vector2, 10f);
+                Vector2 vector2 = new Vector2(realizedPlayer.mainBodyChunk.pos.x + vector.x * num3, realizedPlayer.mainBodyChunk.pos.y + vector.y * num3);
+                (realizedPlayer.graphicsModule as PlayerGraphics).LookAtPoint(vector2, 10f);
                 if (hand > -1)
                 {
-                    (playerPointing.graphicsModule as PlayerGraphics).hands[hand].reachingForObject = true;
-                    (playerPointing.graphicsModule as PlayerGraphics).hands[hand].absoluteHuntPos = vector2;
+                    (realizedPlayer.graphicsModule as PlayerGraphics).hands[hand].reachingForObject = true;
+                    (realizedPlayer.graphicsModule as PlayerGraphics).hands[hand].absoluteHuntPos = vector2;
                 }
             }
         }
@@ -76,7 +84,7 @@ namespace RainMeadow
             {
                 if (Input.GetMouseButton(0))
                 {
-                    specialInput.direction = Vector2.ClampMagnitude((((Vector2)Futile.mousePosition) - playerPointing.input[0].IntVec.ToVector2().normalized) / 500f, 1f);
+                    specialInput.direction = Vector2.ClampMagnitude((((Vector2)Futile.mousePosition) - (realizedPlayer as Player).input[0].IntVec.ToVector2().normalized) / 500f, 1f);
                 }
             }
 
