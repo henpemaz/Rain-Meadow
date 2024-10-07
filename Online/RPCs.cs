@@ -399,21 +399,13 @@ namespace RainMeadow
         [RPCMethod]
         public static void KickToLobby()
         {
-            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-            try
-            {
-                if (game.manager.upcomingProcess != null)
-                {
-                    return;
-                }
-                game.ExitToMenu();
-            } catch
-            {
-                RWCustom.Custom.rainWorld.processManager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
-                
+            var manager = RWCustom.Custom.rainWorld.processManager;
+            if (manager.upcomingProcess != null) return;
 
-            }
-            BanHammer.ShowBan(RWCustom.Custom.rainWorld.processManager);
+            if (manager.musicPlayer != null) manager.musicPlayer.DeathEvent();
+
+            manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+            BanHammer.ShowBan(manager);
         }
 
         [RPCMethod]
