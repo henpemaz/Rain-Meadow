@@ -44,7 +44,6 @@ namespace RainMeadow
                 float num3 = 100f;
 
 
-                Vector2 pos = playerPointing.mainBodyChunk.pos;
                 Vector2 vector2 = new Vector2(playerPointing.mainBodyChunk.pos.x + vector.x * num3, playerPointing.mainBodyChunk.pos.y + vector.y * num3);
                 (playerPointing.graphicsModule as PlayerGraphics).LookAtPoint(vector2, 10f);
                 if (hand > -1)
@@ -86,7 +85,7 @@ namespace RainMeadow
                 return specialInput.direction;
             }
 
-            return Vector2.zero;
+            return Vector2.ClampMagnitude((((Vector2)Futile.mousePosition) - playerPointing.input[0].IntVec.ToVector2().normalized) / 500f, 1f);
 
         }
 
