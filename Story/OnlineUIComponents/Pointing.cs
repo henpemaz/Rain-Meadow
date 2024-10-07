@@ -12,12 +12,9 @@ namespace RainMeadow
     {
         public Creature realizedPlayer;
         int hand;
-        Vector2 pointDirection;
-        public ClientSettings clientSettings;
 
         public Pointing(HUD.HUD hud) : base(hud)
         {
-
         }
 
         public override void Draw(float timeStacker)
