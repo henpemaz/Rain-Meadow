@@ -108,7 +108,28 @@ namespace RainMeadow
             }
 
             BindSettings();
+            SanitizeStoryClientSettings(personaSettings);
+            SanitizeStoryGameMode(gameMode);
+
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
+        }
+
+        private void SanitizeStoryClientSettings(StoryClientSettings clientSettings)
+        {
+            clientSettings.readyForWin = false;
+            clientSettings.isDead = false;
+            clientSettings.myLastDenPos = null;
+            clientSettings.hasSheltered = false;
+        }
+
+        private void SanitizeStoryGameMode(StoryGameMode gameMode)
+        {
+            gameMode.isInGame = false;
+            gameMode.changedRegions = false;
+            gameMode.didStartCycle = false;
+            gameMode.defaultDenPos = null;
+            gameMode.ghostsTalkedTo = new();
+            gameMode.consumedItems = new();
         }
 
         private void SetupHostMenu()
