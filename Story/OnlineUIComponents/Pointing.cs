@@ -43,7 +43,6 @@ namespace RainMeadow
 
                 for (int handy = 1; handy >= 0; handy--)
                 {
-                    // Arena hates player grasps for some reason
                     if ((realizedPlayer.grasps[handy] == null || realizedPlayer.grasps[handy].grabbed is Weapon) && (realizedPlayer.graphicsModule as PlayerGraphics).hands[1 - handy].reachedSnapPosition)
                     {
                         hand = handy;
