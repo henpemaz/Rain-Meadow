@@ -12,7 +12,6 @@ namespace RainMeadow
 
         Player playerPointing;
         int hand;
-        Vector2 pointDirection;
 
 
         public Pointing(HUD.HUD hud) : base(hud)
