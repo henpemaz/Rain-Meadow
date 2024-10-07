@@ -19,6 +19,7 @@ namespace RainMeadow
         {
             playerPointing = (hud.owner as Player);
 
+
         }
 
         public override void Draw(float timeStacker)
@@ -33,11 +34,12 @@ namespace RainMeadow
                 }
 
 
-                for (int num2 = 1; num2 >= 0; num2--)
+                for (int handy = 1; handy >= 0; handy--)
                 {
-                    if ((playerPointing.grasps[num2] == null || playerPointing.grasps[num2].grabbed is Weapon) && (playerPointing.graphicsModule as PlayerGraphics).hands[1 - num2].reachedSnapPosition)
+                    // Arena hates player grasps for some reason
+                    if ((playerPointing.grasps[handy] == null || playerPointing.grasps[handy].grabbed is Weapon) && (playerPointing.graphicsModule as PlayerGraphics).hands[1 - handy].reachedSnapPosition)
                     {
-                        hand = num2;
+                        hand = handy;
                     }
                 }
 
@@ -65,6 +67,7 @@ namespace RainMeadow
         {
 
             SpecialInput specialInput = default;
+            // Good for when we have a specific choice in Options menu, but doesn't work well with the "ANY" input
             var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
             if (controller is Rewired.Joystick joystick)
             {
@@ -85,7 +88,7 @@ namespace RainMeadow
                 return specialInput.direction;
             }
 
-            return Vector2.ClampMagnitude((((Vector2)Futile.mousePosition) - playerPointing.input[0].IntVec.ToVector2().normalized) / 500f, 1f);
+            return Vector2.zero;
 
         }
 
