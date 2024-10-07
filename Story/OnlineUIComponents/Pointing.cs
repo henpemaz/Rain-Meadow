@@ -24,7 +24,7 @@ namespace RainMeadow
         {
             base.Draw(timeStacker);
 
-            if (Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
+            if (Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value)) // TODO: Change this input
             {
                 if (OnlineManager.lobby.playerAvatars[OnlineManager.mePlayer].FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
                 {
