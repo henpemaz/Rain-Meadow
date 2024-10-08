@@ -1,10 +1,5 @@
 ﻿using HUD;
-using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
-using HarmonyLib;
-using static RainMeadow.CreatureController;
-using RainMeadow.GameModes;
 using Rewired;
 
 namespace RainMeadow
