@@ -18,9 +18,7 @@ namespace RainMeadow
         [OnlineFieldHalf]
         public float requestedRopeLength;
         [OnlineField(nullable = true)]
-        public OnlineEntity.EntityId? attachedObject;
-        [OnlineField]
-        public byte attachedChunkIndex;
+        public BodyChunkRef attachedChunk;
 
         public TongueState() { }
         public TongueState(TubeWorm.Tongue tongue)
@@ -29,12 +27,7 @@ namespace RainMeadow
             pos = tongue.pos;
             //idealRopeLength = tongue.idealRopeLength;
             requestedRopeLength = tongue.requestedRopeLength;
-            if (tongue.attachedChunk?.owner?.abstractPhysicalObject is AbstractPhysicalObject apo
-                && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
-            {
-                attachedObject = oe.id;
-                attachedChunkIndex = (byte)tongue.attachedChunk.index;
-            }
+            attachedChunk = BodyChunkRef.FromBodyChunk(tongue.attachedChunk);
         }
 
         public void ReadTo(TubeWorm.Tongue tongue)
@@ -47,10 +40,9 @@ namespace RainMeadow
             {
                 tongue.terrainStuckPos = tongue.pos;
             }
-            else if (tongue.mode == TubeWorm.Tongue.Mode.AttachedToObject
-                && (attachedObject?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject is PhysicalObject po)
+            else if (tongue.mode == TubeWorm.Tongue.Mode.AttachedToObject)
             {
-                tongue.attachedChunk = po.bodyChunks[attachedChunkIndex];
+                tongue.attachedChunk = attachedChunk.ToBodyChunk();
             }
         }
     }
