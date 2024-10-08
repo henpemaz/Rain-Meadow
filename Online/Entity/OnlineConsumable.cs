@@ -1,4 +1,6 @@
-﻿namespace RainMeadow
+﻿using System.Globalization;
+
+namespace RainMeadow
 {
     public class OnlineConsumable : OnlinePhysicalObject
     {
@@ -15,6 +17,13 @@
             {
                 this.originRoom = (short)onlineConsumable.Consumable.originRoom;
                 this.placedObjectIndex = (sbyte)onlineConsumable.Consumable.placedObjectIndex;
+            }
+
+            protected override int ExtrasIndex => base.ExtrasIndex + 2;
+
+            protected override string MakeSerializedObjectNoExtras(PhysicalObjectEntityState initialState)
+            {
+                return string.Format(CultureInfo.InvariantCulture, "{0}<oA>{1}<oA>{2}", base.MakeSerializedObjectNoExtras(initialState), originRoom, placedObjectIndex);
             }
 
             public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)

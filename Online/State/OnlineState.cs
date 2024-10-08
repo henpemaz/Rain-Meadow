@@ -241,6 +241,16 @@ namespace RainMeadow
             }
         }
 
+        public class OmitFieldsAttribute : Attribute
+        {
+            public string[] fields;
+
+            public OmitFieldsAttribute(params string[] v)
+            {
+                this.fields = v;
+            }
+        }
+
         public class DeltaSupportAttribute : Attribute { public StateHandler.DeltaSupport level; }
 
         public class StateHandler
@@ -279,6 +289,11 @@ namespace RainMeadow
 
                     var tresults = new List<FieldInfo>();
                     var t = type; while (t != null) { tresults.AddRange(t.GetFields(anyInstance | BindingFlags.DeclaredOnly).Where(f => f.GetCustomAttribute<OnlineFieldAttribute>() != null)); t = t.BaseType; }
+                    if (type.GetCustomAttribute<OmitFieldsAttribute>() is OmitFieldsAttribute omitFields)
+                    {
+                        RainMeadow.Debug("omitting fields: " + string.Join(" ", omitFields.fields));
+                        tresults = tresults.Where(f => !omitFields.fields.Contains(f.Name)).ToList();
+                    }
                     var fields = tresults.ToArray();
                     RainMeadow.Debug($"found {fields.Length} fields");
                     if (fields.Length > 0) RainMeadow.Debug(fields.Select(f => $"{f.FieldType.Name} {f.Name}").Aggregate((a, b) => a + "\n" + b));

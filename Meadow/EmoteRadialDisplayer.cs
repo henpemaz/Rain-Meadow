@@ -98,8 +98,10 @@ namespace RainMeadow
                 if (emotes[i] != null)
                 {
                     icons[i].SetElementByName(customization.GetEmote(emotes[i]));
+                    icons[i].color = customization.EmoteColor(emotes[i]);
                     icons[i].alpha = 0.6f;
                     tiles[i].SetElementByName(customization.GetBackground(emotes[i]));
+                    tiles[i].color = customization.EmoteBackgroundColor(emotes[i]);
                     tiles[i].alpha = 0.6f;
                 }
                 else
