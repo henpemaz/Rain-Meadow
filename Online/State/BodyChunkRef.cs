@@ -16,11 +16,17 @@ namespace RainMeadow
             this.index = (byte)index;
         }
 
-        public static BodyChunkRef FromBodyChunk(BodyChunk bodyChunk)
+        public static BodyChunkRef? FromBodyChunk(BodyChunk? bodyChunk)
         {
+            if (bodyChunk is null) return null;
             if (!OnlinePhysicalObject.map.TryGetValue(bodyChunk.owner.abstractPhysicalObject, out var oe))
                 throw new InvalidProgrammerException("body chunk owner doesn't exist in online space! " + bodyChunk.owner.abstractPhysicalObject);
             return new BodyChunkRef(oe, bodyChunk.index);
+        }
+
+        public BodyChunk? ToBodyChunk()
+        {
+            return owner?.bodyChunks[index];
         }
 
         public void CustomSerialize(Serializer serializer)
