@@ -5,85 +5,79 @@ using System.Linq;
 using HarmonyLib;
 using static RainMeadow.CreatureController;
 using RainMeadow.GameModes;
+using Rewired;
 
 namespace RainMeadow
 {
     public class Pointing : HudPart
     {
-        public Creature realizedPlayer;
-        int hand;
+        private Creature realizedPlayer;
+        private int hand;
+        private Controller controller;
+        private Vector2 finalHandPos;
 
         public Pointing(HUD.HUD hud) : base(hud)
         {
+            controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
+            finalHandPos = Vector2.zero;
         }
 
         public override void Draw(float timeStacker)
         {
             base.Draw(timeStacker);
 
-            if (Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
+            if (!Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
+                return;
+
+            if (OnlineManager.lobby.playerAvatars[OnlineManager.mePlayer].FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
             {
-                if (OnlineManager.lobby.playerAvatars[OnlineManager.mePlayer].FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                {
-                    realizedPlayer = ac.realizedCreature;
-
-                } else
-                {
-                    return;
-                }
-
-                Vector2 vector = OnlinePointing();
-                if (vector == Vector2.zero)
-                {
-                    return;
-                }
-
-                for (int handy = 1; handy >= 0; handy--)
-                {
-                    if ((realizedPlayer.grasps[handy] == null || realizedPlayer.grasps[handy].grabbed is Weapon) && (realizedPlayer.graphicsModule as PlayerGraphics).hands[1 - handy].reachedSnapPosition)
-                    {
-                        hand = handy;
-                    }
-                }
-
-                float num3 = 100f;
-
-
-                Vector2 vector2 = new Vector2(realizedPlayer.mainBodyChunk.pos.x + vector.x * num3, realizedPlayer.mainBodyChunk.pos.y + vector.y * num3);
-                (realizedPlayer.graphicsModule as PlayerGraphics).LookAtPoint(vector2, 10f);
-                if (hand > -1)
-                {
-                    (realizedPlayer.graphicsModule as PlayerGraphics).hands[hand].reachingForObject = true;
-                    (realizedPlayer.graphicsModule as PlayerGraphics).hands[hand].absoluteHuntPos = vector2;
-                }
-            }
-        }
-
-        public Vector2 OnlinePointing()
-        {
-
-            SpecialInput specialInput = default;
-            var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
-            if (controller is Rewired.Joystick joystick)
-            {
-                specialInput.direction = Vector2.ClampMagnitude(new Vector2(joystick.GetAxis(2), joystick.GetAxis(3)), 1f);
+                realizedPlayer = ac.realizedCreature;
             }
             else
             {
-                    specialInput.direction = Vector2.ClampMagnitude((((Vector2)Futile.mousePosition) - (realizedPlayer as Player).input[0].IntVec.ToVector2().normalized) / 500f, 1f);
-              
+                return;
             }
 
+            Vector2 pointingVector = GetOnlinePointingVector();
+            if (pointingVector == Vector2.zero)
+                return;
 
-            if (specialInput.direction != Vector2.zero)
+            UpdateHandPosition();
+            Vector2 targetPosition = realizedPlayer.mainBodyChunk.pos + pointingVector * 100f;
+
+            finalHandPos = controller is Joystick ? targetPosition : Futile.mousePosition;
+            (realizedPlayer.graphicsModule as PlayerGraphics).LookAtPoint(finalHandPos, 10f);
+
+            if (hand > -1)
             {
-
-                return specialInput.direction;
+                var handModule = (realizedPlayer.graphicsModule as PlayerGraphics).hands[hand];
+                handModule.reachingForObject = true;
+                handModule.absoluteHuntPos = finalHandPos;
             }
-
-            return Vector2.zero;
-
         }
 
+        private void UpdateHandPosition()
+        {
+            for (int handy = 1; handy >= 0; handy--)
+            {
+                if ((realizedPlayer.grasps[handy] == null || realizedPlayer.grasps[handy].grabbed is Weapon) &&
+                    (realizedPlayer.graphicsModule as PlayerGraphics).hands[1 - handy].reachedSnapPosition)
+                {
+                    hand = handy;
+                    break;
+                }
+            }
+        }
+
+        private Vector2 GetOnlinePointingVector()
+        {
+            if (controller is Joystick joystick)
+            {
+                Vector2 direction = new Vector2(joystick.GetAxis(2), joystick.GetAxis(3));
+                return Vector2.ClampMagnitude(direction, 1f);
+            }
+
+            return Futile.mousePosition;
+        }
     }
 }
