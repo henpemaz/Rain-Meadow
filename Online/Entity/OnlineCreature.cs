@@ -187,9 +187,9 @@ namespace RainMeadow
         [RPCMethod]
         public void CreatureViolence(OnlinePhysicalObject? onlineVillain, byte victimChunkIndex, AppendageRef? victimAppendageRef, Vector2? directionAndMomentum, Creature.DamageType damageType, float damage, float stunBonus)
         {
-            var victimAppendage = victimAppendageRef?.GetAppendagePos(this);
             var creature = (this.apo.realizedObject as Creature);
             if (creature == null) return;
+            var victimAppendage = victimAppendageRef?.GetAppendagePos(creature);
 
             BodyChunk? hitChunk = victimChunkIndex < 255 ? creature.bodyChunks[victimChunkIndex] : null;
             creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, hitChunk, victimAppendage, damageType, damage, stunBonus);
