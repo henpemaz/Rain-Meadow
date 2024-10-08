@@ -36,7 +36,6 @@ creature todo
 - allow creature to change the creature-pipe they're going to mid-flight (very low prio)
 - need to sample color of creature and have it in skindata
 	- requires final-ish seeds
-- the shortcut indicators dont work in downpour
 
 lizard todo
 blues have trouble sticking to the ceiling
@@ -44,14 +43,9 @@ blues have trouble climbing/pathing ledges
 
 scav todo
 - hands look silly when walking on falsefloor
-- point things
-
-slugcat in meadow mode
-- point things
 
 squidcicada todo
 button for spin/dance ?
-can probably point things too with a tentacle
 
 eggbug
 	pick seeds and names
