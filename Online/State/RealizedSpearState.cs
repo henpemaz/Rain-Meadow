@@ -94,6 +94,10 @@ namespace RainMeadow
 
         public override bool Equals(object obj) => obj is AppendageRef other && Equals(other);
 
+        public static bool operator ==(AppendageRef lhs, AppendageRef rhs) => lhs is not null && lhs.Equals(rhs);
+
+        public static bool operator !=(AppendageRef lhs, AppendageRef rhs) => !(lhs == rhs);
+
         public override int GetHashCode() => appIndex + prevSegment + (int)(1024 * distanceToNext);
 
         public PhysicalObject.Appendage.Pos GetAppendagePos(PhysicalObject appendageOwner)

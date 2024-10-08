@@ -36,6 +36,10 @@ namespace RainMeadow
 
         public override bool Equals(object obj) => Equals(obj as BodyChunkRef);
 
+        public static bool operator ==(BodyChunkRef lhs, BodyChunkRef rhs) => lhs is not null && lhs.Equals(rhs);
+
+        public static bool operator !=(BodyChunkRef lhs, BodyChunkRef rhs) => !(lhs == rhs);
+
         public override int GetHashCode() => onlineOwner.GetHashCode() * 256 + index;
     }
 }
