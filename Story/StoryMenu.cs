@@ -268,7 +268,11 @@ namespace RainMeadow
                 this.UpdateCharacterUI();
             }
 
-            if (!OnlineManager.lobby.isOwner)
+            if (OnlineManager.lobby.isOwner)
+            {
+                hostStartButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
+            }
+            else
             {
                 campaignContainer.text = $"Current Campaign: The {GetCurrentCampaignName()}";
                 clientWaitingButton.buttonBehav.greyedOut = !(gameMode.isInGame && !gameMode.changedRegions);
