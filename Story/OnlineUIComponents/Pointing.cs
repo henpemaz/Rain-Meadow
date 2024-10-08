@@ -21,7 +21,7 @@ namespace RainMeadow
         {
             base.Draw(timeStacker);
 
-            if (Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value)) // TODO: Change this input
+            if (Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
             {
                 if (OnlineManager.lobby.playerAvatars[OnlineManager.mePlayer].FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
                 {
@@ -63,7 +63,6 @@ namespace RainMeadow
         {
 
             SpecialInput specialInput = default;
-            // Good for when we have a specific choice in Options menu, but doesn't work well with the "ANY" input
             var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
             if (controller is Rewired.Joystick joystick)
             {
@@ -71,10 +70,8 @@ namespace RainMeadow
             }
             else
             {
-                if (Input.GetMouseButton(0))
-                {
                     specialInput.direction = Vector2.ClampMagnitude((((Vector2)Futile.mousePosition) - (realizedPlayer as Player).input[0].IntVec.ToVector2().normalized) / 500f, 1f);
-                }
+              
             }
 
 
