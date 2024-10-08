@@ -12,12 +12,23 @@ namespace RainMeadow
 
         private RoomCamera camera;
         private readonly OnlineGameMode onlineGameMode;
+        public bool showFriends;
 
         public OnlineHUD(HUD.HUD hud, RoomCamera camera, OnlineGameMode onlineGameMode) : base(hud)
         {
             this.camera = camera;
             this.onlineGameMode = onlineGameMode;
             UpdatePlayers();
+        }
+
+        public override void Draw(float timeStacker)
+        {
+            if (!RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value)
+                showFriends = Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value);
+            else if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
+                showFriends = !showFriends;
+
+            base.Draw(timeStacker);
         }
 
         public void UpdatePlayers()
@@ -27,13 +38,12 @@ namespace RainMeadow
 
             clientSettings.Except(currentSettings).Do(PlayerAdded); 
             currentSettings.Except(clientSettings).Do(PlayerRemoved);
-
         }
 
         public void PlayerAdded(ClientSettings clientSettings)
         {
             RainMeadow.DebugMe();
-            PlayerSpecificOnlineHud indicator = new PlayerSpecificOnlineHud(hud, camera, onlineGameMode, clientSettings);
+            PlayerSpecificOnlineHud indicator = new PlayerSpecificOnlineHud(this, camera, onlineGameMode, clientSettings);
             this.indicators.Add(indicator);
             hud.AddPart(indicator);
         }

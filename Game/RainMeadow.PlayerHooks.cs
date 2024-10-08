@@ -2,6 +2,7 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using System;
+using System.Linq;
 
 namespace RainMeadow;
 
@@ -15,13 +16,15 @@ public partial class RainMeadow
         On.SlugcatStats.ctor += SlugcatStats_ctor;
 
         On.Player.ctor += Player_ctor;
-        IL.Player.Update += Player_Update1;
+        IL.Player.Update += Player_Update;
         On.Player.Die += PlayerOnDie;
+        On.Player.Destroy += Player_Destroy;
         On.Player.Grabability += PlayerOnGrabability;
         IL.Player.GrabUpdate += Player_GrabUpdate;
         On.Player.SwallowObject += Player_SwallowObject;
         On.Player.Regurgitate += Player_Regurgitate;
         On.Player.ThrowObject += Player_ThrowObject;
+        On.Player.CanIPickThisUp += Player_CanIPickThisUp;
         On.Player.SpitUpCraftedObject += Player_SpitUpCraftedObject;
         IL.Player.Collide += Player_Collide;
         On.Player.SlugSlamConditions += Player_SlugSlamConditions;
@@ -40,7 +43,7 @@ public partial class RainMeadow
 
     }
 
-    private void Player_Update1(ILContext il)
+    private void Player_Update(ILContext il)
     {
         try
         {
@@ -62,8 +65,7 @@ public partial class RainMeadow
             c.Index += 6;
             c.MarkLabel(skip);
 
-            // don't handle shelter for meadow at all
-            // might make sense to do this for all non-local scugs as well
+            // don't handle shelter for meadow and remote scugs
             c.Index = 0;
             ILLabel skipShelter = null;
             c.GotoNext(i => i.MatchCallOrCallvirt<ShelterDoor>("Close"));
@@ -74,10 +76,12 @@ public partial class RainMeadow
             c.Emit(OpCodes.Ldarg_0);
             c.EmitDelegate((Player self) =>
             {
-                // meadow crashes with msc assuming slugpupbars is there
-                if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+                if (OnlineManager.lobby != null)
                 {
-                    return false;
+                    if (OnlineManager.lobby.gameMode is MeadowGameMode) // meadow crashes with msc assuming slugpupbars is there
+                        return false;
+                    if (OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe) && !oe.isMine) // don't shelter if remote
+                        return false;
                 }
                 return true;
             });
@@ -332,13 +336,27 @@ public partial class RainMeadow
             {
                 RainMeadow.Error("Tried to get OnlineEntity counterpart. Die() may have been called earlier");
             }
-
             else
             {
                 throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
             }
         }
         if (onlineEntity != null && !onlineEntity.isMine) return;
+        RainMeadow.Debug($"%%% DIE {onlineEntity}");
+        orig(self);
+    }
+
+    private void Player_Destroy(On.Player.orig_Destroy orig, Player self)
+    {
+        if (OnlineManager.lobby == null)
+        {
+            orig(self);
+            return;
+        }
+
+        OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe);
+        RainMeadow.Debug($"%%% DESTROY {oe}");
+
         orig(self);
     }
 
@@ -385,6 +403,13 @@ public partial class RainMeadow
             if (!oe.isMine) return;
         }
         orig(self, grasp, eu);
+    }
+
+    // TODO: toggleable friendly steal
+    private bool Player_CanIPickThisUp(On.Player.orig_CanIPickThisUp orig, Player self, PhysicalObject obj)
+    {
+        if (isStoryMode(out _) && obj.grabbedBy.Any(x => x.grabber is Player)) return false;
+        return orig(self, obj);
     }
 
     private void Player_SpitUpCraftedObject(On.Player.orig_SpitUpCraftedObject orig, Player self)

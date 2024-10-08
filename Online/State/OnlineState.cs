@@ -62,6 +62,7 @@ namespace RainMeadow
             public static readonly StateType RealizedVultureGrubState = new("RealizedVultureGrubState", typeof(RealizedVultureGrubState));
             public static readonly StateType RealizedCreatureState = new("RealizedCreatureState", typeof(RealizedCreatureState));
             public static readonly StateType RealizedPlayerState = new("RealizedPlayerState", typeof(RealizedPlayerState));
+            public static readonly StateType RealizedTubeWormState = new("RealizedTubeWormState", typeof(RealizedTubeWormState));
             public static readonly StateType RealizedOverseerState = new("RealizedOverseerState", typeof(RealizedOverseerState));
             public static readonly StateType RealizedWeaponState = new("RealizedWeaponState", typeof(RealizedWeaponState));
             public static readonly StateType RealizedSporePlantState = new("RealizedSporePlantState", typeof(RealizedSporePlantState));
@@ -70,6 +71,7 @@ namespace RainMeadow
             public static readonly StateType RealizedSingularityBombState = new("RealizedSingularityBombState", typeof(RealizedSingularityBombState));
             public static readonly StateType CreatureStateState = new("CreatureStateState", typeof(CreatureStateState));
             public static readonly StateType CreatureHealthStateState = new("CreatureHealthStateState", typeof(CreatureHealthStateState));
+            public static readonly StateType TongueState = new("TongueState", typeof(TongueState));
 
             public static readonly StateType RainCycleDataState = new("RainCycleDataState", typeof(WorldSession.RainCycleData));
 

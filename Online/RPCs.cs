@@ -272,7 +272,7 @@ namespace RainMeadow
                     {
                         if (currentColorIndex > 3 && ModManager.MSC)
                         {
-                            game.classButtons[i].portrait.fileName = "MultiplayerPortrait" + "41-" + game.mm.GetArenaSetup.playerClass[currentColorIndex];
+                            game.classButtons[i].portrait.fileName = "MultiplayerPortrait" + "41-" + game.GetArenaSetup.playerClass[currentColorIndex];
 
                         }
                         else

@@ -299,10 +299,6 @@ namespace RainMeadow
                 DebugOverlay.RemoveOverlay(self);
 
                 OnlineManager.lobby.gameMode.clientSettings.inGame = false;
-                if (isStoryMode(out var story))
-                {
-                    story.storyClientSettings.inGame = false;
-                }
 
                 if (OnlineManager.lobby.gameMode is MeadowGameMode mgm)
                 {

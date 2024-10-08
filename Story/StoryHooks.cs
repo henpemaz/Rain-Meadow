@@ -612,66 +612,35 @@ namespace RainMeadow
 
         private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {
+            if (isStoryMode(out var gameMode) && OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe) && oe.isMine)
+                gameMode.storyClientSettings.readyForWin = false;
             orig(self, eu);
-            if (isStoryMode(out var gameMode))
-            {
-
-                //fetch the online entity and check if it is mine.
-                //If it is mine run the below code
-                //If not, update from the lobby state
-                //self.readyForWin = OnlineManager.lobby.playerid === fetch if this is ours.
-
-                if (OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe))
-                {
-                    if (!oe.isMine)
-                    {
-                        self.readyForWin = gameMode.readyForWinPlayers.Contains(oe.owner.inLobbyId);
-                        return;
-                    }
-                }
-
-                gameMode.storyClientSettings.isDead = self.dead;
-
-                if (self.readyForWin
-                    && self.touchedNoInputCounter > (ModManager.MMF ? 40 : 20)
-                    && RWCustom.Custom.ManhattanDistance(self.abstractCreature.pos.Tile, self.room.shortcuts[0].StartTile) > 3)
-                {
-                    gameMode.storyClientSettings.readyForWin = true;
-                }
-                else
-                {
-                    gameMode.storyClientSettings.readyForWin = false;
-                }
-            }
         }
 
         private void KarmaLadderScreen_Update(On.Menu.KarmaLadderScreen.orig_Update orig, Menu.KarmaLadderScreen self)
         {
             orig(self);
 
-            if (isStoryMode(out var gameMode))
+            if (isStoryMode(out var gameMode) && self.continueButton != null)
             {
                 if (OnlineManager.lobby.isOwner)
                 {
                     self.continueButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
                 }
+                else if (gameMode.didStartCycle)
+                {
+                    if (isPlayerReady)
+                    {
+                        self.Singal(self.continueButton, "CONTINUE");
+                    }
+                    else
+                    {
+                        self.continueButton.menuLabel.text = self.Translate("CONTINUE");
+                    }
+                }
                 else
                 {
-                    if (gameMode.didStartCycle)
-                    {
-                        if (isPlayerReady)
-                        {
-                            self.Singal(self.continueButton, "CONTINUE");
-                        }
-                        else if (self.continueButton != null)
-                        {
-                            self.continueButton.menuLabel.text = self.Translate("CONTINUE");
-                        }
-                    }
-                    else if (self.continueButton != null)
-                    {
-                        self.continueButton.menuLabel.text = self.Translate("READY");
-                    }
+                    self.continueButton.menuLabel.text = self.Translate("READY");
                 }
             }
         }
