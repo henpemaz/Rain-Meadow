@@ -38,7 +38,7 @@ namespace RainMeadow
 
         public ArenaOnlinePlayerJoinButton[] classButtons;
         private bool flushArenaSittingForWaitingClients = false;
-        
+
 
         public ArenaLobbyMenu(ProcessManager manager) : base(manager)
         {
@@ -344,9 +344,9 @@ namespace RainMeadow
 
                 }
 
-                if (this.levelSelector != null && this.levelSelector.levelsPlaylist.levelItems.Count == 0)
+                if (this.levelSelector != null && this.levelSelector.levelsPlaylist.levelItems.Count == 0 && !OnlineManager.lobby.isOwner)
                 {
-                    this.playButton.inactive = true;
+                    this.playButton.inactive = false;
                 }
 
                 if (arena.clientsAreReadiedUp == OnlineManager.players.Count && OnlineManager.players.Count > 1)
