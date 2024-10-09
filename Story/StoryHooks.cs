@@ -78,47 +78,16 @@ namespace RainMeadow
             On.HUD.TextPrompt.Update += TextPrompt_Update;
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
 
-            IL.Weapon.HitThisObject += Weapon_HitThisObject;
+            On.Weapon.HitThisObject += Weapon_HitThisObject;
         }
 
-        // bool flag2 = ModManager.CoopAvailable && Custom.rainWorld.options.friendlyFire;
-        // becomes
-        // bool flag2 = ModManager.CoopAvailable && Custom.rainWorld.options.friendlyFire || isStoryMode && rainmeadowOptions.FriendlyFire.Value;
-        private void Weapon_HitThisObject(ILContext il)
+        private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
         {
-            try
+            if (isStoryMode(out var  story) && story.friendlyFire && obj is Player && self is Spear && self.thrownBy != null && self.thrownBy is Player)
             {
-                var c = new ILCursor(il);
-                var skip = il.DefineLabel();
-                var jumpToDelegate = il.DefineLabel();
-                c.GotoNext(moveType: MoveType.After,
-                    i => i.MatchLdsfld("ModManager", "CoopAvailable"),
-                    i => i.MatchBrfalse(out _),
-                    i => i.MatchLdsfld("RWCustom.Custom", "rainWorld"),
-                    i => i.MatchLdfld<RainWorld>("options"),
-                    i => i.MatchLdfld<Options>("friendlyFire"),
-                    i => i.MatchBr(out _)
-                    );
-                // Emit check for isStoryMode
-                c.EmitDelegate(() => isStoryMode(out var _));
-                c.Emit(OpCodes.Brtrue, jumpToDelegate); // If isStoryMode is true, branch to the jump label
-
-                // If both conditions are false, push false
-                c.Emit(OpCodes.Ldc_I4_0); // Push false
-                c.Emit(OpCodes.Br, skip);   // Skip to the end
-
-                // Label for when isStoryMode is true
-                c.MarkLabel(jumpToDelegate);
-                c.Emit(OpCodes.Ldc_I4_1); // Push true
-
-                c.MarkLabel(skip);
+                return true;
             }
-
-
-            catch (Exception e)
-            {
-                Logger.LogError(e);
-            }
+            return orig(self, obj);
         }
 
         private void TextPrompt_UpdateGameOverString(On.HUD.TextPrompt.orig_UpdateGameOverString orig, TextPrompt self, Options.ControlSetup.Preset controllerType)

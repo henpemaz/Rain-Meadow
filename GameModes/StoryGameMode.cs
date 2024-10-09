@@ -11,6 +11,7 @@ namespace RainMeadow
         public bool isInGame = false;
         public bool changedRegions = false;
         public bool didStartCycle = false;
+        public bool friendlyFire = false; // false until we manage it via UI
         public string? defaultDenPos;
         public SlugcatStats.Name currentCampaign;
         public Dictionary<string, int> ghostsTalkedTo;
