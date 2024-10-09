@@ -308,7 +308,7 @@ namespace RainMeadow
 
                         }
                     }
-                    this.playButton.menuLabel.text = "Waiting for others...";
+                    this.playButton.menuLabel.text = this.Translate("Waiting for others...");
                     this.playButton.inactive = true;
                 }
 
@@ -339,7 +339,7 @@ namespace RainMeadow
 
                 if (OnlineManager.players.Count == 1)
                 {
-                    this.playButton.menuLabel.text = "WAIT FOR OTHERS";
+                    this.playButton.menuLabel.text = this.Translate("WAIT FOR OTHERS");
                     this.playButton.inactive = true;
 
                 }
@@ -352,7 +352,7 @@ namespace RainMeadow
                 if (arena.clientsAreReadiedUp == OnlineManager.players.Count && OnlineManager.players.Count > 1)
                 {
                     arena.allPlayersReadyLockLobby = true;
-                    this.playButton.menuLabel.text = "ENTER";
+                    this.playButton.menuLabel.text = this.Translate("ENTER");
 
                     if (OnlineManager.lobby.isOwner)
                     {
@@ -379,7 +379,7 @@ namespace RainMeadow
                 if (arena.clientsAreReadiedUp != OnlineManager.players.Count && arena.isInGame)
                 {
                     this.playButton.inactive = true;
-                    this.playButton.menuLabel.text = "GAME IN SESSION";
+                    this.playButton.menuLabel.text = this.Translate("GAME IN SESSION");
                 }
 
                 if (arena.returnToLobby && !flushArenaSittingForWaitingClients)
