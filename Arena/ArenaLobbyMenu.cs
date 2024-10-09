@@ -339,11 +339,14 @@ namespace RainMeadow
 
                 if (OnlineManager.players.Count == 1)
                 {
-                    arena.allPlayersReadyLockLobby = true;
-                    this.playButton.menuLabel.text = "ENTER";
-                    this.playButton.inactive = false;
-                    this.meClassButton.buttonBehav.greyedOut = false;
+                    this.playButton.menuLabel.text = "WAIT FOR OTHERS";
+                    this.playButton.inactive = true;
 
+                }
+
+                if (this.levelSelector != null && this.levelSelector.levelsPlaylist.levelItems.Count == 0)
+                {
+                    this.playButton.inactive = true;
                 }
 
                 if (arena.clientsAreReadiedUp == OnlineManager.players.Count && OnlineManager.players.Count > 1)

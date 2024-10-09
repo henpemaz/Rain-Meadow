@@ -86,7 +86,7 @@ namespace RainMeadow
         {
             if (isArenaMode(out var _))
             {
-                self.currentGameType = ArenaSetup.GameTypeID.Competitive; // force override for now, caches last played gametype on startup
+                self.currentGameType = ArenaSetup.GameTypeID.Competitive; // force override for now
             }
             orig(self);
         }
