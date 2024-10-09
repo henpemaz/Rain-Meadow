@@ -417,6 +417,15 @@ namespace RainMeadow
         }
 
         [RPCMethod]
+        public static void ExitToGameModeMenu()
+        {
+            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            if (game is null || game.manager.upcomingProcess != null) return;
+
+            game.manager.RequestMainProcessSwitch(OnlineManager.lobby.gameMode.MenuProcessId());
+        }
+
+        [RPCMethod]
         public static void TriggerGhostHunch(string ghostID)
         {
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);

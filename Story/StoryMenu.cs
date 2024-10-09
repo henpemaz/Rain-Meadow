@@ -48,6 +48,7 @@ namespace RainMeadow
         public StoryMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.StoryMenu)
         {
             RainMeadow.DebugMe();
+            this.backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
 
             this.rainEffect = new RainEffect(this, this.pages[0]);
             this.pages[0].subObjects.Add(this.rainEffect);
@@ -107,7 +108,28 @@ namespace RainMeadow
             }
 
             BindSettings();
+            SanitizeStoryClientSettings(personaSettings);
+            SanitizeStoryGameMode(gameMode);
+
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
+        }
+
+        private void SanitizeStoryClientSettings(StoryClientSettings clientSettings)
+        {
+            clientSettings.readyForWin = false;
+            clientSettings.isDead = false;
+            clientSettings.myLastDenPos = null;
+            clientSettings.hasSheltered = false;
+        }
+
+        private void SanitizeStoryGameMode(StoryGameMode gameMode)
+        {
+            gameMode.isInGame = false;
+            gameMode.changedRegions = false;
+            gameMode.didStartCycle = false;
+            gameMode.defaultDenPos = null;
+            gameMode.ghostsTalkedTo = new();
+            gameMode.consumedItems = new();
         }
 
         private void SetupHostMenu()
@@ -246,7 +268,11 @@ namespace RainMeadow
                 this.UpdateCharacterUI();
             }
 
-            if (!OnlineManager.lobby.isOwner)
+            if (OnlineManager.lobby.isOwner)
+            {
+                hostStartButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
+            }
+            else
             {
                 campaignContainer.text = $"Current Campaign: The {GetCurrentCampaignName()}";
                 clientWaitingButton.buttonBehav.greyedOut = !(gameMode.isInGame && !gameMode.changedRegions);

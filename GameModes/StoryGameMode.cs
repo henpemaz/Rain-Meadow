@@ -76,7 +76,6 @@ namespace RainMeadow
             if (lobby.isOwner)
             {
                 RainMeadow.Debug("Host LobbyReadyCheck - started game");
-                currentCampaign = storyClientSettings.playingAs;
             }
         }
 
