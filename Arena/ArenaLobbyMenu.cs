@@ -152,25 +152,8 @@ namespace RainMeadow
 
             if (this.levelSelector != null && this.levelSelector.levelsPlaylist != null)
             {
-
-                //if (this.levelSelector.levelsPlaylist.levelItems.Count > 0 && OnlineManager.lobby.isOwner)
-                //{
-                //    this.levelSelector.levelsPlaylist.clearAllCounter = 1;
-                //}
-                // TODO: clients are finnicky with when they add or remove versus the host
                 if (!OnlineManager.lobby.isOwner)
                 {
-
-                    //for (int i = 0; i < this.levelSelector.levelsPlaylist.levelItems.Count; i++)
-                    //{
-
-                    //    this.GetGameTypeSetup.playList.RemoveAt(i);
-                    //    this.levelSelector.levelsPlaylist.RemoveLevelItem(new Menu.LevelSelector.LevelItem(this, this.levelSelector.levelsPlaylist, this.levelSelector.levelsPlaylist.levelItems[i].name));
-                    //    this.levelSelector.levelsPlaylist.ScrollPos = this.levelSelector.levelsPlaylist.LastPossibleScroll;
-                    //    this.levelSelector.levelsPlaylist.ConstrainScroll();
-
-
-                    //}
                     foreach (var level in arena.playList)
                     {
                         this.GetGameTypeSetup.playList.Add(level);
