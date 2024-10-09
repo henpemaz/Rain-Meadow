@@ -23,7 +23,6 @@ namespace RainMeadow
 
             if (!Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
                 return;
-
             if (OnlineManager.lobby.playerAvatars[OnlineManager.mePlayer].FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
             {
                 realizedPlayer = ac.realizedCreature;
@@ -46,11 +45,23 @@ namespace RainMeadow
             if (hand > -1)
             {
                 var handModule = (realizedPlayer.graphicsModule as PlayerGraphics).hands[hand];
+
+                var pg = (realizedPlayer.graphicsModule as PlayerGraphics);
+                var p = (realizedPlayer as Player);
                 handModule.reachingForObject = true;
                 handModule.absoluteHuntPos = finalHandPos;
+
+                //if (realizedPlayer.grasps[hand] != null && realizedPlayer.grasps[hand].grabbed is Weapon)
+                //{
+                //    pg.spearDir = Vector3.Slerp(finalHandPos, RWCustom.Custom.DegToVec(pg.spearDir), 0.5f).x;
+                //    //finalHandPos = Vector3.Slerp(finalHandPos, RWCustom.Custom.DegToVec((80f + Mathf.Cos((float)(p.animationFrame + (p.leftFoot ? 9 : 3)) / 12f * 2f * (float)System.Math.PI) * 4f * pg.spearDir) * pg.spearDir), Mathf.Abs((pg.spearDir)));
+                //    //(realizedPlayer.graphicsModule as PlayerGraphics).spearDir = ;
+                //}
+                
+
+
             }
         }
-
         private void UpdateHandPosition()
         {
             for (int handy = 1; handy >= 0; handy--)
