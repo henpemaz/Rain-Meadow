@@ -155,6 +155,10 @@ namespace RainMeadow
 
         public virtual bool PlayerCanOwnResource(OnlinePlayer from, OnlineResource onlineResource)
         {
+            if (from.isActuallySpectating)
+            {
+                return false;
+            }
             return true;
         }
 
