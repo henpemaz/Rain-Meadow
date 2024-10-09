@@ -453,6 +453,7 @@ namespace RainMeadow
             {
                 self.AddPart(new OnlineHUD(self, cam, gameMode));
                 self.AddPart(new SpectatorHud(self, cam, gameMode));
+                self.AddPart(new Pointing(self));
 
             }
         }
@@ -681,6 +682,8 @@ namespace RainMeadow
 
                 self.room.game.cameras[0].hud.parts.Add(new OnlineHUD(self.room.game.cameras[0].hud, self.room.game.cameras[0], storyGameMode));
                 self.room.game.cameras[0].hud.parts.Add(new SpectatorHud(self.room.game.cameras[0].hud, self.room.game.cameras[0], storyGameMode));
+                self.room.game.cameras[0].hud.parts.Add(new Pointing(self.room.game.cameras[0].hud));
+
 
                 return true;
             }
