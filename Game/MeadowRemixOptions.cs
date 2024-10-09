@@ -10,7 +10,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<Color> BodyColor;
     public readonly Configurable<Color> EyeColor;
     public readonly Configurable<KeyCode> SpectatorKey;
-    public readonly Configurable<bool> FriendlyFire;
+    public readonly Configurable<KeyCode> PointingKey;
 
 
 
@@ -24,7 +24,7 @@ public class RainMeadowOptions : OptionInterface
         BodyColor = config.Bind("BodyColor", Color.white);
         EyeColor = config.Bind("EyeColor", Color.black);
         SpectatorKey = config.Bind("SpectatorKey", KeyCode.Tab);
-        FriendlyFire = config.Bind("FriendlyFire", false);
+        PointingKey = config.Bind("PointingKey", KeyCode.Mouse0);
 
 
     }
@@ -35,7 +35,7 @@ public class RainMeadowOptions : OptionInterface
         {
             OpTab opTab = new OpTab(this, "Options");
             Tabs = new OpTab[1] { opTab };
-            UIArrPlayerOptions = new UIelement[16]
+            UIArrPlayerOptions = new UIelement[15]
             {
                 new OpLabel(10f, 550f, "Options", bigText: true),
 
@@ -49,9 +49,8 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10, 320f, "Key used for toggling spectator mode"),
                 new OpKeyBinder(SpectatorKey, new Vector2(10f, 280f), new Vector2(150f, 30f)),
 
-                new OpLabel(10, 210f, "Friendly fire"),
-                new OpCheckBox(FriendlyFire, new Vector2(10f, 185)),
-                new OpLabel(40f, 185, RWCustom.Custom.ReplaceLineDelimeters("If selected, enables friendly fire in Story mode")),
+                new OpLabel(10, 245f, "Story / Arena: Pointing"),
+                new OpKeyBinder(PointingKey, new Vector2(10f, 215), new Vector2(150f, 30f)),
 
                 new OpLabel(10f, 105f, "[Experimental Features]", bigText: true),
                 new OpLabel(10f, 85, "WARNING: Experimental features may cause data corruption, back up your saves", bigText: false),
