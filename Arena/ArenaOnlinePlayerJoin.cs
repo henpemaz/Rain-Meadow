@@ -1,5 +1,6 @@
 ﻿using System;
 using RainMeadow;
+using RainMeadow.GameModes;
 using Rewired;
 using RWCustom;
 using UnityEngine;
@@ -36,6 +37,12 @@ namespace Menu
 
         public bool lastInput;
 
+        public bool readyForCombat;
+
+        public ArenaCompetitiveGameMode arena;
+
+        private ArenaLobbyMenu arenaMenu;
+
         public MenuIllustration joinButtonImage;
 
 
@@ -65,7 +72,7 @@ namespace Menu
             portrait = new MenuIllustration(menu, this, "", "MultiplayerPortrait" + index + "1", size / 2f, crispPixels: true, anchorCenter: true);
             subObjects.Add(portrait);
             string text = menu.Translate("");
-
+            readyForCombat = false;
 
             float num = 0f;
             menuLabel = new MenuLabel(menu, this, menu.Translate("PLAYER") + (InGameTranslator.LanguageID.UsesSpaces(menu.CurrLang) ? " " : "") + (index + 1) + "\r\n" + text, new Vector2(0.01f, 0.1f + num), size, bigText: false);
@@ -84,7 +91,8 @@ namespace Menu
             labelFade = Custom.LerpAndTick(labelFade, 0f, 0.12f, 0.1f);
             labelFadeCounter = ((labelFade == 0f) ? 40 : 0);
             lastPortraitBlack = portraitBlack;
-            portraitBlack = Custom.LerpAndTick(portraitBlack, 0f, 0.06f, 0.05f);
+            portraitBlack = Custom.LerpAndTick(portraitBlack, readyForCombat ? 0 : 1, 0.06f, 0.05f); // Set to 1 to grey out
+
         }
 
         public override void GrafUpdate(float timeStacker)
@@ -105,14 +113,8 @@ namespace Menu
                 selectRect.sprites[j].alpha = num;
             }
 
-            if (index == 3)
-            {
-                menuLabel.label.color = Color.Lerp(Color.Lerp(Custom.Saturate(PlayerGraphics.DefaultSlugcatColor(SlugcatStats.Name.ArenaColor(index)), 0.5f), Color.white, 0.2f), MyColor(timeStacker), num);
-            }
-            else
-            {
-                menuLabel.label.color = Color.Lerp(PlayerGraphics.DefaultSlugcatColor(SlugcatStats.Name.ArenaColor(index)), MyColor(timeStacker), num);
-            }
+            menuLabel.label.color = Color.Lerp(PlayerGraphics.DefaultSlugcatColor(SlugcatStats.Name.White), MyColor(timeStacker), num);
+
 
             portrait.sprite.color = Color.Lerp(Color.white, Color.black, Custom.SCurve(Mathf.Lerp(lastPortraitBlack, portraitBlack, timeStacker), 0.5f) * 0.75f);
         }

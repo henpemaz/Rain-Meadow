@@ -21,11 +21,15 @@ namespace RainMeadow
             [OnlineField(nullable=true)]
             public string? defaultDenPos;
             [OnlineField]
-            public bool isInGame;            
+            public bool isInGame;
             [OnlineField]
             public bool changedRegions;
             [OnlineField]
+            public bool friendlyFire;
+            [OnlineField]
             public SlugcatStats.Name currentCampaign;
+            [OnlineField]
+            public int cycleNumber;
             [OnlineField]
             public bool didStartCycle;
             [OnlineField]
@@ -43,6 +47,10 @@ namespace RainMeadow
             [OnlineField]
             public int mushroomCounter;
             [OnlineField]
+            public Dictionary<string, int> ghostsTalkedTo;
+            [OnlineField]
+            public Dictionary<ushort, ushort[]> consumedItems;
+            [OnlineField]
             public Dictionary<string, bool> storyBoolRemixSettings;
             [OnlineField]
             public Dictionary<string, float> storyFloatRemixSettings;
@@ -59,15 +67,18 @@ namespace RainMeadow
 
                 defaultDenPos = storyGameMode.defaultDenPos;
                 currentCampaign = storyGameMode.currentCampaign;
+                consumedItems = storyGameMode.consumedItems;
                 storyBoolRemixSettings = storyGameMode.storyBoolRemixSettings;
                 storyFloatRemixSettings = storyGameMode.storyFloatRemixSettings;
                 storyIntRemixSettings = storyGameMode.storyIntRemixSettings;
+                ghostsTalkedTo = storyGameMode.ghostsTalkedTo;
 
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
                 changedRegions = storyGameMode.changedRegions;
                 didStartCycle = storyGameMode.didStartCycle;
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
+                    cycleNumber = storySession.saveState.cycleNumber;
                     karma = storySession.saveState.deathPersistentSaveData.karma;
                     karmaCap = storySession.saveState.deathPersistentSaveData.karmaCap;
                     theGlow = storySession.saveState.theGlow;
@@ -77,6 +88,7 @@ namespace RainMeadow
                 food = (currentGameState?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
                 quarterfood = (currentGameState?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
                 mushroomCounter = (currentGameState?.Players[0].realizedCreature as Player)?.mushroomCounter ?? 0;
+                friendlyFire = storyGameMode.friendlyFire;
             }
 
             internal override Type GetDataType() => typeof(StoryLobbyData);
@@ -101,6 +113,7 @@ namespace RainMeadow
 
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
+                    storySession.saveState.cycleNumber = cycleNumber;
                     storySession.saveState.deathPersistentSaveData.karma = karma;
                     storySession.saveState.deathPersistentSaveData.karmaCap = karmaCap;
                     storySession.saveState.deathPersistentSaveData.reinforcedKarma = reinforcedKarma;
@@ -112,6 +125,8 @@ namespace RainMeadow
                     }
                 }
                 (lobby.gameMode as StoryGameMode).currentCampaign = currentCampaign;
+                (lobby.gameMode as StoryGameMode).ghostsTalkedTo = ghostsTalkedTo;
+                (lobby.gameMode as StoryGameMode).consumedItems = consumedItems;
                 (lobby.gameMode as StoryGameMode).storyBoolRemixSettings = storyBoolRemixSettings;
                 (lobby.gameMode as StoryGameMode).storyFloatRemixSettings = storyFloatRemixSettings;
                 (lobby.gameMode as StoryGameMode).storyIntRemixSettings = storyIntRemixSettings;
@@ -119,6 +134,8 @@ namespace RainMeadow
                 (lobby.gameMode as StoryGameMode).isInGame = isInGame;
                 (lobby.gameMode as StoryGameMode).changedRegions = changedRegions;
                 (lobby.gameMode as StoryGameMode).didStartCycle = didStartCycle;
+                (lobby.gameMode as StoryGameMode).friendlyFire = friendlyFire;
+
             }
         }
     }

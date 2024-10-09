@@ -9,8 +9,19 @@ namespace RainMeadow
         public bool collected;
         public TickReference collectedTR;
         public int collectedAt;
-        const int duration = 40 * 10;
-        public OnlinePhysicalObject online;
+        protected int duration = 40 * 10;
+        private OnlinePhysicalObject _online;
+        public OnlinePhysicalObject online
+        {
+            get
+            {
+                if (_online == null)
+                {
+                    _online = OnlinePhysicalObject.map.GetValue(this, (apo) => throw new KeyNotFoundException(apo.ToString()));
+                }
+                return _online;
+            }
+        }
 
         internal bool Expired => collected && world.game.clock > collectedAt + duration;
 
@@ -23,11 +34,6 @@ namespace RainMeadow
         {
             base.Update(time);
 
-            if(online == null)
-            {
-                online = OnlinePhysicalObject.map.GetValue(this, (apo) => throw new KeyNotFoundException(apo.ToString()));
-            }
-            
             if (Expired && online.isMine)
             {
                 RainMeadow.Debug("Expired:" + online);
@@ -54,7 +60,7 @@ namespace RainMeadow
             }
         }
 
-        private void NowCollected()
+        protected void NowCollected()
         {
             if (!online.isMine) { throw new InvalidProgrammerException("not owner: " + online); }
             if (collected) { return; }
@@ -92,7 +98,7 @@ namespace RainMeadow
             {
                 this.realizedObject = new MeadowPlant(this);
             }
-            if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed
+            else if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed
                 || type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue
                 || type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold
                 )

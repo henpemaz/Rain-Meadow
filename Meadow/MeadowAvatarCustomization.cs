@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using RainMeadow.Properties;
+using UnityEngine;
 using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
@@ -40,6 +41,7 @@ namespace RainMeadow
 
         internal string EmoteAtlas => skinData.emoteAtlasOverride ?? characterData.emoteAtlas;
         internal string EmotePrefix => skinData.emotePrefixOverride ?? characterData.emotePrefix;
+        public SoundID VoiceId => skinData.voiceIdOverride ?? characterData.voiceId;
 
         internal override void ModifyBodyColor(ref Color originalBodyColor)
         {
@@ -52,6 +54,15 @@ namespace RainMeadow
             if (skinData.eyeColor.HasValue) originalEyeColor = skinData.eyeColor.Value;
         }
 
+
+        internal override Color GetBodyColor()
+        {
+            if (skinData.baseColor.HasValue)
+            {
+                return skinData.baseColor.Value;
+            }
+            return tint;
+        }
         internal string GetEmote(Emote emote)
         {
             return (emote.value.StartsWith("emote") ? EmotePrefix + emote.value : emote.value).ToLowerInvariant();

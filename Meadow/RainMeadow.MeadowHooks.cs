@@ -2,6 +2,7 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
+using RWCustom;
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -13,6 +14,9 @@ namespace RainMeadow
     {
         private void MeadowHooks()
         {
+            _ = Ext_SoundID.RM_Slugcat_Call; //load
+
+            GroundCreatureController.Enable();
             CicadaController.EnableCicada();
             LizardController.EnableLizard();
             ScavengerController.EnableScavenger();
@@ -52,8 +56,37 @@ namespace RainMeadow
 
             IL.ScavengerOutpost.ctor += ScavengerOutpost_ctor;
 
-            On.ShortcutGraphics.GenerateSprites += ShortcutGraphics_GenerateSprites;
+            On.ShortcutGraphics.GenerateSprites += ShortcutGraphics_GenerateSprites; // creature pipe indicators
+            On.ShortcutGraphics.Draw += ShortcutGraphics_Draw;
 
+            On.World.SpawnGhost += World_SpawnGhost;
+        }
+
+        private void World_SpawnGhost(On.World.orig_SpawnGhost orig, World self)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                return; // no ghosts
+            }
+            orig(self);
+        }
+
+        private void ShortcutGraphics_Draw(On.ShortcutGraphics.orig_Draw orig, ShortcutGraphics self, float timeStacker, Vector2 camPos)
+        {
+            orig(self, timeStacker, camPos);
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                if(ModManager.MSC) // get out of the way
+                {
+                    for (int k = 0; k < self.entranceSprites.GetLength(0); k++)
+                    {
+                        if (self.entranceSprites[k, 0] != null && self.room.shortcuts[k].shortCutType == ShortcutData.Type.NPCTransportation)
+                        {
+                            self.entranceSprites[k, 0].isVisible = true;
+                        }
+                    }
+                }
+            }
         }
 
         private void ShortcutGraphics_GenerateSprites(On.ShortcutGraphics.orig_GenerateSprites orig, ShortcutGraphics self)
@@ -63,8 +96,9 @@ namespace RainMeadow
             {
                 for (int l = 0; l < self.room.shortcuts.Length; l++)
                 {
-                    if (self.room.shortcuts[l].shortCutType == ShortcutData.Type.NPCTransportation && self.entranceSprites[l, 0] == null)
+                    if (self.room.shortcuts[l].shortCutType == ShortcutData.Type.NPCTransportation)
                     {
+                        self.entranceSprites[l, 0]?.RemoveFromContainer(); // remove safari one
                         self.entranceSprites[l, 0] = new FSprite("Pebble10", true);
                         self.entranceSprites[l, 0].rotation = RWCustom.Custom.AimFromOneVectorToAnother(new Vector2(0f, 0f), -RWCustom.IntVector2.ToVector2(self.room.ShorcutEntranceHoleDirection(self.room.shortcuts[l].StartTile)));
                         self.entranceSpriteLocations[l] = self.room.MiddleOfTile(self.room.shortcuts[l].StartTile) + RWCustom.IntVector2.ToVector2(self.room.ShorcutEntranceHoleDirection(self.room.shortcuts[l].StartTile)) * 15f;

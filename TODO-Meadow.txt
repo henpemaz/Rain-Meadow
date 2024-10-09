@@ -1,42 +1,5 @@
-
-multi-player item
-- echo object
-- 3-ish per region
-- placed in "valid" spot with extra constraints
-	- need to be above a ground-creature-accessible tile
-	- 3-wide space
-- blue aura only, no particles, no palette change
-- on approach, floating foodpips show up
-- on staying close, pips update
-	- alternatively, on "bark"
-- on pips full, trigger
-- if triggered, plays paletteswap animation, particles fall from above, players gain gains
-- this plays "locally" so people entering the room late will still see it animate and reward
-
-
-what are the player-player interactions?
-- spot eachother
-- greet eachother
-- greet others
-- decide on what to do
-	- likely want to go somewhere, what other options
-	- echo-hunting
-	- go to one of the extremes of the map
-		- pebbles, moon, SI or Depths
-	- games
-		- hide and seek
-- decide on where to go
-	- a direction, a landmark, something unambiguous
-	- anywhere
-	- follow me, follow the leader
-
-- move together
-- spot things, comment on things
-- tell others to come over here
-- tell others to go back, not come
-
-
 handholding
+	would be so nice to grab cicada be carried by liz etc etc
 	"it's of uttermost importance to me that one cannot troll others with this"
 	either:
 		- invite and accept-to-be-held; or
@@ -44,114 +7,99 @@ handholding
 			you are not heavier nor locked out of anything, no downsides
 			Sky has both, with the invite system, but also the "follow"->"hold hand"
 
-
-teleports that go in game might need to spinlock waiting for unload/release
-right now might crash because requested while pending release
-
 creature todo
-- remove collisions ?
 - can get stuck
 	some rooms will get fixed
 		eventually :tm:
-	need to sort out water movement first before determining what's trully inaccessible
-- allow creature to change the creature-pipe they're going to mid-flight
-- need to sample color of creature and have it in skindata
-	- requires final-ish seeds
 
-player grabbing cicada = laggy physics
-	some mechanism for lending/borrowing control over an entity
-	main entity would sim both,
-		side who leased would still sim self attached to main
-	grabbing disabled for now
+- allow creature to change the creature-pipe they're going to mid-flight (very low prio)
 
 lizard todo
-- sometimes fails to grab poles when holding up
-- cyan-jump from any state
-- find a good seed for our buddies
-
-scav todo
-- movement tends to overshoot
-- leap sometimes goes up/back
-- hands look silly when walking on falsefloor
-- jumping off ledge wack because regains footing too quick?
-	
-slugcat in meadow mode
-- point things
-
-squidcicada todo
-button for spin/dance ?
-remove charge ?
+	blues have trouble sticking to the ceiling
+	blues have trouble climbing/pathing ledges
+	more seeds
 
 eggbug
 	pick seeds and names
 
 noot
-	make art
 	pick seeds and names
-	movement feels a tad boring
-		make tail float around more?
-
-	scream
 
 lantermouse
-	jump too small
-
-water controls for lizard and scav etc
-	needs to be there, crossing DS etc
-	SU_A12
-	I think the pathing logic breaks, water "isn't accessible" but it is. Istileaccessibletocreature accounts for it, some of my logic might not
-
-
-feedback
-lizard often misses grabbing pole on jump
-
-scav movement overshoots
-
-controller-disconnedted popup might be inconsistent
+	seeds and names
 
 visualize selected skin
-	will get color previews
-	but could have tiny screenshots
-
-rat can't beat 3-tiles-tall jump
-	maybe vertfact/horizfact to help
+	will get color previews once all seeds are picked and sampled
 
 tint implementation missing in most creatures
-eggbug collapses on room transition (wolfy dms has logs)
-
-eggbug feels slow
-eggbug should have super jump at all times not just pounce, match how jumpy they are in game
-
-noodle has hard time going into pipes
-noodle could have a "grounded" state like cada
 
 "creature emotions" need addressing
-lizards shouldn't open mouth to bite
+lizards shouldn't open mouth to bite -> can't reproduce
 rats shouldn't panic
-
-creature select can be inconsistent at times: I have big noodlefly selected, i enter the game, i'm small, i log off and click big again, now i'm big
-
-emote preview background color is really bad right now
-
-emote keybind not rebindable
-
-emote mapping on keyboard 1 throug 8 missing
-
-sandbox unlock items still present in meadow lmao
+slugcat arm reaches to threat
 
 passage but the map isn't saving
 
 following others around is hard
 	need map implemented
 	could use pipes flashing colors if room inhabited
+	player list on passage screen
 
+wormgrass can still eat you (big patches in FA)
+prevents pathing still
 
-certain creatures crash
-	need to filter creatures
-		prio filter
-	eventually fix them
-		needlebugai requires 2 fields
-		deer horn grabbing thing
-			might be same as 5p tendrils issue
-				player animation mode expects non-null climb-position, not synched
+echo sky animation is too slow needs to converge
 
+echo reward anim is bad, fade to white is bad, no confetti??
+
+wish there was a symbol for outskirts
+
+double jumps out of the water, way too much speed
+
+ds a09, the crawlspace on left, creatures don't snap to crawling in it
+
+ds c03 exist is at water height wont path
+
+creatures not cleared on enter creature pipe
+	game clears enteringshortcut so they "abort entering" most of the time?
+	could also be that npcdestination is null so they just bounce?
+
+echo tentacle bounces bet screens in long rooms
+
+scav climbpos doesn't sync
+
+emotes go off-screen too often, need to show them in-screen near the creature when possible
+
+seems to happen just too often that creatures don't customize
+
+Lantern mouse: They struggle to grab onto poles when jumping, and overall seen hard to walk on horizontal poles. They need to be rail-roaded into poles more strongly, like how lizards/scavengers are
+
+General: Tint seems to be having sync issues, people randomly change between the original color of the animal, to their tint color in pure form, to anything in-between (the foo had an example above, they tinted themselves red to look dark orange, but for everyone on the lobby they looked pure red)
+
+toggle collision as a setting
+
+noot gets stuck on water surface, seems to always go left?
+
+redo scavenger selectscreen
+
+emotes sometimes don't stop fading when new emotes are added
+
+on meadow-menu or lobby menu, esc doesn't go back
+
+scav latching to pole with lots of momentum lets go? shelter room to drainage spot
+
+dsa13 corner up lizard stuck
+
+squid had trouble in dsb06 underwater poles?
+
+scav has trouble walljumping, doesn't count as walljumpable sometimes, hic02 lower spot
+
+backing out of passage screen sends you to main menu? unconfirmed
+
+eggbug and lanternmouse are way too fast in zerog
+
+lizard wallclimb is slow, slows you down a lot in zerog movement
+
+rebindable keybinds for everything meadow
+- controller emote input
+- tab

@@ -3,7 +3,6 @@ using HUD;
 using RWCustom;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
 
 namespace RainMeadow
@@ -28,7 +27,7 @@ namespace RainMeadow
 
         public void UpdatePlayers()
         {
-            var avatarSettings = OnlineManager.lobby.clientSettings.Values.OfType<MeadowAvatarSettings>().Where(mas=>mas.inGame);
+            var avatarSettings = OnlineManager.lobby.clientSettings.Values.OfType<MeadowAvatarSettings>().Where(mas => mas.inGame);
             var currentSettings = indicators.Select(i => i.avatarSettings).ToList(); //needs duplication
             avatarSettings.Except(currentSettings).Do(PlayerAdded);
             currentSettings.Except(avatarSettings).Do(PlayerRemoved);
@@ -55,12 +54,13 @@ namespace RainMeadow
             base.Update();
             UpdatePlayers();
             var mapDown = RWInput.CheckSpecificButton(0, RewiredConsts.Action.Map);
-            if (!mapDown && lastMapDown && hud.map.fade <= 0.3f)
+            if (!mapDown && lastMapDown && hud.map.fade <= 0.8f)
             {
                 showPlayerNames = !showPlayerNames;
             }
+            arrowOnSelfNeeded = (owner.room == null && owner.NPCTransportationDestination != default)
+                || mapDown;
             lastMapDown = mapDown;
-            arrowOnSelfNeeded = owner.room == null && owner.NPCTransportationDestination != default;
         }
 
         private class MeadowPlayerIndicator : HUD.HudPart
@@ -135,7 +135,7 @@ namespace RainMeadow
 
                 if (avatar == null || avatar.primaryResource == null)
                 {
-                    if(avatarSettings.avatarId != null)
+                    if (avatarSettings.avatarId != null)
                     {
                         this.avatar = (OnlinePhysicalObject)avatarSettings.avatarId.FindEntity(true);
                     }

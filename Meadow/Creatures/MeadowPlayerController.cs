@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using RWCustom;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -73,16 +74,36 @@ namespace RainMeadow
             // no op
         }
 
+        protected override void PointImpl(Vector2 dir)
+        {
+            //int which = dir.x > 0 ? 1 : 0; // bugs above head
+            int which = 0;
+            (player.graphicsModule as PlayerGraphics).hands[which].reachingForObject = true;
+            (player.graphicsModule as PlayerGraphics).hands[which].absoluteHuntPos = player.mainBodyChunk.pos + 100f * dir;
+        }
+
         internal override void ConsciousUpdate()
         {
             base.ConsciousUpdate();
             player.pickUpCandidate = null; // prevent whiplash grab
+
         }
 
-        public MeadowPlayerController(Player player, OnlineCreature oc, int playerNumber) : base(player, oc, playerNumber)
+        protected override void OnCall()
+        {
+            if(player.graphicsModule is PlayerGraphics pg)
+            {
+                player.Blink(10);
+                pg.head.vel += 2f * Custom.DirVec(player.bodyChunks[1].pos, player.bodyChunks[0].pos);
+            }
+        }
+
+        public MeadowPlayerController(Player player, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(player, oc, playerNumber, customization)
         {
             player.controller = new ProxyController(this);
             this.player = player;
+            this.needsLight = false; // doesn't make much of a difference plus slightly different color logic
+            player.glowing = true;
         }
 
         private class ProxyController : Player.PlayerController
@@ -99,6 +120,14 @@ namespace RainMeadow
                 var input = mpc.input[0];
                 input.pckp = false;
                 input.thrw = false;
+
+                if (mpc.pointCounter > 10) // this sucks, cant use lockinplace
+                {
+                    input.x = 0;
+                    input.y = 0;
+                    input.analogueDir = Vector2.zero;
+                }
+
                 return input;
             }
         }

@@ -14,12 +14,29 @@ namespace RainMeadow
         private bool standing;
         [OnlineField]
         private bool glowing;
+        [OnlineField(nullable = true)]
+        private OnlineEntity.EntityId? spearOnBack;
+        //[OnlineField(nullable = true)]
+        //private OnlineEntity.EntityId? slugOnBack;
         [OnlineField(group = "inputs")]
         private ushort inputs;
         [OnlineFieldHalf(group = "inputs")]
         private float analogInputX;
         [OnlineFieldHalf(group = "inputs")]
         private float analogInputY;
+
+        [OnlineField(group = "tongue")]
+        public byte tongueMode;
+        [OnlineField(group = "tongue")]
+        public Vector2 tonguePos;
+        [OnlineFieldHalf(group = "tongue")]
+        public float tongueIdealLength;
+        [OnlineFieldHalf(group = "tongue")]
+        public float tongueRequestedLength;
+        [OnlineField(group = "tongue", nullable = true)]
+        public OnlineEntity.EntityId? tongueAttachedObject;
+        [OnlineField(group = "tongue")]
+        public byte tongueAttachedChunkIndex;
 
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
@@ -31,6 +48,23 @@ namespace RainMeadow
             bodyModeIndex = (byte)p.bodyMode.Index;
             standing = p.standing;
             glowing = p.glowing;
+            spearOnBack = (p.spearOnBack?.spear?.abstractPhysicalObject is AbstractPhysicalObject apo
+                && OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) ? oe.id : null;
+            //slugOnBack = (p.slugOnBack?.slugcat?.abstractPhysicalObject is AbstractPhysicalObject apo0
+            //    && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe0)) ? oe0.id : null;
+            if (p.tongue is Player.Tongue tongue)
+            {
+                tongueMode = (byte)tongue.mode;
+                tonguePos = tongue.pos;
+                tongueIdealLength = tongue.idealRopeLength;
+                tongueRequestedLength = tongue.requestedRopeLength;
+                if (tongue.attachedChunk?.owner?.abstractPhysicalObject is AbstractPhysicalObject apo1
+                    && OnlinePhysicalObject.map.TryGetValue(apo1, out var oe1))
+                {
+                    tongueAttachedObject = oe1.id;
+                    tongueAttachedChunkIndex = (byte)tongue.attachedChunk.index;
+                }
+            }
             var i = p.input[0];
             inputs = (ushort)(
                   (i.x == 1 ? 1 << 0 : 0)
@@ -78,6 +112,27 @@ namespace RainMeadow
                 pl.bodyMode = new Player.BodyModeIndex(Player.BodyModeIndex.values.GetEntry(bodyModeIndex));
                 pl.standing = standing;
                 pl.glowing = glowing;
+                if (pl.spearOnBack != null)
+                    pl.spearOnBack.spear = (spearOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Spear;
+                //if (pl.slugOnBack != null)
+                //    pl.slugOnBack.slugcat = (slugOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Player;
+
+                if (pl.tongue is Player.Tongue tongue)
+                {
+                    tongue.mode = new Player.Tongue.Mode(Player.Tongue.Mode.values.GetEntry(tongueMode));
+                    tongue.pos = tonguePos;
+                    tongue.idealRopeLength = tongueIdealLength;
+                    tongue.requestedRopeLength = tongueRequestedLength;
+                    if (tongue.mode == Player.Tongue.Mode.AttachedToTerrain)
+                    {
+                        tongue.terrainStuckPos = tongue.pos;
+                    }
+                    else if (tongue.mode == Player.Tongue.Mode.AttachedToObject
+                        && (tongueAttachedObject?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject is PhysicalObject po)
+                    {
+                        tongue.attachedChunk = po.bodyChunks[tongueAttachedChunkIndex];
+                    }
+                }
             }
             else
             {

@@ -17,11 +17,13 @@ namespace RainMeadow
         }
 
         public Color bodyColor;
-        public Color eyeColor; // unused
+        public Color eyeColor;
         public SlugcatStats.Name? playingAs;
         public bool readyForWin;
-        public string? myLastDenPos = null;
         public bool isDead;
+
+        public string? myLastDenPos = null;
+        public bool hasSheltered = false;
 
         public StoryClientSettings(Definition entityDefinition, OnlineResource inResource, State initialState) : base(entityDefinition, inResource, initialState)
         {
@@ -73,7 +75,8 @@ namespace RainMeadow
                 eyeColor = onlineEntity.eyeColor;
                 playingAs = onlineEntity.playingAs?.value;
                 readyForWin = onlineEntity.readyForWin;
-                isDead = onlineEntity.isDead;
+                var state = (onlineEntity.avatarId.FindEntity(true) as OnlineCreature)?.creature?.state as PlayerState;
+                isDead = state is null || state.dead || state.permaDead;
             }
 
             public override void ReadTo(OnlineEntity onlineEntity)
@@ -107,6 +110,11 @@ namespace RainMeadow
             internal override void ModifyEyeColor(ref Color eyeColor)
             {
                 eyeColor = new Color(Mathf.Clamp(settings.eyeColor.r, 0.004f, 0.996f), Mathf.Clamp(settings.eyeColor.g, 0.004f, 0.996f), Mathf.Clamp(settings.eyeColor.b, 0.004f, 0.996f));
+            }
+
+            internal override Color GetBodyColor()
+            {
+                return settings.bodyColor;
             }
         }
     }

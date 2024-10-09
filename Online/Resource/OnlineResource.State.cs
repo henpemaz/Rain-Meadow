@@ -1,9 +1,7 @@
-﻿using Mono.Cecil;
-using RainMeadow.Generics;
+﻿using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 using static RainMeadow.OnlineResource.ResourceData;
 
 namespace RainMeadow
@@ -11,6 +9,8 @@ namespace RainMeadow
     public abstract partial class OnlineResource
     {
         protected ResourceState latestState;
+
+        public ResourceState? state { get => isAvailable ? latestState : null; }
 
         public ResourceState GetState(uint ts)
         {
@@ -216,7 +216,7 @@ namespace RainMeadow
                 {
                     foreach (var def in registeredEntities.list)
                     {
-                        if (!resource.registeredEntities.ContainsKey(def.entityId))
+                        if (!resource.registeredEntities.ContainsKey(def.entityId) && !def.failedToSpawn)
                         {
                             try
                             {
@@ -265,10 +265,10 @@ namespace RainMeadow
                         }
                     }
 
-                    HashSet<OnlineEntity.EntityId> joinedHash = new HashSet<OnlineEntity.EntityId>(entitiesJoined.list.Select(e => e.entityId));
+                    var joinedHash = entitiesJoined.lookup;
                     foreach (var kvp in resource.joinedEntities.ToList())
                     {
-                        if (!joinedHash.Contains(kvp.Key))
+                        if (!joinedHash.ContainsKey(kvp.Key))
                         {
                             try
                             {

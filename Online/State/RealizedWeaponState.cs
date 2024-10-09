@@ -9,27 +9,24 @@ namespace RainMeadow
         // is all this data really necessary?
         [OnlineField]
         protected byte mode;
-        [OnlineField]
-        private Vector2 tailPos;
         [OnlineField(nullable = true)]
         private Vector2? setRotation;
         [OnlineField]
         private Vector2 rotation;
         [OnlineField]
-        private Vector2 lastRotation;
-        [OnlineField]
         private float rotationSpeed;
-        
+        [OnlineField(nullable = true)]
+        private OnlineEntity.EntityId? thrownBy;
+
         public RealizedWeaponState() { }
         public RealizedWeaponState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
             var weapon = (Weapon)onlineEntity.apo.realizedObject;
             mode = (byte)weapon.mode;
-            tailPos = weapon.tailPos;
             setRotation = weapon.setRotation;
             rotation = weapon.rotation;
-            lastRotation = weapon.lastRotation;
             rotationSpeed = weapon.rotationSpeed;
+            thrownBy = (weapon.thrownBy?.abstractCreature != null && OnlineCreature.map.TryGetValue(weapon.thrownBy.abstractCreature, out var oc)) ? oc?.id : null;
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
@@ -44,11 +41,10 @@ namespace RainMeadow
                 weapon.ChangeMode(newMode);
                 weapon.throwModeFrames = -1; // not synched, behaves as "infinite"
             }
-            weapon.tailPos = tailPos;
             weapon.setRotation = setRotation;
             weapon.rotation = rotation;
-            weapon.lastRotation = lastRotation;
             weapon.rotationSpeed = rotationSpeed;
+            weapon.thrownBy = (thrownBy?.FindEntity() as OnlineCreature)?.realizedCreature;
         }
     }
 }

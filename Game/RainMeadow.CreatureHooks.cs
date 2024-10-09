@@ -15,6 +15,20 @@ namespace RainMeadow
             On.AbstractCreature.Update += AbstractCreature_Update; // Don't think
             On.AbstractCreature.OpportunityToEnterDen += AbstractCreature_OpportunityToEnterDen; // Don't think
             On.AbstractCreature.InDenUpdate += AbstractCreature_InDenUpdate; // Don't think
+
+            On.ScavengerAbstractAI.InitGearUp += ScavengerAbstractAI_InitGearUp;
+        }
+
+        private void ScavengerAbstractAI_InitGearUp(On.ScavengerAbstractAI.orig_InitGearUp orig, ScavengerAbstractAI self)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                if (self.world.GetResource() is WorldSession ws && !ws.isOwner)
+                {
+                    return;
+                }
+            }
+            orig(self);
         }
 
         // Don't think

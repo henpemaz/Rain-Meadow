@@ -1,11 +1,6 @@
-﻿using Menu;
-using On;
-using Menu;
-using On;
+﻿using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Globalization;
 using System.Linq;
 
 namespace RainMeadow
@@ -20,31 +15,38 @@ namespace RainMeadow
         public Dictionary<OnlinePlayer, OnlineEntity.EntityId> playerAvatars = new(); // should maybe be in GameMode
 
         public string[] mods = RainMeadowModManager.GetActiveMods();
+        public DynamicOrderedPlayerIDs bannedUsers = new();
+
         public bool modsChecked;
+        public bool bannedUsersChecked = false;
 
         public string? password;
         public bool hasPassword => password != null;
+
         public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password) : base(null)
         {
             OnlineManager.lobby = this; // needed for early entity processing
+            bannedUsers.list = new List<MeadowPlayerId>();
 
             this.gameMode = OnlineGameMode.FromType(mode, this);
             this.gameModeType = mode;
             if (gameMode == null) throw new Exception($"Invalid game mode {mode}");
 
             if (owner == null) throw new Exception("No lobby owner");
+            isNeeded = true;
             NewOwner(owner);
 
-            activateOnAvailable = true;
             if (isOwner)
             {
                 this.password = password;
-                Available();
             }
             else
             {
                 RequestLobby(password);
             }
+
+
+
         }
 
         public void RequestLobby(string? key)
@@ -53,7 +55,8 @@ namespace RainMeadow
             if (isPending) throw new InvalidOperationException("pending");
             if (isAvailable) throw new InvalidOperationException("available");
             ClearIncommingBuffers();
-            pendingRequest = supervisor.InvokeRPC(RequestedLobby, key).Then(ResolveLobbyRequest);
+            isRequesting = true;
+            supervisor.InvokeRPC(RequestedLobby, key).Then(ResolveLobbyRequest);
         }
 
         [RPCMethod]
@@ -72,6 +75,8 @@ namespace RainMeadow
 
         public void ResolveLobbyRequest(GenericResult requestResult)
         {
+            RainMeadow.Debug(this);
+            isRequesting = false;
             if (requestResult is GenericResult.Ok)
             {
                 MatchmakingManager.instance.JoinLobby(true);
@@ -91,7 +96,7 @@ namespace RainMeadow
             }
             else if (requestResult is GenericResult.Error) // I should retry
             {
-                Request();
+                RequestLobby((requestResult.referencedEvent as RPCEvent).args[0] as string);
                 RainMeadow.Error("request failed for " + this);
             }
         }
@@ -108,7 +113,6 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var _)) // Arena
             {
-
                 Region arenaRegion = new Region("arena", 0, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer);
 
                 var ws = new WorldSession(arenaRegion, this);
@@ -116,7 +120,6 @@ namespace RainMeadow
                 subresources.Add(ws);
 
                 RainMeadow.Debug(subresources.Count);
-
             }
             else
             {
@@ -133,12 +136,17 @@ namespace RainMeadow
 
         protected override void AvailableImpl()
         {
-            
+
         }
 
         protected override void DeactivateImpl()
         {
             throw new InvalidOperationException("cant deactivate");
+        }
+
+        protected override void UnavailableImpl()
+        {
+
         }
 
         protected override ResourceState MakeState(uint ts)
@@ -170,6 +178,8 @@ namespace RainMeadow
             [OnlineField]
             public string[] mods;
             [OnlineField(nullable = true)]
+            public Generics.DynamicOrderedPlayerIDs bannedUsers;
+            [OnlineField(nullable = true)]
             public Generics.DynamicOrderedPlayerIDs players;
             [OnlineField(nullable = true)]
             public Generics.DynamicOrderedUshorts inLobbyIds;
@@ -180,6 +190,8 @@ namespace RainMeadow
                 players = new(lobby.participants.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Select(p => p.inLobbyId).ToList());
                 mods = lobby.mods;
+                bannedUsers = lobby.bannedUsers;
+
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -189,6 +201,7 @@ namespace RainMeadow
 
                 for (int i = 0; i < players.list.Count; i++)
                 {
+
                     if (MatchmakingManager.instance.GetPlayer(players.list[i]) is OnlinePlayer p)
                     {
                         if (p.inLobbyId != inLobbyIds.list[i]) RainMeadow.Debug($"Setting player {p} to lobbyId {inLobbyIds.list[i]}");
@@ -198,8 +211,30 @@ namespace RainMeadow
                     {
                         RainMeadow.Error("Player not found! " + players.list[i]);
                     }
+
+
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
+                if (lobby.bannedUsersChecked == false)
+                {
+                    // Need to get the participants before we check
+                    if (this.bannedUsers != null && this.bannedUsers.list.Contains(OnlineManager.mePlayer.id))
+                    {
+
+                        BanHammer.BanUser(OnlineManager.mePlayer);
+                        if (lobby.participants.Contains(OnlineManager.mePlayer))
+                        {
+                            lobby.OnPlayerDisconnect(lobby.PlayerFromMeadowID(OnlineManager.mePlayer.id));
+                        }
+                        lobby.bannedUsersChecked = true;
+                        return;
+
+                    }
+
+                    lobby.bannedUsersChecked = true;
+                }
+
+
 
                 if (!lobby.modsChecked)
                 {
@@ -220,6 +255,11 @@ namespace RainMeadow
         {
             if (id == 0) return null;
             return OnlineManager.players.FirstOrDefault(p => p.inLobbyId == id);
+        }
+
+        public OnlinePlayer PlayerFromMeadowID(MeadowPlayerId id)
+        {
+            return OnlineManager.players.FirstOrDefault(p => p.id == id);
         }
 
         protected override void NewParticipantImpl(OnlinePlayer player)

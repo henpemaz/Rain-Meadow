@@ -6,6 +6,7 @@ namespace RainMeadow
 {
     public class PlayerSpecificOnlineHud : HudPart
     {
+        public OnlineHUD owner;
         public OnlineGameMode onlineGameMode;
         public ClientSettings clientSettings;
 
@@ -37,9 +38,10 @@ namespace RainMeadow
             }
         }
 
-        public PlayerSpecificOnlineHud(HUD.HUD hud, RoomCamera camera, OnlineGameMode onlineGameMode, ClientSettings clientSettings) : base(hud)
+        public PlayerSpecificOnlineHud(OnlineHUD owner, RoomCamera camera, OnlineGameMode onlineGameMode, ClientSettings clientSettings) : base(owner.hud)
         {
             RainMeadow.Debug("Adding PlayerSpecificOnlineHud for " + clientSettings.owner);
+            this.owner = owner;
             this.camera = camera;
             camrect = new Rect(Vector2.zero, this.camera.sSize).CloneWithExpansion(-30f);
             this.onlineGameMode = onlineGameMode;
@@ -56,13 +58,9 @@ namespace RainMeadow
         {
             get
             {
-                return clientSettings.inGame && abstractPlayer != null
-                    && (
-                        abstractPlayer.state.dead ||
-                        (
-                            abstractPlayer.realizedCreature is Player player &&
-                            player.dangerGrasp != null && player.dangerGraspTime > 20
-                        )
+                return clientSettings.inGame && abstractPlayer != null && (
+                    abstractPlayer.state.dead
+                    || (RealizedPlayer?.dangerGrasp != null && RealizedPlayer.dangerGraspTime > 20)
                     );
             }
         }
@@ -92,8 +90,8 @@ namespace RainMeadow
                 }
             }
 
-            if (camera.room == null) return;
             if (!clientSettings.inGame) return;
+            if (camera.room == null || !camera.room.shortCutsReady) return;
             if (abstractPlayer == null)
             {
                 RainMeadow.Debug("finding player abscrt for " + clientSettings.owner);
@@ -101,7 +99,10 @@ namespace RainMeadow
                 {
                     abstractPlayer = oc.abstractCreature;
                 }
-                return;
+                else
+                {
+                    return;
+                }
             }
             if (this.playerDisplay == null)
             {
@@ -109,7 +110,6 @@ namespace RainMeadow
                 this.playerDisplay = new OnlinePlayerDisplay(this);
                 this.parts.Add(this.playerDisplay);
             }
-
 
             // tracking
             this.found = false;

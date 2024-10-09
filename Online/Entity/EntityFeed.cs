@@ -22,18 +22,19 @@ namespace RainMeadow
 
         public void Update(uint tick)
         {
-            if (!resource.isAvailable) throw new InvalidOperationException("not available");
+            if (!resource.isAvailable) return; // unloading
             if (resource.isOwner)
             {
                 RainMeadow.Error($"Self-feeding entity {entity} for resource {resource}");
-                throw new InvalidOperationException("feeding myself");
+                return;
             }
             if (resource.owner != player) // they don't know
             {
                 OutgoingStates.Clear();
                 lastAcknoledgedState = null;
+                player = resource.owner;
             }
-            player = resource.owner;
+            if (player == null) return; // resource owner might be null while unloading
 
             if (player.recentlyAckdTicks.Count > 0)
             {

@@ -22,7 +22,7 @@ namespace RainMeadow
                 _ = Character.Slugcat;
                 _ = Skin.Slugcat_Survivor;
                 _ = Emote.emoteHello;
-                currentTestSkin = Skin.Scavenger_Twigs;
+                currentTestSkin = Skin.Lizard_Pink;
 
                 RainMeadow.Debug($"characters loaded: {Character.values.Count}");
                 RainMeadow.Debug($"skins loaded: {Skin.values.Count}");
@@ -45,6 +45,7 @@ namespace RainMeadow
             public string emotePrefix; // for emote sprites
             public string emoteAtlas; // atlas name
             public Color emoteColor; // emote tile color (pre-tint)
+            public SoundID voiceId;
             public List<Skin> skins = new();
             public int[] selectSpriteIndexes; // sprites to darken on character locked in select screen
             public WorldCoordinate startingCoords; // first spawn pos
@@ -68,8 +69,9 @@ namespace RainMeadow
                 emotePrefix = "sc_",
                 emoteAtlas = "emotes_slugcat",
                 emoteColor = new Color(85f, 120f, 120f, 255f) / 255f,
+                voiceId = RainMeadow.Ext_SoundID.RM_Slugcat_Call,
                 selectSpriteIndexes = new[] { 2 },
-                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["SU_C04"], 7, 28, -1),
+                startingCoords = new WorldCoordinate("SU_C04", 7, 28, -1),
             });
             public static Character Lizard = new("Lizard", true, new()
             {
@@ -77,8 +79,9 @@ namespace RainMeadow
                 emotePrefix = "liz_",
                 emoteAtlas = "emotes_lizard",
                 emoteColor = new Color(197, 220, 232, 255f) / 255f,
+                voiceId = RainMeadow.Ext_SoundID.RM_Lizard_Call,
                 selectSpriteIndexes = new[] { 1, 2 },
-                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["DS_A06"], 12, 16, -1),
+                startingCoords = new WorldCoordinate("DS_A06", 12, 16, -1),
             });
             public static Character Cicada = new("Cicada", true, new()
             {
@@ -86,8 +89,9 @@ namespace RainMeadow
                 emotePrefix = "squid_",
                 emoteAtlas = "emotes_squid",
                 emoteColor = new Color(81f, 81f, 81f, 255f) / 255f,
+                voiceId = RainMeadow.Ext_SoundID.RM_Cicada_Call,
                 selectSpriteIndexes = new[] { 2 },
-                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["SI_D05"], 32, 18, -1),
+                startingCoords = new WorldCoordinate("SI_D05", 32, 18, -1),
             });
             public static Character Scavenger = new("Scavenger", true, new()
             {
@@ -95,35 +99,39 @@ namespace RainMeadow
                 emotePrefix = "scav_",
                 emoteAtlas = "emotes_scav",
                 emoteColor = new Color(80,87,80,255) / 255f,
+                voiceId = RainMeadow.Ext_SoundID.RM_Scav_Call,
                 selectSpriteIndexes = new[] { 1 },
-                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["GW_A11"], 26, 22, -1),
+                startingCoords = new WorldCoordinate("GW_A11", 26, 22, -1),
             });
             public static Character Noodlefly = new("Noodlefly", true, new()
             {
                 displayName = "NOODLEFLY",
-                emotePrefix = "sc_", // "noot_"
-                emoteAtlas = "emotes_slugcat",//"emotes_noot",
-                emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
+                emotePrefix = "noot_",
+                emoteAtlas = "emotes_noot",
+                emoteColor = Extensions.ColorFromHex(0x7e6f6a),
+                voiceId = RainMeadow.Ext_SoundID.RM_Noot_Call,
                 selectSpriteIndexes = new int[0],
-                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["LF_F02"], 63, 43, -1),
+                startingCoords = new WorldCoordinate("LF_F02", 63, 43, -1),
             });
             public static Character Eggbug = new("Eggbug", true, new()
             {
                 displayName = "EGGBUG",
-                emotePrefix = "sc_", // "noot_"
-                emoteAtlas = "emotes_slugcat",//"emotes_noot",
+                emotePrefix = "sc_", // "bug_"
+                emoteAtlas = "emotes_slugcat",//"emotes_bug",
                 emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
+                voiceId = RainMeadow.Ext_SoundID.RM_Eggbug_Call,
                 selectSpriteIndexes = new[] { 2 },
-                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["HI_B04"], 32, 18, -1),
+                startingCoords = new WorldCoordinate("HI_B04", 32, 18, -1),
             });
             public static Character LanternMouse = new("LanternMouse", true, new()
             {
                 displayName = "LANTERN MOUSE",
-                emotePrefix = "sc_", // "noot_"
-                emoteAtlas = "emotes_slugcat",//"emotes_noot",
-                emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
+                emotePrefix = "maus_",
+                emoteAtlas = "emotes_maus",
+                emoteColor = Extensions.ColorFromHex(0x79635f),
+                voiceId = RainMeadow.Ext_SoundID.RM_Mouse_Call,
                 selectSpriteIndexes = new int[0],
-                startingCoords = new WorldCoordinate(RainWorld.roomNameToIndex["SH_A21"], 32, 26, -1),
+                startingCoords = new WorldCoordinate("SH_A21", 32, 26, -1),
             });
         }
 
@@ -136,13 +144,14 @@ namespace RainMeadow
             public string displayName;
             public CreatureTemplate.Type creatureType;
             public int randomSeed;
-            public Color? baseColor; // todo fill them all for previews
+            public Color? baseColor;
             public Color? eyeColor;
-            public Color? effectColor;
+            public Color? previewColor;
             public float tintFactor = 0.3f;
             public string emoteAtlasOverride;
             public string emotePrefixOverride;
             public Color? emoteColorOverride;
+            public SoundID? voiceIdOverride;
         }
 
         [TypeConverter(typeof(ExtEnumTypeConverter<Skin>))]
@@ -191,12 +200,14 @@ namespace RainMeadow
                 character = Character.Cicada,
                 displayName = "White",
                 creatureType = CreatureTemplate.Type.CicadaA,
+                previewColor = Extensions.ColorFromHex(0xd4dddf),
             });
             public static Skin Cicada_Dark = new("Cicada_Dark", true, new()
             {
                 character = Character.Cicada,
                 displayName = "Dark",
                 creatureType = CreatureTemplate.Type.CicadaB,
+                previewColor = Extensions.ColorFromHex(0x0e0d19),
             });
 
             public static Skin Lizard_Pink = new("Lizard_Pink", true, new()
@@ -204,6 +215,8 @@ namespace RainMeadow
                 character = Character.Lizard,
                 displayName = "Pink",
                 creatureType = CreatureTemplate.Type.PinkLizard,
+                randomSeed = 3401,
+                previewColor = Extensions.ColorFromHex(0xff07ee),
                 tintFactor = 0.5f,
             });
             public static Skin Lizard_Blue = new("Lizard_Blue", true, new()
@@ -211,6 +224,8 @@ namespace RainMeadow
                 character = Character.Lizard,
                 displayName = "Blue",
                 creatureType = CreatureTemplate.Type.BlueLizard,
+                randomSeed = 9659,
+                previewColor = Extensions.ColorFromHex(0x006bed),
                 tintFactor = 0.5f,
             });
             public static Skin Lizard_Yellow = new("Lizard_Yellow", true, new()
@@ -218,7 +233,8 @@ namespace RainMeadow
                 character = Character.Lizard,
                 displayName = "Yellow",
                 creatureType = CreatureTemplate.Type.YellowLizard,
-                randomSeed = 1366,
+                randomSeed = 6526,
+                previewColor = Extensions.ColorFromHex(0xd35503),
                 tintFactor = 0.5f,
             });
             public static Skin Lizard_Cyan = new("Lizard_Cyan", true, new()
@@ -226,7 +242,17 @@ namespace RainMeadow
                 character = Character.Lizard,
                 displayName = "Cyan",
                 creatureType = CreatureTemplate.Type.CyanLizard,
-                randomSeed = 1366,
+                randomSeed = 5243,
+                previewColor = Extensions.ColorFromHex(0x06f5ff),
+                tintFactor = 0.5f,
+            });
+            public static Skin Lizard_Fluffers = new("Lizard_Fluffers", true, new()
+            {
+                character = Character.Lizard,
+                displayName = "Fluffers",
+                creatureType = CreatureTemplate.Type.PinkLizard,
+                randomSeed = 7713,
+                previewColor = Extensions.ColorFromHex(0xff15b3),
                 tintFactor = 0.5f,
             });
 
@@ -236,6 +262,7 @@ namespace RainMeadow
                 displayName = "Twigs",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 4481,
+                previewColor = Extensions.ColorFromHex(0x212030),
             });
             public static Skin Scavenger_Acorn = new("Scavenger_Acorn", true, new()
             {
@@ -243,6 +270,7 @@ namespace RainMeadow
                 displayName = "Acorn",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 1213,
+                previewColor = Extensions.ColorFromHex(0x341417),
             });
             public static Skin Scavenger_Oak = new("Scavenger_Oak", true, new()
             {
@@ -250,6 +278,7 @@ namespace RainMeadow
                 displayName = "Oak",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 9503,
+                previewColor = Extensions.ColorFromHex(0xd9bba1),
             });
             public static Skin Scavenger_Shrub = new("Scavenger_Shrub", true, new()
             {
@@ -257,6 +286,7 @@ namespace RainMeadow
                 displayName = "Shrub",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 1139,
+                previewColor = Extensions.ColorFromHex(0x9b765d),
             });
             public static Skin Scavenger_Branches = new("Scavenger_Branches", true, new()
             {
@@ -264,6 +294,7 @@ namespace RainMeadow
                 displayName = "Branches",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 1503,
+                previewColor = Extensions.ColorFromHex(0x912e19),
             });
             public static Skin Scavenger_Sage = new("Scavenger_Sage", true, new()
             {
@@ -271,6 +302,7 @@ namespace RainMeadow
                 displayName = "Sage",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 1184,
+                previewColor = Extensions.ColorFromHex(0x493d3f),
             });
             public static Skin Scavenger_Cherry = new("Scavenger_Cherry", true, new()
             {
@@ -278,6 +310,7 @@ namespace RainMeadow
                 displayName = "Cherry",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 9464,
+                previewColor = Extensions.ColorFromHex(0xa72014),
             });
             public static Skin Scavenger_Lavender = new("Scavenger_Lavender", true, new()
             {
@@ -285,6 +318,7 @@ namespace RainMeadow
                 displayName = "Lavender",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 8201,
+                previewColor = Extensions.ColorFromHex(0x9b81d5),
             });
             public static Skin Scavenger_Peppermint = new("Scavenger_Peppermint", true, new()
             {
@@ -292,6 +326,7 @@ namespace RainMeadow
                 displayName = "Peppermint",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 8750,
+                previewColor = Extensions.ColorFromHex(0xd1ebdb),
             });
             public static Skin Scavenger_Juniper = new("Scavenger_Juniper", true, new()
             {
@@ -299,6 +334,7 @@ namespace RainMeadow
                 displayName = "Juniper",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 4566,
+                previewColor = Extensions.ColorFromHex(0xb8c3ec),
             });
 
             public static Skin Noodlefly_Big = new("Noodlefly_Big", true, new()
@@ -312,6 +348,7 @@ namespace RainMeadow
                 character = Character.Noodlefly,
                 displayName = "Small",
                 creatureType = CreatureTemplate.Type.SmallNeedleWorm,
+                voiceIdOverride = RainMeadow.Ext_SoundID.RM_SmallNoot_Call
             });
 
             public static Skin Eggbug_Blue = new("Eggbug_Blue", true, new()
@@ -368,41 +405,51 @@ namespace RainMeadow
             public static Emote emoteHello = new("emoteHello", true);
             public static Emote emoteHappy = new("emoteHappy", true);
             public static Emote emoteSad = new("emoteSad", true);
+
             public static Emote emoteConfused = new("emoteConfused", true);
             public static Emote emoteGoofy = new("emoteGoofy", true);
             public static Emote emoteDead = new("emoteDead", true);
+
             public static Emote emoteAmazed = new("emoteAmazed", true);
             public static Emote emoteShrug = new("emoteShrug", true);
             public static Emote emoteHug = new("emoteHug", true);
+
             public static Emote emoteAngry = new("emoteAngry", true);
             public static Emote emoteWink = new("emoteWink", true);
             public static Emote emoteMischievous = new("emoteMischievous", true);
 
-            // ideas
+            // symbols (displayed 3 per column)
             public static Emote symbolYes = new("symbolYes", true);
             public static Emote symbolNo = new("symbolNo", true);
             public static Emote symbolQuestion = new("symbolQuestion", true);
-            public static Emote symbolTime = new("symbolTime", true);
-            public static Emote symbolSurvivor = new("symbolSurvivor", true);
-            public static Emote symbolFriends = new("symbolFriends", true);
-            public static Emote symbolGroup = new("symbolGroup", true);
-            public static Emote symbolKnoledge = new("symbolKnoledge", true);
-            public static Emote symbolTravel = new("symbolTravel", true);
-            public static Emote symbolMartyr = new("symbolMartyr", true);
 
-            // things
+            public static Emote symbolExclamation = new("symbolExclamation", true);
+            public static Emote symbolArrow = new("symbolArrow", true);
+            public static Emote symbolTime = new("symbolTime", true);
+
+            public static Emote symbolTravel = new("symbolTravel", true);
+            public static Emote symbolGroup = new("symbolGroup", true);
+            public static Emote symbolFollow = new("symbolFollow", true);
+            
+            public static Emote symbolFriends = new("symbolFriends", true);
             public static Emote symbolCollectible = new("symbolCollectible", true);
-            public static Emote symbolFood = new("symbolFood", true);
-            public static Emote symbolLight = new("symbolLight", true);
+            public static Emote symbolEcho = new("symbolEcho", true);
+            
             public static Emote symbolShelter = new("symbolShelter", true);
             public static Emote symbolGate = new("symbolGate", true);
-            public static Emote symbolEcho = new("symbolEcho", true);
-            public static Emote symbolPointOfInterest = new("symbolPointOfInterest", true);
             public static Emote symbolTree = new("symbolTree", true);
-            public static Emote symbolIterator = new("symbolIterator", true);
+            
+            public static Emote symbolSurvivor = new("symbolSurvivor", true);
+            public static Emote symbolWanderer = new("symbolWanderer", true);
+            public static Emote symbolHigh = new("symbolHigh", true);
 
-            // verbs
-            // todo
+            public static Emote symbolIterator = new("symbolIterator", true);
+            public static Emote symbolLight = new("symbolLight", true);
+            public static Emote symbolPlants = new("symbolPlants", true);
+
+            public static Emote symbolMetal = new("symbolMetal", true);
+            public static Emote symbolPipes = new("symbolPipes", true);
+            public static Emote symbolWater = new("symbolWater", true);
         }
 
         public static List<Emote> emoteEmotes = new();
@@ -519,8 +566,17 @@ namespace RainMeadow
                 meadowHud.AnimateEmote();
                 if(EmoteProgress() is Emote emote) meadowHud.NewEmoteUnlocked(emote);
             }
-            
-            AutosaveProgression(); // will be skipped if already saved
+            else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowGhost)
+            {
+                meadowHud.AnimateChar();
+                meadowHud.AnimateSkin();
+                meadowHud.AnimateEmote();
+                if (CharacterProgress() is Character character) meadowHud.NewCharacterUnlocked(character);
+                if (SkinProgress() is Skin skin) meadowHud.NewSkinUnlocked(skin);
+                if (EmoteProgress() is Emote emote) meadowHud.NewEmoteUnlocked(emote);
+            }
+
+                AutosaveProgression(); // will be skipped if already saved
         }
 
         public static Color TokenRedColor = new Color(248f / 255f, 89f / 255f, 93f / 255f);
@@ -554,6 +610,13 @@ namespace RainMeadow
             }
             if (progressionData == null) LoadDefaultProgression();
             lastSaved = UnityEngine.Time.realtimeSinceStartup;
+        }
+
+        public static void ReloadProgression()
+        {
+            RainMeadow.DebugMe();
+            progressionData = null;
+            LoadProgression();
         }
 
         public static void LoadDefaultProgression()

@@ -27,6 +27,14 @@ namespace RainMeadow
             On.OverWorld.WorldLoaded += WorldLoadedPatch;
             On.OverWorld.LoadFirstWorld += OverWorld_LoadFirstWorld;
             On.VirtualMicrophone.NewRoom += NewRoomPatch;
+
+            On.Music.MusicPiece.SubTrack.StopAndDestroy += SubTrack_StopAndDestroy;
+        }
+
+        private static void SubTrack_StopAndDestroy(On.Music.MusicPiece.SubTrack.orig_StopAndDestroy orig, MusicPiece.SubTrack self)
+        {
+            orig(self);
+            self.source?.clip?.UnloadAudioData();
         }
 
         const int waitSecs = 5;

@@ -14,7 +14,7 @@
             {
                 pendingRequest = owner.InvokeRPC(this.Requested).Then(this.ResolveRequest);
             }
-            else
+            else if (primaryResource.owner != null)
             {
                 pendingRequest = primaryResource.owner.InvokeRPC(this.Requested).Then(this.ResolveRequest);
             }
@@ -53,7 +53,7 @@
             if (requestResult.referencedEvent == pendingRequest) pendingRequest = null;
             if (requestResult is GenericResult.Ok) // I'm the new owner of this entity
             {
-                NewOwner(OnlineManager.mePlayer);
+                // no op, comes as state in the same tick
             }
             else if (requestResult is GenericResult.Error) // Something went wrong, I should retry
             {
@@ -61,6 +61,7 @@
                 // abort pending grasps?
                 RainMeadow.Error("request failed for " + this);
             }
+            if (isMine) JoinOrLeavePending(); // keep ticking
         }
 
         // I release this entity (to room host or world host)
@@ -76,7 +77,7 @@
             {
                 RainMeadow.Debug("Staying as supervisor");
             }
-            else
+            else if (primaryResource.owner != null)
             {
                 this.pendingRequest = primaryResource.owner.InvokeRPC(Released, currentlyJoinedResource).Then(ResolveRelease);
             }
@@ -127,6 +128,7 @@
                     Release();
                 }
             }
+            if (isMine) JoinOrLeavePending(); // keep ticking
         }
     }
 }

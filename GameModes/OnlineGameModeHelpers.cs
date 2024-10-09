@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -71,7 +71,7 @@ namespace RainMeadow
             //PlacedObject.Type.StuckDaddy,
             //PlacedObject.Type.CentipedeAttractor,
         };
-        public static HashSet<PlacedObject.Type> PlayerGrablableItems = new()
+        public static HashSet<PlacedObject.Type> PlayerGrabbableItems = new()
         {
             PlacedObject.Type.FlareBomb,
             PlacedObject.Type.PuffBall,          //Weird behavior between thrower and everyone else when throwing 
@@ -89,7 +89,7 @@ namespace RainMeadow
             PlacedObject.Type.FirecrackerPlant,
             PlacedObject.Type.VultureGrub,
             PlacedObject.Type.DeadVultureGrub,
-            //PlacedObject.Type.ScavengerTreasury,  //Spear, Explosive spear, Scav bomb, Pearl, & Laterns
+            PlacedObject.Type.ScavengerTreasury,  //Spear, Explosive spear, Scav bomb, Pearl, & Laterns
             PlacedObject.Type.MultiplayerItem,    //ARENA_SPAWNS for Rock, Spear, ExplosiveSpear, Bomb, SporePlant data
             //PlacedObject.Type.SporePlant,         //abstractConsumable HARD. Need to sync bee's and attached Bee's still
             PlacedObject.Type.ReliableSpear,        //Spears have MSC elements

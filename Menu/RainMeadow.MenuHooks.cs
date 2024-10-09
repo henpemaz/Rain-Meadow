@@ -6,6 +6,8 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using Menu;
 using Steamworks;
+using Newtonsoft.Json.Linq;
+using System.Linq.Expressions;
 
 namespace RainMeadow
 {
@@ -28,7 +30,7 @@ namespace RainMeadow
 
         private bool SlugcatSelectMenu_SlugcatUnlocked(On.Menu.SlugcatSelectMenu.orig_SlugcatUnlocked orig, SlugcatSelectMenu self, SlugcatStats.Name i)
         {
-            if (OnlineManager.lobby == null) 
+            if (OnlineManager.lobby == null)
             {
                 return orig(self, i);
             }
@@ -142,6 +144,26 @@ namespace RainMeadow
                     //(self as InteractiveMenuScene).idleDepths.Add(1.5f);
                 }
             }
+            else if (self.sceneID == RainMeadow.Ext_SceneID.Slugcat_MeadowMouse)
+            {
+                self.sceneFolder = "Scenes" + Path.DirectorySeparatorChar.ToString() + "meadow - mouse";
+                if (self.flatMode)
+                {
+                    self.AddIllustration(new MenuIllustration(self.menu, self, self.sceneFolder, "MeadowMouse - Flat", new Vector2(683f, 384f), false, true));
+                }
+                else
+                {
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmmouse bg", new Vector2(0f, 0f), 3.5f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmmouse lights", new Vector2(0f, 0f), 2.4f, MenuDepthIllustration.MenuShader.SoftLight));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmmouse mouse", new Vector2(0f, 0f), 2.2f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmmouse fg", new Vector2(0f, 0f), 2.1f, MenuDepthIllustration.MenuShader.LightEdges));
+                    (self as InteractiveMenuScene).idleDepths.Add(3.2f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.2f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.1f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.0f);
+                    (self as InteractiveMenuScene).idleDepths.Add(1.5f);
+                }
+            }
             if (string.IsNullOrEmpty(self.sceneFolder))
             {
                 return;
@@ -216,6 +238,12 @@ namespace RainMeadow
                         self.sceneOffset = new Vector2(-10f, 100f);
                         self.slugcatDepth = 3.1000001f;
                     }
+                    else if (mcsp.character == MeadowProgression.Character.LanternMouse)
+                    {
+                        sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowMouse;
+                        self.sceneOffset = new Vector2(-10f, 100f);
+                        self.slugcatDepth = 3.1000001f;
+                    }
                     else
                     {
                         //throw new InvalidProgrammerException("implement me");
@@ -233,7 +261,7 @@ namespace RainMeadow
                             sceneID = Menu.MenuScene.SceneID.Slugcat_White;
                             self.sceneOffset = new Vector2(-10f, 100f);
                             self.slugcatDepth = 3.1000001f;
-                            
+
                         }
 
                         else if (slugcatCustom.slug == SlugcatStats.Name.Yellow)
@@ -266,6 +294,14 @@ namespace RainMeadow
                                 self.sceneOffset = new Vector2(-10f, 100f);
                                 self.slugcatDepth = 3.1000001f;
                             }
+
+                            else if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand)
+                            {
+
+                                sceneID = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID.Slugcat_Gourmand;
+                                self.sceneOffset = new Vector2(-10f, 100f);
+                                self.slugcatDepth = 3.1000001f;
+                            }
                             else if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
                             {
 
@@ -289,16 +325,31 @@ namespace RainMeadow
                                 self.slugcatDepth = 3.1000001f;
                             }
                         }
-                       
+
                     }
                     else // Client
                     {
-                        sceneID = Menu.MenuScene.SceneID.Intro_6_7_Rain_Drop; // TODO: Retrieve current save's region
+                        var result = UnityEngine.Random.Range(0, 3);
+                        switch (result)
+                        {
+                            case 0:
+                                sceneID = Menu.MenuScene.SceneID.Intro_4_Walking; 
+                                break;
+                            case 1:
+                                sceneID = Menu.MenuScene.SceneID.Intro_11_Drowning; 
+                                break;
+                            case 2:
+                                sceneID = Menu.MenuScene.SceneID.Intro_8_Climbing;
+                                break;
+                            case 3:
+                                sceneID = Menu.MenuScene.SceneID.Intro_6_7_Rain_Drop;
+                                break;
+                        }
+
                         self.sceneOffset = new Vector2(-10f, 100f);
                         self.slugcatDepth = 3.1000001f;
 
                     }
-
                 }
 
             });

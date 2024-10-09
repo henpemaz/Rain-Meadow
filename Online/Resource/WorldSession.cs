@@ -36,7 +36,18 @@ namespace RainMeadow
             foreach (var room in world.abstractRooms)
             {
                 var rs = new RoomSession(this, room);
-                roomSessions.Add(room.name, rs);
+                try
+                {
+                    roomSessions.Add(room.name, rs);
+                }
+                catch (Exception)
+                {
+                    RainMeadow.Error($"duplicate room {room.name} for rs {rs}");
+                    var name = "";
+                    for (var i = 0; roomSessions.Keys.Contains((name = room.name + "." + i)); i++);
+                    RainMeadow.Error($"adding as {name}");
+                    roomSessions.Add(name, rs);
+                }
                 subresources.Add(rs);
             }
             foreach (var item in earlyApos)
@@ -50,6 +61,11 @@ namespace RainMeadow
         {
             this.roomSessions.Clear();
             world = null;
+        }
+
+        protected override void UnavailableImpl()
+        {
+
         }
 
         protected override ResourceState MakeState(uint ts)
@@ -83,6 +99,13 @@ namespace RainMeadow
             {
                 if (resource.world != null) {
                     RainCycle rainCycle = resource.world.rainCycle;
+                    if (rainCycle.brokenAntiGrav == null)
+                    {
+                        rainCycle.brokenAntiGrav = new AntiGravity.BrokenAntiGravity(
+                            resource.world.game.setupValues.gravityFlickerCycleMin,
+                            resource.world.game.setupValues.gravityFlickerCycleMax,
+                            resource.world.game);
+                    }
                     rainCycleData = new RainCycleData(rainCycle);
                     realizedRooms = new(resource.world.abstractRooms.Where(s => s.firstTimeRealized == false).Select(r => (ushort)r.index).ToList());
                 }

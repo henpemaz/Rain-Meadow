@@ -7,18 +7,21 @@ namespace RainMeadow
     public class ArenaCompetitiveGameMode : OnlineGameMode
     {
         public bool isInGame = false;
-        public bool nextLevel = false;
-
         public int clientWaiting = 0;
+        public int clientsAreReadiedUp = 0;
+        public bool allPlayersReadyLockLobby = false;
+        public bool returnToLobby = false;
+
 
         public List<string> playList = new List<string>();
+
+        public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
 
         public ArenaCompetitiveGameMode(Lobby lobby) : base(lobby)
         {
         }
 
         public ArenaClientSettings arenaClientSettings => clientSettings as ArenaClientSettings;
-
 
         public override bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)
         {
@@ -30,7 +33,7 @@ namespace RainMeadow
             return RainMeadow.Ext_ProcessID.ArenaLobbyMenu;
         }
 
-        public override bool ShouldSyncObjectInWorld(WorldSession ws, AbstractPhysicalObject apo)
+        public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
             return true;
         }
@@ -55,7 +58,7 @@ namespace RainMeadow
 
         public override bool AllowedInMode(PlacedObject item)
         {
-            return base.AllowedInMode(item) || OnlineGameModeHelpers.PlayerGrablableItems.Contains(item.type);
+            return base.AllowedInMode(item) || OnlineGameModeHelpers.PlayerGrabbableItems.Contains(item.type);
         }
 
         public override bool ShouldSpawnRoomItems(RainWorldGame game, RoomSession roomSession)

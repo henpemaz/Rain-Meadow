@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using Mono.Cecil;
 using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,8 @@ namespace RainMeadow
             public bool isTransferable;
             [OnlineField]
             internal ushort version;
+
+            internal bool failedToSpawn; // tracked locally
 
             public EntityDefinition() : base() { }
 
@@ -131,7 +134,7 @@ namespace RainMeadow
             if (!enteredResources.Contains(resource)) { return; }
             RainMeadow.Debug($"{this} exiting {resource}");
             var index = enteredResources.IndexOf(resource);
-            enteredResources.RemoveRange(index, enteredResources.Count - index);
+            if (index > -1) enteredResources.RemoveRange(index, enteredResources.Count - index);
             RainMeadow.Debug($"now in {currentlyEnteredResource}");
             if (isMine) JoinOrLeavePending();
         }
@@ -139,11 +142,41 @@ namespace RainMeadow
         public void JoinOrLeavePending()
         {
             if (!isMine) { throw new InvalidProgrammerException("not owner"); }
+            
+            // Sanitize
+            for (int i = enteredResources.Count - 1; i >= 0; i--)
+            {
+                if (!enteredResources[i].isActive)
+                {
+                    enteredResources.RemoveAt(i);
+                }
+            }
+            for (int i = joinedResources.Count - 1; i >= 0; i--)
+            {
+                if (!joinedResources[i].isActive)
+                {
+                    RainMeadow.Error("was joined in inactive resource: " + joinedResources[i]);
+                    joinedResources.RemoveAt(i);
+                    continue;
+                }
+                if (!joinedResources[i].joinedEntities.ContainsKey(this.id))
+                {
+                    RainMeadow.Error("was joined in resource but not in entities list: " + joinedResources[i]);
+                    joinedResources.RemoveAt(i);
+                    continue;
+                }
+            }
+            if (pendingRequest is RPCEvent rpc && rpc.target is OnlineResource res)
+            {
+                if(!enteredResources.Contains(res) && !joinedResources.Contains(res))
+                {
+                    RainMeadow.Debug($"dismissing pending request {pendingRequest} for resource {res}");
+                    pendingRequest = null;
+                }
+            }
             if (isPending) { return; } // still pending
             RainMeadow.Debug(this);
 
-            enteredResources.RemoveAll(r => !r.isActive);
-            joinedResources.RemoveAll(r => !r.isAvailable || !r.joinedEntities.ContainsKey(this.id));
 
             // any resources to leave
             var pending = joinedResources.LastOrDefault(r => !enteredResources.Contains(r));
@@ -166,8 +199,7 @@ namespace RainMeadow
         public void OnJoinedResource(OnlineResource inResource, EntityState initialState)
         {
             RainMeadow.Debug($"{this} joining {inResource}");
-            if (inResource == currentlyJoinedResource) return;
-            if (joinedResources.Contains(inResource))
+            if (inResource == currentlyJoinedResource || joinedResources.Contains(inResource))
             {
                 RainMeadow.Error($"Already in resource {this} - {inResource} - {currentlyEnteredResource}" + Environment.NewLine + Environment.StackTrace);
                 return;
@@ -179,7 +211,12 @@ namespace RainMeadow
             joinedResources.Add(inResource);
             incomingState.Add(inResource, new Queue<EntityState>());
 
-            if (!isMine) JoinImpl(inResource, initialState);
+            if (!isMine)
+            {
+                EnterResource(inResource);
+                ReadState(initialState, inResource);
+                JoinImpl(inResource, initialState);
+            }
 
             if (isMine)
             {
@@ -206,11 +243,7 @@ namespace RainMeadow
         public void OnLeftResource(OnlineResource inResource)
         {
             RainMeadow.Debug($"{this} leaving {inResource}");
-            if (!joinedResources.Contains(inResource))
-            {
-                RainMeadow.Error($"Entity already left: {this} {inResource}");
-                return;
-            }
+            if (!joinedResources.Contains(inResource)) return;
 
             // if any subresources to leave do that first for consistency 
             joinedResources.Reverse<OnlineResource>().ToArray().Do(r => { if (r.IsSubresourceOf(inResource)) r.EntityLeftResource(this); });
@@ -266,6 +299,15 @@ namespace RainMeadow
                 incomingState[key] = new Queue<EntityState>();
             }
 
+            if (newOwner.isMe || wasOwner.isMe)
+            {
+                if (pendingRequest is RPCEvent rpc && rpc.target == this) // dismiss ongoing request/release
+                {
+                    RainMeadow.Debug("Dismissing pending request: " + pendingRequest);
+                    pendingRequest = null;
+                }
+            }
+
             if (wasOwner.isMe)
             {
                 foreach (var res in joinedResources)
@@ -284,20 +326,32 @@ namespace RainMeadow
         }
 
         // I was in a resource and I was left behind as the resource was released
-        public virtual void Deactivated(OnlineResource onlineResource)
+        public void Deactivated(OnlineResource onlineResource)
         {
             RainMeadow.Debug($"{this} in {onlineResource}");
-            if (pendingRequest is RPCEvent rpc && rpc.target == onlineResource) pendingRequest = null;
+            if (pendingRequest is RPCEvent rpc && rpc.target == onlineResource)
+            {
+                RainMeadow.Debug($"dismissing pending request {pendingRequest}");
+                pendingRequest = null;
+            }
+            
+            var index = enteredResources.IndexOf(onlineResource);
+            if (index > -1) enteredResources.RemoveRange(index, enteredResources.Count - index);
+            
             if (!joinedResources.Contains(onlineResource)) return;
-            enteredResources.Remove(onlineResource);
+            // if any subresources to leave do that first for consistency 
+            joinedResources.Reverse<OnlineResource>().ToArray().Do(r => { if (r.IsSubresourceOf(onlineResource)) Deactivated(r); });
+
             joinedResources.Remove(onlineResource);
             lastStates.Remove(onlineResource);
             incomingState.Remove(onlineResource);
+
             if (isMine)
             {
                 OnlineManager.RemoveFeed(onlineResource, this);
                 JoinOrLeavePending();
             }
+
             if (primaryResource == null && !isPending)
             {
                 Deregister();

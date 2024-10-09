@@ -13,7 +13,7 @@ namespace RainMeadow
     public class OnlineManager : MainLoopProcess
     {
         public static OnlineManager instance;
-        public static Serializer serializer = new Serializer(32000);
+        public static Serializer serializer = new Serializer(65536);
         public static List<ResourceSubscription> subscriptions;
         public static List<EntityFeed> feeds;
         public static Dictionary<OnlineEntity.EntityId, OnlineEntity> recentEntities;
@@ -35,9 +35,7 @@ namespace RainMeadow
             LeaveLobby();
             MatchmakingManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
             RainMeadow.Debug("OnlineManager Created");
-
         }
-
 
         private void OnlineManager_OnLobbyJoined(bool ok, string error)
         {
@@ -45,6 +43,9 @@ namespace RainMeadow
             currentlyJoiningLobby = default;
             if (ok)
             {
+                manager.rainWorld.progression.Destroy();
+                manager.rainWorld.progression = new PlayerProgression(manager.rainWorld, tryLoad: true, saveAfterLoad: false);
+                manager.rainWorld.progression.Update();
                 // manager.RequestMainProcessSwitch(lobby.gameMode.MenuProcessId());
             }
             else
@@ -70,6 +71,10 @@ namespace RainMeadow
 
             mePlayer = new OnlinePlayer(mePlayer.id) { isMe = true };
             players = new List<OnlinePlayer>() { mePlayer };
+
+            instance.manager.rainWorld.progression.Destroy();
+            instance.manager.rainWorld.progression = new PlayerProgression(instance.manager.rainWorld, tryLoad: true, saveAfterLoad: false);
+            instance.manager.rainWorld.progression.Update();
         }
 
         public override void RawUpdate(float dt)
@@ -119,6 +124,10 @@ namespace RainMeadow
                 if (lobby.isActive)
                 {
                     lobby.Tick(mePlayer.tick);
+                }
+                else if (lobby.isAvailable)
+                {
+                    lobby.Activate();
                 }
 
                 // Prepare outgoing messages

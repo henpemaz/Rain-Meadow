@@ -8,24 +8,29 @@ namespace RainMeadow
 {
     public static class Extensions
     {
-        public static WorldSession GetResource(this World world)
+        public static Color ColorFromHex(int value)
         {
-            return WorldSession.map.GetValue(world, (w) => throw new KeyNotFoundException($"World {w.name} not found"));
+            return new Color(((value >> 16) & 0xff) / 255f, ((value >> 8) & 0xff) / 255f, (value & 0xff) / 255f);
         }
 
-        public static RoomSession GetResource(this AbstractRoom room)
+        public static WorldSession? GetResource(this World world)
         {
-            return RoomSession.map.GetValue(room, (r) => throw new KeyNotFoundException($"Room {r.name} not found"));
+            return WorldSession.map.TryGetValue(world, out var ws) ? ws : null;
         }
 
-        public static OnlinePhysicalObject GetOnlineObject(this AbstractPhysicalObject apo)
+        public static RoomSession? GetResource(this AbstractRoom room)
         {
-            return OnlinePhysicalObject.map.GetValue(apo, (apo) => throw new KeyNotFoundException($"Object {apo} not found"));
+            return RoomSession.map.TryGetValue(room, out var rs) ? rs : null;
         }
 
-        public static OnlineCreature GetOnlineCreature(this AbstractCreature ac)
+        public static OnlinePhysicalObject? GetOnlineObject(this AbstractPhysicalObject apo)
         {
-            return (OnlineCreature)OnlineCreature.map.GetValue(ac, (ac) => throw new KeyNotFoundException($"Creature {ac} not found"));
+            return OnlinePhysicalObject.map.TryGetValue(apo, out var oe) ? oe : null;
+        }
+
+        public static OnlineCreature? GetOnlineCreature(this AbstractCreature ac)
+        {
+            return OnlinePhysicalObject.map.TryGetValue(ac, out var oe) ? oe as OnlineCreature : null;
         }
 
         public static bool RemoveFromShortcuts(this Creature creature)

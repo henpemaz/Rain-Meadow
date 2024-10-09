@@ -24,6 +24,24 @@ namespace RainMeadow
             On.SmallNeedleWormAI.Update += SmallNeedleWormAI_Update;
 
             IL.NeedleWorm.Fly += NeedleWorm_Fly;
+            On.NeedleWorm.Fly += NeedleWorm_Fly1;
+        }
+
+        private static void NeedleWorm_Fly1(On.NeedleWorm.orig_Fly orig, NeedleWorm self, MovementConnection followingConnection)
+        {
+            if (creatureControllers.TryGetValue(self, out var controller))
+            {
+                // if water or close to terrain, crawl
+                if ((self.room.GetTile(followingConnection.startCoord).AnyWater || self.room.aimap.getTerrainProximity(followingConnection.startCoord) <= 1) 
+                 && (self.room.GetTile(followingConnection.destinationCoord).AnyWater || self.room.aimap.getTerrainProximity(followingConnection.destinationCoord) <= 1))
+                {
+                    self.Crawl(followingConnection);
+                    return;
+                }
+            }
+
+
+            orig(self, followingConnection);
         }
 
         private static void NeedleWorm_Fly(ILContext il)
@@ -195,7 +213,7 @@ namespace RainMeadow
             RainMeadow.Trace($"atDestThisFrame? {self.atDestThisFrame}");
         }
 
-        public NoodleController(Creature creature, OnlineCreature oc, int playerNumber) : base(creature, oc, playerNumber)
+        public NoodleController(Creature creature, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(creature, oc, playerNumber, customization)
         {
         }
 
@@ -217,6 +235,27 @@ namespace RainMeadow
             noodle.AI.behavior = NeedleWormAI.Behavior.Idle;
             noodle.AI.flySpeed = Custom.LerpAndTick(noodle.AI.flySpeed, 0, 0.4f, 0.1f);
             forceMove = false;
+        }
+
+        protected override void OnCall()
+        {
+            noodle.screaming = 0.5f;
+        }
+
+        protected override void PointImpl(Vector2 dir)
+        {
+            // fun but cursed
+            // noodle.AddSegmentVel(creature.bodyChunks.Length + noodle.tail.GetLength(0) - 1, dir * 20f);
+            
+            if (noodle.graphicsModule is NeedleWormGraphics ng)
+            {
+                for (int i = 0; i < ng.snout.Length; i++)
+                {
+                    ng.snout[i].vel *= 0.6f; // airbreak
+                    ng.snout[i].vel.y += 0.9f; // negate gravity;
+                    ng.snout[i].vel += 5f * dir;
+                }
+            }
         }
     }
 }

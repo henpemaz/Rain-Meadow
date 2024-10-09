@@ -50,6 +50,12 @@ namespace RainMeadow
         }
 
         [RPCMethod]
+        public static void SubtractFood(short amt)
+        {
+            ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].realizedCreature as Player).SubtractFood(amt);
+        }
+
+        [RPCMethod]
         public static void AddMushroomCounter()
         {
             ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].realizedCreature as Player).mushroomCounter += 320;
@@ -68,19 +74,11 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void InitGameOver()
-        {
-            var player = ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0]);
-            (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.cameras[0].hud.InitGameOverMode(null, 0, player.pos.room, new UnityEngine.Vector2(0f, 0f));
-        }
-
-
-        [RPCMethod]
         public static void IncrementPlayersLeftt()
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                arena.clientWaiting = arena.clientWaiting+1;
+                arena.clientWaiting = arena.clientWaiting + 1;
 
             }
 
@@ -102,7 +100,8 @@ namespace RainMeadow
         {
             foreach (OnlinePlayer player in OnlineManager.players)
             {
-                if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToDeathScreen))) {
+                if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToDeathScreen)))
+                {
                     player.InvokeRPC(RPCs.GoToDeathScreen);
                 }
             }
@@ -122,48 +121,71 @@ namespace RainMeadow
                 return;
             }
             game.GetStorySession.saveState.SessionEnded(game, false, false);
+            RainMeadow.Debug("I am moving to the deathscreen");
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.DeathScreen);
         }
 
         [RPCMethod]
-        public static void MovePlayersToWinScreen(bool malnurished)
+        public static void MovePlayersToWinScreen(bool malnourished, string denPos)
         {
+            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
+            if (game == null || game.manager.upcomingProcess != null) return;
+
+            var storyGameMode = OnlineManager.lobby.gameMode as StoryGameMode;
+
+            if (storyGameMode.storyClientSettings.hasSheltered)
+            {
+                denPos = storyGameMode.storyClientSettings.myLastDenPos;
+            }
+            else
+            {
+                storyGameMode.storyClientSettings.myLastDenPos = denPos;
+            }
+
+            storyGameMode.defaultDenPos = game.GetStorySession.saveState.denPosition = denPos;
+
             foreach (OnlinePlayer player in OnlineManager.players)
             {
-                if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToWinScreen, malnurished)))
+                if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToWinScreen, malnourished, denPos)))
                 {
-                    player.InvokeRPC(RPCs.GoToWinScreen, malnurished);
+                    if (player.isMe)
+                    {
+                        GoToWinScreen(malnourished, denPos);
+                    }
+                    else
+                    {
+                        player.InvokeRPC(RPCs.GoToWinScreen, malnourished, denPos);
+                    }
                 }
             }
         }
 
         //Assumed to be called for storymode only
         [RPCMethod]
-        public static void GoToWinScreen(bool malnourished)
+        public static void GoToWinScreen(bool malnourished, string denPos)
         {
-            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-            if (game == null || game.manager.upcomingProcess != null)
+            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
+            if (game == null || game.manager.upcomingProcess != null) return;
+
+            if (OnlineManager.lobby.isOwner)
             {
-                return;
+                if (!malnourished && !game.rainWorld.saveBackedUp)
+                {
+                    game.rainWorld.saveBackedUp = true;
+                    game.rainWorld.progression.BackUpSave("_Backup");
+                }
             }
-
-            if (!malnourished && !game.rainWorld.saveBackedUp)
+            else
             {
-                game.rainWorld.saveBackedUp = true;
-                game.rainWorld.progression.BackUpSave("_Backup");
+                var storyClientSettings = (OnlineManager.lobby.gameMode as StoryGameMode).storyClientSettings;
+                if (!storyClientSettings.hasSheltered)
+                {
+                    storyClientSettings.myLastDenPos = denPos;
+                }
             }
 
-            //This needs to be called after shelterDoor::Close and game state synced for this to be accurate.
-            var denPos = (OnlineManager.lobby.gameMode as StoryGameMode).defaultDenPos;
-            if (denPos == null) {
-                AbstractCreature firstAlivePlayer = game.FirstAlivePlayer;
-                denPos = game.world.GetAbstractRoom(firstAlivePlayer.pos).name;
-            }
-
-            //TODO: Having soft-win on makes this very difficult. For now I'm (Turtle) locking it down so that you can only win if the host is alive
-            if (OnlineManager.lobby.isOwner) {
-                game.GetStorySession.saveState.SessionEnded(game, true, malnourished);
-            }
+            // TODO: investigate client save desync (e.g. swallowed items)
+            game.GetStorySession.saveState.SessionEnded(game, true, malnourished);
 
             //TODO: need to sync p5 and l2m deam events. Not doing it rn.
             DreamsState dreamsState = game.GetStorySession.saveState.dreamsState;
@@ -171,7 +193,8 @@ namespace RainMeadow
             if (dreamsState != null)
             {
                 dreamsState.EndOfCycleProgress(game.GetStorySession.saveState, game.world.region.name, denPos);
-                if (dreamsState.AnyDreamComingUp && !malnourished) {
+                if (dreamsState.AnyDreamComingUp && !malnourished)
+                {
                     game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Dream);
                     return;
                 }
@@ -211,6 +234,139 @@ namespace RainMeadow
         }
 
         [RPCMethod]
+        public static void Arena_ReadyForNextLevel(string userIsReady)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+                for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                {
+                    if (game.arenaOverlay.resultBoxes[i].playerNameLabel.text == userIsReady)
+                    {
+                        game.arenaOverlay.result[i].readyForNextRound = true;
+                    }
+                }
+            }
+
+        }
+
+        [RPCMethod]
+        public static void Arena_NotifyClassChange(string userIsReady, int currentColorIndex)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+
+                for (int i = 1; i < game.usernameButtons.Length; i++)
+                {
+
+                    if (game.usernameButtons[i].menuLabel.text == userIsReady)
+                    {
+                        if (currentColorIndex > 3 && ModManager.MSC)
+                        {
+                            game.classButtons[i].portrait.fileName = "MultiplayerPortrait" + "41-" + game.GetArenaSetup.playerClass[currentColorIndex];
+
+                        }
+                        else
+                        {
+                            game.classButtons[i].portrait.fileName = "MultiplayerPortrait" + currentColorIndex + "1";
+                        }
+
+
+                        game.classButtons[i].portrait.LoadFile();
+                        game.classButtons[i].portrait.sprite.SetElementByName(game.classButtons[i].portrait.fileName);
+                    }
+
+                }
+
+            }
+
+        }
+        [RPCMethod]
+        public static void Arena_NotifyLobbyReadyUp(string userIsReady, int currentColorIndex)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+
+                for (int i = 1; i < game.usernameButtons.Length; i++)
+                {
+
+                    if (game.usernameButtons[i].menuLabel.text == userIsReady)
+                    {
+                        arena.clientsAreReadiedUp++;
+                        game.classButtons[i].readyForCombat = true;
+                    }
+
+                }
+
+            }
+
+        }
+
+        [RPCMethod]
+        public static void Arena_Killing(OnlinePhysicalObject absCreaturePlayer, OnlinePhysicalObject target, string username)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+
+                if (game.GetArenaGameSession.sessionEnded)
+                {
+                    return;
+                }
+                var killedCrit = (target.apo as AbstractCreature);
+
+                IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(killedCrit);
+
+                for (int i = 0; i < game.GetArenaGameSession.arenaSitting.players.Count; i++)
+                {
+
+                    if (absCreaturePlayer.owner.inLobbyId == arena.arenaSittingOnlineOrder[i])
+                    {
+
+                        if (CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.realizedCreature.Template.type))
+                        {
+                            game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(iconSymbolData);
+                            game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
+                        }
+
+                        int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
+                        if (index >= 0)
+                        {
+                            game.GetArenaGameSession.arenaSitting.players[i].AddSandboxScore(game.GetArenaGameSession.arenaSitting.gameTypeSetup.killScores[index]);
+                        }
+                        else
+                        {
+                            game.GetArenaGameSession.arenaSitting.players[i].AddSandboxScore(0);
+                        }
+
+                        break;
+                    }
+
+                }
+            }
+
+        }
+
+        [RPCMethod]
         public static void Arena_NextLevelCall()
         {
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
@@ -239,5 +395,37 @@ namespace RainMeadow
 
         }
 
+
+        [RPCMethod]
+        public static void KickToLobby()
+        {
+            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            try
+            {
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+                game.ExitToMenu();
+            } catch
+            {
+                RWCustom.Custom.rainWorld.processManager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
+                
+
+            }
+            BanHammer.ShowBan(RWCustom.Custom.rainWorld.processManager);
+        }
+
+        [RPCMethod]
+        public static void TriggerGhostHunch(string ghostID)
+        {
+            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            ExtEnumBase.TryParse(typeof(GhostWorldPresence.GhostID), ghostID, false, out var rawEnumBase);
+            var ghostNumber = rawEnumBase as GhostWorldPresence.GhostID;
+            if (ghostNumber == null) return;
+            var ghostsTalkedTo = (game.session as StoryGameSession).saveState.deathPersistentSaveData.ghostsTalkedTo;
+            if (!ghostsTalkedTo.ContainsKey(ghostNumber) || ghostsTalkedTo[ghostNumber] < 1)
+                ghostsTalkedTo[ghostNumber] = 1;
+        }
     }
 }

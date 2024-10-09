@@ -5,19 +5,21 @@ namespace RainMeadow
 {
     public class StoryGameMode : OnlineGameMode
     {
-        public List<ushort> readyForWinPlayers = new List<ushort>();
-
         // these are synced by StoryLobbyData
         public bool isInGame = false;
         public bool changedRegions = false;
         public bool didStartCycle = false;
+        public bool friendlyFire = false; // false until we manage it via UI
         public string? defaultDenPos;
-        public StorySaveProfile? currentSaveSlot;
         public SlugcatStats.Name currentCampaign;
+        public Dictionary<string, int> ghostsTalkedTo;
         public Dictionary<string, bool> storyBoolRemixSettings;
         public Dictionary<string, float> storyFloatRemixSettings;
         public Dictionary<string, int> storyIntRemixSettings;
+        public Dictionary<ushort, ushort[]> consumedItems;
         public StoryClientSettings storyClientSettings => clientSettings as StoryClientSettings;
+
+        public bool saveToDisk = false;
 
         public StoryGameMode(Lobby lobby) : base(lobby)
         {
@@ -28,7 +30,7 @@ namespace RainMeadow
         }
         public override bool AllowedInMode(PlacedObject item)
         {
-            return base.AllowedInMode(item) || OnlineGameModeHelpers.PlayerGrablableItems.Contains(item.type) || OnlineGameModeHelpers.creatureRelatedItems.Contains(item.type);
+            return base.AllowedInMode(item) || OnlineGameModeHelpers.PlayerGrabbableItems.Contains(item.type) || OnlineGameModeHelpers.creatureRelatedItems.Contains(item.type);
         }
         public override bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)
         {
@@ -41,16 +43,14 @@ namespace RainMeadow
             // todo if two join at once, this first check is faulty
         }
 
-        public override bool ShouldSyncObjectInWorld(WorldSession ws, AbstractPhysicalObject apo)
+        public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
             return true;
         }
 
         public override SlugcatStats.Name GetStorySessionPlayer(RainWorldGame self) 
         {
-            // Return the save slot slugcatStats name
-            // TODO: Handle client side saves. As in don't do anything savestate related, just get from host.
-            return currentSaveSlot?.save ?? RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;
+            return currentCampaign;
         }
         public override SlugcatStats.Name LoadWorldAs(RainWorldGame game)
         {
@@ -98,14 +98,27 @@ namespace RainMeadow
             }
         }
 
-        internal override void LobbyTick(uint tick)
+        internal override void ResourceActive(OnlineResource onlineResource)
         {
-            base.LobbyTick(tick);
-            readyForWinPlayers = lobby.activeEntities.Where(
-                e => e is StoryClientSettings sas && 
-                (sas.readyForWin || !sas.inGame || sas.isDead)
-            ).Select(e => e.owner.inLobbyId).ToList();
+            base.ResourceActive(onlineResource);
+            if (onlineResource is WorldSession ws)
+            {
+                var regionState = ws.world.regionState;
+                if (this.lobby.isOwner)
+                {
+                    ghostsTalkedTo = regionState.saveState.deathPersistentSaveData.ghostsTalkedTo.ToDictionary(kvp => kvp.Key.value, kvp => kvp.Value);
+                    consumedItems = regionState.consumedItems
+                        .Concat(regionState.saveState.deathPersistentSaveData.consumedFlowers) // HACK: group karma flowers with items, room:index shouldn't overlap
+                        .GroupBy(x => x.originRoom)
+                        .ToDictionary(x => (ushort)x.Key, x => x.Select(y => (ushort)y.placedObjectIndex).ToArray());
+                }
+                else
+                {
+                    regionState.consumedItems = consumedItems
+                        .SelectMany(kvp => kvp.Value.Select(v => new RegionState.ConsumedItem(kvp.Key, v, 2))).ToList(); // must be >1
+                    regionState.saveState.deathPersistentSaveData.consumedFlowers = regionState.consumedItems;
+                }
+            }
         }
-
     }
 }

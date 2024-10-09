@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MonoMod.RuntimeDetour;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -27,6 +28,20 @@ namespace RainMeadow
 
             On.AbstractCreature.Move += AbstractCreature_Move; // I'm watching your every step
             On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // I'm watching your every step
+
+            new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
+        }
+
+        private bool AbstractCreature_Quantify(Func<AbstractCreature, bool> orig, AbstractCreature self)
+        {
+            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
+            {
+                if (!oe.isMine)
+                {
+                    return false; // do not attempt to delete remote creatures
+                }
+            }
+            return orig(self);
         }
 
         private void AbstractCreature_ChangeRooms1(On.AbstractCreature.orig_ChangeRooms orig, AbstractCreature self, WorldCoordinate newCoord)
@@ -73,11 +88,8 @@ namespace RainMeadow
             {
                 // leaving room is handled in absroom.removeentity
                 // adding to room is handled here so the position is updated properly
-                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, self)) ws.ApoEnteringWorld(self);
-                if (RoomSession.map.TryGetValue(self.world.GetAbstractRoom(newCoord.room), out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, self))
-                {
-                    rs.ApoEnteringRoom(self, newCoord);
-                }
+                self.world.GetResource().ApoEnteringWorld(self);
+                self.world.GetAbstractRoom(newCoord.room).GetResource()?.ApoEnteringRoom(self, newCoord);
             }
         }
 
@@ -210,8 +222,8 @@ namespace RainMeadow
             orig(self, ent);
             if (OnlineManager.lobby != null && ent is AbstractPhysicalObject apo && apo.pos.room == self.index) // skips apos being apo.Move'd
             {
-                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.ApoEnteringWorld(apo);
-                if (RoomSession.map.TryGetValue(self, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoEnteringRoom(apo, apo.pos);
+                self.world.GetResource().ApoEnteringWorld(apo);
+                self.GetResource()?.ApoEnteringRoom(apo, apo.pos);
             }
         }
 
@@ -227,9 +239,9 @@ namespace RainMeadow
                 }
             }
             orig(self, entity);
-            if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo && RoomSession.map.TryGetValue(self, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo))
+            if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo)
             {
-                rs.ApoLeavingRoom(apo);
+                self.GetResource()?.ApoLeavingRoom(apo);
             }
         }
 
@@ -246,8 +258,8 @@ namespace RainMeadow
             orig(self);
             if (OnlineManager.lobby != null && self is AbstractPhysicalObject apo)
             {
-                if (RoomSession.map.TryGetValue(self.Room, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoLeavingRoom(apo);
-                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.ApoLeavingWorld(apo);
+                self.Room.GetResource()?.ApoLeavingRoom(apo);
+                self.world.GetResource().ApoLeavingWorld(apo);
             }
         }
 
@@ -265,8 +277,8 @@ namespace RainMeadow
             orig(self, entity);
             if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo)
             {
-                if (WorldSession.map.TryGetValue(self.world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, apo)) ws.ApoEnteringWorld(apo);
-                if (RoomSession.map.TryGetValue(self, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, apo)) rs.ApoLeavingRoom(apo);
+                self.world.GetResource().ApoEnteringWorld(apo);
+                self.GetResource()?.ApoLeavingRoom(apo); // rs might not be registered yet
             }
         }
 
@@ -322,19 +334,20 @@ namespace RainMeadow
                 // post: we add our entities to the new world
                 if (room != null && RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession2))
                 {
-                    roomSession2.Activate(); // adds entities that are already in the room as mine
                     room.abstractRoom.entities.AddRange(entitiesFromNewRoom); // re-add overwritten entities
                     room.abstractRoom.creatures.AddRange(creaturesFromNewRoom);
-                    // room never "loaded" so we handle as entities joining a loaded room
-                    for (int i = 0; i < entitiesFromNewRoom.Count; i++)
+                    roomSession2.Activate();
+
+                    foreach (var absplayer in self.game.Players)
                     {
-                        if (entitiesFromNewRoom[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+                        if(absplayer.realizedCreature is Player player && player.objectInStomach is AbstractPhysicalObject apo)
                         {
-                            oe.OnJoinedResource(roomSession2, null);
+                            newWorldSession.ApoEnteringWorld(apo);
                         }
                     }
-
-                    oldWorldSession.FullyReleaseResource(); // done? let go
+                    
+                    oldWorldSession.Deactivate();
+                    oldWorldSession.NotNeeded(); // done? let go
                 }
                 if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode) 
                 {

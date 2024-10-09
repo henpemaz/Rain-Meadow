@@ -5,7 +5,7 @@ namespace RainMeadow
 {
     public class PhysicalObjectEntityState : OnlineEntity.EntityState
     {
-        [OnlineField]
+        [OnlineField(group = "realized")]
         public WorldCoordinate pos;
         [OnlineField]
         public bool inDen;
@@ -19,10 +19,8 @@ namespace RainMeadow
         public PhysicalObjectEntityState() : base() { }
         public PhysicalObjectEntityState(OnlinePhysicalObject onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
         {
-            if (inResource is WorldSession ws && !OnlineManager.lobby.gameMode.ShouldSyncObjectInWorld(ws, onlineEntity.apo)) throw new InvalidOperationException("asked for world state, not synched");
-            if (inResource is RoomSession rs && !OnlineManager.lobby.gameMode.ShouldSyncObjectInRoom(rs, onlineEntity.apo)) throw new InvalidOperationException("asked for room state, not synched");
             var realizedState = inResource is RoomSession;
-            if (realizedState && onlineEntity.isMine && onlineEntity.apo.realizedObject != null && !onlineEntity.realized) { RainMeadow.Error($"have realized object, but not entity not marked as realized??: {onlineEntity} in resource {inResource}"); }
+            if (realizedState && onlineEntity.isMine && onlineEntity.apo.realizedObject != null && !onlineEntity.realized) { RainMeadow.Error($"have realized object, but entity not marked as realized??: {onlineEntity} in resource {inResource}"); }
             if (realizedState && onlineEntity.isMine && !onlineEntity.realized)
             {
                 RainMeadow.Trace($"asked for realized state, not realized: {onlineEntity} in resource {inResource}");
@@ -45,14 +43,17 @@ namespace RainMeadow
 
         protected virtual RealizedPhysicalObjectState GetRealizedState(OnlinePhysicalObject onlineObject)
         {
+
             if (onlineObject.apo.realizedObject == null) throw new InvalidOperationException("not realized");
             if (onlineObject.apo.realizedObject is Spear) return new RealizedSpearState(onlineObject);
+            if (onlineObject.apo.realizedObject is ScavengerBomb) return new RealizedScavengerBombState(onlineObject);
+            if (onlineObject.apo.realizedObject is MoreSlugcats.SingularityBomb) return new RealizedSingularityBombState(onlineObject);
             if (onlineObject.apo.realizedObject is SporePlant) return new RealizedSporePlantState(onlineObject);
-            if (onlineObject.apo.realizedObject is Weapon) return new RealizedWeaponState(onlineObject);
             if (onlineObject.apo.realizedObject is SlimeMold) return new RealizedSlimeMoldState(onlineObject);
             if (onlineObject.apo.realizedObject is VultureGrub) return new RealizedVultureGrubState(onlineObject);
-            if (onlineObject.apo.realizedObject is SeedCob) return new RealizedSeedCobState(onlineObject);
             if (onlineObject.apo.realizedObject is DangleFruit) return new RealizedDangleFruitState(onlineObject);
+            if (onlineObject.apo.realizedObject is Weapon) return new RealizedWeaponState(onlineObject); // Order matters here. If your item inherits from another class, that parent class should be lower
+
             return new RealizedPhysicalObjectState(onlineObject);
         }
 
@@ -68,20 +69,42 @@ namespace RainMeadow
             var wasPos = apo.pos;
             try
             {
-                if (inDen != apo.InDen)
+                if (pos.room == -1)
                 {
-                    if (inDen)
+                    if (wasPos.room != -1)
                     {
-                        RainMeadow.Debug("moving to den: " + onlineObject);
-                        apo.IsEnteringDen(pos);
+                        if(apo.realizedObject is PhysicalObject po)
+                        {
+                            po.RemoveFromRoom();
+                            apo.Abstractize(wasPos);
+                        }
+                        apo.Room.RemoveEntity(apo);
+                    }
+                }
+                else
+                {
+                    if (inDen != apo.InDen)
+                    {
+                        if (inDen)
+                        {
+                            RainMeadow.Debug("moving to den: " + onlineObject);
+                            apo.IsEnteringDen(pos);
+                        }
+                        else
+                        {
+                            RainMeadow.Debug("moving out of den: " + onlineObject);
+                            apo.IsExitingDen();
+                        }
+                    }
+                    if (wasPos.room != -1)
+                    {
+                        apo.Move(pos);
                     }
                     else
                     {
-                        RainMeadow.Debug("moving out of den: " + onlineObject);
-                        apo.IsExitingDen();
+                        if (apo.world.IsRoomInRegion(pos.room)) apo.world.GetAbstractRoom(pos).AddEntity(apo);
                     }
                 }
-                apo.Move(pos);
             }
             catch (Exception e)
             {
@@ -120,7 +143,7 @@ namespace RainMeadow
                 if (!found[i] && apo.stuckObjects[i].A == apo)
                 {
                     RainMeadow.Trace("releasing stick because not found at index " + i);
-                    AbstractObjStickRepr.map.GetValue(apo.stuckObjects[i], AbstractObjStickRepr.FromStick).Release(apo.stuckObjects[i]);
+                    AbstractObjStickRepr.map.GetValue(apo.stuckObjects[i], AbstractObjStickRepr.FromStick)?.Release(apo.stuckObjects[i]);
                 }
             }
 

@@ -48,7 +48,6 @@ namespace RainMeadow
 				label.color =
 					resource.isOwner ? Color.green :
 					resource.isSupervisor ? Color.blue :
-					resource.isFree ? Color.yellow :
 					resource.canRelease ? Color.red : Color.white;
 
 				lineSprite.x = pos.x + 20;
