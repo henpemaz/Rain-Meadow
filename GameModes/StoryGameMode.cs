@@ -73,6 +73,10 @@ namespace RainMeadow
             {
                 return lobby.owner == from;
             }
+            if (from.isActuallySpectating)
+            {
+                return false;
+            }
             return true;
         }
 
