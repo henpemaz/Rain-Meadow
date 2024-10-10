@@ -80,7 +80,7 @@ namespace RainMeadow
                             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerMenu);
                             if (!OnlineManager.lobby.isOwner)
                             {
-                                OnlineManager.lobby.owner.InvokeRPC(RPCs.ResetPlayersLeft);
+                                OnlineManager.lobby.owner.InvokeRPC(ArenaRPCs.Arena_ResetPlayersLeft);
                             }
                             self.players.Clear();
                             return;
@@ -97,7 +97,7 @@ namespace RainMeadow
 
                         if (!OnlineManager.lobby.isOwner)
                         {
-                            OnlineManager.lobby.owner.InvokeRPC(RPCs.ResetPlayersLeft);
+                            OnlineManager.lobby.owner.InvokeRPC(ArenaRPCs.Arena_ResetPlayersLeft);
                         }
 
                         return;
