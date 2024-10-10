@@ -95,6 +95,25 @@ namespace RainMeadow
                         {
 
                             this.game.cameras[0].followAbstractCreature = ac;
+                           
+
+                            if (!OnlinePhysicalObject.map.TryGetValue(ac, out var onlineACOwner))
+                            {
+                                RainMeadow.Error("Error getting online AC during spectate call!");
+                                return; 
+                            }
+
+
+                            if (onlineACOwner.owner != OnlineManager.mePlayer)
+                            {
+                                OnlineManager.mePlayer.isActuallySpectating = true; // I want to view a remote player outside my current position
+
+                            }
+                            else
+                            {
+                                OnlineManager.mePlayer.isActuallySpectating = false; // I want to regain control of where I am
+
+                            }
 
 
                             if (ac.Room.realizedRoom == null)
@@ -136,7 +155,6 @@ namespace RainMeadow
 
             List<SimplerButton> playerList = this.pages[0].subObjects.OfType<SimplerButton>().ToList();
             List<SimplerSymbolButton> xButtons = this.pages[0].subObjects.OfType<SimplerSymbolButton>().ToList();
-            RainMeadow.Debug(OnlineManager.mePlayer.isActuallySpectating = false);
             if (playerList.Count != uniqueACs.Count)
             {
                 // Remove all existing buttons when our AC list changes
@@ -210,23 +228,7 @@ namespace RainMeadow
                     button.buttonBehav.greyedOut = true;
                     button.OnClick += (_) =>
                     {
-                        /* No action on click, slugs are dead or in gate room mode */
-                        if (!OnlinePhysicalObject.map.TryGetValue(this.game.cameras[0].followAbstractCreature, out var onlineACOwner))
-                        {
-                            RainMeadow.Error("Error getting online AC during spectate call!");
-                            return;
-                        }
-
-                        if (onlineACOwner.owner != OnlineManager.mePlayer)
-                        {
-                            OnlineManager.mePlayer.isActuallySpectating = true; // I want to view a remote player outside my current position
-
-                        }
-                        else
-                        {
-                            OnlineManager.mePlayer.isActuallySpectating = false; // I want to regain control of where I am
-
-                        }
+                        // noop
                     };
                 }
                 else
