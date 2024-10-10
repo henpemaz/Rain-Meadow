@@ -349,9 +349,13 @@ namespace RainMeadow
                     oldWorldSession.Deactivate();
                     oldWorldSession.NotNeeded(); // done? let go
                 }
-                if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode) 
+                if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
                 {
                     storyGameMode.changedRegions = true;
+                }
+                if (OnlineManager.lobby.gameMode is MeadowGameMode)
+                {
+                    MeadowMusic.NewWorld(self.activeWorld);
                 }
             }
             else

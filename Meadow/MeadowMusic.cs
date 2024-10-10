@@ -4,28 +4,16 @@ using System.Collections.Generic;
 using Music;
 using System.Linq;
 using RWCustom;
-using IL.MoreSlugcats;
 using System;
-using IL;
-using Steamworks;
-using UnityEngine.Assertions.Must;
-using HarmonyLib;
-using System.Net.NetworkInformation;
-using On;
-using UnityEngine.UI;
 
 namespace RainMeadow
 {
-    public partial class MeadowMusic
+    public class MeadowMusic
     {
         public static void EnableMusic()
         {
             CheckFiles();
 
-            On.RainWorldGame.ctor += GameCtorPatch;
-            On.RainWorldGame.RawUpdate += RawUpdatePatch;
-            On.OverWorld.WorldLoaded += WorldLoadedPatch;
-            On.OverWorld.LoadFirstWorld += OverWorld_LoadFirstWorld;
             On.VirtualMicrophone.NewRoom += NewRoomPatch;
 
             On.Music.MusicPiece.SubTrack.StopAndDestroy += SubTrack_StopAndDestroy;
@@ -35,6 +23,19 @@ namespace RainMeadow
         {
             orig(self);
             self.source?.clip?.UnloadAudioData();
+        }
+
+        internal static void NewGame()
+        {
+            time = 0f;
+            timerStopped = true;
+
+            // there's proooobably more stuff that needs resetting here
+        }
+
+        internal static void Cleanup()
+        {
+            // no memleaks in this house
         }
 
         const int waitSecs = 5;
@@ -132,14 +133,6 @@ namespace RainMeadow
             }
         }
 
-        static void GameCtorPatch(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
-        {
-            orig.Invoke(self, manager);
-            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode) return;
-
-            time = 0f;
-            timerStopped = true;
-        }
         [RPCMethod]
         static void AskNowLeave(RPCEvent rpcEvent, ushort meadowLobbyPlayerId) //could maybe have "i'm a host" be a parameter but perspectiveeeee
         {
@@ -311,6 +304,7 @@ namespace RainMeadow
             var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
             var creature = mgm.avatar;
             var musicdata = creature.GetData<MeadowMusicData>();
+            var RoomImIn = creature.creature.world.game.cameras[0].room;
             if (creature.roomSession == null) return;
 
             RainMeadow.Debug("Checking Players");
@@ -502,14 +496,15 @@ namespace RainMeadow
                 }
             }
         }
+
         //we don't check if players just leave, and don't rejoin. which is something they do, due to me not really caring about them when they're so far away, so they don't join for me.
         //also, newroompatch will no longer call to updateplayers, since it'd already get called by my request to JoinThisResource.
-        static void RawUpdatePatch(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
+        internal static void Tick(RainWorldGame self, float dt)
         {
-            orig.Invoke(self, dt);
-            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode) return;
             if (!timerStopped) time += dt;
             MusicPlayer musicPlayer = self.manager.musicPlayer;
+            var RoomImIn = self.cameras[0].room;
+            var MyGuyMic = self.cameras[0].virtualMicrophone;
 
             var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
             var creature = mgm.avatar;
@@ -804,31 +799,15 @@ namespace RainMeadow
             //do some shit that sends back the current time of the lobby host
             return OnlineManager.lobby.owner.tick / OnlineManager.instance.framesPerSecond;
         }
-        static void WorldLoadedPatch(On.OverWorld.orig_WorldLoaded orig, OverWorld self)
-        {
-            orig.Invoke(self);
 
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
-            {
-                AnalyzeRegion(self.activeWorld);
-            }
-            UpdateIntensity = true;
+        internal static void NewWorld(World activeWorld)
+        {
+            AnalyzeRegion(activeWorld);
         }
 
-        static void OverWorld_LoadFirstWorld(On.OverWorld.orig_LoadFirstWorld orig, OverWorld self)
-        {
-            orig.Invoke(self);
-
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
-            {
-                AnalyzeRegion(self.activeWorld);
-            }
-            UpdateIntensity = true;
-        }
         static int closestVibe;
-        static Room? RoomImIn;
+        //static Room? RoomImIn;
         static int DegreesOfAwayness;
-        static bool ItchingForKnowledge = false;
         static int CalculateDegreesOfAwayness(AbstractRoom testRoom)
         {
             var vibeRoom = testRoom.world.GetAbstractRoom(az.room);
@@ -877,7 +856,6 @@ namespace RainMeadow
             return num;
         }
 
-        static VirtualMicrophone? MyGuyMic;
         private static bool IntegrationToNewGroup;
         public static float playthissongat;
         private static float DJstartedat;
@@ -885,74 +863,64 @@ namespace RainMeadow
         static void NewRoomPatch(On.VirtualMicrophone.orig_NewRoom orig, VirtualMicrophone self, Room room)
         {
             orig.Invoke(self, room);
-            RainMeadow.Debug("The normal method is done");
-            HelloNewRoom(self, room);
+            if(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                NewRoom(room);
+            }
         }
 
-        public static void HelloNewRoom(VirtualMicrophone self, Room room)
+        public static void NewRoom(Room room)
         {
             RainMeadow.Debug("New room is being checked"); 
-
-            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode) return;
-            
-            MyGuyMic = self;
-            RoomImIn = room;
-
-            MusicPlayer musicPlayer = room.game.manager.musicPlayer;
-
             // If i don't know the activezones, do it immediately when you do know
-
-            if (musicPlayer != null)
+            if (activeZonesDict == null)
             {
-                if (activeZonesDict == null)
+                RainMeadow.Error("missing activeZonesDict");
+            }
+            else
+            {
+                //activezonedict has the room ids of each vibe zone's room as keys
+                int[] rooms = activeZonesDict.Keys.ToArray(); //why does it have to be the keys? can't this just be a list and have the id defined in class vibezone?
+                float minDist = float.MaxValue;
+                closestVibe = -1;
+                //find the closest one
+                for (int i = 0; i < rooms.Length; i++)
                 {
-                    ItchingForKnowledge = true;
-                    //BrushForSound = self;
-                    //BrushForSpace = room;
+                    //yoink the coordinates of the player's current room
+                    Vector2 v1 = room.world.RoomToWorldPos(Vector2.zero, room.abstractRoom.index);
+                    //yoink the coordinates of the vibe zone room
+                    Vector2 v2 = room.world.RoomToWorldPos(Vector2.zero, rooms[i]);
+                    //calculate the flat distance between these two vectors
+                    var dist = (v2 - v1).magnitude;
+                    if (dist < minDist)
+                    {
+                        minDist = dist;
+                        closestVibe = rooms[i];
+                    }
                 }
-                else
+                //and just grab its corresponding vibezone from the dict
+                az = activeZonesDict[closestVibe];
+                if (minDist > az.radius)
                 {
-                    //activezonedict has the room ids of each vibe zone's room as keys
-                    int[] rooms = activeZonesDict.Keys.ToArray(); //why does it have to be the keys? can't this just be a list and have the id defined in class vibezone?
-                    float minDist = float.MaxValue;
-                    closestVibe = -1;
-                    //find the closest one
-                    for (int i = 0; i < rooms.Length; i++)
-                    {
-                        //yoink the coordinates of the player's current room
-                        Vector2 v1 = room.world.RoomToWorldPos(Vector2.zero, room.abstractRoom.index);
-                        //yoink the coordinates of the vibe zone room
-                        Vector2 v2 = room.world.RoomToWorldPos(Vector2.zero, rooms[i]);
-                        //calculate the flat distance between these two vectors
-                        var dist = (v2 - v1).magnitude;
-                        if (dist < minDist)
-                        {
-                            minDist = dist;
-                            closestVibe = rooms[i];
-                        }
-                    }
-                    //and just grab its corresponding vibezone from the dict
-                    az = activeZonesDict[closestVibe];
-                    if (minDist > az.radius)
-                    {
-                        RainMeadow.Debug("Meadow Music: Out of Vibezone Radius, Disabled plopping, stopped updating intensity, and musicvolume set to max... ");
-                        //musicPlayer.song.FadeOut(40f);
-                        //activeZone = null;
-                        vibeIntensity = 0f;
-                        if (musicPlayer.song != null) musicPlayer.song.baseVolume = 0.3f;
-                        AllowPlopping = false;
-                        UpdateIntensity = false;
-                        //vibePan = null;
-                    }
-                    else if (minDist < az.radius)
-                    {
-                        RainMeadow.Debug("Meadow Music: Started updating intensity and allowing plopping... ");
-                        UpdateIntensity = true;
-                        AllowPlopping = true;
-                        //activeZone = az;
-                    }
+                    RainMeadow.Debug("Meadow Music: Out of Vibezone Radius, Disabled plopping, stopped updating intensity, and musicvolume set to max... ");
+                    MusicPlayer? musicPlayer = room.game.manager.musicPlayer;
+                    //musicPlayer.song.FadeOut(40f);
+                    //activeZone = null;
+                    vibeIntensity = 0f;
+                    if (musicPlayer != null && musicPlayer.song != null) musicPlayer.song.baseVolume = 0.3f;
+                    AllowPlopping = false;
+                    UpdateIntensity = false;
+                    //vibePan = null;
+                }
+                else if (minDist < az.radius)
+                {
+                    RainMeadow.Debug("Meadow Music: Started updating intensity and allowing plopping... ");
+                    UpdateIntensity = true;
+                    AllowPlopping = true;
+                    //activeZone = az;
                 }
             }
+            
             DegreesOfAwayness = CalculateDegreesOfAwayness(room.abstractRoom);
         }
 
@@ -1002,11 +970,6 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("Meadow Music: no hubs found");
                     activeZonesDict = null;
-                }
-                if (ItchingForKnowledge)
-                {
-                    HelloNewRoom(MyGuyMic, RoomImIn); //Nah, those variables were set right before the itch started.
-                    ItchingForKnowledge = false;
                 }
             }
             if (ambientDict.TryGetValue(world.region.name, out string[] songArr))

@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
-using HarmonyLib;
-using Steamworks;
-using static RainMeadow.PlopMachine;
 
 namespace RainMeadow
 {
@@ -15,12 +12,6 @@ namespace RainMeadow
             On.RainWorldGame.Update += RainWorldGame_Update; //actually usefull
             //On.PlayerGraphics.DrawSprites += hehedrawsprites;
             On.RainWorldGame.ctor += RainWorldGame_ctor; //actually usefull 
-            On.AmbientSoundPlayer.TryInitiation += AmbientSoundPlayer_TryInitiation;
-        }
-
-        private void AmbientSoundPlayer_TryInitiation(On.AmbientSoundPlayer.orig_TryInitiation orig, AmbientSoundPlayer self)
-        {
-            //fuckoff
         }
 
         readonly float magicnumber = 1.0594630776202568303519954093385f;
