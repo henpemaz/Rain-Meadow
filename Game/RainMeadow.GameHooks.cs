@@ -294,7 +294,7 @@ namespace RainMeadow
                 DebugOverlay.Update(self, dt);
                 if(OnlineManager.lobby.gameMode is MeadowGameMode)
                 {
-                    MeadowMusic.Tick(self, dt);
+                    MeadowMusic.RawUpdate(self, dt);
                 }
             }
         }

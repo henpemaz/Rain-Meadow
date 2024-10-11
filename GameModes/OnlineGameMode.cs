@@ -132,6 +132,16 @@ namespace RainMeadow
 
         }
 
+        internal virtual void EntityEnteredResource(OnlineEntity oe, OnlineResource inResource)
+        {
+            
+        }
+
+        internal virtual void EntityLeftResource(OnlineEntity oe, OnlineResource inResource)
+        {
+            
+        }
+
         internal virtual void AddAvatarSettings()
         {
             RainMeadow.Debug("Adding avatar settings!");

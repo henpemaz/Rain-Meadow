@@ -37,6 +37,22 @@ namespace RainMeadow
             }
         }
 
+        internal override void EntityEnteredResource(OnlineEntity oe, OnlineResource inResource)
+        {
+            if(avatar != null && avatar.roomSession == inResource)
+            {
+                MeadowMusic.TheThingTHatsCalledWhenPlayersUpdated();
+            }
+        }
+
+        internal override void EntityLeftResource(OnlineEntity oe, OnlineResource inResource)
+        {
+            if (avatar != null && avatar.roomSession == inResource)
+            {
+                MeadowMusic.TheThingTHatsCalledWhenPlayersUpdated();
+            }
+        }
+
         public override AbstractCreature SpawnAvatar(RainWorldGame game, WorldCoordinate location)
         {
             if (location.room == MeadowProgression.progressionData.currentCharacterProgress.saveLocation.room) location = MeadowProgression.progressionData.currentCharacterProgress.saveLocation;
