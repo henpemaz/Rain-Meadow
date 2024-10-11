@@ -20,29 +20,9 @@
 				"h": 240
 			}
 		},
-		"symbolarrow.png": {
-			"frame": {
-				"x": 243,
-				"y": 1,
-				"w": 240,
-				"h": 240
-			},
-			"rotated": false,
-			"trimmed": false,
-			"spriteSourceSize": {
-				"x": 0,
-				"y": 0,
-				"w": 240,
-				"h": 240
-			},
-			"sourceSize": {
-				"w": 240,
-				"h": 240
-			}
-		},
 		"symbolcollectible.png": {
 			"frame": {
-				"x": 485,
+				"x": 243,
 				"y": 1,
 				"w": 240,
 				"h": 240
@@ -62,6 +42,26 @@
 		},
 		"symbolecho.png": {
 			"frame": {
+				"x": 485,
+				"y": 1,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"symbolfood.png": {
+			"frame": {
 				"x": 727,
 				"y": 1,
 				"w": 240,
@@ -80,27 +80,7 @@
 				"h": 240
 			}
 		},
-		"symbolexclamation.png": {
-			"frame": {
-				"x": 969,
-				"y": 1,
-				"w": 240,
-				"h": 240
-			},
-			"rotated": false,
-			"trimmed": false,
-			"spriteSourceSize": {
-				"x": 0,
-				"y": 0,
-				"w": 240,
-				"h": 240
-			},
-			"sourceSize": {
-				"w": 240,
-				"h": 240
-			}
-		},
-		"symbolfollow.png": {
+		"symbolfriends.png": {
 			"frame": {
 				"x": 1,
 				"y": 243,
@@ -120,7 +100,7 @@
 				"h": 240
 			}
 		},
-		"symbolfriends.png": {
+		"symbolgate.png": {
 			"frame": {
 				"x": 243,
 				"y": 243,
@@ -140,7 +120,7 @@
 				"h": 240
 			}
 		},
-		"symbolgate.png": {
+		"symbolgroup.png": {
 			"frame": {
 				"x": 485,
 				"y": 243,
@@ -160,7 +140,7 @@
 				"h": 240
 			}
 		},
-		"symbolgroup.png": {
+		"symboliterator.png": {
 			"frame": {
 				"x": 727,
 				"y": 243,
@@ -180,27 +160,7 @@
 				"h": 240
 			}
 		},
-		"symbolhigh.png": {
-			"frame": {
-				"x": 969,
-				"y": 243,
-				"w": 240,
-				"h": 240
-			},
-			"rotated": false,
-			"trimmed": false,
-			"spriteSourceSize": {
-				"x": 0,
-				"y": 0,
-				"w": 240,
-				"h": 240
-			},
-			"sourceSize": {
-				"w": 240,
-				"h": 240
-			}
-		},
-		"symboliterator.png": {
+		"symbolknoledge.png": {
 			"frame": {
 				"x": 1,
 				"y": 485,
@@ -240,7 +200,7 @@
 				"h": 240
 			}
 		},
-		"symbolmetal.png": {
+		"symbolmartyr.png": {
 			"frame": {
 				"x": 485,
 				"y": 485,
@@ -280,27 +240,7 @@
 				"h": 240
 			}
 		},
-		"symbolpipes.png": {
-			"frame": {
-				"x": 969,
-				"y": 485,
-				"w": 240,
-				"h": 240
-			},
-			"rotated": false,
-			"trimmed": false,
-			"spriteSourceSize": {
-				"x": 0,
-				"y": 0,
-				"w": 240,
-				"h": 240
-			},
-			"sourceSize": {
-				"w": 240,
-				"h": 240
-			}
-		},
-		"symbolplants.png": {
+		"symbolpointofinterest.png": {
 			"frame": {
 				"x": 1,
 				"y": 727,
@@ -340,29 +280,9 @@
 				"h": 240
 			}
 		},
-		"symbols_background.png": {
-			"frame": {
-				"x": 485,
-				"y": 727,
-				"w": 240,
-				"h": 240
-			},
-			"rotated": false,
-			"trimmed": false,
-			"spriteSourceSize": {
-				"x": 0,
-				"y": 0,
-				"w": 240,
-				"h": 240
-			},
-			"sourceSize": {
-				"w": 240,
-				"h": 240
-			}
-		},
 		"symbolshelter.png": {
 			"frame": {
-				"x": 727,
+				"x": 485,
 				"y": 727,
 				"w": 240,
 				"h": 240
@@ -382,7 +302,7 @@
 		},
 		"symbolsurvivor.png": {
 			"frame": {
-				"x": 969,
+				"x": 727,
 				"y": 727,
 				"w": 240,
 				"h": 240
@@ -402,8 +322,8 @@
 		},
 		"symboltime.png": {
 			"frame": {
-				"x": 1,
-				"y": 969,
+				"x": 969,
+				"y": 1,
 				"w": 240,
 				"h": 240
 			},
@@ -422,8 +342,8 @@
 		},
 		"symboltravel.png": {
 			"frame": {
-				"x": 243,
-				"y": 969,
+				"x": 969,
+				"y": 243,
 				"w": 240,
 				"h": 240
 			},
@@ -442,48 +362,8 @@
 		},
 		"symboltree.png": {
 			"frame": {
-				"x": 485,
-				"y": 969,
-				"w": 240,
-				"h": 240
-			},
-			"rotated": false,
-			"trimmed": false,
-			"spriteSourceSize": {
-				"x": 0,
-				"y": 0,
-				"w": 240,
-				"h": 240
-			},
-			"sourceSize": {
-				"w": 240,
-				"h": 240
-			}
-		},
-		"symbolwanderer.png": {
-			"frame": {
-				"x": 727,
-				"y": 969,
-				"w": 240,
-				"h": 240
-			},
-			"rotated": false,
-			"trimmed": false,
-			"spriteSourceSize": {
-				"x": 0,
-				"y": 0,
-				"w": 240,
-				"h": 240
-			},
-			"sourceSize": {
-				"w": 240,
-				"h": 240
-			}
-		},
-		"symbolwater.png": {
-			"frame": {
 				"x": 969,
-				"y": 969,
+				"y": 485,
 				"w": 240,
 				"h": 240
 			},
@@ -502,8 +382,28 @@
 		},
 		"symbolyes.png": {
 			"frame": {
-				"x": 1211,
-				"y": 1,
+				"x": 969,
+				"y": 727,
+				"w": 240,
+				"h": 240
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 240,
+				"h": 240
+			},
+			"sourceSize": {
+				"w": 240,
+				"h": 240
+			}
+		},
+		"symbols_background.png": {
+			"frame": {
+				"x": 1,
+				"y": 969,
 				"w": 240,
 				"h": 240
 			},
@@ -527,7 +427,7 @@
 		"image": "spritesheet.png",
 		"format": "RGBA8888",
 		"size": {
-			"w": 1452,
+			"w": 1210,
 			"h": 1210
 		},
 		"scale": "1"

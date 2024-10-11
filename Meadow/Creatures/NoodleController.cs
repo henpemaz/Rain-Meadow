@@ -241,21 +241,5 @@ namespace RainMeadow
         {
             noodle.screaming = 0.5f;
         }
-
-        protected override void PointImpl(Vector2 dir)
-        {
-            // fun but cursed
-            // noodle.AddSegmentVel(creature.bodyChunks.Length + noodle.tail.GetLength(0) - 1, dir * 20f);
-            
-            if (noodle.graphicsModule is NeedleWormGraphics ng)
-            {
-                for (int i = 0; i < ng.snout.Length; i++)
-                {
-                    ng.snout[i].vel *= 0.6f; // airbreak
-                    ng.snout[i].vel.y += 0.9f; // negate gravity;
-                    ng.snout[i].vel += 5f * dir;
-                }
-            }
-        }
     }
 }

@@ -9,84 +9,23 @@ namespace RainMeadow
 {
     public class OnlineCreature : OnlinePhysicalObject
     {
-        [OmitFields("apoType")]
         public class OnlineCreatureDefinition : OnlinePhysicalObjectDefinition
         {
-            [OnlineField]
-            private CreatureTemplate.Type creatureType;
-
             public OnlineCreatureDefinition() { }
 
             public OnlineCreatureDefinition(OnlineCreature onlineCreature, OnlineResource inResource) : base(onlineCreature, inResource)
             {
-                this.creatureType = onlineCreature.creature.creatureTemplate.type;
-            }
-
-            protected override int ExtrasIndex => 3;
-
-            protected override void StoreSerializedObject(OnlinePhysicalObject onlinePhysicalObject)
-            {
-                var onlineCreature = (OnlineCreature)onlinePhysicalObject;
-
-                string serializedObject = null;
+                var wasId = onlineCreature.apo.ID.number;
+                onlineCreature.apo.ID.number = onlineCreature.apo.ID.RandomSeed;
                 if (RainMeadow.isArenaMode(out var _))
                 {
-                    serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature);
+                    this.serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature);
                 }
                 else
                 {
-                    serializedObject = SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
+                    this.serializedObject = SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
                 }
-                RainMeadow.Debug("Data is " + serializedObject);
-                int index = 0;
-                int count = ExtrasIndex;
-                for (int i = 0; i < count; i++) index = serializedObject.IndexOf("<cA>", index + 4); // the first X fields are already saved
-                if (index == -1) // no extra data
-                {
-                    RainMeadow.Debug("no extra");
-                    extraData = "";
-                }
-                else
-                {
-                    RainMeadow.Debug("extra is  " + serializedObject.Substring(index + 4));
-                    CreatureSaveExtras(serializedObject.Substring(index + 4));
-                }
-
-
-                this.creatureType = onlineCreature.creature.creatureTemplate.type; // we sneak this in here since this is called from apodef ctor before our own ctor
-                RainMeadow.Debug("resulting object would be: " + MakeSerializedObject(new PhysicalObjectEntityState() { pos = onlinePhysicalObject.apo.pos }));
-            }
-
-            protected void CreatureSaveExtras(string extras)
-            {
-                extraData = extras.Replace("<cA>", "\u0001").Replace("<cB>", "\u0002").Replace("<cC>", "\u0003");
-            }
-
-            protected string CreatureBuildExtras()
-            {
-                return extraData.Replace("\u0001", "<cA>").Replace("\u0002", "<cB>").Replace("\u0003", "<cC>");
-            }
-
-            public override string MakeSerializedObject(PhysicalObjectEntityState initialState)
-            {
-                if (string.IsNullOrEmpty(extraData))
-                {
-                    return MakeSerializedObjectNoExtras(initialState);
-                }
-                else
-                {
-                    return string.Format(CultureInfo.InvariantCulture, "{0}<cA>{1}", MakeSerializedObjectNoExtras(initialState), CreatureBuildExtras());
-                }
-            }
-
-            protected override string MakeSerializedObjectNoExtras(PhysicalObjectEntityState initialState)
-            {
-                return string.Format(CultureInfo.InvariantCulture, "{0}<cA>{1}<cA>{2}.{3}<cA>", 
-                    creatureType.ToString(), 
-                    new EntityID(apoSpawn == ushort.MaxValue ? -1 : apoSpawn, apoId).ToString(), 
-                    initialState.pos.ResolveRoomName(),
-                    initialState.pos.abstractNode
-                    );
+                onlineCreature.apo.ID.number = wasId;
             }
 
             public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
@@ -155,10 +94,9 @@ namespace RainMeadow
             World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
             EntityID id = world.game.GetNewID();
 
-            string serializedObject = newObjectEvent.MakeSerializedObject(initialState);
-            RainMeadow.Debug("serializedObject: " + serializedObject);
+            RainMeadow.Debug("serializedObject: " + newObjectEvent.serializedObject);
 
-            var apo = AbstractCreatureFromString(world, serializedObject);
+            var apo = AbstractCreatureFromString(world, newObjectEvent.serializedObject);
             id.altSeed = apo.ID.RandomSeed;
             apo.ID = id;
             apo.pos = initialState.pos;

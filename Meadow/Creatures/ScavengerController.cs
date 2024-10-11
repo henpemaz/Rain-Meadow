@@ -436,8 +436,6 @@ namespace RainMeadow
 
         internal override void ConsciousUpdate()
         {
-            if (scavenger.animation is MeadowPointingAnimation pa) pa.alive = false; // stop pointing, unless continued this frame
-
             base.ConsciousUpdate();
             var localtrace = Input.GetKey(KeyCode.L);
 
@@ -704,30 +702,6 @@ namespace RainMeadow
             {
                 sg.ShockReaction(0.4f);
             }
-        }
-
-        protected override void PointImpl(Vector2 dir)
-        {
-            if(scavenger.animation is MeadowPointingAnimation pa)
-            {
-                pa.point = scavenger.DangerPos + dir * 100f;
-                pa.alive = true;
-            }
-            else
-            {
-                scavenger.animation = new MeadowPointingAnimation(scavenger, dir);
-            }
-        }
-
-        public class MeadowPointingAnimation : Scavenger.PointingAnimation
-        {
-            public bool alive;
-
-            public MeadowPointingAnimation(Scavenger scavenger, Vector2 point) : base(scavenger, null, point, Scavenger.ScavengerAnimation.ID.GeneralPoint)
-            {
-                alive = true;
-            }
-            public override bool Continue => alive;
         }
     }
 }

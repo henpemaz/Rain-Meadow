@@ -418,7 +418,7 @@ namespace RainMeadow
                     }
                     else
                     {
-                        creatureController.preventInput = true;
+                        creatureController.standStill = true;
                         this.knobVel -= this.knobPos / 6f;
                         this.knobVel.x += (float)package.x * 0.4f;
                         this.knobVel.y += (float)package.y * 0.4f;
@@ -510,10 +510,6 @@ namespace RainMeadow
             {
                 dragging = false;
                 clickedEmote = null;
-            }
-            if(mouseDown && clickedEmote != null)
-            {
-                creatureController.preventMouseInput = true;
             }
         }
 

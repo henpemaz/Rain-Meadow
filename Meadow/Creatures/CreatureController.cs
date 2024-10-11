@@ -152,13 +152,10 @@ namespace RainMeadow
         public static HUD.HUD.OwnerType controlledCreatureHudOwner = new("MeadowControlledCreature", true);
 
         public bool lockInPlace;
-        public bool preventInput;
+        public bool standStill;
 
         protected IntVector2 forceInputDir;
         protected int forceInputCounter;
-        internal bool preventMouseInput;
-        public bool pointing;
-        protected int pointCounter;
 
         // IOwnAHUD
         public HUD.HUD.OwnerType GetOwnerType() => controlledCreatureHudOwner;
@@ -210,7 +207,7 @@ namespace RainMeadow
             }
 
             rawInput = this.input[0];
-            if (this.preventInput || (this.standStillOnMapButton && this.input[0].mp) || this.sleepCounter != 0)
+            if (this.standStill || (this.standStillOnMapButton && this.input[0].mp) || this.sleepCounter != 0)
             {
                 this.input[0].x = 0;
                 this.input[0].y = 0;
@@ -244,11 +241,10 @@ namespace RainMeadow
             }
             else
             {
-                if(!preventMouseInput && Input.GetMouseButton(0))
+                if(Input.GetMouseButton(0))
                 {
                     specialInput.direction = Vector2.ClampMagnitude((((Vector2)Futile.mousePosition) - referencePoint) / 500f, 1f);
                 }
-                preventMouseInput = false;
             }
             return specialInput;
         }
@@ -523,11 +519,6 @@ namespace RainMeadow
                 }
                 this.debugDestinationVisualizer.Update();
             }
-        }
-
-        protected virtual void PointImpl(Vector2 dir)
-        {
-
         }
 
         public virtual void ForceAIDestination(WorldCoordinate coord)
@@ -821,36 +812,6 @@ namespace RainMeadow
                 Call();
             }
 
-            if (input[0].thrw)
-            {
-                pointCounter++;
-
-            }
-            else
-            {
-                pointCounter = 0;
-            }
-
-            var pointDir = specialInput[0].direction;
-            if (pointDir == Vector2.zero) pointDir = inputDir;
-
-            if (pointDir != Vector2.zero || pointCounter > 10)
-            {
-                if (pointDir != Vector2.zero && (input[0].thrw || pointCounter > 10))
-                {
-                    pointing = true;
-                    if(pointCounter > 10) lockInPlace = true;
-                }
-                if (pointing)
-                {
-                    PointImpl(pointDir);
-                }
-            }
-            else
-            {
-                pointing = false;
-            }
-
             if (onlineCreature.isMine)
             {
                 //GrabUpdate(); // currently disabled
@@ -935,7 +896,7 @@ namespace RainMeadow
             }
 
             lockInPlace = false;
-            preventInput = false;
+            standStill = false;
         }
 
         private void Call()

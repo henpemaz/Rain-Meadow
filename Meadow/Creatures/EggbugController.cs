@@ -291,19 +291,8 @@ namespace RainMeadow
                 {
                     ebg.legs[0, i].vel += tohead;
                 }
-                eggbug.shake = Math.Max(eggbug.shake, 2);
+                eggbug.shake = Math.Max(eggbug.shake, 5);
                 if (voice.Display) ebg.Squirt(voice.Volume * 0.33f);
-            }
-        }
-
-        protected override void PointImpl(Vector2 dir)
-        {
-            if (eggbug.graphicsModule is EggBugGraphics eg)
-            {
-                Limb limb = eg.legs[0, 0];
-
-                limb.mode = Limb.Mode.HuntAbsolutePosition;
-                limb.absoluteHuntPos = eggbug.DangerPos + dir * 100f;
             }
         }
     }

@@ -17,18 +17,7 @@ namespace RainMeadow
             On.MouseAI.Update += MouseAI_Update;
             On.MouseAI.DangleTile += MouseAI_DangleTile; // no dangling
 
-            On.MouseGraphics.ShouldThisLimbRetract += MouseGraphics_ShouldThisLimbRetract;
-
             IL.LanternMouse.Update += LanternMouse_Update1;
-        }
-
-        private static bool MouseGraphics_ShouldThisLimbRetract(On.MouseGraphics.orig_ShouldThisLimbRetract orig, MouseGraphics self, int pos, int side)
-        {
-            if (creatureControllers.TryGetValue(self.mouse, out var p))
-            {
-                if (p.pointing && pos == 0 && side == 0) { return false; }
-            }
-            return orig(self, pos, side);
         }
 
         private static void LanternMouse_Update1(MonoMod.Cil.ILContext il)
@@ -190,6 +179,7 @@ namespace RainMeadow
             if(superLaunchJump > 10 && (mouse.room.aimap.getAItile(mouse.bodyChunks[1].pos).acc == AItile.Accessibility.Floor && !mouse.IsTileSolid(0, 0, 1) && !mouse.IsTileSolid(1, 0, 1)))
             {
                 // undo sitting
+                mouse.sitting = false;
                 mouse.profileFac = Mathf.Sign(mouse.profileFac);
                 mouse.mainBodyChunk.vel.y -= 3f;
                 mouse.bodyChunks[1].vel.y += 3f;
@@ -232,17 +222,6 @@ namespace RainMeadow
                         this.mouse.room.AddObject(new MouseSpark(this.mouse.mainBodyChunk.pos, this.mouse.mainBodyChunk.vel + Custom.DegToVec(360f * UnityEngine.Random.value) * 6f * UnityEngine.Random.value, 40f, mg.BodyColor));
                     }
                 }
-            }
-        }
-
-        protected override void PointImpl(Vector2 dir)
-        {
-            if (mouse.graphicsModule is MouseGraphics mg)
-            {
-                Limb limb = mg.limbs[0, 0];
-
-                limb.mode = Limb.Mode.HuntAbsolutePosition;
-                limb.absoluteHuntPos = mouse.DangerPos + dir * 100f;
             }
         }
     }

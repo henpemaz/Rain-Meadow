@@ -74,19 +74,10 @@ namespace RainMeadow
             // no op
         }
 
-        protected override void PointImpl(Vector2 dir)
-        {
-            //int which = dir.x > 0 ? 1 : 0; // bugs above head
-            int which = 0;
-            (player.graphicsModule as PlayerGraphics).hands[which].reachingForObject = true;
-            (player.graphicsModule as PlayerGraphics).hands[which].absoluteHuntPos = player.mainBodyChunk.pos + 100f * dir;
-        }
-
         internal override void ConsciousUpdate()
         {
             base.ConsciousUpdate();
             player.pickUpCandidate = null; // prevent whiplash grab
-
         }
 
         protected override void OnCall()
@@ -120,14 +111,6 @@ namespace RainMeadow
                 var input = mpc.input[0];
                 input.pckp = false;
                 input.thrw = false;
-
-                if (mpc.pointCounter > 10) // this sucks, cant use lockinplace
-                {
-                    input.x = 0;
-                    input.y = 0;
-                    input.analogueDir = Vector2.zero;
-                }
-
                 return input;
             }
         }
