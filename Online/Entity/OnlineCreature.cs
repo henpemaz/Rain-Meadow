@@ -125,10 +125,13 @@ namespace RainMeadow
                 RainMeadow.Debug("Unknown creature: " + array[0] + " creature not spawning");
                 return null;
             }
-            string[] array2 = array[2].Split('.');
+            string[] array2 = array[2].Split(new char[]
+            {
+            '.'
+            });
             EntityID id = EntityID.FromString(array[1]);
             int? num = BackwardsCompatibilityRemix.ParseRoomIndex(array2[0]);
-            if (num == null || (num != -1 && !world.IsRoomInRegion(num.Value))) // handle non-unique (GATE) roomcodes
+            if (num == null || !world.IsRoomInRegion(num.Value)) // handle non-unique (GATE) roomcodes
             {
                 num = world.GetAbstractRoom(array2[0]).index;
             }
@@ -141,9 +144,16 @@ namespace RainMeadow
             }
 
             abstractCreature.state.LoadFromString(Regex.Split(array[3], "<cB>"));
-            if (abstractCreature.Room == null && num != -1)
+            if (abstractCreature.Room == null)
             {
-                RainMeadow.Debug("Spawn room does not exist: " + array2[0] + " ~ " + id.spawner.ToString() + " creature not spawning");
+                RainMeadow.Debug(string.Concat(new string[]
+                    {
+                        "Spawn room does not exist: ",
+                        array2[0],
+                        " ~ ",
+                        id.spawner.ToString(),
+                        " creature not spawning"
+                    }));
                 return null;
             }
             abstractCreature.setCustomFlags();
