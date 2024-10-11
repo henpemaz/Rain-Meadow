@@ -30,8 +30,15 @@ namespace RainMeadow
 
         public static OnlineCreature? GetOnlineCreature(this AbstractCreature ac)
         {
-            return OnlinePhysicalObject.map.TryGetValue(ac, out var oe) ? oe as OnlineCreature : null;
+            return GetOnlineObject(ac) as OnlineCreature;
         }
+
+        public static bool IsLocal(this AbstractPhysicalObject apo)
+        {
+            return OnlineManager.lobby is null || (GetOnlineObject(apo)?.isMine ?? true);
+        }
+
+        public static bool IsLocal(this PhysicalObject po) => IsLocal(po.abstractPhysicalObject);
 
         public static bool RemoveFromShortcuts(this Creature creature)
         {
