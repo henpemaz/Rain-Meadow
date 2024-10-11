@@ -28,10 +28,14 @@ namespace RainMeadow
             return OnlinePhysicalObject.map.TryGetValue(apo, out var oe) ? oe : null;
         }
 
+        public static bool GetOnlineObject(this AbstractPhysicalObject apo, out OnlinePhysicalObject? opo) => (opo = GetOnlineObject(apo)) is not null;
+
         public static OnlineCreature? GetOnlineCreature(this AbstractCreature ac)
         {
             return GetOnlineObject(ac) as OnlineCreature;
         }
+
+        public static bool GetOnlineCreature(this AbstractCreature apo, out OnlineCreature? oc) => (oc = GetOnlineCreature(apo)) is not null;
 
         public static bool IsLocal(this AbstractPhysicalObject apo)
         {
