@@ -42,7 +42,19 @@ namespace RainMeadow
             return OnlineManager.lobby is null || (GetOnlineObject(apo)?.isMine ?? true);
         }
 
+        public static bool IsLocal(this AbstractPhysicalObject apo, out OnlinePhysicalObject? opo)
+        {
+            opo = null;
+            return OnlineManager.lobby is null || (GetOnlineObject(apo, out opo) && opo.isMine);
+        }
+
         public static bool IsLocal(this PhysicalObject po) => IsLocal(po.abstractPhysicalObject);
+
+        public static bool IsLocal(this PhysicalObject po, out OnlinePhysicalObject? opo)
+        {
+            opo = null;
+            return IsLocal(po.abstractPhysicalObject, out opo);
+        }
 
         public static bool CanMove(this AbstractPhysicalObject apo, WorldCoordinate? newCoord=null, bool quiet=false)
         {
