@@ -44,6 +44,17 @@ namespace RainMeadow
 
         public static bool IsLocal(this PhysicalObject po) => IsLocal(po.abstractPhysicalObject);
 
+        public static bool CanMove(this AbstractPhysicalObject apo, WorldCoordinate? newCoord=null, bool quiet=false)
+        {
+            if (!GetOnlineObject(apo, out var oe)) return true;
+            if (!oe.isMine && !oe.beingMoved && (newCoord is null || oe.roomSession is null || oe.roomSession.absroom.index == newCoord.Value.room))
+            {
+                if (!quiet) RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {Environment.StackTrace}");
+                return false;
+            }
+            return true;
+        }
+
         public static bool RemoveFromShortcuts(this Creature creature)
         {
             if (!creature.inShortcut) return true;
