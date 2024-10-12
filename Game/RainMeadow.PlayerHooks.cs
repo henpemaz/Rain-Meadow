@@ -311,6 +311,7 @@ public partial class RainMeadow
                 if (!ent.isMine)
                 {
                     self.controller = new OnlineController(ent, self);
+                    ((PlayerState)self.State).playerNumber = world.game.StoryPlayerCount; // fix DMS applying to remote scugs
                 }
             }
             else
