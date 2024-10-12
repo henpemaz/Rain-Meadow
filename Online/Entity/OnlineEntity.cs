@@ -350,6 +350,10 @@ namespace RainMeadow
                 RainMeadow.Trace($"Skipping state for wrong resource: received {inResource} wanted {currentlyJoinedResource}");
                 // since we send both region state and room state even if it's the same guy owning both, this gets spammed a lot
                 // todo supress sending if more specialized state being sent to the same person
+                
+                // BUT entitystate usually only sends over one resource or another, check all
+                entityState.entityDataStates.list.ForEach(d => d.ReadTo(this));
+
                 return;
             }
             entityState.ReadTo(this);

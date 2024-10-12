@@ -81,6 +81,7 @@ namespace RainMeadow
             {
                 MeadowProgression.ReloadProgression();
                 lobby.AddData<MeadowLobbyData>(true);
+                lobby.AddData<MeadowMusic.LobbyMusicData>(true);
             }
             else if (res is WorldSession ws)
             {
@@ -89,6 +90,26 @@ namespace RainMeadow
             else if (res is RoomSession rs)
             {
                 rs.AddData<MeadowRoomData>(true);
+            }
+        }
+
+        internal override void NewPlayerInLobby(OnlinePlayer player)
+        {
+            base.NewPlayerInLobby(player);
+            if (lobby.isOwner)
+            {
+                var musicdata = lobby.GetData<MeadowMusic.LobbyMusicData>(true);
+                musicdata.playerGroups.Add(player.inLobbyId, 0);
+            }
+        }
+
+        internal override void PlayerLeftLobby(OnlinePlayer player)
+        {
+            base.PlayerLeftLobby(player); if (lobby.isOwner)
+            {
+                var musicdata = lobby.GetData<MeadowMusic.LobbyMusicData>();
+                musicdata.PlayerLeaveGroups(player.inLobbyId);
+                musicdata.playerGroups.Remove(player.inLobbyId);
             }
         }
 
