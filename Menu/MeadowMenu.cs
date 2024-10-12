@@ -288,6 +288,7 @@ namespace RainMeadow
 
             manager.arenaSitting = null;
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
+            manager.rainWorld.progression.miscProgressionData.currentlySelectedSinglePlayerSlugcat = RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;
             manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.RegionSelect;
             manager.menuSetup.regionSelectRoom = MeadowProgression.progressionData.currentCharacterProgress.saveLocation.ResolveRoomName();
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);

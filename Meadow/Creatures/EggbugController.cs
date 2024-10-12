@@ -19,28 +19,7 @@ namespace RainMeadow
 
             IL.EggBug.Swim += EggBug_Swim1;
             IL.EggBug.Update += EggBug_Update1;
-
-            On.EggBugGraphics.Update += EggBugGraphics_Update;
         }
-
-        private static void EggBugGraphics_Update(On.EggBugGraphics.orig_Update orig, EggBugGraphics self)
-        {
-            if (creatureControllers.TryGetValue(self.bug, out var p))
-            {
-                if (self.bug.bodyChunks[0].pos == self.bug.bodyChunks[1].pos)
-                {
-                    // eggbug graphics does some line calcs that break if pos0 == pos1
-                    // doesn't happen offline but when receiving pos from remove, can happen
-                    // pos are equal the frame it's sucked into shortcut
-                    // pos are set to different when sput out
-                    // but due to the suckedintoshortcut not removing client-sided when ran by the creature (it waits for the RPC)
-                    // then the bad values do happen
-                    self.bug.bodyChunks[1].pos += Vector2.down;
-                }
-            }
-            orig(self);
-        }
-
         private static void EggBug_Update1(ILContext il)
         {
             try

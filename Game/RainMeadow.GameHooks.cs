@@ -304,7 +304,7 @@ namespace RainMeadow
                 {
                     MeadowProgression.progressionData.currentCharacterProgress.saveLocation = mgm.avatar.apo.pos;
                     MeadowProgression.SaveProgression();
-                    self.rainWorld.progression.SaveToDisk(false, true, false); // save maps
+                    self.rainWorld.progression.SaveToDisk(false, true, true); // save maps, shelters are miscprog
                 }
 
                 if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
