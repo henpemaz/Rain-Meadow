@@ -6,6 +6,8 @@ using HUD;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
+using static RainMeadow.MeadowProgression;
+using IL;
 
 namespace RainMeadow
 {
@@ -74,6 +76,17 @@ namespace RainMeadow
             On.SSOracleSwarmer.NewRoom += SSOracleSwarmer_NewRoom;
             On.HUD.TextPrompt.Update += TextPrompt_Update;
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
+
+            On.Weapon.HitThisObject += Weapon_HitThisObject;
+        }
+
+        private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
+        {
+            if (isStoryMode(out var  story) && story.friendlyFire && obj is Player && self is Spear && self.thrownBy != null && self.thrownBy is Player)
+            {
+                return true;
+            }
+            return orig(self, obj);
         }
 
         private void TextPrompt_UpdateGameOverString(On.HUD.TextPrompt.orig_UpdateGameOverString orig, TextPrompt self, Options.ControlSetup.Preset controllerType)
@@ -453,6 +466,7 @@ namespace RainMeadow
             {
                 self.AddPart(new OnlineHUD(self, cam, gameMode));
                 self.AddPart(new SpectatorHud(self, cam, gameMode));
+                self.AddPart(new Pointing(self));
 
             }
         }
@@ -681,6 +695,8 @@ namespace RainMeadow
 
                 self.room.game.cameras[0].hud.parts.Add(new OnlineHUD(self.room.game.cameras[0].hud, self.room.game.cameras[0], storyGameMode));
                 self.room.game.cameras[0].hud.parts.Add(new SpectatorHud(self.room.game.cameras[0].hud, self.room.game.cameras[0], storyGameMode));
+                self.room.game.cameras[0].hud.parts.Add(new Pointing(self.room.game.cameras[0].hud));
+
 
                 return true;
             }
