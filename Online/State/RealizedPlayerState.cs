@@ -54,63 +54,70 @@ namespace RainMeadow
             glowing = p.glowing;
             spearOnBack = (p.spearOnBack?.spear?.abstractPhysicalObject is AbstractPhysicalObject apo
                 && OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) ? oe.id : null;
-            for (int h = 0; h < (p.graphicsModule as PlayerGraphics).hands.Length; h++)
+            if ((p.graphicsModule as PlayerGraphics).hands != null)
             {
-
-                absoluteHuntPos = (p.graphicsModule as PlayerGraphics).hands[h].absoluteHuntPos;
-                reachingForObject = (p.graphicsModule as PlayerGraphics).hands[h].reachingForObject;
-            }
-
-
-            //slugOnBack = (p.slugOnBack?.slugcat?.abstractPhysicalObject is AbstractPhysicalObject apo0
-            //    && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe0)) ? oe0.id : null;
-            if (p.tongue is Player.Tongue tongue)
-            {
-                tongueMode = (byte)tongue.mode;
-                tonguePos = tongue.pos;
-                tongueIdealLength = tongue.idealRopeLength;
-                tongueRequestedLength = tongue.requestedRopeLength;
-                if (tongue.attachedChunk?.owner?.abstractPhysicalObject is AbstractPhysicalObject apo1
-                    && OnlinePhysicalObject.map.TryGetValue(apo1, out var oe1))
+                if ((p.graphicsModule as PlayerGraphics).hands != null)
                 {
-                    tongueAttachedObject = oe1.id;
-                    tongueAttachedChunkIndex = (byte)tongue.attachedChunk.index;
+
+                    for (int h = 0; h < (p.graphicsModule as PlayerGraphics).hands.Length; h++)
+                    {
+
+                        absoluteHuntPos = (p.graphicsModule as PlayerGraphics).hands[h].absoluteHuntPos;
+                        reachingForObject = (p.graphicsModule as PlayerGraphics).hands[h].reachingForObject;
+                    }
                 }
             }
-            var i = p.input[0];
-            inputs = (ushort)(
-                  (i.x == 1 ? 1 << 0 : 0)
-                | (i.x == -1 ? 1 << 1 : 0)
-                | (i.y == 1 ? 1 << 2 : 0)
-                | (i.y == -1 ? 1 << 3 : 0)
-                | (i.downDiagonal == 1 ? 1 << 4 : 0)
-                | (i.downDiagonal == -1 ? 1 << 5 : 0)
-                | (i.pckp ? 1 << 6 : 0)
-                | (i.jmp ? 1 << 7 : 0)
-                | (i.thrw ? 1 << 8 : 0)
-                | (i.mp ? 1 << 9 : 0));
 
-            analogInputX = i.analogueDir.x;
-            analogInputY = i.analogueDir.y;
-        }
-        public Player.InputPackage GetInput()
-        {
-            RainMeadow.Trace(inputs);
-            Player.InputPackage i = default;
-            if (((inputs >> 0) & 1) != 0) i.x = 1;
-            if (((inputs >> 1) & 1) != 0) i.x = -1;
-            if (((inputs >> 2) & 1) != 0) i.y = 1;
-            if (((inputs >> 3) & 1) != 0) i.y = -1;
-            if (((inputs >> 4) & 1) != 0) i.downDiagonal = 1;
-            if (((inputs >> 5) & 1) != 0) i.downDiagonal = -1;
-            if (((inputs >> 6) & 1) != 0) i.pckp = true;
-            if (((inputs >> 7) & 1) != 0) i.jmp = true;
-            if (((inputs >> 8) & 1) != 0) i.thrw = true;
-            if (((inputs >> 9) & 1) != 0) i.mp = true;
-            i.analogueDir.x = analogInputX;
-            i.analogueDir.y = analogInputY;
-            return i;
-        }
+
+                //slugOnBack = (p.slugOnBack?.slugcat?.abstractPhysicalObject is AbstractPhysicalObject apo0
+                //    && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe0)) ? oe0.id : null;
+                if (p.tongue is Player.Tongue tongue)
+                {
+                    tongueMode = (byte)tongue.mode;
+                    tonguePos = tongue.pos;
+                    tongueIdealLength = tongue.idealRopeLength;
+                    tongueRequestedLength = tongue.requestedRopeLength;
+                    if (tongue.attachedChunk?.owner?.abstractPhysicalObject is AbstractPhysicalObject apo1
+                        && OnlinePhysicalObject.map.TryGetValue(apo1, out var oe1))
+                    {
+                        tongueAttachedObject = oe1.id;
+                        tongueAttachedChunkIndex = (byte)tongue.attachedChunk.index;
+                    }
+                }
+                var i = p.input[0];
+                inputs = (ushort)(
+                      (i.x == 1 ? 1 << 0 : 0)
+                    | (i.x == -1 ? 1 << 1 : 0)
+                    | (i.y == 1 ? 1 << 2 : 0)
+                    | (i.y == -1 ? 1 << 3 : 0)
+                    | (i.downDiagonal == 1 ? 1 << 4 : 0)
+                    | (i.downDiagonal == -1 ? 1 << 5 : 0)
+                    | (i.pckp ? 1 << 6 : 0)
+                    | (i.jmp ? 1 << 7 : 0)
+                    | (i.thrw ? 1 << 8 : 0)
+                    | (i.mp ? 1 << 9 : 0));
+
+                analogInputX = i.analogueDir.x;
+                analogInputY = i.analogueDir.y;
+            }
+            public Player.InputPackage GetInput()
+            {
+                RainMeadow.Trace(inputs);
+                Player.InputPackage i = default;
+                if (((inputs >> 0) & 1) != 0) i.x = 1;
+                if (((inputs >> 1) & 1) != 0) i.x = -1;
+                if (((inputs >> 2) & 1) != 0) i.y = 1;
+                if (((inputs >> 3) & 1) != 0) i.y = -1;
+                if (((inputs >> 4) & 1) != 0) i.downDiagonal = 1;
+                if (((inputs >> 5) & 1) != 0) i.downDiagonal = -1;
+                if (((inputs >> 6) & 1) != 0) i.pckp = true;
+                if (((inputs >> 7) & 1) != 0) i.jmp = true;
+                if (((inputs >> 8) & 1) != 0) i.thrw = true;
+                if (((inputs >> 9) & 1) != 0) i.mp = true;
+                i.analogueDir.x = analogInputX;
+                i.analogueDir.y = analogInputY;
+                return i;
+            }
 
         public override void ReadTo(OnlineEntity onlineEntity)
         {
@@ -126,13 +133,17 @@ namespace RainMeadow
                 pl.glowing = glowing;
 
 
-                for (int h = 0; h < (pl.graphicsModule as PlayerGraphics).hands.Length; h++)
+                if ((pl.graphicsModule as PlayerGraphics).hands != null)
                 {
+                    for (int h = 0; h < (pl.graphicsModule as PlayerGraphics).hands.Length; h++)
+                    {
 
-                    (pl.graphicsModule as PlayerGraphics).hands[h].absoluteHuntPos = absoluteHuntPos;
-                    (pl.graphicsModule as PlayerGraphics).hands[h].reachingForObject = reachingForObject;
-                }
+                        (pl.graphicsModule as PlayerGraphics).hands[h].absoluteHuntPos = absoluteHuntPos;
+                        (pl.graphicsModule as PlayerGraphics).hands[h].reachingForObject = reachingForObject;
+                    }
                  (pl.graphicsModule as PlayerGraphics).LookAtPoint(absoluteHuntPos, 10f);
+                }
+
 
                 if (pl.spearOnBack != null)
                     pl.spearOnBack.spear = (spearOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Spear;
