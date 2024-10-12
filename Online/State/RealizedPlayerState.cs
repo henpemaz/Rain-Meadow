@@ -37,6 +37,10 @@ namespace RainMeadow
         public OnlineEntity.EntityId? tongueAttachedObject;
         [OnlineField(group = "tongue")]
         public byte tongueAttachedChunkIndex;
+        [OnlineField]
+        public Vector2 absoluteHuntPos;
+        [OnlineField]
+        public bool reachingForObject;
 
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
@@ -50,6 +54,14 @@ namespace RainMeadow
             glowing = p.glowing;
             spearOnBack = (p.spearOnBack?.spear?.abstractPhysicalObject is AbstractPhysicalObject apo
                 && OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) ? oe.id : null;
+            for (int h = 0; h < (p.graphicsModule as PlayerGraphics).hands.Length; h++)
+            {
+
+                absoluteHuntPos = (p.graphicsModule as PlayerGraphics).hands[h].absoluteHuntPos;
+                reachingForObject = (p.graphicsModule as PlayerGraphics).hands[h].reachingForObject;
+            }
+
+
             //slugOnBack = (p.slugOnBack?.slugcat?.abstractPhysicalObject is AbstractPhysicalObject apo0
             //    && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe0)) ? oe0.id : null;
             if (p.tongue is Player.Tongue tongue)
@@ -112,6 +124,16 @@ namespace RainMeadow
                 pl.bodyMode = new Player.BodyModeIndex(Player.BodyModeIndex.values.GetEntry(bodyModeIndex));
                 pl.standing = standing;
                 pl.glowing = glowing;
+
+
+                for (int h = 0; h < (pl.graphicsModule as PlayerGraphics).hands.Length; h++)
+                {
+
+                    (pl.graphicsModule as PlayerGraphics).hands[h].absoluteHuntPos = absoluteHuntPos;
+                    (pl.graphicsModule as PlayerGraphics).hands[h].reachingForObject = reachingForObject;
+                }
+                 (pl.graphicsModule as PlayerGraphics).LookAtPoint(absoluteHuntPos, 10f);
+
                 if (pl.spearOnBack != null)
                     pl.spearOnBack.spear = (spearOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Spear;
                 //if (pl.slugOnBack != null)
