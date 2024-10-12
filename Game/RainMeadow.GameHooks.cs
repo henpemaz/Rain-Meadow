@@ -312,7 +312,7 @@ namespace RainMeadow
             {
                 // if (creature is Player && shortCut.shortCutType == ShortcutData.Type.RoomExit)
                 //becomes
-                // if (creature is Player && ((Player) creature).playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer && shortCut.shortCutType == ShortcutData.Type.RoomExit)
+                // if (creature is Player && creature.IsLocal() && shortCut.shortCutType == ShortcutData.Type.RoomExit)
                 var c = new ILCursor(il);
                 var skip = il.DefineLabel();
                 c.GotoNext(moveType: MoveType.After,
@@ -322,8 +322,8 @@ namespace RainMeadow
                     );
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_1);
-                c.EmitDelegate((Creature creature) => { return OnlineManager.lobby != null && ((Player)creature).playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer; });
-                c.Emit(OpCodes.Brtrue, skip);
+                c.EmitDelegate((Creature creature) => creature.IsLocal());
+                c.Emit(OpCodes.Brfalse, skip);
             }
             catch (Exception e)
             {
