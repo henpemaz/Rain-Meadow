@@ -311,7 +311,8 @@ namespace RainMeadow
 
                 if (ws.isActive) ws.Deactivate();
                 ws.NotNeeded();
-                if (self.manager.upcomingProcess != ProcessManager.ProcessID.MainMenu) // quit directly, otherwise wait release
+                if (self.manager.upcomingProcess != ProcessManager.ProcessID.MainMenu
+                    && self.manager.upcomingProcess != RainMeadow.Ext_ProcessID.LobbySelectMenu) // quit directly, otherwise wait release
                 {
                     while (ws.isAvailable)
                     {
