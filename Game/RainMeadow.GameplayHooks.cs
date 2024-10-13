@@ -9,6 +9,7 @@ namespace RainMeadow
             On.ShelterDoor.Close += ShelterDoorOnClose;
             On.Creature.Update += CreatureOnUpdate;
             On.Creature.Violence += CreatureOnViolence;
+            On.Lizard.Violence += LizardOnViolence;
             On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
             On.ScavengerBomb.Explode += ScavengerBomb_Explode;
@@ -376,59 +377,66 @@ namespace RainMeadow
             }
         }
 
-        private void CreatureOnViolence(On.Creature.orig_Violence orig, Creature self, BodyChunk source, Vector2? directionandmomentum, BodyChunk hitchunk, PhysicalObject.Appendage.Pos hitappendage, Creature.DamageType type, float damage, float stunbonus)
+        private bool DoViolence(Creature self, BodyChunk source, Vector2? directionAndMomentum, BodyChunk hitchunk, PhysicalObject.Appendage.Pos hitappendage, Creature.DamageType type, float damage, float stunbonus)
         {
-            if (OnlineManager.lobby == null)
-            {
-                orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
-                return;
-            }
-            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineVictim) || onlineVictim is not OnlineCreature)
+            if (!self.abstractCreature.GetOnlineCreature(out var onlineVictim))
             {
                 Error($"Chunk owner {self} - {self.abstractPhysicalObject.ID} doesn't exist in online space!");
-                orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
-                return;
+                return true;
             }
             var room = self.room;
             if (room != null && room.updateIndex <= room.updateList.Count)
             {
-                PhysicalObject trueVillain = null;
-                var suspect = room.updateList[room.updateIndex];
-                if (suspect is Explosion explosion) trueVillain = explosion.sourceObject;
-                else if (suspect is PhysicalObject villainObject) trueVillain = villainObject;
-                if (trueVillain != null)
+                PhysicalObject? trueVillain = room.updateList[room.updateIndex] switch {
+                    Explosion explosion => explosion.sourceObject,
+                    PhysicalObject villainObject => villainObject,
+                    _ => null,
+                };
+                if (trueVillain is null) return true;
+                if (!trueVillain.abstractPhysicalObject.GetOnlineObject(out var onlineTrueVillain))
                 {
-                    if (!OnlinePhysicalObject.map.TryGetValue(trueVillain.abstractPhysicalObject, out var onlineTrueVillain))
+                    // bombs exit quickly, and that's ok.
+                    if (trueVillain.abstractPhysicalObject.type != AbstractPhysicalObject.AbstractObjectType.ScavengerBomb
+                        && trueVillain.abstractPhysicalObject.type != MoreSlugcats.MoreSlugcatsEnums.AbstractObjectType.SingularityBomb)
                     {
-                        if (trueVillain.abstractPhysicalObject.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb
-                            || trueVillain.abstractPhysicalObject.type == MoreSlugcats.MoreSlugcatsEnums.AbstractObjectType.SingularityBomb)
-                        {
-                            // bombs exit quickly, and that's ok.
-                            OnlinePhysicalObject onlineVillain = null;
-                            (onlineVictim as OnlineCreature).RPCCreatureViolence(onlineVillain, hitchunk?.index, hitappendage, directionandmomentum, type, damage, stunbonus);
-                            return;
-                        }
                         Error($"True villain {trueVillain} - {trueVillain.abstractPhysicalObject.ID} doesn't exist in online space!");
-                        orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
-                        return;
+                        return true;
                     }
-                    if ((onlineTrueVillain.owner.isMe || onlineTrueVillain.isPending) && !onlineVictim.owner.isMe) // I'm violencing a remote entity
-                    {
-                        OnlinePhysicalObject onlineVillain = null;
-                        if (source != null && !OnlinePhysicalObject.map.TryGetValue(source.owner.abstractPhysicalObject, out onlineVillain))
-                        {
-                            Error($"Source {source.owner} - {source.owner.abstractPhysicalObject.ID} doesn't exist in online space!");
-                            orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
-                            return;
-                        }
-                        // Notify entity owner of violence
-                        (onlineVictim as OnlineCreature).RPCCreatureViolence(onlineVillain, hitchunk?.index, hitappendage, directionandmomentum, type, damage, stunbonus);
-                        return; // Remote is gonna handle this
-                    }
-                    if (!onlineTrueVillain.owner.isMe) return; // Remote entity will send an event
                 }
+                if ((onlineTrueVillain is null || onlineTrueVillain.owner.isMe || onlineTrueVillain.isPending) && !onlineVictim.owner.isMe) // I'm violencing a remote entity
+                {
+                    OnlinePhysicalObject? onlineVillain = null;
+                    if (source is not null && !OnlinePhysicalObject.map.TryGetValue(source.owner.abstractPhysicalObject, out onlineVillain))
+                    {
+                        Error($"Source {source.owner} - {source.owner.abstractPhysicalObject.ID} doesn't exist in online space!");
+                        return true;
+                    }
+                    // Notify entity owner of violence
+                    onlineVictim.RPCCreatureViolence(onlineVillain, hitchunk?.index, hitappendage, directionAndMomentum, type, damage, stunbonus);
+                    return false; // Remote is gonna handle this
+                }
+                if (onlineTrueVillain is not null && !onlineTrueVillain.owner.isMe) return false; // Remote entity will send an event
             }
-            orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
+            return true;
+        }
+
+        private void CreatureOnViolence(On.Creature.orig_Violence orig, Creature self, BodyChunk source, Vector2? directionAndMomentum, BodyChunk hitchunk, PhysicalObject.Appendage.Pos hitappendage, Creature.DamageType type, float damage, float stunbonus)
+        {
+            if (OnlineManager.lobby is not null)
+            {
+                if (!DoViolence(self, source, directionAndMomentum, hitchunk, hitappendage, type, damage, stunbonus))
+                    return;
+            }
+            orig(self, source, directionAndMomentum, hitchunk, hitappendage, type, damage, stunbonus);
+        }
+
+        private void LizardOnViolence(On.Lizard.orig_Violence orig, Lizard self, BodyChunk source, Vector2? directionAndMomentum, BodyChunk hitchunk, PhysicalObject.Appendage.Pos hitappendage, Creature.DamageType type, float damage, float stunbonus)
+        {
+            if (OnlineManager.lobby is not null)
+            {
+                DoViolence(self, source, directionAndMomentum, hitchunk, hitappendage, type, damage, stunbonus);
+            }
+            orig(self, source, directionAndMomentum, hitchunk, hitappendage, type, damage, stunbonus);
         }
 
         private void RoomRealizer_Update(On.RoomRealizer.orig_Update orig, RoomRealizer self)
