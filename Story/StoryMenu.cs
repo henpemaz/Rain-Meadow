@@ -448,7 +448,7 @@ namespace RainMeadow
 
         private void BindSettings()
         {
-            this.personaSettings = (StoryClientSettings)OnlineManager.lobby.gameMode.clientSettings;
+            this.personaSettings = gameMode.storyClientSettings;
             personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
             personaSettings.bodyColor = RainMeadow.rainMeadowOptions.BodyColor.Value;
             personaSettings.eyeColor = RainMeadow.rainMeadowOptions.EyeColor.Value;
