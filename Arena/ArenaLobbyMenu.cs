@@ -327,7 +327,7 @@ namespace RainMeadow
                     this.playButton.inactive = false;
                 }
 
-                if (arena.clientsAreReadiedUp == OnlineManager.players.Count) //&& OnlineManager.players.Count > 1
+                if (arena.clientsAreReadiedUp == OnlineManager.players.Count) 
                 {
                     arena.allPlayersReadyLockLobby = true;
                     if (OnlineManager.players.Count == 1)
