@@ -58,7 +58,7 @@ namespace RainMeadow
                 {
                     return;
                 }
-
+                var Sluglist = ArenaHelpers.AllSlugcats();
                 for (int i = 1; i < game.usernameButtons.Length; i++)
                 {
 
@@ -66,7 +66,7 @@ namespace RainMeadow
                     {
                         if (currentColorIndex > 3 && ModManager.MSC)
                         {
-                            game.classButtons[i].portrait.fileName = "MultiplayerPortrait" + "41-" + game.GetArenaSetup.playerClass[currentColorIndex];
+                            game.classButtons[i].portrait.fileName = "MultiplayerPortrait" + "41-" + Sluglist[currentColorIndex];
 
                         }
                         else

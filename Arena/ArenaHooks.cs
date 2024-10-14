@@ -38,6 +38,7 @@ namespace RainMeadow
             On.ArenaGameSession.Killing += ArenaGameSession_Killing;
             On.ArenaGameSession.AddHUD += ArenaGameSession_AddHUD;
             On.ArenaGameSession.SpawnCreatures += ArenaGameSession_SpawnCreatures;
+            On.ArenaGameSession.ctor += ArenaGameSession_ctor;
 
             On.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded;
 
@@ -321,7 +322,6 @@ namespace RainMeadow
 
         }
 
-
         private void ArenaGameSession_ctor(On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
         {
             orig(self, game);
@@ -333,24 +333,6 @@ namespace RainMeadow
 
 
         }
-        private void ProcessManager_RequestMainProcessSwitch_ProcessID(On.ProcessManager.orig_RequestMainProcessSwitch_ProcessID orig, ProcessManager self, ProcessManager.ProcessID ID)
-        {
-
-            if (isArenaMode(out var _))
-            {
-                if (ID == ProcessManager.ProcessID.MultiplayerMenu && self.currentMainLoop.ID == ProcessManager.ProcessID.Game)
-                {
-                    ID = Ext_ProcessID.ArenaLobbyMenu;
-                }
-                orig(self, ID);
-            }
-            else
-            {
-
-                orig(self, ID);
-            }
-        }
-
         private void OverwriteArenaPlayerMax(ILContext il) => OverwriteArenaPlayerMax(il, false);
 
 

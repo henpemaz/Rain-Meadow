@@ -47,19 +47,6 @@ namespace RainMeadow
             if (OnlineManager.lobby == null) throw new InvalidOperationException("lobby is null");
 
             // Playlist gets cleared as host when client joins
-            // Steam csn
-            // Nightcat is last character shown 
-
-
-            //manager.arenaSetup = new ArenaSetup(manager)
-            //{
-
-            //    currentGameType = ArenaSetup.GameTypeID.Competitive,
-            //    savFilePath = null,
-            //    playerClass = new SlugcatStats.Name[ArenaHelpers.AllSlugcats().Count]
-
-            //};
-
 
             OverrideMultiplayerMenu();
             BindSettings();
