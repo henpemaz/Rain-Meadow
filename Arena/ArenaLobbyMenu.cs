@@ -11,6 +11,7 @@ using System.IO;
 using UnityEngine;
 using Kittehface.Framework20;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace RainMeadow
 {
@@ -38,32 +39,38 @@ namespace RainMeadow
         public ArenaOnlinePlayerJoinButton[] classButtons;
         private bool flushArenaSittingForWaitingClients = false;
 
+
         public ArenaLobbyMenu(ProcessManager manager) : base(manager)
         {
             RainMeadow.DebugMe();
 
             if (OnlineManager.lobby == null) throw new InvalidOperationException("lobby is null");
 
-            manager.arenaSetup = new ArenaSetup(manager)
-            {
-                currentGameType = ArenaSetup.GameTypeID.Competitive,
-                savFilePath = null,
+            // Playlist gets cleared as host when client joins
 
-
-            };
             OverrideMultiplayerMenu();
             BindSettings();
             BuildLayout();
             ArenaHelpers.ResetReadyUpLogic(arena, this);
+            if (OnlineManager.lobby.isOwner)
+            {
+                arena.arenaSittingOnlineOrder = new List<ushort>();
+
+            }
 
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
             //SetupCharacterCustomization();
+
 
         }
 
 
         void RemoveExcessArenaObjects()
         {
+            if (OnlineManager.lobby.isOwner)
+            {
+                arena.playList.Clear();
+            }
             if (this.playerClassButtons != null && this.playerClassButtons.Length > 0)
             {
                 for (int i = this.playerClassButtons.Length - 1; i >= 0; i--)
@@ -83,12 +90,30 @@ namespace RainMeadow
 
                 }
             }
+            if (this.resumeButton != null)
+            {
+                this.resumeButton.RemoveSprites();
+                this.pages[0].RecursiveRemoveSelectables(this.resumeButton);
+            }
+
+            if (this.levelSelector != null && this.levelSelector.levelsPlaylist != null)
+            {
+                for (int i = this.levelSelector.levelsPlaylist.levelItems.Count - 1; i >= 0; i--)
+                {
+                    this.GetGameTypeSetup.playList.RemoveAt(this.GetGameTypeSetup.playList.Count - 1);
+                    this.levelSelector.levelsPlaylist.RemoveLevelItem(new Menu.LevelSelector.LevelItem(this, this.levelSelector.levelsPlaylist, this.levelSelector.levelsPlaylist.levelItems[i].name));
+                    this.levelSelector.levelsPlaylist.ScrollPos = this.levelSelector.levelsPlaylist.LastPossibleScroll;
+                    this.levelSelector.levelsPlaylist.ConstrainScroll();
+                }
+
+            }
 
         }
 
 
         void OverrideMultiplayerMenu()
         {
+
             RemoveExcessArenaObjects();
 
             this.currentGameType = this.nextGameType = ArenaSetup.GameTypeID.Competitive;
@@ -99,13 +124,10 @@ namespace RainMeadow
 
             this.backButton.signalText = "BACKTOLOBBY";
             this.playButton.signalText = "STARTARENAONLINEGAME";
-
             this.GetGameTypeSetup.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Standard;
             this.GetGameTypeSetup.rainWhenOnePlayerLeft = false; // TODO:  Hook this to update logic due to level switching if we want it
             this.GetGameTypeSetup.savingAndLoadingSession = false;
             this.GetGameTypeSetup.saveCreatures = false;
-
-
         }
 
         private void BindSettings()
@@ -121,6 +143,21 @@ namespace RainMeadow
         {
             BuildPlayerSlots();
             AddAbovePlayText();
+
+            if (this.levelSelector != null && this.levelSelector.levelsPlaylist != null)
+            {
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    foreach (var level in arena.playList)
+                    {
+                        this.GetGameTypeSetup.playList.Add(level);
+                        this.levelSelector.levelsPlaylist.AddLevelItem(new Menu.LevelSelector.LevelItem(this, this.levelSelector.levelsPlaylist, level));
+                        this.levelSelector.levelsPlaylist.ScrollPos = this.levelSelector.levelsPlaylist.LastPossibleScroll;
+                        this.levelSelector.levelsPlaylist.ConstrainScroll();
+                    }
+                }
+
+            }
         }
 
         SimplerButton CreateButton(string text, Vector2 pos, Vector2 size, Action<SimplerButton>? clicked = null, Page? page = null)
@@ -145,6 +182,7 @@ namespace RainMeadow
 
 
             this.GetArenaSetup.playersJoined[0] = true; // host should be part of game
+
         }
 
         void AddAbovePlayText()
@@ -244,11 +282,11 @@ namespace RainMeadow
                     {
                         if (!player.isMe)
                         {
-                            player.InvokeRPC(RPCs.Arena_NotifyLobbyReadyUp, OnlineManager.mePlayer.id.name, arena.clientsAreReadiedUp);
+                            player.InvokeRPC(ArenaRPCs.Arena_NotifyLobbyReadyUp, OnlineManager.mePlayer.id.name, arena.clientsAreReadiedUp);
 
                         }
                     }
-                    this.playButton.menuLabel.text = "Waiting for others...";
+                    this.playButton.menuLabel.text = this.Translate("Waiting for others...");
                     this.playButton.inactive = true;
                 }
 
@@ -274,23 +312,33 @@ namespace RainMeadow
         {
             base.Update();
 
-
             if (this.playButton != null)
             {
 
                 if (OnlineManager.players.Count == 1)
                 {
-                    arena.allPlayersReadyLockLobby = true;
-                    this.playButton.menuLabel.text = "ENTER";
-                    this.playButton.inactive = false;
-                    this.meClassButton.buttonBehav.greyedOut = false;
+                    this.playButton.menuLabel.text = this.Translate("WAIT FOR OTHERS");
+                    //this.playButton.inactive = true;
 
                 }
 
-                if (arena.clientsAreReadiedUp == OnlineManager.players.Count && OnlineManager.players.Count > 1)
+                if (this.levelSelector != null && this.levelSelector.levelsPlaylist.levelItems.Count == 0 && !OnlineManager.lobby.isOwner)
+                {
+                    this.playButton.inactive = false;
+                }
+
+                if (arena.clientsAreReadiedUp == OnlineManager.players.Count) 
                 {
                     arena.allPlayersReadyLockLobby = true;
-                    this.playButton.menuLabel.text = "ENTER";
+                    if (OnlineManager.players.Count == 1)
+                    {
+                        this.playButton.menuLabel.text = this.Translate("LOBBY WILL LOCK");
+
+                    } else
+                    {
+                        this.playButton.menuLabel.text = this.Translate("ENTER");
+
+                    }
 
                     if (OnlineManager.lobby.isOwner)
                     {
@@ -317,7 +365,7 @@ namespace RainMeadow
                 if (arena.clientsAreReadiedUp != OnlineManager.players.Count && arena.isInGame)
                 {
                     this.playButton.inactive = true;
-                    this.playButton.menuLabel.text = "GAME IN SESSION";
+                    this.playButton.menuLabel.text = this.Translate("GAME IN SESSION");
                 }
 
                 if (arena.returnToLobby && !flushArenaSittingForWaitingClients)
@@ -325,17 +373,31 @@ namespace RainMeadow
                     ArenaHelpers.ResetReadyUpLogic(arena, this);
                     flushArenaSittingForWaitingClients = true;
                 }
-
-
-                if (this.GetGameTypeSetup.playList.Count * this.GetGameTypeSetup.levelRepeats > 0)
+                if (!OnlineManager.lobby.isOwner)
                 {
-                    this.playButton.buttonBehav.greyedOut = false;
+                    if (this.GetGameTypeSetup.playList.Count * this.GetGameTypeSetup.levelRepeats >= 0)
+                    {
+                        if (this.abovePlayButtonLabel != null)
+                        {
+                            this.abovePlayButtonLabel.RemoveSprites();
+                            this.pages[0].RemoveSubObject(this.abovePlayButtonLabel);
+                        }
+
+                        this.playButton.buttonBehav.greyedOut = false;
+                    }
+
+
                 }
                 else
                 {
-                    this.playButton.buttonBehav.greyedOut = OnlineManager.lobby.isAvailable;
 
+                    if (this.GetGameTypeSetup.playList.Count * this.GetGameTypeSetup.levelRepeats > 0)
+                    {
+                        this.playButton.buttonBehav.greyedOut = false;
+                    }
                 }
+
+
             }
 
 
@@ -367,7 +429,7 @@ namespace RainMeadow
 
             if (message == "INFO" && infoWindow != null)
             {
-                infoWindow.label.text = "Welcome to Arena Online! All players must ready up in the lobby before combat can begin.";
+                infoWindow.label.text = Regex.Replace(this.Translate("Welcome to Arena Online!<LINE>All players must ready up to begin."), "<LINE>", "\r\n");
             }
         }
 
@@ -401,6 +463,7 @@ namespace RainMeadow
                 {
                     ArenaHelpers.ResetReadyUpLogic(arena, this);
                 }
+
             }
 
         }
@@ -409,20 +472,19 @@ namespace RainMeadow
         private void AddMeClassButton() // doing unique stuff with player 0 so less annoying this way
         {
 
+            var SlugList = ArenaHelpers.AllSlugcats();
             meClassButton = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f), 40f), 0);
             meClassButton.buttonBehav.greyedOut = false;
             meClassButton.readyForCombat = true;
             var currentColorIndex = 0;
             meClassButton.OnClick += (_) =>
             {
-
-                currentColorIndex = (currentColorIndex + 1) % this.GetArenaSetup.playerClass.Length;
-
-                this.GetArenaSetup.playerClass[currentColorIndex] = this.GetArenaSetup.playerClass[currentColorIndex];
+                currentColorIndex = (currentColorIndex + 1) % SlugList.Count;
+                SlugList[currentColorIndex] = SlugList[currentColorIndex];
 
                 if (currentColorIndex > 3 && ModManager.MSC)
                 {
-                    meClassButton.portrait.fileName = "MultiplayerPortrait" + "41-" + this.GetArenaSetup.playerClass[currentColorIndex];
+                    meClassButton.portrait.fileName = "MultiplayerPortrait" + "41-" + SlugList[currentColorIndex];
 
                 }
                 else
@@ -435,7 +497,7 @@ namespace RainMeadow
                 meClassButton.portrait.sprite.SetElementByName(meClassButton.portrait.fileName);
                 PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
 
-                personaSettings.playingAs = this.GetArenaSetup.playerClass[currentColorIndex];
+                personaSettings.playingAs = SlugList[currentColorIndex];
 
                 if (OnlineManager.players.Count > 1)
                 {
@@ -443,7 +505,7 @@ namespace RainMeadow
                     {
                         if (!player.isMe)
                         {
-                            player.InvokeRPC(RPCs.Arena_NotifyClassChange, OnlineManager.mePlayer.id.name, currentColorIndex);
+                            player.InvokeRPC(ArenaRPCs.Arena_NotifyClassChange, OnlineManager.mePlayer.id.name, currentColorIndex);
 
                         }
                     }
@@ -457,9 +519,6 @@ namespace RainMeadow
 
         private void AddMeUsername()
         {
-
-            var SlugList = ArenaHelpers.AllSlugcats();
-            this.GetArenaSetup.playerClass = SlugList.ToArray();
 
             var myUsernameButton = new SimplerButton[1];
 
@@ -514,8 +573,8 @@ namespace RainMeadow
 
         public void AddOtherUsernameButtons()
         {
-            var SlugList = ArenaHelpers.AllSlugcats();
-            this.GetArenaSetup.playerClass = SlugList.ToArray();
+            //var SlugList = ArenaHelpers.AllSlugcats();
+            //this.GetArenaSetup.playerClass = SlugList.ToArray();
 
             usernameButtons = new SimplerButton[OnlineManager.players.Count];
 
