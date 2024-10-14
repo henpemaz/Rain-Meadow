@@ -77,7 +77,6 @@ namespace RainMeadow
                 readyForWin = onlineEntity.readyForWin;
                 var state = (onlineEntity.avatarId.FindEntity(true) as OnlineCreature)?.creature?.state as PlayerState;
                 isDead = state is null || state.dead || state.permaDead;
-                RainMeadow.Debug("``` " + (state is null ? "couldn't find playerstate!" : $"Dead:{state.dead} permaDead:{state.permaDead}"));
             }
 
             public override void ReadTo(OnlineEntity onlineEntity)

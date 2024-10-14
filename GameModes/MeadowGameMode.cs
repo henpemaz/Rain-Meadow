@@ -351,6 +351,9 @@ namespace RainMeadow
 
                 var mcc = (MeadowAvatarCustomization)RainMeadow.creatureCustomizations.GetValue(creature, (c) => settings.MakeCustomization());
 
+                // playable creatures
+                CreatureController.BindAvatar(creature, oc, mcc);
+
                 if (oc.TryGetData<MeadowCreatureData>(out var mcd))
                 {
                     EmoteDisplayer.map.GetValue(creature, (c) => new EmoteDisplayer(creature, oc, mcd, mcc));
@@ -359,8 +362,6 @@ namespace RainMeadow
                 {
                     RainMeadow.Error("missing mcd?? " + oc);
                 }
-                // playable creatures
-                CreatureController.BindAvatar(creature, oc, mcc);
 
                 creature.abstractCreature.tentacleImmune = true;
                 creature.abstractCreature.lavaImmune = true;

@@ -144,9 +144,9 @@ namespace RainMeadow
             public string displayName;
             public CreatureTemplate.Type creatureType;
             public int randomSeed;
-            public Color? baseColor; // todo fill them all for previews
+            public Color? baseColor;
             public Color? eyeColor;
-            public Color? effectColor;
+            public Color? previewColor;
             public float tintFactor = 0.3f;
             public string emoteAtlasOverride;
             public string emotePrefixOverride;
@@ -200,12 +200,14 @@ namespace RainMeadow
                 character = Character.Cicada,
                 displayName = "White",
                 creatureType = CreatureTemplate.Type.CicadaA,
+                previewColor = Extensions.ColorFromHex(0xd4dddf),
             });
             public static Skin Cicada_Dark = new("Cicada_Dark", true, new()
             {
                 character = Character.Cicada,
                 displayName = "Dark",
                 creatureType = CreatureTemplate.Type.CicadaB,
+                previewColor = Extensions.ColorFromHex(0x0e0d19),
             });
 
             public static Skin Lizard_Pink = new("Lizard_Pink", true, new()
@@ -214,7 +216,7 @@ namespace RainMeadow
                 displayName = "Pink",
                 creatureType = CreatureTemplate.Type.PinkLizard,
                 randomSeed = 3401,
-                baseColor = Extensions.ColorFromHex(0xff07ee),
+                previewColor = Extensions.ColorFromHex(0xff07ee),
                 tintFactor = 0.5f,
             });
             public static Skin Lizard_Blue = new("Lizard_Blue", true, new()
@@ -223,7 +225,7 @@ namespace RainMeadow
                 displayName = "Blue",
                 creatureType = CreatureTemplate.Type.BlueLizard,
                 randomSeed = 9659,
-                baseColor = Extensions.ColorFromHex(0x006bed),
+                previewColor = Extensions.ColorFromHex(0x006bed),
                 tintFactor = 0.5f,
             });
             public static Skin Lizard_Yellow = new("Lizard_Yellow", true, new()
@@ -232,7 +234,7 @@ namespace RainMeadow
                 displayName = "Yellow",
                 creatureType = CreatureTemplate.Type.YellowLizard,
                 randomSeed = 6526,
-                baseColor = Extensions.ColorFromHex(0xd35503),
+                previewColor = Extensions.ColorFromHex(0xd35503),
                 tintFactor = 0.5f,
             });
             public static Skin Lizard_Cyan = new("Lizard_Cyan", true, new()
@@ -241,7 +243,7 @@ namespace RainMeadow
                 displayName = "Cyan",
                 creatureType = CreatureTemplate.Type.CyanLizard,
                 randomSeed = 5243,
-                baseColor = Extensions.ColorFromHex(0x06f5ff),
+                previewColor = Extensions.ColorFromHex(0x06f5ff),
                 tintFactor = 0.5f,
             });
             public static Skin Lizard_Fluffers = new("Lizard_Fluffers", true, new()
@@ -250,7 +252,7 @@ namespace RainMeadow
                 displayName = "Fluffers",
                 creatureType = CreatureTemplate.Type.PinkLizard,
                 randomSeed = 7713,
-                baseColor = Extensions.ColorFromHex(0xff15b3),
+                previewColor = Extensions.ColorFromHex(0xff15b3),
                 tintFactor = 0.5f,
             });
 
@@ -260,7 +262,7 @@ namespace RainMeadow
                 displayName = "Twigs",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 4481,
-                baseColor = Extensions.ColorFromHex(0x212030),
+                previewColor = Extensions.ColorFromHex(0x212030),
             });
             public static Skin Scavenger_Acorn = new("Scavenger_Acorn", true, new()
             {
@@ -268,7 +270,7 @@ namespace RainMeadow
                 displayName = "Acorn",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 1213,
-                baseColor = Extensions.ColorFromHex(0x341417),
+                previewColor = Extensions.ColorFromHex(0x341417),
             });
             public static Skin Scavenger_Oak = new("Scavenger_Oak", true, new()
             {
@@ -276,7 +278,7 @@ namespace RainMeadow
                 displayName = "Oak",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 9503,
-                baseColor = Extensions.ColorFromHex(0xd9bba1),
+                previewColor = Extensions.ColorFromHex(0xd9bba1),
             });
             public static Skin Scavenger_Shrub = new("Scavenger_Shrub", true, new()
             {
@@ -284,7 +286,7 @@ namespace RainMeadow
                 displayName = "Shrub",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 1139,
-                baseColor = Extensions.ColorFromHex(0x9b765d),
+                previewColor = Extensions.ColorFromHex(0x9b765d),
             });
             public static Skin Scavenger_Branches = new("Scavenger_Branches", true, new()
             {
@@ -292,7 +294,7 @@ namespace RainMeadow
                 displayName = "Branches",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 1503,
-                baseColor = Extensions.ColorFromHex(0x912e19),
+                previewColor = Extensions.ColorFromHex(0x912e19),
             });
             public static Skin Scavenger_Sage = new("Scavenger_Sage", true, new()
             {
@@ -300,7 +302,7 @@ namespace RainMeadow
                 displayName = "Sage",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 1184,
-                baseColor = Extensions.ColorFromHex(0x493d3f),
+                previewColor = Extensions.ColorFromHex(0x493d3f),
             });
             public static Skin Scavenger_Cherry = new("Scavenger_Cherry", true, new()
             {
@@ -308,7 +310,7 @@ namespace RainMeadow
                 displayName = "Cherry",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 9464,
-                baseColor = Extensions.ColorFromHex(0xa72014),
+                previewColor = Extensions.ColorFromHex(0xa72014),
             });
             public static Skin Scavenger_Lavender = new("Scavenger_Lavender", true, new()
             {
@@ -316,7 +318,7 @@ namespace RainMeadow
                 displayName = "Lavender",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 8201,
-                baseColor = Extensions.ColorFromHex(0x9b81d5),
+                previewColor = Extensions.ColorFromHex(0x9b81d5),
             });
             public static Skin Scavenger_Peppermint = new("Scavenger_Peppermint", true, new()
             {
@@ -324,7 +326,7 @@ namespace RainMeadow
                 displayName = "Peppermint",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 8750,
-                baseColor = Extensions.ColorFromHex(0xd1ebdb),
+                previewColor = Extensions.ColorFromHex(0xd1ebdb),
             });
             public static Skin Scavenger_Juniper = new("Scavenger_Juniper", true, new()
             {
@@ -332,7 +334,7 @@ namespace RainMeadow
                 displayName = "Juniper",
                 creatureType = CreatureTemplate.Type.Scavenger,
                 randomSeed = 4566,
-                baseColor = Extensions.ColorFromHex(0xb8c3ec),
+                previewColor = Extensions.ColorFromHex(0xb8c3ec),
             });
 
             public static Skin Noodlefly_Big = new("Noodlefly_Big", true, new()
@@ -403,41 +405,51 @@ namespace RainMeadow
             public static Emote emoteHello = new("emoteHello", true);
             public static Emote emoteHappy = new("emoteHappy", true);
             public static Emote emoteSad = new("emoteSad", true);
+
             public static Emote emoteConfused = new("emoteConfused", true);
             public static Emote emoteGoofy = new("emoteGoofy", true);
             public static Emote emoteDead = new("emoteDead", true);
+
             public static Emote emoteAmazed = new("emoteAmazed", true);
             public static Emote emoteShrug = new("emoteShrug", true);
             public static Emote emoteHug = new("emoteHug", true);
+
             public static Emote emoteAngry = new("emoteAngry", true);
             public static Emote emoteWink = new("emoteWink", true);
             public static Emote emoteMischievous = new("emoteMischievous", true);
 
-            // ideas
+            // symbols (displayed 3 per column)
             public static Emote symbolYes = new("symbolYes", true);
             public static Emote symbolNo = new("symbolNo", true);
             public static Emote symbolQuestion = new("symbolQuestion", true);
-            public static Emote symbolTime = new("symbolTime", true);
-            public static Emote symbolSurvivor = new("symbolSurvivor", true);
-            public static Emote symbolFriends = new("symbolFriends", true);
-            public static Emote symbolGroup = new("symbolGroup", true);
-            public static Emote symbolKnoledge = new("symbolKnoledge", true);
-            public static Emote symbolTravel = new("symbolTravel", true);
-            public static Emote symbolMartyr = new("symbolMartyr", true);
 
-            // things
+            public static Emote symbolExclamation = new("symbolExclamation", true);
+            public static Emote symbolArrow = new("symbolArrow", true);
+            public static Emote symbolTime = new("symbolTime", true);
+
+            public static Emote symbolTravel = new("symbolTravel", true);
+            public static Emote symbolGroup = new("symbolGroup", true);
+            public static Emote symbolFollow = new("symbolFollow", true);
+            
+            public static Emote symbolFriends = new("symbolFriends", true);
             public static Emote symbolCollectible = new("symbolCollectible", true);
-            public static Emote symbolFood = new("symbolFood", true);
-            public static Emote symbolLight = new("symbolLight", true);
+            public static Emote symbolEcho = new("symbolEcho", true);
+            
             public static Emote symbolShelter = new("symbolShelter", true);
             public static Emote symbolGate = new("symbolGate", true);
-            public static Emote symbolEcho = new("symbolEcho", true);
-            public static Emote symbolPointOfInterest = new("symbolPointOfInterest", true);
             public static Emote symbolTree = new("symbolTree", true);
-            public static Emote symbolIterator = new("symbolIterator", true);
+            
+            public static Emote symbolSurvivor = new("symbolSurvivor", true);
+            public static Emote symbolWanderer = new("symbolWanderer", true);
+            public static Emote symbolHigh = new("symbolHigh", true);
 
-            // verbs
-            // todo
+            public static Emote symbolIterator = new("symbolIterator", true);
+            public static Emote symbolLight = new("symbolLight", true);
+            public static Emote symbolPlants = new("symbolPlants", true);
+
+            public static Emote symbolMetal = new("symbolMetal", true);
+            public static Emote symbolPipes = new("symbolPipes", true);
+            public static Emote symbolWater = new("symbolWater", true);
         }
 
         public static List<Emote> emoteEmotes = new();

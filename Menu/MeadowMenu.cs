@@ -288,6 +288,7 @@ namespace RainMeadow
 
             manager.arenaSitting = null;
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
+            manager.rainWorld.progression.miscProgressionData.currentlySelectedSinglePlayerSlugcat = RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;
             manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.RegionSelect;
             manager.menuSetup.regionSelectRoom = MeadowProgression.progressionData.currentCharacterProgress.saveLocation.ResolveRoomName();
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
@@ -344,12 +345,13 @@ namespace RainMeadow
         {
             var cust = personaSettings.MakeCustomization() as MeadowAvatarCustomization;
             tintPreview.SetElementByName(CreatureSymbol.SpriteNameOfCreature(new IconSymbol.IconSymbolData(cust.skinData.creatureType, AbstractPhysicalObject.AbstractObjectType.Creature, 0)));
-            if (cust.skinData.baseColor.HasValue)
+            var color = cust.skinData.baseColor ?? cust.skinData.previewColor;
+            if (color.HasValue)
             {
                 tintPreview.isVisible = true;
-                var color = cust.skinData.baseColor.Value;
-                cust.ModifyBodyColor(ref color);
-                tintPreview.color = color;
+                var c = color.Value;
+                cust.ModifyBodyColor(ref c);
+                tintPreview.color = c;
             }
             else
             {

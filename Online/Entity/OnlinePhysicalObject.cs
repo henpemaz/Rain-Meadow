@@ -2,6 +2,7 @@
 using System.Linq;
 using UnityEngine;
 using System.Runtime.CompilerServices;
+using System.Globalization;
 
 namespace RainMeadow
 {
@@ -10,16 +11,77 @@ namespace RainMeadow
         public class OnlinePhysicalObjectDefinition : EntityDefinition
         {
             [OnlineField]
-            public string serializedObject;
+            protected int apoId;
+            [OnlineField]
+            protected ushort apoSpawn;
+            [OnlineField]
+            protected AbstractPhysicalObject.AbstractObjectType apoType;
+            [OnlineField]
+            protected string extraData;
 
             public OnlinePhysicalObjectDefinition() { }
 
             public OnlinePhysicalObjectDefinition(OnlinePhysicalObject onlinePhysicalObject, OnlineResource inResource) : base(onlinePhysicalObject, inResource)
             {
-                var wasId = onlinePhysicalObject.apo.ID.number;
-                onlinePhysicalObject.apo.ID.number = onlinePhysicalObject.apo.ID.RandomSeed;
-                serializedObject = onlinePhysicalObject.apo.ToString();
-                onlinePhysicalObject.apo.ID.number = wasId;
+                apoId = onlinePhysicalObject.apo.ID.RandomSeed;
+                apoSpawn = (ushort)(onlinePhysicalObject.apo.ID.spawner);
+                apoType = onlinePhysicalObject.apo.type;
+                //apoPos = onlinePhysicalObject.apo.pos; // omitted since it comes in initialstate
+
+                StoreSerializedObject(onlinePhysicalObject);
+            }
+
+            protected void SaveExtras(string extras)
+            {
+                extraData = extras.Replace("<oA>", "\u0001").Replace("<oB>", "\u0002");
+            }
+
+            protected string BuildExtras()
+            {
+                return extraData.Replace("\u0001", "<oA>").Replace("\u0002", "<oB>");
+            }
+
+            protected virtual int ExtrasIndex => 3;
+
+            protected virtual void StoreSerializedObject(OnlinePhysicalObject onlinePhysicalObject)
+            {
+                var serializedObject = onlinePhysicalObject.apo.ToString();
+                RainMeadow.Debug("Data is " + serializedObject);
+                int index = 0;
+                int count = ExtrasIndex;
+                for (int i = 0; i < count; i++) index = serializedObject.IndexOf("<oA>", index + 4); // the first X fields are already saved
+                if (index == -1) // no extra data
+                {
+                    RainMeadow.Debug("no extra");
+                    extraData = "";
+                }
+                else
+                {
+                    RainMeadow.Debug("extra is  " + serializedObject.Substring(index + 4));
+                    SaveExtras(serializedObject.Substring(index + 4));
+                }
+
+                RainMeadow.Debug("resulting object would be: " + MakeSerializedObject(new PhysicalObjectEntityState() { pos = onlinePhysicalObject.apo.pos }));
+            }
+
+            protected virtual string MakeSerializedObjectNoExtras(PhysicalObjectEntityState initialState)
+            {
+                return string.Format(CultureInfo.InvariantCulture, "{0}<oA>{1}<oA>{2}", 
+                    new EntityID(apoSpawn == ushort.MaxValue ? -1 : apoSpawn, apoId).ToString(), 
+                    apoType.ToString(), 
+                    initialState.pos.SaveToString());
+            }
+
+            public virtual string MakeSerializedObject(PhysicalObjectEntityState initialState)
+            {
+                if (string.IsNullOrEmpty(extraData))
+                {
+                    return MakeSerializedObjectNoExtras(initialState);
+                }
+                else
+                {
+                    return string.Format(CultureInfo.InvariantCulture, "{0}<oA>{1}", MakeSerializedObjectNoExtras(initialState), BuildExtras());
+                }
             }
 
             public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
@@ -111,14 +173,15 @@ namespace RainMeadow
         protected virtual AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, PhysicalObjectEntityState initialState)
         {
             World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
+
+            string serializedObject = newObjectEvent.MakeSerializedObject(initialState);
+            RainMeadow.Debug("serializedObject: " + serializedObject);
+
+            var apo = SaveState.AbstractPhysicalObjectFromString(world, serializedObject);
+            apo.pos = initialState.pos; // game's really bad at parsing this huh specially arena or gates
             EntityID id = world.game.GetNewID();
-
-            RainMeadow.Debug("serializedObject: " + newObjectEvent.serializedObject);
-
-            var apo = SaveState.AbstractPhysicalObjectFromString(world, newObjectEvent.serializedObject);
-            id.altSeed = apo.ID.RandomSeed; // this becomes a problem on transfers, the altSeed field is not used by vanila serialize, need to be sent as new field
+            id.altSeed = apo.ID.RandomSeed;
             apo.ID = id;
-            apo.pos = initialState.pos;
             return apo;
         }
 

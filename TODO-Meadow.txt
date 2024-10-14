@@ -1,25 +1,3 @@
-
-what are the player-player interactions?
-- spot eachother
-- greet eachother
-- greet others
-- decide on what to do
-	- likely want to go somewhere, what other options
-	- echo-hunting
-	- go to one of the extremes of the map
-		- pebbles, moon, SI or Depths
-	- games
-		- hide and seek
-- decide on where to go
-	- a direction, a landmark, something unambiguous
-	- anywhere
-	- follow me, follow the leader
-
-- move together
-- spot things, comment on things
-- tell others to come over here
-- tell others to go back, not come
-
 handholding
 	would be so nice to grab cicada be carried by liz etc etc
 	"it's of uttermost importance to me that one cannot troll others with this"
@@ -33,23 +11,13 @@ creature todo
 - can get stuck
 	some rooms will get fixed
 		eventually :tm:
+
 - allow creature to change the creature-pipe they're going to mid-flight (very low prio)
-- need to sample color of creature and have it in skindata
-	- requires final-ish seeds
 
 lizard todo
-blues have trouble sticking to the ceiling
-blues have trouble climbing/pathing ledges
-
-scav todo
-- hands look silly when walking on falsefloor
-- point things
-
-slugcat in meadow mode
-- point things
-
-squidcicada todo
-button for spin/dance ?
+	blues have trouble sticking to the ceiling
+	blues have trouble climbing/pathing ledges
+	more seeds
 
 eggbug
 	pick seeds and names
@@ -60,8 +28,6 @@ noot
 lantermouse
 	seeds and names
 
-controller-disconnedted popup might be inconsistent
-
 visualize selected skin
 	will get color previews once all seeds are picked and sampled
 
@@ -70,8 +36,7 @@ tint implementation missing in most creatures
 "creature emotions" need addressing
 lizards shouldn't open mouth to bite -> can't reproduce
 rats shouldn't panic
-
-sandbox unlock items still present in meadow lmao, seem inactive though
+slugcat arm reaches to threat
 
 passage but the map isn't saving
 
@@ -81,6 +46,7 @@ following others around is hard
 	player list on passage screen
 
 wormgrass can still eat you (big patches in FA)
+prevents pathing still
 
 echo sky animation is too slow needs to converge
 
@@ -106,18 +72,9 @@ emotes go off-screen too often, need to show them in-screen near the creature wh
 
 seems to happen just too often that creatures don't customize
 
-If you use movement keys (left/right) while leaping, you kill your own momentum even if it's on the direction you are leaping to. If you leap without pressing anything you go further away.  Momentum should be kept when pressing the same direction you are leaping to
-todo check this with all creatures, might be solved already
-
 Lantern mouse: They struggle to grab onto poles when jumping, and overall seen hard to walk on horizontal poles. They need to be rail-roaded into poles more strongly, like how lizards/scavengers are
 
-Scavenger: Scavenger's leap seems to only throw you forward if you are at the very edge of a ground. Other creatures can leap from any part of the ground and be launched as normal
-recheck, might be solved
-
 General: Tint seems to be having sync issues, people randomly change between the original color of the animal, to their tint color in pure form, to anything in-between (the foo had an example above, they tinted themselves red to look dark orange, but for everyone on the lobby they looked pure red)
-
-QoL: Some sort of display of how the colors should look in-game? The tint system seems to be confusing at first. Nothing too fancy, just a creature symbol that has the main color of the skin, and then applying tint would also apply it to the symbol to show a rough estimate on how it would look!
-task: rework into "previewcolor" to make sure we arent accidentally overriding anything, which we might be for scav body tints
 
 toggle collision as a setting
 
@@ -129,8 +86,6 @@ emotes sometimes don't stop fading when new emotes are added
 
 on meadow-menu or lobby menu, esc doesn't go back
 
-emotes wheel still has wrong colors
-
 scav latching to pole with lots of momentum lets go? shelter room to drainage spot
 
 dsa13 corner up lizard stuck
@@ -139,15 +94,12 @@ squid had trouble in dsb06 underwater poles?
 
 scav has trouble walljumping, doesn't count as walljumpable sometimes, hic02 lower spot
 
-backing out of passage screen sends you to main menu
+backing out of passage screen sends you to main menu? unconfirmed
 
 eggbug and lanternmouse are way too fast in zerog
 
 lizard wallclimb is slow, slows you down a lot in zerog movement
 
-engine thoughts
-that one crash notchoc posted about a Destroy related to roomjoin
-	so maybe there WAS realized ent duplication and the delete-fallback had side-effects of removing the real deal?
-
-when wolfy crashed on a quick menu-rejoin
-	is it possible that the new deactivate stuff prevented state from broadcasting and as such her or her avatar never got kicked?
+rebindable keybinds for everything meadow
+- controller emote input
+- tab

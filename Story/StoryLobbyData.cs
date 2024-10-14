@@ -25,6 +25,8 @@ namespace RainMeadow
             [OnlineField]
             public bool changedRegions;
             [OnlineField]
+            public bool friendlyFire;
+            [OnlineField]
             public SlugcatStats.Name currentCampaign;
             [OnlineField]
             public int cycleNumber;
@@ -86,6 +88,7 @@ namespace RainMeadow
                 food = (currentGameState?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
                 quarterfood = (currentGameState?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
                 mushroomCounter = (currentGameState?.Players[0].realizedCreature as Player)?.mushroomCounter ?? 0;
+                friendlyFire = storyGameMode.friendlyFire;
             }
 
             internal override Type GetDataType() => typeof(StoryLobbyData);
@@ -131,6 +134,8 @@ namespace RainMeadow
                 (lobby.gameMode as StoryGameMode).isInGame = isInGame;
                 (lobby.gameMode as StoryGameMode).changedRegions = changedRegions;
                 (lobby.gameMode as StoryGameMode).didStartCycle = didStartCycle;
+                (lobby.gameMode as StoryGameMode).friendlyFire = friendlyFire;
+
             }
         }
     }

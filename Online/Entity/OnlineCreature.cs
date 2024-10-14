@@ -9,23 +9,84 @@ namespace RainMeadow
 {
     public class OnlineCreature : OnlinePhysicalObject
     {
+        [OmitFields("apoType")]
         public class OnlineCreatureDefinition : OnlinePhysicalObjectDefinition
         {
+            [OnlineField]
+            private CreatureTemplate.Type creatureType;
+
             public OnlineCreatureDefinition() { }
 
             public OnlineCreatureDefinition(OnlineCreature onlineCreature, OnlineResource inResource) : base(onlineCreature, inResource)
             {
-                var wasId = onlineCreature.apo.ID.number;
-                onlineCreature.apo.ID.number = onlineCreature.apo.ID.RandomSeed;
+                this.creatureType = onlineCreature.creature.creatureTemplate.type;
+            }
+
+            protected override int ExtrasIndex => 3;
+
+            protected override void StoreSerializedObject(OnlinePhysicalObject onlinePhysicalObject)
+            {
+                var onlineCreature = (OnlineCreature)onlinePhysicalObject;
+
+                string serializedObject = null;
                 if (RainMeadow.isArenaMode(out var _))
                 {
-                    this.serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature);
+                    serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature);
                 }
                 else
                 {
-                    this.serializedObject = SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
+                    serializedObject = SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
                 }
-                onlineCreature.apo.ID.number = wasId;
+                RainMeadow.Debug("Data is " + serializedObject);
+                int index = 0;
+                int count = ExtrasIndex;
+                for (int i = 0; i < count; i++) index = serializedObject.IndexOf("<cA>", index + 4); // the first X fields are already saved
+                if (index == -1) // no extra data
+                {
+                    RainMeadow.Debug("no extra");
+                    extraData = "";
+                }
+                else
+                {
+                    RainMeadow.Debug("extra is  " + serializedObject.Substring(index + 4));
+                    CreatureSaveExtras(serializedObject.Substring(index + 4));
+                }
+
+
+                this.creatureType = onlineCreature.creature.creatureTemplate.type; // we sneak this in here since this is called from apodef ctor before our own ctor
+                RainMeadow.Debug("resulting object would be: " + MakeSerializedObject(new PhysicalObjectEntityState() { pos = onlinePhysicalObject.apo.pos }));
+            }
+
+            protected void CreatureSaveExtras(string extras)
+            {
+                extraData = extras.Replace("<cA>", "\u0001").Replace("<cB>", "\u0002").Replace("<cC>", "\u0003");
+            }
+
+            protected string CreatureBuildExtras()
+            {
+                return extraData.Replace("\u0001", "<cA>").Replace("\u0002", "<cB>").Replace("\u0003", "<cC>");
+            }
+
+            public override string MakeSerializedObject(PhysicalObjectEntityState initialState)
+            {
+                if (string.IsNullOrEmpty(extraData))
+                {
+                    return MakeSerializedObjectNoExtras(initialState);
+                }
+                else
+                {
+                    return string.Format(CultureInfo.InvariantCulture, "{0}<cA>{1}", MakeSerializedObjectNoExtras(initialState), CreatureBuildExtras());
+                }
+            }
+
+            protected override string MakeSerializedObjectNoExtras(PhysicalObjectEntityState initialState)
+            {
+                return string.Format(CultureInfo.InvariantCulture, "{0}<cA>{1}<cA>{2}.{3}<cA>", 
+                    creatureType.ToString(), 
+                    new EntityID(apoSpawn == ushort.MaxValue ? -1 : apoSpawn, apoId).ToString(), 
+                    initialState.pos.ResolveRoomName(), // this uses story index, doesn't work in arena but we use pos directly anyways
+                    initialState.pos.abstractNode
+                    );
             }
 
             public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
@@ -54,9 +115,13 @@ namespace RainMeadow
             return new OnlineCreatureDefinition(this, onlineResource);
         }
 
-        public static AbstractCreature AbstractCreatureFromString(World world, string creatureString)
+        public static AbstractCreature AbstractCreatureFromString(World world, string creatureString, WorldCoordinate pos)
         {
             // copy-paste-addapt from vanilla
+            // vanilla has annoyiances with 1. non-unique roomnames such as gates
+            // 2. arena room names being completelly unsupported
+            // completely ignore pos in the string, it's the initialstates anyways
+            // and parsing room names doesn't work in arena, stick with indexes
             string[] array = Regex.Split(creatureString, "<cA>");
             CreatureTemplate.Type type = new CreatureTemplate.Type(array[0], false);
             if (type.Index == -1)
@@ -64,18 +129,9 @@ namespace RainMeadow
                 RainMeadow.Debug("Unknown creature: " + array[0] + " creature not spawning");
                 return null;
             }
-            string[] array2 = array[2].Split(new char[]
-            {
-            '.'
-            });
+            string[] array2 = array[2].Split('.');
             EntityID id = EntityID.FromString(array[1]);
-            int? num = BackwardsCompatibilityRemix.ParseRoomIndex(array2[0]);
-            if (num == null || !world.IsRoomInRegion(num.Value)) // handle non-unique (GATE) roomcodes
-            {
-                num = world.GetAbstractRoom(array2[0]).index;
-            }
-            WorldCoordinate den = new WorldCoordinate(num.Value, -1, -1, int.Parse(array2[1], NumberStyles.Any, CultureInfo.InvariantCulture));
-            AbstractCreature abstractCreature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, den, id);
+            AbstractCreature abstractCreature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, pos, id);
 
             foreach (var item in abstractCreature.stuckObjects.ToArray()) // Some (dropbug) creatures spawn with random items attached
             {
@@ -83,18 +139,6 @@ namespace RainMeadow
             }
 
             abstractCreature.state.LoadFromString(Regex.Split(array[3], "<cB>"));
-            if (abstractCreature.Room == null)
-            {
-                RainMeadow.Debug(string.Concat(new string[]
-                    {
-                        "Spawn room does not exist: ",
-                        array2[0],
-                        " ~ ",
-                        id.spawner.ToString(),
-                        " creature not spawning"
-                    }));
-                return null;
-            }
             abstractCreature.setCustomFlags();
             return abstractCreature;
         }
@@ -104,9 +148,10 @@ namespace RainMeadow
             World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
             EntityID id = world.game.GetNewID();
 
-            RainMeadow.Debug("serializedObject: " + newObjectEvent.serializedObject);
+            string serializedObject = newObjectEvent.MakeSerializedObject(initialState);
+            RainMeadow.Debug("serializedObject: " + serializedObject);
 
-            var apo = AbstractCreatureFromString(world, newObjectEvent.serializedObject);
+            var apo = AbstractCreatureFromString(world, serializedObject, initialState.pos);
             id.altSeed = apo.ID.RandomSeed;
             apo.ID = id;
             apo.pos = initialState.pos;
@@ -142,9 +187,9 @@ namespace RainMeadow
         [RPCMethod]
         public void CreatureViolence(OnlinePhysicalObject? onlineVillain, byte victimChunkIndex, AppendageRef? victimAppendageRef, Vector2? directionAndMomentum, Creature.DamageType damageType, float damage, float stunBonus)
         {
-            var victimAppendage = victimAppendageRef?.GetAppendagePos(this);
             var creature = (this.apo.realizedObject as Creature);
             if (creature == null) return;
+            var victimAppendage = victimAppendageRef?.GetAppendagePos(creature);
 
             BodyChunk? hitChunk = victimChunkIndex < 255 ? creature.bodyChunks[victimChunkIndex] : null;
             creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, hitChunk, victimAppendage, damageType, damage, stunBonus);

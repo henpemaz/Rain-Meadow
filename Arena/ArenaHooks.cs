@@ -34,7 +34,6 @@ namespace RainMeadow
 
             On.ArenaGameSession.SpawnPlayers += ArenaGameSession_SpawnPlayers;
             On.ArenaGameSession.Update += ArenaGameSession_Update;
-            On.ArenaGameSession.ctor += ArenaGameSession_ctor;
             On.ArenaGameSession.EndOfSessionLogPlayerAsAlive += ArenaGameSession_EndOfSessionLogPlayerAsAlive;
             On.ArenaGameSession.Killing += ArenaGameSession_Killing;
             On.ArenaGameSession.AddHUD += ArenaGameSession_AddHUD;
@@ -726,6 +725,8 @@ namespace RainMeadow
             if (isArenaMode(out var _))
             {
                 self.AddPart(new TextPrompt(self));
+                self.AddPart(new Pointing(self));
+
             }
             else
             {

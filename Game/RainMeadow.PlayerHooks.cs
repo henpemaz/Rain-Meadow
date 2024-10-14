@@ -2,6 +2,7 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using System;
+using System.Linq;
 
 namespace RainMeadow;
 
@@ -23,6 +24,7 @@ public partial class RainMeadow
         On.Player.SwallowObject += Player_SwallowObject;
         On.Player.Regurgitate += Player_Regurgitate;
         On.Player.ThrowObject += Player_ThrowObject;
+        On.Player.CanIPickThisUp += Player_CanIPickThisUp;
         On.Player.SpitUpCraftedObject += Player_SpitUpCraftedObject;
         IL.Player.Collide += Player_Collide;
         On.Player.SlugSlamConditions += Player_SlugSlamConditions;
@@ -340,7 +342,7 @@ public partial class RainMeadow
             }
         }
         if (onlineEntity != null && !onlineEntity.isMine) return;
-        RainMeadow.Debug($"``` DIE {onlineEntity}");
+        RainMeadow.Debug($"%%% DIE {onlineEntity}");
         orig(self);
     }
 
@@ -353,7 +355,7 @@ public partial class RainMeadow
         }
 
         OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe);
-        RainMeadow.Debug($"``` DESTROY {oe}");
+        RainMeadow.Debug($"%%% DESTROY {oe}");
 
         orig(self);
     }
@@ -403,6 +405,13 @@ public partial class RainMeadow
         orig(self, grasp, eu);
     }
 
+    // TODO: toggleable friendly steal
+    private bool Player_CanIPickThisUp(On.Player.orig_CanIPickThisUp orig, Player self, PhysicalObject obj)
+    {
+        if (isStoryMode(out _) && obj.grabbedBy.Any(x => x.grabber is Player)) return false;
+        return orig(self, obj);
+    }
+
     private void Player_SpitUpCraftedObject(On.Player.orig_SpitUpCraftedObject orig, Player self)
     {
         if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
@@ -438,7 +447,7 @@ public partial class RainMeadow
                 i => i.MatchBrtrue(out skip)
                 );
             c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((PhysicalObject otherObject) => (isStoryMode(out _) && otherObject is Player));
+            c.EmitDelegate((PhysicalObject otherObject) => (isStoryMode(out var story) && story.friendlyFire && otherObject is Player));
             c.Emit(OpCodes.Brtrue, skip);
         }
         catch (Exception e)
@@ -449,7 +458,7 @@ public partial class RainMeadow
 
     private bool Player_SlugSlamConditions(On.Player.orig_SlugSlamConditions orig, Player self, PhysicalObject otherObject)
     {
-        if (isStoryMode(out _))
+        if (isStoryMode(out var story) && story.friendlyFire)
         {
             if (otherObject is Player) return false;
         }
@@ -473,7 +482,7 @@ public partial class RainMeadow
                 i => i.MatchLdfld<Options>("friendlyFire"),
                 i => i.MatchBrtrue(out _)
                 );
-            c.EmitDelegate(() => isStoryMode(out _));
+            c.EmitDelegate(() => isStoryMode(out var story)  && !story.friendlyFire);
             c.Emit(OpCodes.Brtrue, skip);
             c.Index += 6;
             c.MarkLabel(skip);
@@ -486,7 +495,7 @@ public partial class RainMeadow
 
     private bool Player_CanMaulCreature(On.Player.orig_CanMaulCreature orig, Player self, Creature crit)
     {
-        if (isStoryMode(out _))
+        if (isStoryMode(out var story) && story.friendlyFire)
         {
             if (crit is Player) return false;
         }

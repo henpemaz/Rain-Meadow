@@ -503,5 +503,16 @@ namespace RainMeadow
                 }
             }
         }
+
+        protected override void PointImpl(Vector2 dir)
+        {
+            if (cicada.graphicsModule is CicadaGraphics cg)
+            {
+                Limb limb = cg.tentacles[0, 0];
+
+                limb.mode = Limb.Mode.HuntAbsolutePosition;
+                limb.absoluteHuntPos = cicada.DangerPos + dir * 100f;
+            }
+        }
     }
 }
