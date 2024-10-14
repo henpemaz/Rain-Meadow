@@ -293,6 +293,11 @@ namespace RainMeadow
                 foreach (var res in joinedResources)
                 {
                     OnlineManager.RemoveFeed(res, this);
+
+                    var tick = OnlineManager.mePlayer.tick;
+                    var newState = this.GetState(tick, res);
+                    RainMeadow.Debug($"flushing latest state of {this} tick {tick} to player {newOwner}");
+                    newOwner.QueueStateMessage(new OnlineStateMessage(new EntityFeedState(newState, res), newState, null, false, tick, 0));
                 }
             }
             if (newOwner.isMe)

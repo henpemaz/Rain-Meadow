@@ -4,14 +4,14 @@
     public class OnlineStateMessage
     {
         public OnlineState state;
-        public IStateSource source;
+        public IStateSource? source;
         public bool sentAsDelta;
         public uint tick;
         public uint baseline;
         public RootDeltaState sourceState;
 
 
-        public OnlineStateMessage(OnlineState state, RootDeltaState sourceState, IStateSource source, bool sentAsDelta, uint tick, uint baseline)
+        public OnlineStateMessage(OnlineState state, RootDeltaState sourceState, IStateSource? source, bool sentAsDelta, uint tick, uint baseline)
         {
             this.state = state;
             this.source = source;
@@ -23,12 +23,12 @@
 
         internal void Failed()
         {
-            source.Failed(this);
+            source?.Failed(this);
         }
 
         internal void Sent()
         {
-            source.Sent(this);
+            source?.Sent(this);
         }
 
         public interface IStateSource // could as well be a base type, used in entityfeed and resourcesubscription only
