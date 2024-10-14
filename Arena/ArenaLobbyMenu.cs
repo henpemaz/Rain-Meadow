@@ -330,7 +330,15 @@ namespace RainMeadow
                 if (arena.clientsAreReadiedUp == OnlineManager.players.Count) //&& OnlineManager.players.Count > 1
                 {
                     arena.allPlayersReadyLockLobby = true;
-                    this.playButton.menuLabel.text = this.Translate("ENTER");
+                    if (OnlineManager.players.Count == 1)
+                    {
+                        this.playButton.menuLabel.text = this.Translate("LOBBY WILL LOCK");
+
+                    } else
+                    {
+                        this.playButton.menuLabel.text = this.Translate("ENTER");
+
+                    }
 
                     if (OnlineManager.lobby.isOwner)
                     {
