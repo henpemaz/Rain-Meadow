@@ -1,16 +1,44 @@
-﻿using System;
-using Menu.Remix.MixedUI;
+﻿using Menu;
 using UnityEngine;
+using Steamworks;
+using System;
 
 namespace RainMeadow
 {
-    public class ChatTextBox : OpTextBox, ICanBeTyped
+    public class ChatTextBox : SimpleButton
     {
-        public ChatTextBox(ConfigurableBase config, Vector2 pos, float sizeX) : base(config, pos, sizeX)
+        public Action<char> KeyDown { get; set; }
+        public int textLimit;
+        public string value;
+        public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, "", pos, size)
         {
-            _size = new Vector2(Mathf.Max(IsUpdown ? 40f : 30f, sizeX), this.IsUpdown ? 30f : 24f);
+            KeyDown = (Action<char>)Delegate.Combine(KeyDown, new Action<char>(CaptureInputs));
         }
+        
+        public override void Update()
+        {
+            base.Update();
 
-        public Action<char> KeyHitDown { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+            string input = Input.inputString;
+            foreach (char c in input)
+            {
+                KeyDown.Invoke(c);
+            }
+        }
+        private void CaptureInputs(char input)
+        {
+            if (input == '\b')
+            {
+                if (value.Length > 0)
+                {
+                    value = value.Substring(0, value.Length - 1);
+                }
+            }
+            else
+            {
+                value += input.ToString();
+            }
+            menuLabel.text = value;
+        }
     }
 }
