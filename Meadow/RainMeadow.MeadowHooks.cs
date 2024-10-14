@@ -268,6 +268,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
             {
                 self.activeWorld.rainCycle.timer = 800;
+                MeadowMusic.NewWorld(self.activeWorld);
             }
         }
 

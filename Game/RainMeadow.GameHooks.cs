@@ -60,6 +60,10 @@ namespace RainMeadow
                 OnlineManager.lobby.gameMode.clientSettings.inGame = true;
             }
             orig(self, manager);
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                MeadowMusic.NewGame();
+            }
         }
 
         private void World_LoadWorld(On.World.orig_LoadWorld orig, World self, SlugcatStats.Name slugcatNumber, System.Collections.Generic.List<AbstractRoom> abstractRoomsList, int[] swarmRooms, int[] shelters, int[] gates)
@@ -288,6 +292,10 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 DebugOverlay.Update(self, dt);
+                if(OnlineManager.lobby.gameMode is MeadowGameMode)
+                {
+                    MeadowMusic.RawUpdate(self, dt);
+                }
             }
         }
 

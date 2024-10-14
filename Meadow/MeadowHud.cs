@@ -21,7 +21,6 @@ namespace RainMeadow
             this.hud = hud;
             this.camera = camera;
             this.owner = owner;
-            MeadowMusic.HelloNewRoom(camera.virtualMicrophone, camera.room);
             UpdatePlayers();
         }
 

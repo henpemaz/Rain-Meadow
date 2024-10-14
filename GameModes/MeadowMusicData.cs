@@ -5,8 +5,8 @@ namespace RainMeadow
     internal class MeadowMusicData : OnlineEntity.EntityData
     {
         private OnlineCreature oc;
-        public int inGroup = -1;
-        public bool isDJ = true;
+        //public int inGroup = -1;
+        //public bool isDJ = true;
         public string providedSong;
         public float startedPlayingAt;
         public MeadowMusicData(OnlineCreature oc)
@@ -16,7 +16,7 @@ namespace RainMeadow
 
         internal override EntityDataState MakeState(OnlineResource inResource)
         {
-            if (inResource is RoomSession)
+            if (inResource is WorldSession)
             {
                 RainMeadow.Trace($"{this} for {oc} making state in {inResource}");
                 return new State(this); //todo, don't send every fucking frame dude.
@@ -27,10 +27,10 @@ namespace RainMeadow
 
         public class State : EntityDataState
         {
-            [OnlineField(group = "music")]
-            public int inGroup;
-            [OnlineField(group = "music")]
-            public bool isDJ;
+            //[OnlineField(group = "music")]
+            //public int inGroup;
+            //[OnlineField(group = "music")]
+            //public bool isDJ;
             [OnlineField(group = "music", nullable = true)]
             public string providedSong;
             [OnlineField(group = "music")]
@@ -42,8 +42,8 @@ namespace RainMeadow
                 RainMeadow.Trace("From Data to State " + mcd); 
                 //Copy From data to state
                 //state = data;
-                inGroup = mcd.inGroup;
-                isDJ = mcd.isDJ;
+                //inGroup = mcd.inGroup;
+                //isDJ = mcd.isDJ;
                 providedSong = mcd.providedSong;
                 startedPlayingAt = mcd.startedPlayingAt;
                 //RainMeadow.Debug("Sent: " + inGroup + " " + isDJ + " " + providedSong + " " + startedPlayingAt);
@@ -56,8 +56,8 @@ namespace RainMeadow
                 {
                     //Read from state to data
                     //RainMeadow.Debug("Recieved: " + inGroup + " " + isDJ + " " + providedSong + " " + startedPlayingAt);
-                    mcd.inGroup = inGroup;
-                    mcd.isDJ = isDJ;
+                    //mcd.inGroup = inGroup;
+                    //mcd.isDJ = isDJ;
                     mcd.providedSong = providedSong;
                     mcd.startedPlayingAt = startedPlayingAt;
                 }

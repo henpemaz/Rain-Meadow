@@ -316,17 +316,14 @@ namespace RainMeadow
                                 continue;
                             }
                             if (entity.isMine) continue; // not interested
-                            if (entity.currentlyJoinedResource == resource) // this resource is the most "detailed" provider
+                            try
                             {
-                                try
-                                {
-                                    entity.ReadState(entityState, resource);
-                                }
-                                catch (Exception e)
-                                {
-                                    RainMeadow.Error($"Failed to read state to entity in {resource} : {entity}");
-                                    RainMeadow.Error(e);
-                                }
+                                entity.ReadState(entityState, resource);
+                            }
+                            catch (Exception e)
+                            {
+                                RainMeadow.Error($"Failed to read state to entity in {resource} : {entity}");
+                                RainMeadow.Error(e);
                             }
                         }
                         else

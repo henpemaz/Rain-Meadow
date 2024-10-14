@@ -194,7 +194,7 @@ namespace RainMeadow.Generics
             this.list = list;
         }
 
-        public virtual Imp Delta(Imp other)
+        public Imp Delta(Imp other)
         {
             if (other == null) { return (Imp)this; }
             Imp delta = new();
@@ -202,7 +202,7 @@ namespace RainMeadow.Generics
             return delta.list.Count == 0 ? null : delta;
         }
 
-        public virtual Imp ApplyDelta(Imp other)
+        public Imp ApplyDelta(Imp other)
         {
             Imp result = new();
             result.list = other == null ? list : list.Select(e => (T)e.ApplyDelta(other.list.FirstOrDefault(o => e.ID.Equals(o.ID)))).ToList();
@@ -235,7 +235,7 @@ namespace RainMeadow.Generics
             removedLookup = removed == null ? null : new HashSet<U>(removed);
         }
 
-        public virtual Imp Delta(Imp other)
+        public Imp Delta(Imp other)
         {
             if (other == null) { return (Imp)this; }
             Imp delta = new();
@@ -245,7 +245,7 @@ namespace RainMeadow.Generics
             return (delta.list.Count == 0 && delta.removed.Count == 0) ? null : delta;
         }
 
-        public virtual Imp ApplyDelta(Imp other)
+        public Imp ApplyDelta(Imp other)
         {
             Imp result = new();
             if (other == null)
@@ -258,6 +258,69 @@ namespace RainMeadow.Generics
                 list.Where(e => !other.removedLookup.Contains(e.ID)) // remove
                     .Select(e => other.lookup.TryGetValue(e.ID, out var o) ? o : e) // keep or update
                     .Concat(other.list.Where(o => !lookup.ContainsKey(o.ID))) // add new
+                    .ToList();
+            }
+            result.BuildLookup();
+            return result;
+        }
+
+        public void CustomSerialize(Serializer serializer)
+        {
+            SerializeImpl(serializer);
+            if (serializer.IsReading)
+            {
+                BuildLookup();
+            }
+        }
+
+        public abstract void SerializeImpl(Serializer serializer);
+    }
+
+    /// <summary>
+    /// Dynamic list, id-elementwise comparison, no subdelta
+    /// </summary>
+    public abstract class DynamicKVPList<TKey, TValue, Imp> : IDelta<Imp>, Serializer.ICustomSerializable where Imp : DynamicKVPList<TKey, TValue, Imp>, new() where TKey : IEquatable<TKey>
+    {
+        public List<KeyValuePair<TKey, TValue>> list;
+        public List<TKey> removed;
+        public Dictionary<TKey, TValue> lookup;
+        private HashSet<TKey> removedLookup;
+        public DynamicKVPList() { }
+        public DynamicKVPList(List<KeyValuePair<TKey, TValue>> list)
+        {
+            this.list = list;
+            BuildLookup();
+        }
+
+        private void BuildLookup()
+        {
+            this.lookup = list.ToDictionary();
+            removedLookup = removed == null ? null : new HashSet<TKey>(removed);
+        }
+
+        public Imp Delta(Imp baseline)
+        {
+            if (baseline == null) { return (Imp)this; }
+            Imp delta = new();
+            delta.list = list.Where(sl=>!baseline.lookup.TryGetValue(sl.Key, out var val) || !val.Equals(sl.Value)).ToList(); // new or changed
+            delta.removed = baseline.list.Select(e => e.Key).Where(e => !lookup.ContainsKey(e)).ToList();
+            delta.BuildLookup();
+            return (delta.list.Count == 0 && delta.removed.Count == 0) ? null : delta;
+        }
+
+        public Imp ApplyDelta(Imp baseline)
+        {
+            Imp result = new();
+            if (baseline == null)
+            {
+                result.list = list;
+            }
+            else
+            {
+                result.list =
+                list.Where(e => !baseline.removedLookup.Contains(e.Key)) // remove
+                    .Select(e => baseline.lookup.TryGetValue(e.Key, out var o) ? new KeyValuePair<TKey, TValue>(e.Key, o) : e) // keep or update
+                    .Concat(baseline.list.Where(o => !lookup.ContainsKey(o.Key))) // add new
                     .ToList();
             }
             result.BuildLookup();
@@ -298,7 +361,7 @@ namespace RainMeadow.Generics
             removedLookup = removed == null ? null : new HashSet<U>(removed);
         }
 
-        public virtual Imp Delta(Imp other)
+        public Imp Delta(Imp other)
         {
             if (other == null) { return (Imp)this; }
             Imp delta = new();
@@ -308,7 +371,7 @@ namespace RainMeadow.Generics
             return (delta.list.Count == 0 && delta.removed.Count == 0) ? null : delta;
         }
 
-        public virtual Imp ApplyDelta(Imp other)
+        public Imp ApplyDelta(Imp other)
         {
             Imp result = new();
             if (other == null)
@@ -362,7 +425,7 @@ namespace RainMeadow.Generics
             removedLookup = removed == null ? null : new HashSet<U>(removed);
         }
 
-        public virtual Imp Delta(Imp baseline)
+        public Imp Delta(Imp baseline)
         {
             if (baseline == null) { return (Imp)this; }
             Imp delta = new();
@@ -372,7 +435,7 @@ namespace RainMeadow.Generics
             return (delta.list.Count == 0 && delta.removed.Count == 0) ? null : delta;
         }
 
-        public virtual Imp ApplyDelta(Imp incoming)
+        public Imp ApplyDelta(Imp incoming)
         {
             Imp result = new();
             if (incoming == null)
@@ -591,6 +654,32 @@ namespace RainMeadow.Generics
             {
                 serializer.Serialize(ref updateIndexes);
             }
+        }
+    }
+
+    public class UshortToByteDict : DynamicKVPList<ushort, byte, UshortToByteDict>
+    {
+        public UshortToByteDict() { }
+        public UshortToByteDict(List<KeyValuePair<ushort, byte>> list) : base(list) { }
+
+        public override void SerializeImpl(Serializer serializer)
+        {
+            serializer.Serialize(ref list);
+            if (serializer.IsDelta)
+                serializer.Serialize(ref removed);
+        }
+    }
+
+    public class ByteToUshortDict : DynamicKVPList<byte, ushort, ByteToUshortDict>
+    {
+        public ByteToUshortDict() { }
+        public ByteToUshortDict(List<KeyValuePair<byte, ushort>> list) : base(list) { }
+
+        public override void SerializeImpl(Serializer serializer)
+        {
+            serializer.Serialize(ref list);
+            if (serializer.IsDelta)
+                serializer.Serialize(ref removed);
         }
     }
 }
