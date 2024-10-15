@@ -50,6 +50,19 @@ namespace RainMeadow
                 var p = (realizedPlayer as Player);
                 handModule.reachingForObject = true;
                 handModule.absoluteHuntPos = finalHandPos;
+                //for (int i = 0; i < 2; i++)
+                //{
+                //    if (p.grasps[i] == null)
+                //    {
+                //        continue;
+                //    }
+                //    if (p.grasps[i].grabbed is Spear)
+                //    {
+                //        (p.grasps[i].grabbed as Weapon).setRotation = targetPosition;
+                //        (p.grasps[i].grabbed as Weapon).rotationSpeed = 0f;
+                //    }
+                //}
+
 
                 //if (realizedPlayer.grasps[hand] != null && realizedPlayer.grasps[hand].grabbed is Weapon)
                 //{
@@ -57,7 +70,7 @@ namespace RainMeadow
                 //    //finalHandPos = Vector3.Slerp(finalHandPos, RWCustom.Custom.DegToVec((80f + Mathf.Cos((float)(p.animationFrame + (p.leftFoot ? 9 : 3)) / 12f * 2f * (float)System.Math.PI) * 4f * pg.spearDir) * pg.spearDir), Mathf.Abs((pg.spearDir)));
                 //    //(realizedPlayer.graphicsModule as PlayerGraphics).spearDir = ;
                 //}
-                
+
 
 
             }
@@ -75,8 +88,9 @@ namespace RainMeadow
             }
         }
 
-        private Vector2 GetOnlinePointingVector()
+        public static Vector2 GetOnlinePointingVector()
         {
+           var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
             if (controller is Joystick joystick)
             {
                 Vector2 direction = new Vector2(joystick.GetAxis(2), joystick.GetAxis(3));
