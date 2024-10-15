@@ -23,7 +23,6 @@ namespace RainMeadow
 
             if (!Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
                 return;
-
             if (OnlineManager.lobby.playerAvatars[OnlineManager.mePlayer].FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
             {
                 realizedPlayer = ac.realizedCreature;
@@ -46,11 +45,14 @@ namespace RainMeadow
             if (hand > -1)
             {
                 var handModule = (realizedPlayer.graphicsModule as PlayerGraphics).hands[hand];
+
+                var pg = (realizedPlayer.graphicsModule as PlayerGraphics);
+                var p = (realizedPlayer as Player);
                 handModule.reachingForObject = true;
                 handModule.absoluteHuntPos = finalHandPos;
+
             }
         }
-
         private void UpdateHandPosition()
         {
             for (int handy = 1; handy >= 0; handy--)
@@ -64,8 +66,9 @@ namespace RainMeadow
             }
         }
 
-        private Vector2 GetOnlinePointingVector()
+        public static Vector2 GetOnlinePointingVector()
         {
+           var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
             if (controller is Joystick joystick)
             {
                 Vector2 direction = new Vector2(joystick.GetAxis(2), joystick.GetAxis(3));
