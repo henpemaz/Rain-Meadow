@@ -218,9 +218,23 @@ namespace RainMeadow
 
             }
 
-
+            { // manually realize room of spectated player since we detach it from roomrealizer
+                var ac = this.game.cameras[0].followAbstractCreature;
+                if ((this.game.cameras[0].room.abstractRoom != ac.Room))
+                {
+                    if (ac.Room.realizedRoom == null)
+                    {
+                        RainMeadow.Debug($"activating {ac.Room}");
+                        this.game.world.ActivateRoom(ac.Room);
+                    }
+                    if (ac.Room.realizedRoom != null)
+                    {
+                        this.game.cameras[0].MoveCamera(ac.Room.realizedRoom, -1);
+                        RainMeadow.Debug($"moving camera to {ac.Room}");
+                    }
+                    else RainMeadow.Debug($"room {ac.Room} not realized??");
+                }
+            }
         }
-
-
     }
 }
