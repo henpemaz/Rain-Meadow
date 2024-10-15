@@ -473,6 +473,30 @@ namespace RainMeadow
             //}
             #endregion
 
+            // map discovery adapted to meadow
+            // auto-discover shelters by just being close enough
+            if (creature.coord != creature.lastCoord) // "new tile"
+            {
+                if (this.MapDiscoveryActive && creature.room.shortCutsReady && creature.room.game.cameras[0].hud != null && creature.room.game.cameras[0].hud.map != null)
+                {
+                    var map = creature.room.game.cameras[0].hud.map;
+                    int length = creature.room.abstractRoom.connections.Length;
+                    for (int i = 0; i < length; i++)
+                    {
+                        var pos = creature.room.MiddleOfTile(creature.room.exitAndDenIndex[i]);
+                        if(Custom.DistLess(pos, creature.mainBodyChunk.pos, 500f)) // close enough
+                        {
+                            map.ExternalOnePixelDiscover(pos, creature.room.abstractRoom.index);
+                            var neighbor = creature.room.world.GetAbstractRoom(creature.room.abstractRoom.connections[i]);
+                            if (neighbor != null && neighbor.shelter)
+                            {
+                                creature.room.game.rainWorld.progression.TempDiscoverShelter(neighbor.name);
+                            }
+                        }
+                    }
+                }
+            }
+
             // Void melt so damn annoying
             if (creature.room?.roomSettings.GetEffect(RoomSettings.RoomEffect.Type.VoidMelt) is RoomSettings.RoomEffect effect)
             {

@@ -17,6 +17,34 @@ namespace RainMeadow
             On.AbstractCreature.InDenUpdate += AbstractCreature_InDenUpdate; // Don't think
 
             On.ScavengerAbstractAI.InitGearUp += ScavengerAbstractAI_InitGearUp;
+
+            On.EggBugGraphics.Update += EggBugGraphics_Update;
+            On.BigSpiderGraphics.Update += BigSpiderGraphics_Update;
+        }
+
+        private void EggBugGraphics_Update(On.EggBugGraphics.orig_Update orig, EggBugGraphics self)
+        {
+            if (self.bug.bodyChunks[0].pos == self.bug.bodyChunks[1].pos)
+            {
+                // eggbug graphics does some line calcs that break if pos0 == pos1
+                // doesn't happen offline but when receiving pos from remove, can happen
+                // pos are equal the frame it's sucked into shortcut
+                // pos are set to different when sput out
+                // but due to the suckedintoshortcut not removing client-sided when ran by the creature (it waits for the RPC)
+                // then the bad values do happen
+                self.bug.bodyChunks[1].pos += Vector2.down;
+            }
+            orig(self);
+        }
+
+        private static void BigSpiderGraphics_Update(On.BigSpiderGraphics.orig_Update orig, BigSpiderGraphics self)
+        {
+            if (self.bug.bodyChunks[0].pos == self.bug.bodyChunks[1].pos)
+            {
+                // spiders do this too
+                self.bug.bodyChunks[1].pos += Vector2.down;
+            }
+            orig(self);
         }
 
         private void ScavengerAbstractAI_InitGearUp(On.ScavengerAbstractAI.orig_InitGearUp orig, ScavengerAbstractAI self)

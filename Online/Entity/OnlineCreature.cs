@@ -84,7 +84,7 @@ namespace RainMeadow
                 return string.Format(CultureInfo.InvariantCulture, "{0}<cA>{1}<cA>{2}.{3}<cA>", 
                     creatureType.ToString(), 
                     new EntityID(apoSpawn == ushort.MaxValue ? -1 : apoSpawn, apoId).ToString(), 
-                    initialState.pos.ResolveRoomName(),
+                    initialState.pos.ResolveRoomName(), // this uses story index, doesn't work in arena but we use pos directly anyways
                     initialState.pos.abstractNode
                     );
             }
@@ -115,9 +115,13 @@ namespace RainMeadow
             return new OnlineCreatureDefinition(this, onlineResource);
         }
 
-        public static AbstractCreature AbstractCreatureFromString(World world, string creatureString)
+        public static AbstractCreature AbstractCreatureFromString(World world, string creatureString, WorldCoordinate pos)
         {
             // copy-paste-addapt from vanilla
+            // vanilla has annoyiances with 1. non-unique roomnames such as gates
+            // 2. arena room names being completelly unsupported
+            // completely ignore pos in the string, it's the initialstates anyways
+            // and parsing room names doesn't work in arena, stick with indexes
             string[] array = Regex.Split(creatureString, "<cA>");
             CreatureTemplate.Type type = new CreatureTemplate.Type(array[0], false);
             if (type.Index == -1)
@@ -125,18 +129,9 @@ namespace RainMeadow
                 RainMeadow.Debug("Unknown creature: " + array[0] + " creature not spawning");
                 return null;
             }
-            string[] array2 = array[2].Split(new char[]
-            {
-            '.'
-            });
+            string[] array2 = array[2].Split('.');
             EntityID id = EntityID.FromString(array[1]);
-            int? num = BackwardsCompatibilityRemix.ParseRoomIndex(array2[0]);
-            if (num == null || !world.IsRoomInRegion(num.Value)) // handle non-unique (GATE) roomcodes
-            {
-                num = world.GetAbstractRoom(array2[0]).index;
-            }
-            WorldCoordinate den = new WorldCoordinate(num.Value, -1, -1, int.Parse(array2[1], NumberStyles.Any, CultureInfo.InvariantCulture));
-            AbstractCreature abstractCreature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, den, id);
+            AbstractCreature abstractCreature = new AbstractCreature(world, StaticWorld.GetCreatureTemplate(type), null, pos, id);
 
             foreach (var item in abstractCreature.stuckObjects.ToArray()) // Some (dropbug) creatures spawn with random items attached
             {
@@ -144,18 +139,6 @@ namespace RainMeadow
             }
 
             abstractCreature.state.LoadFromString(Regex.Split(array[3], "<cB>"));
-            if (abstractCreature.Room == null)
-            {
-                RainMeadow.Debug(string.Concat(new string[]
-                    {
-                        "Spawn room does not exist: ",
-                        array2[0],
-                        " ~ ",
-                        id.spawner.ToString(),
-                        " creature not spawning"
-                    }));
-                return null;
-            }
             abstractCreature.setCustomFlags();
             return abstractCreature;
         }
@@ -168,7 +151,7 @@ namespace RainMeadow
             string serializedObject = newObjectEvent.MakeSerializedObject(initialState);
             RainMeadow.Debug("serializedObject: " + serializedObject);
 
-            var apo = AbstractCreatureFromString(world, serializedObject);
+            var apo = AbstractCreatureFromString(world, serializedObject, initialState.pos);
             id.altSeed = apo.ID.RandomSeed;
             apo.ID = id;
             apo.pos = initialState.pos;
@@ -204,9 +187,9 @@ namespace RainMeadow
         [RPCMethod]
         public void CreatureViolence(OnlinePhysicalObject? onlineVillain, byte victimChunkIndex, AppendageRef? victimAppendageRef, Vector2? directionAndMomentum, Creature.DamageType damageType, float damage, float stunBonus)
         {
-            var victimAppendage = victimAppendageRef?.GetAppendagePos(this);
             var creature = (this.apo.realizedObject as Creature);
             if (creature == null) return;
+            var victimAppendage = victimAppendageRef?.GetAppendagePos(creature);
 
             BodyChunk? hitChunk = victimChunkIndex < 255 ? creature.bodyChunks[victimChunkIndex] : null;
             creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, hitChunk, victimAppendage, damageType, damage, stunBonus);

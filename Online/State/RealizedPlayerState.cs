@@ -34,9 +34,7 @@ namespace RainMeadow
         [OnlineFieldHalf(group = "tongue")]
         public float tongueRequestedLength;
         [OnlineField(group = "tongue", nullable = true)]
-        public OnlineEntity.EntityId? tongueAttachedObject;
-        [OnlineField(group = "tongue")]
-        public byte tongueAttachedChunkIndex;
+        public BodyChunkRef tongueAttachedChunk;
         [OnlineField]
         public Vector2 absoluteHuntPos;
         [OnlineField]
@@ -160,10 +158,9 @@ namespace RainMeadow
                     {
                         tongue.terrainStuckPos = tongue.pos;
                     }
-                    else if (tongue.mode == Player.Tongue.Mode.AttachedToObject
-                        && (tongueAttachedObject?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject is PhysicalObject po)
+                    else if (tongue.mode == Player.Tongue.Mode.AttachedToObject)
                     {
-                        tongue.attachedChunk = po.bodyChunks[tongueAttachedChunkIndex];
+                        tongue.attachedChunk = tongueAttachedChunk.ToBodyChunk();
                     }
                 }
             }
