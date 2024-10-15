@@ -37,10 +37,28 @@ public partial class RainMeadow
         On.Mushroom.BitByPlayer += Mushroom_BitByPlayer;
         On.KarmaFlower.BitByPlayer += KarmaFlower_BitByPlayer;
         On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites1;
+        On.Player.GraphicsModuleUpdated += Player_GraphicsModuleUpdated;
 
         On.AbstractCreature.ctor += AbstractCreature_ctor;
         On.Player.ShortCutColor += Player_ShortCutColor;
 
+    }
+
+    private void Player_GraphicsModuleUpdated(On.Player.orig_GraphicsModuleUpdated orig, Player self, bool actuallyViewed, bool eu)
+    {
+        orig(self, actuallyViewed, eu);
+        for (int i = 0; i < 2; i++)
+        {
+            if (self.grasps[i] == null)
+            {
+                continue;
+            }
+            if (self.grasps[i].grabbed is Spear)
+            {
+                (self.grasps[i].grabbed as Weapon).setRotation = Pointing.GetOnlinePointingVector();
+                (self.grasps[i].grabbed as Weapon).rotationSpeed = 0f;
+            }
+        }
     }
 
     private void Player_Update(ILContext il)
