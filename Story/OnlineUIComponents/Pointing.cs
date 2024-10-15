@@ -50,28 +50,6 @@ namespace RainMeadow
                 var p = (realizedPlayer as Player);
                 handModule.reachingForObject = true;
                 handModule.absoluteHuntPos = finalHandPos;
-                //for (int i = 0; i < 2; i++)
-                //{
-                //    if (p.grasps[i] == null)
-                //    {
-                //        continue;
-                //    }
-                //    if (p.grasps[i].grabbed is Spear)
-                //    {
-                //        (p.grasps[i].grabbed as Weapon).setRotation = targetPosition;
-                //        (p.grasps[i].grabbed as Weapon).rotationSpeed = 0f;
-                //    }
-                //}
-
-
-                //if (realizedPlayer.grasps[hand] != null && realizedPlayer.grasps[hand].grabbed is Weapon)
-                //{
-                //    pg.spearDir = Vector3.Slerp(finalHandPos, RWCustom.Custom.DegToVec(pg.spearDir), 0.5f).x;
-                //    //finalHandPos = Vector3.Slerp(finalHandPos, RWCustom.Custom.DegToVec((80f + Mathf.Cos((float)(p.animationFrame + (p.leftFoot ? 9 : 3)) / 12f * 2f * (float)System.Math.PI) * 4f * pg.spearDir) * pg.spearDir), Mathf.Abs((pg.spearDir)));
-                //    //(realizedPlayer.graphicsModule as PlayerGraphics).spearDir = ;
-                //}
-
-
 
             }
         }
