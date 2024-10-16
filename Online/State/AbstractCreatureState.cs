@@ -39,7 +39,7 @@ namespace RainMeadow
             base.ReadTo(onlineEntity);
             var abstractCreature = (AbstractCreature)((OnlineCreature)onlineEntity).apo;
             creatureStateState.ReadTo(abstractCreature);
-            if (abstractCreature.abstractAI is AbstractCreatureAI absAi)
+            if (abstractCreature.Room?.realizedRoom != null && abstractCreature.abstractAI is AbstractCreatureAI absAi)
             {
                 if (destination.room != absAi.destination.room || destination.abstractNode != absAi.destination.abstractNode)
                 {
