@@ -227,7 +227,7 @@ namespace RainMeadow
             {
                 // if (room.physicalObjects[i][j] is Player)
                 //becomes
-                // if (room.physicalObjects[i][j] is Player && !(OnlineManager.lobby != null && !(OnlinePhysicalObject.map.TryGetValue(self.room.physicalObjects[i][j].abstractPhysicalObject, out var oe) && oe.isMine)))
+                // if (room.physicalObjects[i][j] is Player && self.room.physicalObjects[i][j].abstractPhysicalObject.IsLocal())
                 var c = new ILCursor(il);
                 var skip = il.DefineLabel();
                 c.GotoNext(moveType: MoveType.After,
@@ -238,10 +238,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldloc_0);
                 c.Emit(OpCodes.Ldloc_1);
-                c.EmitDelegate((RoomSpecificScript.SS_E08GradientGravity self, int i, int j) =>
-                {
-                    return OnlineManager.lobby != null && !(OnlinePhysicalObject.map.TryGetValue(self.room.physicalObjects[i][j].abstractPhysicalObject, out var oe) && oe.isMine);
-                });
+                c.EmitDelegate((RoomSpecificScript.SS_E08GradientGravity self, int i, int j) => self.room.physicalObjects[i][j].abstractPhysicalObject.IsLocal());
                 c.Emit(OpCodes.Brtrue, skip);
             }
             catch (Exception e)
@@ -315,7 +312,7 @@ namespace RainMeadow
             {
                 // if (creature is Player && shortCut.shortCutType == ShortcutData.Type.RoomExit)
                 //becomes
-                // if (creature is Player && ((Player) creature).playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer && shortCut.shortCutType == ShortcutData.Type.RoomExit)
+                // if (creature is Player && creature.IsLocal() && shortCut.shortCutType == ShortcutData.Type.RoomExit)
                 var c = new ILCursor(il);
                 var skip = il.DefineLabel();
                 c.GotoNext(moveType: MoveType.After,
@@ -325,8 +322,8 @@ namespace RainMeadow
                     );
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_1);
-                c.EmitDelegate((Creature creature) => { return OnlineManager.lobby != null && ((Player)creature).playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer; });
-                c.Emit(OpCodes.Brtrue, skip);
+                c.EmitDelegate((Creature creature) => creature.IsLocal());
+                c.Emit(OpCodes.Brfalse, skip);
             }
             catch (Exception e)
             {

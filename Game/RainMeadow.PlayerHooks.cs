@@ -58,9 +58,8 @@ public partial class RainMeadow
                 i => i.MatchCallOrCallvirt<RainWorldGame>("GameOver")
                 );
             c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((Player self) =>
-                (OnlineManager.lobby != null && !(OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe) && oe.isMine)));
-            c.Emit(OpCodes.Brtrue, skip);
+            c.EmitDelegate((Player self) => self.abstractPhysicalObject.IsLocal());
+            c.Emit(OpCodes.Brfalse, skip);
             c.Index += 6;
             c.MarkLabel(skip);
 
@@ -79,7 +78,7 @@ public partial class RainMeadow
                 {
                     if (OnlineManager.lobby.gameMode is MeadowGameMode) // meadow crashes with msc assuming slugpupbars is there
                         return false;
-                    if (OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe) && !oe.isMine) // don't shelter if remote
+                    if (!self.abstractCreature.IsLocal()) // don't shelter if remote
                         return false;
                 }
                 return true;
@@ -180,8 +179,8 @@ public partial class RainMeadow
                 i => i.MatchNewobj<AbstractSpear>()
                 );
             c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((Player self) => OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe) && !oe.isMine);
-            c.Emit(OpCodes.Brtrue, skip);
+            c.EmitDelegate((Player self) => self.abstractPhysicalObject.IsLocal());
+            c.Emit(OpCodes.Brfalse, skip);
         }
         catch (Exception e)
         {
@@ -294,15 +293,11 @@ public partial class RainMeadow
         orig(self, abstractCreature, world);
         if (OnlineManager.lobby != null)
         {
-            if (OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var ent))
+            if (!self.abstractPhysicalObject.IsLocal(out var oe))
             {
-                // remote player
-                if (!ent.isMine)
-                {
-                    self.controller = new OnlineController(ent, self);
-                }
+                self.controller = new OnlineController(oe, self); // remote player
             }
-            else
+            else if (oe is null)
             {
                 RainMeadow.Error("player entity not found for " + self + " " + self.abstractCreature);
             }
@@ -351,35 +346,25 @@ public partial class RainMeadow
 
     private Player.ObjectGrabability PlayerOnGrabability(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
     {
-        if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
-        {
-            if (!oe.isMine) return Player.ObjectGrabability.CantGrab;
-        }
+        if (!self.abstractPhysicalObject.IsLocal()) return Player.ObjectGrabability.CantGrab;
         return orig(self, obj);
     }
 
     private void Player_SwallowObject(On.Player.orig_SwallowObject orig, Player self, int grasp)
     {
-        OnlinePhysicalObject? oe = null;
-        if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out oe))
-        {
-            if (!oe.isMine && !oe.beingMoved) return; // prevent execution
-        }
+        if (!self.abstractPhysicalObject.IsLocal(out var oe)) return;
         orig(self, grasp);
-        if (oe != null)
+        if (oe is not null && self.objectInStomach is not null)
         {
-            if (oe.isMine && self.objectInStomach != null)
-            {
-                self.objectInStomach.pos.room = -1; // signal not-in-a-room
-            }
+            self.objectInStomach.pos.room = -1; // signal not-in-a-room
         }
     }
 
     private void Player_Regurgitate(On.Player.orig_Regurgitate orig, Player self)
     {
-        if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
+        if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject(out var oe))
         {
-            if (!oe.isMine && !oe.beingMoved) return; // prevent execution
+            if (!oe.isMine) return; // prevent execution
             if (self.objectInStomach != null) self.objectInStomach.pos = self.abstractCreature.pos; // so it picks up in room.addentity hook, otherwise skipped
         }
         orig(self);
@@ -387,10 +372,7 @@ public partial class RainMeadow
 
     private void Player_ThrowObject(On.Player.orig_ThrowObject orig, Player self, int grasp, bool eu)
     {
-        if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
-        {
-            if (!oe.isMine) return;
-        }
+        if (!self.abstractPhysicalObject.IsLocal()) return;
         orig(self, grasp, eu);
     }
 
@@ -403,10 +385,7 @@ public partial class RainMeadow
 
     private void Player_SpitUpCraftedObject(On.Player.orig_SpitUpCraftedObject orig, Player self)
     {
-        if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
-        {
-            if (!oe.isMine) return;
-        }
+        if (!self.abstractPhysicalObject.IsLocal()) return;
         orig(self);
     }
 
