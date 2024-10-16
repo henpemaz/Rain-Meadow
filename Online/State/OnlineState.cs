@@ -66,9 +66,16 @@ namespace RainMeadow
             _ = StateType.Unknown; // runs static init
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList())
             {
-                foreach (var type in assembly.GetTypes().ToList())
+                try
                 {
-                    OnlineState.RegisterState(type);
+                    foreach (var type in assembly.GetTypes().ToList())
+                    {
+                        OnlineState.RegisterState(type);
+                    }
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
                 }
             }
         }

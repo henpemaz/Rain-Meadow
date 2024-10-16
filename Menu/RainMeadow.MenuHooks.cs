@@ -1,6 +1,7 @@
 using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using Steamworks;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;

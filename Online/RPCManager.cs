@@ -37,9 +37,16 @@ namespace RainMeadow
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList())
             {
-                foreach (var type in assembly.GetTypes().ToList())
+                try
                 {
-                    RegisterRPCs(type);
+                    foreach (var type in assembly.GetTypes().ToList())
+                    {
+                        RegisterRPCs(type);
+                    }
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
                 }
             }
         }
