@@ -64,7 +64,9 @@ namespace RainMeadow
 
                     this.pages[0].subObjects.Add(new Menu.MenuLabel(this, this.pages[0], this.Translate("PLAYERS"), new UnityEngine.Vector2(1180, 553), new(110, 30), true));
                     var btn = new SimplerButton(this, this.pages[0], username, new UnityEngine.Vector2(1180, 515) - i * new UnityEngine.Vector2(0, 38), new(110, 30));
+                    var chat = new ChatTextBox(this, this.pages[0], "", new UnityEngine.Vector2(manager.rainWorld.options.ScreenSize.x / 2f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 700f, 0), new(1400, 30)); // temp
                     this.pages[0].subObjects.Add(btn);
+                    this.pages[0].subObjects.Add(chat); // temp
                     btn.toggled = false;
 
                     if (OnlineManager.lobby.isOwner && i > 0)
