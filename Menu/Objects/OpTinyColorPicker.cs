@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    internal class OpTinyColorPicker : OpSimpleButton
+    public class OpTinyColorPicker : OpSimpleButton
     {
         public OpColorPicker colorPicker;
         private bool currentlyPicking;
@@ -51,7 +51,7 @@ namespace RainMeadow
             }
         }
 
-        internal delegate void OnValueChangedHandler();
+        public delegate void OnValueChangedHandler();
         public event OnValueChangedHandler OnValueChangedEvent;
 
         public Color valuecolor

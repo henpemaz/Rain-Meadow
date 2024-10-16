@@ -37,7 +37,6 @@ namespace RainMeadow
             return (OnlineGameMode)Activator.CreateInstance(gamemodes[onlineGameModeType], lobby);
         }
 
-        // todo handle modded ones
         public static void RegisterType(OnlineGameModeType onlineGameModeType, Type type, string description)
         {
             if (!typeof(OnlineGameMode).IsAssignableFrom(type) || type.GetConstructor(new[] { typeof(Lobby) }) == null) throw new ArgumentException("Needs to be OnlineGameMode with a (Lobby) ctor");
@@ -115,10 +114,7 @@ namespace RainMeadow
             return RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;
         }
 
-        public virtual ProcessManager.ProcessID MenuProcessId()
-        {
-            return RainMeadow.Ext_ProcessID.LobbyMenu;
-        }
+        public abstract ProcessManager.ProcessID MenuProcessId();
 
         internal virtual void AddClientData()
         {

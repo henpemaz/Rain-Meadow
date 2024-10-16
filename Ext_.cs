@@ -8,7 +8,7 @@ namespace RainMeadow
         {
             public static ProcessManager.ProcessID OnlineManager = new("MeadowOnlineManager", true);
             public static ProcessManager.ProcessID LobbySelectMenu = new("MeadowLobbySelectMenu", true);
-            public static ProcessManager.ProcessID LobbyMenu = new("MeadowLobbyMenu", true);
+            public static ProcessManager.ProcessID CustomLobbyMenu = new("MeadowLobbyMenu", true);
             public static ProcessManager.ProcessID ArenaLobbyMenu = new("ArenaLobbyMenu", true);
             public static ProcessManager.ProcessID MeadowMenu = new("MeadowMenu", true);
             public static ProcessManager.ProcessID StoryMenu = new("StoryMenu", true);

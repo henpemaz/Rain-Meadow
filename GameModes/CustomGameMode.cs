@@ -2,7 +2,7 @@
 {
     public class CustomGameMode : OnlineGameMode
     {
-        private SlugcatCustomization avatarSettings;
+        public SlugcatCustomization avatarSettings;
 
         public CustomGameMode(Lobby lobby) : base(lobby)
         {
@@ -22,6 +22,11 @@
                 // this adds the entry in the CWT
                 RainMeadow.creatureCustomizations.GetValue(creature, (c) => data);
             }
+        }
+
+        public override ProcessManager.ProcessID MenuProcessId()
+        {
+            return RainMeadow.Ext_ProcessID.CustomLobbyMenu;
         }
     }
 }
