@@ -108,18 +108,16 @@ namespace RainMeadow
             }
 
             BindSettings();
-            SanitizeStoryClientSettings(personaSettings);
+            SanitizeStoryClientSettings(gameMode.storyClientData);
             SanitizeStoryGameMode(gameMode);
 
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
         }
 
-        private void SanitizeStoryClientSettings(StoryClientSettings clientSettings)
+        private void SanitizeStoryClientSettings(StoryClientSettingsData clientSettings)
         {
             clientSettings.readyForWin = false;
             clientSettings.isDead = false;
-            clientSettings.myLastDenPos = null;
-            clientSettings.hasSheltered = false;
         }
 
         private void SanitizeStoryGameMode(StoryGameMode gameMode)
@@ -130,6 +128,8 @@ namespace RainMeadow
             gameMode.defaultDenPos = null;
             gameMode.ghostsTalkedTo = new();
             gameMode.consumedItems = new();
+            gameMode.myLastDenPos = null;
+            gameMode.hasSheltered = false;
         }
 
         private void SetupHostMenu()
