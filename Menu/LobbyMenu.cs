@@ -1,7 +1,7 @@
 ﻿using Menu;
-using UnityEngine;
-using System.Collections.Generic;
 using Steamworks;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -51,10 +51,12 @@ namespace RainMeadow
             foreach (OnlinePlayer player in OnlineManager.players)
             {
                 CSteamID playerId;
-                if (player.id is LocalMatchmakingManager.LocalPlayerId) {
+                if (player.id is LocalMatchmakingManager.LocalPlayerId)
+                {
                     playerId = default;
                 }
-                else {
+                else
+                {
                     playerId = (player.id as SteamMatchmakingManager.SteamPlayerId).steamID;
                 }
                 players.Add(new PlayerInfo(playerId, player.id.name));

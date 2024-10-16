@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace RainMeadow
 {
     public class RealizedTubeWormState : RealizedCreatureState

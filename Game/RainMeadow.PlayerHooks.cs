@@ -1,6 +1,5 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
 using System;
 using System.Linq;
 
@@ -280,20 +279,10 @@ public partial class RainMeadow
     {
         if (OnlineManager.lobby != null)
         {
-            // this could probably be reworked to be a single callback to gamemode, instead of 2
             sSpawningAvatar = true;
             AbstractCreature ac = OnlineManager.lobby.gameMode.SpawnAvatar(self, location);
             if (ac == null) ac = orig(self, player1, player2, player3, player4, location);
             sSpawningAvatar = false;
-
-            if (OnlineCreature.map.TryGetValue(ac, out var onlineCreature))
-            {
-                OnlineManager.lobby.gameMode.SetAvatar(onlineCreature as OnlineCreature);
-            }
-            else
-            {
-                throw new InvalidProgrammerException($"Can't find OnlineCreature for {ac}");
-            }
 
             return ac;
         }
@@ -482,7 +471,7 @@ public partial class RainMeadow
                 i => i.MatchLdfld<Options>("friendlyFire"),
                 i => i.MatchBrtrue(out _)
                 );
-            c.EmitDelegate(() => isStoryMode(out var story)  && !story.friendlyFire);
+            c.EmitDelegate(() => isStoryMode(out var story) && !story.friendlyFire);
             c.Emit(OpCodes.Brtrue, skip);
             c.Index += 6;
             c.MarkLabel(skip);
@@ -502,19 +491,19 @@ public partial class RainMeadow
         return orig(self, crit);
     }
 
+    // this WHOLE hook might be obsolete, todo check
     private void SlugcatStats_ctor(On.SlugcatStats.orig_ctor orig, SlugcatStats self, SlugcatStats.Name slugcat, bool malnourished)
     {
-
         if (isStoryMode(out var storyGameMode))
         {
-            slugcat = (storyGameMode.clientSettings as StoryClientSettings).playingAs;
+            slugcat = storyGameMode.avatarSettings.playingAs;
         }
         orig(self, slugcat, malnourished);
 
         if (OnlineManager.lobby == null) return;
         if (slugcat != Ext_SlugcatStatsName.OnlineSessionPlayer && slugcat != Ext_SlugcatStatsName.OnlineSessionRemotePlayer) return;
 
-        if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode or FreeRoamGameMode)
+        if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode or CustomGameMode)
         {
             self.throwingSkill = 1;
         }

@@ -38,8 +38,6 @@ lizards shouldn't open mouth to bite -> can't reproduce
 rats shouldn't panic
 slugcat arm reaches to threat
 
-passage but the map isn't saving
-
 following others around is hard
 	need map implemented
 	could use pipes flashing colors if room inhabited
@@ -69,8 +67,6 @@ echo tentacle bounces bet screens in long rooms
 scav climbpos doesn't sync
 
 emotes go off-screen too often, need to show them in-screen near the creature when possible
-
-seems to happen just too often that creatures don't customize
 
 Lantern mouse: They struggle to grab onto poles when jumping, and overall seen hard to walk on horizontal poles. They need to be rail-roaded into poles more strongly, like how lizards/scavengers are
 

@@ -1,17 +1,12 @@
-﻿using HUD;
+﻿using Kittehface.Framework20;
 using Menu;
 using Menu.Remix;
-using Menu.Remix.MixedUI;
-using RainMeadow.GameModes;
 using RWCustom;
 using Steamworks;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using UnityEngine;
-using Kittehface.Framework20;
-using System.Linq;
 using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -19,7 +14,7 @@ namespace RainMeadow
     {
         private ArenaCompetitiveGameMode arena => (ArenaCompetitiveGameMode)OnlineManager.lobby.gameMode;
 
-        private ArenaClientSettings personaSettings;
+        private SlugcatCustomization personaSettings;
         private static float num = 120f;
         private static float num2 = 0f;
         private static float num3 = num - num2;
@@ -132,11 +127,11 @@ namespace RainMeadow
 
         private void BindSettings()
         {
-            this.personaSettings = (ArenaClientSettings)OnlineManager.lobby.gameMode.clientSettings;
+            this.personaSettings = (OnlineManager.lobby.gameMode as ArenaCompetitiveGameMode).avatarSettings;
             personaSettings.bodyColor = RainMeadow.rainMeadowOptions.BodyColor.Value;
             personaSettings.eyeColor = RainMeadow.rainMeadowOptions.EyeColor.Value;
             personaSettings.playingAs = SlugcatStats.Name.White;
-
+            arena.arenaClientSettings.playingAs = personaSettings.playingAs;
         }
 
         void BuildLayout()
@@ -327,14 +322,15 @@ namespace RainMeadow
                     this.playButton.inactive = false;
                 }
 
-                if (arena.clientsAreReadiedUp == OnlineManager.players.Count) 
+                if (arena.clientsAreReadiedUp == OnlineManager.players.Count)
                 {
                     arena.allPlayersReadyLockLobby = true;
                     if (OnlineManager.players.Count == 1)
                     {
                         this.playButton.menuLabel.text = this.Translate("LOBBY WILL LOCK");
 
-                    } else
+                    }
+                    else
                     {
                         this.playButton.menuLabel.text = this.Translate("ENTER");
 
@@ -498,6 +494,7 @@ namespace RainMeadow
                 PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
 
                 personaSettings.playingAs = SlugList[currentColorIndex];
+                arena.arenaClientSettings.playingAs = personaSettings.playingAs;
 
                 if (OnlineManager.players.Count > 1)
                 {

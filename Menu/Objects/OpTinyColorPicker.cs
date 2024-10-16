@@ -1,8 +1,7 @@
-﻿using UnityEngine;
-using Menu;
-using Menu.Remix.MixedUI;
-using System;
+﻿using Menu;
 using Menu.Remix;
+using Menu.Remix.MixedUI;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -44,8 +43,8 @@ namespace RainMeadow
                 currentlyPicking = false;
                 colorFill = colorPicker.valueColor;
                 OnValueChangedEvent?.Invoke();
-                
-                if(Menu.selectedObject == this.colorPicker.wrapper)
+
+                if (Menu.selectedObject == this.colorPicker.wrapper)
                     Menu.selectedObject = this.wrapper;
 
                 colorPicker.Hide();

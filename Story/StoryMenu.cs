@@ -4,9 +4,8 @@ using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using System.Reflection;
-using Menu.Remix.MixedUI;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -25,7 +24,7 @@ namespace RainMeadow
 
         private SlugcatSelectMenu ssm;
         private SlugcatSelectMenu.SlugcatPage sp;
-        private StoryClientSettings personaSettings;
+        private SlugcatCustomization personaSettings;
 
         private List<SlugcatSelectMenu.SlugcatPage> characterPages;
         private EventfulSelectOneButton[] playerButtons = new EventfulSelectOneButton[0];
@@ -108,18 +107,16 @@ namespace RainMeadow
             }
 
             BindSettings();
-            SanitizeStoryClientSettings(personaSettings);
+            SanitizeStoryClientSettings(gameMode.storyClientData);
             SanitizeStoryGameMode(gameMode);
 
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
         }
 
-        private void SanitizeStoryClientSettings(StoryClientSettings clientSettings)
+        private void SanitizeStoryClientSettings(StoryClientSettingsData clientSettings)
         {
             clientSettings.readyForWin = false;
             clientSettings.isDead = false;
-            clientSettings.myLastDenPos = null;
-            clientSettings.hasSheltered = false;
         }
 
         private void SanitizeStoryGameMode(StoryGameMode gameMode)
@@ -130,6 +127,8 @@ namespace RainMeadow
             gameMode.defaultDenPos = null;
             gameMode.ghostsTalkedTo = new();
             gameMode.consumedItems = new();
+            gameMode.myLastDenPos = null;
+            gameMode.hasSheltered = false;
         }
 
         private void SetupHostMenu()
@@ -448,7 +447,7 @@ namespace RainMeadow
 
         private void BindSettings()
         {
-            this.personaSettings = (StoryClientSettings)OnlineManager.lobby.gameMode.clientSettings;
+            this.personaSettings = (OnlineManager.lobby.gameMode as StoryGameMode).avatarSettings;
             personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
             personaSettings.bodyColor = RainMeadow.rainMeadowOptions.BodyColor.Value;
             personaSettings.eyeColor = RainMeadow.rainMeadowOptions.EyeColor.Value;

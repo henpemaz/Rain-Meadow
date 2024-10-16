@@ -80,7 +80,7 @@ namespace RainMeadow
             return dictionary;
         }
 
-        public static (List<T1>, List<T2>) ToListTuple<T1, T2>(this IEnumerable<(T1,T2)> source)
+        public static (List<T1>, List<T2>) ToListTuple<T1, T2>(this IEnumerable<(T1, T2)> source)
         {
             var list = source.ToList(); // eval once
             var listA = new List<T1>(list.Count);

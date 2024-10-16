@@ -1,5 +1,4 @@
 ﻿using RWCustom;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -14,7 +13,7 @@ namespace RainMeadow
         public OnlineCreature ownerEntity;
         public MeadowCreatureData creatureData;
         private CreatureController creatureController;
-        public MeadowAvatarCustomization customization;
+        public MeadowAvatarData customization;
         private RainWorldGame game;
 
         public const int maxEmoteCount = 4;
@@ -33,7 +32,7 @@ namespace RainMeadow
 
         // this weird thing isn't a uad, it sort of follows the creature and gets updated when the creature updates
         // the "tiles" it adds though are UADs
-        public EmoteDisplayer(Creature owner, OnlineCreature ownerEntity, MeadowCreatureData creatureData, MeadowAvatarCustomization customization)
+        public EmoteDisplayer(Creature owner, OnlineCreature ownerEntity, MeadowCreatureData creatureData, MeadowAvatarData customization)
         {
             RainMeadow.Debug($"EmoteDisplayer created for {owner}");
             this.owner = owner;
@@ -77,7 +76,7 @@ namespace RainMeadow
             lastClock = game.clock;
 
             this.pos = owner.firstChunk.pos;
-            if((owner.inShortcut || owner.room == null) && game.shortcuts.OnScreenPositionOfInShortCutCreature(owner.abstractPhysicalObject.Room.realizedRoom, owner) is Vector2 inShortcutPos)
+            if ((owner.inShortcut || owner.room == null) && game.shortcuts.OnScreenPositionOfInShortCutCreature(owner.abstractPhysicalObject.Room.realizedRoom, owner) is Vector2 inShortcutPos)
             {
                 this.pos = inShortcutPos;
             }
@@ -96,7 +95,7 @@ namespace RainMeadow
             if (creatureController.specialInput[0].direction != Vector2.zero)
             {
                 rot = Custom.VecToDeg(creatureData.specialInput.direction);
-            } 
+            }
             else if (creatureController.inputDir != Vector2.zero)
             {
                 rot = Custom.VecToDeg(creatureController.inputDir);
@@ -105,7 +104,7 @@ namespace RainMeadow
             {
                 rot = 0f;
             }
-            if(ownerEntity.isMine && tiles.Count > 0 && time > timeToLive)
+            if (ownerEntity.isMine && tiles.Count > 0 && time > timeToLive)
             {
                 Clear();
                 this.creatureData.emotes.Clear();
@@ -151,7 +150,7 @@ namespace RainMeadow
 
             if (this.creatureData.emotes.Contains(emoteType)) return false;
             if (this.creatureData.emotes.Count >= maxEmoteCount) return false;
-            
+
             if (this.creatureData.emotes.Count == 0)
             {
                 startInGameClock = owner.abstractPhysicalObject.world.game.clock;

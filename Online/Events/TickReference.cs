@@ -1,6 +1,4 @@
-﻿using Mono.Cecil;
-using System;
-using static RainMeadow.Serializer;
+﻿using static RainMeadow.Serializer;
 
 namespace RainMeadow
 {
@@ -25,8 +23,8 @@ namespace RainMeadow
         public float TimeSinceTick()
         {
             var player = OnlineManager.lobby.PlayerFromId(fromPlayer);
-            if(player == null) { RainMeadow.Error("Player not found: " + fromPlayer); return 0; }
-            return (player.tick - tick) / (float) OnlineManager.instance.framesPerSecond;
+            if (player == null) { RainMeadow.Error("Player not found: " + fromPlayer); return 0; }
+            return (player.tick - tick) / (float)OnlineManager.instance.framesPerSecond;
         }
 
         public void CustomSerialize(Serializer serializer)

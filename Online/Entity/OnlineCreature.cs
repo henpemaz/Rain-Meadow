@@ -81,9 +81,9 @@ namespace RainMeadow
 
             protected override string MakeSerializedObjectNoExtras(PhysicalObjectEntityState initialState)
             {
-                return string.Format(CultureInfo.InvariantCulture, "{0}<cA>{1}<cA>{2}.{3}<cA>", 
-                    creatureType.ToString(), 
-                    new EntityID(apoSpawn == ushort.MaxValue ? -1 : apoSpawn, apoId).ToString(), 
+                return string.Format(CultureInfo.InvariantCulture, "{0}<cA>{1}<cA>{2}.{3}<cA>",
+                    creatureType.ToString(),
+                    new EntityID(apoSpawn == ushort.MaxValue ? -1 : apoSpawn, apoId).ToString(),
                     initialState.pos.ResolveRoomName(), // this uses story index, doesn't work in arena but we use pos directly anyways
                     initialState.pos.abstractNode
                     );
@@ -161,11 +161,11 @@ namespace RainMeadow
         public override void Deregister()
         {
             base.Deregister();
-            if(apo.realizedObject is Creature critter && critter.grasps != null)
+            if (apo.realizedObject is Creature critter && critter.grasps != null)
             {
                 foreach (var item in critter.grasps)
                 {
-                    if(item != null)
+                    if (item != null)
                     {
                         GraspRef.map.Remove(item);
                     }
@@ -239,7 +239,7 @@ namespace RainMeadow
             RainMeadow.Debug(this);
             enteringShortCut = true;
             var creature = (apo.realizedObject as Creature);
-            if(creature != null && creature.room != null)
+            if (creature != null && creature.room != null)
             {
                 try
                 {

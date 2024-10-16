@@ -10,7 +10,7 @@ namespace RainMeadow
     // Support character customization (WIP)
     public partial class RainMeadow
     {
-        public static ConditionalWeakTable<Creature, ClientSettings.AvatarCustomization> creatureCustomizations = new();
+        public static ConditionalWeakTable<Creature, AvatarData> creatureCustomizations = new();
 
         public void CustomizationHooks()
         {
@@ -41,7 +41,8 @@ namespace RainMeadow
                     c.MoveAfterLabels();
                     c.Emit(OpCodes.Ldarg_0);
                     c.Emit(OpCodes.Ldloca, colorVar.Index);
-                    c.EmitDelegate((PlayerGraphics self, ref Color originalEyeColor) => {
+                    c.EmitDelegate((PlayerGraphics self, ref Color originalEyeColor) =>
+                    {
                         if (RainMeadow.creatureCustomizations.TryGetValue(self.player, out var customization))
                         {
                             customization.ModifyEyeColor(ref originalEyeColor);
@@ -67,10 +68,15 @@ namespace RainMeadow
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldloca, 0);
-                c.EmitDelegate((PlayerGraphics self, ref Color originalBodyColor) => {
+                c.EmitDelegate((PlayerGraphics self, ref Color originalBodyColor) =>
+                {
+                    RainMeadow.Debug("a");
                     if (RainMeadow.creatureCustomizations.TryGetValue(self.player, out var customization))
                     {
+                        RainMeadow.Debug("b");
+                        RainMeadow.Debug("color was " + originalBodyColor);
                         customization.ModifyBodyColor(ref originalBodyColor);
+                        RainMeadow.Debug("color became " + originalBodyColor);
                     }
                 });
             }

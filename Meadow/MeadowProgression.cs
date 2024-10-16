@@ -54,7 +54,8 @@ namespace RainMeadow
         [TypeConverter(typeof(ExtEnumTypeConverter<Character>))]
         public class Character : ExtEnum<Character>
         {
-            public Character(string value, bool register = false, CharacterData characterDataEntry = null) : base(value, register)
+            public Character(string value, bool register = false) : base(value, register) { }
+            public Character(string value, bool register, CharacterData characterDataEntry) : base(value, register)
             {
                 if (register)
                 {
@@ -98,7 +99,7 @@ namespace RainMeadow
                 displayName = "SCAVENGER",
                 emotePrefix = "scav_",
                 emoteAtlas = "emotes_scav",
-                emoteColor = new Color(80,87,80,255) / 255f,
+                emoteColor = new Color(80, 87, 80, 255) / 255f,
                 voiceId = RainMeadow.Ext_SoundID.RM_Scav_Call,
                 selectSpriteIndexes = new[] { 1 },
                 startingCoords = new WorldCoordinate("GW_A11", 26, 22, -1),
@@ -157,7 +158,8 @@ namespace RainMeadow
         [TypeConverter(typeof(ExtEnumTypeConverter<Skin>))]
         public class Skin : ExtEnum<Skin>
         {
-            public Skin(string value, bool register = false, SkinData skinDataEntry = null) : base(value, register)
+            public Skin(string value, bool register = false) : base(value, register) { }
+            public Skin(string value, bool register, SkinData skinDataEntry) : base(value, register)
             {
                 if (register)
                 {
@@ -387,7 +389,7 @@ namespace RainMeadow
         {
             public Emote(string value, bool register = false) : base(value, register)
             {
-                if(register)
+                if (register)
                 {
                     if (value.StartsWith("emote"))
                     {
@@ -430,15 +432,15 @@ namespace RainMeadow
             public static Emote symbolTravel = new("symbolTravel", true);
             public static Emote symbolGroup = new("symbolGroup", true);
             public static Emote symbolFollow = new("symbolFollow", true);
-            
+
             public static Emote symbolFriends = new("symbolFriends", true);
             public static Emote symbolCollectible = new("symbolCollectible", true);
             public static Emote symbolEcho = new("symbolEcho", true);
-            
+
             public static Emote symbolShelter = new("symbolShelter", true);
             public static Emote symbolGate = new("symbolGate", true);
             public static Emote symbolTree = new("symbolTree", true);
-            
+
             public static Emote symbolSurvivor = new("symbolSurvivor", true);
             public static Emote symbolWanderer = new("symbolWanderer", true);
             public static Emote symbolHigh = new("symbolHigh", true);
@@ -564,7 +566,7 @@ namespace RainMeadow
             else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
             {
                 meadowHud.AnimateEmote();
-                if(EmoteProgress() is Emote emote) meadowHud.NewEmoteUnlocked(emote);
+                if (EmoteProgress() is Emote emote) meadowHud.NewEmoteUnlocked(emote);
             }
             else if (abstractMeadowCollectible.type == RainMeadow.Ext_PhysicalObjectType.MeadowGhost)
             {
@@ -576,7 +578,7 @@ namespace RainMeadow
                 if (EmoteProgress() is Emote emote) meadowHud.NewEmoteUnlocked(emote);
             }
 
-                AutosaveProgression(); // will be skipped if already saved
+            AutosaveProgression(); // will be skipped if already saved
         }
 
         public static Color TokenRedColor = new Color(248f / 255f, 89f / 255f, 93f / 255f);

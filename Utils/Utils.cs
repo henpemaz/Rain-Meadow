@@ -2,16 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace RainMeadow
 {
     internal static class Utils
     {
-        public static void Restart(string args = "") {
+        public static void Restart(string args = "")
+        {
             Process currentProcess = Process.GetCurrentProcess();
             string text = "\"" + currentProcess.MainModule.FileName + "\"";
             IDictionary environmentVariables = Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process);

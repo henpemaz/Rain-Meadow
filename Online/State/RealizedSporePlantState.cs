@@ -39,7 +39,7 @@ namespace RainMeadow
             {
                 this.possibleDestinations = sporePlant.possibleDestinations;
             }
-            else 
+            else
             {
                 this.possibleDestinations = new List<IntVector2>();
             }
@@ -51,7 +51,7 @@ namespace RainMeadow
                 this.stalkStuckPos = sporePlant.stalk.stuckPos;
                 this.coil = sporePlant.stalk.coil;
             }
-            else 
+            else
             {
                 this.hasStalk = false;
             }
@@ -68,7 +68,8 @@ namespace RainMeadow
             sporePlant.releaseBeesDelay = this.releaseBeesDelay;
             sporePlant.possibleDestinations = this.possibleDestinations;
             //sporePlant.deployOnCollision = this.deployOnCollision;
-            if (hasStalk && sporePlant.stalk != null) {
+            if (hasStalk && sporePlant.stalk != null)
+            {
                 sporePlant.stalk.baseDirVec = this.baseDirVec;
                 sporePlant.stalk.stalkDirVec = this.stalkDirVec;
                 sporePlant.stalk.stuckPos = this.stalkStuckPos;

@@ -22,14 +22,14 @@ namespace RainMeadow
         public Queue<uint> recentTicks = new(16); // incoming ticks
         public ushort recentTicksToAckBitpack; // outgoing, bitpack of recent ticks relative to tick, used for ack
         public uint latestTickAck; // incoming, the last tick they've ack'd to me
-        public HashSet<uint> recentlyAckdTicks = new (); // incoming, recent ticks they've acked (from bitpack)
+        public HashSet<uint> recentlyAckdTicks = new(); // incoming, recent ticks they've acked (from bitpack)
         public uint oldestTickToConsider; // incoming, from acked ticks the oldest to use for deltas
 
         public bool needsAck;
 
         public bool isMe;
         public bool hasLeft;
-        
+
         // For Debug Overlay
         public int ping; // rtt
         public bool eventsWritten;

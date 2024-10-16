@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static RainMeadow.OnlineResource.ResourceData;
 
 namespace RainMeadow
 {
@@ -36,7 +35,7 @@ namespace RainMeadow
         public void ReadState(ResourceState newState)
         {
             RainMeadow.Trace(this);
-            if(!isAvailable && !isWaitingForState && !isPending)
+            if (!isAvailable && !isWaitingForState && !isPending)
             {
                 RainMeadow.Trace($"received state for inactive resource");
                 return;
@@ -80,114 +79,6 @@ namespace RainMeadow
             }
         }
 
-        private List<ResourceData> resourceData = new();
-
-        internal T AddData<T>(bool ignoreDuplicate = false) where T : ResourceData
-        {
-            for (int i = 0; i < resourceData.Count; i++)
-            {
-                if (resourceData[i].GetType() == typeof(T))
-                {
-                    if (ignoreDuplicate) return (T)resourceData[i];
-                    throw new ArgumentException("type already in data");
-                }
-            }
-            var v = (T)Activator.CreateInstance(typeof(T), new[] { this });
-            resourceData.Add(v);
-            return v;
-        }
-
-        internal T AddData<T>(T toAdd, bool ignoreDuplicate = false) where T : ResourceData
-        {
-            for (int i = 0; i < resourceData.Count; i++)
-            {
-                if (ignoreDuplicate) return (T)resourceData[i];
-                throw new ArgumentException("type already in data");
-            }
-            resourceData.Add(toAdd);
-            return toAdd;
-        }
-
-        internal bool TryGetData<T>(out T d, bool addIfMissing = false) where T : ResourceData
-        {
-            for (int i = 0; i < resourceData.Count; i++)
-            {
-                if (resourceData[i].GetType() == typeof(T))
-                {
-                    d = (T)resourceData[i];
-                    return true;
-                }
-            }
-            if (addIfMissing)
-            {
-                d = (T)Activator.CreateInstance(typeof(T), new[] { this });
-                resourceData.Add(d);
-                return true;
-            }
-            d = null;
-            return false;
-        }
-
-        internal bool TryGetData(Type T, out ResourceData d, bool addIfMissing = false)
-        {
-            for (int i = 0; i < resourceData.Count; i++)
-            {
-                if (resourceData[i].GetType() == T)
-                {
-                    d = resourceData[i];
-                    return true;
-                }
-            }
-            if (addIfMissing)
-            {
-                d = (ResourceData)Activator.CreateInstance(T, new[] { this });
-                resourceData.Add(d);
-                return true;
-            }
-            d = null;
-            return false;
-        }
-
-        internal T GetData<T>(bool addIfMissing = false) where T : ResourceData
-        {
-            if (!TryGetData<T>(out var d, addIfMissing)) throw new KeyNotFoundException();
-            return d;
-        }
-
-
-        internal ResourceData GetData(Type T, bool addIfMissing = false)
-        {
-            if (!TryGetData(T, out var d, addIfMissing)) throw new KeyNotFoundException();
-            return d;
-        }
-
-        /// <summary>
-        /// Gamemode-specific data for a resource.
-        /// Must have ctor(OnlineResource)
-        /// </summary>
-        public abstract class ResourceData
-        {
-            public readonly OnlineResource resource;
-
-            public ResourceData(OnlineResource resource) // required constructor signature
-            {
-                this.resource = resource;
-            }
-
-            internal virtual ResourceDataState MakeState() { return null; }
-
-            [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
-            public abstract class ResourceDataState : OnlineState, IIdentifiable<byte>
-            {
-                public byte ID => (byte)handler.stateType.index;
-
-                public ResourceDataState() { }
-
-                internal abstract void ReadTo(ResourceData data);
-                internal abstract Type GetDataType();
-            }
-        }
-
         public abstract class ResourceState : RootDeltaState
         {
             [OnlineField(always = true)]
@@ -199,7 +90,7 @@ namespace RainMeadow
             [OnlineField(nullable = true, group = "entities")]
             public DeltaStates<OnlineEntity.EntityState, OnlineEntity.EntityId> entityStates;
             [OnlineField(nullable = true, group = "data")]
-            public DeltaDataStates<ResourceDataState> resourceDataStates;
+            public DeltaDataStates<ResourceData.ResourceDataState> resourceDataStates;
 
             protected ResourceState() : base() { }
             protected ResourceState(OnlineResource resource, uint ts) : base(ts)
@@ -208,7 +99,7 @@ namespace RainMeadow
                 registeredEntities = new(resource.registeredEntities.Values.ToList());
                 entitiesJoined = new(resource.joinedEntities.Values.ToList());
                 entityStates = new(resource.activeEntities.Select(e => e.GetState(ts, resource)).ToList());
-                resourceDataStates = new(resource.resourceData.Select(d => d.MakeState()).Where(s => s != null).ToList());
+                resourceDataStates = new(resource.resourceData.Values.Select(d => d.MakeState(resource)).Where(s => s != null).ToList());
             }
             public virtual void ReadTo(OnlineResource resource)
             {
@@ -335,7 +226,7 @@ namespace RainMeadow
                         }
                     }
                 }
-                resourceDataStates.list.ForEach(d => d.ReadTo(resource.GetData(d.GetDataType(), true)));
+                resourceDataStates.list.ForEach(ds => ds.ReadTo(resource.TryGetData(ds.GetDataType(), out var d) ? d : resource.AddData(ds.MakeData(resource)), resource));
             }
         }
 
@@ -370,7 +261,7 @@ namespace RainMeadow
 
                     foreach (var item in subleaseState.list)
                     {
-                        var subresource = resource.SubresourceFromShortId(item.resourceId);  
+                        var subresource = resource.SubresourceFromShortId(item.resourceId);
                         var itemOwner = OnlineManager.lobby.PlayerFromId(item.owner);
                         if (subresource.owner != itemOwner) subresource.NewOwner(itemOwner);
 

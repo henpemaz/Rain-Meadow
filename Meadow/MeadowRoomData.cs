@@ -2,17 +2,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace RainMeadow
 {
+    // no sync only data
     internal class MeadowRoomData : OnlineResource.ResourceData
     {
         private List<Place> places = new();
 
-        public MeadowRoomData(OnlineResource resource) : base(resource) { }
-
         public int NumberOfPlaces => places.Count;
+
+        public override ResourceDataState MakeState(OnlineResource resource) => null; // no state
 
         internal void AddItemPlacement(int x, int y, bool rare)
         {
@@ -28,7 +28,7 @@ namespace RainMeadow
             }
             var usedPlaces = placeRoom.abstractRoom.entities.Select(e => e.pos.Tile).ToHashSet();
             var unusedPlaces = places.Where(p => !usedPlaces.Contains(p.pos)).ToList();
-            if(unusedPlaces.Count > 0)
+            if (unusedPlaces.Count > 0)
             {
                 return unusedPlaces[UnityEngine.Random.Range(0, unusedPlaces.Count)].pos;
             }

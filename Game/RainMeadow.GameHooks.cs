@@ -3,7 +3,6 @@ using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using System;
 using System.Linq;
-using UnityEngine;
 
 namespace RainMeadow
 {
@@ -25,8 +24,6 @@ namespace RainMeadow
             On.Options.GetSaveFileName_SavOrExp += Options_GetSaveFileName_SavOrExp;
 
             On.RegionState.AdaptWorldToRegionState += RegionState_AdaptWorldToRegionState;
-
-            On.World.LoadWorld += World_LoadWorld;
 
             On.Room.ctor += Room_ctor;
             IL.Room.LoadFromDataString += Room_LoadFromDataString;
@@ -57,17 +54,13 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
-                OnlineManager.lobby.gameMode.clientSettings.inGame = true;
+                OnlineManager.lobby.gameMode.PreGameStart();
             }
             orig(self, manager);
-        }
-
-        private void World_LoadWorld(On.World.orig_LoadWorld orig, World self, SlugcatStats.Name slugcatNumber, System.Collections.Generic.List<AbstractRoom> abstractRoomsList, int[] swarmRooms, int[] shelters, int[] gates)
-        {
-            orig(self, slugcatNumber, abstractRoomsList, swarmRooms, shelters, gates);
-
             if (OnlineManager.lobby != null)
-                OnlineManager.lobby.gameMode.LobbyReadyCheck();
+            {
+                OnlineManager.lobby.gameMode.PostGameStart();
+            }
         }
 
         private void RainWorldGame_Update(ILContext il)
@@ -96,7 +89,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((RainWorldGame self) =>
                 {
-                    if(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+                    if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
                     {
                         self.pauseMenu = new MeadowPauseMenu(self.manager, self, mgm);
                         return true;
@@ -123,7 +116,7 @@ namespace RainMeadow
                     self.manager.blackDelay = 0;
                 }
             }
-            
+
             orig(self);
 
             if (OnlineManager.lobby?.gameMode is MeadowGameMode mgm)
@@ -132,7 +125,7 @@ namespace RainMeadow
                 // every 5 minutes
                 if (self.manager.upcomingProcess == null && self.clock % (5 * 60 * 40) == 0)
                 {
-                    MeadowProgression.progressionData.currentCharacterProgress.saveLocation = mgm.avatar.apo.pos;
+                    MeadowProgression.progressionData.currentCharacterProgress.saveLocation = mgm.avatars[0].apo.pos;
                     MeadowProgression.AutosaveProgression();
                 }
             }
@@ -245,7 +238,8 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldloc_0);
                 c.Emit(OpCodes.Ldloc_1);
-                c.EmitDelegate((RoomSpecificScript.SS_E08GradientGravity self, int i, int j) => {
+                c.EmitDelegate((RoomSpecificScript.SS_E08GradientGravity self, int i, int j) =>
+                {
                     return OnlineManager.lobby != null && !(OnlinePhysicalObject.map.TryGetValue(self.room.physicalObjects[i][j].abstractPhysicalObject, out var oe) && oe.isMine);
                 });
                 c.Emit(OpCodes.Brtrue, skip);
@@ -276,7 +270,7 @@ namespace RainMeadow
                 saveStateNumber = OnlineManager.lobby.gameMode.GetStorySessionPlayer(game);
                 if (isStoryMode(out var story))
                 {
-                    story.storyClientSettings.isDead = false;
+                    story.storyClientData.isDead = false;
                 }
             }
             orig(self, saveStateNumber, game);
@@ -298,14 +292,7 @@ namespace RainMeadow
             {
                 DebugOverlay.RemoveOverlay(self);
 
-                OnlineManager.lobby.gameMode.clientSettings.inGame = false;
-
-                if (OnlineManager.lobby.gameMode is MeadowGameMode mgm)
-                {
-                    MeadowProgression.progressionData.currentCharacterProgress.saveLocation = mgm.avatar.apo.pos;
-                    MeadowProgression.SaveProgression();
-                    self.rainWorld.progression.SaveToDisk(false, true, true); // save maps, shelters are miscprog
-                }
+                OnlineManager.lobby.gameMode.GameShutDown(self);
 
                 if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
 

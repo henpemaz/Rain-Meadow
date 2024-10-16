@@ -1,5 +1,5 @@
-﻿using System;
-using Menu;
+﻿using Menu;
+using System;
 using UnityEngine;
 
 namespace RainMeadow
@@ -12,7 +12,7 @@ namespace RainMeadow
             this.signalText = singalText;
             this.symbolSprite = new FSprite(symbolName);
             this.Container.AddChild(this.symbolSprite);
-            
+
         }
 
         public override void Clicked() { base.Clicked(); OnClick?.Invoke(this); }

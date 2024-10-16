@@ -1,5 +1,4 @@
-﻿using RainMeadow.GameModes;
-using RainMeadow.Generics;
+﻿using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,87 +31,12 @@ namespace RainMeadow
         }
 
         // todo register these automatically I'm tired of typing new ones in here
+        // really, just make it automagic
         // todo figure out how to handle indexes for modded stuff (so doesn't depend on load-order and so forth)
         public class StateType : ExtEnum<StateType>
         {
-            private StateType(string value, bool register) : base(value, register) { }
-            public StateType(string value) : base(value, false) { }
-            public StateType(string value, Type type) : base(value, true) { OnlineState.RegisterState(this, type); }
-
+            public StateType(string value, bool register = false) : base(value, register) { }
             public static readonly StateType Unknown = new("Unknown", true); // sending zeroes over should error out
-
-            public static readonly StateType LobbyState = new("LobbyState", typeof(Lobby.LobbyState));
-            public static readonly StateType WorldState = new("WorldState", typeof(WorldSession.WorldState));
-            public static readonly StateType RoomState = new("RoomState", typeof(RoomSession.RoomState));
-
-            public static readonly StateType EntityFeedState = new("EntityFeedState", typeof(EntityFeedState));
-
-            public static readonly StateType PhysicalObjectEntityState = new("PhysicalObjectEntityState", typeof(PhysicalObjectEntityState));
-            public static readonly StateType OnlineConsumableState = new("OnlineConsumableState", typeof(OnlineConsumable.OnlineConsumableState));
-            public static readonly StateType OnlineSeedCobState = new("OnlineSeedCobState", typeof(OnlineSeedCob.OnlineSeedCobState));
-            public static readonly StateType OnlineBubbleGrassState = new("OnlineBubbleGrassState", typeof(OnlineBubbleGrass.OnlineBubbleGrassState));
-            public static readonly StateType OnlineSporePlantState = new("OnlineSporePlantState", typeof(OnlineSporePlant.OnlineSporePlantState));
-            public static readonly StateType OnlineSpearState = new("OnlineSpearState", typeof(OnlineSpear.OnlineSpearState));
-            public static readonly StateType PlayerStateState = new("PlayerStateState", typeof(PlayerStateState));
-            public static readonly StateType AbstractCreatureState = new("AbstractCreatureState", typeof(AbstractCreatureState));
-            public static readonly StateType RealizedFlyState = new("RealizedFlyState", typeof(RealizedFlyState));
-            public static readonly StateType RealizedPhysicalObjectState = new("RealizedPhysicalObjectState", typeof(RealizedPhysicalObjectState));
-            public static readonly StateType RealizedDangleFruitState = new("RealizedDangleFruitState", typeof(RealizedDangleFruitState));
-            public static readonly StateType RealizedSlimeMoldState = new("RealizedSlimeMoldState", typeof(RealizedSlimeMoldState));
-            public static readonly StateType RealizedVultureGrubState = new("RealizedVultureGrubState", typeof(RealizedVultureGrubState));
-            public static readonly StateType RealizedCreatureState = new("RealizedCreatureState", typeof(RealizedCreatureState));
-            public static readonly StateType RealizedPlayerState = new("RealizedPlayerState", typeof(RealizedPlayerState));
-            public static readonly StateType RealizedTubeWormState = new("RealizedTubeWormState", typeof(RealizedTubeWormState));
-            public static readonly StateType RealizedOverseerState = new("RealizedOverseerState", typeof(RealizedOverseerState));
-            public static readonly StateType RealizedWeaponState = new("RealizedWeaponState", typeof(RealizedWeaponState));
-            public static readonly StateType RealizedSporePlantState = new("RealizedSporePlantState", typeof(RealizedSporePlantState));
-            public static readonly StateType RealizedSpearState = new("RealizedSpearState", typeof(RealizedSpearState));
-            public static readonly StateType RealizedScavengerBombState = new("RealizedScavengerBombState", typeof(RealizedScavengerBombState));
-            public static readonly StateType RealizedSingularityBombState = new("RealizedSingularityBombState", typeof(RealizedSingularityBombState));
-            public static readonly StateType CreatureStateState = new("CreatureStateState", typeof(CreatureStateState));
-            public static readonly StateType CreatureHealthStateState = new("CreatureHealthStateState", typeof(CreatureHealthStateState));
-            public static readonly StateType TongueState = new("TongueState", typeof(TongueState));
-
-            public static readonly StateType RainCycleDataState = new("RainCycleDataState", typeof(WorldSession.RainCycleData));
-
-            public static readonly StateType MeadowPersonaSettingsState = new("MeadowPersonaSettings.State", typeof(MeadowAvatarSettings.State));
-            public static readonly StateType SlugcatAvatarSettingsState = new("SlugcatAvatarSettings.State", typeof(StoryClientSettings.State));
-
-            public static readonly StateType ArenaAvatarSettingsDefinition = new("ArenaAvatarSettings.Definition", typeof(ArenaClientSettings.Definition));
-            public static readonly StateType ArenaCustomization = new("ArenaAvatarCustomization.State", typeof(ArenaClientSettings.State));
-            public static readonly StateType ArenaLobbyDataState = new("ArenaLobbyDataState", typeof(ArenaLobbyData.State));
-
-            //public static readonly StateType GamemodeDataState = new("GamemodeDataState", typeof(GamemodeDataState)); // abstract
-            public static readonly StateType MeadowCreatureDataState = new("MeadowCreatureDataState", typeof(MeadowCreatureData.State));
-            public static readonly StateType MeadowLobbyState = new("MeadowLobbyState", typeof(MeadowLobbyData.State));
-
-            public static readonly StateType StoryLobbyDataState = new("StoryLobbyDataState", typeof(StoryLobbyData.State));
-
-
-            public static readonly StateType OnlinePhysicalObjectDefinition = new("OnlinePhysicalObjectDefinition", typeof(OnlinePhysicalObject.OnlinePhysicalObjectDefinition));
-            public static readonly StateType OnlineConsumableDefinition = new("OnlineConsumableDefinition", typeof(OnlineConsumable.OnlineConsumableDefinition));
-            public static readonly StateType OnlinePebblesPearlDefinition = new("OnlinePebblesPearlDefinition", typeof(OnlinePebblesPearl.OnlinePebblesPearlDefinition));
-            public static readonly StateType OnlineSeedCobDefinition = new("OnlineSeedCobDefinition", typeof(OnlineSeedCob.OnlineSeedCobDefinition));
-            public static readonly StateType OnlineBubbleGrassDefinition = new("OnlineBubbleGrassDefinition", typeof(OnlineBubbleGrass.OnlineBubbleGrassDefinition));
-            public static readonly StateType OnlineSporePlantDefinition = new("OnlineSporePlantDefinition", typeof(OnlineSporePlant.OnlineSporePlantDefinition));
-            public static readonly StateType OnlineCreatureDefinition = new("OnlineCreatureDefinition", typeof(OnlineCreature.OnlineCreatureDefinition));
-            public static readonly StateType OnlineSpearDefinition = new("OnlineSpearDefinition", typeof(OnlineSpear.OnlineSpearDefinition));
-
-            public static readonly StateType GraspRef = new("GraspRef", typeof(GraspRef));
-            public static readonly StateType AbstractObjStickReprSpearStick = new("AbstractObjStickRepr.SpearStick", typeof(AbstractObjStickRepr.SpearStick));
-            public static readonly StateType AbstractObjStickReprSpearAppendageStick = new("AbstractObjStickRepr.SpearAppendageStick", typeof(AbstractObjStickRepr.SpearAppendageStick));
-            public static readonly StateType AbstractObjStickReprImpaledOnSpearStick = new("AbstractObjStickRepr.ImpaledOnSpearStick", typeof(AbstractObjStickRepr.ImpaledOnSpearStick));
-            public static readonly StateType AbstractObjStickReprOnBackStick = new("AbstractObjStickRepr.OnBackStick", typeof(AbstractObjStickRepr.OnBackStick));
-            public static readonly StateType AbstractObjStickReprCreatureGripStick = new ("AbstractObjStickRepr.CreatureGripStick", typeof(AbstractObjStickRepr.CreatureGripStick));
-
-            public static readonly StateType MeadowAvatarSettingsDefinition = new ("MeadowAvatarSettings.Definition", typeof(MeadowAvatarSettings.Definition));
-            public static readonly StateType SlugcatAvatarSettingsDefinition = new ("SlugcatAvatarSettings.Definition", typeof(StoryClientSettings.Definition));
-
-            public static readonly StateType OnlineMeadowCollectibleDefinition = new ("OnlineMeadowCollectible.Definition", typeof(OnlineMeadowCollectible.Definition));
-            public static readonly StateType OnlineMeadowCollectibleMeadowCollectibleState = new ("MeadowCollectibleState", typeof(OnlineMeadowCollectible.MeadowCollectibleState));
-            public static readonly StateType OnlineMeadowCollectibleMeadowGhostState = new ("MeadowGhostState", typeof(OnlineMeadowCollectible.MeadowGhostState));
-
-            public static readonly StateType DeflateState = new("DeflateState", typeof(DeflateState)); // used in serializer for wrapping large states
         }
 
         public static OnlineState ParsePolymorph(Serializer serializer)
@@ -128,13 +52,32 @@ namespace RainMeadow
         private static Dictionary<StateType, StateHandler> handlersByEnum = new Dictionary<StateType, StateHandler>();
         private static Dictionary<Type, StateHandler> handlersByType = new Dictionary<Type, StateHandler>();
 
-        public static void RegisterState(StateType stateType, Type type)
+        public static void RegisterState(Type type)
         {
-            if (!handlersByEnum.ContainsKey(stateType)) { handlersByEnum[stateType] = handlersByType[type] = new StateHandler(stateType, type); }
+            if (!type.IsAbstract && typeof(OnlineState).IsAssignableFrom(type))
+            {
+                StateType stateType = new StateType(type.FullName, true);
+                handlersByEnum[stateType] = handlersByType[type] = new StateHandler(stateType, type);
+            }
         }
+
         internal static void InitializeBuiltinTypes()
         {
             _ = StateType.Unknown; // runs static init
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList())
+            {
+                try
+                {
+                    foreach (var type in assembly.GetTypes().ToList())
+                    {
+                        OnlineState.RegisterState(type);
+                    }
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                }
+            }
         }
 
         public virtual void CustomSerialize(Serializer serializer)
@@ -215,7 +158,7 @@ namespace RainMeadow
             public virtual Expression ComparisonMethod(FieldInfo f, MemberExpression currentField, MemberExpression baselineField)
             {
                 if (f.FieldType.IsArray) return Expression.Call(
-                    typeof(Enumerable).GetMethods().First(m=> m.Name == "SequenceEqual" && m.IsGenericMethodDefinition && m.GetParameters().Length == 2).MakeGenericMethod(f.FieldType.GetElementType()),
+                    typeof(Enumerable).GetMethods().First(m => m.Name == "SequenceEqual" && m.IsGenericMethodDefinition && m.GetParameters().Length == 2).MakeGenericMethod(f.FieldType.GetElementType()),
                     Expression.Convert(currentField, typeof(IEnumerable<>).MakeGenericType(f.FieldType.GetElementType())),
                     Expression.Convert(baselineField, typeof(IEnumerable<>).MakeGenericType(f.FieldType.GetElementType()))
                     );

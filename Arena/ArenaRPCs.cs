@@ -1,6 +1,4 @@
-﻿using RainMeadow;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     public static class ArenaRPCs
     {
