@@ -17,6 +17,7 @@ namespace RainMeadow
         public float lastBlink;
         public bool switchedToDeathIcon;
         public int onlineTimeSinceSpawn;
+        public string iconString;
 
         SlugcatCustomization customization;
 
@@ -44,7 +45,17 @@ namespace RainMeadow
             this.arrowSprite.alpha = 0f;
             this.arrowSprite.x = -1000f;
             this.arrowSprite.color = Color.white;
-            this.slugIcon = new FSprite("Kill_Slugcat", true);
+
+            if (owner.clientSettings.owner == OnlineManager.lobby.owner)
+            {
+                this.iconString = "ChieftainA";
+            }
+            else
+            {
+                this.iconString = "Kill_Slugcat";
+
+            }
+            this.slugIcon = new FSprite(iconString, true);
             owner.hud.fContainers[0].AddChild(this.slugIcon);
             this.slugIcon.alpha = 0f;
             this.slugIcon.x = -1000f;
@@ -83,7 +94,7 @@ namespace RainMeadow
                     if (owner.PlayerConsideredDead != switchedToDeathIcon)
                     {
                         slugIcon.RemoveFromContainer();
-                        slugIcon = new FSprite(owner.PlayerConsideredDead ? "Multiplayer_Death" : "Kill_Slugcat");
+                        slugIcon = new FSprite(owner.PlayerConsideredDead ? "Multiplayer_Death" : iconString);
                         owner.hud.fContainers[0].AddChild(slugIcon);
                         switchedToDeathIcon = owner.PlayerConsideredDead;
                     }
