@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     // no sync only data
     internal class MeadowWorldData : OnlineResource.ResourceData

@@ -18,7 +18,7 @@ namespace RainMeadow
 
         SlugcatSelectMenu ssm;
         List<SlugcatSelectMenu.SlugcatPage> characterPages;
-        
+
         MenuLabel skinsLabel;
         EventfulSelectOneButton[] skinButtons;
 
@@ -64,9 +64,9 @@ namespace RainMeadow
 
                 characterSkins[playableCharacters[j]] = MeadowProgression.AllAvailableSkins(this.playableCharacters[j]);
             }
-            if(MeadowProgression.NextUnlockableCharacter() is MeadowProgression.Character character)
+            if (MeadowProgression.NextUnlockableCharacter() is MeadowProgression.Character character)
             {
-                this.characterPages.Add(new MeadowCharacterSelectPage(this, ssm, characterPages.Count + 1, character, locked:true));
+                this.characterPages.Add(new MeadowCharacterSelectPage(this, ssm, characterPages.Count + 1, character, locked: true));
                 this.pages.Add(this.characterPages[characterPages.Count - 1]);
             }
 
@@ -75,13 +75,15 @@ namespace RainMeadow
 
             this.pages[0].subObjects.Add(this.startButton);
             this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
-            this.prevButton.OnClick += (_) => {
+            this.prevButton.OnClick += (_) =>
+            {
                 ssm.quedSideInput = Math.Max(-3, ssm.quedSideInput - 1);
                 base.PlaySound(SoundID.MENU_Next_Slugcat);
             };
             this.pages[0].subObjects.Add(this.prevButton);
             this.nextButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(985f, 50f), 1);
-            this.nextButton.OnClick += (_) => {
+            this.nextButton.OnClick += (_) =>
+            {
                 ssm.quedSideInput = Math.Min(3, ssm.quedSideInput + 1);
                 base.PlaySound(SoundID.MENU_Next_Slugcat);
             };
@@ -112,7 +114,8 @@ namespace RainMeadow
             this.pages[0].subObjects.Add(skinProgressIcon);
 
             var cheatButton = new SimplerButton(this, mainPage, "CHEAT", new Vector2(200f, 90f), new Vector2(110f, 30f));
-            cheatButton.OnClick += (_) => {
+            cheatButton.OnClick += (_) =>
+            {
                 if (manager.upcomingProcess != null) return;
                 for (int i = 0; i < 80; i++)
                 {
@@ -133,7 +136,8 @@ namespace RainMeadow
             mainPage.subObjects.Add(cheatButton);
 
             var resetButton = new SimplerButton(this, mainPage, "RESET", new Vector2(200f, 140f), new Vector2(110f, 30f));
-            resetButton.OnClick += (_) => {
+            resetButton.OnClick += (_) =>
+            {
                 if (manager.upcomingProcess != null) return;
                 MeadowProgression.progressionData = null;
                 MeadowProgression.LoadDefaultProgression();
@@ -165,7 +169,7 @@ namespace RainMeadow
 
         private void UpdateCharacterUI()
         {
-            if(skinButtons != null)
+            if (skinButtons != null)
             {
                 var oldSkinButtons = skinButtons;
                 for (int i = 0; i < oldSkinButtons.Length; i++)
@@ -175,7 +179,7 @@ namespace RainMeadow
                     mainPage.RemoveSubObject(btn);
                 }
             }
-            
+
             var skins = ssm.slugcatPageIndex < playableCharacters.Count ? characterSkins[playableCharacters[ssm.slugcatPageIndex]] : new List<MeadowProgression.Skin>();
             skinButtons = new EventfulSelectOneButton[skins.Count];
             for (int i = 0; i < skins.Count; i++)
@@ -244,7 +248,7 @@ namespace RainMeadow
             }
             if (ssm.scroll == 0f && ssm.lastScroll == 0f) // one frame later
             {
-                if(ssm.quedSideInput != 0)
+                if (ssm.quedSideInput != 0)
                 {
                     var sign = (int)Mathf.Sign(ssm.quedSideInput);
                     ssm.slugcatPageIndex += sign;

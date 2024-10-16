@@ -9,7 +9,7 @@ namespace RainMeadow
         public WorldCoordinate pos;
         [OnlineField]
         public bool inDen;
-        [OnlineField(nullable=true)]
+        [OnlineField(nullable = true)]
         public Generics.DynamicOrderedStates<AbstractObjStickRepr> sticks;
         [OnlineField]
         public bool realized;
@@ -26,7 +26,7 @@ namespace RainMeadow
                 RainMeadow.Trace($"asked for realized state, not realized: {onlineEntity} in resource {inResource}");
                 realizedState = false;
             }
-            if(realizedState && onlineEntity.apo.realizedObject == null)
+            if (realizedState && onlineEntity.apo.realizedObject == null)
             {
                 RainMeadow.Error($"asked for realized state, not realized: {onlineEntity} in resource {inResource}");
                 realizedState = false;
@@ -73,7 +73,7 @@ namespace RainMeadow
                 {
                     if (wasPos.room != -1)
                     {
-                        if(apo.realizedObject is PhysicalObject po)
+                        if (apo.realizedObject is PhysicalObject po)
                         {
                             po.RemoveFromRoom();
                             apo.Abstractize(wasPos);
@@ -114,7 +114,7 @@ namespace RainMeadow
                 if (apo.world.IsRoomInRegion(pos.room)) apo.world.GetAbstractRoom(pos).AddEntity(apo);
                 //throw;
             }
-            
+
             onlineObject.apo.pos = pos; // pos isn't updated if compareDisregardingTile, but please, do
 
             // sticks

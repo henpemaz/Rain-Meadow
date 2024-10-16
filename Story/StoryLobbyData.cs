@@ -1,7 +1,5 @@
-﻿using Mono.Cecil;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using static RainMeadow.OnlineResource;
 
 namespace RainMeadow
@@ -16,7 +14,7 @@ namespace RainMeadow
 
         public class State : ResourceDataState
         {
-            [OnlineField(nullable=true)]
+            [OnlineField(nullable = true)]
             public string? defaultDenPos;
             [OnlineField]
             public bool isInGame;
@@ -56,7 +54,7 @@ namespace RainMeadow
             public Dictionary<string, int> storyIntRemixSettings;
 
 
-            public State() {}
+            public State() { }
 
             public State(StoryLobbyData storyLobbyData, OnlineResource onlineResource)
             {
@@ -98,7 +96,7 @@ namespace RainMeadow
                 var lobby = (resource as Lobby);
 
                 (lobby.gameMode as StoryGameMode).defaultDenPos = defaultDenPos;
-                
+
                 if (playerstate != null)
                 {
                     playerstate.foodInStomach = food;
@@ -118,7 +116,7 @@ namespace RainMeadow
                     storySession.saveState.theGlow = theGlow;
                     if ((RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame rainWorldGame))
                     {
-                        if(rainWorldGame.Players[0].realizedCreature != null)
+                        if (rainWorldGame.Players[0].realizedCreature != null)
                             (rainWorldGame.Players[0].realizedCreature as Player).glowing = theGlow;
                     }
                 }

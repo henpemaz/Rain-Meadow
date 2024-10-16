@@ -2,7 +2,6 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
-using RWCustom;
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -76,7 +75,7 @@ namespace RainMeadow
             orig(self, timeStacker, camPos);
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
             {
-                if(ModManager.MSC) // get out of the way
+                if (ModManager.MSC) // get out of the way
                 {
                     for (int k = 0; k < self.entranceSprites.GetLength(0); k++)
                     {
@@ -205,7 +204,7 @@ namespace RainMeadow
 
         private bool RegionGate_AllPlayersThroughToOtherSide1(On.RegionGate.orig_AllPlayersThroughToOtherSide orig, RegionGate self)
         {
-            if(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
             {
                 if (mgm.avatars[0].creature.pos.room == self.room.abstractRoom.index && (!self.letThroughDir || mgm.avatars[0].creature.pos.x < self.room.TileWidth / 2 + 3) && (self.letThroughDir || mgm.avatars[0].creature.pos.x > self.room.TileWidth / 2 - 4))
                 {
@@ -282,7 +281,7 @@ namespace RainMeadow
 
         private bool RainWorldGame_AllowRainCounterToTick(On.RainWorldGame.orig_AllowRainCounterToTick orig, RainWorldGame self)
         {
-            if(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
             {
                 return false;
             }
@@ -307,7 +306,7 @@ namespace RainMeadow
                 //}
 
                 var c = new ILCursor(il);
-                var loc = il.Body.Variables.First(v=>v.VariableType.Name == "SaveState").Index;
+                var loc = il.Body.Variables.First(v => v.VariableType.Name == "SaveState").Index;
                 ILLabel vanilla = il.DefineLabel();
                 ILLabel skipToEnd = null;
                 MethodReference op_Ineq;
@@ -336,12 +335,12 @@ namespace RainMeadow
 
         private void RoomCamera_Update(On.RoomCamera.orig_Update orig, RoomCamera self)
         {
-            if(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode meadowGameMode)
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode meadowGameMode)
             {
-                if(self.hud == null && self.followAbstractCreature?.realizedObject is Creature owner)
+                if (self.hud == null && self.followAbstractCreature?.realizedObject is Creature owner)
                 {
                     RainMeadow.Debug("followed creature is " + owner);
-                    if(owner != meadowGameMode.avatars[0].realizedCreature) { RainMeadow.Error($"Camera owner != avatar {owner} {meadowGameMode.avatars[0]}"); }
+                    if (owner != meadowGameMode.avatars[0].realizedCreature) { RainMeadow.Error($"Camera owner != avatar {owner} {meadowGameMode.avatars[0]}"); }
 
                     self.hud = new HUD.HUD(new FContainer[]
                     {

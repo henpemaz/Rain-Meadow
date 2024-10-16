@@ -48,7 +48,7 @@ namespace RainMeadow
 
                         for (int num6 = 0; num6 < 10; num6++)
                         {
-                            this.room.AddObject(new MeadowCollectToken.TokenSpark(this.placePos + Custom.RNV() * 2f, Custom.RNV() * 11f * Random.value + Custom.DirVec(avatarCreature.mainBodyChunk.pos, this.placePos) * 5f * Random.value, new Color(203f/255f, 252f/255f, 147f/255f), false));
+                            this.room.AddObject(new MeadowCollectToken.TokenSpark(this.placePos + Custom.RNV() * 2f, Custom.RNV() * 11f * Random.value + Custom.DirVec(avatarCreature.mainBodyChunk.pos, this.placePos) * 5f * Random.value, new Color(203f / 255f, 252f / 255f, 147f / 255f), false));
                         }
                     }
                 }

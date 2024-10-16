@@ -13,7 +13,7 @@
 
         public override Player.InputPackage GetInput()
         {
-            if(ent.currentlyJoinedResource != null)
+            if (ent.currentlyJoinedResource != null)
             {
                 var latestState = ent.lastStates[ent.currentlyJoinedResource];
                 if (latestState is AbstractCreatureState ces && ces.realizedObjectState is RealizedPlayerState rps)
@@ -25,7 +25,7 @@
             {
                 RainMeadow.Error($"player {ent} hasn't joined the room yet");
             }
-            
+
             return base.GetInput();
         }
     }

@@ -1,6 +1,6 @@
 ﻿using HUD;
-using UnityEngine;
 using Rewired;
+using UnityEngine;
 
 namespace RainMeadow
 {

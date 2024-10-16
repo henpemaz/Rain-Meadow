@@ -53,7 +53,7 @@ namespace RainMeadow
             return true;
         }
 
-        public override SlugcatStats.Name GetStorySessionPlayer(RainWorldGame self) 
+        public override SlugcatStats.Name GetStorySessionPlayer(RainWorldGame self)
         {
             return currentCampaign;
         }

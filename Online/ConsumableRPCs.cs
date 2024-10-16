@@ -7,11 +7,11 @@ namespace RainMeadow
         [RPCMethod]
         public static void pacifySporePlant(OnlinePhysicalObject onlineSporePlant)
         {
-            (onlineSporePlant.apo.realizedObject as SporePlant).Pacify(); 
+            (onlineSporePlant.apo.realizedObject as SporePlant).Pacify();
         }
 
         [RPCMethod]
-        public static void explodePuffBall(RoomSession onlineRoom, Vector2 pos, Color sporeColor, Color puffballColor) 
+        public static void explodePuffBall(RoomSession onlineRoom, Vector2 pos, Color sporeColor, Color puffballColor)
         {
             var room = onlineRoom.absroom.realizedRoom;
             InsectCoordinator smallInsects = null;

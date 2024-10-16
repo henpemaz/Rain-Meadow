@@ -18,7 +18,7 @@ namespace RainMeadow
 
         public override EntityDataState MakeState(OnlineEntity onlineEntity, OnlineResource inResource)
         {
-            if(inResource is RoomSession)
+            if (inResource is RoomSession)
             {
                 RainMeadow.Trace($"{this} for {onlineEntity} making state in {inResource}");
                 return new State(this);

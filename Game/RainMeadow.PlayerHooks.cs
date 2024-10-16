@@ -1,6 +1,5 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
 using System;
 using System.Linq;
 
@@ -472,7 +471,7 @@ public partial class RainMeadow
                 i => i.MatchLdfld<Options>("friendlyFire"),
                 i => i.MatchBrtrue(out _)
                 );
-            c.EmitDelegate(() => isStoryMode(out var story)  && !story.friendlyFire);
+            c.EmitDelegate(() => isStoryMode(out var story) && !story.friendlyFire);
             c.Emit(OpCodes.Brtrue, skip);
             c.Index += 6;
             c.MarkLabel(skip);

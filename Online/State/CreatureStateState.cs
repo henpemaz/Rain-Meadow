@@ -1,5 +1,3 @@
-using System;
-
 namespace RainMeadow
 {
     [DeltaSupport(level = StateHandler.DeltaSupport.FollowsContainer)]

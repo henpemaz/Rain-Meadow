@@ -87,7 +87,7 @@ namespace RainMeadow
                         RainMeadow.Debug("Player not found! Instantiating new at: " + remoteEndpoint.Port);
                         player = new OnlinePlayer(new LocalMatchmakingManager.LocalPlayerId(remoteEndpoint.Port, remoteEndpoint, remoteEndpoint.Port == UdpPeer.STARTING_PORT));
                     }
-                    
+
                     Packet.Decode(netReader, player);
                 }
                 catch (Exception e)

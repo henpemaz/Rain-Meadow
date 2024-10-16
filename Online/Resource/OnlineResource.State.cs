@@ -35,7 +35,7 @@ namespace RainMeadow
         public void ReadState(ResourceState newState)
         {
             RainMeadow.Trace(this);
-            if(!isAvailable && !isWaitingForState && !isPending)
+            if (!isAvailable && !isWaitingForState && !isPending)
             {
                 RainMeadow.Trace($"received state for inactive resource");
                 return;
@@ -261,7 +261,7 @@ namespace RainMeadow
 
                     foreach (var item in subleaseState.list)
                     {
-                        var subresource = resource.SubresourceFromShortId(item.resourceId);  
+                        var subresource = resource.SubresourceFromShortId(item.resourceId);
                         var itemOwner = OnlineManager.lobby.PlayerFromId(item.owner);
                         if (subresource.owner != itemOwner) subresource.NewOwner(itemOwner);
 

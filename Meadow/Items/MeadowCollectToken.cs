@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using RWCustom;
+﻿using RWCustom;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -236,7 +236,7 @@ namespace RainMeadow
                     var creature = room.abstractRoom.creatures[i].realizedCreature;
                     if (creature == null) continue;
                     num4 = Mathf.Min(num4, Vector2.Distance(creature.mainBodyChunk.pos, this.pos));
-                    
+
                     if (Custom.DistLess(creature.mainBodyChunk.pos, this.pos, num5))
                     {
                         if (Custom.DistLess(this.pos, this.hoverPos, 80f))
@@ -507,7 +507,7 @@ namespace RainMeadow
                     this.headVel -= Custom.DirVec(this.armPos, this.head) * (Vector2.Distance(this.armPos, this.head) - this.coordLength) * 0.8f;
                     this.head -= Custom.DirVec(this.armPos, this.head) * (Vector2.Distance(this.armPos, this.head) - this.coordLength) * 0.8f;
                 }
-                this.headVel += (Vector2) Vector3.Slerp(Custom.DegToVec(this.GetCurveLerp(0, 0.5f, 1f)), new Vector2(0f, 1f), 0.4f) * 0.4f;
+                this.headVel += (Vector2)Vector3.Slerp(Custom.DegToVec(this.GetCurveLerp(0, 0.5f, 1f)), new Vector2(0f, 1f), 0.4f) * 0.4f;
                 this.lastHeadDir = this.headDir;
                 Vector2 vector = this.hoverPos;
                 if (this.token != null && this.token.expand == 0f && !this.token.contract)
@@ -619,7 +619,7 @@ namespace RainMeadow
 
             public Vector2 EyePos(float timeStacker)
             {
-                return Vector2.Lerp(this.lastHead, this.head, timeStacker) + (Vector2) Vector3.Slerp(this.lastHeadDir, this.headDir, timeStacker) * 3f;
+                return Vector2.Lerp(this.lastHead, this.head, timeStacker) + (Vector2)Vector3.Slerp(this.lastHeadDir, this.headDir, timeStacker) * 3f;
             }
 
             public void InitiateSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)

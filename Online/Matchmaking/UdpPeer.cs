@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Reflection;
 using UnityEngine;
 
 namespace RainMeadow
@@ -237,7 +236,7 @@ namespace RainMeadow
                 peers[remoteEndpoint] = peerData;
             }
 
-            if(simulatedLoss > 0)
+            if (simulatedLoss > 0)
             {
                 if (simulatedLoss > random.NextDouble() || (peerData.loss && simulatedChainLoss > random.NextDouble()))
                 {

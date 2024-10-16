@@ -266,7 +266,7 @@ namespace RainMeadow
         {
             base.Update();
 
-            if(game.pauseMenu != null)
+            if (game.pauseMenu != null)
             {
                 lastRadialPickerActive = false;
                 radialPickerActive = false;
@@ -290,7 +290,7 @@ namespace RainMeadow
 
             uiLastFade = uiFade;
 
-            if(mousePos != lastMousePos || dragging || this.gridHover.x != -1)
+            if (mousePos != lastMousePos || dragging || this.gridHover.x != -1)
             {
                 uiNeeded = Mathf.Max(uiNeeded, 80);
             }
@@ -322,9 +322,9 @@ namespace RainMeadow
                     clickedEmote = gridEmotes[gridHover.y, gridHover.x];
                     mouseOrigin = mousePos;
                 }
-                else if(!mouseDown && lastMouseDown)
+                else if (!mouseDown && lastMouseDown)
                 {
-                    if(clickedEmote != null && !dragging && newHover == gridHover) // still here
+                    if (clickedEmote != null && !dragging && newHover == gridHover) // still here
                     {
                         EmotePressed(clickedEmote);
                     }
@@ -497,9 +497,9 @@ namespace RainMeadow
                 draggedEmote.SetElementByName(customization.GetEmote(clickedEmote));
                 draggedTile.SetElementByName(customization.GetBackground(clickedEmote));
             }
-            if(dragging && !mouseDown && clickedEmote != null) // let go to end
+            if (dragging && !mouseDown && clickedEmote != null) // let go to end
             {
-                if(radialSelected >= 0)
+                if (radialSelected >= 0)
                 {
                     MeadowProgression.progressionData.currentCharacterProgress.emoteHotbar[radialSelected] = clickedEmote;
                     MeadowProgression.AutosaveProgression(true);
@@ -513,7 +513,7 @@ namespace RainMeadow
                 dragging = false;
                 clickedEmote = null;
             }
-            if(mouseDown && clickedEmote != null)
+            if (mouseDown && clickedEmote != null)
             {
                 creatureController.preventMouseInput = true;
             }
@@ -531,7 +531,7 @@ namespace RainMeadow
 
             var hideAll = game.pauseMenu != null || fullyHidden;
             base.Draw(timeStacker);
-            
+
             if (hideAll)
             {
                 gridDisplay.isVisible = false;
@@ -646,7 +646,7 @@ namespace RainMeadow
 
         internal void Refresh()
         {
-            if(slatedForDeletion) { return; }
+            if (slatedForDeletion) { return; }
             slatedForDeletion = true;
             hud.AddPart(new MeadowEmoteHud(hud, camera, owner));
         }

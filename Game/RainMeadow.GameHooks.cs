@@ -3,7 +3,6 @@ using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using System;
 using System.Linq;
-using UnityEngine;
 
 namespace RainMeadow
 {
@@ -90,7 +89,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((RainWorldGame self) =>
                 {
-                    if(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+                    if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
                     {
                         self.pauseMenu = new MeadowPauseMenu(self.manager, self, mgm);
                         return true;
@@ -117,7 +116,7 @@ namespace RainMeadow
                     self.manager.blackDelay = 0;
                 }
             }
-            
+
             orig(self);
 
             if (OnlineManager.lobby?.gameMode is MeadowGameMode mgm)
@@ -239,7 +238,8 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldloc_0);
                 c.Emit(OpCodes.Ldloc_1);
-                c.EmitDelegate((RoomSpecificScript.SS_E08GradientGravity self, int i, int j) => {
+                c.EmitDelegate((RoomSpecificScript.SS_E08GradientGravity self, int i, int j) =>
+                {
                     return OnlineManager.lobby != null && !(OnlinePhysicalObject.map.TryGetValue(self.room.physicalObjects[i][j].abstractPhysicalObject, out var oe) && oe.isMine);
                 });
                 c.Emit(OpCodes.Brtrue, skip);
@@ -293,7 +293,7 @@ namespace RainMeadow
                 DebugOverlay.RemoveOverlay(self);
 
                 OnlineManager.lobby.gameMode.GameShutDown(self);
-                
+
                 if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
 
                 if (ws.isActive) ws.Deactivate();

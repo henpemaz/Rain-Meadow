@@ -1,13 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
 using HUD;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
-using static RainMeadow.MeadowProgression;
-using IL;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -82,7 +80,7 @@ namespace RainMeadow
 
         private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
         {
-            if (isStoryMode(out var  story) && story.friendlyFire && obj is Player && self is Spear && self.thrownBy != null && self.thrownBy is Player)
+            if (isStoryMode(out var story) && story.friendlyFire && obj is Player && self is Spear && self.thrownBy != null && self.thrownBy is Player)
             {
                 return true;
             }

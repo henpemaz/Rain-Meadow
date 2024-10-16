@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using Mono.Cecil;
 using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
@@ -141,7 +140,7 @@ namespace RainMeadow
         public void JoinOrLeavePending()
         {
             if (!isMine) { throw new InvalidProgrammerException("not owner"); }
-            
+
             // Sanitize
             for (int i = enteredResources.Count - 1; i >= 0; i--)
             {
@@ -167,7 +166,7 @@ namespace RainMeadow
             }
             if (pendingRequest is RPCEvent rpc && rpc.target is OnlineResource res)
             {
-                if(!enteredResources.Contains(res) && !joinedResources.Contains(res))
+                if (!enteredResources.Contains(res) && !joinedResources.Contains(res))
                 {
                     RainMeadow.Debug($"dismissing pending request {pendingRequest} for resource {res}");
                     pendingRequest = null;
@@ -268,14 +267,14 @@ namespace RainMeadow
 
         public virtual void NewOwner(OnlinePlayer newOwner)
         {
-            if(newOwner == null) { throw new InvalidProgrammerException("null owner for entity"); }
+            if (newOwner == null) { throw new InvalidProgrammerException("null owner for entity"); }
             RainMeadow.Debug($"{this} assigned to {newOwner}");
             var wasOwner = owner;
             if (wasOwner == newOwner) return;
             owner = newOwner;
             primaryResource.registeredEntities[id] = MakeDefinition(primaryResource);
 
-            foreach(var key in incomingState.Keys.ToList())
+            foreach (var key in incomingState.Keys.ToList())
             {
                 incomingState[key] = new Queue<EntityState>();
             }
@@ -315,10 +314,10 @@ namespace RainMeadow
                 RainMeadow.Debug($"dismissing pending request {pendingRequest}");
                 pendingRequest = null;
             }
-            
+
             var index = enteredResources.IndexOf(onlineResource);
             if (index > -1) enteredResources.RemoveRange(index, enteredResources.Count - index);
-            
+
             if (!joinedResources.Contains(onlineResource)) return;
             // if any subresources to leave do that first for consistency 
             joinedResources.Reverse<OnlineResource>().ToArray().Do(r => { if (r.IsSubresourceOf(onlineResource)) Deactivated(r); });

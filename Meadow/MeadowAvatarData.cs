@@ -66,7 +66,7 @@ namespace RainMeadow
 
         public override EntityDataState MakeState(OnlineEntity onlineEntity, OnlineResource inResource)
         {
-            if(inResource is Lobby || inResource is WorldSession)
+            if (inResource is Lobby || inResource is WorldSession)
             {
                 return new State(this);
             }
@@ -108,7 +108,7 @@ namespace RainMeadow
 
         private void NewState(State state)
         {
-            if(state != lastState) // ref uneq
+            if (state != lastState) // ref uneq
             {
                 Updated();
             }

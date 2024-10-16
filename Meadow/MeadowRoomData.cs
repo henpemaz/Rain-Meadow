@@ -28,7 +28,7 @@ namespace RainMeadow
             }
             var usedPlaces = placeRoom.abstractRoom.entities.Select(e => e.pos.Tile).ToHashSet();
             var unusedPlaces = places.Where(p => !usedPlaces.Contains(p.pos)).ToList();
-            if(unusedPlaces.Count > 0)
+            if (unusedPlaces.Count > 0)
             {
                 return unusedPlaces[UnityEngine.Random.Range(0, unusedPlaces.Count)].pos;
             }

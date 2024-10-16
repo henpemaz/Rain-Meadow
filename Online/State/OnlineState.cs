@@ -151,7 +151,7 @@ namespace RainMeadow
             public virtual Expression ComparisonMethod(FieldInfo f, MemberExpression currentField, MemberExpression baselineField)
             {
                 if (f.FieldType.IsArray) return Expression.Call(
-                    typeof(Enumerable).GetMethods().First(m=> m.Name == "SequenceEqual" && m.IsGenericMethodDefinition && m.GetParameters().Length == 2).MakeGenericMethod(f.FieldType.GetElementType()),
+                    typeof(Enumerable).GetMethods().First(m => m.Name == "SequenceEqual" && m.IsGenericMethodDefinition && m.GetParameters().Length == 2).MakeGenericMethod(f.FieldType.GetElementType()),
                     Expression.Convert(currentField, typeof(IEnumerable<>).MakeGenericType(f.FieldType.GetElementType())),
                     Expression.Convert(baselineField, typeof(IEnumerable<>).MakeGenericType(f.FieldType.GetElementType()))
                     );

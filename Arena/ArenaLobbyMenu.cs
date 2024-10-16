@@ -1,16 +1,12 @@
-﻿using HUD;
+﻿using Kittehface.Framework20;
 using Menu;
 using Menu.Remix;
-using Menu.Remix.MixedUI;
 using RWCustom;
 using Steamworks;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using UnityEngine;
-using Kittehface.Framework20;
-using System.Linq;
 using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -326,14 +322,15 @@ namespace RainMeadow
                     this.playButton.inactive = false;
                 }
 
-                if (arena.clientsAreReadiedUp == OnlineManager.players.Count) 
+                if (arena.clientsAreReadiedUp == OnlineManager.players.Count)
                 {
                     arena.allPlayersReadyLockLobby = true;
                     if (OnlineManager.players.Count == 1)
                     {
                         this.playButton.menuLabel.text = this.Translate("LOBBY WILL LOCK");
 
-                    } else
+                    }
+                    else
                     {
                         this.playButton.menuLabel.text = this.Translate("ENTER");
 

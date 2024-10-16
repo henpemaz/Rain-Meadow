@@ -1,7 +1,6 @@
 ﻿using MonoMod.RuntimeDetour;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace RainMeadow
 {
@@ -109,7 +108,7 @@ namespace RainMeadow
 
         private void AbstractPhysicalObject_Realize(On.AbstractPhysicalObject.orig_Realize orig, AbstractPhysicalObject self)
         {
-            if(OnlineManager.lobby != null)
+            if (OnlineManager.lobby != null)
             {
                 UnityEngine.Random.seed = self.ID.RandomSeed;
             }
@@ -340,16 +339,16 @@ namespace RainMeadow
 
                     foreach (var absplayer in self.game.Players)
                     {
-                        if(absplayer.realizedCreature is Player player && player.objectInStomach is AbstractPhysicalObject apo)
+                        if (absplayer.realizedCreature is Player player && player.objectInStomach is AbstractPhysicalObject apo)
                         {
                             newWorldSession.ApoEnteringWorld(apo);
                         }
                     }
-                    
+
                     oldWorldSession.Deactivate();
                     oldWorldSession.NotNeeded(); // done? let go
                 }
-                if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode) 
+                if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
                 {
                     storyGameMode.changedRegions = true;
                 }

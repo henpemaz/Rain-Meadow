@@ -1,8 +1,8 @@
-﻿using UnityEngine;
-using RWCustom;
+﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using RWCustom;
 using System;
-using Mono.Cecil.Cil;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -32,7 +32,7 @@ namespace RainMeadow
             if (creatureControllers.TryGetValue(self, out var controller))
             {
                 // if water or close to terrain, crawl
-                if ((self.room.GetTile(followingConnection.startCoord).AnyWater || self.room.aimap.getTerrainProximity(followingConnection.startCoord) <= 1) 
+                if ((self.room.GetTile(followingConnection.startCoord).AnyWater || self.room.aimap.getTerrainProximity(followingConnection.startCoord) <= 1)
                  && (self.room.GetTile(followingConnection.destinationCoord).AnyWater || self.room.aimap.getTerrainProximity(followingConnection.destinationCoord) <= 1))
                 {
                     self.Crawl(followingConnection);
@@ -246,7 +246,7 @@ namespace RainMeadow
         {
             // fun but cursed
             // noodle.AddSegmentVel(creature.bodyChunks.Length + noodle.tail.GetLength(0) - 1, dir * 20f);
-            
+
             if (noodle.graphicsModule is NeedleWormGraphics ng)
             {
                 for (int i = 0; i < ng.snout.Length; i++)

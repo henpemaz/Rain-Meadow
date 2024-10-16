@@ -1,8 +1,8 @@
-﻿using System.IO;
-using UnityEngine;
+﻿using HarmonyLib;
 using RWCustom;
 using System;
-using HarmonyLib;
+using System.IO;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -61,7 +61,7 @@ namespace RainMeadow
             {
                 ringOffsets[i] = new Vector2(left + i * 30f, 60f);
             }
-            
+
             this.spine = new MeadowGhost.Part[this.spineSegments];
             for (int i = 0; i < this.spine.Length; i++)
             {
@@ -165,17 +165,17 @@ namespace RainMeadow
             if (abstractCollectible.collected)
             {
                 abstractGhost.currentCount = abstractGhost.targetCount;
-            //      if not collected locally
+                //      if not collected locally
                 if (!abstractCollectible.collectedLocally)
                 {
-            //          if local player nearby
+                    //          if local player nearby
                     if (OnlineManager.lobby.gameMode.avatars[0].realizedCreature is Creature c)
                     {
                         if ((c.firstChunk.pos - this.pos).sqrMagnitude < Mathf.Pow(700 - c.firstChunk.rad, 2))
                         {
-            //              collect
+                            //              collect
                             abstractCollectible.Collect();
-            //              start animating
+                            //              start animating
                             fadeOut = 0.01f;
                         }
                     }
@@ -203,7 +203,7 @@ namespace RainMeadow
             this.rags.Update();
             this.chains.Update();
             this.sinBob += 1f / Mathf.Lerp(140f, 210f, global::UnityEngine.Random.value);
-            this.pos = this.firstChunk.pos + new Vector2(0f, voffset +  Mathf.Sin(this.sinBob * 3.1415927f * 2f) * 18f * this.scale);
+            this.pos = this.firstChunk.pos + new Vector2(0f, voffset + Mathf.Sin(this.sinBob * 3.1415927f * 2f) * 18f * this.scale);
             this.flipProg = Mathf.Min(1f, this.flipProg + this.flipSpeed);
             this.flip = Mathf.Lerp(this.flipFrom, this.flipTo, Custom.SCurve(this.flipProg, 0.7f));
             if (this.flipProg >= 1f && global::UnityEngine.Random.value < 0.1f)

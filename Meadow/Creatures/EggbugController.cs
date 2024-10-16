@@ -39,7 +39,8 @@ namespace RainMeadow
                     );
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((EggBug self) => {
+                c.EmitDelegate((EggBug self) =>
+                {
                     if (creatureControllers.TryGetValue(self, out var controller))
                     {
                         if (self.mainBodyChunk.submersion >= 1)
@@ -84,14 +85,15 @@ namespace RainMeadow
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldloca, 0);
-                c.EmitDelegate((EggBug self, ref MovementConnection movementConnection) => {
+                c.EmitDelegate((EggBug self, ref MovementConnection movementConnection) =>
+                {
                     if (creatureControllers.TryGetValue(self, out var controller))
                     {
                         var coord = controller.creature.coord;
                         var to = controller.creature.abstractCreature.abstractAI.RealAI.pathFinder.destination;
                         movementConnection = new MovementConnection(MovementConnection.MovementType.Standard, coord, to, 1);
 
-                        if(self.mainBodyChunk.submersion >= 1)
+                        if (self.mainBodyChunk.submersion >= 1)
                         {
                             self.mainBodyChunk.vel += 1.2f * controller.inputDir; // here some help
                         }
@@ -263,7 +265,7 @@ namespace RainMeadow
 
         protected override void OnCall()
         {
-            if(eggbug.graphicsModule is EggBugGraphics ebg && !ebg.culled)
+            if (eggbug.graphicsModule is EggBugGraphics ebg && !ebg.culled)
             {
                 Vector2 tohead = Custom.DirVec(eggbug.bodyChunks[1].pos, eggbug.bodyChunks[0].pos);
                 for (int i = 0; i < ebg.legs.GetLength(0); i++)

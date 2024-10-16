@@ -1,5 +1,4 @@
-﻿using RainMeadow.Properties;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -57,7 +56,7 @@ namespace RainMeadow
 
         public OnlineGameMode(Lobby lobby)
         {
-            this.lobby = lobby;            
+            this.lobby = lobby;
         }
 
         public virtual void FilterItems(Room room)

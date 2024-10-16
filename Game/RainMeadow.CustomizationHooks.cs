@@ -41,7 +41,8 @@ namespace RainMeadow
                     c.MoveAfterLabels();
                     c.Emit(OpCodes.Ldarg_0);
                     c.Emit(OpCodes.Ldloca, colorVar.Index);
-                    c.EmitDelegate((PlayerGraphics self, ref Color originalEyeColor) => {
+                    c.EmitDelegate((PlayerGraphics self, ref Color originalEyeColor) =>
+                    {
                         if (RainMeadow.creatureCustomizations.TryGetValue(self.player, out var customization))
                         {
                             customization.ModifyEyeColor(ref originalEyeColor);
@@ -67,8 +68,9 @@ namespace RainMeadow
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldloca, 0);
-                c.EmitDelegate((PlayerGraphics self, ref Color originalBodyColor) => {
-                        RainMeadow.Debug("a");
+                c.EmitDelegate((PlayerGraphics self, ref Color originalBodyColor) =>
+                {
+                    RainMeadow.Debug("a");
                     if (RainMeadow.creatureCustomizations.TryGetValue(self.player, out var customization))
                     {
                         RainMeadow.Debug("b");

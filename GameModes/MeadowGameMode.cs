@@ -41,7 +41,7 @@ namespace RainMeadow
                     RainMeadow.Debug("re-register, migrating emotedisplayer");
                     throw new InvalidProgrammerException("entity re-register"); // lemme test if this still needs supporting because it has more implications
 
-                    
+
                     d.ownerEntity = oc;
                     d.creatureData = oe.GetData<MeadowCreatureData>();
                 }
@@ -115,7 +115,7 @@ namespace RainMeadow
                     lobbyData.regionGoldTokensGoal = new ushort[totalRegions];
                     lobbyData.regionGhostsGoal = new ushort[totalRegions];
                 } // otherwise the above is initialized on state receive
-                    
+
                 for (int i = 0; i < totalRegions; i++)
                 {
                     var region = (lobby.subresources[i] as WorldSession).region;
@@ -186,7 +186,7 @@ namespace RainMeadow
                             var n = (ushort)stacker;
                             for (int k = 0; k < n; k++)
                             {
-                                var e = isghost ? 
+                                var e = isghost ?
                                     new AbstractMeadowGhost(r.world, type, new WorldCoordinate(r.index, -1, -1, 0), r.world.game.GetNewID())
                                     : new AbstractMeadowCollectible(r.world, type, new WorldCoordinate(r.index, -1, -1, 0), r.world.game.GetNewID());
                                 r.AddEntity(e);
