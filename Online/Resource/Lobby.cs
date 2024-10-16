@@ -12,7 +12,7 @@ namespace RainMeadow
         public OnlineGameMode.OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
         public Dictionary<OnlinePlayer, ClientSettings> clientSettings = new();
-        public Dictionary<OnlinePlayer, OnlineEntity.EntityId> playerAvatars = new(); // should maybe be in GameMode
+        public List<KeyValuePair<OnlinePlayer, OnlineEntity.EntityId>> playerAvatars = new(); // guess we can support multiple avatars per client
 
         public string[] mods = RainMeadowModManager.GetActiveMods();
         public DynamicOrderedPlayerIDs bannedUsers = new();
@@ -104,7 +104,7 @@ namespace RainMeadow
         internal override void Tick(uint tick)
         {
             clientSettings = activeEntities.Where(e => e is ClientSettings).ToDictionary(e => e.owner, e => e as ClientSettings);
-            playerAvatars = clientSettings.ToDictionary(e => e.Key, e => e.Value.avatarId);
+            playerAvatars = clientSettings.SelectMany(e => e.Value.avatars.Select(a => new KeyValuePair<OnlinePlayer, OnlineEntity.EntityId>(e.Key, a))).ToList();
             gameMode.LobbyTick(tick);
             base.Tick(tick);
         }

@@ -9,6 +9,7 @@ namespace RainMeadow
 {
     public class MeadowMenu : SmartMenu, SelectOneButton.SelectOneButtonOwner
     {
+        public MeadowGameMode mgm;
         RainEffect rainEffect;
 
         EventfulHoldButton startButton;
@@ -27,7 +28,7 @@ namespace RainMeadow
         int skinIndex;
         float tintAmount;
         FSprite tintPreview;
-        MeadowAvatarSettings personaSettings;
+        MeadowAvatarData personaSettings;
         OpTinyColorPicker colorpicker;
         TokenMenuDisplayer skinProgressIcon;
         private SubtleSlider2 tintSlider;
@@ -38,6 +39,8 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
             backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
+
+            this.mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
 
             this.rainEffect = new RainEffect(this, this.pages[0]);
             this.pages[0].subObjects.Add(this.rainEffect);
@@ -149,7 +152,7 @@ namespace RainMeadow
             }
             MeadowProgression.progressionData.characterProgress[playableCharacters[ssm.slugcatPageIndex]].everSeenInMenu = true;
 
-            this.personaSettings = (MeadowAvatarSettings)OnlineManager.lobby.gameMode.clientSettings;
+            this.personaSettings = mgm.avatarData;
             ReadCharacterSettings();
 
             UpdateCharacterUI();
@@ -277,6 +280,8 @@ namespace RainMeadow
             personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][skinIndex];
             personaSettings.tint = colorpicker.valuecolor;
             personaSettings.tintAmount = tintAmount;
+
+            personaSettings.Updated();
         }
 
         private void StartGame()
@@ -313,6 +318,7 @@ namespace RainMeadow
         {
             skinIndex = to;
             personaSettings.skin = characterSkins[playableCharacters[ssm.slugcatPageIndex]][to];
+            personaSettings.Updated();
             MeadowProgression.progressionData.currentCharacterProgress.selectedSkin = personaSettings.skin;
 
             UpdateTintPreview();
@@ -323,6 +329,7 @@ namespace RainMeadow
         {
             tintAmount = f;
             personaSettings.tintAmount = f;
+            personaSettings.Updated();
             MeadowProgression.progressionData.currentCharacterProgress.tintAmount = f;
 
             UpdateTintPreview();
@@ -336,6 +343,7 @@ namespace RainMeadow
         private void Colorpicker_OnValueChangedEvent()
         {
             personaSettings.tint = colorpicker.valuecolor;
+            personaSettings.Updated();
             MeadowProgression.progressionData.currentCharacterProgress.tintColor = personaSettings.tint;
 
             UpdateTintPreview();
@@ -343,14 +351,13 @@ namespace RainMeadow
 
         private void UpdateTintPreview()
         {
-            var cust = personaSettings.MakeCustomization() as MeadowAvatarCustomization;
-            tintPreview.SetElementByName(CreatureSymbol.SpriteNameOfCreature(new IconSymbol.IconSymbolData(cust.skinData.creatureType, AbstractPhysicalObject.AbstractObjectType.Creature, 0)));
-            var color = cust.skinData.baseColor ?? cust.skinData.previewColor;
+            tintPreview.SetElementByName(CreatureSymbol.SpriteNameOfCreature(new IconSymbol.IconSymbolData(personaSettings.skinData.creatureType, AbstractPhysicalObject.AbstractObjectType.Creature, 0)));
+            var color = personaSettings.skinData.baseColor ?? personaSettings.skinData.previewColor;
             if (color.HasValue)
             {
                 tintPreview.isVisible = true;
                 var c = color.Value;
-                cust.ModifyBodyColor(ref c);
+                personaSettings.ModifyBodyColor(ref c);
                 tintPreview.color = c;
             }
             else

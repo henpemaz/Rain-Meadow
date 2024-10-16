@@ -1,6 +1,4 @@
-﻿using IL.Menu;
-using RainMeadow.GameModes;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -64,7 +62,7 @@ namespace RainMeadow
                 ArenaSitting.ArenaPlayer newPlayer = new ArenaSitting.ArenaPlayer(i)
                 {
                     playerNumber = i,
-                    playerClass = ((OnlineManager.lobby.clientSettings[currentPlayer] as ArenaClientSettings).playingAs), // Set the playerClass to the OnlinePlayer
+                    playerClass = ((OnlineManager.lobby.clientSettings[currentPlayer].GetData<ArenaClientSettings>()).playingAs), // Set the playerClass to the OnlinePlayer
                     hasEnteredGameArea = true
                 };
 

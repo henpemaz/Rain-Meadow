@@ -133,13 +133,13 @@ namespace RainMeadow
 
             var storyGameMode = OnlineManager.lobby.gameMode as StoryGameMode;
 
-            if (storyGameMode.storyClientSettings.hasSheltered)
+            if (storyGameMode.hasSheltered)
             {
-                denPos = storyGameMode.storyClientSettings.myLastDenPos;
+                denPos = storyGameMode.myLastDenPos;
             }
             else
             {
-                storyGameMode.storyClientSettings.myLastDenPos = denPos;
+                storyGameMode.myLastDenPos = denPos;
             }
 
             storyGameMode.defaultDenPos = game.GetStorySession.saveState.denPosition = denPos;
@@ -177,10 +177,10 @@ namespace RainMeadow
             }
             else
             {
-                var storyClientSettings = (OnlineManager.lobby.gameMode as StoryGameMode).storyClientSettings;
-                if (!storyClientSettings.hasSheltered)
+                var storyGameMode = (OnlineManager.lobby.gameMode as StoryGameMode);
+                if (!storyGameMode.hasSheltered)
                 {
-                    storyClientSettings.myLastDenPos = denPos;
+                    storyGameMode.myLastDenPos = denPos;
                 }
             }
 

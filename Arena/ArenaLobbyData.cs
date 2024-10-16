@@ -6,9 +6,9 @@ namespace RainMeadow
 {
     internal class ArenaLobbyData : OnlineResource.ResourceData
     {
-        public ArenaLobbyData(OnlineResource resource) : base(resource) { }
+        public ArenaLobbyData() { }
 
-        internal override ResourceDataState MakeState()
+        public override ResourceDataState MakeState(OnlineResource resource)
         {
             return new State(this, resource);
         }
@@ -26,7 +26,6 @@ namespace RainMeadow
             [OnlineField]
             public bool returnToLobby;
 
-
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
@@ -36,22 +35,19 @@ namespace RainMeadow
                 arenaSittingOnlineOrder = arena.arenaSittingOnlineOrder;
                 allPlayersReadyLockLobby = arena.allPlayersReadyLockLobby;
                 returnToLobby = arena.returnToLobby;
-
             }
 
-            internal override Type GetDataType() => typeof(ArenaLobbyData);
-
-            internal override void ReadTo(OnlineResource.ResourceData data)
+            public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
             {
-                var lobby = (data.resource as Lobby);
+                var lobby = (resource as Lobby);
                 (lobby.gameMode as ArenaCompetitiveGameMode).isInGame = isInGame;
                 (lobby.gameMode as ArenaCompetitiveGameMode).playList = playList;
                 (lobby.gameMode as ArenaCompetitiveGameMode).arenaSittingOnlineOrder = arenaSittingOnlineOrder;
                 (lobby.gameMode as ArenaCompetitiveGameMode).allPlayersReadyLockLobby = allPlayersReadyLockLobby;
                 (lobby.gameMode as ArenaCompetitiveGameMode).returnToLobby = returnToLobby;
-
-
             }
+
+            public override Type GetDataType() => typeof(ArenaLobbyData);
         }
     }
 }

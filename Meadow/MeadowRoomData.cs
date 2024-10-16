@@ -2,17 +2,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace RainMeadow
 {
+    // no sync only data
     internal class MeadowRoomData : OnlineResource.ResourceData
     {
         private List<Place> places = new();
 
-        public MeadowRoomData(OnlineResource resource) : base(resource) { }
-
         public int NumberOfPlaces => places.Count;
+
+        public override ResourceDataState MakeState(OnlineResource resource) => null; // no state
 
         internal void AddItemPlacement(int x, int y, bool rare)
         {

@@ -129,6 +129,8 @@ namespace RainMeadow
 
             try
             {
+                MenuHooks(); //  sets the error message fallback
+
                 MachineConnector.SetRegisteredOI("henpemaz_rainmeadow", rainMeadowOptions);
 
                 var sw = Stopwatch.StartNew();
@@ -174,7 +176,6 @@ namespace RainMeadow
                     }
                 }
 
-                MenuHooks();
                 GameHooks();
                 CreatureHooks();
                 EntityHooks();

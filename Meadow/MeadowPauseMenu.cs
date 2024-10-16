@@ -24,7 +24,7 @@ namespace RainMeadow
             this.exitButton = null;
 
             this.mgm = mgm;
-            this.avatarCreature = mgm.avatar.realizedCreature;
+            this.avatarCreature = mgm.avatars[0].realizedCreature;
 
             this.pauseWarningActive = false;
             game.cameras[0].hud.textPrompt.pausedWarningText = false;
@@ -121,7 +121,7 @@ namespace RainMeadow
         private void Unstuck(SimplerButton button)
         {
             RainMeadow.DebugMe();
-            var creature = mgm.avatar.realizedCreature;
+            var creature = mgm.avatars[0].realizedCreature;
             if (creature.room != null)
             {
                 RainMeadow.Debug("found in room");

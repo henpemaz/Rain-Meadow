@@ -11,7 +11,7 @@ namespace RainMeadow
     public abstract class CreatureController : IOwnAHUD
     {
         public static ConditionalWeakTable<Creature, CreatureController> creatureControllers = new();
-        internal static void BindAvatar(Creature creature, OnlineCreature oc, MeadowAvatarCustomization customization)
+        internal static void BindAvatar(Creature creature, OnlineCreature oc, MeadowAvatarData customization)
         {
             if (creature is Player player)
             {
@@ -52,10 +52,10 @@ namespace RainMeadow
         public OnlineCreature onlineCreature;
         public MeadowCreatureData mcd;
         public MeadowVoice voice;
-        public MeadowAvatarCustomization customization;
+        public MeadowAvatarData customization;
 
 
-        public CreatureController(Creature creature, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization)
+        public CreatureController(Creature creature, OnlineCreature oc, int playerNumber, MeadowAvatarData customization)
         {
             this.creature = creature;
             this.template = creature.Template;

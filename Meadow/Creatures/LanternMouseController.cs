@@ -110,7 +110,7 @@ namespace RainMeadow
 
         private readonly LanternMouse mouse;
 
-        public LanternMouseController(LanternMouse mouse, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(mouse, oc, playerNumber, customization)
+        public LanternMouseController(LanternMouse mouse, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(mouse, oc, playerNumber, customization)
         {
             this.mouse = mouse;
             jumpFactor = 1.4f; // y u so smol

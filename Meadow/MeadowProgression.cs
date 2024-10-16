@@ -54,7 +54,8 @@ namespace RainMeadow
         [TypeConverter(typeof(ExtEnumTypeConverter<Character>))]
         public class Character : ExtEnum<Character>
         {
-            public Character(string value, bool register = false, CharacterData characterDataEntry = null) : base(value, register)
+            public Character(string value, bool register = false) : base(value, register) { }
+            public Character(string value, bool register, CharacterData characterDataEntry) : base(value, register)
             {
                 if (register)
                 {
@@ -157,7 +158,8 @@ namespace RainMeadow
         [TypeConverter(typeof(ExtEnumTypeConverter<Skin>))]
         public class Skin : ExtEnum<Skin>
         {
-            public Skin(string value, bool register = false, SkinData skinDataEntry = null) : base(value, register)
+            public Skin(string value, bool register = false) : base(value, register) { }
+            public Skin(string value, bool register, SkinData skinDataEntry) : base(value, register)
             {
                 if (register)
                 {

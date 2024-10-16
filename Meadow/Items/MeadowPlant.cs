@@ -16,7 +16,7 @@ namespace RainMeadow
             RainMeadow.Debug("MeadowPlant");
             this.LoadFile("meadowPlant");
             this.mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
-            avatarCreature = mgm.avatar.creature.realizedCreature;
+            avatarCreature = mgm.avatars[0].creature.realizedCreature;
         }
 
         public override void Update(bool eu)
@@ -35,7 +35,7 @@ namespace RainMeadow
             {
                 if (avatarCreature == null)
                 {
-                    avatarCreature = mgm.avatar.creature.realizedCreature;
+                    avatarCreature = mgm.avatars[0].creature.realizedCreature;
                 }
                 else if (avatarCreature.room == this.room)
                 {

@@ -9,7 +9,7 @@ namespace RainMeadow
 {
     class CicadaController : AirCreatureController
     {
-        public CicadaController(Cicada creature, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(creature, oc, playerNumber, customization) { }
+        public CicadaController(Cicada creature, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(creature, oc, playerNumber, customization) { }
 
         public Cicada cicada => creature as Cicada;
 

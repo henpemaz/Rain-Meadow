@@ -207,7 +207,7 @@ namespace RainMeadow
         {
             if(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
             {
-                if (mgm.avatar.creature.pos.room == self.room.abstractRoom.index && (!self.letThroughDir || mgm.avatar.creature.pos.x < self.room.TileWidth / 2 + 3) && (self.letThroughDir || mgm.avatar.creature.pos.x > self.room.TileWidth / 2 - 4))
+                if (mgm.avatars[0].creature.pos.room == self.room.abstractRoom.index && (!self.letThroughDir || mgm.avatars[0].creature.pos.x < self.room.TileWidth / 2 + 3) && (self.letThroughDir || mgm.avatars[0].creature.pos.x > self.room.TileWidth / 2 - 4))
                 {
                     return false;
                 }
@@ -220,7 +220,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
             {
-                if (mgm.avatar.realizedCreature != null && CreatureController.creatureControllers.TryGetValue(mgm.avatar.realizedCreature, out var c))
+                if (mgm.avatars[0].realizedCreature != null && CreatureController.creatureControllers.TryGetValue(mgm.avatars[0].realizedCreature, out var c))
                 {
                     return c.touchedNoInputCounter > 20;
                 }
@@ -232,7 +232,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
             {
-                if (mgm.avatar.realizedCreature != null && CreatureController.creatureControllers.TryGetValue(mgm.avatar.realizedCreature, out var c))
+                if (mgm.avatars[0].realizedCreature != null && CreatureController.creatureControllers.TryGetValue(mgm.avatars[0].realizedCreature, out var c))
                 {
                     return self.DetectZone(c.creature.abstractCreature);
                 }
@@ -340,7 +340,8 @@ namespace RainMeadow
             {
                 if(self.hud == null && self.followAbstractCreature?.realizedObject is Creature owner)
                 {
-                    if(owner != meadowGameMode.avatar.realizedCreature) { RainMeadow.Error($"Camera owner != avatar {owner} {meadowGameMode.avatar}"); }
+                    RainMeadow.Debug("followed creature is " + owner);
+                    if(owner != meadowGameMode.avatars[0].realizedCreature) { RainMeadow.Error($"Camera owner != avatar {owner} {meadowGameMode.avatars[0]}"); }
 
                     self.hud = new HUD.HUD(new FContainer[]
                     {

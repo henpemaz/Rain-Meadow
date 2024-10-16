@@ -15,7 +15,7 @@ namespace RainMeadow
         public MeadowCollectToken(AbstractPhysicalObject abstractPhysicalObject) : base(abstractPhysicalObject)
         {
             this.mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
-            avatarCreature = mgm.avatar.creature.realizedCreature;
+            avatarCreature = mgm.avatars[0].creature.realizedCreature;
 
             if (this.abstractPhysicalObject.type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
             {
@@ -207,7 +207,7 @@ namespace RainMeadow
 
                 if (avatarCreature == null)
                 {
-                    avatarCreature = mgm.avatar.creature.realizedCreature;
+                    avatarCreature = mgm.avatars[0].creature.realizedCreature;
                 }
                 else if (avatarCreature.room == this.room)
                 {

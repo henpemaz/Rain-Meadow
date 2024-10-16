@@ -34,9 +34,13 @@ namespace RainMeadow
         public static void SetupRPCs()
         {
             index = 1; // zero is an easy to catch mistake
-            foreach (var type in Assembly.GetExecutingAssembly().GetTypes())
+
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList())
             {
-                RegisterRPCs(type);
+                foreach (var type in assembly.GetTypes().ToList())
+                {
+                    RegisterRPCs(type);
+                }
             }
         }
 
@@ -53,6 +57,7 @@ namespace RainMeadow
 
         public static void RegisterRPCs(Type targetType)
         {
+            if (targetType.IsGenericTypeDefinition || targetType.IsInterface) return;
             var methods = targetType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly).Where(m => m.GetCustomAttribute<RPCMethodAttribute>() != null);
             if (!methods.Any()) return;
 

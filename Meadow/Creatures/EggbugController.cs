@@ -157,7 +157,7 @@ namespace RainMeadow
             orig(self, eu);
         }
 
-        public EggbugController(EggBug creature, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(creature, oc, playerNumber, customization)
+        public EggbugController(EggBug creature, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(creature, oc, playerNumber, customization)
         {
             if (creature.grasps == null) creature.grasps = new Creature.Grasp[1];
             eggbug = creature;

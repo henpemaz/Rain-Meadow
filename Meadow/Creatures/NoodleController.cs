@@ -213,7 +213,7 @@ namespace RainMeadow
             RainMeadow.Trace($"atDestThisFrame? {self.atDestThisFrame}");
         }
 
-        public NoodleController(Creature creature, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(creature, oc, playerNumber, customization)
+        public NoodleController(Creature creature, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(creature, oc, playerNumber, customization)
         {
         }
 

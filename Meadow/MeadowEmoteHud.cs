@@ -13,7 +13,7 @@ namespace RainMeadow
         private RainWorldGame game;
         private CreatureController creatureController;
         private Creature owner;
-        private MeadowAvatarCustomization customization;
+        private MeadowAvatarData customization;
 
         // emote
         private EmoteDisplayer displayer;
@@ -79,9 +79,11 @@ namespace RainMeadow
             this.creatureController = CreatureController.creatureControllers.GetValue(owner, (c) => throw new KeyNotFoundException());
 
             this.displayer = EmoteDisplayer.map.GetValue(owner, (c) => throw new KeyNotFoundException());
-            this.customization = (MeadowAvatarCustomization)RainMeadow.creatureCustomizations.GetValue(owner, (c) => throw new KeyNotFoundException());
+            this.customization = (MeadowAvatarData)RainMeadow.creatureCustomizations.GetValue(owner, (c) => throw new KeyNotFoundException());
             var emotes = MeadowProgression.AllAvailableEmotes(customization.character);
             var symbols = MeadowProgression.symbolEmotes;
+
+            RainMeadow.Debug($"MeadowEmoteHud for {owner}, oc is {creatureController.onlineCreature}");
 
             // grid
             int iconsPerColumn = 3;

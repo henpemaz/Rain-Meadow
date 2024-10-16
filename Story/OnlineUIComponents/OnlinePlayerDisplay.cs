@@ -1,5 +1,4 @@
-﻿using RainMeadow.GameModes;
-using RWCustom;
+﻿using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
@@ -19,7 +18,9 @@ namespace RainMeadow
         public bool switchedToDeathIcon;
         public int onlineTimeSinceSpawn;
 
-        public OnlinePlayerDisplay(PlayerSpecificOnlineHud owner) : base(owner)
+        SlugcatCustomization customization;
+
+        public OnlinePlayerDisplay(PlayerSpecificOnlineHud owner, SlugcatCustomization customization) : base(owner)
         {
             this.owner = owner;
 
@@ -52,24 +53,10 @@ namespace RainMeadow
             this.blink = 1f;
             this.switchedToDeathIcon = false;
 
-            if (RainMeadow.isStoryMode(out var _))
-            {
-                this.label.color = (owner.clientSettings as StoryClientSettings).SlugcatColor(); ;
-                this.arrowSprite.color = (owner.clientSettings as StoryClientSettings).SlugcatColor(); ;
-                this.slugIcon.color = (owner.clientSettings as StoryClientSettings).SlugcatColor(); ;
-
-
-            }
-
-            if (RainMeadow.isArenaMode(out var _))
-            {
-                this.label.color = (owner.clientSettings as ArenaClientSettings).SlugcatColor();
-
-                this.arrowSprite.color = (owner.clientSettings as ArenaClientSettings).SlugcatColor();
-                this.slugIcon.color = (owner.clientSettings as ArenaClientSettings).SlugcatColor();
-
-
-            }
+            this.label.color = customization.SlugcatColor();
+            this.arrowSprite.color = customization.SlugcatColor();
+            this.slugIcon.color = customization.SlugcatColor();
+            this.customization = customization;
         }
 
         public override void Update()
@@ -130,15 +117,8 @@ namespace RainMeadow
             this.label.y = vector.y + 20f;
             Color color = Color.white;
 
-            if (RainMeadow.isStoryMode(out var _))
-            {
-                color = (owner.clientSettings as StoryClientSettings).SlugcatColor();
+            color = customization.SlugcatColor();
 
-            }
-            if (RainMeadow.isArenaMode(out var _))
-            {
-                color = (owner.clientSettings as ArenaClientSettings).SlugcatColor();
-            }
             if (this.counter % 6 < 2 && this.lastBlink > 0f)
             {
                 if (((Vector3)(Vector4)color).magnitude > 1.56f)

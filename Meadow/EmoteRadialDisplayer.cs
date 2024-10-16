@@ -41,7 +41,7 @@ namespace RainMeadow
             set { container.alpha = value; container.isVisible = (value > 0f); }
         }
 
-        public EmoteRadialDisplayer(FContainer parentContainer, MeadowAvatarCustomization customization, Emote[] emotes, Vector2 pos, float emotesSize)
+        public EmoteRadialDisplayer(FContainer parentContainer, MeadowAvatarData customization, Emote[] emotes, Vector2 pos, float emotesSize)
         {
             this.container = new FContainer();
             this.meshes = new TriangleMesh[8];
@@ -91,7 +91,7 @@ namespace RainMeadow
             parentContainer.AddChild(container);
         }
 
-        public void SetEmotes(Emote[] emotes, MeadowAvatarCustomization customization)
+        public void SetEmotes(Emote[] emotes, MeadowAvatarData customization)
         {
             for (int i = 0; i < icons.Length; i++)
             {

@@ -14,7 +14,7 @@ namespace RainMeadow
         public OnlineCreature ownerEntity;
         public MeadowCreatureData creatureData;
         private CreatureController creatureController;
-        public MeadowAvatarCustomization customization;
+        public MeadowAvatarData customization;
         private RainWorldGame game;
 
         public const int maxEmoteCount = 4;
@@ -33,7 +33,7 @@ namespace RainMeadow
 
         // this weird thing isn't a uad, it sort of follows the creature and gets updated when the creature updates
         // the "tiles" it adds though are UADs
-        public EmoteDisplayer(Creature owner, OnlineCreature ownerEntity, MeadowCreatureData creatureData, MeadowAvatarCustomization customization)
+        public EmoteDisplayer(Creature owner, OnlineCreature ownerEntity, MeadowCreatureData creatureData, MeadowAvatarData customization)
         {
             RainMeadow.Debug($"EmoteDisplayer created for {owner}");
             this.owner = owner;

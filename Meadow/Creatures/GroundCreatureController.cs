@@ -43,7 +43,7 @@ namespace RainMeadow
             return orig(self, originPos, actuallyFollowingThisPath);
         }
 
-        public GroundCreatureController(Creature creature, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(creature, oc, playerNumber, customization)
+        public GroundCreatureController(Creature creature, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(creature, oc, playerNumber, customization)
         {
             this._wallClimber = creature.Template.AccessibilityResistance(AItile.Accessibility.Wall).Allowed;
             this._swimWithPathing = template.MovementLegalInRelationToWater(true, false);

@@ -169,7 +169,7 @@ namespace RainMeadow
                 if (!abstractCollectible.collectedLocally)
                 {
             //          if local player nearby
-                    if (OnlineManager.lobby.gameMode.avatar.realizedCreature is Creature c)
+                    if (OnlineManager.lobby.gameMode.avatars[0].realizedCreature is Creature c)
                     {
                         if ((c.firstChunk.pos - this.pos).sqrMagnitude < Mathf.Pow(700 - c.firstChunk.rad, 2))
                         {

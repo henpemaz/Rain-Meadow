@@ -2,7 +2,6 @@
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
-using RainMeadow.GameModes;
 using RWCustom;
 using Steamworks;
 using System;
@@ -18,7 +17,7 @@ namespace RainMeadow
     {
         private ArenaCompetitiveGameMode arena => (ArenaCompetitiveGameMode)OnlineManager.lobby.gameMode;
 
-        private ArenaClientSettings personaSettings;
+        private SlugcatCustomization personaSettings;
         private static float num = 120f;
         private static float num2 = 0f;
         private static float num3 = num - num2;
@@ -110,11 +109,11 @@ namespace RainMeadow
 
         private void BindSettings()
         {
-            this.personaSettings = (ArenaClientSettings)OnlineManager.lobby.gameMode.clientSettings;
+            this.personaSettings = (OnlineManager.lobby.gameMode as ArenaCompetitiveGameMode).avatarSettings;
             personaSettings.bodyColor = RainMeadow.rainMeadowOptions.BodyColor.Value;
             personaSettings.eyeColor = RainMeadow.rainMeadowOptions.EyeColor.Value;
             personaSettings.playingAs = SlugcatStats.Name.White;
-
+            arena.arenaClientSettings.playingAs = personaSettings.playingAs;
         }
 
         void BuildLayout()
@@ -436,6 +435,7 @@ namespace RainMeadow
                 PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
 
                 personaSettings.playingAs = this.GetArenaSetup.playerClass[currentColorIndex];
+                arena.arenaClientSettings.playingAs = personaSettings.playingAs;
 
                 if (OnlineManager.players.Count > 1)
                 {

@@ -1,113 +1,36 @@
 ﻿using System;
 using UnityEngine;
 
-namespace RainMeadow.GameModes
+namespace RainMeadow
 {
-    public class ArenaClientSettings : ClientSettings
+    public class ArenaClientSettings : OnlineEntity.EntityData
     {
-        public class Definition : ClientSettings.Definition
+        public SlugcatStats.Name playingAs;
+
+        public ArenaClientSettings() { }
+
+        public override EntityDataState MakeState(OnlineEntity entity, OnlineResource inResource)
         {
-            public Definition() { }
-
-            public Definition(ClientSettings clientSettings, OnlineResource inResource) : base(clientSettings, inResource) { }
-
-            public override OnlineEntity MakeEntity(OnlineResource inResource, EntityState initialState)
-            {
-                return new ArenaClientSettings(this, inResource, (State)initialState);
-            }
+            return new State(this);
         }
 
-        public Color bodyColor;
-        public Color eyeColor;
-        public SlugcatStats.Name? playingAs;
-
-        public ArenaClientSettings(Definition entityDefinition, OnlineResource inResource, State initialState) : base(entityDefinition, inResource, initialState)
+        public class State : EntityDataState
         {
-            RainMeadow.Debug(this);
-            bodyColor = entityDefinition.owner == 2 ? Color.white : PlayerGraphics.DefaultSlugcatColor(SlugcatStats.Name.White);
-            eyeColor = Color.black;
-
-        }
-
-        public ArenaClientSettings(EntityId id, OnlinePlayer owner) : base(id, owner)
-        {
-
-        }
-
-        internal override EntityDefinition MakeDefinition(OnlineResource onlineResource)
-        {
-            return new Definition(this, onlineResource);
-        }
-
-        internal override AvatarCustomization MakeCustomization()
-        {
-            return new ArenaAvatarCustomization(this);
-        }
-
-        protected override EntityState MakeState(uint tick, OnlineResource inResource)
-        {
-            return new State(this, inResource, tick);
-        }
-
-        internal Color SlugcatColor()
-        {
-            return bodyColor;
-        }
-
-        public class State : ClientSettings.State
-        {
-            [OnlineFieldColorRgb]
-            public Color bodyColor;
-            [OnlineFieldColorRgb]
-            public Color eyeColor;
             [OnlineField(nullable = true)]
-            public string? playingAs;
+            public SlugcatStats.Name playingAs;
             public State() { }
-            public State(ArenaClientSettings onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
+            public State(ArenaClientSettings onlineEntity) : base()
             {
-                bodyColor = onlineEntity.bodyColor;
-                eyeColor = onlineEntity.eyeColor;
-                playingAs = onlineEntity.playingAs?.value;
+                playingAs = onlineEntity.playingAs;
             }
 
-            public override void ReadTo(OnlineEntity onlineEntity)
+            public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
             {
-                base.ReadTo(onlineEntity);
-                var avatarSettings = (ArenaClientSettings)onlineEntity;
-                avatarSettings.bodyColor = bodyColor;
-                avatarSettings.eyeColor = eyeColor;
-                if (playingAs != null)
-                {
-                    ExtEnumBase.TryParse(typeof(SlugcatStats.Name), playingAs, false, out var rawEnumBase);
-                    avatarSettings.playingAs = rawEnumBase as SlugcatStats.Name;
-                }
-            }
-        }
-        public class ArenaAvatarCustomization : AvatarCustomization
-        {
-            public readonly ArenaClientSettings settings;
-
-            public ArenaAvatarCustomization(ArenaClientSettings slugcatAvatarSettings)
-            {
-                this.settings = slugcatAvatarSettings;
+                var avatarSettings = (ArenaClientSettings)entityData;
+                avatarSettings.playingAs = playingAs;
             }
 
-
-            internal override void ModifyBodyColor(ref Color bodyColor)
-            {
-                bodyColor = new Color(Mathf.Clamp(settings.bodyColor.r, 0.004f, 0.996f), Mathf.Clamp(settings.bodyColor.g, 0.004f, 0.996f), Mathf.Clamp(settings.bodyColor.b, 0.004f, 0.996f));
-            }
-
-            internal override void ModifyEyeColor(ref Color eyeColor)
-            {
-                eyeColor = new Color(Mathf.Clamp(settings.eyeColor.r, 0.004f, 0.996f), Mathf.Clamp(settings.eyeColor.g, 0.004f, 0.996f), Mathf.Clamp(settings.eyeColor.b, 0.004f, 0.996f));
-            }
-
-            internal override Color GetBodyColor()
-            {
-                return settings.bodyColor;
-            }
-
+            public override Type GetDataType() => typeof(ArenaClientSettings);
         }
     }
 }

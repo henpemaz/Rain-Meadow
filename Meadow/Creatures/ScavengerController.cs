@@ -353,7 +353,7 @@ namespace RainMeadow
             }
         }
 
-        public ScavengerController(Scavenger scav, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(scav, oc, playerNumber, customization) 
+        public ScavengerController(Scavenger scav, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(scav, oc, playerNumber, customization) 
         {
             scavenger = scav;
 

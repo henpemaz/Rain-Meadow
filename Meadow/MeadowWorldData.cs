@@ -2,11 +2,12 @@
 
 namespace RainMeadow
 {
+    // no sync only data
     internal class MeadowWorldData : OnlineResource.ResourceData
     {
         internal float[] roomWeights;
         internal AbstractRoom[] validRooms;
 
-        public MeadowWorldData(OnlineResource resource) : base(resource) { }
+        public override ResourceDataState MakeState(OnlineResource resource) => null;
     }
 }

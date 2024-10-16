@@ -98,7 +98,7 @@ namespace RainMeadow
             }
         }
 
-        public MeadowPlayerController(Player player, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(player, oc, playerNumber, customization)
+        public MeadowPlayerController(Player player, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(player, oc, playerNumber, customization)
         {
             player.controller = new ProxyController(this);
             this.player = player;
