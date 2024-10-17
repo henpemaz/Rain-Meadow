@@ -228,20 +228,6 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 playerCharacter = OnlineManager.lobby.gameMode.LoadWorldAs(game);
-                if (isArenaMode(out var arena))
-                {
-
-                    if (!OnlineManager.lobby.isOwner)
-                    {
-                        while (OnlineManager.lobby.worldSessions["arena"].isWaitingForState)
-                        {
-                            RainMeadow.Debug("Waiting for next level to be ready...");
-                            Thread.Sleep(200);
-
-                        }
-
-                    }
-                }
 
 
             }
