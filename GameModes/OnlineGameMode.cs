@@ -13,14 +13,12 @@ namespace RainMeadow
             public static OnlineGameModeType Meadow = new("Meadow", true);
             public static OnlineGameModeType Story = new("Story", true);
             public static OnlineGameModeType ArenaCompetitive = new("ArenaCompetitive", true);
-            public static OnlineGameModeType Custom = new("Custom", true);
 
             public static Dictionary<OnlineGameModeType, string> descriptions = new()
             {
                 { Meadow, "A peaceful mode about exploring around and discovering little secrets, together or on your own." },
                 { Story, "Adventure together with friends in the world of Rain World, fight together and die together." },
                 { ArenaCompetitive, "You sweaty bastards." },
-                { Custom, "Your own way." },
             };
         }
 
@@ -29,7 +27,6 @@ namespace RainMeadow
             { OnlineGameModeType.Meadow, typeof(MeadowGameMode) },
             { OnlineGameModeType.Story, typeof(StoryGameMode) },
             { OnlineGameModeType.ArenaCompetitive, typeof(ArenaCompetitiveGameMode) },
-            { OnlineGameModeType.Custom, typeof(CustomGameMode) },
         };
 
         public static OnlineGameMode FromType(OnlineGameModeType onlineGameModeType, Lobby lobby)
@@ -116,7 +113,7 @@ namespace RainMeadow
 
         public abstract ProcessManager.ProcessID MenuProcessId();
 
-        internal virtual void AddClientData()
+        public virtual void AddClientData()
         {
 
         }
@@ -126,7 +123,7 @@ namespace RainMeadow
             return null; // game runs default code
         }
 
-        internal virtual void NewEntity(OnlineEntity oe, OnlineResource inResource)
+        public virtual void NewEntity(OnlineEntity oe, OnlineResource inResource)
         {
             RainMeadow.Debug(oe);
             if (RainMeadow.sSpawningAvatar && oe is OnlineCreature onlineCreature)
@@ -137,14 +134,14 @@ namespace RainMeadow
             }
         }
 
-        internal abstract void ConfigureAvatar(OnlineCreature onlineCreature);
+        public abstract void ConfigureAvatar(OnlineCreature onlineCreature);
 
-        internal virtual void ResourceAvailable(OnlineResource onlineResource)
+        public virtual void ResourceAvailable(OnlineResource onlineResource)
         {
             RainMeadow.Debug(onlineResource);
         }
 
-        internal virtual void ResourceActive(OnlineResource onlineResource)
+        public virtual void ResourceActive(OnlineResource onlineResource)
         {
             RainMeadow.Debug(onlineResource);
             if (onlineResource is Lobby)
@@ -161,35 +158,35 @@ namespace RainMeadow
             return true;
         }
 
-        internal virtual void PlayerLeftLobby(OnlinePlayer player)
+        public virtual void PlayerLeftLobby(OnlinePlayer player)
         {
 
         }
 
-        internal virtual void NewPlayerInLobby(OnlinePlayer player)
+        public virtual void NewPlayerInLobby(OnlinePlayer player)
         {
 
         }
 
-        internal virtual void LobbyTick(uint tick)
+        public virtual void LobbyTick(uint tick)
         {
             clientSettings.avatars = avatars.Select(a => a.id).ToList();
         }
 
-        internal abstract void Customize(Creature creature, OnlineCreature oc);
+        public abstract void Customize(Creature creature, OnlineCreature oc);
 
-        internal virtual void PreGameStart()
+        public virtual void PreGameStart()
         {
 
         }
 
-        internal virtual void PostGameStart()
+        public virtual void PostGameStart(RainWorldGame self)
         {
             clientSettings.inGame = true;
             clientSettings.avatars = avatars.Select(a => a.id).ToList();
         }
 
-        internal virtual void GameShutDown(RainWorldGame game)
+        public virtual void GameShutDown(RainWorldGame game)
         {
             clientSettings.inGame = false;
             avatars.Clear();

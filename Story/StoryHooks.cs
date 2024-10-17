@@ -346,12 +346,19 @@ namespace RainMeadow
         private void Player_GetInitialSlugcatClass(On.Player.orig_GetInitialSlugcatClass orig, Player self)
         {
             orig(self);
-            if (isStoryMode(out var storyGameMode))
+            if (OnlineManager.lobby != null)
             {
-                if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
-                    throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
-
-                self.SlugCatClass = oe.GetData<SlugcatCustomization>().playingAs;
+                if (OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
+                {
+                    if (oe.TryGetData<SlugcatCustomization>(out var customization))
+                    {
+                        self.SlugCatClass = customization.playingAs;
+                    }
+                }
+                else
+                {
+                    RainMeadow.Error("Player doesn't have OnlineEntity counterpart!!");
+                }
             }
         }
 

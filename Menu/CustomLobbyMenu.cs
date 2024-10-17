@@ -16,20 +16,10 @@ namespace RainMeadow
         public Vector2 btnsize = new Vector2(100, 20);
         public SimplerButton startbtn;
 
-        public CustomGameMode gamemode;
-        public SlugcatCustomization customization;
-        public SlugcatCustomizationSelector customizationHolder;
-
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
-        public CustomLobbyMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.CustomLobbyMenu)
+        public CustomLobbyMenu(ProcessManager manager, ProcessManager.ProcessID ID) : base(manager, ID)
         {
             RainMeadow.DebugMe();
-
-            this.gamemode = OnlineManager.lobby.gameMode as CustomGameMode;
-            this.customization = gamemode.avatarSettings;
-
-            pages[0].subObjects.Add(startbtn = new SimplerButton(this, pages[0], "START", btns, btnsize));
-            startbtn.OnClick += (SimplerButton obj) => { StartGame(); };
 
             // player list
             // label
@@ -71,10 +61,6 @@ namespace RainMeadow
             this.players = players.ToArray();
             CreatePlayerCards();
 
-            // customization
-            this.customizationHolder = new SlugcatCustomizationSelector(this, this.mainPage, new Vector2(540, 460), customization);
-            mainPage.subObjects.Add(this.customizationHolder);
-
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
         }
 
@@ -86,16 +72,6 @@ namespace RainMeadow
             if (scrollTo < 0) scrollTo = RWCustom.Custom.LerpAndTick(scrollTo, 0, 0.1f, 0.1f);
             if (scrollTo > extraItems) scrollTo = RWCustom.Custom.LerpAndTick(scrollTo, extraItems, 0.1f, 0.1f);
             scroll = RWCustom.Custom.LerpAndTick(scroll, scrollTo, 0.1f, 0.1f);
-        }
-
-        public void StartGame()
-        {
-            RainMeadow.DebugMe();
-            if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
-            manager.arenaSitting = null;
-            manager.rainWorld.progression.ClearOutSaveStateFromMemory();
-            manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
-            manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
 
         public void CreatePlayerCards()

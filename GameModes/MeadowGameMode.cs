@@ -17,7 +17,7 @@ namespace RainMeadow
             this.avatarData = new MeadowAvatarData();
         }
 
-        internal override void AddClientData()
+        public override void AddClientData()
         {
             // none
             RainMeadow.DebugMe();
@@ -28,7 +28,7 @@ namespace RainMeadow
             return RainMeadow.Ext_ProcessID.MeadowMenu;
         }
 
-        internal override void NewEntity(OnlineEntity oe, OnlineResource inResource)
+        public override void NewEntity(OnlineEntity oe, OnlineResource inResource)
         {
             RainMeadow.Debug($"{oe} + {inResource}");
             base.NewEntity(oe, inResource);
@@ -70,13 +70,13 @@ namespace RainMeadow
             return abstractCreature;
         }
 
-        internal override void ConfigureAvatar(OnlineCreature onlineCreature)
+        public override void ConfigureAvatar(OnlineCreature onlineCreature)
         {
             RainMeadow.Debug(onlineCreature);
             onlineCreature.AddData(avatarData);
         }
 
-        internal override void ResourceAvailable(OnlineResource res)
+        public override void ResourceAvailable(OnlineResource res)
         {
             base.ResourceAvailable(res);
 
@@ -95,7 +95,7 @@ namespace RainMeadow
             }
         }
 
-        internal override void ResourceActive(OnlineResource res)
+        public override void ResourceActive(OnlineResource res)
         {
             base.ResourceActive(res);
             if (res is Lobby lobby)
@@ -350,7 +350,7 @@ namespace RainMeadow
             }
         }
 
-        internal override void Customize(Creature creature, OnlineCreature oc)
+        public override void Customize(Creature creature, OnlineCreature oc)
         {
             if (oc.TryGetData<MeadowAvatarData>(out var data))
             {
@@ -415,7 +415,7 @@ namespace RainMeadow
             PlacedObject.Type.GhostSpot,
         };
 
-        internal override void GameShutDown(RainWorldGame game)
+        public override void GameShutDown(RainWorldGame game)
         {
             MeadowProgression.progressionData.currentCharacterProgress.saveLocation = avatars[0].apo.pos;
             MeadowProgression.SaveProgression();

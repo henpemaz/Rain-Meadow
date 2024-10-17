@@ -268,7 +268,7 @@ public partial class RainMeadow
         {
             if (creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat && self.state == null) // please, have a state like all other creatures PLEASE
             {
-                self.state = new PlayerState(self, 0, Ext_SlugcatStatsName.OnlineSessionRemotePlayer, false);
+                self.state = new PlayerState(self, 0, Ext_SlugcatStatsName.OnlineSessionPlayer, false);
             }
             if (self.state == null) { Error($"Missing state for {self} of type {creatureTemplate}"); }
         }
@@ -501,9 +501,9 @@ public partial class RainMeadow
         orig(self, slugcat, malnourished);
 
         if (OnlineManager.lobby == null) return;
-        if (slugcat != Ext_SlugcatStatsName.OnlineSessionPlayer && slugcat != Ext_SlugcatStatsName.OnlineSessionRemotePlayer) return;
+        if (slugcat != Ext_SlugcatStatsName.OnlineSessionPlayer) return;
 
-        if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode or CustomGameMode)
+        if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode)
         {
             self.throwingSkill = 1;
         }

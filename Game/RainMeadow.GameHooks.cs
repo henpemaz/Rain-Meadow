@@ -59,7 +59,7 @@ namespace RainMeadow
             orig(self, manager);
             if (OnlineManager.lobby != null)
             {
-                OnlineManager.lobby.gameMode.PostGameStart();
+                OnlineManager.lobby.gameMode.PostGameStart(self);
             }
         }
 
@@ -315,7 +315,7 @@ namespace RainMeadow
             {
                 // if (creature is Player && shortCut.shortCutType == ShortcutData.Type.RoomExit)
                 //becomes
-                // if (creature is Player && ((Player) creature).playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer && shortCut.shortCutType == ShortcutData.Type.RoomExit)
+                // if (creature is Player && player.oe.isMine && shortCut.shortCutType == ShortcutData.Type.RoomExit)
                 var c = new ILCursor(il);
                 var skip = il.DefineLabel();
                 c.GotoNext(moveType: MoveType.After,
@@ -325,7 +325,7 @@ namespace RainMeadow
                     );
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_1);
-                c.EmitDelegate((Creature creature) => { return OnlineManager.lobby != null && ((Player)creature).playerState.slugcatCharacter == Ext_SlugcatStatsName.OnlineSessionRemotePlayer; });
+                c.EmitDelegate((Creature creature) => { return OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(creature.abstractPhysicalObject, out var oe) && !oe.isMine; });
                 c.Emit(OpCodes.Brtrue, skip);
             }
             catch (Exception e)
