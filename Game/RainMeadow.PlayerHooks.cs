@@ -188,52 +188,75 @@ public partial class RainMeadow
         }
     }
 
+    public static bool sUpdateFood = true;
+
     private void Player_AddQuarterFood(On.Player.orig_AddQuarterFood orig, Player self)
     {
-        if (OnlineManager.lobby != null)
+        if (OnlineManager.lobby is null || !sUpdateFood)
         {
-            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
-            if (!onlineEntity.isMine) return;
-
-            if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
-            {
-                OnlineManager.lobby.owner.InvokeRPC(RPCs.AddQuarterFood);
-            }
+            orig(self);
+            return;
         }
 
+        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+        if (!onlineEntity.isMine) return;
+
+        var state = (PlayerState)self.State;
+        var origFood = state.foodInStomach * 4 + state.quarterFoodPoints;
+
         orig(self);
+
+        if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+        {
+            var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
+            if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(RPCs.ChangeFood, (short)(newFood - origFood));
+        }
     }
 
     private void Player_AddFood(On.Player.orig_AddFood orig, Player self, int add)
     {
-        if (OnlineManager.lobby != null)
+        if (OnlineManager.lobby is null || !sUpdateFood)
         {
-            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
-            if (!onlineEntity.isMine) return;
-
-            if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
-            {
-                OnlineManager.lobby.owner.InvokeRPC(RPCs.AddFood, (short)add);
-            }
+            orig(self, add);
+            return;
         }
 
+        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+        if (!onlineEntity.isMine) return;
+
+        var state = (PlayerState)self.State;
+        var origFood = state.foodInStomach * 4 + state.quarterFoodPoints;
+
         orig(self, add);
+
+        if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+        {
+            var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
+            if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(RPCs.ChangeFood, (short)(newFood - origFood));
+        }
     }
 
     private void Player_SubtractFood(On.Player.orig_SubtractFood orig, Player self, int add)
     {
-        if (OnlineManager.lobby != null)
+        if (OnlineManager.lobby is null || !sUpdateFood)
         {
-            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
-            if (!onlineEntity.isMine) return;
-
-            if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
-            {
-                OnlineManager.lobby.owner.InvokeRPC(RPCs.SubtractFood, (short)add);
-            }
+            orig(self, add);
+            return;
         }
 
+        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+        if (!onlineEntity.isMine) return;
+
+        var state = (PlayerState)self.State;
+        var origFood = state.foodInStomach * 4 + state.quarterFoodPoints;
+
         orig(self, add);
+
+        if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+        {
+            var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
+            if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(RPCs.ChangeFood, (short)(newFood - origFood));
+        }
     }
 
     private int Player_FoodInRoom(On.Player.orig_FoodInRoom_bool orig, Player self, bool eatAndDestroy)
