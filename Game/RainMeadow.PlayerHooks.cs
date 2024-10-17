@@ -48,16 +48,19 @@ public partial class RainMeadow
     private void Player_GraphicsModuleUpdated(On.Player.orig_GraphicsModuleUpdated orig, Player self, bool actuallyViewed, bool eu)
     {
         orig(self, actuallyViewed, eu);
-        for (int i = 0; i < 2; i++)
+        if (OnlineManager.lobby != null)
         {
-            if (self.grasps[i] == null)
+            for (int i = 0; i < self.grasps.Length; i++)
             {
-                continue;
-            }
-            if (self.grasps[i].grabbed is Weapon && Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
-            {
-                (self.grasps[i].grabbed as Weapon).setRotation = Pointing.GetOnlinePointingVector();
-                (self.grasps[i].grabbed as Weapon).rotationSpeed = 0f;
+                if (self.grasps[i] == null)
+                {
+                    continue;
+                }
+                if (self.grasps[i].grabbed is Weapon && Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value) && Pointing.hand == i)
+                {
+                    (self.grasps[i].grabbed as Weapon).setRotation = Pointing.GetOnlinePointingVector();
+                    (self.grasps[i].grabbed as Weapon).rotationSpeed = 0f;
+                }
             }
         }
     }

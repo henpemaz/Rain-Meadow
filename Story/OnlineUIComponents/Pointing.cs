@@ -7,9 +7,10 @@ namespace RainMeadow
     public class Pointing : HudPart
     {
         private Creature realizedPlayer;
-        private int hand;
+        public static int hand;
         private Controller controller;
         private Vector2 finalHandPos;
+        public int currentlyPointingHand;
 
         public Pointing(HUD.HUD hud) : base(hud)
         {
@@ -36,7 +37,7 @@ namespace RainMeadow
             if (pointingVector == Vector2.zero)
                 return;
 
-            UpdateHandPosition();
+            hand = UpdateHandPosition();
             Vector2 targetPosition = realizedPlayer.mainBodyChunk.pos + pointingVector * 100f;
 
             finalHandPos = controller is Joystick ? targetPosition : Futile.mousePosition;
@@ -50,7 +51,7 @@ namespace RainMeadow
 
             }
         }
-        private void UpdateHandPosition()
+        private int UpdateHandPosition()
         {
             for (int handy = 1; handy >= 0; handy--)
             {
@@ -61,6 +62,7 @@ namespace RainMeadow
                     break;
                 }
             }
+            return hand;
         }
 
         public static Vector2 GetOnlinePointingVector()
