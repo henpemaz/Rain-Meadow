@@ -192,5 +192,10 @@ namespace RainMeadow
             avatars.Clear();
             clientSettings.avatars.Clear();
         }
+
+        public virtual Menu.PauseMenu CustomPauseMenu(ProcessManager manager, RainWorldGame game)
+        {
+            return null;
+        }
     }
 }

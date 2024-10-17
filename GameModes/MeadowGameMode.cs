@@ -1,4 +1,5 @@
-﻿using RWCustom;
+﻿using Menu;
+using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -421,6 +422,11 @@ namespace RainMeadow
             MeadowProgression.SaveProgression();
             game.rainWorld.progression.SaveToDisk(false, true, true); // save maps, shelters are miscprog
             base.GameShutDown(game);
+        }
+
+        public override PauseMenu CustomPauseMenu(ProcessManager manager, RainWorldGame game)
+        {
+            return new MeadowPauseMenu(manager, game, this);
         }
     }
 }

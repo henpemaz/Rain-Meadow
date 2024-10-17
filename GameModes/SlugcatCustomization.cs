@@ -34,11 +34,7 @@ namespace RainMeadow
 
         public override EntityDataState MakeState(OnlineEntity onlineEntity, OnlineResource inResource)
         {
-            if (inResource is Lobby || inResource is WorldSession)
-            {
-                return new State(this);
-            }
-            return null;
+            return new State(this);
         }
 
         public class State : EntityDataState
@@ -63,11 +59,16 @@ namespace RainMeadow
 
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
             {
-                var slugcatCustomization = onlineEntity.GetData<SlugcatCustomization>();
+                var slugcatCustomization = (SlugcatCustomization)entityData;
                 slugcatCustomization.bodyColor = bodyColor;
                 slugcatCustomization.eyeColor = eyeColor;
                 slugcatCustomization.playingAs = playingAs;
                 slugcatCustomization.nickname = nickname;
+
+                if (UnityEngine.Input.GetKey(KeyCode.L))
+                {
+                    RainMeadow.Debug("color? " + bodyColor);
+                }
             }
 
             public override Type GetDataType() => typeof(SlugcatCustomization);

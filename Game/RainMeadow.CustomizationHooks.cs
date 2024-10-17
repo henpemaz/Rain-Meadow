@@ -70,11 +70,8 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldloca, 0);
                 c.EmitDelegate((PlayerGraphics self, ref Color originalBodyColor) =>
                 {
-                    RainMeadow.Debug("a");
                     if (RainMeadow.creatureCustomizations.TryGetValue(self.player, out var customization))
                     {
-                        RainMeadow.Debug("b");
-                        RainMeadow.Debug("color was " + originalBodyColor);
                         customization.ModifyBodyColor(ref originalBodyColor);
                         RainMeadow.Debug("color became " + originalBodyColor);
                     }

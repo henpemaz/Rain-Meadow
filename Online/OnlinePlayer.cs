@@ -157,12 +157,12 @@ namespace RainMeadow
             }
         }
 
-        internal RPCEvent InvokeRPC(Delegate del, params object[] args)
+        public RPCEvent InvokeRPC(Delegate del, params object[] args)
         {
             return (RPCEvent)this.QueueEvent(RPCManager.BuildRPC(del, args));
         }
 
-        internal RPCEvent InvokeOnceRPC(Delegate del, params object[] args)
+        public RPCEvent InvokeOnceRPC(Delegate del, params object[] args)
         {
             foreach (var e in OutgoingEvents)
                 if (e is RPCEvent rpc && rpc.IsIdentical(del, args))
@@ -185,7 +185,7 @@ namespace RainMeadow
             bytesOut[nextSnapshotIndex] = 0;
             bytesSnapIndex = nextSnapshotIndex;
         }
-        internal TickReference MakeTickReference()
+        public TickReference MakeTickReference()
         {
             return new TickReference(this);
         }

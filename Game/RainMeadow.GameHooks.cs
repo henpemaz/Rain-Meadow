@@ -89,9 +89,9 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((RainWorldGame self) =>
                 {
-                    if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+                    if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode.CustomPauseMenu(self.manager, self) is Menu.PauseMenu pauseMenu)
                     {
-                        self.pauseMenu = new MeadowPauseMenu(self.manager, self, mgm);
+                        self.pauseMenu = pauseMenu;
                         return true;
                     }
                     return false;

@@ -20,6 +20,7 @@ namespace RainMeadow
         public CustomLobbyMenu(ProcessManager manager, ProcessManager.ProcessID ID) : base(manager, ID)
         {
             RainMeadow.DebugMe();
+            this.backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
 
             // player list
             // label
