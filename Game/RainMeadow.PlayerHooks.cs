@@ -3,6 +3,7 @@ using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using System;
 using System.Linq;
+using UnityEngine;
 
 namespace RainMeadow;
 
@@ -53,7 +54,7 @@ public partial class RainMeadow
             {
                 continue;
             }
-            if (self.grasps[i].grabbed is Spear)
+            if (self.grasps[i].grabbed is Spear && Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
             {
                 (self.grasps[i].grabbed as Weapon).setRotation = Pointing.GetOnlinePointingVector();
                 (self.grasps[i].grabbed as Weapon).rotationSpeed = 0f;
