@@ -50,6 +50,22 @@ namespace RainMeadow
 
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
+            if (OnlineManager.mePlayer.isActuallySpectating)
+            {
+                RainMeadow.Error($"I'm sorry, Dave. I can't let you sync {apo}.");
+                return false;
+            }
+            return true;
+        }
+
+        public override bool ShouldRegisterAPO(OnlineResource resource, AbstractPhysicalObject apo)
+        {
+            if (OnlineManager.mePlayer.isActuallySpectating)
+            {
+                RainMeadow.Error($"I'm sorry, Dave. I can't let you register {apo}.");
+                apo.Destroy();
+                return false;
+            }
             return true;
         }
 
@@ -72,6 +88,10 @@ namespace RainMeadow
             if (onlineResource is WorldSession)
             {
                 return lobby.owner == from;
+            }
+            if (from.isActuallySpectating)
+            {
+                return false;
             }
             return true;
         }
