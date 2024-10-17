@@ -54,7 +54,7 @@ public partial class RainMeadow
             {
                 continue;
             }
-            if (self.grasps[i].grabbed is Spear && Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
+            if (self.grasps[i].grabbed is Weapon && Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
             {
                 (self.grasps[i].grabbed as Weapon).setRotation = Pointing.GetOnlinePointingVector();
                 (self.grasps[i].grabbed as Weapon).rotationSpeed = 0f;
