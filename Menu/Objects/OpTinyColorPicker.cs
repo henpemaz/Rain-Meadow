@@ -12,9 +12,9 @@ namespace RainMeadow
         private const int focusTimeout = 10;
         private int loseFocusCounter;
 
-        public OpTinyColorPicker(Menu.Menu menu, Vector2 pos, string defaultHex) : base(pos, new Vector2(30, 30))
+        public OpTinyColorPicker(Menu.Menu menu, Vector2 pos, Color defaultColor) : base(pos, new Vector2(30, 30))
         {
-            this.colorPicker = new OpColorPicker(new Configurable<Color>(MenuColorEffect.HexToColor(defaultHex)), pos);
+            this.colorPicker = new OpColorPicker(new Configurable<Color>(defaultColor), pos);
             UIelementWrapper wrapper = new UIelementWrapper((menu as SmartMenu).tabWrapper, colorPicker);
             colorPicker.Hide();
 

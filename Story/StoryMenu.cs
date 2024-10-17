@@ -338,11 +338,11 @@ namespace RainMeadow
             eyeLabel.label.alignment = FLabelAlignment.Right;
             this.pages[0].subObjects.Add(eyeLabel);
 
-            bodyColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 553), ColorUtility.ToHtmlStringRGB(RainMeadow.rainMeadowOptions.BodyColor.Value));
+            bodyColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 553), RainMeadow.rainMeadowOptions.BodyColor.Value);
             var wrapper = new UIelementWrapper(this.tabWrapper, bodyColorPicker);
             bodyColorPicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
 
-            eyeColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 500), ColorUtility.ToHtmlStringRGB(RainMeadow.rainMeadowOptions.EyeColor.Value));
+            eyeColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 500), RainMeadow.rainMeadowOptions.EyeColor.Value);
             var wrapper2 = new UIelementWrapper(this.tabWrapper, eyeColorPicker);
             eyeColorPicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
         }
