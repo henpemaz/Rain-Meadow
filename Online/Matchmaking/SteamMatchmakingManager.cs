@@ -50,10 +50,11 @@ namespace RainMeadow
         private Callback<LobbyChatUpdate_t> m_LobbyChatUpdate;
         private Callback<SteamNetworkingMessagesSessionRequest_t> m_SessionRequest;
         private Callback<GameLobbyJoinRequested_t> m_GameLobbyJoinRequested;
+        private Callback<LobbyChatMsg_t> m_LobbyChatMsgCall;
 #pragma warning restore IDE0052 // Remove unread private members
 
         private CSteamID me;
-        private CSteamID lobbyID;
+        public CSteamID lobbyID { get; private set; }
 
         public SteamMatchmakingManager()
         {
@@ -65,6 +66,7 @@ namespace RainMeadow
             m_LobbyChatUpdate = Callback<LobbyChatUpdate_t>.Create(LobbyChatUpdated);
             m_SessionRequest = Callback<SteamNetworkingMessagesSessionRequest_t>.Create(SessionRequest);
             m_GameLobbyJoinRequested = Callback<GameLobbyJoinRequested_t>.Create(GameLobbyJoinRequested);
+            m_LobbyChatMsgCall = Callback<LobbyChatMsg_t>.Create(LobbyChatMessageRecieved);
 
             me = SteamUser.GetSteamID();
             OnlineManager.mePlayer = new OnlinePlayer(new SteamPlayerId(me)) { isMe = true };
@@ -250,6 +252,23 @@ namespace RainMeadow
             }
         }
 
+        public void SendChatMessage(CSteamID lobbyID, string message)
+        {
+            byte[] msgBytes = System.Text.Encoding.UTF8.GetBytes(message);
+            bool outputted = SteamMatchmaking.SendLobbyChatMsg(lobbyID, msgBytes, msgBytes.Length);
+
+            if (!outputted) RainMeadow.Debug($"Failed to send message: {msgBytes} {msgBytes.Length}");
+        }
+
+        private void LobbyChatMessageRecieved(LobbyChatMsg_t callback)
+        {
+            CSteamID p = me;
+            byte[] msgData = new byte[1024];
+            int msgDataLength = SteamMatchmaking.GetLobbyChatEntry((CSteamID)callback.m_ulSteamIDLobby, (int)callback.m_iChatID, out me, msgData, msgData.Length, out EChatEntryType _);
+
+            string message = System.Text.Encoding.UTF8.GetString(msgData, 0, msgDataLength);
+            RainMeadow.Debug($"Message from {SteamFriends.GetFriendPersonaName(p)}: {message}");
+        }
         private void PlayerJoined(CSteamID p)
         {
             RainMeadow.Debug($"PlayerJoined:{p} - {SteamFriends.GetFriendPersonaName(p)}");
