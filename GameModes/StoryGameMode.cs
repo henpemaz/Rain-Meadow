@@ -9,6 +9,7 @@ namespace RainMeadow
         public bool isInGame = false;
         public bool changedRegions = false;
         public bool didStartCycle = false;
+        public bool readyForShelter = false;
         public bool friendlyFire = false; // false until we manage it via UI
         public string? defaultDenPos;
         public string? myLastDenPos = null;
@@ -86,6 +87,16 @@ namespace RainMeadow
             base.LobbyTick(tick);
             // could switch this based on rules? any vs all
             storyClientData.isDead = avatars.All(a => a.abstractCreature.state is PlayerState state && (state.dead || state.permaDead));
+
+            if (lobby.isOwner && OnlineManager.lobby.clientSettings.Values.Where(cs => cs.inGame) is var inGameClients && inGameClients.Count() > 0)
+            {
+                var inGameClientsData = inGameClients.Select(cs => cs.GetData<StoryClientSettingsData>());
+
+                if (!readyForShelter && inGameClientsData.Any(scs => scs.readyForWin) && inGameClientsData.All(scs => scs.readyForWin || scs.isDead))
+                {
+                    readyForShelter = true;
+                }
+            }
         }
 
         internal override void PlayerLeftLobby(OnlinePlayer player)

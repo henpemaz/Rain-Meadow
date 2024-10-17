@@ -520,6 +520,7 @@ namespace RainMeadow
 
                 storyGameMode.hasSheltered = false;
                 storyGameMode.changedRegions = false;
+                storyGameMode.readyForShelter = false;
             }
             return origSaveState;
         }

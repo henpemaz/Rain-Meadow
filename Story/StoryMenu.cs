@@ -124,6 +124,7 @@ namespace RainMeadow
             gameMode.isInGame = false;
             gameMode.changedRegions = false;
             gameMode.didStartCycle = false;
+            gameMode.readyForShelter = false;
             gameMode.defaultDenPos = null;
             gameMode.ghostsTalkedTo = new();
             gameMode.consumedItems = new();
