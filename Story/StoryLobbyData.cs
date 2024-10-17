@@ -23,6 +23,8 @@ namespace RainMeadow
             [OnlineField]
             public bool changedRegions;
             [OnlineField]
+            public byte readyForGate;
+            [OnlineField]
             public bool friendlyFire;
             [OnlineField]
             public SlugcatStats.Name currentCampaign;
@@ -74,6 +76,7 @@ namespace RainMeadow
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
                 changedRegions = storyGameMode.changedRegions;
                 didStartCycle = storyGameMode.didStartCycle;
+                readyForGate = storyGameMode.readyForGate;
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
                     cycleNumber = storySession.saveState.cycleNumber;
@@ -133,6 +136,7 @@ namespace RainMeadow
                 (lobby.gameMode as StoryGameMode).isInGame = isInGame;
                 (lobby.gameMode as StoryGameMode).changedRegions = changedRegions;
                 (lobby.gameMode as StoryGameMode).didStartCycle = didStartCycle;
+                (lobby.gameMode as StoryGameMode).readyForGate = readyForGate;
                 (lobby.gameMode as StoryGameMode).friendlyFire = friendlyFire;
                 (lobby.gameMode as StoryGameMode).region = region;
 

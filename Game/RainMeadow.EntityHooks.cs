@@ -275,6 +275,7 @@ namespace RainMeadow
                 if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
                 {
                     storyGameMode.changedRegions = true;
+                    storyGameMode.readyForGate = 2;
                 }
             }
             else

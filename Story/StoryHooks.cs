@@ -45,9 +45,8 @@ namespace RainMeadow
             IL.MoreSlugcats.CutsceneArtificerRobo.ctor += ClientDisableUAD;
             IL.MoreSlugcats.MSCRoomSpecificScript.SI_SAINTINTRO_tut.ctor += ClientDisableUAD;
 
+            IL.RegionGate.Update += RegionGate_Update;
             On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide;
-            On.RegionGate.PlayersStandingStill += PlayersStandingStill;
-            On.RegionGate.PlayersInZone += RegionGate_PlayersInZone;
 
             On.GhostHunch.Update += GhostHunch_Update;
 
@@ -762,109 +761,66 @@ namespace RainMeadow
             }
         }
 
+        private void RegionGate_Update(ILContext il)
+        {
+            // if (story.readyForGate == 1)
+            //     open gate
+            // else
+            //     story.storyClientData.readyForGate = true
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<RegionGate>("mode"),
+                    i => i.MatchLdsfld<RegionGate.Mode>("MiddleClosed"),
+                    i => i.MatchCall("ExtEnum`1<RegionGate/Mode>", "op_Equality"),
+                    i => i.MatchBrfalse(out _)
+                );
+                c.EmitDelegate(() =>
+                {
+                    if (isStoryMode(out var story))
+                    {
+                        if (story.readyForGate == 1) return true;
+                        story.storyClientData.readyForGate = false;
+                    }
+                    return false;
+                });
+                c.Emit(OpCodes.Brtrue, skip);
+                c.GotoNext(moveType: MoveType.AfterLabel,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdsfld<RegionGate.Mode>("ClosingAirLock"),
+                    i => i.MatchStfld<RegionGate>("mode")
+                );
+                c.EmitDelegate(() =>
+                {
+                    if (isStoryMode(out var story))
+                    {
+                        story.storyClientData.readyForGate = true;
+                        return true;
+                    }
+                    return false;
+                });
+                c.Emit(OpCodes.Brfalse, skip);
+                c.Emit(OpCodes.Ret);
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
         private bool RegionGate_AllPlayersThroughToOtherSide(On.RegionGate.orig_AllPlayersThroughToOtherSide orig, RegionGate self)
         {
-
+            var ret = orig(self);
             if (isStoryMode(out var storyGameMode))
             {
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
-                {
-                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                    {
-                        if (ac.pos.room == self.room.abstractRoom.index && (!self.letThroughDir || ac.pos.x < self.room.TileWidth / 2 + 3)
-                            && (self.letThroughDir || ac.pos.x > self.room.TileWidth / 2 - 4))
-                        {
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        return false; // not loaded
-                    }
-                }
-
-                self.room.game.cameras[0].hud.parts.Add(new OnlineHUD(self.room.game.cameras[0].hud, self.room.game.cameras[0], storyGameMode));
-                self.room.game.cameras[0].hud.parts.Add(new SpectatorHud(self.room.game.cameras[0].hud, self.room.game.cameras[0]));
-                self.room.game.cameras[0].hud.parts.Add(new Pointing(self.room.game.cameras[0].hud));
-                return true;
+                storyGameMode.storyClientData.readyForGate = !ret;
+                ret = storyGameMode.readyForGate == 0;
             }
-
-            return orig(self);
-        }
-
-
-        private int RegionGate_PlayersInZone(On.RegionGate.orig_PlayersInZone orig, RegionGate self)
-        {
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
-            {
-                int regionGateZone = -1;
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
-                {
-                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                    {
-                        if (ac.Room == self.room.abstractRoom)
-                        {
-                            int zone = self.DetectZone(ac);
-                            if (zone != regionGateZone && regionGateZone != -1)
-                            {
-                                return -1;
-                            }
-                            regionGateZone = zone;
-                        }
-                    }
-                    else
-                    {
-                        return -1; // not loaded
-                    }
-                }
-
-                return regionGateZone;
-            }
-            return orig(self);
-        }
-
-        private bool PlayersStandingStill(On.RegionGate.orig_PlayersStandingStill orig, RegionGate self)
-        {
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
-            {
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
-                {
-                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                    {
-                        if (ac.Room != self.room.abstractRoom
-                        || ((ac.realizedCreature as Player)?.touchedNoInputCounter ?? 0) < (ModManager.MMF ? 40 : 20))
-                        {
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        return false; // not loaded
-                    }
-                }
-
-                List<HudPart> partsToRemove = new List<HudPart>();
-
-                foreach (HudPart part in self.room.game.cameras[0].hud.parts)
-                {
-                    if (part is OnlineHUD || part is PlayerSpecificOnlineHud || part is SpectatorHud)
-                    {
-                        partsToRemove.Add(part);
-                    }
-                }
-
-                foreach (HudPart part in partsToRemove)
-                {
-                    part.slatedForDeletion = true;
-                    part.ClearSprites();
-                    self.room.game.cameras[0].hud.parts.Remove(part);
-                }
-                return true;
-            }
-            return orig(self);
+            return ret;
         }
 
         private void GhostHunch_Update(On.GhostHunch.orig_Update orig, GhostHunch self, bool eu)
