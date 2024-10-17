@@ -19,7 +19,7 @@ namespace RainMeadow
 
         public ArenaCompetitiveGameMode(Lobby lobby) : base(lobby)
         {
-            avatarSettings = new SlugcatCustomization();
+            avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
             arenaClientSettings = new ArenaClientSettings();
             arenaClientSettings.playingAs = SlugcatStats.Name.White;
         }

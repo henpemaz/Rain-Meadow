@@ -27,7 +27,7 @@ namespace RainMeadow
 
         public StoryGameMode(Lobby lobby) : base(lobby)
         {
-            avatarSettings = new SlugcatCustomization();
+            avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
         }
         public override ProcessManager.ProcessID MenuProcessId()
         {
