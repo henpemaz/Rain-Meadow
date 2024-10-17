@@ -45,9 +45,6 @@ namespace RainMeadow
             if (hand > -1)
             {
                 var handModule = (realizedPlayer.graphicsModule as PlayerGraphics).hands[hand];
-
-                var pg = (realizedPlayer.graphicsModule as PlayerGraphics);
-                var p = (realizedPlayer as Player);
                 handModule.reachingForObject = true;
                 handModule.absoluteHuntPos = finalHandPos;
 
