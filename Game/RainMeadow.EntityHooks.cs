@@ -98,6 +98,10 @@ namespace RainMeadow
         // get real, and customize
         private void AbstractCreature_Realize(On.AbstractCreature.orig_Realize orig, AbstractCreature self)
         {
+            if(OnlineManager.lobby != null)
+            {
+                UnityEngine.Random.seed = self.ID.RandomSeed;
+            }
             var wasCreature = self.realizedCreature;
             orig(self);
             if (OnlineManager.lobby != null && self.GetOnlineObject(out var oe))
