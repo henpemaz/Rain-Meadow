@@ -8,20 +8,20 @@ namespace RainMeadow
 {
     public class ChatTextBox : SimpleButton, ICanBeTyped
     {
+        private SteamMatchmakingManager steamMatchmakingManager;
         private ButtonTypingHandler typingHandler;
         private GameObject gameObject;
         public Action<char> OnKeyDown { get; set; }
-        public int textLimit;
+        public static int textLimit = 150;
         public string value;
         public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, "", pos, size)
         {
+            steamMatchmakingManager = MatchmakingManager.instance as SteamMatchmakingManager;
+            value = "";
             this.menu = menu;
             gameObject ??= new GameObject();
             OnKeyDown = (Action<char>)Delegate.Combine(OnKeyDown, new Action<char>(CaptureInputs));
-            if (typingHandler == null)
-            {
-                typingHandler = gameObject.AddComponent<ButtonTypingHandler>();
-            }
+            typingHandler ??= gameObject.AddComponent<ButtonTypingHandler>();
             typingHandler.Assign(this);
         }
         private void CaptureInputs(char input)
@@ -34,18 +34,24 @@ namespace RainMeadow
                     value = value.Substring(0, value.Length - 1);
                 }
             }
-            else
+            else if (input == '\n' || input == '\r')
             {
-                menu.PlaySound(SoundID.MENU_Checkbox_Check);
-                value += input.ToString();
-            }
-
-            if (value.Length > 0)
-            {
-                if (input == '\n' || input == '\r')
+                if (value.Length > 0)
                 {
                     typingHandler.Unassign(this);
-                    RainMeadow.Debug(value);
+                    steamMatchmakingManager.SendChatMessage((MatchmakingManager.instance as SteamMatchmakingManager).lobbyID, value);
+                }
+                else
+                {
+                    RainMeadow.Debug("Could not send value because it had no text");
+                }
+            }
+            else
+            {
+                if (value.Length < textLimit)
+                {
+                    menu.PlaySound(SoundID.MENU_Checkbox_Check);
+                    value += input.ToString();
                 }
             }
             menuLabel.text = value;
