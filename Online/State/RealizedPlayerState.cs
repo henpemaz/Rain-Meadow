@@ -65,17 +65,15 @@ namespace RainMeadow
 
             if ((p.graphicsModule as PlayerGraphics).hands != null)
             {
-                if ((p.graphicsModule as PlayerGraphics).hands != null)
+
+                for (int h = 0; h < (p.graphicsModule as PlayerGraphics).hands.Length; h++)
                 {
 
-                    for (int h = 0; h < (p.graphicsModule as PlayerGraphics).hands.Length; h++)
-                    {
-
-                        absoluteHuntPos = (p.graphicsModule as PlayerGraphics).hands[h].absoluteHuntPos;
-                        reachingForObject = (p.graphicsModule as PlayerGraphics).hands[h].reachingForObject;
-                    }
+                    absoluteHuntPos = (p.graphicsModule as PlayerGraphics).hands[h].absoluteHuntPos;
+                    reachingForObject = (p.graphicsModule as PlayerGraphics).hands[h].reachingForObject;
                 }
             }
+
 
             var i = p.input[0];
             inputs = (ushort)(
