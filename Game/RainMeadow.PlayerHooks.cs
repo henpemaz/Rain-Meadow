@@ -15,7 +15,9 @@ public partial class RainMeadow
         On.SlugcatStats.ctor += SlugcatStats_ctor;
 
         On.Player.ctor += Player_ctor;
+        On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass;
         IL.Player.Update += Player_Update;
+        On.Player.Update += Player_Update1;
         On.Player.Die += PlayerOnDie;
         On.Player.Destroy += Player_Destroy;
         On.Player.Grabability += PlayerOnGrabability;
@@ -89,6 +91,13 @@ public partial class RainMeadow
         {
             Logger.LogError(e);
         }
+    }
+
+    private void Player_Update1(On.Player.orig_Update orig, Player self, bool eu)
+    {
+        if (isStoryMode(out var gameMode) && self.abstractCreature.IsLocal())
+            gameMode.storyClientData.readyForWin = false;
+        orig(self, eu);
     }
 
     private UnityEngine.Color Player_ShortCutColor(On.Player.orig_ShortCutColor orig, Player self)
@@ -321,6 +330,22 @@ public partial class RainMeadow
                 self.controller = new OnlineController(oe, self); // remote player
             }
             else if (oe is null)
+            {
+                RainMeadow.Error("player entity not found for " + self + " " + self.abstractCreature);
+            }
+        }
+    }
+
+    private void Player_GetInitialSlugcatClass(On.Player.orig_GetInitialSlugcatClass orig, Player self)
+    {
+        orig(self);
+        if (OnlineManager.lobby != null)
+        {
+            if (self.abstractPhysicalObject.GetOnlineObject(out var oe))
+            {
+                self.SlugCatClass = oe.GetData<SlugcatCustomization>().playingAs;
+            }
+            else
             {
                 RainMeadow.Error("player entity not found for " + self + " " + self.abstractCreature);
             }
