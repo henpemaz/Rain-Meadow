@@ -296,7 +296,7 @@ namespace RainMeadow
             this.Resolve(new GenericResult.Error(this));
         }
 
-        internal bool IsIdentical(Delegate del, params object[] args)
+        public bool IsIdentical(Delegate del, params object[] args)
         {
             return handler.method == del.Method && this.target == del.Target && this.args.SequenceEqual(args);
         }

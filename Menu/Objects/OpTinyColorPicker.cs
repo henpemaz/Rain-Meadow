@@ -33,6 +33,7 @@ namespace RainMeadow
             {
                 this.colorPicker.pos = (this.InScrollBox ? (this.GetPos() + scrollBox.GetPos() + new Vector2(0f, scrollBox.ScrollOffset)) : this.GetPos()) + new Vector2(-60, 30);
                 colorPicker.Show();
+                colorPicker.myContainer.MoveToFront();
                 currentlyPicking = true;
                 colorPicker.NonMouseSetHeld(true);
                 colorPicker.held = true;
