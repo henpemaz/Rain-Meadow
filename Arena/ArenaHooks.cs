@@ -76,26 +76,7 @@ namespace RainMeadow
             On.Menu.MultiplayerMenu.InitiateGameTypeSpecificButtons += MultiplayerMenu_InitiateGameTypeSpecificButtons;
             On.Menu.ArenaSettingsInterface.SetSelected += ArenaSettingsInterface_SetSelected;
             On.Menu.ArenaSettingsInterface.SetChecked += ArenaSettingsInterface_SetChecked;
-            // On.Menu.ArenaSettingsInterface.GetSelected += ArenaSettingsInterface_GetSelected;
             On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
-
-        }
-
-
-
-        private int ArenaSettingsInterface_GetSelected(On.Menu.ArenaSettingsInterface.orig_GetSelected orig, Menu.ArenaSettingsInterface self, Menu.MultipleChoiceArray array)
-        {
-            orig(self, array);
-            if (isArenaMode(out var arena))
-            {
-                if (!OnlineManager.lobby.isOwner && arena.onlineArenaSettingsInterfaceMultiChoice.ContainsKey(array.IDString))
-                {
-
-                    return arena.onlineArenaSettingsInterfaceMultiChoice[array.IDString];
-                }
-            }
-
-            return orig(self, array);
 
         }
 
