@@ -506,7 +506,6 @@ namespace RainMeadow
             else
             {
                 RainMeadow.Debug("Player did NOT exist in dictionary");
-
                 arena.playersInLobbyChoosingSlugs.Add(OnlineManager.mePlayer.id.name, 0);
             }
             int currentColorIndex = arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.name];
