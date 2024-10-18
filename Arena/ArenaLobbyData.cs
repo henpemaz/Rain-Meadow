@@ -25,7 +25,9 @@ namespace RainMeadow
             [OnlineField]
             public bool returnToLobby;
             [OnlineField]
-            public Dictionary<string, int> onlineArenaInterfaceSettings;
+            public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice;
+            [OnlineField]
+            public Dictionary<string, bool> onlineArenaSettingsInterfaceBool;
 
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
@@ -36,7 +38,8 @@ namespace RainMeadow
                 arenaSittingOnlineOrder = arena.arenaSittingOnlineOrder;
                 allPlayersReadyLockLobby = arena.allPlayersReadyLockLobby;
                 returnToLobby = arena.returnToLobby;
-                onlineArenaInterfaceSettings = arena.onlineArenaSettingsInterface;
+                onlineArenaSettingsInterfaceMultiChoice = arena.onlineArenaSettingsInterfaceMultiChoice;
+                onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -47,7 +50,9 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaCompetitiveGameMode).arenaSittingOnlineOrder = arenaSittingOnlineOrder;
                 (lobby.gameMode as ArenaCompetitiveGameMode).allPlayersReadyLockLobby = allPlayersReadyLockLobby;
                 (lobby.gameMode as ArenaCompetitiveGameMode).returnToLobby = returnToLobby;
-                (lobby.gameMode as ArenaCompetitiveGameMode).onlineArenaSettingsInterface = onlineArenaInterfaceSettings;
+                (lobby.gameMode as ArenaCompetitiveGameMode).onlineArenaSettingsInterfaceMultiChoice = onlineArenaSettingsInterfaceMultiChoice;
+                (lobby.gameMode as ArenaCompetitiveGameMode).onlineArenaSettingsInterfaceeBool = onlineArenaSettingsInterfaceBool;
+
 
             }
 

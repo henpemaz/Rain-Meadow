@@ -1,4 +1,5 @@
 ﻿using Menu;
+using Newtonsoft.Json.Linq;
 using System;
 
 namespace RainMeadow
@@ -7,7 +8,7 @@ namespace RainMeadow
     {
 
         [RPCMethod]
-        public static void Arena_UpdateSelected(string arrayID, int value)
+        public static void Arena_UpdateSelectedChoice(string stringID, int value)
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
@@ -19,13 +20,38 @@ namespace RainMeadow
 
                 foreach (var selectable in game.arenaSettingsInterface.menu.pages[0].selectables)
                 {
-                    if (selectable is MultipleChoiceArray.MultipleChoiceButton && (selectable as MultipleChoiceArray.MultipleChoiceButton).multipleChoiceArray.IDString == arrayID)
+                    if (selectable is MultipleChoiceArray.MultipleChoiceButton && (selectable as MultipleChoiceArray.MultipleChoiceButton).multipleChoiceArray.IDString == stringID)
                     {
                         
                         game.arenaSettingsInterface.SetSelected((selectable as MultipleChoiceArray.MultipleChoiceButton).multipleChoiceArray, value); // why didn't this method take a freakin string
                     }
+
                 }
                
+            }
+        }
+
+        [RPCMethod]
+        public static void Arena_UpdateSelectedCheckbox(string stringID, bool c)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+
+                foreach (var selectable in game.arenaSettingsInterface.menu.pages[0].selectables)
+                {
+
+                    if (selectable is Menu.CheckBox && (selectable as Menu.CheckBox).IDString == stringID)
+                    {
+
+                        game.arenaSettingsInterface.SetChecked((selectable as CheckBox), c);
+                    }
+                }
+
             }
         }
 

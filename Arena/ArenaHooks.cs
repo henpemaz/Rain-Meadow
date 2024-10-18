@@ -75,20 +75,23 @@ namespace RainMeadow
 
             On.Menu.MultiplayerMenu.InitiateGameTypeSpecificButtons += MultiplayerMenu_InitiateGameTypeSpecificButtons;
             On.Menu.ArenaSettingsInterface.SetSelected += ArenaSettingsInterface_SetSelected;
-            On.Menu.ArenaSettingsInterface.GetSelected += ArenaSettingsInterface_GetSelected;
+            On.Menu.ArenaSettingsInterface.SetChecked += ArenaSettingsInterface_SetChecked;
+            // On.Menu.ArenaSettingsInterface.GetSelected += ArenaSettingsInterface_GetSelected;
             On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
 
         }
+
+
 
         private int ArenaSettingsInterface_GetSelected(On.Menu.ArenaSettingsInterface.orig_GetSelected orig, Menu.ArenaSettingsInterface self, Menu.MultipleChoiceArray array)
         {
             orig(self, array);
             if (isArenaMode(out var arena))
             {
-                if (!OnlineManager.lobby.isOwner && arena.onlineArenaSettingsInterface.ContainsKey(array.IDString))
+                if (!OnlineManager.lobby.isOwner && arena.onlineArenaSettingsInterfaceMultiChoice.ContainsKey(array.IDString))
                 {
 
-                    return arena.onlineArenaSettingsInterface[array.IDString];
+                    return arena.onlineArenaSettingsInterfaceMultiChoice[array.IDString];
                 }
             }
 
@@ -105,7 +108,9 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby.isOwner)
                 {
-                    arena.onlineArenaSettingsInterface = new Dictionary<string, int>();
+                    arena.onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
+                    arena.onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
+
 
                     // Add lobby syncs for those who join after we've started the game session
 
@@ -119,11 +124,21 @@ namespace RainMeadow
                     var wildLifeSyncKey = self.wildlifeArray.IDString;
                     int wildLifeSyncValue = self.GetGameTypeSetup.wildLifeSetting.index;
 
+                    //var spearsHitSync = self.spearsHitCheckbox.IDString; Not dealing with this logic.
+                    //var spearsHitValue = self.GetGameTypeSetup.spearsHitPlayers;
+
+                    var aggroAISync = self.evilAICheckBox.IDString;
+                    var aggroAISyncValue = self.GetGameTypeSetup.evilAI;
 
 
-                    arena.onlineArenaSettingsInterface.Add(roomRepeatSync, roomRepeatValue);
-                    arena.onlineArenaSettingsInterface.Add(rainSyncKey, rainSyncValue);
-                    arena.onlineArenaSettingsInterface.Add(wildLifeSyncKey, wildLifeSyncValue);
+
+                    arena.onlineArenaSettingsInterfaceMultiChoice.Add(roomRepeatSync, roomRepeatValue);
+                    arena.onlineArenaSettingsInterfaceMultiChoice.Add(rainSyncKey, rainSyncValue);
+                    arena.onlineArenaSettingsInterfaceMultiChoice.Add(wildLifeSyncKey, wildLifeSyncValue);
+
+                    // arena.onlineArenaSettingsInterfaceeBool.Add(spearsHitSync, spearsHitValue);
+                    arena.onlineArenaSettingsInterfaceeBool.Add(aggroAISync, aggroAISyncValue);
+
 
 
                 }
@@ -134,14 +149,26 @@ namespace RainMeadow
                         if (selectable is Menu.MultipleChoiceArray.MultipleChoiceButton)
                         {
 
-                            var onlineArray = (selectable as Menu.MultipleChoiceArray.MultipleChoiceButton).multipleChoiceArray.IDString;
-                            if (arena.onlineArenaSettingsInterface.ContainsKey(onlineArray)) 
+                            var onlineArrayMutliChoice = (selectable as Menu.MultipleChoiceArray.MultipleChoiceButton).multipleChoiceArray.IDString;
+                            if (arena.onlineArenaSettingsInterfaceMultiChoice.ContainsKey(onlineArrayMutliChoice)) 
                             {
-                                self.SetSelected((selectable as Menu.MultipleChoiceArray.MultipleChoiceButton).multipleChoiceArray, arena.onlineArenaSettingsInterface[onlineArray]);
+                                self.SetSelected((selectable as Menu.MultipleChoiceArray.MultipleChoiceButton).multipleChoiceArray, arena.onlineArenaSettingsInterfaceMultiChoice[onlineArrayMutliChoice]);
                             }
                             (selectable as Menu.MultipleChoiceArray.MultipleChoiceButton).buttonBehav.greyedOut = true;
 
                         }
+                        if (selectable is Menu.CheckBox)
+                        {
+
+                            var onlineArrayBool = (selectable as Menu.CheckBox).IDString;
+                            if (arena.onlineArenaSettingsInterfaceeBool.ContainsKey(onlineArrayBool))
+                            {
+                                self.SetChecked((selectable as Menu.CheckBox), arena.onlineArenaSettingsInterfaceeBool[onlineArrayBool]);
+                            }
+                           (selectable as Menu.CheckBox).buttonBehav.greyedOut = true;
+
+                        }
+
                     }
                 }
             }
@@ -156,10 +183,10 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby.isOwner)
                 {
-                    if (arena.onlineArenaSettingsInterface.ContainsKey(array.IDString))
+                    if (arena.onlineArenaSettingsInterfaceMultiChoice.ContainsKey(array.IDString))
                     {
                         RainMeadow.Debug($"Setting {array.IDString} to value {i}");
-                        arena.onlineArenaSettingsInterface[array.IDString] = i;
+                        arena.onlineArenaSettingsInterfaceMultiChoice[array.IDString] = i;
                     }
                     foreach (var player in OnlineManager.players)
                     {
@@ -167,7 +194,7 @@ namespace RainMeadow
                         {
                             continue;
                         }
-                        player.InvokeOnceRPC(ArenaRPCs.Arena_UpdateSelected, array.IDString, i);
+                        player.InvokeOnceRPC(ArenaRPCs.Arena_UpdateSelectedChoice, array.IDString, i);
                     }
                 }
 
@@ -175,6 +202,38 @@ namespace RainMeadow
 
 
         }
+
+        private void ArenaSettingsInterface_SetChecked(On.Menu.ArenaSettingsInterface.orig_SetChecked orig, Menu.ArenaSettingsInterface self, Menu.CheckBox box, bool c)
+        {
+            orig(self, box, c);
+
+            if (isArenaMode(out var arena))
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    if (arena.onlineArenaSettingsInterfaceeBool.ContainsKey(box.IDString))
+                    {
+                        RainMeadow.Debug($"Setting {box.IDString} to value {c}");
+                        arena.onlineArenaSettingsInterfaceeBool[box.IDString] = c;
+                    }
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (player.id == OnlineManager.lobby.owner.id || player.isMe)
+                        {
+                            continue;
+                        }
+                        player.InvokeOnceRPC(ArenaRPCs.Arena_UpdateSelectedCheckbox, box.IDString, c);
+                    }
+                }
+
+            }
+
+        }
+
+
+
+
+
 
         private void MultiplayerMenu_InitiateGameTypeSpecificButtons(On.Menu.MultiplayerMenu.orig_InitiateGameTypeSpecificButtons orig, Menu.MultiplayerMenu self)
         {
