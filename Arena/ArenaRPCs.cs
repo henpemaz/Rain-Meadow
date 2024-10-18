@@ -1,7 +1,34 @@
-﻿namespace RainMeadow
+﻿using Menu;
+using System;
+
+namespace RainMeadow
 {
     public static class ArenaRPCs
     {
+
+        [RPCMethod]
+        public static void Arena_UpdateSelected(string arrayID, int value)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+
+                foreach (var selectable in game.arenaSettingsInterface.menu.pages[0].selectables)
+                {
+                    if (selectable is MultipleChoiceArray.MultipleChoiceButton && (selectable as MultipleChoiceArray.MultipleChoiceButton).multipleChoiceArray.IDString == arrayID)
+                    {
+                        
+                        game.arenaSettingsInterface.SetSelected((selectable as MultipleChoiceArray.MultipleChoiceButton).multipleChoiceArray, value); // why didn't this method take a freakin string
+                    }
+                }
+               
+            }
+        }
+
 
         [RPCMethod]
         public static void Arena_IncrementPlayersLeftt()
@@ -35,7 +62,7 @@
                 {
                     return;
                 }
-                for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                for (int i = 0; i < game.arenaOverlay.resultBoxes.Count; i++)
                 {
                     if (game.arenaOverlay.resultBoxes[i].playerNameLabel.text == userIsReady)
                     {

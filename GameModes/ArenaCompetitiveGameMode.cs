@@ -9,6 +9,7 @@ namespace RainMeadow
         public int clientsAreReadiedUp = 0;
         public bool allPlayersReadyLockLobby = false;
         public bool returnToLobby = false;
+        public Dictionary<string, int> onlineArenaSettingsInterface = new Dictionary<string, int>();
 
         public ArenaClientSettings arenaClientSettings;
         public SlugcatCustomization avatarSettings;

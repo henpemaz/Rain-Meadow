@@ -41,8 +41,6 @@ namespace RainMeadow
 
             if (OnlineManager.lobby == null) throw new InvalidOperationException("lobby is null");
 
-            // Playlist gets cleared as host when client joins
-
             OverrideMultiplayerMenu();
             BindSettings();
             BuildLayout();
@@ -50,6 +48,7 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
                 arena.arenaSittingOnlineOrder = new List<ushort>();
+                
 
             }
 
@@ -123,6 +122,7 @@ namespace RainMeadow
             this.GetGameTypeSetup.rainWhenOnePlayerLeft = false; // TODO:  Hook this to update logic due to level switching if we want it
             this.GetGameTypeSetup.savingAndLoadingSession = false;
             this.GetGameTypeSetup.saveCreatures = false;
+            
         }
 
         private void BindSettings()
