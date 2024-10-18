@@ -488,17 +488,19 @@ namespace RainMeadow
             meClassButton = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f), 40f), 0);
             meClassButton.buttonBehav.greyedOut = false;
             meClassButton.readyForCombat = true;
+            int currentColorIndex;
             if (arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.mePlayer.id.name, out var existingValue))
             {
+                currentColorIndex = arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.name];
                 RainMeadow.Debug("Player already exists in dictionary");
                 if (arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.name] > 3 && ModManager.MSC)
                 {
-                    meClassButton.portrait.fileName = "MultiplayerPortrait" + "41-" + SlugList[arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.name]];
+                    meClassButton.portrait.fileName = "MultiplayerPortrait" + "41-" + currentColorIndex;
 
                 }
                 else
                 {
-                    meClassButton.portrait.fileName = "MultiplayerPortrait" + arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.name] + "1";
+                    meClassButton.portrait.fileName = "MultiplayerPortrait" + currentColorIndex + "1";
                 }
                 meClassButton.portrait.LoadFile();
                 meClassButton.portrait.sprite.SetElementByName(meClassButton.portrait.fileName);
@@ -506,9 +508,9 @@ namespace RainMeadow
             else
             {
                 RainMeadow.Debug("Player did NOT exist in dictionary");
-                arena.playersInLobbyChoosingSlugs.Add(OnlineManager.mePlayer.id.name, 0);
+                currentColorIndex = 0;
+                arena.playersInLobbyChoosingSlugs.Add(OnlineManager.mePlayer.id.name, currentColorIndex);
             }
-            int currentColorIndex = arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.name];
             meClassButton.OnClick += (_) =>
             {
                 currentColorIndex = (currentColorIndex + 1) % SlugList.Count;
