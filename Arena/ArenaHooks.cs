@@ -1,6 +1,7 @@
 ﻿using HUD;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -73,6 +74,105 @@ namespace RainMeadow
             On.Menu.LevelSelector.LevelFromPlayList += LevelSelector_LevelFromPlayList;
 
             On.Menu.MultiplayerMenu.InitiateGameTypeSpecificButtons += MultiplayerMenu_InitiateGameTypeSpecificButtons;
+            On.Menu.ArenaSettingsInterface.SetSelected += ArenaSettingsInterface_SetSelected;
+            On.Menu.ArenaSettingsInterface.GetSelected += ArenaSettingsInterface_GetSelected;
+            On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
+
+        }
+
+        private int ArenaSettingsInterface_GetSelected(On.Menu.ArenaSettingsInterface.orig_GetSelected orig, Menu.ArenaSettingsInterface self, Menu.MultipleChoiceArray array)
+        {
+            orig(self, array);
+            if (isArenaMode(out var arena))
+            {
+                if (!OnlineManager.lobby.isOwner && arena.onlineArenaSettingsInterface.ContainsKey(array.IDString))
+                {
+
+                    return arena.onlineArenaSettingsInterface[array.IDString];
+                }
+            }
+
+            return orig(self, array);
+
+        }
+
+
+
+        private void ArenaSettingsInterface_ctor(On.Menu.ArenaSettingsInterface.orig_ctor orig, Menu.ArenaSettingsInterface self, Menu.Menu menu, Menu.MenuObject owner)
+        {
+            orig(self, menu, owner);
+            if (isArenaMode(out var arena))
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.onlineArenaSettingsInterface = new Dictionary<string, int>();
+
+                    // Add lobby syncs for those who join after we've started the game session
+
+                    var roomRepeatSync = "ROOMREPEAT"; // Don't ask.
+                    int roomRepeatValue = self.GetGameTypeSetup.levelRepeats;
+
+
+                    var rainSyncKey = self.rainTimer.IDString;
+                    int rainSyncValue = self.GetGameTypeSetup.sessionTimeLengthIndex;
+
+                    var wildLifeSyncKey = self.wildlifeArray.IDString;
+                    int wildLifeSyncValue = self.GetGameTypeSetup.wildLifeSetting.index;
+
+
+
+                    arena.onlineArenaSettingsInterface.Add(roomRepeatSync, roomRepeatValue);
+                    arena.onlineArenaSettingsInterface.Add(rainSyncKey, rainSyncValue);
+                    arena.onlineArenaSettingsInterface.Add(wildLifeSyncKey, wildLifeSyncValue);
+
+
+                }
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    foreach (var selectable in self.menu.pages[0].selectables)
+                    {
+                        if (selectable is Menu.MultipleChoiceArray.MultipleChoiceButton)
+                        {
+
+                            var onlineArray = (selectable as Menu.MultipleChoiceArray.MultipleChoiceButton).multipleChoiceArray.IDString;
+                            if (arena.onlineArenaSettingsInterface.ContainsKey(onlineArray)) 
+                            {
+                                self.SetSelected((selectable as Menu.MultipleChoiceArray.MultipleChoiceButton).multipleChoiceArray, arena.onlineArenaSettingsInterface[onlineArray]);
+                            }
+                            (selectable as Menu.MultipleChoiceArray.MultipleChoiceButton).buttonBehav.greyedOut = true;
+
+                        }
+                    }
+                }
+            }
+
+        }
+
+        private void ArenaSettingsInterface_SetSelected(On.Menu.ArenaSettingsInterface.orig_SetSelected orig, Menu.ArenaSettingsInterface self, Menu.MultipleChoiceArray array, int i)
+        {
+            orig(self, array, i);
+
+            if (isArenaMode(out var arena))
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    if (arena.onlineArenaSettingsInterface.ContainsKey(array.IDString))
+                    {
+                        RainMeadow.Debug($"Setting {array.IDString} to value {i}");
+                        arena.onlineArenaSettingsInterface[array.IDString] = i;
+                    }
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (player.id == OnlineManager.lobby.owner.id || player.isMe)
+                        {
+                            continue;
+                        }
+                        player.InvokeOnceRPC(ArenaRPCs.Arena_UpdateSelected, array.IDString, i);
+                    }
+                }
+
+            }
+
 
         }
 
@@ -782,7 +882,6 @@ namespace RainMeadow
             {
 
 
-                // TODO: Figure out the weird username logic and arenaoverlay
                 if (!OnlineManager.lobby.isOwner)
                 {
                     self.playersContinueButtons = null;
@@ -817,18 +916,6 @@ namespace RainMeadow
                     orig(self);
                 }
 
-                //for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
-                //{
-                //    if (self.resultBoxes[i].playerNameLabel.text == OnlineManager.mePlayer.id.name)
-                //    {
-                //        self.result[i].readyForNextRound = true;
-                //    }
-                //}
-
-                //self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
-
-
-
             }
             else
             {
@@ -850,7 +937,7 @@ namespace RainMeadow
                 {
                     foreach (OnlinePlayer player in OnlineManager.players)
                     {
-                        if (player.id == OnlineManager.lobby.owner.id && arena.clientWaiting == OnlineManager.players.Count - 1)
+                        if (player.id == OnlineManager.lobby.owner.id && arena.clientWaiting == arena.arenaSittingOnlineOrder.Count - 1)
                         {
                             ArenaRPCs.Arena_NextLevelCall();
                         }
