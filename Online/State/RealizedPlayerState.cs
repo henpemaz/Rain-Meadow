@@ -39,6 +39,10 @@ namespace RainMeadow
         public bool reachingForObject;
         [OnlineField]
         public Vector2 absoluteHuntPos;
+        [OnlineField]
+        public Vector2 handPos;
+        [OnlineField]
+        public Vector2 grabbedChunkPos;
 
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
@@ -71,11 +75,14 @@ namespace RainMeadow
 
                     absoluteHuntPos = (p.graphicsModule as PlayerGraphics).hands[h].absoluteHuntPos;
                     reachingForObject = (p.graphicsModule as PlayerGraphics).hands[h].reachingForObject;
+                    handPos = (p.graphicsModule as PlayerGraphics).hands[h].pos; // fixes offhand visual bug with spear but doesn't fix jitter
+
                 }
             }
 
 
-            var i = p.input[0];
+
+                    var i = p.input[0];
             inputs = (ushort)(
                   (i.x == 1 ? 1 << 0 : 0)
                 | (i.x == -1 ? 1 << 1 : 0)
@@ -135,6 +142,8 @@ namespace RainMeadow
 
                         (pl.graphicsModule as PlayerGraphics).hands[h].absoluteHuntPos = absoluteHuntPos;
                         (pl.graphicsModule as PlayerGraphics).hands[h].reachingForObject = reachingForObject;
+                        (pl.graphicsModule as PlayerGraphics).hands[h].pos = handPos; // fixes spear jitter when held in wrong hand, but doesn't fix spear jitter
+
                     }
                  (pl.graphicsModule as PlayerGraphics).LookAtPoint(absoluteHuntPos, 10f);
                 }
