@@ -341,9 +341,9 @@ public partial class RainMeadow
         orig(self);
         if (OnlineManager.lobby != null)
         {
-            if (self.abstractPhysicalObject.GetOnlineObject(out var oe))
+            if (self.abstractPhysicalObject.GetOnlineObject(out var oe) && oe.TryGetData<SlugcatCustomization>(out var customization))
             {
-                self.SlugCatClass = oe.GetData<SlugcatCustomization>().playingAs;
+                self.SlugCatClass = customization.playingAs;
             }
             else
             {
