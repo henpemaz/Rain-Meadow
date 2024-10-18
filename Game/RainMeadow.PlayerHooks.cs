@@ -1,3 +1,4 @@
+using HUD;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
@@ -48,7 +49,7 @@ public partial class RainMeadow
     private void Player_GraphicsModuleUpdated(On.Player.orig_GraphicsModuleUpdated orig, Player self, bool actuallyViewed, bool eu)
     {
         orig(self, actuallyViewed, eu);
-        if (OnlineManager.lobby != null)
+        if (OnlineManager.lobby != null && self.room.game.cameras[0].hud.parts.Any(part => part is Pointing))
         {
             for (int i = 0; i < self.grasps.Length; i++)
             {
