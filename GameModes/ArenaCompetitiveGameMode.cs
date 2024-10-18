@@ -11,6 +11,7 @@ namespace RainMeadow
         public bool returnToLobby = false;
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
+        public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
 
 
         public ArenaClientSettings arenaClientSettings;
