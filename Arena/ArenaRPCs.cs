@@ -100,7 +100,7 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void Arena_NotifyClassChange(string userIsReady, int currentColorIndex)
+        public static void Arena_NotifyClassChange(string userChangingClass, int currentColorIndex)
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
@@ -113,7 +113,7 @@ namespace RainMeadow
                 for (int i = 1; i < game.usernameButtons.Length; i++)
                 {
 
-                    if (game.usernameButtons[i].menuLabel.text == userIsReady)
+                    if (game.usernameButtons[i].menuLabel.text == userChangingClass)
                     {
                         if (currentColorIndex > 3 && ModManager.MSC)
                         {
