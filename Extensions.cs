@@ -28,9 +28,43 @@ namespace RainMeadow
             return OnlinePhysicalObject.map.TryGetValue(apo, out var oe) ? oe : null;
         }
 
+        public static bool GetOnlineObject(this AbstractPhysicalObject apo, out OnlinePhysicalObject? opo) => (opo = GetOnlineObject(apo)) is not null;
+
         public static OnlineCreature? GetOnlineCreature(this AbstractCreature ac)
         {
-            return OnlinePhysicalObject.map.TryGetValue(ac, out var oe) ? oe as OnlineCreature : null;
+            return GetOnlineObject(ac) as OnlineCreature;
+        }
+
+        public static bool GetOnlineCreature(this AbstractCreature apo, out OnlineCreature? oc) => (oc = GetOnlineCreature(apo)) is not null;
+
+        public static bool IsLocal(this AbstractPhysicalObject apo)
+        {
+            return OnlineManager.lobby is null || (GetOnlineObject(apo)?.isMine ?? true);
+        }
+
+        public static bool IsLocal(this AbstractPhysicalObject apo, out OnlinePhysicalObject? opo)
+        {
+            opo = null;
+            return OnlineManager.lobby is null || (GetOnlineObject(apo, out opo) && opo.isMine);
+        }
+
+        public static bool IsLocal(this PhysicalObject po) => IsLocal(po.abstractPhysicalObject);
+
+        public static bool IsLocal(this PhysicalObject po, out OnlinePhysicalObject? opo)
+        {
+            opo = null;
+            return IsLocal(po.abstractPhysicalObject, out opo);
+        }
+
+        public static bool CanMove(this AbstractPhysicalObject apo, WorldCoordinate? newCoord=null, bool quiet=false)
+        {
+            if (!GetOnlineObject(apo, out var oe)) return true;
+            if (!oe.isMine && !oe.beingMoved && (newCoord is null || oe.roomSession is null || oe.roomSession.absroom.index == newCoord.Value.room))
+            {
+                if (!quiet) RainMeadow.Error($"Remote entity trying to move: {oe} at {oe.roomSession} {Environment.StackTrace}");
+                return false;
+            }
+            return true;
         }
 
         public static bool RemoveFromShortcuts(this Creature creature)

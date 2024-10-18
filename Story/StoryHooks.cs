@@ -34,9 +34,6 @@ namespace RainMeadow
 
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
 
-            On.Player.Update += Player_Update;
-
-            On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass;
             On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
 
             IL.HardmodeStart.ctor += HardmodeStart_ctor;
@@ -343,25 +340,6 @@ namespace RainMeadow
             }
         }
 
-        private void Player_GetInitialSlugcatClass(On.Player.orig_GetInitialSlugcatClass orig, Player self)
-        {
-            orig(self);
-            if (OnlineManager.lobby != null)
-            {
-                if (OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
-                {
-                    if (oe.TryGetData<SlugcatCustomization>(out var customization))
-                    {
-                        self.SlugCatClass = customization.playingAs;
-                    }
-                }
-                else
-                {
-                    RainMeadow.Error("Player doesn't have OnlineEntity counterpart!!");
-                }
-            }
-        }
-
         private RWCustom.IntVector2 SlugcatStats_SlugcatFoodMeter(On.SlugcatStats.orig_SlugcatFoodMeter orig, SlugcatStats.Name slugcat)
         {
             if (isStoryMode(out var storyGameMode))
@@ -624,13 +602,6 @@ namespace RainMeadow
                 }
             }
             orig(self, sender, message);
-        }
-
-        private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
-        {
-            if (isStoryMode(out var gameMode) && OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe) && oe.isMine)
-                gameMode.storyClientData.readyForWin = false;
-            orig(self, eu);
         }
 
         private void KarmaLadderScreen_Update(On.Menu.KarmaLadderScreen.orig_Update orig, Menu.KarmaLadderScreen self)

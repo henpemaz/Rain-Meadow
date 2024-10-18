@@ -15,7 +15,9 @@ public partial class RainMeadow
         On.SlugcatStats.ctor += SlugcatStats_ctor;
 
         On.Player.ctor += Player_ctor;
+        On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass;
         IL.Player.Update += Player_Update;
+        On.Player.Update += Player_Update1;
         On.Player.Die += PlayerOnDie;
         On.Player.Destroy += Player_Destroy;
         On.Player.Grabability += PlayerOnGrabability;
@@ -58,9 +60,8 @@ public partial class RainMeadow
                 i => i.MatchCallOrCallvirt<RainWorldGame>("GameOver")
                 );
             c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((Player self) =>
-                (OnlineManager.lobby != null && !(OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe) && oe.isMine)));
-            c.Emit(OpCodes.Brtrue, skip);
+            c.EmitDelegate((Player self) => self.abstractPhysicalObject.IsLocal());
+            c.Emit(OpCodes.Brfalse, skip);
             c.Index += 6;
             c.MarkLabel(skip);
 
@@ -79,7 +80,7 @@ public partial class RainMeadow
                 {
                     if (OnlineManager.lobby.gameMode is MeadowGameMode) // meadow crashes with msc assuming slugpupbars is there
                         return false;
-                    if (OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe) && !oe.isMine) // don't shelter if remote
+                    if (!self.abstractCreature.IsLocal()) // don't shelter if remote
                         return false;
                 }
                 return true;
@@ -90,6 +91,13 @@ public partial class RainMeadow
         {
             Logger.LogError(e);
         }
+    }
+
+    private void Player_Update1(On.Player.orig_Update orig, Player self, bool eu)
+    {
+        if (isStoryMode(out var gameMode) && self.abstractCreature.IsLocal())
+            gameMode.storyClientData.readyForWin = false;
+        orig(self, eu);
     }
 
     private UnityEngine.Color Player_ShortCutColor(On.Player.orig_ShortCutColor orig, Player self)
@@ -180,8 +188,8 @@ public partial class RainMeadow
                 i => i.MatchNewobj<AbstractSpear>()
                 );
             c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((Player self) => OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe) && !oe.isMine);
-            c.Emit(OpCodes.Brtrue, skip);
+            c.EmitDelegate((Player self) => self.abstractPhysicalObject.IsLocal());
+            c.Emit(OpCodes.Brfalse, skip);
         }
         catch (Exception e)
         {
@@ -189,52 +197,75 @@ public partial class RainMeadow
         }
     }
 
+    public static bool sUpdateFood = true;
+
     private void Player_AddQuarterFood(On.Player.orig_AddQuarterFood orig, Player self)
     {
-        if (OnlineManager.lobby != null)
+        if (OnlineManager.lobby is null || !sUpdateFood)
         {
-            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
-            if (!onlineEntity.isMine) return;
-
-            if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
-            {
-                OnlineManager.lobby.owner.InvokeRPC(RPCs.AddQuarterFood);
-            }
+            orig(self);
+            return;
         }
 
+        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+        if (!onlineEntity.isMine) return;
+
+        var state = (PlayerState)self.State;
+        var origFood = state.foodInStomach * 4 + state.quarterFoodPoints;
+
         orig(self);
+
+        if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+        {
+            var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
+            if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(RPCs.ChangeFood, (short)(newFood - origFood));
+        }
     }
 
     private void Player_AddFood(On.Player.orig_AddFood orig, Player self, int add)
     {
-        if (OnlineManager.lobby != null)
+        if (OnlineManager.lobby is null || !sUpdateFood)
         {
-            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
-            if (!onlineEntity.isMine) return;
-
-            if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
-            {
-                OnlineManager.lobby.owner.InvokeRPC(RPCs.AddFood, (short)add);
-            }
+            orig(self, add);
+            return;
         }
 
+        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+        if (!onlineEntity.isMine) return;
+
+        var state = (PlayerState)self.State;
+        var origFood = state.foodInStomach * 4 + state.quarterFoodPoints;
+
         orig(self, add);
+
+        if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+        {
+            var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
+            if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(RPCs.ChangeFood, (short)(newFood - origFood));
+        }
     }
 
     private void Player_SubtractFood(On.Player.orig_SubtractFood orig, Player self, int add)
     {
-        if (OnlineManager.lobby != null)
+        if (OnlineManager.lobby is null || !sUpdateFood)
         {
-            if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
-            if (!onlineEntity.isMine) return;
-
-            if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
-            {
-                OnlineManager.lobby.owner.InvokeRPC(RPCs.SubtractFood, (short)add);
-            }
+            orig(self, add);
+            return;
         }
 
+        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+        if (!onlineEntity.isMine) return;
+
+        var state = (PlayerState)self.State;
+        var origFood = state.foodInStomach * 4 + state.quarterFoodPoints;
+
         orig(self, add);
+
+        if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
+        {
+            var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
+            if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(RPCs.ChangeFood, (short)(newFood - origFood));
+        }
     }
 
     private int Player_FoodInRoom(On.Player.orig_FoodInRoom_bool orig, Player self, bool eatAndDestroy)
@@ -294,13 +325,25 @@ public partial class RainMeadow
         orig(self, abstractCreature, world);
         if (OnlineManager.lobby != null)
         {
-            if (OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var ent))
+            if (!self.abstractPhysicalObject.IsLocal(out var oe))
             {
-                // remote player
-                if (!ent.isMine)
-                {
-                    self.controller = new OnlineController(ent, self);
-                }
+                self.controller = new OnlineController(oe, self); // remote player
+            }
+            else if (oe is null)
+            {
+                RainMeadow.Error("player entity not found for " + self + " " + self.abstractCreature);
+            }
+        }
+    }
+
+    private void Player_GetInitialSlugcatClass(On.Player.orig_GetInitialSlugcatClass orig, Player self)
+    {
+        orig(self);
+        if (OnlineManager.lobby != null)
+        {
+            if (self.abstractPhysicalObject.GetOnlineObject(out var oe))
+            {
+                self.SlugCatClass = oe.GetData<SlugcatCustomization>().playingAs;
             }
             else
             {
@@ -351,35 +394,25 @@ public partial class RainMeadow
 
     private Player.ObjectGrabability PlayerOnGrabability(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
     {
-        if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
-        {
-            if (!oe.isMine) return Player.ObjectGrabability.CantGrab;
-        }
+        if (!self.abstractPhysicalObject.IsLocal()) return Player.ObjectGrabability.CantGrab;
         return orig(self, obj);
     }
 
     private void Player_SwallowObject(On.Player.orig_SwallowObject orig, Player self, int grasp)
     {
-        OnlinePhysicalObject? oe = null;
-        if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out oe))
-        {
-            if (!oe.isMine && !oe.beingMoved) return; // prevent execution
-        }
+        if (!self.abstractPhysicalObject.IsLocal(out var oe)) return;
         orig(self, grasp);
-        if (oe != null)
+        if (oe is not null && self.objectInStomach is not null)
         {
-            if (oe.isMine && self.objectInStomach != null)
-            {
-                self.objectInStomach.pos.room = -1; // signal not-in-a-room
-            }
+            self.objectInStomach.pos.room = -1; // signal not-in-a-room
         }
     }
 
     private void Player_Regurgitate(On.Player.orig_Regurgitate orig, Player self)
     {
-        if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
+        if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject(out var oe))
         {
-            if (!oe.isMine && !oe.beingMoved) return; // prevent execution
+            if (!oe.isMine) return; // prevent execution
             if (self.objectInStomach != null) self.objectInStomach.pos = self.abstractCreature.pos; // so it picks up in room.addentity hook, otherwise skipped
         }
         orig(self);
@@ -387,10 +420,7 @@ public partial class RainMeadow
 
     private void Player_ThrowObject(On.Player.orig_ThrowObject orig, Player self, int grasp, bool eu)
     {
-        if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
-        {
-            if (!oe.isMine) return;
-        }
+        if (!self.abstractPhysicalObject.IsLocal()) return;
         orig(self, grasp, eu);
     }
 
@@ -403,10 +433,7 @@ public partial class RainMeadow
 
     private void Player_SpitUpCraftedObject(On.Player.orig_SpitUpCraftedObject orig, Player self)
     {
-        if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
-        {
-            if (!oe.isMine) return;
-        }
+        if (!self.abstractPhysicalObject.IsLocal()) return;
         orig(self);
     }
 

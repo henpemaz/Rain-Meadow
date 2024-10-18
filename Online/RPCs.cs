@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -33,21 +34,14 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void AddFood(short add)
+        public static void ChangeFood(short amt)
         {
-            ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].realizedCreature as Player).AddFood(add);
-        }
-
-        [RPCMethod]
-        public static void AddQuarterFood()
-        {
-            ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].realizedCreature as Player).AddQuarterFood();
-        }
-
-        [RPCMethod]
-        public static void SubtractFood(short amt)
-        {
-            ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].realizedCreature as Player).SubtractFood(amt);
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.Players[0]?.state is PlayerState state)
+            {
+                var newFood = Math.Max(0, Math.Min(state.foodInStomach * 4 + state.quarterFoodPoints + amt, game.session.characterStats.maxFood * 4));
+                state.foodInStomach = newFood / 4;
+                state.quarterFoodPoints = newFood % 4;
+            }
         }
 
         [RPCMethod]
