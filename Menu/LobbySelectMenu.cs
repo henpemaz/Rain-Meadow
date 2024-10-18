@@ -20,7 +20,7 @@ namespace RainMeadow
         private float scroll;
         private float scrollTo;
         private int currentlySelectedCard;
-        private OpComboBox visibilityDropDown;
+        private OpComboBox2 visibilityDropDown;
         private OpTextBox lobbyLimitNumberTextBox;
         private SimplerButton playButton;
         private SimplerButton refreshButton;

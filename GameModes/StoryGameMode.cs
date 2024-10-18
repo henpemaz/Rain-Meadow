@@ -27,7 +27,7 @@ namespace RainMeadow
 
         public StoryGameMode(Lobby lobby) : base(lobby)
         {
-            avatarSettings = new SlugcatCustomization();
+            avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
         }
         public override ProcessManager.ProcessID MenuProcessId()
         {
@@ -76,19 +76,19 @@ namespace RainMeadow
             return true;
         }
 
-        internal override void AddClientData()
+        public override void AddClientData()
         {
             storyClientData = clientSettings.AddData(new StoryClientSettingsData());
         }
 
-        internal override void LobbyTick(uint tick)
+        public override void LobbyTick(uint tick)
         {
             base.LobbyTick(tick);
             // could switch this based on rules? any vs all
             storyClientData.isDead = avatars.All(a => a.abstractCreature.state is PlayerState state && (state.dead || state.permaDead));
         }
 
-        internal override void PlayerLeftLobby(OnlinePlayer player)
+        public override void PlayerLeftLobby(OnlinePlayer player)
         {
             base.PlayerLeftLobby(player);
             if (player == lobby.owner)
@@ -97,7 +97,7 @@ namespace RainMeadow
             }
         }
 
-        internal override void ResourceAvailable(OnlineResource onlineResource)
+        public override void ResourceAvailable(OnlineResource onlineResource)
         {
             base.ResourceAvailable(onlineResource);
             if (onlineResource is Lobby lobby)
@@ -106,7 +106,7 @@ namespace RainMeadow
             }
         }
 
-        internal override void ResourceActive(OnlineResource onlineResource)
+        public override void ResourceActive(OnlineResource onlineResource)
         {
             base.ResourceActive(onlineResource);
             if (onlineResource is WorldSession ws)
@@ -129,12 +129,12 @@ namespace RainMeadow
             }
         }
 
-        internal override void ConfigureAvatar(OnlineCreature onlineCreature)
+        public override void ConfigureAvatar(OnlineCreature onlineCreature)
         {
             onlineCreature.AddData(avatarSettings);
         }
 
-        internal override void Customize(Creature creature, OnlineCreature oc)
+        public override void Customize(Creature creature, OnlineCreature oc)
         {
             if (oc.TryGetData<SlugcatCustomization>(out var data))
             {

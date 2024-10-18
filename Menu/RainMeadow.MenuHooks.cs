@@ -390,10 +390,6 @@ namespace RainMeadow
             {
                 self.currentMainLoop = new StoryMenu(self);
             }
-            if (ID == Ext_ProcessID.LobbyMenu)
-            {
-                self.currentMainLoop = new LobbyMenu(self);
-            }
 
 #if !LOCAL_P2P
             if (ID == ProcessManager.ProcessID.IntroRoll)

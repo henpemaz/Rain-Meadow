@@ -19,7 +19,7 @@ namespace RainMeadow
 
         public ArenaCompetitiveGameMode(Lobby lobby) : base(lobby)
         {
-            avatarSettings = new SlugcatCustomization();
+            avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
             arenaClientSettings = new ArenaClientSettings();
             arenaClientSettings.playingAs = SlugcatStats.Name.White;
         }
@@ -48,7 +48,7 @@ namespace RainMeadow
         }
 
 
-        internal override void PlayerLeftLobby(OnlinePlayer player)
+        public override void PlayerLeftLobby(OnlinePlayer player)
         {
             base.PlayerLeftLobby(player);
             if (player == lobby.owner)
@@ -67,7 +67,7 @@ namespace RainMeadow
             return roomSession.owner == null || roomSession.isOwner;
         }
 
-        internal override void ResourceAvailable(OnlineResource onlineResource)
+        public override void ResourceAvailable(OnlineResource onlineResource)
         {
             base.ResourceAvailable(onlineResource);
 
@@ -77,17 +77,17 @@ namespace RainMeadow
             }
         }
 
-        internal override void AddClientData()
+        public override void AddClientData()
         {
             clientSettings.AddData(arenaClientSettings);
         }
 
-        internal override void ConfigureAvatar(OnlineCreature onlineCreature)
+        public override void ConfigureAvatar(OnlineCreature onlineCreature)
         {
             onlineCreature.AddData(avatarSettings);
         }
 
-        internal override void Customize(Creature creature, OnlineCreature oc)
+        public override void Customize(Creature creature, OnlineCreature oc)
         {
             if (oc.TryGetData<SlugcatCustomization>(out var data))
             {

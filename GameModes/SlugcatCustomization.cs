@@ -8,6 +8,7 @@ namespace RainMeadow
         public Color bodyColor;
         public Color eyeColor;
         public SlugcatStats.Name playingAs;
+        public string nickname;
 
         public SlugcatCustomization() { }
 
@@ -33,11 +34,7 @@ namespace RainMeadow
 
         public override EntityDataState MakeState(OnlineEntity onlineEntity, OnlineResource inResource)
         {
-            if (inResource is Lobby || inResource is WorldSession)
-            {
-                return new State(this);
-            }
-            return null;
+            return new State(this);
         }
 
         public class State : EntityDataState
@@ -48,6 +45,8 @@ namespace RainMeadow
             public Color eyeColor;
             [OnlineField(nullable = true)]
             public SlugcatStats.Name playingAs;
+            [OnlineField]
+            public string nickname;
 
             public State() { }
             public State(SlugcatCustomization slugcatCustomization) : base()
@@ -55,14 +54,21 @@ namespace RainMeadow
                 bodyColor = slugcatCustomization.bodyColor;
                 eyeColor = slugcatCustomization.eyeColor;
                 playingAs = slugcatCustomization.playingAs;
+                nickname = slugcatCustomization.nickname;
             }
 
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
             {
-                var slugcatCustomization = onlineEntity.GetData<SlugcatCustomization>();
+                var slugcatCustomization = (SlugcatCustomization)entityData;
                 slugcatCustomization.bodyColor = bodyColor;
                 slugcatCustomization.eyeColor = eyeColor;
                 slugcatCustomization.playingAs = playingAs;
+                slugcatCustomization.nickname = nickname;
+
+                if (UnityEngine.Input.GetKey(KeyCode.L))
+                {
+                    RainMeadow.Debug("color? " + bodyColor);
+                }
             }
 
             public override Type GetDataType() => typeof(SlugcatCustomization);

@@ -8,14 +8,14 @@ namespace RainMeadow
     {
         private Dictionary<Type, ResourceData> resourceData = new();
 
-        internal T AddData<T>(T toAdd) where T : ResourceData
+        public T AddData<T>(T toAdd) where T : ResourceData
         {
             if (resourceData.TryGetValue(toAdd.GetType(), out var temp)) return (T)temp;
             resourceData.Add(toAdd.GetType(), toAdd);
             return toAdd;
         }
 
-        internal bool TryGetData<T>(out T d) where T : ResourceData
+        public bool TryGetData<T>(out T d) where T : ResourceData
         {
             ResourceData temp;
             if (resourceData.TryGetValue(typeof(T), out temp))
@@ -27,17 +27,17 @@ namespace RainMeadow
             return false;
         }
 
-        internal bool TryGetData(Type T, out ResourceData d)
+        public bool TryGetData(Type T, out ResourceData d)
         {
             return resourceData.TryGetValue(T, out d);
         }
 
-        internal T GetData<T>() where T : ResourceData
+        public T GetData<T>() where T : ResourceData
         {
             return (T)resourceData[typeof(T)];
         }
 
-        internal ResourceData GetData(Type T)
+        public ResourceData GetData(Type T)
         {
             return resourceData[T];
         }

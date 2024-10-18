@@ -33,7 +33,7 @@ namespace RainMeadow
             owner.hud.fContainers[0].AddChild(this.gradient);
             this.gradient.alpha = 0f;
             this.gradient.x = -1000f;
-            this.label = new FLabel(Custom.GetFont(), owner.clientSettings.owner.id.name);
+            this.label = new FLabel(Custom.GetFont(), customization.nickname);
             this.label.color = Color.white;
 
 

@@ -5,24 +5,22 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class LobbyMenu : SmartMenu
+    public class CustomLobbyMenu : SmartMenu
     {
-        private List<FSprite> sprites;
-        private ProperlyAlignedMenuLabel[] playerLabels = new ProperlyAlignedMenuLabel[0];
-        private PlayerInfo[] players;
-        private float scroll;
-        private float scrollTo;
-        private Vector2 btns = new Vector2(350, 50);
-        private Vector2 btnsize = new Vector2(100, 20);
-        private SimplerButton startbtn;
+        public List<FSprite> sprites;
+        public ProperlyAlignedMenuLabel[] playerLabels = new ProperlyAlignedMenuLabel[0];
+        public PlayerInfo[] players;
+        public float scroll;
+        public float scrollTo;
+        public Vector2 btns = new Vector2(350, 50);
+        public Vector2 btnsize = new Vector2(100, 20);
+        public SimplerButton startbtn;
 
         public override MenuScene.SceneID GetScene => MenuScene.SceneID.Landscape_CC;
-        public LobbyMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbyMenu)
+        public CustomLobbyMenu(ProcessManager manager, ProcessManager.ProcessID ID) : base(manager, ID)
         {
             RainMeadow.DebugMe();
-
-            pages[0].subObjects.Add(startbtn = new SimplerButton(this, pages[0], "START", btns, btnsize));
-            startbtn.OnClick += (SimplerButton obj) => { StartGame(); };
+            this.backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
 
             // player list
             // label
@@ -77,17 +75,7 @@ namespace RainMeadow
             scroll = RWCustom.Custom.LerpAndTick(scroll, scrollTo, 0.1f, 0.1f);
         }
 
-        private void StartGame()
-        {
-            RainMeadow.DebugMe();
-            if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
-            manager.arenaSitting = null;
-            manager.rainWorld.progression.ClearOutSaveStateFromMemory();
-            manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
-            manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
-        }
-
-        private void CreatePlayerCards()
+        public void CreatePlayerCards()
         {
             for (int i = 0; i < playerLabels.Length; i++)
             {
@@ -107,14 +95,14 @@ namespace RainMeadow
             }
         }
 
-        private Vector2 CardPosition(int i)
+        public Vector2 CardPosition(int i)
         {
             Vector2 rootPos = new(214, 540);
             Vector2 offset = new(0, 20);
             return rootPos - (scroll + i - 1) * offset;
         }
 
-        private class PlayerInfoCard : ProperlyAlignedMenuLabel
+        public class PlayerInfoCard : ProperlyAlignedMenuLabel
         {
             public PlayerInfo playerInfo;
             public int playerIndex;
@@ -127,11 +115,11 @@ namespace RainMeadow
             public override void Update()
             {
                 base.Update();
-                pos = (menu as LobbyMenu).CardPosition(this.playerIndex);
+                pos = (menu as CustomLobbyMenu).CardPosition(this.playerIndex);
             }
         }
 
-        private void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
+        public void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
         {
             this.players = players;
             CreatePlayerCards();

@@ -295,7 +295,7 @@ namespace RainMeadow
             if (isOwner) NewVersion();
         }
 
-        private void NewVersion()
+        public void NewVersion()
         {
             lastModified = OnlineManager.mePlayer.tick;
         }

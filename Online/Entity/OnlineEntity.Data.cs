@@ -8,13 +8,13 @@ namespace RainMeadow
     {
         private Dictionary<Type, EntityData> entityData = new();
 
-        internal T AddData<T>(T toAdd) where T : EntityData
+        public T AddData<T>(T toAdd) where T : EntityData
         {
             entityData.Add(toAdd.GetType(), toAdd);
             return toAdd;
         }
 
-        internal bool TryGetData<T>(out T d) where T : EntityData
+        public bool TryGetData<T>(out T d) where T : EntityData
         {
             EntityData temp;
             if (entityData.TryGetValue(typeof(T), out temp))
@@ -26,17 +26,17 @@ namespace RainMeadow
             return false;
         }
 
-        internal bool TryGetData(Type T, out EntityData d)
+        public bool TryGetData(Type T, out EntityData d)
         {
             return entityData.TryGetValue(T, out d);
         }
 
-        internal T GetData<T>() where T : EntityData
+        public T GetData<T>() where T : EntityData
         {
             return (T)entityData[typeof(T)];
         }
 
-        internal EntityData GetData(Type T)
+        public EntityData GetData(Type T)
         {
             return entityData[T];
         }

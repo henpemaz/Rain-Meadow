@@ -96,8 +96,8 @@ namespace RainMeadow
         }
 
         public bool enteringShortCut;
-        internal AbstractCreature creature => apo as AbstractCreature;
-        internal Creature realizedCreature => apo.realizedObject as Creature;
+        public AbstractCreature creature => apo as AbstractCreature;
+        public Creature realizedCreature => apo.realizedObject as Creature;
         public AbstractCreature abstractCreature => apo as AbstractCreature;
 
         public OnlineCreature(AbstractCreature ac, EntityId id, OnlinePlayer owner, bool isTransferable) : base(ac, id, owner, isTransferable)

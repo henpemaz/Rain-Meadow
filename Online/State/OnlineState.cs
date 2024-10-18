@@ -30,8 +30,6 @@ namespace RainMeadow
             return e;
         }
 
-        // todo register these automatically I'm tired of typing new ones in here
-        // really, just make it automagic
         // todo figure out how to handle indexes for modded stuff (so doesn't depend on load-order and so forth)
         public class StateType : ExtEnum<StateType>
         {
