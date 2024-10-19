@@ -495,7 +495,7 @@ namespace RainMeadow
                 RainMeadow.Debug("Player already exists in dictionary");
                 if (arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.name] > 3 && ModManager.MSC)
                 {
-                    meClassButton.portrait.fileName = "MultiplayerPortrait" + "41-" + currentColorIndex;
+                    meClassButton.portrait.fileName = "MultiplayerPortrait" + "41-" + SlugList[currentColorIndex];
 
                 }
                 else
@@ -620,8 +620,6 @@ namespace RainMeadow
 
         public void AddOtherUsernameButtons()
         {
-            //var SlugList = ArenaHelpers.AllSlugcats();
-            //this.GetArenaSetup.playerClass = SlugList.ToArray();
 
             usernameButtons = new SimplerButton[OnlineManager.players.Count];
 
