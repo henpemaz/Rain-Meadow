@@ -41,17 +41,16 @@ namespace RainMeadow
 
             if (OnlineManager.lobby == null) throw new InvalidOperationException("lobby is null");
 
-            // Playlist gets cleared as host when client joins
+            if (OnlineManager.lobby.isOwner)
+            {
+                arena.arenaSittingOnlineOrder = new List<ushort>();
+            }
 
             OverrideMultiplayerMenu();
             BindSettings();
             BuildLayout();
             ArenaHelpers.ResetReadyUpLogic(arena, this);
-            if (OnlineManager.lobby.isOwner)
-            {
-                arena.arenaSittingOnlineOrder = new List<ushort>();
 
-            }
 
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
             //SetupCharacterCustomization();
@@ -123,6 +122,7 @@ namespace RainMeadow
             this.GetGameTypeSetup.rainWhenOnePlayerLeft = false; // TODO:  Hook this to update logic due to level switching if we want it
             this.GetGameTypeSetup.savingAndLoadingSession = false;
             this.GetGameTypeSetup.saveCreatures = false;
+
         }
 
         private void BindSettings()
@@ -172,8 +172,8 @@ namespace RainMeadow
 
             AddMeClassButton();
             AddMeUsername();
-            AddOtherPlayerClassButtons();
             AddOtherUsernameButtons();
+            AddOtherPlayerClassButtons();
 
 
             this.GetArenaSetup.playersJoined[0] = true; // host should be part of game
@@ -451,8 +451,24 @@ namespace RainMeadow
                 }
                 if (OnlineManager.players.Count > 1)
                 {
-                    AddOtherPlayerClassButtons();
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (!player.isMe)
+                        {
+                            if (arena.playersInLobbyChoosingSlugs.TryGetValue(player.id.name, out var existingValue))
+                            {
+                                RainMeadow.Debug("Player already exists in online dictionary");
+                            }
+                            else
+                            {
+                                // Key does not exist, you can add it if needed
+                                arena.playersInLobbyChoosingSlugs.Add(player.id.name, 0);
+                            }
+                        }
+                    }
                     AddOtherUsernameButtons();
+                    AddOtherPlayerClassButtons();
+
                 }
 
                 if (this != null)
@@ -472,7 +488,29 @@ namespace RainMeadow
             meClassButton = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f), 40f), 0);
             meClassButton.buttonBehav.greyedOut = false;
             meClassButton.readyForCombat = true;
-            var currentColorIndex = 0;
+            int currentColorIndex;
+            if (arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.mePlayer.id.name, out var existingValue))
+            {
+                currentColorIndex = arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.name];
+                RainMeadow.Debug("Player already exists in dictionary");
+                if (arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.name] > 3 && ModManager.MSC)
+                {
+                    meClassButton.portrait.fileName = "MultiplayerPortrait" + "41-" + SlugList[currentColorIndex];
+
+                }
+                else
+                {
+                    meClassButton.portrait.fileName = "MultiplayerPortrait" + currentColorIndex + "1";
+                }
+                meClassButton.portrait.LoadFile();
+                meClassButton.portrait.sprite.SetElementByName(meClassButton.portrait.fileName);
+            }
+            else
+            {
+                RainMeadow.Debug("Player did NOT exist in dictionary");
+                currentColorIndex = 0;
+                arena.playersInLobbyChoosingSlugs.Add(OnlineManager.mePlayer.id.name, currentColorIndex);
+            }
             meClassButton.OnClick += (_) =>
             {
                 currentColorIndex = (currentColorIndex + 1) % SlugList.Count;
@@ -496,7 +534,7 @@ namespace RainMeadow
                 personaSettings.playingAs = SlugList[currentColorIndex];
                 arena.arenaClientSettings.playingAs = personaSettings.playingAs;
 
-                if (OnlineManager.players.Count > 1)
+                if (OnlineManager.players.Count > 1 && !arena.allPlayersReadyLockLobby) // stop unnecessary RPCs
                 {
                     foreach (var player in OnlineManager.players)
                     {
@@ -508,8 +546,7 @@ namespace RainMeadow
                     }
                 }
 
-
-
+                arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.name] = currentColorIndex;
             };
             pages[0].subObjects.Add(meClassButton);
         }
@@ -548,18 +585,31 @@ namespace RainMeadow
         }
         private void AddOtherPlayerClassButtons()
         {
-
-
+            var SlugList = ArenaHelpers.AllSlugcats();
             classButtons = new ArenaOnlinePlayerJoinButton[OnlineManager.players.Count];
+
+
             if (OnlineManager.players.Count > 1)
             {
                 for (int l = 1; l < classButtons.Length; l++)
                 {
+                    if (this.usernameButtons[l].menuLabel.text == OnlineManager.players[l].id.name) // we have our mark
 
                     classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
                     classButtons[l].buttonBehav.greyedOut = true;
                     classButtons[l].portraitBlack = Custom.LerpAndTick(classButtons[l].portraitBlack, 1f, 0.06f, 0.05f);
-                    classButtons[l].portrait.fileName = "MultiplayerPortrait" + "01";
+
+
+                    if (arena.playersInLobbyChoosingSlugs[OnlineManager.players[l].id.name] > 3 && ModManager.MSC)
+                    {
+                        classButtons[l].portrait.fileName = "MultiplayerPortrait" + "41-" + SlugList[arena.playersInLobbyChoosingSlugs[OnlineManager.players[l].id.name]];
+
+                    }
+                    else
+                    {
+                        classButtons[l].portrait.fileName = "MultiplayerPortrait" + arena.playersInLobbyChoosingSlugs[OnlineManager.players[l].id.name] + "1";
+                    }
+
                     classButtons[l].portrait.LoadFile();
                     classButtons[l].portrait.sprite.SetElementByName(classButtons[l].portrait.fileName);
 
@@ -570,8 +620,6 @@ namespace RainMeadow
 
         public void AddOtherUsernameButtons()
         {
-            //var SlugList = ArenaHelpers.AllSlugcats();
-            //this.GetArenaSetup.playerClass = SlugList.ToArray();
 
             usernameButtons = new SimplerButton[OnlineManager.players.Count];
 

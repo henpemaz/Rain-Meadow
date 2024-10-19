@@ -1,7 +1,60 @@
-﻿namespace RainMeadow
+﻿using Menu;
+using Newtonsoft.Json.Linq;
+using System;
+
+namespace RainMeadow
 {
     public static class ArenaRPCs
     {
+
+        [RPCMethod]
+        public static void Arena_UpdateSelectedChoice(string stringID, int value)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+
+                foreach (var selectable in game.arenaSettingsInterface.menu.pages[0].selectables)
+                {
+                    if (selectable is MultipleChoiceArray.MultipleChoiceButton && (selectable as MultipleChoiceArray.MultipleChoiceButton).multipleChoiceArray.IDString == stringID)
+                    {
+                        
+                        game.arenaSettingsInterface.SetSelected((selectable as MultipleChoiceArray.MultipleChoiceButton).multipleChoiceArray, value); // why didn't this method take a freakin string
+                    }
+
+                }
+               
+            }
+        }
+
+        [RPCMethod]
+        public static void Arena_UpdateSelectedCheckbox(string stringID, bool c)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+
+                foreach (var selectable in game.arenaSettingsInterface.menu.pages[0].selectables)
+                {
+
+                    if (selectable is Menu.CheckBox && (selectable as Menu.CheckBox).IDString == stringID)
+                    {
+
+                        game.arenaSettingsInterface.SetChecked((selectable as CheckBox), c);
+                    }
+                }
+
+            }
+        }
+
 
         [RPCMethod]
         public static void Arena_IncrementPlayersLeftt()
@@ -35,7 +88,7 @@
                 {
                     return;
                 }
-                for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                for (int i = 0; i < game.arenaOverlay.resultBoxes.Count; i++)
                 {
                     if (game.arenaOverlay.resultBoxes[i].playerNameLabel.text == userIsReady)
                     {
@@ -47,7 +100,7 @@
         }
 
         [RPCMethod]
-        public static void Arena_NotifyClassChange(string userIsReady, int currentColorIndex)
+        public static void Arena_NotifyClassChange(string userChangingClass, int currentColorIndex)
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
@@ -60,7 +113,7 @@
                 for (int i = 1; i < game.usernameButtons.Length; i++)
                 {
 
-                    if (game.usernameButtons[i].menuLabel.text == userIsReady)
+                    if (game.usernameButtons[i].menuLabel.text == userChangingClass)
                     {
                         if (currentColorIndex > 3 && ModManager.MSC)
                         {
@@ -75,6 +128,7 @@
 
                         game.classButtons[i].portrait.LoadFile();
                         game.classButtons[i].portrait.sprite.SetElementByName(game.classButtons[i].portrait.fileName);
+                        arena.playersInLobbyChoosingSlugs[userChangingClass] = currentColorIndex;
                     }
 
                 }
