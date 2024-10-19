@@ -497,6 +497,8 @@ namespace RainMeadow
             var origSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
             if (isStoryMode(out var storyGameMode))
             {
+                origSaveState.denPosition = "SH_S09";
+                return origSaveState;
                 if (!OnlineManager.lobby.isOwner)
                 {
                     origSaveState.deathPersistentSaveData.ghostsTalkedTo.Clear();
