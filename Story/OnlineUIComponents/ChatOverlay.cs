@@ -46,6 +46,7 @@ namespace RainMeadow
                 chatMessageLabel.label.alignment = FLabelAlignment.Left;
                 pages[0].subObjects.Add(chatMessageLabel);
                 yOfftset += 20f;
+                RainMeadow.Debug($"Message log part: {message}");
             }
         }
 
