@@ -1,4 +1,5 @@
 ﻿using HUD;
+using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using Newtonsoft.Json.Linq;
@@ -79,8 +80,6 @@ namespace RainMeadow
             On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
 
         }
-
-
 
         private void ArenaSettingsInterface_ctor(On.Menu.ArenaSettingsInterface.orig_ctor orig, Menu.ArenaSettingsInterface self, Menu.Menu menu, Menu.MenuObject owner)
         {
@@ -1037,10 +1036,11 @@ namespace RainMeadow
 
         private void ArenaGameSession_Update(On.ArenaGameSession.orig_Update orig, ArenaGameSession self)
         {
+            orig(self);
+
             if (isArenaMode(out var arena))
             {
-                orig(self);
-                if (self.Players.Count != OnlineManager.players.Count)
+                if (self.Players.Count != arena.arenaSittingOnlineOrder.Count)
                 {
                     var extraPlayers = self.Players.Skip(OnlineManager.players.Count).ToList();
                     self.Players.RemoveAll(p => extraPlayers.Contains(p));
@@ -1056,10 +1056,6 @@ namespace RainMeadow
                 }
 
 
-            }
-            else
-            {
-                orig(self);
             }
         }
 
@@ -1152,15 +1148,16 @@ namespace RainMeadow
 
                     return true;
                 }
+
+                if (self.world.rainCycle.TimeUntilRain <= 100)
+                {
+                    return true;
+                }
+
                 orig(self);
+            }
 
                 return orig(self);
-
-            }
-            else
-            {
-                return orig(self);
-            }
 
         }
 
