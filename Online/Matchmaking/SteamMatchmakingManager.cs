@@ -66,7 +66,7 @@ namespace RainMeadow
             m_LobbyChatUpdate = Callback<LobbyChatUpdate_t>.Create(LobbyChatUpdated);
             m_SessionRequest = Callback<SteamNetworkingMessagesSessionRequest_t>.Create(SessionRequest);
             m_GameLobbyJoinRequested = Callback<GameLobbyJoinRequested_t>.Create(GameLobbyJoinRequested);
-            m_LobbyChatMsgCall = Callback<LobbyChatMsg_t>.Create(LobbyChatMessageRecieved);
+            m_LobbyChatMsgCall = Callback<LobbyChatMsg_t>.Create(LobbyChatMessageReceived);
 
             me = SteamUser.GetSteamID();
             OnlineManager.mePlayer = new OnlinePlayer(new SteamPlayerId(me)) { isMe = true };
@@ -260,7 +260,7 @@ namespace RainMeadow
             if (!outputted) RainMeadow.Debug($"Failed to send message: {msgBytes} {msgBytes.Length}");
         }
 
-        private void LobbyChatMessageRecieved(LobbyChatMsg_t callback)
+        private void LobbyChatMessageReceived(LobbyChatMsg_t callback)
         {
             CSteamID p = me;
             byte[] msgData = new byte[1024];
@@ -268,6 +268,7 @@ namespace RainMeadow
 
             string message = System.Text.Encoding.UTF8.GetString(msgData, 0, msgDataLength);
             RainMeadow.Debug($"Message from {SteamFriends.GetFriendPersonaName(p)}: {message}");
+            ChatLogManager.LogMessage($"{SteamFriends.GetFriendPersonaName(p)}: {message}");
         }
         private void PlayerJoined(CSteamID p)
         {
@@ -293,6 +294,7 @@ namespace RainMeadow
                 }
                 RainMeadow.Debug($"Actually removing player:{player}");
                 OnlineManager.players.Remove(player);
+                SendChatMessage(lobbyID, $"{p} left the game");
             }
         }
 

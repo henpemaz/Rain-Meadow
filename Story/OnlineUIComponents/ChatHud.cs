@@ -1,44 +1,58 @@
-﻿using HUD;
+﻿using System.Collections.Generic;
+using HUD;
+using IL.Menu;
 using UnityEngine;
 
 namespace RainMeadow
 {
     public class ChatHud : HudPart
     {
-
+        private TextPrompt textPrompt;
         private RoomCamera camera;
         private readonly OnlineGameMode onlineGameMode;
-        private Menu.Menu chatBox;
+        private ChatOverlay chatOverlay;
         private RainWorldGame game;
         private bool chatActive = false;
-
+        public static bool gamePaused;
+        private List<string> chatLog = new List<string>();
 
         public ChatHud(HUD.HUD hud, RoomCamera camera, OnlineGameMode onlineGameMode) : base(hud)
         {
+            textPrompt = hud.textPrompt;
             this.camera = camera;
             this.onlineGameMode = onlineGameMode;
             game = camera.game;
+
+            ChatLogManager.Initialize(this);
+        }
+        
+        public void AddMessage(string message)
+        {
+            chatLog.Add($"{message}");
+            if (chatLog.Count > 13) chatLog.RemoveAt(0);
         }
 
         public override void Draw(float timeStacker)
         {
             base.Draw(timeStacker);
-            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatKey.Value) && chatBox == null && chatActive == false)
+            gamePaused = textPrompt.pausedMode;
+            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatKey.Value) && chatOverlay == null && chatActive == false && !textPrompt.pausedMode)
             {
                 RainMeadow.Debug("creating chat box");
-                chatBox = new ChatOverlay(game.manager, game);
+                chatOverlay = new ChatOverlay(game.manager, game, chatLog);
                 chatActive = true;
+                chatOverlay.needsUpdate = true;
             }
 
-            chatBox?.GrafUpdate(timeStacker);
+            chatOverlay?.GrafUpdate(timeStacker);
 
-            if (Input.GetKeyDown(KeyCode.Return) && chatBox != null) ShutDownChat();
+            if (Input.GetKeyDown(KeyCode.Return) && chatOverlay != null) ShutDownChat();
         }
         public void ShutDownChat()
         {
-            RainMeadow.Debug("shut down chat box");
-            chatBox.ShutDownProcess();
-            chatBox = null;
+            RainMeadow.Debug("shut down chat overlay");
+            chatOverlay.ShutDownProcess();
+            chatOverlay = null;
             chatActive = false;
         }
         public override void Update()
@@ -46,9 +60,9 @@ namespace RainMeadow
             base.Update();
             if (OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                if ((game.pauseMenu != null || camera.hud.map.visible || game.manager.upcomingProcess != null) && chatBox != null) ShutDownChat();
+                if ((game.pauseMenu != null || camera.hud.map.visible || game.manager.upcomingProcess != null) && chatOverlay != null) ShutDownChat();
 
-                chatBox?.Update();
+                chatOverlay?.Update();
             }
         }
     }
