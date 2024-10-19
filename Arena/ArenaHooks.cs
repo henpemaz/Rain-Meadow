@@ -110,8 +110,6 @@ namespace RainMeadow
                     var aggroAISync = self.evilAICheckBox.IDString;
                     var aggroAISyncValue = self.GetGameTypeSetup.evilAI;
 
-                    RainMeadow.Debug($"Setting ${roomRepeatSync} to  {roomRepeatValue}");
-
                     arena.onlineArenaSettingsInterfaceMultiChoice.Add(roomRepeatSync, roomRepeatValue);
                     arena.onlineArenaSettingsInterfaceMultiChoice.Add(rainSyncKey, rainSyncValue);
                     arena.onlineArenaSettingsInterfaceMultiChoice.Add(wildLifeSyncKey, wildLifeSyncValue);
@@ -157,12 +155,11 @@ namespace RainMeadow
 
         private void ArenaSettingsInterface_SetSelected(On.Menu.ArenaSettingsInterface.orig_SetSelected orig, Menu.ArenaSettingsInterface self, Menu.MultipleChoiceArray array, int i)
         {
-
+           
             if (isArenaMode(out var arena))
             {
                 if (OnlineManager.lobby.isOwner)
                 {
-                    orig(self, array, i);
                     if (arena.onlineArenaSettingsInterfaceMultiChoice.ContainsKey(array.IDString))
                     {
                         RainMeadow.Debug($"Setting {array.IDString} to value {i}");
@@ -177,29 +174,7 @@ namespace RainMeadow
                         player.InvokeOnceRPC(ArenaRPCs.Arena_UpdateSelectedChoice, array.IDString, i);
                     }
                 }
-                else
-                {
-                    switch (array.IDString)
-                    {
-                        case "ROOMREPEAT":
-                            RainMeadow.Debug($"Setting {array.IDString} to {arena.onlineArenaSettingsInterfaceMultiChoice[array.IDString]}");
-                            self.GetGameTypeSetup.levelRepeats = arena.onlineArenaSettingsInterfaceMultiChoice[array.IDString];
-                            break;
-                        case "SESSIONLENGTH":
-                            RainMeadow.Debug($"Setting {array.IDString} to {arena.onlineArenaSettingsInterfaceMultiChoice[array.IDString]}");
-
-                            self.GetGameTypeSetup.sessionTimeLengthIndex = arena.onlineArenaSettingsInterfaceMultiChoice[array.IDString];
-                            break;
-                        case "WILDLIFE":
-                            RainMeadow.Debug($"Setting {array.IDString} to {arena.onlineArenaSettingsInterfaceMultiChoice[array.IDString]}");
-
-                            self.GetGameTypeSetup.wildLifeSetting.index = arena.onlineArenaSettingsInterfaceMultiChoice[array.IDString];
-                            break;
-                        case "SCORETOENTERDEN":
-                            self.GetGameTypeSetup.scoreToEnterDenIndex = self.GetGameTypeSetup.scoreToEnterDenIndex = i;
-                            break;
-                    }
-                }
+                orig(self, array, i);
 
             } else
             {
