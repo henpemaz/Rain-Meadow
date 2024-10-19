@@ -1,8 +1,8 @@
-﻿using HUD;
+﻿using HarmonyLib;
+using HUD;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
-using HarmonyLib;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -36,7 +36,7 @@ namespace RainMeadow
             var clientSettings = OnlineManager.lobby.clientSettings.Values.OfType<ClientSettings>();
             var currentSettings = indicators.Select(i => i.clientSettings).ToList();
 
-            clientSettings.Except(currentSettings).Do(PlayerAdded); 
+            clientSettings.Except(currentSettings).Do(PlayerAdded);
             currentSettings.Except(clientSettings).Do(PlayerRemoved);
         }
 

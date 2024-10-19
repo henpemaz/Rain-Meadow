@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 
 namespace RainMeadow
@@ -44,7 +43,7 @@ namespace RainMeadow
 
         public void SerializeNullableDelta<T>(ref T customSerializable) where T : ICustomSerializable, new()
         {
-            if(IsDelta) SerializeNullable(ref customSerializable);
+            if (IsDelta) SerializeNullable(ref customSerializable);
             else Serialize(ref customSerializable);
         }
 
@@ -210,7 +209,7 @@ namespace RainMeadow
                     { nullable: true, longList: true } => "SerializeNullableShort"
                 } && m.IsGenericMethod && m.GetGenericMethodDefinition().GetGenericArguments().Any(ga => ga.GetGenericParameterConstraints().Any(t => t == typeof(Serializer.ICustomSerializable)))
                 && m.GetParameters().Any(p => p.ParameterType.IsByRef && (p.ParameterType.GetElementType().IsGenericType && p.ParameterType.GetElementType().GetGenericTypeDefinition() == typeof(List<>)) != fieldType.IsArray && p.ParameterType.GetElementType().IsArray == fieldType.IsArray)
-                ).MakeGenericMethod(new Type[] { fieldType.IsArray ? fieldType.GetElementType() : fieldType.GetGenericArguments()[0] }) ;
+                ).MakeGenericMethod(new Type[] { fieldType.IsArray ? fieldType.GetElementType() : fieldType.GetGenericArguments()[0] });
             }
             if (typeof(OnlineResource).IsAssignableFrom(fieldType))
             {
@@ -233,8 +232,8 @@ namespace RainMeadow
             {
                 return typeof(Serializer).GetMethods().Single(m =>
                 m.Name == "SerializeExtEnum" && m.IsGenericMethod).MakeGenericMethod(fieldType);
-            } 
-            
+            }
+
             if (!fieldType.IsValueType && fieldType != typeof(string))
             {
                 RainMeadow.Debug($"{fieldType} not handled by SerializerCallMethod");

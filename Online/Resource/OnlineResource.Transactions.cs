@@ -18,7 +18,7 @@ namespace RainMeadow
             }
 
             ClearIncommingBuffers();
-            if(supervisor == null)
+            if (supervisor == null)
             {
                 RainMeadow.Debug("Resolving request with no supervisor");
                 Available();

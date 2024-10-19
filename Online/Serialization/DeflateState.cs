@@ -1,8 +1,7 @@
-﻿using System.IO;
-using UnityEngine;
+﻿using Ionic.Zlib;
+using System.IO;
 using System.Linq.Expressions;
 using System.Reflection;
-using Ionic.Zlib;
 
 namespace RainMeadow
 {
@@ -25,7 +24,8 @@ namespace RainMeadow
             this.bytes = Compress(input, len);
         }
 
-        public void Decompress(Stream into) {
+        public void Decompress(Stream into)
+        {
             using (var compressStream = new MemoryStream(bytes))
             using (var decompressor = new DeflateStream(compressStream, CompressionMode.Decompress))
                 decompressor.CopyTo(into);

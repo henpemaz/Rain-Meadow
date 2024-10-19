@@ -31,7 +31,8 @@ namespace RainMeadow
                 stuckInAppendage = spear.stuckInAppendage != null ? new AppendageRef(spear.stuckInAppendage) : null;
                 stuckBodyPart = (sbyte)spear.stuckBodyPart;
                 stuckRotation = spear.stuckRotation;
-            } else stuckInChunk = null;
+            }
+            else stuckInChunk = null;
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)

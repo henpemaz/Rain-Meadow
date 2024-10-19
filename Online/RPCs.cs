@@ -1,8 +1,4 @@
-﻿using IL.RWCustom;
-using System;
-using System.Collections.Generic;
-using Kittehface.Framework20;
-using IL.Menu;
+﻿using System;
 using System.Linq;
 
 namespace RainMeadow
@@ -38,21 +34,14 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void AddFood(short add)
+        public static void ChangeFood(short amt)
         {
-            ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].realizedCreature as Player).AddFood(add);
-        }
-
-        [RPCMethod]
-        public static void AddQuarterFood()
-        {
-            ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].realizedCreature as Player).AddQuarterFood();
-        }
-
-        [RPCMethod]
-        public static void SubtractFood(short amt)
-        {
-            ((RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame)?.Players[0].realizedCreature as Player).SubtractFood(amt);
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.Players[0]?.state is PlayerState state)
+            {
+                var newFood = Math.Max(0, Math.Min(state.foodInStomach * 4 + state.quarterFoodPoints + amt, game.session.characterStats.maxFood * 4));
+                state.foodInStomach = newFood / 4;
+                state.quarterFoodPoints = newFood % 4;
+            }
         }
 
         [RPCMethod]
@@ -112,13 +101,13 @@ namespace RainMeadow
 
             var storyGameMode = OnlineManager.lobby.gameMode as StoryGameMode;
 
-            if (storyGameMode.storyClientSettings.hasSheltered)
+            if (storyGameMode.hasSheltered)
             {
-                denPos = storyGameMode.storyClientSettings.myLastDenPos;
+                denPos = storyGameMode.myLastDenPos;
             }
             else
             {
-                storyGameMode.storyClientSettings.myLastDenPos = denPos;
+                storyGameMode.myLastDenPos = denPos;
             }
 
             storyGameMode.defaultDenPos = game.GetStorySession.saveState.denPosition = denPos;
@@ -156,10 +145,10 @@ namespace RainMeadow
             }
             else
             {
-                var storyClientSettings = (OnlineManager.lobby.gameMode as StoryGameMode).storyClientSettings;
-                if (!storyClientSettings.hasSheltered)
+                var storyGameMode = (OnlineManager.lobby.gameMode as StoryGameMode);
+                if (!storyGameMode.hasSheltered)
                 {
-                    storyClientSettings.myLastDenPos = denPos;
+                    storyGameMode.myLastDenPos = denPos;
                 }
             }
 

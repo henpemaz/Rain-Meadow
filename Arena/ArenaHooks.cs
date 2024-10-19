@@ -1,18 +1,13 @@
 ﻿using HUD;
-using Menu.Remix;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using RainMeadow.GameModes;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
 {
-
-
     public partial class RainMeadow
     {
         public static bool isArenaMode(out ArenaCompetitiveGameMode gameMode)
@@ -63,7 +58,6 @@ namespace RainMeadow
 
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
-            On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1;
 
             // On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
 
@@ -151,7 +145,7 @@ namespace RainMeadow
                 }
             }
             orig(self, levelName);
-            
+
         }
 
         private bool MultiplayerUnlocks_IsLevelUnlocked(On.MultiplayerUnlocks.orig_IsLevelUnlocked orig, MultiplayerUnlocks self, string levelName)
@@ -562,28 +556,6 @@ namespace RainMeadow
 
         }
 
-        private void Player_GetInitialSlugcatClass1(On.Player.orig_GetInitialSlugcatClass orig, Player self)
-        {
-            orig(self);
-            if (isArenaMode(out var arena))
-            {
-                if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
-                {
-                    RainMeadow.Error("Player doesn't have OnlineEntity counterpart!!");
-                    self.SlugCatClass = SlugcatStats.Name.White;
-                    return;
-                }
-                var scs = OnlineManager.lobby.activeEntities.OfType<ArenaClientSettings>().FirstOrDefault(e => e.owner == oe.owner);
-                if (scs == null)
-                {
-                    RainMeadow.Error("OnlinePlayer doesn't have ArenaClientSettings!!");
-                    self.SlugCatClass = SlugcatStats.Name.White;
-                    return;
-
-                };
-                self.SlugCatClass = scs.playingAs;
-            }
-        }
         private void Spear_Update(On.Spear.orig_Update orig, Spear self, bool eu)
         {
 
@@ -920,7 +892,7 @@ namespace RainMeadow
                     var extraPlayers = self.Players.Skip(OnlineManager.players.Count).ToList();
                     self.Players.RemoveAll(p => extraPlayers.Contains(p));
 
-                    foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+                    foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                     {
                         if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
                         if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !self.Players.Contains(ac))
@@ -1099,31 +1071,13 @@ namespace RainMeadow
 
                 array[num]++;
 
-
                 RainMeadow.Debug("Trying to create an abstract creature");
 
                 sSpawningAvatar = true;
-
                 AbstractCreature abstractCreature = new AbstractCreature(self.game.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(0, -1, -1, -1), new EntityID(-1, 0));
-
-
-
-                RainMeadow.Debug("assigned ac, moving to den");
-
-
-                AbstractRoom_Arena_MoveEntityToDen(self.game.world, abstractCreature.Room, abstractCreature); // Arena adds abstract creature then realizes it later
-                RainMeadow.Debug("moved, setting online creature");
-
-
-                SetOnlineCreature(abstractCreature);
-
+                RainMeadow.Debug("assigned ac, registering");
+                self.game.world.GetResource().ApoEnteringWorld(abstractCreature);
                 sSpawningAvatar = false;
-
-                if (OnlineManager.lobby.isActive)
-                {
-                    OnlineManager.instance.Update(); // Subresources are active, gamemode is online, ticks are happening. Not sure why we'd need this here
-                }
-
 
                 if (ModManager.MSC)
                 {
@@ -1132,14 +1086,12 @@ namespace RainMeadow
 
                 if (self.chMeta != null)
                 {
-
                     abstractCreature.state = new PlayerState(abstractCreature, 0, self.characterStats_Mplayer[0].name, isGhost: false);
                 }
                 else
                 {
                     abstractCreature.state = new PlayerState(abstractCreature, 0, new SlugcatStats.Name(ExtEnum<SlugcatStats.Name>.values.GetEntry(0)), isGhost: false);
                 }
-
 
                 RainMeadow.Debug("Arena: Realize Creature!");
                 abstractCreature.Realize();
@@ -1174,42 +1126,6 @@ namespace RainMeadow
             {
                 orig(self, room, suggestedDens);
             }
-
         }
-
-
-        private void SetOnlineCreature(AbstractCreature abstractCreature)
-        {
-            if (OnlineCreature.map.TryGetValue(abstractCreature, out var onlineCreature))
-            {
-                RainMeadow.Debug("Found OnlineCreature");
-                OnlineManager.lobby.gameMode.SetAvatar(onlineCreature as OnlineCreature);
-            }
-            else
-            {
-                throw new InvalidProgrammerException($"Can't find OnlineCreature for {abstractCreature}");
-            }
-        }
-
-        private void AbstractRoom_Arena_MoveEntityToDen(World world, AbstractRoom asbtRoom, AbstractWorldEntity entity)
-        {
-            if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo0 && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe))
-            {
-                if (!oe.isMine && !oe.beingMoved)
-                {
-                    Error($"Remote entity trying to move: {oe} at {oe.roomSession} {Environment.StackTrace}");
-                    return;
-                }
-            }
-
-            if (OnlineManager.lobby != null && entity is AbstractPhysicalObject apo)
-            {
-                if (WorldSession.map.TryGetValue(world, out var ws) && OnlineManager.lobby.gameMode.ShouldSyncAPOInWorld(ws, apo)) ws.ApoEnteringWorld(apo);
-                if (RoomSession.map.TryGetValue(asbtRoom, out var rs) && OnlineManager.lobby.gameMode.ShouldSyncAPOInRoom(rs, apo)) rs.ApoLeavingRoom(apo);
-            }
-        }
-
     }
-
-
 }

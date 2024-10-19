@@ -16,7 +16,7 @@ namespace RainMeadow
             RainMeadow.Debug("MeadowPlant");
             this.LoadFile("meadowPlant");
             this.mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
-            avatarCreature = mgm.avatar.creature.realizedCreature;
+            avatarCreature = mgm.avatars[0].creature.realizedCreature;
         }
 
         public override void Update(bool eu)
@@ -35,7 +35,7 @@ namespace RainMeadow
             {
                 if (avatarCreature == null)
                 {
-                    avatarCreature = mgm.avatar.creature.realizedCreature;
+                    avatarCreature = mgm.avatars[0].creature.realizedCreature;
                 }
                 else if (avatarCreature.room == this.room)
                 {
@@ -48,7 +48,7 @@ namespace RainMeadow
 
                         for (int num6 = 0; num6 < 10; num6++)
                         {
-                            this.room.AddObject(new MeadowCollectToken.TokenSpark(this.placePos + Custom.RNV() * 2f, Custom.RNV() * 11f * Random.value + Custom.DirVec(avatarCreature.mainBodyChunk.pos, this.placePos) * 5f * Random.value, new Color(203f/255f, 252f/255f, 147f/255f), false));
+                            this.room.AddObject(new MeadowCollectToken.TokenSpark(this.placePos + Custom.RNV() * 2f, Custom.RNV() * 11f * Random.value + Custom.DirVec(avatarCreature.mainBodyChunk.pos, this.placePos) * 5f * Random.value, new Color(203f / 255f, 252f / 255f, 147f / 255f), false));
                         }
                     }
                 }

@@ -1,8 +1,6 @@
 ﻿using HUD;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
-using HarmonyLib;
 
 namespace RainMeadow
 {

@@ -65,7 +65,7 @@ namespace RainMeadow
             PlacedObject.Type.ExitSymbolAncientShelter,
             PlacedObject.Type.BlinkingFlower
         };
-        public static HashSet<PlacedObject.Type> creatureRelatedItems = new() 
+        public static HashSet<PlacedObject.Type> creatureRelatedItems = new()
         {
             //PlacedObject.Type.TempleGuard,
             //PlacedObject.Type.StuckDaddy,

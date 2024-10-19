@@ -47,7 +47,7 @@ namespace RainMeadow
 
             if (locked && !this.slugcatImage.flatMode)
             {
-                foreach(var index in MeadowProgression.characterData[character].selectSpriteIndexes)
+                foreach (var index in MeadowProgression.characterData[character].selectSpriteIndexes)
                 {
                     this.slugcatImage.depthIllustrations[index].sprite.shader = menu.manager.rainWorld.Shaders["RM_SceneHidden"];
                 }
@@ -92,7 +92,7 @@ namespace RainMeadow
 
         public override void GrafUpdate(float timeStacker) // why did they make this so hacky...
         {
-            
+
             flashSin = (flashSin + timeStacker / 6f) % (2 * Mathf.PI);
 
             float scroll = base.Scroll(timeStacker);

@@ -1,6 +1,4 @@
-﻿using RainMeadow.GameModes;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -12,6 +10,8 @@ namespace RainMeadow
         public bool allPlayersReadyLockLobby = false;
         public bool returnToLobby = false;
 
+        public ArenaClientSettings arenaClientSettings;
+        public SlugcatCustomization avatarSettings;
 
         public List<string> playList = new List<string>();
 
@@ -19,9 +19,10 @@ namespace RainMeadow
 
         public ArenaCompetitiveGameMode(Lobby lobby) : base(lobby)
         {
+            avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
+            arenaClientSettings = new ArenaClientSettings();
+            arenaClientSettings.playingAs = SlugcatStats.Name.White;
         }
-
-        public ArenaClientSettings arenaClientSettings => clientSettings as ArenaClientSettings;
 
         public override bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)
         {
@@ -47,7 +48,7 @@ namespace RainMeadow
         }
 
 
-        internal override void PlayerLeftLobby(OnlinePlayer player)
+        public override void PlayerLeftLobby(OnlinePlayer player)
         {
             base.PlayerLeftLobby(player);
             if (player == lobby.owner)
@@ -66,25 +67,33 @@ namespace RainMeadow
             return roomSession.owner == null || roomSession.isOwner;
         }
 
-        internal override void AddAvatarSettings()
-        {
-            RainMeadow.Debug("Adding arena avatar settings!");
-            clientSettings = new ArenaClientSettings(new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0), OnlineManager.mePlayer);
-
-            clientSettings.EnterResource(lobby);
-        }
-
-        internal override void ResourceAvailable(OnlineResource onlineResource)
+        public override void ResourceAvailable(OnlineResource onlineResource)
         {
             base.ResourceAvailable(onlineResource);
 
             if (onlineResource is Lobby lobby)
             {
-                lobby.AddData<ArenaLobbyData>(true);
+                lobby.AddData(new ArenaLobbyData());
             }
-
-
         }
 
+        public override void AddClientData()
+        {
+            clientSettings.AddData(arenaClientSettings);
+        }
+
+        public override void ConfigureAvatar(OnlineCreature onlineCreature)
+        {
+            onlineCreature.AddData(avatarSettings);
+        }
+
+        public override void Customize(Creature creature, OnlineCreature oc)
+        {
+            if (oc.TryGetData<SlugcatCustomization>(out var data))
+            {
+                RainMeadow.Debug(oc);
+                RainMeadow.creatureCustomizations.GetValue(creature, (c) => data);
+            }
+        }
     }
 }

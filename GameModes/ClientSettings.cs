@@ -1,64 +1,65 @@
-﻿using UnityEngine;
-using static RainMeadow.OnlineEntity;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace RainMeadow
 {
-    public abstract class ClientSettings : OnlineEntity
+    public sealed class ClientSettings : OnlineEntity
     {
-        public abstract class Definition : EntityDefinition
+        public sealed class Definition : EntityDefinition
         {
             public Definition() : base() { }
             public Definition(ClientSettings clientSettings, OnlineResource inResource) : base(clientSettings, inResource) { }
+
+            public override OnlineEntity MakeEntity(OnlineResource inResource, EntityState initialState)
+            {
+                return new ClientSettings(this, inResource, initialState);
+            }
         }
 
-        /// <summary>
-        /// the real avatar of the player
-        /// </summary>
-        public EntityId avatarId;
         public bool inGame;
+        public List<OnlineEntity.EntityId> avatars = new();
 
         public ClientSettings(EntityDefinition entityDefinition, OnlineResource inResource, EntityState initialState) : base(entityDefinition, inResource, initialState)
         {
-            avatarId = (initialState as State).avatarId;
+
         }
 
-        protected ClientSettings(EntityId id, OnlinePlayer owner) : base(id, owner, false)
+        public ClientSettings(EntityId id, OnlinePlayer owner) : base(id, owner, false)
         {
-            avatarId = new EntityId(owner.inLobbyId, EntityId.IdType.none, 0);
+
         }
 
-        internal abstract AvatarCustomization MakeCustomization();
-
-        public abstract class AvatarCustomization
+        internal override EntityDefinition MakeDefinition(OnlineResource onlineResource)
         {
-            internal abstract void ModifyBodyColor(ref Color bodyColor);
-
-            internal abstract void ModifyEyeColor(ref Color eyeColor);
-
-            internal abstract Color GetBodyColor();
+            return new Definition(this, onlineResource);
         }
 
-        public abstract class State : EntityState
+        protected override EntityState MakeState(uint tick, OnlineResource inResource)
         {
-            [OnlineField(nullable:true)]
-            public EntityId avatarId;
+            return new State(this, inResource, tick);
+        }
+
+        public class State : EntityState
+        {
             [OnlineField]
             public bool inGame;
+            [OnlineField(nullable = true)]
+            public Generics.DynamicOrderedEntityIDs avatars;
 
-            protected State() { }
+            public State() { }
 
-            protected State(ClientSettings clientSettings, OnlineResource inResource, uint ts) : base(clientSettings, inResource, ts)
+            public State(ClientSettings clientSettings, OnlineResource inResource, uint ts) : base(clientSettings, inResource, ts)
             {
-                this.avatarId = clientSettings.avatarId;
                 inGame = clientSettings.inGame;
+                avatars = new(clientSettings.avatars.ToList());
             }
 
             public override void ReadTo(OnlineEntity onlineEntity)
             {
                 base.ReadTo(onlineEntity);
-                var avatarSettings = (ClientSettings)onlineEntity;
-                avatarSettings.avatarId = avatarId;
-                avatarSettings.inGame = inGame;
+                var clientSettings = (ClientSettings)onlineEntity;
+                clientSettings.inGame = inGame;
+                clientSettings.avatars = avatars.list;
             }
         }
     }
