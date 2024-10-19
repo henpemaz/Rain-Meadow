@@ -27,9 +27,11 @@ namespace RainMeadow
         }
         public override void ShutDownProcess()
         {
-
             chatLabels.Clear();
+            chat.Unassign();
+            chat.DelayedUnload(0.5f);
             base.ShutDownProcess();
+            typingHandler.OnDestroy();
         }
         public override void Update()
         {
@@ -38,6 +40,11 @@ namespace RainMeadow
             {
                 UpdateLogDisplay();
                 needsUpdate = false;
+            }
+            if (ModManager.DevTools)
+            {
+                game.devToolsActive = false;
+                game.devToolsLabel.isVisible = game.devToolsActive;
             }
         }
 
@@ -55,6 +62,7 @@ namespace RainMeadow
                 chatMessageLabel.label.alignment = FLabelAlignment.Left;
                 pages[0].subObjects.Add(chatMessageLabel);
                 yOfftset += 20f;
+                RainMeadow.Debug($"Message log part: {message}");
             }
         }
 

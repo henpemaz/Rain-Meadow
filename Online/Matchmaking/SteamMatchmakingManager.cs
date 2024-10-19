@@ -263,13 +263,13 @@ namespace RainMeadow
 
         private void LobbyChatMessageReceived(LobbyChatMsg_t callback)
         {
-            CSteamID p = me;
+            CSteamID senderID;
             byte[] msgData = new byte[1024];
-            int msgDataLength = SteamMatchmaking.GetLobbyChatEntry((CSteamID)callback.m_ulSteamIDLobby, (int)callback.m_iChatID, out me, msgData, msgData.Length, out EChatEntryType _);
+            int msgDataLength = SteamMatchmaking.GetLobbyChatEntry((CSteamID)callback.m_ulSteamIDLobby, (int)callback.m_iChatID, out senderID, msgData, msgData.Length, out EChatEntryType _);
 
             string message = System.Text.Encoding.UTF8.GetString(msgData, 0, msgDataLength);
-            RainMeadow.Debug($"Message from {SteamFriends.GetFriendPersonaName(p)}: {message}");
-            ChatLogManager.LogMessage($"{SteamFriends.GetFriendPersonaName(p)}: {message}");
+            RainMeadow.Debug($"Message from {SteamFriends.GetFriendPersonaName(senderID)}: {message}");
+            ChatLogManager.LogMessage($"{SteamFriends.GetFriendPersonaName(senderID)}: {message}");
         }
         private void PlayerJoined(CSteamID p)
         {

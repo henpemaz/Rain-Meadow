@@ -1,16 +1,15 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using Menu.Remix.MixedUI;
-using UnityEngine.Rendering;
+using System;
 
 namespace RainMeadow
 {
-    public class ButtonTypingHandler : MonoBehaviour
+    public class ButtonTypingHandler : TypingHandler
     {
         public string _lastInput = "";
         public HashSet<ICanBeTyped> _assigned = new HashSet<ICanBeTyped>();
         public ICanBeTyped _focused;
-        public static bool chatOpened = false;
         public void Update()
         {
             if (_assigned.Count < 1)
@@ -27,7 +26,6 @@ namespace RainMeadow
                 foreach (ICanBeTyped canBeTyped in _assigned)
                 {
                     _focused = canBeTyped;
-                    chatOpened = true;
                     break;
                 }
                 if (_focused == null)
@@ -59,9 +57,16 @@ namespace RainMeadow
 
         public void OnDestroy()
         {
+            _HandlerOnDestroy();
+        }
+
+        private void _HandlerOnDestroy()
+        {
             _assigned.Clear();
+            _focused = null;
             CanBeTypedExt._HandlerOnDestroy();
         }
+
         public void Assign(ICanBeTyped typable)
         {
             _assigned.Add(typable);
@@ -72,6 +77,8 @@ namespace RainMeadow
         }
         public void Unassign(ICanBeTyped typable)
         {
+            RainMeadow.Debug("Unassigning chatbox");
+            _assigned.Clear();
             _assigned.Remove(typable);
         }
     }
