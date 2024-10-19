@@ -47,6 +47,7 @@ namespace RainMeadow
                 RainMeadow.Debug("Spectate destroy!");
                 spectatorMode.ShutDownProcess();
                 spectatorMode = null;
+                OnlineManager.mePlayer.isActuallySpectating = false;
             }
         }
 
