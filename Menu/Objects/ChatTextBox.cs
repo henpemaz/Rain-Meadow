@@ -2,6 +2,8 @@
 using UnityEngine;
 using System;
 using Menu.Remix.MixedUI;
+using DevInterface;
+using System.Collections;
 
 namespace RainMeadow
 {
@@ -13,6 +15,7 @@ namespace RainMeadow
         public Action<char> OnKeyDown { get; set; }
         public static int textLimit = 150;
         public string value;
+        public event Action OnUnload;
         public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, "", pos, size)
         {
             steamMatchmakingManager = MatchmakingManager.instance as SteamMatchmakingManager;
@@ -22,6 +25,31 @@ namespace RainMeadow
             OnKeyDown = (Action<char>)Delegate.Combine(OnKeyDown, new Action<char>(CaptureInputs));
             typingHandler ??= gameObject.AddComponent<ButtonTypingHandler>();
             typingHandler.Assign(this);
+        }
+
+        public void DelayedUnload(float delay) => typingHandler.StartCoroutine(UnloadAfterDelay(delay));
+        private IEnumerator UnloadAfterDelay(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+
+            Unload();
+        }
+
+        public void Unload()
+        {
+            try 
+            {
+                OnUnload?.Invoke();
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error($"Error unloading: {e}");
+                return;
+            }
+
+            OnKeyDown = null;
+            typingHandler.Unassign(this);
+            typingHandler.OnDestroy();
         }
         private void CaptureInputs(char input)
         {
