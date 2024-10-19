@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using Menu.Remix.MixedUI;
+using UnityEngine.Rendering;
 
 namespace RainMeadow
 {
@@ -25,6 +26,7 @@ namespace RainMeadow
                 foreach (ICanBeTyped canBeTyped in _assigned)
                 {
                     _focused = canBeTyped;
+                    chatOpened = true;
                     break;
                 }
                 if (_focused == null)
@@ -47,7 +49,7 @@ namespace RainMeadow
                     queue.Enqueue(inputString[j]);
                 }
             }
-            while (queue.Count > 0)
+            while (queue.Count > 0 && _focused.OnKeyDown != null)
             {
                 _focused?.OnKeyDown(queue.Dequeue());
             }
