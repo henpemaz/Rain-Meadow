@@ -128,6 +128,7 @@ namespace RainMeadow
 
                         game.classButtons[i].portrait.LoadFile();
                         game.classButtons[i].portrait.sprite.SetElementByName(game.classButtons[i].portrait.fileName);
+                        arena.playersInLobbyChoosingSlugs[userChangingClass] = currentColorIndex;
                     }
 
                 }
