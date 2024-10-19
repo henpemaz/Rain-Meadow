@@ -692,6 +692,11 @@ namespace RainMeadow
                     self.subObjects.Add(self.portrait);
 
                 }
+                if (ModManager.MSC && player.playerClass == SlugcatStats.Name.Night)
+                {
+                    self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "3" + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                    self.subObjects.Add(self.portrait);
+                }
             }
 
         }
