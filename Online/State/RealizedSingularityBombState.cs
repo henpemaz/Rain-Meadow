@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     public class RealizedSingularityBombState : RealizedWeaponState
     {

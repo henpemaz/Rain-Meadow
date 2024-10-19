@@ -1,8 +1,8 @@
-﻿using Steamworks;
+﻿using RWCustom;
+using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RWCustom;
 
 namespace RainMeadow
 {
@@ -159,7 +159,8 @@ namespace RainMeadow
                     {
                         SteamMatchmaking.SetLobbyData(lobbyID, PASSWORD_KEY, "true");
                     }
-                    else {
+                    else
+                    {
                         SteamMatchmaking.SetLobbyData(lobbyID, PASSWORD_KEY, "false");
                     }
                     SteamMatchmaking.SetLobbyMemberLimit(lobbyID, MAX_LOBBY);
@@ -366,7 +367,7 @@ namespace RainMeadow
                     RainMeadow.Debug("trying to rejoin same lobby, ignoring, id: " + param.m_steamIDLobby);
                     return;
                 }
-                
+
                 RainMeadow.Debug("trying to join lobby from steam with id: " + param.m_steamIDLobby);
 
                 if (lobbyID != default)
@@ -374,7 +375,7 @@ namespace RainMeadow
                     LeaveLobby();
                 }
 
-                OnlineManager.currentlyJoiningLobby = new LobbyInfo(param.m_steamIDLobby, "", "", 0,false, MAX_LOBBY);
+                OnlineManager.currentlyJoiningLobby = new LobbyInfo(param.m_steamIDLobby, "", "", 0, false, MAX_LOBBY);
                 Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
 
                 m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(param.m_steamIDLobby));

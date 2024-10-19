@@ -8,11 +8,9 @@ namespace RainMeadow
         [OnlineField(group = "spear", nullable = true)]
         private Vector2? stuckInWall;
         [OnlineField(group = "spear", nullable = true)]
-        private OnlineEntity.EntityId stuckInObject;
+        private BodyChunkRef? stuckInChunk;
         [OnlineField(group = "spear", nullable = true)]
-        private AppendageRef stuckInAppendage;
-        [OnlineField(group = "spear")]
-        private byte stuckInChunkIndex;
+        private AppendageRef? stuckInAppendage;
         [OnlineField(group = "spear")]
         private sbyte stuckBodyPart;
         [OnlineField(group = "spear")]
@@ -29,25 +27,12 @@ namespace RainMeadow
 
             if (spear.stuckInObject != null)
             {
-                if (!OnlinePhysicalObject.map.TryGetValue(spear.stuckInObject.abstractPhysicalObject, out var onlineStuckEntity))
-
-                    if (RainMeadow.isArenaMode(out var _))
-                    {
-
-                        RainMeadow.Debug("Stuck in creature while switching worlds");
-
-                    }
-
-                    else
-                    {
-                        throw new InvalidOperationException("Stuck to a non-synced creature!");
-                    }
-                stuckInObject = onlineStuckEntity?.id;
-                stuckInChunkIndex = (byte)spear.stuckInChunkIndex;
+                stuckInChunk = BodyChunkRef.FromBodyChunk(spear.stuckInChunk);
                 stuckInAppendage = spear.stuckInAppendage != null ? new AppendageRef(spear.stuckInAppendage) : null;
                 stuckBodyPart = (sbyte)spear.stuckBodyPart;
                 stuckRotation = spear.stuckRotation;
             }
+            else stuckInChunk = null;
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
@@ -59,15 +44,14 @@ namespace RainMeadow
             if (!stuckInWall.HasValue)
                 spear.addPoles = false;
 
-            var stuckInEntity = stuckInObject?.FindEntity() as OnlinePhysicalObject;
-            if (stuckInEntity != null)
+            if (stuckInChunk is not null)
             {
-                spear.stuckInObject = stuckInEntity.apo.realizedObject;
-                spear.stuckInAppendage = stuckInAppendage?.GetAppendagePos(stuckInEntity);
+                spear.stuckInObject = stuckInChunk.owner;
+                spear.stuckInChunkIndex = stuckInChunk.index;
+                spear.stuckInAppendage = spear.stuckInObject != null ? stuckInAppendage?.GetAppendagePos(spear.stuckInObject) : null;
+                spear.stuckBodyPart = stuckBodyPart;
+                spear.stuckRotation = stuckRotation;
             }
-            spear.stuckInChunkIndex = stuckInChunkIndex;
-            spear.stuckBodyPart = stuckBodyPart;
-            spear.stuckRotation = stuckRotation;
 
             base.ReadTo(onlineEntity);
             if (spear.mode == Weapon.Mode.StuckInWall && !spear.stuckInWall.HasValue)
@@ -75,7 +59,7 @@ namespace RainMeadow
                 RainMeadow.Error("Stuck in wall but has no value!");
                 spear.ChangeMode(Weapon.Mode.Free);
             }
-            if (spear.mode == Weapon.Mode.StuckInCreature && (stuckInEntity == null || stuckInEntity.apo.realizedObject == null ))
+            if (spear.mode == Weapon.Mode.StuckInCreature && spear.stuckInObject == null)
             {
                 RainMeadow.Error("Stuck in creature but no creature");
                 spear.ChangeMode(Weapon.Mode.Free);
@@ -106,19 +90,20 @@ namespace RainMeadow
 
         public bool Equals(AppendageRef other)
         {
-            return other != null && other.appIndex == appIndex && other.prevSegment == prevSegment && other.distanceToNext == distanceToNext;
+            return other.appIndex == appIndex && other.prevSegment == prevSegment && other.distanceToNext == distanceToNext;
         }
 
-        public override bool Equals(object obj) => Equals(obj as AppendageRef);
+        public override bool Equals(object obj) => obj is AppendageRef other && Equals(other);
+
+        public static bool operator ==(AppendageRef lhs, AppendageRef rhs) => lhs is not null && lhs.Equals(rhs);
+
+        public static bool operator !=(AppendageRef lhs, AppendageRef rhs) => !(lhs == rhs);
 
         public override int GetHashCode() => appIndex + prevSegment + (int)(1024 * distanceToNext);
 
-        public PhysicalObject.Appendage.Pos GetAppendagePos(OnlinePhysicalObject appendageOwner)
+        public PhysicalObject.Appendage.Pos GetAppendagePos(PhysicalObject appendageOwner)
         {
-            if (appendageOwner == null) return null;
-            var physicalObject = appendageOwner.apo.realizedObject;
-            var appendage = physicalObject.appendages[appIndex];
-            return new PhysicalObject.Appendage.Pos(appendage, prevSegment, distanceToNext);
+            return new PhysicalObject.Appendage.Pos(appendageOwner.appendages[appIndex], prevSegment, distanceToNext);
         }
     }
 }

@@ -40,7 +40,7 @@ namespace RainMeadow
         {
             try
             {
-                
+
                 var c = new ILCursor(il);
 
 
@@ -123,7 +123,7 @@ namespace RainMeadow
             if (OnlineManager.lobby == null) return result;
 
             var absCrit = vessel.creature.abstractCreature;
-            if(!OnlinePhysicalObject.map.TryGetValue(absCrit, out var onlineEntity))
+            if (!OnlinePhysicalObject.map.TryGetValue(absCrit, out var onlineEntity))
             {
                 RainMeadow.Error($"Untracked entity: " + absCrit);
                 return result;

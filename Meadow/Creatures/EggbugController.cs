@@ -19,28 +19,7 @@ namespace RainMeadow
 
             IL.EggBug.Swim += EggBug_Swim1;
             IL.EggBug.Update += EggBug_Update1;
-
-            On.EggBugGraphics.Update += EggBugGraphics_Update;
         }
-
-        private static void EggBugGraphics_Update(On.EggBugGraphics.orig_Update orig, EggBugGraphics self)
-        {
-            if (creatureControllers.TryGetValue(self.bug, out var p))
-            {
-                if (self.bug.bodyChunks[0].pos == self.bug.bodyChunks[1].pos)
-                {
-                    // eggbug graphics does some line calcs that break if pos0 == pos1
-                    // doesn't happen offline but when receiving pos from remove, can happen
-                    // pos are equal the frame it's sucked into shortcut
-                    // pos are set to different when sput out
-                    // but due to the suckedintoshortcut not removing client-sided when ran by the creature (it waits for the RPC)
-                    // then the bad values do happen
-                    self.bug.bodyChunks[1].pos += Vector2.down;
-                }
-            }
-            orig(self);
-        }
-
         private static void EggBug_Update1(ILContext il)
         {
             try
@@ -60,7 +39,8 @@ namespace RainMeadow
                     );
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((EggBug self) => {
+                c.EmitDelegate((EggBug self) =>
+                {
                     if (creatureControllers.TryGetValue(self, out var controller))
                     {
                         if (self.mainBodyChunk.submersion >= 1)
@@ -105,14 +85,15 @@ namespace RainMeadow
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldloca, 0);
-                c.EmitDelegate((EggBug self, ref MovementConnection movementConnection) => {
+                c.EmitDelegate((EggBug self, ref MovementConnection movementConnection) =>
+                {
                     if (creatureControllers.TryGetValue(self, out var controller))
                     {
                         var coord = controller.creature.coord;
                         var to = controller.creature.abstractCreature.abstractAI.RealAI.pathFinder.destination;
                         movementConnection = new MovementConnection(MovementConnection.MovementType.Standard, coord, to, 1);
 
-                        if(self.mainBodyChunk.submersion >= 1)
+                        if (self.mainBodyChunk.submersion >= 1)
                         {
                             self.mainBodyChunk.vel += 1.2f * controller.inputDir; // here some help
                         }
@@ -178,7 +159,7 @@ namespace RainMeadow
             orig(self, eu);
         }
 
-        public EggbugController(EggBug creature, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(creature, oc, playerNumber, customization)
+        public EggbugController(EggBug creature, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(creature, oc, playerNumber, customization)
         {
             if (creature.grasps == null) creature.grasps = new Creature.Grasp[1];
             eggbug = creature;
@@ -284,7 +265,7 @@ namespace RainMeadow
 
         protected override void OnCall()
         {
-            if(eggbug.graphicsModule is EggBugGraphics ebg && !ebg.culled)
+            if (eggbug.graphicsModule is EggBugGraphics ebg && !ebg.culled)
             {
                 Vector2 tohead = Custom.DirVec(eggbug.bodyChunks[1].pos, eggbug.bodyChunks[0].pos);
                 for (int i = 0; i < ebg.legs.GetLength(0); i++)

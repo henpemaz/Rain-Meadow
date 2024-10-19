@@ -35,7 +35,7 @@ namespace RainMeadow
 
         public OnlineResource(OnlineResource super)
         {
-            if(super != null)
+            if (super != null)
             {
                 this.super = super;
                 this.chain = super.chain.Append(this).ToList();
@@ -249,7 +249,7 @@ namespace RainMeadow
             incomingState = new(8); // used for delta-encoding stream, so we reset here
 
             if (owner != null) NewParticipant(owner);
-            else if(isAvailable || isPending) // cannot operate resource without an owner
+            else if (isAvailable || isPending) // cannot operate resource without an owner
             {
                 RainMeadow.Debug($"Resource cannot be operated, releasing");
                 NotNeeded();
@@ -295,7 +295,7 @@ namespace RainMeadow
             if (isOwner) NewVersion();
         }
 
-        private void NewVersion()
+        public void NewVersion()
         {
             lastModified = OnlineManager.mePlayer.tick;
         }
@@ -355,8 +355,8 @@ namespace RainMeadow
             }
             if (participant.isMe)
             {
-                if(isAvailable) Unavailable();
-                if(isWaitingForState) isWaitingForState = false;
+                if (isAvailable) Unavailable();
+                if (isWaitingForState) isWaitingForState = false;
                 PerformRequests();
             }
             ParticipantLeftImpl(participant);

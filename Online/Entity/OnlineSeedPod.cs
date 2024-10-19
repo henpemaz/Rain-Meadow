@@ -16,7 +16,7 @@
 
             public override OnlineEntity MakeEntity(OnlineResource inResource, EntityState initialState)
             {
-                return new OnlineSeedCob(this, inResource, (OnlineSeedCobState) initialState);
+                return new OnlineSeedCob(this, inResource, (OnlineSeedCobState)initialState);
             }
         }
 
@@ -40,7 +40,8 @@
             RoomSettings roomsetting = new RoomSettings(apo.Room.name, apo.world.region, false, false, OnlineManager.lobby.gameMode.LoadWorldAs(apo.world.game));
 
             var asc = new SeedCob.AbstractSeedCob(apo.world, apo.realizedObject, apo.pos, apo.ID, consumableDef.originRoom, consumableDef.placedObjectIndex, consumableDef.originallyDead,
-                roomsetting.placedObjects[consumableDef.placedObjectIndex].data as PlacedObject.ConsumableObjectData) { isConsumed = (initialState as OnlineConsumableState).isConsumed };
+                roomsetting.placedObjects[consumableDef.placedObjectIndex].data as PlacedObject.ConsumableObjectData)
+            { isConsumed = (initialState as OnlineConsumableState).isConsumed };
             return asc;
         }
 

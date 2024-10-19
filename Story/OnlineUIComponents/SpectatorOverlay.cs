@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
+﻿using Menu;
+using System.Collections.Generic;
 using System.Linq;
-using Menu;
 using UnityEngine;
 
 namespace RainMeadow
@@ -28,7 +27,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby.playerAvatars.Count > uniqueACs.Count)
             {
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                 {
                     if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue;
 

@@ -17,6 +17,34 @@ namespace RainMeadow
             On.AbstractCreature.InDenUpdate += AbstractCreature_InDenUpdate; // Don't think
 
             On.ScavengerAbstractAI.InitGearUp += ScavengerAbstractAI_InitGearUp;
+
+            On.EggBugGraphics.Update += EggBugGraphics_Update;
+            On.BigSpiderGraphics.Update += BigSpiderGraphics_Update;
+        }
+
+        private void EggBugGraphics_Update(On.EggBugGraphics.orig_Update orig, EggBugGraphics self)
+        {
+            if (self.bug.bodyChunks[0].pos == self.bug.bodyChunks[1].pos)
+            {
+                // eggbug graphics does some line calcs that break if pos0 == pos1
+                // doesn't happen offline but when receiving pos from remove, can happen
+                // pos are equal the frame it's sucked into shortcut
+                // pos are set to different when sput out
+                // but due to the suckedintoshortcut not removing client-sided when ran by the creature (it waits for the RPC)
+                // then the bad values do happen
+                self.bug.bodyChunks[1].pos += Vector2.down;
+            }
+            orig(self);
+        }
+
+        private static void BigSpiderGraphics_Update(On.BigSpiderGraphics.orig_Update orig, BigSpiderGraphics self)
+        {
+            if (self.bug.bodyChunks[0].pos == self.bug.bodyChunks[1].pos)
+            {
+                // spiders do this too
+                self.bug.bodyChunks[1].pos += Vector2.down;
+            }
+            orig(self);
         }
 
         private void ScavengerAbstractAI_InitGearUp(On.ScavengerAbstractAI.orig_InitGearUp orig, ScavengerAbstractAI self)
@@ -34,53 +62,28 @@ namespace RainMeadow
         // Don't think
         private void AbstractCreature_InDenUpdate(On.AbstractCreature.orig_InDenUpdate orig, AbstractCreature self, int time)
         {
-            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
-            {
-                if (!oe.isMine && !oe.beingMoved)
-                {
-                    return;
-                }
-            }
+            if (OnlineManager.lobby != null && !self.CanMove(quiet: true)) return;
             orig(self, time);
         }
 
         // Don't think
         private void AbstractCreature_OpportunityToEnterDen(On.AbstractCreature.orig_OpportunityToEnterDen orig, AbstractCreature self, WorldCoordinate den)
         {
-            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
-            {
-                if (!oe.isMine && !oe.beingMoved)
-                {
-                    Error($"Remote entity trying to move: {oe} at {oe.roomSession} {Environment.StackTrace}");
-                    return;
-                }
-            }
+            if (OnlineManager.lobby != null && !self.CanMove()) return;
             orig(self, den);
         }
 
         // Don't think
         private void AbstractCreature_Update(On.AbstractCreature.orig_Update orig, AbstractCreature self, int time)
         {
-            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
-            {
-                if (!oe.isMine && !oe.beingMoved)
-                {
-                    return;
-                }
-            }
+            if (OnlineManager.lobby != null && !self.CanMove(quiet: true)) return;
             orig(self, time);
         }
 
         // Don't think
         private void AbstractPhysicalObject_Update(On.AbstractPhysicalObject.orig_Update orig, AbstractPhysicalObject self, int time)
         {
-            if (OnlineManager.lobby != null && OnlinePhysicalObject.map.TryGetValue(self, out var oe))
-            {
-                if (!oe.isMine && !oe.beingMoved)
-                {
-                    return;
-                }
-            }
+            if (OnlineManager.lobby != null && !self.CanMove(quiet: true)) return;
             orig(self, time);
         }
 
@@ -90,15 +93,12 @@ namespace RainMeadow
         // so lets not let them choose for themselves.
         private void OverseerAI_Update(On.OverseerAI.orig_Update orig, OverseerAI self)
         {
-            if (OnlineManager.lobby != null)
+            if (!self.overseer.abstractCreature.IsLocal(out var oe))
             {
-                if (OnlinePhysicalObject.map.TryGetValue(self.overseer.abstractCreature, out var oe) && !oe.isMine)
-                {
-                    Vector2 tempLookAt = self.lookAt;
-                    orig(self);
-                    self.lookAt = tempLookAt;
-                    return;
-                }
+                Vector2 tempLookAt = self.lookAt;
+                orig(self);
+                self.lookAt = tempLookAt;
+                return;
             }
             orig(self);
         }
@@ -107,13 +107,7 @@ namespace RainMeadow
         // we might also need to block ziptoposition, but i havent been able to test if thats an issue.
         private void OverseerAI_UpdateTempHoverPosition(On.OverseerAI.orig_UpdateTempHoverPosition orig, OverseerAI self)
         {
-            if (OnlineManager.lobby != null)
-            {
-                if (OnlinePhysicalObject.map.TryGetValue(self.overseer.abstractCreature, out var oe) && !oe.isMine)
-                {
-                    return;
-                }
-            }
+            if (!self.overseer.abstractCreature.IsLocal()) return;
             orig(self);
         }
     }

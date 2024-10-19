@@ -1,8 +1,8 @@
-﻿using UnityEngine;
-using System;
-using RWCustom;
+﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using Mono.Cecil.Cil;
+using RWCustom;
+using System;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -84,7 +84,8 @@ namespace RainMeadow
                      i => i.MatchBrfalse(out norun)
                      );
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((Lizard self) => {
+                c.EmitDelegate((Lizard self) =>
+                {
                     if (creatureControllers.TryGetValue(self, out var controller))
                     {
                         return false;
@@ -104,7 +105,8 @@ namespace RainMeadow
                      i => i.MatchBrtrue(out run)
                      );
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((Lizard self) => {
+                c.EmitDelegate((Lizard self) =>
+                {
                     if (creatureControllers.TryGetValue(self, out var controller))
                     {
                         return true;
@@ -280,7 +282,8 @@ namespace RainMeadow
             }
         }
 
-        public LizardController(Lizard lizard, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(lizard, oc, playerNumber, customization){
+        public LizardController(Lizard lizard, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(lizard, oc, playerNumber, customization)
+        {
 
             this.lizard = lizard;
             lizard.abstractCreature.personality.energy = 1f; // stop being lazy
@@ -375,7 +378,7 @@ namespace RainMeadow
 
         protected override void LookImpl(Vector2 pos)
         {
-            if(lizard.graphicsModule != null)
+            if (lizard.graphicsModule != null)
             {
                 (lizard.graphicsModule as LizardGraphics).lookPos = pos;
             }
@@ -385,9 +388,9 @@ namespace RainMeadow
         {
             base.ConsciousUpdate();
 
-            if(lizard.jumpModule is LizardJumpModule jumpModule)
+            if (lizard.jumpModule is LizardJumpModule jumpModule)
             {
-                if(this.superLaunchJump > 10)
+                if (this.superLaunchJump > 10)
                 {
                     if (input[0].jmp)
                     {
@@ -437,7 +440,7 @@ namespace RainMeadow
             }
 
             // body points to input
-            if(inputDir.magnitude > 0f && !lockInPlace)
+            if (inputDir.magnitude > 0f && !lockInPlace)
             {
                 creature.bodyChunks[0].vel += inputDir * 0.4f;
                 creature.bodyChunks[2].vel -= inputDir * 0.4f;
@@ -470,7 +473,7 @@ namespace RainMeadow
         {
             lizard.AI.behavior = LizardAI.Behavior.Travelling;
             var howmuch = lizard.lizardParams.bodySizeFac * magnitude;
-            
+
             lizard.AI.runSpeed = Custom.LerpAndTick(lizard.AI.runSpeed, howmuch, 0.2f, 0.05f);
             lizard.AI.excitement = Custom.LerpAndTick(lizard.AI.excitement, 0.8f, 0.1f, 0.05f);
 

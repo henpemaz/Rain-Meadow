@@ -4,9 +4,8 @@ using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using System.Reflection;
-using Menu.Remix.MixedUI;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -25,7 +24,7 @@ namespace RainMeadow
 
         private SlugcatSelectMenu ssm;
         private SlugcatSelectMenu.SlugcatPage sp;
-        private StoryClientSettings personaSettings;
+        private SlugcatCustomization personaSettings;
 
         private List<SlugcatSelectMenu.SlugcatPage> characterPages;
         private EventfulSelectOneButton[] playerButtons = new EventfulSelectOneButton[0];
@@ -48,6 +47,7 @@ namespace RainMeadow
         public StoryMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.StoryMenu)
         {
             RainMeadow.DebugMe();
+            this.backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
 
             this.rainEffect = new RainEffect(this, this.pages[0]);
             this.pages[0].subObjects.Add(this.rainEffect);
@@ -107,7 +107,28 @@ namespace RainMeadow
             }
 
             BindSettings();
+            SanitizeStoryClientSettings(gameMode.storyClientData);
+            SanitizeStoryGameMode(gameMode);
+
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
+        }
+
+        private void SanitizeStoryClientSettings(StoryClientSettingsData clientSettings)
+        {
+            clientSettings.readyForWin = false;
+            clientSettings.isDead = false;
+        }
+
+        private void SanitizeStoryGameMode(StoryGameMode gameMode)
+        {
+            gameMode.isInGame = false;
+            gameMode.changedRegions = false;
+            gameMode.didStartCycle = false;
+            gameMode.defaultDenPos = null;
+            gameMode.ghostsTalkedTo = new();
+            gameMode.consumedItems = new();
+            gameMode.myLastDenPos = null;
+            gameMode.hasSheltered = false;
         }
 
         private void SetupHostMenu()
@@ -246,7 +267,11 @@ namespace RainMeadow
                 this.UpdateCharacterUI();
             }
 
-            if (!OnlineManager.lobby.isOwner)
+            if (OnlineManager.lobby.isOwner)
+            {
+                hostStartButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
+            }
+            else
             {
                 campaignContainer.text = $"Current Campaign: The {GetCurrentCampaignName()}";
                 clientWaitingButton.buttonBehav.greyedOut = !(gameMode.isInGame && !gameMode.changedRegions);
@@ -313,11 +338,11 @@ namespace RainMeadow
             eyeLabel.label.alignment = FLabelAlignment.Right;
             this.pages[0].subObjects.Add(eyeLabel);
 
-            bodyColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 553), ColorUtility.ToHtmlStringRGB(RainMeadow.rainMeadowOptions.BodyColor.Value));
+            bodyColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 553), RainMeadow.rainMeadowOptions.BodyColor.Value);
             var wrapper = new UIelementWrapper(this.tabWrapper, bodyColorPicker);
             bodyColorPicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
 
-            eyeColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 500), ColorUtility.ToHtmlStringRGB(RainMeadow.rainMeadowOptions.EyeColor.Value));
+            eyeColorPicker = new OpTinyColorPicker(this, new Vector2(1094, 500), RainMeadow.rainMeadowOptions.EyeColor.Value);
             var wrapper2 = new UIelementWrapper(this.tabWrapper, eyeColorPicker);
             eyeColorPicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;
         }
@@ -422,7 +447,7 @@ namespace RainMeadow
 
         private void BindSettings()
         {
-            this.personaSettings = (StoryClientSettings)OnlineManager.lobby.gameMode.clientSettings;
+            this.personaSettings = (OnlineManager.lobby.gameMode as StoryGameMode).avatarSettings;
             personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
             personaSettings.bodyColor = RainMeadow.rainMeadowOptions.BodyColor.Value;
             personaSettings.eyeColor = RainMeadow.rainMeadowOptions.EyeColor.Value;

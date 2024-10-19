@@ -9,17 +9,19 @@
         {
             [OnlineField]
             public int cycleLength = 0;
-            [OnlineField(group:"timer")]
+            [OnlineField(group: "timer")]
             public int timer = 0;
             [OnlineField]
             public int preTimer = 0;
             [OnlineField]
             public bool antiGravity = false;
 
-            public RainCycleData() { 
-            
+            public RainCycleData()
+            {
+
             }
-            public RainCycleData(RainCycle rainCycle) {
+            public RainCycleData(RainCycle rainCycle)
+            {
                 this.cycleLength = rainCycle.cycleLength;
                 this.timer = rainCycle.timer;
                 this.preTimer = rainCycle.preTimer;
@@ -28,7 +30,8 @@
 
             public override bool Equals(object obj)
             {
-                if (obj is RainCycleData) {
+                if (obj is RainCycleData)
+                {
                     var rainCycle = (RainCycleData)obj;
                     return (this.cycleLength == rainCycle.cycleLength && this.timer == rainCycle.timer && this.preTimer == rainCycle.preTimer && this.antiGravity == rainCycle.antiGravity);
                 }

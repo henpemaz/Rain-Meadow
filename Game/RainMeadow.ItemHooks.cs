@@ -1,7 +1,6 @@
 ﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.Utils;
-using System;
 using System.Globalization;
 using System.Linq;
 
@@ -36,7 +35,7 @@ namespace RainMeadow
             c.Emit(OpCodes.Ldarg_0);
             c.EmitDelegate((SeedCob self) =>
             {
-                if(OnlineManager.lobby != null)
+                if (OnlineManager.lobby != null)
                 {
                     return false;
                 }

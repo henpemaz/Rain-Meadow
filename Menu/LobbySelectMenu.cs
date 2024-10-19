@@ -20,7 +20,7 @@ namespace RainMeadow
         private float scroll;
         private float scrollTo;
         private int currentlySelectedCard;
-        private OpComboBox visibilityDropDown;
+        private OpComboBox2 visibilityDropDown;
         private OpTextBox lobbyLimitNumberTextBox;
         private SimplerButton playButton;
         private SimplerButton refreshButton;
@@ -241,7 +241,7 @@ namespace RainMeadow
                 this.RemoveSubObject(menuLabel);
                 this.menuLabel = new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.name, new(5, 30), new(10, 50), true);
                 this.subObjects.Add(this.menuLabel);
-                if (lobbyInfo.hasPassword) 
+                if (lobbyInfo.hasPassword)
                 {
                     this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, "Private", new(260, 20), new(10, 50), false));
                 }
@@ -328,7 +328,7 @@ namespace RainMeadow
                 CreateLobbyCards();
             }
         }
-        
+
         private void OnlineManager_OnLobbyJoined(bool ok, string error)
         {
             RainMeadow.Debug(ok);
@@ -359,7 +359,8 @@ namespace RainMeadow
             return;
         }
 
-        public void ShowPasswordRequestDialog() {
+        public void ShowPasswordRequestDialog()
+        {
             if (popupDialog != null) HideDialog();
 
             popupDialog = new CustomInputDialogueBox(this, mainPage, "Password Required", "HIDE_PASSWORD", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
@@ -377,7 +378,7 @@ namespace RainMeadow
         public void ShowErrorDialog(string error)
         {
             if (popupDialog != null) HideDialog();
-            
+
             popupDialog = new DialogBoxNotify(this, mainPage, error, "HIDE_DIALOG", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
             mainPage.subObjects.Add(popupDialog);
         }
@@ -408,10 +409,13 @@ namespace RainMeadow
             }
         }
 
-        public bool GetChecked(CheckBox box) {
+        public bool GetChecked(CheckBox box)
+        {
             string idstring = box.IDString;
-            if (idstring != null) {
-                if (idstring == "SETPASSWORD") {
+            if (idstring != null)
+            {
+                if (idstring == "SETPASSWORD")
+                {
                     return setpassword;
                 }
             }

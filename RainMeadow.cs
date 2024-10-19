@@ -14,7 +14,7 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.0.72.1";
+        public const string MeadowVersionStr = "0.0.73.01";
         public static RainMeadow instance;
         private bool init;
         public bool fullyInit;
@@ -129,6 +129,8 @@ namespace RainMeadow
 
             try
             {
+                MenuHooks(); //  sets the error message fallback
+
                 MachineConnector.SetRegisteredOI("henpemaz_rainmeadow", rainMeadowOptions);
 
                 var sw = Stopwatch.StartNew();
@@ -174,7 +176,6 @@ namespace RainMeadow
                     }
                 }
 
-                MenuHooks();
                 GameHooks();
                 CreatureHooks();
                 EntityHooks();
