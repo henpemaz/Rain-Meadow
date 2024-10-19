@@ -1,6 +1,5 @@
 ﻿using Menu;
 using UnityEngine;
-using Steamworks;
 using System;
 using Menu.Remix.MixedUI;
 
@@ -26,35 +25,42 @@ namespace RainMeadow
         }
         private void CaptureInputs(char input)
         {
-            if (input == '\b')
+            if (ChatHud.gamePaused)
             {
-                if (value.Length > 0)
-                {
-                    menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
-                    value = value.Substring(0, value.Length - 1);
-                }
+                OnKeyDown = null;
+                return;
             }
-            else if (input == '\n' || input == '\r')
-            {
-                if (value.Length > 0)
+                if (input == '\b')
                 {
+                    if (value.Length > 0)
+                    {
+                        menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                        value = value.Substring(0, value.Length - 1);
+                    }
+                }
+                else if (input == '\n' || input == '\r')
+                {
+                    if (value.Length > 0)
+                    {
+                        steamMatchmakingManager.SendChatMessage((MatchmakingManager.instance as SteamMatchmakingManager).lobbyID, value);
+                    }
+                    else
+                    {
+                        RainMeadow.Debug("Could not send value because it had no text");
+                    }
+                    RainMeadow.Debug("closing out chat text box");
                     typingHandler.Unassign(this);
-                    steamMatchmakingManager.SendChatMessage((MatchmakingManager.instance as SteamMatchmakingManager).lobbyID, value);
                 }
                 else
                 {
-                    RainMeadow.Debug("Could not send value because it had no text");
+                    if (value.Length < textLimit)
+                    {
+                        menu.PlaySound(SoundID.MENU_Checkbox_Check);
+                        value += input.ToString();
+                    }
                 }
-            }
-            else
-            {
-                if (value.Length < textLimit)
-                {
-                    menu.PlaySound(SoundID.MENU_Checkbox_Check);
-                    value += input.ToString();
-                }
-            }
-            menuLabel.text = value;
+                menuLabel.text = value;
+            
         }
     }
 }
