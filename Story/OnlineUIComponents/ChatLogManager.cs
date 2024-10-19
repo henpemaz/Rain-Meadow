@@ -11,7 +11,6 @@
         public static void LogMessage(string message)
         {
             chatHud.AddMessage(message);
-            RainMeadow.Error("Success sending message dude");
         }
     }
 }
