@@ -270,7 +270,7 @@ namespace RainMeadow
             string message = System.Text.Encoding.UTF8.GetString(msgData, 0, msgDataLength);
             RainMeadow.Debug($"Message from {SteamFriends.GetFriendPersonaName(senderID)}: {message}");
             ChatLogManager.LogMessage($"{SteamFriends.GetFriendPersonaName(senderID)}: {message}");
-            ChatOverlay.needsUpdate = true;
+            ChatOverlay.isReceived = true;
         }
         private void PlayerJoined(CSteamID p)
         {
@@ -278,6 +278,8 @@ namespace RainMeadow
             if (p == me) return;
             SteamFriends.RequestUserInformation(p, true);
             OnlineManager.players.Add(new OnlinePlayer(new SteamPlayerId(p)));
+
+            ChatLogManager.LogMessage($"{SteamFriends.GetFriendPersonaName(p)} joined the game.");
         }
 
         private void PlayerLeft(CSteamID p)
@@ -296,6 +298,8 @@ namespace RainMeadow
                 }
                 RainMeadow.Debug($"Actually removing player:{player}");
                 OnlineManager.players.Remove(player);
+
+                ChatLogManager.LogMessage($"{SteamFriends.GetFriendPersonaName(p)} left the game.");
             }
         }
 
