@@ -53,6 +53,7 @@ namespace RainMeadow
                     RainMeadow.Debug("Shutting down spectator overlay due to another process request");
                     spectatorOverlay.ShutDownProcess();
                     spectatorOverlay = null;
+                    OnlineManager.mePlayer.isActuallySpectating = false;
                     return;
                 }
                 spectatorOverlay.Update();
