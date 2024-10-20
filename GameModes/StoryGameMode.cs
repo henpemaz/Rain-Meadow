@@ -59,6 +59,12 @@ namespace RainMeadow
             // todo if two join at once, this first check is faulty
         }
 
+        public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
+        {
+
+            return true;
+        }
+
         public override SlugcatStats.Name GetStorySessionPlayer(RainWorldGame self)
         {
             return currentCampaign;
