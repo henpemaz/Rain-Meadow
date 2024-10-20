@@ -36,22 +36,8 @@ namespace RainMeadow
                 {
                     this.button.toggled = !this.button.toggled;
                     overlay.spectatee = this.button.toggled ? opo.apo as AbstractCreature : null;
-                    if (overlay.spectatee != null)
-                    {
-                        if (!OnlinePhysicalObject.map.TryGetValue(overlay.spectatee, out var onlineACOwner))
-                        {
-                            RainMeadow.Error("Error getting online AC during spectate call!");
-                            return;
-                        }
-                        if (onlineACOwner.owner != OnlineManager.mePlayer)
-                        {
-                            OnlineManager.mePlayer.isActuallySpectating = true; // I want to view a remote player outside my current position
-                        }
-                        else
-                        {
-                            OnlineManager.mePlayer.isActuallySpectating = false; // I want to regain control of where I am
-                        }
-                    }
+                    OnlineManager.mePlayer.isActuallySpectating = overlay.spectatee == null || !this.player.isMine;
+
                 };
                 this.button.owner.subObjects.Add(button);
                 if (canKick)
