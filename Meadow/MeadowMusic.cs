@@ -326,11 +326,11 @@ namespace RainMeadow
                     {
                         if (inGroup == 0 || hostId == OnlineManager.mePlayer.inLobbyId)
                         {
-                            RainMeadow.Debug("Meadow Music: Playing ambient song");
 
                             if (shuffleindex + 1 >= shufflequeue.Length) { ShuffleSongs(); }
                             else { shuffleindex++; }
                             musicdata.providedSong = ambienceSongArray[shufflequeue[shuffleindex]];
+                            RainMeadow.Debug("Meadow Music: Playing ambient song: " + musicdata.providedSong);
                             musicdata.startedPlayingAt = LobbyTime();
                             Song song = new(musicPlayer, musicdata.providedSong, MusicPlayer.MusicContext.StoryMode)
                             {
@@ -388,11 +388,11 @@ namespace RainMeadow
                                     }
                                     else
                                     {
-                                        RainMeadow.Debug("Meadow Music: I don't have my DJs provided song. Playing ambient song");
-
+                                        RainMeadow.Debug("Meadow Music: I don't have my DJs provided song.");
                                         if (shuffleindex + 1 >= shufflequeue.Length) { ShuffleSongs(); }
                                         else { shuffleindex++; }
                                         musicdata.providedSong = ambienceSongArray[shufflequeue[shuffleindex]];
+                                        RainMeadow.Debug("Playing ambient song: " + musicdata.providedSong);
                                         musicdata.startedPlayingAt = LobbyTime();
                                         Song song = new(musicPlayer, musicdata.providedSong, MusicPlayer.MusicContext.StoryMode)
                                         {
