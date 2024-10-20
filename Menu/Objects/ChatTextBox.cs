@@ -27,7 +27,7 @@ namespace RainMeadow
             typingHandler ??= gameObject.AddComponent<ButtonTypingHandler>();
             typingHandler.Assign(this);
         }
-
+        
         public void DelayedUnload(float delay) => typingHandler.StartCoroutine(UnloadAfterDelay(delay));
 
         private IEnumerator UnloadAfterDelay(float delay)
