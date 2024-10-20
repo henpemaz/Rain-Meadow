@@ -27,11 +27,8 @@ BepInEx/core/Mono.Cecil.dll
 BepInEx/core/MonoMod.RuntimeDetour.dll
 BepInEx/core/MonoMod.Utils.dll
 BepInEx/core/MonoMod.dll
-
 BepInEx/plugins/HOOKS-Assembly-CSharp.dll
-
 BepInEx/utils/PUBLIC-Assembly-CSharp.dll
-
 RainWorld_Data/Managed/Assembly-CSharp-firstpass.dll
 RainWorld_Data/Managed/Mono.Cecil.dll
 RainWorld_Data/Managed/MonoMod.RuntimeDetour.dll
