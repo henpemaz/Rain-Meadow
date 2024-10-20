@@ -12,7 +12,7 @@ namespace RainMeadow
         private GameObject gameObject;
         private List<string> chatLog;
         private List<MenuLabel> chatLabels = new();
-        public bool needsUpdate = false;
+        public static bool needsUpdate = false;
         public RainWorldGame game;
         public ChatOverlay chatOverlay;
         public static ChatTextBox chat;
@@ -25,6 +25,7 @@ namespace RainMeadow
             pages.Add(new Page(this, null, "chat", 0));
             InitChat();
         }
+        
         public override void ShutDownProcess()
         {
             chatLabels.Clear();

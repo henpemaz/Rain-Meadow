@@ -15,6 +15,7 @@ namespace RainMeadow
         private bool chatActive = false;
         public static bool gamePaused;
         private List<string> chatLog = new List<string>();
+        private int chatCoolDown = 0;
 
         public ChatHud(HUD.HUD hud, RoomCamera camera, OnlineGameMode onlineGameMode) : base(hud)
         {
@@ -36,17 +37,17 @@ namespace RainMeadow
         {
             base.Draw(timeStacker);
             gamePaused = textPrompt.pausedMode;
-            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatKey.Value) && chatOverlay == null && chatActive == false && !textPrompt.pausedMode)
+            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatKey.Value) && chatOverlay == null && !chatActive && !textPrompt.pausedMode)
             {
                 RainMeadow.Debug("creating chat box");
                 chatOverlay = new ChatOverlay(game.manager, game, chatLog);
                 chatActive = true;
-                chatOverlay.needsUpdate = true;
+                chatCoolDown = 1;
             }
 
             chatOverlay?.GrafUpdate(timeStacker);
 
-            if (Input.GetKeyDown(KeyCode.Return) && chatOverlay != null) ShutDownChat();
+            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatKey.Value) && chatActive && chatCoolDown <= 0) ShutDownChat();
         }
         public void ShutDownChat()
         {
@@ -63,6 +64,11 @@ namespace RainMeadow
                 if ((game.pauseMenu != null || camera.hud.map.visible || game.manager.upcomingProcess != null) && chatOverlay != null) ShutDownChat();
 
                 chatOverlay?.Update();
+
+                if (chatOverlay != null)
+                {
+                    if (chatCoolDown > 0) chatCoolDown--;
+                }
             }
         }
     }
