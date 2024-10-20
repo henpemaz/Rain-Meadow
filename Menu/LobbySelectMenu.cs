@@ -355,11 +355,11 @@ namespace RainMeadow
             };
             public enum PasswordFilter
             {
-                [Description("Don't care")]
+                [Description("Show All")]
                 All,
-                [Description("Nuh")]
+                [Description("No")]
                 NoPassword,
-                [Description("Yuh")]
+                [Description("Yes")]
                 Password,
             }
 
