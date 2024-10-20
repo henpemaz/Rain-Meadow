@@ -25,7 +25,7 @@ public class RainMeadowOptions : OptionInterface
         EyeColor = config.Bind("EyeColor", Color.black);
         SpectatorKey = config.Bind("SpectatorKey", KeyCode.Tab);
         PointingKey = config.Bind("PointingKey", KeyCode.Mouse0);
-        ChatKey = config.Bind("ChatKey", KeyCode.T);
+        ChatKey = config.Bind("ChatKey", KeyCode.Return);
 
 
     }

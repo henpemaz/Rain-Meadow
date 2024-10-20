@@ -13,7 +13,7 @@ namespace RainMeadow
         private ButtonTypingHandler typingHandler;
         private GameObject gameObject;
         public Action<char> OnKeyDown { get; set; }
-        public static int textLimit = 150;
+        public static int textLimit = 75;
         public string value;
         public event Action OnUnload;
         public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, "", pos, size)
@@ -26,7 +26,7 @@ namespace RainMeadow
             typingHandler ??= gameObject.AddComponent<ButtonTypingHandler>();
             typingHandler.Assign(this);
         }
-
+        
         public void DelayedUnload(float delay) => typingHandler.StartCoroutine(UnloadAfterDelay(delay));
         private IEnumerator UnloadAfterDelay(float delay)
         {
@@ -35,7 +35,7 @@ namespace RainMeadow
             Unload();
         }
 
-        public void Unload()
+        private void Unload()
         {
             try 
             {
