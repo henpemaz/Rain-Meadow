@@ -37,11 +37,11 @@ RainWorld_Data/Managed/Newtonsoft.Json.dll
 RainWorld_Data/Managed/Rewired_Core.dll
 RainWorld_Data/Managed/Unity.Mathematics.dll
 RainWorld_Data/Managed/UnityEngine.AssetBundleModule.dll
+RainWorld_Data/Managed/UnityEngine.AudioModule.dll
 RainWorld_Data/Managed/UnityEngine.CoreModule.dll
 RainWorld_Data/Managed/UnityEngine.InputLegacyModule.dll
 RainWorld_Data/Managed/UnityEngine.JSONSerializeModule.dll
 RainWorld_Data/Managed/UnityEngine.dll
-RainWorld_Data/Managed/UnityEngine.AudioModule.dll
 RainWorld_Data/Managed/com.rlabrecque.steamworks.net.dll
 ```
 
