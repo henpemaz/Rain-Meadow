@@ -12,7 +12,7 @@ namespace RainMeadow
         private GameObject gameObject;
         private List<string> chatLog;
         private List<MenuLabel> chatLabels = new();
-        public static bool needsUpdate = false;
+        public static bool isReceived = false;
         public RainWorldGame game;
         public ChatOverlay chatOverlay;
         public static ChatTextBox chat;
@@ -37,10 +37,10 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
-            if (needsUpdate)
+            if (isReceived)
             {
                 UpdateLogDisplay();
-                needsUpdate = false;
+                isReceived = false;
             }
             if (ModManager.DevTools)
             {
@@ -59,7 +59,7 @@ namespace RainMeadow
             float yOfftset = 0;
             foreach (string message in chatLog)
             {
-                var chatMessageLabel = new MenuLabel(this, pages[0], message, new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f - 660f, 360f - yOfftset), new Vector2(1400f, 30f), false);
+                var chatMessageLabel = new MenuLabel(this, pages[0], message, new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f - 660f, 300f - yOfftset), new Vector2(1400f, 30f), false);
                 chatMessageLabel.label.alignment = FLabelAlignment.Left;
                 pages[0].subObjects.Add(chatMessageLabel);
                 yOfftset += 20f;
