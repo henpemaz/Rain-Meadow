@@ -270,6 +270,7 @@ namespace RainMeadow
             string message = System.Text.Encoding.UTF8.GetString(msgData, 0, msgDataLength);
             RainMeadow.Debug($"Message from {SteamFriends.GetFriendPersonaName(senderID)}: {message}");
             ChatLogManager.LogMessage($"{SteamFriends.GetFriendPersonaName(senderID)}: {message}");
+            ChatOverlay.needsUpdate = true;
         }
         private void PlayerJoined(CSteamID p)
         {
@@ -295,7 +296,6 @@ namespace RainMeadow
                 }
                 RainMeadow.Debug($"Actually removing player:{player}");
                 OnlineManager.players.Remove(player);
-                SendChatMessage(lobbyID, $"{p} left the game");
             }
         }
 
