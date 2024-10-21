@@ -128,8 +128,8 @@ namespace RainMeadow
         private void BindSettings()
         {
             this.personaSettings = (OnlineManager.lobby.gameMode as ArenaCompetitiveGameMode).avatarSettings;
-            personaSettings.bodyColor = RainMeadow.rainMeadowOptions.BodyColor.Value;
-            personaSettings.eyeColor = RainMeadow.rainMeadowOptions.EyeColor.Value;
+            personaSettings.bodyColor = Extensions.SafeColorRange(RainMeadow.rainMeadowOptions.BodyColor.Value);
+            personaSettings.eyeColor = Extensions.SafeColorRange(RainMeadow.rainMeadowOptions.EyeColor.Value);
             personaSettings.playingAs = SlugcatStats.Name.White;
             arena.arenaClientSettings.playingAs = personaSettings.playingAs;
         }
@@ -627,14 +627,12 @@ namespace RainMeadow
 
             pages[0].subObjects.Add(bodyColor);
             pages[0].subObjects.Add(eyeColor);
-
-
         }
 
         private void ColorPicker_OnValueChangedEvent()
         {
-            if (personaSettings != null) personaSettings.bodyColor = bodyColorPicker.valuecolor;
-            if (personaSettings != null) personaSettings.eyeColor = eyeColorPicker.valuecolor;
+            personaSettings.bodyColor = Extensions.SafeColorRange(bodyColorPicker.valuecolor);
+            personaSettings.eyeColor = Extensions.SafeColorRange(eyeColorPicker.valuecolor);
         }
 
         /// TODO: Share level selection visibly with client

@@ -100,3 +100,7 @@ lizard wallclimb is slow, slows you down a lot in zerog movement
 rebindable keybinds for everything meadow
 - controller emote input
 - tab
+
+world state of onlineplayer is a lot of rot etc because no filters apply
+
+rotating arrow symbol resets to up on remote when client lets go
