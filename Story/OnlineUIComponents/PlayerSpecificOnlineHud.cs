@@ -16,7 +16,7 @@ namespace RainMeadow
         public OnlinePlayerDeathBump deathBump;
         public int deadCounter = -1;
         public int antiDeathBumpFlicker;
-        private List<OnlinePlayerHudPart> parts = new();
+        public List<OnlinePlayerHudPart> parts = new();
 
         public bool lastDead;
         public Player RealizedPlayer => this.abstractPlayer.realizedCreature as Player;
