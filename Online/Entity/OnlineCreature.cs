@@ -277,6 +277,51 @@ namespace RainMeadow
             enteringShortCut = false;
         }
 
+        public void BroadcastTookFlight(AbstractRoomNode.Type type, WorldCoordinate start, WorldCoordinate dest)
+        {
+            if (currentlyJoinedResource is RoomSession room)
+            {
+                RainMeadow.Debug(this);
+                if (id.type == 0) throw new InvalidProgrammerException("here");
+                foreach (var participant in room.participants)
+                {
+                    if (!participant.isMe)
+                        participant.InvokeRPC(this.TookFlight, type, start, dest);
+                }
+            }
+        }
+
+        [RPCMethod]
+        public void TookFlight(AbstractRoomNode.Type type, WorldCoordinate start, WorldCoordinate dest)
+        {
+            RainMeadow.Debug(this);
+            if (realizedCreature is not null && realizedCreature.room is Room room)
+            {
+                try
+                {
+                    enteringShortCut = true;
+                    var handler = room.game.shortcuts;
+                    handler.CreatureTakeFlight(realizedCreature, type, start, dest);
+
+                    // copied from SuckedIntoShortCut, do we need this?
+                    foreach (var apo in creature.GetAllConnectedObjects())
+                    {
+                        if (apo.realizedObject is not null)
+                        {
+                            room.RemoveObject(apo.realizedObject);
+                            room.CleanOutObjectNotInThisRoom(apo.realizedObject); // very important
+                        }
+                    }
+                }
+                catch
+                {
+                    enteringShortCut = false;
+                    throw;
+                }
+            }
+            enteringShortCut = false;
+        }
+
         public override string ToString()
         {
             return $"{abstractCreature.creatureTemplate.type} {base.ToString()}";
