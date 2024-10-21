@@ -391,7 +391,7 @@ namespace RainMeadow
                 if (ent.owner.hasLeft || !participants.Contains(ent.owner)) // abandoned
                 {
                     RainMeadow.Debug($"Abandoned entity: {ent}");
-                    if (ent.isTransferable)
+                    if (ent.isTransferable && !OnlineManager.mePlayer.isActuallySpectating)
                     {
                         if (!ent.primaryResource.participants.Contains(ent.owner) || ent.owner.hasLeft) // owner really just left if behind
                         {

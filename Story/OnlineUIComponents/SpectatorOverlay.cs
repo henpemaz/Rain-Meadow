@@ -16,8 +16,10 @@ namespace RainMeadow
             public OnlinePhysicalObject player;
             public SimplerButton button;
             public SimplerSymbolButton? kickbutton;
-            public Vector2 pos {
-                set {
+            public Vector2 pos
+            {
+                set
+                {
                     button.pos = value;
                     if (kickbutton != null)
                         kickbutton.pos = value + new Vector2(120, 0);
@@ -34,6 +36,8 @@ namespace RainMeadow
                 {
                     this.button.toggled = !this.button.toggled;
                     overlay.spectatee = this.button.toggled ? opo.apo as AbstractCreature : null;
+                    OnlineManager.mePlayer.isActuallySpectating = overlay.spectatee == null || !this.player.isMine;
+
                 };
                 this.button.owner.subObjects.Add(button);
                 if (canKick)
