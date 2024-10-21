@@ -22,8 +22,6 @@ namespace RainMeadow
             On.Lizard.SwimBehavior += Lizard_SwimBehavior1;
             On.Lizard.FollowConnection += Lizard_FollowConnection;
 
-            // color
-            On.LizardGraphics.ctor += LizardGraphics_ctor;
             // pounce visuals
             On.LizardGraphics.Update += LizardGraphics_Update;
             // no violence
@@ -270,21 +268,8 @@ namespace RainMeadow
             }
         }
 
-        private static void LizardGraphics_ctor(On.LizardGraphics.orig_ctor orig, LizardGraphics self, PhysicalObject ow)
-        {
-            orig(self, ow);
-            if (RainMeadow.creatureCustomizations.TryGetValue(ow as Creature, out var c))
-            {
-                var col = self.lizard.effectColor;
-                c.ModifyBodyColor(ref col);
-                RainMeadow.Debug($"{self.lizard} color from {self.lizard.effectColor} to {col}");
-                self.lizard.effectColor = col;
-            }
-        }
-
         public LizardController(Lizard lizard, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(lizard, oc, playerNumber, customization)
         {
-
             this.lizard = lizard;
             lizard.abstractCreature.personality.energy = 1f; // stop being lazy
             jumpFactor = 1.2f;
@@ -292,6 +277,11 @@ namespace RainMeadow
             // this.needsLight = false; // has builtin light
             // or so I thought but vanilla light is too small, give it two!
             canZeroGClimb = true;
+
+            var col = lizard.effectColor;
+            customization.ModifyBodyColor(ref col);
+            RainMeadow.Debug($"{lizard} color from {lizard.effectColor} to {col}");
+            lizard.effectColor = col;
         }
 
         public Lizard lizard;
