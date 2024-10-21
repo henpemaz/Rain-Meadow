@@ -38,6 +38,8 @@ namespace RainMeadow
                 return;
 
             hand = UpdateHandPosition();
+            controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
+
             Vector2 targetPosition = realizedPlayer.mainBodyChunk.pos + pointingVector * 100f;
 
             finalHandPos = controller is Joystick ? targetPosition : Futile.mousePosition;
