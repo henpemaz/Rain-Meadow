@@ -18,7 +18,152 @@ namespace RainMeadow
             On.VirtualMicrophone.NewRoom += NewRoomPatch;
 
             On.Music.MusicPiece.SubTrack.StopAndDestroy += SubTrack_StopAndDestroy;
+            
+            On.Music.PlayerThreatTracker.Update += PlayerThreatTracker_Update; // yo which hook is this one go to? oooOOOoooooo
         }
+
+        private static void PlayerThreatTracker_Update(On.Music.PlayerThreatTracker.orig_Update orig, PlayerThreatTracker self)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                if (self.musicPlayer.manager.currentMainLoop == null || self.musicPlayer.manager.currentMainLoop.ID != ProcessManager.ProcessID.Game)
+                {
+                    self.recommendedDroneVolume = 0f;
+                    self.currentThreat = 0f;
+                    self.currentMusicAgnosticThreat = 0f;
+                    self.region = null;
+                    return;
+                }
+                if (self.playerNumber >= (self.musicPlayer.manager.currentMainLoop as RainWorldGame).Players.Count)
+                {
+                    return;
+                }
+                Player player = (self.musicPlayer.manager.currentMainLoop as RainWorldGame).Players[self.playerNumber].realizedCreature as Player;
+                if (player == null || player.room == null)
+                {
+                    return;
+                }
+                if (player.room.game.GameOverModeActive || player.redsIllness != null)
+                {
+                    self.recommendedDroneVolume = 0f;
+                    self.currentThreat = 0f;
+                    self.currentMusicAgnosticThreat = 0f;
+                    return;
+                }
+                self.recommendedDroneVolume = player.room.roomSettings.BkgDroneVolume;
+                if (!player.room.world.rainCycle.MusicAllowed && player.room.roomSettings.DangerType != RoomRain.DangerType.None)
+                {
+                    self.recommendedDroneVolume = 0f;
+                }
+                if ((self.musicPlayer.manager.currentMainLoop as RainWorldGame).cameras[0].ghostMode > (ModManager.MMF ? 0.1f : 0f))
+                {
+                    if (player.room.world.worldGhost != null)
+                    {
+                        self.ghostMode = player.room.world.worldGhost.GhostMode(player.room.abstractRoom, player.abstractCreature.world.RoomToWorldPos(player.mainBodyChunk.pos, player.room.abstractRoom.index));
+                    }
+                    else
+                    {
+                        self.ghostMode = 1f;
+                    }
+                }
+                else
+                {
+                    self.ghostMode = 0f;
+                }
+
+                float highpass = 1f;
+                if (self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>() != null)
+                {
+                    highpass = self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency;
+                }
+
+                if (self.ghostMode == 0f && self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>() != null)
+                {
+                    if (self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency < 11f)
+                    {
+                        UnityEngine.Object.Destroy(self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>());
+                    }
+                }
+                else if (self.ghostMode > 0f && self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>() == null)
+                {
+                    self.musicPlayer.gameObj.AddComponent<AudioHighPassFilter>().cutoffFrequency = 1f;
+                    //self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency = 1f;
+                }
+                if (self.ghostMode > 0f || highpass > 10f)
+                {
+                    self.recommendedDroneVolume = 0f;
+                    //self.musicPlayer.FadeOutAllNonGhostSongs(120f);
+                    //if (player.room.world.worldGhost != null && (self.musicPlayer.song == null || !(self.musicPlayer.song is GhostSong)))
+                    //{
+                    //    self.musicPlayer.RequestGhostSong(player.room.world.worldGhost.songName);
+                    //}
+                    float currenthighpass = self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency;
+                    float highpassgoal = Mathf.Lerp(0f, 1200f, Mathf.Pow(self.ghostMode, 2f));    
+                    self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency = Custom.LerpAndTick(currenthighpass, highpassgoal, 0.03f, 0.08f);
+                }
+
+                if (!player.room.world.singleRoomWorld)
+                {
+                    if (player.room.abstractRoom.index != self.room)
+                    {
+                        self.lastLastRoom = self.lastRoom;
+                        self.lastRoom = self.room;
+                        self.room = player.room.abstractRoom.index;
+                        if (self.room != self.lastLastRoom)
+                        {
+                            self.roomSwitches++;
+                            if (player.room.world.region.name != self.region)
+                            {
+                                self.region = player.room.world.region.name;
+                                self.musicPlayer.NewRegion(self.region);
+                            }
+                        }
+                    }
+                    if (self.roomSwitches > 0 && self.roomSwitchDelay > 0)
+                    {
+                        self.roomSwitchDelay--;
+                        if (self.roomSwitchDelay < 1)
+                        {
+                            if (self.musicPlayer.song != null)
+                            {
+                                self.musicPlayer.song.PlayerToNewRoom();
+                            }
+                            if (self.musicPlayer.nextSong != null)
+                            {
+                                self.musicPlayer.nextSong.PlayerToNewRoom();
+                            }
+                            self.roomSwitchDelay = UnityEngine.Random.Range(80, 400);
+                            self.roomSwitches--;
+                        }
+                    }
+                }
+                //else if ((self.musicPlayer.manager.currentMainLoop as RainWorldGame).IsArenaSession && (self.musicPlayer.manager.currentMainLoop as RainWorldGame).GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == MoreSlugcatsEnums.GameTypeID.Challenge && (self.musicPlayer.manager.currentMainLoop as RainWorldGame).GetArenaGameSession.chMeta != null && !string.IsNullOrEmpty((self.musicPlayer.manager.currentMainLoop as RainWorldGame).GetArenaGameSession.chMeta.threatMusic))
+                //{
+                //    string threatMusic = (self.musicPlayer.manager.currentMainLoop as RainWorldGame).GetArenaGameSession.chMeta.threatMusic;
+                //    if (self.region != threatMusic)
+                //    {
+                //        self.region = threatMusic;
+                //        self.musicPlayer.NewRegion(self.region);
+                //    }
+                //}
+                //
+                //self.threatDetermine.Update(self.musicPlayer.manager.currentMainLoop as RainWorldGame);
+                //if (self.musicPlayer.song != null)
+                //{
+                //    self.threatDetermine.currentThreat = 0f;
+                //}
+                //self.currentThreat = self.threatDetermine.currentThreat;
+                //self.currentMusicAgnosticThreat = self.threatDetermine.currentMusicAgnosticThreat;
+                
+                //on the slight moment after fading out a song, the default threat theme plays
+                //so just take away it calculating th threat theme lmao
+            }
+            else
+            {
+                orig(self);
+            }
+        }
+
 
         private static void SubTrack_StopAndDestroy(On.Music.MusicPiece.SubTrack.orig_StopAndDestroy orig, MusicPiece.SubTrack self)
         {
