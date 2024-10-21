@@ -7,9 +7,10 @@ namespace RainMeadow
     public class Pointing : HudPart
     {
         private Creature realizedPlayer;
-        private int hand;
+        public static int hand;
         private Controller controller;
         private Vector2 finalHandPos;
+        public int currentlyPointingHand;
 
         public Pointing(HUD.HUD hud) : base(hud)
         {
@@ -22,9 +23,9 @@ namespace RainMeadow
             base.Draw(timeStacker);
 
             if (!Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
-                return;
-
-            if (OnlineManager.lobby.gameMode.avatars[0] is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                return; 
+                
+            if (OnlineManager.lobby.playerAvatars[OnlineManager.mePlayer].FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
             {
                 realizedPlayer = ac.realizedCreature;
             }
@@ -37,7 +38,9 @@ namespace RainMeadow
             if (pointingVector == Vector2.zero)
                 return;
 
-            UpdateHandPosition();
+            hand = UpdateHandPosition();
+            controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
+
             Vector2 targetPosition = realizedPlayer.mainBodyChunk.pos + pointingVector * 100f;
 
             finalHandPos = controller is Joystick ? targetPosition : Futile.mousePosition;
@@ -48,10 +51,10 @@ namespace RainMeadow
                 var handModule = (realizedPlayer.graphicsModule as PlayerGraphics).hands[hand];
                 handModule.reachingForObject = true;
                 handModule.absoluteHuntPos = finalHandPos;
+
             }
         }
-
-        private void UpdateHandPosition()
+        private int UpdateHandPosition()
         {
             for (int handy = 1; handy >= 0; handy--)
             {
@@ -62,10 +65,12 @@ namespace RainMeadow
                     break;
                 }
             }
+            return hand;
         }
 
-        private Vector2 GetOnlinePointingVector()
+        public static Vector2 GetOnlinePointingVector()
         {
+           var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
             if (controller is Joystick joystick)
             {
                 Vector2 direction = new Vector2(joystick.GetAxis(2), joystick.GetAxis(3));
