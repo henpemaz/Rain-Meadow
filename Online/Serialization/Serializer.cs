@@ -96,7 +96,7 @@ namespace RainMeadow
         {
             scratchpad.stream.Seek(0, SeekOrigin.Begin);
             playerEvent.CustomSerialize(scratchpad);
-            if(scratchpad.Position < (capacity - Position - margin))
+            if (scratchpad.Position < (capacity - Position - margin))
             {
                 writer.Write((byte)playerEvent.eventType);
                 writer.Write(scratchpad.buffer, 0, (int)scratchpad.Position);
@@ -200,15 +200,15 @@ namespace RainMeadow
         private OnlineState ReadState()
         {
             OnlineState s = OnlineState.ParsePolymorph(this);
-            if(s is RootDeltaState ps)
+            if (s is RootDeltaState ps)
             {
                 ps.from = currPlayer;
                 ps.tick = currPlayer.tick;
             }
-            
+
             WrappedSerialize(s);
 
-            if(s is DeflateState ds)
+            if (s is DeflateState ds)
             {
                 scratchpad.stream.Seek(0, SeekOrigin.Begin);
                 ds.Decompress(scratchpad.stream);
@@ -386,7 +386,7 @@ namespace RainMeadow
             if (IsReading)
             {
                 state = (T)OnlineState.ParsePolymorph(this);
-                if(state is RootDeltaState ps)
+                if (state is RootDeltaState ps)
                 {
                     ps.from = currPlayer;
                     ps.tick = currPlayer.tick;
@@ -746,7 +746,7 @@ namespace RainMeadow
                 foreach (var playerEvent in events)
                 {
                     writer.Write((byte)playerEvent.eventType);
-    #if TRACING
+#if TRACING
                 if (IsWriting) RainMeadow.Trace(1);
 #endif
                     playerEvent.CustomSerialize(this);

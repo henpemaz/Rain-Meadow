@@ -1,9 +1,9 @@
-﻿using MonoMod.Cil;
-using System;
-using UnityEngine;
+﻿using Mono.Cecil.Cil;
+using MonoMod.Cil;
 using RWCustom;
-using Mono.Cecil.Cil;
+using System;
 using System.Linq;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -85,7 +85,8 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldloca, locMov);
                 c.Emit(OpCodes.Ldloca, locNum2);
 
-                c.EmitDelegate((Scavenger self, ref MovementConnection movementConnection, ref int num2) => {
+                c.EmitDelegate((Scavenger self, ref MovementConnection movementConnection, ref int num2) =>
+                {
                     if (creatureControllers.TryGetValue(self, out var s))
                     {
                         if ((s as ScavengerController).forceMoving)
@@ -142,7 +143,7 @@ namespace RainMeadow
                     );
                 c.GotoLabel(skipfooting); // go to end of if body
                 c.GotoPrev(MoveType.After, // go backwards to end of if statement
-                    i => i.MatchBrfalse(out var label) && label.Target == skipfooting.Target 
+                    i => i.MatchBrfalse(out var label) && label.Target == skipfooting.Target
                     );
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
@@ -169,7 +170,8 @@ namespace RainMeadow
                     i => i.MatchBgt(out run)
                     );
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((Scavenger self) => {
+                c.EmitDelegate((Scavenger self) =>
+                {
                     if (creatureControllers.TryGetValue(self, out var s))
                     {
                         return self.connections.Count > 0 && (s as ScavengerController).forceMoving;
@@ -182,7 +184,7 @@ namespace RainMeadow
                 // basically if I give it a "long" path it walks like a scav walks, on short paths it leans back too much
                 int localVec = 0;
                 c.GotoNext(MoveType.Before,
-                    i => i.MatchCall("SharedPhysics","ExactTerrainRayTracePos"),
+                    i => i.MatchCall("SharedPhysics", "ExactTerrainRayTracePos"),
                     i => i.MatchStloc(out _),
                     i => i.MatchLdarg(0),
                     i => i.MatchLdloc(out _),
@@ -353,7 +355,7 @@ namespace RainMeadow
             }
         }
 
-        public ScavengerController(Scavenger scav, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(scav, oc, playerNumber, customization) 
+        public ScavengerController(Scavenger scav, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(scav, oc, playerNumber, customization)
         {
             scavenger = scav;
 
@@ -400,7 +402,7 @@ namespace RainMeadow
             scavenger.moveModeChangeCounter = -5;
             forceNoFooting = 10;
             scavenger.connections.Clear();
-            if(scavenger.graphicsModule is ScavengerGraphics sg)
+            if (scavenger.graphicsModule is ScavengerGraphics sg)
             {
                 var handsfly = new Vector2(0.5f * scavenger.flip, 1f).normalized;
                 var main = scavenger.mainBodyChunk;
@@ -430,7 +432,7 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug($"{i}:pos:{self.bodyChunks[i].pos}:vel:{self.bodyChunks[i].vel}");
                 }
-                RainMeadow.Debug("connections:\n" + string.Join("\n", self.connections.Select(m=>$"{m.startCoord.Tile} -> {m.destinationCoord.Tile}")));
+                RainMeadow.Debug("connections:\n" + string.Join("\n", self.connections.Select(m => $"{m.startCoord.Tile} -> {m.destinationCoord.Tile}")));
             }
         }
 
@@ -583,7 +585,7 @@ namespace RainMeadow
             {
                 if (scavenger.movMode == Scavenger.MovementMode.Climb) return true;
                 if (scavenger.swingPos != null) return true;
-                if (scavenger.occupyTile != new IntVector2(-1,-1) && creature.room.GetTile(scavenger.occupyTile).AnyBeam && creature.room.aimap.getAItile(scavenger.occupyTile).acc == AItile.Accessibility.Climb) return true;
+                if (scavenger.occupyTile != new IntVector2(-1, -1) && creature.room.GetTile(scavenger.occupyTile).AnyBeam && creature.room.aimap.getAItile(scavenger.occupyTile).acc == AItile.Accessibility.Climb) return true;
                 return false;
             }
         }
@@ -613,7 +615,7 @@ namespace RainMeadow
 
         protected override int GetFlip()
         {
-            int newFlip = (int) Mathf.Sign(scavenger.flip);
+            int newFlip = (int)Mathf.Sign(scavenger.flip);
             if (newFlip != 0) return newFlip;
             return flipDirection;
         }
@@ -671,7 +673,7 @@ namespace RainMeadow
 
         protected override void GripPole(Room.Tile tile0)
         {
-            if(scavenger.swingPos == null && scavenger.movMode != Scavenger.MovementMode.Climb && forceNoFooting < 1)
+            if (scavenger.swingPos == null && scavenger.movMode != Scavenger.MovementMode.Climb && forceNoFooting < 1)
             {
                 scavenger.swingPos = creature.room.MiddleOfTile(tile0.X, tile0.Y);
                 scavenger.swingRadius = (scavenger.mainBodyChunk.pos - scavenger.swingPos.Value).magnitude;
@@ -708,7 +710,7 @@ namespace RainMeadow
 
         protected override void PointImpl(Vector2 dir)
         {
-            if(scavenger.animation is MeadowPointingAnimation pa)
+            if (scavenger.animation is MeadowPointingAnimation pa)
             {
                 pa.point = scavenger.DangerPos + dir * 100f;
                 pa.alive = true;

@@ -44,7 +44,7 @@ namespace RainMeadow
                 {
                     RainMeadow.Error($"duplicate room {room.name} for rs {rs}");
                     var name = "";
-                    for (var i = 0; roomSessions.Keys.Contains((name = room.name + "." + i)); i++);
+                    for (var i = 0; roomSessions.Keys.Contains((name = room.name + "." + i)); i++) ;
                     RainMeadow.Error($"adding as {name}");
                     roomSessions.Add(name, rs);
                 }
@@ -92,12 +92,13 @@ namespace RainMeadow
         {
             [OnlineField]
             public RainCycleData rainCycleData;
-            [OnlineField(nullable:true)]
+            [OnlineField(nullable: true)]
             public Generics.DynamicOrderedUshorts realizedRooms;
             public WorldState() : base() { }
-            public WorldState(WorldSession resource, uint ts) : base(resource, ts) 
+            public WorldState(WorldSession resource, uint ts) : base(resource, ts)
             {
-                if (resource.world != null) {
+                if (resource.world != null)
+                {
                     RainCycle rainCycle = resource.world.rainCycle;
                     if (rainCycle.brokenAntiGrav == null)
                     {
@@ -113,14 +114,16 @@ namespace RainMeadow
 
             public override void ReadTo(OnlineResource resource)
             {
-                if (resource.isActive) {
+                if (resource.isActive)
+                {
                     var ws = (WorldSession)resource;
                     RainCycle cycle = ws.world.rainCycle;
                     cycle.preTimer = rainCycleData.preTimer;
                     cycle.timer = rainCycleData.timer;
                     cycle.cycleLength = rainCycleData.cycleLength;
 
-                    if (realizedRooms != null) {
+                    if (realizedRooms != null)
+                    {
                         foreach (var index in realizedRooms.list)
                         {
                             var abstractRoom = ws.world.GetAbstractRoom(index);
@@ -139,7 +142,7 @@ namespace RainMeadow
                         }
                     }
                 }
-                
+
                 base.ReadTo(resource);
             }
         }

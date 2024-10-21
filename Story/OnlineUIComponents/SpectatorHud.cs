@@ -1,27 +1,20 @@
 ﻿using HUD;
-using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
-using HarmonyLib;
 
 namespace RainMeadow
 {
     public class SpectatorHud : HudPart
     {
-
         private RoomCamera camera;
-        private readonly OnlineGameMode onlineGameMode;
-        private Menu.Menu spectatorMode;
         private RainWorldGame game;
-        private List<AbstractCreature> acList;
-        private int spectateInitCoolDown;
-
+        private readonly OnlineGameMode onlineGameMode;
+        private SpectatorOverlay? spectatorOverlay;
+        private AbstractCreature? spectatee;
 
         public SpectatorHud(HUD.HUD hud, RoomCamera camera, OnlineGameMode onlineGameMode) : base(hud)
         {
             this.camera = camera;
             this.onlineGameMode = onlineGameMode;
-            acList = new List<AbstractCreature>();
             this.game = camera.game;
         }
 
@@ -29,53 +22,53 @@ namespace RainMeadow
         {
             base.Draw(timeStacker);
 
-            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value) && spectatorMode == null)
+            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value))
             {
-
-                RainMeadow.Debug("Creating spectator overlay");
-                spectatorMode = new SpectatorOverlay(game.manager, game);
-                spectateInitCoolDown = 10;
+                if (spectatorOverlay == null)
+                {
+                    RainMeadow.Debug("Creating spectator overlay");
+                    spectatorOverlay = new SpectatorOverlay(game.manager, game);
+                }
+                else
+                {
+                    RainMeadow.Debug("Spectate destroy!");
+                    spectatorOverlay.ShutDownProcess();
+                    spectatorOverlay = null;
+                }
             }
 
-            if (spectatorMode != null)
+            if (spectatorOverlay != null)
             {
-                spectatorMode.GrafUpdate(timeStacker);
-            }
-
-            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value) && spectatorMode != null && spectateInitCoolDown == 0)
-            {
-                RainMeadow.Debug("Spectate destroy!");
-                spectatorMode.ShutDownProcess();
-                spectatorMode = null;
+                spectatorOverlay.GrafUpdate(timeStacker);
             }
         }
-
 
         public override void Update()
         {
             base.Update();
-            if (OnlineManager.lobby.gameMode is StoryGameMode)
+            if (spectatorOverlay != null)
             {
-                if ((game.pauseMenu != null || camera.hud.map.visible || game.manager.upcomingProcess != null) && spectatorMode != null)
+                if (game.pauseMenu != null || camera.hud.map.visible || game.manager.upcomingProcess != null)
                 {
                     RainMeadow.Debug("Shutting down spectator overlay due to another process request");
-
-                    spectatorMode.ShutDownProcess();
-                    spectatorMode = null;
+                    spectatorOverlay.ShutDownProcess();
+                    spectatorOverlay = null;
+                    return;
                 }
-
-
-                if (spectatorMode != null)
+                spectatorOverlay.Update();
+                spectatee = spectatorOverlay.spectatee;
+            }
+            if (spectatee is AbstractCreature ac)
+            {
+                camera.followAbstractCreature = spectatee;
+                if (spectatee.Room.realizedRoom == null)
                 {
-                    spectatorMode.Update();
-
-                    if (spectateInitCoolDown > 0)
-                    {
-                        spectateInitCoolDown--;
-                    }
+                    this.game.world.ActivateRoom(spectatee.Room);
                 }
-
-
+                if (camera.room.abstractRoom != spectatee.Room)
+                {
+                    camera.MoveCamera(spectatee.Room.realizedRoom, -1);
+                }
             }
         }
     }

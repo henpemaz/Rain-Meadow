@@ -1,7 +1,5 @@
 ﻿using Menu;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -24,7 +22,7 @@ namespace RainMeadow
             this.exitButton = null;
 
             this.mgm = mgm;
-            this.avatarCreature = mgm.avatar.realizedCreature;
+            this.avatarCreature = mgm.avatars[0].realizedCreature;
 
             this.pauseWarningActive = false;
             game.cameras[0].hud.textPrompt.pausedWarningText = false;
@@ -48,7 +46,7 @@ namespace RainMeadow
             SimplerButton AddButton(string localizedText, string localizedDescription, Action<SimplerButton> onClick, bool active = true)
             {
                 Vector2 pos = new Vector2(
-                    this.ContinueAndExitButtonsXPos - 250.2f - this.moveLeft - this.manager.rainWorld.options.SafeScreenOffset.x, 
+                    this.ContinueAndExitButtonsXPos - 250.2f - this.moveLeft - this.manager.rainWorld.options.SafeScreenOffset.x,
                     Mathf.Max(manager.rainWorld.options.SafeScreenOffset.y, 15f) + 540.2f
                 );
                 pos.y -= (buttonCount) * 40f;
@@ -121,7 +119,7 @@ namespace RainMeadow
         private void Unstuck(SimplerButton button)
         {
             RainMeadow.DebugMe();
-            var creature = mgm.avatar.realizedCreature;
+            var creature = mgm.avatars[0].realizedCreature;
             if (creature.room != null)
             {
                 RainMeadow.Debug("found in room");

@@ -1,6 +1,5 @@
 ﻿using HUD;
 using RWCustom;
-using System;
 using System.Linq;
 using UnityEngine;
 
@@ -34,7 +33,7 @@ namespace RainMeadow
 
             rootPos = new Vector2(22f + Mathf.Max(55.01f, hud.rainWorld.options.SafeScreenOffset.x + 22.51f), Mathf.Max(45.01f, hud.rainWorld.options.SafeScreenOffset.y + 22.51f));
             this.progressionContainer = new FContainer();
-            
+
             emotesIcon = new TokenSparkIcon(progressionContainer, MeadowProgression.TokenRedColor, DrawPos(1f, 0), 1.5f, 1f);
             emotesLabel = new FLabel(Custom.GetFont(), EmoteCountText);
             emotesLabel.SetPosition(DrawPos(1f, 0) + new Vector2(0, 20f));
@@ -104,7 +103,7 @@ namespace RainMeadow
             progressionVisible = Custom.LerpAndTick(progressionVisible, progressionNeeded > 0 ? 1f : 0f, progressionNeeded > 0 ? 0.025f : 0.01f, 0.01f);
             progressionContainer.alpha = progressionVisible;
 
-            if(progressionVisible > 0f)
+            if (progressionVisible > 0f)
             {
                 progressionContainer.isVisible = true;
                 emotesIcon.Update();

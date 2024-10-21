@@ -11,18 +11,23 @@ namespace RainMeadow
         public bool didStartCycle = false;
         public bool friendlyFire = false; // false until we manage it via UI
         public string? defaultDenPos;
+        public string? myLastDenPos = null;
+        public bool hasSheltered = false;
         public SlugcatStats.Name currentCampaign;
         public Dictionary<string, int> ghostsTalkedTo;
         public Dictionary<string, bool> storyBoolRemixSettings;
         public Dictionary<string, float> storyFloatRemixSettings;
         public Dictionary<string, int> storyIntRemixSettings;
         public Dictionary<ushort, ushort[]> consumedItems;
-        public StoryClientSettings storyClientSettings => clientSettings as StoryClientSettings;
+        public StoryClientSettingsData storyClientData;
 
         public bool saveToDisk = false;
 
+        public SlugcatCustomization avatarSettings;
+
         public StoryGameMode(Lobby lobby) : base(lobby)
         {
+            avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
         }
         public override ProcessManager.ProcessID MenuProcessId()
         {
@@ -48,7 +53,7 @@ namespace RainMeadow
             return true;
         }
 
-        public override SlugcatStats.Name GetStorySessionPlayer(RainWorldGame self) 
+        public override SlugcatStats.Name GetStorySessionPlayer(RainWorldGame self)
         {
             return currentCampaign;
         }
@@ -71,15 +76,19 @@ namespace RainMeadow
             return true;
         }
 
-        public override void LobbyReadyCheck()
+        public override void AddClientData()
         {
-            if (lobby.isOwner)
-            {
-                RainMeadow.Debug("Host LobbyReadyCheck - started game");
-            }
+            storyClientData = clientSettings.AddData(new StoryClientSettingsData());
         }
 
-        internal override void PlayerLeftLobby(OnlinePlayer player)
+        public override void LobbyTick(uint tick)
+        {
+            base.LobbyTick(tick);
+            // could switch this based on rules? any vs all
+            storyClientData.isDead = avatars.All(a => a.abstractCreature.state is PlayerState state && (state.dead || state.permaDead));
+        }
+
+        public override void PlayerLeftLobby(OnlinePlayer player)
         {
             base.PlayerLeftLobby(player);
             if (player == lobby.owner)
@@ -88,16 +97,16 @@ namespace RainMeadow
             }
         }
 
-        internal override void ResourceAvailable(OnlineResource onlineResource)
+        public override void ResourceAvailable(OnlineResource onlineResource)
         {
             base.ResourceAvailable(onlineResource);
             if (onlineResource is Lobby lobby)
             {
-                lobby.AddData<StoryLobbyData>(true);
+                lobby.AddData(new StoryLobbyData());
             }
         }
 
-        internal override void ResourceActive(OnlineResource onlineResource)
+        public override void ResourceActive(OnlineResource onlineResource)
         {
             base.ResourceActive(onlineResource);
             if (onlineResource is WorldSession ws)
@@ -117,6 +126,20 @@ namespace RainMeadow
                         .SelectMany(kvp => kvp.Value.Select(v => new RegionState.ConsumedItem(kvp.Key, v, 2))).ToList(); // must be >1
                     regionState.saveState.deathPersistentSaveData.consumedFlowers = regionState.consumedItems;
                 }
+            }
+        }
+
+        public override void ConfigureAvatar(OnlineCreature onlineCreature)
+        {
+            onlineCreature.AddData(avatarSettings);
+        }
+
+        public override void Customize(Creature creature, OnlineCreature oc)
+        {
+            if (oc.TryGetData<SlugcatCustomization>(out var data))
+            {
+                RainMeadow.Debug(oc);
+                RainMeadow.creatureCustomizations.GetValue(creature, (c) => data);
             }
         }
     }

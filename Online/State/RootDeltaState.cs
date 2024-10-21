@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     /// <summary>
     /// Root-element state. Meant to be used with IPrimaryDelta

@@ -16,9 +16,7 @@ namespace RainMeadow
         public int goldTokensGoal;
         public int ghostsGoal;
 
-        public MeadowLobbyData(OnlineResource resource) : base(resource) { }
-
-        internal override ResourceDataState MakeState()
+        public override ResourceDataState MakeState(OnlineResource resource)
         {
             return new State(this);
         }
@@ -42,9 +40,9 @@ namespace RainMeadow
                 regionGhostsGoal = new(meadowLobbyData.regionGhostsGoal.ToList());
             }
 
-            internal override Type GetDataType() => typeof(MeadowLobbyData);
+            public override Type GetDataType() => typeof(MeadowLobbyData);
 
-            internal override void ReadTo(OnlineResource.ResourceData data)
+            public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
             {
                 MeadowLobbyData? meadowLobbyData = (data as MeadowLobbyData);
                 meadowLobbyData.regionRedTokensGoal = regionRedTokensGoal.list.ToArray();

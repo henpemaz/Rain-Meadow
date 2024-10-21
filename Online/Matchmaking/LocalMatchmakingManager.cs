@@ -1,7 +1,7 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
-using System.Collections.Generic;
 using static RainMeadow.NetIO;
 
 namespace RainMeadow
@@ -32,7 +32,8 @@ namespace RainMeadow
                 this.isHost = isHost;
             }
 
-            public void reset() {
+            public void reset()
+            {
                 this.id = default;
                 this.endPoint = default;
                 this.isHost = default;
@@ -80,10 +81,11 @@ namespace RainMeadow
             //OnLobbyListReceived?.Invoke(true, new LobbyInfo[0] { });
             // Create the proper list
             var fakeEndpoint = new IPEndPoint(IPAddress.Loopback, UdpPeer.STARTING_PORT);
-            OnLobbyListReceived?.Invoke(true, new LobbyInfo[2] { new LobbyInfo(fakeEndpoint, "local", localGameMode, 1,false, MAX_LOBBY), new LobbyInfo(fakeEndpoint, "local:HasPassword", localGameMode, 1, true, MAX_LOBBY) });
+            OnLobbyListReceived?.Invoke(true, new LobbyInfo[2] { new LobbyInfo(fakeEndpoint, "local", localGameMode, 1, false, MAX_LOBBY), new LobbyInfo(fakeEndpoint, "local:HasPassword", localGameMode, 1, true, MAX_LOBBY) });
         }
 
-        public void sessionSetup(bool isHost){
+        public void sessionSetup(bool isHost)
+        {
             RainMeadow.DebugMe();
             UdpPeer.Startup();
             me = UdpPeer.port;
@@ -95,7 +97,8 @@ namespace RainMeadow
             thisPlayer.endPoint = UdpPeer.ownEndPoint;
         }
 
-        public void sessionShutdown() {
+        public void sessionShutdown()
+        {
             UdpPeer.Shutdown();
 
             var thisPlayer = (LocalPlayerId)OnlineManager.mePlayer.id;
@@ -124,10 +127,11 @@ namespace RainMeadow
                 return;
             }
             RainMeadow.Debug("Trying to join local game...");
-            if (lobby.ipEndpoint == null) {
+            if (lobby.ipEndpoint == null)
+            {
                 RainMeadow.Debug("Failed to join local game...");
                 return;
-            } 
+            }
             lobbyPassword = password;
             var memory = new MemoryStream(16);
             var writer = new BinaryWriter(memory);
