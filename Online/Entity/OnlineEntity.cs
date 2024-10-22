@@ -1,10 +1,8 @@
 ﻿using HarmonyLib;
-using Mono.Cecil;
 using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static RainMeadow.OnlineEntity.EntityData;
 
 namespace RainMeadow
 {
@@ -142,7 +140,7 @@ namespace RainMeadow
         public void JoinOrLeavePending()
         {
             if (!isMine) { throw new InvalidProgrammerException("not owner"); }
-            
+
             // Sanitize
             for (int i = enteredResources.Count - 1; i >= 0; i--)
             {
@@ -168,7 +166,7 @@ namespace RainMeadow
             }
             if (pendingRequest is RPCEvent rpc && rpc.target is OnlineResource res)
             {
-                if(!enteredResources.Contains(res) && !joinedResources.Contains(res))
+                if (!enteredResources.Contains(res) && !joinedResources.Contains(res))
                 {
                     RainMeadow.Debug($"dismissing pending request {pendingRequest} for resource {res}");
                     pendingRequest = null;
@@ -269,14 +267,14 @@ namespace RainMeadow
 
         public virtual void NewOwner(OnlinePlayer newOwner)
         {
-            if(newOwner == null) { throw new InvalidProgrammerException("null owner for entity"); }
+            if (newOwner == null) { throw new InvalidProgrammerException("null owner for entity"); }
             RainMeadow.Debug($"{this} assigned to {newOwner}");
             var wasOwner = owner;
             if (wasOwner == newOwner) return;
             owner = newOwner;
             primaryResource.registeredEntities[id] = MakeDefinition(primaryResource);
 
-            foreach(var key in incomingState.Keys.ToList())
+            foreach (var key in incomingState.Keys.ToList())
             {
                 incomingState[key] = new Queue<EntityState>();
             }
@@ -316,10 +314,10 @@ namespace RainMeadow
                 RainMeadow.Debug($"dismissing pending request {pendingRequest}");
                 pendingRequest = null;
             }
-            
+
             var index = enteredResources.IndexOf(onlineResource);
             if (index > -1) enteredResources.RemoveRange(index, enteredResources.Count - index);
-            
+
             if (!joinedResources.Contains(onlineResource)) return;
             // if any subresources to leave do that first for consistency 
             joinedResources.Reverse<OnlineResource>().ToArray().Do(r => { if (r.IsSubresourceOf(onlineResource)) Deactivated(r); });
@@ -422,99 +420,14 @@ namespace RainMeadow
             return lastState;
         }
 
-        private List<EntityData> entityData = new();
-
-        internal T AddData<T>(bool ignoreDuplicate = false) where T : EntityData, new()
-        {
-            for (int i = 0; i < entityData.Count; i++)
-            {
-                if (entityData[i].GetType() == typeof(T))
-                {
-                    if (ignoreDuplicate) return (T)entityData[i];
-                    throw new ArgumentException("type already in data");
-                }
-            }
-            var v = new T();
-            entityData.Add(v);
-            return v;
-        }
-
-        internal T AddData<T>(T toAdd, bool ignoreDuplicate = false) where T : EntityData
-        {
-            for (int i = 0; i < entityData.Count; i++)
-            {
-                if (entityData[i].GetType() == typeof(T))
-                {
-                    if (ignoreDuplicate) return (T)entityData[i];
-                    throw new ArgumentException("type already in data");
-                }
-            }
-            entityData.Add(toAdd);
-            return toAdd;
-        }
-
-        internal bool TryGetData<T>(out T d, bool addIfMissing = false) where T : EntityData
-        {
-            for (int i = 0; i < entityData.Count; i++)
-            {
-                if (entityData[i].GetType() == typeof(T))
-                {
-                    d = (T)entityData[i];
-                    return true;
-                }
-            }
-            if (addIfMissing)
-            {
-                d = Activator.CreateInstance<T>();
-                entityData.Add(d);
-                return true;
-            }
-            d = null;
-            return false;
-        }
-
-        internal T GetData<T>(bool addIfMissing = false) where T : EntityData
-        {
-            if (!TryGetData<T>(out var d, addIfMissing)) throw new KeyNotFoundException();
-            return d;
-        }
-
-        internal void RemoveData<T>() where T : EntityData
-        {
-            for (int i = 0; i < entityData.Count; i++)
-            {
-                if (entityData[i].GetType() == typeof(T))
-                {
-                    entityData.RemoveAt(i);
-                }
-            }
-        }
-
-        public abstract class EntityData
-        {
-            protected EntityData() { }
-
-            internal abstract EntityDataState MakeState(OnlineResource inResource);
-
-            [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
-            public abstract class EntityDataState : OnlineState, IIdentifiable<byte>
-            {
-                protected EntityDataState() { }
-
-                public byte ID => (byte)handler.stateType.index;
-
-                internal abstract void ReadTo(OnlineEntity onlineEntity);
-            }
-        }
-
         public abstract class EntityState : RootDeltaState, IIdentifiable<OnlineEntity.EntityId>
         {
             [OnlineField(always: true)]
             public OnlineEntity.EntityId entityId;
             [OnlineField(group: "meta")]
             public ushort version;
-            [OnlineField(nullable: true, polymorphic: true)]
-            public DeltaDataStates<EntityDataState> entityDataStates;
+            [OnlineField(nullable: true)]
+            public DeltaDataStates<EntityData.EntityDataState> entityDataStates;
             public OnlineEntity.EntityId ID => entityId;
 
             protected EntityState() : base() { }
@@ -522,13 +435,13 @@ namespace RainMeadow
             {
                 this.entityId = onlineEntity.id;
                 this.version = onlineEntity.version;
-                this.entityDataStates = new(onlineEntity.entityData.Select(d => d.MakeState(inResource)).Where(s => s != null).ToList());
+                this.entityDataStates = new(onlineEntity.entityData.Values.Select(d => d.MakeState(onlineEntity, inResource)).Where(s => s != null).ToList());
             }
 
             public virtual void ReadTo(OnlineEntity onlineEntity)
             {
                 onlineEntity.version = version;
-                entityDataStates.list.ForEach(d => d.ReadTo(onlineEntity));
+                entityDataStates.list.ForEach(ds => ds.ReadTo(onlineEntity.TryGetData(ds.GetDataType(), out var d) ? d : onlineEntity.AddData(ds.MakeData(onlineEntity)), onlineEntity));
             }
         }
 

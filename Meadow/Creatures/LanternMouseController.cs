@@ -45,7 +45,8 @@ namespace RainMeadow
                 c.Index = spot;
                 c.Emit(OpCodes.Ldarg, 0);
                 c.Emit(OpCodes.Ldloc, whichLoc);
-                c.EmitDelegate( (float gravity, LanternMouse self, int index) => {
+                c.EmitDelegate((float gravity, LanternMouse self, int index) =>
+                {
                     if (creatureControllers.TryGetValue(self, out var s))
                     {
                         return gravity - self.bodyChunks[index].submersion * self.buoyancy;
@@ -110,7 +111,7 @@ namespace RainMeadow
 
         private readonly LanternMouse mouse;
 
-        public LanternMouseController(LanternMouse mouse, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(mouse, oc, playerNumber, customization)
+        public LanternMouseController(LanternMouse mouse, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(mouse, oc, playerNumber, customization)
         {
             this.mouse = mouse;
             jumpFactor = 1.4f; // y u so smol
@@ -179,15 +180,16 @@ namespace RainMeadow
             {
                 mouse.footingCounter = 0;
             }
-            else if(mouse.footingCounter > 0 && mouse.footingCounter < 10)
+            else if (mouse.footingCounter > 0 && mouse.footingCounter < 10)
             {
                 mouse.footingCounter = 10; // faster initial regain
-            } else
+            }
+            else
             {
                 mouse.footingCounter++; // faster
             }
 
-            if(superLaunchJump > 10 && (mouse.room.aimap.getAItile(mouse.bodyChunks[1].pos).acc == AItile.Accessibility.Floor && !mouse.IsTileSolid(0, 0, 1) && !mouse.IsTileSolid(1, 0, 1)))
+            if (superLaunchJump > 10 && (mouse.room.aimap.getAItile(mouse.bodyChunks[1].pos).acc == AItile.Accessibility.Floor && !mouse.IsTileSolid(0, 0, 1) && !mouse.IsTileSolid(1, 0, 1)))
             {
                 // undo sitting
                 mouse.profileFac = Mathf.Sign(mouse.profileFac);

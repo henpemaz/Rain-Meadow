@@ -1,6 +1,4 @@
-﻿using RWCustom;
-using System;
-using System.Linq;
+﻿using System.Linq;
 using UnityEngine;
 namespace RainMeadow
 {
@@ -18,6 +16,8 @@ namespace RainMeadow
 
             On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor;
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
+
+            On.RoomRealizer.Update += RoomRealizer_Update;
         }
 
         private void ScavengerBomb_Explode(On.ScavengerBomb.orig_Explode orig, ScavengerBomb self, BodyChunk hitChunk)
@@ -230,16 +230,20 @@ namespace RainMeadow
             }
 
             var storyGameMode = OnlineManager.lobby.gameMode as StoryGameMode;
-            var storyClientSettings = storyGameMode?.storyClientSettings;
+            var storyClientSettings = storyGameMode?.storyClientData;
             if (storyGameMode != null)
             {
                 storyClientSettings.readyForWin = true;
 
-                foreach (var scs in OnlineManager.lobby.clientSettings.Values.Cast<StoryClientSettings>())
-                    RainMeadow.Debug($"player {scs.owner} inGame:{scs.inGame} isDead:{scs.isDead} readyForWin:{scs.readyForWin}");
+                var anyNotReady = false;
+                foreach (var cs in OnlineManager.lobby.clientSettings.Values)
+                {
+                    var scs = cs.GetData<StoryClientSettingsData>();
+                    RainMeadow.Debug($"player {cs.owner} inGame:{cs.inGame} isDead:{scs.isDead} readyForWin:{scs.readyForWin}");
+                    anyNotReady |= cs.inGame && !scs.isDead && !scs.readyForWin;
+                }
 
-                if (OnlineManager.lobby.clientSettings.Values.Cast<StoryClientSettings>()
-                    .Any(scs => scs.inGame && !scs.isDead && !scs.readyForWin))
+                if (anyNotReady)
                 {
                     return;
                 }
@@ -258,8 +262,8 @@ namespace RainMeadow
             {
                 if (storyGameMode != null)
                 {
-                    storyClientSettings.myLastDenPos = self.room.abstractRoom.name;
-                    storyClientSettings.hasSheltered = true;
+                    storyGameMode.myLastDenPos = self.room.abstractRoom.name;
+                    storyGameMode.hasSheltered = true;
                 }
             }
         }
@@ -425,6 +429,20 @@ namespace RainMeadow
                 }
             }
             orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
+        }
+
+        private void RoomRealizer_Update(On.RoomRealizer.orig_Update orig, RoomRealizer self)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                var origFollow = self.world.game.cameras[0].followAbstractCreature;
+                self.world.game.cameras[0].followAbstractCreature = self.world.game.Players[0];
+                orig(self);
+                self.world.game.cameras[0].followAbstractCreature = origFollow;
+                return;
+            }
+
+            orig(self);
         }
     }
 }

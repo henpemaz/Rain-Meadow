@@ -1,7 +1,6 @@
-﻿using System;
-using Mono.Cecil.Cil;
+﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using System.Linq;
+using System;
 
 namespace RainMeadow
 {
@@ -48,7 +47,7 @@ namespace RainMeadow
             c.Emit(OpCodes.Ldloc, locuad);
             c.EmitDelegate((Room room, UpdatableAndDeletable uad) =>
             {
-                if(OnlineManager.lobby != null)
+                if (OnlineManager.lobby != null)
                 {
                     try
                     {

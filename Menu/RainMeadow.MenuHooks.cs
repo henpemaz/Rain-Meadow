@@ -1,13 +1,11 @@
+using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using Steamworks;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using UnityEngine;
-using Menu;
-using Steamworks;
-using Newtonsoft.Json.Linq;
-using System.Linq.Expressions;
 
 namespace RainMeadow
 {
@@ -333,10 +331,10 @@ namespace RainMeadow
                         switch (result)
                         {
                             case 0:
-                                sceneID = Menu.MenuScene.SceneID.Intro_4_Walking; 
+                                sceneID = Menu.MenuScene.SceneID.Intro_4_Walking;
                                 break;
                             case 1:
-                                sceneID = Menu.MenuScene.SceneID.Intro_11_Drowning; 
+                                sceneID = Menu.MenuScene.SceneID.Intro_11_Drowning;
                                 break;
                             case 2:
                                 sceneID = Menu.MenuScene.SceneID.Intro_8_Climbing;
@@ -391,10 +389,6 @@ namespace RainMeadow
             if (ID == Ext_ProcessID.StoryMenu)
             {
                 self.currentMainLoop = new StoryMenu(self);
-            }
-            if (ID == Ext_ProcessID.LobbyMenu)
-            {
-                self.currentMainLoop = new LobbyMenu(self);
             }
 
 #if !LOCAL_P2P

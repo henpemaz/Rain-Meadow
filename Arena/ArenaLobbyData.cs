@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace RainMeadow
 {
     internal class ArenaLobbyData : OnlineResource.ResourceData
     {
-        public ArenaLobbyData(OnlineResource resource) : base(resource) { }
+        public ArenaLobbyData() { }
 
-        internal override ResourceDataState MakeState()
+        public override ResourceDataState MakeState(OnlineResource resource)
         {
             return new State(this, resource);
         }
@@ -25,7 +24,12 @@ namespace RainMeadow
             public List<ushort> arenaSittingOnlineOrder;
             [OnlineField]
             public bool returnToLobby;
-
+            [OnlineField]
+            public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice;
+            [OnlineField]
+            public Dictionary<string, bool> onlineArenaSettingsInterfaceBool;
+            [OnlineField]
+            public Dictionary<string, int> playersChoosingSlugs;
 
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
@@ -36,22 +40,27 @@ namespace RainMeadow
                 arenaSittingOnlineOrder = arena.arenaSittingOnlineOrder;
                 allPlayersReadyLockLobby = arena.allPlayersReadyLockLobby;
                 returnToLobby = arena.returnToLobby;
-
+                onlineArenaSettingsInterfaceMultiChoice = arena.onlineArenaSettingsInterfaceMultiChoice;
+                onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
+                playersChoosingSlugs = arena.playersInLobbyChoosingSlugs;
             }
 
-            internal override Type GetDataType() => typeof(ArenaLobbyData);
-
-            internal override void ReadTo(OnlineResource.ResourceData data)
+            public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
             {
-                var lobby = (data.resource as Lobby);
+                var lobby = (resource as Lobby);
                 (lobby.gameMode as ArenaCompetitiveGameMode).isInGame = isInGame;
                 (lobby.gameMode as ArenaCompetitiveGameMode).playList = playList;
                 (lobby.gameMode as ArenaCompetitiveGameMode).arenaSittingOnlineOrder = arenaSittingOnlineOrder;
                 (lobby.gameMode as ArenaCompetitiveGameMode).allPlayersReadyLockLobby = allPlayersReadyLockLobby;
                 (lobby.gameMode as ArenaCompetitiveGameMode).returnToLobby = returnToLobby;
+                (lobby.gameMode as ArenaCompetitiveGameMode).onlineArenaSettingsInterfaceMultiChoice = onlineArenaSettingsInterfaceMultiChoice;
+                (lobby.gameMode as ArenaCompetitiveGameMode).onlineArenaSettingsInterfaceeBool = onlineArenaSettingsInterfaceBool;
+                (lobby.gameMode as ArenaCompetitiveGameMode).playersInLobbyChoosingSlugs = playersChoosingSlugs;
 
 
             }
+
+            public override Type GetDataType() => typeof(ArenaLobbyData);
         }
     }
 }

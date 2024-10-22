@@ -14,7 +14,7 @@ namespace RainMeadow
         {
             var was = hasSignalled;
             base.Update();
-            if(!was && hasSignalled)
+            if (!was && hasSignalled)
             {
                 OnClick?.Invoke(this);
             }

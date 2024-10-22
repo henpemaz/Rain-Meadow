@@ -1,5 +1,4 @@
 ﻿using RWCustom;
-using System;
 using UnityEngine;
 using static RainMeadow.MeadowProgression;
 
@@ -36,7 +35,7 @@ namespace RainMeadow
             set { container.alpha = value; container.isVisible = (value > 0f); }
         }
 
-        public EmoteGridDisplay(FContainer parent, MeadowAvatarCustomization customization, Emote[,] emotes, Vector2 pos)
+        public EmoteGridDisplay(FContainer parent, MeadowAvatarData customization, Emote[,] emotes, Vector2 pos)
         {
             this.container = new();
             nr = emotes.GetLength(0);

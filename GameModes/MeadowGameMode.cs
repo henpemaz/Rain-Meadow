@@ -1,4 +1,5 @@
-﻿using RWCustom;
+﻿using Menu;
+using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,11 +10,18 @@ namespace RainMeadow
 {
     public class MeadowGameMode : OnlineGameMode
     {
-        public bool spawnPlants = true;
+        public bool spawnPlants = false;
+        public MeadowAvatarData avatarData;
 
         public MeadowGameMode(Lobby lobby) : base(lobby)
         {
+            this.avatarData = new MeadowAvatarData();
+        }
 
+        public override void AddClientData()
+        {
+            // none
+            RainMeadow.DebugMe();
         }
 
         public override ProcessManager.ProcessID MenuProcessId()
@@ -21,15 +29,20 @@ namespace RainMeadow
             return RainMeadow.Ext_ProcessID.MeadowMenu;
         }
 
-        internal override void NewEntity(OnlineEntity oe, OnlineResource inResource)
+        public override void NewEntity(OnlineEntity oe, OnlineResource inResource)
         {
+            RainMeadow.Debug($"{oe} + {inResource}");
             base.NewEntity(oe, inResource);
             if (oe is OnlineCreature oc)
             {
                 RainMeadow.Debug("Registering new creature: " + oc);
-                oe.AddData(new MeadowCreatureData(oc));
-                if (oc.realizedCreature != null && EmoteDisplayer.map.TryGetValue(oc.realizedCreature, out var d))
+                oe.AddData(new MeadowCreatureData());
+                if (oc.realizedCreature != null && EmoteDisplayer.map.TryGetValue(oc.realizedCreature, out var d)) // migrate over on re-register
                 {
+                    RainMeadow.Debug("re-register, migrating emotedisplayer");
+                    throw new InvalidProgrammerException("entity re-register"); // lemme test if this still needs supporting because it has more implications
+
+
                     d.ownerEntity = oc;
                     d.creatureData = oe.GetData<MeadowCreatureData>();
                 }
@@ -38,9 +51,9 @@ namespace RainMeadow
 
         public override AbstractCreature SpawnAvatar(RainWorldGame game, WorldCoordinate location)
         {
+            RainMeadow.DebugMe();
             if (location.room == MeadowProgression.progressionData.currentCharacterProgress.saveLocation.room) location = MeadowProgression.progressionData.currentCharacterProgress.saveLocation;
-            var settings = (clientSettings as MeadowAvatarSettings);
-            var skinData = MeadowProgression.skinData[settings.skin];
+            var skinData = MeadowProgression.skinData[avatarData.skin];
             var abstractCreature = new AbstractCreature(game.world, StaticWorld.GetCreatureTemplate(skinData.creatureType), null, location, new EntityID(-1, skinData.randomSeed)); // altseed not sync'd because not serialized by game smh
             if (skinData.creatureType == CreatureTemplate.Type.Slugcat)
             {
@@ -54,40 +67,36 @@ namespace RainMeadow
             }
             game.world.GetAbstractRoom(abstractCreature.pos.room).AddEntity(abstractCreature);
 
+            RainMeadow.Debug("spawned avatar is " + abstractCreature);
             return abstractCreature;
         }
 
-        internal override void ResourceAvailable(OnlineResource res)
+        public override void ConfigureAvatar(OnlineCreature onlineCreature)
+        {
+            RainMeadow.Debug(onlineCreature);
+            onlineCreature.AddData(avatarData);
+        }
+
+        public override void ResourceAvailable(OnlineResource res)
         {
             base.ResourceAvailable(res);
+
             if (res is Lobby lobby)
             {
                 MeadowProgression.ReloadProgression();
-                lobby.AddData<MeadowLobbyData>(true);
+                lobby.AddData(new MeadowLobbyData());
             }
             else if (res is WorldSession ws)
             {
-                ws.AddData<MeadowWorldData>(true);
+                ws.AddData(new MeadowWorldData());
             }
             else if (res is RoomSession rs)
             {
-                rs.AddData<MeadowRoomData>(true);
+                rs.AddData(new MeadowRoomData());
             }
         }
 
-        internal override void AddAvatarSettings()
-        {
-            RainMeadow.Debug("Adding avatar settings!");
-            MeadowAvatarSettings meadowAvatarSettings = new MeadowAvatarSettings(new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0), OnlineManager.mePlayer);
-            clientSettings = meadowAvatarSettings;
-            if (!RWCustom.Custom.rainWorld.setup.startScreen) // skipping all menus
-            {
-                meadowAvatarSettings.skin = MeadowProgression.currentTestSkin;
-            }
-            clientSettings.EnterResource(lobby);
-        }
-
-        internal override void ResourceActive(OnlineResource res)
+        public override void ResourceActive(OnlineResource res)
         {
             base.ResourceActive(res);
             if (res is Lobby lobby)
@@ -107,7 +116,7 @@ namespace RainMeadow
                     lobbyData.regionGoldTokensGoal = new ushort[totalRegions];
                     lobbyData.regionGhostsGoal = new ushort[totalRegions];
                 } // otherwise the above is initialized on state receive
-                    
+
                 for (int i = 0; i < totalRegions; i++)
                 {
                     var region = (lobby.subresources[i] as WorldSession).region;
@@ -178,7 +187,7 @@ namespace RainMeadow
                             var n = (ushort)stacker;
                             for (int k = 0; k < n; k++)
                             {
-                                var e = isghost ? 
+                                var e = isghost ?
                                     new AbstractMeadowGhost(r.world, type, new WorldCoordinate(r.index, -1, -1, 0), r.world.game.GetNewID())
                                     : new AbstractMeadowCollectible(r.world, type, new WorldCoordinate(r.index, -1, -1, 0), r.world.game.GetNewID());
                                 r.AddEntity(e);
@@ -342,15 +351,12 @@ namespace RainMeadow
             }
         }
 
-        internal override void Customize(Creature creature, OnlineCreature oc)
+        public override void Customize(Creature creature, OnlineCreature oc)
         {
-            if (lobby.playerAvatars[oc.owner] == oc.id)
+            if (oc.TryGetData<MeadowAvatarData>(out var data))
             {
-                RainMeadow.Debug($"Customizing avatar {creature} for {oc.owner}");
-                var settings = lobby.activeEntities.First(em => em is ClientSettings avs && avs.avatarId == oc.id) as MeadowAvatarSettings;
-
-                var mcc = (MeadowAvatarCustomization)RainMeadow.creatureCustomizations.GetValue(creature, (c) => settings.MakeCustomization());
-
+                RainMeadow.Debug(oc);
+                var mcc = RainMeadow.creatureCustomizations.GetValue(creature, (c) => data) as MeadowAvatarData;
                 // playable creatures
                 CreatureController.BindAvatar(creature, oc, mcc);
 
@@ -371,8 +377,6 @@ namespace RainMeadow
             }
             else
             {
-                // note to self, this *might* happen with sufficiently bad timing, avatar data comes from lobby, entity join is in world
-                // that is potentially two separate people you're talking to, lobby might not have sent it to you yet
                 RainMeadow.Error("creature not avatar ?? " + oc);
             }
         }
@@ -399,7 +403,7 @@ namespace RainMeadow
 
         public override bool ShouldRegisterAPO(OnlineResource resource, AbstractPhysicalObject apo)
         {
-            return relevantTypes.Contains(apo.type) && (apo.type != AbstractPhysicalObject.AbstractObjectType.Creature || RainMeadow.sSpawningAvatar || apo == (OnlineManager.lobby.gameMode.avatar?.apo));
+            return relevantTypes.Contains(apo.type) && (apo.type != AbstractPhysicalObject.AbstractObjectType.Creature || RainMeadow.sSpawningAvatar);
         }
 
         public override bool AllowedInMode(PlacedObject item)
@@ -411,5 +415,18 @@ namespace RainMeadow
         {
             PlacedObject.Type.GhostSpot,
         };
+
+        public override void GameShutDown(RainWorldGame game)
+        {
+            MeadowProgression.progressionData.currentCharacterProgress.saveLocation = avatars[0].apo.pos;
+            MeadowProgression.SaveProgression();
+            game.rainWorld.progression.SaveToDisk(false, true, true); // save maps, shelters are miscprog
+            base.GameShutDown(game);
+        }
+
+        public override PauseMenu CustomPauseMenu(ProcessManager manager, RainWorldGame game)
+        {
+            return new MeadowPauseMenu(manager, game, this);
+        }
     }
 }

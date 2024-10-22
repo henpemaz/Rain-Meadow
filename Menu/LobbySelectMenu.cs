@@ -7,6 +7,7 @@ using Steamworks;
 #endif
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using UnityEngine;
 
@@ -17,10 +18,16 @@ namespace RainMeadow
         private List<FSprite> sprites;
         private EventfulSelectOneButton[] lobbyButtons;
         private LobbyInfo[] lobbies;
+        private LobbyInfo[] displayLobbies;
+        private LobbyFilter filter;
+        private OpComboBox2 filterModeDropDown;
+        private OpComboBox2 filterPasswordDropDown;
+        private OpTextBox filterLobbyLimit;
+        private OpTextBox lobbySearchInputBox;
         private float scroll;
         private float scrollTo;
         private int currentlySelectedCard;
-        private OpComboBox visibilityDropDown;
+        private OpComboBox2 visibilityDropDown;
         private OpTextBox lobbyLimitNumberTextBox;
         private SimplerButton playButton;
         private SimplerButton refreshButton;
@@ -58,15 +65,19 @@ namespace RainMeadow
 
             // 188 on mock -> 218 -> 768 - 218 = 550 -> 552
             // misc buttons on topright
+            // currently greyed out since they server no purpose
             Vector2 where = new Vector2(1056f, 552f);
             var aboutButton = new SimplerButton(this, mainPage, Translate("ABOUT"), where, new Vector2(110f, 30f));
+            aboutButton.buttonBehav.greyedOut = true;
 
             mainPage.subObjects.Add(aboutButton);
             where.y -= 35;
             var statsButton = new SimplerButton(this, mainPage, Translate("STATS"), where, new Vector2(110f, 30f));
+            statsButton.buttonBehav.greyedOut = true;
             mainPage.subObjects.Add(statsButton);
             where.y -= 35;
             var unlocksButton = new SimplerButton(this, mainPage, Translate("UNLOCKS"), where, new Vector2(110f, 30f));
+            unlocksButton.buttonBehav.greyedOut = true;
             mainPage.subObjects.Add(unlocksButton);
 
             // center description
@@ -123,6 +134,35 @@ namespace RainMeadow
             versionLabel.size = new Vector2(versionLabel.label.textRect.width, versionLabel.size.y);
             mainPage.subObjects.Add(versionLabel);
 
+            // filters
+            filter = new LobbyFilter();
+            var filterLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Filters"), new Vector2(600f, 305f), new Vector2(200f, 20f), true);
+            mainPage.subObjects.Add(filterLabel);
+
+            where = new Vector2(550f, 280f);
+            var filterModeLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Lobby Mode"), where, new Vector2(200f, 20f), false);
+            mainPage.subObjects.Add(filterModeLabel);
+            where.y -= 27;
+            filterModeDropDown = new OpComboBox2(new Configurable<LobbyFilter.ModeFilter>(LobbyFilter.ModeFilter.All), where, 160f, OpResourceSelector.GetEnumNames(null, typeof(LobbyFilter.ModeFilter)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
+            filterModeDropDown.OnChange += UpdateLobbyFilter;
+            new UIelementWrapper(this.tabWrapper, filterModeDropDown);
+            where.y -= 30;
+            var filterPasswordLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Requires Password"), where, new Vector2(200f, 20f), false);
+            mainPage.subObjects.Add(filterPasswordLabel);
+            where.y -= 27;
+            filterPasswordDropDown = new OpComboBox2(new Configurable<LobbyFilter.PasswordFilter>(LobbyFilter.PasswordFilter.All), where, 160f, OpResourceSelector.GetEnumNames(null, typeof(LobbyFilter.PasswordFilter)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
+            filterPasswordDropDown.OnChange += UpdateLobbyFilter;
+            new UIelementWrapper(this.tabWrapper, filterPasswordDropDown);
+            where.y -= 30;
+            var filterLobbyLimitLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Max Lobby Size"), where, new Vector2(200f, 20f), false);
+            mainPage.subObjects.Add(filterLobbyLimitLabel);
+            where.y -= 27;
+            filterLobbyLimit = new OpTextBox(new Configurable<int>(32), where, 50f);
+            filterLobbyLimit.accept = OpTextBox.Accept.Int;
+            filterLobbyLimit.maxLength = 2;
+            filterLobbyLimit.OnChange += UpdateLobbyFilter;
+            new UIelementWrapper(this.tabWrapper, filterLobbyLimit);
+
             // left lobby selector
             // bg
             sprites = new();
@@ -140,6 +180,12 @@ namespace RainMeadow
             var downButton = new EventfulScrollButton(this, mainPage, new(316, 113), 2, 100);
             mainPage.subObjects.Add(downButton);
             downButton.OnClick += (_) => scrollTo += 1f;
+
+            // searchbar
+            lobbySearchInputBox = new OpTextBox(new Configurable<string>(""), new Vector2(214f, 496f), 304f);
+            lobbySearchInputBox.label.text = "Search Lobbies";
+            lobbySearchInputBox.OnChange += UpdateLobbyFilter;
+            new UIelementWrapper(this.tabWrapper, lobbySearchInputBox);
 
             // cards
             lobbies = new LobbyInfo[0];
@@ -211,12 +257,15 @@ namespace RainMeadow
                 mainPage.RemoveSubObject(btn);
             }
 
-            lobbyButtons = new EventfulSelectOneButton[1 + lobbies.Length];
+            FilterLobbyCards();
+
+            lobbyButtons = new EventfulSelectOneButton[1 + displayLobbies.Length];
             lobbyButtons[0] = oldLobbyButtons[0];
 
-            for (int i = 0; i < lobbies.Length; i++)
+            for (int i = 0; i < displayLobbies.Length; i++)
             {
-                var lobby = lobbies[i];
+                var lobby = displayLobbies[i];
+
                 var btn = new LobbyInfoCard(this, mainPage, CardPosition(i + 1), new(304, 60), lobbyButtons, i + 1, lobby);
                 btn.OnClick += BumpPlayButton;
                 mainPage.subObjects.Add(btn);
@@ -226,7 +275,7 @@ namespace RainMeadow
 
         private Vector2 CardPosition(int i)
         {
-            Vector2 rootPos = new(214, 460);
+            Vector2 rootPos = new(210, 430);
             Vector2 offset = new(0, 70);
             return rootPos - (scroll + i - 1) * offset;
         }
@@ -241,7 +290,7 @@ namespace RainMeadow
                 this.RemoveSubObject(menuLabel);
                 this.menuLabel = new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.name, new(5, 30), new(10, 50), true);
                 this.subObjects.Add(this.menuLabel);
-                if (lobbyInfo.hasPassword) 
+                if (lobbyInfo.hasPassword)
                 {
                     this.subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, "Private", new(260, 20), new(10, 50), false));
                 }
@@ -258,6 +307,70 @@ namespace RainMeadow
             }
 
             // todo out of view
+        }
+
+        private void FilterLobbyCards()
+        {
+            var targetLobbies = new List<LobbyInfo>();
+
+            for (int i = 0; i < lobbies.Length; i++)
+            {
+                var lobby = lobbies[i];
+
+                if (filter.lobbyName != "" && !lobby.name.ToLower().Contains(filter.lobbyName)) continue;
+                if (filter.mode != "All" && lobby.mode != filter.mode) continue;
+                if (filter.password == "NoPassword" && lobby.hasPassword) continue;
+                if (filter.password == "Password" && !lobby.hasPassword) continue;
+                if (filter.playerLimit < lobby.maxPlayerCount) continue;
+
+                targetLobbies.Add(lobby);
+            }
+
+            displayLobbies = targetLobbies.ToArray();
+        }
+
+        private void UpdateLobbyFilter()
+        {
+            filter.mode = filterModeDropDown.value;
+            filter.password = filterPasswordDropDown.value;
+            filter.playerLimit = filterLobbyLimit.valueInt;
+            filter.lobbyName = lobbySearchInputBox.value.ToLower();
+
+            CreateLobbyCards();
+        }
+
+        private class LobbyFilter
+        {
+            public bool enabled;
+            public string mode;
+            public string password;
+            public int playerLimit;
+            public string lobbyName;
+            public enum ModeFilter
+            {
+                All,
+                Meadow,
+                Story,
+                ArenaCompetitive
+            };
+            public enum PasswordFilter
+            {
+                [Description("Show All")]
+                All,
+                [Description("No")]
+                NoPassword,
+                [Description("Yes")]
+                Password,
+            }
+
+            public LobbyFilter()
+            {
+                this.enabled = false;
+                this.mode = "All";
+                this.password = "All";
+                this.playerLimit = 32;
+                this.lobbyName = "";
+            }
         }
 
         private void Play(SimplerButton obj)
@@ -328,7 +441,7 @@ namespace RainMeadow
                 CreateLobbyCards();
             }
         }
-        
+
         private void OnlineManager_OnLobbyJoined(bool ok, string error)
         {
             RainMeadow.Debug(ok);
@@ -359,7 +472,8 @@ namespace RainMeadow
             return;
         }
 
-        public void ShowPasswordRequestDialog() {
+        public void ShowPasswordRequestDialog()
+        {
             if (popupDialog != null) HideDialog();
 
             popupDialog = new CustomInputDialogueBox(this, mainPage, "Password Required", "HIDE_PASSWORD", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
@@ -377,7 +491,7 @@ namespace RainMeadow
         public void ShowErrorDialog(string error)
         {
             if (popupDialog != null) HideDialog();
-            
+
             popupDialog = new DialogBoxNotify(this, mainPage, error, "HIDE_DIALOG", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
             mainPage.subObjects.Add(popupDialog);
         }
@@ -408,24 +522,32 @@ namespace RainMeadow
             }
         }
 
-        public bool GetChecked(CheckBox box) {
-            string idstring = box.IDString;
-            if (idstring != null) {
-                if (idstring == "SETPASSWORD") {
+        public bool GetChecked(CheckBox box)
+        {
+            switch (box.IDString)
+            {
+                case "SETPASSWORD":
                     return setpassword;
-                }
+                case "FILTERLOBBIES":
+                    return filter.enabled;
+                default:
+                    break;
             }
             return false;
         }
         public void SetChecked(CheckBox box, bool c)
         {
-            string idstring = box.IDString;
-            if (idstring != null)
+            switch (box.IDString)
             {
-                if (idstring == "SETPASSWORD")
-                {
+                case "SETPASSWORD":
                     setpassword = !setpassword;
-                }
+                    break;
+                case "FILTERLOBBIES":
+                    filter.enabled = !filter.enabled;
+                    UpdateLobbyFilter();
+                    break;
+                default:
+                    break;
             }
         }
     }

@@ -42,7 +42,7 @@ namespace RainMeadow
         {
             return other != null
                 && graspUsed == other.graspUsed
-                && grabbed  == other.grabbed
+                && grabbed == other.grabbed
                 && chunkGrabbed == other.chunkGrabbed
                 && shareability == (byte)other.shareability
                 && dominance == other.dominance
@@ -59,7 +59,7 @@ namespace RainMeadow
                     creature.ReleaseGrasp(grasp.graspUsed);
                 }
             }
-            if(obj.room == null) // lots of "grabbed" code assumes a room for SFX
+            if (obj.room == null) // lots of "grabbed" code assumes a room for SFX
             {
                 if (creature.room == null) return;
                 creature.room.AddObject(obj);

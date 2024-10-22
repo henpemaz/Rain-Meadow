@@ -1,6 +1,6 @@
 ﻿using HUD;
-using UnityEngine;
 using Rewired;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -23,7 +23,8 @@ namespace RainMeadow
             base.Draw(timeStacker);
 
             if (!Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
-                return;
+                return; 
+                
             if (OnlineManager.lobby.playerAvatars[OnlineManager.mePlayer].FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
             {
                 realizedPlayer = ac.realizedCreature;

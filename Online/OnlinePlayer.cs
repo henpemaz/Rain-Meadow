@@ -22,14 +22,14 @@ namespace RainMeadow
         public Queue<uint> recentTicks = new(16); // incoming ticks
         public ushort recentTicksToAckBitpack; // outgoing, bitpack of recent ticks relative to tick, used for ack
         public uint latestTickAck; // incoming, the last tick they've ack'd to me
-        public HashSet<uint> recentlyAckdTicks = new (); // incoming, recent ticks they've acked (from bitpack)
+        public HashSet<uint> recentlyAckdTicks = new(); // incoming, recent ticks they've acked (from bitpack)
         public uint oldestTickToConsider; // incoming, from acked ticks the oldest to use for deltas
 
         public bool needsAck;
 
         public bool isMe;
         public bool hasLeft;
-        
+
         // For Debug Overlay
         public int ping; // rtt
         public bool eventsWritten;
@@ -157,12 +157,12 @@ namespace RainMeadow
             }
         }
 
-        internal RPCEvent InvokeRPC(Delegate del, params object[] args)
+        public RPCEvent InvokeRPC(Delegate del, params object[] args)
         {
             return (RPCEvent)this.QueueEvent(RPCManager.BuildRPC(del, args));
         }
 
-        internal RPCEvent InvokeOnceRPC(Delegate del, params object[] args)
+        public RPCEvent InvokeOnceRPC(Delegate del, params object[] args)
         {
             foreach (var e in OutgoingEvents)
                 if (e is RPCEvent rpc && rpc.IsIdentical(del, args))
@@ -185,7 +185,7 @@ namespace RainMeadow
             bytesOut[nextSnapshotIndex] = 0;
             bytesSnapIndex = nextSnapshotIndex;
         }
-        internal TickReference MakeTickReference()
+        public TickReference MakeTickReference()
         {
             return new TickReference(this);
         }
