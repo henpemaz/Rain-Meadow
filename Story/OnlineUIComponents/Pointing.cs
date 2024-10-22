@@ -35,7 +35,9 @@ namespace RainMeadow
 
             Vector2 pointingVector = GetOnlinePointingVector();
             if (pointingVector == Vector2.zero)
+            {
                 return;
+            }
 
             hand = UpdateHandPosition();
             controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
