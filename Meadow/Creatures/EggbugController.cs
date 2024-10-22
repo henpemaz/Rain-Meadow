@@ -19,97 +19,125 @@ namespace RainMeadow
 
             IL.EggBug.Swim += EggBug_Swim1;
             IL.EggBug.Update += EggBug_Update1;
+
+            IL.EggBugGraphics.ApplyPalette += EggBugGraphics_ApplyPalette;
         }
+
+        private static void EggBugGraphics_ApplyPalette(ILContext il)
+        {
+            var c = new ILCursor(il);
+
+            // patch eye and highlight colors at the top
+            c.GotoNext(MoveType.AfterLabel,
+                i => i.MatchStfld<EggBugGraphics>("blackColor")
+                );
+
+            c.GotoPrev(MoveType.After,
+                i => i.MatchStloc(out _));
+
+            c.MoveAfterLabels();
+            c.Emit(OpCodes.Ldarg_0);
+            c.Emit(OpCodes.Ldloca, 0);
+            c.Emit(OpCodes.Ldloca, 1);
+            c.EmitDelegate((EggBugGraphics self, ref Color c1, ref Color c2) =>
+            {
+                if (creatureControllers.TryGetValue(self.bug, out var p))
+                {
+                    p.customization.ModifyBodyColor(ref c1);
+                    p.customization.ModifyBodyColor(ref c2);
+                }
+            });
+
+            // egg colors
+            c.GotoNext(i => i.MatchCallOrCallvirt<EggBugGraphics>("EggColors"));
+            c.GotoNext(MoveType.After, i => i.MatchStfld<EggBugGraphics>("eggColors"));
+            c.MoveAfterLabels();
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((EggBugGraphics self) =>
+            {
+                if (creatureControllers.TryGetValue(self.bug, out var p))
+                {
+                    p.customization.ModifyBodyColor(ref self.eggColors[0]);
+                    p.customization.ModifyBodyColor(ref self.eggColors[1]);
+                    p.customization.ModifyBodyColor(ref self.eggColors[2]);
+                }
+            });
+        }
+
         private static void EggBug_Update1(ILContext il)
         {
-            try
+            var c = new ILCursor(il);
+
+            // if (base.graphicsModule != null && this.room != null etc etc
+            // then do the leg pulling thing if out-of-medium
+            // instead skip that if controlled and submerged
+
+            ILLabel skip = null;
+            c.GotoNext(i => i.MatchCallOrCallvirt<InsectoidCreature>("Update"));
+            c.GotoNext(moveType: MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchCall<PhysicalObject>("get_graphicsModule"),
+                i => i.MatchBrfalse(out skip)
+                );
+            c.MoveAfterLabels();
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((EggBug self) =>
             {
-                var c = new ILCursor(il);
-
-                // if (base.graphicsModule != null && this.room != null etc etc
-                // then do the leg pulling thing if out-of-medium
-                // instead skip that if controlled and submerged
-
-                ILLabel skip = null;
-                c.GotoNext(i => i.MatchCallOrCallvirt<InsectoidCreature>("Update"));
-                c.GotoNext(moveType: MoveType.After,
-                    i => i.MatchLdarg(0),
-                    i => i.MatchCall<PhysicalObject>("get_graphicsModule"),
-                    i => i.MatchBrfalse(out skip)
-                    );
-                c.MoveAfterLabels();
-                c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((EggBug self) =>
+                if (creatureControllers.TryGetValue(self, out var controller))
                 {
-                    if (creatureControllers.TryGetValue(self, out var controller))
+                    if (self.mainBodyChunk.submersion >= 1)
                     {
-                        if (self.mainBodyChunk.submersion >= 1)
-                        {
-                            return false;
-                        }
+                        return false;
                     }
-                    return true;
-                });
-                c.Emit(OpCodes.Brfalse, skip);
-            }
-            catch (Exception e)
-            {
-                RainMeadow.Error(e);
-                throw;
-            }
+                }
+                return true;
+            });
+            c.Emit(OpCodes.Brfalse, skip);
         }
 
         private static void EggBug_Swim1(ILContext il)
         {
-            try
+            var c = new ILCursor(il);
+
+            // tricky to describe but decompiled code says "if (!(movementConnection != default(movementConnection)))"
+            // but in practice it's the opposite, just a much longer if body
+            // if ((movementConnection != default(MovementConnection)))
+            // becomes
+            // if (meadowOverride || (movementConnection != default(MovementConnection)))
+
+            c.GotoNext(i => i.MatchCallOrCallvirt<PhysicalObject>("get_graphicsModule"));
+            c.GotoPrev(moveType: MoveType.After,
+                i => i.MatchLdloc(0),
+                i => i.MatchLdloca(1),
+                i => i.MatchInitobj<MovementConnection>(),
+                i => i.MatchLdloc(1),
+                i => i.MatchCall(out _),
+                i => i.MatchBrfalse(out _)
+                );
+            var skip = c.MarkLabel();
+            c.Index -= 6;
+            c.MoveAfterLabels();
+            c.Emit(OpCodes.Ldarg_0);
+            c.Emit(OpCodes.Ldloca, 0);
+            c.EmitDelegate((EggBug self, ref MovementConnection movementConnection) =>
             {
-                var c = new ILCursor(il);
-
-                // tricky to describe but decompiled code says "if (!(movementConnection != default(movementConnection)))"
-                // but in practice it's the opposite, just a much longer if body
-                // if ((movementConnection != default(MovementConnection)))
-                // becomes
-                // if (meadowOverride || (movementConnection != default(MovementConnection)))
-
-                c.GotoNext(i => i.MatchCallOrCallvirt<PhysicalObject>("get_graphicsModule"));
-                c.GotoPrev(moveType: MoveType.After,
-                    i => i.MatchLdloc(0),
-                    i => i.MatchLdloca(1),
-                    i => i.MatchInitobj<MovementConnection>(),
-                    i => i.MatchLdloc(1),
-                    i => i.MatchCall(out _),
-                    i => i.MatchBrfalse(out _)
-                    );
-                var skip = c.MarkLabel();
-                c.Index -= 6;
-                c.MoveAfterLabels();
-                c.Emit(OpCodes.Ldarg_0);
-                c.Emit(OpCodes.Ldloca, 0);
-                c.EmitDelegate((EggBug self, ref MovementConnection movementConnection) =>
+                if (creatureControllers.TryGetValue(self, out var controller))
                 {
-                    if (creatureControllers.TryGetValue(self, out var controller))
+                    var coord = controller.creature.coord;
+                    var to = controller.creature.abstractCreature.abstractAI.RealAI.pathFinder.destination;
+                    movementConnection = new MovementConnection(MovementConnection.MovementType.Standard, coord, to, 1);
+
+                    if (self.mainBodyChunk.submersion >= 1)
                     {
-                        var coord = controller.creature.coord;
-                        var to = controller.creature.abstractCreature.abstractAI.RealAI.pathFinder.destination;
-                        movementConnection = new MovementConnection(MovementConnection.MovementType.Standard, coord, to, 1);
-
-                        if (self.mainBodyChunk.submersion >= 1)
-                        {
-                            self.mainBodyChunk.vel += 1.2f * controller.inputDir; // here some help
-                        }
-
-                        if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("overriding");
-                        return false;
+                        self.mainBodyChunk.vel += 1.2f * controller.inputDir; // here some help
                     }
-                    return true;
-                });
-                c.Emit(OpCodes.Brfalse, skip);
-            }
-            catch (Exception e)
-            {
-                RainMeadow.Error(e);
-                throw;
-            }
+
+                    if (Input.GetKey(KeyCode.L)) RainMeadow.Debug("overriding");
+                    return false;
+                }
+                return true;
+            });
+            c.Emit(OpCodes.Brfalse, skip);
         }
 
         private static void EggBug_Swim(On.EggBug.orig_Swim orig, EggBug self)
