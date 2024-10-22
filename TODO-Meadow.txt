@@ -19,9 +19,6 @@ lizard todo
 	blues have trouble climbing/pathing ledges
 	more seeds
 
-eggbug
-	pick seeds and names
-
 lantermouse
 	seeds and names
 

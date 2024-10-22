@@ -408,19 +408,45 @@ namespace RainMeadow
                 previewColor = Extensions.ColorFromHex(0xc3c5c7),
             });
 
-            public static Skin Eggbug_Blue = new("Eggbug_Blue", true, new()
+            public static Skin Eggbug_Blueberry = new("Eggbug_Blueberry", true, new()
             {
                 character = Character.Eggbug,
-                displayName = "Blue",
+                displayName = "Blueberry",
                 creatureType = CreatureTemplate.Type.EggBug,
-                randomSeed = 1001,
+                randomSeed = 2340,
+                previewColor = Extensions.ColorFromHex(0x007aef),
             });
-            public static Skin Eggbug_Teal = new("Eggbug_Teal", true, new()
+            public static Skin Eggbug_Kiwi = new("Eggbug_Kiwi", true, new()
             {
                 character = Character.Eggbug,
-                displayName = "Teal",
+                displayName = "Kiwi",
                 creatureType = CreatureTemplate.Type.EggBug,
-                randomSeed = 1002,
+                randomSeed = 2337,
+                previewColor = Extensions.ColorFromHex(0x00ea68),
+            });
+            public static Skin Eggbug_Citrus = new("Eggbug_Citrus", true, new()
+            {
+                character = Character.Eggbug,
+                displayName = "Citrus",
+                creatureType = CreatureTemplate.Type.EggBug,
+                randomSeed = 2399,
+                previewColor = Extensions.ColorFromHex(0x00e1f5),
+            });
+            public static Skin Eggbug_Mango = new("Eggbug_Mango", true, new()
+            {
+                character = Character.Eggbug,
+                displayName = "Mango",
+                creatureType = CreatureTemplate.Type.EggBug,
+                randomSeed = 2337,
+                baseColor = Extensions.ColorFromHex(0xff9900),
+            });
+            public static Skin Eggbug_Dragonfruit = new("Eggbug_Dragonfruit", true, new()
+            {
+                character = Character.Eggbug,
+                displayName = "Dragonfruit",
+                creatureType = CreatureTemplate.Type.EggBug,
+                randomSeed = 8557,
+                baseColor = Extensions.ColorFromHex(0xff0859),
             });
 
             public static Skin LanternMouse_Blue = new("LanternMouse_Blue", true, new()
