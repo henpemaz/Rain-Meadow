@@ -20,6 +20,24 @@ namespace RainMeadow
             On.MouseGraphics.ShouldThisLimbRetract += MouseGraphics_ShouldThisLimbRetract;
 
             IL.LanternMouse.Update += LanternMouse_Update1;
+
+            IL.MouseGraphics.Update += MouseGraphics_Update; // please, look pretty
+        }
+
+        private static void MouseGraphics_Update(ILContext il)
+        {
+            var c = new ILCursor(il);
+            c.GotoNext(MoveType.After, i => i.MatchStfld<MouseGraphics>("litRoom"));
+            c.MoveAfterLabels();
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((MouseGraphics self) =>
+            {
+                if (creatureControllers.TryGetValue((Creature)self.owner, out var s))
+                {
+                    self.litRoom *= 0.3f;
+                }
+            }
+            );
         }
 
         private static bool MouseGraphics_ShouldThisLimbRetract(On.MouseGraphics.orig_ShouldThisLimbRetract orig, MouseGraphics self, int pos, int side)
@@ -115,6 +133,10 @@ namespace RainMeadow
         {
             this.mouse = mouse;
             jumpFactor = 1.4f; // y u so smol
+
+            var color = mouse.iVars.color.rgb;
+            customization.ModifyBodyColor(ref color);
+            mouse.iVars.color = color.ToHSL();
         }
 
         public override bool HasFooting => mouse.footingCounter >= 10;
