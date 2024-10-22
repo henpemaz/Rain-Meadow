@@ -22,17 +22,11 @@ lizard todo
 eggbug
 	pick seeds and names
 
-noot
-	pick seeds and names
-
 lantermouse
 	seeds and names
 
 visualize selected skin
 	will get color previews once all seeds are picked and sampled
-
-tint implementation missing in most creatures
-cicada tentacles arent tinted
 
 "creature emotions" need addressing
 lizards shouldn't open mouth to bite -> can't reproduce

@@ -339,18 +339,73 @@ namespace RainMeadow
                 previewColor = Extensions.ColorFromHex(0xb8c3ec),
             });
 
-            public static Skin Noodlefly_Big = new("Noodlefly_Big", true, new()
+            public static Skin Noodlefly_Small_Lily = new("Noodlefly_Small_Lily", true, new()
             {
                 character = Character.Noodlefly,
-                displayName = "Big",
-                creatureType = CreatureTemplate.Type.BigNeedleWorm,
-            });
-            public static Skin Noodlefly_Small = new("Noodlefly_Small", true, new()
-            {
-                character = Character.Noodlefly,
-                displayName = "Small",
+                displayName = "Lily",
                 creatureType = CreatureTemplate.Type.SmallNeedleWorm,
-                voiceIdOverride = RainMeadow.Ext_SoundID.RM_SmallNoot_Call
+                voiceIdOverride = RainMeadow.Ext_SoundID.RM_SmallNoot_Call,
+                randomSeed = 10989,
+                previewColor = Extensions.ColorFromHex(0xd15460),
+            });
+            public static Skin Noodlefly_Big_Rose = new("Noodlefly_Big_Rose", true, new()
+            {
+                character = Character.Noodlefly,
+                displayName = "Rose",
+                creatureType = CreatureTemplate.Type.BigNeedleWorm,
+                randomSeed = 9091,
+                previewColor = Extensions.ColorFromHex(0x450814),
+            });
+            public static Skin Noodlefly_Small_Poppy = new("Noodlefly_Small_Poppy", true, new()
+            {
+                character = Character.Noodlefly,
+                displayName = "Poppy",
+                creatureType = CreatureTemplate.Type.SmallNeedleWorm,
+                voiceIdOverride = RainMeadow.Ext_SoundID.RM_SmallNoot_Call,
+                randomSeed = 11114,
+                previewColor = Extensions.ColorFromHex(0x740719),
+            });
+            public static Skin Noodlefly_Big_Lotus = new("Noodlefly_Big_Lotus", true, new()
+            {
+                character = Character.Noodlefly,
+                displayName = "Lotus",
+                creatureType = CreatureTemplate.Type.BigNeedleWorm,
+                randomSeed = 9092,
+                previewColor = Extensions.ColorFromHex(0x44082f),
+            });
+            public static Skin Noodlefly_Small_Lilac = new("Noodlefly_Small_Lilac", true, new()
+            {
+                character = Character.Noodlefly,
+                displayName = "Lilac",
+                creatureType = CreatureTemplate.Type.SmallNeedleWorm,
+                voiceIdOverride = RainMeadow.Ext_SoundID.RM_SmallNoot_Call,
+                randomSeed = 10992,
+                previewColor = Extensions.ColorFromHex(0xb72264),
+            });
+            public static Skin Noodlefly_Big_Petunia = new("Noodlefly_Big_Petunia", true, new()
+            {
+                character = Character.Noodlefly,
+                displayName = "Petunia",
+                creatureType = CreatureTemplate.Type.BigNeedleWorm,
+                randomSeed = 9110,
+                previewColor = Extensions.ColorFromHex(0x2a232d),
+            });
+            public static Skin Noodlefly_Small_Jasmine = new("Noodlefly_Small_Jasmine", true, new()
+            {
+                character = Character.Noodlefly,
+                displayName = "Jasmine",
+                creatureType = CreatureTemplate.Type.SmallNeedleWorm,
+                voiceIdOverride = RainMeadow.Ext_SoundID.RM_SmallNoot_Call,
+                randomSeed = 10986,
+                previewColor = Extensions.ColorFromHex(0xa7a8aa),
+            });
+            public static Skin Noodlefly_Big_Gardenia = new("Noodlefly_Big_Gardenia", true, new()
+            {
+                character = Character.Noodlefly,
+                displayName = "Gardenia",
+                creatureType = CreatureTemplate.Type.BigNeedleWorm,
+                randomSeed = 9065,
+                previewColor = Extensions.ColorFromHex(0xc3c5c7),
             });
 
             public static Skin Eggbug_Blue = new("Eggbug_Blue", true, new()
