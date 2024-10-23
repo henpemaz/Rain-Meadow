@@ -113,7 +113,7 @@ namespace RainMeadow
                 for (int i = 1; i < game.usernameButtons.Length; i++)
                 {
 
-                    if (game.usernameButtons[i].menuLabel.text == userChangingClass)
+                    if (game.usernameButtons[i].menuLabel.text == userChangingClass) // TODO: Null referencing here
                     {
                         if (currentColorIndex > 3 && ModManager.MSC)
                         {

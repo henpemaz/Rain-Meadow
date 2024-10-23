@@ -56,6 +56,7 @@ namespace RainMeadow
             }
 
             allSlugs = ArenaHelpers.AllSlugcats();
+            holdPlayerPosition = 1; // the position we want to use for changing as we navigate
 
             OverrideMultiplayerMenu();
             BindSettings();
@@ -182,13 +183,19 @@ namespace RainMeadow
         void BuildPlayerSlots()
         {
 
-            AddMeClassButton(0);
+            AddMeClassButton();
             AddMeUsername();
             AddOtherUsernameButtons();
             AddOtherPlayerClassButtons();
 
 
             this.GetArenaSetup.playersJoined[0] = true; // host should be part of game
+
+            if (OnlineManager.players.Count > holdPlayerPosition)
+            {
+                HandleLobbyProfileOverflow();
+
+            }
 
         }
 
@@ -461,19 +468,6 @@ namespace RainMeadow
                     playerbtn.RemoveSprites();
                     //mainPage.RemoveSubObject(playerbtn);
                 }
-
-                if (viewNextPlayer != null)
-                {
-                    viewNextPlayer.RemoveSprites();
-                    pages[0].RemoveSubObject(viewNextPlayer);
-                }
-
-                if (viewPrevPlayer != null)
-                {
-
-                    viewPrevPlayer.RemoveSprites();
-                    pages[0].RemoveSubObject(viewPrevPlayer);
-                }
             }
 
 
@@ -498,79 +492,7 @@ namespace RainMeadow
                 AddOtherUsernameButtons();
                 AddOtherPlayerClassButtons();
 
-                holdPlayerPosition = 1;
-                currentPlayerPosition = 1;
-
-                viewNextPlayer = new SimplerSymbolButton(this, pages[0], "Menu_Symbol_Arrow", "VIEWNEXT", new Vector2(classButtons[holdPlayerPosition].pos.x + 120f, classButtons[holdPlayerPosition].pos.y + 60));
-                viewNextPlayer.symbolSprite.rotation = 90;
-
-                viewNextPlayer.OnClick += (_) =>
-                {
-                    RainMeadow.Debug(currentPlayerPosition + "CURRENT");
-
-                    if (viewPrevPlayer != null && viewPrevPlayer.buttonBehav.greyedOut)
-                    {
-                        viewPrevPlayer.buttonBehav.greyedOut = false;
-                    }
-
-                    if (currentPlayerPosition + 1 >= OnlineManager.players.Count)
-                    {
-                        RainMeadow.Debug("End of list: " + currentPlayerPosition);
-                        viewNextPlayer.buttonBehav.greyedOut = true;
-                        return;
-                    }
-
-                    usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition + 1].id.name; // current becomes next
-                    if (currentPlayerPosition > 3 && ModManager.MSC)
-                    {
-                        classButtons[holdPlayerPosition].portrait.fileName = "MultiplayerPortrait" + "41-" + allSlugs[arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition + 1].id.name]];
-
-                    }
-                    else
-                    {
-                        classButtons[holdPlayerPosition].portrait.fileName = "MultiplayerPortrait" + arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition + 1].id.name] + "1";
-                    }
-                    RainMeadow.Debug(classButtons[holdPlayerPosition].portrait.fileName);
-                    classButtons[holdPlayerPosition].portrait.LoadFile();
-                    classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
-
-                    currentPlayerPosition++;
-
-                };
-
-                viewPrevPlayer = new SimplerSymbolButton(this, pages[0], "Menu_Symbol_Arrow", "VIEWPREV", new Vector2(classButtons[holdPlayerPosition].pos.x + 120f, classButtons[holdPlayerPosition].pos.y + 20));
-                viewPrevPlayer.symbolSprite.rotation = 270;
-                viewPrevPlayer.OnClick += (_) =>
-                {
-                    if (viewNextPlayer != null && viewNextPlayer.buttonBehav.greyedOut)
-                    {
-                        viewNextPlayer.buttonBehav.greyedOut = false;
-                    }
-                    RainMeadow.Debug(currentPlayerPosition + "CURRENT");
-                    if (currentPlayerPosition - 1 < 1)
-                    {
-                        RainMeadow.Debug("Beginning of extended list: " + currentPlayerPosition);
-                        viewPrevPlayer.buttonBehav.greyedOut = true;
-                        return;
-                    }
-                    usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition -1].id.name; // current becomes previous
-                    if (currentPlayerPosition > 3 && ModManager.MSC)
-                    {
-                        classButtons[holdPlayerPosition].portrait.fileName = "MultiplayerPortrait" + "41-" + allSlugs[arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition -1].id.name]];
-
-                    }
-                    else
-                    {
-                        classButtons[holdPlayerPosition].portrait.fileName = "MultiplayerPortrait" + arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition -1].id.name] + "1";
-                    }
-                    classButtons[holdPlayerPosition].portrait.LoadFile();
-                    classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
-
-                    currentPlayerPosition--;
-
-                };
-                this.pages[0].subObjects.Add(viewNextPlayer);
-                this.pages[0].subObjects.Add(viewPrevPlayer);
+                HandleLobbyProfileOverflow();
 
 
                 if (this != null)
@@ -583,12 +505,13 @@ namespace RainMeadow
         }
 
 
-        private void AddMeClassButton(int currentColorIndex) // doing unique stuff with player 0 so less annoying this way
+        private void AddMeClassButton() // doing unique stuff with player 0 so less annoying this way
         {
 
             meClassButton = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f), 40f), 0);
             meClassButton.buttonBehav.greyedOut = false;
             meClassButton.readyForCombat = true;
+            var currentColorIndex = 0;
             if (arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.mePlayer.id.name, out var existingValue))
             {
                 currentColorIndex = arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.name];
@@ -787,6 +710,95 @@ namespace RainMeadow
         {
             if (personaSettings != null) personaSettings.bodyColor = bodyColorPicker.valuecolor;
             if (personaSettings != null) personaSettings.eyeColor = eyeColorPicker.valuecolor;
+        }
+
+
+        private void HandleLobbyProfileOverflow()
+        {
+            if (viewNextPlayer != null)
+            {
+                viewNextPlayer.RemoveSprites();
+                pages[0].RemoveSubObject(viewNextPlayer);
+            }
+
+            if (viewPrevPlayer != null)
+            {
+
+                viewPrevPlayer.RemoveSprites();
+                pages[0].RemoveSubObject(viewPrevPlayer);
+            }
+
+            currentPlayerPosition = 1;
+
+            viewNextPlayer = new SimplerSymbolButton(this, pages[0], "Menu_Symbol_Arrow", "VIEWNEXT", new Vector2(classButtons[holdPlayerPosition].pos.x + 120f, classButtons[holdPlayerPosition].pos.y + 60));
+            viewNextPlayer.symbolSprite.rotation = 90;
+
+            viewNextPlayer.OnClick += (_) =>
+            {
+                RainMeadow.Debug(currentPlayerPosition + "CURRENT");
+
+                if (viewPrevPlayer != null && viewPrevPlayer.buttonBehav.greyedOut)
+                {
+                    viewPrevPlayer.buttonBehav.greyedOut = false;
+                }
+
+                if (currentPlayerPosition + 1 >= OnlineManager.players.Count)
+                {
+                    RainMeadow.Debug("End of list: " + currentPlayerPosition);
+                    viewNextPlayer.buttonBehav.greyedOut = true;
+                    return;
+                }
+
+                usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition + 1].id.name; // current becomes next
+                if (currentPlayerPosition > 3 && ModManager.MSC)
+                {
+                    classButtons[holdPlayerPosition].portrait.fileName = "MultiplayerPortrait" + "41-" + allSlugs[arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition + 1].id.name]];
+
+                }
+                else
+                {
+                    classButtons[holdPlayerPosition].portrait.fileName = "MultiplayerPortrait" + arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition + 1].id.name] + "1";
+                }
+                classButtons[holdPlayerPosition].portrait.LoadFile();
+                classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
+
+                currentPlayerPosition++;
+
+            };
+
+            viewPrevPlayer = new SimplerSymbolButton(this, pages[0], "Menu_Symbol_Arrow", "VIEWPREV", new Vector2(classButtons[holdPlayerPosition].pos.x + 120f, classButtons[holdPlayerPosition].pos.y + 20));
+            viewPrevPlayer.symbolSprite.rotation = 270;
+            viewPrevPlayer.OnClick += (_) =>
+            {
+                if (viewNextPlayer != null && viewNextPlayer.buttonBehav.greyedOut)
+                {
+                    viewNextPlayer.buttonBehav.greyedOut = false;
+                }
+                RainMeadow.Debug(currentPlayerPosition + "CURRENT");
+                if (currentPlayerPosition - 1 < 1)
+                {
+                    RainMeadow.Debug("Beginning of extended list: " + currentPlayerPosition);
+                    viewPrevPlayer.buttonBehav.greyedOut = true;
+                    return;
+                }
+                usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition - 1].id.name; // current becomes previous
+                if (currentPlayerPosition > 3 && ModManager.MSC)
+                {
+                    classButtons[holdPlayerPosition].portrait.fileName = "MultiplayerPortrait" + "41-" + allSlugs[arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition - 1].id.name]];
+
+                }
+                else
+                {
+                    classButtons[holdPlayerPosition].portrait.fileName = "MultiplayerPortrait" + arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition - 1].id.name] + "1";
+                }
+                classButtons[holdPlayerPosition].portrait.LoadFile();
+                classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
+
+                currentPlayerPosition--;
+
+            };
+            this.pages[0].subObjects.Add(viewNextPlayer);
+            this.pages[0].subObjects.Add(viewPrevPlayer);
         }
 
         /// TODO: Share level selection visibly with client
