@@ -5,6 +5,7 @@ using RWCustom;
 using Steamworks;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -24,11 +25,18 @@ namespace RainMeadow
         public UIelementWrapper bodyColor;
         public UIelementWrapper eyeColor;
         public bool clientReadiedUp = false;
+        private SimplerSymbolButton viewNextPlayer;
+        private SimplerSymbolButton viewPrevPlayer;
+
+        private int holdPlayerPosition;
+        private int currentPlayerPosition;
+
 
 
         int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x; // been using 1360 as ref
 
         public SimpleButton[] usernameButtons;
+        public SimpleButton meUsernameButton;
         public ArenaOnlinePlayerJoinButton meClassButton;
 
         public ArenaOnlinePlayerJoinButton[] classButtons;
@@ -49,6 +57,8 @@ namespace RainMeadow
             OverrideMultiplayerMenu();
             BindSettings();
             BuildLayout();
+
+
             ArenaHelpers.ResetReadyUpLogic(arena, this);
 
 
@@ -122,7 +132,6 @@ namespace RainMeadow
             this.GetGameTypeSetup.rainWhenOnePlayerLeft = false; // TODO:  Hook this to update logic due to level switching if we want it
             this.GetGameTypeSetup.savingAndLoadingSession = false;
             this.GetGameTypeSetup.saveCreatures = false;
-
         }
 
         private void BindSettings()
@@ -449,27 +458,111 @@ namespace RainMeadow
                     playerbtn.RemoveSprites();
                     //mainPage.RemoveSubObject(playerbtn);
                 }
-                if (OnlineManager.players.Count > 1)
+
+                if (viewNextPlayer != null)
                 {
-                    foreach (var player in OnlineManager.players)
+                    viewNextPlayer.RemoveSprites();
+                    pages[0].RemoveSubObject(viewNextPlayer);
+                }
+
+                if (viewPrevPlayer != null)
+                {
+
+                    viewPrevPlayer.RemoveSprites();
+                    pages[0].RemoveSubObject(viewPrevPlayer);
+                }
+            }
+
+
+
+            if (OnlineManager.players.Count > 1)
+            {
+                foreach (var player in OnlineManager.players)
+                {
+                    if (!player.isMe)
                     {
-                        if (!player.isMe)
+                        if (arena.playersInLobbyChoosingSlugs.TryGetValue(player.id.name, out var existingValue))
                         {
-                            if (arena.playersInLobbyChoosingSlugs.TryGetValue(player.id.name, out var existingValue))
-                            {
-                                RainMeadow.Debug("Player already exists in online dictionary");
-                            }
-                            else
-                            {
-                                // Key does not exist, you can add it if needed
-                                arena.playersInLobbyChoosingSlugs.Add(player.id.name, 0);
-                            }
+                            RainMeadow.Debug("Player already exists in online dictionary");
+                        }
+                        else
+                        {
+                            // Key does not exist, you can add it if needed
+                            arena.playersInLobbyChoosingSlugs.Add(player.id.name, 0);
                         }
                     }
-                    AddOtherUsernameButtons();
-                    AddOtherPlayerClassButtons();
-
                 }
+                AddOtherUsernameButtons();
+                AddOtherPlayerClassButtons();
+                var SlugList = ArenaHelpers.AllSlugcats();
+
+                viewNextPlayer = new SimplerSymbolButton(this, pages[0], "Menu_Symbol_Arrow", "VIEWNEXT", new Vector2(classButtons[OnlineManager.players.Count - 1].pos.x + 120f, classButtons[OnlineManager.players.Count - 1].pos.y + 80));
+                viewNextPlayer.symbolSprite.rotation = 90;
+                holdPlayerPosition = 1;
+                currentPlayerPosition = 1;
+                viewNextPlayer.OnClick += (_) =>
+                {
+                    RainMeadow.Debug(currentPlayerPosition + "CURRENT");
+
+                    if (viewPrevPlayer != null && viewPrevPlayer.buttonBehav.greyedOut)
+                    {
+                        viewPrevPlayer.buttonBehav.greyedOut = false;
+                    }
+
+                    if (currentPlayerPosition + 1 >= OnlineManager.players.Count)
+                    {
+                        RainMeadow.Debug("End of list: " + currentPlayerPosition);
+                        viewNextPlayer.buttonBehav.greyedOut = true;
+                        return;
+                    }
+
+                    usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition + 1].id.name; // current becomes next
+
+                    currentPlayerPosition++;
+
+                    //classButtons[currentPlayerPosition].portrait = classButtons[currentPlayerPosition - 1].portrait;
+                    //classButtons[currentPlayerPosition].portrait.sprite = classButtons[currentPlayerPosition - 1].portrait.sprite;
+                    //classButtons[currentPlayerPosition].portrait.LoadFile();
+                    //classButtons[currentPlayerPosition].portrait.sprite.SetElementByName(classButtons[currentPlayerPosition].portrait.fileName);
+
+                    RainMeadow.Debug(currentPlayerPosition + "NEXT");
+
+
+
+
+                };
+
+                viewPrevPlayer = new SimplerSymbolButton(this, pages[0], "Menu_Symbol_Arrow", "VIEWPREV", new Vector2(classButtons[OnlineManager.players.Count - 1].pos.x + 120f, classButtons[OnlineManager.players.Count - 1].pos.y + 60));
+                viewPrevPlayer.symbolSprite.rotation = 270;
+                viewPrevPlayer.OnClick += (_) =>
+                {
+                    if (viewNextPlayer != null && viewNextPlayer.buttonBehav.greyedOut)
+                    {
+                        viewNextPlayer.buttonBehav.greyedOut = false;
+                    }
+                    RainMeadow.Debug(currentPlayerPosition + "CURRENT");
+                    if (currentPlayerPosition - 1 < 1)
+                    {
+                        RainMeadow.Debug("Beginning of extended list: " + currentPlayerPosition);
+                        viewPrevPlayer.buttonBehav.greyedOut = true;
+                        return;
+                    }
+                    usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition -1].id.name; // current becomes previous
+
+                    currentPlayerPosition--;
+
+                    //classButtons[currentPlayerPosition].portrait.LoadFile();
+                    //classButtons[currentPlayerPosition].portrait.sprite.SetElementByName(classButtons[currentPlayerPosition].portrait.fileName);
+
+                    RainMeadow.Debug(currentPlayerPosition + "PREV");
+
+
+
+
+                };
+                this.pages[0].subObjects.Add(viewNextPlayer);
+                this.pages[0].subObjects.Add(viewPrevPlayer);
+
 
                 if (this != null)
                 {
@@ -554,9 +647,6 @@ namespace RainMeadow
         private void AddMeUsername()
         {
 
-            var myUsernameButton = new SimplerButton[1];
-
-
             string name = OnlineManager.mePlayer.id.name;
             CSteamID playerId;
             if (OnlineManager.players[0].id is LocalMatchmakingManager.LocalPlayerId)
@@ -568,17 +658,17 @@ namespace RainMeadow
                 playerId = (OnlineManager.mePlayer.id as SteamMatchmakingManager.SteamPlayerId).steamID;
             }
 
-            myUsernameButton[0] = new SimplerButton(this, pages[0], name, new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * myUsernameButton.Length, 40f), new Vector2(num - 20f, 30f));
-            (myUsernameButton[0] as SimplerButton).OnClick += (_) =>
+            meUsernameButton = new SimplerButton(this, pages[0], name, new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f), 40f), new Vector2(num - 20f, 30f));
+            (meUsernameButton as SimplerButton).OnClick += (_) =>
             {
                 string url = $"https://steamcommunity.com/profiles/{playerId}";
                 SteamFriends.ActivateGameOverlayToWebPage(url);
             };
 
-            myUsernameButton[0].buttonBehav.greyedOut = false;
+            meUsernameButton.buttonBehav.greyedOut = false;
 
 
-            pages[0].subObjects.Add(myUsernameButton[0]);
+            pages[0].subObjects.Add(meUsernameButton);
 
 
 
@@ -588,14 +678,13 @@ namespace RainMeadow
             var SlugList = ArenaHelpers.AllSlugcats();
             classButtons = new ArenaOnlinePlayerJoinButton[OnlineManager.players.Count];
 
-
             if (OnlineManager.players.Count > 1)
             {
                 for (int l = 1; l < classButtons.Length; l++)
                 {
                     if (this.usernameButtons[l].menuLabel.text == OnlineManager.players[l].id.name) // we have our mark
 
-                    classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
+                        classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
                     classButtons[l].buttonBehav.greyedOut = true;
                     classButtons[l].portraitBlack = Custom.LerpAndTick(classButtons[l].portraitBlack, 1f, 0.06f, 0.05f);
 
