@@ -56,7 +56,7 @@ namespace RainMeadow
             }
 
             allSlugs = ArenaHelpers.AllSlugcats();
-            holdPlayerPosition = 1; // the position we want to use for changing as we navigate
+            holdPlayerPosition = 3; // the position we want to use for changing as we navigate
 
             OverrideMultiplayerMenu();
             BindSettings();
@@ -328,6 +328,7 @@ namespace RainMeadow
 
             if (this.playButton != null)
             {
+
                 if (OnlineManager.players.Count == 1)
                 {
                     this.playButton.menuLabel.text = this.Translate("WAIT FOR OTHERS");
@@ -335,60 +336,7 @@ namespace RainMeadow
 
                 }
 
-                if (arena.clientsAreReadiedUp == OnlineManager.players.Count)
-                {
-                    arena.allPlayersReadyLockLobby = true;
-                    if (OnlineManager.players.Count == 1)
-                    {
-                        this.playButton.menuLabel.text = this.Translate("LOBBY WILL LOCK");
-
-                    }
-                    else
-                    {
-                        this.playButton.menuLabel.text = this.Translate("ENTER");
-
-                    }
-
-                    if (OnlineManager.lobby.isOwner)
-                    {
-                        this.playButton.inactive = false;
-                    }
-
-                    if (!OnlineManager.lobby.isOwner)
-                    {
-                        if (!arena.isInGame)
-                        {
-                            this.playButton.inactive = true;
-                        }
-                        else
-                        {
-                            this.playButton.inactive = false;
-                        }
-
-                    }
-
-                }
-
-                
-                if (this.levelSelector != null && this.levelSelector.levelsPlaylist.levelItems.Count == 0 && !OnlineManager.lobby.isOwner)
-                {
-                    this.playButton.inactive = false;
-                }
-
-
-
-                if (arena.clientsAreReadiedUp != OnlineManager.players.Count && arena.isInGame)
-                {
-                    this.playButton.inactive = true;
-                    this.playButton.menuLabel.text = this.Translate("GAME IN SESSION");
-                }
-
-                if (arena.returnToLobby && !flushArenaSittingForWaitingClients)
-                {
-                    ArenaHelpers.ResetReadyUpLogic(arena, this);
-                    flushArenaSittingForWaitingClients = true;
-                }
-                if (!OnlineManager.lobby.isOwner)
+                if (!OnlineManager.lobby.isOwner) // let clients ready up when no map is selected
                 {
                     if (this.GetGameTypeSetup.playList.Count * this.GetGameTypeSetup.levelRepeats >= 0)
                     {
@@ -401,16 +349,66 @@ namespace RainMeadow
                         this.playButton.buttonBehav.greyedOut = false;
                     }
 
-
-                }
-                else
-                {
-
-                    if (this.GetGameTypeSetup.playList.Count * this.GetGameTypeSetup.levelRepeats > 0)
+                    if (!clientReadiedUp && this.levelSelector != null && this.levelSelector.levelsPlaylist.levelItems.Count == 0)
                     {
                         this.playButton.buttonBehav.greyedOut = false;
                     }
+
                 }
+
+
+                if (clientReadiedUp && OnlineManager.players.Count > 1)
+                {
+                    this.playButton.inactive = true;
+                }
+
+                if (arena.clientsAreReadiedUp == OnlineManager.players.Count)
+                {
+                    arena.allPlayersReadyLockLobby = true;
+
+                    if (OnlineManager.players.Count == 1)
+                    {
+                        this.playButton.menuLabel.text = this.Translate("LOBBY WILL LOCK"); // are you sure you want to enter host? Nobody can join you
+
+                    }
+                    else
+                    {
+                        this.playButton.menuLabel.text = this.Translate("ENTER");
+
+                    }
+
+                    if (OnlineManager.lobby.isOwner) // go in, host
+                    {
+                        this.playButton.inactive = false;
+                    }
+
+                    if (!OnlineManager.lobby.isOwner)
+                    {
+                        if (!arena.isInGame) // wait for host to establish session
+                        {
+                            this.playButton.inactive = true;
+                        }
+                        else
+                        {
+                            this.playButton.inactive = false;
+                        }
+
+                    }
+
+                }
+
+                if (arena.arenaSittingOnlineOrder.Count != OnlineManager.players.Count && arena.isInGame) // you're late.
+                {
+                    this.playButton.inactive = true;
+                    this.playButton.menuLabel.text = this.Translate("GAME IN SESSION");
+                }
+
+                if (arena.returnToLobby && !flushArenaSittingForWaitingClients) // coming back to lobby, reset everything
+                {
+                    ArenaHelpers.ResetReadyUpLogic(arena, this);
+                    flushArenaSittingForWaitingClients = true;
+                }
+
 
 
             }
@@ -492,7 +490,12 @@ namespace RainMeadow
                     AddOtherUsernameButtons();
                     AddOtherPlayerClassButtons();
 
-                    HandleLobbyProfileOverflow();
+                    if (OnlineManager.players.Count > holdPlayerPosition)
+                    {
+                        HandleLobbyProfileOverflow();
+
+                    }
+                    clientReadiedUp = false;
 
 
                     if (this != null)
@@ -612,7 +615,7 @@ namespace RainMeadow
             {
                 for (int l = 1; l < OnlineManager.players.Count; l++)
                 {
-                    if (l > 1)
+                    if (l > 3)
                     {
                         break;
                     }
@@ -651,7 +654,7 @@ namespace RainMeadow
             {
                 for (int k = 1; k < usernameButtons.Length; k++)
                 {
-                    if (k > 1)
+                    if (k > 3)
                     {
                         break;
                     }
@@ -738,6 +741,7 @@ namespace RainMeadow
                 viewNextPlayer.buttonBehav.greyedOut = true;
             }
 
+
             viewNextPlayer.OnClick += (_) =>
             {
                 RainMeadow.Debug(currentPlayerPosition + "CURRENT");
@@ -762,7 +766,7 @@ namespace RainMeadow
 
                 currentPlayerPosition++;
 
-                if (currentPlayerPosition + 1 >= OnlineManager.players.Count - 1) // not including me
+                if (currentPlayerPosition + 1 >= OnlineManager.players.Count)
                 {
                     RainMeadow.Debug("End of extended list: " + currentPlayerPosition);
                     viewNextPlayer.buttonBehav.greyedOut = true;
