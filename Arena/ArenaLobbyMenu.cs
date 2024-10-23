@@ -179,7 +179,7 @@ namespace RainMeadow
         void BuildPlayerSlots()
         {
 
-            AddMeClassButton();
+            AddMeClassButton(0);
             AddMeUsername();
             AddOtherUsernameButtons();
             AddOtherPlayerClassButtons();
@@ -496,7 +496,7 @@ namespace RainMeadow
                 AddOtherPlayerClassButtons();
                 var SlugList = ArenaHelpers.AllSlugcats();
 
-                viewNextPlayer = new SimplerSymbolButton(this, pages[0], "Menu_Symbol_Arrow", "VIEWNEXT", new Vector2(classButtons[OnlineManager.players.Count - 1].pos.x + 120f, classButtons[OnlineManager.players.Count - 1].pos.y + 80));
+                viewNextPlayer = new SimplerSymbolButton(this, pages[0], "Menu_Symbol_Arrow", "VIEWNEXT", new Vector2(classButtons[OnlineManager.players.Count - 1].pos.x + 120f, classButtons[OnlineManager.players.Count - 1].pos.y + 60));
                 viewNextPlayer.symbolSprite.rotation = 90;
                 holdPlayerPosition = 1;
                 currentPlayerPosition = 1;
@@ -517,22 +517,15 @@ namespace RainMeadow
                     }
 
                     usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition + 1].id.name; // current becomes next
+                    classButtons[holdPlayerPosition].userDefinedNameToRetrieveFileName = OnlineManager.players[currentPlayerPosition + 1].id.name;
+                    classButtons[holdPlayerPosition].portrait.LoadFile();
+                    classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[currentPlayerPosition + 1].portrait.fileName);
 
                     currentPlayerPosition++;
 
-                    //classButtons[currentPlayerPosition].portrait = classButtons[currentPlayerPosition - 1].portrait;
-                    //classButtons[currentPlayerPosition].portrait.sprite = classButtons[currentPlayerPosition - 1].portrait.sprite;
-                    //classButtons[currentPlayerPosition].portrait.LoadFile();
-                    //classButtons[currentPlayerPosition].portrait.sprite.SetElementByName(classButtons[currentPlayerPosition].portrait.fileName);
-
-                    RainMeadow.Debug(currentPlayerPosition + "NEXT");
-
-
-
-
                 };
 
-                viewPrevPlayer = new SimplerSymbolButton(this, pages[0], "Menu_Symbol_Arrow", "VIEWPREV", new Vector2(classButtons[OnlineManager.players.Count - 1].pos.x + 120f, classButtons[OnlineManager.players.Count - 1].pos.y + 60));
+                viewPrevPlayer = new SimplerSymbolButton(this, pages[0], "Menu_Symbol_Arrow", "VIEWPREV", new Vector2(classButtons[OnlineManager.players.Count - 1].pos.x + 120f, classButtons[OnlineManager.players.Count - 1].pos.y + 30));
                 viewPrevPlayer.symbolSprite.rotation = 270;
                 viewPrevPlayer.OnClick += (_) =>
                 {
@@ -548,16 +541,11 @@ namespace RainMeadow
                         return;
                     }
                     usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition -1].id.name; // current becomes previous
+                    classButtons[holdPlayerPosition].userDefinedNameToRetrieveFileName = OnlineManager.players[currentPlayerPosition - 1].id.name;
+                    classButtons[holdPlayerPosition].portrait.LoadFile();
+                    classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[currentPlayerPosition -1].portrait.fileName);
 
                     currentPlayerPosition--;
-
-                    //classButtons[currentPlayerPosition].portrait.LoadFile();
-                    //classButtons[currentPlayerPosition].portrait.sprite.SetElementByName(classButtons[currentPlayerPosition].portrait.fileName);
-
-                    RainMeadow.Debug(currentPlayerPosition + "PREV");
-
-
-
 
                 };
                 this.pages[0].subObjects.Add(viewNextPlayer);
@@ -574,14 +562,13 @@ namespace RainMeadow
         }
 
 
-        private void AddMeClassButton() // doing unique stuff with player 0 so less annoying this way
+        private void AddMeClassButton(int currentColorIndex) // doing unique stuff with player 0 so less annoying this way
         {
 
             var SlugList = ArenaHelpers.AllSlugcats();
             meClassButton = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f), 40f), 0);
             meClassButton.buttonBehav.greyedOut = false;
             meClassButton.readyForCombat = true;
-            int currentColorIndex;
             if (arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.mePlayer.id.name, out var existingValue))
             {
                 currentColorIndex = arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.name];
@@ -680,25 +667,25 @@ namespace RainMeadow
 
             if (OnlineManager.players.Count > 1)
             {
-                for (int l = 1; l < classButtons.Length; l++)
+                for (int l = 1; l < OnlineManager.players.Count; l++)
                 {
                     if (this.usernameButtons[l].menuLabel.text == OnlineManager.players[l].id.name) // we have our mark
 
-                        classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
+                    classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
                     classButtons[l].buttonBehav.greyedOut = true;
                     classButtons[l].portraitBlack = Custom.LerpAndTick(classButtons[l].portraitBlack, 1f, 0.06f, 0.05f);
-
+                    var currentColorIndex = arena.playersInLobbyChoosingSlugs[OnlineManager.players[l].id.name];
 
                     if (arena.playersInLobbyChoosingSlugs[OnlineManager.players[l].id.name] > 3 && ModManager.MSC)
                     {
-                        classButtons[l].portrait.fileName = "MultiplayerPortrait" + "41-" + SlugList[arena.playersInLobbyChoosingSlugs[OnlineManager.players[l].id.name]];
+                        classButtons[l].userDefinedNameToRetrieveFileName = "MultiplayerPortrait" + "41-" + SlugList[currentColorIndex];
 
                     }
                     else
                     {
-                        classButtons[l].portrait.fileName = "MultiplayerPortrait" + arena.playersInLobbyChoosingSlugs[OnlineManager.players[l].id.name] + "1";
+                        classButtons[l].userDefinedNameToRetrieveFileName = "MultiplayerPortrait" + currentColorIndex + "1";
                     }
-
+                    classButtons[l].portrait.fileName = classButtons[l].userDefinedNameToRetrieveFileName;
                     classButtons[l].portrait.LoadFile();
                     classButtons[l].portrait.sprite.SetElementByName(classButtons[l].portrait.fileName);
 

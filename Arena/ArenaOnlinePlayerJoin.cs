@@ -38,6 +38,8 @@ namespace Menu
 
         public bool readyForCombat;
 
+        public string userDefinedNameToRetrieveFileName;
+
         public ArenaCompetitiveGameMode arena;
 
         private ArenaLobbyMenu arenaMenu;
@@ -72,7 +74,7 @@ namespace Menu
             subObjects.Add(portrait);
             string text = menu.Translate("");
             readyForCombat = false;
-
+            userDefinedNameToRetrieveFileName = "";
             float num = 0f;
             menuLabel = new MenuLabel(menu, this, menu.Translate("PLAYER") + (InGameTranslator.LanguageID.UsesSpaces(menu.CurrLang) ? " " : "") + (index + 1) + "\r\n" + text, new Vector2(0.01f, 0.1f + num), size, bigText: false);
             subObjects.Add(menuLabel);
