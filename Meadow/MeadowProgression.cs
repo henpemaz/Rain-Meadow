@@ -408,6 +408,14 @@ namespace RainMeadow
                 previewColor = Extensions.ColorFromHex(0xc3c5c7),
             });
 
+            public static Skin Eggbug_Citrus = new("Eggbug_Citrus", true, new()
+            {
+                character = Character.Eggbug,
+                displayName = "Citrus",
+                creatureType = CreatureTemplate.Type.EggBug,
+                randomSeed = 2399,
+                previewColor = Extensions.ColorFromHex(0x00e1f5),
+            });
             public static Skin Eggbug_Blueberry = new("Eggbug_Blueberry", true, new()
             {
                 character = Character.Eggbug,
@@ -423,14 +431,6 @@ namespace RainMeadow
                 creatureType = CreatureTemplate.Type.EggBug,
                 randomSeed = 2337,
                 previewColor = Extensions.ColorFromHex(0x00ea68),
-            });
-            public static Skin Eggbug_Citrus = new("Eggbug_Citrus", true, new()
-            {
-                character = Character.Eggbug,
-                displayName = "Citrus",
-                creatureType = CreatureTemplate.Type.EggBug,
-                randomSeed = 2399,
-                previewColor = Extensions.ColorFromHex(0x00e1f5),
             });
             public static Skin Eggbug_Mango = new("Eggbug_Mango", true, new()
             {
