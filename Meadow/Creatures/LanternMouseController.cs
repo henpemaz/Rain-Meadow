@@ -22,6 +22,23 @@ namespace RainMeadow
             IL.LanternMouse.Update += LanternMouse_Update1;
 
             IL.MouseGraphics.Update += MouseGraphics_Update; // please, look pretty
+
+            new MonoMod.RuntimeDetour.Hook(typeof(MouseGraphics).GetProperty("BodyColor").GetGetMethod(), MouseGraphics_ColorHook);
+            new MonoMod.RuntimeDetour.Hook(typeof(MouseGraphics).GetProperty("DecalColor").GetGetMethod(), MouseGraphics_ColorHook);
+            new MonoMod.RuntimeDetour.Hook(typeof(MouseGraphics).GetProperty("EyesColor").GetGetMethod(), MouseGraphics_ColorHook);
+        }
+
+        private static Color MouseGraphics_ColorHook(Func<MouseGraphics, Color> orig, MouseGraphics self)
+        {
+            if (creatureControllers.TryGetValue((Creature)self.owner, out var s))
+            {
+                var chargingWas = self.charging;
+                if (((LanternMouseController)s).invertedColors) self.charging = Mathf.Max(chargingWas, 0.95f);
+                var color = orig(self);
+                self.charging = chargingWas;
+                return color;
+            }
+            return orig(self);
         }
 
         private static void MouseGraphics_Update(ILContext il)
@@ -34,7 +51,7 @@ namespace RainMeadow
             {
                 if (creatureControllers.TryGetValue((Creature)self.owner, out var s))
                 {
-                    self.litRoom *= 0.3f;
+                    self.litRoom *= 0.3f; // do not darken yourself as much please
                 }
             }
             );
@@ -128,6 +145,7 @@ namespace RainMeadow
         }
 
         private readonly LanternMouse mouse;
+        private bool invertedColors;
 
         public LanternMouseController(LanternMouse mouse, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(mouse, oc, playerNumber, customization)
         {
@@ -137,6 +155,11 @@ namespace RainMeadow
             var color = mouse.iVars.color.rgb;
             customization.ModifyBodyColor(ref color);
             mouse.iVars.color = color.ToHSL();
+
+            if (customization.skin == MeadowProgression.Skin.LanternMouse_Opal || customization.skin == MeadowProgression.Skin.LanternMouse_Garnet)
+            {
+                invertedColors = true;
+            }
         }
 
         public override bool HasFooting => mouse.footingCounter >= 10;

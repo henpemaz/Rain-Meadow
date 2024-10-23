@@ -449,19 +449,77 @@ namespace RainMeadow
                 baseColor = Extensions.ColorFromHex(0xff0859),
             });
 
-            public static Skin LanternMouse_Blue = new("LanternMouse_Blue", true, new()
+            public static Skin LanternMouse_Saphire = new("LanternMouse_Saphire", true, new()
             {
                 character = Character.LanternMouse,
-                displayName = "Blue",
+                displayName = "Saphire",
                 creatureType = CreatureTemplate.Type.LanternMouse,
-                randomSeed = 1001,
+                randomSeed = 9814,
+                previewColor = Extensions.ColorFromHex(0xccddff),
             });
-            public static Skin LanternMouse_Teal = new("LanternMouse_Teal", true, new()
+            public static Skin LanternMouse_Ruby = new("LanternMouse_Ruby", true, new()
             {
                 character = Character.LanternMouse,
-                displayName = "Teal",
+                displayName = "Ruby",
                 creatureType = CreatureTemplate.Type.LanternMouse,
-                randomSeed = 1002,
+                randomSeed = 9834,
+                previewColor = Extensions.ColorFromHex(0xffcecc),
+            });
+            public static Skin LanternMouse_Acquamarine = new("LanternMouse_Acquamarine", true, new()
+            {
+                character = Character.LanternMouse,
+                displayName = "Acquamarine",
+                creatureType = CreatureTemplate.Type.LanternMouse,
+                randomSeed = 9764,
+                previewColor = Extensions.ColorFromHex(0xccfeff),
+            });
+            public static Skin LanternMouse_Citrine = new("LanternMouse_Citrine", true, new()
+            {
+                character = Character.LanternMouse,
+                displayName = "Citrine",
+                creatureType = CreatureTemplate.Type.LanternMouse,
+                randomSeed = 9795,
+                previewColor = Extensions.ColorFromHex(0xffeacc),
+            });
+            public static Skin LanternMouse_Emerald = new("LanternMouse_Emerald", true, new()
+            {
+                character = Character.LanternMouse,
+                displayName = "Emerald",
+                creatureType = CreatureTemplate.Type.LanternMouse,
+                randomSeed = 10137,
+                previewColor = Extensions.ColorFromHex(0xd2ffcc),
+            });
+            public static Skin LanternMouse_Quartz = new("LanternMouse_Quartz", true, new()
+            {
+                character = Character.LanternMouse,
+                displayName = "Quartz",
+                creatureType = CreatureTemplate.Type.LanternMouse,
+                randomSeed = 11801,
+                previewColor = Extensions.ColorFromHex(0xf9ccff),
+            });
+            public static Skin LanternMouse_Amethyst = new("LanternMouse_Amethyst", true, new()
+            {
+                character = Character.LanternMouse,
+                displayName = "Amethyst",
+                creatureType = CreatureTemplate.Type.LanternMouse,
+                randomSeed = 12346,
+                previewColor = Extensions.ColorFromHex(0xdeccff),
+            });
+            public static Skin LanternMouse_Opal = new("LanternMouse_Opal", true, new()
+            {
+                character = Character.LanternMouse,
+                displayName = "Opal",
+                creatureType = CreatureTemplate.Type.LanternMouse,
+                randomSeed = 9814,
+                baseColor = Extensions.ColorFromHex(0x202227),
+            });
+            public static Skin LanternMouse_Garnet = new("LanternMouse_Garnet", true, new()
+            {
+                character = Character.LanternMouse,
+                displayName = "Garnet",
+                creatureType = CreatureTemplate.Type.LanternMouse,
+                randomSeed = 9834,
+                baseColor = Extensions.ColorFromHex(0x272020),
             });
         }
 
