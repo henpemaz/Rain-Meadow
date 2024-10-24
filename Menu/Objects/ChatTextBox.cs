@@ -71,7 +71,6 @@ namespace RainMeadow
                             {
                                 var username = onlineHud.parts.FirstOrDefault(f => f is OnlinePlayerDisplay) as OnlinePlayerDisplay;
                                 username.label.text = value;
-                                overSlugDuration = value.Length * 4;
                             }
                         }
                     } commenting this out for now */
