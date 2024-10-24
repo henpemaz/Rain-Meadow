@@ -35,6 +35,14 @@ namespace RainMeadow
         public float tongueRequestedLength;
         [OnlineField(group = "tongue", nullable = true)]
         public BodyChunkRef tongueAttachedChunk;
+        [OnlineField]
+        public bool reachingForObject;
+        [OnlineField]
+        public Vector2 absoluteHuntPos;
+        [OnlineField]
+        public Vector2 handPos;
+        [OnlineField]
+        public int handReaching;
 
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
@@ -58,6 +66,26 @@ namespace RainMeadow
                 tongueRequestedLength = tongue.requestedRopeLength;
                 tongueAttachedChunk = BodyChunkRef.FromBodyChunk(tongue.attachedChunk);
             }
+
+            if ((p.graphicsModule as PlayerGraphics).hands != null)
+            {
+
+                for (int h = 0; h < (p.graphicsModule as PlayerGraphics).hands.Length; h++)
+                {
+                    if ((p.graphicsModule as PlayerGraphics).hands[h].reachingForObject)
+                    {
+                        absoluteHuntPos = (p.graphicsModule as PlayerGraphics).hands[h].absoluteHuntPos;
+                        reachingForObject = (p.graphicsModule as PlayerGraphics).hands[h].reachingForObject;
+                        handReaching = h;
+
+                    }
+                   
+
+                }
+            }
+
+
+
             var i = p.input[0];
             inputs = (ushort)(
                   (i.x == 1 ? 1 << 0 : 0)
@@ -109,6 +137,23 @@ namespace RainMeadow
                     pl.spearOnBack.spear = (spearOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Spear;
                 //if (pl.slugOnBack != null)
                 //    pl.slugOnBack.slugcat = (slugOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Player;
+
+
+                if ((pl.graphicsModule as PlayerGraphics).hands != null)
+                {
+                    for (int h = 0; h < (pl.graphicsModule as PlayerGraphics).hands.Length; h++)
+                    {
+
+                        if (reachingForObject)
+                        {
+                            (pl.graphicsModule as PlayerGraphics).hands[handReaching].absoluteHuntPos = absoluteHuntPos;
+                            (pl.graphicsModule as PlayerGraphics).hands[handReaching].reachingForObject = reachingForObject;
+                        }
+
+
+                    }
+                 (pl.graphicsModule as PlayerGraphics).LookAtPoint(absoluteHuntPos, 10f);
+                }
 
                 if (pl.tongue is Player.Tongue tongue)
                 {
