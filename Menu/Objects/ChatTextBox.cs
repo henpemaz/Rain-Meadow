@@ -14,7 +14,6 @@ namespace RainMeadow
         public Action<char> OnKeyDown { get; set; }
         public static int textLimit = 75;
         public string value;
-        public event Action OnUnload;
         public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, "", pos, size)
         {
             steamMatchmakingManager = MatchmakingManager.instance as SteamMatchmakingManager;
@@ -44,7 +43,7 @@ namespace RainMeadow
         {
             if (ChatHud.gamePaused)
             {
-                OnKeyDown = null;
+                Unload();
                 return;
             }
             if (input == '\b')
