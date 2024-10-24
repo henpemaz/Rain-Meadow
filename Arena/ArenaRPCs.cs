@@ -22,12 +22,12 @@ namespace RainMeadow
                 {
                     if (selectable is MultipleChoiceArray.MultipleChoiceButton && (selectable as MultipleChoiceArray.MultipleChoiceButton).multipleChoiceArray.IDString == stringID)
                     {
-                        
+
                         game.arenaSettingsInterface.SetSelected((selectable as MultipleChoiceArray.MultipleChoiceButton).multipleChoiceArray, value); // why didn't this method take a freakin string
                     }
 
                 }
-               
+
             }
         }
 
@@ -110,27 +110,35 @@ namespace RainMeadow
                     return;
                 }
                 var Sluglist = ArenaHelpers.AllSlugcats();
-                for (int i = 1; i < game.usernameButtons.Length; i++)
+                arena.playersInLobbyChoosingSlugs[userChangingClass] = currentColorIndex;
+
+                try
                 {
-
-                    if (game.usernameButtons[i].menuLabel.text == userChangingClass)
+                    for (int i = 1; i < game.usernameButtons.Length; i++)
                     {
-                        if (currentColorIndex > 3 && ModManager.MSC)
+
+                        if (game.usernameButtons[i].menuLabel.text == userChangingClass) // TODO: Null referencing here
                         {
-                            game.classButtons[i].portrait.fileName = "MultiplayerPortrait" + "41-" + Sluglist[currentColorIndex];
+                            if (currentColorIndex > 3 && ModManager.MSC)
+                            {
+                                game.classButtons[i].portrait.fileName = "MultiplayerPortrait" + "41-" + Sluglist[currentColorIndex];
 
+                            }
+                            else
+                            {
+                                game.classButtons[i].portrait.fileName = "MultiplayerPortrait" + currentColorIndex + "1";
+                            }
+
+
+                            game.classButtons[i].portrait.LoadFile();
+                            game.classButtons[i].portrait.sprite.SetElementByName(game.classButtons[i].portrait.fileName);
                         }
-                        else
-                        {
-                            game.classButtons[i].portrait.fileName = "MultiplayerPortrait" + currentColorIndex + "1";
-                        }
 
-
-                        game.classButtons[i].portrait.LoadFile();
-                        game.classButtons[i].portrait.sprite.SetElementByName(game.classButtons[i].portrait.fileName);
-                        arena.playersInLobbyChoosingSlugs[userChangingClass] = currentColorIndex;
                     }
-
+                }
+                catch
+                {
+                    RainMeadow.Debug("Could not find username button");
                 }
 
             }
@@ -146,17 +154,27 @@ namespace RainMeadow
                 {
                     return;
                 }
+                arena.clientsAreReadiedUp++;
 
-                for (int i = 1; i < game.usernameButtons.Length; i++)
+                try
                 {
-
-                    if (game.usernameButtons[i].menuLabel.text == userIsReady)
+                    for (int i = 1; i < game.usernameButtons.Length; i++)
                     {
-                        arena.clientsAreReadiedUp++;
-                        game.classButtons[i].readyForCombat = true;
-                    }
 
+                        if (game.usernameButtons[i].menuLabel.text == userIsReady)
+                        {
+
+                            game.classButtons[i].readyForCombat = true;
+                        }
+
+                    }
                 }
+                catch
+                {
+                    RainMeadow.Debug("Could not find username button");
+                }
+
+
 
             }
 
