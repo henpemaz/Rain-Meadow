@@ -181,7 +181,7 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void Arena_Killing(OnlinePhysicalObject absCreaturePlayer, OnlinePhysicalObject target, string username)
+        public static void Arena_Killing(OnlinePhysicalObject absCreaturePlayer, OnlinePhysicalObject target, string username, int timeAlive)
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
@@ -240,6 +240,27 @@ namespace RainMeadow
             }
             game.GetArenaGameSession.arenaSitting.NextLevel(game.manager);
             game.arenaOverlay.nextLevelCall = true;
+        }
+
+        [RPCMethod]
+        public static void Arena_AddTimeAlive(int timeAlive, string incomingUsername)
+        {
+            if (RainMeadow.isArenaMode(out var arena)) {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+                foreach (var result in game.GetArenaGameSession.arenaSitting.players)
+                {
+                    var onlineResult = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, result.playerNumber);
+                    if (onlineResult.id.name == incomingUsername)
+                    {
+                        result.timeAlive = timeAlive;
+                    }
+
+                };
+            }
         }
 
         [RPCMethod]

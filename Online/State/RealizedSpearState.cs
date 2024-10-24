@@ -32,7 +32,11 @@ namespace RainMeadow
                 stuckBodyPart = (sbyte)spear.stuckBodyPart;
                 stuckRotation = spear.stuckRotation;
             }
-            else stuckInChunk = null;
+            else
+            {
+                spear.Destroy();
+                stuckInChunk = null;
+            }
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
