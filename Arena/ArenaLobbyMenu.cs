@@ -191,7 +191,7 @@ namespace RainMeadow
 
             this.GetArenaSetup.playersJoined[0] = true; // host should be part of game
 
-            if (OnlineManager.players.Count > holdPlayerPosition)
+            if (OnlineManager.players.Count > 4)
             {
                 HandleLobbyProfileOverflow();
 
@@ -622,7 +622,7 @@ namespace RainMeadow
 
                     if (this.usernameButtons[l].menuLabel.text == OnlineManager.players[l].id.name) // we have our mark
 
-                        classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
+                    classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
                     classButtons[l].buttonBehav.greyedOut = true;
                     classButtons[l].portraitBlack = Custom.LerpAndTick(classButtons[l].portraitBlack, 1f, 0.06f, 0.05f);
                     var currentColorIndex = arena.playersInLobbyChoosingSlugs[OnlineManager.players[l].id.name];
@@ -732,7 +732,7 @@ namespace RainMeadow
                 pages[0].RemoveSubObject(viewPrevPlayer);
             }
 
-            currentPlayerPosition = 1;
+            currentPlayerPosition = holdPlayerPosition;
 
             viewNextPlayer = new SimplerSymbolButton(this, pages[0], "Menu_Symbol_Arrow", "VIEWNEXT", new Vector2(classButtons[holdPlayerPosition].pos.x + 120f, classButtons[holdPlayerPosition].pos.y + 60));
             viewNextPlayer.symbolSprite.rotation = 90;
@@ -744,15 +744,13 @@ namespace RainMeadow
 
             viewNextPlayer.OnClick += (_) =>
             {
-                RainMeadow.Debug(currentPlayerPosition + "CURRENT");
-
                 if (viewPrevPlayer != null && viewPrevPlayer.buttonBehav.greyedOut)
                 {
                     viewPrevPlayer.buttonBehav.greyedOut = false;
                 }
 
                 usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition + 1].id.name; // current becomes next
-                if (currentPlayerPosition > 3 && ModManager.MSC)
+                if (arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition + 1].id.name] > 3 && ModManager.MSC)
                 {
                     classButtons[holdPlayerPosition].portrait.fileName = "MultiplayerPortrait" + "41-" + allSlugs[arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition + 1].id.name]];
 
@@ -777,7 +775,7 @@ namespace RainMeadow
 
             viewPrevPlayer = new SimplerSymbolButton(this, pages[0], "Menu_Symbol_Arrow", "VIEWPREV", new Vector2(classButtons[holdPlayerPosition].pos.x + 120f, classButtons[holdPlayerPosition].pos.y + 20));
             viewPrevPlayer.symbolSprite.rotation = 270;
-            if (currentPlayerPosition == 1)
+            if (currentPlayerPosition <= 3)
             {
                 viewPrevPlayer.buttonBehav.greyedOut = true;
             }
@@ -787,10 +785,9 @@ namespace RainMeadow
                 {
                     viewNextPlayer.buttonBehav.greyedOut = false;
                 }
-                RainMeadow.Debug(currentPlayerPosition + "CURRENT");
 
                 usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition - 1].id.name; // current becomes previous
-                if (currentPlayerPosition > 3 && ModManager.MSC)
+                if (arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition - 1].id.name] > 3 && ModManager.MSC)
                 {
                     classButtons[holdPlayerPosition].portrait.fileName = "MultiplayerPortrait" + "41-" + allSlugs[arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition - 1].id.name]];
 
@@ -803,7 +800,7 @@ namespace RainMeadow
                 classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
 
                 currentPlayerPosition--;
-                if (currentPlayerPosition - 1 < 1)
+                if (currentPlayerPosition - 1 <= 3)
                 {
                     RainMeadow.Debug("Beginning of extended list: " + currentPlayerPosition);
                     viewPrevPlayer.buttonBehav.greyedOut = true;
