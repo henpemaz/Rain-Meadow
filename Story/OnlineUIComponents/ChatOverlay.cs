@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Menu;
-using Menu.Remix.MixedUI;
 using UnityEngine;
 
 namespace RainMeadow
 {
     public class ChatOverlay : Menu.Menu
     {
-        private ButtonTypingHandler typingHandler;
         private GameObject gameObject;
         private List<string> chatLog;
-        private List<MenuLabel> chatLabels = new();
         public static bool isReceived = false;
         public RainWorldGame game;
         public ChatOverlay chatOverlay;
@@ -19,21 +15,19 @@ namespace RainMeadow
         public ChatOverlay(ProcessManager manager, RainWorldGame game, List<string> chatLog) : base(manager, RainMeadow.Ext_ProcessID.ChatMode)
         {
             gameObject ??= new GameObject();
-            typingHandler ??= gameObject.AddComponent<ButtonTypingHandler>();
             this.chatLog = chatLog;
             this.game = game;
             pages.Add(new Page(this, null, "chat", 0));
             InitChat();
+            isReceived = true;
         }
-        
+
         public override void ShutDownProcess()
         {
-            chatLabels.Clear();
-            chat.Unassign();
             chat.DelayedUnload(0.5f);
             base.ShutDownProcess();
-            typingHandler.OnDestroy();
         }
+
         public override void Update()
         {
             base.Update();
@@ -51,11 +45,6 @@ namespace RainMeadow
 
         public void UpdateLogDisplay()
         {
-            foreach (var label in chatLabels)
-            {
-                pages[0].subObjects.Remove(label);
-            }
-            chatLabels.Clear();
             float yOfftset = 0;
             foreach (string message in chatLog)
             {
@@ -63,7 +52,6 @@ namespace RainMeadow
                 chatMessageLabel.label.alignment = FLabelAlignment.Left;
                 pages[0].subObjects.Add(chatMessageLabel);
                 yOfftset += 20f;
-                RainMeadow.Debug($"Message log part: {message}");
             }
         }
 
