@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using Menu.Remix.MixedUI;
-using System;
 
 namespace RainMeadow
 {
@@ -48,7 +47,7 @@ namespace RainMeadow
                     queue.Enqueue(inputString[j]);
                 }
             }
-            while (queue.Count > 0 && _focused.OnKeyDown != null)
+            while (queue.Count > 0)
             {
                 _focused?.OnKeyDown(queue.Dequeue());
             }
@@ -56,16 +55,10 @@ namespace RainMeadow
         }
         public void OnDestroy()
         {
-            _HandlerOnDestroy();
-        }
-
-        private void _HandlerOnDestroy()
-        {
             _assigned.Clear();
             _focused = null;
             CanBeTypedExt._HandlerOnDestroy();
         }
-
         public void Assign(ICanBeTyped typable)
         {
             _assigned.Add(typable);

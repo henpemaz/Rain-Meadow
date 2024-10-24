@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Menu;
-using Menu.Remix.MixedUI;
 using UnityEngine;
 
 namespace RainMeadow
@@ -46,7 +45,6 @@ namespace RainMeadow
                 chatMessageLabel.label.alignment = FLabelAlignment.Left;
                 pages[0].subObjects.Add(chatMessageLabel);
                 yOfftset += 20f;
-                RainMeadow.Debug($"Message log part: {message}");
             }
         }
 
