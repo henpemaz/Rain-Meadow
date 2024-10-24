@@ -25,6 +25,7 @@ namespace RainMeadow
         public UIelementWrapper bodyColor;
         public UIelementWrapper eyeColor;
         public bool clientReadiedUp = false;
+        public MenuLabel totalClientsReadiedUpOnPage;
         private SimplerSymbolButton viewNextPlayer;
         private SimplerSymbolButton viewPrevPlayer;
 
@@ -166,6 +167,10 @@ namespace RainMeadow
                 }
 
             }
+
+            // Ready up label
+            this.totalClientsReadiedUpOnPage = new MenuLabel(this, pages[0], this.Translate($"Ready: {arena.clientsAreReadiedUp} / {OnlineManager.players.Count}"), new Vector2(meUsernameButton.pos.x + 30f, meUsernameButton.pos.y + 150f), new Vector2(10f, 10f), false);
+            this.pages[0].subObjects.Add(totalClientsReadiedUpOnPage);
         }
 
         SimplerButton CreateButton(string text, Vector2 pos, Vector2 size, Action<SimplerButton>? clicked = null, Page? page = null)
@@ -288,6 +293,7 @@ namespace RainMeadow
             if (!arena.allPlayersReadyLockLobby)
             {
                 arena.clientsAreReadiedUp++;
+                
                 clientReadiedUp = true;
                 if (OnlineManager.players.Count > 1)
                 {
@@ -325,6 +331,11 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
+
+            if (this.totalClientsReadiedUpOnPage != null)
+            {
+                UpdateReadyUpLabel();
+            }
 
             if (this.playButton != null)
             {
@@ -714,6 +725,12 @@ namespace RainMeadow
         {
             if (personaSettings != null) personaSettings.bodyColor = bodyColorPicker.valuecolor;
             if (personaSettings != null) personaSettings.eyeColor = eyeColorPicker.valuecolor;
+        }
+
+        private void UpdateReadyUpLabel()
+        {
+            this.totalClientsReadiedUpOnPage.text = $"Ready: {arena.clientsAreReadiedUp} / {OnlineManager.players.Count}";
+
         }
 
 
