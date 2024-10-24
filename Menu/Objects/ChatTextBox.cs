@@ -2,9 +2,7 @@
 using UnityEngine;
 using System;
 using Menu.Remix.MixedUI;
-using DevInterface;
 using System.Collections;
-using System.Linq;
 
 namespace RainMeadow
 {
@@ -27,31 +25,21 @@ namespace RainMeadow
             typingHandler ??= gameObject.AddComponent<ButtonTypingHandler>();
             typingHandler.Assign(this);
         }
-        
+
         public void DelayedUnload(float delay) => typingHandler.StartCoroutine(UnloadAfterDelay(delay));
+
         private IEnumerator UnloadAfterDelay(float delay)
         {
             yield return new WaitForSeconds(delay);
-
             Unload();
         }
 
         private void Unload()
         {
-            try
-            {
-                OnUnload?.Invoke();
-            }
-            catch (Exception e)
-            {
-                RainMeadow.Error($"Error unloading: {e}");
-                return;
-            }
-
-            OnKeyDown = null;
             typingHandler.Unassign(this);
             typingHandler.OnDestroy();
         }
+
         private void CaptureInputs(char input)
         {
             if (ChatHud.gamePaused)
@@ -72,7 +60,7 @@ namespace RainMeadow
                 if (value.Length > 0)
                 {
                     steamMatchmakingManager.SendChatMessage((MatchmakingManager.instance as SteamMatchmakingManager).lobbyID, value);
-                    foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+                    /*foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                     {
                         if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
                         if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.owner == OnlineManager.mePlayer && opo.apo is AbstractCreature ac)
@@ -81,19 +69,18 @@ namespace RainMeadow
 
                             if (onlineHud != null)
                             {
-
-                                var pain = onlineHud.parts.FirstOrDefault(f => f is OnlinePlayerDisplay) as OnlinePlayerDisplay;
-                                pain.label.text = value;
+                                var username = onlineHud.parts.FirstOrDefault(f => f is OnlinePlayerDisplay) as OnlinePlayerDisplay;
+                                username.label.text = value;
+                                overSlugDuration = value.Length * 4;
                             }
-
                         }
-                    }
+                    } commenting this out for now */
                 }
                 else
                 {
+                    menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
                     RainMeadow.Debug("Could not send value because it had no text");
                 }
-                RainMeadow.Debug("closing out chat text box");
                 typingHandler.Unassign(this);
             }
             else
@@ -105,7 +92,6 @@ namespace RainMeadow
                 }
             }
             menuLabel.text = value;
-
         }
     }
 }
