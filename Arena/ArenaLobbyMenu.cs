@@ -640,14 +640,13 @@ namespace RainMeadow
 
                     if (arena.playersInLobbyChoosingSlugs[OnlineManager.players[l].id.name] > 3 && ModManager.MSC)
                     {
-                        classButtons[l].userDefinedNameToRetrieveFileName = "MultiplayerPortrait" + "41-" + allSlugs[currentColorIndex];
+                        classButtons[l].portrait.fileName = "MultiplayerPortrait" + "41-" + allSlugs[currentColorIndex];
 
                     }
                     else
                     {
-                        classButtons[l].userDefinedNameToRetrieveFileName = "MultiplayerPortrait" + currentColorIndex + "1";
+                        classButtons[l].portrait.fileName = "MultiplayerPortrait" + currentColorIndex + "1";
                     }
-                    classButtons[l].portrait.fileName = classButtons[l].userDefinedNameToRetrieveFileName;
                     classButtons[l].portrait.LoadFile();
                     classButtons[l].portrait.sprite.SetElementByName(classButtons[l].portrait.fileName);
 
