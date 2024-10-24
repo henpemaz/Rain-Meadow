@@ -6,15 +6,13 @@ namespace RainMeadow
 {
     public class ChatOverlay : Menu.Menu
     {
-        private GameObject gameObject;
         private List<string> chatLog;
         public static bool isReceived = false;
         public RainWorldGame game;
         public ChatOverlay chatOverlay;
-        public static ChatTextBox chat;
+        public ChatTextBox chat;
         public ChatOverlay(ProcessManager manager, RainWorldGame game, List<string> chatLog) : base(manager, RainMeadow.Ext_ProcessID.ChatMode)
         {
-            gameObject ??= new GameObject();
             this.chatLog = chatLog;
             this.game = game;
             pages.Add(new Page(this, null, "chat", 0));
