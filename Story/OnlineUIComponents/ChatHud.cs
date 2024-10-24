@@ -11,7 +11,7 @@ namespace RainMeadow
         private readonly OnlineGameMode onlineGameMode;
         private ChatOverlay chatOverlay;
         private RainWorldGame game;
-        private bool chatActive = false;
+        public static bool chatActive = false;
         public static bool gamePaused;
         private List<string> chatLog = new List<string>();
         private int chatCoolDown = 0;

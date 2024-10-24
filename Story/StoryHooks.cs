@@ -2,6 +2,7 @@ using HUD;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
+using RainMeadow.Story.OnlineUIComponents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -73,6 +74,17 @@ namespace RainMeadow
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
 
             On.Weapon.HitThisObject += Weapon_HitThisObject;
+            On.Player.checkInput += Player_checkInput;
+        }
+
+        private void Player_checkInput(On.Player.orig_checkInput orig, Player self)
+        {
+            orig(self);
+            if (ChatHud.chatActive || self.room.world.game.cameras[0].hud.textPrompt.pausedMode)
+            {
+                PlayerMovementOverride.StopPlayerMovement(self);
+            }
+
         }
 
         private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
