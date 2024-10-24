@@ -501,7 +501,7 @@ namespace RainMeadow
                     AddOtherUsernameButtons();
                     AddOtherPlayerClassButtons();
 
-                    if (OnlineManager.players.Count > holdPlayerPosition)
+                    if (OnlineManager.players.Count > 4)
                     {
                         HandleLobbyProfileOverflow();
 
