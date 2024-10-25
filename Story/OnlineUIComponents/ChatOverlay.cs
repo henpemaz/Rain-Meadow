@@ -11,6 +11,7 @@ namespace RainMeadow
         public RainWorldGame game;
         public ChatOverlay chatOverlay;
         public ChatTextBox chat;
+        private int ticker;
         public ChatOverlay(ProcessManager manager, RainWorldGame game, List<string> chatLog) : base(manager, RainMeadow.Ext_ProcessID.ChatMode)
         {
             this.chatLog = chatLog;
@@ -18,17 +19,23 @@ namespace RainMeadow
             pages.Add(new Page(this, null, "chat", 0));
             InitChat();
             isReceived = true;
+            ticker = 100;
         }
 
-        public override void ShutDownProcess()
-        {
-            chat.DelayedUnload(0.5f);
-            base.ShutDownProcess();
-        }
+        //public override void ShutDownProcess()
+        //{
+        //    chat.RemoveSprites();
+        //    this.pages[0].RemoveSubObject(chat);
+        //    base.ShutDownProcess();
+
+        //    // chat.DelayedUnload(0.5f);
+
+        //}
 
         public override void Update()
         {
-            base.Update();
+            // base.Update();
+
             if (isReceived)
             {
                 UpdateLogDisplay();
@@ -55,11 +62,16 @@ namespace RainMeadow
 
         public void InitChat()
         {
-            if (OnlineManager.lobby.gameMode is StoryGameMode)
+            if (chat != null)
             {
-                chat = new ChatTextBox(this, pages[0], "", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 700f, 0), new(1400, 30));
-                pages[0].subObjects.Add(chat);
+                chat.RemoveSprites();
+                this.pages[0].RemoveSprites();
+                this.pages[0].RemoveSubObject(chat);
             }
+
+            chat = new ChatTextBox(this, pages[0], "", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 700f, 0), new(1400, 30));
+            pages[0].subObjects.Add(chat);
+
         }
     }
 }

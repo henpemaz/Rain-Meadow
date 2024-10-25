@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using HUD;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -15,6 +17,7 @@ namespace RainMeadow
         public static bool gamePaused;
         private List<string> chatLog = new List<string>();
         private int chatCoolDown = 0;
+        public static bool messageRecieved = false;
 
         public ChatHud(HUD.HUD hud, RoomCamera camera, OnlineGameMode onlineGameMode) : base(hud)
         {
@@ -24,8 +27,11 @@ namespace RainMeadow
             game = camera.game;
 
             ChatLogManager.Initialize(this);
+
+
         }
-        
+
+
         public void AddMessage(string message)
         {
             chatLog.Add($"{message}");
@@ -46,18 +52,22 @@ namespace RainMeadow
 
             chatOverlay?.GrafUpdate(timeStacker);
 
-            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatKey.Value) && chatActive && chatCoolDown <= 0) ShutDownChat();
+            if (Input.GetKeyDown(KeyCode.Return) && chatActive && chatCoolDown <= 0) ShutDownChat();
         }
         public void ShutDownChat()
         {
             RainMeadow.Debug("shut down chat overlay");
-            chatOverlay.ShutDownProcess();
-            chatOverlay = null;
+            if (chatOverlay != null)
+            {
+                chatOverlay.ShutDownProcess();
+                chatOverlay = null;
+            }            
             chatActive = false;
         }
         public override void Update()
         {
             base.Update();
+
             if (OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 if ((game.pauseMenu != null || camera.hud.map.visible || game.manager.upcomingProcess != null) && chatOverlay != null) ShutDownChat();
@@ -66,8 +76,10 @@ namespace RainMeadow
 
                 if (chatOverlay != null)
                 {
+
                     if (chatCoolDown > 0) chatCoolDown--;
                 }
+
             }
         }
     }
