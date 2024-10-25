@@ -19,6 +19,7 @@ namespace RainMeadow
             pages.Add(new Page(this, null, "chat", 0));
             InitChat();
             isReceived = true;
+            ticker = 100;
         }
 
         public override void Update()

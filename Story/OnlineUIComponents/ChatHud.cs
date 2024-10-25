@@ -91,6 +91,7 @@ namespace RainMeadow
 
                     if (chatCoolDown > 0) chatCoolDown--;
                 }
+
             }
         }
     }
