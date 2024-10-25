@@ -5,6 +5,7 @@ using Menu.Remix.MixedUI;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace RainMeadow
 {
@@ -61,9 +62,50 @@ namespace RainMeadow
             {
                 if (lastSentMessage.Length > 0)
                 {
-                    steamMatchmakingManager.SendChatMessage((MatchmakingManager.instance as SteamMatchmakingManager).lobbyID, lastSentMessage);
+                    //steamMatchmakingManager.SendChatMessage((MatchmakingManager.instance as SteamMatchmakingManager).lobbyID, lastSentMessage);
+
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (!player.isMe)
+                        {
+
+                            player.InvokeRPC(RPCs.UpdateUsernameTemporarily, OnlineManager.mePlayer.id.name, lastSentMessage);
+                        }
+                    }
+
                     sentASteamMsg = true;
                     (OnlineManager.lobby.gameMode as StoryGameMode).lastMessageISent = lastSentMessage;
+                    foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+                    {
+                        if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+
+                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.owner.id.name == OnlineManager.mePlayer.id.name && opo.apo is AbstractCreature ac)
+                        {
+
+                            var onlineHuds = ac.world.game.cameras[0].hud.parts
+                                .OfType<PlayerSpecificOnlineHud>();
+
+                            foreach (var onlineHud in onlineHuds)
+                            {
+                                OnlinePlayerDisplay usernameDisplay = null;
+
+                                foreach (var part in onlineHud.parts.OfType<OnlinePlayerDisplay>())
+                                {
+                                    if (part.label.text == OnlineManager.mePlayer.id.name)
+                                    {
+                                        usernameDisplay = part;
+                                        break;
+                                    }
+                                }
+
+                                if (usernameDisplay != null)
+                                {
+                                    usernameDisplay.label.text = $"{OnlineManager.mePlayer.id.name}: {lastSentMessage}";
+                                }
+                            }
+                        }
+
+                    }
 
                 }
                 else
