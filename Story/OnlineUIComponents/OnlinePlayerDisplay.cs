@@ -109,24 +109,6 @@ namespace RainMeadow
 
                 this.counter++;
 
-                if (this.label.text != customization.nickname) // we've updated a username
-                {
-                    resetUsernameCounter--;
-                    Color currentColor = this.label.color;
-                    float blendFactor = 0.9f;
-
-                    Color closerToWhite = Color.Lerp(currentColor, Color.white, blendFactor);
-                    this.label.color = closerToWhite;
-
-                }
-
-                if (resetUsernameCounter < 0)
-                {
-                    this.label.text = customization.nickname;
-                    resetUsernameCounter = 200;
-
-                }
-
             }
             if (!show) this.lastAlpha = this.alpha;
         }
@@ -165,7 +147,26 @@ namespace RainMeadow
             }
             var lighter_color = color * 1.7f;
 
-            this.label.color = lighter_color;
+
+            if (this.label.text != customization.nickname) // we've updated a username
+            {
+                resetUsernameCounter--;
+                this.label.color = color * 4f;
+
+            } else
+            {
+                this.label.color = lighter_color;
+
+            }
+
+            if (resetUsernameCounter < 0)
+            {
+
+                this.label.text = customization.nickname;
+                resetUsernameCounter = 200;
+
+            }
+
             this.arrowSprite.color = lighter_color;
             this.slugIcon.color = lighter_color;
 
