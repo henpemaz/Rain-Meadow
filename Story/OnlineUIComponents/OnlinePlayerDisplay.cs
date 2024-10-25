@@ -1,4 +1,5 @@
 ﻿using RWCustom;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -10,7 +11,7 @@ namespace RainMeadow
         public FLabel label;
         public FSprite slugIcon;
         public int counter;
-        public int fadeAwayCounter;
+        public int resetUsernameCounter;
         public float alpha;
         public float lastAlpha;
         public float blink;
@@ -23,7 +24,9 @@ namespace RainMeadow
 
         public OnlinePlayerDisplay(PlayerSpecificOnlineHud owner, SlugcatCustomization customization) : base(owner)
         {
+
             this.owner = owner;
+            this.resetUsernameCounter = 200;
 
             this.pos = new Vector2(-1000f, -1000f);
             this.lastPos = this.pos;
@@ -105,6 +108,40 @@ namespace RainMeadow
                 }
 
                 this.counter++;
+
+                if (OnlineManager.mePlayer.id.name == ChatLogManager.chatLogs.LastOrDefault().Key)
+                {
+                    // TODO: Find me and update my name
+
+                }
+                    if ((OnlineManager.lobby.gameMode as StoryGameMode).lastMessageISent != "")
+                {
+                    var cachedMsg = (OnlineManager.lobby.gameMode as StoryGameMode).lastMessageISent;
+                    if (cachedMsg != (OnlineManager.lobby.gameMode as StoryGameMode).lastMessageISent)
+                    {
+                        // new msg recvd
+                        resetUsernameCounter = 200;
+                    }
+                    
+                    resetUsernameCounter--;
+                    Color currentColor = this.label.color; 
+                    float blendFactor = 0.9f;
+
+                    Color closerToWhite = Color.Lerp(currentColor, Color.white, blendFactor);
+                    this.label.color = closerToWhite;
+                    this.label.text = customization.nickname + ": " + (OnlineManager.lobby.gameMode as StoryGameMode).lastMessageISent;
+
+                }
+                // TODO: Others messages need to be recieved
+
+                if (resetUsernameCounter < 0)
+                {
+                    this.label.text = customization.nickname;
+                    (OnlineManager.lobby.gameMode as StoryGameMode).lastMessageISent = "";
+                    resetUsernameCounter = 200;
+
+                }
+
             }
             if (!show) this.lastAlpha = this.alpha;
         }
@@ -150,6 +187,7 @@ namespace RainMeadow
             this.label.alpha = num;
             this.arrowSprite.alpha = num;
             this.slugIcon.alpha = num;
+
         }
 
         public override void ClearSprites()
