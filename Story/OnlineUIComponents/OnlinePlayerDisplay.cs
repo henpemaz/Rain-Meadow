@@ -109,35 +109,20 @@ namespace RainMeadow
 
                 this.counter++;
 
-                if (OnlineManager.mePlayer.id.name == ChatLogManager.chatLogs.LastOrDefault().Key)
+                if (this.label.text != customization.nickname) // we've updated a username
                 {
-                    // TODO: Find me and update my name
-
-                }
-                    if ((OnlineManager.lobby.gameMode as StoryGameMode).lastMessageISent != "")
-                {
-                    var cachedMsg = (OnlineManager.lobby.gameMode as StoryGameMode).lastMessageISent;
-                    if (cachedMsg != (OnlineManager.lobby.gameMode as StoryGameMode).lastMessageISent)
-                    {
-                        // new msg recvd
-                        resetUsernameCounter = 200;
-                    }
-                    
                     resetUsernameCounter--;
-                    Color currentColor = this.label.color; 
+                    Color currentColor = this.label.color;
                     float blendFactor = 0.9f;
 
                     Color closerToWhite = Color.Lerp(currentColor, Color.white, blendFactor);
                     this.label.color = closerToWhite;
-                    this.label.text = customization.nickname + ": " + (OnlineManager.lobby.gameMode as StoryGameMode).lastMessageISent;
 
                 }
-                // TODO: Others messages need to be recieved
 
                 if (resetUsernameCounter < 0)
                 {
                     this.label.text = customization.nickname;
-                    (OnlineManager.lobby.gameMode as StoryGameMode).lastMessageISent = "";
                     resetUsernameCounter = 200;
 
                 }
