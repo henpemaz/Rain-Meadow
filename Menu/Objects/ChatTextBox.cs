@@ -62,7 +62,7 @@ namespace RainMeadow
             {
                 if (lastSentMessage.Length > 0)
                 {
-                    //steamMatchmakingManager.SendChatMessage((MatchmakingManager.instance as SteamMatchmakingManager).lobbyID, lastSentMessage);
+                    steamMatchmakingManager.SendChatMessage((MatchmakingManager.instance as SteamMatchmakingManager).lobbyID, lastSentMessage);
 
                     foreach (var player in OnlineManager.players)
                     {
