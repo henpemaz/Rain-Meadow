@@ -11,11 +11,16 @@ namespace RainMeadow
         private TextPrompt textPrompt;
         private RoomCamera camera;
         private ChatOverlay chatOverlay;
+        private ChatButtonOverlay chatButtonOverlay;
         private RainWorldGame game;
-        public static bool chatActive = false;
+        public static bool chatLogActive = false;
+        public static bool chatButtonActive = false;
+
         public static bool gamePaused;
         private List<string> chatLog = new List<string>();
         private int chatCoolDown = 0;
+        private int chatTextButtonCooldown = 0;
+
         public static bool messageRecieved = false;
 
         public ChatHud(HUD.HUD hud, RoomCamera camera) : base(hud)
@@ -40,27 +45,51 @@ namespace RainMeadow
         {
             base.Draw(timeStacker);
             gamePaused = textPrompt.pausedMode;
-            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatKey.Value) && chatOverlay == null && !chatActive && !textPrompt.pausedMode)
+            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatLogKey.Value) && chatOverlay == null && !chatLogActive && !textPrompt.pausedMode)
             {
-                RainMeadow.Debug("creating chat box");
+                RainMeadow.Debug("creating overlay");
                 chatOverlay = new ChatOverlay(game.manager, game, chatLog);
-                chatActive = true;
+                chatLogActive = true;
                 chatCoolDown = 1;
             }
 
-            chatOverlay?.GrafUpdate(timeStacker);
+            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatTalkingKey.Value) && chatButtonOverlay == null && !chatButtonActive && !textPrompt.pausedMode)
+            {
+                RainMeadow.Debug("creating chat box");
+                chatButtonOverlay = new ChatButtonOverlay(game.manager, game, chatLog);
+                chatButtonActive = true;
+                chatTextButtonCooldown = 1;
 
-            if (Input.GetKeyDown(KeyCode.Return) && chatActive && chatCoolDown <= 0) ShutDownChat();
+            }
+
+            chatOverlay?.GrafUpdate(timeStacker);
+            chatButtonOverlay?.GrafUpdate(timeStacker);
+
+
+            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatLogKey.Value) && chatLogActive && chatCoolDown <= 0) ShutDownChatLog();
+            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatLogKey.Value) && chatButtonActive && chatTextButtonCooldown <= 0) ShutDownChatButton();
+
         }
-        public void ShutDownChat()
+        public void ShutDownChatLog()
         {
-            RainMeadow.Debug("shut down chat overlay");
+            RainMeadow.Debug("shut down chat log overlay");
             if (chatOverlay != null)
             {
                 chatOverlay.ShutDownProcess();
                 chatOverlay = null;
             }
-            chatActive = false;
+            chatLogActive = false;
+        }
+
+        public void ShutDownChatButton()
+        {
+            RainMeadow.Debug("shut down chat button");
+            if (chatButtonOverlay != null)
+            {
+                chatButtonOverlay.ShutDownProcess();
+                chatButtonOverlay = null;
+            }
+            chatButtonActive = false;
         }
         public override void Update()
         {
@@ -70,26 +99,47 @@ namespace RainMeadow
             {
                 if (RainMeadow.isArenaMode(out var _))
                 {
-                    if (game.pauseMenu != null || game.manager.upcomingProcess != null && chatOverlay != null)
+                    if (game.pauseMenu != null || game.manager.upcomingProcess != null)
                     {
-                        ShutDownChat();
+                        if (chatButtonOverlay != null)
+                        {
+                            ShutDownChatButton();
+                        }
+                        if (chatOverlay != null)
+                        {
+                            ShutDownChatLog();
+                        }
                     }
                 }
                 else
                 {
 
-                    if ((game.pauseMenu != null || camera.hud.map.visible || game.manager.upcomingProcess != null) && chatOverlay != null)
+                    if ((game.pauseMenu != null || camera.hud.map.visible || game.manager.upcomingProcess != null))
                     {
-                        ShutDownChat();
+                        if (chatButtonOverlay != null)
+                        {
+                            ShutDownChatButton();
+                        }
+                        if (chatOverlay != null)
+                        {
+                            ShutDownChatLog();
+                        }
                     }
 
                 }
                 chatOverlay?.Update();
+                chatButtonOverlay?.Update();
+
 
                 if (chatOverlay != null)
                 {
 
                     if (chatCoolDown > 0) chatCoolDown--;
+                }
+                if (chatButtonOverlay!= null)
+                {
+
+                    if (chatTextButtonCooldown > 0) chatTextButtonCooldown--;
                 }
             }
         }
