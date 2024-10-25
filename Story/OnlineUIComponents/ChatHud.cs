@@ -10,7 +10,6 @@ namespace RainMeadow
     {
         private TextPrompt textPrompt;
         private RoomCamera camera;
-        private readonly OnlineGameMode onlineGameMode;
         private ChatOverlay chatOverlay;
         private RainWorldGame game;
         public static bool chatActive = false;
@@ -19,11 +18,10 @@ namespace RainMeadow
         private int chatCoolDown = 0;
         public static bool messageRecieved = false;
 
-        public ChatHud(HUD.HUD hud, RoomCamera camera, OnlineGameMode onlineGameMode) : base(hud)
+        public ChatHud(HUD.HUD hud, RoomCamera camera) : base(hud)
         {
             textPrompt = hud.textPrompt;
             this.camera = camera;
-            this.onlineGameMode = onlineGameMode;
             game = camera.game;
 
             ChatLogManager.Initialize(this);
@@ -61,17 +59,31 @@ namespace RainMeadow
             {
                 chatOverlay.ShutDownProcess();
                 chatOverlay = null;
-            }            
+            }
             chatActive = false;
         }
         public override void Update()
         {
             base.Update();
 
-            if (OnlineManager.lobby.gameMode is StoryGameMode)
+            if (OnlineManager.lobby.gameMode is not MeadowGameMode)
             {
-                if ((game.pauseMenu != null || camera.hud.map.visible || game.manager.upcomingProcess != null) && chatOverlay != null) ShutDownChat();
+                if (RainMeadow.isArenaMode(out var _))
+                {
+                    if (game.pauseMenu != null || game.manager.upcomingProcess != null && chatOverlay != null)
+                    {
+                        ShutDownChat();
+                    }
+                }
+                else
+                {
 
+                    if ((game.pauseMenu != null || camera.hud.map.visible || game.manager.upcomingProcess != null) && chatOverlay != null)
+                    {
+                        ShutDownChat();
+                    }
+
+                }
                 chatOverlay?.Update();
 
                 if (chatOverlay != null)
@@ -79,7 +91,6 @@ namespace RainMeadow
 
                     if (chatCoolDown > 0) chatCoolDown--;
                 }
-
             }
         }
     }
