@@ -22,19 +22,8 @@ namespace RainMeadow
             ticker = 100;
         }
 
-        //public override void ShutDownProcess()
-        //{
-        //    chat.RemoveSprites();
-        //    this.pages[0].RemoveSubObject(chat);
-        //    base.ShutDownProcess();
-
-        //    // chat.DelayedUnload(0.5f);
-
-        //}
-
         public override void Update()
         {
-            // base.Update();
 
             if (isReceived)
             {
