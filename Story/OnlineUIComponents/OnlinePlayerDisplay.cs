@@ -155,7 +155,7 @@ namespace RainMeadow
 
             }
 
-            if (resetUsernameCounter < 50)
+            if (resetUsernameCounter < 20) // snappier fadeaway
             {
                 this.label.color = lighter_color;
 
