@@ -80,7 +80,7 @@ namespace RainMeadow
         private void Player_checkInput(On.Player.orig_checkInput orig, Player self)
         {
             orig(self);
-            if (ChatHud.chatActive || self.room.world.game.cameras[0].hud.textPrompt.pausedMode)
+            if (ChatHud.chatButtonActive || self.room.world.game.cameras[0].hud.textPrompt.pausedMode)
             {
                 PlayerMovementOverride.StopPlayerMovement(self);
             }
