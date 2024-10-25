@@ -23,8 +23,6 @@ namespace RainMeadow
 
 
 
-
-
         public bool saveToDisk = false;
 
         public SlugcatCustomization avatarSettings;
