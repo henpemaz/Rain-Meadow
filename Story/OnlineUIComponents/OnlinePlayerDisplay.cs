@@ -146,18 +146,21 @@ namespace RainMeadow
                 }
             }
             var lighter_color = color * 1.7f;
-
+            this.label.color = lighter_color;
 
             if (this.label.text != customization.nickname) // we've updated a username
             {
                 resetUsernameCounter--;
                 this.label.color = color * 3f;
 
-            } else
+            }
+
+            if (resetUsernameCounter < 50)
             {
                 this.label.color = lighter_color;
 
             }
+
 
             if (resetUsernameCounter < 0)
             {
