@@ -19,6 +19,8 @@ namespace RainMeadow
             [OnlineField]
             public bool isInGame;
             [OnlineField]
+            public string lastMessageTheySent;
+            [OnlineField]
             public bool changedRegions;
             [OnlineField]
             public bool friendlyFire;
@@ -67,6 +69,8 @@ namespace RainMeadow
                 storyBoolRemixSettings = storyGameMode.storyBoolRemixSettings;
                 storyFloatRemixSettings = storyGameMode.storyFloatRemixSettings;
                 storyIntRemixSettings = storyGameMode.storyIntRemixSettings;
+                lastMessageTheySent = storyGameMode.lastMessageTheySent;
+
                 ghostsTalkedTo = storyGameMode.ghostsTalkedTo;
 
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
@@ -131,6 +135,9 @@ namespace RainMeadow
                 (lobby.gameMode as StoryGameMode).changedRegions = changedRegions;
                 (lobby.gameMode as StoryGameMode).didStartCycle = didStartCycle;
                 (lobby.gameMode as StoryGameMode).friendlyFire = friendlyFire;
+                (lobby.gameMode as StoryGameMode).lastMessageTheySent = lastMessageTheySent;
+
+
 
             }
         }
