@@ -19,8 +19,6 @@ namespace RainMeadow
             [OnlineField]
             public bool isInGame;
             [OnlineField]
-            public string lastMessageTheySent;
-            [OnlineField]
             public bool changedRegions;
             [OnlineField]
             public bool friendlyFire;
