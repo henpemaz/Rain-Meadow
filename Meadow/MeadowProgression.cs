@@ -196,6 +196,13 @@ namespace RainMeadow
                 creatureType = CreatureTemplate.Type.Slugcat,
                 baseColor = new Color(111, 216, 255, 255) / 255f
             });
+            public static Skin Slugcat_Night = new("Slugcat_Night", true, new()
+            {
+                character = Character.Slugcat,
+                displayName = "Night",
+                creatureType = CreatureTemplate.Type.Slugcat,
+                baseColor = PlayerGraphics.SlugcatColor(SlugcatStats.Name.Night),
+            });
 
             public static Skin Cicada_White = new("Cicada_White", true, new()
             {
@@ -203,6 +210,7 @@ namespace RainMeadow
                 displayName = "White",
                 creatureType = CreatureTemplate.Type.CicadaA,
                 previewColor = Extensions.ColorFromHex(0xd4dddf),
+                tintFactor = 0.5f,
             });
             public static Skin Cicada_Dark = new("Cicada_Dark", true, new()
             {
@@ -210,6 +218,7 @@ namespace RainMeadow
                 displayName = "Dark",
                 creatureType = CreatureTemplate.Type.CicadaB,
                 previewColor = Extensions.ColorFromHex(0x0e0d19),
+                tintFactor = 0.5f,
             });
 
             public static Skin Lizard_Pink = new("Lizard_Pink", true, new()
@@ -217,8 +226,8 @@ namespace RainMeadow
                 character = Character.Lizard,
                 displayName = "Pink",
                 creatureType = CreatureTemplate.Type.PinkLizard,
-                randomSeed = 3401,
-                previewColor = Extensions.ColorFromHex(0xff07ee),
+                randomSeed = 3321,
+                previewColor = Extensions.ColorFromHex(0xff0c85),
                 tintFactor = 0.5f,
             });
             public static Skin Lizard_Blue = new("Lizard_Blue", true, new()
@@ -226,8 +235,8 @@ namespace RainMeadow
                 character = Character.Lizard,
                 displayName = "Blue",
                 creatureType = CreatureTemplate.Type.BlueLizard,
-                randomSeed = 9659,
-                previewColor = Extensions.ColorFromHex(0x006bed),
+                randomSeed = 3125,
+                previewColor = Extensions.ColorFromHex(0x1946ff),
                 tintFactor = 0.5f,
             });
             public static Skin Lizard_Yellow = new("Lizard_Yellow", true, new()
@@ -235,8 +244,53 @@ namespace RainMeadow
                 character = Character.Lizard,
                 displayName = "Yellow",
                 creatureType = CreatureTemplate.Type.YellowLizard,
-                randomSeed = 6526,
-                previewColor = Extensions.ColorFromHex(0xd35503),
+                randomSeed = 718,
+                previewColor = Extensions.ColorFromHex(0xffa604),
+                tintFactor = 0.5f,
+            });
+            public static Skin Lizard_White = new("Lizard_White", true, new()
+            {
+                character = Character.Lizard,
+                displayName = "White",
+                creatureType = CreatureTemplate.Type.WhiteLizard,
+                randomSeed = 3217,
+                previewColor = Extensions.ColorFromHex(0xffffff),
+                tintFactor = 0.5f,
+            });
+            public static Skin Lizard_Red = new("Lizard_Red", true, new()
+            {
+                character = Character.Lizard,
+                displayName = "Red",
+                creatureType = CreatureTemplate.Type.RedLizard,
+                randomSeed = 5036,
+                previewColor = Extensions.ColorFromHex(0xfb0600),
+                tintFactor = 0.5f,
+            });
+            public static Skin Lizard_Black = new("Lizard_Black", true, new()
+            {
+                character = Character.Lizard,
+                displayName = "Black",
+                creatureType = CreatureTemplate.Type.BlackLizard,
+                randomSeed = 280,
+                previewColor = Extensions.ColorFromHex(0x757475),
+                tintFactor = 0.5f,
+            });
+            public static Skin Lizard_Axo = new("Lizard_Axo", true, new()
+            {
+                character = Character.Lizard,
+                displayName = "Axo",
+                creatureType = CreatureTemplate.Type.Salamander,
+                randomSeed = 7621,
+                previewColor = Extensions.ColorFromHex(0xd60065),
+                tintFactor = 0.5f,
+            });
+            public static Skin Lizard_Sala = new("Lizard_Sala", true, new()
+            {
+                character = Character.Lizard,
+                displayName = "Sala",
+                creatureType = CreatureTemplate.Type.Salamander,
+                randomSeed = 3107,
+                previewColor = Extensions.ColorFromHex(0xfd0062),
                 tintFactor = 0.5f,
             });
             public static Skin Lizard_Cyan = new("Lizard_Cyan", true, new()
