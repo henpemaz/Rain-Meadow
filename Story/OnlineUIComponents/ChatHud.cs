@@ -67,7 +67,7 @@ namespace RainMeadow
 
 
             if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatLogKey.Value) && chatLogActive && chatCoolDown <= 0) ShutDownChatLog();
-            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatLogKey.Value) && chatButtonActive && chatTextButtonCooldown <= 0) ShutDownChatButton();
+            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatTalkingKey.Value) && chatButtonActive && chatTextButtonCooldown <= 0) ShutDownChatButton();
 
         }
         public void ShutDownChatLog()
@@ -133,12 +133,10 @@ namespace RainMeadow
 
                 if (chatOverlay != null)
                 {
-
                     if (chatCoolDown > 0) chatCoolDown--;
                 }
                 if (chatButtonOverlay!= null)
                 {
-
                     if (chatTextButtonCooldown > 0) chatTextButtonCooldown--;
                 }
             }
