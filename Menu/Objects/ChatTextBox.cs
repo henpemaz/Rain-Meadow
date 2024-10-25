@@ -2,7 +2,10 @@
 using UnityEngine;
 using System;
 using Menu.Remix.MixedUI;
+using System.Collections.Generic;
 using System.Collections;
+using System.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace RainMeadow
 {
@@ -13,11 +16,11 @@ namespace RainMeadow
         private GameObject gameObject;
         public Action<char> OnKeyDown { get; set; }
         public static int textLimit = 75;
-        public string value;
+        public static string lastSentMessage = "";
         public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, "", pos, size)
         {
             steamMatchmakingManager = MatchmakingManager.instance as SteamMatchmakingManager;
-            value = "";
+            lastSentMessage = "";
             this.menu = menu;
             gameObject ??= new GameObject();
             OnKeyDown = (Action<char>)Delegate.Combine(OnKeyDown, new Action<char>(CaptureInputs));
@@ -48,48 +51,80 @@ namespace RainMeadow
             }
             if (input == '\b')
             {
-                if (value.Length > 0)
+                if (lastSentMessage.Length > 0)
                 {
                     menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
-                    value = value.Substring(0, value.Length - 1);
+                    lastSentMessage = lastSentMessage.Substring(0, lastSentMessage.Length - 1);
                 }
             }
             else if (input == '\n' || input == '\r')
             {
-                if (value.Length > 0)
+                if (lastSentMessage.Length > 0)
                 {
-                    steamMatchmakingManager.SendChatMessage((MatchmakingManager.instance as SteamMatchmakingManager).lobbyID, value);
-                    /*foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+                    if (MatchmakingManager.instance is SteamMatchmakingManager)
+                    {
+                        steamMatchmakingManager.SendChatMessage((MatchmakingManager.instance as SteamMatchmakingManager).lobbyID, lastSentMessage);
+                    }
+
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (!player.isMe)
+                        {
+
+                            player.InvokeRPC(RPCs.UpdateUsernameTemporarily, OnlineManager.mePlayer.id.name, lastSentMessage);
+                        }
+                    }
+
+                    foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                     {
                         if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.owner == OnlineManager.mePlayer && opo.apo is AbstractCreature ac)
-                        {
-                            var onlineHud = ac.world.game.cameras[0].hud.parts.FirstOrDefault(f => f is PlayerSpecificOnlineHud) as PlayerSpecificOnlineHud;
 
-                            if (onlineHud != null)
+                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.owner.id.name == OnlineManager.mePlayer.id.name && opo.apo is AbstractCreature ac)
+                        {
+
+                            var onlineHuds = ac.world.game.cameras[0].hud.parts
+                                .OfType<PlayerSpecificOnlineHud>();
+
+                            foreach (var onlineHud in onlineHuds)
                             {
-                                var username = onlineHud.parts.FirstOrDefault(f => f is OnlinePlayerDisplay) as OnlinePlayerDisplay;
-                                username.label.text = value;
+                                OnlinePlayerDisplay usernameDisplay = null;
+
+                                foreach (var part in onlineHud.parts.OfType<OnlinePlayerDisplay>())
+                                {
+                                    if (part.label.text == OnlineManager.mePlayer.id.name)
+                                    {
+                                        usernameDisplay = part;
+                                        break;
+                                    }
+                                }
+
+                                if (usernameDisplay != null)
+                                {
+                                    usernameDisplay.label.text = $"{OnlineManager.mePlayer.id.name}: {lastSentMessage}";
+                                }
                             }
                         }
-                    } commenting this out for now */
+
+                    }
+
                 }
                 else
                 {
                     menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
-                    RainMeadow.Debug("Could not send value because it had no text");
+                    RainMeadow.Debug("Could not send lastSentMessage because it had no text");
                 }
                 typingHandler.Unassign(this);
             }
             else
             {
-                if (value.Length < textLimit)
+                if (lastSentMessage.Length < textLimit)
                 {
                     menu.PlaySound(SoundID.MENU_Checkbox_Check);
-                    value += input.ToString();
+                    lastSentMessage += input.ToString();
                 }
             }
-            menuLabel.text = value;
+            menuLabel.text = lastSentMessage;
+
         }
     }
 }

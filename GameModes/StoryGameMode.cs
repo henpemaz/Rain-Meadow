@@ -21,6 +21,8 @@ namespace RainMeadow
         public Dictionary<ushort, ushort[]> consumedItems;
         public StoryClientSettingsData storyClientData;
 
+
+
         public bool saveToDisk = false;
 
         public SlugcatCustomization avatarSettings;
