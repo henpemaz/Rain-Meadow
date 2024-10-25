@@ -24,6 +24,12 @@ namespace RainMeadow
             public List<ushort> arenaSittingOnlineOrder;
             [OnlineField]
             public bool returnToLobby;
+            [OnlineField]
+            public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice;
+            [OnlineField]
+            public Dictionary<string, bool> onlineArenaSettingsInterfaceBool;
+            [OnlineField]
+            public Dictionary<string, int> playersChoosingSlugs;
 
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
@@ -34,6 +40,9 @@ namespace RainMeadow
                 arenaSittingOnlineOrder = arena.arenaSittingOnlineOrder;
                 allPlayersReadyLockLobby = arena.allPlayersReadyLockLobby;
                 returnToLobby = arena.returnToLobby;
+                onlineArenaSettingsInterfaceMultiChoice = arena.onlineArenaSettingsInterfaceMultiChoice;
+                onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
+                playersChoosingSlugs = arena.playersInLobbyChoosingSlugs;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -44,6 +53,11 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaCompetitiveGameMode).arenaSittingOnlineOrder = arenaSittingOnlineOrder;
                 (lobby.gameMode as ArenaCompetitiveGameMode).allPlayersReadyLockLobby = allPlayersReadyLockLobby;
                 (lobby.gameMode as ArenaCompetitiveGameMode).returnToLobby = returnToLobby;
+                (lobby.gameMode as ArenaCompetitiveGameMode).onlineArenaSettingsInterfaceMultiChoice = onlineArenaSettingsInterfaceMultiChoice;
+                (lobby.gameMode as ArenaCompetitiveGameMode).onlineArenaSettingsInterfaceeBool = onlineArenaSettingsInterfaceBool;
+                (lobby.gameMode as ArenaCompetitiveGameMode).playersInLobbyChoosingSlugs = playersChoosingSlugs;
+
+
             }
 
             public override Type GetDataType() => typeof(ArenaLobbyData);

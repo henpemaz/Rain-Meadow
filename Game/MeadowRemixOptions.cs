@@ -10,7 +10,9 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<Color> EyeColor;
     public readonly Configurable<KeyCode> SpectatorKey;
     public readonly Configurable<KeyCode> PointingKey;
-    public readonly Configurable<KeyCode> ChatKey;
+    public readonly Configurable<KeyCode> ChatLogKey;
+    public readonly Configurable<KeyCode> ChatTalkingKey;
+
 
 
 
@@ -25,8 +27,8 @@ public class RainMeadowOptions : OptionInterface
         EyeColor = config.Bind("EyeColor", Color.black);
         SpectatorKey = config.Bind("SpectatorKey", KeyCode.Tab);
         PointingKey = config.Bind("PointingKey", KeyCode.Mouse0);
-        ChatKey = config.Bind("ChatKey", KeyCode.Return);
-
+        ChatLogKey = config.Bind("ChatLogKey", KeyCode.Backspace);
+        ChatTalkingKey = config.Bind("ChatTalkingKey", KeyCode.Return);
 
     }
 
@@ -36,7 +38,7 @@ public class RainMeadowOptions : OptionInterface
         {
             OpTab opTab = new OpTab(this, "Options");
             Tabs = new OpTab[1] { opTab };
-            UIArrPlayerOptions = new UIelement[17]
+            UIArrPlayerOptions = new UIelement[19]
             {
                 new OpLabel(10f, 550f, "Options", bigText: true),
 
@@ -53,8 +55,11 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10, 245f, "Story / Arena: Pointing"),
                 new OpKeyBinder(PointingKey, new Vector2(10f, 215), new Vector2(150f, 30f)),
 
-                new OpLabel(10, 180f, "Chat Toggle"),
-                new OpKeyBinder(ChatKey, new Vector2(10f, 150), new Vector2(150f, 30f)),
+                new OpLabel(10, 180f, "Chat Log Toggle"),
+                new OpKeyBinder(ChatLogKey, new Vector2(10f, 150), new Vector2(150f, 30f)),
+
+                new OpLabel(400, 180f, "Chat Button"),
+                new OpKeyBinder(ChatTalkingKey, new Vector2(400f, 150), new Vector2(150f, 30f)),
 
                 new OpLabel(10f, 105f, "[Experimental Features]", bigText: true),
                 new OpLabel(10f, 85, "WARNING: Experimental features may cause data corruption, back up your saves", bigText: false),

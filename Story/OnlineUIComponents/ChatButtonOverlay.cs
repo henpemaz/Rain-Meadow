@@ -1,50 +1,31 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Menu;
 using UnityEngine;
 
 namespace RainMeadow
 {
-    public class ChatOverlay : Menu.Menu
+    public class ChatButtonOverlay : Menu.Menu
     {
         private List<string> chatLog;
-        public static bool isReceived = false;
         public RainWorldGame game;
         public ChatOverlay chatOverlay;
         public ChatTextBox chat;
         private int ticker;
-        public ChatOverlay(ProcessManager manager, RainWorldGame game, List<string> chatLog) : base(manager, RainMeadow.Ext_ProcessID.ChatMode)
+        public ChatButtonOverlay(ProcessManager manager, RainWorldGame game, List<string> chatLog) : base(manager, RainMeadow.Ext_ProcessID.ChatMode)
         {
             this.chatLog = chatLog;
             this.game = game;
-            pages.Add(new Page(this, null, "chat", 0));
-            // InitChat();
-            isReceived = true;
+            pages.Add(new Page(this, null, "chatButton", 0));
+            InitChat();
         }
 
         public override void Update()
         {
 
-            if (isReceived)
-            {
-                UpdateLogDisplay();
-                isReceived = false;
-            }
             if (ModManager.DevTools)
             {
                 game.devToolsActive = false;
                 game.devToolsLabel.isVisible = game.devToolsActive;
-            }
-        }
-
-        public void UpdateLogDisplay()
-        {
-            float yOfftset = 0;
-            foreach (string message in chatLog)
-            {
-                var chatMessageLabel = new MenuLabel(this, pages[0], message, new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f - 660f, 300f - yOfftset), new Vector2(1400f, 30f), false);
-                chatMessageLabel.label.alignment = FLabelAlignment.Left;
-                pages[0].subObjects.Add(chatMessageLabel);
-                yOfftset += 20f;
             }
         }
 

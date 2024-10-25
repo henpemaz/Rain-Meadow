@@ -61,9 +61,15 @@ Instructions on how to install the mod into your game:
         2. Extract downloaded zip file
         3. If you see a single folder named 'rainmeadow', copy the folder into your game mods folder
      
-## Steam Deck / Proton
-In order for Rain Meadow to work on Steam Deck, you will need to install [Proton](https://docs.bepinex.dev/articles/advanced/proton_wine.html).
+## Steam Deck / Linux
+Proton/Wine will only load dlls built in to its package by default, which breaks BepInEx modloading. To resolve this you must override the load order for `winhttp.dll` so that the game dll takes precedence:
+1. In steam, right click Rain World
+2. Navigate to properties
+3. In the launch options window, enter `WINEDLLOVERRIDES="winhttp=n,b" %command%`
+4. Launch the game and enable Rain Meadow
 
+> [!NOTE]
+> If remix configuration menus do not appear for workshop mods, you must edit and reapply your enabled mods.
 
 # Contributions
 

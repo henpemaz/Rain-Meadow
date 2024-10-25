@@ -98,6 +98,25 @@ public partial class RainMeadow
         if (isStoryMode(out var gameMode) && self.abstractCreature.IsLocal())
             gameMode.storyClientData.readyForWin = false;
         orig(self, eu);
+        if (isStoryMode(out var _) && !self.inShortcut && OnlineManager.players.Count > 4)
+        {
+            if (self.room.abstractRoom.shelter || self.room.IsGateRoom())
+            {
+                if (self.collisionLayer != 0)
+                {
+                    self.room.ChangeCollisionLayerForObject(self, 0);
+                }
+            }
+            else
+            {
+                if (self.collisionLayer != 1)
+                {
+                    self.room.ChangeCollisionLayerForObject(self, 1);
+                }
+            }
+        }
+
+
     }
 
     private UnityEngine.Color Player_ShortCutColor(On.Player.orig_ShortCutColor orig, Player self)
