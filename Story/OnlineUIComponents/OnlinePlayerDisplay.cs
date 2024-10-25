@@ -151,7 +151,7 @@ namespace RainMeadow
             if (this.label.text != customization.nickname) // we've updated a username
             {
                 resetUsernameCounter--;
-                this.label.color = color * 4f;
+                this.label.color = color * 3f;
 
             } else
             {
