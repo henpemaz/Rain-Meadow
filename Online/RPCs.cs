@@ -32,6 +32,41 @@ namespace RainMeadow
                 }
             }
         }
+        [RPCMethod]
+        public static void UpdateUsernameTemporarily(string incomingUsername, string lastSentMessage)
+        {
+            RainMeadow.Debug(incomingUsername);
+            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+            {
+                if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+
+                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.owner.id.name == incomingUsername && opo.apo is AbstractCreature ac)
+                {
+                    var onlineHuds = ac.world.game.cameras[0].hud.parts
+                        .OfType<PlayerSpecificOnlineHud>();
+
+                    foreach (var onlineHud in onlineHuds)
+                    {
+                        OnlinePlayerDisplay usernameDisplay = null;
+
+                        foreach (var part in onlineHud.parts.OfType<OnlinePlayerDisplay>())
+                        {
+                            if (part.label.text == incomingUsername)
+                            {
+                                usernameDisplay = part;
+                                break;
+                            }
+                        }
+
+                        if (usernameDisplay != null)
+                        {
+                            usernameDisplay.label.text = $"{incomingUsername}: {lastSentMessage}";
+                        }
+                    }
+                }
+
+            }
+        }
 
         [RPCMethod]
         public static void ChangeFood(short amt)
