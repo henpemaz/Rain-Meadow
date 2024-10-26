@@ -50,9 +50,12 @@ public partial class RainMeadow
     private void Player_checkInput(On.Player.orig_checkInput orig, Player self)
     {
         orig(self);
-        if (self.room.world.game.cameras[0].hud.textPrompt.pausedMode || ChatHud.chatButtonActive)
+        if (OnlineManager.lobby != null)
         {
-            PlayerMovementOverride.StopPlayerMovement(self);
+            if (self.room.world.game.cameras[0].hud.textPrompt.pausedMode || ChatHud.chatButtonActive)
+            {
+                PlayerMovementOverride.StopPlayerMovement(self);
+            }
         }
 
     }
