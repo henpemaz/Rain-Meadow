@@ -38,6 +38,10 @@ namespace RainMeadow
             RainMeadow.Debug(incomingUsername);
             foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
             {
+                if (OnlineManager.lobby.gameMode.usersIDontWantToChatWith.Contains(incomingUsername))
+                {
+                    continue;
+                }
                 if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
 
                 if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.owner.id.name == incomingUsername && opo.apo is AbstractCreature ac)

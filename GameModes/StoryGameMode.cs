@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RainMeadow
@@ -20,7 +21,6 @@ namespace RainMeadow
         public Dictionary<string, int> storyIntRemixSettings;
         public Dictionary<ushort, ushort[]> consumedItems;
         public StoryClientSettingsData storyClientData;
-
 
 
         public bool saveToDisk = false;

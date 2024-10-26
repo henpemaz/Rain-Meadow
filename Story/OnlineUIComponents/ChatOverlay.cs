@@ -58,6 +58,18 @@ namespace RainMeadow
 
                 foreach (string message in chatLog)
                 {
+                    var partsOfMessage = message.Split(':');
+
+                    // Check if we have at least two parts (username and message)
+                    if (partsOfMessage.Length >= 2)
+                    {
+                        string username = partsOfMessage[0].Trim(); // Extract and trim the username
+                        if (OnlineManager.lobby.gameMode.usersIDontWantToChatWith.Contains(username))
+                        {
+                            continue;
+                        }
+                    }
+
                     var chatMessageLabel = new MenuLabel(this, pages[0], message, new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f - 660f, 300f - yOfftset), new Vector2(1400f, 30f), false);
                     chatMessageLabel.label.alignment = FLabelAlignment.Left;
                     pages[0].subObjects.Add(chatMessageLabel);
