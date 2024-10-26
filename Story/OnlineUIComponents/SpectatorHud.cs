@@ -7,14 +7,12 @@ namespace RainMeadow
     {
         private RoomCamera camera;
         private RainWorldGame game;
-        private readonly OnlineGameMode onlineGameMode;
         private SpectatorOverlay? spectatorOverlay;
         private AbstractCreature? spectatee;
 
-        public SpectatorHud(HUD.HUD hud, RoomCamera camera, OnlineGameMode onlineGameMode) : base(hud)
+        public SpectatorHud(HUD.HUD hud, RoomCamera camera) : base(hud)
         {
             this.camera = camera;
-            this.onlineGameMode = onlineGameMode;
             this.game = camera.game;
         }
 
@@ -48,13 +46,31 @@ namespace RainMeadow
             base.Update();
             if (spectatorOverlay != null)
             {
-                if (game.pauseMenu != null || camera.hud.map.visible || game.manager.upcomingProcess != null)
+                if (RainMeadow.isStoryMode(out var _))
                 {
-                    RainMeadow.Debug("Shutting down spectator overlay due to another process request");
-                    spectatorOverlay.ShutDownProcess();
-                    spectatorOverlay = null;
-                    return;
+                    if ((game.pauseMenu != null || camera.hud.map.visible || game.manager.upcomingProcess != null))
+                    {
+                        RainMeadow.Debug("Shutting down spectator overlay due to another process request");
+                        spectatorOverlay.ShutDownProcess();
+                        spectatorOverlay = null;
+                        return;
+                    }
+
+
                 }
+
+                if (RainMeadow.isArenaMode(out var _))
+                {
+
+                    if (game.arenaOverlay != null || game.pauseMenu != null || game.manager.upcomingProcess != null)
+                    {
+                        RainMeadow.Debug("Shutting down spectator overlay due to another process request");
+                        spectatorOverlay.ShutDownProcess();
+                        spectatorOverlay = null;
+                        return;
+                    }
+                }
+
                 spectatorOverlay.Update();
                 spectatee = spectatorOverlay.spectatee;
             }
