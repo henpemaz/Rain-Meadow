@@ -1,7 +1,9 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using RainMeadow.Story.OnlineUIComponents;
 using System;
 using System.Linq;
+using UnityEngine;
 
 namespace RainMeadow;
 
@@ -41,6 +43,17 @@ public partial class RainMeadow
 
         On.AbstractCreature.ctor += AbstractCreature_ctor;
         On.Player.ShortCutColor += Player_ShortCutColor;
+        On.Player.checkInput += Player_checkInput;
+
+    }
+
+    private void Player_checkInput(On.Player.orig_checkInput orig, Player self)
+    {
+        orig(self);
+        if (self.room.world.game.cameras[0].hud.textPrompt.pausedMode || ChatHud.chatButtonActive)
+        {
+            PlayerMovementOverride.StopPlayerMovement(self);
+        }
 
     }
 

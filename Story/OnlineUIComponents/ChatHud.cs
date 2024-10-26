@@ -45,6 +45,14 @@ namespace RainMeadow
         {
             base.Draw(timeStacker);
             gamePaused = textPrompt.pausedMode;
+
+            if (ChatHud.chatButtonActive)
+            {
+                game.devToolsActive = false;
+                game.devToolsLabel.isVisible = false;
+            }
+
+
             if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatLogKey.Value) && chatOverlay == null && !chatLogActive && !textPrompt.pausedMode)
             {
                 RainMeadow.Debug("creating overlay");
