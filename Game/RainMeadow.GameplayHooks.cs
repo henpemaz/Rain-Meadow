@@ -433,13 +433,12 @@ namespace RainMeadow
 
         private void RoomRealizer_Update(On.RoomRealizer.orig_Update orig, RoomRealizer self)
         {
-            if (OnlineManager.lobby != null)
+            if (OnlineManager.lobby != null && OnlineManager.mePlayer.isActuallySpectating)
             {
                 var origFollow = self.world.game.cameras[0].followAbstractCreature;
-                self.world.game.cameras[0].followAbstractCreature = self.world.game.Players[0];
+                self.world.game.cameras[0].followAbstractCreature = self.followCreature;
                 orig(self);
                 self.world.game.cameras[0].followAbstractCreature = origFollow;
-                return;
             }
 
             orig(self);
