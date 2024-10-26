@@ -17,7 +17,6 @@ namespace RainMeadow
             this.chatLog = chatLog;
             this.game = game;
             pages.Add(new Page(this, null, "chat", 0));
-            // InitChat();
             isReceived = true;
         }
 
@@ -39,27 +38,32 @@ namespace RainMeadow
         public void UpdateLogDisplay()
         {
             float yOfftset = 0;
-            foreach (string message in chatLog)
+            if (chatLog.Count > 0)
             {
-                var chatMessageLabel = new MenuLabel(this, pages[0], message, new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f - 660f, 300f - yOfftset), new Vector2(1400f, 30f), false);
-                chatMessageLabel.label.alignment = FLabelAlignment.Left;
-                pages[0].subObjects.Add(chatMessageLabel);
-                yOfftset += 20f;
+                var logsToRemove = new List<MenuObject>();
+
+                // First, collect all the logs to remove
+                foreach (var log in pages[0].subObjects)
+                {
+                    log.RemoveSprites();
+                    logsToRemove.Add(log);
+                }
+
+                // Now remove the logs from the original collection
+                foreach (var log in logsToRemove)
+                {
+                    pages[0].RemoveSubObject(log);
+                }
+
+
+                foreach (string message in chatLog)
+                {
+                    var chatMessageLabel = new MenuLabel(this, pages[0], message, new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f - 660f, 300f - yOfftset), new Vector2(1400f, 30f), false);
+                    chatMessageLabel.label.alignment = FLabelAlignment.Left;
+                    pages[0].subObjects.Add(chatMessageLabel);
+                    yOfftset += 20f;
+                }
             }
-        }
-
-        public void InitChat()
-        {
-            if (chat != null)
-            {
-                chat.RemoveSprites();
-                this.pages[0].RemoveSprites();
-                this.pages[0].RemoveSubObject(chat);
-            }
-
-            chat = new ChatTextBox(this, pages[0], "", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 700f, 0), new(1400, 30));
-            pages[0].subObjects.Add(chat);
-
         }
     }
 }
