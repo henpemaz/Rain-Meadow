@@ -296,17 +296,17 @@ namespace RainMeadow
             {
                 return;
             }
-            if (!clientReadiedUp)
-            {
-                arena.clientsAreReadiedUp++;
 
-            }
 
             if (!arena.allPlayersReadyLockLobby)
             {
+                if (!clientReadiedUp)
+                {
+                    arena.clientsAreReadiedUp++;
 
-                clientReadiedUp = true;
-                if (OnlineManager.players.Count > 1)
+                }
+
+                if (OnlineManager.players.Count > 1 && !clientReadiedUp)
                 {
                     foreach (var player in OnlineManager.players)
                     {
@@ -320,6 +320,8 @@ namespace RainMeadow
                     this.playButton.inactive = true;
                     this.playButton.buttonBehav.greyedOut = true;
                 }
+                clientReadiedUp = true;
+
 
                 return;
             }
@@ -470,6 +472,7 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var _))
             {
+                arena.clientsAreReadiedUp = 0;
                 RainMeadow.Debug(players);
                 for (int i = usernameButtons.Length - 1; i >= 1; i--)
                 {
