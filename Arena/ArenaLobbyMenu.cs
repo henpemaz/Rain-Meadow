@@ -285,17 +285,28 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
+            if (OnlineManager.lobby.isOwner && this.GetGameTypeSetup.playList != null && this.GetGameTypeSetup.playList.Count == 0)
+            {
+                return; // don't be foolish
+            }
+
+
+
             if (arena.clientsAreReadiedUp != OnlineManager.players.Count && arena.isInGame)
             {
                 return;
             }
 
+
             if (!arena.allPlayersReadyLockLobby)
             {
-                arena.clientsAreReadiedUp++;
-                
-                clientReadiedUp = true;
-                if (OnlineManager.players.Count > 1)
+                if (!clientReadiedUp)
+                {
+                    arena.clientsAreReadiedUp++;
+
+                }
+
+                if (OnlineManager.players.Count > 1 && !clientReadiedUp)
                 {
                     foreach (var player in OnlineManager.players)
                     {
@@ -309,6 +320,8 @@ namespace RainMeadow
                     this.playButton.inactive = true;
                     this.playButton.buttonBehav.greyedOut = true;
                 }
+                clientReadiedUp = true;
+
 
                 return;
             }
@@ -340,6 +353,7 @@ namespace RainMeadow
             if (this.playButton != null)
             {
 
+
                 if (OnlineManager.players.Count == 1)
                 {
                     this.playButton.menuLabel.text = this.Translate("WAIT FOR OTHERS");
@@ -347,25 +361,20 @@ namespace RainMeadow
 
                 }
 
-                if (!OnlineManager.lobby.isOwner) // let clients ready up when no map is selected
+
+                if (this.GetGameTypeSetup.playList.Count * this.GetGameTypeSetup.levelRepeats >= 0)
                 {
-                    if (this.GetGameTypeSetup.playList.Count * this.GetGameTypeSetup.levelRepeats >= 0)
+                    if (this.abovePlayButtonLabel != null)
                     {
-                        if (this.abovePlayButtonLabel != null)
-                        {
-                            this.abovePlayButtonLabel.RemoveSprites();
-                            this.pages[0].RemoveSubObject(this.abovePlayButtonLabel);
-                        }
-
-                        this.playButton.buttonBehav.greyedOut = false;
+                        this.abovePlayButtonLabel.RemoveSprites();
+                        this.pages[0].RemoveSubObject(this.abovePlayButtonLabel);
                     }
-
-                    if (!clientReadiedUp && this.levelSelector != null && this.levelSelector.levelsPlaylist.levelItems.Count == 0)
+                    if (!OnlineManager.lobby.isOwner) // let clients ready up when no map is selected
                     {
                         this.playButton.buttonBehav.greyedOut = false;
                     }
-
                 }
+
 
 
                 if (clientReadiedUp && OnlineManager.players.Count > 1)
@@ -463,18 +472,25 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var _))
             {
+                arena.clientsAreReadiedUp = 0;
                 RainMeadow.Debug(players);
                 for (int i = usernameButtons.Length - 1; i >= 1; i--)
                 {
-                    var playerbtn = usernameButtons[i];
-                    playerbtn.RemoveSprites();
+                    if (usernameButtons[i] != null)
+                    {
+                        var playerbtn = usernameButtons[i];
+                        playerbtn.RemoveSprites();
+                    }
                     //mainPage.RemoveSubObject(playerbtn);
                 }
 
                 for (int i = classButtons.Length - 1; i >= 1; i--)
                 {
-                    var playerbtn = classButtons[i];
-                    playerbtn.RemoveSprites();
+                    if (classButtons[i] != null)
+                    {
+                        var playerbtn = classButtons[i];
+                        playerbtn.RemoveSprites();
+                    }
                     //mainPage.RemoveSubObject(playerbtn);
                 }
 
@@ -500,12 +516,9 @@ namespace RainMeadow
                     }
                     AddOtherUsernameButtons();
                     AddOtherPlayerClassButtons();
+                    HandleLobbyProfileOverflow();
 
-                    if (OnlineManager.players.Count > 4)
-                    {
-                        HandleLobbyProfileOverflow();
-
-                    }
+                    
                     clientReadiedUp = false;
 
 
@@ -633,7 +646,7 @@ namespace RainMeadow
 
                     if (this.usernameButtons[l].menuLabel.text == OnlineManager.players[l].id.name) // we have our mark
 
-                    classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
+                        classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
                     classButtons[l].buttonBehav.greyedOut = true;
                     classButtons[l].portraitBlack = Custom.LerpAndTick(classButtons[l].portraitBlack, 1f, 0.06f, 0.05f);
                     var currentColorIndex = arena.playersInLobbyChoosingSlugs[OnlineManager.players[l].id.name];
@@ -735,6 +748,7 @@ namespace RainMeadow
 
         private void HandleLobbyProfileOverflow()
         {
+            
             if (viewNextPlayer != null)
             {
                 viewNextPlayer.RemoveSprites();
@@ -748,11 +762,16 @@ namespace RainMeadow
                 pages[0].RemoveSubObject(viewPrevPlayer);
             }
 
+            if (OnlineManager.players.Count <= 4)
+            {
+                return;
+            }
+
             currentPlayerPosition = holdPlayerPosition;
 
             viewNextPlayer = new SimplerSymbolButton(this, pages[0], "Menu_Symbol_Arrow", "VIEWNEXT", new Vector2(classButtons[holdPlayerPosition].pos.x + 120f, classButtons[holdPlayerPosition].pos.y + 60));
             viewNextPlayer.symbolSprite.rotation = 90;
-            if (currentPlayerPosition == OnlineManager.players.Count -1)
+            if (currentPlayerPosition == OnlineManager.players.Count - 1)
             {
                 viewNextPlayer.buttonBehav.greyedOut = true;
             }
@@ -760,6 +779,8 @@ namespace RainMeadow
 
             viewNextPlayer.OnClick += (_) =>
             {
+
+
                 if (viewPrevPlayer != null && viewPrevPlayer.buttonBehav.greyedOut)
                 {
                     viewPrevPlayer.buttonBehav.greyedOut = false;
@@ -787,6 +808,11 @@ namespace RainMeadow
                     return;
                 }
 
+                else
+                {
+                    return;
+                }
+
             };
 
             viewPrevPlayer = new SimplerSymbolButton(this, pages[0], "Menu_Symbol_Arrow", "VIEWPREV", new Vector2(classButtons[holdPlayerPosition].pos.x + 120f, classButtons[holdPlayerPosition].pos.y + 20));
@@ -797,6 +823,8 @@ namespace RainMeadow
             }
             viewPrevPlayer.OnClick += (_) =>
             {
+
+
                 if (viewNextPlayer != null && viewNextPlayer.buttonBehav.greyedOut)
                 {
                     viewNextPlayer.buttonBehav.greyedOut = false;
@@ -823,6 +851,10 @@ namespace RainMeadow
                     return;
                 }
 
+                else
+                {
+                    return;
+                }
             };
             this.pages[0].subObjects.Add(viewNextPlayer);
             this.pages[0].subObjects.Add(viewPrevPlayer);
