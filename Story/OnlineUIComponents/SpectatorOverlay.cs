@@ -16,6 +16,8 @@ namespace RainMeadow
             public OnlinePhysicalObject player;
             public SimplerButton button;
             public SimplerSymbolButton? kickbutton;
+            public bool mutedPlayer;
+            private string clientMuteSymbol;
             public Vector2 pos
             {
                 set
@@ -32,6 +34,18 @@ namespace RainMeadow
                 this.overlay = menu;
                 this.player = opo;
                 this.button = new SimplerButton(menu, menu.pages[0], opo.owner.id.name, pos, new Vector2(110, 30));
+
+                if (OnlineManager.lobby.gameMode.usersIDontWantToChatWith.Contains(opo.owner.id.name)) {
+
+                    clientMuteSymbol = "FriendA"; // Mark as being friendly again next click
+                    mutedPlayer = true;
+                } else
+                {
+                    clientMuteSymbol = "Menu_Symbol_Clear_All"; // Mark as available to be muted
+                    mutedPlayer = false;
+
+                }
+
                 this.button.OnClick += (_) =>
                 {
                     this.button.toggled = !this.button.toggled;
@@ -44,6 +58,29 @@ namespace RainMeadow
                 {
                     this.kickbutton = new SimplerSymbolButton(menu, menu.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", pos + new Vector2(120, 0));
                     this.kickbutton.OnClick += (_) => BanHammer.BanUser(opo.owner);
+                    this.kickbutton.owner.subObjects.Add(kickbutton);
+                }
+                if (opo.owner != OnlineManager.mePlayer)
+                {
+                    this.kickbutton = new SimplerSymbolButton(menu, menu.pages[0], clientMuteSymbol, "MUTEPLAYER", pos + new Vector2(120, 0));
+                    this.kickbutton.OnClick += (_) =>
+                    {
+                        if (!mutedPlayer)
+                        {
+                            OnlineManager.lobby.gameMode.usersIDontWantToChatWith.Add(opo.owner.id.name);
+                            RainMeadow.Debug($"Added  {opo.owner.id.name} to mute list");
+                            this.kickbutton.UpdateSymbol("FriendA");
+                            mutedPlayer = true;
+                        }
+                        else
+                        {
+                            OnlineManager.lobby.gameMode.usersIDontWantToChatWith.Remove(opo.owner.id.name);
+                            RainMeadow.Debug($"Removed  {opo.owner.id.name} from mute list");
+                            this.kickbutton.UpdateSymbol("Menu_Symbol_Clear_All");
+                            mutedPlayer = false;
+
+                        }
+                    };
                     this.kickbutton.owner.subObjects.Add(kickbutton);
                 }
                 this.pos = pos;

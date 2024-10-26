@@ -825,6 +825,9 @@ namespace RainMeadow
             {
                 self.AddPart(new TextPrompt(self));
                 self.AddPart(new Pointing(self));
+                self.AddPart(new ChatHud(self, session.game.cameras[0]));
+                self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
+
 
             }
             else

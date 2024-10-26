@@ -1,4 +1,5 @@
 ﻿using RWCustom;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -10,7 +11,7 @@ namespace RainMeadow
         public FLabel label;
         public FSprite slugIcon;
         public int counter;
-        public int fadeAwayCounter;
+        public int resetUsernameCounter;
         public float alpha;
         public float lastAlpha;
         public float blink;
@@ -23,7 +24,9 @@ namespace RainMeadow
 
         public OnlinePlayerDisplay(PlayerSpecificOnlineHud owner, SlugcatCustomization customization) : base(owner)
         {
+
             this.owner = owner;
+            this.resetUsernameCounter = 200;
 
             this.pos = new Vector2(-1000f, -1000f);
             this.lastPos = this.pos;
@@ -105,6 +108,7 @@ namespace RainMeadow
                 }
 
                 this.counter++;
+
             }
             if (!show) this.lastAlpha = this.alpha;
         }
@@ -142,14 +146,37 @@ namespace RainMeadow
                 }
             }
             var lighter_color = color * 1.7f;
-
             this.label.color = lighter_color;
+
+            if (this.label.text != customization.nickname) // we've updated a username
+            {
+                resetUsernameCounter--;
+                this.label.color = color * 3f;
+
+            }
+
+            if (resetUsernameCounter < 10) // snappier fadeaway
+            {
+                this.label.color = lighter_color;
+
+            }
+
+
+            if (resetUsernameCounter < 0)
+            {
+
+                this.label.text = customization.nickname;
+                resetUsernameCounter = 200;
+
+            }
+
             this.arrowSprite.color = lighter_color;
             this.slugIcon.color = lighter_color;
 
             this.label.alpha = num;
             this.arrowSprite.alpha = num;
             this.slugIcon.alpha = num;
+
         }
 
         public override void ClearSprites()
