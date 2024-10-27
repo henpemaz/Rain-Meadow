@@ -46,6 +46,7 @@ namespace RainMeadow
         {
             this._wallClimber = creature.Template.AccessibilityResistance(AItile.Accessibility.Wall).Allowed;
             this._swimWithPathing = template.MovementLegalInRelationToWater(true, false);
+            if (creature.abstractCreature.abstractAI.RealAI.pathFinder is StandardPather sp) sp.savedPastConnections = 0;
         }
 
         public float jumpBoost;
@@ -393,8 +394,10 @@ namespace RainMeadow
                         if (tile.AnyBeam && !tile.DeepWater)
                         {
                             RainMeadow.Debug("grip!");
+                            ClearMovementOverride();
                             GripPole(tile);
-                            break;
+                            toPos = room.GetWorldCoordinate(new IntVector2(tile.X, tile.Y));
+                            return true;
                         }
                     }
                 }

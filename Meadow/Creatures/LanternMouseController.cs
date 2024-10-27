@@ -14,6 +14,9 @@ namespace RainMeadow
             On.LanternMouse.Act += LanternMouse_Act;
             On.LanternMouse.Hang += LanternMouse_Hang;
 
+            On.LanternMouse.MoveTowards += LanternMouse_MoveTowards; // snap to poles
+            On.LanternMouse.Run += LanternMouse_Run;
+
             On.MouseAI.Update += MouseAI_Update;
             On.MouseAI.DangleTile += MouseAI_DangleTile; // no dangling
 
@@ -26,6 +29,71 @@ namespace RainMeadow
             new MonoMod.RuntimeDetour.Hook(typeof(MouseGraphics).GetProperty("BodyColor").GetGetMethod(), MouseGraphics_ColorHook);
             new MonoMod.RuntimeDetour.Hook(typeof(MouseGraphics).GetProperty("DecalColor").GetGetMethod(), MouseGraphics_ColorHook);
             new MonoMod.RuntimeDetour.Hook(typeof(MouseGraphics).GetProperty("EyesColor").GetGetMethod(), MouseGraphics_ColorHook);
+        }
+
+        private static void LanternMouse_Run(On.LanternMouse.orig_Run orig, LanternMouse self, MovementConnection followingConnection)
+        {
+            if (creatureControllers.TryGetValue(self, out var p))
+            {
+                if (followingConnection.type == MovementConnection.MovementType.Standard && self.footingCounter >= 10)
+                {
+                    var tile = self.room.GetTile(followingConnection.startCoord.x, followingConnection.startCoord.y);
+                    var aitile = self.room.aimap.getAItile(tile.X, tile.Y);
+                    var delta = followingConnection.destinationCoord.Tile - followingConnection.startCoord.Tile;
+                    if (aitile.acc == AItile.Accessibility.Climb)
+                    {
+                        if (tile.horizontalBeam && delta.y == 0)
+                        {
+                            self.mainBodyChunk.vel.y *= 0.2f;
+                            self.mainBodyChunk.vel.y += Mathf.Clamp(self.room.MiddleOfTile(tile.X, tile.Y).x - self.mainBodyChunk.pos.y, -1, 1);
+                            self.mainBodyChunk.vel.x *= 0.8f;
+                            self.mainBodyChunk.vel.x += Mathf.Clamp(delta.x, -1, 1);
+                        }
+                        if (tile.verticalBeam && delta.x == 0)
+                        {
+                            self.mainBodyChunk.vel.x *= 0.2f;
+                            self.mainBodyChunk.vel.x += Mathf.Clamp(self.room.MiddleOfTile(tile.X, tile.Y).x - self.mainBodyChunk.pos.x, -1, 1);
+                            self.mainBodyChunk.vel.y *= 0.8f;
+                            self.mainBodyChunk.vel.y += Mathf.Clamp(delta.y, -1, 1);
+                        }
+                    }
+                }
+            }
+            orig(self, followingConnection);
+        }
+
+        private static void LanternMouse_MoveTowards(On.LanternMouse.orig_MoveTowards orig, LanternMouse self, Vector2 moveTo)
+        {
+            if (creatureControllers.TryGetValue(self, out var p))
+            {
+                var c = (LanternMouseController)p;
+
+                if (self.specialMoveCounter > 0 && self.footingCounter > 10) // this is the call from Act not Run
+                {
+                    var startCoord = c.CurrentPathfindingPosition.Tile;
+                    var tile = self.room.GetTile(startCoord.x, startCoord.y);
+                    var aitile = self.room.aimap.getAItile(tile.X, tile.Y);
+                    var delta = self.room.GetTilePosition(moveTo) - startCoord;
+                    if (aitile.acc == AItile.Accessibility.Climb && (delta.x != 0 || delta.y != 0))
+                    {
+                        if (tile.horizontalBeam && delta.y == 0)
+                        {
+                            self.mainBodyChunk.vel.y *= 0.2f;
+                            self.mainBodyChunk.vel.y += Mathf.Clamp(self.room.MiddleOfTile(tile.X, tile.Y).x - self.mainBodyChunk.pos.y, -1, 1);
+                            self.mainBodyChunk.vel.x *= 0.8f;
+                            self.mainBodyChunk.vel.x += Mathf.Clamp(delta.x, -1, 1);
+                        }
+                        if (tile.verticalBeam && delta.x == 0)
+                        {
+                            self.mainBodyChunk.vel.x *= 0.2f;
+                            self.mainBodyChunk.vel.x += Mathf.Clamp(self.room.MiddleOfTile(tile.X, tile.Y).x - self.mainBodyChunk.pos.x, -1, 1);
+                            self.mainBodyChunk.vel.y *= 0.8f;
+                            self.mainBodyChunk.vel.y += Mathf.Clamp(delta.y, -1, 1);
+                        }
+                    }
+                }
+            }
+            orig(self, moveTo);
         }
 
         private static Color MouseGraphics_ColorHook(Func<MouseGraphics, Color> orig, MouseGraphics self)
@@ -150,7 +218,7 @@ namespace RainMeadow
         public LanternMouseController(LanternMouse mouse, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(mouse, oc, playerNumber, customization)
         {
             this.mouse = mouse;
-            jumpFactor = 1.4f; // y u so smol
+            jumpFactor = 1.2f; // y u so smol
 
             var color = mouse.iVars.color.rgb;
             customization.ModifyBodyColor(ref color);
@@ -164,7 +232,7 @@ namespace RainMeadow
 
         public override bool HasFooting => mouse.footingCounter >= 10;
 
-        public override bool IsOnPole => GetTile(0).AnyBeam;
+        public override bool IsOnPole => creature.room.GetTile(CurrentPathfindingPosition).AnyBeam;
 
         public override bool IsOnGround => IsTileGround(0, 0, -1) || IsTileGround(1, 0, -1);
 
@@ -172,18 +240,30 @@ namespace RainMeadow
 
         public override bool IsOnClimb => false;
 
+        public override WorldCoordinate CurrentPathfindingPosition
+        {
+            get
+            {
+                var mainBodyChunk = creature.mainBodyChunk;
+                for (int j = 0; j < 5; j++)
+                {
+                    var tile = creature.room.GetTilePosition(mainBodyChunk.pos + Custom.fourDirectionsAndZero[j].ToVector2() * mainBodyChunk.rad);
+                    if (TileAccessible(creature.room, tile)) return creature.room.GetWorldCoordinate(tile);
+                }
+                return base.CurrentPathfindingPosition;
+            }
+        }
 
         protected override void GripPole(Room.Tile tile0)
         {
             if (mouse.footingCounter < 10)
             {
+                RainMeadow.Debug("gripped");
                 creature.room.PlaySound(SoundID.Mouse_Scurry, creature.mainBodyChunk);
-                for (int i = 0; i < creature.bodyChunks.Length; i++)
-                {
-                    creature.bodyChunks[i].vel *= 0.2f;
-                }
-                creature.mainBodyChunk.vel += 0.2f * (creature.room.MiddleOfTile(tile0.X, tile0.Y) - creature.mainBodyChunk.pos);
-                mouse.footingCounter = 10;
+                creature.bodyChunks[0].vel *= 0.2f;
+                creature.bodyChunks[1].vel *= 0.3f;
+                mouse.footingCounter = Mathf.Max(21, mouse.footingCounter);
+                mouse.MoveTowards(creature.room.MiddleOfTile(tile0.X, tile0.Y));
             }
         }
 
@@ -194,7 +274,13 @@ namespace RainMeadow
 
         protected override void LookImpl(Vector2 pos)
         {
+            var dir = Custom.DirVec(mouse.mainBodyChunk.pos, pos);
             (mouse.graphicsModule as MouseGraphics).lookDir = (mouse.mainBodyChunk.pos - pos) / 500f;
+            if (HasFooting)
+            {
+                mouse.bodyChunks[0].vel += 0.5f * dir;
+                mouse.bodyChunks[1].vel -= 0.5f * dir;
+            }
         }
 
         protected override void MovementOverride(MovementConnection movementConnection)
@@ -223,10 +309,12 @@ namespace RainMeadow
             base.ConsciousUpdate();
             if (mouse.specialMoveCounter > 0 && !mouse.room.aimap.TileAccessibleToCreature(mouse.mainBodyChunk.pos, mouse.Template) && !mouse.room.aimap.TileAccessibleToCreature(mouse.bodyChunks[1].pos, mouse.Template))
             {
+                RainMeadow.Debug("lose footing!");
                 mouse.footingCounter = 0;
             }
-            else if (mouse.footingCounter > 0 && mouse.footingCounter < 10)
+            else if (mouse.footingCounter > 0 && mouse.footingCounter < 10 && (mouse.room.aimap.TileAccessibleToCreature(mouse.mainBodyChunk.pos, mouse.Template) || mouse.room.aimap.TileAccessibleToCreature(mouse.bodyChunks[1].pos, mouse.Template)))
             {
+                RainMeadow.Debug("regain footing");
                 mouse.footingCounter = 10; // faster initial regain
             }
             else
