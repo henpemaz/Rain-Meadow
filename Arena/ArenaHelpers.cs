@@ -58,11 +58,10 @@ namespace RainMeadow
             {
 
                 var currentPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
-
                 ArenaSitting.ArenaPlayer newPlayer = new ArenaSitting.ArenaPlayer(i)
                 {
                     playerNumber = i,
-                    playerClass = ((OnlineManager.lobby.clientSettings[currentPlayer].GetData<ArenaClientSettings>()).playingAs), // Set the playerClass to the OnlinePlayer
+                    playerClass = ((OnlineManager.lobby.clientSettings[currentPlayer].GetData<ArenaClientSettings>()).playingAs), // Set the playerClass to the OnlinePlayer. TODO: Try and find a way to go through avatarSettings for this
                     hasEnteredGameArea = true
                 };
 
