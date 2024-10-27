@@ -1,25 +1,18 @@
 ﻿using HUD;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace RainMeadow
 {
     public class SpectatorHud : HudPart
     {
-
         private RoomCamera camera;
-        private readonly OnlineGameMode onlineGameMode;
-        private Menu.Menu spectatorMode;
         private RainWorldGame game;
-        private List<AbstractCreature> acList;
-        private int spectateInitCoolDown;
+        private SpectatorOverlay? spectatorOverlay;
+        private AbstractCreature? spectatee;
 
-
-        public SpectatorHud(HUD.HUD hud, RoomCamera camera, OnlineGameMode onlineGameMode) : base(hud)
+        public SpectatorHud(HUD.HUD hud, RoomCamera camera) : base(hud)
         {
             this.camera = camera;
-            this.onlineGameMode = onlineGameMode;
-            acList = new List<AbstractCreature>();
             this.game = camera.game;
         }
 
@@ -27,53 +20,71 @@ namespace RainMeadow
         {
             base.Draw(timeStacker);
 
-            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value) && spectatorMode == null)
+            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value))
             {
-
-                RainMeadow.Debug("Creating spectator overlay");
-                spectatorMode = new SpectatorOverlay(game.manager, game);
-                spectateInitCoolDown = 10;
+                if (spectatorOverlay == null)
+                {
+                    RainMeadow.Debug("Creating spectator overlay");
+                    spectatorOverlay = new SpectatorOverlay(game.manager, game);
+                }
+                else
+                {
+                    RainMeadow.Debug("Spectate destroy!");
+                    spectatorOverlay.ShutDownProcess();
+                    spectatorOverlay = null;
+                }
             }
 
-            if (spectatorMode != null)
+            if (spectatorOverlay != null)
             {
-                spectatorMode.GrafUpdate(timeStacker);
-            }
-
-            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.SpectatorKey.Value) && spectatorMode != null && spectateInitCoolDown == 0)
-            {
-                RainMeadow.Debug("Spectate destroy!");
-                spectatorMode.ShutDownProcess();
-                spectatorMode = null;
+                spectatorOverlay.GrafUpdate(timeStacker);
             }
         }
-
 
         public override void Update()
         {
             base.Update();
-            if (OnlineManager.lobby.gameMode is StoryGameMode)
+            if (spectatorOverlay != null)
             {
-                if ((game.pauseMenu != null || camera.hud.map.visible || game.manager.upcomingProcess != null) && spectatorMode != null)
+                if (RainMeadow.isStoryMode(out var _))
                 {
-                    RainMeadow.Debug("Shutting down spectator overlay due to another process request");
+                    if ((game.pauseMenu != null || camera.hud.map.visible || game.manager.upcomingProcess != null))
+                    {
+                        RainMeadow.Debug("Shutting down spectator overlay due to another process request");
+                        spectatorOverlay.ShutDownProcess();
+                        spectatorOverlay = null;
+                        return;
+                    }
 
-                    spectatorMode.ShutDownProcess();
-                    spectatorMode = null;
+
                 }
 
-
-                if (spectatorMode != null)
+                if (RainMeadow.isArenaMode(out var _))
                 {
-                    spectatorMode.Update();
 
-                    if (spectateInitCoolDown > 0)
+                    if (game.arenaOverlay != null || game.pauseMenu != null || game.manager.upcomingProcess != null)
                     {
-                        spectateInitCoolDown--;
+                        RainMeadow.Debug("Shutting down spectator overlay due to another process request");
+                        spectatorOverlay.ShutDownProcess();
+                        spectatorOverlay = null;
+                        return;
                     }
                 }
 
-
+                spectatorOverlay.Update();
+                spectatee = spectatorOverlay.spectatee;
+            }
+            if (spectatee is AbstractCreature ac)
+            {
+                camera.followAbstractCreature = spectatee;
+                if (spectatee.Room.realizedRoom == null)
+                {
+                    this.game.world.ActivateRoom(spectatee.Room);
+                }
+                if (camera.room.abstractRoom != spectatee.Room)
+                {
+                    camera.MoveCamera(spectatee.Room.realizedRoom, -1);
+                }
             }
         }
     }

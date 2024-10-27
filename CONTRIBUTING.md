@@ -37,6 +37,7 @@ RainWorld_Data/Managed/Newtonsoft.Json.dll
 RainWorld_Data/Managed/Rewired_Core.dll
 RainWorld_Data/Managed/Unity.Mathematics.dll
 RainWorld_Data/Managed/UnityEngine.AssetBundleModule.dll
+RainWorld_Data/Managed/UnityEngine.AudioModule.dll
 RainWorld_Data/Managed/UnityEngine.CoreModule.dll
 RainWorld_Data/Managed/UnityEngine.InputLegacyModule.dll
 RainWorld_Data/Managed/UnityEngine.JSONSerializeModule.dll
@@ -60,7 +61,7 @@ Keeping your method or function's parameters set to primitives can greatly boost
 Some developers are more advanced than others and this is expected. However, pinging developers for questions that you can research yourself is disrespectful to their time and to your intelligence. The expectation is that by the time you've asked a question, you have exhausted your extracurricular resources, reviewed the game code and need context on Meadow's design itself.
 
 ### 4. It's easier to modify than to write
-Everyone wants a perfect Pull Request. But if you're going to make a PR, please put in the work to test your  changes, attempt debugging, and write an executive summary in your PR's description rather than relying on the devs to contextualize themselves with the code you've written. 
+Everyone wants a perfect Pull Request. But if you're going to make a PR, please put in the work to test your changes, attempt debugging, and write an executive summary in your PR's description rather than relying on the devs to contextualize themselves with the code you've written. 
 
 ### 5. Don't go rogue
 Rain Meadow is a cool mod. We want to keep it that way. Conform to the vision the team has for its game modes, not use them as an excuse to push your own content. This is Rain World, not Doom 64. We love the creativity of the fan base, and the best way to harness that creativity for this mod is to tackle existing GitHub issues or reach out to the team on Discord for what needs to be worked on next if no issues are remaining.

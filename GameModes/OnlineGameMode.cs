@@ -16,8 +16,8 @@ namespace RainMeadow
 
             public static Dictionary<OnlineGameModeType, string> descriptions = new()
             {
-                { Meadow, "A peaceful mode about exploring around and discovering little secrets, together or on your own." },
-                { Story, "Adventure together with friends in the world of Rain World, fight together and die together." },
+                { Meadow, "A peaceful mode about exploring around and discovering little secrets, together or on\nyour own." },
+                { Story, "Adventure together with friends in the world of Rain World, fight together and die\ntogether." },
                 { ArenaCompetitive, "You sweaty bastards." },
             };
         }
@@ -49,10 +49,13 @@ namespace RainMeadow
         public Lobby lobby;
         public List<OnlineCreature> avatars = new();
         public ClientSettings clientSettings;
+        public List<string> usersIDontWantToChatWith;
+
 
         public OnlineGameMode(Lobby lobby)
         {
             this.lobby = lobby;
+            this.usersIDontWantToChatWith = new List<string>();
         }
 
         public virtual void FilterItems(Room room)
