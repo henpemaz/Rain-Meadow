@@ -218,7 +218,7 @@ namespace RainMeadow
         public LanternMouseController(LanternMouse mouse, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(mouse, oc, playerNumber, customization)
         {
             this.mouse = mouse;
-            jumpFactor = 1.2f; // y u so smol
+            jumpFactor = 1.3f; // y u so smol
 
             var color = mouse.iVars.color.rgb;
             customization.ModifyBodyColor(ref color);
@@ -264,6 +264,8 @@ namespace RainMeadow
                 creature.bodyChunks[1].vel *= 0.3f;
                 mouse.footingCounter = Mathf.Max(21, mouse.footingCounter);
                 mouse.MoveTowards(creature.room.MiddleOfTile(tile0.X, tile0.Y));
+                mouse.MoveTowards(creature.room.MiddleOfTile(tile0.X, tile0.Y));// please
+                mouse.MoveTowards(creature.room.MiddleOfTile(tile0.X, tile0.Y));// PLEASE
             }
         }
 
