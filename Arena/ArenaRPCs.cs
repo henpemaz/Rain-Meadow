@@ -165,6 +165,8 @@ namespace RainMeadow
                         {
 
                             game.classButtons[i].readyForCombat = true;
+                            arena.playersReadiedUp[userIsReady] = true;
+
                         }
 
                     }

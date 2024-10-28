@@ -524,6 +524,16 @@ namespace RainMeadow
                                 // Key does not exist, you can add it if needed
                                 arena.playersInLobbyChoosingSlugs.Add(player.id.name, 0);
                             }
+
+                            if (arena.playersReadiedUp.TryGetValue(player.id.name, out var alreadyReady))
+                            {
+                                RainMeadow.Debug("Player already exists in online dictionary");
+                            }
+                            else
+                            {
+                                // Key does not exist, you can add it if needed
+                                arena.playersReadiedUp.Add(player.id.name, false);
+                            }
                         }
                     }
                     AddOtherUsernameButtons();
@@ -612,6 +622,7 @@ namespace RainMeadow
                 arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.name] = currentColorIndex;
 
 
+
             };
             pages[0].subObjects.Add(meClassButton);
             arena.avatarSettings.playingAs = allSlugs[currentColorIndex];
@@ -663,8 +674,10 @@ namespace RainMeadow
 
                     if (this.usernameButtons[l].menuLabel.text == OnlineManager.players[l].id.name) // we have our mark
 
-                        classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
+                    classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
                     classButtons[l].buttonBehav.greyedOut = true;
+                    classButtons[l].readyForCombat = false;
+
                     classButtons[l].portraitBlack = Custom.LerpAndTick(classButtons[l].portraitBlack, 1f, 0.06f, 0.05f);
                     var currentColorIndex = arena.playersInLobbyChoosingSlugs[OnlineManager.players[l].id.name];
 
@@ -813,6 +826,13 @@ namespace RainMeadow
                 }
                 classButtons[holdPlayerPosition].portrait.LoadFile();
                 classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
+                try
+                {
+                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp[OnlineManager.players[currentPlayerPosition + 1].id.name];
+                } catch
+                {
+                    classButtons[holdPlayerPosition].readyForCombat = false;
+                }
 
                 currentPlayerPosition++;
 
@@ -857,6 +877,14 @@ namespace RainMeadow
                 }
                 classButtons[holdPlayerPosition].portrait.LoadFile();
                 classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
+                try
+                {
+                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp[OnlineManager.players[currentPlayerPosition - 1].id.name];
+                }
+                catch
+                {
+                    classButtons[holdPlayerPosition].readyForCombat = false;
+                }
 
                 currentPlayerPosition--;
                 if (currentPlayerPosition - 1 <= 3)
