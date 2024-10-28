@@ -154,7 +154,6 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
-            RainMeadow.Debug(OnlineManager.mePlayer.isActuallySpectating);
             UpdateList();
 
             foreach (var button in playerButtons)
