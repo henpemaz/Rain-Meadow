@@ -141,11 +141,9 @@ namespace RainMeadow
 
         private void BindSettings()
         {
-            this.personaSettings = (OnlineManager.lobby.gameMode as ArenaCompetitiveGameMode).avatarSettings;
-            personaSettings.bodyColor = Extensions.SafeColorRange(RainMeadow.rainMeadowOptions.BodyColor.Value);
-            personaSettings.eyeColor = Extensions.SafeColorRange(RainMeadow.rainMeadowOptions.EyeColor.Value);
-            personaSettings.playingAs = SlugcatStats.Name.White;
-            arena.arenaClientSettings.playingAs = personaSettings.playingAs;
+            arena.avatarSettings.eyeColor = RainMeadow.rainMeadowOptions.EyeColor.Value;
+            arena.avatarSettings.bodyColor = RainMeadow.rainMeadowOptions.BodyColor.Value;
+            arena.avatarSettings.playingAs = SlugcatStats.Name.White;
         }
 
         void BuildLayout()
@@ -283,6 +281,7 @@ namespace RainMeadow
         private void StartGame()
         {
             RainMeadow.DebugMe();
+            
             if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
             if (OnlineManager.lobby.isOwner && this.GetGameTypeSetup.playList != null && this.GetGameTypeSetup.playList.Count == 0)
@@ -539,7 +538,7 @@ namespace RainMeadow
             meClassButton = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f), 40f), 0);
             meClassButton.buttonBehav.greyedOut = false;
             meClassButton.readyForCombat = true;
-            var currentColorIndex = 0;
+            int currentColorIndex;
             if (arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.mePlayer.id.name, out var existingValue))
             {
                 currentColorIndex = arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.name];
@@ -582,8 +581,8 @@ namespace RainMeadow
                 meClassButton.portrait.sprite.SetElementByName(meClassButton.portrait.fileName);
                 PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
 
-                personaSettings.playingAs = allSlugs[currentColorIndex];
-                arena.arenaClientSettings.playingAs = personaSettings.playingAs;
+                arena.avatarSettings.playingAs = allSlugs[currentColorIndex];
+                arena.arenaClientSettings.playingAs = arena.avatarSettings.playingAs;
 
                 if (OnlineManager.players.Count > 1 && !arena.allPlayersReadyLockLobby) // stop unnecessary RPCs
                 {
@@ -598,8 +597,13 @@ namespace RainMeadow
                 }
 
                 arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.name] = currentColorIndex;
+
+
             };
             pages[0].subObjects.Add(meClassButton);
+            arena.avatarSettings.playingAs = allSlugs[currentColorIndex];
+            arena.arenaClientSettings.playingAs = arena.avatarSettings.playingAs;
+
         }
 
         private void AddMeUsername()
