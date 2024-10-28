@@ -226,6 +226,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
+                OnlineManager.mePlayer.isActuallySpectating = false;
                 playerCharacter = OnlineManager.lobby.gameMode.LoadWorldAs(game);
 
 
