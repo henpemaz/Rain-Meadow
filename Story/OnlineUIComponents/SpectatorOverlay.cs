@@ -50,9 +50,7 @@ namespace RainMeadow
                 {
                     this.button.toggled = !this.button.toggled;
                     overlay.spectatee = this.button.toggled ? this.player.apo as AbstractCreature : null;
-                    bool result = !this.player.isMine ? true : overlay.spectatee == null ? false : false;
-
-                    OnlineManager.mePlayer.isActuallySpectating = result;
+                    OnlineManager.mePlayer.isActuallySpectating = overlay.spectatee == null || !this.player.isMine;
 
                 };
                 this.button.owner.subObjects.Add(button);
