@@ -140,10 +140,11 @@ public partial class RainMeadow
 
         if (OnlineManager.lobby != null)
         {
-            if ((self.Template.type == CreatureTemplate.Type.Slugcat || OnlineManager.lobby.gameMode is MeadowGameMode)
-                && RainMeadow.creatureCustomizations.TryGetValue(self, out var custom))
+            if (RainMeadow.creatureCustomizations.TryGetValue(self, out var custom))
             {
-                return custom.GetBodyColor();
+                var color = orig(self);
+                custom.ModifyBodyColor(ref color);
+                return color;
             }
         }
         return orig(self);

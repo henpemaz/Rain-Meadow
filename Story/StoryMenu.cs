@@ -11,8 +11,9 @@ namespace RainMeadow
 {
     public class StoryMenu : SmartMenu, SelectOneButton.SelectOneButtonOwner, CheckBox.IOwnCheckBox
     {
-        private StoryGameMode gameMode => (StoryGameMode)OnlineManager.lobby.gameMode;
         private readonly RainEffect rainEffect;
+
+        private StoryGameMode gameMode;
 
         private EventfulHoldButton hostStartButton;
         private EventfulHoldButton clientWaitingButton;
@@ -53,6 +54,8 @@ namespace RainMeadow
             this.pages[0].subObjects.Add(this.rainEffect);
             this.rainEffect.rainFade = 0.3f;
             this.characterPages = new List<SlugcatSelectMenu.SlugcatPage>();
+
+            gameMode = (StoryGameMode)OnlineManager.lobby.gameMode;
 
             // Initial setup for slugcat menu & pages
             ssm = (SlugcatSelectMenu)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(SlugcatSelectMenu));
@@ -314,7 +317,6 @@ namespace RainMeadow
                     string url = $"https://steamcommunity.com/profiles/{player.id}";
                     SteamFriends.ActivateGameOverlayToWebPage(url);
                 };
-
             }
         }
 
@@ -325,6 +327,7 @@ namespace RainMeadow
             {
                 OnlineManager.LeaveLobby();
             }
+            RainMeadow.rainMeadowOptions._SaveConfigFile(); // save colors
             base.ShutDownProcess();
         }
 
@@ -449,17 +452,14 @@ namespace RainMeadow
         {
             this.personaSettings = (OnlineManager.lobby.gameMode as StoryGameMode).avatarSettings;
             personaSettings.playingAs = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
-            personaSettings.bodyColor = RainMeadow.rainMeadowOptions.BodyColor.Value;
-            personaSettings.eyeColor = RainMeadow.rainMeadowOptions.EyeColor.Value;
+            personaSettings.bodyColor = Extensions.SafeColorRange(RainMeadow.rainMeadowOptions.BodyColor.Value);
+            personaSettings.eyeColor = Extensions.SafeColorRange(RainMeadow.rainMeadowOptions.EyeColor.Value);
         }
 
         private void Colorpicker_OnValueChangedEvent()
         {
-            if (personaSettings != null) personaSettings.bodyColor = bodyColorPicker.valuecolor;
-            if (personaSettings != null) personaSettings.eyeColor = eyeColorPicker.valuecolor;
-            RainMeadow.rainMeadowOptions.BodyColor.Value = bodyColorPicker.valuecolor;
-            RainMeadow.rainMeadowOptions.EyeColor.Value = eyeColorPicker.valuecolor;
-            RainMeadow.rainMeadowOptions._SaveConfigFile();
+            RainMeadow.rainMeadowOptions.BodyColor.Value = personaSettings.bodyColor = Extensions.SafeColorRange(bodyColorPicker.valuecolor);
+            RainMeadow.rainMeadowOptions.EyeColor.Value = personaSettings.eyeColor = Extensions.SafeColorRange(eyeColorPicker.valuecolor);
         }
 
         private List<SlugcatStats.Name> AllSlugcats()

@@ -733,14 +733,12 @@ namespace RainMeadow
 
             pages[0].subObjects.Add(bodyColor);
             pages[0].subObjects.Add(eyeColor);
-
-
         }
 
         private void ColorPicker_OnValueChangedEvent()
         {
-            if (personaSettings != null) personaSettings.bodyColor = bodyColorPicker.valuecolor;
-            if (personaSettings != null) personaSettings.eyeColor = eyeColorPicker.valuecolor;
+            personaSettings.bodyColor = Extensions.SafeColorRange(bodyColorPicker.valuecolor);
+            personaSettings.eyeColor = Extensions.SafeColorRange(eyeColorPicker.valuecolor);
         }
 
         private void UpdateReadyUpLabel()

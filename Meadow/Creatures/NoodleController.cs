@@ -25,6 +25,32 @@ namespace RainMeadow
 
             IL.NeedleWorm.Fly += NeedleWorm_Fly;
             On.NeedleWorm.Fly += NeedleWorm_Fly1;
+
+            IL.NeedleWormGraphics.ApplyPalette += NeedleWormGraphics_ApplyPalette; // colors
+        }
+
+        private static void NeedleWormGraphics_ApplyPalette(ILContext il)
+        {
+            // recolor after assigning to bodycolor before using it
+            var c = new ILCursor(il);
+            c.GotoNext(MoveType.Before, // sleaser usage
+                i => i.MatchLdarg(1)
+                );
+            c.GotoPrev(MoveType.After, // bodycolor storage
+                i => i.MatchStfld<NeedleWormGraphics>("highLightColor")
+                );
+
+            c.MoveAfterLabels();
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate<Action<NeedleWormGraphics>>((self) =>
+            {
+                if (creatureControllers.TryGetValue(self.worm, out var p))
+                {
+                    p.customization.ModifyBodyColor(ref self.detailsColor);
+                    p.customization.ModifyBodyColor(ref self.highLightColor);
+                    p.customization.ModifyBodyColor(ref self.bodyColor);
+                }
+            });
         }
 
         private static void NeedleWorm_Fly1(On.NeedleWorm.orig_Fly orig, NeedleWorm self, MovementConnection followingConnection)

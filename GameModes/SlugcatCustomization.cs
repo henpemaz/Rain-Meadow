@@ -22,11 +22,6 @@ namespace RainMeadow
             originalEyeColor = new Color(Mathf.Clamp(eyeColor.r, 0.004f, 0.996f), Mathf.Clamp(eyeColor.g, 0.004f, 0.996f), Mathf.Clamp(eyeColor.b, 0.004f, 0.996f));
         }
 
-        internal override Color GetBodyColor()
-        {
-            return bodyColor;
-        }
-
         internal Color SlugcatColor()
         {
             return bodyColor;

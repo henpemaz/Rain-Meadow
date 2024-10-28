@@ -17,21 +17,6 @@ creature todo
 lizard todo
 	blues have trouble sticking to the ceiling
 	blues have trouble climbing/pathing ledges
-	more seeds
-
-eggbug
-	pick seeds and names
-
-noot
-	pick seeds and names
-
-lantermouse
-	seeds and names
-
-visualize selected skin
-	will get color previews once all seeds are picked and sampled
-
-tint implementation missing in most creatures
 
 "creature emotions" need addressing
 lizards shouldn't open mouth to bite -> can't reproduce
@@ -68,10 +53,6 @@ scav climbpos doesn't sync
 
 emotes go off-screen too often, need to show them in-screen near the creature when possible
 
-Lantern mouse: They struggle to grab onto poles when jumping, and overall seen hard to walk on horizontal poles. They need to be rail-roaded into poles more strongly, like how lizards/scavengers are
-
-General: Tint seems to be having sync issues, people randomly change between the original color of the animal, to their tint color in pure form, to anything in-between (the foo had an example above, they tinted themselves red to look dark orange, but for everyone on the lobby they looked pure red)
-
 toggle collision as a setting
 
 noot gets stuck on water surface, seems to always go left?
@@ -99,3 +80,7 @@ lizard wallclimb is slow, slows you down a lot in zerog movement
 rebindable keybinds for everything meadow
 - controller emote input
 - tab
+
+world state of onlineplayer is a lot of rot etc because no filters apply
+
+rotating arrow symbol resets to up on remote when client lets go

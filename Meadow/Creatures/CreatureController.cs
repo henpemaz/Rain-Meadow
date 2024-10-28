@@ -930,7 +930,7 @@ namespace RainMeadow
                 }
                 else
                 {
-                    if (localTrace) RainMeadow.Debug($"locked in place: {basecoord.Tile}");
+                    if (localTrace && lockInPlace) RainMeadow.Debug($"locked in place: {basecoord.Tile}");
                     Resting();
                     mcd.moveSpeed = 0f;
                     if (template.AI && basecoord != creature.abstractCreature.abstractAI.RealAI.pathFinder.destination)

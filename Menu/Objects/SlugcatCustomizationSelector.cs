@@ -65,8 +65,8 @@ namespace RainMeadow
 
         private void ColorSelector_OnValueChangedEvent()
         {
-            customization.eyeColor = eyeColorSelector.valuecolor;
-            customization.bodyColor = bodyColorSelector.valuecolor;
+            customization.eyeColor = Extensions.SafeColorRange(eyeColorSelector.valuecolor);
+            customization.bodyColor = Extensions.SafeColorRange(bodyColorSelector.valuecolor);
         }
     }
 }
