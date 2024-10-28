@@ -155,6 +155,7 @@ namespace RainMeadow
                     return;
                 }
                 arena.clientsAreReadiedUp++;
+                arena.playersReadiedUp[userIsReady] = true;
 
                 try
                 {
@@ -165,7 +166,6 @@ namespace RainMeadow
                         {
 
                             game.classButtons[i].readyForCombat = true;
-                            arena.playersReadiedUp[userIsReady] = true;
 
                         }
 

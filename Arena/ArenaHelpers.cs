@@ -31,6 +31,11 @@ namespace RainMeadow
             }
             arena.allPlayersReadyLockLobby = false;
             arena.clientsAreReadiedUp = 0;
+            foreach (var player in OnlineManager.players)
+            {
+                arena.playersReadiedUp[player.id.name] = false;
+            }
+            
             arena.isInGame = false;
             arena.returnToLobby = false;
             lobby.manager.rainWorld.options.DeleteArenaSitting();
