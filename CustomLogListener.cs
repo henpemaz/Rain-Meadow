@@ -2,6 +2,8 @@ using BepInEx.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace RainMeadow
@@ -42,30 +44,46 @@ namespace RainMeadow
 
             public LogLevel LogLevelFilter => DisplayedLogLevel;
 
-            public int counter;
-
-            public string StripTime(string line)
+            public string StripNumbers(string line)
             {
-                if (line.Length > 35 && line.Substring(8, 20) == "RainMeadow")
-                {
-                    for (int i = 0, count = 2; i < line.Length; i++)
-                    {
-                        if (line[i] == '|')
-                        {
-                            count--;
-                            if (count == 0) return line.Substring(i + 1);
-                        }
-                    }
-                }
-                return line;
+                return Regex.Replace(line, @"\d+", "{#}");
             }
 
-            private string? lastStrippedLine;
+            private int repeat;
+            private Queue<Tuple<string,string>> lastLines = new();
+
             public bool LogEventIsRepeat(string line)
             {
-                var origStrippedLine = lastStrippedLine;
-                lastStrippedLine = StripTime(line);
-                return origStrippedLine == lastStrippedLine;
+                var stripped = StripNumbers(line);
+                int i;
+                for (i = lastLines.Count - 1; i >= 0; i--)
+                    if (lastLines.ElementAt(i).Item2 == stripped)
+                        break;
+                if (repeat == 0 ? i >= 0 : i == 0)
+                {
+                    if (repeat == lastLines.Count)
+                    {
+                        LogWriter.WriteLine($"... last {lastLines.Count} lines repeated");
+                        LogWriter.Flush();
+                    }
+                    while (i-- >= 0)
+                        lastLines.Dequeue();
+                    repeat++;
+                }
+                else if (repeat > 0)
+                {
+                    if (repeat > lastLines.Count)
+                        LogWriter.WriteLine($"... {(int)repeat / lastLines.Count} times");
+                    var remainder = repeat % lastLines.Count;
+                    for (var j = lastLines.Count - remainder; j > 0; j--)
+                        lastLines.Dequeue();
+                    for (var k = remainder; k > 0; k--)
+                        LogWriter.WriteLine(lastLines.Dequeue().Item1);
+                    repeat = 0;
+                }
+                if (lastLines.Count > 10) lastLines.Dequeue();
+                lastLines.Enqueue(Tuple.Create(line, stripped));
+                return repeat > 0;
             }
 
             public void LogEvent(object sender, LogEventArgs eventArgs)
@@ -77,19 +95,8 @@ namespace RainMeadow
                     return;
 
                 var line = eventArgs.ToString();
-                if (LogEventIsRepeat(line))
-                {
-                    if (counter == 0)
-                        LogWriter.WriteLine("... repeated");
-                    counter++;
-                }
-                else
-                {
-                    if (counter > 0)
-                        LogWriter.WriteLine($"... {counter} times");
-                    counter = 0;
+                if (!LogEventIsRepeat(line))
                     LogWriter.WriteLine(line);
-                }
 
                 if (InstantFlushing)
                     LogWriter.Flush();
