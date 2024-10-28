@@ -517,7 +517,7 @@ namespace RainMeadow
                         {
                             if (arena.playersInLobbyChoosingSlugs.TryGetValue(player.id.name, out var existingValue))
                             {
-                                RainMeadow.Debug("Player already exists in online dictionary");
+                                RainMeadow.Debug("Player already exists in slug dictionary");
                             }
                             else
                             {
@@ -527,7 +527,7 @@ namespace RainMeadow
 
                             if (arena.playersReadiedUp.TryGetValue(player.id.name, out var alreadyReady))
                             {
-                                RainMeadow.Debug("Player already exists in online dictionary");
+                                RainMeadow.Debug("Player already exists in readiedUp dictionary");
                             }
                             else
                             {
