@@ -657,6 +657,7 @@ namespace RainMeadow
 
             if (isStoryMode(out var gameMode))
             {
+                OnlineManager.mePlayer.isActuallySpectating = false;
                 isPlayerReady = false;
                 gameMode.didStartCycle = false;
             }
