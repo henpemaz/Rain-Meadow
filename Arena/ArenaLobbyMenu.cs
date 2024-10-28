@@ -286,7 +286,7 @@ namespace RainMeadow
             {
                 return;
             }
-            
+
             if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
             if (OnlineManager.lobby.isOwner && this.GetGameTypeSetup.playList != null && this.GetGameTypeSetup.playList.Count == 0)
@@ -530,7 +530,7 @@ namespace RainMeadow
                     AddOtherPlayerClassButtons();
                     HandleLobbyProfileOverflow();
 
-                    
+
                     clientReadiedUp = false;
 
 
@@ -661,9 +661,10 @@ namespace RainMeadow
                         break;
                     }
 
-                    if (this.usernameButtons[l].menuLabel.text == OnlineManager.players[l].id.name) // we have our mark
 
-                        classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
+                    //if (this.usernameButtons[l].menuLabel.text == OnlineManager.players[l].id.name) // we have our mark
+
+                    classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
                     classButtons[l].buttonBehav.greyedOut = true;
                     classButtons[l].portraitBlack = Custom.LerpAndTick(classButtons[l].portraitBlack, 1f, 0.06f, 0.05f);
                     var currentColorIndex = arena.playersInLobbyChoosingSlugs[OnlineManager.players[l].id.name];
@@ -681,6 +682,14 @@ namespace RainMeadow
                     classButtons[l].portrait.sprite.SetElementByName(classButtons[l].portrait.fileName);
 
                     pages[0].subObjects.Add(classButtons[l]);
+                    if (OnlineManager.lobby.isOwner)
+                    {
+
+                        classButtons[l].kickButton = new SimplerSymbolButton(this, this.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", new Vector2(classButtons[l].pos.x + 100f, classButtons[l].pos.y + 80f));
+                        RainMeadow.Debug(OnlineManager.players[l]);
+                        classButtons[l].kickButton.OnClick += (_) => RainMeadow.Debug("hi"); //BanHammer.BanUser(OnlineManager.players[l]
+                        this.pages[0].subObjects.Add(classButtons[l].kickButton);
+                    }
                 }
             }
         }
@@ -763,7 +772,7 @@ namespace RainMeadow
 
         private void HandleLobbyProfileOverflow()
         {
-            
+
             if (viewNextPlayer != null)
             {
                 viewNextPlayer.RemoveSprites();
