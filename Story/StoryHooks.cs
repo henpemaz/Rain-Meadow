@@ -484,9 +484,7 @@ namespace RainMeadow
         private void RainWorldGame_GoToDeathScreen(On.RainWorldGame.orig_GoToDeathScreen orig, RainWorldGame self)
         {
             if (isStoryMode(out var gameMode))
-            {
-                OnlineManager.mePlayer.isActuallySpectating = false;
-                
+            {                
                 if (OnlineManager.lobby.isOwner)
                 {
                     RPCs.MovePlayersToDeathScreen();
@@ -657,7 +655,6 @@ namespace RainMeadow
 
             if (isStoryMode(out var gameMode))
             {
-                OnlineManager.mePlayer.isActuallySpectating = false;
                 isPlayerReady = false;
                 gameMode.didStartCycle = false;
             }
