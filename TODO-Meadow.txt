@@ -84,3 +84,5 @@ rebindable keybinds for everything meadow
 world state of onlineplayer is a lot of rot etc because no filters apply
 
 rotating arrow symbol resets to up on remote when client lets go
+
+throw is for switching pages on hotwheel, but also call, specially on controller
