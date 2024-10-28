@@ -485,6 +485,8 @@ namespace RainMeadow
         {
             if (isStoryMode(out var gameMode))
             {
+                OnlineManager.mePlayer.isActuallySpectating = false;
+                
                 if (OnlineManager.lobby.isOwner)
                 {
                     RPCs.MovePlayersToDeathScreen();
