@@ -25,7 +25,7 @@ namespace RainMeadow
             if (!Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
                 return; 
                 
-            if (OnlineManager.lobby.playerAvatars[OnlineManager.mePlayer].FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+            if (OnlineManager.lobby.gameMode.avatars[0] is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
             {
                 realizedPlayer = ac.realizedCreature;
             }
