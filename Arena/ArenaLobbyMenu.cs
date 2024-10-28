@@ -31,6 +31,7 @@ namespace RainMeadow
 
         private int holdPlayerPosition;
         private int currentPlayerPosition;
+        private bool initiatedStartGameForClient;
         public List<SlugcatStats.Name> allSlugs;
 
 
@@ -69,7 +70,7 @@ namespace RainMeadow
 
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
             //SetupCharacterCustomization();
-
+            initiatedStartGameForClient = false;
 
         }
 
@@ -281,6 +282,10 @@ namespace RainMeadow
         private void StartGame()
         {
             RainMeadow.DebugMe();
+            if (initiatedStartGameForClient) // no double clicking while I'm pulling you in
+            {
+                return;
+            }
             
             if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
@@ -347,6 +352,14 @@ namespace RainMeadow
             if (this.totalClientsReadiedUpOnPage != null)
             {
                 UpdateReadyUpLabel();
+            }
+
+            if (arena.allPlayersReadyLockLobby && arena.isInGame && arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId) && !OnlineManager.lobby.isOwner && !initiatedStartGameForClient)  // time to go
+            {
+                this.StartGame();
+                initiatedStartGameForClient = true;
+
+
             }
 
             if (this.playButton != null)
