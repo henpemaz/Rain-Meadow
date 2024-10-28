@@ -49,10 +49,9 @@ namespace RainMeadow
                 this.button.OnClick += (_) =>
                 {
                     this.button.toggled = !this.button.toggled;
-                    overlay.spectatee = this.button.toggled ? opo.apo as AbstractCreature : null;
-                    bool result = OnlineManager.mePlayer.isActuallySpectating
-                    ? (overlay.spectatee == null || !this.player.isMine)
-                    : false;
+                    overlay.spectatee = this.button.toggled ? this.player.apo as AbstractCreature : null;
+                    bool result = !this.player.isMine ? true : overlay.spectatee == null ? false : false;
+
                     OnlineManager.mePlayer.isActuallySpectating = result;
 
                 };
@@ -155,7 +154,7 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
-
+            RainMeadow.Debug(OnlineManager.mePlayer.isActuallySpectating);
             UpdateList();
 
             foreach (var button in playerButtons)
