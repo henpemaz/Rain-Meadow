@@ -43,6 +43,8 @@ namespace RainMeadow
         public Vector2 handPos;
         [OnlineField]
         public int handReaching;
+        [OnlineField]
+        public bool reachedSnappedPos;
 
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
@@ -69,17 +71,18 @@ namespace RainMeadow
 
             if ((p.graphicsModule as PlayerGraphics).hands != null)
             {
-
                 for (int h = 0; h < (p.graphicsModule as PlayerGraphics).hands.Length; h++)
                 {
                     if ((p.graphicsModule as PlayerGraphics).hands[h].reachingForObject)
                     {
                         absoluteHuntPos = (p.graphicsModule as PlayerGraphics).hands[h].absoluteHuntPos;
                         reachingForObject = (p.graphicsModule as PlayerGraphics).hands[h].reachingForObject;
+                        reachedSnappedPos = (p.graphicsModule as PlayerGraphics).hands[h].reachedSnapPosition;
+
                         handReaching = h;
 
                     }
-                   
+
 
                 }
             }
@@ -148,6 +151,8 @@ namespace RainMeadow
                         {
                             (pl.graphicsModule as PlayerGraphics).hands[handReaching].absoluteHuntPos = absoluteHuntPos;
                             (pl.graphicsModule as PlayerGraphics).hands[handReaching].reachingForObject = reachingForObject;
+                            (pl.graphicsModule as PlayerGraphics).hands[handReaching].reachedSnapPosition = reachedSnappedPos;
+
                         }
 
 
