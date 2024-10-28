@@ -1,4 +1,4 @@
-﻿using Menu;
+using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 
@@ -215,6 +215,24 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
+
+            bool popupVisible = popupDialog != null;
+
+            for (int i = 0; i < lobbyButtons.Length; i++)
+            {
+                lobbyButtons[i].buttonBehav.greyedOut = popupVisible;
+            }
+            lobbySearchInputBox.greyedOut = popupVisible;
+            modeDropDown.greyedOut = popupVisible;
+            visibilityDropDown.greyedOut = popupVisible;
+            enablePasswordCheckbox.buttonBehav.greyedOut = popupVisible;
+            passwordInputBox.greyedOut = popupVisible;
+            filterLobbyLimit.greyedOut = popupVisible;
+            filterModeDropDown.greyedOut = popupVisible;
+            filterPasswordDropDown.greyedOut = popupVisible;
+
+            if (popupVisible) return;
+
             int extraItems = Mathf.Max(lobbies.Length - 4, 0);
             scrollTo = Mathf.Clamp(scrollTo, -0.5f, extraItems + 0.5f);
             if (scrollTo < 0) scrollTo = RWCustom.Custom.LerpAndTick(scrollTo, 0, 0.1f, 0.1f);
