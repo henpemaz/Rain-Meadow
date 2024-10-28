@@ -354,7 +354,7 @@ namespace RainMeadow
                 UpdateReadyUpLabel();
             }
 
-            if (arena.allPlayersReadyLockLobby && arena.isInGame && OnlineManager.players.Count == arena.arenaSittingOnlineOrder.Count && !OnlineManager.lobby.isOwner && !initiatedStartGameForClient)  // time to go
+            if (arena.allPlayersReadyLockLobby && arena.isInGame && arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId) && !OnlineManager.lobby.isOwner && !initiatedStartGameForClient)  // time to go
             {
                 this.StartGame();
                 initiatedStartGameForClient = true;
