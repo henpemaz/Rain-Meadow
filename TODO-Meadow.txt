@@ -91,6 +91,4 @@ red and some more lizs are having trouble climbing
 
 scav and scug don't stop pointing even when you let go of call
 
-axo vs sala skin not implemented
-
 emote bg tint too strong
