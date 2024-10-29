@@ -34,9 +34,6 @@ namespace RainMeadow
             GenericResultOk,
             GenericResultError,
             GenericResultFail,
-            NewObjectEvent,
-            NewCreatureEvent,
-            NewMeadowPersonaSettingsEvent,
             RPCEvent,
         }
 

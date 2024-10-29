@@ -170,12 +170,6 @@ namespace RainMeadow
                 if (e is RPCEvent rpc && rpc.IsIdentical(del, args))
                     return rpc;
 
-            if (isMe)
-            {
-                del.Method.Invoke(del.Target, args);
-                return null;
-            }
-
             return (RPCEvent)this.QueueEvent(RPCManager.BuildRPC(del, args));
         }
 

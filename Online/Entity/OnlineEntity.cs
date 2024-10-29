@@ -338,6 +338,34 @@ namespace RainMeadow
             }
         }
 
+        /// <summary>
+        /// Runs RPC on owner and auto-retries with current owner
+        /// </summary>
+        public void RunRPC(Delegate del, params object[] args)
+        {
+            if (primaryResource == null) { RainMeadow.Debug("deactivated"); return; }
+            if (owner == null || owner.hasLeft) { RainMeadow.Debug("no owner"); return; }
+            owner.InvokeRPC(del, args).Then(e => { if (e is not GenericResult.Ok) RunRPC(del, args); });
+        }
+
+        /// <summary>
+        /// Runs RPC for others in room
+        /// </summary>
+        public void BroadcastRPCInRoom(Delegate del, params object[] args)
+        {
+            RainMeadow.Debug($"{this} - {del}");
+            if (currentlyJoinedResource is RoomSession room)
+            {
+                foreach (var participant in room.participants)
+                {
+                    if (!participant.isMe)
+                    {
+                        participant.InvokeRPC(del, args);
+                    }
+                }
+            }
+        }
+
         public virtual void ReadState(EntityState entityState, OnlineResource inResource)
         {
             if (entityState == null) throw new InvalidProgrammerException("state is null");

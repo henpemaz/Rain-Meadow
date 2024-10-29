@@ -181,7 +181,7 @@ namespace RainMeadow
         public void RPCCreatureViolence(OnlinePhysicalObject onlineVillain, int? hitchunkIndex, PhysicalObject.Appendage.Pos hitappendage, Vector2? directionandmomentum, Creature.DamageType type, float damage, float stunbonus)
         {
             byte chunkIndex = (byte)(hitchunkIndex ?? 255);
-            this.owner.InvokeRPC(this.CreatureViolence, onlineVillain, chunkIndex, hitappendage == null ? null : new AppendageRef(hitappendage), directionandmomentum, type, damage, stunbonus);
+            RunRPC(this.CreatureViolence, onlineVillain, chunkIndex, hitappendage == null ? null : new AppendageRef(hitappendage), directionandmomentum, type, damage, stunbonus);
         }
 
         [RPCMethod]
@@ -193,44 +193,6 @@ namespace RainMeadow
 
             BodyChunk? hitChunk = victimChunkIndex < 255 ? creature.bodyChunks[victimChunkIndex] : null;
             creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, hitChunk, victimAppendage, damageType, damage, stunBonus);
-        }
-
-        //public void ForceGrab(GraspRef graspRef)
-        //{
-        //    var castShareability = new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(graspRef.Shareability));
-        //    var other = graspRef.OnlineGrabbed.FindEntity(quiet: true) as OnlinePhysicalObject;
-        //    if (other != null && other.apo.realizedObject != null)
-        //    {
-        //        var grabber = (Creature)this.apo.realizedObject;
-        //        var grabbedThing = other.apo.realizedObject;
-        //        var graspUsed = graspRef.GraspUsed;
-
-        //        if (grabber.grasps[graspUsed] != null)
-        //        {
-        //            if (grabber.grasps[graspUsed].grabbed == grabbedThing) return;
-        //            grabber.grasps[graspUsed].Release();
-        //        }
-        //        grabber.grasps[graspUsed] = new Creature.Grasp(grabber, grabbedThing, graspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
-        //        grabbedThing.room = grabber.room;
-        //        grabbedThing.Grabbed(grabber.grasps[graspUsed]);
-        //        new AbstractPhysicalObject.CreatureGripStick(grabber.abstractCreature, grabbedThing.abstractPhysicalObject, graspUsed, graspRef.Pacifying || grabbedThing.TotalMass < grabber.TotalMass);
-        //    }
-        //}
-
-        public void BroadcastSuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
-        {
-            if (currentlyJoinedResource is RoomSession room)
-            {
-                RainMeadow.Debug(this);
-                if (id.type == 0) throw new InvalidProgrammerException("here");
-                foreach (var participant in room.participants)
-                {
-                    if (!participant.isMe)
-                    {
-                        participant.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
-                    }
-                }
-            }
         }
 
         [RPCMethod]
@@ -275,20 +237,6 @@ namespace RainMeadow
                 }
             }
             enteringShortCut = false;
-        }
-
-        public void BroadcastTookFlight(AbstractRoomNode.Type type, WorldCoordinate start, WorldCoordinate dest)
-        {
-            if (currentlyJoinedResource is RoomSession room)
-            {
-                RainMeadow.Debug(this);
-                if (id.type == 0) throw new InvalidProgrammerException("here");
-                foreach (var participant in room.participants)
-                {
-                    if (!participant.isMe)
-                        participant.InvokeRPC(this.TookFlight, type, start, dest);
-                }
-            }
         }
 
         [RPCMethod]

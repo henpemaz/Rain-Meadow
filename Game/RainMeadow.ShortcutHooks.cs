@@ -178,7 +178,7 @@ namespace RainMeadow
             if (onlineCreature.isMine)
             {
                 RainMeadow.Debug($"{onlineCreature} took flight");
-                onlineCreature.BroadcastTookFlight(type, start, dest);
+                onlineCreature.BroadcastRPCInRoom(onlineCreature.TookFlight, type, start, dest);
             }
             else if (onlineCreature.enteringShortCut) // If this call was from a processing event
             {
@@ -223,7 +223,7 @@ namespace RainMeadow
             {
                 // tell everyone else that I am about to enter a shortcut!
                 RainMeadow.Debug($"{onlineCreature} sucked into shortcut");
-                onlineCreature.BroadcastSuckedIntoShortCut(entrancePos, carriedByOther);
+                onlineCreature.BroadcastRPCInRoom(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
                 orig(self, entrancePos, carriedByOther);
             }
             else
