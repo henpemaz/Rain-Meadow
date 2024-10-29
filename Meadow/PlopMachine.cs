@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using System.Linq;
+using System.Linq.Expressions;
 
 namespace RainMeadow
 {
@@ -12,6 +14,7 @@ namespace RainMeadow
             On.RainWorldGame.Update += RainWorldGame_Update; //actually usefull
             //On.PlayerGraphics.DrawSprites += hehedrawsprites;
             On.RainWorldGame.ctor += RainWorldGame_ctor; //actually usefull 
+            On.VirtualMicrophone.SoundObject.Destroy += SoundObject_Destroy;
         }
 
         readonly float magicnumber = 1.0594630776202568303519954093385f;
@@ -72,68 +75,9 @@ namespace RainMeadow
             { 6  , 8  , 9  , 11 , 1  , 2  , 4  , 6  } //F# m  (the same as Gb)
         };
 
-        //https://muted.io/major-minor-scales/#minor-scales
-
-        //todo: make a switch thing that makes the notes into the ints immediatelly
-
-        /* the switch statement
-        int transposition = 0;
-        switch (NoteNow)
-        {
-            case "C":
-                transposition = 0;
-                break;
-        
-            case "C#" or "Db":
-                transposition = 1;
-                break;
-        
-            case "D":
-                transposition = 2;
-                break;
-        
-            case "D#" or "Eb":
-                transposition = 3;
-                break;
-        
-            case "E":
-                transposition = 4;
-                break;
-        
-            case "F":
-                transposition = 5;
-                break;
-        
-            case "F#" or "Gb":
-                transposition = 6;
-                break;
-        
-            case "G":
-                transposition = 7;
-                break;
-        
-            case "G#" or "Ab":
-                transposition = 8;
-                break;
-        
-            case "A":
-                transposition = 9;
-                break;
-        
-            case "A#" or "Bb":
-                transposition = 10;
-                break;
-        
-            case "B":
-                transposition = 11;
-                break;
-        }
-        */
 
         bool inmajorscale = true;
-
         bool EntryRequest = true;
-
         bool playingchord = false;
 
         string chordnotes = "yosup";
@@ -259,7 +203,7 @@ namespace RainMeadow
             int integer = thescale[treatedkey, index - 1];
             return integer;
         }
-        private SoundID[] SampDict(string length)
+        private SoundID[] SampDict(PlopType length)
         {
             RainMeadow.Debug($"It's trying to get length {length}");
             SoundID[] library = new SoundID[7]; //to do:  make better
@@ -267,55 +211,17 @@ namespace RainMeadow
             MeadowMusic.VibeZone[] newthings;
             bool diditwork = MeadowMusic.vibeZonesDict.TryGetValue(acronym, out newthings);
             //we retrieve a newthings array (one of many vibezones)
-            RainMeadow.Debug("C" + diditwork);
-            RainMeadow.Debug(Newtonsoft.Json.JsonConvert.SerializeObject(newthings));
+            //RainMeadow.Debug("C" + diditwork);
+            //RainMeadow.Debug(Newtonsoft.Json.JsonConvert.SerializeObject(newthings));
             if (!diditwork) { RainMeadow.Debug("itdidn'twork"); return null; }
             MeadowMusic.VibeZone newthing = newthings[0]; //TEMP DUMMY FOR UNTIL HELLOTHERE'S REQUIUM
                                                           //and pick the one that is closer
             RainMeadow.Debug("d");
             string patch = newthing.sampleUsed;
-            //RainMeadow.Debug(patch);
-            //switch (acronym)
-            //{
-            //    case "su" or "hi":
-            //        patch = "Trisaw";
-            //        break;
-            //
-            //    case "gw" or "sh":
-            //        patch = "Bell";
-            //        break;
-            //
-            //    case "ss" or "sb" or "sl":
-            //        patch = "Litri";
-            //        break;
-            //
-            //    case "cc" or "si":
-            //        patch = "Sine";
-            //        break;
-            //
-            //    case "ds" or "lf" or "uw":
-            //        patch = "Clar";
-            //        break;
-            //    default:
-            //        patch = "Trisaw";
-            //        break;
-            //}
-            //cc(chimney cannopy)
-            //ds(drainage system)
-            //gw(garbage wastes)
-            //hi(industrial complex)
-            //lf(farm array)
-            //sb("sb subterranian")
-            //sh(shadow)
-            //si(sky place)
-            //sl(shoreline)
-            //ss(fivebepples)
-            //su(outskirts)
-            //uw(underhang and wall)
 
             switch (length)
             {
-                case "L":
+                case PlopType.Long:
                     switch (patch)
                     {
                         case "Trisaw":
@@ -371,7 +277,7 @@ namespace RainMeadow
                             break;
                     }
                     break;
-                case "M":
+                case PlopType.Medium:
                     switch (patch)
                     {
                         case "Trisaw":
@@ -426,7 +332,7 @@ namespace RainMeadow
 
                     }
                     break;
-                case "S":
+                case PlopType.Short:
                     switch (patch)
                     {
                         case "Trisaw":
@@ -488,38 +394,21 @@ namespace RainMeadow
         {
             RainMeadow.Debug("It plays the plop " + input);
             string[] parts = input.Split('-');
-
             //Dust.Add(input, this); haltered
-            string slib = parts[0]; //either L for Long, M for Medium, or S for Short
+            PlopType slib = parts[0] switch { "L" => PlopType.Long, "M" => PlopType.Medium, "S" => PlopType.Short, _ => PlopType.Short }; //either L for Long, M for Medium, or S for Short
             int oct = int.Parse(parts[1]);
-            int ind;
-            bool intiseasy = int.TryParse(parts[2], out ind);
-            //RainMeadow.Debug($"So the string is {s}, which counts as {parts.Length} amounts of parts. {slib}, {oct}, {ind}");
-
+            bool intiseasy = int.TryParse(parts[2], out int ind);
+            //Debug($"So the string is {s}, which counts as {parts.Length} amounts of parts. {slib}, {oct}, {ind}");
             SoundID[] slopb = SampDict(slib);
             SoundID sampleused = slopb[oct - 1];
-            RainMeadow.Debug("Octave integer " + oct + ". sampleused: " + sampleused);
-            RainMeadow.Debug($"It uses the sample {sampleused}");
+            //Debug("Octave integer " + oct + ". sampleused: " + sampleused);
             int extratranspose = 0;
             if (!intiseasy)
             {
                 string appends = parts[2].Substring(1);
-                foreach (char letter in appends)
-                {
-                    switch (letter)
-                    {
-                        case 'b':
-                            extratranspose--;
-                            break;
-                        case '#':
-                            extratranspose++;
-                            break;
-                    }
-                }
-
+                foreach (char letter in appends) { extratranspose = letter switch { 'b' => extratranspose--, '#' => extratranspose, _ => extratranspose }; }
                 ind = int.Parse(parts[2].Substring(0, 1));
             }
-
             int transposition = IndexTOCKInt(ind);
             //if (!intiseasy)
             //{
@@ -529,16 +418,13 @@ namespace RainMeadow
             //}
 
             transposition += extratranspose; //If to the power is smart(can take negative numbers), this can work
-
-            float speeed = 1;
-
-            speeed *= Mathf.Pow(magicnumber, transposition);
+            float speeed = Mathf.Pow(magicnumber, transposition);
 
             // get intensity and turn that into too 
             // (which will also be reverb effect here then)
 
             float humanizingrandomnessinvelocitylol = UnityEngine.Random.Range(360, 1001) / 1000f;
-            PlayThing(sampleused, humanizingrandomnessinvelocitylol, speeed, mic);
+            PlayThing(sampleused, humanizingrandomnessinvelocitylol, speeed, mic, slib);
 
         }
         private void PushKeyModulation(int diff)
@@ -627,7 +513,6 @@ namespace RainMeadow
                         chordleadups = ChordInfos[i][2];
                     }
                 }
-                myred += 2f;
                 InfluenceModulation(); //this'll be modified to take in int
                 ChitChat.Wipe(this);
                 string[] inst = chordnotes.Split(',');
@@ -692,15 +577,10 @@ namespace RainMeadow
                 }
             }           
         }
-        private void PlayThing(SoundID Note, float velocity, float speed, VirtualMicrophone virtualMicrophone)
+        private void PlayThing(SoundID Note, float velocity, float speed, VirtualMicrophone virtualMicrophone, PlopType type)
         {
-            //virtualMicrophone.PlaySound(Note, 0f, intensity*0.5f, speed);
-
-            //float pan = (float)(UnityEngine.Random.Range(-350, 351) / 1000f);
-            float pan = MeadowMusic.vibePan == null ? 0 : (float)MeadowMusic.vibePan * (Mathf.Pow((float)MeadowMusic.vibeIntensity.Value*0.7f+0.125f, 1.65f));
-            //float vol = velocity * 0.5f;
+            float pan = MeadowMusic.vibePan == null ? 0 : (float)MeadowMusic.vibePan * Mathf.Pow((float)MeadowMusic.vibeIntensity.Value * 0.7f + 0.125f, 1.65f);
             float vol = MeadowMusic.vibeIntensity == null ? 0 : Mathf.Pow((float)MeadowMusic.vibeIntensity, 1.65f) * 0.5f * velocity;
-            //float vol = MeadowMusic.plopIntensity * velocity;
             float pitch = speed;
             RainMeadow. Debug($"Trying to play a {Note}, at {vol} volume, with {pan} pan");
             try
@@ -718,8 +598,12 @@ namespace RainMeadow
                 SoundLoader.SoundData soundData = virtualMicrophone.GetSoundData(Note, -1);
                 if (virtualMicrophone.SoundClipReady(soundData))
                 {
+                    if (virtualMicrophone.soundObjects.Count * 2 - AliveList.Count > 22) DestroyLastSound();
+                    if (virtualMicrophone.soundObjects.Count * 2 - AliveList.Count > 24) DestroyLastSound();
                     var thissound = new VirtualMicrophone.DisembodiedSound(virtualMicrophone, soundData, pan, vol, pitch, false, 0);
                     virtualMicrophone.soundObjects.Add(thissound);
+                    InfoThingy thingy = new InfoThingy(type, thissound, vol, false, 0);
+                    AliveList.Add(thingy);
                 }
                 else
                 {
@@ -736,8 +620,109 @@ namespace RainMeadow
             {
                 RainMeadow.Debug($"Log {e}");
             }
-
         }
+
+        private void SoundObject_Destroy(On.VirtualMicrophone.SoundObject.orig_Destroy orig, VirtualMicrophone.SoundObject self)
+        {
+            //just straight up kill that guy immediatly     //Debug("Hi");
+            orig(self);
+            int indextodelete = -1;
+            for (int i = 0; i < AliveList.Count; i++)
+            {
+                if (AliveList[i].soundObject == self) { indextodelete = i; break; }
+            }
+            if (indextodelete == -1)
+            {
+                //Debug("this normal sound"); 
+            }
+            else
+            { //Debug("this plop");  
+                AliveList.RemoveAt(indextodelete);
+            }
+        }
+
+        private void DestroyLastSound()
+        {
+            PlopType looksfor = PlopType.Short;
+            InfoThingy KillThisFucker;
+            int RightHere = -1;
+            while (true)
+            {
+                foreach (InfoThingy aliverrr in AliveList)
+                {
+                    RightHere++;
+                    if (aliverrr.type == looksfor && aliverrr.dying != true)
+                    {
+                        KillThisFucker = aliverrr;
+                        KillThisFucker.dying = true;
+                        AliveList[RightHere] = KillThisFucker;
+                        break;
+                    }
+                }
+                if (looksfor == PlopType.Pad || AliveList[RightHere].dying)
+                {
+                    //NotMyProblem = true;
+                    break; //Not my problem
+                }
+                RightHere = -1;
+                looksfor++;
+            }
+        }
+
+        enum PlopType
+        {
+            Short,
+            Medium,
+            Long,
+            Drum,
+            Pad
+        }
+        struct InfoThingy
+        {
+            public InfoThingy(PlopType type, VirtualMicrophone.SoundObject soundObject, float initvolume, bool dying, float dyingpercent)
+            {
+                this.type = type;
+                this.soundObject = soundObject;
+                this.initvolume = initvolume;
+                this.dying = dying;
+                this.dyingpercent = dyingpercent;
+            }
+            public PlopType type;
+            public VirtualMicrophone.SoundObject soundObject;
+            public float initvolume;
+            public bool dying;
+            public float dyingpercent;
+        }
+        List<InfoThingy> AliveList = new List<InfoThingy>();
+        private void ThanatosSlayGirl()
+        {
+            bool breakkill = AliveList.Count == 0;
+            if (!breakkill)
+            {
+                for (int i = 0; i < AliveList.Count; i++)
+                {
+                    InfoThingy thingy = AliveList[i];
+                    if (thingy.dying)
+                    {
+                        float hah = thingy.dyingpercent;
+                        hah = (hah * 0.1f) + 0.175f + hah;
+
+                        if (hah >= 1f || true)
+                        {
+                            RainMeadow.Debug("I removed one");
+                            thingy.soundObject.Destroy();
+                        }
+                        else
+                        {
+                            thingy.soundObject.SetVolume = thingy.initvolume * (1 - hah);
+                        }
+                    }
+                }
+            }
+        }
+
+
+
         struct Liaison
         {
             public Liaison(string note, int stopwatch, bool[] pattern, int patternindex, string period)
@@ -775,10 +760,8 @@ namespace RainMeadow
             static public bool arpgoingupwards = false;
             static int arptimer = 20;
 
-            static public bool[] arppattern = new bool[4];
-            //static bool[] arppattern = [true, true, true, true, true, false, true, false, false, true, true, false];
-            //static bool[] arppattern = [true, true, true, true, true, true, false, false, true, false, false];
-            static int arppatternindex = 0;
+            static public bool[] steppattern = new bool[4];
+            static int steppatternindex = 0;
 
             static public double arpcounterstopwatch;
             static int arpcurrentfreq;
@@ -915,8 +898,7 @@ namespace RainMeadow
                         {
                             if (LiaisonList.Count != 0) //bruh why should it ever be less than zero lmao (that's the joke here)
                             { 
-                                if (arppattern[arppatternindex]) CollectiveArpStep(mic, plopmachine);
-                                plopmachine.mygreen += 0.3f;
+                                if (steppattern[steppatternindex]) CollectiveArpStep(mic, plopmachine);
                                 arpcounterstopwatch += plopmachine.fichtean * 12 + 4;
                                 //arpcurrentfreq = (int)(Mathf.PerlinNoise((float)arpcounterstopwatch / 1000f, (float)arpcounterstopwatch / 4000f) * 5);
 
@@ -927,7 +909,7 @@ namespace RainMeadow
                                     if (arpbufferfreq > arpcurrentfreq) 
                                     {
                                         waitnumber /= 2;
-                                        if (arppattern[arppatternindex]) CollectiveArpStep(mic, plopmachine);
+                                        if (steppattern[steppatternindex]) CollectiveArpStep(mic, plopmachine);
                                     }
                                     else 
                                     { 
@@ -950,7 +932,7 @@ namespace RainMeadow
                                     }
                                     TensionStopwatch = 0;
                                 }
-                                arppatternindex = arppatternindex + 1 < arppattern.Length ? arppatternindex + 1 : 0;
+                                steppatternindex = steppatternindex + 1 < steppattern.Length ? steppatternindex + 1 : 0;
                             }
                         }
                         else
@@ -972,7 +954,6 @@ namespace RainMeadow
                     }
                     else
                     {
-                        plopmachine.mygreen += 0.2f;
                         //RainMeadow.Debug("Playing a note from Chitchat.Anarchy");
                         if (liaison.pattern[liaison.patternindex])
                         {
@@ -1056,7 +1037,11 @@ namespace RainMeadow
             }
             public static void Instantiate(PlopMachine plopMachine)
             {
-                if (LiaisonList.Count < 3) { isindividualistic = true; RainMeadow.Debug("SO its normally individual"); }
+                if (LiaisonList.Count < 3) 
+                { 
+                    isindividualistic = true; 
+                    RainMeadow.Debug("SO its normally individual"); 
+                }
                 else
                 {
                     RainMeadow.Debug("YO");
@@ -1070,29 +1055,53 @@ namespace RainMeadow
                     */
                     isindividualistic = false;
                 }
+
                 if (!isindividualistic) { Analyze(plopMachine); }
 
                 if (UnityEngine.Random.Range(0, 2) == 1) RandomMode();
                 arpingmode = Arpmode.upwards; //FOR TESTING, REMOVE AFTERWARDS
-                arppatternindex = 0;
-                
-                //
-                //
-                //A "Proper" Arpegiation is one where
-                //The divisions of wait % the length of arppattern = 0
-                //AND
-                //The amount of True's % the amounts of waits per bar = 0
-                //
-                //
-                //
-                //
-                //
-                //
-                //Maybe the arppatternindex shouldn't be reset to zero if the arpmode isn't changed.
-                //I.E. It's only when the arpmode changes that you reset arppatternindex.
-                //here it should generate arppattern
-                //what it base its generation upon is weird
-                // in the far future it should make the patterns for anarchy here
+                steppatternindex = 0;
+
+                //some bogus code to make a new step sequence sometimes
+                if (UnityEngine.Random.Range(0, 100) < 10f + plopMachine.fichtean * 15f)
+                {
+                    RainMeadow.Debug("Time to change the stepsequence, yup");
+                    List<bool> steppatternlist = new();
+                    steppatternlist.Add(true);
+                    RainMeadow.Debug(steppatternlist);
+                    bool satisfied = false;
+
+                    while (!satisfied)
+                    {
+                        if (steppatternlist.Count == 1)
+                        {
+                            if (!steppattern.Contains(false))
+                            {
+                                if (UnityEngine.Random.Range(0, 3) != 0)
+                                {
+                                    satisfied = true;
+                                    continue;
+                                }
+                            }
+                        }
+
+                        bool addnewone = UnityEngine.Random.Range(0, 100) > 5f * steppatternlist.Count * (plopMachine.fichtean+0.2) + 5f;
+
+                        if (addnewone)
+                        {
+                            steppatternlist.Add(UnityEngine.Random.Range(0, 100) > 10f+plopMachine.fichtean*15f);
+                        }
+                        else
+                        {
+                            satisfied = true;
+                        }
+
+                    }
+                    var newarray = steppatternlist.ToArray();
+
+                    steppattern = newarray;
+                    RainMeadow.Debug("Yeah so the steppattern is apperantly" + Newtonsoft.Json.JsonConvert.SerializeObject(steppattern));
+                }
             }
             public static void Add(string note, PlopMachine plopmachine)
             {
@@ -1100,7 +1109,6 @@ namespace RainMeadow
                 string[] anotherhighernotesparts = note.Split('-');
                 //RainMeadow.Debug(anotherhighernotesparts[0] + " " + anotherhighernotesparts[1]);
                 int octave = int.Parse(anotherhighernotesparts[0]);
-
                 bool willadd = true;
                 string mynote = "M-" + note;
                 //int thing = (int)(plopmachine.fichtean * 5); //was 16 - 4 here
@@ -1137,12 +1145,6 @@ namespace RainMeadow
             }
             private static void CheckThisLiaisonOutDude(int indexofwhereitathomie, PlopMachine plopmachine)
             {
-                //the liaison modifier code, this shall be called when the note has a chance to be FREAKED up dude (changed)
-                //ok i had a bit of confusion about why i decided so and i found this line in the pseudo: this chance shall be rolled after playing a note (it is much harder to modify the arp before, as it might break together by trying to analyze() it)
-                //so an y ways,,
-                //bool hi = UnityEngine.Random.Range(plopmachine.debugstopwatch - evolvestopwatch, plopmachine.debugstopwatch - evolvestopwatch + 7000) > 7000 + evolvestopwatch;
-                //what the fuck is this pseudocode ok
-                //fuck this lets just have it be  a normal random shit and have that be fucked up or smth
                 Liaison liaison = LiaisonList[indexofwhereitathomie];
 
                 bool itwillevolve = UnityEngine.Random.Range(0, 800) + (int)evolvestopwatch > 1200; //RTYU
@@ -1623,14 +1625,19 @@ namespace RainMeadow
         //I am ideaing to tag 'em with L, M, and S notes, Destroying S then M never L.
         //whatever,
 
+
+
+
+
+
         static Dictionary<string, int> WaitDict = new();
         public void StartthefuckingWaitDict()
         {
-            ChitChat.arppattern = new bool[4];
-            ChitChat.arppattern[0] = true;
-            ChitChat.arppattern[1] = true;
-            ChitChat.arppattern[2] = true;
-            ChitChat.arppattern[3] = false;
+            ChitChat.steppattern = new bool[4];
+            ChitChat.steppattern[0] = true;
+            ChitChat.steppattern[1] = true;
+            ChitChat.steppattern[2] = true;
+            ChitChat.steppattern[3] = false;
 
             WaitDict.Add("bar", 96);
             WaitDict.Add("half", 48);
@@ -1688,37 +1695,6 @@ namespace RainMeadow
                 return Leftof(waittype, atthistimeofyear) + ((thewait - 1) * waitvalue);
             }
         }
-
-        Color mycolor = new(0f, 0f, 1f, 1f);
-        float myred;
-        float mygreen;
-        float myblue;
-        /*
-        these lines i write to
-        bring equality, and for
-        my love of haikus
-        */
-        //public void hehedrawsprites(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
-        //{
-        //    //orig(self, sLeaser, timeStacker, rCam, timeStacker, camPos);
-        //    orig(self, sLeaser, rCam, timeStacker, camPos);
-        //    Color camocoloryo = rCam.PixelColorAtCoordinate(self.player.mainBodyChunk.pos);
-        //    //RainMeadow.Debug($"So the color at here issss {color}");
-        //    //Color mycolor = sLeaser[self.startSprite].color;
-        //    foreach (var sprite in sLeaser.sprites)
-        //    {
-        //        //sprite.color = camocoloryo;
-        //        sprite.color = mycolor;
-        //    }
-        //}
-        bool switchbetweentwonumbers;
-        bool switchbetweentwoothernumbers = true;
-        bool yoyo;
-        bool yoyo2;
-        bool yoyo3;
-        int theothernumber = 112222;
-        static int SimulationNumber;
-        float thenumber = 0.05f;
         private void RainWorldGame_Update(On.RainWorldGame.orig_Update orig, RainWorldGame self)
         {
             orig(self);
@@ -1729,6 +1705,7 @@ namespace RainMeadow
 
             fichtean = Mathf.PerlinNoise(debugstopwatch / 1000f, debugstopwatch / 4000f);
             if (MeadowMusic.AllowPlopping) PlayEntry(mic);
+            ThanatosSlayGirl();
         }
 
         public static readonly SoundID Kick = new SoundID("Kick", register: true);
