@@ -265,11 +265,6 @@ namespace RainMeadow
             {
                 doneCutscene = false;
                 saveStateNumber = OnlineManager.lobby.gameMode.GetStorySessionPlayer(game);
-                if (isStoryMode(out var story))
-                {
-                    story.storyClientData.isDead = false;
-                    OnlineManager.mePlayer.isActuallySpectating = false;
-                }
             }
             orig(self, saveStateNumber, game);
         }
