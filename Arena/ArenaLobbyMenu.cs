@@ -704,7 +704,7 @@ namespace RainMeadow
                         classButtons[localIndex].kickButton = new SimplerSymbolButton(this, this.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", new Vector2(classButtons[localIndex].pos.x + 100f, classButtons[localIndex].pos.y + 80f));
                         classButtons[localIndex].kickButton.OnClick += (_) =>
                         {
-                            BanHammer.BanUser(OnlineManager.players[localIndex])
+                            BanHammer.BanUser(OnlineManager.players[localIndex]);
                         };
                         this.pages[0].subObjects.Add(classButtons[localIndex].kickButton);
                     }
