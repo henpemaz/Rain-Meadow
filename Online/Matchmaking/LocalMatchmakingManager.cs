@@ -190,7 +190,7 @@ namespace RainMeadow
             RainMeadow.Debug($"Added {joiningPlayer} to the lobby matchmaking player list");
             OnlineManager.players.Add(joiningPlayer);
 
-            if (OnlineManager.lobby != null && OnlineManager.lobby.owner.isMe)
+            if (OnlineManager.lobby != null && OnlineManager.lobby.isOwner)
             {
                 // Tell the other players to create this player
                 foreach (OnlinePlayer player in OnlineManager.players)
@@ -213,7 +213,7 @@ namespace RainMeadow
 
             OnlineManager.players.Remove(leavingPlayer);
 
-            if (OnlineManager.lobby.owner.isMe)
+            if (OnlineManager.lobby.isOwner)
             {
                 // Tell the other players to create this player
                 foreach (OnlinePlayer player in OnlineManager.players)

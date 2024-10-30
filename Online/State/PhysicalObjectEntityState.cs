@@ -43,7 +43,6 @@ namespace RainMeadow
 
         protected virtual RealizedPhysicalObjectState GetRealizedState(OnlinePhysicalObject onlineObject)
         {
-
             if (onlineObject.apo.realizedObject == null) throw new InvalidOperationException("not realized");
             if (onlineObject.apo.realizedObject is Spear) return new RealizedSpearState(onlineObject);
             if (onlineObject.apo.realizedObject is ScavengerBomb) return new RealizedScavengerBombState(onlineObject);
@@ -60,7 +59,6 @@ namespace RainMeadow
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
-            if (onlineEntity.isPending) { RainMeadow.Debug($"not syncing {onlineEntity} because pending"); return; }; // Don't sync if pending, reduces visibility and effect of lag
 
             var onlineObject = onlineEntity as OnlinePhysicalObject;
             var apo = onlineObject.apo;

@@ -30,7 +30,6 @@ namespace RainMeadow
 
         public override void ReadTo(OnlineEntity onlineEntity)
         {
-            if (!onlineEntity.owner.isMe && onlineEntity.isPending) return; // Don't sync if pending, reduces visibility and effect of lag
             base.ReadTo(onlineEntity);
             var weapon = (Weapon)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             var newMode = new Weapon.Mode(Weapon.Mode.values.GetEntry(mode));
@@ -40,10 +39,11 @@ namespace RainMeadow
                 weapon.ChangeMode(newMode);
                 weapon.throwModeFrames = -1; // not synched, behaves as "infinite"
             }
+            weapon.thrownBy = (thrownBy?.FindEntity() as OnlineCreature)?.realizedCreature;
+            if (weapon.grabbedBy != null && weapon.grabbedBy.Count > 0) { RainMeadow.Trace($"Skipping state because grabbed"); return; }
             weapon.setRotation = setRotation;
             weapon.rotation = rotation;
             weapon.rotationSpeed = rotationSpeed;
-            weapon.thrownBy = (thrownBy?.FindEntity() as OnlineCreature)?.realizedCreature;
         }
     }
 }

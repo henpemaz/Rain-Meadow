@@ -78,7 +78,7 @@ namespace RainMeadow
             base.Update();
             onlineTimeSinceSpawn++;
 
-            bool show = owner.owner.showFriends || (owner.clientSettings.owner.isMe && onlineTimeSinceSpawn < 120);
+            bool show = owner.owner.showFriends || (owner.clientSettings.isMine && onlineTimeSinceSpawn < 120);
             if (show || this.alpha > 0)
             {
                 this.lastAlpha = this.alpha;
