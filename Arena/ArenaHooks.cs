@@ -821,12 +821,13 @@ namespace RainMeadow
         private void HUD_InitMultiplayerHud(On.HUD.HUD.orig_InitMultiplayerHud orig, HUD.HUD self, ArenaGameSession session)
         {
 
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
                 self.AddPart(new TextPrompt(self));
                 self.AddPart(new Pointing(self));
                 self.AddPart(new ChatHud(self, session.game.cameras[0]));
                 self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
+                self.AddPart(new HideTimer(self, self.fContainers[0], arena));
 
 
             }

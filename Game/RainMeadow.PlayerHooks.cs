@@ -56,6 +56,14 @@ public partial class RainMeadow
             {
                 PlayerMovementOverride.StopPlayerMovement(self);
             }
+
+            if (isArenaMode(out var arena))
+            {
+                if (arena.countdownInitiatedHoldFire)
+                {
+                    PlayerMovementOverride.HoldFire(self);
+                }
+            }
         }
 
     }
