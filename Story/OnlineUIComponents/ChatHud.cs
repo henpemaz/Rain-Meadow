@@ -102,6 +102,7 @@ namespace RainMeadow
             RainMeadow.Debug("shut down chat button");
             if (chatButtonOverlay != null)
             {
+                chatButtonOverlay.chat.DelayedUnload(0.1f);
                 chatButtonOverlay.ShutDownProcess();
                 chatButtonOverlay = null;
             }

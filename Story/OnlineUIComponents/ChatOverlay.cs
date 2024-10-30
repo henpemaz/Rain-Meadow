@@ -22,16 +22,10 @@ namespace RainMeadow
 
         public override void Update()
         {
-
             if (isReceived)
             {
                 UpdateLogDisplay();
                 isReceived = false;
-            }
-            if (ModManager.DevTools)
-            {
-                game.devToolsActive = false;
-                game.devToolsLabel.isVisible = game.devToolsActive;
             }
         }
 

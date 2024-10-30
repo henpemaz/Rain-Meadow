@@ -14,6 +14,7 @@ namespace RainMeadow
         private SteamMatchmakingManager steamMatchmakingManager;
         private ButtonTypingHandler typingHandler;
         private GameObject gameObject;
+        private bool isUnloading = false;
         public Action<char> OnKeyDown { get; set; }
         public static int textLimit = 75;
         public static string lastSentMessage = "";
@@ -28,27 +29,24 @@ namespace RainMeadow
             typingHandler.Assign(this);
         }
 
-        public void DelayedUnload(float delay) => typingHandler.StartCoroutine(UnloadAfterDelay(delay));
-
-        private IEnumerator UnloadAfterDelay(float delay)
+        public void DelayedUnload(float delay)
         {
-            yield return new WaitForSeconds(delay);
-            Unload();
+            if (!isUnloading)
+            {
+                isUnloading = true;
+                typingHandler.StartCoroutine(Unload(delay));
+            }
         }
 
-        private void Unload()
+        private IEnumerator Unload(float delay)
         {
+            yield return new WaitForSeconds(delay);
+
             typingHandler.Unassign(this);
             typingHandler.OnDestroy();
         }
-
         private void CaptureInputs(char input)
         {
-            if (ChatHud.gamePaused)
-            {
-                Unload();
-                return;
-            }
             if (input == '\b')
             {
                 if (lastSentMessage.Length > 0)
