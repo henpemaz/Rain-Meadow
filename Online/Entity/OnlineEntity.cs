@@ -51,7 +51,7 @@ namespace RainMeadow
         internal ushort version;
         internal bool everRegistered;
 
-        public bool isMine => owner.isMe;
+        public bool isMine => owner.isMe && !isTransfering;
 
         /// <summary>
         /// stack of resources this entity has entered locally, updated imediately, kept in sync for remote entities
@@ -66,8 +66,9 @@ namespace RainMeadow
         public OnlineResource currentlyJoinedResource => joinedResources.Count != 0 ? joinedResources[joinedResources.Count - 1] : null;
         public OnlineResource currentlyEnteredResource => enteredResources.Count != 0 ? enteredResources[enteredResources.Count - 1] : null;
 
-        public bool isPending => pendingRequest != null;
+        public bool isPending => pendingRequest != null || isTransfering;
         public OnlineEvent pendingRequest;
+        public bool isTransfering; // set on request, cleared on error or ownership change (non-error comes from different player than ownership status)
 
         protected OnlineEntity(EntityId id, OnlinePlayer owner, bool isTransferable)
         {
@@ -270,7 +271,8 @@ namespace RainMeadow
             if (newOwner == null) { throw new InvalidProgrammerException("null owner for entity"); }
             RainMeadow.Debug($"{this} assigned to {newOwner}");
             var wasOwner = owner;
-            if (wasOwner == newOwner) return;
+            isTransfering = false;
+            if (wasOwner == newOwner) { RainMeadow.Debug($"assigned to same owner"); return; }
             owner = newOwner;
             primaryResource.registeredEntities[id] = MakeDefinition(primaryResource);
 
@@ -278,15 +280,7 @@ namespace RainMeadow
             {
                 incomingState[key] = new Queue<EntityState>();
             }
-
-            if (newOwner.isMe || wasOwner.isMe)
-            {
-                if (pendingRequest is RPCEvent rpc && rpc.target == this) // dismiss ongoing request/release
-                {
-                    RainMeadow.Debug("Dismissing pending request: " + pendingRequest);
-                    pendingRequest = null;
-                }
-            }
+            lastStates.Clear();
 
             if (wasOwner.isMe)
             {
@@ -301,6 +295,19 @@ namespace RainMeadow
                 {
                     if (!res.isOwner) OnlineManager.AddFeed(res, this);
                 }
+            }
+
+            if (newOwner.isMe || wasOwner.isMe)
+            {
+                if (pendingRequest is RPCEvent rpc && rpc.target == this) // dismiss ongoing request/release
+                {
+                    RainMeadow.Debug("Dismissing pending request: " + pendingRequest);
+                    pendingRequest.Abort();
+                }
+            }
+
+            if (newOwner.isMe)
+            {
                 JoinOrLeavePending();
             }
         }
@@ -341,11 +348,12 @@ namespace RainMeadow
         /// <summary>
         /// Runs RPC on owner and auto-retries with current owner
         /// </summary>
+        /// // todo add While param??
         public void RunRPC(Delegate del, params object[] args)
         {
             if (primaryResource == null) { RainMeadow.Debug("deactivated"); return; }
             if (owner == null || owner.hasLeft) { RainMeadow.Debug("no owner"); return; }
-            owner.InvokeRPC(del, args).Then(e => { if (e is not GenericResult.Ok) RunRPC(del, args); });
+            owner.InvokeRPC(del, args).Then(e => { if (e is not GenericResult.Ok) OnlineManager.RunDeferred(() => RunRPC(del, args)); });
         }
 
         /// <summary>
@@ -368,16 +376,7 @@ namespace RainMeadow
 
         public virtual void ReadState(EntityState entityState, OnlineResource inResource)
         {
-            if (entityState == null) throw new InvalidProgrammerException("state is null");
-            if (entityState.isDelta) throw new InvalidProgrammerException("state delta");
             lastStates[inResource] = entityState;
-            if (inResource != currentlyJoinedResource)
-            {
-                RainMeadow.Trace($"Skipping state for wrong resource: received {inResource} wanted {currentlyJoinedResource}");
-                // since we send both region state and room state even if it's the same guy owning both, this gets spammed a lot
-                // todo supress sending if more specialized state being sent to the same person
-                return;
-            }
             entityState.ReadTo(this);
         }
 
@@ -423,6 +422,12 @@ namespace RainMeadow
                 RainMeadow.Trace("received absolute state for tick " + newState.tick);
             }
             stateQueue.Enqueue(newState);
+            if (inResource != currentlyJoinedResource)
+            {
+                RainMeadow.Trace($"Skipping state for wrong resource: received {inResource} wanted {currentlyJoinedResource}");
+                lastStates[inResource] = newState;
+                return;
+            }
             ReadState(newState, inResource);
         }
 

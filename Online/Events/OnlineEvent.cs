@@ -8,6 +8,7 @@ namespace RainMeadow
         public OnlinePlayer from;// not serialized
         public OnlinePlayer to;// not serialized
         public ushort eventId;
+        public bool aborted;
 
         public override string ToString()
         {
@@ -24,6 +25,7 @@ namespace RainMeadow
         public virtual void Abort() // I was not acknowledged and the other guy left, what do, can be run on local or on remote
         {
             RainMeadow.Error($"Aborted {this}");
+            aborted = true;
         }
 
         //public abstract void Acknoledged();

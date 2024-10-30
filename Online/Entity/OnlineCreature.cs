@@ -187,12 +187,20 @@ namespace RainMeadow
         [RPCMethod]
         public void CreatureViolence(OnlinePhysicalObject? onlineVillain, byte victimChunkIndex, AppendageRef? victimAppendageRef, Vector2? directionAndMomentum, Creature.DamageType damageType, float damage, float stunBonus)
         {
+            if (!isMine || isPending) throw new InvalidOperationException("not owner"); // causes sender to retry
             var creature = (this.apo.realizedObject as Creature);
-            if (creature == null) return;
+            if (creature == null)
+            {
+                RainMeadow.Error("realized creature not found for: " + this);
+                return;
+            }
             var victimAppendage = victimAppendageRef?.GetAppendagePos(creature);
 
+            RainMeadow.Debug($"{this} hit for {damage}");
+            if(creature.State is HealthState hs1) RainMeadow.Debug($"heath was {hs1.health}");
             BodyChunk? hitChunk = victimChunkIndex < 255 ? creature.bodyChunks[victimChunkIndex] : null;
             creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, hitChunk, victimAppendage, damageType, damage, stunBonus);
+            if (creature.State is HealthState hs2) RainMeadow.Debug($"heath became {hs2.health}");
         }
 
         [RPCMethod]

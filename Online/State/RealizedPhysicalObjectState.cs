@@ -22,7 +22,7 @@ namespace RainMeadow
 
         public virtual void ReadTo(OnlineEntity onlineEntity)
         {
-            if (onlineEntity.owner.isMe || onlineEntity.isPending) { RainMeadow.Debug($"not syncing {this} because mine?{onlineEntity.owner.isMe} pending?{onlineEntity.isPending}"); return; }; // Don't sync if pending, reduces visibility and effect of lag
+            if (onlineEntity.isPending) { RainMeadow.Trace($"not syncing {onlineEntity} because pending"); return; };
             var po = (onlineEntity as OnlinePhysicalObject).apo.realizedObject;
             for (int i = 0; i < chunkStates.Length; i++) //sync bodychunk positions
             {
