@@ -933,8 +933,9 @@ namespace RainMeadow
 
                 if (!OnlineManager.lobby.isOwner)
                 {
-                    self.playersContinueButtons = null;
+                    // self.playersContinueButtons = null;
                     self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
+                    return;
 
                     //for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
                     //{
@@ -1037,6 +1038,10 @@ namespace RainMeadow
                             self.Players.Add(ac);
                         }
                     }
+                }
+                if (self.Players.Count == arena.arenaSittingOnlineOrder.Count)
+                {
+                    arena.allPlayersAreNowInGame = true;
                 }
             }
         }

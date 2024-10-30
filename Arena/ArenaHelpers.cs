@@ -33,6 +33,9 @@ namespace RainMeadow
             arena.clientsAreReadiedUp = 0;
             arena.isInGame = false;
             arena.returnToLobby = false;
+            arena.allPlayersAreNowInGame = false;
+            arena.countdownInitiatedHoldFire = true;
+            arena.setupTime = 300;
             lobby.manager.rainWorld.options.DeleteArenaSitting();
 
         }

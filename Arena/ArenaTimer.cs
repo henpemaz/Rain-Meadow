@@ -20,13 +20,13 @@ namespace RainMeadow
         private FLabel modeLabel;
         private Vector2 pos, lastPos;
         private float fade, lastFade;
-        public float HunterTimer, HiderTimer, SetupTimer;
-        public ArenaCompetitiveGameMode tgm;
+        public float SetupTimer;
+        public ArenaCompetitiveGameMode arena;
         private Player? player;
 
-        public HideTimer(HUD.HUD hud, FContainer fContainer, ArenaCompetitiveGameMode tgm) : base(hud)
+        public HideTimer(HUD.HUD hud, FContainer fContainer, ArenaCompetitiveGameMode arena) : base(hud)
         {
-            SetupTimer = tgm.setupTime;
+            SetupTimer = arena.setupTime;
             matchMode = TimerMode.Waiting;
 
             timerLabel = new FLabel("font", FormatTime(0))
@@ -48,20 +48,12 @@ namespace RainMeadow
 
             fContainer.AddChild(timerLabel);
             fContainer.AddChild(modeLabel);
-            this.tgm = tgm;
+            this.arena = arena;
         }
 
         public Vector2 DrawPos(float timeStacker)
         {
             return Vector2.Lerp(lastPos, pos, timeStacker);
-        }
-
-        public override void Update()
-        {
-            base.Update();
-            player = hud.owner as Player;
-            if (player == null) return;
-
         }
 
         public override void Draw(float timeStacker)
@@ -109,7 +101,7 @@ namespace RainMeadow
             timerLabel.RemoveFromContainer();
             modeLabel.RemoveFromContainer();
 
-            tgm.hideTimer = null;
+            arena.hideTimer = null;
         }
     }
 }
