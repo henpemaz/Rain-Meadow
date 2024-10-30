@@ -1,4 +1,4 @@
-using Menu;
+﻿using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 
@@ -49,164 +49,168 @@ namespace RainMeadow
             Vector2 buttonSize = new(130f, 30f);
             this.backTarget = ProcessManager.ProcessID.MainMenu;
             
-            // title at the top
-            this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", "MeadowShadow", new Vector2(-2.99f, 265.01f), true, false));
-            this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", "MeadowTitle", new Vector2(-2.99f, 265.01f), true, false));
-            this.scene.flatIllustrations[this.scene.flatIllustrations.Count - 1].sprite.shader = this.manager.rainWorld.Shaders["MenuText"];
+            var test = new LobbyCardsSelector(this, mainPage);
+            mainPage.subObjects.Add(test);
 
-            // 690 on mock -> 720 -> 768 - 720 = 48, placed at 50 so my mock has a +2 offset
-            // play button at lower right
-            createButton = new SimplerButton(this, mainPage, Translate("CREATE!"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
-            createButton.OnClick += CreateLobby;
-            mainPage.subObjects.Add(createButton);
+            // // title at the top
+            // this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", "MeadowShadow", new Vector2(-2.99f, 265.01f), true, false));
+            // this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", "MeadowTitle", new Vector2(-2.99f, 265.01f), true, false));
+            // this.scene.flatIllustrations[this.scene.flatIllustrations.Count - 1].sprite.shader = this.manager.rainWorld.Shaders["MenuText"];
 
-            // refresh button on lower left // P.S. I know we will probably re-align it later, I could not find an exact position that would satisfy my OCD, which usually means the alignment sucks.
-            refreshButton = new SimplerButton(this, mainPage, "REFRESH", new Vector2(315f, 50f), new Vector2(110f, 30f));
-            refreshButton.OnClick += RefreshLobbyList;
-            mainPage.subObjects.Add(refreshButton);
+            // // 690 on mock -> 720 -> 768 - 720 = 48, placed at 50 so my mock has a +2 offset
+            // // play button at lower right
+            // createButton = new SimplerButton(this, mainPage, Translate("CREATE!"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
+            // createButton.OnClick += CreateLobby;
+            // mainPage.subObjects.Add(createButton);
 
-            // 188 on mock -> 218 -> 768 - 218 = 550 -> 552
-            // misc buttons on topright
-            // currently greyed out since they server no purpose
-            Vector2 where = new Vector2(1056f, 552f);
-            var aboutButton = new SimplerButton(this, mainPage, Translate("ABOUT"), where, new Vector2(110f, 30f));
-            aboutButton.buttonBehav.greyedOut = true;
+            // // refresh button on lower left // P.S. I know we will probably re-align it later, I could not find an exact position that would satisfy my OCD, which usually means the alignment sucks.
+            // refreshButton = new SimplerButton(this, mainPage, "REFRESH", new Vector2(315f, 50f), new Vector2(110f, 30f));
+            // refreshButton.OnClick += RefreshLobbyList;
+            // mainPage.subObjects.Add(refreshButton);
 
-            mainPage.subObjects.Add(aboutButton);
-            where.y -= 35;
-            var statsButton = new SimplerButton(this, mainPage, Translate("STATS"), where, new Vector2(110f, 30f));
-            statsButton.buttonBehav.greyedOut = true;
-            mainPage.subObjects.Add(statsButton);
-            where.y -= 35;
-            var unlocksButton = new SimplerButton(this, mainPage, Translate("UNLOCKS"), where, new Vector2(110f, 30f));
-            unlocksButton.buttonBehav.greyedOut = true;
-            mainPage.subObjects.Add(unlocksButton);
+            // // 188 on mock -> 218 -> 768 - 218 = 550 -> 552
+            // // misc buttons on topright
+            // // currently greyed out since they server no purpose
+            // Vector2 where = new Vector2(1056f, 552f);
+            // var aboutButton = new SimplerButton(this, mainPage, Translate("ABOUT"), where, new Vector2(110f, 30f));
+            // aboutButton.buttonBehav.greyedOut = true;
 
-            // center description
-            where = new Vector2(555f, 557f);
-            var modeLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Mode:"), where, new Vector2(200, 20f), false);
-            mainPage.subObjects.Add(modeLabel);
-            where.x += 80;
-            modeDropDown = new OpComboBox2(new Configurable<OnlineGameMode.OnlineGameModeType>(OnlineGameMode.OnlineGameModeType.Meadow), where, 160, OpResourceSelector.GetEnumNames(null, typeof(OnlineGameMode.OnlineGameModeType)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
-            modeDropDown.OnChanged += UpdateModeDescription;
-            new UIelementWrapper(this.tabWrapper, modeDropDown);
-            where.x -= 80;
+            // mainPage.subObjects.Add(aboutButton);
+            // where.y -= 35;
+            // var statsButton = new SimplerButton(this, mainPage, Translate("STATS"), where, new Vector2(110f, 30f));
+            // statsButton.buttonBehav.greyedOut = true;
+            // mainPage.subObjects.Add(statsButton);
+            // where.y -= 35;
+            // var unlocksButton = new SimplerButton(this, mainPage, Translate("UNLOCKS"), where, new Vector2(110f, 30f));
+            // unlocksButton.buttonBehav.greyedOut = true;
+            // mainPage.subObjects.Add(unlocksButton);
 
-            where.y -= 35;
-            modeDescriptionLabel = new ProperlyAlignedMenuLabel(this, mainPage, "", where, new Vector2(0, 20f), false);
-            mainPage.subObjects.Add(modeDescriptionLabel);
-            UpdateModeDescription();
+            // // center description
+            // where = new Vector2(555f, 557f);
+            // var modeLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Mode:"), where, new Vector2(200, 20f), false);
+            // mainPage.subObjects.Add(modeLabel);
+            // where.x += 80;
+            // modeDropDown = new OpComboBox2(new Configurable<OnlineGameMode.OnlineGameModeType>(OnlineGameMode.OnlineGameModeType.Meadow), where, 160, OpResourceSelector.GetEnumNames(null, typeof(OnlineGameMode.OnlineGameModeType)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
+            // modeDropDown.OnChanged += UpdateModeDescription;
+            // new UIelementWrapper(this.tabWrapper, modeDropDown);
+            // where.x -= 80;
 
-            // center-low settings
-            where.y -= 45;
-            var visibilityLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Visibility:"), where, new Vector2(200, 20f), false);
-            mainPage.subObjects.Add(visibilityLabel);
-            where.x += 80;
-            visibilityDropDown = new OpComboBox2(new Configurable<MatchmakingManager.LobbyVisibility>(MatchmakingManager.LobbyVisibility.Public), where, 160, OpResourceSelector.GetEnumNames(null, typeof(MatchmakingManager.LobbyVisibility)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
-            new UIelementWrapper(this.tabWrapper, visibilityDropDown);
-            where.x -= 80;
+            // where.y -= 35;
+            // modeDescriptionLabel = new ProperlyAlignedMenuLabel(this, mainPage, "", where, new Vector2(0, 20f), false);
+            // mainPage.subObjects.Add(modeDescriptionLabel);
+            // UpdateModeDescription();
 
-            where.y -= 45;
-            enablePasswordCheckbox = new CheckBox(this, mainPage, this, where, 60f, Translate("Enable Password:"), "SETPASSWORD", true);
-            mainPage.subObjects.Add(enablePasswordCheckbox);
-            // password setting
-            where.x += 160;
-            passwordInputBox = new OpTextBox(new Configurable<string>(""), where, 160f);
-            passwordInputBox.accept = OpTextBox.Accept.StringASCII;
-            passwordInputBox.description = "Lobby Password";
-            passwordInputBox.label.text = "Password";
-            new UIelementWrapper(this.tabWrapper, passwordInputBox);
+            // // center-low settings
+            // where.y -= 45;
+            // var visibilityLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Visibility:"), where, new Vector2(200, 20f), false);
+            // mainPage.subObjects.Add(visibilityLabel);
+            // where.x += 80;
+            // visibilityDropDown = new OpComboBox2(new Configurable<MatchmakingManager.LobbyVisibility>(MatchmakingManager.LobbyVisibility.Public), where, 160, OpResourceSelector.GetEnumNames(null, typeof(MatchmakingManager.LobbyVisibility)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
+            // new UIelementWrapper(this.tabWrapper, visibilityDropDown);
+            // where.x -= 80;
 
-            // textbox lobby limit option
-            where.x -= 160;
-            where.y -= 45;
-            var limitNumberLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Player max:"), where, new Vector2(400, 20f), false);
-            mainPage.subObjects.Add(limitNumberLabel);
-            where.x += 80;
-            where.y -= 5;
-            lobbyLimitNumberTextBox = new OpTextBox(new Configurable<int>(maxPlayerCount = 4), where, 160f);
-            lobbyLimitNumberTextBox.accept = OpTextBox.Accept.Int;
-            lobbyLimitNumberTextBox.maxLength = 2;
-            lobbyLimitNumberTextBox.description = "The Max of the Players for the Lobby (up to 32)";
-            new UIelementWrapper(this.tabWrapper, lobbyLimitNumberTextBox);
-            where.y += 5;
+            // where.y -= 45;
+            // enablePasswordCheckbox = new CheckBox(this, mainPage, this, where, 60f, Translate("Enable Password:"), "SETPASSWORD", true);
+            // mainPage.subObjects.Add(enablePasswordCheckbox);
+            // // password setting
+            // where.x += 160;
+            // passwordInputBox = new OpTextBox(new Configurable<string>(""), where, 160f);
+            // passwordInputBox.accept = OpTextBox.Accept.StringASCII;
+            // passwordInputBox.description = "Lobby Password";
+            // passwordInputBox.label.text = "Password";
+            // new UIelementWrapper(this.tabWrapper, passwordInputBox);
 
-            // display version
-            MenuLabel versionLabel = new MenuLabel(this, pages[0], $"Rain Meadow Version: {RainMeadow.MeadowVersionStr}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f), new Vector2(200f, 20f), false, null);
+            // // textbox lobby limit option
+            // where.x -= 160;
+            // where.y -= 45;
+            // var limitNumberLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Player max:"), where, new Vector2(400, 20f), false);
+            // mainPage.subObjects.Add(limitNumberLabel);
+            // where.x += 80;
+            // where.y -= 5;
+            // lobbyLimitNumberTextBox = new OpTextBox(new Configurable<int>(maxPlayerCount = 4), where, 160f);
+            // lobbyLimitNumberTextBox.accept = OpTextBox.Accept.Int;
+            // lobbyLimitNumberTextBox.maxLength = 2;
+            // lobbyLimitNumberTextBox.description = "The Max of the Players for the Lobby (up to 32)";
+            // new UIelementWrapper(this.tabWrapper, lobbyLimitNumberTextBox);
+            // where.y += 5;
+
+            // // display version
+            // MenuLabel versionLabel = new MenuLabel(this, pages[0], $"Rain Meadow Version: {RainMeadow.MeadowVersionStr}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f), new Vector2(200f, 20f), false, null);
+            MenuLabel versionLabel = new MenuLabel(this, pages[0], $"hehe funni text no version number 4 u :P", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f), new Vector2(200f, 20f), false, null);
             versionLabel.size = new Vector2(versionLabel.label.textRect.width, versionLabel.size.y);
             mainPage.subObjects.Add(versionLabel);
 
-            // filters
-            filter = new LobbyFilter();
-            var filterLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Filters"), new Vector2(600f, 305f), new Vector2(200f, 20f), true);
-            mainPage.subObjects.Add(filterLabel);
+            // // filters
+            // filter = new LobbyFilter();
+            // var filterLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Filters"), new Vector2(600f, 305f), new Vector2(200f, 20f), true);
+            // mainPage.subObjects.Add(filterLabel);
 
-            where = new Vector2(550f, 280f);
-            var filterModeLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Lobby Mode"), where, new Vector2(200f, 20f), false);
-            mainPage.subObjects.Add(filterModeLabel);
-            where.y -= 27;
-            filterModeDropDown = new OpComboBox2(new Configurable<LobbyFilter.ModeFilter>(LobbyFilter.ModeFilter.All), where, 160f, OpResourceSelector.GetEnumNames(null, typeof(LobbyFilter.ModeFilter)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
-            filterModeDropDown.OnChange += UpdateLobbyFilter;
-            new UIelementWrapper(this.tabWrapper, filterModeDropDown);
-            where.y -= 30;
-            var filterPasswordLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Requires Password"), where, new Vector2(200f, 20f), false);
-            mainPage.subObjects.Add(filterPasswordLabel);
-            where.y -= 27;
-            filterPasswordDropDown = new OpComboBox2(new Configurable<LobbyFilter.PasswordFilter>(LobbyFilter.PasswordFilter.All), where, 160f, OpResourceSelector.GetEnumNames(null, typeof(LobbyFilter.PasswordFilter)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
-            filterPasswordDropDown.OnChange += UpdateLobbyFilter;
-            new UIelementWrapper(this.tabWrapper, filterPasswordDropDown);
-            where.y -= 30;
-            var filterLobbyLimitLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Max Lobby Size"), where, new Vector2(200f, 20f), false);
-            mainPage.subObjects.Add(filterLobbyLimitLabel);
-            where.y -= 27;
-            filterLobbyLimit = new OpTextBox(new Configurable<int>(32), where, 50f);
-            filterLobbyLimit.accept = OpTextBox.Accept.Int;
-            filterLobbyLimit.maxLength = 2;
-            filterLobbyLimit.OnChange += UpdateLobbyFilter;
-            new UIelementWrapper(this.tabWrapper, filterLobbyLimit);
+            // where = new Vector2(550f, 280f);
+            // var filterModeLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Lobby Mode"), where, new Vector2(200f, 20f), false);
+            // mainPage.subObjects.Add(filterModeLabel);
+            // where.y -= 27;
+            // filterModeDropDown = new OpComboBox2(new Configurable<LobbyFilter.ModeFilter>(LobbyFilter.ModeFilter.All), where, 160f, OpResourceSelector.GetEnumNames(null, typeof(LobbyFilter.ModeFilter)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
+            // filterModeDropDown.OnChange += UpdateLobbyFilter;
+            // new UIelementWrapper(this.tabWrapper, filterModeDropDown);
+            // where.y -= 30;
+            // var filterPasswordLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Requires Password"), where, new Vector2(200f, 20f), false);
+            // mainPage.subObjects.Add(filterPasswordLabel);
+            // where.y -= 27;
+            // filterPasswordDropDown = new OpComboBox2(new Configurable<LobbyFilter.PasswordFilter>(LobbyFilter.PasswordFilter.All), where, 160f, OpResourceSelector.GetEnumNames(null, typeof(LobbyFilter.PasswordFilter)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
+            // filterPasswordDropDown.OnChange += UpdateLobbyFilter;
+            // new UIelementWrapper(this.tabWrapper, filterPasswordDropDown);
+            // where.y -= 30;
+            // var filterLobbyLimitLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Max Lobby Size"), where, new Vector2(200f, 20f), false);
+            // mainPage.subObjects.Add(filterLobbyLimitLabel);
+            // where.y -= 27;
+            // filterLobbyLimit = new OpTextBox(new Configurable<int>(32), where, 50f);
+            // filterLobbyLimit.accept = OpTextBox.Accept.Int;
+            // filterLobbyLimit.maxLength = 2;
+            // filterLobbyLimit.OnChange += UpdateLobbyFilter;
+            // new UIelementWrapper(this.tabWrapper, filterLobbyLimit);
 
-            // left lobby selector
-            // bg
-            sprites = new();
-            FSprite sprite = new FSprite("pixel") { x = 204 - (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, y = 137, anchorY = 0, scaleY = 444, color = MenuRGB(MenuColors.MediumGrey) };
-            mainPage.Container.AddChild(sprite);
-            sprites.Add(sprite);
-            sprite = new FSprite("pixel") { x = 528 - (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, y = 137, anchorY = 0, scaleY = 444, color = MenuRGB(MenuColors.MediumGrey) };
-            mainPage.Container.AddChild(sprite);
-            sprites.Add(sprite);
+            // // left lobby selector
+            // // bg
+            // sprites = new();
+            // FSprite sprite = new FSprite("pixel") { x = 204 - (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, y = 137, anchorY = 0, scaleY = 444, color = MenuRGB(MenuColors.MediumGrey) };
+            // mainPage.Container.AddChild(sprite);
+            // sprites.Add(sprite);
+            // sprite = new FSprite("pixel") { x = 528 - (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, y = 137, anchorY = 0, scaleY = 444, color = MenuRGB(MenuColors.MediumGrey) };
+            // mainPage.Container.AddChild(sprite);
+            // sprites.Add(sprite);
 
-            // buttons
-            upButton = new EventfulScrollButton(this, mainPage, new(316, 581), 0, 100);
-            mainPage.subObjects.Add(upButton);
-            upButton.OnClick += (_) => scrollTo += 1f;
-            downButton = new EventfulScrollButton(this, mainPage, new(316, 113), 2, 100);
-            mainPage.subObjects.Add(downButton);
-            downButton.OnClick += (_) => scrollTo -= 1f;
+            // // buttons
+            // upButton = new EventfulScrollButton(this, mainPage, new(316, 581), 0, 100);
+            // mainPage.subObjects.Add(upButton);
+            // upButton.OnClick += (_) => scrollTo -= 1f;
+            // downButton = new EventfulScrollButton(this, mainPage, new(316, 113), 2, 100);
+            // mainPage.subObjects.Add(downButton);
+            // downButton.OnClick += (_) => scrollTo += 1f;
 
-            // searchbar
-            lobbySearchInputBox = new OpTextBox(new Configurable<string>(""), new Vector2(214f, 550f), 304f);
-            lobbySearchInputBox.label.text = "Search Lobbies";
-            lobbySearchInputBox.OnChange += UpdateLobbyFilter;
-            new UIelementWrapper(this.tabWrapper, lobbySearchInputBox);
+            // // searchbar
+            // lobbySearchInputBox = new OpTextBox(new Configurable<string>(""), new Vector2(214f, 550f), 304f);
+            // lobbySearchInputBox.label.text = "Search Lobbies";
+            // lobbySearchInputBox.OnChange += UpdateLobbyFilter;
+            // new UIelementWrapper(this.tabWrapper, lobbySearchInputBox);
 
-            // cards
-            lobbies = new LobbyInfo[0];
-            lobbyButtons = new LobbyInfoCard[1];
-            CreateLobbyCards();
-            // waiting for lobby data!
+            // // cards
+            // lobbies = new LobbyInfo[0];
+            // lobbyButtons = new LobbyInfoCard[1];
+            // CreateLobbyCards();
+            // // waiting for lobby data!
 
-            if (OnlineManager.currentlyJoiningLobby != default)
-            {
-                ShowLoadingDialog("Joining lobby...");
-            }
+            // if (OnlineManager.currentlyJoiningLobby != default)
+            // {
+            //     ShowLoadingDialog("Joining lobby...");
+            // }
 
-            // Lobby machine go!
-            MatchmakingManager.instance.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
-            MatchmakingManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
+            // // Lobby machine go!
+            // MatchmakingManager.instance.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
+            // MatchmakingManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
 #if !LOCAL_P2P
-            SteamNetworkingUtils.InitRelayNetworkAccess();
+            // SteamNetworkingUtils.InitRelayNetworkAccess();
 #endif
-            MatchmakingManager.instance.RequestLobbyList();
+            // MatchmakingManager.instance.RequestLobbyList();
 
             if (manager.musicPlayer != null)
             {
@@ -231,38 +235,38 @@ namespace RainMeadow
         {
             base.Update();
 
-            bool popupVisible = popupDialog != null;
+            // bool popupVisible = popupDialog != null;
 
-            for (int i = 0; i < lobbyButtons.Length; i++)
-            {
-                lobbyButtons[i].buttonBehav.greyedOut = popupVisible;
-            }
+            // for (int i = 0; i < lobbyButtons.Length; i++)
+            // {
+            //     lobbyButtons[i].buttonBehav.greyedOut = popupVisible;
+            // }
 
-            filterModeDropDown.greyedOut = popupVisible;
-            filterPasswordDropDown.greyedOut = popupVisible;
-            filterLobbyLimit.greyedOut = popupVisible;
-            lobbySearchInputBox.greyedOut = popupVisible;
+            // filterModeDropDown.greyedOut = popupVisible;
+            // filterPasswordDropDown.greyedOut = popupVisible;
+            // filterLobbyLimit.greyedOut = popupVisible;
+            // lobbySearchInputBox.greyedOut = popupVisible;
 
-            visibilityDropDown.greyedOut = popupVisible;
-            lobbyLimitNumberTextBox.greyedOut = popupVisible;
-            createButton.buttonBehav.greyedOut = popupVisible;
-            refreshButton.buttonBehav.greyedOut = popupVisible;
-            modeDropDown.greyedOut = popupVisible;
-            passwordInputBox.greyedOut = popupVisible;
-            enablePasswordCheckbox.buttonBehav.greyedOut = popupVisible;
-            upButton.buttonBehav.greyedOut = popupVisible;
-            downButton.buttonBehav.greyedOut = popupVisible;
+            // visibilityDropDown.greyedOut = popupVisible;
+            // lobbyLimitNumberTextBox.greyedOut = popupVisible;
+            // createButton.buttonBehav.greyedOut = popupVisible;
+            // refreshButton.buttonBehav.greyedOut = popupVisible;
+            // modeDropDown.greyedOut = popupVisible;
+            // passwordInputBox.greyedOut = popupVisible;
+            // enablePasswordCheckbox.buttonBehav.greyedOut = popupVisible;
+            // upButton.buttonBehav.greyedOut = popupVisible;
+            // downButton.buttonBehav.greyedOut = popupVisible;
 
-            if (popupVisible) return;
+            // if (popupVisible) return;
 
-            int extraItems = Mathf.Max(lobbies.Length - 4, 0);
-            scrollTo = Mathf.Clamp(scrollTo, -0.5f, extraItems + 0.5f);
-            if (scrollTo < 0) scrollTo = RWCustom.Custom.LerpAndTick(scrollTo, 0, 0.1f, 0.1f);
-            if (scrollTo > extraItems) scrollTo = RWCustom.Custom.LerpAndTick(scrollTo, extraItems, 0.1f, 0.1f);
-            scroll = RWCustom.Custom.LerpAndTick(scroll, scrollTo, 0.1f, 0.1f);
+            // int extraItems = Mathf.Max(lobbies.Length - 4, 0);
+            // scrollTo = Mathf.Clamp(scrollTo, -0.5f, extraItems + 0.5f);
+            // if (scrollTo < 0) scrollTo = RWCustom.Custom.LerpAndTick(scrollTo, 0, 0.1f, 0.1f);
+            // if (scrollTo > extraItems) scrollTo = RWCustom.Custom.LerpAndTick(scrollTo, extraItems, 0.1f, 0.1f);
+            // scroll = RWCustom.Custom.LerpAndTick(scroll, scrollTo, 0.1f, 0.1f);
 
-            passwordInputBox.greyedOut = !setpassword;
-            if (lobbyLimitNumberTextBox.value != "" && !lobbyLimitNumberTextBox.held) ApplyLobbyLimit();
+            // passwordInputBox.greyedOut = !setpassword;
+            // if (lobbyLimitNumberTextBox.value != "" && !lobbyLimitNumberTextBox.held) ApplyLobbyLimit();
         }
 
         private void ApplyLobbyLimit()
