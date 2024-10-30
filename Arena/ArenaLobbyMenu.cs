@@ -33,7 +33,7 @@ namespace RainMeadow
         private int currentPlayerPosition;
         private bool initiatedStartGameForClient;
         public List<SlugcatStats.Name> allSlugs;
-
+        public Dictionary<string, bool> playersReadiedUp = new Dictionary<string, bool>();
 
 
         int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x; // been using 1360 as ref
