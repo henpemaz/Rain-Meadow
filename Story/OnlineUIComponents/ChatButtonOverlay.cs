@@ -21,7 +21,6 @@ namespace RainMeadow
 
         public override void Update()
         {
-
             if (ModManager.DevTools)
             {
                 game.devToolsActive = false;
@@ -38,7 +37,7 @@ namespace RainMeadow
                 this.pages[0].RemoveSubObject(chat);
             }
 
-            chat = new ChatTextBox(this, pages[0], "", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 700f, 0), new(1400, 30));
+            chat = new ChatTextBox(this, pages[0], "", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 683f, 0), new(manager.rainWorld.options.ScreenSize.x, 30));
             pages[0].subObjects.Add(chat);
 
         }

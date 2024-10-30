@@ -2,10 +2,8 @@
 using UnityEngine;
 using System;
 using Menu.Remix.MixedUI;
-using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 
 namespace RainMeadow
 {
@@ -42,8 +40,11 @@ namespace RainMeadow
         {
             yield return new WaitForSeconds(delay);
 
-            typingHandler.Unassign(this);
-            typingHandler.OnDestroy();
+            if (typingHandler != null)
+            {
+                typingHandler.Unassign(this);
+                typingHandler.OnDestroy();
+            }
         }
         private void CaptureInputs(char input)
         {
