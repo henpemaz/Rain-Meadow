@@ -1,7 +1,9 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using RainMeadow.Story.OnlineUIComponents;
 using System;
 using System.Linq;
+using UnityEngine;
 
 namespace RainMeadow;
 
@@ -41,6 +43,20 @@ public partial class RainMeadow
 
         On.AbstractCreature.ctor += AbstractCreature_ctor;
         On.Player.ShortCutColor += Player_ShortCutColor;
+        On.Player.checkInput += Player_checkInput;
+
+    }
+
+    private void Player_checkInput(On.Player.orig_checkInput orig, Player self)
+    {
+        orig(self);
+        if (OnlineManager.lobby != null)
+        {
+            if (self.room.world.game.cameras[0].hud.textPrompt.pausedMode || ChatHud.chatButtonActive)
+            {
+                PlayerMovementOverride.StopPlayerMovement(self);
+            }
+        }
 
     }
 
@@ -98,6 +114,25 @@ public partial class RainMeadow
         if (isStoryMode(out var gameMode) && self.abstractCreature.IsLocal())
             gameMode.storyClientData.readyForWin = false;
         orig(self, eu);
+        if (isStoryMode(out var _) && !self.inShortcut && OnlineManager.players.Count > 4)
+        {
+            if (self.room.abstractRoom.shelter || self.room.IsGateRoom())
+            {
+                if (self.collisionLayer != 0)
+                {
+                    self.room.ChangeCollisionLayerForObject(self, 0);
+                }
+            }
+            else
+            {
+                if (self.collisionLayer != 1)
+                {
+                    self.room.ChangeCollisionLayerForObject(self, 1);
+                }
+            }
+        }
+
+
     }
 
     private UnityEngine.Color Player_ShortCutColor(On.Player.orig_ShortCutColor orig, Player self)
@@ -105,10 +140,11 @@ public partial class RainMeadow
 
         if (OnlineManager.lobby != null)
         {
-            if ((self.Template.type == CreatureTemplate.Type.Slugcat || OnlineManager.lobby.gameMode is MeadowGameMode)
-                && RainMeadow.creatureCustomizations.TryGetValue(self, out var custom))
+            if (RainMeadow.creatureCustomizations.TryGetValue(self, out var custom))
             {
-                return custom.GetBodyColor();
+                var color = orig(self);
+                custom.ModifyBodyColor(ref color);
+                return color;
             }
         }
         return orig(self);

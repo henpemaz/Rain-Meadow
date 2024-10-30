@@ -2,6 +2,7 @@ using HUD;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
+using RainMeadow.Story.OnlineUIComponents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -74,6 +75,21 @@ namespace RainMeadow
 
             On.Weapon.HitThisObject += Weapon_HitThisObject;
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
         {
@@ -447,9 +463,9 @@ namespace RainMeadow
             if (isStoryMode(out var gameMode))
             {
                 self.AddPart(new OnlineHUD(self, cam, gameMode));
-                self.AddPart(new SpectatorHud(self, cam, gameMode));
+                self.AddPart(new SpectatorHud(self, cam));
                 self.AddPart(new Pointing(self));
-
+                self.AddPart(new ChatHud(self, cam));
             }
         }
 
@@ -468,7 +484,7 @@ namespace RainMeadow
         private void RainWorldGame_GoToDeathScreen(On.RainWorldGame.orig_GoToDeathScreen orig, RainWorldGame self)
         {
             if (isStoryMode(out var gameMode))
-            {
+            {                
                 if (OnlineManager.lobby.isOwner)
                 {
                     RPCs.MovePlayersToDeathScreen();
@@ -667,10 +683,8 @@ namespace RainMeadow
                 }
 
                 self.room.game.cameras[0].hud.parts.Add(new OnlineHUD(self.room.game.cameras[0].hud, self.room.game.cameras[0], storyGameMode));
-                self.room.game.cameras[0].hud.parts.Add(new SpectatorHud(self.room.game.cameras[0].hud, self.room.game.cameras[0], storyGameMode));
+                self.room.game.cameras[0].hud.parts.Add(new SpectatorHud(self.room.game.cameras[0].hud, self.room.game.cameras[0]));
                 self.room.game.cameras[0].hud.parts.Add(new Pointing(self.room.game.cameras[0].hud));
-
-
                 return true;
             }
 
@@ -734,7 +748,7 @@ namespace RainMeadow
 
                 foreach (HudPart part in self.room.game.cameras[0].hud.parts)
                 {
-                    if (part is OnlineHUD || part is PlayerSpecificOnlineHud)
+                    if (part is OnlineHUD || part is PlayerSpecificOnlineHud || part is SpectatorHud)
                     {
                         partsToRemove.Add(part);
                     }

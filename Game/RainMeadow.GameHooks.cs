@@ -268,6 +268,7 @@ namespace RainMeadow
                 if (isStoryMode(out var story))
                 {
                     story.storyClientData.isDead = false;
+                    OnlineManager.mePlayer.isActuallySpectating = false;
                 }
             }
             orig(self, saveStateNumber, game);

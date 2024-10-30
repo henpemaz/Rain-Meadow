@@ -49,10 +49,13 @@ namespace RainMeadow
         public Lobby lobby;
         public List<OnlineCreature> avatars = new();
         public ClientSettings clientSettings;
+        public List<string> usersIDontWantToChatWith;
+
 
         public OnlineGameMode(Lobby lobby)
         {
             this.lobby = lobby;
+            this.usersIDontWantToChatWith = new List<string>();
         }
 
         public virtual void FilterItems(Room room)

@@ -196,6 +196,13 @@ namespace RainMeadow
                 creatureType = CreatureTemplate.Type.Slugcat,
                 baseColor = new Color(111, 216, 255, 255) / 255f
             });
+            public static Skin Slugcat_Night = new("Slugcat_Night", true, new()
+            {
+                character = Character.Slugcat,
+                displayName = "Night",
+                creatureType = CreatureTemplate.Type.Slugcat,
+                baseColor = PlayerGraphics.SlugcatColor(SlugcatStats.Name.Night),
+            });
 
             public static Skin Cicada_White = new("Cicada_White", true, new()
             {
@@ -203,6 +210,7 @@ namespace RainMeadow
                 displayName = "White",
                 creatureType = CreatureTemplate.Type.CicadaA,
                 previewColor = Extensions.ColorFromHex(0xd4dddf),
+                tintFactor = 0.5f,
             });
             public static Skin Cicada_Dark = new("Cicada_Dark", true, new()
             {
@@ -210,6 +218,7 @@ namespace RainMeadow
                 displayName = "Dark",
                 creatureType = CreatureTemplate.Type.CicadaB,
                 previewColor = Extensions.ColorFromHex(0x0e0d19),
+                tintFactor = 0.5f,
             });
 
             public static Skin Lizard_Pink = new("Lizard_Pink", true, new()
@@ -217,8 +226,8 @@ namespace RainMeadow
                 character = Character.Lizard,
                 displayName = "Pink",
                 creatureType = CreatureTemplate.Type.PinkLizard,
-                randomSeed = 3401,
-                previewColor = Extensions.ColorFromHex(0xff07ee),
+                randomSeed = 3321,
+                previewColor = Extensions.ColorFromHex(0xff0c85),
                 tintFactor = 0.5f,
             });
             public static Skin Lizard_Blue = new("Lizard_Blue", true, new()
@@ -226,8 +235,8 @@ namespace RainMeadow
                 character = Character.Lizard,
                 displayName = "Blue",
                 creatureType = CreatureTemplate.Type.BlueLizard,
-                randomSeed = 9659,
-                previewColor = Extensions.ColorFromHex(0x006bed),
+                randomSeed = 3125,
+                previewColor = Extensions.ColorFromHex(0x1946ff),
                 tintFactor = 0.5f,
             });
             public static Skin Lizard_Yellow = new("Lizard_Yellow", true, new()
@@ -235,8 +244,53 @@ namespace RainMeadow
                 character = Character.Lizard,
                 displayName = "Yellow",
                 creatureType = CreatureTemplate.Type.YellowLizard,
-                randomSeed = 6526,
-                previewColor = Extensions.ColorFromHex(0xd35503),
+                randomSeed = 718,
+                previewColor = Extensions.ColorFromHex(0xffa604),
+                tintFactor = 0.5f,
+            });
+            public static Skin Lizard_White = new("Lizard_White", true, new()
+            {
+                character = Character.Lizard,
+                displayName = "White",
+                creatureType = CreatureTemplate.Type.WhiteLizard,
+                randomSeed = 3217,
+                previewColor = Extensions.ColorFromHex(0xffffff),
+                tintFactor = 0.5f,
+            });
+            public static Skin Lizard_Red = new("Lizard_Red", true, new()
+            {
+                character = Character.Lizard,
+                displayName = "Red",
+                creatureType = CreatureTemplate.Type.RedLizard,
+                randomSeed = 5036,
+                previewColor = Extensions.ColorFromHex(0xfb0600),
+                tintFactor = 0.5f,
+            });
+            public static Skin Lizard_Black = new("Lizard_Black", true, new()
+            {
+                character = Character.Lizard,
+                displayName = "Black",
+                creatureType = CreatureTemplate.Type.BlackLizard,
+                randomSeed = 280,
+                previewColor = Extensions.ColorFromHex(0x757475),
+                tintFactor = 0.5f,
+            });
+            public static Skin Lizard_Axo = new("Lizard_Axo", true, new()
+            {
+                character = Character.Lizard,
+                displayName = "Axo",
+                creatureType = CreatureTemplate.Type.Salamander,
+                randomSeed = 7621,
+                previewColor = Extensions.ColorFromHex(0xd60065),
+                tintFactor = 0.5f,
+            });
+            public static Skin Lizard_Sala = new("Lizard_Sala", true, new()
+            {
+                character = Character.Lizard,
+                displayName = "Sala",
+                creatureType = CreatureTemplate.Type.Salamander,
+                randomSeed = 3107,
+                previewColor = Extensions.ColorFromHex(0xfd0062),
                 tintFactor = 0.5f,
             });
             public static Skin Lizard_Cyan = new("Lizard_Cyan", true, new()
@@ -339,48 +393,187 @@ namespace RainMeadow
                 previewColor = Extensions.ColorFromHex(0xb8c3ec),
             });
 
-            public static Skin Noodlefly_Big = new("Noodlefly_Big", true, new()
+            public static Skin Noodlefly_Small_Lily = new("Noodlefly_Small_Lily", true, new()
             {
                 character = Character.Noodlefly,
-                displayName = "Big",
-                creatureType = CreatureTemplate.Type.BigNeedleWorm,
-            });
-            public static Skin Noodlefly_Small = new("Noodlefly_Small", true, new()
-            {
-                character = Character.Noodlefly,
-                displayName = "Small",
+                displayName = "Lily",
                 creatureType = CreatureTemplate.Type.SmallNeedleWorm,
-                voiceIdOverride = RainMeadow.Ext_SoundID.RM_SmallNoot_Call
+                voiceIdOverride = RainMeadow.Ext_SoundID.RM_SmallNoot_Call,
+                randomSeed = 10989,
+                previewColor = Extensions.ColorFromHex(0xd15460),
+            });
+            public static Skin Noodlefly_Big_Rose = new("Noodlefly_Big_Rose", true, new()
+            {
+                character = Character.Noodlefly,
+                displayName = "Rose",
+                creatureType = CreatureTemplate.Type.BigNeedleWorm,
+                randomSeed = 9091,
+                previewColor = Extensions.ColorFromHex(0x450814),
+            });
+            public static Skin Noodlefly_Small_Poppy = new("Noodlefly_Small_Poppy", true, new()
+            {
+                character = Character.Noodlefly,
+                displayName = "Poppy",
+                creatureType = CreatureTemplate.Type.SmallNeedleWorm,
+                voiceIdOverride = RainMeadow.Ext_SoundID.RM_SmallNoot_Call,
+                randomSeed = 11114,
+                previewColor = Extensions.ColorFromHex(0x740719),
+            });
+            public static Skin Noodlefly_Big_Lotus = new("Noodlefly_Big_Lotus", true, new()
+            {
+                character = Character.Noodlefly,
+                displayName = "Lotus",
+                creatureType = CreatureTemplate.Type.BigNeedleWorm,
+                randomSeed = 9092,
+                previewColor = Extensions.ColorFromHex(0x44082f),
+            });
+            public static Skin Noodlefly_Small_Lilac = new("Noodlefly_Small_Lilac", true, new()
+            {
+                character = Character.Noodlefly,
+                displayName = "Lilac",
+                creatureType = CreatureTemplate.Type.SmallNeedleWorm,
+                voiceIdOverride = RainMeadow.Ext_SoundID.RM_SmallNoot_Call,
+                randomSeed = 10992,
+                previewColor = Extensions.ColorFromHex(0xb72264),
+            });
+            public static Skin Noodlefly_Big_Petunia = new("Noodlefly_Big_Petunia", true, new()
+            {
+                character = Character.Noodlefly,
+                displayName = "Petunia",
+                creatureType = CreatureTemplate.Type.BigNeedleWorm,
+                randomSeed = 9110,
+                previewColor = Extensions.ColorFromHex(0x2a232d),
+            });
+            public static Skin Noodlefly_Small_Jasmine = new("Noodlefly_Small_Jasmine", true, new()
+            {
+                character = Character.Noodlefly,
+                displayName = "Jasmine",
+                creatureType = CreatureTemplate.Type.SmallNeedleWorm,
+                voiceIdOverride = RainMeadow.Ext_SoundID.RM_SmallNoot_Call,
+                randomSeed = 10986,
+                previewColor = Extensions.ColorFromHex(0xa7a8aa),
+            });
+            public static Skin Noodlefly_Big_Gardenia = new("Noodlefly_Big_Gardenia", true, new()
+            {
+                character = Character.Noodlefly,
+                displayName = "Gardenia",
+                creatureType = CreatureTemplate.Type.BigNeedleWorm,
+                randomSeed = 9065,
+                previewColor = Extensions.ColorFromHex(0xc3c5c7),
             });
 
-            public static Skin Eggbug_Blue = new("Eggbug_Blue", true, new()
+            public static Skin Eggbug_Citrus = new("Eggbug_Citrus", true, new()
             {
                 character = Character.Eggbug,
-                displayName = "Blue",
+                displayName = "Citrus",
                 creatureType = CreatureTemplate.Type.EggBug,
-                randomSeed = 1001,
+                randomSeed = 2399,
+                previewColor = Extensions.ColorFromHex(0x00e1f5),
             });
-            public static Skin Eggbug_Teal = new("Eggbug_Teal", true, new()
+            public static Skin Eggbug_Blueberry = new("Eggbug_Blueberry", true, new()
             {
                 character = Character.Eggbug,
-                displayName = "Teal",
+                displayName = "Blueberry",
                 creatureType = CreatureTemplate.Type.EggBug,
-                randomSeed = 1002,
+                randomSeed = 2340,
+                previewColor = Extensions.ColorFromHex(0x007aef),
+            });
+            public static Skin Eggbug_Kiwi = new("Eggbug_Kiwi", true, new()
+            {
+                character = Character.Eggbug,
+                displayName = "Kiwi",
+                creatureType = CreatureTemplate.Type.EggBug,
+                randomSeed = 2337,
+                previewColor = Extensions.ColorFromHex(0x00ea68),
+            });
+            public static Skin Eggbug_Mango = new("Eggbug_Mango", true, new()
+            {
+                character = Character.Eggbug,
+                displayName = "Mango",
+                creatureType = CreatureTemplate.Type.EggBug,
+                randomSeed = 2337,
+                baseColor = Extensions.ColorFromHex(0xff9900),
+            });
+            public static Skin Eggbug_Dragonfruit = new("Eggbug_Dragonfruit", true, new()
+            {
+                character = Character.Eggbug,
+                displayName = "Dragonfruit",
+                creatureType = CreatureTemplate.Type.EggBug,
+                randomSeed = 8557,
+                baseColor = Extensions.ColorFromHex(0xff0859),
             });
 
-            public static Skin LanternMouse_Blue = new("LanternMouse_Blue", true, new()
+            public static Skin LanternMouse_Saphire = new("LanternMouse_Saphire", true, new()
             {
                 character = Character.LanternMouse,
-                displayName = "Blue",
+                displayName = "Saphire",
                 creatureType = CreatureTemplate.Type.LanternMouse,
-                randomSeed = 1001,
+                randomSeed = 9814,
+                previewColor = Extensions.ColorFromHex(0xccddff),
             });
-            public static Skin LanternMouse_Teal = new("LanternMouse_Teal", true, new()
+            public static Skin LanternMouse_Ruby = new("LanternMouse_Ruby", true, new()
             {
                 character = Character.LanternMouse,
-                displayName = "Teal",
+                displayName = "Ruby",
                 creatureType = CreatureTemplate.Type.LanternMouse,
-                randomSeed = 1002,
+                randomSeed = 9834,
+                previewColor = Extensions.ColorFromHex(0xffcecc),
+            });
+            public static Skin LanternMouse_Acquamarine = new("LanternMouse_Acquamarine", true, new()
+            {
+                character = Character.LanternMouse,
+                displayName = "Acquamarine",
+                creatureType = CreatureTemplate.Type.LanternMouse,
+                randomSeed = 9764,
+                previewColor = Extensions.ColorFromHex(0xccfeff),
+            });
+            public static Skin LanternMouse_Citrine = new("LanternMouse_Citrine", true, new()
+            {
+                character = Character.LanternMouse,
+                displayName = "Citrine",
+                creatureType = CreatureTemplate.Type.LanternMouse,
+                randomSeed = 9795,
+                previewColor = Extensions.ColorFromHex(0xffeacc),
+            });
+            public static Skin LanternMouse_Emerald = new("LanternMouse_Emerald", true, new()
+            {
+                character = Character.LanternMouse,
+                displayName = "Emerald",
+                creatureType = CreatureTemplate.Type.LanternMouse,
+                randomSeed = 10137,
+                previewColor = Extensions.ColorFromHex(0xd2ffcc),
+            });
+            public static Skin LanternMouse_Quartz = new("LanternMouse_Quartz", true, new()
+            {
+                character = Character.LanternMouse,
+                displayName = "Quartz",
+                creatureType = CreatureTemplate.Type.LanternMouse,
+                randomSeed = 11801,
+                previewColor = Extensions.ColorFromHex(0xf9ccff),
+            });
+            public static Skin LanternMouse_Amethyst = new("LanternMouse_Amethyst", true, new()
+            {
+                character = Character.LanternMouse,
+                displayName = "Amethyst",
+                creatureType = CreatureTemplate.Type.LanternMouse,
+                randomSeed = 12346,
+                previewColor = Extensions.ColorFromHex(0xdeccff),
+            });
+            public static Skin LanternMouse_Opal = new("LanternMouse_Opal", true, new()
+            {
+                character = Character.LanternMouse,
+                displayName = "Opal",
+                creatureType = CreatureTemplate.Type.LanternMouse,
+                randomSeed = 9814,
+                baseColor = Extensions.ColorFromHex(0x202227),
+            });
+            public static Skin LanternMouse_Garnet = new("LanternMouse_Garnet", true, new()
+            {
+                character = Character.LanternMouse,
+                displayName = "Garnet",
+                creatureType = CreatureTemplate.Type.LanternMouse,
+                randomSeed = 9834,
+                baseColor = Extensions.ColorFromHex(0x272020),
             });
         }
 

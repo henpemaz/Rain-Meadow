@@ -7,219 +7,159 @@ namespace RainMeadow
 {
     public class SpectatorOverlay : Menu.Menu
     {
+        public AbstractCreature? spectatee;
+
+        public Vector2 pos;
+
+        public class PlayerButton
+        {
+            public OnlinePhysicalObject player;
+            public SimplerButton button;
+            public SimplerSymbolButton? kickbutton;
+            public bool mutedPlayer;
+            private string clientMuteSymbol;
+            public Vector2 pos
+            {
+                set
+                {
+                    button.pos = value;
+                    if (kickbutton != null)
+                        kickbutton.pos = value + new Vector2(120, 0);
+                }
+            }
+            public SpectatorOverlay overlay;
+
+            public PlayerButton(SpectatorOverlay menu, OnlinePhysicalObject opo, Vector2 pos, bool canKick = false)
+            {
+                this.overlay = menu;
+                this.player = opo;
+                this.button = new SimplerButton(menu, menu.pages[0], opo.owner.id.name, pos, new Vector2(110, 30));
+
+                if (OnlineManager.lobby.gameMode.usersIDontWantToChatWith.Contains(opo.owner.id.name)) {
+
+                    clientMuteSymbol = "FriendA"; // Mark as being friendly again next click
+                    mutedPlayer = true;
+                } else
+                {
+                    clientMuteSymbol = "Menu_Symbol_Clear_All"; // Mark as available to be muted
+                    mutedPlayer = false;
+
+                }
+
+                this.button.OnClick += (_) =>
+                {
+                    this.button.toggled = !this.button.toggled;
+                    overlay.spectatee = this.button.toggled ? this.player.apo as AbstractCreature : null;
+                    OnlineManager.mePlayer.isActuallySpectating = overlay.spectatee == null || !this.player.isMine;
+
+                };
+                this.button.owner.subObjects.Add(button);
+                if (canKick)
+                {
+                    this.kickbutton = new SimplerSymbolButton(menu, menu.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", pos + new Vector2(120, 0));
+                    this.kickbutton.OnClick += (_) => BanHammer.BanUser(opo.owner);
+                    this.kickbutton.owner.subObjects.Add(kickbutton);
+                }
+                if (opo.owner != OnlineManager.mePlayer)
+                {
+                    this.kickbutton = new SimplerSymbolButton(menu, menu.pages[0], clientMuteSymbol, "MUTEPLAYER", pos + new Vector2(120, 0));
+                    this.kickbutton.OnClick += (_) =>
+                    {
+                        if (!mutedPlayer)
+                        {
+                            OnlineManager.lobby.gameMode.usersIDontWantToChatWith.Add(opo.owner.id.name);
+                            RainMeadow.Debug($"Added  {opo.owner.id.name} to mute list");
+                            this.kickbutton.UpdateSymbol("FriendA");
+                            mutedPlayer = true;
+                        }
+                        else
+                        {
+                            OnlineManager.lobby.gameMode.usersIDontWantToChatWith.Remove(opo.owner.id.name);
+                            RainMeadow.Debug($"Removed  {opo.owner.id.name} from mute list");
+                            this.kickbutton.UpdateSymbol("Menu_Symbol_Clear_All");
+                            mutedPlayer = false;
+
+                        }
+                    };
+                    this.kickbutton.owner.subObjects.Add(kickbutton);
+                }
+                this.pos = pos;
+            }
+
+            public void Destroy()
+            {
+                this.button.RemoveSprites();
+                this.button.page.RemoveSubObject(this.button);
+                if (this.kickbutton != null)
+                {
+                    this.kickbutton.RemoveSprites();
+                    this.kickbutton.page.RemoveSubObject(this.kickbutton);
+                }
+            }
+        }
+
         public RainWorldGame game;
-        public SpectatorOverlay spectatorOverlay;
-        public HashSet<AbstractCreature> uniqueACs;
+        public List<PlayerButton> playerButtons;
 
         public SpectatorOverlay(ProcessManager manager, RainWorldGame game) : base(manager, RainMeadow.Ext_ProcessID.SpectatorMode)
-
         {
             this.game = game;
             this.pages.Add(new Page(this, null, "spectator", 0));
             this.selectedObject = null;
-            uniqueACs = new HashSet<AbstractCreature>();
-            InitSpectatorMode();
-
+            this.playerButtons = new();
+            this.pos = new Vector2(1180, 553);
+            this.pages[0].subObjects.Add(new Menu.MenuLabel(this, this.pages[0], this.Translate("PLAYERS"), this.pos, new(110, 30), true));
         }
 
-
-        private void ScanAndUpdateACList()
+        private bool UpdateList()
         {
-            if (OnlineManager.lobby.playerAvatars.Count > uniqueACs.Count)
-            {
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
-                {
-                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue;
+            List<OnlinePhysicalObject> newPlayers = OnlineManager.lobby.playerAvatars
+                .Select(kv => kv.Value.FindEntity(true))
+                .OfType<OnlinePhysicalObject>()
+                .OrderBy(opo => opo.isMine ? 0 : 1)
+                .ToList();
 
-                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                    {
-                        uniqueACs.Add(ac);
-                    }
+            if (newPlayers.Count == playerButtons.Count) return false; // race condition that will Never Happen(TM)
+
+            var offset = new Vector2(0, 38);
+            var pos = this.pos - offset;
+
+            for (var i = playerButtons.Count - 1; i >= 0; i--)
+            {
+                var button = playerButtons[i];
+                if (newPlayers.Contains(button.player))
+                {
+                    newPlayers.Remove(button.player);
+                    button.pos = pos;
+                    pos -= offset;
                 }
-            }
-            if (OnlineManager.lobby.playerAvatars.Count < uniqueACs.Count)
-            {
-                uniqueACs.Clear();
-            }
-        }
-
-        private void InitSpectatorMode()
-        {
-            if (OnlineManager.lobby.gameMode is StoryGameMode)
-            {
-                ScanAndUpdateACList();
-
-                for (int i = 0; i < uniqueACs.Count; i++)
+                else
                 {
-                    var username = "";
-                    if (!OnlinePhysicalObject.map.TryGetValue(uniqueACs.ElementAt(i), out var onlinePlayer))
-                    {
-                        RainMeadow.Error("Error getting onlineplayer in spectator hud");
-                    }
-
-                    username = onlinePlayer.owner.id.name;
-                    var ac = uniqueACs.ElementAt(i);
-
-
-                    this.pages[0].subObjects.Add(new Menu.MenuLabel(this, this.pages[0], this.Translate("PLAYERS"), new UnityEngine.Vector2(1180, 553), new(110, 30), true));
-                    var btn = new SimplerButton(this, this.pages[0], username, new UnityEngine.Vector2(1180, 515) - i * new UnityEngine.Vector2(0, 38), new(110, 30));
-                    this.pages[0].subObjects.Add(btn);
-                    btn.toggled = false;
-
-                    if (OnlineManager.lobby.isOwner && i > 0)
-                    {
-
-                        var kickPlayer = new SimplerSymbolButton(this, this.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", new Vector2(1300, 515) - i * new UnityEngine.Vector2(0, 38));
-                        kickPlayer.OnClick += (_) =>
-                        {
-                            BanHammer.BanUser(onlinePlayer.owner as OnlinePlayer);
-                        };
-                        this.pages[0].subObjects.Add(kickPlayer);
-                    }
-
-                    bool hasAnyAcInGateRoom = false;
-                    // Disable button if AC is dead or if we're in gate room mode. We cannot have a situation where a realizedCreature becomes null during a room check
-                    if ((ac.state.dead ||
-                    (ac.realizedCreature != null && ac.realizedCreature.State.dead)) ||
-                    (hasAnyAcInGateRoom && !ac.Room.gate))
-                    {
-                        btn.inactive = true;
-                        btn.buttonBehav.greyedOut = true;
-                        btn.OnClick += (_) => { /* No action on click, slugs are dead or in gate room mode */ };
-                    }
-                    else
-                    {
-                        btn.inactive = false;
-                        btn.buttonBehav.greyedOut = false;
-                        btn.OnClick += (_) =>
-                        {
-
-                            this.game.cameras[0].followAbstractCreature = ac;
-
-                            if (ac.Room.realizedRoom == null)
-                            {
-                                this.game.world.ActivateRoom(ac.Room);
-                            }
-
-                            RainMeadow.Debug("Following " + ac);
-
-                            if ((this.game.cameras[0].room.abstractRoom != ac.Room))
-                            {
-                                this.game.cameras[0].MoveCamera(ac.Room.realizedRoom, -1);
-                            }
-                            btn.toggled = !btn.toggled;
-
-
-                            // Set all other buttons to false
-                            foreach (var otherBtn in this.pages[0].subObjects.OfType<SimplerButton>())
-                            {
-                                if (otherBtn != btn)
-                                {
-                                    otherBtn.toggled = false;
-                                }
-                            }
-
-                        };
-                    }
+                    button.Destroy();
+                    playerButtons.RemoveAt(i);
                 }
             }
 
+            foreach (var player in newPlayers)
+            {
+                playerButtons.Add(new PlayerButton(this, player, pos, OnlineManager.lobby.isOwner && !player.isMine));
+                pos -= offset;
+            }
+
+            return true;
         }
 
         public override void Update()
         {
             base.Update();
+            UpdateList();
 
-            ScanAndUpdateACList();
-
-            List<SimplerButton> playerList = this.pages[0].subObjects.OfType<SimplerButton>().ToList();
-            List<SimplerSymbolButton> xButtons = this.pages[0].subObjects.OfType<SimplerSymbolButton>().ToList();
-
-            if (playerList.Count != uniqueACs.Count)
+            foreach (var button in playerButtons)
             {
-                // Remove all existing buttons when our AC list changes
-                foreach (var button in playerList)
-                {
-                    button.RemoveSprites();
-                    this.pages[0].RemoveSubObject(button);
-                }
-
-                foreach (var button in xButtons)
-                {
-                    button.RemoveSprites();
-                    this.pages[0].RemoveSubObject(button);
-                }
-
-                // Create and add new buttons
-                for (int i = 0; i < uniqueACs.Count; i++)
-                {
-                    var ac = uniqueACs.ElementAt(i);
-                    var username = "";
-                    if (!OnlinePhysicalObject.map.TryGetValue(uniqueACs.ElementAt(i), out var onlinePlayer))
-                    {
-                        RainMeadow.Error("Error getting onlineplayer in spectator hud");
-                    }
-
-                    username = onlinePlayer.owner.id.name;
-
-                    this.pages[0].subObjects.Add(new Menu.MenuLabel(this, this.pages[0], this.Translate("PLAYERS"), new UnityEngine.Vector2(1180, 553), new(110, 30), true));
-                    var btn = new SimplerButton(this, this.pages[0], username, new UnityEngine.Vector2(1180, 515) - i * new UnityEngine.Vector2(0, 38), new(110, 30));
-                    this.pages[0].subObjects.Add(btn);
-                    btn.toggled = false;
-
-                    if (OnlineManager.lobby.isOwner && i > 0)
-                    {
-
-
-                        var kickPlayer = new SimplerSymbolButton(this, this.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", new Vector2(1300, 515) - i * new UnityEngine.Vector2(0, 38));
-                        kickPlayer.OnClick += (_) =>
-                        {
-                            BanHammer.BanUser(onlinePlayer.owner as OnlinePlayer);
-
-                        };
-
-                        this.pages[0].subObjects.Add(kickPlayer);
-                    }
-                }
+                var ac = button.player.apo as AbstractCreature;
+                button.button.toggled = ac != null && ac == spectatee;
+                button.button.buttonBehav.greyedOut = ac is null || (ac.state.dead || (ac.realizedCreature != null && ac.realizedCreature.State.dead));
             }
-            // Update button states
-            bool hasAnyAcInGateRoom = false;
-
-            for (int i = 0; i < uniqueACs.Count; i++)
-            {
-                var ac = uniqueACs.ElementAt(i);
-                var button = this.pages[0].subObjects.OfType<SimplerButton>().ElementAt(i);
-
-                // Check if any AC is in the gate room
-                if (ac.Room.gate)
-                {
-                    hasAnyAcInGateRoom = true;
-
-                }
-
-                // Disable button if AC is dead or if we're in gate room mode
-                if ((ac.state.dead ||
-                     (ac.realizedCreature != null && ac.realizedCreature.State.dead)) ||
-                    (hasAnyAcInGateRoom && !ac.Room.gate))
-                {
-                    button.inactive = true;
-                    button.buttonBehav.greyedOut = true;
-                    button.OnClick += (_) =>
-                    {
-                        /* No action on click, slugs are dead or in gate room mode */
-                    };
-                }
-                else
-                {
-                    button.inactive = false;
-
-                }
-
-            }
-
-
         }
-
-
     }
 }

@@ -16,6 +16,8 @@ namespace RainMeadow
 
             On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor;
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
+
+            On.RoomRealizer.Update += RoomRealizer_Update;
         }
 
         private void ScavengerBomb_Explode(On.ScavengerBomb.orig_Explode orig, ScavengerBomb self, BodyChunk hitChunk)
@@ -427,6 +429,19 @@ namespace RainMeadow
                 }
             }
             orig(self, source, directionandmomentum, hitchunk, hitappendage, type, damage, stunbonus);
+        }
+
+        private void RoomRealizer_Update(On.RoomRealizer.orig_Update orig, RoomRealizer self)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.mePlayer.isActuallySpectating)
+            {
+                var origFollow = self.world.game.cameras[0].followAbstractCreature;
+                self.world.game.cameras[0].followAbstractCreature = self.followCreature;
+                orig(self);
+                self.world.game.cameras[0].followAbstractCreature = origFollow;
+            }
+
+            orig(self);
         }
     }
 }

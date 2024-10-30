@@ -10,7 +10,7 @@ namespace RainMeadow
 {
     public class MeadowGameMode : OnlineGameMode
     {
-        public bool spawnPlants = false;
+        public bool spawnPlants = true;
         public MeadowAvatarData avatarData;
 
         public MeadowGameMode(Lobby lobby) : base(lobby)

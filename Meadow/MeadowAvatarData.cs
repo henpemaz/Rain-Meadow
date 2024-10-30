@@ -36,14 +36,6 @@ namespace RainMeadow
             if (skinData.eyeColor.HasValue) originalEyeColor = skinData.eyeColor.Value;
         }
 
-        internal override Color GetBodyColor()
-        {
-            if (skinData.baseColor.HasValue)
-            {
-                return skinData.baseColor.Value;
-            }
-            return tint;
-        }
         internal string GetEmote(Emote emote)
         {
             return (emote.value.StartsWith("emote") ? EmotePrefix + emote.value : emote.value).ToLowerInvariant();

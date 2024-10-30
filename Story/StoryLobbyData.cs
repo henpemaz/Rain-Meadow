@@ -67,6 +67,7 @@ namespace RainMeadow
                 storyBoolRemixSettings = storyGameMode.storyBoolRemixSettings;
                 storyFloatRemixSettings = storyGameMode.storyFloatRemixSettings;
                 storyIntRemixSettings = storyGameMode.storyIntRemixSettings;
+
                 ghostsTalkedTo = storyGameMode.ghostsTalkedTo;
 
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
@@ -131,6 +132,8 @@ namespace RainMeadow
                 (lobby.gameMode as StoryGameMode).changedRegions = changedRegions;
                 (lobby.gameMode as StoryGameMode).didStartCycle = didStartCycle;
                 (lobby.gameMode as StoryGameMode).friendlyFire = friendlyFire;
+
+
 
             }
         }

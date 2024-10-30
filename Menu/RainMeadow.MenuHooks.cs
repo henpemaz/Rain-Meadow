@@ -357,14 +357,18 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby?.gameMode is OnlineGameMode gameMode && RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame)
             {
-                if (ID == ProcessManager.ProcessID.MainMenu || ID == ProcessManager.ProcessID.MultiplayerMenu)
+                if (gameMode is not MeadowGameMode)
                 {
-                    ID = gameMode.MenuProcessId();
-
-                    if (OnlineManager.lobby.isOwner)
+                    // todo figure out a better way to do this proccess redirection, this isn't ideal
+                    if (ID == ProcessManager.ProcessID.MainMenu || ID == ProcessManager.ProcessID.MultiplayerMenu)
                     {
-                        foreach (OnlinePlayer player in OnlineManager.players)
-                            if (!player.isMe) player.InvokeOnceRPC(RPCs.ExitToGameModeMenu);
+                        ID = gameMode.MenuProcessId();
+
+                        if (OnlineManager.lobby.isOwner)
+                        {
+                            foreach (OnlinePlayer player in OnlineManager.players)
+                                if (!player.isMe) player.InvokeOnceRPC(RPCs.ExitToGameModeMenu);
+                        }
                     }
                 }
             }

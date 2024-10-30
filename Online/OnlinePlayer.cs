@@ -25,6 +25,8 @@ namespace RainMeadow
         public HashSet<uint> recentlyAckdTicks = new(); // incoming, recent ticks they've acked (from bitpack)
         public uint oldestTickToConsider; // incoming, from acked ticks the oldest to use for deltas
 
+
+        public bool isActuallySpectating;
         public bool needsAck;
 
         public bool isMe;
