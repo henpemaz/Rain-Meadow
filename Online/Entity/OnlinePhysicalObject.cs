@@ -261,6 +261,8 @@ namespace RainMeadow
                 else if (inResource is RoomSession newRoom)
                 {
                     RainMeadow.Debug($"room join");
+                    RainMeadow.Debug($"topos Tile defined? {topos.TileDefined}");
+
                     if (!poState.inDen && apo.pos.room != -1) // inden entities are basically abstracted so not added to the room
                                                               // room == -1 signals swallowed item which shouldn't be in room
                     {
@@ -300,9 +302,10 @@ namespace RainMeadow
                                     RainMeadow.Debug($"early entity"); // room loading will place it
                                 }
                             }
-                            else // nodedefined
+                            if (topos.NodeDefined) // nodedefined ARENA GodOfMultiEyes: Node is -1, Node is NOT Defined. NodeDefined = abstractNode > -1
                             {
                                 RainMeadow.Debug("node defined");
+
                                 apo.Move(topos);
                                 if (apo.realizedObject is Creature c)
                                 {
@@ -316,13 +319,46 @@ namespace RainMeadow
                                         RainMeadow.Debug($"spawning in shortcuts");
                                         ac2.Realize();
                                         ac2.realizedCreature.inShortcut = true;
+
+                                        RainMeadow.Debug($"Join Impl: index: {ac2.world.GetAbstractRoom(topos)} ::: {topos.abstractNode}");
+                                        RainMeadow.Debug($"Join Impl: layer: {ac2.world.GetAbstractRoom(topos).layer}");
+                                        RainMeadow.Debug($"Join Impl: node length: {ac2.world.GetAbstractRoom(topos).nodes.Length}"); // God of Eyes == 5
                                         ac2.world.game.shortcuts.CreatureEnterFromAbstractRoom(ac2.realizedCreature, ac2.world.GetAbstractRoom(topos), topos.abstractNode);
+
+
                                     }
                                     else
                                     {
                                         RainMeadow.Debug($"supposedly already spawning in shortcuts");
                                         RainMeadow.Debug("found in shortcuts? " + (ac2.realizedCreature != null && apo.world.game.shortcuts.betweenRoomsWaitingLobby.Any(v => v.creature.abstractCreature.GetAllConnectedObjects().Any(o => o.realizedObject == ac2.realizedCreature))));
                                     }
+                                }
+                                if (!topos.NodeDefined && !topos.TileDefined)
+                                {
+                                    apo.Move(topos);
+                                    if (apo.realizedObject is Creature c2)
+                                    {
+                                        c2.RemoveFromShortcuts();
+                                    }
+
+                                    if (apo is AbstractCreature ac3)
+                                    {
+
+                                        ac3.world.game.roomRealizer.ForceRealizeRoom(ac3.world.GetAbstractRoom(topos)); // we are in dire straits
+
+                                        if (newRoom.absroom.realizedRoom.shortCutsReady)
+                                        {
+                                            RainMeadow.Debug($"spawning in room");
+                                            apo.RealizeInRoom(); // placesinroom
+                                        }
+                                        else
+                                        {
+                                            RainMeadow.Debug($"early entity"); // room loading will place it
+                                        }
+
+
+                                    }
+
                                 }
                                 else
                                 {
