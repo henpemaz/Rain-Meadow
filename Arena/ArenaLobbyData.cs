@@ -36,6 +36,7 @@ namespace RainMeadow
             public bool allPlayersAreNowInGame;
             //public ushort setupTimer;
 
+
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
@@ -68,6 +69,7 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaCompetitiveGameMode).countdownInitiatedHoldFire = countdownInitiatedHoldFire;
                 //(lobby.gameMode as ArenaCompetitiveGameMode).allPlayersAreNowInGame = allPlayersAreNowInGame;
                 //(lobby.gameMode as ArenaCompetitiveGameMode).setupTime = setupTimer;
+
 
 
 
