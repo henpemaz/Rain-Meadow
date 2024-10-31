@@ -322,7 +322,7 @@ namespace RainMeadow
 
                                         RainMeadow.Debug($"Join Impl: index: {ac2.world.GetAbstractRoom(topos)} ::: {topos.abstractNode}");
                                         RainMeadow.Debug($"Join Impl: layer: {ac2.world.GetAbstractRoom(topos).layer}");
-                                        RainMeadow.Debug($"Join Impl: node length: {ac2.world.GetAbstractRoom(topos).nodes.Length}"); // God of Eyes == 5
+                                        RainMeadow.Debug($"Join Impl: node length: {ac2.world.GetAbstractRoom(topos).nodes.Length}");
                                         ac2.world.game.shortcuts.CreatureEnterFromAbstractRoom(ac2.realizedCreature, ac2.world.GetAbstractRoom(topos), topos.abstractNode);
 
 
