@@ -43,14 +43,14 @@ namespace RainMeadow
         {
             if (creatureControllers.TryGetValue(self, out var p))
             {
-                if(OnlineManager.lobby.gameMode is MeadowGameMode)
+                if (OnlineManager.lobby.gameMode is MeadowGameMode)
                 {
                     self.airInLungs = 1f;
                 }
                 p.Update(eu);
             }
             orig(self, eu);
-            if(OnlineManager.lobby != null)
+            if (OnlineManager.lobby != null)
             {
                 if (RainMeadow.tracing)
                 {
@@ -61,7 +61,7 @@ namespace RainMeadow
 
         protected override void LookImpl(Vector2 pos)
         {
-            if(player.graphicsModule != null) (player.graphicsModule as PlayerGraphics).LookAtPoint(pos, 1000f);
+            if (player.graphicsModule != null) (player.graphicsModule as PlayerGraphics).LookAtPoint(pos, 1000f);
         }
 
         protected override void Resting()
@@ -91,14 +91,14 @@ namespace RainMeadow
 
         protected override void OnCall()
         {
-            if(player.graphicsModule is PlayerGraphics pg)
+            if (player.graphicsModule is PlayerGraphics pg)
             {
                 player.Blink(10);
                 pg.head.vel += 2f * Custom.DirVec(player.bodyChunks[1].pos, player.bodyChunks[0].pos);
             }
         }
 
-        public MeadowPlayerController(Player player, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(player, oc, playerNumber, customization)
+        public MeadowPlayerController(Player player, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(player, oc, playerNumber, customization)
         {
             player.controller = new ProxyController(this);
             this.player = player;

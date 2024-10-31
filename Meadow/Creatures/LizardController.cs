@@ -1,8 +1,8 @@
-﻿using UnityEngine;
-using System;
-using RWCustom;
+﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using Mono.Cecil.Cil;
+using RWCustom;
+using System;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -22,10 +22,9 @@ namespace RainMeadow
             On.Lizard.SwimBehavior += Lizard_SwimBehavior1;
             On.Lizard.FollowConnection += Lizard_FollowConnection;
 
-            // color
-            On.LizardGraphics.ctor += LizardGraphics_ctor;
             // pounce visuals
             On.LizardGraphics.Update += LizardGraphics_Update;
+            On.LizardGraphics.ctor += LizardGraphics_ctor;
             // no violence
             On.Lizard.AttemptBite += Lizard_AttemptBite;
             On.Lizard.DamageAttack += Lizard_DamageAttack;
@@ -84,7 +83,8 @@ namespace RainMeadow
                      i => i.MatchBrfalse(out norun)
                      );
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((Lizard self) => {
+                c.EmitDelegate((Lizard self) =>
+                {
                     if (creatureControllers.TryGetValue(self, out var controller))
                     {
                         return false;
@@ -104,7 +104,8 @@ namespace RainMeadow
                      i => i.MatchBrtrue(out run)
                      );
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((Lizard self) => {
+                c.EmitDelegate((Lizard self) =>
+                {
                     if (creatureControllers.TryGetValue(self, out var controller))
                     {
                         return true;
@@ -218,6 +219,22 @@ namespace RainMeadow
             orig(self, creature);
         }
 
+        private static void LizardGraphics_ctor(On.LizardGraphics.orig_ctor orig, LizardGraphics self, PhysicalObject ow)
+        {
+            orig(self, ow);
+            if (creatureControllers.TryGetValue(self.lizard, out var c))
+            {
+                if (c.customization.skin == MeadowProgression.Skin.Lizard_Axo)
+                {
+                    self.blackSalamander = false;
+                }
+                if (c.customization.skin == MeadowProgression.Skin.Lizard_Sala)
+                {
+                    self.blackSalamander = true;
+                }
+            }
+        }
+
         private static void LizardGraphics_Update(On.LizardGraphics.orig_Update orig, LizardGraphics self)
         {
             orig(self);
@@ -268,20 +285,8 @@ namespace RainMeadow
             }
         }
 
-        private static void LizardGraphics_ctor(On.LizardGraphics.orig_ctor orig, LizardGraphics self, PhysicalObject ow)
+        public LizardController(Lizard lizard, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(lizard, oc, playerNumber, customization)
         {
-            orig(self, ow);
-            if (RainMeadow.creatureCustomizations.TryGetValue(ow as Creature, out var c))
-            {
-                var col = self.lizard.effectColor;
-                c.ModifyBodyColor(ref col);
-                RainMeadow.Debug($"{self.lizard} color from {self.lizard.effectColor} to {col}");
-                self.lizard.effectColor = col;
-            }
-        }
-
-        public LizardController(Lizard lizard, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(lizard, oc, playerNumber, customization){
-
             this.lizard = lizard;
             lizard.abstractCreature.personality.energy = 1f; // stop being lazy
             jumpFactor = 1.2f;
@@ -289,6 +294,11 @@ namespace RainMeadow
             // this.needsLight = false; // has builtin light
             // or so I thought but vanilla light is too small, give it two!
             canZeroGClimb = true;
+
+            var col = lizard.effectColor;
+            customization.ModifyBodyColor(ref col);
+            RainMeadow.Debug($"{lizard} color from {lizard.effectColor} to {col}");
+            lizard.effectColor = col;
         }
 
         public Lizard lizard;
@@ -375,7 +385,7 @@ namespace RainMeadow
 
         protected override void LookImpl(Vector2 pos)
         {
-            if(lizard.graphicsModule != null)
+            if (lizard.graphicsModule != null)
             {
                 (lizard.graphicsModule as LizardGraphics).lookPos = pos;
             }
@@ -385,9 +395,9 @@ namespace RainMeadow
         {
             base.ConsciousUpdate();
 
-            if(lizard.jumpModule is LizardJumpModule jumpModule)
+            if (lizard.jumpModule is LizardJumpModule jumpModule)
             {
-                if(this.superLaunchJump > 10)
+                if (this.superLaunchJump > 10)
                 {
                     if (input[0].jmp)
                     {
@@ -437,7 +447,7 @@ namespace RainMeadow
             }
 
             // body points to input
-            if(inputDir.magnitude > 0f && !lockInPlace)
+            if (inputDir.magnitude > 0f && !lockInPlace)
             {
                 creature.bodyChunks[0].vel += inputDir * 0.4f;
                 creature.bodyChunks[2].vel -= inputDir * 0.4f;
@@ -470,7 +480,7 @@ namespace RainMeadow
         {
             lizard.AI.behavior = LizardAI.Behavior.Travelling;
             var howmuch = lizard.lizardParams.bodySizeFac * magnitude;
-            
+
             lizard.AI.runSpeed = Custom.LerpAndTick(lizard.AI.runSpeed, howmuch, 0.2f, 0.05f);
             lizard.AI.excitement = Custom.LerpAndTick(lizard.AI.excitement, 0.8f, 0.1f, 0.05f);
 

@@ -1,13 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
 using HUD;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
-using static RainMeadow.MeadowProgression;
-using IL;
+using RainMeadow.Story.OnlineUIComponents;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -36,9 +35,6 @@ namespace RainMeadow
 
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
 
-            On.Player.Update += Player_Update;
-
-            On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass;
             On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
 
             IL.HardmodeStart.ctor += HardmodeStart_ctor;
@@ -80,9 +76,24 @@ namespace RainMeadow
             On.Weapon.HitThisObject += Weapon_HitThisObject;
         }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
         {
-            if (isStoryMode(out var  story) && story.friendlyFire && obj is Player && self is Spear && self.thrownBy != null && self.thrownBy is Player)
+            if (isStoryMode(out var story) && story.friendlyFire && obj is Player && self is Spear && self.thrownBy != null && self.thrownBy is Player)
             {
                 return true;
             }
@@ -345,19 +356,6 @@ namespace RainMeadow
             }
         }
 
-        private void Player_GetInitialSlugcatClass(On.Player.orig_GetInitialSlugcatClass orig, Player self)
-        {
-            orig(self);
-            if (isStoryMode(out var storyGameMode))
-            {
-                if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe))
-                    throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
-                var scs = OnlineManager.lobby.activeEntities.OfType<StoryClientSettings>().FirstOrDefault(e => e.owner == oe.owner);
-                if (scs == null) throw new InvalidProgrammerException("OnlinePlayer doesn't have StoryClientSettings!!");
-                self.SlugCatClass = scs.playingAs;
-            }
-        }
-
         private RWCustom.IntVector2 SlugcatStats_SlugcatFoodMeter(On.SlugcatStats.orig_SlugcatFoodMeter orig, SlugcatStats.Name slugcat)
         {
             if (isStoryMode(out var storyGameMode))
@@ -465,9 +463,9 @@ namespace RainMeadow
             if (isStoryMode(out var gameMode))
             {
                 self.AddPart(new OnlineHUD(self, cam, gameMode));
-                self.AddPart(new SpectatorHud(self, cam, gameMode));
+                self.AddPart(new SpectatorHud(self, cam));
                 self.AddPart(new Pointing(self));
-
+                self.AddPart(new ChatHud(self, cam));
             }
         }
 
@@ -486,7 +484,7 @@ namespace RainMeadow
         private void RainWorldGame_GoToDeathScreen(On.RainWorldGame.orig_GoToDeathScreen orig, RainWorldGame self)
         {
             if (isStoryMode(out var gameMode))
-            {
+            {                
                 if (OnlineManager.lobby.isOwner)
                 {
                     RPCs.MovePlayersToDeathScreen();
@@ -500,9 +498,9 @@ namespace RainMeadow
 
         private void RainWorldGame_Win(On.RainWorldGame.orig_Win orig, RainWorldGame self, bool malnourished)
         {
-            if (isStoryMode(out var gameMode))
+            if (isStoryMode(out var storyGameMode))
             {
-                OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.MovePlayersToWinScreen, malnourished, gameMode.storyClientSettings.myLastDenPos);
+                OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.MovePlayersToWinScreen, malnourished, storyGameMode.myLastDenPos);
             }
             else
             {
@@ -513,33 +511,31 @@ namespace RainMeadow
         private SaveState PlayerProgression_GetOrInitiateSaveState(On.PlayerProgression.orig_GetOrInitiateSaveState orig, PlayerProgression self, SlugcatStats.Name saveStateNumber, RainWorldGame game, ProcessManager.MenuSetup setup, bool saveAsDeathOrQuit)
         {
             var origSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
-            if (isStoryMode(out var gameMode))
+            if (isStoryMode(out var storyGameMode))
             {
                 if (!OnlineManager.lobby.isOwner)
                 {
                     origSaveState.deathPersistentSaveData.ghostsTalkedTo.Clear();
-                    foreach (var kvp in gameMode.ghostsTalkedTo)
+                    foreach (var kvp in storyGameMode.ghostsTalkedTo)
                         if (ExtEnumBase.TryParse(typeof(GhostWorldPresence.GhostID), kvp.Key, ignoreCase: false, out var rawEnumBase))
                             origSaveState.deathPersistentSaveData.ghostsTalkedTo[(GhostWorldPresence.GhostID)rawEnumBase] = kvp.Value;
                 }
 
-                var storyClientSettings = gameMode.clientSettings as StoryClientSettings;
-
-                if (storyClientSettings.myLastDenPos != null)
+                if (storyGameMode.myLastDenPos != null)
                 {
-                    origSaveState.denPosition = storyClientSettings.myLastDenPos;
+                    origSaveState.denPosition = storyGameMode.myLastDenPos;
                 }
-                else if (gameMode.defaultDenPos != null)
+                else if (storyGameMode.defaultDenPos != null)
                 {
-                    storyClientSettings.myLastDenPos = origSaveState.denPosition = gameMode.defaultDenPos;
+                    storyGameMode.myLastDenPos = origSaveState.denPosition = storyGameMode.defaultDenPos;
                 }
                 if (OnlineManager.lobby.isOwner)
                 {
-                    gameMode.defaultDenPos = origSaveState.denPosition;
+                    storyGameMode.defaultDenPos = origSaveState.denPosition;
                 }
 
-                storyClientSettings.hasSheltered = false;
-                gameMode.changedRegions = false;
+                storyGameMode.hasSheltered = false;
+                storyGameMode.changedRegions = false;
             }
             return origSaveState;
         }
@@ -624,13 +620,6 @@ namespace RainMeadow
             orig(self, sender, message);
         }
 
-        private void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
-        {
-            if (isStoryMode(out var gameMode) && OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var oe) && oe.isMine)
-                gameMode.storyClientSettings.readyForWin = false;
-            orig(self, eu);
-        }
-
         private void KarmaLadderScreen_Update(On.Menu.KarmaLadderScreen.orig_Update orig, Menu.KarmaLadderScreen self)
         {
             orig(self);
@@ -676,7 +665,7 @@ namespace RainMeadow
 
             if (isStoryMode(out var storyGameMode))
             {
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                 {
                     if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
                     if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
@@ -694,10 +683,8 @@ namespace RainMeadow
                 }
 
                 self.room.game.cameras[0].hud.parts.Add(new OnlineHUD(self.room.game.cameras[0].hud, self.room.game.cameras[0], storyGameMode));
-                self.room.game.cameras[0].hud.parts.Add(new SpectatorHud(self.room.game.cameras[0].hud, self.room.game.cameras[0], storyGameMode));
+                self.room.game.cameras[0].hud.parts.Add(new SpectatorHud(self.room.game.cameras[0].hud, self.room.game.cameras[0]));
                 self.room.game.cameras[0].hud.parts.Add(new Pointing(self.room.game.cameras[0].hud));
-
-
                 return true;
             }
 
@@ -710,7 +697,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 int regionGateZone = -1;
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                 {
                     if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
                     if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
@@ -740,7 +727,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Values)
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                 {
                     if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
                     if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
@@ -761,7 +748,7 @@ namespace RainMeadow
 
                 foreach (HudPart part in self.room.game.cameras[0].hud.parts)
                 {
-                    if (part is OnlineHUD || part is PlayerSpecificOnlineHud)
+                    if (part is OnlineHUD || part is PlayerSpecificOnlineHud || part is SpectatorHud)
                     {
                         partsToRemove.Add(part);
                     }

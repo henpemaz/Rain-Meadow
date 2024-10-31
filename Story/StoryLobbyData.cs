@@ -1,24 +1,20 @@
-﻿using Mono.Cecil;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using static RainMeadow.OnlineResource;
 
 namespace RainMeadow
 {
     //playerSessionData - passage
-    internal class StoryLobbyData : OnlineResource.ResourceData
+    public class StoryLobbyData : OnlineResource.ResourceData
     {
-        public StoryLobbyData(OnlineResource resource) : base(resource) { }
-
-        internal override ResourceDataState MakeState()
+        public override ResourceDataState MakeState(OnlineResource resource)
         {
             return new State(this, resource);
         }
 
         public class State : ResourceDataState
         {
-            [OnlineField(nullable=true)]
+            [OnlineField(nullable = true)]
             public string? defaultDenPos;
             [OnlineField]
             public bool isInGame;
@@ -58,7 +54,7 @@ namespace RainMeadow
             public Dictionary<string, int> storyIntRemixSettings;
 
 
-            public State() {}
+            public State() { }
 
             public State(StoryLobbyData storyLobbyData, OnlineResource onlineResource)
             {
@@ -71,6 +67,7 @@ namespace RainMeadow
                 storyBoolRemixSettings = storyGameMode.storyBoolRemixSettings;
                 storyFloatRemixSettings = storyGameMode.storyFloatRemixSettings;
                 storyIntRemixSettings = storyGameMode.storyIntRemixSettings;
+
                 ghostsTalkedTo = storyGameMode.ghostsTalkedTo;
 
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
@@ -91,16 +88,16 @@ namespace RainMeadow
                 friendlyFire = storyGameMode.friendlyFire;
             }
 
-            internal override Type GetDataType() => typeof(StoryLobbyData);
+            public override Type GetDataType() => typeof(StoryLobbyData);
 
-            internal override void ReadTo(ResourceData data)
+            public override void ReadTo(ResourceData data, OnlineResource resource)
             {
                 RainWorldGame currentGameState = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
                 var playerstate = (currentGameState?.Players[0].state as PlayerState);
-                var lobby = (data.resource as Lobby);
+                var lobby = (resource as Lobby);
 
                 (lobby.gameMode as StoryGameMode).defaultDenPos = defaultDenPos;
-                
+
                 if (playerstate != null)
                 {
                     playerstate.foodInStomach = food;
@@ -120,7 +117,7 @@ namespace RainMeadow
                     storySession.saveState.theGlow = theGlow;
                     if ((RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame rainWorldGame))
                     {
-                        if(rainWorldGame.Players[0].realizedCreature != null)
+                        if (rainWorldGame.Players[0].realizedCreature != null)
                             (rainWorldGame.Players[0].realizedCreature as Player).glowing = theGlow;
                     }
                 }
@@ -135,6 +132,8 @@ namespace RainMeadow
                 (lobby.gameMode as StoryGameMode).changedRegions = changedRegions;
                 (lobby.gameMode as StoryGameMode).didStartCycle = didStartCycle;
                 (lobby.gameMode as StoryGameMode).friendlyFire = friendlyFire;
+
+
 
             }
         }

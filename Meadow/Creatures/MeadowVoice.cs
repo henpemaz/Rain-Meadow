@@ -1,5 +1,4 @@
 ﻿using RWCustom;
-using System;
 using UnityEngine;
 
 namespace RainMeadow
@@ -45,7 +44,7 @@ namespace RainMeadow
                             var shortcut = cam.room.shortcutsIndex.IndexfOf(startTile);
                             cam.room.BlinkShortCut(shortcut, -1, 1f);
                             cam.shortcutGraphics.ColorEntrance(shortcut, owner.effectColor);
-                            if(UnityEngine.Random.value < volume)
+                            if (UnityEngine.Random.value < volume)
                             {
                                 cam.room.PlaySound(myId, cam.room.MiddleOfTile(startTile), volume / 2f, 1.0f);
                             }

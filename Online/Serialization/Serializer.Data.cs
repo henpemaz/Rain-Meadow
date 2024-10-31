@@ -681,7 +681,8 @@ namespace RainMeadow
 #endif
         }
 
-        public void SerializeNullable(ref string data) {
+        public void SerializeNullable(ref string data)
+        {
 #if TRACING
             long wasPos = this.Position;
 #endif
@@ -758,7 +759,7 @@ namespace RainMeadow
 #endif
         }
 
-        public void SerializeNullable(ref List<string> data) 
+        public void SerializeNullable(ref List<string> data)
         {
 #if TRACING
             long wasPos = this.Position;
@@ -862,7 +863,7 @@ namespace RainMeadow
                 {
                     float x = reader.ReadSingle();
                     float y = reader.ReadSingle();
-                    data.Add(new Vector2(x,y));
+                    data.Add(new Vector2(x, y));
                 }
             }
 #if TRACING
@@ -1157,13 +1158,15 @@ namespace RainMeadow
 #if TRACING
             long wasPos = this.Position;
 #endif
-            if (IsWriting) {
+            if (IsWriting)
+            {
                 writer.Write(data.r);
                 writer.Write(data.g);
                 writer.Write(data.b);
                 writer.Write(data.a);
             }
-            if (IsReading) { 
+            if (IsReading)
+            {
                 data.r = reader.ReadSingle();
                 data.g = reader.ReadSingle();
                 data.b = reader.ReadSingle();

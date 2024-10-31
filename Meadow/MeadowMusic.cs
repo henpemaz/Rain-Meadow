@@ -1,7 +1,7 @@
-using UnityEngine;
-using System.IO;
-using System.Collections.Generic;
 using Music;
+using RWCustom;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using RWCustom;
 using System;
@@ -902,7 +902,7 @@ namespace RainMeadow
             {
                 RainMeadow.Debug("Meadow Music: found zones " + vzArray.Length);
                 activeZonesDict = new Dictionary<int, VibeZone>();
-                foreach(VibeZone vz in vzArray)
+                foreach (VibeZone vz in vzArray)
                 {
                     RainMeadow.Debug("Meadow Music: looking for room " + vz.room);
                     foreach (AbstractRoom room in world.abstractRooms)

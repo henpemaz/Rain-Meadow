@@ -7,22 +7,18 @@ namespace RainMeadow
     // OnlineGameSession is tightly coupled to a lobby, and the highest ownership level
     public abstract partial class OnlineGameMode
     {
-        public Lobby lobby;
-
         public class OnlineGameModeType : ExtEnum<OnlineGameModeType>
         {
             public OnlineGameModeType(string value, bool register = false) : base(value, register) { }
             public static OnlineGameModeType Meadow = new("Meadow", true);
             public static OnlineGameModeType Story = new("Story", true);
             public static OnlineGameModeType ArenaCompetitive = new("ArenaCompetitive", true);
-            //public static OnlineGameModeType FreeRoam = new("FreeRoam", true);
 
             public static Dictionary<OnlineGameModeType, string> descriptions = new()
             {
-                { Meadow, "A peaceful mode about exploring around and discovering little secrets, together or on your own." },
-                { Story, "Adventure together with friends in the world of Rain World, fight together and die together." },
-                { ArenaCompetitive, "You sweaty bastards." }
-                //{ FreeRoam, "(FOR TESTING PURPOSES ONLY) Silly around, no creatures." },
+                { Meadow, "A peaceful mode about exploring around and discovering little secrets, together or on\nyour own." },
+                { Story, "Adventure together with friends in the world of Rain World, fight together and die\ntogether." },
+                { ArenaCompetitive, "You sweaty bastards." },
             };
         }
 
@@ -30,8 +26,7 @@ namespace RainMeadow
         {
             { OnlineGameModeType.Meadow, typeof(MeadowGameMode) },
             { OnlineGameModeType.Story, typeof(StoryGameMode) },
-            { OnlineGameModeType.ArenaCompetitive, typeof(ArenaCompetitiveGameMode) }
-            //{ OnlineGameModeType.FreeRoam, typeof(FreeRoamGameMode) },
+            { OnlineGameModeType.ArenaCompetitive, typeof(ArenaCompetitiveGameMode) },
         };
 
         public static OnlineGameMode FromType(OnlineGameModeType onlineGameModeType, Lobby lobby)
@@ -39,7 +34,6 @@ namespace RainMeadow
             return (OnlineGameMode)Activator.CreateInstance(gamemodes[onlineGameModeType], lobby);
         }
 
-        // todo handle modded ones
         public static void RegisterType(OnlineGameModeType onlineGameModeType, Type type, string description)
         {
             if (!typeof(OnlineGameMode).IsAssignableFrom(type) || type.GetConstructor(new[] { typeof(Lobby) }) == null) throw new ArgumentException("Needs to be OnlineGameMode with a (Lobby) ctor");
@@ -52,14 +46,17 @@ namespace RainMeadow
             _ = gamemodes;
         }
 
+        public Lobby lobby;
+        public List<OnlineCreature> avatars = new();
+        public ClientSettings clientSettings;
+        public List<string> usersIDontWantToChatWith;
+
+
         public OnlineGameMode(Lobby lobby)
         {
             this.lobby = lobby;
+            this.usersIDontWantToChatWith = new List<string>();
         }
-
-        // todo support jolly or other forms of local co-op
-        public OnlineCreature avatar;
-        public ClientSettings clientSettings;
 
         public virtual void FilterItems(Room room)
         {
@@ -117,9 +114,11 @@ namespace RainMeadow
             return RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;
         }
 
-        public virtual ProcessManager.ProcessID MenuProcessId()
+        public abstract ProcessManager.ProcessID MenuProcessId();
+
+        public virtual void AddClientData()
         {
-            return RainMeadow.Ext_ProcessID.LobbyMenu;
+
         }
 
         public virtual AbstractCreature SpawnAvatar(RainWorldGame self, WorldCoordinate location)
@@ -127,9 +126,15 @@ namespace RainMeadow
             return null; // game runs default code
         }
 
-        internal virtual void NewEntity(OnlineEntity oe, OnlineResource inResource)
+        public virtual void NewEntity(OnlineEntity oe, OnlineResource inResource)
         {
-
+            RainMeadow.Debug(oe);
+            if (RainMeadow.sSpawningAvatar && oe is OnlineCreature onlineCreature)
+            {
+                RainMeadow.Debug("Registring avatar: " + onlineCreature);
+                this.avatars.Add(onlineCreature);
+                ConfigureAvatar(onlineCreature);
+            }
         }
 
         internal virtual void EntityEnteredResource(OnlineEntity oe, OnlineResource inResource)
@@ -142,30 +147,21 @@ namespace RainMeadow
             
         }
 
-        internal virtual void AddAvatarSettings()
+        public abstract void ConfigureAvatar(OnlineCreature onlineCreature);
+
+        public virtual void ResourceAvailable(OnlineResource onlineResource)
         {
-            RainMeadow.Debug("Adding avatar settings!");
-            clientSettings = new StoryClientSettings(new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0), OnlineManager.mePlayer);
-            clientSettings.EnterResource(lobby);
+            RainMeadow.Debug(onlineResource);
         }
 
-        internal virtual void SetAvatar(OnlineCreature onlineCreature)
+        public virtual void ResourceActive(OnlineResource onlineResource)
         {
-            RainMeadow.Debug(onlineCreature);
-            this.avatar = onlineCreature;
-            this.clientSettings.avatarId = onlineCreature.id;
-        }
-
-        internal virtual void ResourceAvailable(OnlineResource onlineResource)
-        {
-
-        }
-
-        internal virtual void ResourceActive(OnlineResource onlineResource)
-        {
+            RainMeadow.Debug(onlineResource);
             if (onlineResource is Lobby)
             {
-                AddAvatarSettings();
+                this.clientSettings = new ClientSettings(new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0), OnlineManager.mePlayer);
+                AddClientData();
+                clientSettings.EnterResource(lobby);
                 OnlineManager.instance.manager.RequestMainProcessSwitch(MenuProcessId());
             }
         }
@@ -175,36 +171,44 @@ namespace RainMeadow
             return true;
         }
 
-        public virtual void LobbyReadyCheck()
+        public virtual void PlayerLeftLobby(OnlinePlayer player)
         {
 
         }
 
-        internal virtual void PlayerLeftLobby(OnlinePlayer player)
+        public virtual void NewPlayerInLobby(OnlinePlayer player)
         {
 
         }
 
-        internal virtual void NewPlayerInLobby(OnlinePlayer player)
+        public virtual void LobbyTick(uint tick)
+        {
+            clientSettings.avatars = avatars.Select(a => a.id).ToList();
+        }
+
+        public abstract void Customize(Creature creature, OnlineCreature oc);
+
+        public virtual void PreGameStart()
         {
 
         }
 
-        internal virtual void LobbyTick(uint tick)
+        public virtual void PostGameStart(RainWorldGame self)
         {
-
+            clientSettings.inGame = true;
+            clientSettings.avatars = avatars.Select(a => a.id).ToList();
         }
 
-        internal virtual void Customize(Creature creature, OnlineCreature oc)
+        public virtual void GameShutDown(RainWorldGame game)
         {
-            if (lobby.playerAvatars.Any(a => a.Value == oc.id))
-            {
-                RainMeadow.Debug($"Customizing avatar {creature} for {oc.owner}");
-                var settings = lobby.activeEntities.First(em => em is ClientSettings avs && avs.avatarId == oc.id) as ClientSettings;
+            clientSettings.inGame = false;
+            avatars.Clear();
+            clientSettings.avatars.Clear();
+        }
 
-                // this adds the entry in the CWT
-                RainMeadow.creatureCustomizations.GetValue(creature, (c) => settings.MakeCustomization());
-            }
+        public virtual Menu.PauseMenu CustomPauseMenu(ProcessManager manager, RainWorldGame game)
+        {
+            return null;
         }
     }
 }

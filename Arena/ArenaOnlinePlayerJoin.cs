@@ -1,8 +1,7 @@
-﻿using System;
-using RainMeadow;
-using RainMeadow.GameModes;
+﻿using RainMeadow;
 using Rewired;
 using RWCustom;
+using System;
 using UnityEngine;
 
 namespace Menu
@@ -69,6 +68,9 @@ namespace Menu
             subObjects.Add(roundedRect);
             selectRect = new RoundedRect(menu, this, new Vector2(0f, 0f), size, filled: false);
             subObjects.Add(selectRect);
+
+
+
             portrait = new MenuIllustration(menu, this, "", "MultiplayerPortrait" + index + "1", size / 2f, crispPixels: true, anchorCenter: true);
             subObjects.Add(portrait);
             string text = menu.Translate("");

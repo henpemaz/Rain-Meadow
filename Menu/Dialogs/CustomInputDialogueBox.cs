@@ -1,19 +1,13 @@
-﻿using Menu.Remix.MixedUI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using Menu;
+﻿using Menu;
 using Menu.Remix;
-using RWCustom;
+using Menu.Remix.MixedUI;
+using UnityEngine;
 namespace RainMeadow
 {
     public class CustomInputDialogueBox : MenuDialogBox
     {
         protected MenuTabWrapper tabWrapper;
-
+        public SymbolButton cancelButton;
         public SimpleButton continueButton;
         public OpTextBox textBox;
         public UIelementWrapper textBoxWrapper;
@@ -34,6 +28,8 @@ namespace RainMeadow
             continueButton = new SimpleButton(menu, this, menu.Translate("CONFIRM"), signalText, where, new Vector2(110f, 30f));
             subObjects.Add(continueButton);
 
+            cancelButton = new SymbolButton(menu, this, "Menu_Symbol_Clear_All", "CLOSE_DIALOG", size - new Vector2(40f, 40f));
+            subObjects.Add(cancelButton);
         }
         public override void RemoveSprites()
         {

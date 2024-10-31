@@ -11,7 +11,7 @@ namespace RainMeadow
         public AbstractCreatureState(OnlineCreature onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
         {
             creatureStateState = GetCreatureStateState(onlineEntity);
-            if(onlineEntity.creature.abstractAI is AbstractCreatureAI absAi)
+            if (onlineEntity.creature.abstractAI is AbstractCreatureAI absAi)
             {
                 destination = absAi.destination;
             }
@@ -41,7 +41,7 @@ namespace RainMeadow
             creatureStateState.ReadTo(abstractCreature);
             if (abstractCreature.abstractAI is AbstractCreatureAI absAi)
             {
-                if(destination.room != absAi.destination.room || destination.abstractNode != absAi.destination.abstractNode)
+                if (destination.room != absAi.destination.room || destination.abstractNode != absAi.destination.abstractNode)
                 {
                     absAi.SetDestination(destination);
                 }

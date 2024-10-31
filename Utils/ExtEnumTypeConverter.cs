@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace RainMeadow
@@ -12,9 +13,8 @@ namespace RainMeadow
 
         public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
         {
-            return value != null && ExtEnumBase.TryParse(typeof(T), (string)value, true, out var val) ? val : null;
+            return value != null && ExtEnumBase.TryParse(typeof(T), (string)value, true, out var val) ? val : throw new KeyNotFoundException((string)value);
         }
-
 
         public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
         {

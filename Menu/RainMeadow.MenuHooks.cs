@@ -1,13 +1,11 @@
+using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using Steamworks;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using UnityEngine;
-using Menu;
-using Steamworks;
-using Newtonsoft.Json.Linq;
-using System.Linq.Expressions;
 
 namespace RainMeadow
 {
@@ -18,6 +16,7 @@ namespace RainMeadow
             On.Menu.MainMenu.ctor += MainMenu_ctor;
             //On.Menu.InputOptionsMenu.ctor += InputOptionsMenu_ctor;
 
+            On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
             On.ProcessManager.PostSwitchMainProcess += ProcessManager_PostSwitchMainProcess;
 
             IL.Menu.SlugcatSelectMenu.SlugcatPage.AddImage += SlugcatPage_AddImage;
@@ -25,7 +24,6 @@ namespace RainMeadow
             On.Menu.MenuScene.BuildScene += MenuScene_BuildScene;
 
             On.Menu.SlugcatSelectMenu.SlugcatUnlocked += SlugcatSelectMenu_SlugcatUnlocked;
-
         }
 
         private bool SlugcatSelectMenu_SlugcatUnlocked(On.Menu.SlugcatSelectMenu.orig_SlugcatUnlocked orig, SlugcatSelectMenu self, SlugcatStats.Name i)
@@ -333,10 +331,10 @@ namespace RainMeadow
                         switch (result)
                         {
                             case 0:
-                                sceneID = Menu.MenuScene.SceneID.Intro_4_Walking; 
+                                sceneID = Menu.MenuScene.SceneID.Intro_4_Walking;
                                 break;
                             case 1:
-                                sceneID = Menu.MenuScene.SceneID.Intro_11_Drowning; 
+                                sceneID = Menu.MenuScene.SceneID.Intro_11_Drowning;
                                 break;
                             case 2:
                                 sceneID = Menu.MenuScene.SceneID.Intro_8_Climbing;
@@ -353,6 +351,29 @@ namespace RainMeadow
                 }
 
             });
+        }
+
+        private void ProcessManager_RequestMainProcessSwitch_ProcessID(On.ProcessManager.orig_RequestMainProcessSwitch_ProcessID orig, ProcessManager self, ProcessManager.ProcessID ID)
+        {
+            if (OnlineManager.lobby?.gameMode is OnlineGameMode gameMode && RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame)
+            {
+                if (gameMode is not MeadowGameMode)
+                {
+                    // todo figure out a better way to do this proccess redirection, this isn't ideal
+                    if (ID == ProcessManager.ProcessID.MainMenu || ID == ProcessManager.ProcessID.MultiplayerMenu)
+                    {
+                        ID = gameMode.MenuProcessId();
+
+                        if (OnlineManager.lobby.isOwner)
+                        {
+                            foreach (OnlinePlayer player in OnlineManager.players)
+                                if (!player.isMe) player.InvokeOnceRPC(RPCs.ExitToGameModeMenu);
+                        }
+                    }
+                }
+            }
+
+            orig(self, ID);
         }
 
         private void ProcessManager_PostSwitchMainProcess(On.ProcessManager.orig_PostSwitchMainProcess orig, ProcessManager self, ProcessManager.ProcessID ID)
@@ -372,10 +393,6 @@ namespace RainMeadow
             if (ID == Ext_ProcessID.StoryMenu)
             {
                 self.currentMainLoop = new StoryMenu(self);
-            }
-            if (ID == Ext_ProcessID.LobbyMenu)
-            {
-                self.currentMainLoop = new LobbyMenu(self);
             }
 
 #if !LOCAL_P2P

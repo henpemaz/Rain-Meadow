@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using HUD;
+﻿using HUD;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace RainMeadow
@@ -11,11 +11,12 @@ namespace RainMeadow
         public ClientSettings clientSettings;
 
         public AbstractCreature abstractPlayer;
+        private SlugcatCustomization customization;
         public OnlinePlayerDisplay playerDisplay;
         public OnlinePlayerDeathBump deathBump;
         public int deadCounter = -1;
         public int antiDeathBumpFlicker;
-        private List<OnlinePlayerHudPart> parts = new();
+        public List<OnlinePlayerHudPart> parts = new();
 
         public bool lastDead;
         public Player RealizedPlayer => this.abstractPlayer.realizedCreature as Player;
@@ -46,10 +47,6 @@ namespace RainMeadow
             camrect = new Rect(Vector2.zero, this.camera.sSize).CloneWithExpansion(-30f);
             this.onlineGameMode = onlineGameMode;
             this.clientSettings = clientSettings;
-
-            this.playerDisplay = new OnlinePlayerDisplay(this);
-
-            this.parts.Add(this.playerDisplay);
 
             needed = true;
         }
@@ -95,9 +92,10 @@ namespace RainMeadow
             if (abstractPlayer == null)
             {
                 RainMeadow.Debug("finding player abscrt for " + clientSettings.owner);
-                if (clientSettings.avatarId.FindEntity(true) is OnlineCreature oc)
+                if (clientSettings.avatars.Count > 0 && clientSettings.avatars[0].FindEntity(true) is OnlineCreature oc) // todo these arrows should be per-avatar?
                 {
                     abstractPlayer = oc.abstractCreature;
+                    customization = oc.GetData<SlugcatCustomization>();
                 }
                 else
                 {
@@ -107,7 +105,7 @@ namespace RainMeadow
             if (this.playerDisplay == null)
             {
                 RainMeadow.Debug("adding player arrow for " + clientSettings.owner);
-                this.playerDisplay = new OnlinePlayerDisplay(this);
+                this.playerDisplay = new OnlinePlayerDisplay(this, customization);
                 this.parts.Add(this.playerDisplay);
             }
 

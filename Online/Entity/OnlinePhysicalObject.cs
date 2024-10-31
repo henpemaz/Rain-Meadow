@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Linq;
-using UnityEngine;
-using System.Runtime.CompilerServices;
 using System.Globalization;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -66,9 +66,9 @@ namespace RainMeadow
 
             protected virtual string MakeSerializedObjectNoExtras(PhysicalObjectEntityState initialState)
             {
-                return string.Format(CultureInfo.InvariantCulture, "{0}<oA>{1}<oA>{2}", 
-                    new EntityID(apoSpawn == ushort.MaxValue ? -1 : apoSpawn, apoId).ToString(), 
-                    apoType.ToString(), 
+                return string.Format(CultureInfo.InvariantCulture, "{0}<oA>{1}<oA>{2}",
+                    new EntityID(apoSpawn == ushort.MaxValue ? -1 : apoSpawn, apoId).ToString(),
+                    apoType.ToString(),
                     initialState.pos.SaveToString());
             }
 
@@ -145,16 +145,17 @@ namespace RainMeadow
 
         private static bool IsTypeConsumable(AbstractPhysicalObject.AbstractObjectType type)
         {
-            if(AbstractConsumable.IsTypeConsumable(type)) return true;
+            if (AbstractConsumable.IsTypeConsumable(type)) return true;
 
-            if(type == AbstractPhysicalObject.AbstractObjectType.SeedCob) return true; // un fucking believable
+            if (type == AbstractPhysicalObject.AbstractObjectType.SeedCob) return true; // un fucking believable
 
             return false;
         }
 
-        private static OnlineConsumable OnlineConsumableFromAcm(AbstractConsumable acm, EntityId entityId, OnlinePlayer owner, bool isTransferable) 
+        private static OnlineConsumable OnlineConsumableFromAcm(AbstractConsumable acm, EntityId entityId, OnlinePlayer owner, bool isTransferable)
         {
-            switch (acm) {
+            switch (acm)
+            {
                 case BubbleGrass.AbstractBubbleGrass abg:
                     return new OnlineBubbleGrass(abg, entityId, owner, isTransferable);
                 case SeedCob.AbstractSeedCob asc:
@@ -178,6 +179,7 @@ namespace RainMeadow
             RainMeadow.Debug("serializedObject: " + serializedObject);
 
             var apo = SaveState.AbstractPhysicalObjectFromString(world, serializedObject);
+            apo.pos = initialState.pos; // game's really bad at parsing this huh specially arena or gates
             EntityID id = world.game.GetNewID();
             id.altSeed = apo.ID.RandomSeed;
             apo.ID = id;
@@ -242,7 +244,7 @@ namespace RainMeadow
             // on joinimpl we've just read initialstate as well so some stuff is already set
             var poState = initialState as PhysicalObjectEntityState;
             var topos = poState.pos;
-            
+
             RainMeadow.Debug($"{this} joining {inResource} at {poState.pos}");
             try
             {
@@ -361,7 +363,7 @@ namespace RainMeadow
                     RainMeadow.Debug("Removing entity from game: " + this);
                     apo.LoseAllStuckObjects();
                     apo.Room?.RemoveEntity(apo);
-                    if(apo.realizedObject is PhysicalObject po)
+                    if (apo.realizedObject is PhysicalObject po)
                     {
                         if (apo.Room?.realizedRoom is Room room)
                         {

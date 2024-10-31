@@ -1,6 +1,5 @@
 ﻿using RWCustom;
 using System;
-using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -43,10 +42,11 @@ namespace RainMeadow
             return orig(self, originPos, actuallyFollowingThisPath);
         }
 
-        public GroundCreatureController(Creature creature, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(creature, oc, playerNumber, customization)
+        public GroundCreatureController(Creature creature, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(creature, oc, playerNumber, customization)
         {
             this._wallClimber = creature.Template.AccessibilityResistance(AItile.Accessibility.Wall).Allowed;
             this._swimWithPathing = template.MovementLegalInRelationToWater(true, false);
+            if (creature.abstractCreature.abstractAI.RealAI.pathFinder is StandardPather sp) sp.savedPastConnections = 0;
         }
 
         public float jumpBoost;
@@ -229,10 +229,10 @@ namespace RainMeadow
                 RainMeadow.Debug("normal jump");
                 OnJump();
                 this.jumpBoost = 6;
-                cs[0].vel.y = 4.4f * jumpFactor;
+                cs[0].vel.y = 6.4f * jumpFactor;
                 for (int i = 1; i < cc; i++)
                 {
-                    cs[i].vel.y = 4.5f * jumpFactor;
+                    cs[i].vel.y = 6.6f * jumpFactor;
                 }
                 if (input[0].x != 0)
                 {
@@ -376,7 +376,7 @@ namespace RainMeadow
             var previousAccessibility = room.aimap.getAItile(basecoord).acc;
 
             if (localTrace) RainMeadow.Debug($"moving from {basecoord.Tile} towards {toPos.Tile}");
-            
+
             if (this.forceJump > 0) // jumping
             {
                 this.MovementOverride(new MovementConnection(MovementConnection.MovementType.Standard, basecoord, toPos, 2));
@@ -394,8 +394,10 @@ namespace RainMeadow
                         if (tile.AnyBeam && !tile.DeepWater)
                         {
                             RainMeadow.Debug("grip!");
+                            ClearMovementOverride();
                             GripPole(tile);
-                            break;
+                            toPos = room.GetWorldCoordinate(new IntVector2(tile.X, tile.Y));
+                            return true;
                         }
                     }
                 }
@@ -420,7 +422,7 @@ namespace RainMeadow
                         break;
                     }
                 }
-                if(!climbing || inputDir.y > 0.75f) // not found yet, OR pulling the stick hard
+                if (!climbing || inputDir.y > 0.75f) // not found yet, OR pulling the stick hard
                 {
                     for (int i = 0; i < 3; i++)
                     {
@@ -442,7 +444,7 @@ namespace RainMeadow
 
             if (!climbing)
             {
-                
+
                 if (this.input[0].x != 0) // to sides
                 {
                     if (localTrace) RainMeadow.Debug("sides");
@@ -529,15 +531,15 @@ namespace RainMeadow
                 //break;
             }
             var pathFinder = creature.abstractCreature.abstractAI.RealAI.pathFinder;
-            if (pathFinder.PathingCellAtWorldCoordinate(basecoord).reachable 
-                && pathFinder.PathingCellAtWorldCoordinate(toPos).reachable 
+            if (pathFinder.PathingCellAtWorldCoordinate(basecoord).reachable
+                && pathFinder.PathingCellAtWorldCoordinate(toPos).reachable
                 && QuickConnectivity.Check(room, creature.Template, basecoord.Tile, toPos.Tile, 12) > -1) // found and pathfinder-pathable
             {
                 if (localTrace) RainMeadow.Debug("pathable");
                 return true;
             }
             else
-            { 
+            {
                 // no pathing
                 if (localTrace) RainMeadow.Debug("unpathable");
                 pathFinder.OutOfElement();
@@ -547,11 +549,11 @@ namespace RainMeadow
                         room.aimap.getAItile(toPos).DeepWater // on water
                         ||
                         climbing // climbing target
-                        ||( // otherwise
+                        || ( // otherwise
                             !IsOnPole // don't let go of pole mode
                             && (input[0].y != 1 || input[0].x != 0) // not straight up
                             )
-                    ) 
+                    )
                 )
                 {
                     // force movement
@@ -607,7 +609,7 @@ namespace RainMeadow
                 if (localTrace) RainMeadow.Debug("can water jump");
                 this.canWaterJump = 5;
             }
-            
+
 
             if (this.CanPounce)
             {
@@ -634,10 +636,10 @@ namespace RainMeadow
                 }
                 if (!this.input[0].jmp && this.input[1].jmp)
                 {
-                    if(this.superLaunchJump >= 20)
+                    if (this.superLaunchJump >= 20)
                     {
                         this.wantToJump = 1;
-                    } 
+                    }
                     else if (this.superLaunchJump > 2 && this.superLaunchJump <= 10) // regular jump attempt, will miss boost because released
                     {
                         this.wantToJump = 5;

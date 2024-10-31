@@ -8,18 +8,17 @@ namespace RainMeadow
         {
             public static ProcessManager.ProcessID OnlineManager = new("MeadowOnlineManager", true);
             public static ProcessManager.ProcessID LobbySelectMenu = new("MeadowLobbySelectMenu", true);
-            public static ProcessManager.ProcessID LobbyMenu = new("MeadowLobbyMenu", true);
             public static ProcessManager.ProcessID ArenaLobbyMenu = new("ArenaLobbyMenu", true);
             public static ProcessManager.ProcessID MeadowMenu = new("MeadowMenu", true);
             public static ProcessManager.ProcessID StoryMenu = new("StoryMenu", true);
             public static ProcessManager.ProcessID SpectatorMode = new("SpectatorMode", true);
-
+            public static ProcessManager.ProcessID ChatMode = new("ChatMode", true);
         }
 
         public class Ext_SlugcatStatsName
         {
             public static SlugcatStats.Name OnlineSessionPlayer = new("MeadowOnline", true);
-            public static SlugcatStats.Name OnlineSessionRemotePlayer = new("MeadowOnlineRemote", true);
+            //public static SlugcatStats.Name OnlineSessionRemotePlayer = new("MeadowOnlineRemote", true);
         }
 
         public class Ext_SceneID
@@ -36,7 +35,6 @@ namespace RainMeadow
         public class Ext_PhysicalObjectType
         {
             public static AbstractPhysicalObject.AbstractObjectType MeadowPlant = new("MeadowPlant", true);
-            // public static AbstractPhysicalObject.AbstractObjectType MeadowToken = new("MeadowToken", true);
             public static AbstractPhysicalObject.AbstractObjectType MeadowTokenRed = new("MeadowTokenRed", true);
             public static AbstractPhysicalObject.AbstractObjectType MeadowTokenBlue = new("MeadowTokenBlue", true);
             public static AbstractPhysicalObject.AbstractObjectType MeadowTokenGold = new("MeadowTokenGold", true);

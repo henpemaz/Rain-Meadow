@@ -4,10 +4,10 @@ using System.Linq;
 
 namespace RainMeadow
 {
+    // todo split this guy into emotedata and controllerdata
     public class MeadowCreatureData : OnlineEntity.EntityData
     {
-        public OnlineCreature owner;
-        internal TickReference emotesTick; // tick of primary resource owner
+        internal TickReference emotesTick = new(OnlineManager.lobby.owner); // tick of primary resource owner
         internal float emotesLife; // seconds
         internal List<MeadowProgression.Emote> emotes = new();
         internal byte emotesVersion;
@@ -16,23 +16,16 @@ namespace RainMeadow
         internal WorldCoordinate destination;
         internal float moveSpeed;
 
-        public MeadowCreatureData(OnlineCreature owner)
+        public override EntityDataState MakeState(OnlineEntity onlineEntity, OnlineResource inResource)
         {
-            this.owner = owner;
-            this.emotesTick = new TickReference(OnlineManager.lobby.owner);
-        }
-
-        internal override EntityDataState MakeState(OnlineResource inResource)
-        {
-            if(inResource is RoomSession)
+            if (inResource is RoomSession)
             {
-                RainMeadow.Trace($"{this} for {owner} making state in {inResource}");
+                RainMeadow.Trace($"{this} for {onlineEntity} making state in {inResource}");
                 return new State(this);
             }
-            RainMeadow.Trace($"{this} for {owner} skipping state in {inResource}");
+            RainMeadow.Trace($"{this} for {onlineEntity} skipping state in {inResource}");
             return null;
         }
-
 
         public class State : EntityDataState
         {
@@ -86,38 +79,38 @@ namespace RainMeadow
                 moveSpeed = mcd.moveSpeed;
             }
 
-            internal override void ReadTo(OnlineEntity onlineEntity)
+            public override Type GetDataType()
+            {
+                return typeof(MeadowCreatureData);
+            }
+
+            public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
             {
                 RainMeadow.Trace(onlineEntity);
-                if (onlineEntity is OnlineCreature oc && oc.TryGetData<MeadowCreatureData>(out var mcd))
-                {
-                    mcd.emotes = emotes.list;
-                    mcd.emotesVersion = emotesVersion;
-                    mcd.emotesLife = emotesLife;
-                    mcd.emotesTick = emotesTick;
+                var mcd = (MeadowCreatureData)entityData;
 
-                    Player.InputPackage i = default;
-                    if (((inputs >> 0) & 1) != 0) i.x = 1;
-                    if (((inputs >> 1) & 1) != 0) i.x = -1;
-                    if (((inputs >> 2) & 1) != 0) i.y = 1;
-                    if (((inputs >> 3) & 1) != 0) i.y = -1;
-                    if (((inputs >> 4) & 1) != 0) i.downDiagonal = 1;
-                    if (((inputs >> 5) & 1) != 0) i.downDiagonal = -1;
-                    if (((inputs >> 6) & 1) != 0) i.pckp = true;
-                    if (((inputs >> 7) & 1) != 0) i.jmp = true;
-                    if (((inputs >> 8) & 1) != 0) i.thrw = true;
-                    if (((inputs >> 9) & 1) != 0) i.mp = true;
-                    i.analogueDir.x = analogInputX;
-                    i.analogueDir.y = analogInputY;
-                    mcd.input = i;
-                    mcd.specialInput = specialInput;
-                    mcd.destination = destination;
-                    mcd.moveSpeed = moveSpeed;
-                }
-                else
-                {
-                    RainMeadow.Error("Failed to read MeadowCreatureDataState into " + onlineEntity);
-                }
+                mcd.emotes = emotes.list;
+                mcd.emotesVersion = emotesVersion;
+                mcd.emotesLife = emotesLife;
+                mcd.emotesTick = emotesTick;
+
+                Player.InputPackage i = default;
+                if (((inputs >> 0) & 1) != 0) i.x = 1;
+                if (((inputs >> 1) & 1) != 0) i.x = -1;
+                if (((inputs >> 2) & 1) != 0) i.y = 1;
+                if (((inputs >> 3) & 1) != 0) i.y = -1;
+                if (((inputs >> 4) & 1) != 0) i.downDiagonal = 1;
+                if (((inputs >> 5) & 1) != 0) i.downDiagonal = -1;
+                if (((inputs >> 6) & 1) != 0) i.pckp = true;
+                if (((inputs >> 7) & 1) != 0) i.jmp = true;
+                if (((inputs >> 8) & 1) != 0) i.thrw = true;
+                if (((inputs >> 9) & 1) != 0) i.mp = true;
+                i.analogueDir.x = analogInputX;
+                i.analogueDir.y = analogInputY;
+                mcd.input = i;
+                mcd.specialInput = specialInput;
+                mcd.destination = destination;
+                mcd.moveSpeed = moveSpeed;
             }
         }
     }

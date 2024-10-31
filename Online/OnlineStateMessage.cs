@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     // An entry of state queued to a player, notifies source on send/fail
     public class OnlineStateMessage

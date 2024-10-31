@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace RainMeadow
 {
@@ -42,7 +40,7 @@ namespace RainMeadow
             return $"{GetType()} - to {B}";
         }
 
-        public static AbstractObjStickRepr FromStick(AbstractPhysicalObject.AbstractObjectStick stick)
+        public static AbstractObjStickRepr? FromStick(AbstractPhysicalObject.AbstractObjectStick stick)
         {
             OnlinePhysicalObject b = null;
             if (!OnlinePhysicalObject.map.TryGetValue(stick.A, out var a) || !OnlinePhysicalObject.map.TryGetValue(stick.B, out b))
@@ -63,7 +61,8 @@ namespace RainMeadow
                 case AbstractPhysicalObject.CreatureGripStick s:
                     return new CreatureGripStick(b, s);
                 default:
-                    throw new NotImplementedException(stick.ToString());
+                    RainMeadow.Error($"stick not implemented: {stick.ToString()}");
+                    return null;
             }
         }
 

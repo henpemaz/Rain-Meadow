@@ -1,15 +1,14 @@
-﻿using System;
-using UnityEngine;
-using RWCustom;
+﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using Mono.Cecil.Cil;
-using System.Collections.Generic;
+using RWCustom;
+using System;
+using UnityEngine;
 
 namespace RainMeadow
 {
     class CicadaController : AirCreatureController
     {
-        public CicadaController(Cicada creature, OnlineCreature oc, int playerNumber, MeadowAvatarCustomization customization) : base(creature, oc, playerNumber, customization) { }
+        public CicadaController(Cicada creature, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(creature, oc, playerNumber, customization) { }
 
         public Cicada cicada => creature as Cicada;
 
@@ -242,7 +241,7 @@ namespace RainMeadow
             {
                 c.Index -= 2;
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((Cicada self) => { return  (1f - self.Submersion); });
+                c.EmitDelegate((Cicada self) => { return (1f - self.Submersion); });
                 c.Emit(OpCodes.Mul);
             }
 
@@ -376,24 +375,24 @@ namespace RainMeadow
             //                                + 0.15f * this.inputDir
             //                                + 0.03f * Custom.DirVec(cicada.bodyChunks[1].pos, cicada.mainBodyChunk.pos)).normalized;
 
-                // hopefully won't be needing that in the meadows...
-                //if (cicada.Charging && cicada.grasps[0] != null && cicada.grasps[0].grabbed is Weapon w)
-                //{
-                //    SharedPhysics.CollisionResult result = SharedPhysics.TraceProjectileAgainstBodyChunks(null, cicada.room, w.firstChunk.lastPos, ref w.firstChunk.pos, w.firstChunk.rad, 1, cicada, true);
-                //    if (result.hitSomething)
-                //    {
-                //        var dir = (cicada.bodyChunks[0].pos - cicada.bodyChunks[1].pos).normalized;
-                //        var throwndir = new IntVector2(Mathf.Abs(dir.x) > 0.38 ? (int)Mathf.Sign(dir.x) : 0, Mathf.Abs(dir.y) > 0.38 ? (int)Mathf.Sign(dir.y) : 0);
-                //        w.Thrown(cicada, w.firstChunk.pos, w.firstChunk.lastPos, throwndir, 1f, cicada.evenUpdate);
-                //        if (w is Spear sp && !(result.obj is Player))
-                //        {
-                //            sp.spearDamageBonus *= 0.6f;
-                //            sp.setRotation = dir;
-                //        }
-                //        w.Forbid();
-                //        cicada.ReleaseGrasp(0);
-                //    }
-                //}
+            // hopefully won't be needing that in the meadows...
+            //if (cicada.Charging && cicada.grasps[0] != null && cicada.grasps[0].grabbed is Weapon w)
+            //{
+            //    SharedPhysics.CollisionResult result = SharedPhysics.TraceProjectileAgainstBodyChunks(null, cicada.room, w.firstChunk.lastPos, ref w.firstChunk.pos, w.firstChunk.rad, 1, cicada, true);
+            //    if (result.hitSomething)
+            //    {
+            //        var dir = (cicada.bodyChunks[0].pos - cicada.bodyChunks[1].pos).normalized;
+            //        var throwndir = new IntVector2(Mathf.Abs(dir.x) > 0.38 ? (int)Mathf.Sign(dir.x) : 0, Mathf.Abs(dir.y) > 0.38 ? (int)Mathf.Sign(dir.y) : 0);
+            //        w.Thrown(cicada, w.firstChunk.pos, w.firstChunk.lastPos, throwndir, 1f, cicada.evenUpdate);
+            //        if (w is Spear sp && !(result.obj is Player))
+            //        {
+            //            sp.spearDamageBonus *= 0.6f;
+            //            sp.setRotation = dir;
+            //        }
+            //        w.Forbid();
+            //        cicada.ReleaseGrasp(0);
+            //    }
+            //}
             // }
 
             // scoooot
@@ -433,7 +432,7 @@ namespace RainMeadow
             var mag = dir.magnitude;
 
             (cicada.graphicsModule as CicadaGraphics).lookDir = dir.normalized * Mathf.Pow(mag, 0.5f) * 1.5f;
-            (cicada.graphicsModule as CicadaGraphics).lookRotation = - RWCustom.Custom.VecToDeg(dir);
+            (cicada.graphicsModule as CicadaGraphics).lookRotation = -RWCustom.Custom.VecToDeg(dir);
         }
 
         public override WorldCoordinate CurrentPathfindingPosition

@@ -1,5 +1,4 @@
 ﻿using Menu;
-using System.Linq.Expressions;
 using UnityEngine;
 
 namespace RainMeadow
@@ -15,11 +14,14 @@ namespace RainMeadow
             this.subtleSliderNob.pos = new Vector2(-10f, 5f);
         }
 
-        public bool Hidden { get => hidden; set
+        public bool Hidden
+        {
+            get => hidden; set
             {
                 this.buttonBehav.greyedOut = value;
                 hidden = value;
-            } }
+            }
+        }
 
         public override void GrafUpdate(float timeStacker)
         {

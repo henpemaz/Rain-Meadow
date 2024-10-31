@@ -21,29 +21,29 @@ namespace RainMeadow
             this.hud = hud;
             this.camera = camera;
             this.owner = owner;
-            UpdatePlayers();
+            UpdateAvatars();
         }
 
-        public void UpdatePlayers()
+        public void UpdateAvatars()
         {
-            var avatarSettings = OnlineManager.lobby.clientSettings.Values.OfType<MeadowAvatarSettings>().Where(mas => mas.inGame);
-            var currentSettings = indicators.Select(i => i.avatarSettings).ToList(); //needs duplication
-            avatarSettings.Except(currentSettings).Do(PlayerAdded);
-            currentSettings.Except(avatarSettings).Do(PlayerRemoved);
+            var activeAvatars = OnlineManager.lobby.playerAvatars.Select(kv => kv.Value.FindEntity(true) as OnlineCreature).Where(e => e != null);
+            var currentAvatars = indicators.Select(i => i.avatar).ToList(); //needs duplication
+            activeAvatars.Except(currentAvatars).Do(AvatarAdded);
+            currentAvatars.Except(activeAvatars).Do(AvatarRemoved);
         }
 
-        public void PlayerAdded(MeadowAvatarSettings avatarSettings)
+        public void AvatarAdded(OnlineCreature avatar)
         {
             RainMeadow.DebugMe();
-            MeadowPlayerIndicator indicator = new MeadowPlayerIndicator(hud, camera, avatarSettings, this);
+            MeadowPlayerIndicator indicator = new MeadowPlayerIndicator(hud, camera, avatar, this);
             this.indicators.Add(indicator);
             hud.AddPart(indicator);
         }
 
-        public void PlayerRemoved(MeadowAvatarSettings avatarSettings)
+        public void AvatarRemoved(OnlineCreature avatar)
         {
             RainMeadow.DebugMe();
-            var indicator = this.indicators.First(i => i.avatarSettings == avatarSettings);
+            var indicator = this.indicators.First(i => i.avatar == avatar);
             this.indicators.Remove(indicator);
             indicator.slatedForDeletion = true;
         }
@@ -51,7 +51,7 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
-            UpdatePlayers();
+            UpdateAvatars();
             var mapDown = RWInput.CheckSpecificButton(0, RewiredConsts.Action.Map);
             if (!mapDown && lastMapDown && hud.map.fade <= 0.8f)
             {
@@ -64,7 +64,8 @@ namespace RainMeadow
 
         private class MeadowPlayerIndicator : HUD.HudPart
         {
-            public MeadowAvatarSettings avatarSettings;
+            public OnlineCreature avatar;
+            public MeadowAvatarData avatarSettings;
             private MeadowHud meadowHud;
             private Rect camrect;
             private Vector2 pos;
@@ -72,7 +73,6 @@ namespace RainMeadow
             private FSprite gradient;
             private HUD.HUD hud;
             private RoomCamera camera;
-            private OnlinePhysicalObject avatar;
             private Vector2 pointDir;
             private FLabel label;
             private FSprite arrowSprite;
@@ -80,11 +80,13 @@ namespace RainMeadow
             private float alpha;
             private float lastAlpha;
 
-            public MeadowPlayerIndicator(HUD.HUD hud, RoomCamera camera, MeadowAvatarSettings avatarSettings, MeadowHud meadowHud) : base(hud)
+            public MeadowPlayerIndicator(HUD.HUD hud, RoomCamera camera, OnlineCreature avatar, MeadowHud meadowHud) : base(hud)
             {
+                this.avatar = avatar;
+                this.avatarSettings = avatar.GetData<MeadowAvatarData>();
+
                 this.hud = hud;
                 this.camera = camera;
-                this.avatarSettings = avatarSettings;
                 this.meadowHud = meadowHud;
 
                 this.camrect = new Rect(Vector2.zero, this.camera.sSize).CloneWithExpansion(-30f);
@@ -92,7 +94,7 @@ namespace RainMeadow
                 this.pos = new Vector2(-1000f, -1000f);
                 this.lastPos = this.pos;
 
-                Color uiColor = (avatarSettings.MakeCustomization() as MeadowAvatarCustomization).EmoteBackgroundColor(MeadowProgression.Emote.emoteHello);
+                Color uiColor = avatarSettings.EmoteBackgroundColor(MeadowProgression.Emote.emoteHello);
 
                 this.gradient = new FSprite("Futile_White", true);
                 this.gradient.shader = hud.rainWorld.Shaders["FlatLight"];
@@ -100,7 +102,7 @@ namespace RainMeadow
                 hud.fContainers[0].AddChild(this.gradient);
                 this.gradient.alpha = 0f;
                 this.gradient.x = -1000f;
-                this.label = new FLabel(Custom.GetFont(), avatarSettings.owner.id.name);
+                this.label = new FLabel(Custom.GetFont(), avatar.owner.id.name);
                 this.label.color = uiColor;
                 hud.fContainers[0].AddChild(this.label);
                 this.label.alpha = 0f;
@@ -118,7 +120,7 @@ namespace RainMeadow
                 lastAlpha = alpha;
                 this.active = false;
                 bool needed;
-                if (!meadowHud.showPlayerNames && !(avatarSettings.isMine && meadowHud.arrowOnSelfNeeded))
+                if (!meadowHud.showPlayerNames && !(avatar.isMine && meadowHud.arrowOnSelfNeeded))
                 {
                     needed = false;
                     if (alpha == 0f) return;
@@ -131,15 +133,6 @@ namespace RainMeadow
 
                 // tracking
                 lastPos = pos;
-
-                if (avatar == null || avatar.primaryResource == null)
-                {
-                    if (avatarSettings.avatarId != null)
-                    {
-                        this.avatar = (OnlinePhysicalObject)avatarSettings.avatarId.FindEntity(true);
-                    }
-                }
-                if (avatar == null || camera.room == null) return;
 
                 Vector2 rawPos = new();
                 // in this room
