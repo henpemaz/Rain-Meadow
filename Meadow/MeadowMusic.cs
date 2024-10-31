@@ -25,7 +25,8 @@ namespace RainMeadow
 
         private static void PlayerThreatTracker_Update(On.Music.PlayerThreatTracker.orig_Update orig, PlayerThreatTracker self)
         {
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            // replace vanilla handling, ours is better
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
             {
                 if (self.musicPlayer.manager.currentMainLoop == null || self.musicPlayer.manager.currentMainLoop.ID != ProcessManager.ProcessID.Game)
                 {
@@ -35,22 +36,12 @@ namespace RainMeadow
                     self.region = null;
                     return;
                 }
-                if (self.playerNumber >= (self.musicPlayer.manager.currentMainLoop as RainWorldGame).Players.Count)
-                {
-                    return;
-                }
-                Player player = (self.musicPlayer.manager.currentMainLoop as RainWorldGame).Players[self.playerNumber].realizedCreature as Player;
+                Creature player = mgm.avatars[0].realizedCreature;
                 if (player == null || player.room == null)
                 {
                     return;
                 }
-                if (player.room.game.GameOverModeActive || player.redsIllness != null)
-                {
-                    self.recommendedDroneVolume = 0f;
-                    self.currentThreat = 0f;
-                    self.currentMusicAgnosticThreat = 0f;
-                    return;
-                }
+                
                 self.recommendedDroneVolume = player.room.roomSettings.BkgDroneVolume;
                 if (!player.room.world.rainCycle.MusicAllowed && player.room.roomSettings.DangerType != RoomRain.DangerType.None)
                 {
@@ -87,8 +78,8 @@ namespace RainMeadow
                 }
                 else if (self.ghostMode > 0f && self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>() == null)
                 {
-                    self.musicPlayer.gameObj.AddComponent<AudioHighPassFilter>().cutoffFrequency = 1f;
-                    //self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency = 1f;
+                    self.musicPlayer.gameObj.AddComponent<AudioHighPassFilter>();
+                    self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency = 1f;
                 }
                 if (self.ghostMode > 0f || highpass > 10f)
                 {
@@ -155,7 +146,8 @@ namespace RainMeadow
                 //}
                 //self.currentThreat = self.threatDetermine.currentThreat;
                 //self.currentMusicAgnosticThreat = self.threatDetermine.currentMusicAgnosticThreat;
-                
+
+                self.threatDetermine.currentThreat = 0f;
                 //on the slight moment after fading out a song, the default threat theme plays
                 //so just take away it calculating th threat theme lmao
             }
