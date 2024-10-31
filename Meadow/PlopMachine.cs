@@ -206,17 +206,13 @@ namespace RainMeadow
         private SoundID[] SampDict(PlopType length)
         {
             RainMeadow.Debug($"It's trying to get length {length}");
-            SoundID[] library = new SoundID[7]; //to do:  make better
+            SoundID[] library = new SoundID[7]; //to do:  sure
             string acronym = CurrentRegion.ToUpper();
             MeadowMusic.VibeZone[] newthings;
             bool diditwork = MeadowMusic.vibeZonesDict.TryGetValue(acronym, out newthings);
             //we retrieve a newthings array (one of many vibezones)
-            //RainMeadow.Debug("C" + diditwork);
-            //RainMeadow.Debug(Newtonsoft.Json.JsonConvert.SerializeObject(newthings));
             if (!diditwork) { RainMeadow.Debug("itdidn'twork"); return null; }
-            MeadowMusic.VibeZone newthing = newthings[0]; //TEMP DUMMY FOR UNTIL HELLOTHERE'S REQUIUM
-                                                          //and pick the one that is closer
-            RainMeadow.Debug("d");
+            MeadowMusic.VibeZone newthing = newthings[0]; 
             string patch = newthing.sampleUsed;
 
             switch (length)
@@ -225,8 +221,6 @@ namespace RainMeadow
                     switch (patch)
                     {
                         case "Trisaw":
-                            //here's how henp did it string[] keycodeNames = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=" };
-                            //SoundID[] library2 = { C1LongTrisaw, C2LongTrisaw, C3LongTrisaw, C4LongTrisaw, C5LongTrisaw, C6LongTrisaw, C7LongTrisaw };
                             library[0] = C1LongTrisaw;
                             library[1] = C2LongTrisaw;
                             library[2] = C3LongTrisaw;
@@ -392,7 +386,7 @@ namespace RainMeadow
         }
         private void Plop(string input, VirtualMicrophone mic)
         {
-            RainMeadow.Debug("It plays the plop " + input);
+            //RainMeadow.Debug("It plays the plop " + input);
             string[] parts = input.Split('-');
             //Dust.Add(input, this); haltered
             PlopType slib = parts[0] switch { "L" => PlopType.Long, "M" => PlopType.Medium, "S" => PlopType.Short, _ => PlopType.Short }; //either L for Long, M for Medium, or S for Short
@@ -455,19 +449,19 @@ namespace RainMeadow
                 if (inmajorscale)
                 {
                     inmajorscale = false;
-                    RainMeadow.Debug("Minor scale now");
+                    //RainMeadow.Debug("Minor scale now");
                     //weplipping = false;
                 }
                 else
                 {
                     inmajorscale = true;
-                    RainMeadow.Debug("Major scale now");
+                    //RainMeadow.Debug("Major scale now");
                     //weplipping = true;
                 }
             }
 
 
-            RainMeadow.Debug($"The chance rolled {dicedint}, modified by {QueuedModulation}, it goes to {dicedsign}. So it was {deadint} and now is {CurrentKey}");
+            //RainMeadow.Debug($"The chance rolled {dicedint}, modified by {QueuedModulation}, it goes to {dicedsign}. So it was {deadint} and now is {CurrentKey}");
             QueuedModulation = 0;
 
             //CurrentKey += QueuedModulation;
@@ -538,11 +532,11 @@ namespace RainMeadow
                 float feelingtoplay = UnityEngine.Random.Range(0, 1001) / 1000f;
                 float threshholdtoplay = 0.77f - (fichtean * 0.48f) + chordexhaustion * 0.08f + chordsequenceiteration * Mathf.Lerp(0.225f, 0.125f, fichtean); //will be tweaked probs
                 bool chordissequenced = feelingtoplay > threshholdtoplay;
-                RainMeadow.Debug($"Chord is getting played with a {threshholdtoplay} threshhold");
+                //RainMeadow.Debug($"Chord is getting played with a {threshholdtoplay} threshhold");
                 if (chordissequenced)
                 {
                     chordexhaustion = (chordexhaustion * 1.325f) + Mathf.Lerp(1.75f, 0.55f, fichtean);
-                    RainMeadow.Debug("Chord sequenced their thing:" + chordexhaustion);
+                    //RainMeadow.Debug("Chord sequenced their thing:" + chordexhaustion);
                     float sequencedwait = UnityEngine.Random.Range(100, 500 - (int)(fichtean * 375)) / 100f;
                     chordtimer = Wait.Until("half", (int)sequencedwait, debugstopwatch);
                     chordsequenceiteration++;
@@ -552,7 +546,7 @@ namespace RainMeadow
                     chordexhaustion = (chordexhaustion * 2) + Mathf.Lerp(1.5f, 0.5f, fichtean);
                     //RainMeadow.Debug("Chord waited a bar " + (int)chordexhaustion);
                     //RainMeadow.Debug("Chord waited a bar " + Wait.Until("bar", (int)chordexhaustion, debugstopwatch));
-                    RainMeadow.Debug("New Chord Played");
+                    //RainMeadow.Debug("New Chord Played");
                     chordtimer = Wait.Until("bar", (int)chordexhaustion, debugstopwatch);
                     chordsequenceiteration = 0;
                 }
@@ -582,7 +576,7 @@ namespace RainMeadow
             float pan = MeadowMusic.vibePan == null ? 0 : (float)MeadowMusic.vibePan * Mathf.Pow((float)MeadowMusic.vibeIntensity.Value * 0.7f + 0.125f, 1.65f);
             float vol = MeadowMusic.vibeIntensity == null ? 0 : Mathf.Pow((float)MeadowMusic.vibeIntensity, 1.65f) * 0.5f * velocity;
             float pitch = speed;
-            RainMeadow. Debug($"Trying to play a {Note}, at {vol} volume, with {pan} pan");
+            //RainMeadow. Debug($"Trying to play a {Note}, at {vol} volume, with {pan} pan");
             try
             {
                 if (virtualMicrophone.visualize)
@@ -709,7 +703,7 @@ namespace RainMeadow
 
                         if (hah >= 1f || true)
                         {
-                            RainMeadow.Debug("I removed one");
+                            //RainMeadow.Debug("I removed one");
                             thingy.soundObject.Destroy();
                         }
                         else
@@ -867,7 +861,7 @@ namespace RainMeadow
                     {
                         if (UnityEngine.Random.Range(0, 12) + (int)((1 - plopmachine.fichtean) * 4) <= 4)
                         {
-                            RainMeadow.Debug("UNDID A BREAK BUT GOOD");
+                            //RainMeadow.Debug("UNDID A BREAK BUT GOOD");
                             UndoBreak(plopmachine);
                         }
                         BreakUndoStopwatch = 0;
@@ -1040,11 +1034,11 @@ namespace RainMeadow
                 if (LiaisonList.Count < 3) 
                 { 
                     isindividualistic = true; 
-                    RainMeadow.Debug("SO its normally individual"); 
+                    //RainMeadow.Debug("SO its normally individual"); 
                 }
                 else
                 {
-                    RainMeadow.Debug("YO");
+                    //RainMeadow.Debug("YO");
                     /*
                     if (!isindividualistic)
                     {
@@ -1065,10 +1059,10 @@ namespace RainMeadow
                 //some bogus code to make a new step sequence sometimes
                 if (UnityEngine.Random.Range(0, 100) < 10f + plopMachine.fichtean * 15f)
                 {
-                    RainMeadow.Debug("Time to change the stepsequence, yup");
+                    //RainMeadow.Debug("Time to change the stepsequence, yup");
                     List<bool> steppatternlist = new();
                     steppatternlist.Add(true);
-                    RainMeadow.Debug(steppatternlist);
+                    //RainMeadow.Debug(steppatternlist);
                     bool satisfied = false;
 
                     while (!satisfied)
@@ -1100,7 +1094,7 @@ namespace RainMeadow
                     var newarray = steppatternlist.ToArray();
 
                     steppattern = newarray;
-                    RainMeadow.Debug("Yeah so the steppattern is apperantly" + Newtonsoft.Json.JsonConvert.SerializeObject(steppattern));
+                    //RainMeadow.Debug("Yeah so the steppattern is apperantly" + Newtonsoft.Json.JsonConvert.SerializeObject(steppattern));
                 }
             }
             public static void Add(string note, PlopMachine plopmachine)
@@ -1153,7 +1147,7 @@ namespace RainMeadow
                 if (itwillevolve)
                 {
                     evolvestopwatch = 0;
-                    RainMeadow.Debug("Evolves " + liaison.note);
+                    //RainMeadow.Debug("Evolves " + liaison.note);
 
                     string[] parts = liaison.note.Split('-');
                     //ok this REALLY should be reworked to pick the note NEXT to that guy
