@@ -302,7 +302,7 @@ namespace RainMeadow
                                     RainMeadow.Debug($"early entity"); // room loading will place it
                                 }
                             }
-                            if (topos.NodeDefined) // nodedefined ARENA GodOfMultiEyes: Node is -1, Node is NOT Defined. NodeDefined = abstractNode > -1
+                            if (topos.NodeDefined) 
                             {
                                 RainMeadow.Debug("node defined");
 
