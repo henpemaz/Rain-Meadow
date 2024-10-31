@@ -23,10 +23,13 @@ namespace RainMeadow
 
         public override void Draw(float timeStacker)
         {
-            if (!RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value)
-                showFriends = Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value);
-            else if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
-                showFriends = !showFriends;
+            if (!ChatHud.chatButtonActive)
+            {
+                if (!RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value)
+                    showFriends = Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value);
+                else if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
+                    showFriends = !showFriends;
+            }
 
             base.Draw(timeStacker);
         }

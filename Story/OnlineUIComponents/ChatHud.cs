@@ -46,21 +46,24 @@ namespace RainMeadow
             base.Draw(timeStacker);
             gamePaused = textPrompt.pausedMode;
 
-            if (ChatHud.chatButtonActive)
+            if (chatButtonActive)
             {
                 game.devToolsActive = false;
                 game.devToolsLabel.isVisible = false;
             }
 
-
-            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatLogKey.Value) && chatOverlay == null && !chatLogActive && !textPrompt.pausedMode)
+            if (!chatButtonActive)
             {
-                RainMeadow.Debug("creating overlay");
-                chatOverlay = new ChatOverlay(game.manager, game, chatLog);
-                chatLogActive = true;
-                chatCoolDown = 1;
-            }
+                if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatLogKey.Value) && chatOverlay == null && !chatLogActive && !textPrompt.pausedMode)
+                {
+                    RainMeadow.Debug("creating overlay");
+                    chatOverlay = new ChatOverlay(game.manager, game, chatLog);
+                    chatLogActive = true;
+                    chatCoolDown = 1;
+                }
 
+                if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatLogKey.Value) && chatLogActive && chatCoolDown <= 0) ShutDownChatLog();
+            }
             if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatTalkingKey.Value) && chatButtonOverlay == null && !chatButtonActive && !textPrompt.pausedMode)
             {
                 RainMeadow.Debug("creating chat box");
@@ -75,14 +78,12 @@ namespace RainMeadow
                     chatLogActive = true;
                     chatCoolDown = 1;
                 }
-
             }
 
             chatOverlay?.GrafUpdate(timeStacker);
             chatButtonOverlay?.GrafUpdate(timeStacker);
 
 
-            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatLogKey.Value) && chatLogActive && chatCoolDown <= 0) ShutDownChatLog();
             if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatTalkingKey.Value) && chatButtonActive && chatTextButtonCooldown <= 0) ShutDownChatButton();
 
         }
