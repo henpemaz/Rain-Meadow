@@ -6,6 +6,7 @@ using System.Linq;
 using RWCustom;
 using System;
 using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -284,7 +285,7 @@ namespace RainMeadow
             var MyGuyMic = self.cameras[0].virtualMicrophone;
 
             var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
-            var creature = mgm.avatar;
+            var creature = mgm.avatars[0];
             var musicdata = creature.GetData<MeadowMusicData>();
             
             if (demiseTimer != null)
@@ -312,11 +313,8 @@ namespace RainMeadow
                     List<OnlineCreature> InThisRoom = new List<OnlineCreature>();
                     foreach (var entity in creature.roomSession.activeEntities.Where(v => v is OnlineCreature))
                     {
-                        var thing = entity.owner;
-                        if (OnlineManager.lobby.playerAvatars[thing].FindEntity() is OnlineCreature oc && oc == entity)//yay
-                        {
-                            InThisRoom.Add(oc);
-                        }
+                        if(entity.TryGetData<MeadowMusicData>(out _))
+                            InThisRoom.Add((OnlineCreature)entity);
                     }
                     ushort[] ballers = InThisRoom.Select(v => v.owner.inLobbyId).ToArray();
                     OnlineManager.lobby.owner.InvokeRPC(AskNowSquashPlayers, ballers);
@@ -334,12 +332,10 @@ namespace RainMeadow
 
                     self.cameras[0].virtualMicrophone.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, creature.owner.inLobbyId == 1 ? -0.8f : 0.8f, 1, 1);
 
-                    foreach (var entity in creature.roomSession.activeEntities.Where(v => v != null))
+                    foreach (var entity in creature.roomSession.activeEntities.Where(v => v is OnlineCreature))
                     {
-                        if (entity is OnlineCreature && OnlineManager.lobby.playerAvatars.TryGetValue(entity.owner, out var id) && id == entity.id && !entity.isMine)
-                        {
+                        if (entity.TryGetData<MeadowMusicData>(out _))
                             playersWithMe.Add(entity.owner);
-                        }
                     }
 
                     bool theresaguywithanID = false;
@@ -397,7 +393,7 @@ namespace RainMeadow
             //RainMeadow.Debug("ingroup: " + inGroup);
             //RainMeadow.Debug("hostid: " + hostId);
 
-            if (inGroup != 0 && inGroup != lastInGroup) // this doesn't get set... yet
+            if (inGroup != 0 && inGroup != lastInGroup)
             {
                 RainMeadow.Debug("new group!");
                 RainMeadow.Debug("ingroup: " + inGroup);
@@ -408,7 +404,7 @@ namespace RainMeadow
                     RainMeadow.Debug("I'm the host");
                 }
                 else if (OnlineManager.lobby.PlayerFromId(hostId) is OnlinePlayer other 
-                    && OnlineManager.lobby.playerAvatars.TryGetValue(other, out var otherOcId)
+                    && OnlineManager.lobby.playerAvatars.FirstOrDefault(kvp => kvp.Key == other).Value is OnlineEntity.EntityId otherOcId
                     && otherOcId.FindEntity() is OnlineCreature oc)
                 {
                     // found
@@ -487,7 +483,7 @@ namespace RainMeadow
 
                         }
                         else if (OnlineManager.lobby.PlayerFromId(hostId) is OnlinePlayer other
-                            && OnlineManager.lobby.playerAvatars.TryGetValue(other, out var otherOcId)
+                            && OnlineManager.lobby.playerAvatars.FirstOrDefault(kvp => kvp.Key == other).Value is OnlineEntity.EntityId otherOcId
                             && otherOcId.FindEntity() is OnlineCreature oc)
                         {
                             // found
@@ -576,7 +572,7 @@ namespace RainMeadow
         public static void TheThingTHatsCalledWhenPlayersUpdated()
         {
             var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
-            var creature = mgm.avatar;
+            var creature = mgm.avatars[0];
             var musicdata = creature.GetData<MeadowMusicData>();
             var RoomImIn = creature.creature.Room.realizedRoom;
             if (RoomImIn == null || creature.roomSession == null) return;
@@ -591,7 +587,7 @@ namespace RainMeadow
             {
                 if (creature.roomSession.activeEntities.Any(
                     e => e is OnlineCreature && !e.isMine // someone elses
-                    && OnlineManager.lobby.playerAvatars.TryGetValue(e.owner, out var avatarid) && e.id == avatarid)) // avatar
+                    && e.TryGetData<MeadowMusicData>(out _))) // avatar
                 {
                     RainMeadow.Debug("There are other people here!");
                     if (joinTimer == null) joinTimer = 5;
@@ -664,7 +660,9 @@ namespace RainMeadow
                     if (!isDJ)
                     {
                         var theDJ = mgrr2.groupHosts[inGroup];
-                        if(OnlineManager.lobby.playerAvatars.TryGetValue(OnlineManager.lobby.PlayerFromId(theDJ), out var ocid) && ocid.FindEntity(true) is OnlineCreature oc)
+                        if(OnlineManager.lobby.PlayerFromId(theDJ) is OnlinePlayer other
+                            && OnlineManager.lobby.playerAvatars.FirstOrDefault(kvp => kvp.Key == other).Value is OnlineEntity.EntityId ocid
+                            && ocid.FindEntity(true) is OnlineCreature oc)
                         {
                             djinsameregion = oc.abstractCreature.world == creature.abstractCreature.world;
                         }
@@ -697,9 +695,8 @@ namespace RainMeadow
                                 {
                                     if (demiseTimer != null)
                                     {
-
                                         int i = 0;
-                                        foreach (var other in OnlineManager.lobby.playerAvatars.Values.Where(v => v != null))
+                                        foreach (var other in OnlineManager.lobby.playerAvatars.Select(kvp => kvp.Value))
                                         {
                                             if (other.FindEntity() is OnlineCreature oc)
                                             {
@@ -710,12 +707,10 @@ namespace RainMeadow
                                                 }
                                             }
                                         }
-
                                         demiseTimer = 6f * i;
                                     }
                                     groupdemiseTimer = null;
                                 }
-
                             }
                             else
                             {

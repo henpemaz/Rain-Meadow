@@ -3,6 +3,7 @@ using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static RainMeadow.OnlineEntity.EntityData;
 
 namespace RainMeadow
 {
@@ -350,7 +351,7 @@ namespace RainMeadow
                 // todo supress sending if more specialized state being sent to the same person
                 
                 // BUT entitystate usually only sends over one resource or another, check all
-                entityState.entityDataStates.list.ForEach(d => d.ReadTo(this));
+                entityState.entityDataStates.list.ForEach(ds => ds.ReadTo(this.TryGetData(ds.GetDataType(), out var d) ? d : this.AddData(ds.MakeData(this)), this));
 
                 return;
             }

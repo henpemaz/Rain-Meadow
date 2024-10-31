@@ -15,12 +15,12 @@ namespace RainMeadow
             public Dictionary<ushort, byte> playerGroups = new Dictionary<ushort, byte>();
             public Dictionary<byte, ushort> groupHosts = new Dictionary<byte, ushort>();
 
-            public LobbyMusicData(OnlineResource resource) : base(resource)
+            public LobbyMusicData() : base()
             {
 
             }
 
-            internal override ResourceDataState MakeState()
+            public override ResourceDataState MakeState(OnlineResource inResource)
             {
                 return new State(this);
             }
@@ -71,9 +71,9 @@ namespace RainMeadow
                     //RainMeadow.Debug("I am writing: " + Json.Serialize(lobbyMusicData.playerGroups));
                 }
 
-                internal override Type GetDataType() => typeof(LobbyMusicData);
+                public override Type GetDataType() => typeof(LobbyMusicData);
 
-                internal override void ReadTo(OnlineResource.ResourceData data)
+                public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
                 {
                     var lobbyMusicData = (LobbyMusicData)data;
                     lobbyMusicData.playerGroups = playerGroups.list.ToDictionary();

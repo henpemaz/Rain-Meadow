@@ -16,6 +16,10 @@ namespace RainMeadow
         public MeadowGameMode(Lobby lobby) : base(lobby)
         {
             this.avatarData = new MeadowAvatarData();
+
+            MeadowProgression.ReloadProgression();
+            lobby.AddData(new MeadowLobbyData());
+            lobby.AddData(new MeadowMusic.LobbyMusicData());
         }
 
         public override void AddClientData()
@@ -52,7 +56,7 @@ namespace RainMeadow
 
         internal override void EntityEnteredResource(OnlineEntity oe, OnlineResource inResource)
         {
-            if(avatar != null && avatar.roomSession == inResource)
+            if(avatars.Count > 0 && avatars[0].roomSession == inResource)
             {
                 MeadowMusic.TheThingTHatsCalledWhenPlayersUpdated();
             }
@@ -60,7 +64,7 @@ namespace RainMeadow
 
         internal override void EntityLeftResource(OnlineEntity oe, OnlineResource inResource)
         {
-            if (avatar != null && avatar.roomSession == inResource)
+            if (avatars.Count > 0 && avatars[0].roomSession == inResource)
             {
                 MeadowMusic.TheThingTHatsCalledWhenPlayersUpdated();
             }
@@ -100,9 +104,7 @@ namespace RainMeadow
 
             if (res is Lobby lobby)
             {
-                MeadowProgression.ReloadProgression();
-                lobby.AddData(new MeadowLobbyData());
-                lobby.AddData(new MeadowMusic.LobbyMusicData());
+                // stuff runs in ctor
             }
             else if (res is WorldSession ws)
             {
@@ -114,17 +116,17 @@ namespace RainMeadow
             }
         }
 
-        internal override void NewPlayerInLobby(OnlinePlayer player)
+        public override void NewPlayerInLobby(OnlinePlayer player)
         {
             base.NewPlayerInLobby(player);
             if (lobby.isOwner)
             {
-                var musicdata = lobby.GetData<MeadowMusic.LobbyMusicData>(true);
+                var musicdata = lobby.GetData<MeadowMusic.LobbyMusicData>();
                 musicdata.playerGroups.Add(player.inLobbyId, 0);
             }
         }
 
-        internal override void PlayerLeftLobby(OnlinePlayer player)
+        public override void PlayerLeftLobby(OnlinePlayer player)
         {
             base.PlayerLeftLobby(player); if (lobby.isOwner)
             {
@@ -134,7 +136,7 @@ namespace RainMeadow
             }
         }
 
-        internal override void ResourceActive(OnlineResource res)
+        public override void ResourceActive(OnlineResource res)
         {
             base.ResourceActive(res);
             if (res is Lobby lobby)

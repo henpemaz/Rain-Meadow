@@ -1,27 +1,24 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace RainMeadow
 {
     internal class MeadowMusicData : OnlineEntity.EntityData
     {
-        private OnlineCreature oc;
         //public int inGroup = -1;
         //public bool isDJ = true;
         public string providedSong;
         public float startedPlayingAt;
-        public MeadowMusicData(OnlineCreature oc)
-        {
-            this.oc = oc;
-        }
+        public MeadowMusicData() : base() { }
 
-        internal override EntityDataState MakeState(OnlineResource inResource)
+        public override EntityDataState MakeState(OnlineEntity entity, OnlineResource inResource)
         {
             if (inResource is WorldSession)
             {
-                RainMeadow.Trace($"{this} for {oc} making state in {inResource}");
-                return new State(this); //todo, don't send every fucking frame dude.
+                RainMeadow.Trace($"{this} for {entity} making state in {inResource}");
+                return new State(this);
             }
-            RainMeadow.Trace($"{this} for {oc} skipping state in {inResource}");
+            RainMeadow.Trace($"{this} for {entity} skipping state in {inResource}");
             return null;
         }
 
@@ -49,22 +46,17 @@ namespace RainMeadow
                 //RainMeadow.Debug("Sent: " + inGroup + " " + isDJ + " " + providedSong + " " + startedPlayingAt);
             }
 
-            internal override void ReadTo(OnlineEntity onlineEntity)
+            public override Type GetDataType() => typeof(MeadowMusicData);
+
+            public override void ReadTo(OnlineEntity.EntityData data, OnlineEntity onlineEntity)
             {
-                RainMeadow.Trace("From state to data " + onlineEntity);
-                if (onlineEntity is OnlineCreature oc && oc.TryGetData<MeadowMusicData>(out var mcd))
-                {
-                    //Read from state to data
-                    //RainMeadow.Debug("Recieved: " + inGroup + " " + isDJ + " " + providedSong + " " + startedPlayingAt);
-                    //mcd.inGroup = inGroup;
-                    //mcd.isDJ = isDJ;
-                    mcd.providedSong = providedSong;
-                    mcd.startedPlayingAt = startedPlayingAt;
-                }
-                else
-                {
-                    RainMeadow.Error("Failed to read MeadowMusicDataState into " + onlineEntity);
-                }
+                var mcd = (MeadowMusicData)data;
+                //Read from state to data
+                //RainMeadow.Debug("Recieved: " + inGroup + " " + isDJ + " " + providedSong + " " + startedPlayingAt);
+                //mcd.inGroup = inGroup;
+                //mcd.isDJ = isDJ;
+                mcd.providedSong = providedSong;
+                mcd.startedPlayingAt = startedPlayingAt;
             }
         }
     }
