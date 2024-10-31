@@ -270,7 +270,7 @@ namespace RainMeadow
                 this.UpdateCharacterUI();
             }
 
-            if (OnlineManager.lobby.isOwner)
+            if (OnlineManager.lobby.isOwner && hostStartButton is not null)
             {
                 hostStartButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
             }

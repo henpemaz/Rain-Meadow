@@ -484,7 +484,7 @@ namespace RainMeadow
         private void RainWorldGame_GoToDeathScreen(On.RainWorldGame.orig_GoToDeathScreen orig, RainWorldGame self)
         {
             if (isStoryMode(out var gameMode))
-            {
+            {                
                 if (OnlineManager.lobby.isOwner)
                 {
                     RPCs.MovePlayersToDeathScreen();

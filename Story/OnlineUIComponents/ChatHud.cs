@@ -68,6 +68,14 @@ namespace RainMeadow
                 chatButtonActive = true;
                 chatTextButtonCooldown = 1;
 
+                if (chatOverlay == null && !chatLogActive)
+                {
+                    RainMeadow.Debug("creating overlay");
+                    chatOverlay = new ChatOverlay(game.manager, game, chatLog);
+                    chatLogActive = true;
+                    chatCoolDown = 1;
+                }
+
             }
 
             chatOverlay?.GrafUpdate(timeStacker);

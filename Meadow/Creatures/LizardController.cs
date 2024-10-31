@@ -24,6 +24,7 @@ namespace RainMeadow
 
             // pounce visuals
             On.LizardGraphics.Update += LizardGraphics_Update;
+            On.LizardGraphics.ctor += LizardGraphics_ctor;
             // no violence
             On.Lizard.AttemptBite += Lizard_AttemptBite;
             On.Lizard.DamageAttack += Lizard_DamageAttack;
@@ -216,6 +217,22 @@ namespace RainMeadow
                 return;
             }
             orig(self, creature);
+        }
+
+        private static void LizardGraphics_ctor(On.LizardGraphics.orig_ctor orig, LizardGraphics self, PhysicalObject ow)
+        {
+            orig(self, ow);
+            if (creatureControllers.TryGetValue(self.lizard, out var c))
+            {
+                if (c.customization.skin == MeadowProgression.Skin.Lizard_Axo)
+                {
+                    self.blackSalamander = false;
+                }
+                if (c.customization.skin == MeadowProgression.Skin.Lizard_Sala)
+                {
+                    self.blackSalamander = true;
+                }
+            }
         }
 
         private static void LizardGraphics_Update(On.LizardGraphics.orig_Update orig, LizardGraphics self)

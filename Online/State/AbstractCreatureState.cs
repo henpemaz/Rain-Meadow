@@ -3,7 +3,7 @@ namespace RainMeadow
     public class AbstractCreatureState : PhysicalObjectEntityState
     {
         [OnlineField(polymorphic = true)]
-        private CreatureStateState creatureStateState;
+        public CreatureStateState creatureStateState;
         [OnlineField(group = "realized")]
         public WorldCoordinate destination;
 

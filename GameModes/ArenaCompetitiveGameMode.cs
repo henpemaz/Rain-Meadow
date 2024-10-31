@@ -12,9 +12,11 @@ namespace RainMeadow
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
         public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
+        public ushort setupTime = 300;
+        public int playerEnteredGame = 0;
         public Dictionary<string, bool> playersReadiedUp = new Dictionary<string, bool>();
-
-
+        public bool countdownInitiatedHoldFire = true;
+        public ArenaPrepTimer arenaPrepTimer;
 
         public ArenaClientSettings arenaClientSettings;
         public SlugcatCustomization avatarSettings;

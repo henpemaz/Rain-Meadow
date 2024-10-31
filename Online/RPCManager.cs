@@ -249,15 +249,16 @@ namespace RainMeadow
                 }
 
                 RainMeadow.Debug($"Processing RPC: {handler.summary}");
+                var useArgs = args;
                 if (handler.eventArgIndex > -1)
                 {
                     var newArgs = args.ToList();
                     newArgs.Insert(handler.eventArgIndex, this);
-                    args = newArgs.ToArray();
+                    useArgs = newArgs.ToArray();
                 }
 
                 var nout = from.OutgoingEvents.Count;
-                var result = handler.method.Invoke(target, args);
+                var result = handler.method.Invoke(target, useArgs);
                 if (from.OutgoingEvents.Count != nout && from.OutgoingEvents.Any(e => e is GenericResult gr && gr.referencedEvent == this)) return;
 
                 if (result is GenericResult res) from.QueueEvent(res);

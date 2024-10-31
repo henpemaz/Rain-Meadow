@@ -181,56 +181,26 @@ namespace RainMeadow
         public void RPCCreatureViolence(OnlinePhysicalObject onlineVillain, int? hitchunkIndex, PhysicalObject.Appendage.Pos hitappendage, Vector2? directionandmomentum, Creature.DamageType type, float damage, float stunbonus)
         {
             byte chunkIndex = (byte)(hitchunkIndex ?? 255);
-            this.owner.InvokeRPC(this.CreatureViolence, onlineVillain, chunkIndex, hitappendage == null ? null : new AppendageRef(hitappendage), directionandmomentum, type, damage, stunbonus);
+            RunRPC(this.CreatureViolence, onlineVillain, chunkIndex, hitappendage == null ? null : new AppendageRef(hitappendage), directionandmomentum, type, damage, stunbonus);
         }
 
         [RPCMethod]
         public void CreatureViolence(OnlinePhysicalObject? onlineVillain, byte victimChunkIndex, AppendageRef? victimAppendageRef, Vector2? directionAndMomentum, Creature.DamageType damageType, float damage, float stunBonus)
         {
+            if (!isMine || isPending) throw new InvalidOperationException("not owner"); // causes sender to retry
             var creature = (this.apo.realizedObject as Creature);
-            if (creature == null) return;
+            if (creature == null)
+            {
+                RainMeadow.Error("realized creature not found for: " + this);
+                return;
+            }
             var victimAppendage = victimAppendageRef?.GetAppendagePos(creature);
 
+            RainMeadow.Debug($"{this} hit for {damage}");
+            if(creature.State is HealthState hs1) RainMeadow.Debug($"heath was {hs1.health}");
             BodyChunk? hitChunk = victimChunkIndex < 255 ? creature.bodyChunks[victimChunkIndex] : null;
             creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, hitChunk, victimAppendage, damageType, damage, stunBonus);
-        }
-
-        //public void ForceGrab(GraspRef graspRef)
-        //{
-        //    var castShareability = new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(graspRef.Shareability));
-        //    var other = graspRef.OnlineGrabbed.FindEntity(quiet: true) as OnlinePhysicalObject;
-        //    if (other != null && other.apo.realizedObject != null)
-        //    {
-        //        var grabber = (Creature)this.apo.realizedObject;
-        //        var grabbedThing = other.apo.realizedObject;
-        //        var graspUsed = graspRef.GraspUsed;
-
-        //        if (grabber.grasps[graspUsed] != null)
-        //        {
-        //            if (grabber.grasps[graspUsed].grabbed == grabbedThing) return;
-        //            grabber.grasps[graspUsed].Release();
-        //        }
-        //        grabber.grasps[graspUsed] = new Creature.Grasp(grabber, grabbedThing, graspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
-        //        grabbedThing.room = grabber.room;
-        //        grabbedThing.Grabbed(grabber.grasps[graspUsed]);
-        //        new AbstractPhysicalObject.CreatureGripStick(grabber.abstractCreature, grabbedThing.abstractPhysicalObject, graspUsed, graspRef.Pacifying || grabbedThing.TotalMass < grabber.TotalMass);
-        //    }
-        //}
-
-        public void BroadcastSuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
-        {
-            if (currentlyJoinedResource is RoomSession room)
-            {
-                RainMeadow.Debug(this);
-                if (id.type == 0) throw new InvalidProgrammerException("here");
-                foreach (var participant in room.participants)
-                {
-                    if (!participant.isMe)
-                    {
-                        participant.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
-                    }
-                }
-            }
+            if (creature.State is HealthState hs2) RainMeadow.Debug($"heath became {hs2.health}");
         }
 
         [RPCMethod]
@@ -269,6 +239,37 @@ namespace RainMeadow
                     }
                 }
                 catch (Exception)
+                {
+                    enteringShortCut = false;
+                    throw;
+                }
+            }
+            enteringShortCut = false;
+        }
+
+        [RPCMethod]
+        public void TookFlight(AbstractRoomNode.Type type, WorldCoordinate start, WorldCoordinate dest)
+        {
+            RainMeadow.Debug(this);
+            if (realizedCreature is not null && realizedCreature.room is Room room)
+            {
+                try
+                {
+                    enteringShortCut = true;
+                    var handler = room.game.shortcuts;
+                    handler.CreatureTakeFlight(realizedCreature, type, start, dest);
+
+                    // copied from SuckedIntoShortCut, do we need this?
+                    foreach (var apo in creature.GetAllConnectedObjects())
+                    {
+                        if (apo.realizedObject is not null)
+                        {
+                            room.RemoveObject(apo.realizedObject);
+                            room.CleanOutObjectNotInThisRoom(apo.realizedObject); // very important
+                        }
+                    }
+                }
+                catch
                 {
                     enteringShortCut = false;
                     throw;

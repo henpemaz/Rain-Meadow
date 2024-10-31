@@ -1,4 +1,4 @@
-﻿using Menu;
+using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 
@@ -16,7 +16,8 @@ namespace RainMeadow
     public class LobbySelectMenu : SmartMenu, CheckBox.IOwnCheckBox
     {
         private List<FSprite> sprites;
-        private SimplerButton[] lobbyButtons;
+        private LobbyInfoCard[] lobbyButtons;
+        private LobbyInfoCard lastClickedLobbyButton;
         private LobbyInfo[] lobbies;
         private LobbyInfo[] displayLobbies;
         private LobbyFilter filter;
@@ -26,7 +27,6 @@ namespace RainMeadow
         private OpTextBox lobbySearchInputBox;
         private float scroll;
         private float scrollTo;
-        private int currentlySelectedCard;
         private OpComboBox2 visibilityDropDown;
         private OpTextBox lobbyLimitNumberTextBox;
         private SimplerButton createButton;
@@ -38,6 +38,8 @@ namespace RainMeadow
         private OpTextBox passwordInputBox;
         private CheckBox enablePasswordCheckbox;
         private int maxPlayerCount;
+        private EventfulScrollButton upButton;
+        private EventfulScrollButton downButton;
 
         public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
@@ -174,10 +176,10 @@ namespace RainMeadow
             sprites.Add(sprite);
 
             // buttons
-            var upButton = new EventfulScrollButton(this, mainPage, new(316, 581), 0, 100);
+            upButton = new EventfulScrollButton(this, mainPage, new(316, 581), 0, 100);
             mainPage.subObjects.Add(upButton);
             upButton.OnClick += (_) => scrollTo -= 1f;
-            var downButton = new EventfulScrollButton(this, mainPage, new(316, 113), 2, 100);
+            downButton = new EventfulScrollButton(this, mainPage, new(316, 113), 2, 100);
             mainPage.subObjects.Add(downButton);
             downButton.OnClick += (_) => scrollTo += 1f;
 
@@ -189,7 +191,7 @@ namespace RainMeadow
 
             // cards
             lobbies = new LobbyInfo[0];
-            lobbyButtons = new SimplerButton[1];
+            lobbyButtons = new LobbyInfoCard[1];
             CreateLobbyCards();
             // waiting for lobby data!
 
@@ -215,6 +217,31 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
+
+            bool popupVisible = popupDialog != null;
+
+            for (int i = 0; i < lobbyButtons.Length; i++)
+            {
+                lobbyButtons[i].buttonBehav.greyedOut = popupVisible;
+            }
+
+            filterModeDropDown.greyedOut = popupVisible;
+            filterPasswordDropDown.greyedOut = popupVisible;
+            filterLobbyLimit.greyedOut = popupVisible;
+            lobbySearchInputBox.greyedOut = popupVisible;
+
+            visibilityDropDown.greyedOut = popupVisible;
+            lobbyLimitNumberTextBox.greyedOut = popupVisible;
+            createButton.buttonBehav.greyedOut = popupVisible;
+            refreshButton.buttonBehav.greyedOut = popupVisible;
+            modeDropDown.greyedOut = popupVisible;
+            passwordInputBox.greyedOut = popupVisible;
+            enablePasswordCheckbox.buttonBehav.greyedOut = popupVisible;
+            upButton.buttonBehav.greyedOut = popupVisible;
+            downButton.buttonBehav.greyedOut = popupVisible;
+
+            if (popupVisible) return;
+
             int extraItems = Mathf.Max(lobbies.Length - 4, 0);
             scrollTo = Mathf.Clamp(scrollTo, -0.5f, extraItems + 0.5f);
             if (scrollTo < 0) scrollTo = RWCustom.Custom.LerpAndTick(scrollTo, 0, 0.1f, 0.1f);
@@ -243,7 +270,7 @@ namespace RainMeadow
 
             FilterLobbyCards();
 
-            lobbyButtons = new SimplerButton[displayLobbies.Length];
+            lobbyButtons = new LobbyInfoCard[displayLobbies.Length];
 
             for (int i = 0; i < displayLobbies.Length; i++)
             {
@@ -290,8 +317,6 @@ namespace RainMeadow
                 base.Update();
                 pos = (menu as LobbySelectMenu).CardPosition(this.buttonArrayIndex);
             }
-
-            // todo out of view
         }
 
         private void FilterLobbyCards()
@@ -360,13 +385,21 @@ namespace RainMeadow
 
         private void Play(SimplerButton obj)
         {
+            if (obj is not LobbyInfoCard infoCard)
+            {
+                ShowErrorDialog("Play was called by something other than a lobby card");
+                return;
+            }
             if (ModManager.JollyCoop)
             {
                 ShowErrorDialog("Please disable JollyCoop before playing Online");
                 return;
             }
 
-            var lobbyInfo = (lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo;
+
+            lastClickedLobbyButton = infoCard;
+
+            var lobbyInfo = infoCard.lobbyInfo;
             MatchmakingManager.MAX_LOBBY = lobbyInfo.maxPlayerCount;
             if (lobbyInfo.playerCount >= lobbyInfo.maxPlayerCount)
             {
@@ -414,9 +447,8 @@ namespace RainMeadow
 
         private void RequestLobbyJoin(LobbyInfo lobby, string? password = null)
         {
-            var lobbyInfo = (lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo;
             RainMeadow.DebugMe();
-            maxPlayerCount = lobbyInfo.maxPlayerCount;
+            maxPlayerCount = lobby.maxPlayerCount;
             MatchmakingManager.instance.RequestJoinLobby(lobby, password);
         }
 
@@ -444,20 +476,6 @@ namespace RainMeadow
             MatchmakingManager.instance.OnLobbyListReceived -= OnlineManager_OnLobbyListReceived;
             MatchmakingManager.instance.OnLobbyJoined -= OnlineManager_OnLobbyJoined;
             base.ShutDownProcess();
-        }
-
-        // SelectOneButton.SelectOneButtonOwner
-        public int GetCurrentlySelectedOfSeries(string series)
-        {
-            if (series == "lobbyCards") return currentlySelectedCard;
-            return 0;
-        }
-
-        // SelectOneButton.SelectOneButtonOwner
-        public void SetCurrentlySelectedOfSeries(string series, int to)
-        {
-            if (series == "lobbyCards") currentlySelectedCard = to;
-            return;
         }
 
         public void ShowPasswordRequestDialog()
@@ -505,7 +523,10 @@ namespace RainMeadow
                 case "HIDE_PASSWORD":
                     var password = (popupDialog as CustomInputDialogueBox).textBox.value;
                     ShowLoadingDialog("Joining lobby...");
-                    RequestLobbyJoin((lobbyButtons[currentlySelectedCard] as LobbyInfoCard).lobbyInfo, password);
+                    RequestLobbyJoin(lastClickedLobbyButton.lobbyInfo, password);
+                    break;
+                case "CLOSE_DIALOG":
+                    HideDialog();
                     break;
             }
         }

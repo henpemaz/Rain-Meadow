@@ -14,6 +14,7 @@ namespace RainMeadow
             IL.ShortcutHandler.Update += ShortcutHandler_Update; // cleanup of entities in shortcut system
             On.ShortcutHandler.VesselAllowedInRoom += ShortcutHandlerOnVesselAllowedInRoom; // Prevent creatures from entering a room if their online counterpart has not yet entered!
 
+            On.ShortcutHandler.CreatureTakeFlight += ShortcutHandler_CreatureTakeFlight;
             On.Creature.SuckedIntoShortCut += CreatureSuckedIntoShortCut;
         }
 
@@ -157,6 +158,40 @@ namespace RainMeadow
             return result;
         }
 
+        private void ShortcutHandler_CreatureTakeFlight(On.ShortcutHandler.orig_CreatureTakeFlight orig, ShortcutHandler self, Creature creature, AbstractRoomNode.Type type, WorldCoordinate start, WorldCoordinate dest)
+        {
+            if (OnlineManager.lobby is null)
+            {
+                orig(self, creature, type, start, dest);
+                return;
+            }
+
+            if (!OnlinePhysicalObject.map.TryGetValue(creature.abstractCreature, out var onlineEntity))
+            {
+                Error($"Entity {creature} - {creature.abstractCreature.ID} doesn't exist in online space!");
+                orig(self, creature, type, start, dest);
+                return;
+            }
+
+            var onlineCreature = (OnlineCreature)onlineEntity;
+
+            if (onlineCreature.isMine)
+            {
+                RainMeadow.Debug($"{onlineCreature} took flight");
+                onlineCreature.BroadcastRPCInRoom(onlineCreature.TookFlight, type, start, dest);
+            }
+            else if (onlineCreature.enteringShortCut) // If this call was from a processing event
+            {
+                onlineCreature.enteringShortCut = false;
+            }
+            else
+            {
+                RainMeadow.Error($"Remote entity trying to take flight: {onlineCreature} at {onlineCreature.roomSession}");
+                return;
+            }
+            orig(self, creature, type, start, dest);
+        }
+
         // event driven shortcutting for remotes
         private void CreatureSuckedIntoShortCut(On.Creature.orig_SuckedIntoShortCut orig, Creature self, IntVector2 entrancePos, bool carriedByOther)
         {
@@ -188,7 +223,7 @@ namespace RainMeadow
             {
                 // tell everyone else that I am about to enter a shortcut!
                 RainMeadow.Debug($"{onlineCreature} sucked into shortcut");
-                onlineCreature.BroadcastSuckedIntoShortCut(entrancePos, carriedByOther);
+                onlineCreature.BroadcastRPCInRoom(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
                 orig(self, entrancePos, carriedByOther);
             }
             else

@@ -21,5 +21,12 @@ namespace RainMeadow.Story.OnlineUIComponents
 
         }
 
+        public static void HoldFire(Player p)
+        {
+            p.input[0].thrw = false;
+
+
+        }
+
     }
 }

@@ -86,3 +86,9 @@ world state of onlineplayer is a lot of rot etc because no filters apply
 rotating arrow symbol resets to up on remote when client lets go
 
 throw is for switching pages on hotwheel, but also call, specially on controller
+
+red and some more lizs are having trouble climbing
+
+scav and scug don't stop pointing even when you let go of call
+
+emote bg tint too strong
