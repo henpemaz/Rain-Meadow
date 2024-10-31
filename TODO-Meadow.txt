@@ -16,7 +16,6 @@ creature todo
 	lizards shouldn't open mouth to bite -> can't reproduce
 	rats shouldn't panic
 	slugcat arm reaches to threat
-- double jumps out of the water, way too much speed
 - creatures not cleared on enter creature pipe
 	game clears enteringshortcut so they "abort entering" most of the time?
 	could also be that npcdestination is null so they just bounce?
