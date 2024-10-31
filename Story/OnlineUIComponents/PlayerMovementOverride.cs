@@ -10,6 +10,7 @@
             p.input[0].jmp = false;
             p.input[0].thrw = false;
             p.input[0].pckp = false;
+            p.input[0].mp = false;
         }
     }
 }

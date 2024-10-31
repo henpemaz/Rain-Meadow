@@ -58,7 +58,7 @@ namespace RainMeadow
             }
             else if (input == '\n' || input == '\r')
             {
-                if (lastSentMessage.Length > 0)
+                if (lastSentMessage.Length > 0 && !string.IsNullOrWhiteSpace(lastSentMessage))
                 {
                     if (MatchmakingManager.instance is SteamMatchmakingManager)
                     {
@@ -105,12 +105,11 @@ namespace RainMeadow
                         }
 
                     }
-
                 }
                 else
                 {
                     menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
-                    RainMeadow.Debug("Could not send lastSentMessage because it had no text");
+                    RainMeadow.Debug("Could not send lastSentMessage because it had no text or only had whitespaces");
                 }
                 typingHandler.Unassign(this);
             }
