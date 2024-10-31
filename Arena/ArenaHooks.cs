@@ -33,7 +33,6 @@ namespace RainMeadow
             On.ArenaGameSession.Update += ArenaGameSession_Update;
             On.ArenaGameSession.EndOfSessionLogPlayerAsAlive += ArenaGameSession_EndOfSessionLogPlayerAsAlive;
             On.ArenaGameSession.Killing += ArenaGameSession_Killing;
-            On.ArenaGameSession.AddHUD += ArenaGameSession_AddHUD;
             On.ArenaGameSession.SpawnCreatures += ArenaGameSession_SpawnCreatures;
             On.ArenaGameSession.ctor += ArenaGameSession_ctor;
 
@@ -827,8 +826,8 @@ namespace RainMeadow
                 self.AddPart(new Pointing(self));
                 self.AddPart(new ChatHud(self, session.game.cameras[0]));
                 self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
-                self.AddPart(new HideTimer(self, self.fContainers[0], arena));
-
+                self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena));
+                self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));
 
             }
             else
@@ -836,19 +835,6 @@ namespace RainMeadow
                 orig(self, session);
             }
 
-        }
-
-
-
-        private void ArenaGameSession_AddHUD(On.ArenaGameSession.orig_AddHUD orig, ArenaGameSession self)
-        {
-            orig(self);
-
-
-            if (isArenaMode(out var gameMode))
-            {
-                self.game.cameras[0].hud.AddPart(new OnlineHUD(self.game.cameras[0].hud, self.game.cameras[0], gameMode));
-            }
         }
 
         private bool ExitManager_PlayerTryingToEnterDen(On.ArenaBehaviors.ExitManager.orig_PlayerTryingToEnterDen orig, ArenaBehaviors.ExitManager self, ShortcutHandler.ShortCutVessel shortcutVessel)
@@ -1038,10 +1024,6 @@ namespace RainMeadow
                             self.Players.Add(ac);
                         }
                     }
-                }
-                if (self.Players.Count == arena.arenaSittingOnlineOrder.Count)
-                {
-                    arena.allPlayersAreNowInGame = true;
                 }
             }
         }
@@ -1257,6 +1239,17 @@ namespace RainMeadow
                 }
 
                 self.playersSpawned = true;
+                arena.playerEnteredGame++;
+                foreach (var player in arena.arenaSittingOnlineOrder)
+                {
+
+                    var getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(player);
+                    if (!getPlayer.isMe)
+                    {
+                        getPlayer.InvokeOnceRPC(ArenaRPCs.Arena_IncrementPlayersJoined);
+                    }
+                }
+
             }
 
             else

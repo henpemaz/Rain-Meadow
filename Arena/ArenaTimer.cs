@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class HideTimer : HUD.HudPart
+    public class ArenaPrepTimer : HUD.HudPart
     {
         public enum TimerMode
         {
@@ -24,7 +24,7 @@ namespace RainMeadow
         public ArenaCompetitiveGameMode arena;
         private Player? player;
 
-        public HideTimer(HUD.HUD hud, FContainer fContainer, ArenaCompetitiveGameMode arena) : base(hud)
+        public ArenaPrepTimer(HUD.HUD hud, FContainer fContainer, ArenaCompetitiveGameMode arena) : base(hud)
         {
             SetupTimer = arena.setupTime;
             matchMode = TimerMode.Waiting;
@@ -61,24 +61,27 @@ namespace RainMeadow
             base.Draw(timeStacker);
             if (RainMeadow.isArenaMode(out var arena))
             {
-                if (arena.allPlayersAreNowInGame)
-                {
-                    SetupTimer--;
-                    showMode = TimerMode.Countdown;
-                    matchMode = TimerMode.Countdown;
-                    modeLabel.text = $"Prepare for combat, {SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs)}";
-                } else
+
+                if (arena.playerEnteredGame != arena.arenaSittingOnlineOrder.Count)
                 {
                     showMode = TimerMode.Waiting;
                     matchMode = TimerMode.Waiting;
                     modeLabel.text = showMode.ToString();
 
                 }
+                else
+                {
+                    SetupTimer--;
+                    showMode = TimerMode.Countdown;
+                    matchMode = TimerMode.Countdown;
+                    modeLabel.text = $"Prepare for combat, {SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs)}";
+                } 
 
                 if (SetupTimer < 0)
                 {
                     ClearSprites();
                     arena.countdownInitiatedHoldFire = false;
+                    SetupTimer = arena.setupTime;
                 }
             }
 
@@ -101,7 +104,7 @@ namespace RainMeadow
             timerLabel.RemoveFromContainer();
             modeLabel.RemoveFromContainer();
 
-            arena.hideTimer = null;
+            arena.arenaPrepTimer = null;
         }
     }
 }

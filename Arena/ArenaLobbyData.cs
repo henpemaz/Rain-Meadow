@@ -49,7 +49,7 @@ namespace RainMeadow
                 onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
                 playersChoosingSlugs = arena.playersInLobbyChoosingSlugs;
                 countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
-                allPlayersAreNowInGame = arena.allPlayersAreNowInGame;
+                //allPlayersAreNowInGame = arena.allPlayersAreNowInGame;
                 //setupTimer = arena.setupTime;
 
             }
@@ -66,7 +66,7 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaCompetitiveGameMode).onlineArenaSettingsInterfaceeBool = onlineArenaSettingsInterfaceBool;
                 (lobby.gameMode as ArenaCompetitiveGameMode).playersInLobbyChoosingSlugs = playersChoosingSlugs;
                 (lobby.gameMode as ArenaCompetitiveGameMode).countdownInitiatedHoldFire = countdownInitiatedHoldFire;
-                (lobby.gameMode as ArenaCompetitiveGameMode).allPlayersAreNowInGame = allPlayersAreNowInGame;
+                //(lobby.gameMode as ArenaCompetitiveGameMode).allPlayersAreNowInGame = allPlayersAreNowInGame;
                 //(lobby.gameMode as ArenaCompetitiveGameMode).setupTime = setupTimer;
 
 
