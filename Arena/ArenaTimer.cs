@@ -79,6 +79,7 @@ namespace RainMeadow
 
                 if (SetupTimer < 0)
                 {
+                    hud.PlaySound(SoundID.MENU_Start_New_Game);
                     ClearSprites();
                     arena.countdownInitiatedHoldFire = false;
                     SetupTimer = arena.setupTime;

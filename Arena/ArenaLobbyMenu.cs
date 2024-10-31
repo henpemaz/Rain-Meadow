@@ -341,6 +341,7 @@ namespace RainMeadow
             // temp
             UserInput.SetUserCount(OnlineManager.players.Count);
             UserInput.SetForceDisconnectControllers(forceDisconnect: false);
+            this.PlaySound(SoundID.MENU_Start_New_Game);
             this.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
 
         }
