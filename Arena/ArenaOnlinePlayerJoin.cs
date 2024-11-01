@@ -44,6 +44,8 @@ namespace Menu
 
         public MenuIllustration joinButtonImage;
 
+        public SimplerSymbolButton kickButton;
+
 
         public event Action<ArenaOnlinePlayerJoinButton> OnClick;
         public override void Clicked() { base.Clicked(); OnClick?.Invoke(this); }

@@ -21,6 +21,9 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
+                arena.countdownInitiatedHoldFire = true;
+                arena.playerEnteredGame  = 0;
+
                 ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
 
 

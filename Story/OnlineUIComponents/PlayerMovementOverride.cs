@@ -12,5 +12,13 @@
             p.input[0].pckp = false;
             p.input[0].mp = false;
         }
+
+
+        public static void HoldFire(Player p)
+        {
+            p.input[0].thrw = false;
+
+
+        }
     }
 }

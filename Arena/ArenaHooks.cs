@@ -1,8 +1,6 @@
 ﻿using HUD;
-using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,9 +31,9 @@ namespace RainMeadow
             On.ArenaGameSession.Update += ArenaGameSession_Update;
             On.ArenaGameSession.EndOfSessionLogPlayerAsAlive += ArenaGameSession_EndOfSessionLogPlayerAsAlive;
             On.ArenaGameSession.Killing += ArenaGameSession_Killing;
-            On.ArenaGameSession.AddHUD += ArenaGameSession_AddHUD;
             On.ArenaGameSession.SpawnCreatures += ArenaGameSession_SpawnCreatures;
             On.ArenaGameSession.ctor += ArenaGameSession_ctor;
+          
 
             On.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded;
 
@@ -79,6 +77,18 @@ namespace RainMeadow
             On.Menu.ArenaSettingsInterface.SetChecked += ArenaSettingsInterface_SetChecked;
             On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
 
+            On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
+
+        }
+
+        private void Player_ClassMechanicsSaint(On.Player.orig_ClassMechanicsSaint orig, Player self)
+        {
+            orig(self);
+            if (isArenaMode(out var _))
+            {
+                var duration = 0.35f * (self.maxGodTime / 400f); // we'll see how that feels for now
+                self.godTimer = Mathf.Min(self.godTimer + duration, self.maxGodTime);
+            }
         }
 
         private void ArenaSettingsInterface_ctor(On.Menu.ArenaSettingsInterface.orig_ctor orig, Menu.ArenaSettingsInterface self, Menu.Menu menu, Menu.MenuObject owner)
@@ -128,7 +138,7 @@ namespace RainMeadow
                         {
                             RainMeadow.Debug((selectable as Menu.MultipleChoiceArray.MultipleChoiceButton).multipleChoiceArray.IDString);
                             var onlineArrayMutliChoice = (selectable as Menu.MultipleChoiceArray.MultipleChoiceButton).multipleChoiceArray.IDString;
-                            if (arena.onlineArenaSettingsInterfaceMultiChoice.ContainsKey(onlineArrayMutliChoice)) 
+                            if (arena.onlineArenaSettingsInterfaceMultiChoice.ContainsKey(onlineArrayMutliChoice))
                             {
                                 self.SetSelected((selectable as Menu.MultipleChoiceArray.MultipleChoiceButton).multipleChoiceArray, arena.onlineArenaSettingsInterfaceMultiChoice[onlineArrayMutliChoice]);
                             }
@@ -155,7 +165,7 @@ namespace RainMeadow
 
         private void ArenaSettingsInterface_SetSelected(On.Menu.ArenaSettingsInterface.orig_SetSelected orig, Menu.ArenaSettingsInterface self, Menu.MultipleChoiceArray array, int i)
         {
-           
+
             if (isArenaMode(out var arena))
             {
                 if (OnlineManager.lobby.isOwner)
@@ -176,7 +186,8 @@ namespace RainMeadow
                 }
                 orig(self, array, i);
 
-            } else
+            }
+            else
             {
                 orig(self, array, i);
             }
@@ -821,13 +832,14 @@ namespace RainMeadow
         private void HUD_InitMultiplayerHud(On.HUD.HUD.orig_InitMultiplayerHud orig, HUD.HUD self, ArenaGameSession session)
         {
 
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
                 self.AddPart(new TextPrompt(self));
                 self.AddPart(new Pointing(self));
                 self.AddPart(new ChatHud(self, session.game.cameras[0]));
                 self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
-
+                self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena));
+                self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));
 
             }
             else
@@ -835,19 +847,6 @@ namespace RainMeadow
                 orig(self, session);
             }
 
-        }
-
-
-
-        private void ArenaGameSession_AddHUD(On.ArenaGameSession.orig_AddHUD orig, ArenaGameSession self)
-        {
-            orig(self);
-
-
-            if (isArenaMode(out var gameMode))
-            {
-                self.game.cameras[0].hud.AddPart(new OnlineHUD(self.game.cameras[0].hud, self.game.cameras[0], gameMode));
-            }
         }
 
         private bool ExitManager_PlayerTryingToEnterDen(On.ArenaBehaviors.ExitManager.orig_PlayerTryingToEnterDen orig, ArenaBehaviors.ExitManager self, ShortcutHandler.ShortCutVessel shortcutVessel)
@@ -932,8 +931,9 @@ namespace RainMeadow
 
                 if (!OnlineManager.lobby.isOwner)
                 {
-                    self.playersContinueButtons = null;
+                    // self.playersContinueButtons = null;
                     self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
+                    return;
 
                     //for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
                     //{
@@ -1138,7 +1138,7 @@ namespace RainMeadow
                 orig(self);
             }
 
-                return orig(self);
+            return orig(self);
 
         }
 
@@ -1166,47 +1166,55 @@ namespace RainMeadow
                 }
 
 
-                int exits = self.game.world.GetAbstractRoom(0).exits;
-                int[] array = new int[exits];
+                int totalExits = self.game.world.GetAbstractRoom(0).exits;
+                int[] exitScores = new int[totalExits];
                 if (suggestedDens != null)
                 {
                     for (int k = 0; k < suggestedDens.Count; k++)
                     {
-                        if (suggestedDens[k] >= 0 && suggestedDens[k] < array.Length)
+                        if (suggestedDens[k] >= 0 && suggestedDens[k] < exitScores.Length)
                         {
-                            array[suggestedDens[k]] -= 1000;
+                            exitScores[suggestedDens[k]] -= 1000;
                         }
                     }
                 }
 
-                int num = UnityEngine.Random.Range(0, exits);
-                float num2 = float.MinValue;
-                for (int m = 0; m < exits; m++)
+                int randomExitIndex = UnityEngine.Random.Range(0, totalExits);
+                float highestScore = float.MinValue;
+
+
+                for (int currentExitIndex = 0; currentExitIndex < totalExits; currentExitIndex++)
                 {
-                    float num3 = UnityEngine.Random.value - (float)array[m] * 1000f;
-                    RWCustom.IntVector2 startTile = room.ShortcutLeadingToNode(m).StartTile;
-                    for (int n = 0; n < exits; n++)
+                    float score = UnityEngine.Random.value - (float)exitScores[currentExitIndex] * 1000f;
+                    RWCustom.IntVector2 startTilePosition = room.ShortcutLeadingToNode(currentExitIndex).StartTile;
+
+                    for (int otherExitIndex = 0; otherExitIndex < totalExits; otherExitIndex++)
                     {
-                        if (n != m && array[n] > 0)
+                        if (otherExitIndex != currentExitIndex && exitScores[otherExitIndex] > 0)
                         {
-                            num3 += Mathf.Clamp(startTile.FloatDist(room.ShortcutLeadingToNode(n).StartTile), 8f, 17f) * UnityEngine.Random.value;
+                            float distanceAdjustment = Mathf.Clamp(startTilePosition.FloatDist(room.ShortcutLeadingToNode(otherExitIndex).StartTile), 8f, 17f) * UnityEngine.Random.value;
+                            score += distanceAdjustment;
                         }
                     }
 
-                    if (num3 > num2)
+                    if (score > highestScore)
                     {
-                        num = m;
-                        num2 = num3;
+                        randomExitIndex = currentExitIndex;
+                        highestScore = score;
                     }
                 }
-
-                array[num]++;
 
                 RainMeadow.Debug("Trying to create an abstract creature");
-
+                RainMeadow.Debug($"RANDOM EXIT INDEX: {randomExitIndex}");
+                RainMeadow.Debug($"RANDOM START TILE INDEX: {room.ShortcutLeadingToNode(randomExitIndex).StartTile}");
                 sSpawningAvatar = true;
                 AbstractCreature abstractCreature = new AbstractCreature(self.game.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(0, -1, -1, -1), new EntityID(-1, 0));
+                abstractCreature.pos.room = self.game.world.GetAbstractRoom(0).index;
+                abstractCreature.pos.abstractNode = room.ShortcutLeadingToNode(randomExitIndex).destNode;
+
+
                 RainMeadow.Debug("assigned ac, registering");
+
                 self.game.world.GetResource().ApoEnteringWorld(abstractCreature);
                 sSpawningAvatar = false;
 
@@ -1227,10 +1235,11 @@ namespace RainMeadow
                 RainMeadow.Debug("Arena: Realize Creature!");
                 abstractCreature.Realize();
 
-                var shortCutVessel = new ShortcutHandler.ShortCutVessel(new RWCustom.IntVector2(-1, -1), abstractCreature.realizedCreature, self.game.world.GetAbstractRoom(0), 0);
-                shortCutVessel.entranceNode = num;
+                var shortCutVessel = new ShortcutHandler.ShortCutVessel(room.ShortcutLeadingToNode(randomExitIndex).DestTile, abstractCreature.realizedCreature, self.game.world.GetAbstractRoom(0), 0);
+
+                shortCutVessel.entranceNode = abstractCreature.pos.abstractNode;
                 shortCutVessel.room = self.game.world.GetAbstractRoom(abstractCreature.Room.name);
-                abstractCreature.pos.room = self.game.world.offScreenDen.index;
+
                 self.game.shortcuts.betweenRoomsWaitingLobby.Add(shortCutVessel);
                 self.AddPlayer(abstractCreature);
                 if (ModManager.MSC)
@@ -1251,6 +1260,17 @@ namespace RainMeadow
                 }
 
                 self.playersSpawned = true;
+                arena.playerEnteredGame++;
+                foreach (var player in arena.arenaSittingOnlineOrder)
+                {
+
+                    var getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(player);
+                    if (!getPlayer.isMe)
+                    {
+                        getPlayer.InvokeOnceRPC(ArenaRPCs.Arena_IncrementPlayersJoined);
+                    }
+                }
+
             }
 
             else

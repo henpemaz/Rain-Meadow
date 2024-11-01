@@ -68,6 +68,17 @@ namespace RainMeadow
         }
 
         [RPCMethod]
+        public static void Arena_IncrementPlayersJoined()
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                arena.playerEnteredGame = arena.playerEnteredGame + 1;
+
+            }
+
+        }
+
+        [RPCMethod]
         public static void Arena_ResetPlayersLeft()
         {
             if (RainMeadow.isArenaMode(out var arena))
@@ -155,6 +166,7 @@ namespace RainMeadow
                     return;
                 }
                 arena.clientsAreReadiedUp++;
+                arena.playersReadiedUp[userIsReady] = true;
 
                 try
                 {
@@ -165,6 +177,7 @@ namespace RainMeadow
                         {
 
                             game.classButtons[i].readyForCombat = true;
+
                         }
 
                     }
