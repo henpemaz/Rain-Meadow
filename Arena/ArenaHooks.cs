@@ -86,7 +86,7 @@ namespace RainMeadow
             orig(self);
             if (isArenaMode(out var _))
             {
-                var duration = 0.40f * (self.maxGodTime / 400f); // we'll see how that feels for now
+                var duration = 0.35f * (self.maxGodTime / 400f); // we'll see how that feels for now
                 self.godTimer = Mathf.Min(self.godTimer + duration, self.maxGodTime);
             }
         }
