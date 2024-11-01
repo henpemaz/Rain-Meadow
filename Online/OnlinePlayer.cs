@@ -143,16 +143,19 @@ namespace RainMeadow
 
         public void AbortUnacknoledgedEvents()
         {
-            if (OutgoingEvents.Count > 0)
+            var toBeAborted = new Queue<OnlineEvent>(OutgoingEvents); // newly added events are not aborted on purpose
+            while (toBeAborted.Count > 0)
             {
-                RainMeadow.Debug($"Aborting events for player {this}");
-                var toBeAborted = new Queue<OnlineEvent>(OutgoingEvents); // newly added events are not aborted on purpose
-                OutgoingEvents.Clear();
-                while (toBeAborted.Count > 0)
+                // this is a bit complex because we only want the events that were originally there
+                // but at the same time handling can add/remove events
+                var e = toBeAborted.Dequeue();
+                if (OutgoingEvents.Contains(e))
                 {
-                    var e = toBeAborted.Dequeue();
                     RainMeadow.Debug($"Aborting: {e}");
                     e.Abort();
+
+                    //OutgoingEvents.Remove(e);
+                    OutgoingEvents = new Queue<OnlineEvent>(OutgoingEvents.Where(ne => ne != e));
                 }
             }
         }

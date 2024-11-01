@@ -11,84 +11,82 @@ creature todo
 - can get stuck
 	some rooms will get fixed
 		eventually :tm:
-
 - allow creature to change the creature-pipe they're going to mid-flight (very low prio)
+- creatures not cleared on enter creature pipe
+	game clears enteringshortcut so they "abort entering" most of the time?
+	could also be that npcdestination is null so they just bounce?
+- eggbug and lanternmouse are way too fast in zerog
+
 
 lizard todo
 	blues have trouble sticking to the ceiling
 	blues have trouble climbing/pathing ledges
+	lizard wallclimb is slow, slows you down a lot in zerog movement
+	red and some more lizs are having trouble climbing
 
-"creature emotions" need addressing
-lizards shouldn't open mouth to bite -> can't reproduce
-rats shouldn't panic
-slugcat arm reaches to threat
+
+scav todo
+	scav climbpos doesn't sync
+	pointing doesn't let go once let go?
+	scav latching to pole with lots of momentum lets go? shelter room to drainage spot
+	scav has trouble walljumping, doesn't count as walljumpable sometimes, hic02 lower spot (check?)
+
+
+noot todo
+	noot gets stuck on water surface, seems to always go left?
+
 
 following others around is hard
 	need map implemented
 	could use pipes flashing colors if room inhabited
 	player list on passage screen
 
-wormgrass can still eat you (big patches in FA)
-prevents pathing still
 
-echo sky animation is too slow needs to converge
+echo
+	echo sky animation is too slow needs to converge
+	echo reward anim is bad, fade to white is bad, no confetti??
+	echo tentacle bounces bet screens in long rooms
+	squid had trouble in dsb06 underwater poles?
 
-echo reward anim is bad, fade to white is bad, no confetti??
 
-wish there was a symbol for outskirts
+accessibility
+	ds a09, the crawlspace on left, creatures don't snap to crawling in it
+	ds c03 exist is at water height wont path
+	dsa13 corner up lizard stuck
 
-double jumps out of the water, way too much speed
 
-ds a09, the crawlspace on left, creatures don't snap to crawling in it
+emotes
+	wish there was a symbol for outskirts
+	emotes go off-screen too often, need to show them in-screen near the creature when possible
+	emotes sometimes don't stop fading when new emotes are added
+	rotating arrow symbol resets to up on remote when client lets go
+	emote bg tint too strong, same for text
 
-ds c03 exist is at water height wont path
+customization
+	tints could blend in HSL, currently blends towards desat always because of the nature of the maths
 
-creatures not cleared on enter creature pipe
-	game clears enteringshortcut so they "abort entering" most of the time?
-	could also be that npcdestination is null so they just bounce?
 
-echo tentacle bounces bet screens in long rooms
+input
+	throw is for switching pages on hotwheel, but also call, specially on controller
+	rebindable keybinds for everything meadow
+		- controller emote input
+		- tab
+	- people don't like locking in place while pointing
+		// could combine with "look", after all just looking is kind of meh
+	- scav and scug don't stop pointing even when you let go of call
 
-scav climbpos doesn't sync
 
-emotes go off-screen too often, need to show them in-screen near the creature when possible
+gameplay
+	toggle collision as a setting
+	world state of onlineplayer is a lot of rot etc because no filters apply
 
-toggle collision as a setting
+	music plays maybe too often
+		rethink triggers
+		maybe options
 
-noot gets stuck on water surface, seems to always go left?
 
-redo scavenger selectscreen
+menus
+	redo scavenger selectscreen
+	on meadow-menu or lobby menu, esc doesn't go back
+	backing out of passage screen sends you to main menu? unconfirmed but plausible
 
-emotes sometimes don't stop fading when new emotes are added
-
-on meadow-menu or lobby menu, esc doesn't go back
-
-scav latching to pole with lots of momentum lets go? shelter room to drainage spot
-
-dsa13 corner up lizard stuck
-
-squid had trouble in dsb06 underwater poles?
-
-scav has trouble walljumping, doesn't count as walljumpable sometimes, hic02 lower spot
-
-backing out of passage screen sends you to main menu? unconfirmed
-
-eggbug and lanternmouse are way too fast in zerog
-
-lizard wallclimb is slow, slows you down a lot in zerog movement
-
-rebindable keybinds for everything meadow
-- controller emote input
-- tab
-
-world state of onlineplayer is a lot of rot etc because no filters apply
-
-rotating arrow symbol resets to up on remote when client lets go
-
-throw is for switching pages on hotwheel, but also call, specially on controller
-
-red and some more lizs are having trouble climbing
-
-scav and scug don't stop pointing even when you let go of call
-
-emote bg tint too strong
