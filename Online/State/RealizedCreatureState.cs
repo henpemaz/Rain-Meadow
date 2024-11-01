@@ -9,10 +9,12 @@ namespace RainMeadow
     {
         [OnlineField(nullable = true)]
         private DynamicOrderedStates<GraspRef> grasps;
-        [OnlineField]
+        [OnlineField(group = "counters")]
         public short stun;
         [OnlineField(nullable = true)]
         private IntVector2? enteringShortcut;
+        [OnlineField]
+        private WorldCoordinate transportationDestination;
 
         public RealizedCreatureState() { }
         public RealizedCreatureState(OnlineCreature onlineCreature) : base(onlineCreature)
@@ -23,6 +25,7 @@ namespace RainMeadow
                                         .ToList() ?? new());
             stun = (short)creature.stun;
             enteringShortcut = creature.enteringShortCut;
+            transportationDestination = creature.NPCTransportationDestination;
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
@@ -33,6 +36,7 @@ namespace RainMeadow
 
             creature.stun = stun;
             creature.enteringShortCut = enteringShortcut;
+            creature.NPCTransportationDestination = transportationDestination;
 
             if (creature.grasps != null)
             {

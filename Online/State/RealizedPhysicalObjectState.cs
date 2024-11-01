@@ -28,7 +28,10 @@ namespace RainMeadow
             {
                 chunkStates[i].ReadTo(po.bodyChunks[i]);
             }
-            po.collisionLayer = collisionLayer;
+            if (po.collisionLayer != collisionLayer)
+            {
+                po.ChangeCollisionLayer(collisionLayer);
+            }
         }
     }
 
@@ -49,7 +52,7 @@ namespace RainMeadow
         public void CustomSerialize(Serializer serializer)
         {
             serializer.Serialize(ref pos);
-            serializer.Serialize(ref vel);
+            serializer.SerializeHalf(ref vel);
         }
 
         public void ReadTo(BodyChunk c)

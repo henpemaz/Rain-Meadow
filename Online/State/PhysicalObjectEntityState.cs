@@ -71,6 +71,10 @@ namespace RainMeadow
                 {
                     if (wasPos.room != -1)
                     {
+                        if (apo.world.game.session is StoryGameSession storyGameSession)
+                        {
+                            storyGameSession.RemovePersistentTracker(apo);
+                        }
                         if (apo.realizedObject is PhysicalObject po)
                         {
                             po.RemoveFromRoom();
@@ -101,6 +105,18 @@ namespace RainMeadow
                     else
                     {
                         if (apo.world.IsRoomInRegion(pos.room)) apo.world.GetAbstractRoom(pos).AddEntity(apo);
+                        if (ModManager.MMF && MoreSlugcats.MMF.cfgKeyItemTracking.Value && AbstractPhysicalObject.UsesAPersistantTracker(apo) && apo.world.game.session is StoryGameSession storyGameSession)
+                        {
+                            storyGameSession.AddNewPersistentTracker(apo);
+                            /* remix key item tracking TODO: get player that puked this up
+                            if (apo.Room.NOTRACKERS)
+                            {
+                                apo.tracker.lastSeenRegion = lastGoodTrackerSpawnRegion;
+                                apo.tracker.lastSeenRoom = lastGoodTrackerSpawnRoom;
+                                apo.tracker.ChangeDesiredSpawnLocation(lastGoodTrackerSpawnCoord);
+                            }
+                            */
+                        }
                     }
                 }
             }

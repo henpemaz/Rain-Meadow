@@ -51,6 +51,9 @@ namespace RainMeadow
 
             On.Creature.Die += Creature_Die; // do not die!
 
+            On.WormGrass.IsTileAccessible += WormGrass_IsTileAccessible; // always accessible
+            On.WormGrass.WormGrassPatch.InteractWithCreature += WormGrassPatch_InteractWithCreature;
+            IL.WormGrass.WormGrassPatch.InteractWithCreature += WormGrassPatch_InteractWithCreature1;
             On.WormGrass.Worm.ctor += Worm_ctor; // only cosmetic worms
 
             IL.ScavengerOutpost.ctor += ScavengerOutpost_ctor;
@@ -59,6 +62,57 @@ namespace RainMeadow
             On.ShortcutGraphics.Draw += ShortcutGraphics_Draw;
 
             On.World.SpawnGhost += World_SpawnGhost;
+
+            On.CreatureTemplate.CreatureRelationship_CreatureTemplate += CreatureTemplate_CreatureRelationship_CreatureTemplate;
+        }
+
+        private CreatureTemplate.Relationship CreatureTemplate_CreatureRelationship_CreatureTemplate(On.CreatureTemplate.orig_CreatureRelationship_CreatureTemplate orig, CreatureTemplate self, CreatureTemplate crit)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                return new CreatureTemplate.Relationship(CreatureTemplate.Relationship.Type.Ignores, 2f); // intense ignore helps with looking
+            }
+            return orig(self, crit);
+        }
+
+        private void WormGrassPatch_InteractWithCreature1(ILContext il)
+        {
+            var c = new ILCursor(il);
+            ILLabel skip = null;
+            c.GotoNext(MoveType.After,
+                i => i.MatchLdfld<CreatureTemplate>("type"),
+                i => i.MatchLdsfld<CreatureTemplate.Type>("Slugcat"),
+                i => i.MatchCallOrCallvirt("ExtEnum`1<CreatureTemplate/Type>", "op_Inequality"),
+                i => i.MatchBrfalse(out skip)
+                );
+            c.EmitDelegate(() =>
+            {
+                if(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+                {
+                    return false;
+                }
+                return true;
+            });
+            c.Emit(OpCodes.Brfalse, skip);
+        }
+
+        private void WormGrassPatch_InteractWithCreature(On.WormGrass.WormGrassPatch.orig_InteractWithCreature orig, WormGrass.WormGrassPatch self, WormGrass.WormGrassPatch.CreatureAndPull creatureAndPull)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                creatureAndPull.bury = 0f;
+                creatureAndPull.pull = 0f;
+            }
+            orig(self, creatureAndPull);
+        }
+
+        private bool WormGrass_IsTileAccessible(On.WormGrass.orig_IsTileAccessible orig, WormGrass self, RWCustom.IntVector2 tile, CreatureTemplate crit)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                return true;
+            }
+            return orig(self, tile, crit);
         }
 
         private void World_SpawnGhost(On.World.orig_SpawnGhost orig, World self)

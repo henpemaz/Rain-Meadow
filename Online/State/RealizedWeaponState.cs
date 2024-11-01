@@ -8,11 +8,9 @@ namespace RainMeadow
         // is all this data really necessary?
         [OnlineField]
         protected byte mode;
-        [OnlineField(nullable = true)]
-        private Vector2? setRotation;
-        [OnlineField]
+        [OnlineFieldHalf]
         private Vector2 rotation;
-        [OnlineField]
+        [OnlineFieldHalf]
         private float rotationSpeed;
         [OnlineField(nullable = true)]
         private OnlineEntity.EntityId? thrownBy;
@@ -22,7 +20,6 @@ namespace RainMeadow
         {
             var weapon = (Weapon)onlineEntity.apo.realizedObject;
             mode = (byte)weapon.mode;
-            setRotation = weapon.setRotation;
             rotation = weapon.rotation;
             rotationSpeed = weapon.rotationSpeed;
             thrownBy = (weapon.thrownBy?.abstractCreature != null && OnlineCreature.map.TryGetValue(weapon.thrownBy.abstractCreature, out var oc)) ? oc?.id : null;
@@ -41,7 +38,6 @@ namespace RainMeadow
             }
             weapon.thrownBy = (thrownBy?.FindEntity() as OnlineCreature)?.realizedCreature;
             if (weapon.grabbedBy != null && weapon.grabbedBy.Count > 0) { RainMeadow.Trace($"Skipping state because grabbed"); return; }
-            weapon.setRotation = setRotation;
             weapon.rotation = rotation;
             weapon.rotationSpeed = rotationSpeed;
         }

@@ -211,11 +211,11 @@ namespace RainMeadow
         {
             if (!OnlineManager.players.Contains(leavingPlayer)) { return; }
 
-            OnlineManager.players.Remove(leavingPlayer);
+            HandleDisconnect(leavingPlayer);
 
             if (OnlineManager.lobby.isOwner)
             {
-                // Tell the other players to create this player
+                // Tell the other players to remove this player
                 foreach (OnlinePlayer player in OnlineManager.players)
                 {
                     if (player.isMe)
