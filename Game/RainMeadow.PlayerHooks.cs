@@ -63,6 +63,19 @@ public partial class RainMeadow
                 {
                     PlayerMovementOverride.HoldFire(self);
                 }
+
+                if (self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint && !arena.countdownInitiatedHoldFire)
+                {
+                    if (self.wantToJump > 0 && self.input[0].pckp && self.canJump <= 0 && !self.monkAscension && !self.tongue.Attached && self.bodyMode != Player.BodyModeIndex.Crawl && self.bodyMode != Player.BodyModeIndex.CorridorClimb && self.bodyMode != Player.BodyModeIndex.ClimbIntoShortCut && self.animation != Player.AnimationIndex.HangFromBeam && self.animation != Player.AnimationIndex.ClimbOnBeam && self.bodyMode != Player.BodyModeIndex.WallClimb && self.bodyMode != Player.BodyModeIndex.Swimming && self.Consious && !self.Stunned && self.animation != Player.AnimationIndex.AntlerClimb && self.animation != Player.AnimationIndex.VineGrab && self.animation != Player.AnimationIndex.ZeroGPoleGrab)
+                    {
+                        self.ActivateAscension();
+                    }
+                }
+
+                //if (self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer && arena.countdownInitiatedHoldFire) // Arena: undecided on this for now
+                //{
+                //    self.pyroJumpped = true;
+                //}
             }
         }
 
@@ -522,6 +535,10 @@ public partial class RainMeadow
         {
             if (otherObject is Player) return false;
         }
+        if (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire)
+        {
+            if (otherObject is Player) return false;
+        }
         return orig(self, otherObject);
     }
 
@@ -559,6 +576,10 @@ public partial class RainMeadow
         {
             if (crit is Player) return false;
         }
+        if (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire)
+        {
+            if (crit is Player) return false;
+        }
         return orig(self, crit);
     }
 
@@ -568,6 +589,12 @@ public partial class RainMeadow
         if (isStoryMode(out var storyGameMode))
         {
             slugcat = storyGameMode.avatarSettings.playingAs;
+        }
+
+        if (isArenaMode(out var arena))
+        {
+
+            slugcat = arena.avatarSettings.playingAs; // Arena needs this 
         }
         orig(self, slugcat, malnourished);
 
