@@ -1,6 +1,5 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using On.MoreSlugcats;
 using RainMeadow.Story.OnlineUIComponents;
 using System;
 using System.Linq;
@@ -72,6 +71,11 @@ public partial class RainMeadow
                         self.ActivateAscension();
                     }
                 }
+
+                //if (self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer && arena.countdownInitiatedHoldFire) // Arena: undecided on this for now
+                //{
+                //    self.pyroJumpped = true;
+                //}
             }
         }
 
@@ -531,6 +535,10 @@ public partial class RainMeadow
         {
             if (otherObject is Player) return false;
         }
+        if (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire)
+        {
+            if (otherObject is Player) return false;
+        }
         return orig(self, otherObject);
     }
 
@@ -568,6 +576,10 @@ public partial class RainMeadow
         {
             if (crit is Player) return false;
         }
+        if (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire)
+        {
+            if (crit is Player) return false;
+        }
         return orig(self, crit);
     }
 
@@ -577,6 +589,12 @@ public partial class RainMeadow
         if (isStoryMode(out var storyGameMode))
         {
             slugcat = storyGameMode.avatarSettings.playingAs;
+        }
+
+        if (isArenaMode(out var arena))
+        {
+
+            slugcat = arena.avatarSettings.playingAs; // Arena needs this 
         }
         orig(self, slugcat, malnourished);
 
