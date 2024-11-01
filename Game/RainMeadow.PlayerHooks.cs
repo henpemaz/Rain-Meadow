@@ -1,6 +1,7 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using System;
+using System.Drawing;
 using System.Linq;
 using UnityEngine;
 
@@ -43,6 +44,19 @@ public partial class RainMeadow
         On.AbstractCreature.ctor += AbstractCreature_ctor;
         On.Player.ShortCutColor += Player_ShortCutColor;
         On.Player.checkInput += Player_checkInput;
+        On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites2;
+
+    }
+
+    private void PlayerGraphics_DrawSprites2(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
+    {
+        orig(self, sLeaser, rCam, timeStacker, camPos);
+        sLeaser.sprites[4]._color.a = 0f;
+        sLeaser.sprites[3]._color.a = 0f;
+        sLeaser.sprites[2]._color.a = 0f;
+        sLeaser.sprites[1]._color.a = 0f;
+        sLeaser.sprites[0]._color.a = 0f;
+
 
     }
 
@@ -63,18 +77,8 @@ public partial class RainMeadow
                     PlayerMovementOverride.HoldFire(self);
                 }
 
-                if (self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint && !arena.countdownInitiatedHoldFire)
-                {
-                    if (self.wantToJump > 0 && self.input[0].pckp && self.canJump <= 0 && !self.monkAscension && !self.tongue.Attached && self.bodyMode != Player.BodyModeIndex.Crawl && self.bodyMode != Player.BodyModeIndex.CorridorClimb && self.bodyMode != Player.BodyModeIndex.ClimbIntoShortCut && self.animation != Player.AnimationIndex.HangFromBeam && self.animation != Player.AnimationIndex.ClimbOnBeam && self.bodyMode != Player.BodyModeIndex.WallClimb && self.bodyMode != Player.BodyModeIndex.Swimming && self.Consious && !self.Stunned && self.animation != Player.AnimationIndex.AntlerClimb && self.animation != Player.AnimationIndex.VineGrab && self.animation != Player.AnimationIndex.ZeroGPoleGrab)
-                    {
-                        self.ActivateAscension();
-                    }
-                }
+                ArenaHelpers.OverideSlugcatClasses(self, arena);
 
-                //if (self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer && arena.countdownInitiatedHoldFire) // Arena: undecided on this for now
-                //{
-                //    self.pyroJumpped = true;
-                //}
             }
         }
 
