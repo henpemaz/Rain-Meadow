@@ -25,7 +25,7 @@ public partial class RainMeadow
         On.Player.Destroy += Player_Destroy;
         On.Player.Grabability += PlayerOnGrabability;
         IL.Player.GrabUpdate += Player_GrabUpdate;
-        On.Player.SwallowObject += Player_SwallowObject;
+        IL.Player.SwallowObject += Player_SwallowObject;
         On.Player.Regurgitate += Player_Regurgitate;
         On.Player.ThrowObject += Player_ThrowObject;
         On.Player.CanIPickThisUp += Player_CanIPickThisUp;
@@ -487,13 +487,51 @@ public partial class RainMeadow
         return orig(self, obj);
     }
 
-    private void Player_SwallowObject(On.Player.orig_SwallowObject orig, Player self, int grasp)
+    private void Player_SwallowObject(ILContext il)
     {
-        if (!self.abstractPhysicalObject.IsLocal(out var oe)) return;
-        orig(self, grasp);
-        if (oe is not null && self.objectInStomach is not null)
+        try
         {
-            self.objectInStomach.pos.room = -1; // signal not-in-a-room
+            var c = new ILCursor(il);
+            var skip = il.DefineLabel();
+            c.GotoNext(moveType: MoveType.AfterLabel,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdloc(0),
+                i => i.MatchStfld<Player>("objectInStomach")
+                );
+            c.Emit(OpCodes.Ldarg_0);
+            c.Emit(OpCodes.Ldloc_0);
+            c.EmitDelegate((Player self, AbstractPhysicalObject objectInStomach) =>
+            {
+                if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject(out var oe))
+                {
+                    if (!oe.isMine) return false;
+                    if (objectInStomach.GetOnlineObject(out var oeInStomach))
+                        oeInStomach.realized = false; // don't release ownership
+                }
+                return true;
+            });
+            c.Emit(OpCodes.Brfalse, skip);
+            c.Index = il.Instrs.Count - 1;
+            c.GotoPrev(moveType: MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<Player>("objectInStomach"),
+                i => i.MatchLdarg(0),
+                i => i.MatchCallOrCallvirt<Creature>("get_abstractCreature"),
+                i => i.MatchLdfld<AbstractWorldEntity>("pos"),
+                i => i.MatchCallOrCallvirt<AbstractWorldEntity>("Abstractize")
+                );
+            // abstractize sets pos so we gotta unset it after
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Player self) =>
+            {
+                if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject(out var oe))
+                    self.objectInStomach.pos.room = -1; // signal not-in-a-room
+            });
+            c.MarkLabel(skip);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e);
         }
     }
 
