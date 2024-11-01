@@ -324,7 +324,7 @@ namespace RainMeadow
                                         ac2.Realize();
                                         ac2.realizedCreature.inShortcut = true;
                                         
-                                        if (ac2.world.GetAbstractRoom(topos).realizedRoom?.shortcuts?.Length > 0))
+                                        if (ac2.world.GetAbstractRoom(topos).realizedRoom?.shortcuts?.Length > 0)
                                         {
                                             ac2.world.game.shortcuts.CreatureEnterFromAbstractRoom(ac2.realizedCreature, ac2.world.GetAbstractRoom(topos), topos.abstractNode);
                                         }
