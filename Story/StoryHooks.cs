@@ -138,6 +138,7 @@ namespace RainMeadow
                         self.gameOverMode = false;
                     }
                 }
+                self.restartNotAllowed = (ChatHud.chatButtonActive) ? 1 : 0; // block GoToDeathScreen if we're typing
             }
         }
 
