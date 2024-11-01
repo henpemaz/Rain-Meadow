@@ -33,6 +33,7 @@ namespace RainMeadow
             On.ArenaGameSession.Killing += ArenaGameSession_Killing;
             On.ArenaGameSession.SpawnCreatures += ArenaGameSession_SpawnCreatures;
             On.ArenaGameSession.ctor += ArenaGameSession_ctor;
+          
 
             On.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded;
 
@@ -76,6 +77,18 @@ namespace RainMeadow
             On.Menu.ArenaSettingsInterface.SetChecked += ArenaSettingsInterface_SetChecked;
             On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
 
+            On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
+
+        }
+
+        private void Player_ClassMechanicsSaint(On.Player.orig_ClassMechanicsSaint orig, Player self)
+        {
+            orig(self);
+            if (isArenaMode(out var _))
+            {
+                var duration = 0.40f * (self.maxGodTime / 400f); // we'll see how that feels for now
+                self.godTimer = Mathf.Min(self.godTimer + duration, self.maxGodTime);
+            }
         }
 
         private void ArenaSettingsInterface_ctor(On.Menu.ArenaSettingsInterface.orig_ctor orig, Menu.ArenaSettingsInterface self, Menu.Menu menu, Menu.MenuObject owner)

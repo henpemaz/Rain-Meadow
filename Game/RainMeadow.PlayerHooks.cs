@@ -1,5 +1,6 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using On.MoreSlugcats;
 using RainMeadow.Story.OnlineUIComponents;
 using System;
 using System.Linq;
@@ -62,6 +63,14 @@ public partial class RainMeadow
                 if (arena.countdownInitiatedHoldFire)
                 {
                     PlayerMovementOverride.HoldFire(self);
+                }
+
+                if (self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint && !arena.countdownInitiatedHoldFire)
+                {
+                    if (self.wantToJump > 0 && self.input[0].pckp && self.canJump <= 0 && !self.monkAscension && !self.tongue.Attached && self.bodyMode != Player.BodyModeIndex.Crawl && self.bodyMode != Player.BodyModeIndex.CorridorClimb && self.bodyMode != Player.BodyModeIndex.ClimbIntoShortCut && self.animation != Player.AnimationIndex.HangFromBeam && self.animation != Player.AnimationIndex.ClimbOnBeam && self.bodyMode != Player.BodyModeIndex.WallClimb && self.bodyMode != Player.BodyModeIndex.Swimming && self.Consious && !self.Stunned && self.animation != Player.AnimationIndex.AntlerClimb && self.animation != Player.AnimationIndex.VineGrab && self.animation != Player.AnimationIndex.ZeroGPoleGrab)
+                    {
+                        self.ActivateAscension();
+                    }
                 }
             }
         }
