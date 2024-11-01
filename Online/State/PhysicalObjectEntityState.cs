@@ -73,6 +73,10 @@ namespace RainMeadow
                 {
                     if (wasPos.room != -1)
                     {
+                        if (apo.world.game.session is StoryGameSession storyGameSession)
+                        {
+                            storyGameSession.RemovePersistentTracker(apo);
+                        }
                         if (apo.realizedObject is PhysicalObject po)
                         {
                             po.RemoveFromRoom();
