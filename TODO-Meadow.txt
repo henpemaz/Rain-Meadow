@@ -12,9 +12,6 @@ creature todo
 	some rooms will get fixed
 		eventually :tm:
 - allow creature to change the creature-pipe they're going to mid-flight (very low prio)
-- creatures not cleared on enter creature pipe
-	game clears enteringshortcut so they "abort entering" most of the time?
-	could also be that npcdestination is null so they just bounce?
 - eggbug and lanternmouse are way too fast in zerog
 
 
