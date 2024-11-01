@@ -20,6 +20,7 @@ lizard todo
 	blues have trouble climbing/pathing ledges
 	lizard wallclimb is slow, slows you down a lot in zerog movement
 	red and some more lizs are having trouble climbing
+	could use proper lizard voice not default pink
 
 
 scav todo
@@ -31,6 +32,11 @@ scav todo
 
 noot todo
 	noot gets stuck on water surface, seems to always go left?
+
+
+eggbugg todo
+	regains footing mid-jump
+	voice call is slow-attack
 
 
 following others around is hard
