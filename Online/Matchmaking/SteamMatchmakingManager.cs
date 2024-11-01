@@ -281,18 +281,7 @@ namespace RainMeadow
 
             if (OnlineManager.players.FirstOrDefault(op => (op.id as SteamPlayerId).steamID == p) is OnlinePlayer player)
             {
-                RainMeadow.Debug($"Handling player disconnect:{player}");
-                player.hasLeft = true;
-                OnlineManager.lobby?.OnPlayerDisconnect(player);
-                while (player.HasUnacknoledgedEvents())
-                {
-                    player.AbortUnacknoledgedEvents();
-                    OnlineManager.lobby?.OnPlayerDisconnect(player);
-                }
-                RainMeadow.Debug($"Actually removing player:{player}");
-                OnlineManager.players.Remove(player);
-
-                ChatLogManager.LogMessage($"{SteamFriends.GetFriendPersonaName(p)} left the game.");
+                HandleDisconnect(player);
             }
         }
 

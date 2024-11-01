@@ -44,7 +44,7 @@ namespace RainMeadow
             {
                 EntityRegisteredInResource(oe, oe.MakeDefinition(this), null);
             }
-            else if (owner != null) // request to register
+            else if (owner != null && !owner.hasLeft) // request to register
             {
                 oe.pendingRequest = owner.InvokeRPC(this.OnEntityRegisterRequest, oe.MakeDefinition(this), oe.GetState(oe.owner.tick, this)).Then(OnRegisterResolve);
             }
@@ -154,7 +154,7 @@ namespace RainMeadow
             {
                 EntityJoinedResource(oe, null);
             }
-            else if (owner != null) // request to join
+            else if (owner != null && !owner.hasLeft) // request to join
             {
                 RequestJoinEntity(oe);
             }
@@ -226,7 +226,7 @@ namespace RainMeadow
             {
                 EntityLeftResource(oe);
             }
-            else if (owner != null) // request to leave
+            else if (owner != null && !owner.hasLeft) // request to leave
             {
                 RequestEntityLeave(oe);
             }
@@ -299,7 +299,7 @@ namespace RainMeadow
             {
                 EntityTransfered(oe, to);
             }
-            else if (owner != null) // request to transfer
+            else if (owner != null && !owner.hasLeft) // request to transfer
             {
                 RequestEntityTransfer(oe, to);
             }
