@@ -62,6 +62,17 @@ namespace RainMeadow
             On.ShortcutGraphics.Draw += ShortcutGraphics_Draw;
 
             On.World.SpawnGhost += World_SpawnGhost;
+
+            On.CreatureTemplate.CreatureRelationship_CreatureTemplate += CreatureTemplate_CreatureRelationship_CreatureTemplate;
+        }
+
+        private CreatureTemplate.Relationship CreatureTemplate_CreatureRelationship_CreatureTemplate(On.CreatureTemplate.orig_CreatureRelationship_CreatureTemplate orig, CreatureTemplate self, CreatureTemplate crit)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                return new CreatureTemplate.Relationship(CreatureTemplate.Relationship.Type.Ignores, 2f); // intense ignore helps with looking
+            }
+            return orig(self, crit);
         }
 
         private void WormGrassPatch_InteractWithCreature1(ILContext il)

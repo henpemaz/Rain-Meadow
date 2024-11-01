@@ -12,10 +12,6 @@ creature todo
 	some rooms will get fixed
 		eventually :tm:
 - allow creature to change the creature-pipe they're going to mid-flight (very low prio)
-- "creature emotions" need addressing
-	lizards shouldn't open mouth to bite -> can't reproduce
-	rats shouldn't panic
-	slugcat arm reaches to threat
 - creatures not cleared on enter creature pipe
 	game clears enteringshortcut so they "abort entering" most of the time?
 	could also be that npcdestination is null so they just bounce?
@@ -65,6 +61,9 @@ emotes
 	emotes sometimes don't stop fading when new emotes are added
 	rotating arrow symbol resets to up on remote when client lets go
 	emote bg tint too strong, same for text
+
+customization
+	tints could blend in HSL, currently blends towards desat always because of the nature of the maths
 
 
 input
