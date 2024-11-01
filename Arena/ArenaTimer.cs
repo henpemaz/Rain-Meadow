@@ -22,7 +22,9 @@ namespace RainMeadow
         private float fade, lastFade;
         public float SetupTimer;
         public ArenaCompetitiveGameMode arena;
+        public bool cancelTimer;
         private Player? player;
+        private bool countdownInitiated;
 
         public ArenaPrepTimer(HUD.HUD hud, FContainer fContainer, ArenaCompetitiveGameMode arena) : base(hud)
         {
@@ -49,6 +51,7 @@ namespace RainMeadow
             fContainer.AddChild(timerLabel);
             fContainer.AddChild(modeLabel);
             this.arena = arena;
+            countdownInitiated = false;
         }
 
         public Vector2 DrawPos(float timeStacker)
@@ -69,20 +72,22 @@ namespace RainMeadow
                     modeLabel.text = showMode.ToString();
 
                 }
-                else
+                else if (SetupTimer > 0)
                 {
                     SetupTimer--;
                     showMode = TimerMode.Countdown;
                     matchMode = TimerMode.Countdown;
                     modeLabel.text = $"Prepare for combat, {SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs)}";
-                } 
+                }
 
-                if (SetupTimer < 0)
+                else if (SetupTimer <= 0 && !countdownInitiated)
                 {
+                    countdownInitiated = true;
                     hud.PlaySound(SoundID.MENU_Start_New_Game);
                     ClearSprites();
                     arena.countdownInitiatedHoldFire = false;
                     SetupTimer = arena.setupTime;
+                     // Set the flag to true to prevent further executions
                 }
             }
 
