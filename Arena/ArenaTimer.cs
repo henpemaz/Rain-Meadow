@@ -1,5 +1,4 @@
-﻿using IL.MoreSlugcats;
-using RainMeadow;
+﻿
 using UnityEngine;
 
 namespace RainMeadow
@@ -30,7 +29,7 @@ namespace RainMeadow
         public ArenaPrepTimer(HUD.HUD hud, FContainer fContainer, ArenaCompetitiveGameMode arena) : base(hud)
         {
             SetupTimer = arena.setupTime;
-            if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
+            if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint) // Can snipe players, should wait to give them time to prep
             {
                 SetupTimer = arena.setupTime * 2;
             }
