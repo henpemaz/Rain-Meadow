@@ -261,6 +261,9 @@ namespace RainMeadow
                 else if (inResource is RoomSession newRoom)
                 {
                     RainMeadow.Debug($"room join");
+                    RainMeadow.Debug($"topos Tile defined? {topos.TileDefined}");
+                    RainMeadow.Debug($"topos Node defined? {topos.NodeDefined}");
+
                     if (!poState.inDen && apo.pos.room != -1) // inden entities are basically abstracted so not added to the room
                                                               // room == -1 signals swallowed item which shouldn't be in room
                     {
@@ -286,6 +289,8 @@ namespace RainMeadow
                             if (topos.TileDefined)
                             {
                                 apo.Move(topos);
+
+
                                 if (apo.realizedObject is Creature c)
                                 {
                                     c.RemoveFromShortcuts();
@@ -299,10 +304,12 @@ namespace RainMeadow
                                 {
                                     RainMeadow.Debug($"early entity"); // room loading will place it
                                 }
+
                             }
-                            else // nodedefined
+                            else
                             {
                                 RainMeadow.Debug("node defined");
+
                                 apo.Move(topos);
                                 if (apo.realizedObject is Creature c)
                                 {
@@ -316,7 +323,17 @@ namespace RainMeadow
                                         RainMeadow.Debug($"spawning in shortcuts");
                                         ac2.Realize();
                                         ac2.realizedCreature.inShortcut = true;
-                                        ac2.world.game.shortcuts.CreatureEnterFromAbstractRoom(ac2.realizedCreature, ac2.world.GetAbstractRoom(topos), topos.abstractNode);
+                                        
+                                        if (ac2.world.GetAbstractRoom(topos).realizedRoom?.shortcuts?.Length > 0)
+                                        {
+                                            ac2.world.game.shortcuts.CreatureEnterFromAbstractRoom(ac2.realizedCreature, ac2.world.GetAbstractRoom(topos), topos.abstractNode);
+                                        }
+                                        else
+                                        {
+
+                                            // noop, shortcut length / realized room is null
+                                        }
+
                                     }
                                     else
                                     {
