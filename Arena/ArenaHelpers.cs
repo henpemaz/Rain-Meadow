@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using RainMeadow.Arena.Nightcat;
 using UnityEngine;
 
 namespace RainMeadow
@@ -46,11 +47,7 @@ namespace RainMeadow
             arena.countdownInitiatedHoldFire = true;
             arena.setupTime = 300;
             lobby.manager.rainWorld.options.DeleteArenaSitting();
-            Nightcat.activateNightcatSFX = false;
-            Nightcat.deactivateNightcatSFX = false;
-            Nightcat.ticker = 300;
-            Nightcat.durationPhase = 300;
-            Nightcat.cooldownTimer = 0;
+            Nightcat.ResetNightcat();
 
 
         }

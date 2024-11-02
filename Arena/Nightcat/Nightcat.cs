@@ -1,9 +1,9 @@
 using Smoke;
 using UnityEngine;
 
-namespace RainMeadow
+namespace RainMeadow.Arena.Nightcat
 {
-    internal static class Nightcat
+    internal class Nightcat
     {
         public static int ticker = 300;
         public static int durationPhase = 300;
@@ -20,7 +20,17 @@ namespace RainMeadow
         public static bool notifiedPlayer = true;
         public static bool firstTimeInitiating = false;
 
-        public static void ActivateNightcat(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
+        public static void ResetNightcat()
+        {
+            durationPhase = 300;
+            deactivateNightcatSFX = false;
+            activatedNightcat = false;
+            activateNightcatSFX = false;
+            firstTimeInitiating = true;
+            notifiedPlayer = false;
+        }
+
+        public static void ActivateNightcat(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
             isActive = true;
             sLeaser.sprites[9]._color = Color.white; // eyes
@@ -47,18 +57,12 @@ namespace RainMeadow
 
         }
 
-        public static void DeactivateNightcat(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
+        public static void DeactivateNightcat(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
 
             isActive = false;
             activateNightcatSFX = false;
 
-            if (!activateNightcatSFX)
-            {   
-                self.player.room.PlaySound(SoundID.Firecracker_Disintegrate, self.player.mainBodyChunk, loop: false, 1f, 1f);
-                self.player.room.AddObject(new ZapCoil.ZapFlash(self.player.bodyChunks[1].pos, 5f));
-                activateNightcatSFX = true;
-            }
             //self.player.room.AddObject(new ShockWave(self.player.bodyChunks[1].pos, 100f, 0.07f, 6));
 
             // Reset alphaOffsets for the next cycle
@@ -70,33 +74,36 @@ namespace RainMeadow
 
             }
 
-            cooldownTimer = 300;
-            durationPhase = 300;
-            deactivateNightcatSFX = false;
-            activatedNightcat = false;
-            activateNightcatSFX = false;
-            firstTimeInitiating = true;
-            notifiedPlayer = false;
+            if (!activateNightcatSFX)
+            {
+                self.player.room.PlaySound(SoundID.Firecracker_Disintegrate, self.player.mainBodyChunk, loop: false, 1f, 1f);
+                self.player.room.AddObject(new ZapCoil.ZapFlash(self.player.bodyChunks[1].pos, 5f));
+                activateNightcatSFX = true;
+            }
+
+            ResetNightcat();
+            cooldownTimer = 300f;
+
         }
 
-        public static void NightcatImplementation(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
+        public static void NightcatImplementation(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
 
-            if (Nightcat.activatedNightcat)
+            if (activatedNightcat)
             {
-                Nightcat.ActivateNightcat(arena, self, sLeaser, rCam, timeStacker, camPos);
-                if (Nightcat.durationPhase > 0)
+                ActivateNightcat(arena, self, sLeaser, rCam, timeStacker, camPos);
+                if (durationPhase > 0)
                 {
-                    Nightcat.durationPhase--;
+                    durationPhase--;
                 }
 
-                Nightcat.durationPhase = Mathf.Max(Nightcat.durationPhase, 0);
+                durationPhase = Mathf.Max(durationPhase, 0);
             }
 
 
-            if ((Nightcat.durationPhase == 0 || self.player.input[0].thrw) &&  Nightcat.isActive)
+            if ((durationPhase == 0 || self.player.input[0].thrw || self.player != null && self.player.dead) && isActive)
             {
-                Nightcat.DeactivateNightcat(arena, self, sLeaser, rCam, timeStacker, camPos);
+                DeactivateNightcat(arena, self, sLeaser, rCam, timeStacker, camPos);
 
             }
         }
