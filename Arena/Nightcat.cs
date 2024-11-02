@@ -15,6 +15,7 @@ namespace RainMeadow
         public static bool activateNightcat = false;
         public static float cooldownTimer = 0f;
         public static bool initiateCountdownTimer = false;
+        public static bool playerThrewExitInvis = false;
 
 
         public static void ActivateNightcat(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
@@ -27,7 +28,7 @@ namespace RainMeadow
                 for (int i = 0; i < spriteCount; i++)
                 {
                     // Increment alphaOffsets for fading out
-                    float fadeOutAlpha = Mathf.Clamp01(Time.deltaTime * 0.3f);
+                    float fadeOutAlpha = Mathf.Clamp01(Time.deltaTime * 0.9f);
                     alphaOffsets[i] = Mathf.Clamp01(alphaOffsets[0] + fadeOutAlpha); // Adjust speed
 
 
@@ -42,12 +43,14 @@ namespace RainMeadow
 
                 }
             }
-            else if (ticker <= 0) // Restore phase
+
+            // Make this DeactivateNightcat
+            else if (ticker <= 0 || self.player.input[0].thrw) // Restore phase
             {
                 activateNightcatSFX = false;
                 durationPhase--;
 
-                if (durationPhase <= 0 && !deactivateNightcatSFX)
+                if ((durationPhase <= 0 && !deactivateNightcatSFX))
                 {
                     deactivateNightcatSFX = true;
                     self.player.room.PlaySound(SoundID.Firecracker_Disintegrate, self.player.mainBodyChunk, loop: false, 1f, 1f);
