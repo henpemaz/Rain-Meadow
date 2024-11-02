@@ -510,7 +510,7 @@ namespace RainMeadow
                         classButtons[i].RemoveSprites();
                         this.pages[0].RemoveSubObject(classButtons[i]);
                     }
-                    
+
                 }
 
 
@@ -704,7 +704,8 @@ namespace RainMeadow
                     {
 
                         classButtons[localIndex].kickButton = new SimplerSymbolButton(this, this.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", new Vector2(classButtons[localIndex].pos.x + 40f, classButtons[localIndex].pos.y + 110f));
-                        if (OnlineManager.players.Count <= 4) {
+                        if (OnlineManager.players.Count <= 4)
+                        {
                             classButtons[localIndex].kickButton.OnClick += (_) =>
                             {
                                 BanHammer.BanUser(OnlineManager.players[localIndex]);
@@ -834,11 +835,13 @@ namespace RainMeadow
 
                 usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition + 1].id.name; // current becomes next
                 int localIndex = currentPlayerPosition;
-                classButtons[holdPlayerPosition].kickButton.OnClick += (_) =>
+                if (OnlineManager.lobby.isOwner)
                 {
-                    BanHammer.BanUser(OnlineManager.players[localIndex + 1]);
-                };
-
+                    classButtons[holdPlayerPosition].kickButton.OnClick += (_) =>
+                    {
+                        BanHammer.BanUser(OnlineManager.players[localIndex + 1]);
+                    };
+                }
                 if (arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition + 1].id.name] > 3 && ModManager.MSC)
                 {
                     classButtons[holdPlayerPosition].portrait.fileName = "MultiplayerPortrait" + "41-" + allSlugs[arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition + 1].id.name]];
@@ -853,7 +856,8 @@ namespace RainMeadow
                 try
                 {
                     classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp[OnlineManager.players[currentPlayerPosition + 1].id.name];
-                } catch
+                }
+                catch
                 {
                     classButtons[holdPlayerPosition].readyForCombat = false;
                 }
@@ -891,10 +895,13 @@ namespace RainMeadow
 
                 usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition - 1].id.name; // current becomes previous
                 int localIndex = currentPlayerPosition;
-                classButtons[holdPlayerPosition].kickButton.OnClick += (_) =>
+                if (OnlineManager.lobby.isOwner)
                 {
-                    BanHammer.BanUser(OnlineManager.players[localIndex - 1]);
-                };
+                    classButtons[holdPlayerPosition].kickButton.OnClick += (_) =>
+                    {
+                        BanHammer.BanUser(OnlineManager.players[localIndex - 1]);
+                    };
+                }
                 if (arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition - 1].id.name] > 3 && ModManager.MSC)
                 {
                     classButtons[holdPlayerPosition].portrait.fileName = "MultiplayerPortrait" + "41-" + allSlugs[arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition - 1].id.name]];
