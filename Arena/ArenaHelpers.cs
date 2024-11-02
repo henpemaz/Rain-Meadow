@@ -131,21 +131,16 @@ namespace RainMeadow
 
             if (player.SlugCatClass == SlugcatStats.Name.Night && !arena.countdownInitiatedHoldFire)
             {
-                if (player.input[0].pckp && player.input[0].jmp && !Nightcat.activateNightcat && Nightcat.cooldownTimer == 0)
+                if (player.input[0].pckp && player.input[0].jmp && !Nightcat.activatedNightcat && Nightcat.cooldownTimer == 0)
                 {
-                    Nightcat.activateNightcat = true;
+                    Nightcat.activatedNightcat = true;
                 }
-                if (Nightcat.initiateCountdownTimer)
+                if (Nightcat.cooldownTimer > 0)
                 {
-                    if (Nightcat.cooldownTimer > 0)
-                    {
-                        Nightcat.cooldownTimer--;
-                    }
-
-                    // Ensure cooldownTimer never goes below zero
-                    Nightcat.cooldownTimer = Mathf.Max(Nightcat.cooldownTimer, 0);
-
+                    Nightcat.cooldownTimer--;
                 }
+
+                Nightcat.cooldownTimer = Mathf.Max(Nightcat.cooldownTimer, 0);
 
             }
 

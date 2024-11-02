@@ -54,10 +54,10 @@ public partial class RainMeadow
         orig(self, sLeaser, rCam, timeStacker, camPos);
 
 
-        if (isArenaMode(out var arena) && Nightcat.activateNightcat && Nightcat.cooldownTimer == 0)
+        if (isArenaMode(out var arena) && self.player.SlugCatClass == SlugcatStats.Name.Night)
         {
-            Nightcat.ActivateNightcat(arena, self, sLeaser, rCam, timeStacker, camPos);
 
+            Nightcat.NightcatImplementation(arena, self, sLeaser, rCam, timeStacker, camPos);
         }
 
 
