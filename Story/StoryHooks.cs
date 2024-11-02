@@ -533,9 +533,6 @@ namespace RainMeadow
                 {
                     storyGameMode.defaultDenPos = origSaveState.denPosition;
                 }
-
-                storyGameMode.hasSheltered = false;
-                storyGameMode.changedRegions = false;
             }
             return origSaveState;
         }
