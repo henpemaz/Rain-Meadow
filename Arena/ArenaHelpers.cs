@@ -5,6 +5,15 @@ namespace RainMeadow
     internal static class ArenaHelpers
     {
 
+        public static float NightcatAlpha = 1f;
+        public static float LastNightcatAlpha;
+        public static float NCinitialDuration = 10.5f;
+        public static float NCinitialTickInterval = 0.000333335f;
+        public static int ticker = 300;
+        public static int coolDownTick = 300;
+        public static float[] alphaOffsets = { 0.0f, 0.05f, 0.1f, 0.15f, 0.2f }; // Offsets for tail, feet, neck, chin, head
+        public static int spriteCount = 5;
+
         public static readonly List<string> nonArenaSlugs = new List<string> { "Inv", "Slugpup", "MeadowOnline", "MeadowOnlineRemote" };
 
         // I need a way to order ArenaSitting by the host without serializing a ton of data, so I just serialize the ushort of the inLobbyId
