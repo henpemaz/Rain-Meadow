@@ -1,4 +1,5 @@
 ﻿using HUD;
+using RainMeadow.Arena.Nightcat;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -216,6 +217,28 @@ namespace RainMeadow
             lastCameraPos = camera.currentCameraPosition;
             lastAbstractRoom = camera.room.abstractRoom.index;
 
+            if (this.antiNightcatFlicker > 0)
+            {
+                this.antiNightcatFlicker--;
+            }
+            if (Nightcat.cooldownTimer == 0 && !Nightcat.notifiedPlayer && Nightcat.firstTimeInitiating)
+            {
+                RainMeadow.Debug("Maybe here?");
+
+                if (this.antiNightcatFlicker < 1)
+                {
+                    this.nightcatCounter++;
+                    if (this.nightcatCounter == 10)
+                    {
+                        this.antiNightcatFlicker = 80;
+                        this.nightcatBump = new NightcatHUD(this);
+                        this.parts.Add(this.nightcatBump);
+                        Nightcat.notifiedPlayer = true;
+                    }
+                }
+            }
+
+
             if (this.antiDeathBumpFlicker > 0)
             {
                 this.antiDeathBumpFlicker--;
@@ -230,24 +253,6 @@ namespace RainMeadow
                         this.antiDeathBumpFlicker = 80;
                         this.deathBump = new OnlinePlayerDeathBump(this);
                         this.parts.Add(this.deathBump);
-                    }
-                }
-            }
-
-            if (this.antiNightcatFlicker > 0)
-            {
-                this.antiNightcatFlicker--;
-            }
-            if (Nightcat.cooldownTimer == 0 && !Nightcat.notifiedPlayer && Nightcat.firstTimeInitiating)
-            {
-                if (this.antiNightcatFlicker < 1)
-                {
-                    this.nightcatCounter++;
-                    if (this.nightcatCounter == 10)
-                    {
-                        this.nightcatBump = new NightcatHUD(this);
-                        this.parts.Add(this.nightcatBump);
-                        Nightcat.notifiedPlayer = true;
                     }
                 }
             }
