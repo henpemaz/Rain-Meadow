@@ -1,18 +1,12 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace RainMeadow
 {
     internal static class ArenaHelpers
     {
 
-        public static float NightcatAlpha = 1f;
-        public static float LastNightcatAlpha;
-        public static float NCinitialDuration = 10.5f;
-        public static float NCinitialTickInterval = 0.000333335f;
-        public static int ticker = 300;
-        public static int coolDownTick = 300;
-        public static float[] alphaOffsets = { 0.0f, 0.05f, 0.1f, 0.15f, 0.2f }; // Offsets for tail, feet, neck, chin, head
-        public static int spriteCount = 5;
+
 
         public static readonly List<string> nonArenaSlugs = new List<string> { "Inv", "Slugpup", "MeadowOnline", "MeadowOnlineRemote" };
 
@@ -44,7 +38,7 @@ namespace RainMeadow
             {
                 arena.playersReadiedUp[player.id.name] = false;
             }
-            
+
             arena.isInGame = false;
             arena.returnToLobby = false;
             arena.playerEnteredGame = 0;
@@ -52,8 +46,15 @@ namespace RainMeadow
             arena.countdownInitiatedHoldFire = true;
             arena.setupTime = 300;
             lobby.manager.rainWorld.options.DeleteArenaSitting();
+            Nightcat.activateNightcatSFX = false;
+            Nightcat.deactivateNightcatSFX = false;
+            Nightcat.ticker = 300;
+            Nightcat.durationPhase = 300;
+            Nightcat.cooldownTimer = 0;
+
 
         }
+
 
         public static OnlinePlayer FindOnlinePlayerByFakePlayerNumber(ArenaCompetitiveGameMode arena, int playerNumber)
         {
@@ -119,7 +120,7 @@ namespace RainMeadow
 
         public static void OverideSlugcatClasses(Player player, ArenaCompetitiveGameMode arena)
         {
-            
+
             if (player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint && !arena.countdownInitiatedHoldFire)
             {
                 if (player.wantToJump > 0 && player.input[0].pckp && player.canJump <= 0 && !player.monkAscension && !player.tongue.Attached && player.bodyMode != Player.BodyModeIndex.Crawl && player.bodyMode != Player.BodyModeIndex.CorridorClimb && player.bodyMode != Player.BodyModeIndex.ClimbIntoShortCut && player.animation != Player.AnimationIndex.HangFromBeam && player.animation != Player.AnimationIndex.ClimbOnBeam && player.bodyMode != Player.BodyModeIndex.WallClimb && player.bodyMode != Player.BodyModeIndex.Swimming && player.Consious && !player.Stunned && player.animation != Player.AnimationIndex.AntlerClimb && player.animation != Player.AnimationIndex.VineGrab && player.animation != Player.AnimationIndex.ZeroGPoleGrab)
@@ -128,13 +129,27 @@ namespace RainMeadow
                 }
             }
 
-            //if (self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer && arena.countdownInitiatedHoldFire) // Arena: undecided on this for now
-            //{
-            //    self.pyroJumpped = true;
-            //}
+            if (player.SlugCatClass == SlugcatStats.Name.Night && !arena.countdownInitiatedHoldFire)
+            {
+                if (player.input[0].pckp && player.input[0].jmp && !Nightcat.activateNightcat && Nightcat.cooldownTimer == 0)
+                {
+                    Nightcat.activateNightcat = true;
+                }
+                if (Nightcat.initiateCountdownTimer)
+                {
+                    if (Nightcat.cooldownTimer > 0)
+                    {
+                        Nightcat.cooldownTimer--;
+                    }
+
+                    // Ensure cooldownTimer never goes below zero
+                    Nightcat.cooldownTimer = Mathf.Max(Nightcat.cooldownTimer, 0);
+
+                }
+
+            }
+
         }
-
-
     }
 
 

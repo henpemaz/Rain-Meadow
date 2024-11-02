@@ -48,53 +48,15 @@ public partial class RainMeadow
 
     }
 
+
     private void PlayerGraphics_DrawSprites2(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
     {
         orig(self, sLeaser, rCam, timeStacker, camPos);
 
 
-        if (isArenaMode(out var arena))
+        if (isArenaMode(out var arena) && Nightcat.activateNightcat && Nightcat.cooldownTimer == 0)
         {
-            //localAlpha = RWCustom.Custom.LerpAndTick(1f, arena.avatarSettings.bodyColor.a, 0.2f, 0.033333335f);
-            //localAlpha = RWCustom.Custom.LerpAndTick(arena.avatarSettings.bodyColor.a, 0f, 0.08f, 0.033333335f);
-
-            RainMeadow.Debug(ArenaHelpers.ticker);
-            if (ArenaHelpers.ticker > 0)
-            {
-                ArenaHelpers.ticker--;
-
-                for (int i = 0; i < ArenaHelpers.spriteCount; i++)
-                {
-                    // Increment alphaOffsets for fading out
-                    float fadeOutAlpha = Mathf.Clamp01(Time.deltaTime * 0.3f);
-                    ArenaHelpers.alphaOffsets[i] = Mathf.Clamp01(ArenaHelpers.alphaOffsets[0] + fadeOutAlpha); // Adjust speed
-
-
-                    // Apply transparency using the updated value
-                    sLeaser.sprites[i]._color.a = Mathf.Lerp(arena.avatarSettings.bodyColor.a, 0f, ArenaHelpers.alphaOffsets[i]);
-                }
-            }
-            else if (ArenaHelpers.ticker == 0) // Restore phase
-            {
-                ArenaHelpers.coolDownTick--;
-
-                if (ArenaHelpers.coolDownTick <= 0)
-                {
-
-
-                    // Reset alphaOffsets for the next cycle
-                    for (int i = 0; i < ArenaHelpers.spriteCount; i++)
-                    {
-                        // Apply the alpha based on the current offset
-                        sLeaser.sprites[i]._color.a = arena.avatarSettings.bodyColor.a;
-                        ArenaHelpers.alphaOffsets[i] = 0f; // Reset to start restoring from fully transparent
-
-                    }
-                    ArenaHelpers.ticker = 300;
-                    ArenaHelpers.coolDownTick = 300;
-                }
-
-            }
+            Nightcat.ActivateNightcat(arena, self, sLeaser, rCam, timeStacker, camPos);
 
         }
 
