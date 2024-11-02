@@ -14,8 +14,14 @@ namespace RainMeadow
         private SlugcatCustomization customization;
         public OnlinePlayerDisplay playerDisplay;
         public OnlinePlayerDeathBump deathBump;
+        public NightcatHUD nightcatBump;
+
         public int deadCounter = -1;
+        public int nightcatCounter = -1;
+
         public int antiDeathBumpFlicker;
+        public int antiNightcatFlicker;
+
         public List<OnlinePlayerHudPart> parts = new();
 
         public bool lastDead;
@@ -36,6 +42,14 @@ namespace RainMeadow
             get
             {
                 return Mathf.InverseLerp(40f, 0f, (float)this.deadCounter);
+            }
+        }
+
+        public float NightcatFade
+        {
+            get
+            {
+                return Mathf.InverseLerp(40f, 0f, (float)this.nightcatCounter);
             }
         }
 
@@ -76,6 +90,11 @@ namespace RainMeadow
                     else if (this.parts[i] == this.deathBump)
                     {
                         this.deathBump = null;
+                    }
+
+                    else if (this.parts[i] == this.nightcatBump)
+                    {
+                        this.nightcatBump = null;
                     }
 
                     this.parts[i].ClearSprites();
@@ -214,6 +233,35 @@ namespace RainMeadow
                     }
                 }
             }
+
+            if (this.antiNightcatFlicker > 0)
+            {
+                this.antiNightcatFlicker--;
+            }
+            if (Nightcat.cooldownTimer == 0 && !Nightcat.notifiedPlayer && Nightcat.firstTimeInitiating)
+            {
+                if (this.antiNightcatFlicker < 1)
+                {
+                    this.nightcatCounter++;
+                    if (this.nightcatCounter == 10)
+                    {
+                        this.nightcatBump = new NightcatHUD(this);
+                        this.parts.Add(this.nightcatBump);
+                        Nightcat.notifiedPlayer = true;
+                    }
+                }
+            }
+
+            if (Nightcat.notifiedPlayer)
+            {
+                if (this.nightcatBump != null)
+                {
+                    this.nightcatBump.removeAsap = true;
+                }
+                this.nightcatCounter = -1;
+            }
+
+
             else if (this.lastDead)
             {
                 //Debug.Log("revivePlayer");

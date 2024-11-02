@@ -5,8 +5,6 @@ namespace RainMeadow
 {
     internal static class Nightcat
     {
-
-
         public static int ticker = 300;
         public static int durationPhase = 300;
         public static float[] alphaOffsets = { 0.0f, 0.05f, 0.1f, 0.15f, 0.2f }; // Offsets for tail, feet, neck, chin, head
@@ -19,9 +17,8 @@ namespace RainMeadow
         public static float cooldownTimer = 0f;
         public static bool initiateCountdownTimer = false;
 
-        public static bool notifiedPlayer = false;
-        public static int flashEyes = 80;
-
+        public static bool notifiedPlayer = true;
+        public static bool firstTimeInitiating = false;
 
         public static void ActivateNightcat(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
         {
@@ -78,15 +75,8 @@ namespace RainMeadow
             deactivateNightcatSFX = false;
             activatedNightcat = false;
             activateNightcatSFX = false;
-
-        }
-
-        public static void NotifyReadyForNightcat(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
-        {
-            flashEyes--;
-            sLeaser.sprites[9]._color = UnityEngine.Color.white; // eyes
-            notifiedPlayer = true;
-
+            firstTimeInitiating = true;
+            notifiedPlayer = false;
         }
 
         public static void NightcatImplementation(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
