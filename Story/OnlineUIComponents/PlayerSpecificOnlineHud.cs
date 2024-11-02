@@ -221,7 +221,7 @@ namespace RainMeadow
             {
                 this.antiNightcatFlicker--;
             }
-            if (Nightcat.cooldownTimer == 0 && !Nightcat.notifiedPlayer && Nightcat.firstTimeInitiating)
+            if (Nightcat.cooldownTimer == 0 && !Nightcat.notifiedPlayer && !Nightcat.firstTimeInitiating)
             {
                 RainMeadow.Debug("Maybe here?");
 
@@ -257,6 +257,8 @@ namespace RainMeadow
                 }
             }
 
+            // weird visual bug with 
+
             if (Nightcat.notifiedPlayer)
             {
                 if (this.nightcatBump != null)
@@ -267,18 +269,18 @@ namespace RainMeadow
             }
 
 
-            else if (this.lastDead)
-            {
-                //Debug.Log("revivePlayer");
-                this.antiDeathBumpFlicker = 80;
-                if (this.deathBump != null)
-                {
-                    this.deathBump.removeAsap = true;
-                }
-                this.deadCounter = -1;
-                this.hud.PlaySound(SoundID.UI_Multiplayer_Player_Revive);
-                this.hud.fadeCircles.Add(new FadeCircle(this.hud, 10f, 10f, 0.82f, 30f, 4f, this.drawpos, this.hud.fContainers[1]));
-            }
+            //else if (this.lastDead)
+            //{
+            //    //Debug.Log("revivePlayer");
+            //    this.antiDeathBumpFlicker = 80;
+            //    if (this.deathBump != null)
+            //    {
+            //        this.deathBump.removeAsap = true;
+            //    }
+            //    this.deadCounter = -1;
+            //    this.hud.PlaySound(SoundID.UI_Multiplayer_Player_Revive);
+            //    this.hud.fadeCircles.Add(new FadeCircle(this.hud, 10f, 10f, 0.82f, 30f, 4f, this.drawpos, this.hud.fContainers[1]));
+            //}
             this.lastDead = this.PlayerConsideredDead;
         }
 

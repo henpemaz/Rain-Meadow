@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace RainMeadow.Arena.Nightcat
 {
-    internal class Nightcat
+    internal static class Nightcat
     {
         public static int ticker = 300;
         public static int durationPhase = 300;
@@ -33,6 +33,7 @@ namespace RainMeadow.Arena.Nightcat
         public static void ActivateNightcat(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
             isActive = true;
+
             sLeaser.sprites[9]._color = Color.white; // eyes
             for (int i = 0; i < spriteCount; i++)
             {
@@ -62,7 +63,6 @@ namespace RainMeadow.Arena.Nightcat
 
             isActive = false;
             activateNightcatSFX = false;
-
             //self.player.room.AddObject(new ShockWave(self.player.bodyChunks[1].pos, 100f, 0.07f, 6));
 
             // Reset alphaOffsets for the next cycle
@@ -83,7 +83,7 @@ namespace RainMeadow.Arena.Nightcat
 
             ResetNightcat();
             cooldownTimer = 300f;
-
+            firstTimeInitiating = false;
         }
 
         public static void NightcatImplementation(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)

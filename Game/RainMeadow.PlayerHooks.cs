@@ -1,5 +1,6 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using RainMeadow.Arena.Nightcat;
 using System;
 using System.Drawing;
 using System.Linq;
