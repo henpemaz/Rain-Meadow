@@ -7,6 +7,8 @@ using RWCustom;
 using System;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using Mono.Cecil;
+using IL.MoreSlugcats;
 
 namespace RainMeadow
 {
@@ -21,6 +23,41 @@ namespace RainMeadow
             On.Music.MusicPiece.SubTrack.StopAndDestroy += SubTrack_StopAndDestroy;
             
             On.Music.PlayerThreatTracker.Update += PlayerThreatTracker_Update; // yo which hook is this one go to? oooOOOoooooo
+
+            On.Music.MusicPlayer.UpdateMusicContext += MusicPlayer_UpdateMusicContext;
+            On.Music.MusicPiece.StopAndDestroy += MusicPiece_StopAndDestroy;
+        }
+
+        private static void MusicPlayer_UpdateMusicContext(On.Music.MusicPlayer.orig_UpdateMusicContext orig, MusicPlayer self, MainLoopProcess currentProcess)
+        {
+            if (self.musicContext != null)
+            {
+                if (currentProcess.ID == ProcessManager.ProcessID.Game)
+                {
+                    if (((RainWorldGame)currentProcess).IsStorySession && OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+                    {
+                        if (self.gameObj.GetComponent<AudioHighPassFilter>() == null)
+                        {
+                            self.gameObj.AddComponent<AudioHighPassFilter>();
+                            self.gameObj.GetComponent<AudioHighPassFilter>().enabled = true;
+                            self.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency = 10f;
+                        }
+                    }
+                    else
+                    {
+                        if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null) self.song.FadeOut(120f);
+                    }
+                }
+                else
+                {
+                    if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null) self.song.FadeOut(120f);
+                }
+            }
+            else
+            {
+                if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null) self.song.FadeOut(120f);
+            }
+            orig.Invoke(self, currentProcess);
         }
 
         private static void PlayerThreatTracker_Update(On.Music.PlayerThreatTracker.orig_Update orig, PlayerThreatTracker self)
@@ -63,25 +100,19 @@ namespace RainMeadow
                     self.ghostMode = 0f;
                 }
 
-                float highpass = 1f;
-                if (self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>() != null)
-                {
-                    highpass = self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency;
-                }
 
-                if (self.ghostMode == 0f && self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>() != null)
+                if (self.ghostMode == 0f && self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().enabled)
                 {
-                    if (self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency < 11f)
+                    if (self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency < 12f)
                     {
-                        UnityEngine.Object.Destroy(self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>());
+                        self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().enabled = false;
                     }
                 }
-                else if (self.ghostMode > 0f && self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>() == null)
+                else if (self.ghostMode > 0f && !self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().enabled)
                 {
-                    self.musicPlayer.gameObj.AddComponent<AudioHighPassFilter>();
-                    self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency = 1f;
+                    self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().enabled = true;
                 }
-                if (self.ghostMode > 0f || highpass > 10f)
+                if (self.ghostMode > 0f || self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency > 12f)
                 {
                     self.recommendedDroneVolume = 0f;
                     //self.musicPlayer.FadeOutAllNonGhostSongs(120f);
@@ -90,8 +121,8 @@ namespace RainMeadow
                     //    self.musicPlayer.RequestGhostSong(player.room.world.worldGhost.songName);
                     //}
                     float currenthighpass = self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency;
-                    float highpassgoal = Mathf.Lerp(0f, 1200f, Mathf.Pow(self.ghostMode, 2f));    
-                    self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency = Custom.LerpAndTick(currenthighpass, highpassgoal, 0.03f, 0.08f);
+                    float highpassgoal = Mathf.Lerp(0f, 1200f, Mathf.Pow(self.ghostMode, 2.5f));    
+                    self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency = Custom.LerpAndTick(currenthighpass, highpassgoal, currenthighpass > highpassgoal ? 0.025f : 0.005f, 0.0f);
                 }
 
                 if (!player.room.world.singleRoomWorld)
@@ -120,7 +151,7 @@ namespace RainMeadow
                             {
                                 self.musicPlayer.song.PlayerToNewRoom();
                             }
-                            if (self.musicPlayer.nextSong != null)
+                                if (self.musicPlayer.nextSong != null)
                             {
                                 self.musicPlayer.nextSong.PlayerToNewRoom();
                             }
@@ -156,13 +187,25 @@ namespace RainMeadow
                 orig(self);
             }
         }
+        private static void MusicPiece_StopAndDestroy(On.Music.MusicPiece.orig_StopAndDestroy orig, MusicPiece self)
+        {
+            orig.Invoke(self);
 
-
+            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode mgm)
+            {
+                if (self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>() != null)
+                {
+                    self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency = 10f;
+                    self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().enabled = false;
+                    UnityEngine.Object.Destroy(self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>());
+                }
+            }
+        }
         private static void SubTrack_StopAndDestroy(On.Music.MusicPiece.SubTrack.orig_StopAndDestroy orig, MusicPiece.SubTrack self)
         {
             orig(self);
             self.source?.clip?.UnloadAudioData();
-        }
+        } 
 
         internal static void NewGame()
         {
@@ -254,11 +297,14 @@ namespace RainMeadow
                 string[] thesongs = AssetManager.ListDirectory("music/songs", false, true);
                 foreach (string song in thesongs)
                 {
+                    if (song[song.Length-1] != 'g') continue; //Intikus' monkey way of skipping unmodded songs, scream at him when you find this and let your words be a simpler way to find their length
+
                     WWW www = new WWW("file://" + song); 
+                    //AudioClip? thing = AssetManager.SafeWWWAudioClip("file://" + song, threeD: false, stream: true, AudioType.OGGVORBIS);
                     AudioClip? thing2 = www.GetAudioClip(false, true, AudioType.OGGVORBIS); //This method will have vanilla songs be 0 in length, due to its info being in assetbundles
                     float howlonghorse = thing2.length;
                     string filename = song.Split(Path.DirectorySeparatorChar)[song.Split(Path.DirectorySeparatorChar).Length - 1];
-                    RainMeadow.Debug("Meadow Music:  Registered song " + filename + " to be of length " + howlonghorse);
+                    RainMeadow.Debug("Meadow Music: Registered song " + filename + " to be of length " + howlonghorse);
                     DictTho.Add(filename, howlonghorse);
                 }
                 //The Future is here, and it's way dumber than i imagined.
@@ -468,11 +514,10 @@ namespace RainMeadow
                             Song song = new(musicPlayer, musicdata.providedSong, MusicPlayer.MusicContext.StoryMode)
                             {
                                 playWhenReady = true,
-                                volume = 1,
-                                fadeInTime = 1f
+                                volume = 1
+                                //fadeInTime = 1f
                             };
                             musicPlayer.song = song;
-
                         }
                         else if (OnlineManager.lobby.PlayerFromId(hostId) is OnlinePlayer other
                             && OnlineManager.lobby.playerAvatars.FirstOrDefault(kvp => kvp.Key == other).Value is OnlineEntity.EntityId otherOcId
@@ -530,8 +575,8 @@ namespace RainMeadow
                                         Song song = new(musicPlayer, musicdata.providedSong, MusicPlayer.MusicContext.StoryMode)
                                         {
                                             playWhenReady = true,
-                                            volume = 1,
-                                            fadeInTime = 1f
+                                            volume = 1
+                                            //fadeInTime = 1f
                                         };
                                         musicPlayer.song = song;
                                     }
