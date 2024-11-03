@@ -436,6 +436,21 @@ namespace RainMeadow
             }
         }
 
+        public override void ResolveRequest(GenericResult requestResult)
+        {
+            base.ResolveRequest(requestResult);
+            if (requestResult is GenericResult.Error && apo.realizedObject is not null)
+            {
+                foreach (var grasp in apo.realizedObject.grabbedBy)
+                {
+                    if (grasp.grabber.IsLocal())
+                    {
+                        grasp.grabber.ReleaseGrasp(grasp.graspUsed);
+                    }
+                }
+            }
+        }
+
         public override string ToString()
         {
             return $"{apo?.type} {base.ToString()}";

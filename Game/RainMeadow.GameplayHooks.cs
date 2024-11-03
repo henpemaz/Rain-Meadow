@@ -354,24 +354,9 @@ namespace RainMeadow
                     }
                     if (!onlineGrabbed.isMine && onlineGrabbed.isTransferable && !onlineGrabbed.isPending) // been leased to someone else
                     {
-                        if (grasp.grabbed is not Creature) // Non-Creetchers cannot be grabbed by multiple creatures
-                        {
-                            self.ReleaseGrasp(grasp.graspUsed);
-                            continue;
-                        }
-
                         var grabbersOtherThanMe = grasp.grabbed.grabbedBy.Select(x => x.grabber).Where(x => x != self);
-                        foreach (var grabbers in grabbersOtherThanMe)
-                        {
-                            if (!OnlinePhysicalObject.map.TryGetValue(grabbers.abstractPhysicalObject, out var tempEntity))
-                            {
-                                Trace($"Other grabber {grabbers.abstractPhysicalObject} {grabbers.abstractPhysicalObject.ID} doesn't exist in online space!");
-                                continue;
-                            }
-                            if (!tempEntity.isMine) continue;
-                        }
-                        // If no remotes holding the entity, request it
-                        onlineGrabbed.Request();
+                        if (grabbersOtherThanMe.All(x => x.abstractPhysicalObject.GetOnlineObject(out var opo) && opo.isMine))
+                            onlineGrabbed.Request();
                     }
                 }
             }
