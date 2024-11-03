@@ -217,27 +217,6 @@ namespace RainMeadow
             lastCameraPos = camera.currentCameraPosition;
             lastAbstractRoom = camera.room.abstractRoom.index;
 
-            if (this.antiNightcatFlicker > 0)
-            {
-                this.antiNightcatFlicker--;
-            }
-            if (Nightcat.cooldownTimer == 0 && !Nightcat.notifiedPlayer && !Nightcat.firstTimeInitiating)
-            {
-                RainMeadow.Debug("Maybe here?");
-
-                if (this.antiNightcatFlicker < 1)
-                {
-                    this.nightcatCounter++;
-                    if (this.nightcatCounter == 10)
-                    {
-                        this.antiNightcatFlicker = 80;
-                        this.nightcatBump = new NightcatHUD(this);
-                        this.parts.Add(this.nightcatBump);
-                        Nightcat.notifiedPlayer = true;
-                    }
-                }
-            }
-
 
             if (this.antiDeathBumpFlicker > 0)
             {
@@ -257,7 +236,42 @@ namespace RainMeadow
                 }
             }
 
-            // weird visual bug with 
+
+
+            else if (this.lastDead)
+            {
+                //Debug.Log("revivePlayer");
+                this.antiDeathBumpFlicker = 80;
+                if (this.deathBump != null)
+                {
+                    this.deathBump.removeAsap = true;
+                }
+                this.deadCounter = -1;
+                this.hud.PlaySound(SoundID.UI_Multiplayer_Player_Revive);
+                this.hud.fadeCircles.Add(new FadeCircle(this.hud, 10f, 10f, 0.82f, 30f, 4f, this.drawpos, this.hud.fContainers[1]));
+            }
+
+            this.lastDead = this.PlayerConsideredDead;
+
+            if (this.antiNightcatFlicker > 0)
+            {
+                this.antiNightcatFlicker--;
+            }
+
+            if (Nightcat.cooldownTimer == 0 && !Nightcat.notifiedPlayer && !Nightcat.firstTimeInitiating && RealizedPlayer != null && RealizedPlayer.SlugCatClass == SlugcatStats.Name.Night)
+            {
+                if (this.antiNightcatFlicker < 1)
+                {
+                    this.nightcatCounter++;
+                    if (this.nightcatCounter == 10)
+                    {
+                        this.antiNightcatFlicker = 80;
+                        this.nightcatBump = new NightcatHUD(this);
+                        this.parts.Add(this.nightcatBump);
+                        Nightcat.notifiedPlayer = true;
+                    }
+                }
+            }
 
             if (Nightcat.notifiedPlayer)
             {
@@ -268,20 +282,6 @@ namespace RainMeadow
                 this.nightcatCounter = -1;
             }
 
-
-            //else if (this.lastDead)
-            //{
-            //    //Debug.Log("revivePlayer");
-            //    this.antiDeathBumpFlicker = 80;
-            //    if (this.deathBump != null)
-            //    {
-            //        this.deathBump.removeAsap = true;
-            //    }
-            //    this.deadCounter = -1;
-            //    this.hud.PlaySound(SoundID.UI_Multiplayer_Player_Revive);
-            //    this.hud.fadeCircles.Add(new FadeCircle(this.hud, 10f, 10f, 0.82f, 30f, 4f, this.drawpos, this.hud.fContainers[1]));
-            //}
-            this.lastDead = this.PlayerConsideredDead;
         }
 
         public override void Draw(float timeStacker)
