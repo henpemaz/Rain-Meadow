@@ -96,12 +96,6 @@ namespace RainMeadow.Arena.Nightcat
             {
                 alpha = Mathf.Sin(Mathf.InverseLerp(0f, 40f, counter) * 3.1415927f);
                 blink = Custom.LerpAndTick(blink, 1f, 0.07f, 0.033333335f);
-                if (counter == 5 && !removeAsap)
-                {
-                    owner.hud.fadeCircles.Add(new FadeCircle(owner.hud, 10f, 10f, 0.82f, 30f, 4f, pos, owner.hud.fContainers[1]));
-                    owner.hud.PlaySound(SoundID.UI_Multiplayer_Player_Dead_A);
-                    return;
-                }
             }
             else
             {

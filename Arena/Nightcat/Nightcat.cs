@@ -6,7 +6,7 @@ namespace RainMeadow.Arena.Nightcat
     internal static class Nightcat
     {
         public static int ticker = 300;
-        public static int durationPhase = 300;
+        public static int durationPhase = 360;
         public static float[] alphaOffsets = { 0.0f, 0.05f, 0.1f, 0.15f, 0.2f }; // Offsets for tail, feet, neck, chin, head
         public static int spriteCount = 5;
         public static bool activateNightcatSFX = false;
@@ -19,15 +19,27 @@ namespace RainMeadow.Arena.Nightcat
 
         public static bool notifiedPlayer = true;
         public static bool firstTimeInitiating = false;
+        public static bool isReverseLerping = false;
+        public static float SwitchInterval = 0.9f;
 
+
+        public static float flashTimer;
+        public static float flashDuration = 0.9f; // Duration of each flash
+        public static float maxFlashIntensity = 1f; // Maximum intensity of the flash
+        public static Color eyeColor;
         public static void ResetNightcat()
         {
-            durationPhase = 300;
+            durationPhase = 360;
             deactivateNightcatSFX = false;
             activatedNightcat = false;
             activateNightcatSFX = false;
-            firstTimeInitiating = true;
+            firstTimeInitiating = false;
             notifiedPlayer = false;
+        }
+
+        public static void ResetCoolDownTimer()
+        {
+            cooldownTimer = 360f;
         }
 
         public static void ActivateNightcat(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
@@ -35,6 +47,8 @@ namespace RainMeadow.Arena.Nightcat
             isActive = true;
 
             sLeaser.sprites[9]._color = Color.white; // eyes
+            sLeaser.sprites[8]._color = Color.black; // arms
+
             for (int i = 0; i < spriteCount; i++)
             {
                 // Increment alphaOffsets for fading out
@@ -82,12 +96,14 @@ namespace RainMeadow.Arena.Nightcat
             }
 
             ResetNightcat();
-            cooldownTimer = 300f;
+            ResetCoolDownTimer();
             firstTimeInitiating = false;
         }
 
         public static void NightcatImplementation(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
+
+            MakeEyesFlash(arena, self, sLeaser, rCam, timeStacker, camPos);
 
             if (activatedNightcat)
             {
@@ -104,6 +120,19 @@ namespace RainMeadow.Arena.Nightcat
             if ((durationPhase == 0 || self.player.input[0].thrw || self.player != null && self.player.dead) && isActive)
             {
                 DeactivateNightcat(arena, self, sLeaser, rCam, timeStacker, camPos);
+
+            }
+        }
+
+        public static void MakeEyesFlash(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
+        {
+            if (!Nightcat.isActive && Nightcat.cooldownTimer == 0 && !arena.countdownInitiatedHoldFire)
+            {
+
+                flashTimer += Time.deltaTime;
+                float t = flashTimer / flashDuration;
+                float intensity = Mathf.PingPong(t, Nightcat.maxFlashIntensity);
+                sLeaser.sprites[9]._color = Color.Lerp(Color.white, arena.avatarSettings.eyeColor, intensity);
 
             }
         }
