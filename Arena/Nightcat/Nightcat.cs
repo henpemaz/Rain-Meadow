@@ -35,6 +35,7 @@ namespace RainMeadow.Arena.Nightcat
             activateNightcatSFX = false;
             firstTimeInitiating = false;
             notifiedPlayer = false;
+
         }
 
         public static void ResetCoolDownTimer()
@@ -98,6 +99,8 @@ namespace RainMeadow.Arena.Nightcat
             ResetNightcat();
             ResetCoolDownTimer();
             firstTimeInitiating = false;
+            self.player.slugcatStats.visualStealthInSneakMode = 0.5f;
+
         }
 
         public static void NightcatImplementation(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
@@ -117,7 +120,7 @@ namespace RainMeadow.Arena.Nightcat
             }
 
 
-            if ((durationPhase == 0 || self.player.input[0].thrw || self.player != null && self.player.dead) && isActive)
+            if ((durationPhase == 0 || self.player.input[0].thrw || self.player != null && (self.player.dead || self.player.dangerGrasp != null && self.player.dangerGraspTime > 20)) && isActive)
             {
                 DeactivateNightcat(arena, self, sLeaser, rCam, timeStacker, camPos);
 

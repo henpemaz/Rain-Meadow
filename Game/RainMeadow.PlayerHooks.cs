@@ -176,6 +176,11 @@ public partial class RainMeadow
                     self.room.ChangeCollisionLayerForObject(self, 1);
                 }
             }
+            if (Nightcat.isActive)
+            {
+                self.slugcatStats.visualStealthInSneakMode = 1f;
+
+            }
         }
 
 
@@ -620,15 +625,17 @@ public partial class RainMeadow
         {
 
             slugcat = arena.avatarSettings.playingAs; // Arena needs this 
+            if (slugcat == SlugcatStats.Name.Night)
+            {
+                self.throwingSkill = 1; // don't let them push you around
+                self.visualStealthInSneakMode = 0.5f;
+            }
         }
         orig(self, slugcat, malnourished);
 
         if (OnlineManager.lobby == null) return;
         if (slugcat != Ext_SlugcatStatsName.OnlineSessionPlayer) return;
 
-        if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode)
-        {
-            self.throwingSkill = 1;
-        }
+
     }
 }
