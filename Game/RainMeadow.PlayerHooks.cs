@@ -81,7 +81,7 @@ public partial class RainMeadow
                     PlayerMovementOverride.HoldFire(self);
                 }
 
-                ArenaHelpers.OverideSlugcatClasses(self, arena);
+                ArenaHelpers.OverideSlugcatClassAbilities(self, arena);
 
             }
         }
