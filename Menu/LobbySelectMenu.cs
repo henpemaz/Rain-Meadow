@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
 using UnityEngine;
 
 namespace RainMeadow
@@ -46,16 +47,46 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
 
-            Vector2 buttonSize = new(130f, 30f);
             this.backTarget = ProcessManager.ProcessID.MainMenu;
 
-            var test = new LobbyCardsSelector(this, mainPage);
+            var test = new LobbyCardsList(this, mainPage, new Vector2(518, 100f), new Vector2(330f, 420f));
+            var fakeEndpoint = new IPEndPoint(IPAddress.Loopback, UdpPeer.STARTING_PORT);
+            test.allLobbies = new List<LobbyInfo>{
+                new LobbyInfo(fakeEndpoint, "Ancient Liberties", "Meadow", 2, true, 9),
+                new LobbyInfo(fakeEndpoint, "Lonesome Song", "Story", 8, false, 9),
+                new LobbyInfo(fakeEndpoint, "Cracked Crescents Abound", "ArenaCompetitive", 11, true, 18),
+                new LobbyInfo(fakeEndpoint, "Boundless Opportunities", "Meadow", 20, false, 22),
+                new LobbyInfo(fakeEndpoint, "Unearthed Experience", "Story", 13, true, 24),
+                new LobbyInfo(fakeEndpoint, "Nonstop Vigilance", "ArenaCompetitive", 30, false, 31),
+                new LobbyInfo(fakeEndpoint, "Solemn Overture", "Meadow", 13, true, 19),
+                new LobbyInfo(fakeEndpoint, "Roaring Moon", "Story", 20, false, 23),
+                new LobbyInfo(fakeEndpoint, "Silent Call", "ArenaCompetitive", 2, true, 17),
+                new LobbyInfo(fakeEndpoint, "Blind Allegiance", "Meadow", 13, false, 18),
+                new LobbyInfo(fakeEndpoint, "Unbroken Resolute", "Story", 11, true, 30),
+                new LobbyInfo(fakeEndpoint, "Thirty-two Pebbles", "ArenaCompetitive", 23, false, 32),
+                new LobbyInfo(fakeEndpoint, "Three Feathers Uncovered", "Meadow", 8, true, 14),
+                new LobbyInfo(fakeEndpoint, "Ten Marbles Colored", "Story", 25, false, 30),
+                new LobbyInfo(fakeEndpoint, "Eight Rusted Memories", "ArenaCompetitive", 28, true, 29),
+                new LobbyInfo(fakeEndpoint, "One Light Broken", "Meadow", 26, false, 11),
+                new LobbyInfo(fakeEndpoint, "Two Seeds Grown", "Story", 19, true, 20),
+                new LobbyInfo(fakeEndpoint, "Pink Lizard 🔥", "ArenaCompetitive", 9, false, 24),
+                new LobbyInfo(fakeEndpoint, "Them", "Meadow", 6, true, 28),
+                new LobbyInfo(fakeEndpoint, "Person", "Story", 2147483647, false, 2147483647),
+                new LobbyInfo(fakeEndpoint, "The One Who Waits", "ArenaCompetitive", 11, true, 12),
+                new LobbyInfo(fakeEndpoint, "Fisher Price Pebbles (lmao)", "Meadow", 21, false, 26),
+                new LobbyInfo(fakeEndpoint, "notchoc", "Story", -7, true, -16),
+                new LobbyInfo(fakeEndpoint, "Glistening Sanctuaries", "Story", 4, true, 15),
+                new LobbyInfo(fakeEndpoint, "Lighthearted Appraisal", "Story", 21, true, 16),
+            }.ToArray();
+            test.FilterLobbies();
+            test.CreateCards();
+            test.RefreshButton.OnClick += RefreshLobbyList;
             mainPage.subObjects.Add(test);
 
             // // title at the top
-            // this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", "MeadowShadow", new Vector2(-2.99f, 265.01f), true, false));
-            // this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", "MeadowTitle", new Vector2(-2.99f, 265.01f), true, false));
-            // this.scene.flatIllustrations[this.scene.flatIllustrations.Count - 1].sprite.shader = this.manager.rainWorld.Shaders["MenuText"];
+            this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", "MeadowShadow", new Vector2(-2.99f, 265.01f), true, false));
+            this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", "MeadowTitle", new Vector2(-2.99f, 265.01f), true, false));
+            this.scene.flatIllustrations[this.scene.flatIllustrations.Count - 1].sprite.shader = this.manager.rainWorld.Shaders["MenuText"];
 
             // // 690 on mock -> 720 -> 768 - 720 = 48, placed at 50 so my mock has a +2 offset
             // // play button at lower right
@@ -437,7 +468,7 @@ namespace RainMeadow
             RequestLobbyCreate();
         }
 
-        private void RefreshLobbyList(SimplerButton obj)
+        private void RefreshLobbyList(SymbolButton obj)
         {
             MatchmakingManager.instance.RequestLobbyList();
         }
