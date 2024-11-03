@@ -176,11 +176,6 @@ public partial class RainMeadow
                     self.room.ChangeCollisionLayerForObject(self, 1);
                 }
             }
-            if (Nightcat.isActive)
-            {
-                self.slugcatStats.visualStealthInSneakMode = 1f;
-
-            }
         }
 
 
@@ -426,6 +421,11 @@ public partial class RainMeadow
     private void Player_GetInitialSlugcatClass(On.Player.orig_GetInitialSlugcatClass orig, Player self)
     {
         orig(self);
+        if (self.SlugCatClass == SlugcatStats.Name.Night)
+        {
+            self.slugcatStats.throwingSkill = 1; // don't let them push you around
+            Nightcat.ResetSneak(self);
+        }
         if (OnlineManager.lobby != null)
         {
             if (self.abstractPhysicalObject.GetOnlineObject(out var oe) && oe.TryGetData<SlugcatCustomization>(out var customization))
@@ -621,16 +621,6 @@ public partial class RainMeadow
             slugcat = storyGameMode.avatarSettings.playingAs;
         }
 
-        if (isArenaMode(out var arena))
-        {
-
-            slugcat = arena.avatarSettings.playingAs; // Arena needs this 
-            if (slugcat == SlugcatStats.Name.Night)
-            {
-                self.throwingSkill = 1; // don't let them push you around
-                self.visualStealthInSneakMode = 0.5f;
-            }
-        }
         orig(self, slugcat, malnourished);
 
         if (OnlineManager.lobby == null) return;

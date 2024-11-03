@@ -5,28 +5,41 @@ namespace RainMeadow.Arena.Nightcat
 {
     internal static class Nightcat
     {
-        public static int ticker = 300;
         public static int durationPhase = 360;
-        public static float[] alphaOffsets = { 0.0f, 0.05f, 0.1f, 0.15f, 0.2f }; // Offsets for tail, feet, neck, chin, head
+        public static float[] alphaOffsets = { 0.0f, 0.05f, 0.1f, 0.15f, 0.2f }; // Offsets for tail, feet, neck, chin, head. Currently unused
         public static int spriteCount = 5;
+
+        // SFX management
         public static bool activateNightcatSFX = false;
         public static bool deactivateNightcatSFX = false;
+
+        // 
         public static bool activatedNightcat = false;
         public static bool isActive = false;
+
+        //public static bool isActive = false;
 
         public static float cooldownTimer = 0f;
         public static bool initiateCountdownTimer = false;
 
+
+        // Skin / HUD management
         public static bool notifiedPlayer = true;
-        public static bool firstTimeInitiating = false;
         public static bool isReverseLerping = false;
         public static float SwitchInterval = 0.9f;
 
 
+        // HUD management
+        public static bool firstTimeInitiating = false;
+
+
+
+        // Eye management
         public static float flashTimer;
         public static float flashDuration = 0.9f; // Duration of each flash
         public static float maxFlashIntensity = 1f; // Maximum intensity of the flash
         public static Color eyeColor;
+
         public static void ResetNightcat()
         {
             durationPhase = 360;
@@ -38,9 +51,48 @@ namespace RainMeadow.Arena.Nightcat
 
         }
 
+        public static void ResetSneak(Player player)
+        {
+            player.slugcatStats.visualStealthInSneakMode = 0.1f;
+        }
+
+        public static void ImproveSneak(Player player)
+        {
+            player.slugcatStats.visualStealthInSneakMode = 1f;
+        }
+
+
+        public static void ResetThrowingSkill(Player player)
+        {
+            player.slugcatStats.throwingSkill = 1;
+        }
+
+        public static void ImproveThrow(Player player)
+        {
+            player.slugcatStats.throwingSkill = 3;
+        }
+
+
         public static void ResetCoolDownTimer()
         {
             cooldownTimer = 360f;
+        }
+
+        public static void CheckInputForActivatingNightcat(Player player)
+        {
+
+            if (player.input[0].pckp && player.input[0].jmp && !Nightcat.activatedNightcat && Nightcat.cooldownTimer == 0)
+            {
+                Nightcat.activatedNightcat = true;
+            }
+            if (Nightcat.cooldownTimer > 0)
+            {
+                Nightcat.cooldownTimer--;
+            }
+
+            Nightcat.cooldownTimer = Mathf.Max(Nightcat.cooldownTimer, 0);
+
+
         }
 
         public static void ActivateNightcat(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
@@ -67,6 +119,8 @@ namespace RainMeadow.Arena.Nightcat
                 activateNightcatSFX = true;
                 self.player.room.PlaySound(SoundID.Firecracker_Disintegrate, self.player.mainBodyChunk, loop: false, 1f, 1f);
                 self.player.room.AddObject(new ZapCoil.ZapFlash(self.player.bodyChunks[1].pos, 5f));
+                Nightcat.ImproveSneak(self.player);
+                Nightcat.ImproveThrow(self.player);
             }
 
 
@@ -98,9 +152,9 @@ namespace RainMeadow.Arena.Nightcat
 
             ResetNightcat();
             ResetCoolDownTimer();
+            ResetSneak(self.player);
+            ResetThrowingSkill(self.player);
             firstTimeInitiating = false;
-            self.player.slugcatStats.visualStealthInSneakMode = 0.5f;
-
         }
 
         public static void NightcatImplementation(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
@@ -129,7 +183,7 @@ namespace RainMeadow.Arena.Nightcat
 
         public static void MakeEyesFlash(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
-            if (!Nightcat.isActive && Nightcat.cooldownTimer == 0 && !arena.countdownInitiatedHoldFire)
+            if (!Nightcat.activatedNightcat && Nightcat.cooldownTimer == 0)
             {
 
                 flashTimer += Time.deltaTime;

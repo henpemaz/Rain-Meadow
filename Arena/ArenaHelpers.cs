@@ -128,19 +128,9 @@ namespace RainMeadow
                 }
             }
 
-            if (player.SlugCatClass == SlugcatStats.Name.Night && !arena.countdownInitiatedHoldFire)
+            if (player.SlugCatClass == SlugcatStats.Name.Night)
             {
-                if (player.input[0].pckp && player.input[0].jmp && !Nightcat.activatedNightcat && Nightcat.cooldownTimer == 0)
-                {
-                    Nightcat.activatedNightcat = true;
-                }
-                if (Nightcat.cooldownTimer > 0)
-                {
-                    Nightcat.cooldownTimer--;
-                }
-
-                Nightcat.cooldownTimer = Mathf.Max(Nightcat.cooldownTimer, 0);
-
+                Nightcat.CheckInputForActivatingNightcat(player);
             }
 
         }
