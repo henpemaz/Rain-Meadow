@@ -42,10 +42,8 @@ namespace RainMeadow
 
             arena.isInGame = false;
             arena.returnToLobby = false;
-            arena.playerEnteredGame = 0;
-            //arena.allPlayersAreNowInGame = false;
-            arena.countdownInitiatedHoldFire = true;
-            arena.setupTime = 300;
+            arena.ResetViolence();
+            arena.ResetGameTimer();
             lobby.manager.rainWorld.options.DeleteArenaSitting();
             Nightcat.ResetNightcat();
 
