@@ -160,6 +160,24 @@ public partial class RainMeadow
             }
         }
 
+        if (isArenaMode(out var arena) && !self.inShortcut)
+        {
+            if (arena.countdownInitiatedHoldFire)
+            {
+                if (self.collisionLayer != 0)
+                {
+                    self.room.ChangeCollisionLayerForObject(self, 0);
+                }
+            }
+            else
+            {
+                if (self.collisionLayer != 1)
+                {
+                    self.room.ChangeCollisionLayerForObject(self, 1);
+                }
+            }
+        }
+
 
     }
 

@@ -68,7 +68,6 @@ namespace RainMeadow
             base.Draw(timeStacker);
             if (RainMeadow.isArenaMode(out var arena))
             {
-                RainMeadow.Debug(arena.setupTime);
                 arena.setupTime = System.Math.Max(0, arena.setupTime);
 
                 if (arena.playerEnteredGame != arena.arenaSittingOnlineOrder.Count)
