@@ -20,7 +20,6 @@ namespace RainMeadow
         private FLabel modeLabel;
         private Vector2 pos, lastPos;
         private float fade, lastFade;
-        public float SetupTimer;
         public ArenaCompetitiveGameMode arena;
         public bool cancelTimer;
         private Player? player;
@@ -28,10 +27,10 @@ namespace RainMeadow
 
         public ArenaPrepTimer(HUD.HUD hud, FContainer fContainer, ArenaCompetitiveGameMode arena) : base(hud)
         {
-            SetupTimer = arena.setupTime;
+            
             if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint) // Can snipe players, should wait to give them time to prep
             {
-                SetupTimer = arena.setupTime * 2;
+                arena.setupTime = arena.setupTime * 2;
             }
 
             matchMode = TimerMode.Waiting;
@@ -69,6 +68,8 @@ namespace RainMeadow
             base.Draw(timeStacker);
             if (RainMeadow.isArenaMode(out var arena))
             {
+                RainMeadow.Debug(arena.setupTime);
+                arena.setupTime = System.Math.Max(0, arena.setupTime);
 
                 if (arena.playerEnteredGame != arena.arenaSittingOnlineOrder.Count)
                 {
@@ -77,25 +78,25 @@ namespace RainMeadow
                     modeLabel.text = showMode.ToString();
 
                 }
-                else if (SetupTimer > 0)
+                else if (arena.setupTime > 0)
                 {
-                    SetupTimer--;
+                    arena.setupTime --;
                     showMode = TimerMode.Countdown;
                     matchMode = TimerMode.Countdown;
                     modeLabel.text = $"Prepare for combat, {SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs)}";
                 }
 
-                else if (SetupTimer <= 0 && !countdownInitiated)
+                else if (arena.setupTime <= 0 && !countdownInitiated)
                 {
                     countdownInitiated = true;
+                    arena.countdownInitiatedHoldFire = false;
+
                     hud.PlaySound(SoundID.MENU_Start_New_Game);
                     ClearSprites();
-                    arena.countdownInitiatedHoldFire = false;
-                    SetupTimer = arena.setupTime;
                 }
             }
 
-            timerLabel.text = FormatTime(SetupTimer);
+            timerLabel.text = FormatTime(arena.setupTime);
         }
 
         // Format time to MM:SS:MMM

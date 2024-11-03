@@ -12,7 +12,7 @@ namespace RainMeadow
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
         public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
-        public ushort setupTime = 300;
+        public int setupTime = 300;
         public int playerEnteredGame = 0;
         public Dictionary<string, bool> playersReadiedUp = new Dictionary<string, bool>();
         public bool countdownInitiatedHoldFire = true;
@@ -30,6 +30,17 @@ namespace RainMeadow
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
             arenaClientSettings = new ArenaClientSettings();
             arenaClientSettings.playingAs = SlugcatStats.Name.White;
+        }
+
+        public void ResetGameTimer()
+        {
+            setupTime = 300;
+        }
+
+        public void ResetViolence()
+        {
+            countdownInitiatedHoldFire = true;
+            playerEnteredGame = 0;
         }
 
         public override bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)

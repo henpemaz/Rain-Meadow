@@ -1037,6 +1037,11 @@ namespace RainMeadow
                         }
                     }
                 }
+
+                if (arena.setupTime == 0 && arena.countdownInitiatedHoldFire)
+                {
+                    arena.countdownInitiatedHoldFire = false; // in case we missed it during the timer HUD
+                }
             }
         }
 
