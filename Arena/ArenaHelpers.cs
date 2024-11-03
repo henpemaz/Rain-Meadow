@@ -1,9 +1,13 @@
 ﻿using System.Collections.Generic;
+using RainMeadow.Arena.Nightcat;
+using UnityEngine;
 
 namespace RainMeadow
 {
     internal static class ArenaHelpers
     {
+
+
 
         public static readonly List<string> nonArenaSlugs = new List<string> { "Inv", "Slugpup", "MeadowOnline", "MeadowOnlineRemote" };
 
@@ -35,7 +39,7 @@ namespace RainMeadow
             {
                 arena.playersReadiedUp[player.id.name] = false;
             }
-            
+
             arena.isInGame = false;
             arena.returnToLobby = false;
             arena.playerEnteredGame = 0;
@@ -43,8 +47,11 @@ namespace RainMeadow
             arena.countdownInitiatedHoldFire = true;
             arena.setupTime = 300;
             lobby.manager.rainWorld.options.DeleteArenaSitting();
+            Nightcat.ResetNightcat();
+
 
         }
+
 
         public static OnlinePlayer FindOnlinePlayerByFakePlayerNumber(ArenaCompetitiveGameMode arena, int playerNumber)
         {
@@ -108,7 +115,33 @@ namespace RainMeadow
             return filteredList;
         }
 
+        public static void OverideSlugcatClasses(Player player, ArenaCompetitiveGameMode arena)
+        {
 
+            if (player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint && !arena.countdownInitiatedHoldFire)
+            {
+                if (player.wantToJump > 0 && player.input[0].pckp && player.canJump <= 0 && !player.monkAscension && !player.tongue.Attached && player.bodyMode != Player.BodyModeIndex.Crawl && player.bodyMode != Player.BodyModeIndex.CorridorClimb && player.bodyMode != Player.BodyModeIndex.ClimbIntoShortCut && player.animation != Player.AnimationIndex.HangFromBeam && player.animation != Player.AnimationIndex.ClimbOnBeam && player.bodyMode != Player.BodyModeIndex.WallClimb && player.bodyMode != Player.BodyModeIndex.Swimming && player.Consious && !player.Stunned && player.animation != Player.AnimationIndex.AntlerClimb && player.animation != Player.AnimationIndex.VineGrab && player.animation != Player.AnimationIndex.ZeroGPoleGrab)
+                {
+                    player.ActivateAscension();
+                }
+            }
+
+            if (player.SlugCatClass == SlugcatStats.Name.Night && !arena.countdownInitiatedHoldFire)
+            {
+                if (player.input[0].pckp && player.input[0].jmp && !Nightcat.activatedNightcat && Nightcat.cooldownTimer == 0)
+                {
+                    Nightcat.activatedNightcat = true;
+                }
+                if (Nightcat.cooldownTimer > 0)
+                {
+                    Nightcat.cooldownTimer--;
+                }
+
+                Nightcat.cooldownTimer = Mathf.Max(Nightcat.cooldownTimer, 0);
+
+            }
+
+        }
     }
 
 

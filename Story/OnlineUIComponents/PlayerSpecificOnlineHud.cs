@@ -1,4 +1,5 @@
 ﻿using HUD;
+using RainMeadow.Arena.Nightcat;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,8 +15,14 @@ namespace RainMeadow
         private SlugcatCustomization customization;
         public OnlinePlayerDisplay playerDisplay;
         public OnlinePlayerDeathBump deathBump;
+        public NightcatHUD nightcatBump;
+
         public int deadCounter = -1;
+        public int nightcatCounter = -1;
+
         public int antiDeathBumpFlicker;
+        public int antiNightcatFlicker;
+
         public List<OnlinePlayerHudPart> parts = new();
 
         public bool lastDead;
@@ -36,6 +43,14 @@ namespace RainMeadow
             get
             {
                 return Mathf.InverseLerp(40f, 0f, (float)this.deadCounter);
+            }
+        }
+
+        public float NightcatFade
+        {
+            get
+            {
+                return Mathf.InverseLerp(40f, 0f, (float)this.nightcatCounter);
             }
         }
 
@@ -76,6 +91,11 @@ namespace RainMeadow
                     else if (this.parts[i] == this.deathBump)
                     {
                         this.deathBump = null;
+                    }
+
+                    else if (this.parts[i] == this.nightcatBump)
+                    {
+                        this.nightcatBump = null;
                     }
 
                     this.parts[i].ClearSprites();
@@ -197,6 +217,7 @@ namespace RainMeadow
             lastCameraPos = camera.currentCameraPosition;
             lastAbstractRoom = camera.room.abstractRoom.index;
 
+
             if (this.antiDeathBumpFlicker > 0)
             {
                 this.antiDeathBumpFlicker--;
@@ -214,6 +235,9 @@ namespace RainMeadow
                     }
                 }
             }
+
+
+
             else if (this.lastDead)
             {
                 //Debug.Log("revivePlayer");
@@ -226,7 +250,38 @@ namespace RainMeadow
                 this.hud.PlaySound(SoundID.UI_Multiplayer_Player_Revive);
                 this.hud.fadeCircles.Add(new FadeCircle(this.hud, 10f, 10f, 0.82f, 30f, 4f, this.drawpos, this.hud.fContainers[1]));
             }
+
             this.lastDead = this.PlayerConsideredDead;
+
+            if (this.antiNightcatFlicker > 0)
+            {
+                this.antiNightcatFlicker--;
+            }
+
+            if (Nightcat.cooldownTimer == 0 && !Nightcat.notifiedPlayer && !Nightcat.firstTimeInitiating && RealizedPlayer != null && RealizedPlayer.SlugCatClass == SlugcatStats.Name.Night)
+            {
+                if (this.antiNightcatFlicker < 1)
+                {
+                    this.nightcatCounter++;
+                    if (this.nightcatCounter == 10)
+                    {
+                        this.antiNightcatFlicker = 80;
+                        this.nightcatBump = new NightcatHUD(this);
+                        this.parts.Add(this.nightcatBump);
+                        Nightcat.notifiedPlayer = true;
+                    }
+                }
+            }
+
+            if (Nightcat.notifiedPlayer)
+            {
+                if (this.nightcatBump != null)
+                {
+                    this.nightcatBump.removeAsap = true;
+                }
+                this.nightcatCounter = -1;
+            }
+
         }
 
         public override void Draw(float timeStacker)
