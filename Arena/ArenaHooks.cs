@@ -738,15 +738,6 @@ namespace RainMeadow
         private void PlayerResultBox_ctor(On.Menu.PlayerResultBox.orig_ctor orig, Menu.PlayerResultBox self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, Vector2 size, ArenaSitting.ArenaPlayer player, int index)
         {
 
-            RainMeadow.Debug("MY TIME ALIVE:" + player.timeAlive + "MY NAME: " + player.playerNumber);
-            //foreach (var onlinePlayer in OnlineManager.players)
-            //{
-            //    if (!onlinePlayer.isMe)
-            //    {
-            //        onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_TimeAlive, player.timeAlive, player.playerNumber);
-            //    }
-            //}
-
             orig(self, menu, owner, pos, size, player, index); // stupid rectangle
             if (self.backgroundRect == null)
             {
