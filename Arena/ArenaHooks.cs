@@ -33,7 +33,8 @@ namespace RainMeadow
             On.ArenaGameSession.Killing += ArenaGameSession_Killing;
             On.ArenaGameSession.SpawnCreatures += ArenaGameSession_SpawnCreatures;
             On.ArenaGameSession.ctor += ArenaGameSession_ctor;
-          
+            On.ArenaGameSession.PlayersStillActive += ArenaGameSession_PlayersStillActive;
+
 
             On.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded;
 
@@ -79,6 +80,68 @@ namespace RainMeadow
 
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
 
+        }
+
+        private int ArenaGameSession_PlayersStillActive(On.ArenaGameSession.orig_PlayersStillActive orig, ArenaGameSession self, bool addToAliveTime, bool dontCountSandboxLosers)
+        {
+            if (isArenaMode(out var arena))
+            {
+                int num = 0;
+                for (int i = 0; i < self.Players.Count; i++)
+                {
+                    bool flag = true;
+                    if (!self.Players[i].state.alive)
+                    {
+                        flag = false;
+                    }
+
+                    if (flag && self.exitManager != null && self.exitManager.IsPlayerInDen(self.Players[i]))
+                    {
+                        flag = false;
+                    }
+
+                    if (flag && self.Players[i].realizedCreature != null && (self.Players[i].realizedCreature as Player).dangerGrasp != null)
+                    {
+                        flag = false;
+                    }
+
+                    if (flag)
+                    {
+                        for (int j = 0; j < self.arenaSitting.players.Count; j++)
+                        {
+
+                            if (self.Players[i].Room == self.game.world.offScreenDen && self.arenaSitting.players[j].hasEnteredGameArea)
+                            {
+                                flag = false;
+                            }
+
+                            //if (addToAliveTime && flag && !self.sessionEnded && self.game.pauseMenu == null)
+                            //{
+                            //    self.arenaSitting.players[j].timeAlive++;
+                            //}
+
+                            if (dontCountSandboxLosers && self.arenaSitting.players[j].sandboxWin < 0)
+                            {
+                                flag = false;
+                            }
+
+                            break;
+
+                        }
+                    }
+
+                    if (flag)
+                    {
+                        num++;
+                    }
+                }
+
+                return num;
+            }
+            else
+            {
+                return orig(self, addToAliveTime, dontCountSandboxLosers);
+            }
         }
 
         private void Player_ClassMechanicsSaint(On.Player.orig_ClassMechanicsSaint orig, Player self)
@@ -1042,6 +1105,25 @@ namespace RainMeadow
                 {
                     arena.countdownInitiatedHoldFire = false; // in case we missed it during the timer HUD
                 }
+
+                if (!self.sessionEnded) {
+                    foreach (var s in self.arenaSitting.players)
+                    {
+                        var os = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.playerNumber); // current player
+
+                        foreach (var c in self.Players)
+                        {
+                            if (OnlinePhysicalObject.map.TryGetValue(c, out var onlineC) && onlineC.owner == os && c.realizedCreature is not null && !c.realizedCreature.State.dead)
+                            {
+                                s.timeAlive++;
+                            }
+                        }
+                    }
+
+                }
+
+
+
             }
         }
 
