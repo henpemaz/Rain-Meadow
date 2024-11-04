@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using MonoMod.Cil;
+using Mono.Cecil.Cil;
 using UnityEngine;
 
 namespace RainMeadow
@@ -17,6 +20,9 @@ namespace RainMeadow
             On.AbstractCreature.InDenUpdate += AbstractCreature_InDenUpdate; // Don't think
 
             On.ScavengerAbstractAI.InitGearUp += ScavengerAbstractAI_InitGearUp;
+
+            IL.GarbageWorm.NewHole += GarbageWorm_NewHole;
+            On.GarbageWormAI.Update += GarbageWormAI_Update;
 
             On.EggBugGraphics.Update += EggBugGraphics_Update;
             On.BigSpiderGraphics.Update += BigSpiderGraphics_Update;
@@ -93,7 +99,7 @@ namespace RainMeadow
         // so lets not let them choose for themselves.
         private void OverseerAI_Update(On.OverseerAI.orig_Update orig, OverseerAI self)
         {
-            if (!self.overseer.abstractCreature.IsLocal(out var oe))
+            if (!self.overseer.IsLocal())
             {
                 Vector2 tempLookAt = self.lookAt;
                 orig(self);
@@ -107,8 +113,45 @@ namespace RainMeadow
         // we might also need to block ziptoposition, but i havent been able to test if thats an issue.
         private void OverseerAI_UpdateTempHoverPosition(On.OverseerAI.orig_UpdateTempHoverPosition orig, OverseerAI self)
         {
-            if (!self.overseer.abstractCreature.IsLocal()) return;
+            if (!self.overseer.IsLocal()) return;
             orig(self);
+        }
+
+        private void GarbageWorm_NewHole(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.AfterLabel,
+                    i => i.MatchNewobj<List<int>>(),
+                    i => i.MatchStloc(0)
+                    );
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldarg_1);
+                c.EmitDelegate((GarbageWorm self, bool burrowed) => !burrowed || self.IsLocal());  // HACK: not burrowed on NewRoom => spawn normally
+                c.Emit(OpCodes.Brfalse, skip);
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchStfld<GarbageWorm>("hole")
+                    );
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void GarbageWormAI_Update(On.GarbageWormAI.orig_Update orig, GarbageWormAI self)
+        {
+            var origAngry = self.showAsAngry;
+            var origLookPoint = self.worm.lookPoint;
+            orig(self);
+            if (!self.creature.IsLocal())
+            {
+                self.worm.lookPoint = origLookPoint;
+                self.showAsAngry = origAngry;
+            }
         }
     }
 }
