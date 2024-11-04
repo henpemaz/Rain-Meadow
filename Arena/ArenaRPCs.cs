@@ -8,6 +8,25 @@ namespace RainMeadow
     {
 
         [RPCMethod]
+        public static void Arena_TimeAlive(int timeAlive, int arenaNumber)
+        {
+            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            if (game.manager.upcomingProcess != null)
+            {
+                return;
+            }
+            RainMeadow.Debug("INCOMING TIME ALIVE:" + timeAlive + "INCOMING NAME: " + arenaNumber);
+
+            foreach (var playerNum in game.GetArenaGameSession.arenaSitting.players)
+            {
+                if (arenaNumber == playerNum.playerNumber)
+                {
+                    playerNum.timeAlive = timeAlive;
+                }
+            }
+        }
+
+        [RPCMethod]
         public static void Arena_UpdateSelectedChoice(string stringID, int value)
         {
             if (RainMeadow.isArenaMode(out var arena))
