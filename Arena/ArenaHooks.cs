@@ -33,7 +33,7 @@ namespace RainMeadow
             On.ArenaGameSession.Killing += ArenaGameSession_Killing;
             On.ArenaGameSession.SpawnCreatures += ArenaGameSession_SpawnCreatures;
             On.ArenaGameSession.ctor += ArenaGameSession_ctor;
-            //On.ArenaGameSession.PlayersStillActive += ArenaGameSession_PlayersStillActive;
+            On.ArenaGameSession.PlayersStillActive += ArenaGameSession_PlayersStillActive;
 
 
             On.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded;
@@ -1115,16 +1115,24 @@ namespace RainMeadow
                     arena.countdownInitiatedHoldFire = false; // in case we missed it during the timer HUD
                 }
 
-                if (!self.sessionEnded)
-                {
-                    foreach (var player in self.arenaSitting.players)
+                if (!self.sessionEnded) {
+                    foreach (var s in self.arenaSitting.players)
                     {
-                        if (player.alive)
+                        var os = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.playerNumber); // current player
+
+                        foreach (var c in self.Players)
                         {
-                            player.timeAlive++;
+                            if (OnlinePhysicalObject.map.TryGetValue(c, out var onlineC) && onlineC.owner == os && c.realizedCreature is not null && !c.realizedCreature.State.dead)
+                            {
+                                s.timeAlive++;
+                            }
                         }
                     }
+
                 }
+
+
+
             }
         }
 
