@@ -1,6 +1,8 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using RainMeadow.Arena.Nightcat;
 using System;
+using System.Drawing;
 using System.Linq;
 using UnityEngine;
 
@@ -43,6 +45,22 @@ public partial class RainMeadow
         On.AbstractCreature.ctor += AbstractCreature_ctor;
         On.Player.ShortCutColor += Player_ShortCutColor;
         On.Player.checkInput += Player_checkInput;
+        On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites2;
+
+    }
+
+
+    private void PlayerGraphics_DrawSprites2(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
+    {
+        orig(self, sLeaser, rCam, timeStacker, camPos);
+
+
+        //if (isArenaMode(out var arena) && self.player.SlugCatClass == SlugcatStats.Name.Night)
+        //{
+
+        //    Nightcat.NightcatImplementation(arena, self, sLeaser, rCam, timeStacker, camPos);
+        //}
+
 
     }
 
@@ -63,18 +81,8 @@ public partial class RainMeadow
                     PlayerMovementOverride.HoldFire(self);
                 }
 
-                if (self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint && !arena.countdownInitiatedHoldFire)
-                {
-                    if (self.wantToJump > 0 && self.input[0].pckp && self.canJump <= 0 && !self.monkAscension && !self.tongue.Attached && self.bodyMode != Player.BodyModeIndex.Crawl && self.bodyMode != Player.BodyModeIndex.CorridorClimb && self.bodyMode != Player.BodyModeIndex.ClimbIntoShortCut && self.animation != Player.AnimationIndex.HangFromBeam && self.animation != Player.AnimationIndex.ClimbOnBeam && self.bodyMode != Player.BodyModeIndex.WallClimb && self.bodyMode != Player.BodyModeIndex.Swimming && self.Consious && !self.Stunned && self.animation != Player.AnimationIndex.AntlerClimb && self.animation != Player.AnimationIndex.VineGrab && self.animation != Player.AnimationIndex.ZeroGPoleGrab)
-                    {
-                        self.ActivateAscension();
-                    }
-                }
+                ArenaHelpers.OverideSlugcatClassAbilities(self, arena);
 
-                //if (self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer && arena.countdownInitiatedHoldFire) // Arena: undecided on this for now
-                //{
-                //    self.pyroJumpped = true;
-                //}
             }
         }
 
@@ -137,6 +145,24 @@ public partial class RainMeadow
         if (isStoryMode(out var _) && !self.inShortcut && OnlineManager.players.Count > 4)
         {
             if (self.room.abstractRoom.shelter || self.room.IsGateRoom())
+            {
+                if (self.collisionLayer != 0)
+                {
+                    self.room.ChangeCollisionLayerForObject(self, 0);
+                }
+            }
+            else
+            {
+                if (self.collisionLayer != 1)
+                {
+                    self.room.ChangeCollisionLayerForObject(self, 1);
+                }
+            }
+        }
+
+        if (isArenaMode(out var arena) && !self.inShortcut)
+        {
+            if (arena.countdownInitiatedHoldFire)
             {
                 if (self.collisionLayer != 0)
                 {
@@ -395,8 +421,15 @@ public partial class RainMeadow
     private void Player_GetInitialSlugcatClass(On.Player.orig_GetInitialSlugcatClass orig, Player self)
     {
         orig(self);
+
         if (OnlineManager.lobby != null)
         {
+            if (self.SlugCatClass == SlugcatStats.Name.Night)
+            {
+                self.slugcatStats.throwingSkill = 1; // don't let them push you around
+                // Nightcat.ResetSneak(self);
+            }
+
             if (self.abstractPhysicalObject.GetOnlineObject(out var oe) && oe.TryGetData<SlugcatCustomization>(out var customization))
             {
                 self.SlugCatClass = customization.playingAs;
@@ -590,19 +623,11 @@ public partial class RainMeadow
             slugcat = storyGameMode.avatarSettings.playingAs;
         }
 
-        if (isArenaMode(out var arena))
-        {
-
-            slugcat = arena.avatarSettings.playingAs; // Arena needs this 
-        }
         orig(self, slugcat, malnourished);
 
         if (OnlineManager.lobby == null) return;
         if (slugcat != Ext_SlugcatStatsName.OnlineSessionPlayer) return;
 
-        if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode)
-        {
-            self.throwingSkill = 1;
-        }
+
     }
 }

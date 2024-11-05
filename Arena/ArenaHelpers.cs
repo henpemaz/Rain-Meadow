@@ -1,9 +1,13 @@
 ﻿using System.Collections.Generic;
+using RainMeadow.Arena.Nightcat;
+using UnityEngine;
 
 namespace RainMeadow
 {
     internal static class ArenaHelpers
     {
+
+
 
         public static readonly List<string> nonArenaSlugs = new List<string> { "Inv", "Slugpup", "MeadowOnline", "MeadowOnlineRemote" };
 
@@ -35,16 +39,17 @@ namespace RainMeadow
             {
                 arena.playersReadiedUp[player.id.name] = false;
             }
-            
+
             arena.isInGame = false;
             arena.returnToLobby = false;
-            arena.playerEnteredGame = 0;
-            //arena.allPlayersAreNowInGame = false;
-            arena.countdownInitiatedHoldFire = true;
-            arena.setupTime = 300;
+            arena.ResetViolence();
+            arena.ResetGameTimer();
             lobby.manager.rainWorld.options.DeleteArenaSitting();
+            //Nightcat.ResetNightcat();
+
 
         }
+
 
         public static OnlinePlayer FindOnlinePlayerByFakePlayerNumber(ArenaCompetitiveGameMode arena, int playerNumber)
         {
@@ -108,7 +113,27 @@ namespace RainMeadow
             return filteredList;
         }
 
+        public static void OverideSlugcatClassAbilities(Player player, ArenaCompetitiveGameMode arena)
+        {
 
+            if (player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint && !arena.countdownInitiatedHoldFire)
+            {
+                if (player.wantToJump > 0 && player.input[0].pckp && player.canJump <= 0 && !player.monkAscension && !player.tongue.Attached && player.bodyMode != Player.BodyModeIndex.Crawl && player.bodyMode != Player.BodyModeIndex.CorridorClimb && player.bodyMode != Player.BodyModeIndex.ClimbIntoShortCut && player.animation != Player.AnimationIndex.HangFromBeam && player.animation != Player.AnimationIndex.ClimbOnBeam && player.bodyMode != Player.BodyModeIndex.WallClimb && player.bodyMode != Player.BodyModeIndex.Swimming && player.Consious && !player.Stunned && player.animation != Player.AnimationIndex.AntlerClimb && player.animation != Player.AnimationIndex.VineGrab && player.animation != Player.AnimationIndex.ZeroGPoleGrab)
+                {
+                    player.maxGodTime = 360f;
+                    player.ActivateAscension();
+                }
+                if (player.wantToJump > 0 && player.monkAscension) {
+                    player.DeactivateAscension();
+                }
+            }
+
+            //if (player.SlugCatClass == SlugcatStats.Name.Night)
+            //{
+            //    Nightcat.CheckInputForActivatingNightcat(player);
+            //}
+
+        }
     }
 
 
