@@ -19,11 +19,10 @@ namespace RainMeadow
         private static float num = 120f;
         private static float num2 = 0f;
         private static float num3 = num - num2;
-        private List<string> sharedPlayList = new List<string>();
-        private OpTinyColorPicker bodyColorPicker;
-        private OpTinyColorPicker eyeColorPicker;
-        public UIelementWrapper bodyColor;
-        public UIelementWrapper eyeColor;
+        //private OpTinyColorPicker bodyColorPicker;
+        //private OpTinyColorPicker eyeColorPicker;
+        //public UIelementWrapper bodyColor;
+        //public UIelementWrapper eyeColor;
         public bool clientReadiedUp = false;
         public MenuLabel totalClientsReadiedUpOnPage;
         private SimplerSymbolButton viewNextPlayer;
@@ -757,34 +756,37 @@ namespace RainMeadow
             }
         }
 
-        private void SetupCharacterCustomization()
-        {
-            var bodyLabel = new MenuLabel(this, pages[0], Translate("Body color"), new Vector2(800, 353), new(0, 30), false);
-            bodyLabel.label.alignment = FLabelAlignment.Right;
-            this.pages[0].subObjects.Add(bodyLabel);
 
-            var eyeLabel = new MenuLabel(this, pages[0], Translate("Eye color"), new Vector2(900, 353), new(0, 30), false);
-            eyeLabel.label.alignment = FLabelAlignment.Right;
-            this.pages[0].subObjects.Add(eyeLabel);
+        // UNUSED due to weird subobject logic between smart menu and MultiplayerMenu
 
-            bodyColorPicker = new OpTinyColorPicker(this.pages[0].menu, new Vector2(705, 353), personaSettings.bodyColor);
-            var tabWrapper = new MenuTabWrapper(this, this.pages[0]);
-            bodyColor = new UIelementWrapper(tabWrapper, bodyColorPicker);
-            bodyColorPicker.OnValueChangedEvent += ColorPicker_OnValueChangedEvent;
+        //private void SetupCharacterCustomization()
+        //{
+        //    var bodyLabel = new MenuLabel(this, pages[0], Translate("Body color"), new Vector2(800, 353), new(0, 30), false);
+        //    bodyLabel.label.alignment = FLabelAlignment.Right;
+        //    this.pages[0].subObjects.Add(bodyLabel);
 
-            eyeColorPicker = new OpTinyColorPicker(this.pages[0].menu, new Vector2(810, 353), personaSettings.eyeColor);
-            eyeColor = new UIelementWrapper(tabWrapper, eyeColorPicker);
-            eyeColorPicker.OnValueChangedEvent += ColorPicker_OnValueChangedEvent;
+        //    var eyeLabel = new MenuLabel(this, pages[0], Translate("Eye color"), new Vector2(900, 353), new(0, 30), false);
+        //    eyeLabel.label.alignment = FLabelAlignment.Right;
+        //    this.pages[0].subObjects.Add(eyeLabel);
 
-            pages[0].subObjects.Add(bodyColor);
-            pages[0].subObjects.Add(eyeColor);
-        }
+        //    bodyColorPicker = new OpTinyColorPicker(this.pages[0].menu, new Vector2(705, 353), personaSettings.bodyColor);
+        //    var tabWrapper = new MenuTabWrapper(this, this.pages[0]);
+        //    bodyColor = new UIelementWrapper(tabWrapper, bodyColorPicker);
+        //    bodyColorPicker.OnValueChangedEvent += ColorPicker_OnValueChangedEvent;
 
-        private void ColorPicker_OnValueChangedEvent()
-        {
-            personaSettings.bodyColor = Extensions.SafeColorRange(bodyColorPicker.valuecolor);
-            personaSettings.eyeColor = Extensions.SafeColorRange(eyeColorPicker.valuecolor);
-        }
+        //    eyeColorPicker = new OpTinyColorPicker(this.pages[0].menu, new Vector2(810, 353), personaSettings.eyeColor);
+        //    eyeColor = new UIelementWrapper(tabWrapper, eyeColorPicker);
+        //    eyeColorPicker.OnValueChangedEvent += ColorPicker_OnValueChangedEvent;
+
+        //    pages[0].subObjects.Add(bodyColor);
+        //    pages[0].subObjects.Add(eyeColor);
+        //}
+
+        //private void ColorPicker_OnValueChangedEvent()
+        //{
+        //    personaSettings.bodyColor = Extensions.SafeColorRange(bodyColorPicker.valuecolor);
+        //    personaSettings.eyeColor = Extensions.SafeColorRange(eyeColorPicker.valuecolor);
+        //}
 
         private void UpdateReadyUpLabel()
         {

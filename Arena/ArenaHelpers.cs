@@ -45,7 +45,7 @@ namespace RainMeadow
             arena.ResetViolence();
             arena.ResetGameTimer();
             lobby.manager.rainWorld.options.DeleteArenaSitting();
-            Nightcat.ResetNightcat();
+            //Nightcat.ResetNightcat();
 
 
         }
@@ -128,10 +128,10 @@ namespace RainMeadow
                 }
             }
 
-            if (player.SlugCatClass == SlugcatStats.Name.Night)
-            {
-                Nightcat.CheckInputForActivatingNightcat(player);
-            }
+            //if (player.SlugCatClass == SlugcatStats.Name.Night)
+            //{
+            //    Nightcat.CheckInputForActivatingNightcat(player);
+            //}
 
         }
     }

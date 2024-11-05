@@ -81,17 +81,17 @@ namespace RainMeadow.Arena.Nightcat
         public static void CheckInputForActivatingNightcat(Player player)
         {
 
-            if (player.input[0].pckp && player.input[0].jmp && !Nightcat.activatedNightcat && Nightcat.cooldownTimer == 0)
-            {
-                Nightcat.activatedNightcat = true;
-            }
-            if (Nightcat.cooldownTimer > 0)
-            {
-                Nightcat.cooldownTimer--;
-            }
+                if (player.input[0].pckp && player.input[0].jmp && !Nightcat.activatedNightcat && Nightcat.cooldownTimer == 0)
+                {
+                    Nightcat.activatedNightcat = true;
+                }
+                if (Nightcat.cooldownTimer > 0)
+                {
+                    Nightcat.cooldownTimer--;
+                }
 
-            Nightcat.cooldownTimer = Mathf.Max(Nightcat.cooldownTimer, 0);
-
+                Nightcat.cooldownTimer = Mathf.Max(Nightcat.cooldownTimer, 0);
+            
 
         }
 
@@ -99,29 +99,29 @@ namespace RainMeadow.Arena.Nightcat
         {
             isActive = true;
 
-            sLeaser.sprites[9]._color = Color.white; // eyes
-            sLeaser.sprites[8]._color = Color.black; // arms
+                sLeaser.sprites[9]._color = Color.white; // eyes
+                sLeaser.sprites[8]._color = Color.black; // arms
 
-            for (int i = 0; i < spriteCount; i++)
-            {
-                // Increment alphaOffsets for fading out
-                float fadeOutAlpha = Mathf.Clamp01(Time.deltaTime * 0.9f);
-                alphaOffsets[i] = Mathf.Clamp01(alphaOffsets[0] + fadeOutAlpha); // Adjust speed
-
-
-                // Apply transparency using the updated value
-                sLeaser.sprites[i]._color.a = Mathf.Lerp(arena.avatarSettings.bodyColor.a, 0f, alphaOffsets[i]);
+                for (int i = 0; i < spriteCount; i++)
+                {
+                    // Increment alphaOffsets for fading out
+                    float fadeOutAlpha = Mathf.Clamp01(Time.deltaTime * 0.9f);
+                    alphaOffsets[i] = Mathf.Clamp01(alphaOffsets[0] + fadeOutAlpha); // Adjust speed
 
 
-            }
-            if (sLeaser.sprites[0]._color.a == 0f && !activateNightcatSFX)
-            {
-                activateNightcatSFX = true;
-                self.player.room.PlaySound(SoundID.Firecracker_Disintegrate, self.player.mainBodyChunk, loop: false, 1f, 1f);
-                self.player.room.AddObject(new ZapCoil.ZapFlash(self.player.bodyChunks[1].pos, 5f));
-                Nightcat.ImproveSneak(self.player);
-                Nightcat.ImproveThrow(self.player);
-            }
+                    // Apply transparency using the updated value
+                    sLeaser.sprites[i]._color.a = Mathf.Lerp(arena.avatarSettings.bodyColor.a, 0f, alphaOffsets[i]);
+
+
+                }
+                if (sLeaser.sprites[0]._color.a == 0f && !activateNightcatSFX)
+                {
+                    activateNightcatSFX = true;
+                    self.player.room.PlaySound(SoundID.Firecracker_Disintegrate, self.player.mainBodyChunk, loop: false, 1f, 1f);
+                    self.player.room.AddObject(new ZapCoil.ZapFlash(self.player.bodyChunks[1].pos, 5f));
+                    Nightcat.ImproveSneak(self.player);
+                    Nightcat.ImproveThrow(self.player);
+                }
 
 
 
@@ -130,32 +130,32 @@ namespace RainMeadow.Arena.Nightcat
         public static void DeactivateNightcat(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
 
-            isActive = false;
-            activateNightcatSFX = false;
-            //self.player.room.AddObject(new ShockWave(self.player.bodyChunks[1].pos, 100f, 0.07f, 6));
+                isActive = false;
+                activateNightcatSFX = false;
+                //self.player.room.AddObject(new ShockWave(self.player.bodyChunks[1].pos, 100f, 0.07f, 6));
 
-            // Reset alphaOffsets for the next cycle
-            for (int i = 0; i < spriteCount; i++)
-            {
-                // Apply the alpha based on the current offset
-                sLeaser.sprites[i]._color.a = arena.avatarSettings.bodyColor.a;
-                alphaOffsets[i] = 0f; // Reset to start restoring from fully transparent
+                // Reset alphaOffsets for the next cycle
+                for (int i = 0; i < spriteCount; i++)
+                {
+                    // Apply the alpha based on the current offset
+                    sLeaser.sprites[i]._color.a = arena.avatarSettings.bodyColor.a;
+                    alphaOffsets[i] = 0f; // Reset to start restoring from fully transparent
 
+                }
+
+                if (!activateNightcatSFX)
+                {
+                    self.player.room.PlaySound(SoundID.Firecracker_Disintegrate, self.player.mainBodyChunk, loop: false, 1f, 1f);
+                    self.player.room.AddObject(new ZapCoil.ZapFlash(self.player.bodyChunks[1].pos, 5f));
+                    activateNightcatSFX = true;
+                }
+
+                ResetNightcat();
+                ResetCoolDownTimer();
+                ResetSneak(self.player);
+                ResetThrowingSkill(self.player);
+                firstTimeInitiating = false;
             }
-
-            if (!activateNightcatSFX)
-            {
-                self.player.room.PlaySound(SoundID.Firecracker_Disintegrate, self.player.mainBodyChunk, loop: false, 1f, 1f);
-                self.player.room.AddObject(new ZapCoil.ZapFlash(self.player.bodyChunks[1].pos, 5f));
-                activateNightcatSFX = true;
-            }
-
-            ResetNightcat();
-            ResetCoolDownTimer();
-            ResetSneak(self.player);
-            ResetThrowingSkill(self.player);
-            firstTimeInitiating = false;
-        }
 
         public static void NightcatImplementation(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
@@ -183,16 +183,16 @@ namespace RainMeadow.Arena.Nightcat
 
         public static void MakeEyesFlash(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
-            if (!Nightcat.activatedNightcat && Nightcat.cooldownTimer == 0)
-            {
+                if (!Nightcat.activatedNightcat && Nightcat.cooldownTimer == 0)
+                {
 
-                flashTimer += Time.deltaTime;
-                float t = flashTimer / flashDuration;
-                float intensity = Mathf.PingPong(t, Nightcat.maxFlashIntensity);
-                sLeaser.sprites[9]._color = Color.Lerp(Color.white, arena.avatarSettings.eyeColor, intensity);
+                    flashTimer += Time.deltaTime;
+                    float t = flashTimer / flashDuration;
+                    float intensity = Mathf.PingPong(t, Nightcat.maxFlashIntensity);
+                    sLeaser.sprites[9]._color = Color.Lerp(Color.white, arena.avatarSettings.eyeColor, intensity);
 
+                }
             }
-        }
 
     }
 

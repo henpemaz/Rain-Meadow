@@ -1042,6 +1042,7 @@ namespace RainMeadow
                 {
                     arena.countdownInitiatedHoldFire = false; // in case we missed it during the timer HUD
                 }
+                RainMeadow.Debug(self.arenaSitting.players[0].playerClass);
             }
         }
 
