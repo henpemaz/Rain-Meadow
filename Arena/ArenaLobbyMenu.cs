@@ -336,7 +336,7 @@ namespace RainMeadow
             InitializeNewOnlineSitting();
             ArenaHelpers.SetupOnlineArenaStting(arena, this.manager);
             this.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
-            arena.playerResultColorizizerForMSCAndHighLobbyCount = UnityEngine.Random.Range(0, 5);
+            arena.playerResultColorizizerForMSCAndHighLobbyCount = UnityEngine.Random.Range(0, 4);
             // temp
             UserInput.SetUserCount(OnlineManager.players.Count);
             UserInput.SetForceDisconnectControllers(forceDisconnect: false);
@@ -501,10 +501,13 @@ namespace RainMeadow
                 {
                     if (classButtons[i] != null)
                     {
-                        if (OnlineManager.lobby.isOwner)
+                        if (OnlineManager.lobby.isOwner) // kickbutton null check
                         {
-                            classButtons[i].kickButton.RemoveSprites();
-                            this.pages[0].RemoveSubObject(classButtons[i].kickButton);
+                            if (classButtons[i].kickButton != null)
+                            {
+                                classButtons[i].kickButton.RemoveSprites();
+                                this.pages[0].RemoveSubObject(classButtons[i].kickButton);
+                            }
                         }
                         classButtons[i].RemoveSprites();
                         this.pages[0].RemoveSubObject(classButtons[i]);
