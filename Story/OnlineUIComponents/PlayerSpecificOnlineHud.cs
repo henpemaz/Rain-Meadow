@@ -15,13 +15,13 @@ namespace RainMeadow
         private SlugcatCustomization customization;
         public OnlinePlayerDisplay playerDisplay;
         public OnlinePlayerDeathBump deathBump;
-        public NightcatHUD nightcatBump;
+        //public NightcatHUD nightcatBump;
 
         public int deadCounter = -1;
         public int nightcatCounter = -1;
 
         public int antiDeathBumpFlicker;
-        public int antiNightcatFlicker;
+        //public int antiNightcatFlicker;
 
         public List<OnlinePlayerHudPart> parts = new();
 
@@ -46,13 +46,13 @@ namespace RainMeadow
             }
         }
 
-        public float NightcatFade
-        {
-            get
-            {
-                return Mathf.InverseLerp(40f, 0f, (float)this.nightcatCounter);
-            }
-        }
+        //public float NightcatFade
+        //{
+        //    get
+        //    {
+        //        return Mathf.InverseLerp(40f, 0f, (float)this.nightcatCounter);
+        //    }
+        //}
 
         public PlayerSpecificOnlineHud(OnlineHUD owner, RoomCamera camera, OnlineGameMode onlineGameMode, ClientSettings clientSettings) : base(owner.hud)
         {
@@ -93,10 +93,10 @@ namespace RainMeadow
                         this.deathBump = null;
                     }
 
-                    else if (this.parts[i] == this.nightcatBump)
-                    {
-                        this.nightcatBump = null;
-                    }
+                    //else if (this.parts[i] == this.nightcatBump)
+                    //{
+                    //    this.nightcatBump = null;
+                    //}
 
                     this.parts[i].ClearSprites();
                     this.parts.RemoveAt(i);
@@ -253,10 +253,10 @@ namespace RainMeadow
 
             this.lastDead = this.PlayerConsideredDead;
 
-            if (this.antiNightcatFlicker > 0)
-            {
-                this.antiNightcatFlicker--;
-            }
+            //if (this.antiNightcatFlicker > 0)
+            //{
+            //    this.antiNightcatFlicker--;
+            //}
 
             //if (Nightcat.cooldownTimer == 0 && !Nightcat.notifiedPlayer && !Nightcat.firstTimeInitiating && RealizedPlayer != null && RealizedPlayer.SlugCatClass == SlugcatStats.Name.Night)
             //{
