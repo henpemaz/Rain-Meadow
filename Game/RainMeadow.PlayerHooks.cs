@@ -432,7 +432,6 @@ public partial class RainMeadow
 
             if (self.abstractPhysicalObject.GetOnlineObject(out var oe) && oe.TryGetData<SlugcatCustomization>(out var customization))
             {
-                RainMeadow.Debug("===========CURRENT ARENA CLASS " + customization.playingAs);
                 self.SlugCatClass = customization.playingAs;
             }
             else
