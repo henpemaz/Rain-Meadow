@@ -510,31 +510,38 @@ namespace RainMeadow
 
         private SaveState PlayerProgression_GetOrInitiateSaveState(On.PlayerProgression.orig_GetOrInitiateSaveState orig, PlayerProgression self, SlugcatStats.Name saveStateNumber, RainWorldGame game, ProcessManager.MenuSetup setup, bool saveAsDeathOrQuit)
         {
-            var origSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
             if (isStoryMode(out var storyGameMode))
             {
+                var origLoadInProgress = self.loadInProgress;
+                if (!OnlineManager.lobby.isOwner && self.starvedSaveState is null) self.loadInProgress = true;  // don't load client save
+                var currentSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
+                self.loadInProgress = origLoadInProgress;
+
                 if (!OnlineManager.lobby.isOwner)
                 {
-                    origSaveState.deathPersistentSaveData.ghostsTalkedTo.Clear();
+                    currentSaveState.deathPersistentSaveData.ghostsTalkedTo.Clear();
                     foreach (var kvp in storyGameMode.ghostsTalkedTo)
                         if (ExtEnumBase.TryParse(typeof(GhostWorldPresence.GhostID), kvp.Key, ignoreCase: false, out var rawEnumBase))
-                            origSaveState.deathPersistentSaveData.ghostsTalkedTo[(GhostWorldPresence.GhostID)rawEnumBase] = kvp.Value;
+                            currentSaveState.deathPersistentSaveData.ghostsTalkedTo[(GhostWorldPresence.GhostID)rawEnumBase] = kvp.Value;
                 }
 
                 if (storyGameMode.myLastDenPos != null)
                 {
-                    origSaveState.denPosition = storyGameMode.myLastDenPos;
+                    currentSaveState.denPosition = storyGameMode.myLastDenPos;
                 }
                 else if (storyGameMode.defaultDenPos != null)
                 {
-                    storyGameMode.myLastDenPos = origSaveState.denPosition = storyGameMode.defaultDenPos;
+                    storyGameMode.myLastDenPos = currentSaveState.denPosition = storyGameMode.defaultDenPos;
                 }
                 if (OnlineManager.lobby.isOwner)
                 {
-                    storyGameMode.defaultDenPos = origSaveState.denPosition;
+                    storyGameMode.defaultDenPos = currentSaveState.denPosition;
                 }
+
+                return currentSaveState;
             }
-            return origSaveState;
+
+            return orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
         }
 
         private bool PlayerProgression_SaveToDisk(On.PlayerProgression.orig_SaveToDisk orig, PlayerProgression self, bool saveCurrentState, bool saveMaps, bool saveMiscProg)
