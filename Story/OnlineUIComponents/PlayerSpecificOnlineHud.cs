@@ -258,29 +258,29 @@ namespace RainMeadow
                 this.antiNightcatFlicker--;
             }
 
-            if (Nightcat.cooldownTimer == 0 && !Nightcat.notifiedPlayer && !Nightcat.firstTimeInitiating && RealizedPlayer != null && RealizedPlayer.SlugCatClass == SlugcatStats.Name.Night)
-            {
-                if (this.antiNightcatFlicker < 1)
-                {
-                    this.nightcatCounter++;
-                    if (this.nightcatCounter == 10)
-                    {
-                        this.antiNightcatFlicker = 80;
-                        this.nightcatBump = new NightcatHUD(this);
-                        this.parts.Add(this.nightcatBump);
-                        Nightcat.notifiedPlayer = true;
-                    }
-                }
-            }
+            //if (Nightcat.cooldownTimer == 0 && !Nightcat.notifiedPlayer && !Nightcat.firstTimeInitiating && RealizedPlayer != null && RealizedPlayer.SlugCatClass == SlugcatStats.Name.Night)
+            //{
+            //    if (this.antiNightcatFlicker < 1)
+            //    {
+            //        this.nightcatCounter++;
+            //        if (this.nightcatCounter == 10)
+            //        {
+            //            this.antiNightcatFlicker = 80;
+            //            this.nightcatBump = new NightcatHUD(this);
+            //            this.parts.Add(this.nightcatBump);
+            //            Nightcat.notifiedPlayer = true;
+            //        }
+            //    }
+            //}
 
-            if (Nightcat.notifiedPlayer)
-            {
-                if (this.nightcatBump != null)
-                {
-                    this.nightcatBump.removeAsap = true;
-                }
-                this.nightcatCounter = -1;
-            }
+            //if (Nightcat.notifiedPlayer)
+            //{
+            //    if (this.nightcatBump != null)
+            //    {
+            //        this.nightcatBump.removeAsap = true;
+            //    }
+            //    this.nightcatCounter = -1;
+            //}
 
         }
 
