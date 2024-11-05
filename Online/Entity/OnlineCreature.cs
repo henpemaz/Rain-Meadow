@@ -22,21 +22,25 @@ namespace RainMeadow
                 this.creatureType = onlineCreature.creature.creatureTemplate.type;
             }
 
+            protected void CreatureSaveExtras(string extras)
+            {
+                extraData = extras.Replace("<cA>", "\u0001").Replace("<cB>", "\u0002").Replace("<cC>", "\u0003");
+            }
+
+            protected string CreatureBuildExtras()
+            {
+                return extraData.Replace("\u0001", "<cA>").Replace("\u0002", "<cB>").Replace("\u0003", "<cC>");
+            }
+
             protected override int ExtrasIndex => 3;
 
             protected override void StoreSerializedObject(OnlinePhysicalObject onlinePhysicalObject)
             {
                 var onlineCreature = (OnlineCreature)onlinePhysicalObject;
 
-                string serializedObject = null;
-                if (RainMeadow.isArenaMode(out var _))
-                {
-                    serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature);
-                }
-                else
-                {
-                    serializedObject = SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
-                }
+                var serializedObject = onlineCreature.abstractCreature.world.singleRoomWorld
+                    ? SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature)
+                    : SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
                 RainMeadow.Debug("Data is " + serializedObject);
                 int index = 0;
                 int count = ExtrasIndex;
@@ -52,19 +56,8 @@ namespace RainMeadow
                     CreatureSaveExtras(serializedObject.Substring(index + 4));
                 }
 
-
                 this.creatureType = onlineCreature.creature.creatureTemplate.type; // we sneak this in here since this is called from apodef ctor before our own ctor
                 RainMeadow.Debug("resulting object would be: " + MakeSerializedObject(new PhysicalObjectEntityState() { pos = onlinePhysicalObject.apo.pos }));
-            }
-
-            protected void CreatureSaveExtras(string extras)
-            {
-                extraData = extras.Replace("<cA>", "\u0001").Replace("<cB>", "\u0002").Replace("<cC>", "\u0003");
-            }
-
-            protected string CreatureBuildExtras()
-            {
-                return extraData.Replace("\u0001", "<cA>").Replace("\u0002", "<cB>").Replace("\u0003", "<cC>");
             }
 
             public override string MakeSerializedObject(PhysicalObjectEntityState initialState)
@@ -75,13 +68,13 @@ namespace RainMeadow
                 }
                 else
                 {
-                    return string.Format(CultureInfo.InvariantCulture, "{0}<cA>{1}", MakeSerializedObjectNoExtras(initialState), CreatureBuildExtras());
+                    return string.Format(CultureInfo.InvariantCulture, "{0}{1}", MakeSerializedObjectNoExtras(initialState), CreatureBuildExtras());  // MakeSerializedObjectNoExtras already appends a `<cA>`
                 }
             }
 
             protected override string MakeSerializedObjectNoExtras(PhysicalObjectEntityState initialState)
             {
-                return string.Format(CultureInfo.InvariantCulture, "{0}<cA>{1}<cA>{2}.{3}<cA>",
+                return string.Format(CultureInfo.InvariantCulture, "{0}<cA>{1}<cA>{2}.{3}<cA>",  // trailing `<cA>` expected by game code
                     creatureType.ToString(),
                     new EntityID(apoSpawn == ushort.MaxValue ? -1 : apoSpawn, apoId).ToString(),
                     initialState.pos.ResolveRoomName(), // this uses story index, doesn't work in arena but we use pos directly anyways
