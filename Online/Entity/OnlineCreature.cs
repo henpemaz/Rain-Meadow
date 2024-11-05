@@ -28,15 +28,9 @@ namespace RainMeadow
             {
                 var onlineCreature = (OnlineCreature)onlinePhysicalObject;
 
-                string serializedObject = null;
-                if (RainMeadow.isArenaMode(out var _))
-                {
-                    serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature);
-                }
-                else
-                {
-                    serializedObject = SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
-                }
+                var serializedObject = onlineCreature.abstractCreature.world.singleRoomWorld
+                    ? SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature)
+                    : SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
                 RainMeadow.Debug("Data is " + serializedObject);
                 int index = 0;
                 int count = ExtrasIndex;
@@ -75,7 +69,7 @@ namespace RainMeadow
                 }
                 else
                 {
-                    return string.Format(CultureInfo.InvariantCulture, "{0}<cA>{1}", MakeSerializedObjectNoExtras(initialState), CreatureBuildExtras());
+                    return string.Format(CultureInfo.InvariantCulture, "{0}{1}", MakeSerializedObjectNoExtras(initialState), CreatureBuildExtras());
                 }
             }
 
