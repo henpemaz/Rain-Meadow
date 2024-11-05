@@ -18,6 +18,8 @@ namespace RainMeadow
         public bool countdownInitiatedHoldFire = true;
         public ArenaPrepTimer arenaPrepTimer;
 
+        public int playerResultColorizizerForMSCAndHighLobbyCount;
+
         public ArenaClientSettings arenaClientSettings;
         public SlugcatCustomization avatarSettings;
 

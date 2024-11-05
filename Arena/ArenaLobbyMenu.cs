@@ -336,7 +336,7 @@ namespace RainMeadow
             InitializeNewOnlineSitting();
             ArenaHelpers.SetupOnlineArenaStting(arena, this.manager);
             this.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
-
+            arena.playerResultColorizizerForMSCAndHighLobbyCount = UnityEngine.Random.Range(0, 5);
             // temp
             UserInput.SetUserCount(OnlineManager.players.Count);
             UserInput.SetForceDisconnectControllers(forceDisconnect: false);

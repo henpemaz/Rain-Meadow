@@ -750,12 +750,13 @@ namespace RainMeadow
 
                 var currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
                 self.playerNameLabel.text = currentName.id.name;
+                self.portrait.RemoveSprites();
+                menu.pages[0].RemoveSubObject(self.portrait);
 
                 if (!ModManager.MSC)
                 {
                     // TODO: Test this with recent arenasitting changes
-                    self.portrait.RemoveSprites();
-                    menu.pages[0].RemoveSubObject(self.portrait);
+
                     var portaitMapper = (player.playerClass == SlugcatStats.Name.White) ? 0 :
                           (player.playerClass == SlugcatStats.Name.Yellow) ? 1 :
                           (player.playerClass == SlugcatStats.Name.Red) ? 2 :
@@ -766,9 +767,17 @@ namespace RainMeadow
                     self.subObjects.Add(self.portrait);
 
                 }
-                if (ModManager.MSC && player.playerClass == SlugcatStats.Name.Night)
+                if (ModManager.MSC)
                 {
-                    self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "3" + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                    if (player.playerClass == SlugcatStats.Name.Night)
+                    {
+                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "3" + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                    }
+                    else
+                    {
+                        
+                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColorizizerForMSCAndHighLobbyCount + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                    }
                     self.subObjects.Add(self.portrait);
                 }
             }
