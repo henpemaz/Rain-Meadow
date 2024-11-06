@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using Mono.Cecil;
 using IL.MoreSlugcats;
+using System.Drawing.Printing;
 
 namespace RainMeadow
 {
@@ -189,6 +190,7 @@ namespace RainMeadow
         }
         private static void MusicPiece_StopAndDestroy(On.Music.MusicPiece.orig_StopAndDestroy orig, MusicPiece self)
         {
+            //RainMeadow.Debug("DESTROYED SONG");
             orig.Invoke(self);
 
             if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode mgm)
@@ -325,7 +327,7 @@ namespace RainMeadow
             var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
             var creature = mgm.avatars[0];
             var musicdata = creature.GetData<MeadowMusicData>();
-            
+
             if (demiseTimer != null)
             {
                 demiseTimer -= dt;
@@ -496,6 +498,7 @@ namespace RainMeadow
 
             if (musicPlayer != null && musicPlayer.song == null && self.world.rainCycle.RainApproaching > 0.5f)
             {
+                //that smalll moment when host has no song after having switched is a bit akward (posts like one million error messages in the other place
                 musicdata.providedSong = null;
                 timerStopped = false;
                 if (time > waitSecs)
@@ -619,6 +622,12 @@ namespace RainMeadow
             var isDJ = inGroup == 0 ? false : mgrr2.groupHosts[inGroup] == OnlineManager.mePlayer.inLobbyId;
 
             RainMeadow.Debug("Checking Players");
+
+            var VibeRoomCreatures = creature.abstractCreature.Room.world.GetAbstractRoom(closestVibe);
+            if (VibeRoomCreatures != null)
+            { 
+                //PlopMachine.agora = VibeRoomCreatures.creatures.Count();
+            }
 
             if (inGroup == 0)
             {
@@ -785,7 +794,7 @@ namespace RainMeadow
             AnalyzeRegion(activeWorld);
         }
 
-        static int closestVibe;
+        public static int closestVibe;
         //static Room? RoomImIn;
         static int DegreesOfAwayness;
         static int CalculateDegreesOfAwayness(AbstractRoom testRoom)
