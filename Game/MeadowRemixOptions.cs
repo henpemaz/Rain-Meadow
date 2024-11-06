@@ -43,7 +43,7 @@ public class RainMeadowOptions : OptionInterface
         try
         {
             OpTab meadowTab = new OpTab(this, "Meadow");
-            OpTab opTab = new OpTab(this, "General");
+            OpTab opTab = new OpTab(this, "Arena / Story");
             OpTab arenaTab = new OpTab(this, "Arena");
             OpTab storyTab = new OpTab(this, "Story");
 
@@ -60,7 +60,7 @@ public class RainMeadowOptions : OptionInterface
             meadowTab.AddItems(OnlineMeadowSettings);
             GeneralUIArrPlayerOptions = new UIelement[14]
             {
-                new OpLabel(10f, 550f, "General", bigText: true),
+                new OpLabel(10f, 550f, "Arena / Story", bigText: true),
 
                 new OpLabel(10, 500f, "Key used for viewing friends' usernames"),
                 new OpKeyBinder(FriendsListKey, new Vector2(10f, 460f), new Vector2(150f, 30f)),
@@ -72,7 +72,7 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10, 320f, "Key used for toggling spectator mode"),
                 new OpKeyBinder(SpectatorKey, new Vector2(10f, 280f), new Vector2(150f, 30f)),
 
-                new OpLabel(10, 245f, "Story / Arena: Pointing"),
+                new OpLabel(10, 245f, "Pointing"),
                 new OpKeyBinder(PointingKey, new Vector2(10f, 215), new Vector2(150f, 30f)),
 
                 new OpLabel(10, 180f, "Chat Log Toggle"),
@@ -104,7 +104,7 @@ public class RainMeadowOptions : OptionInterface
             OnlineArenaSettings = new UIelement[3]
             {
                 new OpLabel(10f, 550f, "Arena", bigText: true),
-                new OpLabel(10f, 500, "Countdown combat prevention timer. 60 == 1s", bigText: false),
+                new OpLabel(10f, 505, "Countdown timer. 60 == 1s", bigText: false),
                 new OpTextBox(ArenaCountDownTimer, new Vector2(10, 480), 160f)
                 {
                     accept = OpTextBox.Accept.Int
