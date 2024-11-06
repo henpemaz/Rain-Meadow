@@ -4,6 +4,7 @@ using UnityEngine;
 public class RainMeadowOptions : OptionInterface
 {
     public readonly Configurable<KeyCode> FriendsListKey;
+    public readonly Configurable<bool> ShowFriends;
     public readonly Configurable<bool> SlugcatCustomToggle;
     public readonly Configurable<bool> FriendViewClickToActivate;
     public readonly Configurable<Color> BodyColor;
@@ -13,14 +14,12 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<KeyCode> ChatLogKey;
     public readonly Configurable<KeyCode> ChatTalkingKey;
 
-
-
-
     private UIelement[] UIArrPlayerOptions;
 
     public RainMeadowOptions(global::RainMeadow.RainMeadow instance)
     {
         FriendsListKey = config.Bind("OpenMenuKey", KeyCode.J);
+        ShowFriends = config.Bind("ShowFriends", false);
         SlugcatCustomToggle = config.Bind("SlugToggle", false);
         FriendViewClickToActivate = config.Bind("FriendViewHoldOrToggle", false);
         BodyColor = config.Bind("BodyColor", Color.white);
@@ -29,7 +28,6 @@ public class RainMeadowOptions : OptionInterface
         PointingKey = config.Bind("PointingKey", KeyCode.Mouse0);
         ChatLogKey = config.Bind("ChatLogKey", KeyCode.Comma);
         ChatTalkingKey = config.Bind("ChatTalkingKey", KeyCode.Return);
-
     }
 
     public override void Initialize()
@@ -38,7 +36,7 @@ public class RainMeadowOptions : OptionInterface
         {
             OpTab opTab = new OpTab(this, "Options");
             Tabs = new OpTab[1] { opTab };
-            UIArrPlayerOptions = new UIelement[19]
+            UIArrPlayerOptions = new UIelement[]
             {
                 new OpLabel(10f, 550f, "Options", bigText: true),
 
