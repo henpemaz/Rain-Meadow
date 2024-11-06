@@ -12,7 +12,7 @@ namespace RainMeadow
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
         public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
-        public int setupTime = 300;
+        public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         public int playerEnteredGame = 0;
         public Dictionary<string, bool> playersReadiedUp = new Dictionary<string, bool>();
         public bool countdownInitiatedHoldFire = true;
@@ -36,7 +36,7 @@ namespace RainMeadow
 
         public void ResetGameTimer()
         {
-            setupTime = 300;
+            setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         }
 
         public void ResetViolence()

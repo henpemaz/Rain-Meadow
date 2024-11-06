@@ -16,13 +16,10 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<int> ArenaCountDownTimer;
 
 
-
-
-
+    private UIelement[] OnlineMeadowSettings;
     private UIelement[] GeneralUIArrPlayerOptions;
     private UIelement[] OnlineArenaSettings;
     private UIelement[] OnlineStorySettings;
-    private UIelement[] OnlineMeadowSettings;
 
 
     public RainMeadowOptions(global::RainMeadow.RainMeadow instance)
@@ -45,12 +42,22 @@ public class RainMeadowOptions : OptionInterface
     {
         try
         {
+            OpTab meadowTab = new OpTab(this, "Meadow");
             OpTab opTab = new OpTab(this, "General");
             OpTab arenaTab = new OpTab(this, "Arena");
             OpTab storyTab = new OpTab(this, "Story");
-            OpTab meadowTab = new OpTab(this, "Meadow");
 
-            Tabs = new OpTab[4] { opTab, arenaTab, storyTab,  meadowTab};
+
+
+            Tabs = new OpTab[4] { meadowTab, opTab, arenaTab, storyTab };
+
+            OnlineMeadowSettings = new UIelement[1]
+            {
+            new OpLabel(10f, 550f, "Meadow", bigText: true),
+
+
+            };
+            meadowTab.AddItems(OnlineMeadowSettings);
             GeneralUIArrPlayerOptions = new UIelement[14]
             {
                 new OpLabel(10f, 550f, "General", bigText: true),
@@ -82,7 +89,7 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10f, 500, "[Experimental Features]", bigText: true),
                 new OpLabel(10f, 480, "WARNING: Experimental features may cause data corruption, back up your saves", bigText: false),
 
-                new OpLabel(10f, 460, "Custom Story Slugcat", bigText: false),
+                new OpLabel(10f, 450, "Custom Story Slugcat", bigText: false),
 
                 new OpCheckBox(SlugcatCustomToggle, new Vector2(10f, 420)),
                 new OpLabel(40f, 420, RWCustom.Custom.ReplaceLineDelimeters("If selected, hosts can choose slugcat campaigns that are unstable. <LINE>Clients can choose their own Slugcats inside a host's Story campaign"))
@@ -94,20 +101,17 @@ public class RainMeadowOptions : OptionInterface
 
 
 
-            OnlineArenaSettings = new UIelement[2]
-{               new OpLabel(10f, 550f, "Arena", bigText: true),
-                new OpLabel(10f, 500, "Countdown combat prevention timer", bigText: false),
-                //new OpUpdown(ArenaCountDownTimer, new Vector2(10f, 410f), 300f),
-
-};
+            OnlineArenaSettings = new UIelement[3]
+            {
+                new OpLabel(10f, 550f, "Arena", bigText: true),
+                new OpLabel(10f, 500, "Countdown combat prevention timer. 60 == 1s", bigText: false),
+                new OpTextBox(ArenaCountDownTimer, new Vector2(10, 480), 160f)
+                {
+                    accept = OpTextBox.Accept.Int
+                }
+        };
             arenaTab.AddItems(OnlineArenaSettings);
-
-            OnlineMeadowSettings = new UIelement[1]
-{               new OpLabel(10f, 550f, "Meadow", bigText: true),
-
-
-};
-            meadowTab.AddItems(OnlineMeadowSettings);
+            
         }
         catch (Exception ex)
         {
