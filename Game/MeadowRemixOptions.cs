@@ -12,11 +12,14 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<KeyCode> PointingKey;
     public readonly Configurable<KeyCode> ChatLogKey;
     public readonly Configurable<KeyCode> ChatTalkingKey;
+    public readonly Configurable<int> ArenaCountDownTimer;
 
 
 
 
-    private UIelement[] UIArrPlayerOptions;
+
+    private UIelement[] GeneralUIArrPlayerOptions;
+    private UIelement[] OnlineArenaSettings;
 
     public RainMeadowOptions(global::RainMeadow.RainMeadow instance)
     {
@@ -29,6 +32,7 @@ public class RainMeadowOptions : OptionInterface
         PointingKey = config.Bind("PointingKey", KeyCode.Mouse0);
         ChatLogKey = config.Bind("ChatLogKey", KeyCode.Comma);
         ChatTalkingKey = config.Bind("ChatTalkingKey", KeyCode.Return);
+        ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 300);
 
     }
 
@@ -36,9 +40,11 @@ public class RainMeadowOptions : OptionInterface
     {
         try
         {
-            OpTab opTab = new OpTab(this, "Options");
-            Tabs = new OpTab[1] { opTab };
-            UIArrPlayerOptions = new UIelement[19]
+            OpTab opTab = new OpTab(this, "General");
+            OpTab arenaTab = new OpTab(this, "Arena");
+            // OpTab storyTab = new OpTab(this, "Story");
+            Tabs = new OpTab[2] { opTab, arenaTab };
+            GeneralUIArrPlayerOptions = new UIelement[19]
             {
                 new OpLabel(10f, 550f, "Options", bigText: true),
 
@@ -73,7 +79,22 @@ public class RainMeadowOptions : OptionInterface
                 }
             };
 
-            opTab.AddItems(UIArrPlayerOptions);
+            opTab.AddItems(GeneralUIArrPlayerOptions);
+
+            OnlineArenaSettings = new UIelement[2]
+{
+
+                //new OpLabel(10, 500f, "Key used for viewing friends' usernames"),
+                //new OpKeyBinder(FriendsListKey, new Vector2(10f, 460f), new Vector2(150f, 30f)),
+
+                new OpLabel(10f, 410f, "Countdown combat prevention timer", bigText: false),
+                new OpUpdown(ArenaCountDownTimer, new Vector2(10f, 410f), 300f),
+
+
+};
+
+            opTab.AddItems(GeneralUIArrPlayerOptions);
+            arenaTab.AddItems(OnlineArenaSettings);
         }
         catch (Exception ex)
         {
