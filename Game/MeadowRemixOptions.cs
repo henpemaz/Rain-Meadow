@@ -4,6 +4,7 @@ using UnityEngine;
 public class RainMeadowOptions : OptionInterface
 {
     public readonly Configurable<KeyCode> FriendsListKey;
+    public readonly Configurable<bool> ShowFriends;
     public readonly Configurable<bool> SlugcatCustomToggle;
     public readonly Configurable<bool> FriendViewClickToActivate;
     public readonly Configurable<Color> BodyColor;
@@ -24,6 +25,7 @@ public class RainMeadowOptions : OptionInterface
     public RainMeadowOptions(global::RainMeadow.RainMeadow instance)
     {
         FriendsListKey = config.Bind("OpenMenuKey", KeyCode.J);
+        ShowFriends = config.Bind("ShowFriends", false);
         SlugcatCustomToggle = config.Bind("SlugToggle", false);
         FriendViewClickToActivate = config.Bind("FriendViewHoldOrToggle", false);
         BodyColor = config.Bind("BodyColor", Color.white);
