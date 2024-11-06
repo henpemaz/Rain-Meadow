@@ -1,3 +1,4 @@
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
@@ -14,6 +15,8 @@ namespace RainMeadow
         private float rotationSpeed;
         [OnlineField(nullable = true)]
         private OnlineEntity.EntityId? thrownBy;
+        [OnlineField]
+        private IntVector2 thrownDir;
 
         public RealizedWeaponState() { }
         public RealizedWeaponState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
@@ -23,6 +26,7 @@ namespace RainMeadow
             rotation = weapon.rotation;
             rotationSpeed = weapon.rotationSpeed;
             thrownBy = (weapon.thrownBy?.abstractCreature != null && OnlineCreature.map.TryGetValue(weapon.thrownBy.abstractCreature, out var oc)) ? oc?.id : null;
+            thrownDir = weapon.throwDir;
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
@@ -40,6 +44,8 @@ namespace RainMeadow
             if (weapon.grabbedBy != null && weapon.grabbedBy.Count > 0) { RainMeadow.Trace($"Skipping state because grabbed"); return; }
             weapon.rotation = rotation;
             weapon.rotationSpeed = rotationSpeed;
+            weapon.throwDir = thrownDir;
+
         }
     }
 }
