@@ -21,6 +21,9 @@ public class RainMeadowOptions : OptionInterface
 
     private UIelement[] GeneralUIArrPlayerOptions;
     private UIelement[] OnlineArenaSettings;
+    private UIelement[] OnlineStorySettings;
+    private UIelement[] OnlineMeadowSettings;
+
 
     public RainMeadowOptions(global::RainMeadow.RainMeadow instance)
     {
@@ -44,11 +47,13 @@ public class RainMeadowOptions : OptionInterface
         {
             OpTab opTab = new OpTab(this, "General");
             OpTab arenaTab = new OpTab(this, "Arena");
-            // OpTab storyTab = new OpTab(this, "Story");
-            Tabs = new OpTab[2] { opTab, arenaTab };
-            GeneralUIArrPlayerOptions = new UIelement[19]
+            OpTab storyTab = new OpTab(this, "Story");
+            OpTab meadowTab = new OpTab(this, "Meadow");
+
+            Tabs = new OpTab[4] { opTab, arenaTab, storyTab,  meadowTab};
+            GeneralUIArrPlayerOptions = new UIelement[14]
             {
-                new OpLabel(10f, 550f, "Options", bigText: true),
+                new OpLabel(10f, 550f, "General", bigText: true),
 
                 new OpLabel(10, 500f, "Key used for viewing friends' usernames"),
                 new OpKeyBinder(FriendsListKey, new Vector2(10f, 460f), new Vector2(150f, 30f)),
@@ -66,37 +71,43 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10, 180f, "Chat Log Toggle"),
                 new OpKeyBinder(ChatLogKey, new Vector2(10f, 150), new Vector2(150f, 30f)),
 
-                new OpLabel(400, 180f, "Chat Button"),
-                new OpKeyBinder(ChatTalkingKey, new Vector2(400f, 150), new Vector2(150f, 30f)),
-
-                new OpLabel(10f, 105f, "[Experimental Features]", bigText: true),
-                new OpLabel(10f, 85, "WARNING: Experimental features may cause data corruption, back up your saves", bigText: false),
-
-                new OpLabel(10f, 65, "Custom Story Slugcat", bigText: false),
-
-                new OpCheckBox(SlugcatCustomToggle, new Vector2(10f, 40)),
-                new OpLabel(40f, 45, RWCustom.Custom.ReplaceLineDelimeters("If selected, hosts can choose slugcat campaigns that are unstable. <LINE>Clients can choose their own Slugcats inside a host's Story campaign"))
-                {
-                    verticalAlignment = OpLabel.LabelVAlignment.Center
-                }
+                new OpLabel(10, 125f, "Chat Button"),
+                new OpKeyBinder(ChatTalkingKey, new Vector2(10f, 95), new Vector2(150f, 30f)),
             };
 
             opTab.AddItems(GeneralUIArrPlayerOptions);
 
+            OnlineStorySettings = new UIelement[6]
+           {    new OpLabel(10f, 550f, "Story", bigText: true),
+                new OpLabel(10f, 500, "[Experimental Features]", bigText: true),
+                new OpLabel(10f, 480, "WARNING: Experimental features may cause data corruption, back up your saves", bigText: false),
+
+                new OpLabel(10f, 460, "Custom Story Slugcat", bigText: false),
+
+                new OpCheckBox(SlugcatCustomToggle, new Vector2(10f, 420)),
+                new OpLabel(40f, 420, RWCustom.Custom.ReplaceLineDelimeters("If selected, hosts can choose slugcat campaigns that are unstable. <LINE>Clients can choose their own Slugcats inside a host's Story campaign"))
+                {
+                    verticalAlignment = OpLabel.LabelVAlignment.Center
+                }
+           };
+            storyTab.AddItems(OnlineStorySettings);
+
+
+
             OnlineArenaSettings = new UIelement[2]
-{
+{               new OpLabel(10f, 550f, "Arena", bigText: true),
+                new OpLabel(10f, 500, "Countdown combat prevention timer", bigText: false),
+                //new OpUpdown(ArenaCountDownTimer, new Vector2(10f, 410f), 300f),
 
-                //new OpLabel(10, 500f, "Key used for viewing friends' usernames"),
-                //new OpKeyBinder(FriendsListKey, new Vector2(10f, 460f), new Vector2(150f, 30f)),
+};
+            arenaTab.AddItems(OnlineArenaSettings);
 
-                new OpLabel(10f, 410f, "Countdown combat prevention timer", bigText: false),
-                new OpUpdown(ArenaCountDownTimer, new Vector2(10f, 410f), 300f),
+            OnlineMeadowSettings = new UIelement[1]
+{               new OpLabel(10f, 550f, "Meadow", bigText: true),
 
 
 };
-
-            opTab.AddItems(GeneralUIArrPlayerOptions);
-            arenaTab.AddItems(OnlineArenaSettings);
+            meadowTab.AddItems(OnlineMeadowSettings);
         }
         catch (Exception ex)
         {
