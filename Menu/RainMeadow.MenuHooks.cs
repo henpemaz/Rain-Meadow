@@ -246,110 +246,20 @@ namespace RainMeadow
                     {
                         //throw new InvalidProgrammerException("implement me");
                     }
-
                 }
 
-                if (self.slugcatNumber == RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer && self is SlugcatCustomSelection slugcatCustom)
+                if (self is SlugcatCustomSelection slugcatCustom && !OnlineManager.lobby.isOwner)
                 {
-                    if (OnlineManager.lobby.isOwner) // Host
-                    {
-
-                        if (slugcatCustom.slug == SlugcatStats.Name.White)
-                        {
-                            sceneID = Menu.MenuScene.SceneID.Slugcat_White;
-                            self.sceneOffset = new Vector2(-10f, 100f);
-                            self.slugcatDepth = 3.1000001f;
-
-                        }
-
-                        else if (slugcatCustom.slug == SlugcatStats.Name.Yellow)
-                        {
-                            sceneID = Menu.MenuScene.SceneID.Slugcat_Yellow;
-                            self.sceneOffset = new Vector2(-10f, 100f);
-                            self.slugcatDepth = 3.1000001f;
-                        }
-
-                        else if (slugcatCustom.slug == SlugcatStats.Name.Red)
-                        {
-                            sceneID = Menu.MenuScene.SceneID.Slugcat_Red;
-                            self.sceneOffset = new Vector2(-10f, 100f);
-                            self.slugcatDepth = 3.1000001f;
-                        }
-                        else if (ModManager.MSC)
-                        {
-
-                            if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet)
-                            {
-
-                                sceneID = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID.Slugcat_Rivulet;
-                                self.sceneOffset = new Vector2(-10f, 100f);
-                                self.slugcatDepth = 3.1000001f;
-                            }
-                            else if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer)
-                            {
-
-                                sceneID = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID.Slugcat_Artificer;
-                                self.sceneOffset = new Vector2(-10f, 100f);
-                                self.slugcatDepth = 3.1000001f;
-                            }
-
-                            else if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand)
-                            {
-
-                                sceneID = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID.Slugcat_Gourmand;
-                                self.sceneOffset = new Vector2(-10f, 100f);
-                                self.slugcatDepth = 3.1000001f;
-                            }
-                            else if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
-                            {
-
-                                sceneID = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID.Slugcat_Saint;
-                                self.sceneOffset = new Vector2(-10f, 100f);
-                                self.slugcatDepth = 3.1000001f;
-                            }
-
-                            else if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear)
-                            {
-
-                                sceneID = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID.Slugcat_Spear;
-                                self.sceneOffset = new Vector2(-10f, 100f);
-                                self.slugcatDepth = 3.1000001f;
-                            }
-
-                            else
-                            {
-                                sceneID = Menu.MenuScene.SceneID.NewDeath;
-                                self.sceneOffset = new Vector2(-10f, 100f);
-                                self.slugcatDepth = 3.1000001f;
-                            }
-                        }
-
-                    }
-                    else // Client
-                    {
-                        var result = UnityEngine.Random.Range(0, 3);
-                        switch (result)
-                        {
-                            case 0:
-                                sceneID = Menu.MenuScene.SceneID.Intro_4_Walking;
-                                break;
-                            case 1:
-                                sceneID = Menu.MenuScene.SceneID.Intro_11_Drowning;
-                                break;
-                            case 2:
-                                sceneID = Menu.MenuScene.SceneID.Intro_8_Climbing;
-                                break;
-                            case 3:
-                                sceneID = Menu.MenuScene.SceneID.Intro_6_7_Rain_Drop;
-                                break;
-                        }
-
-                        self.sceneOffset = new Vector2(-10f, 100f);
-                        self.slugcatDepth = 3.1000001f;
-
-                    }
+                    Menu.MenuScene.SceneID[] scenes = {
+                        Menu.MenuScene.SceneID.Intro_4_Walking,
+                        Menu.MenuScene.SceneID.Intro_11_Drowning,
+                        Menu.MenuScene.SceneID.Intro_8_Climbing,
+                        Menu.MenuScene.SceneID.Intro_6_7_Rain_Drop
+                    };
+                    sceneID = scenes[UnityEngine.Random.Range(0, scenes.Length - 1)];
+                    self.sceneOffset = new Vector2(-10f, 100f);
+                    self.slugcatDepth = 3.1000001f;
                 }
-
             });
         }
 
