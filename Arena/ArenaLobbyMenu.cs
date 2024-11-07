@@ -275,6 +275,7 @@ namespace RainMeadow
 
             }
 
+            arena.playerResultColorizizerForMSCAndHighLobbyCount = UnityEngine.Random.Range(0, 4);
 
         }
 
@@ -324,8 +325,6 @@ namespace RainMeadow
                     this.playButton.buttonBehav.greyedOut = true;
                 }
                 clientReadiedUp = true;
-
-
                 return;
             }
 
@@ -336,7 +335,6 @@ namespace RainMeadow
             InitializeNewOnlineSitting();
             ArenaHelpers.SetupOnlineArenaStting(arena, this.manager);
             this.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
-            arena.playerResultColorizizerForMSCAndHighLobbyCount = UnityEngine.Random.Range(0, 4);
             // temp
             UserInput.SetUserCount(OnlineManager.players.Count);
             UserInput.SetForceDisconnectControllers(forceDisconnect: false);
