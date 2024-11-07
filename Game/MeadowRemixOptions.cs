@@ -43,7 +43,7 @@ public class RainMeadowOptions : OptionInterface
         try
         {
             OpTab meadowTab = new OpTab(this, "Meadow");
-            OpTab opTab = new OpTab(this, "Arena / Story");
+            OpTab opTab = new OpTab(this, "General");
             OpTab arenaTab = new OpTab(this, "Arena");
             OpTab storyTab = new OpTab(this, "Story");
 
@@ -58,14 +58,16 @@ public class RainMeadowOptions : OptionInterface
 
             };
             meadowTab.AddItems(OnlineMeadowSettings);
-            GeneralUIArrPlayerOptions = new UIelement[14]
+            GeneralUIArrPlayerOptions = new UIelement[15]
             {
-                new OpLabel(10f, 550f, "Arena / Story", bigText: true),
+                new OpLabel(10f, 550f, "General", bigText: true),
+                new OpLabel(10f, 530f, "Note: These inputs are not used in Meadow mode", bigText: false),
 
-                new OpLabel(10, 500f, "Key used for viewing friends' usernames"),
+
+                new OpLabel(10, 490f, "Key used for viewing friends' usernames"),
                 new OpKeyBinder(FriendsListKey, new Vector2(10f, 460f), new Vector2(150f, 30f)),
 
-                new OpLabel(10f, 410f, "Username Toggle", bigText: false),
+                new OpLabel(10f, 400f, "Username Toggle", bigText: false),
                 new OpCheckBox(FriendViewClickToActivate, new Vector2(10f, 380f)),
                 new OpLabel(40f, 385, RWCustom.Custom.ReplaceLineDelimeters("If selected, replaces holding to toggling to view usernames")),
 
