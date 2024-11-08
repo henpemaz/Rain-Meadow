@@ -8,7 +8,9 @@ namespace RainMeadow
     {
         public FSprite arrowSprite;
         public FSprite gradient;
-        public FLabel label;
+        public FLabel username;
+        public FLabel message;
+
         public FSprite slugIcon;
         public int counter;
         public int resetUsernameCounter;
@@ -36,13 +38,21 @@ namespace RainMeadow
             owner.hud.fContainers[0].AddChild(this.gradient);
             this.gradient.alpha = 0f;
             this.gradient.x = -1000f;
-            this.label = new FLabel(Custom.GetFont(), customization.nickname);
-            this.label.color = Color.white;
+            this.username = new FLabel(Custom.GetFont(), customization.nickname);
+            this.username.color = Color.white;
 
 
-            owner.hud.fContainers[0].AddChild(this.label);
-            this.label.alpha = 0f;
-            this.label.x = -1000f;
+            owner.hud.fContainers[0].AddChild(this.username);
+            this.username.alpha = 0f;
+            this.username.x = -1000f;
+
+            this.message = new FLabel(Custom.GetFont(), "");
+            this.message.color = Color.white;
+
+
+            owner.hud.fContainers[0].AddChild(this.message);
+            this.message.alpha = 0f;
+            this.message.x = -1000f;
             this.arrowSprite = new FSprite("Multiplayer_Arrow", true);
             owner.hud.fContainers[0].AddChild(this.arrowSprite);
             this.arrowSprite.alpha = 0f;
@@ -67,7 +77,9 @@ namespace RainMeadow
             this.blink = 1f;
             this.switchedToDeathIcon = false;
 
-            this.label.color = customization.SlugcatColor();
+            this.username.color = customization.SlugcatColor();
+            this.message.color = Color.white;
+
             this.arrowSprite.color = customization.SlugcatColor();
             this.slugIcon.color = customization.SlugcatColor();
             this.customization = customization;
@@ -128,8 +140,12 @@ namespace RainMeadow
             this.slugIcon.x = vector.x;
             this.slugIcon.y = vector.y + 40f;
 
-            this.label.x = vector.x;
-            this.label.y = vector.y + 20f;
+            this.username.x = vector.x;
+            this.username.y = vector.y + 20f;
+            this.message.x = vector.x + 20f;
+            //this.message._anchorX = vector.x + 20f;
+            this.message.alignment = FLabelAlignment.Center;
+            this.message.y = vector.y + 20f;
             Color color = Color.white;
 
             color = customization.SlugcatColor();
@@ -146,18 +162,21 @@ namespace RainMeadow
                 }
             }
             var lighter_color = color * 1.7f;
-            this.label.color = lighter_color;
+            this.username.color = lighter_color;
 
-            if (this.label.text != customization.nickname) // we've updated a username
+            if (this.message.text != "") // we've updated a username
             {
+                this.username.text = customization.nickname + ":";
                 resetUsernameCounter--;
-                this.label.color = color * 3f;
+                this.username.color = color * 3f;
+                this.username.x = vector.x + this.message._textRect.x - 15f;
+
 
             }
 
             if (resetUsernameCounter < 10) // snappier fadeaway
             {
-                this.label.color = lighter_color;
+                this.username.color = lighter_color;
 
             }
 
@@ -165,7 +184,8 @@ namespace RainMeadow
             if (resetUsernameCounter < 0)
             {
 
-                this.label.text = customization.nickname;
+                this.message.text = "";
+                this.username.text = customization.nickname;
                 resetUsernameCounter = 200;
 
             }
@@ -173,7 +193,9 @@ namespace RainMeadow
             this.arrowSprite.color = lighter_color;
             this.slugIcon.color = lighter_color;
 
-            this.label.alpha = num;
+            this.username.alpha = num;
+            this.message.alpha = num;
+
             this.arrowSprite.alpha = num;
             this.slugIcon.alpha = num;
 
@@ -184,7 +206,9 @@ namespace RainMeadow
             base.ClearSprites();
             this.gradient.RemoveFromContainer();
             this.arrowSprite.RemoveFromContainer();
-            this.label.RemoveFromContainer();
+            this.username.RemoveFromContainer();
+            this.message.RemoveFromContainer();
+
             this.slugIcon.RemoveFromContainer();
         }
     }
