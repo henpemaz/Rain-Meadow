@@ -40,23 +40,44 @@ namespace RainMeadow
                 return;
             }
 
-            hand = UpdateHandPosition();
+            //hand = UpdateHandPosition();
             controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
 
-            Vector2 targetPosition = realizedPlayer.mainBodyChunk.pos + pointingVector * 100f;
+            Vector2 targetPosition = realizedPlayer.mainBodyChunk.pos + pointingVector * 40f;
 
-            finalHandPos = controller is Joystick ? targetPosition : Futile.mousePosition;
+            finalHandPos = controller is Joystick ? targetPosition : realizedPlayer.mainBodyChunk.pos + ((Vector2)Futile.mousePosition - realizedPlayer.mainBodyChunk.pos).normalized * 40f;
+            (realizedPlayer.graphicsModule as PlayerGraphics).tail[3].pos = finalHandPos;
+
+            if (finalHandPos.y < realizedPlayer.mainBodyChunk.pos.y)
+            {
+                (realizedPlayer.graphicsModule as PlayerGraphics).tail[2].pos.y = finalHandPos.y + 10f;
+
+            }
+            else
+            {
+                (realizedPlayer.graphicsModule as PlayerGraphics).tail[2].pos.y = finalHandPos.y - 10f;
+            }
+            if (finalHandPos.x < realizedPlayer.mainBodyChunk.pos.x)
+            {
+                (realizedPlayer.graphicsModule as PlayerGraphics).tail[2].pos.x = finalHandPos.x + 10f;
+
+            }
+            else
+            {
+                (realizedPlayer.graphicsModule as PlayerGraphics).tail[2].pos.x = finalHandPos.x - 10f;
+            }
+
             (realizedPlayer.graphicsModule as PlayerGraphics).LookAtPoint(finalHandPos, 10f);
 
-            if (hand > -1)
+/*            if (hand > -1)
             {
                 var handModule = (realizedPlayer.graphicsModule as PlayerGraphics).hands[hand];
                 handModule.reachingForObject = true;
                 handModule.absoluteHuntPos = finalHandPos;
 
-            }
+            }*/
         }
-        private int UpdateHandPosition()
+/*        private int UpdateHandPosition()
         {
             for (int handy = 1; handy >= 0; handy--)
             {
@@ -68,7 +89,7 @@ namespace RainMeadow
                 }
             }
             return hand;
-        }
+        }*/
 
         public static Vector2 GetOnlinePointingVector()
         {

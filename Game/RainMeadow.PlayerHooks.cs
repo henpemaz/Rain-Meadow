@@ -58,11 +58,6 @@ public partial class RainMeadow
                 {
                     continue;
                 }
-                if (self.grasps[i].grabbed is Weapon && Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value) && Pointing.hand == i)
-                {
-                    (self.grasps[i].grabbed as Weapon).setRotation = Pointing.GetOnlinePointingVector();
-                    (self.grasps[i].grabbed as Weapon).rotationSpeed = 0f;
-                }
             }
         }
     }
