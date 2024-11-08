@@ -90,7 +90,7 @@ namespace RainMeadow
 
                                 foreach (var part in onlineHud.parts.OfType<OnlinePlayerDisplay>())
                                 {
-                                    if (part.label.text == OnlineManager.mePlayer.id.name)
+                                    if (part.username.text == OnlineManager.mePlayer.id.name)
                                     {
                                         usernameDisplay = part;
                                         break;
@@ -99,7 +99,7 @@ namespace RainMeadow
 
                                 if (usernameDisplay != null)
                                 {
-                                    usernameDisplay.label.text = $"{OnlineManager.mePlayer.id.name}: {lastSentMessage}";
+                                    usernameDisplay.message.text = $"{lastSentMessage}";
                                 }
                             }
                         }
