@@ -143,8 +143,8 @@ namespace RainMeadow
             this.username.x = vector.x;
             this.username.y = vector.y + 20f;
             this.message.x = vector.x + 20f;
-            this.message._anchorX = vector.x + 20f;
-            this.message.alignment = FLabelAlignment.Left;
+            //this.message._anchorX = vector.x + 20f;
+            this.message.alignment = FLabelAlignment.Center;
             this.message.y = vector.y + 20f;
             Color color = Color.white;
 
@@ -169,6 +169,8 @@ namespace RainMeadow
                 this.username.text = customization.nickname + ":";
                 resetUsernameCounter--;
                 this.username.color = color * 3f;
+                this.username.x = vector.x + this.message._textRect.x;
+
 
             }
 
