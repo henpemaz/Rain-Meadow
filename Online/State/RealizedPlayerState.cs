@@ -40,11 +40,11 @@ namespace RainMeadow
         [OnlineField]
         public Vector2 absoluteHuntPos;
         [OnlineField]
-        public Vector2 handPos;
+        public Vector2 tailPos3;
         [OnlineField]
-        public int handReaching;
-        [OnlineField]
-        public bool reachedSnappedPos;
+        public Vector2 tailPos2;
+
+
 
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
@@ -69,22 +69,11 @@ namespace RainMeadow
                 tongueAttachedChunk = BodyChunkRef.FromBodyChunk(tongue.attachedChunk);
             }
 
-            if ((p.graphicsModule as PlayerGraphics).hands != null)
+            if ((p.graphicsModule as PlayerGraphics).tail != null)
             {
-                for (int h = 0; h < (p.graphicsModule as PlayerGraphics).hands.Length; h++)
-                {
-                    if ((p.graphicsModule as PlayerGraphics).hands[h].reachingForObject)
-                    {
-                        absoluteHuntPos = (p.graphicsModule as PlayerGraphics).hands[h].absoluteHuntPos;
-                        reachingForObject = (p.graphicsModule as PlayerGraphics).hands[h].reachingForObject;
-                        reachedSnappedPos = (p.graphicsModule as PlayerGraphics).hands[h].reachedSnapPosition;
+                tailPos3 = (p.graphicsModule as PlayerGraphics).tail[3].pos;
+                tailPos2 = (p.graphicsModule as PlayerGraphics).tail[2].pos;
 
-                        handReaching = h;
-
-                    }
-
-
-                }
             }
 
 
@@ -142,22 +131,12 @@ namespace RainMeadow
                 //    pl.slugOnBack.slugcat = (slugOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Player;
 
 
-                if ((pl.graphicsModule as PlayerGraphics).hands != null)
+                if ((pl.graphicsModule as PlayerGraphics).tail != null)
                 {
-                    for (int h = 0; h < (pl.graphicsModule as PlayerGraphics).hands.Length; h++)
-                    {
+                    (pl.graphicsModule as PlayerGraphics).tail[3].pos = tailPos3;
+                    (pl.graphicsModule as PlayerGraphics).tail[2].pos = tailPos2;
 
-                        if (reachingForObject)
-                        {
-                            (pl.graphicsModule as PlayerGraphics).hands[handReaching].absoluteHuntPos = absoluteHuntPos;
-                            (pl.graphicsModule as PlayerGraphics).hands[handReaching].reachingForObject = reachingForObject;
-                            (pl.graphicsModule as PlayerGraphics).hands[handReaching].reachedSnapPosition = reachedSnappedPos;
-
-                        }
-
-
-                    }
-                 (pl.graphicsModule as PlayerGraphics).LookAtPoint(absoluteHuntPos, 10f);
+                    (pl.graphicsModule as PlayerGraphics).LookAtPoint(absoluteHuntPos, 10f);
                 }
 
                 if (pl.tongue is Player.Tongue tongue)
