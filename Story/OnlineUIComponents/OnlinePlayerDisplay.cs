@@ -146,7 +146,6 @@ namespace RainMeadow
             this.message._anchorX = vector.x + 20f;
             this.message.alignment = FLabelAlignment.Left;
             this.message.y = vector.y + 20f;
-            //this.message.y = username.y + 20f;
             Color color = Color.white;
 
             color = customization.SlugcatColor();
@@ -168,7 +167,6 @@ namespace RainMeadow
             if (this.message.text != "") // we've updated a username
             {
                 this.username.text = customization.nickname + ":";
-                // this.username.x = this.message.x - 10f;
                 resetUsernameCounter--;
                 this.username.color = color * 3f;
 
