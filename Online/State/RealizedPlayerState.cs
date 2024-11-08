@@ -134,9 +134,14 @@ namespace RainMeadow
                 if ((pl.graphicsModule as PlayerGraphics).tail != null)
                 {
                     (pl.graphicsModule as PlayerGraphics).tail[3].pos = tailPos3;
-                    (pl.graphicsModule as PlayerGraphics).tail[2].pos = tailPos2;
+                    (pl.graphicsModule as PlayerGraphics).tail[3].lastPos = tailPos3;
 
-                    (pl.graphicsModule as PlayerGraphics).LookAtPoint(absoluteHuntPos, 10f);
+
+                    (pl.graphicsModule as PlayerGraphics).tail[2].pos = tailPos2;
+                    (pl.graphicsModule as PlayerGraphics).tail[2].lastPos = tailPos2;
+
+
+                    (pl.graphicsModule as PlayerGraphics).LookAtPoint(tailPos3, 10f);
                 }
 
                 if (pl.tongue is Player.Tongue tongue)
