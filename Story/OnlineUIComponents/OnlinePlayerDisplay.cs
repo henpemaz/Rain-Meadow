@@ -169,7 +169,7 @@ namespace RainMeadow
                 this.username.text = customization.nickname + ":";
                 resetUsernameCounter--;
                 this.username.color = color * 3f;
-                this.username.x = vector.x + this.message._textRect.x;
+                this.username.x = vector.x + this.message._textRect.x - 15f;
 
 
             }
