@@ -139,6 +139,8 @@ public partial class RainMeadow
 
     private void Player_Update1(On.Player.orig_Update orig, Player self, bool eu)
     {
+        if (OnlineManager.lobby != null && self.objectInStomach != null)
+            self.objectInStomach.pos = self.abstractCreature.pos;
         if (isStoryMode(out var gameMode) && self.abstractCreature.IsLocal())
             gameMode.storyClientData.readyForWin = false;
         orig(self, eu);
@@ -506,7 +508,7 @@ public partial class RainMeadow
                 {
                     if (!oe.isMine) return false;
                     if (objectInStomach.GetOnlineObject(out var oeInStomach))
-                        oeInStomach.realized = false; // don't release ownership
+                        oeInStomach.realized = false;  // don't release ownership
                 }
                 return true;
             });
@@ -525,7 +527,11 @@ public partial class RainMeadow
             c.EmitDelegate((Player self) =>
             {
                 if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject(out var oe))
-                    self.objectInStomach.pos.room = -1; // signal not-in-a-room
+                {
+                    // signal not-in-a-room
+                    self.objectInStomach.InDen = true;
+                    self.objectInStomach.pos.WashNode();
+                }
             });
             c.MarkLabel(skip);
         }
@@ -540,7 +546,11 @@ public partial class RainMeadow
         if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject(out var oe))
         {
             if (!oe.isMine) return; // prevent execution
-            if (self.objectInStomach != null) self.objectInStomach.pos = self.abstractCreature.pos; // so it picks up in room.addentity hook, otherwise skipped
+            if (self.objectInStomach != null)
+            {
+                self.objectInStomach.pos = self.abstractCreature.pos; // so it picks up in room.addentity hook, otherwise skipped
+                self.objectInStomach.InDen = false;
+            }
         }
         orig(self);
     }

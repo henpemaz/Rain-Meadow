@@ -21,7 +21,9 @@
 
             if ((abstractCreature.realizedCreature as Player)?.objectInStomach is AbstractPhysicalObject apo)
             {
-                apo.pos.room = -1; // signal not-in-a-room
+                // signal not-in-a-room
+                apo.InDen = true;
+                apo.pos.WashNode();
                 if (apo.realizedObject != null) apo.Abstractize(abstractCreature.pos);
                 if (!OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
                 {
