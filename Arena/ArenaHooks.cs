@@ -34,6 +34,7 @@ namespace RainMeadow
             On.ArenaGameSession.SpawnCreatures += ArenaGameSession_SpawnCreatures;
             On.ArenaGameSession.ctor += ArenaGameSession_ctor;
             On.ArenaGameSession.PlayersStillActive += ArenaGameSession_PlayersStillActive;
+            On.ArenaGameSession.PlayerLandSpear += ArenaGameSession_PlayerLandSpear;
 
 
             On.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded;
@@ -80,6 +81,43 @@ namespace RainMeadow
 
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
 
+        }
+
+        private void ArenaGameSession_PlayerLandSpear(On.ArenaGameSession.orig_PlayerLandSpear orig, ArenaGameSession self, Player player, Creature target)
+        {
+
+            if (isArenaMode(out var arena))
+            {
+
+                if (self.sessionEnded || self.GameTypeSetup.spearHitScore == 0 || !CreatureSymbol.DoesCreatureEarnATrophy(target.Template.type))
+                {
+                    return;
+                }
+
+                for (int i = 0; i < self.arenaSitting.players.Count; i++)
+                {
+
+                    if (!OnlinePhysicalObject.map.TryGetValue(player.abstractPhysicalObject, out var op))
+                    {
+
+                        RainMeadow.Error("Could not get PlayerLandSpear player");
+                    }
+                    var onlineArenaPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.arenaSitting.players[i].playerNumber);
+
+                    if (op.owner != onlineArenaPlayer)
+                    {
+                        continue;
+                    }
+
+                    self.arenaSitting.players[i].AddSandboxScore(self.GameTypeSetup.spearHitScore);
+
+                }
+
+            }
+            else
+            {
+                orig(self, player, target);
+            }
         }
 
         private int ArenaGameSession_PlayersStillActive(On.ArenaGameSession.orig_PlayersStillActive orig, ArenaGameSession self, bool addToAliveTime, bool dontCountSandboxLosers)
