@@ -18,6 +18,7 @@ namespace RainMeadow
             On.AbstractCreature.Update += AbstractCreature_Update; // Don't think
             On.AbstractCreature.OpportunityToEnterDen += AbstractCreature_OpportunityToEnterDen; // Don't think
             On.AbstractCreature.InDenUpdate += AbstractCreature_InDenUpdate; // Don't think
+            IL.AbstractCreature.IsEnteringDen += AbstractCreature_IsEnteringDen;
 
             On.ScavengerAbstractAI.InitGearUp += ScavengerAbstractAI_InitGearUp;
 
@@ -151,6 +152,30 @@ namespace RainMeadow
             {
                 self.worm.lookPoint = origLookPoint;
                 self.showAsAngry = origAngry;
+            }
+        }
+
+        private void AbstractCreature_IsEnteringDen(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.AfterLabel,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<AbstractWorldEntity>("world"),
+                    i => i.MatchLdfld<World>("FliesWorldAI"),
+                    i => i.MatchCallOrCallvirt<FliesWorldAI>("RespawnOneFly")
+                    );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((AbstractCreature self) => self.IsLocal());
+                c.Emit(OpCodes.Brfalse, skip);
+                c.Index += 4;
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
             }
         }
     }
