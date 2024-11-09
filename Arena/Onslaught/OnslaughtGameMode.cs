@@ -2,40 +2,20 @@
 
 namespace RainMeadow
 {
-    public class ArenaCompetitiveGameMode : OnlineGameMode
+    public class Onslaught : ArenaCompetitiveGameMode
     {
-
-
-
-        public bool isInGame = false;
-        public int clientWaiting = 0;
-        public int clientsAreReadiedUp = 0;
-        public bool allPlayersReadyLockLobby = false;
-        public bool returnToLobby = false;
-        public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
-        public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
-        public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
-        public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
-        public int playerEnteredGame = 0;
-        public Dictionary<string, bool> playersReadiedUp = new Dictionary<string, bool>();
-        public bool countdownInitiatedHoldFire = true;
-        public ArenaPrepTimer arenaPrepTimer;
-
-        public int playerResultColorizizerForMSCAndHighLobbyCount;
-
-        public ArenaClientSettings arenaClientSettings;
-        public SlugcatCustomization avatarSettings;
-
-        public List<string> playList = new List<string>();
-
-        public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
-
-        public ArenaCompetitiveGameMode(Lobby lobby) : base(lobby)
+        public Onslaught(Lobby lobby) : base(lobby)
         {
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
             arenaClientSettings = new ArenaClientSettings();
             arenaClientSettings.playingAs = SlugcatStats.Name.White;
         }
+
+        public static void RegisterGameMode()
+        {
+
+        }
+
 
         public void ResetGameTimer()
         {
@@ -120,7 +100,7 @@ namespace RainMeadow
             }
         }
 
-        public virtual bool IsExitOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
+        public override bool IsExitOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
             var deadCount = 0;
             foreach (var player in self.gameSession.Players)

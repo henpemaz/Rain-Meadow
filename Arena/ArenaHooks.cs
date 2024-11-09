@@ -21,6 +21,18 @@ namespace RainMeadow
             return false;
         }
 
+        public static bool isOnslaughtMode(out Onslaught gameMode)
+        {
+            gameMode = null;
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode arena)
+            {
+                //if (arena.)
+                
+                return true;
+            }
+            return false;
+        }
+
         private void ArenaHooks()
         {
 
@@ -79,6 +91,19 @@ namespace RainMeadow
             On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
 
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
+            On.Menu.ArenaSettingsInterface.Update += ArenaSettingsInterface_Update;
+
+        }
+
+
+        private void ArenaSettingsInterface_Update(On.Menu.ArenaSettingsInterface.orig_Update orig, Menu.ArenaSettingsInterface self)
+        {
+            orig(self);
+            if (isArenaMode(out var _) && self.spearsHitCheckbox != null)
+            {
+                self.spearsHitCheckbox.buttonBehav.greyedOut = false;
+
+            }
 
         }
 
@@ -1208,30 +1233,9 @@ namespace RainMeadow
         private bool ExitManager_ExitsOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
 
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
-                var deadCount = 0;
-                foreach (var player in self.gameSession.Players)
-                {
-                    if (player.realizedCreature != null && (player.realizedCreature.State.dead || player.state.dead))
-                    {
-
-                        deadCount++;
-                    }
-                }
-
-                if (deadCount != 0 && deadCount == self.gameSession.Players.Count - 1)
-                {
-
-                    return true;
-                }
-
-                if (self.world.rainCycle.TimeUntilRain <= 100)
-                {
-                    return true;
-                }
-
-                orig(self);
+                return arena.IsExitOpen(orig, self);
             }
 
             return orig(self);
