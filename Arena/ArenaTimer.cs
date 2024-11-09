@@ -20,12 +20,12 @@ namespace RainMeadow
         private FLabel modeLabel;
         private Vector2 pos, lastPos;
         private float fade, lastFade;
-        public ArenaCompetitiveGameMode arena;
+        public ArenaOnlineGameMode arena;
         public bool cancelTimer;
         private Player? player;
         private bool countdownInitiated;
 
-        public ArenaPrepTimer(HUD.HUD hud, FContainer fContainer, ArenaCompetitiveGameMode arena) : base(hud)
+        public ArenaPrepTimer(HUD.HUD hud, FContainer fContainer, ArenaOnlineGameMode arena) : base(hud)
         {
             
             if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint) // Can snipe players, should wait to give them time to prep

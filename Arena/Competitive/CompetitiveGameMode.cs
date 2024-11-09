@@ -2,39 +2,9 @@
 
 namespace RainMeadow
 {
-    public class ArenaOnlineGameMode : OnlineGameMode
+    public class ArenaCompetitiveGameMode : ArenaOnlineGameMode
     {
-
-        public static readonly string Competitive = "Competitive";
-        public static readonly string OnslaughtMode = "Onslaught";
-
-        public string currentGameMode;
-
-
-        public bool isInGame = false;
-        public int clientWaiting = 0;
-        public int clientsAreReadiedUp = 0;
-        public bool allPlayersReadyLockLobby = false;
-        public bool returnToLobby = false;
-        public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
-        public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
-        public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
-        public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
-        public int playerEnteredGame = 0;
-        public Dictionary<string, bool> playersReadiedUp = new Dictionary<string, bool>();
-        public bool countdownInitiatedHoldFire = true;
-        public ArenaPrepTimer arenaPrepTimer;
-
-        public int playerResultColorizizerForMSCAndHighLobbyCount;
-
-        public ArenaClientSettings arenaClientSettings;
-        public SlugcatCustomization avatarSettings;
-
-        public List<string> playList = new List<string>();
-
-        public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
-
-        public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
+        public ArenaCompetitiveGameMode(ArenaOnlineGameMode arena) : base(arena.lobby)
         {
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
             arenaClientSettings = new ArenaClientSettings();
@@ -122,42 +92,6 @@ namespace RainMeadow
                 RainMeadow.Debug(oc);
                 RainMeadow.creatureCustomizations.GetValue(creature, (c) => data);
             }
-        }
-
-        public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
-        {
-           if (currentGameMode == ArenaOnlineGameMode.Competitive)
-            {
-                return false;
-            }
-            return true;
-        }
-
-        public virtual bool IsExitOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
-        {
-            var deadCount = 0;
-            foreach (var player in self.gameSession.Players)
-            {
-                if (player.realizedCreature != null && (player.realizedCreature.State.dead || player.state.dead))
-                {
-
-                    deadCount++;
-                }
-            }
-
-            if (deadCount != 0 && deadCount == self.gameSession.Players.Count - 1)
-            {
-
-                return true;
-            }
-
-            if (self.world.rainCycle.TimeUntilRain <= 100)
-            {
-                return true;
-            }
-
-            orig(self);
-            return orig(self);
         }
     }
 }

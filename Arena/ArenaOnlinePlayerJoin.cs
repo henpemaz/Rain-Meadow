@@ -38,7 +38,7 @@ namespace Menu
 
         public bool readyForCombat;
 
-        public ArenaCompetitiveGameMode arena;
+        public ArenaOnlineGameMode arena;
 
         private ArenaLobbyMenu arenaMenu;
 

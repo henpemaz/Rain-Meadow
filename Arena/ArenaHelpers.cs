@@ -25,7 +25,7 @@ namespace RainMeadow
             return null;
         }
 
-        public static void ResetReadyUpLogic(ArenaCompetitiveGameMode arena, ArenaLobbyMenu lobby)
+        public static void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
         {
             if (lobby.playButton != null)
             {
@@ -51,7 +51,7 @@ namespace RainMeadow
         }
 
 
-        public static OnlinePlayer FindOnlinePlayerByFakePlayerNumber(ArenaCompetitiveGameMode arena, int playerNumber)
+        public static OnlinePlayer FindOnlinePlayerByFakePlayerNumber(ArenaOnlineGameMode arena, int playerNumber)
         {
 
             for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
@@ -65,7 +65,7 @@ namespace RainMeadow
             return null;
         }
 
-        public static void SetupOnlineArenaStting(ArenaCompetitiveGameMode arena, ProcessManager manager)
+        public static void SetupOnlineArenaStting(ArenaOnlineGameMode arena, ProcessManager manager)
         {
             manager.arenaSitting.players = new List<ArenaSitting.ArenaPlayer>();
             for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
@@ -113,7 +113,7 @@ namespace RainMeadow
             return filteredList;
         }
 
-        public static void OverideSlugcatClassAbilities(Player player, ArenaCompetitiveGameMode arena)
+        public static void OverideSlugcatClassAbilities(Player player, ArenaOnlineGameMode arena)
         {
 
             if (player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint && !arena.countdownInitiatedHoldFire)

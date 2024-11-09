@@ -2,24 +2,21 @@
 
 namespace RainMeadow
 {
-    public class Onslaught : ArenaCompetitiveGameMode
+    public class Onslaught : ArenaOnlineGameMode
     {
-        public Onslaught(Lobby lobby) : base(lobby)
+
+        public static readonly string OnslaughtMode = "Onslaught";
+        public Onslaught(ArenaOnlineGameMode arena) : base(arena.lobby)
         {
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
             arenaClientSettings = new ArenaClientSettings();
             arenaClientSettings.playingAs = SlugcatStats.Name.White;
         }
 
-        public static void RegisterGameMode()
-        {
-
-        }
-
 
         public void ResetGameTimer()
         {
-            setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
+            setupTime = 0;
         }
 
         public void ResetViolence()
@@ -38,6 +35,7 @@ namespace RainMeadow
             return RainMeadow.Ext_ProcessID.ArenaLobbyMenu;
         }
 
+
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
             return true;
@@ -51,6 +49,11 @@ namespace RainMeadow
             return true;
         }
 
+        public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
+        {
+
+            return true;
+        }
 
         public override void PlayerLeftLobby(OnlinePlayer player)
         {
@@ -100,31 +103,18 @@ namespace RainMeadow
             }
         }
 
-        public override bool IsExitOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
+       /* public override bool IsExitOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
-            var deadCount = 0;
-            foreach (var player in self.gameSession.Players)
+            foreach (var player in self.gameSession.arenaSitting.players)
             {
-                if (player.realizedCreature != null && (player.realizedCreature.State.dead || player.state.dead))
+                if (player != null && (player.score > 0))
                 {
 
-                    deadCount++;
+                    return true;
                 }
             }
+            return false;
 
-            if (deadCount != 0 && deadCount == self.gameSession.Players.Count - 1)
-            {
-
-                return true;
-            }
-
-            if (self.world.rainCycle.TimeUntilRain <= 100)
-            {
-                return true;
-            }
-
-            orig(self);
-            return orig(self);
-        }
+        }*/
     }
 }

@@ -13,7 +13,7 @@ namespace RainMeadow
 {
     public class ArenaLobbyMenu : MultiplayerMenu
     {
-        private ArenaCompetitiveGameMode arena => (ArenaCompetitiveGameMode)OnlineManager.lobby.gameMode;
+        private ArenaOnlineGameMode arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
 
         private SlugcatCustomization personaSettings;
         private static float num = 120f;
@@ -137,6 +137,8 @@ namespace RainMeadow
             this.GetGameTypeSetup.rainWhenOnePlayerLeft = false; // TODO:  Hook this to update logic due to level switching if we want it
             this.GetGameTypeSetup.savingAndLoadingSession = false;
             this.GetGameTypeSetup.saveCreatures = false;
+            
+            
         }
 
         private void BindSettings()
