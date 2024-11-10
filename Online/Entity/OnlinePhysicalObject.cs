@@ -439,6 +439,16 @@ namespace RainMeadow
         public override void ResolveRequest(GenericResult requestResult)
         {
             base.ResolveRequest(requestResult);
+            if (requestResult is GenericResult.Ok)
+            {
+                if (apo.InDen && !apo.pos.NodeDefined)  // was stomach object
+                {
+                    apo.InDen = false;
+                    apo.Room.AddEntity(apo);
+                    if (apo.Room.realizedRoom is not null)
+                        apo.RealizeInRoom();
+                }
+            }
             if (requestResult is GenericResult.Error && apo.realizedObject is not null)
             {
                 foreach (var grasp in apo.realizedObject.grabbedBy)
