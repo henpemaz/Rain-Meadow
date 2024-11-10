@@ -22,6 +22,8 @@ namespace RainMeadow
             IL.ShortcutHandler.SuckInCreature += ShortcutHandler_SuckInCreature;
 
             On.Options.GetSaveFileName_SavOrExp += Options_GetSaveFileName_SavOrExp;
+            On.PlayerProgression.CopySaveFile += PlayerProgression_CopySaveFile;
+            On.Menu.BackupManager.RestoreSaveFile += BackupManager_RestoreSaveFile;
 
             On.RegionState.AdaptWorldToRegionState += RegionState_AdaptWorldToRegionState;
 
@@ -154,6 +156,18 @@ namespace RainMeadow
                 return "online_" + orig(self);
             }
             return orig(self);
+        }
+
+        private void PlayerProgression_CopySaveFile(On.PlayerProgression.orig_CopySaveFile orig, PlayerProgression self, string sourceName, string destinationDirectory)
+        {
+            orig(self, sourceName, destinationDirectory);
+            orig(self, "online_" + sourceName, destinationDirectory);
+        }
+
+        private void BackupManager_RestoreSaveFile(On.Menu.BackupManager.orig_RestoreSaveFile orig, Menu.BackupManager self, string sourceName)
+        {
+            orig(self, sourceName);
+            orig(self, "online_" + sourceName);
         }
 
         private void Room_PlaceQuantifiedCreaturesInRoom(On.Room.orig_PlaceQuantifiedCreaturesInRoom orig, Room self, CreatureTemplate.Type critType)
