@@ -18,10 +18,13 @@ namespace RainMeadow
         public float lastAlpha;
         public float blink;
         public float lastBlink;
-        public bool switchedToDeathIcon;
         public int onlineTimeSinceSpawn;
         public string iconString;
 
+        public int notifyPlayer;
+        public int notificationTimer;
+        public bool flippedColor;
+       
         SlugcatCustomization customization;
 
         public OnlinePlayerDisplay(PlayerSpecificOnlineHud owner, SlugcatCustomization customization) : base(owner)
@@ -75,7 +78,6 @@ namespace RainMeadow
             this.slugIcon.color = Color.white;
 
             this.blink = 1f;
-            this.switchedToDeathIcon = false;
 
             this.username.color = customization.SlugcatColor();
             this.message.color = Color.white;
@@ -83,6 +85,10 @@ namespace RainMeadow
             this.arrowSprite.color = customization.SlugcatColor();
             this.slugIcon.color = customization.SlugcatColor();
             this.customization = customization;
+
+            this.notifyPlayer = 0;
+            this.notificationTimer = 0; 
+            this.flippedColor = false;
         }
 
         public override void Update()
@@ -90,7 +96,7 @@ namespace RainMeadow
             base.Update();
             onlineTimeSinceSpawn++;
 
-            bool show = RainMeadow.rainMeadowOptions.ShowFriends.Value || (owner.clientSettings.isMine && onlineTimeSinceSpawn < 120);
+            bool show = RainMeadow.rainMeadowOptions.ShowFriends.Value || (owner.clientSettings.isMine && onlineTimeSinceSpawn < 120) || owner.PlayerInShelter || owner.PlayerInGate;
             if (show || this.alpha > 0)
             {
                 this.lastAlpha = this.alpha;
@@ -106,13 +112,10 @@ namespace RainMeadow
 
                     if (owner.PlayerConsideredDead) this.alpha = Mathf.Min(this.alpha, 0.5f);
 
-                    if (owner.PlayerConsideredDead != switchedToDeathIcon)
-                    {
-                        slugIcon.RemoveFromContainer();
-                        slugIcon = new FSprite(owner.PlayerConsideredDead ? "Multiplayer_Death" : iconString);
-                        owner.hud.fContainers[0].AddChild(slugIcon);
-                        switchedToDeathIcon = owner.PlayerConsideredDead;
-                    }
+                    if (owner.PlayerInShelter) slugIcon.SetElementByName("ShortcutShelter");
+                    else if (owner.PlayerInGate) slugIcon.SetElementByName("ShortcutGate");
+                    else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
+                    else slugIcon.SetElementByName("Kill_Slugcat");
                 }
                 else
                 {
@@ -161,8 +164,6 @@ namespace RainMeadow
                     color = Color.Lerp(color, new Color(1f, 1f, 1f), Mathf.InverseLerp(0f, 0.5f, Mathf.Lerp(this.lastBlink, this.blink, timeStacker)));
                 }
             }
-            var lighter_color = color * 1.7f;
-            this.username.color = lighter_color;
 
             if (this.message.text != "") // we've updated a username
             {
@@ -170,35 +171,52 @@ namespace RainMeadow
                 resetUsernameCounter--;
                 this.username.color = color * 3f;
                 this.username.x = vector.x + this.message._textRect.x - 15f;
-
-
             }
-
-            if (resetUsernameCounter < 10) // snappier fadeaway
-            {
-                this.username.color = lighter_color;
-
-            }
-
 
             if (resetUsernameCounter < 0)
             {
-
                 this.message.text = "";
                 this.username.text = customization.nickname;
                 resetUsernameCounter = 200;
 
             }
 
-            this.arrowSprite.color = lighter_color;
-            this.slugIcon.color = lighter_color;
+            if (owner.PlayerInGate || owner.PlayerInShelter)
+            {
+                this.notifyPlayer++;
+
+                if (this.notifyPlayer % 60 == 0)
+                {
+                    notificationTimer = this.notifyPlayer;
+                    if (this.flippedColor)
+                    {
+                        if (this.message.text == "") this.username.color = Color.white;
+                        this.slugIcon.color = Color.white;
+                        this.arrowSprite.color = Color.white;
+                        this.flippedColor = false;
+                    }
+                    else if (!this.flippedColor)
+                    {
+                        if (this.message.text == "") this.username.color = customization.SlugcatColor();
+                        this.slugIcon.color = customization.SlugcatColor();
+                        this.arrowSprite.color = customization.SlugcatColor();
+                        this.flippedColor = true;
+                    }
+                }
+            }
+            else
+            {
+                var lighter_color = color * 1.7f;                
+                this.slugIcon.color = lighter_color;
+                this.username.color = lighter_color;
+                this.arrowSprite.color = lighter_color;
+            }
 
             this.username.alpha = num;
             this.message.alpha = num;
 
             this.arrowSprite.alpha = num;
             this.slugIcon.alpha = num;
-
         }
 
         public override void ClearSprites()

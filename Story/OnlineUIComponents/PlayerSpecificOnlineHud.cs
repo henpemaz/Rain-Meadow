@@ -77,6 +77,22 @@ namespace RainMeadow
             }
         }
 
+        public bool PlayerInShelter
+        {
+            get
+            {
+                return abstractPlayer.Room.shelter;
+            }
+        }
+
+        public bool PlayerInGate
+        {
+            get
+            {
+                return abstractPlayer.Room.gate;
+            }
+        }
+
         public override void Update()
         {
             base.Update();
