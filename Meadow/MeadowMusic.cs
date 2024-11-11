@@ -31,6 +31,7 @@ namespace RainMeadow
 
         private static void MusicPlayer_UpdateMusicContext(On.Music.MusicPlayer.orig_UpdateMusicContext orig, MusicPlayer self, MainLoopProcess currentProcess)
         {
+            //oh this fella fails if there's no song playing currently, like if there's no "me" playing in the character select
             if (self.musicContext != null)
             {
                 if (currentProcess.ID == ProcessManager.ProcessID.Game)
@@ -406,15 +407,15 @@ namespace RainMeadow
             {
                 //i have NO idea how it'll fuck up when the region has not got a vibezone but idccccccccccccccc. oh wait it wont cuz it won't activate updateintensity cuz it'll never go close to one.
                 vibePan = Vector2.Dot((RoomImIn.world.RoomToWorldPos(Vector2.zero, closestVibe) - RoomImIn.world.RoomToWorldPos(Vector2.zero, RoomImIn.abstractRoom.index)).normalized, Vector2.right);
-                //RainMeadow.Debug("IsFased");
-                Vector2 LOL = self.world.RoomToWorldPos(self.world.GetAbstractRoom(closestVibe).size.ToVector2() * 10f, closestVibe);
-                Vector2 lol = self.world.RoomToWorldPos(MyGuyMic.listenerPoint, RoomImIn.abstractRoom.index);
-                //RainMeadow.Debug("IsZased");
+                //RainMeadow.Debug("Has Calculated Pan");
+                Vector2 VibeRoomCenterPos = self.world.RoomToWorldPos(self.world.GetAbstractRoom(closestVibe).size.ToVector2() * 10f, closestVibe);
+                Vector2 PlayerPos = self.world.RoomToWorldPos(MyGuyMic.listenerPoint, RoomImIn.abstractRoom.index);
+                //RainMeadow.Debug("Has made vectors to viberoom and player");
                 float vibeIntensityTarget = 
-                             Mathf.Pow(Mathf.InverseLerp(az.radius, az.minradius, Vector2.Distance(lol, LOL)), 1.425f)
+                             Mathf.Pow(Mathf.InverseLerp(az.radius, az.minradius, Vector2.Distance(PlayerPos, VibeRoomCenterPos)), 1.425f)
                            * Custom.LerpMap((float)DegreesOfAwayness, 0f, 3f, 1f, 0.15f) //* Custom.LerpMap((float)DegreesOfAwayness, 1f, 3f, 0.6f, 0.15f)
                            * ((RoomImIn.abstractRoom.layer == self.world.GetAbstractRoom(closestVibe).layer) ? 1f : 0.75f); //az.room also works 
-                //RainMeadow.Debug("IsBased");
+                //RainMeadow.Debug("Has Figured out TargetIntensity");
                 vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? 0 : (float)vibeIntensity, vibeIntensityTarget, 0.025f, 0.002f);
                 vibeIntensity = vibeIntensityTarget;
                 AllowPlopping = vibeIntensity.Value >= 0.2f;
@@ -423,7 +424,7 @@ namespace RainMeadow
                     if ((float)vibeIntensity > 0.9f) { musicPlayer.song.baseVolume = 0f; }
                     else { musicPlayer.song.baseVolume = Mathf.Pow(1f - (float)vibeIntensity, 2f) * 0.3f; }
                 }                
-                //RainMeadow.Debug("IsMased");
+                //RainMeadow.Debug("Has assigned vibeintensity, plopping, and maybe musicvolume.");
             }
 
             var lmd = OnlineManager.lobby.GetData<LobbyMusicData>();

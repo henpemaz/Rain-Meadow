@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Drawing.Printing;
 using UnityEngine.UI;
+using JetBrains.Annotations;
 
 namespace RainMeadow
 {
@@ -523,9 +524,21 @@ namespace RainMeadow
         }
         private void PlayThing(SoundID Note, float velocity, float speed, VirtualMicrophone virtualMicrophone, PlopType type)
         {
-            float pan = MeadowMusic.vibePan == null ? 0 : (float)MeadowMusic.vibePan * Mathf.Pow((float)MeadowMusic.vibeIntensity.Value * 0.7f + 0.125f, 1.65f);
-            float vol = MeadowMusic.vibeIntensity == null ? 0 : Mathf.Pow((float)MeadowMusic.vibeIntensity, 1.65f) * 0.5f * velocity;
-            float pitch = speed;
+            if (MeadowMusic.vibeIntensity == null || MeadowMusic.vibeIntensity.Value == 0f || velocity == 0f)
+            {
+                if (RainWorld.ShowLogs) 
+                { 
+                    RainMeadow.Debug("VibeIntensity is undefined or 0, or inputted velocity is 0, won't bother playing thing");
+                }
+                return;
+            }
+            float vol = Mathf.Pow(MeadowMusic.vibeIntensity.Value, 1.65f) * 0.5f * velocity;
+
+            float pan = 0f;
+            if (MeadowMusic.vibePan != null)
+            {
+                pan = (float)MeadowMusic.vibePan * Mathf.Pow(MeadowMusic.vibeIntensity.Value * 0.7f + 0.125f, 1.65f);
+            }
             //RainMeadow. Debug($"Trying to play a {Note}, at {vol} volume, with {pan} pan");
             try
             {
@@ -542,11 +555,11 @@ namespace RainMeadow
                 SoundLoader.SoundData soundData = virtualMicrophone.GetSoundData(Note, -1);
                 if (virtualMicrophone.SoundClipReady(soundData))
                 {
-                    if (virtualMicrophone.soundObjects.Count * 2 - AliveList.Count > 22) DestroyLastSound();
-                    if (virtualMicrophone.soundObjects.Count * 2 - AliveList.Count > 24) DestroyLastSound();
-                    var thissound = new VirtualMicrophone.DisembodiedSound(virtualMicrophone, soundData, pan, vol, pitch, false, 0);
+                    if (virtualMicrophone.soundObjects.Count * 2 - AliveList.Count > 22) DestroyOldestPlop();
+                    if (virtualMicrophone.soundObjects.Count * 2 - AliveList.Count > 24) DestroyOldestPlop();
+                    var thissound = new VirtualMicrophone.DisembodiedSound(virtualMicrophone, soundData, pan, vol, speed, false, 0);
                     virtualMicrophone.soundObjects.Add(thissound);
-                    InfoThingy thingy = new InfoThingy(type, thissound, vol, false, 0);
+                    InfoThingy thingy = new(type, thissound, vol, false, 0);
                     AliveList.Add(thingy);
                 }
                 else
@@ -583,9 +596,10 @@ namespace RainMeadow
                 AliveList.RemoveAt(indextodelete);
             }
         }
-        private void DestroyLastSound()
+        private void DestroyOldestPlop()
         {
-            PlopType looksfor = (PlopType)0;
+            //will need a redesign, drums are frequent and short, but midnotes could be more preferable to destroy
+            PlopType looksfor = 0;
             InfoThingy KillThisFucker;
             int RightHere = -1;
             while (true)
@@ -1112,7 +1126,7 @@ namespace RainMeadow
                         willmodify = true; //copied straight from the best coder on earth, me, when wriding Add()
                         int modifying = UnityEngine.Random.Range(-2, 1);
                         if (modifying > -1) modifying++;
-                        if (modifying is (-2) or 2) if (UnityEngine.Random.Range(0, 2) == 1) modifying /= 2;
+                        if (modifying == -2 || modifying == 2) if (UnityEngine.Random.Range(0, 2) == 1) modifying /= 2;
 
                         ind += modifying;
 
@@ -1559,55 +1573,60 @@ namespace RainMeadow
 
         public static class DrumMachine
         {
-            struct hit
+            struct Fill
             {
-                public hit(float velocity1, string pausefor, int waiters1, float chancetoplay = 1)
+                public Fill(float velocity, string pausefor, int rests, float chancetoplay = 1)
                 {
-                    velocity = velocity1;
-                    waiting = pausefor;
+                    this.velocity = velocity;
+                    restvalue = pausefor;
+                    restcount = rests;
                     chance = chancetoplay;
-                    waiters = waiters1;
                 }
                 public float velocity;
-                public string waiting;
+                public string restvalue;
+                public int restcount;
                 public float chance;
-                public int waiters;
             }
             struct Track
             {
-                public Track(hit[] hitlist, SoundID sample, float volume)
+                public Track(Fill[] sequence, SoundID sample, int inttrack)
                 {
-                    this.hitlist = hitlist;
-                    this.volume = volume;
-                    this.timer = 1;
-                    this.hitindex = 0;
+                    this.sequence = sequence;
                     this.sample = sample;
+                    track = inttrack;
+                    timer = 1;
+                    sequenceindex = 0;
                 }
-                public Track(hit[] hitlist, float volume)
+
+                public Track(Fill[] sequence)
                 {
-                    this.hitlist = hitlist;
-                    this.volume = volume;
-                    this.timer = 1;
-                    this.hitindex = 0;
-                    this.sample = SoundID.None;
+                    this.sequence = sequence;
+                    sample = SoundID.None;
+                    track = -1;
+                    timer = 1;
+                    sequenceindex = 0;
                 }
+
                 //PlopMachine PlopMachine;
+                public Fill[] sequence;
                 public SoundID sample;
-                public hit[] hitlist;
-                public int hitindex;
-                public float volume;
-                int timer;
-                public hit? Update(PlopMachine plopMachine, float newvolumelol)
+                public int track;
+                public int timer;
+                public int sequenceindex;
+                public void Reset()
                 {
-                    volume = newvolumelol;
-                    //RainMeadow.Debug("Timer: " + timer);
+                    sequenceindex = 0;
+                    timer = 0;
+                }
+                public Fill? Update(PlopMachine plopMachine)
+                {
                     if (timer <= 0)
                     {
-                        hit hittoplay = hitlist[hitindex];
-                        timer = Wait.Until(hittoplay.waiting, hittoplay.waiters, plopMachine.debugstopwatch);
+                        Fill filltoplay = sequence[sequenceindex];
+                        timer = Wait.Until(filltoplay.restvalue, filltoplay.restcount, plopMachine.debugstopwatch);
                         //RainMeadow.Debug(timer + "  " + hittoplay.waiting + "  " + hittoplay.waiters + "  " +  plopMachine.debugstopwatch + "    " + plopMachine.debugstopwatch % WaitDict["1/8"] + "    " + plopMachine.debugstopwatch % WaitDict["1"]);
-                        hitindex = (hitindex == hitlist.Length - 1) ? 0 : hitindex + 1;
-                        return hittoplay;
+                        sequenceindex = (sequenceindex == sequence.Length - 1) ? 0 : sequenceindex + 1;
+                        return filltoplay;
                     }
                     else
                     {
@@ -1619,63 +1638,51 @@ namespace RainMeadow
 
             public static void Update(VirtualMicrophone mic, PlopMachine plopMachine)
             {
-
-                float kickvol = Math.Max(0, Math.Min(plopMachine.currentagora * 0.4f - 0.5f, 1));
-                float snarevol= Math.Max(0, Math.Min(plopMachine.currentagora * 0.5f - 1f, 1));
-                float hatvol  = Math.Max(0, Math.Min(plopMachine.currentagora * 0.35f - 1f, 1));
-                float percvol = Math.Max(0, Math.Min(plopMachine.currentagora * 0.27f - 1.6f, 1));
-
-
-                hit? lol = kicks.Update(plopMachine, kickvol);
-                if (lol != null && kickvol != 0)
+                for (int i = 0; i < tracks.Count; i++)
                 {
-                    plopMachine.PlayThing(kicks.sample, lol.Value.velocity * kicks.volume*0.7f, 1, mic, PlopType.Drum);
+                    Track track = tracks[i];
+                    Fill? step = track.Update(plopMachine);
+                    tracks[i] = track; //Hi henp is there an easier way to modify this list shit?
+                    if (step != null)
+                    {
+                        float trackvol = track.track switch
+                        {
+                            0 => Math.Max(0, Math.Min(plopMachine.currentagora * 0.4f - 0.5f, 1)),
+                            1 => Math.Max(0, Math.Min(plopMachine.currentagora * 0.5f - 1f, 1)),
+                            2 => Math.Max(0, Math.Min(plopMachine.currentagora * 0.35f - 1f, 1)),
+                            3 => Math.Max(0, Math.Min(plopMachine.currentagora * 0.27f - 1.6f, 1)),
+                            _ => 0f,
+                        };
+                        plopMachine.PlayThing(track.sample, step.Value.velocity * trackvol * 0.7f, 1, mic, PlopType.Drum); //TESTING 0.7 is a mildener
+                    }
                 }
-                hit? lol2 = hats.Update(plopMachine, hatvol);
-                if (lol2 != null && hatvol != 0)
-                {
-                    plopMachine.PlayThing(hats.sample, lol2.Value.velocity * hats.volume * 0.7f, 1, mic, PlopType.Drum);
-                }
-                hit? lol3 = snare.Update(plopMachine, snarevol);
-                if (lol3 != null && snarevol != 0)
-                {
-                    plopMachine.PlayThing(snare.sample, lol3.Value.velocity * snare.volume * 0.7f, 1, mic, PlopType.Drum);
-                }
-
-
-                //decrement every time thingy
-                //every time thingy that's a 0: increment their index, set time to decay
-
                 //impulse from a main loop will trigger a random fill of x length
+                //impulse from a main thingy will trigger every loop to reset.
             }
 
-            static hit[]? fuck = new hit[2];
-            static hit[]? fuck2 = new hit[2];
-            static hit[]? fuck3 = new hit[2];
-            static Track kicks = new();
-            static Track hats = new();
-            static Track snare = new();
+            static List<Track> tracks = new();
             public static void StartthefuckingWaitDicthehe()
             {
-                float kickvol = Math.Max(0, Math.Min (0 * 0.4f - 0.5f, 1));
-                float snarevol = Math.Max(0, Math.Min(0 * 0.5f - 1f, 1));
-                float hatvol = Math.Max(0, Math.Min  (0 * 0.35f - 1f, 1));
-                float percvol = Math.Max(0, Math.Min (0 * 0.27f - 1.6f, 1));
+                Fill[]? fuck = new Fill[2];
+                fuck[0] = new Fill(1f, "1/8", 7);
+                fuck[1] = new Fill(0.4f, "1/8", 1, 0.6f);
+                Track kicks = new Track(fuck, Kick, 0);
 
-                //fuck[0] = new hit(1, "1/4", 3);
-                //fuck = new hit[1];
-                fuck = new hit[2];
-                fuck[0] = new hit(1f, "1/8", 7);
-                fuck[1] = new hit(0.4f, "1/8", 1, 0.6f);
-                kicks = new Track(fuck, Kick, kickvol);
-                fuck2 = new hit[2];
-                fuck2[0] = new hit(0.2f, "1/8T", 1);
-                fuck2[1] = new hit(0.4f, "1/8T", 1, 0.6f);
-                hats = new Track(fuck2, HiHat, hatvol);
-                fuck3 = new hit[2];
-                fuck3[0] = new hit(0f, "1/2", 1);
-                fuck3[1] = new hit(1f, "1/2", 1, 0.6f);
-                snare = new Track(fuck3, Snare, snarevol);
+                Fill[]? fuck2 = new Fill[2];
+                fuck2[0] = new Fill(0f, "1/2", 1);
+                fuck2[1] = new Fill(1f, "1/2", 1, 0.6f);
+                Track snares = new Track(fuck2, Snare, 1);
+
+                Fill[]? fuck3 = new Fill[2];
+                fuck3[0] = new Fill(0.2f, "1/8T", 1);
+                fuck3[1] = new Fill(0.4f, "1/8T", 1, 0.6f);
+                Track hats = new Track(fuck3, HiHat, 2);
+
+
+                tracks.Add(kicks);
+                tracks.Add(hats);
+                tracks.Add(snares);
+                //TESTING this whole thing, probably is going to be remade, somehow?
             }
 
         }
