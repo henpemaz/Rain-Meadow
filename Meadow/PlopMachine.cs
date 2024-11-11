@@ -507,6 +507,7 @@ namespace RainMeadow
 
             if (playingchord == true) //holding
             {
+                ChitChat.Update(mic, this);
                 if (chordtimer <= 0)
                 {
                     //RainMeadow.Debug($"{UpcomingEntry} will play");       
@@ -515,7 +516,6 @@ namespace RainMeadow
                 }
                 else
                 {
-                    ChitChat.Update(mic, this);
                     chordexhaustion *= Mathf.Lerp(0.9975f, 0.9925f, fichtean);
                     chordtimer--;
                 }
@@ -585,7 +585,7 @@ namespace RainMeadow
         }
         private void DestroyLastSound()
         {
-            PlopType looksfor = PlopType.Short;
+            PlopType looksfor = (PlopType)0;
             InfoThingy KillThisFucker;
             int RightHere = -1;
             while (true)
@@ -612,10 +612,10 @@ namespace RainMeadow
         }
         enum PlopType
         {
+            Drum,
             Short,
             Medium,
             Long,
-            Drum,
             Pad
         }
         struct InfoThingy
@@ -648,9 +648,9 @@ namespace RainMeadow
                         float hah = thingy.dyingpercent;
                         hah = (hah * 0.1f) + 0.175f + hah;
 
-                        if (hah >= 1f || true)
+                        if (hah >= 1f || true) //TESTING true
                         {
-                            //RainMeadow.Debug("I removed one");
+                            RainMeadow.Debug("I removed one");
                             thingy.soundObject.Destroy();
                         }
                         else
@@ -834,7 +834,7 @@ namespace RainMeadow
                     {
                         if (arptimer <= 0)
                         {
-                            if (LiaisonList.Count != 0) //bruh why should it ever be less than zero lmao (that's the joke here)
+                            if (LiaisonList.Count != 0) //bruh why would it ever be less than zero lmao (that's the joke here)
                             { 
                                 if (steppattern[steppatternindex]) CollectiveArpStep(mic, plopmachine);
                                 arpcounterstopwatch += plopmachine.fichtean * 12 + 4;
@@ -858,6 +858,7 @@ namespace RainMeadow
                                 //PLUSS ONE because its' fucking... because this one plays it at the exact same time??? And goes downward for some reason??? Oh wait it's because it starts HERE. At THIS MOMENT, if it was a wait, there would be 24 until the next.
                                 //RainMeadow.Debug("OK SO THE NEXT ONE IS " + arptimer);
                                 arptimer = Wait.Until($"1/{waitnumber}", 1, plopmachine.debugstopwatch);
+                                //RainMeadow.Debug("Arptimer waits " + arptimer);
 
                                 if (UnityEngine.Random.Range(0, 150000) + TensionStopwatch*12 > 150000) //RTYU            this is strum activationcode  //temp, will share with other. I decide now that if it's strummed, it'll roll a chance to break, but reset the "stopwatch" both use, tension   
                                 {
@@ -1565,7 +1566,7 @@ namespace RainMeadow
                     velocity = velocity1;
                     waiting = pausefor;
                     chance = chancetoplay;
-                    waiters = waiters1+1;
+                    waiters = waiters1;
                 }
                 public float velocity;
                 public string waiting;
@@ -1599,15 +1600,18 @@ namespace RainMeadow
                 public hit? Update(PlopMachine plopMachine, float newvolumelol)
                 {
                     volume = newvolumelol;
-                    timer--;
+                    //RainMeadow.Debug("Timer: " + timer);
                     if (timer <= 0)
                     {
                         hit hittoplay = hitlist[hitindex];
                         timer = Wait.Until(hittoplay.waiting, hittoplay.waiters, plopMachine.debugstopwatch);
-                        RainMeadow.Debug(timer);
-                        //timer = WaitDict[hittoplay.waiting]* hittoplay.waiters;
+                        //RainMeadow.Debug(timer + "  " + hittoplay.waiting + "  " + hittoplay.waiters + "  " +  plopMachine.debugstopwatch + "    " + plopMachine.debugstopwatch % WaitDict["1/8"] + "    " + plopMachine.debugstopwatch % WaitDict["1"]);
                         hitindex = (hitindex == hitlist.Length - 1) ? 0 : hitindex + 1;
                         return hittoplay;
+                    }
+                    else
+                    {
+                        timer--;
                     }
                     return null;
                 }
@@ -1748,17 +1752,21 @@ namespace RainMeadow
         private void RainWorldGame_Update(On.RainWorldGame.orig_Update orig, RainWorldGame self)
         {
             orig(self);
-            debugstopwatch++;
             var mic = self.cameras[0].virtualMicrophone;
             CurrentRegion = self.world.region.name;
             CurrentRegion ??= "sl";
 
-            currentagora = Mathf.Lerp(currentagora, agora, 0.005f);
+            currentagora = Mathf.Lerp(currentagora, agora, 0.1f); //TESTING, actual value = 0.005
             //RainMeadow.Debug("Next procedural: " + (self.manager.musicPlayer.nextProcedural == null) + " Nextsong: " + (self.manager.musicPlayer.nextSong == null));
-            fichtean = Mathf.Pow(Mathf.PerlinNoise(debugstopwatch / 1000f, debugstopwatch / 4000f), 1/(currentagora/2 + 1));
+            if (MeadowMusic.AllowPlopping)
+            {
+                debugstopwatch++;
+                float x = Mathf.PerlinNoise(debugstopwatch / 1000f, debugstopwatch / 4000f);
+                fichtean = (Mathf.Pow(x, 1/(currentagora/2 + 1))+x)/2;
+                PlayEntry(mic);
+                DrumMachine.Update(mic, this);
+            }
             
-            if (MeadowMusic.AllowPlopping) PlayEntry(mic);
-            if (MeadowMusic.AllowPlopping) DrumMachine.Update(mic, this);
             ThanatosSlayGirl();
 
             //if (Wait.Until("quarter", 1, debugstopwatch) == 23)
