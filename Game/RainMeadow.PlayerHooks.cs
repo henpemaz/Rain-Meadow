@@ -671,10 +671,6 @@ public partial class RainMeadow
             slugcat = storyGameMode.avatarSettings.playingAs;
         }
         
-        if (isArenaMode(out var arena))
-        {
-            slugcat = OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs;
-        }
 
         orig(self, slugcat, malnourished);
 
