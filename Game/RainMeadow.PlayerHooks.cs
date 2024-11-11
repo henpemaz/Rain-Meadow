@@ -5,6 +5,8 @@ using System;
 using System.Drawing;
 using System.Linq;
 using UnityEngine;
+using MonoMod.RuntimeDetour;
+using System.Runtime.CompilerServices;
 
 namespace RainMeadow;
 
@@ -15,10 +17,9 @@ public partial class RainMeadow
     {
         On.RainWorldGame.SpawnPlayers_bool_bool_bool_bool_WorldCoordinate += RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate; // Personas are set as non-transferable
 
-        On.SlugcatStats.ctor += SlugcatStats_ctor;
-
         On.Player.ctor += Player_ctor;
         On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass;
+        new Hook(typeof(Player).GetProperty("slugcatStats").GetGetMethod(), this.Player_slugcatStats);
         IL.Player.Update += Player_Update;
         On.Player.Update += Player_Update1;
         On.Player.Die += PlayerOnDie;
@@ -46,7 +47,6 @@ public partial class RainMeadow
         On.Player.ShortCutColor += Player_ShortCutColor;
         On.Player.checkInput += Player_checkInput;
         On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites2;
-
     }
 
 
@@ -404,6 +404,8 @@ public partial class RainMeadow
         return orig(self, player1, player2, player3, player4, location);
     }
 
+    public static ConditionalWeakTable<Player, SlugcatStats> slugcatStatsPerPlayer = new();
+
     private void Player_ctor(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
     {
         orig(self, abstractCreature, world);
@@ -416,6 +418,11 @@ public partial class RainMeadow
             else if (oe is null)
             {
                 RainMeadow.Error("player entity not found for " + self + " " + self.abstractCreature);
+            }
+            if (oe is not null)
+            {
+                slugcatStatsPerPlayer.Add(self, new SlugcatStats(self.SlugCatClass, self.slugcatStats.malnourished));
+                RainMeadow.Debug($"slugcatstats:{self.SlugCatClass} owner:{oe.owner}");
             }
         }
     }
@@ -441,6 +448,19 @@ public partial class RainMeadow
                 RainMeadow.Error("player entity not found for " + self + " " + self.abstractCreature);
             }
         }
+    }
+
+    private SlugcatStats Player_slugcatStats(Func<Player, SlugcatStats> orig, Player self)
+    {
+        if (OnlineManager.lobby != null)
+        {
+            if (slugcatStatsPerPlayer.TryGetValue(self, out var slugcatStats))
+            {
+                return slugcatStats;
+            }
+        }
+
+        return orig(self);
     }
 
     private void PlayerOnDie(On.Player.orig_Die orig, Player self)
@@ -661,22 +681,5 @@ public partial class RainMeadow
             if (crit is Player) return false;
         }
         return orig(self, crit);
-    }
-
-    // this WHOLE hook might be obsolete, todo check
-    private void SlugcatStats_ctor(On.SlugcatStats.orig_ctor orig, SlugcatStats self, SlugcatStats.Name slugcat, bool malnourished)
-    {
-        if (isStoryMode(out var storyGameMode))
-        {
-            slugcat = storyGameMode.avatarSettings.playingAs;
-        }
-        
-
-        orig(self, slugcat, malnourished);
-
-        if (OnlineManager.lobby == null) return;
-        if (slugcat != Ext_SlugcatStatsName.OnlineSessionPlayer) return;
-
-
     }
 }
