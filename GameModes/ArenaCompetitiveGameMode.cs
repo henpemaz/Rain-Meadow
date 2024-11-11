@@ -5,18 +5,21 @@ namespace RainMeadow
     public class ArenaCompetitiveGameMode : OnlineGameMode
     {
         public bool isInGame = false;
-        public int clientWaiting = 0;
+        public int playerLeftGame = 0;
         public int clientsAreReadiedUp = 0;
         public bool allPlayersReadyLockLobby = false;
         public bool returnToLobby = false;
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
         public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
-        public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         public int playerEnteredGame = 0;
         public Dictionary<string, bool> playersReadiedUp = new Dictionary<string, bool>();
         public bool countdownInitiatedHoldFire = true;
+
         public ArenaPrepTimer arenaPrepTimer;
+        public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
+        public int arenaSaintAscendanceTimer = RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value;
+
 
         public int playerResultColorizizerForMSCAndHighLobbyCount;
 

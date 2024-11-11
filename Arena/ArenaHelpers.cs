@@ -38,12 +38,15 @@ namespace RainMeadow
             foreach (var player in OnlineManager.players)
             {
                 arena.playersReadiedUp[player.id.name] = false;
+                if (player != OnlineManager.lobby.owner)
+                {
+
+                    player.InvokeOnceRPC(ArenaRPCs.Arena_InitialSetupTimers, arena.setupTime, arena.arenaSaintAscendanceTimer);
+                }
             }
 
             arena.isInGame = false;
-            arena.returnToLobby = false;
-            arena.ResetViolence();
-            arena.ResetGameTimer();
+            // arena.returnToLobby = false;
             lobby.manager.rainWorld.options.DeleteArenaSitting();
             //Nightcat.ResetNightcat();
 
@@ -120,10 +123,11 @@ namespace RainMeadow
             {
                 if (player.wantToJump > 0 && player.input[0].pckp && player.canJump <= 0 && !player.monkAscension && !player.tongue.Attached && player.bodyMode != Player.BodyModeIndex.Crawl && player.bodyMode != Player.BodyModeIndex.CorridorClimb && player.bodyMode != Player.BodyModeIndex.ClimbIntoShortCut && player.animation != Player.AnimationIndex.HangFromBeam && player.animation != Player.AnimationIndex.ClimbOnBeam && player.bodyMode != Player.BodyModeIndex.WallClimb && player.bodyMode != Player.BodyModeIndex.Swimming && player.Consious && !player.Stunned && player.animation != Player.AnimationIndex.AntlerClimb && player.animation != Player.AnimationIndex.VineGrab && player.animation != Player.AnimationIndex.ZeroGPoleGrab)
                 {
-                    player.maxGodTime = 360f;
+                    player.maxGodTime = arena.arenaSaintAscendanceTimer;
                     player.ActivateAscension();
                 }
-                if (player.wantToJump > 0 && player.monkAscension) {
+                if (player.wantToJump > 0 && player.monkAscension)
+                {
                     player.DeactivateAscension();
                 }
             }
