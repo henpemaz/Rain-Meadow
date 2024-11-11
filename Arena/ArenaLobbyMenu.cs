@@ -54,6 +54,7 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
                 arena.arenaSittingOnlineOrder = new List<ushort>();
+                arena.returnToLobby = true;
             }
 
             allSlugs = ArenaHelpers.AllSlugcats();
@@ -276,7 +277,7 @@ namespace RainMeadow
             }
 
             arena.playerResultColorizizerForMSCAndHighLobbyCount = UnityEngine.Random.Range(0, 4);
-
+            arena.returnToLobby = false;
         }
 
         private void StartGame()

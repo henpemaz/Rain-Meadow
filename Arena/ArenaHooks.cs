@@ -189,6 +189,7 @@ namespace RainMeadow
             {
                 var duration = 0.35f * (self.maxGodTime / 400f); // we'll see how that feels for now
                 self.godTimer = Mathf.Min(self.godTimer + duration, self.maxGodTime);
+                
             }
         }
 
@@ -1095,7 +1096,7 @@ namespace RainMeadow
                 {
                     foreach (OnlinePlayer player in OnlineManager.players)
                     {
-                        if (player.id == OnlineManager.lobby.owner.id && arena.clientWaiting == arena.arenaSittingOnlineOrder.Count - 1)
+                        if (player.id == OnlineManager.lobby.owner.id && arena.playerLeftGame == arena.arenaSittingOnlineOrder.Count - 1)
                         {
                             ArenaRPCs.Arena_NextLevelCall();
                         }

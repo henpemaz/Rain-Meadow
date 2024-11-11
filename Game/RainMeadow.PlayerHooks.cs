@@ -670,6 +670,7 @@ public partial class RainMeadow
         {
             slugcat = storyGameMode.avatarSettings.playingAs;
         }
+        
 
         orig(self, slugcat, malnourished);
 
