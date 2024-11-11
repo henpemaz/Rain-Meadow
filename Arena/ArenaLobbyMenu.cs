@@ -278,7 +278,6 @@ namespace RainMeadow
 
             arena.playerResultColorizizerForMSCAndHighLobbyCount = UnityEngine.Random.Range(0, 4);
             arena.returnToLobby = false;
-            flushArenaSittingForWaitingClients = false;
         }
 
         private void StartGame()
