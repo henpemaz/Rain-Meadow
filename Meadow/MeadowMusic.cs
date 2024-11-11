@@ -10,6 +10,8 @@ using UnityEngine;
 using Mono.Cecil;
 using IL.MoreSlugcats;
 using System.Drawing.Printing;
+using System.Threading.Tasks;
+using AssetBundles;
 
 namespace RainMeadow
 {
@@ -227,6 +229,7 @@ namespace RainMeadow
 
         internal static Dictionary<int, VibeZone> activeZonesDict = null;
         static string[] ambienceSongArray = null;
+        static bool loadingsong = false;
 
         static int[] shufflequeue = new int[0];
         static int shuffleindex = 0;
@@ -302,7 +305,7 @@ namespace RainMeadow
                 {
                     if (song[song.Length-1] != 'g') continue; //Intikus' monkey way of skipping unmodded songs, scream at him when you find this and let your words be a simpler way to find their length
 
-                    WWW www = new WWW("file://" + song); 
+                    WWW www = new WWW("file://" + song);
                     //AudioClip? thing = AssetManager.SafeWWWAudioClip("file://" + song, threeD: false, stream: true, AudioType.OGGVORBIS);
                     AudioClip? thing2 = www.GetAudioClip(false, true, AudioType.OGGVORBIS); //This method will have vanilla songs be 0 in length, due to its info being in assetbundles
                     float howlonghorse = thing2.length;
@@ -491,13 +494,7 @@ namespace RainMeadow
                 }
             }
 
-            //note for tomorrow: previous method of checking only when your rooms playercount changes or when you switch room is bad, since it doesn't get called by players sticking to one room, nor when my fellow goes outside of my range of view.
-            //so adjust *when* updateplayerthing is called: have it be called when players tranfer rooms and *are in a room* (so when it has joined resource).
-            //Won't care about joinedresource's of things other than *creatures* of *players* in *my game* in *my region*. but maybe that's already taken care of? :)
-
-            //RainMeadow.Debug("It's gotten this far, " + musicdata.inGroup + " " + musicdata.isDJ + " " + musicdata.providedSong + " " + musicdata.startedPlayingAt);
-
-            if (musicPlayer != null && musicPlayer.song == null && self.world.rainCycle.RainApproaching > 0.5f)
+            if (musicPlayer != null && musicPlayer.song == null && self.world.rainCycle.RainApproaching > 0.5f && !loadingsong)
             {
                 //that smalll moment when host has no song after having switched is a bit akward (posts like one million error messages in the other place
                 musicdata.providedSong = null;
@@ -512,16 +509,10 @@ namespace RainMeadow
 
                             if (shuffleindex + 1 >= shufflequeue.Length) { ShuffleSongs(); }
                             else { shuffleindex++; }
-                            musicdata.providedSong = ambienceSongArray[shufflequeue[shuffleindex]];
+                            string providedSong = ambienceSongArray[shufflequeue[shuffleindex]];
+                            _ = PlaySong(musicPlayer, providedSong);
                             RainMeadow.Debug("Meadow Music: Playing ambient song: " + musicdata.providedSong);
-                            musicdata.startedPlayingAt = LobbyTime();
-                            Song song = new(musicPlayer, musicdata.providedSong, MusicPlayer.MusicContext.StoryMode)
-                            {
-                                playWhenReady = true,
-                                volume = 1
-                                //fadeInTime = 1f
-                            };
-                            musicPlayer.song = song;
+
                         }
                         else if (OnlineManager.lobby.PlayerFromId(hostId) is OnlinePlayer other
                             && OnlineManager.lobby.playerAvatars.FirstOrDefault(kvp => kvp.Key == other).Value is OnlineEntity.EntityId otherOcId
@@ -550,17 +541,7 @@ namespace RainMeadow
                                         if (hostsongprogress < 0.95f)
                                         {
                                             RainMeadow.Debug("Meadow Music: Playing my DJs provided song: " + myDJsdata.providedSong + (ivebeenpatientlywaiting ? " supposedly from the beginning, after patiently waiting" : " from a specific point, since i haven't waited"));
-
-                                            Song song = new(musicPlayer, myDJsdata.providedSong, MusicPlayer.MusicContext.StoryMode)
-                                            {
-                                                playWhenReady = true,
-                                                volume = 1,
-                                                fadeInTime = ivebeenpatientlywaiting ? 1f : 120f
-                                            };
-                                            musicPlayer.song = song;
-                                            musicdata.providedSong = myDJsdata.providedSong;
-
-                                            RainMeadow.Debug(LobbyTime() + " " + DJstartedat);
+                                            _ = PlaySong(musicPlayer, myDJsdata.providedSong, ivebeenpatientlywaiting);
                                         }
                                         else
                                         {
@@ -573,16 +554,9 @@ namespace RainMeadow
                                         RainMeadow.Debug("Meadow Music: I don't have my DJs provided song.");
                                         if (shuffleindex + 1 >= shufflequeue.Length) { ShuffleSongs(); }
                                         else { shuffleindex++; }
-                                        musicdata.providedSong = ambienceSongArray[shufflequeue[shuffleindex]];
+                                        string provide = ambienceSongArray[shufflequeue[shuffleindex]];
+                                        _ = PlaySong(musicPlayer, provide);
                                         RainMeadow.Debug("Playing ambient song: " + musicdata.providedSong);
-                                        musicdata.startedPlayingAt = LobbyTime();
-                                        Song song = new(musicPlayer, musicdata.providedSong, MusicPlayer.MusicContext.StoryMode)
-                                        {
-                                            playWhenReady = true,
-                                            volume = 1
-                                            //fadeInTime = 1f
-                                        };
-                                        musicPlayer.song = song;
                                     }
                                 }
                                 else
@@ -608,6 +582,79 @@ namespace RainMeadow
                 time = 0f;
                 timerStopped = true;
             }
+        }
+
+        private static async Task PlaySong(MusicPlayer musicPlayer, string providedsong, bool Patient = true)
+        {
+            Song song = await Task.Run(() => LoadSong(musicPlayer, providedsong, Patient));
+
+            var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
+            var creature = mgm.avatars[0];
+            var musicdata = creature.GetData<MeadowMusicData>();
+
+            musicPlayer.song = song;
+            musicdata.providedSong = providedsong;
+            musicdata.startedPlayingAt = LobbyTime();
+            RainMeadow.Debug("my song is now " + musicdata.providedSong);
+        }
+        
+        private static Song LoadSong(MusicPlayer musicPlayer, string providedsong, bool Patient = true)
+        {
+            loadingsong = true;
+
+            Song song = new(musicPlayer, providedsong, MusicPlayer.MusicContext.StoryMode)
+            {
+                playWhenReady = true,
+                volume = 1
+            };
+            if (!Patient) song.fadeInTime = 120f;
+
+            MusicPiece.SubTrack sub = song.subTracks[0];
+            sub.isStreamed = false;
+            string text4 = string.Concat(new string[] { "Music", Path.DirectorySeparatorChar.ToString(), "Songs", Path.DirectorySeparatorChar.ToString(), sub.trackName, ".ogg" });
+            string text5 = AssetManager.ResolveFilePath(text4);
+            if (text5 != Path.Combine(Custom.RootFolderDirectory(), text4.ToLowerInvariant()) && File.Exists(text5))
+            {
+                //RainMeadow.Debug("It does load the song safetly ");
+                sub.source.clip = AssetManager.SafeWWWAudioClip("file://" + text5, false, true, AudioType.OGGVORBIS);
+                sub.isStreamed = true;
+            }
+            //else if (sub.loadOp == null)
+            //{
+            //    //string text6;
+            //    LoadedAssetBundle loadedAssetBundle2 = AssetBundleManager.GetLoadedAssetBundle("music_songs", out _);
+            //    if (loadedAssetBundle2 != null)
+            //    {
+            //
+            //        RainMeadow.Debug("It does load the song not asynconously");
+            //        sub.source.clip = loadedAssetBundle2.m_AssetBundle.LoadAsset<AudioClip>(sub.trackName);
+            //    }
+            //    if (sub.source.clip == null)
+            //    {
+            //        RainMeadow.Debug("It does load the song asynconously");
+            //        sub.loadOp = AssetBundleManager.LoadAssetAsync("music_songs", sub.trackName, typeof(AudioClip));
+            //    }
+            //}
+            //if (sub.loadOp != null && sub.loadOp.IsDone())
+            //{
+            //    sub.source.clip = sub.loadOp.GetAsset<AudioClip>();
+            //    sub.loadOp = null;
+            //    sub.source.clip.LoadAudioData();
+            //}
+            //
+			if (sub.source.clip != null)
+			{
+				sub.source.clip.LoadAudioData();
+			}
+					
+			else if (!sub.source.isPlaying && 2 == (int)sub.source.clip.loadState)
+			{
+				sub.readyToPlay = true;
+			}
+
+            sub.StartPlaying();
+            loadingsong = false;
+            return song;
         }
 
         public static void TheThingTHatsCalledWhenPlayersUpdated()
