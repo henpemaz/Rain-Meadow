@@ -17,10 +17,7 @@ namespace RainMeadow
             orig(self, game);
         }
 
-        public virtual void InitAsGameType(On.ArenaSetup.GameTypeSetup.orig_InitAsGameType orig, ArenaSetup.GameTypeSetup self, ArenaSetup.GameTypeID gameType)
-        {
-            orig(self, gameType);
-        }
+        public abstract void InitAsGameType(ArenaSetup.GameTypeSetup self);
 
         public virtual string TimerText()
         {

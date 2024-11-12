@@ -36,14 +36,13 @@ namespace RainMeadow
         {
             return false;
         }
-
-        public override void InitAsGameType(On.ArenaSetup.GameTypeSetup.orig_InitAsGameType orig, ArenaSetup.GameTypeSetup self, ArenaSetup.GameTypeID gameType)
-        {
-           base.InitAsGameType(orig, self, gameType);
-        }
         public override string TimerText()
         {
             return $"Prepare for combat, {SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs)}";
+        }
+        public override void InitAsGameType(ArenaSetup.GameTypeSetup self)
+        {
+            // noop
         }
 
 

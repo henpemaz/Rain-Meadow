@@ -107,13 +107,10 @@ namespace RainMeadow
             On.ArenaSetup.GameTypeSetup.InitAsGameType += GameTypeSetup_InitAsGameType;
         }
 
+        // Investigate this further
         private void GameTypeSetup_InitAsGameType(On.ArenaSetup.GameTypeSetup.orig_InitAsGameType orig, ArenaSetup.GameTypeSetup self, ArenaSetup.GameTypeID gameType)
         {
             orig(self, gameType);
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                arena.onlineArenaGameMode.InitAsGameType(orig, self, gameType);
-            }
         }
 
         private void GameTypeID_Init(On.ArenaSetup.GameTypeID.orig_Init orig)

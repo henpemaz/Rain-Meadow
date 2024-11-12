@@ -42,7 +42,7 @@ namespace RainMeadow
 
         }
 
-        public override void InitAsGameType(On.ArenaSetup.GameTypeSetup.orig_InitAsGameType orig, ArenaSetup.GameTypeSetup self, ArenaSetup.GameTypeID gameType)
+        public override void InitAsGameType(ArenaSetup.GameTypeSetup self)
         {
             self.foodScore = 1;
             self.survivalScore = 0;
