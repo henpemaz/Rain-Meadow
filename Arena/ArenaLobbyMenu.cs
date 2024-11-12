@@ -278,6 +278,8 @@ namespace RainMeadow
             }
 
             arena.playerResultColorizizerForMSCAndHighLobbyCount = UnityEngine.Random.Range(0, 4);
+            arena.RegisterMode("RainMeadow." + arena.currentGameMode);
+
 
         }
 

@@ -34,6 +34,8 @@ namespace RainMeadow
             public bool countdownInitiatedHoldFire;
             [OnlineField]
             public int arenaCountDownTimerRemix;
+            [OnlineField]
+            public string currentGameMode;
 
 
             public State() { }
@@ -50,6 +52,7 @@ namespace RainMeadow
                 playersChoosingSlugs = arena.playersInLobbyChoosingSlugs;
                 countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
                 arenaCountDownTimerRemix = arena.setupTime;
+                currentGameMode = arena.currentGameMode;
 
             }
 
@@ -66,6 +69,8 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).playersInLobbyChoosingSlugs = playersChoosingSlugs;
                 (lobby.gameMode as ArenaOnlineGameMode).countdownInitiatedHoldFire = countdownInitiatedHoldFire;
                 (lobby.gameMode as ArenaOnlineGameMode).setupTime = arenaCountDownTimerRemix;
+                (lobby.gameMode as ArenaOnlineGameMode).currentGameMode = currentGameMode;
+
 
 
             }

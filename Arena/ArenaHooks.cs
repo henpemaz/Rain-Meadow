@@ -1,5 +1,4 @@
 ﻿using HUD;
-using IL.Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using System;
@@ -113,18 +112,7 @@ namespace RainMeadow
             orig(self, gameType);
             if (RainMeadow.isArenaMode(out var arena))
             {
-                if (gameType == Onslaught.OnslaughtMode)
-                {
-                    self.foodScore = 1;
-                    self.survivalScore = 0;
-                    self.spearHitScore = 1;
-                    self.repeatSingleLevelForever = false;
-                    self.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Standard;
-                    self.rainWhenOnePlayerLeft = false;
-                    self.levelItems = true;
-                    self.fliesSpawn = true;
-
-                }
+                arena.onlineArenaGameMode.InitAsGameType(orig, self, gameType);
             }
         }
 
@@ -397,7 +385,6 @@ namespace RainMeadow
                         }
                         else
                         {
-                            arena.onlineArenaGameMode = new Onslaught();
                             arena.currentGameMode = Onslaught.OnslaughtMode.value;
 
 
@@ -1186,27 +1173,8 @@ namespace RainMeadow
 
                 if (!OnlineManager.lobby.isOwner)
                 {
-                    // self.playersContinueButtons = null;
                     self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
                     return;
-
-                    //for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
-                    //{
-                    //    if (self.resultBoxes[i].playerNameLabel.text == OnlineManager.mePlayer.id.name)
-                    //    {
-                    //        self.result[i].readyForNextRound = true;
-                    //    }
-                    //}
-
-                    //foreach (var player in OnlineManager.players)
-                    //{
-
-                    //    if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.Arena_ReadyForNextLevel, player.id.name)))
-                    //    {
-                    //        player.InvokeRPC(RPCs.Arena_ReadyForNextLevel, OnlineManager.mePlayer.id.name);
-                    //    }
-
-                    //}
 
                 }
                 else
@@ -1394,20 +1362,7 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
-                if (isArenaCompetitive(arena))
-                {
-
-                    return arena.IsExitOpen(orig, self);
-
-                }
-                else
-                {
-                    return arena.onlineArenaGameMode.IsExitsOpen(orig, self);
-                }
-
-
-
-
+                return arena.onlineArenaGameMode.IsExitsOpen(orig, self);
             }
 
             return orig(self);

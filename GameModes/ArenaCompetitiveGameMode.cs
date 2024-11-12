@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -10,7 +11,6 @@ namespace RainMeadow
 
         public string currentGameMode;
 
-
         public bool isInGame = false;
         public int clientWaiting = 0;
         public int clientsAreReadiedUp = 0;
@@ -19,7 +19,7 @@ namespace RainMeadow
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
         public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
-        public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
+        public int setupTime;
         public int playerEnteredGame = 0;
         public Dictionary<string, bool> playersReadiedUp = new Dictionary<string, bool>();
         public bool countdownInitiatedHoldFire = true;
@@ -131,31 +131,27 @@ namespace RainMeadow
 
         }
 
-        public virtual bool IsExitOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
+        public virtual void RegisterMode(string mode) // You MUST include the namespace prefixed in your mode
         {
-            var deadCount = 0;
-            foreach (var player in self.gameSession.Players)
-            {
-                if (player.realizedCreature != null && (player.realizedCreature.State.dead || player.state.dead))
-                {
+            Type type = Type.GetType(mode);
 
-                    deadCount++;
+            RainMeadow.Debug("Arena Mode Type: " + type);
+
+            if (type != null)
+            {
+                var registeredMode = Activator.CreateInstance(type);
+                this.onlineArenaGameMode = registeredMode as InternalArenaGameMode;
+                if (this.onlineArenaGameMode == null)
+                {
+                    RainMeadow.Debug("Failed to cast the created instance to InternalArenaGameMode.");
                 }
             }
-
-            if (deadCount != 0 && deadCount == self.gameSession.Players.Count - 1)
+            else
             {
-
-                return true;
+                RainMeadow.Debug("Failed to find type: " + mode);
             }
 
-            if (self.world.rainCycle.TimeUntilRain <= 100)
-            {
-                return true;
-            }
 
-            orig(self);
-            return orig(self);
         }
     }
 }

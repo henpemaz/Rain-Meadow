@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 namespace RainMeadow
 {
     public class Onslaught : InternalArenaGameMode
@@ -9,6 +11,7 @@ namespace RainMeadow
         public int onslaughtTimer = 3000;
         public int currentPoints;
         public int scoreToWin;
+        private int _timerDuration;
 
 
         public override bool IsExitsOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
@@ -39,5 +42,32 @@ namespace RainMeadow
 
         }
 
-}
+        public override void InitAsGameType(On.ArenaSetup.GameTypeSetup.orig_InitAsGameType orig, ArenaSetup.GameTypeSetup self, ArenaSetup.GameTypeID gameType)
+        {
+            self.foodScore = 1;
+            self.survivalScore = 0;
+            self.spearHitScore = 1;
+            self.repeatSingleLevelForever = false;
+            self.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Standard;
+            self.rainWhenOnePlayerLeft = false;
+            self.levelItems = true;
+            self.fliesSpawn = true;
+        }
+
+        public override string TimerText()
+        {
+            return $": Time until rain. Current points: {currentPoints}";
+        }
+
+        public override int SetTimer()
+        {
+            return TimerDuration = 3000;
+        }
+
+        public override int TimerDuration
+        {
+            get { return _timerDuration; }
+            set { _timerDuration = value; }
+        }
+    }
 }
