@@ -67,42 +67,37 @@ namespace RainMeadow
             var wasPos = apo.pos;
             try
             {
-                if (pos.room == -1)
+                if (inDen != apo.InDen)
                 {
-                    if (wasPos.room != -1)
+                    if (inDen)
                     {
-                        if (apo.realizedObject is PhysicalObject po)
+                        RainMeadow.Debug("moving to den: " + onlineObject);
+                        if (!apo.pos.NodeDefined && apo.world.game.session is StoryGameSession storyGameSession)
                         {
-                            po.RemoveFromRoom();
-                            apo.Abstractize(wasPos);
+                            storyGameSession.RemovePersistentTracker(apo);
                         }
-                        apo.Room.RemoveEntity(apo);
-                    }
-                }
-                else
-                {
-                    if (inDen != apo.InDen)
-                    {
-                        if (inDen)
-                        {
-                            RainMeadow.Debug("moving to den: " + onlineObject);
-                            apo.IsEnteringDen(pos);
-                        }
-                        else
-                        {
-                            RainMeadow.Debug("moving out of den: " + onlineObject);
-                            apo.IsExitingDen();
-                        }
-                    }
-                    if (wasPos.room != -1)
-                    {
-                        apo.Move(pos);
+                        apo.IsEnteringDen(pos);
                     }
                     else
                     {
-                        if (apo.world.IsRoomInRegion(pos.room)) apo.world.GetAbstractRoom(pos).AddEntity(apo);
+                        RainMeadow.Debug("moving out of den: " + onlineObject);
+                        if (!apo.pos.NodeDefined && apo.world.game.session is StoryGameSession storyGameSession
+                            && ModManager.MMF && MoreSlugcats.MMF.cfgKeyItemTracking.Value && AbstractPhysicalObject.UsesAPersistantTracker(apo))
+                        {
+                            storyGameSession.AddNewPersistentTracker(apo);
+                            /* remix key item tracking TODO: get player that puked this up
+                            if (apo.Room.NOTRACKERS)
+                            {
+                                apo.tracker.lastSeenRegion = lastGoodTrackerSpawnRegion;
+                                apo.tracker.lastSeenRoom = lastGoodTrackerSpawnRoom;
+                                apo.tracker.ChangeDesiredSpawnLocation(lastGoodTrackerSpawnCoord);
+                            }
+                            */
+                        }
+                        apo.IsExitingDen();
                     }
                 }
+                apo.Move(pos);
             }
             catch (Exception e)
             {

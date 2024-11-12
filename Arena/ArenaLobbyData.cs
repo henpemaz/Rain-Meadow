@@ -30,6 +30,8 @@ namespace RainMeadow
             public Dictionary<string, bool> onlineArenaSettingsInterfaceBool;
             [OnlineField]
             public Dictionary<string, int> playersChoosingSlugs;
+            [OnlineField]
+            public bool countdownInitiatedHoldFire;
 
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
@@ -43,6 +45,8 @@ namespace RainMeadow
                 onlineArenaSettingsInterfaceMultiChoice = arena.onlineArenaSettingsInterfaceMultiChoice;
                 onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
                 playersChoosingSlugs = arena.playersInLobbyChoosingSlugs;
+                countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
+
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -56,6 +60,7 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaCompetitiveGameMode).onlineArenaSettingsInterfaceMultiChoice = onlineArenaSettingsInterfaceMultiChoice;
                 (lobby.gameMode as ArenaCompetitiveGameMode).onlineArenaSettingsInterfaceeBool = onlineArenaSettingsInterfaceBool;
                 (lobby.gameMode as ArenaCompetitiveGameMode).playersInLobbyChoosingSlugs = playersChoosingSlugs;
+                (lobby.gameMode as ArenaCompetitiveGameMode).countdownInitiatedHoldFire = countdownInitiatedHoldFire;
 
 
             }

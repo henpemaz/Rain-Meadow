@@ -51,8 +51,7 @@
         }
 
         // my request has been answered to
-        // I thought of stuff like "breaking grasps" if a request for the grasped object failed
-        public void ResolveRequest(GenericResult requestResult)
+        public virtual void ResolveRequest(GenericResult requestResult)
         {
             RainMeadow.Debug(this);
             if (requestResult.referencedEvent == pendingRequest) pendingRequest = null;
@@ -64,7 +63,6 @@
             else if (requestResult is GenericResult.Error) // Something went wrong, I should retry
             {
                 // todo retry logic
-                // abort pending grasps?
                 RainMeadow.Error("request failed for " + this);
                 isTransfering = false;
             }

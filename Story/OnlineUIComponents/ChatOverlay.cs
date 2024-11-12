@@ -22,22 +22,16 @@ namespace RainMeadow
 
         public override void Update()
         {
-
             if (isReceived)
             {
                 UpdateLogDisplay();
                 isReceived = false;
             }
-            if (ModManager.DevTools)
-            {
-                game.devToolsActive = false;
-                game.devToolsLabel.isVisible = game.devToolsActive;
-            }
         }
 
         public void UpdateLogDisplay()
         {
-            float yOfftset = 0;
+            float yOffSet = 0;
             if (chatLog.Count > 0)
             {
                 var logsToRemove = new List<MenuObject>();
@@ -69,11 +63,10 @@ namespace RainMeadow
                             continue;
                         }
                     }
-
-                    var chatMessageLabel = new MenuLabel(this, pages[0], message, new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f - 660f, 300f - yOfftset), new Vector2(1400f, 30f), false);
+                    var chatMessageLabel = new MenuLabel(this, pages[0], message, new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f, 330f - yOffSet), new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
                     chatMessageLabel.label.alignment = FLabelAlignment.Left;
                     pages[0].subObjects.Add(chatMessageLabel);
-                    yOfftset += 20f;
+                    yOffSet += 20f;
                 }
             }
         }
