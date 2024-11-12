@@ -5,8 +5,8 @@ namespace RainMeadow
     public class ArenaOnlineGameMode : OnlineGameMode
     {
 
-        public static readonly string Competitive = "Competitive";
-        public static readonly string OnslaughtMode = "Onslaught";
+
+        public InternalArenaGameMode onlineArenaGameMode;
 
         public string currentGameMode;
 
@@ -126,11 +126,9 @@ namespace RainMeadow
 
         public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
         {
-           if (currentGameMode == ArenaOnlineGameMode.Competitive)
-            {
-                return false;
-            }
-            return true;
+            return onlineArenaGameMode.SpawnBatflies(self, spawnRoom);
+
+
         }
 
         public virtual bool IsExitOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)

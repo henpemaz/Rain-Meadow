@@ -18,7 +18,7 @@ namespace RainMeadow
             On.AbstractCreature.Update += AbstractCreature_Update; // Don't think
             On.AbstractCreature.OpportunityToEnterDen += AbstractCreature_OpportunityToEnterDen; // Don't think
             On.AbstractCreature.InDenUpdate += AbstractCreature_InDenUpdate; // Don't think
-           // IL.AbstractCreature.IsEnteringDen += AbstractCreature_IsEnteringDen;
+           IL.AbstractCreature.IsEnteringDen += AbstractCreature_IsEnteringDen;
 
             On.ScavengerAbstractAI.InitGearUp += ScavengerAbstractAI_InitGearUp;
 
@@ -164,7 +164,7 @@ namespace RainMeadow
                 c.GotoNext(moveType: MoveType.AfterLabel,
                     i => i.MatchLdarg(0),
                     i => i.MatchLdfld<AbstractWorldEntity>("world"),
-                    i => i.MatchLdfld<World>("FliesWorldAI"),
+                    i => i.MatchLdfld<World>("fliesWorldAI"),
                     i => i.MatchCallOrCallvirt<FliesWorldAI>("RespawnOneFly")
                     );
                 c.Emit(OpCodes.Ldarg_0);

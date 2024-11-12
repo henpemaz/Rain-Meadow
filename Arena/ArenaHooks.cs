@@ -22,10 +22,12 @@ namespace RainMeadow
             return false;
         }
 
-        public static bool isArenaOnslaughtMode(ArenaOnlineGameMode arena)
+        public static bool isArenaOnslaughtMode(ArenaOnlineGameMode arena, out Onslaught onslaught)
         {
-            if (arena.currentGameMode == ArenaOnlineGameMode.OnslaughtMode)
+            onslaught = null;
+            if (arena.currentGameMode == Onslaught.OnslaughtMode.value)
             {
+                onslaught = (arena.onlineArenaGameMode as Onslaught);
                 return true;
             }
             return false;
@@ -33,7 +35,7 @@ namespace RainMeadow
 
         public static bool isArenaCompetitive(ArenaOnlineGameMode arena)
         {
-            if (arena.currentGameMode == ArenaOnlineGameMode.Competitive)
+            if (arena.currentGameMode == ArenaSetup.GameTypeID.Competitive.value)
             {
                 return true;
             }
@@ -102,9 +104,40 @@ namespace RainMeadow
 
 
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
+            On.ArenaSetup.GameTypeID.Init += GameTypeID_Init;
+            On.ArenaSetup.GameTypeSetup.InitAsGameType += GameTypeSetup_InitAsGameType;
         }
 
+        private void GameTypeSetup_InitAsGameType(On.ArenaSetup.GameTypeSetup.orig_InitAsGameType orig, ArenaSetup.GameTypeSetup self, ArenaSetup.GameTypeID gameType)
+        {
+            orig(self, gameType);
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                if (gameType == Onslaught.OnslaughtMode)
+                {
+                    self.foodScore = 1;
+                    self.survivalScore = 0;
+                    self.spearHitScore = 1;
+                    self.repeatSingleLevelForever = false;
+                    self.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Standard;
+                    self.rainWhenOnePlayerLeft = false;
+                    self.levelItems = true;
+                    self.fliesSpawn = true;
 
+                }
+            }
+        }
+
+        private void GameTypeID_Init(On.ArenaSetup.GameTypeID.orig_Init orig)
+        {
+            orig();
+            if (isArenaMode(out var arena))
+            {
+                ExtEnum<ArenaSetup.GameTypeID>.values.AddEntry(Onslaught.OnslaughtMode.value);
+
+            }
+
+        }
 
         private void ArenaSettingsInterface_Update(On.Menu.ArenaSettingsInterface.orig_Update orig, Menu.ArenaSettingsInterface self)
         {
@@ -359,11 +392,15 @@ namespace RainMeadow
                     {
                         if (self.GetGameTypeSetup.spearsHitPlayers)
                         {
-                            arena.currentGameMode = ArenaOnlineGameMode.Competitive;
+                            arena.currentGameMode = ArenaSetup.GameTypeID.Competitive.value;
+
                         }
                         else
                         {
-                            arena.currentGameMode = ArenaOnlineGameMode.OnslaughtMode;
+                            arena.onlineArenaGameMode = new Onslaught();
+                            arena.currentGameMode = Onslaught.OnslaughtMode.value;
+
+
                         }
                     }
                 }
@@ -379,11 +416,11 @@ namespace RainMeadow
                 {
                     if (self.GetGameTypeSetup.spearsHitPlayers)
                     {
-                        arena.currentGameMode = ArenaOnlineGameMode.Competitive;
+                        arena.currentGameMode = ArenaSetup.GameTypeID.Competitive.value;
                     }
                     else
                     {
-                        arena.currentGameMode = ArenaOnlineGameMode.OnslaughtMode;
+                        arena.currentGameMode = Onslaught.OnslaughtMode.value;
                     }
                 }
 
@@ -672,6 +709,11 @@ namespace RainMeadow
             {
                 self.outsidePlayersCountAsDead = false; // prevent killing scugs in dens
                 On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
+                if (!isArenaCompetitive(arena))
+                {
+                    arena.onlineArenaGameMode.ArenaSessionCtor(arena, orig, self, game);
+                }
+
             }
 
 
@@ -788,6 +830,12 @@ namespace RainMeadow
                                 {
                                     self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
                                     self.arenaSitting.players[i].allKills.Add(iconSymbolData);
+
+                                    if (isArenaOnslaughtMode(arena, out var onslaught))
+                                    {
+                                        self.arenaSitting.players[i].score++;
+                                        onslaught.currentPoints = self.arenaSitting.players[i].score;
+                                    }
                                 }
 
                                 int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
@@ -1343,7 +1391,7 @@ namespace RainMeadow
         }
         private bool ExitManager_ExitsOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
-            
+
             if (isArenaMode(out var arena))
             {
                 if (isArenaCompetitive(arena))
@@ -1352,11 +1400,13 @@ namespace RainMeadow
                     return arena.IsExitOpen(orig, self);
 
                 }
-
-                if (isArenaOnslaughtMode(arena))
+                else
                 {
-                    return (arena as Onslaught).IsExitOpen(orig, self);
+                    return arena.onlineArenaGameMode.IsExitsOpen(orig, self);
                 }
+
+
+
 
             }
 

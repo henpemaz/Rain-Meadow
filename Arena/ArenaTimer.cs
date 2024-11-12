@@ -27,10 +27,17 @@ namespace RainMeadow
 
         public ArenaPrepTimer(HUD.HUD hud, FContainer fContainer, ArenaOnlineGameMode arena) : base(hud)
         {
-            
+
+
+
             if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint) // Can snipe players, should wait to give them time to prep
             {
                 arena.setupTime = arena.setupTime * 2;
+            }
+
+            if (RainMeadow.isArenaOnslaughtMode(arena, out var onslaught))
+            {
+                arena.setupTime = onslaught.onslaughtTimer;
             }
 
             matchMode = TimerMode.Waiting;
@@ -79,10 +86,18 @@ namespace RainMeadow
                 }
                 else if (arena.setupTime > 0)
                 {
-                    arena.setupTime --;
+                    arena.setupTime--;
                     showMode = TimerMode.Countdown;
                     matchMode = TimerMode.Countdown;
-                    modeLabel.text = $"Prepare for combat, {SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs)}";
+                    if (RainMeadow.isArenaOnslaughtMode(arena, out var onslaught))
+                    {
+                        modeLabel.text = $": Time until rain. Current points: {onslaught.currentPoints}";
+                    }
+                    else
+                    {
+                        modeLabel.text = $"Prepare for combat, {SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs)}";
+
+                    }
                 }
 
                 else if (arena.setupTime <= 0 && !countdownInitiated)
