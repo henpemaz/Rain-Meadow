@@ -637,14 +637,6 @@ namespace RainMeadow
                 var currentSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
                 self.loadInProgress = origLoadInProgress;
 
-                if (!OnlineManager.lobby.isOwner)
-                {
-                    currentSaveState.deathPersistentSaveData.ghostsTalkedTo.Clear();
-                    foreach (var kvp in storyGameMode.ghostsTalkedTo)
-                        if (ExtEnumBase.TryParse(typeof(GhostWorldPresence.GhostID), kvp.Key, ignoreCase: false, out var rawEnumBase))
-                            currentSaveState.deathPersistentSaveData.ghostsTalkedTo[(GhostWorldPresence.GhostID)rawEnumBase] = kvp.Value;
-                }
-
                 if (storyGameMode.myLastDenPos != null)
                 {
                     currentSaveState.denPosition = storyGameMode.myLastDenPos;
@@ -878,7 +870,7 @@ namespace RainMeadow
             orig(self, eu);
             if (isStoryMode(out _) && !OnlineManager.lobby.isOwner)
             {
-                if (self.ghostNumber != null && (self.room.game.session as StoryGameSession).saveState.deathPersistentSaveData.ghostsTalkedTo[self.ghostNumber] > 0)
+                if (self.ghostNumber != null)
                     OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.TriggerGhostHunch, self.ghostNumber.value);
             }
         }

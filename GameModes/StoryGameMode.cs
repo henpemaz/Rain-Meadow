@@ -14,8 +14,6 @@ namespace RainMeadow
         public string? defaultDenPos;
         public string? region = null;
         public SlugcatStats.Name currentCampaign;
-        public Dictionary<string, int> ghostsTalkedTo;
-        public Dictionary<ushort, ushort[]> consumedItems;
 
         // TODO: split these out for other gamemodes to reuse (see Story/StoryMenuHelpers for methods)
         public Dictionary<string, bool> storyBoolRemixSettings;
@@ -38,8 +36,6 @@ namespace RainMeadow
             defaultDenPos = null;
             myLastDenPos = null;
             region = null;
-            ghostsTalkedTo = new();
-            consumedItems = new();
             storyClientData?.Sanitize();
         }
 
@@ -185,24 +181,6 @@ namespace RainMeadow
         public override void ResourceActive(OnlineResource onlineResource)
         {
             base.ResourceActive(onlineResource);
-            if (onlineResource is WorldSession ws)
-            {
-                var regionState = ws.world.regionState;
-                if (lobby.isOwner)
-                {
-                    ghostsTalkedTo = regionState.saveState.deathPersistentSaveData.ghostsTalkedTo.ToDictionary(kvp => kvp.Key.value, kvp => kvp.Value);
-                    consumedItems = regionState.consumedItems
-                        .Concat(regionState.saveState.deathPersistentSaveData.consumedFlowers) // HACK: group karma flowers with items, room:index shouldn't overlap
-                        .GroupBy(x => x.originRoom)
-                        .ToDictionary(x => (ushort)x.Key, x => x.Select(y => (ushort)y.placedObjectIndex).ToArray());
-                }
-                else
-                {
-                    regionState.consumedItems = consumedItems
-                        .SelectMany(kvp => kvp.Value.Select(v => new RegionState.ConsumedItem(kvp.Key, v, 2))).ToList(); // must be >1
-                    regionState.saveState.deathPersistentSaveData.consumedFlowers = regionState.consumedItems;
-                }
-            }
         }
 
         public override void ConfigureAvatar(OnlineCreature onlineCreature)
