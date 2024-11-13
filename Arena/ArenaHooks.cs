@@ -111,6 +111,11 @@ namespace RainMeadow
         private void GameTypeSetup_InitAsGameType(On.ArenaSetup.GameTypeSetup.orig_InitAsGameType orig, ArenaSetup.GameTypeSetup self, ArenaSetup.GameTypeID gameType)
         {
             orig(self, gameType);
+            if (isArenaMode(out var arena))
+            {
+                arena.RegisterMode("RainMeadow." + Onslaught.OnslaughtMode);
+                arena.onlineArenaGameMode.InitAsGameType(self);
+            }
         }
 
         private void GameTypeID_Init(On.ArenaSetup.GameTypeID.orig_Init orig)
