@@ -12,9 +12,6 @@ creature todo
 	some rooms will get fixed
 		eventually :tm:
 - allow creature to change the creature-pipe they're going to mid-flight (very low prio)
-- creatures not cleared on enter creature pipe
-	game clears enteringshortcut so they "abort entering" most of the time?
-	could also be that npcdestination is null so they just bounce?
 - eggbug and lanternmouse are way too fast in zerog
 
 
@@ -23,6 +20,7 @@ lizard todo
 	blues have trouble climbing/pathing ledges
 	lizard wallclimb is slow, slows you down a lot in zerog movement
 	red and some more lizs are having trouble climbing
+	could use proper lizard voice not default pink
 
 
 scav todo
@@ -34,6 +32,11 @@ scav todo
 
 noot todo
 	noot gets stuck on water surface, seems to always go left?
+
+
+eggbugg todo
+	regains footing mid-jump
+	voice call is slow-attack
 
 
 following others around is hard

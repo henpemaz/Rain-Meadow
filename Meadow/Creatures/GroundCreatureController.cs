@@ -388,11 +388,20 @@ namespace RainMeadow
             // grip pole if no footing
             if (this.input[0].y > 0 && !HasFooting)
             {
+                //var tile0 = room.GetTile(basecoord);
+                //if (tile0.AnyBeam && !tile0.DeepWater)
+                //{
+                //    RainMeadow.Debug("grip!");
+                //    ClearMovementOverride();
+                //    GripPole(tile0);
+                //    toPos = basecoord;
+                //    return true;
+                //}
                 for (var i = 0; i < nc; i++)
                 {
                     for (int j = 0; j < 5; j++)
                     {
-                        var tile = creature.room.GetTile(chunks[i].pos + Custom.fourDirectionsAndZero[j].ToVector2() * chunks[i].rad);
+                        var tile = room.GetTile(chunks[i].pos + Custom.fourDirectionsAndZero[j].ToVector2() * chunks[i].rad);
                         if (tile.AnyBeam && !tile.DeepWater)
                         {
                             RainMeadow.Debug("grip!");
@@ -569,6 +578,20 @@ namespace RainMeadow
                     if (localTrace) RainMeadow.Debug("unable to move");
                     return false;
                 }
+            }
+        }
+
+        public override WorldCoordinate CurrentPathfindingPosition
+        {
+            get
+            {
+                var from = creature.room.GetTilePosition(creature.mainBodyChunk.pos);
+                for (int j = 0; j < 5; j++)
+                {
+                    var tile = from + Custom.fourDirectionsAndZero[j];
+                    if (TileAccessible(creature.room, tile)) return creature.room.GetWorldCoordinate(tile);
+                }
+                return base.CurrentPathfindingPosition;
             }
         }
 
