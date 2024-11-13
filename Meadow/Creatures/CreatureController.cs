@@ -1,6 +1,7 @@
 ﻿using HUD;
 using Rewired;
 using RWCustom;
+using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -252,7 +253,7 @@ namespace RainMeadow
             return specialInput;
         }
 
-        public struct SpecialInput : Serializer.ICustomSerializable
+        public struct SpecialInput : Serializer.ICustomSerializable, IEquatable<SpecialInput>
         {
             public Vector2 direction;
 
@@ -264,7 +265,12 @@ namespace RainMeadow
 
             public override bool Equals(object? obj)
             {
-                return obj is SpecialInput input && direction.Equals(input.direction);
+                return obj is SpecialInput input && Equals(input);
+            }
+
+            public bool Equals(SpecialInput other)
+            {
+                return this.direction.CloseEnoughZeroSnap(other.direction, 1 / 256f);
             }
 
             public override int GetHashCode()
@@ -274,11 +280,11 @@ namespace RainMeadow
 
             public static bool operator ==(SpecialInput self, SpecialInput other)
             {
-                return self.direction == other.direction;
+                return self.Equals(other);
             }
             public static bool operator !=(SpecialInput self, SpecialInput other)
             {
-                return self.direction != other.direction;
+                return !self.Equals(other);
             }
         }
 

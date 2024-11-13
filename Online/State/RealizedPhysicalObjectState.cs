@@ -69,7 +69,7 @@ namespace RainMeadow
         public bool Equals(ChunkState other)
         {
             //return other != null && pos == other.pos && vel == other.vel;
-            return other as object != null && pos.CloseEnough(other.pos, 1f) && vel.CloseEnoughZeroSnap(other.vel, 1f);
+            return other as object != null && pos.CloseEnough(other.pos, 1 / 4f) && vel.CloseEnoughZeroSnap(other.vel, 1 / 256f);
         }
 
         public static bool operator ==(ChunkState lhs, ChunkState rhs)
