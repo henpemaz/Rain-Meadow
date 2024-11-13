@@ -73,22 +73,19 @@ namespace RainMeadow
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
 
             On.Weapon.HitThisObject += Weapon_HitThisObject;
+            On.Menu.SlugcatSelectMenu.CustomColorInterface.ctor += CustomColorInterface_ctor;
         }
 
+        private void CustomColorInterface_ctor(On.Menu.SlugcatSelectMenu.CustomColorInterface.orig_ctor orig, Menu.SlugcatSelectMenu.CustomColorInterface self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, SlugcatStats.Name slugcatID, List<string> names, List<string> defaultColors)
+        {
+            orig(self, menu, owner, pos, slugcatID, names, defaultColors);
+
+            self.bodyColors[0].color = RainMeadow.rainMeadowOptions.BodyColor.Value;
+            self.bodyColors[1].color = RainMeadow.rainMeadowOptions.EyeColor.Value;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+        }
 
         private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
         {
@@ -484,7 +481,7 @@ namespace RainMeadow
         private void RainWorldGame_GoToDeathScreen(On.RainWorldGame.orig_GoToDeathScreen orig, RainWorldGame self)
         {
             if (isStoryMode(out var gameMode))
-            {                
+            {
                 if (OnlineManager.lobby.isOwner)
                 {
                     RPCs.MovePlayersToDeathScreen();
