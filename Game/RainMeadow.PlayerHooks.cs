@@ -47,6 +47,23 @@ public partial class RainMeadow
         On.Player.ShortCutColor += Player_ShortCutColor;
         On.Player.checkInput += Player_checkInput;
         On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites2;
+
+        On.Weapon.HitSomethingWithoutStopping += Weapon_HitSomethingWithoutStopping;
+    }
+
+    private void Weapon_HitSomethingWithoutStopping(On.Weapon.orig_HitSomethingWithoutStopping orig, Weapon self, PhysicalObject obj, BodyChunk chunk, PhysicalObject.Appendage appendage)
+    {
+        if (isStoryMode(out var _))
+        {
+            if (obj is Player)
+            {
+                if (self.thrownBy == (obj as Player) && obj.IsLocal() && self is Spear)
+                {
+                    return;
+                }
+            }
+        }
+        orig(self, obj, chunk, appendage);
     }
 
 
@@ -144,13 +161,14 @@ public partial class RainMeadow
         if (isStoryMode(out var gameMode) && self.abstractCreature.IsLocal())
             gameMode.storyClientData.readyForWin = false;
         orig(self, eu);
-        if (isStoryMode(out var _) && !self.inShortcut && OnlineManager.players.Count > 4)
+        if (isStoryMode(out var story) && !self.inShortcut && OnlineManager.players.Count > 4)
         {
             if (self.room.abstractRoom.shelter || self.room.IsGateRoom())
             {
                 if (self.collisionLayer != 0)
                 {
                     self.room.ChangeCollisionLayerForObject(self, 0);
+                    
                 }
             }
             else
@@ -158,6 +176,7 @@ public partial class RainMeadow
                 if (self.collisionLayer != 1)
                 {
                     self.room.ChangeCollisionLayerForObject(self, 1);
+
                 }
             }
         }
@@ -290,7 +309,6 @@ public partial class RainMeadow
             orig(self);
             return;
         }
-
         if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
         if (!onlineEntity.isMine) return;
 
@@ -470,7 +488,7 @@ public partial class RainMeadow
             orig(self);
             return;
         }
-
+        
         if (OnlineManager.lobby.gameMode is MeadowGameMode) return; // do not run
 
         if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity))
