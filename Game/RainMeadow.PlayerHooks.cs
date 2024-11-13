@@ -145,7 +145,7 @@ public partial class RainMeadow
         if (isStoryMode(out var gameMode) && self.abstractCreature.IsLocal())
             gameMode.storyClientData.readyForWin = false;
         orig(self, eu);
-        if (isStoryMode(out var _) && !self.inShortcut && OnlineManager.players.Count >= 1)
+        if (isStoryMode(out var _) && !self.inShortcut && OnlineManager.players.Count > 4)
         {
             if (self.room.abstractRoom.shelter || self.room.IsGateRoom())
             {
