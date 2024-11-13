@@ -50,6 +50,7 @@ public partial class RainMeadow
     }
 
 
+
     private void PlayerGraphics_DrawSprites2(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
     {
         orig(self, sLeaser, rCam, timeStacker, camPos);
@@ -148,16 +149,18 @@ public partial class RainMeadow
         {
             if (self.room.abstractRoom.shelter || self.room.IsGateRoom())
             {
-                if (self.collisionLayer != 0)
+                if (!self.IsLocal() && self.collisionLayer != 0)
                 {
                     self.room.ChangeCollisionLayerForObject(self, 0);
+
                 }
             }
             else
             {
-                if (self.collisionLayer != 1)
+                if (!self.IsLocal() && self.collisionLayer != 1)
                 {
                     self.room.ChangeCollisionLayerForObject(self, 1);
+
                 }
             }
         }
@@ -290,7 +293,6 @@ public partial class RainMeadow
             orig(self);
             return;
         }
-
         if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
         if (!onlineEntity.isMine) return;
 
