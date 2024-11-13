@@ -10,8 +10,11 @@ namespace RainMeadow
         public FSprite gradient;
         public FLabel username;
         public FLabel message;
-
         public FSprite slugIcon;
+
+        public Color color;
+        public Color lighter_color;
+
         public int counter;
         public int resetUsernameCounter;
         public float alpha;
@@ -32,34 +35,25 @@ namespace RainMeadow
             this.owner = owner;
             this.resetUsernameCounter = 200;
 
+            this.color = customization.SlugcatColor();
+            this.lighter_color = color * 1.7f;
+
+
             this.pos = new Vector2(-1000f, -1000f);
             this.lastPos = this.pos;
             this.gradient = new FSprite("Futile_White", true);
+            owner.hud.fContainers[0].AddChild(this.gradient);
             this.gradient.shader = owner.hud.rainWorld.Shaders["FlatLight"];
             this.gradient.color = new Color(0f, 0f, 0f);
-            owner.hud.fContainers[0].AddChild(this.gradient);
             this.gradient.alpha = 0f;
             this.gradient.x = -1000f;
-            this.username = new FLabel(Custom.GetFont(), customization.nickname);
-            this.username.color = Color.white;
-
-
-            owner.hud.fContainers[0].AddChild(this.username);
-            this.username.alpha = 0f;
-            this.username.x = -1000f;
 
             this.message = new FLabel(Custom.GetFont(), "");
-            this.message.color = Color.white;
-
-
             owner.hud.fContainers[0].AddChild(this.message);
+            this.message.color = Color.white;
             this.message.alpha = 0f;
             this.message.x = -1000f;
-            this.arrowSprite = new FSprite("Multiplayer_Arrow", true);
-            owner.hud.fContainers[0].AddChild(this.arrowSprite);
-            this.arrowSprite.alpha = 0f;
-            this.arrowSprite.x = -1000f;
-            this.arrowSprite.color = Color.white;
+
 
             if (owner.clientSettings.owner == OnlineManager.lobby.owner)
             {
@@ -75,15 +69,25 @@ namespace RainMeadow
             owner.hud.fContainers[0].AddChild(this.slugIcon);
             this.slugIcon.alpha = 0f;
             this.slugIcon.x = -1000f;
-            this.slugIcon.color = Color.white;
-
+            this.slugIcon.color = lighter_color;
             this.blink = 1f;
 
-            this.username.color = customization.SlugcatColor();
+            this.username = new FLabel(Custom.GetFont(), customization.nickname);
+            owner.hud.fContainers[0].AddChild(this.username);
+            this.username.alpha = 0f;
+            this.username.x = -1000f;
+            this.username.color = lighter_color;
             this.message.color = Color.white;
 
-            this.arrowSprite.color = customization.SlugcatColor();
-            this.slugIcon.color = customization.SlugcatColor();
+
+            this.arrowSprite = new FSprite("Multiplayer_Arrow", true);
+            owner.hud.fContainers[0].AddChild(this.arrowSprite);
+            this.arrowSprite.alpha = 0f;
+            this.arrowSprite.x = -1000f;
+            this.arrowSprite.color = lighter_color;
+
+
+
             this.customization = customization;
 
             this.notifyPlayer = 0;
@@ -148,9 +152,6 @@ namespace RainMeadow
             //this.message._anchorX = vector.x + 20f;
             this.message.alignment = FLabelAlignment.Center;
             this.message.y = vector.y + 20f;
-            Color color = Color.white;
-
-            color = customization.SlugcatColor();
 
             if (this.counter % 6 < 2 && this.lastBlink > 0f)
             {
@@ -168,7 +169,6 @@ namespace RainMeadow
             {
                 this.username.text = customization.nickname + ":";
                 resetUsernameCounter--;
-                this.username.color = color * 3f;
                 this.username.x = vector.x + this.message._textRect.x - 15f;
             }
 
@@ -194,16 +194,15 @@ namespace RainMeadow
                     }
                     else
                     {
-                        this.username.color = customization.SlugcatColor();
-                        this.slugIcon.color = customization.SlugcatColor();
-                        this.arrowSprite.color = customization.SlugcatColor();
+                        this.username.color = lighter_color;
+                        this.slugIcon.color = lighter_color;
+                        this.arrowSprite.color = lighter_color;
                     }
                     this.flippedColor = !this.flippedColor;
                 }
             }
             else
             {
-                var lighter_color = color * 1.7f;                
                 this.slugIcon.color = lighter_color;
                 this.username.color = lighter_color;
                 this.arrowSprite.color = lighter_color;
