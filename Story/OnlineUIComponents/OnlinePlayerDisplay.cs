@@ -22,7 +22,6 @@ namespace RainMeadow
         public string iconString;
 
         public int notifyPlayer;
-        public int notificationTimer;
         public bool flippedColor;
        
         SlugcatCustomization customization;
@@ -71,6 +70,7 @@ namespace RainMeadow
                 this.iconString = "Kill_Slugcat";
 
             }
+
             this.slugIcon = new FSprite(iconString, true);
             owner.hud.fContainers[0].AddChild(this.slugIcon);
             this.slugIcon.alpha = 0f;
@@ -87,7 +87,6 @@ namespace RainMeadow
             this.customization = customization;
 
             this.notifyPlayer = 0;
-            this.notificationTimer = 0; 
             this.flippedColor = false;
         }
 
@@ -187,21 +186,19 @@ namespace RainMeadow
 
                 if (this.notifyPlayer % 60 == 0)
                 {
-                    notificationTimer = this.notifyPlayer;
                     if (this.flippedColor)
                     {
-                        if (this.message.text == "") this.username.color = Color.white;
+                        this.username.color = Color.white;
                         this.slugIcon.color = Color.white;
                         this.arrowSprite.color = Color.white;
-                        this.flippedColor = false;
                     }
-                    else if (!this.flippedColor)
+                    else
                     {
-                        if (this.message.text == "") this.username.color = customization.SlugcatColor();
+                        this.username.color = customization.SlugcatColor();
                         this.slugIcon.color = customization.SlugcatColor();
                         this.arrowSprite.color = customization.SlugcatColor();
-                        this.flippedColor = true;
                     }
+                    this.flippedColor = !this.flippedColor;
                 }
             }
             else
