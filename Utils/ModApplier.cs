@@ -25,50 +25,10 @@ namespace RainMeadow
         public ModApplier(ProcessManager manager, List<bool> pendingEnabled, List<int> pendingLoadOrder) : base(manager, pendingEnabled, pendingLoadOrder)
         {
             On.RainWorld.Update += RainWorld_Update;
-            On.ModManager.ModApplyer.ApplyModsThread += ModApplyer_ApplyModsThread;
             menu = (Menu.Menu)manager.currentMainLoop;
             this.modsToDisable = new List<ModManager.Mod>();
             this.modsToEnable = new List<ModManager.Mod>();
             this.unknownMods = new List<string>();
-
-        }
-
-        private void ModApplyer_ApplyModsThread(On.ModManager.ModApplyer.orig_ApplyModsThread orig, ModManager.ModApplyer self)
-        {
-            if (modsToDisable.Count > 0)
-            {
-
-                for (int i = 0; i < modsToDisable.Count; i++)
-                {
-
-                    var matchingMod = ModManager.InstalledMods.FirstOrDefault(m => m.id == modsToDisable[i].id);
-                    if (matchingMod != null)
-                    {
-                        if (pendingEnabled[i] != matchingMod.enabled)
-                        {
-                            pendingEnabled[i] = false;
-                        }
-
-                    }
-
-                }
-            }
-
-            if (modsToEnable.Count > 0)
-            {
-                for (int i = 0; i < modsToEnable.Count; i++)
-                {
-
-                    var matchingMod = ModManager.InstalledMods.FirstOrDefault(m => m.id == modsToEnable[i].id);
-
-                    if (matchingMod != null)
-                    {
-                        matchingMod.enabled = false;
-                    }
-                }
-            }
-            orig(self);
-
         }
 
         private void RainWorld_Update(On.RainWorld.orig_Update orig, RainWorld self)
@@ -80,12 +40,9 @@ namespace RainMeadow
 
         public new void Update()
         {
-
             base.Update();
 
-
             dialogBox?.SetText(menu.Translate("mod_menu_apply_mods") + Environment.NewLine + statusText);
-
 
             if (IsFinished())
             {
@@ -105,9 +62,20 @@ namespace RainMeadow
 
         public void ShowConfirmation(List<ModManager.Mod> modsToEnable, List<ModManager.Mod> modsToDisable, List<string> unknownMods)
         {
-
             modMismatchString = menu.Translate("Mod mismatch detected.") + Environment.NewLine;
 
+            Action confirmProceed = () =>
+            {
+                Start(filesInBadState);
+            };
+
+            Action cancelProceed = () =>
+            {
+                manager.dialog = null;
+                requiresRestartDialog = null;
+                OnlineManager.LeaveLobby();
+                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+            };
 
             if (modsToEnable.Count > 0)
             {
@@ -124,38 +92,18 @@ namespace RainMeadow
                 modMismatchString += Environment.NewLine + menu.Translate("Unable to find the following mods, please install them: ") + string.Join(", ", unknownMods);
                 this.unknownMods = unknownMods;
             }
-
-            modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("Please confirm to auto-apply these changes, or cancel and return to lobby");
-
-            Action confirmProceed = () =>
+            else
             {
-
-                Start(filesInBadState);
-
-            };
-
-            Action cancelProceed = () =>
-            {
-                manager.dialog = null;
-                requiresRestartDialog = null;
-                OnlineManager.LeaveLobby();
-                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
-
-            };
-
-
+                modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("Please confirm to auto-apply these changes, or cancel and return to lobby");
+            }
 
             checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, cancelProceed);
 
             manager.ShowDialog(checkUserConfirmation);
-
-
-
         }
 
         public new void Start(bool filesInBadState)
         {
-
             if (unknownMods.Count > 0)
             {
                 manager.dialog = null;
@@ -173,7 +121,6 @@ namespace RainMeadow
 
             }
             base.Start(filesInBadState);
-
         }
     }
 }
