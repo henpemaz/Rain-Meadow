@@ -74,6 +74,41 @@ namespace RainMeadow
 
             On.Weapon.HitThisObject += Weapon_HitThisObject;
             On.Menu.SlugcatSelectMenu.CustomColorInterface.ctor += CustomColorInterface_ctor;
+            On.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderSetValue;
+        }
+
+        private void SlugcatSelectMenu_SliderSetValue(On.Menu.SlugcatSelectMenu.orig_SliderSetValue orig, Menu.SlugcatSelectMenu self, Menu.Slider slider, float f)
+        {
+           orig(self, slider, f);
+            if (isStoryMode(out var story))
+            {
+
+                self.colorInterface.bodyColors[self.activeColorChooser].color = RWCustom.Custom.HSL2RGB(self.hueSlider.floatValue, self.satSlider.floatValue, self.litSlider.floatValue);
+                RainMeadow.Debug(self.colorInterface.bodyColors[self.activeColorChooser].color);
+                story.avatarSettings.bodyColor = self.colorInterface.bodyColors[0].color;
+                RainMeadow.rainMeadowOptions.BodyColor.Value = self.colorInterface.bodyColors[0].color;
+
+                story.avatarSettings.eyeColor = self.colorInterface.bodyColors[1].color;
+                RainMeadow.rainMeadowOptions.EyeColor.Value = self.colorInterface.bodyColors[1].color;
+
+                //if (self.activeColorChooser == 0)
+                //{
+                //    var bodyColors = StoryMenuHelpers.HslToRgb(slider.hueSlider.floatValue, self.satSlider.floatValue, self.litSlider.floatValue);
+                //    RainMeadow.rainMeadowOptions.BodyColor.Value = bodyColors;
+                //    story.avatarSettings.bodyColor = bodyColors;
+                //    RainMeadow.Debug(story.avatarSettings.bodyColor);
+                //}
+
+                //if (self.activeColorChooser == 1)
+                //{
+                //    var eyeColors = StoryMenuHelpers.HslToRgb(self.hueSlider.floatValue, self.satSlider.floatValue, self.litSlider.floatValue);
+                //    RainMeadow.rainMeadowOptions.EyeColor.Value = eyeColors;
+                //    story.avatarSettings.eyeColor = eyeColors;
+                //    RainMeadow.Debug(story.avatarSettings.eyeColor);
+                //}
+
+
+            }
         }
 
         private void CustomColorInterface_ctor(On.Menu.SlugcatSelectMenu.CustomColorInterface.orig_ctor orig, Menu.SlugcatSelectMenu.CustomColorInterface self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, SlugcatStats.Name slugcatID, List<string> names, List<string> defaultColors)

@@ -71,11 +71,11 @@ namespace RainMeadow
 
             sp.imagePos = new Vector2(683f, 484f);
 
-            for (int j = 0; j < ssm.slugcatColorOrder.Count; j++)
-            {
-                this.characterPages.Add(new SlugcatCustomSelection(this, ssm, 1 + j, ssm.slugcatColorOrder[j]));
-                this.pages.Add(this.characterPages[j]);
-            }
+            //for (int j = 0; j < ssm.slugcatColorOrder.Count; j++)
+            //{
+            //    this.characterPages.Add(new SlugcatCustomSelection(this, ssm, 1 + j, ssm.slugcatColorOrder[j]));
+            //    this.pages.Add(this.characterPages[j]);
+            //}
 
             gameMode.currentCampaign = ssm.slugcatPages[ssm.slugcatPageIndex].slugcatNumber;
             // Setup host / client buttons & general view

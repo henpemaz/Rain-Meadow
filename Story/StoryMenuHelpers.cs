@@ -10,12 +10,50 @@ namespace RainMeadow
 {
     internal static class StoryMenuHelpers
     {
-
+        #region Remix
         public static List<string> nonCampaignSlugcats = new List<string> { "Night", "Inv", "Slugpup", "MeadowOnline", "MeadowOnlineRemote" };
 
         public static List<string> nonGameplayRemixSettings = new List<string> { "cfgSpeedrunTimer", "cfgHideRainMeterNoThreat", "cfgLoadingScreenTips", "cfgExtraTutorials", "cfgClearerDeathGradients", "cfgShowUnderwaterShortcuts", "cfgBreathTimeVisualIndicator", "cfgCreatureSense", "cfgTickTock", "cfgFastMapReveal", "cfgThreatMusicPulse", "cfgExtraLizardSounds", "cfgQuieterGates", "cfgDisableScreenShake", "cfgHunterBatflyAutograb", "cfgNoMoreTinnitus" };
 
+        internal static (Dictionary<string, bool> hostBoolSettings, Dictionary<string, float> hostFloatSettings, Dictionary<string, int> hostIntSettings) GetHostBoolStoryRemixSettings()
+        {
+            Dictionary<string, bool> configurableBools = new Dictionary<string, bool>();
+            Dictionary<string, float> configurableFloats = new Dictionary<string, float>();
+            Dictionary<string, int> configurableInts = new Dictionary<string, int>();
 
+            if (ModManager.MMF)
+            {
+                Type type = typeof(MoreSlugcats.MMF);
+
+                FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
+                var sortedFields = fields.OrderBy(f => f.Name);
+
+                foreach (FieldInfo field in sortedFields)
+                {
+                    if (nonGameplayRemixSettings.Contains(field.Name)) continue;
+                    var reflectedValue = field.GetValue(null);
+                    if (reflectedValue is Configurable<bool> boolOption)
+                    {
+                        configurableBools.Add(field.Name, boolOption._typedValue);
+                    }
+
+                    if (reflectedValue is Configurable<float> floatOption)
+                    {
+                        configurableFloats.Add(field.Name, floatOption._typedValue);
+                    }
+
+                    if (reflectedValue is Configurable<int> intOption)
+                    {
+                        configurableInts.Add(field.Name, intOption._typedValue);
+                    }
+                }
+                RainMeadow.Debug(configurableBools);
+                RainMeadow.Debug(configurableInts);
+                RainMeadow.Debug(configurableFloats);
+                return (configurableBools, configurableFloats, configurableInts);
+            }
+            return (configurableBools, configurableFloats, configurableInts);
+        }
 
         internal static void SetClientStoryRemixSettings(Dictionary<string, bool> hostBoolRemixSettings, Dictionary<string, float> hostFloatRemixSettings, Dictionary<string, int> hostIntRemixSettings)
         {
@@ -71,9 +109,28 @@ namespace RainMeadow
             }
         }
 
+        internal static void SanitizeStoryClientSettings(StoryClientSettingsData clientSettings)
+        {
+            clientSettings.readyForWin = false;
+            clientSettings.isDead = false;
+        }
+
+        internal static void SanitizeStoryGameMode(StoryGameMode gameMode)
+        {
+            gameMode.isInGame = false;
+            gameMode.changedRegions = false;
+            gameMode.didStartCycle = false;
+            gameMode.defaultDenPos = null;
+            gameMode.ghostsTalkedTo = new();
+            gameMode.consumedItems = new();
+            gameMode.myLastDenPos = null;
+            gameMode.hasSheltered = false;
+        }
+
+        #endregion
 
 
-
+        #region StoryObjects
         internal static void RemoveExcessStoryObjects(StoryMenuRedux storyMenu)
         {
             if (storyMenu.startButton != null)
@@ -97,14 +154,14 @@ namespace RainMeadow
             // Player lobby label
             var lobbyLabel = new MenuLabel(storyMenu, storyMenu.pages[0], storyMenu.Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true);
             storyMenu.pages[0].subObjects.Add(lobbyLabel);
-            var inviteFriendsIcon = new SimplerSymbolButton(storyMenu, storyMenu.pages[0], "Kill_Slugcat", "InviteFriends", new Vector2(storyMenu.playerButtons[0].pos.x - 35f, storyMenu.playerButtons[0].pos.y + 5f));
-            inviteFriendsIcon.OnClick += (_) =>
-            {
+            //var inviteFriendsIcon = new SimplerSymbolButton(storyMenu, storyMenu.pages[0], "Kill_Slugcat", "InviteFriends", new Vector2(storyMenu.playerButtons[0].pos.x - 35f, storyMenu.playerButtons[0].pos.y + 5f));
+            //inviteFriendsIcon.OnClick += (_) =>
+            //{
 
-                SteamFriends.ActivateGameOverlay("friends");
+            //    SteamFriends.ActivateGameOverlay("friends");
 
-            };
-            storyMenu.pages[0].subObjects.Add(inviteFriendsIcon);
+            //};
+            // storyMenu.pages[0].subObjects.Add(inviteFriendsIcon);
 
             if (RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value && !OnlineManager.lobby.isOwner)
             {
@@ -112,7 +169,22 @@ namespace RainMeadow
             }
         }
 
+        internal static void ModifyExistingMenuItems(StoryMenuRedux storyMenu)
+        {
+            foreach (var obj in storyMenu.pages[0].subObjects) // unfortunate locally declared variable.
+            {
+                if (obj is SimpleButton && (obj as SimpleButton).signalText == "BACK") {
 
+                    (obj as SimpleButton).pos = new Vector2(50f, 50f);
+
+                }
+            }
+
+        }
+
+        #endregion
+
+        #region SlugcatSetup
         private static List<SlugcatStats.Name> AllSlugcats()
         {
             var filteredList = new List<SlugcatStats.Name>();
@@ -175,6 +247,9 @@ namespace RainMeadow
 
         }
 
+        #endregion
+
+        #region Host vs Client
         internal static void SetupHostMenu(StoryMenuRedux storyMenu, StoryGameMode story)
         {
             storyMenu.hostStartButton = new EventfulHoldButton(storyMenu, storyMenu.pages[0], storyMenu.Translate("ENTER"), new Vector2(683f, 85f), 40f);
@@ -182,7 +257,9 @@ namespace RainMeadow
             storyMenu.hostStartButton.buttonBehav.greyedOut = false;
             storyMenu.pages[0].subObjects.Add(storyMenu.hostStartButton);
 
-            storyMenu.resetSaveCheckbox = new CheckBox(storyMenu, storyMenu.pages[0], storyMenu, new Vector2(903, 30f), 70f, storyMenu.Translate("Reset Save"), "RESETSAVE", false);
+           
+            storyMenu.resetSaveCheckbox = new CheckBox(storyMenu, storyMenu.pages[0], storyMenu, new Vector2(storyMenu.colorsCheckbox.pos.x + 150f, storyMenu.colorsCheckbox.pos.y), 70f, storyMenu.Translate("Reset Save"), "RESETSAVE", false);
+            storyMenu.resetSaveCheckbox.Singal(storyMenu.pages[0], "RESETSAVE");
             storyMenu.pages[0].subObjects.Add(storyMenu.resetSaveCheckbox);
 
 
@@ -201,28 +278,65 @@ namespace RainMeadow
 
             storyMenu.pages[0].subObjects.Add(storyMenu.clientWaitingButton);
 
-            storyMenu.clientWantsToOverwriteSave = new CheckBox(storyMenu, storyMenu.pages[0], storyMenu, new Vector2(907, 30f), 70f, storyMenu.Translate("Overwrite save progress"), "OVERWRITECLIENTSAVE", true);
-
+           
+            storyMenu.clientWantsToOverwriteSave = new CheckBox(storyMenu, storyMenu.pages[0], storyMenu, new Vector2(storyMenu.colorsCheckbox.pos.x + 150f, storyMenu.colorsCheckbox.pos.y), 70f, storyMenu.Translate("Copy host progress"), "OVERWRITECLIENTSAVE", false);
+            storyMenu.clientWantsToOverwriteSave.Singal(storyMenu.pages[0], "OVERWRITECLIENTSAVE");
             storyMenu.pages[0].subObjects.Add(storyMenu.clientWantsToOverwriteSave);
         }
+        #endregion
 
-        internal static void SanitizeStoryClientSettings(StoryClientSettingsData clientSettings)
+        internal static Color HslToRgb(float hue, float saturation, float lightness)
         {
-            clientSettings.readyForWin = false;
-            clientSettings.isDead = false;
-        }
+            // Convert HSL to RGB
+            float c = (1 - Math.Abs(2 * lightness - 1)) * saturation;
+            float x = c * (1 - Math.Abs(((hue / 60) % 2) - 1));
+            float m = lightness - c / 2;
 
-        internal static void SanitizeStoryGameMode(StoryGameMode gameMode)
-        {
-            gameMode.isInGame = false;
-            gameMode.changedRegions = false;
-            gameMode.didStartCycle = false;
-            gameMode.defaultDenPos = null;
-            gameMode.ghostsTalkedTo = new();
-            gameMode.consumedItems = new();
-            gameMode.myLastDenPos = null;
-            gameMode.hasSheltered = false;
-        }
+            float rPrime = 0, gPrime = 0, bPrime = 0;
 
+            if (hue >= 0 && hue < 60)
+            {
+                rPrime = c;
+                gPrime = x;
+                bPrime = 0;
+            }
+            else if (hue >= 60 && hue < 120)
+            {
+                rPrime = x;
+                gPrime = c;
+                bPrime = 0;
+            }
+            else if (hue >= 120 && hue < 180)
+            {
+                rPrime = 0;
+                gPrime = c;
+                bPrime = x;
+            }
+            else if (hue >= 180 && hue < 240)
+            {
+                rPrime = 0;
+                gPrime = x;
+                bPrime = c;
+            }
+            else if (hue >= 240 && hue < 300)
+            {
+                rPrime = x;
+                gPrime = 0;
+                bPrime = c;
+            }
+            else
+            {
+                rPrime = c;
+                gPrime = 0;
+                bPrime = x;
+            }
+
+            // Add m to adjust RGB values
+            int r = (int)((rPrime + m) * 255);
+            int g = (int)((gPrime + m) * 255);
+            int b = (int)((bPrime + m) * 255);
+
+            return new Color(r, g, b); // Return the RGB color
+        }
     }
 }

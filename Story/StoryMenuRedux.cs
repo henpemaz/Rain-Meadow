@@ -11,19 +11,19 @@ namespace RainMeadow
 {
     public class StoryMenuRedux : SlugcatSelectMenu, SelectOneButton.SelectOneButtonOwner
     {
-        private PlayerInfo[] players;
+        int selectOneBtnIndex;
         internal CheckBox resetSaveCheckbox;
         internal CheckBox clientWantsToOverwriteSave;
         internal EventfulSelectOneButton[] playerButtons = new EventfulSelectOneButton[0];
-        int selectOneBtnIndex;
-        internal SlugcatCustomization personaSettings;
-        private StoryGameMode story;
         internal EventfulHoldButton hostStartButton;
         internal EventfulHoldButton clientWaitingButton;
+        internal SlugcatCustomization personaSettings;
+        private StoryGameMode story;
+        private PlayerInfo[] players;
         internal bool resetSave;
+        private bool updateDefaultColors;
         internal StoryGameMode storyModeOnline;
         internal MenuLabel campaignContainer;
-        private bool updateDefaultColors;
 
 
         internal SlugcatStats.Name customSelectedSlugcat = SlugcatStats.Name.White;
@@ -35,11 +35,15 @@ namespace RainMeadow
             storyModeOnline.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
 
             StoryMenuHelpers.RemoveExcessStoryObjects(this);
-
+            StoryMenuHelpers.ModifyExistingMenuItems(this);
 
             if (OnlineManager.lobby.isOwner)
             {
                 StoryMenuHelpers.SetupHostMenu(this, storyModeOnline);
+                var hostSettings = StoryMenuHelpers.GetHostBoolStoryRemixSettings();
+                storyModeOnline.storyBoolRemixSettings = hostSettings.hostBoolSettings;
+                storyModeOnline.storyFloatRemixSettings = hostSettings.hostFloatSettings;
+                storyModeOnline.storyIntRemixSettings = hostSettings.hostIntSettings;
             }
             else
             {
@@ -50,7 +54,6 @@ namespace RainMeadow
                 }
 
             }
-            StoryMenuHelpers.SetupOnlineCustomization(this);
             SteamSetup();
             UpdatePlayerList();
             StoryMenuHelpers.SetupOnlineMenuItems(this);
@@ -58,16 +61,19 @@ namespace RainMeadow
             StoryMenuHelpers.SanitizeStoryClientSettings(storyModeOnline.storyClientData);
             StoryMenuHelpers.SanitizeStoryGameMode(storyModeOnline);
 
+            StoryMenuHelpers.SetupOnlineCustomization(this);
+
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
 
         }
 
         // TODO:
-        // 1. IownAcheckbox is competing with story menu built in stuff
+        // 1. IownAcheckbox is competing with story menu built in stuff -- check to ensure boolean is getting flipped
         // 2. Need to figure out color change event to save choice
 
         public void StartGame()
         {
+
             RainMeadow.DebugMe();
             if (!OnlineManager.lobby.isOwner) // I'm a client
             {
@@ -87,7 +93,8 @@ namespace RainMeadow
             }
             else //I'm the host
             {
-                personaSettings.playingAs = slugcatPages[slugcatPageIndex].slugcatNumber;
+
+
                 RainMeadow.Debug("CURRENT CAMPAIGN: " + StoryMenuHelpers.GetCurrentCampaignName(storyModeOnline));
             }
 
@@ -187,38 +194,38 @@ namespace RainMeadow
             this.players = players;
             UpdatePlayerList();
         }
-        public bool GetChecked(CheckBox box)
-        {
-            string idstring = box.IDString;
-            if (idstring != null)
-            {
-                if (idstring == "RESETSAVE")
-                {
-                    return resetSave;
-                }
-                if (idstring == "OVERWRITECLIENTSAVE")
-                {
-                    return storyModeOnline.saveToDisk;
-                }
-            }
-            return false;
-        }
-        public void SetChecked(CheckBox box, bool c)
-        {
-            string idstring = box.IDString;
-            if (idstring != null)
-            {
-                if (idstring == "RESETSAVE")
-                {
-                    resetSave = !resetSave;
-                }
+        //public bool GetChecked(CheckBox box)
+        //{
+        //    string idstring = box.IDString;
+        //    if (idstring != null)
+        //    {
+        //        if (idstring == "RESETSAVE")
+        //        {
+        //            return resetSave;
+        //        }
+        //        if (idstring == "OVERWRITECLIENTSAVE")
+        //        {
+        //            return storyModeOnline.saveToDisk;
+        //        }
+        //    }
+        //    return false;
+        //}
+        //public void SetChecked(CheckBox box, bool c)
+        //{
+        //    string idstring = box.IDString;
+        //    if (idstring != null)
+        //    {
+        //        if (idstring == "RESETSAVE")
+        //        {
+        //            resetSave = !resetSave;
+        //        }
 
-                if (idstring == "OVERWRITECLIENTSAVE")
-                {
-                    storyModeOnline.saveToDisk = !storyModeOnline.saveToDisk;
-                }
-            }
-        }
+        //        if (idstring == "OVERWRITECLIENTSAVE")
+        //        {
+        //            storyModeOnline.saveToDisk = !storyModeOnline.saveToDisk;
+        //        }
+        //    }
+        //}
 
         public override void Singal(MenuObject sender, string message)
         {
@@ -233,6 +240,18 @@ namespace RainMeadow
             {
                 var index = slugcatPageIndex + 1 >= slugcatPages.Count ? 0 : slugcatPageIndex + 1;
                 storyModeOnline.currentCampaign = slugcatPages[index].slugcatNumber;
+
+            }
+
+            if (message == "RESETSAVE")
+            {
+                resetSave = !resetSave;
+                RainMeadow.Debug(resetSave);
+            }
+            if (message == "OVERWRITECLIENTSAVE")
+            {
+                storyModeOnline.saveToDisk = !storyModeOnline.saveToDisk;
+                RainMeadow.Debug(storyModeOnline.saveToDisk);
 
             }
         }

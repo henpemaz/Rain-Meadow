@@ -248,12 +248,11 @@ namespace RainMeadow
                     }
                 }
 
-                if (self is SlugcatCustomSelection slugcatCustom && !OnlineManager.lobby.isOwner)
+                if (isStoryMode(out var _) &&  !OnlineManager.lobby.isOwner)
                 {
                     Menu.MenuScene.SceneID[] scenes = {
                         Menu.MenuScene.SceneID.Intro_4_Walking,
                         Menu.MenuScene.SceneID.Intro_11_Drowning,
-                        Menu.MenuScene.SceneID.Intro_8_Climbing,
                         Menu.MenuScene.SceneID.Intro_6_7_Rain_Drop
                     };
                     sceneID = scenes[UnityEngine.Random.Range(0, scenes.Length - 1)];
