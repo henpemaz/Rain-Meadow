@@ -62,6 +62,9 @@ namespace RainMeadow
 
         }
 
+        // TODO:
+        // 1. IownAcheckbox is competing with story menu built in stuff
+        // 2. Need to figure out color change event to save choice
 
         public void StartGame()
         {
