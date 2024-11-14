@@ -8,6 +8,7 @@ namespace RainMeadow
 
         public static ArenaSetup.GameTypeID OnslaughtMode = new ArenaSetup.GameTypeID("Onslaught", register: true);
 
+
         public int onslaughtTimer = 3000;
         public int currentPoints;
         public int scoreToWin;

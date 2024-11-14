@@ -105,7 +105,10 @@ namespace RainMeadow
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
             On.ArenaSetup.GameTypeID.Init += GameTypeID_Init;
             On.ArenaSetup.GameTypeSetup.InitAsGameType += GameTypeSetup_InitAsGameType;
+
         }
+
+
 
         // Investigate this further
         private void GameTypeSetup_InitAsGameType(On.ArenaSetup.GameTypeSetup.orig_InitAsGameType orig, ArenaSetup.GameTypeSetup self, ArenaSetup.GameTypeID gameType)
@@ -698,10 +701,9 @@ namespace RainMeadow
             {
                 self.outsidePlayersCountAsDead = false; // prevent killing scugs in dens
                 On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
-                if (!isArenaCompetitive(arena))
-                {
-                    arena.onlineArenaGameMode.ArenaSessionCtor(arena, orig, self, game);
-                }
+
+                arena.onlineArenaGameMode.ArenaSessionCtor(arena, orig, self, game);
+
 
             }
 
@@ -1082,6 +1084,8 @@ namespace RainMeadow
                 self.AddPart(new Pointing(self));
                 self.AddPart(new ChatHud(self, session.game.cameras[0]));
                 self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
+                self.AddPart(new StoreHUD(self, session.game.cameras[0]));
+
                 self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena));
                 self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));
 

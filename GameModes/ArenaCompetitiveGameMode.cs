@@ -22,7 +22,7 @@ namespace RainMeadow
         public int setupTime;
         public int playerEnteredGame = 0;
         public Dictionary<string, bool> playersReadiedUp = new Dictionary<string, bool>();
-        public bool countdownInitiatedHoldFire = true;
+        public bool countdownInitiatedHoldFire;
         public ArenaPrepTimer arenaPrepTimer;
 
         public int playerResultColorizizerForMSCAndHighLobbyCount;
@@ -46,7 +46,7 @@ namespace RainMeadow
             setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         }
 
-        public void ResetViolence()
+        public virtual void ResetViolence()
         {
             countdownInitiatedHoldFire = true;
             playerEnteredGame = 0;
