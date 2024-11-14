@@ -2,11 +2,11 @@
 using System.IO;
 using System.Linq;
 
-
 namespace RainMeadow
 {
     public class RainMeadowModManager
     {
+        public static ModApplier? modApplier;
         public static string[] GetActiveMods()
         {
             var highImpactMods = ModManager.ActiveMods
@@ -18,18 +18,21 @@ namespace RainMeadow
             return highImpactMods.ToArray();
         }
 
-        internal static void CheckMods(string[] lobbyMods, string[] localMods) // both filtered by GetActiveMods
+        internal static bool CheckMods(string[] lobbyMods, string[]? localMods = null) // both filtered by GetActiveMods
         {
+            if (localMods is null) localMods = GetActiveMods();
             RainMeadow.Debug($"lobby mods: [ {string.Join(", ", lobbyMods)} ]");
             RainMeadow.Debug($"local mods: [ {string.Join(", ", localMods)} ]");
             if (Enumerable.SequenceEqual(localMods, lobbyMods))
             {
                 RainMeadow.Debug("Matching mod set");
+                return true;
             }
             else if (lobbyMods.ToHashSet().SetEquals(localMods.ToHashSet()))
             {
-                RainMeadow.Debug("Matching mod set, but mismatched order");
                 // TODO: worry about this
+                RainMeadow.Debug("Matching mod set, but mismatched order");
+                return true;
             }
             else
             {
@@ -66,17 +69,18 @@ namespace RainMeadow
                     modsToDisable.Add(ModManager.InstalledMods[index]);
                 }
 
-                ModApplier modApplyer = new(RWCustom.Custom.rainWorld.processManager, mods, loadOrder);
+                modApplier = new(RWCustom.Custom.rainWorld.processManager, mods, loadOrder);
 
-                modApplyer.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
+                modApplier.ShowConfirmation(modsToEnable, modsToDisable, unknownMods);
 
-                modApplyer.OnFinish += (ModApplier modApplyer) =>
+                modApplier.OnFinish += (ModApplier modApplier) =>
                 {
+                    RainMeadowModManager.modApplier = null; 
                     RainMeadow.Debug("Finished applying");
-
                     //Utils.Restart($"+connect_lobby {MatchmakingManager.instance.GetLobbyID()}"); 
-
                 };
+
+                return false;
             }
         }
 

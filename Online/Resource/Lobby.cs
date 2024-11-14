@@ -14,10 +14,8 @@ namespace RainMeadow
         public Dictionary<OnlinePlayer, ClientSettings> clientSettings = new();
         public List<KeyValuePair<OnlinePlayer, OnlineEntity.EntityId>> playerAvatars = new(); // guess we can support multiple avatars per client
 
-        public string[] mods = RainMeadowModManager.GetActiveMods();
         public DynamicOrderedPlayerIDs bannedUsers = new();
 
-        public bool modsChecked;
         public bool bannedUsersChecked = false;
 
         public string? password;
@@ -44,9 +42,6 @@ namespace RainMeadow
             {
                 RequestLobby(password);
             }
-
-
-
         }
 
         public void RequestLobby(string? key)
@@ -175,8 +170,6 @@ namespace RainMeadow
         {
             [OnlineField]
             public ushort nextId;
-            [OnlineField]
-            public string[] mods;
             [OnlineField(nullable = true)]
             public Generics.DynamicOrderedPlayerIDs bannedUsers;
             [OnlineField(nullable = true)]
@@ -189,9 +182,7 @@ namespace RainMeadow
                 nextId = lobby.nextId;
                 players = new(lobby.participants.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Select(p => p.inLobbyId).ToList());
-                mods = lobby.mods;
                 bannedUsers = lobby.bannedUsers;
-
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -201,7 +192,6 @@ namespace RainMeadow
 
                 for (int i = 0; i < players.list.Count; i++)
                 {
-
                     if (MatchmakingManager.instance.GetPlayer(players.list[i]) is OnlinePlayer p)
                     {
                         if (p.inLobbyId != inLobbyIds.list[i]) RainMeadow.Debug($"Setting player {p} to lobbyId {inLobbyIds.list[i]}");
@@ -211,35 +201,23 @@ namespace RainMeadow
                     {
                         RainMeadow.Error("Player not found! " + players.list[i]);
                     }
-
-
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
-                if (lobby.bannedUsersChecked == false)
+                if (!lobby.bannedUsersChecked)
                 {
                     // Need to get the participants before we check
                     if (this.bannedUsers != null && this.bannedUsers.list.Contains(OnlineManager.mePlayer.id))
                     {
-
                         BanHammer.BanUser(OnlineManager.mePlayer);
                         if (lobby.participants.Contains(OnlineManager.mePlayer))
                         {
-                            lobby.OnPlayerDisconnect(lobby.PlayerFromMeadowID(OnlineManager.mePlayer.id));
+                            lobby.OnPlayerDisconnect(OnlineManager.mePlayer);
                         }
                         lobby.bannedUsersChecked = true;
                         return;
-
                     }
 
                     lobby.bannedUsersChecked = true;
-                }
-
-
-
-                if (!lobby.modsChecked)
-                {
-                    RainMeadowModManager.CheckMods(this.mods, lobby.mods);
-                    lobby.modsChecked = true;
                 }
 
                 base.ReadTo(resource);

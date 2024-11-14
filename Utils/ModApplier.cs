@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    internal class ModApplier : ModManager.ModApplyer
+    public class ModApplier : ModManager.ModApplyer
     {
         public DialogAsyncWait dialogBox;
         public DialogConfirm checkUserConfirmation;
@@ -118,8 +118,8 @@ namespace RainMeadow
                 manager.dialog = null;
                 manager.ShowNextDialog();
                 requiresRestartDialog = null;
-
             }
+
             base.Start(filesInBadState);
         }
     }

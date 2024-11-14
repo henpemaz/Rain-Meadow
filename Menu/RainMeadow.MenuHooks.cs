@@ -316,7 +316,8 @@ namespace RainMeadow
                         if (args.Length > i + 1 && ulong.TryParse(args[i + 1], out var id))
                         {
                             Debug($"joining lobby with id {id} from the command line");
-                            MatchmakingManager.instance.RequestJoinLobby(new LobbyInfo(new CSteamID(id), "", "", 0, false, 4), null);
+                            // TODO: mod compat check
+                            MatchmakingManager.instance.RequestJoinLobby(new LobbyInfo(new CSteamID(id), "", "", default, false, 0, 4), null);
                         }
                         else
                         {

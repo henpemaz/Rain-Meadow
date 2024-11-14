@@ -195,7 +195,7 @@ namespace RainMeadow
             CreateLobbyCards();
             // waiting for lobby data!
 
-            if (OnlineManager.currentlyJoiningLobby != default)
+            if (OnlineManager.currentlyJoiningLobby)
             {
                 ShowLoadingDialog("Joining lobby...");
             }
@@ -449,6 +449,16 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
             maxPlayerCount = lobby.maxPlayerCount;
+
+            if (!RainMeadowModManager.CheckMods(lobby.mods))
+            {
+                RainMeadowModManager.modApplier.OnFinish += (modApplier) =>
+                {
+                    if (!modApplier.requiresRestart)
+                        RequestLobbyJoin(lobby, password); // retry join
+                };
+            }
+
             MatchmakingManager.instance.RequestJoinLobby(lobby, password);
         }
 

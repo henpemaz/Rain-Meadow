@@ -20,7 +20,7 @@ namespace RainMeadow
         public static List<OnlinePlayer> players;
         public static Lobby lobby;
 
-        public static LobbyInfo currentlyJoiningLobby;
+        public static bool currentlyJoiningLobby;
         public int milisecondsPerFrame;
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
@@ -37,7 +37,7 @@ namespace RainMeadow
         private void OnlineManager_OnLobbyJoined(bool ok, string error)
         {
             RainMeadow.Debug(ok);
-            currentlyJoiningLobby = default;
+            currentlyJoiningLobby = false;
             if (ok)
             {
                 manager.rainWorld.progression.Destroy();

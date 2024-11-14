@@ -146,6 +146,7 @@ namespace RainMeadow
         private void Futile_OnApplicationQuit(On.Futile.orig_OnApplicationQuit orig, Futile self)
         {
             //TODO: Impliment graceful exist
+            OnlineManager.LeaveLobby();
             orig(self);
         }
 
