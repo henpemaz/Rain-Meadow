@@ -87,7 +87,12 @@ public partial class RainMeadow
         orig(self);
         if (OnlineManager.lobby != null)
         {
-            if (self.room.world.game.cameras[0].hud.textPrompt.pausedMode || ChatHud.chatButtonActive)
+            if (
+                self.room.world.game.cameras[0] != null &&
+                self.room.world.game.cameras[0].hud != null &&
+                self.room.world.game.cameras[0].hud.textPrompt != null &&
+                self.room.world.game.cameras[0].hud.textPrompt.pausedMode ||
+                ChatHud.chatButtonActive)
             {
                 PlayerMovementOverride.StopPlayerMovement(self);
             }
