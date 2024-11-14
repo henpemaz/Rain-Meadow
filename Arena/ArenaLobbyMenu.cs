@@ -282,7 +282,9 @@ namespace RainMeadow
             if (arena.registeredGameModes.Values.Contains(arena.currentGameMode))
             {
                 arena.onlineArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Value == arena.currentGameMode).Key;
-            } else
+                RainMeadow.Debug("Playing GameMode: " + arena.onlineArenaGameMode);
+            }
+            else
             {
                 RainMeadow.Error("Could not find gamemode link to current game mode!");
                 

@@ -62,13 +62,18 @@ namespace RainMeadow
 
         public override int SetTimer()
         {
-            return TimerDuration = 3000;
+            return TimerDuration = 1;
         }
 
         public override int TimerDuration
         {
             get { return _timerDuration; }
             set { _timerDuration = value; }
+        }
+
+        public override int TimerDirection(int timer)
+        {
+            return ++timer;
         }
     }
 }

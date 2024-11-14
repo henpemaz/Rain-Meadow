@@ -110,13 +110,15 @@ namespace RainMeadow
 
 
 
-        // Investigate this further
         private void GameTypeSetup_InitAsGameType(On.ArenaSetup.GameTypeSetup.orig_InitAsGameType orig, ArenaSetup.GameTypeSetup self, ArenaSetup.GameTypeID gameType)
         {
             orig(self, gameType);
             if (isArenaMode(out var arena) && !arena.registeredNewGameModes)
             {
                 arena.RegisterMode("RainMeadow", Onslaught.OnslaughtMode.value);
+                arena.RegisterMode("RainMeadow", Competitive.CompetitiveMode.value);
+
+
                 arena.registeredNewGameModes = true;
             }
         }
@@ -409,7 +411,7 @@ namespace RainMeadow
                 {
                     if (self.GetGameTypeSetup.spearsHitPlayers)
                     {
-                        arena.currentGameMode = ArenaSetup.GameTypeID.Competitive.value;
+                        arena.currentGameMode = Competitive.CompetitiveMode.value;
                     }
                     else
                     {

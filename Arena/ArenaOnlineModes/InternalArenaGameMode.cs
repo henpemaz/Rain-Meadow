@@ -6,6 +6,7 @@ namespace RainMeadow
 {
     public abstract class InternalArenaGameMode
     {
+        private int _timerDuration;
 
         public abstract bool IsExitsOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self);
         public abstract bool SpawnBatflies(FliesWorldAI self, int spawnRoom);
@@ -29,6 +30,10 @@ namespace RainMeadow
             return RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         }
 
+        public virtual int TimerDirection(int timer)
+        {
+            return --timer;
+        }
 
     }
 }

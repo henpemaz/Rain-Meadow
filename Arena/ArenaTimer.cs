@@ -82,11 +82,11 @@ namespace RainMeadow
                 }
                 else if (arena.setupTime > 0)
                 {
-                    arena.setupTime--;
+                    arena.setupTime = arena.onlineArenaGameMode.TimerDirection(arena.setupTime);
                     showMode = TimerMode.Countdown;
                     matchMode = TimerMode.Countdown;
-                    modeLabel.text = arena.onlineArenaGameMode.TimerText();
 
+                    modeLabel.text = arena.onlineArenaGameMode.TimerText();
 
                 }
 

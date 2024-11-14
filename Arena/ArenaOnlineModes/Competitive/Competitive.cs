@@ -3,6 +3,9 @@ namespace RainMeadow
 {
     public class Competitive : InternalArenaGameMode
     {
+
+        public static ArenaSetup.GameTypeID CompetitiveMode = new ArenaSetup.GameTypeID("Competitive", register: true);
+
         private int _timerDuration;  // Backing field for TimerDuration
 
         public override bool IsExitsOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
@@ -42,14 +45,30 @@ namespace RainMeadow
         }
         public override void InitAsGameType(ArenaSetup.GameTypeSetup self)
         {
-            // noop
+            self.foodScore = 1;
+            self.survivalScore = 0;
+            self.spearHitScore = 0;
+            self.repeatSingleLevelForever = false;
+            self.savingAndLoadingSession = true;
+            self.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Standard;
+            self.rainWhenOnePlayerLeft = true;
+            self.levelItems = true;
+            self.fliesSpawn = true;
+            self.saveCreatures = false;
         }
 
-
+        public override int SetTimer()
+        {
+            return RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
+        }
         public override int TimerDuration
         {
             get { return _timerDuration; }
             set { _timerDuration = value; }
+        }
+        public override int TimerDirection(int timer)
+        {
+            return --timer;
         }
     }
 }
