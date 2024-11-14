@@ -275,8 +275,11 @@ namespace RainMeadow
                 manager.arenaSitting.levelPlaylist = arena.playList;
 
             }
-
-            arena.playerResultColorizizerForMSCAndHighLobbyCount = UnityEngine.Random.Range(0, 4);
+            for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+            {
+               var currentPlayer =  ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, i);
+               arena.playerResultColors[currentPlayer.id.name] = UnityEngine.Random.Range(0, 4);
+            }
             arena.returnToLobby = false;
         }
 
