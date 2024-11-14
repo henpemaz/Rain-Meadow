@@ -114,10 +114,10 @@ namespace RainMeadow
         private void GameTypeSetup_InitAsGameType(On.ArenaSetup.GameTypeSetup.orig_InitAsGameType orig, ArenaSetup.GameTypeSetup self, ArenaSetup.GameTypeID gameType)
         {
             orig(self, gameType);
-            if (isArenaMode(out var arena))
+            if (isArenaMode(out var arena) && !arena.registeredNewGameModes)
             {
-                arena.RegisterMode("RainMeadow." + Onslaught.OnslaughtMode);
-                arena.onlineArenaGameMode.InitAsGameType(self);
+                arena.RegisterMode("RainMeadow", Onslaught.OnslaughtMode.value);
+                arena.registeredNewGameModes = true;
             }
         }
 
@@ -391,6 +391,7 @@ namespace RainMeadow
                         else
                         {
                             arena.currentGameMode = Onslaught.OnslaughtMode.value;
+                            RainMeadow.Debug(arena.registeredGameModes.Count);
 
 
                         }

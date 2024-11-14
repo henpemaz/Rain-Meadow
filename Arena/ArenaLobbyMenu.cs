@@ -6,6 +6,7 @@ using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -278,8 +279,16 @@ namespace RainMeadow
             }
 
             arena.playerResultColorizizerForMSCAndHighLobbyCount = UnityEngine.Random.Range(0, 4);
-            //arena.RegisterMode("RainMeadow." + arena.currentGameMode);
-            //arena.onlineArenaGameMode.InitAsGameType(this.GetGameTypeSetup);
+            if (arena.registeredGameModes.Values.Contains(arena.currentGameMode))
+            {
+                arena.onlineArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Value == arena.currentGameMode).Key;
+            } else
+            {
+                RainMeadow.Error("Could not find gamemode link to current game mode!");
+                
+                
+            }
+            arena.onlineArenaGameMode.InitAsGameType(this.GetGameTypeSetup);
 
         }
 

@@ -19,26 +19,34 @@ namespace RainMeadow
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
         public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
+        public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
+
+        public ArenaClientSettings arenaClientSettings;
+        public SlugcatCustomization avatarSettings;
+        public int playerResultColorizizerForMSCAndHighLobbyCount;
+
+
         public int setupTime;
         public int playerEnteredGame = 0;
         public Dictionary<string, bool> playersReadiedUp = new Dictionary<string, bool>();
         public bool countdownInitiatedHoldFire;
         public ArenaPrepTimer arenaPrepTimer;
 
-        public int playerResultColorizizerForMSCAndHighLobbyCount;
 
-        public ArenaClientSettings arenaClientSettings;
-        public SlugcatCustomization avatarSettings;
+
+        public Dictionary<InternalArenaGameMode, string> registeredGameModes;
+        public bool registeredNewGameModes = false;
+
 
         public List<string> playList = new List<string>();
 
-        public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
 
         public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
         {
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
             arenaClientSettings = new ArenaClientSettings();
             arenaClientSettings.playingAs = SlugcatStats.Name.White;
+            registeredGameModes = new Dictionary<InternalArenaGameMode, string>();
         }
 
         public void ResetGameTimer()
@@ -131,24 +139,23 @@ namespace RainMeadow
 
         }
 
-        public virtual void RegisterMode(string mode) // You MUST include the namespace prefixed in your mode
+        public virtual void RegisterMode(string yourNamespace, string mode) // You MUST include the namespace prefixed in your mode
         {
-            Type type = Type.GetType(mode);
+            Type type = Type.GetType(yourNamespace + "." + mode);
 
             RainMeadow.Debug("Arena Mode Type: " + type);
 
             if (type != null)
             {
-                var registeredMode = Activator.CreateInstance(type);
-                this.onlineArenaGameMode = registeredMode as InternalArenaGameMode;
-                if (this.onlineArenaGameMode == null)
+                InternalArenaGameMode newGameMode = (Activator.CreateInstance(type) as InternalArenaGameMode);
+                if (!registeredGameModes.ContainsKey(newGameMode))
                 {
-                    RainMeadow.Debug("Failed to cast the created instance to InternalArenaGameMode.");
+                    registeredGameModes.Add(newGameMode, mode);
                 }
             }
             else
             {
-                RainMeadow.Debug("Failed to find type: " + mode);
+                RainMeadow.Error("Failed to find type: " + mode);
             }
 
 
