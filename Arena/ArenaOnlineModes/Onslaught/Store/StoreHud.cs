@@ -7,12 +7,14 @@ namespace RainMeadow
     {
         private RoomCamera camera;
         private RainWorldGame game;
+        private Onslaught onslaught;
         private StoreOverlay? spectatorOverlay;
 
-        public StoreHUD(HUD.HUD hud, RoomCamera camera) : base(hud)
+        public StoreHUD(HUD.HUD hud, RoomCamera camera, Onslaught onslaught) : base(hud)
         {
             this.camera = camera;
             this.game = camera.game;
+            this.onslaught = onslaught;
         }
 
         public override void Draw(float timeStacker)
@@ -24,7 +26,7 @@ namespace RainMeadow
                 if (spectatorOverlay == null)
                 {
                     RainMeadow.Debug("Creating spectator overlay");
-                    spectatorOverlay = new StoreOverlay(game.manager, game);
+                    spectatorOverlay = new StoreOverlay(game.manager, game, onslaught);
                 }
                 else
                 {

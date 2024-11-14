@@ -1083,8 +1083,11 @@ namespace RainMeadow
                 self.AddPart(new TextPrompt(self));
                 self.AddPart(new Pointing(self));
                 self.AddPart(new ChatHud(self, session.game.cameras[0]));
-                self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
-                self.AddPart(new StoreHUD(self, session.game.cameras[0]));
+                //self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
+                if (isArenaOnslaughtMode(arena, out var onslaught))
+                {
+                    self.AddPart(new StoreHUD(self, session.game.cameras[0], onslaught));
+                }
 
                 self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena));
                 self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));
