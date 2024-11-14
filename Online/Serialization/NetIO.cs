@@ -178,5 +178,17 @@ namespace RainMeadow
             ushort delta = (ushort)(eventId - lastIncomingEvent);
             return delta < ushort.MaxValue / 2;
         }
+
+        public static bool IsNewer(byte eventId, byte lastIncomingEvent)
+        {
+            ushort delta = (byte)(eventId - lastIncomingEvent);
+            return delta != 0 && delta < byte.MaxValue / 2;
+        }
+
+        public static bool IsNewerOrEqual(byte eventId, byte lastIncomingEvent)
+        {
+            byte delta = (byte)(eventId - lastIncomingEvent);
+            return delta < byte.MaxValue / 2;
+        }
     }
 }
