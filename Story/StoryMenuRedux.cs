@@ -67,10 +67,6 @@ namespace RainMeadow
 
         }
 
-        // TODO:
-        // 1. IownAcheckbox is competing with story menu built in stuff -- check to ensure boolean is getting flipped
-        // 2. Need to figure out color change event to save choice
-
         public void StartGame()
         {
 
@@ -194,38 +190,6 @@ namespace RainMeadow
             this.players = players;
             UpdatePlayerList();
         }
-        //public bool GetChecked(CheckBox box)
-        //{
-        //    string idstring = box.IDString;
-        //    if (idstring != null)
-        //    {
-        //        if (idstring == "RESETSAVE")
-        //        {
-        //            return resetSave;
-        //        }
-        //        if (idstring == "OVERWRITECLIENTSAVE")
-        //        {
-        //            return storyModeOnline.saveToDisk;
-        //        }
-        //    }
-        //    return false;
-        //}
-        //public void SetChecked(CheckBox box, bool c)
-        //{
-        //    string idstring = box.IDString;
-        //    if (idstring != null)
-        //    {
-        //        if (idstring == "RESETSAVE")
-        //        {
-        //            resetSave = !resetSave;
-        //        }
-
-        //        if (idstring == "OVERWRITECLIENTSAVE")
-        //        {
-        //            storyModeOnline.saveToDisk = !storyModeOnline.saveToDisk;
-        //        }
-        //    }
-        //}
 
         public override void Singal(MenuObject sender, string message)
         {

@@ -91,22 +91,6 @@ namespace RainMeadow
                 story.avatarSettings.eyeColor = self.colorInterface.bodyColors[1].color;
                 RainMeadow.rainMeadowOptions.EyeColor.Value = self.colorInterface.bodyColors[1].color;
 
-                //if (self.activeColorChooser == 0)
-                //{
-                //    var bodyColors = StoryMenuHelpers.HslToRgb(slider.hueSlider.floatValue, self.satSlider.floatValue, self.litSlider.floatValue);
-                //    RainMeadow.rainMeadowOptions.BodyColor.Value = bodyColors;
-                //    story.avatarSettings.bodyColor = bodyColors;
-                //    RainMeadow.Debug(story.avatarSettings.bodyColor);
-                //}
-
-                //if (self.activeColorChooser == 1)
-                //{
-                //    var eyeColors = StoryMenuHelpers.HslToRgb(self.hueSlider.floatValue, self.satSlider.floatValue, self.litSlider.floatValue);
-                //    RainMeadow.rainMeadowOptions.EyeColor.Value = eyeColors;
-                //    story.avatarSettings.eyeColor = eyeColors;
-                //    RainMeadow.Debug(story.avatarSettings.eyeColor);
-                //}
-
 
             }
         }
