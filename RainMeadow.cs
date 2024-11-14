@@ -35,18 +35,9 @@ namespace RainMeadow
             On.RWCustom.Custom.Log += Custom_Log;
             On.RWCustom.Custom.LogImportant += Custom_LogImportant;
             On.RWCustom.Custom.LogWarning += Custom_LogWarning;
-
-            On.WorldLoader.GeneratePopulation += WorldLoader_GeneratePopulation;
         }
 
-        private void WorldLoader_GeneratePopulation(On.WorldLoader.orig_GeneratePopulation orig, WorldLoader self, bool fresh)
-        {
-            if (OnlineManager.lobby.gameMode is MeadowGameMode)
-            {
-                return;
-            }
-            orig(self, fresh);
-        }
+
 
         private void Custom_LogWarning(On.RWCustom.Custom.orig_LogWarning orig, string[] values)
         {

@@ -189,7 +189,7 @@ namespace RainMeadow
             {
                 var duration = 0.35f * (self.maxGodTime / 400f); // we'll see how that feels for now
                 self.godTimer = Mathf.Min(self.godTimer + duration, self.maxGodTime);
-                
+
             }
         }
 
@@ -814,8 +814,8 @@ namespace RainMeadow
                     }
                     else
                     {
-                        
-                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColorizizerForMSCAndHighLobbyCount + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+
+                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[currentName.id.name] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
                     }
                     self.subObjects.Add(self.portrait);
                 }
@@ -1154,7 +1154,8 @@ namespace RainMeadow
                     arena.countdownInitiatedHoldFire = false; // in case we missed it during the timer HUD
                 }
 
-                if (!self.sessionEnded) {
+                if (!self.sessionEnded)
+                {
                     foreach (var s in self.arenaSitting.players)
                     {
                         var os = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.playerNumber); // current player
