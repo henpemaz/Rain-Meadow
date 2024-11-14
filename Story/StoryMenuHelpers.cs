@@ -95,7 +95,16 @@ namespace RainMeadow
             storyMenu.mySoundLoopID = SoundID.MENU_Main_Menu_LOOP;
 
             // Player lobby label
-            storyMenu.pages[0].subObjects.Add(new MenuLabel(storyMenu, storyMenu.pages[0], storyMenu.Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true));
+            var lobbyLabel = new MenuLabel(storyMenu, storyMenu.pages[0], storyMenu.Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true);
+            storyMenu.pages[0].subObjects.Add(lobbyLabel);
+            var inviteFriendsIcon = new SimplerSymbolButton(storyMenu, storyMenu.pages[0], "Kill_Slugcat", "InviteFriends", new Vector2(storyMenu.playerButtons[0].pos.x - 35f, storyMenu.playerButtons[0].pos.y + 5f));
+            inviteFriendsIcon.OnClick += (_) =>
+            {
+
+                SteamFriends.ActivateGameOverlay("friends");
+
+            };
+            storyMenu.pages[0].subObjects.Add(inviteFriendsIcon);
 
             if (RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value && !OnlineManager.lobby.isOwner)
             {
@@ -176,7 +185,7 @@ namespace RainMeadow
             storyMenu.resetSaveCheckbox = new CheckBox(storyMenu, storyMenu.pages[0], storyMenu, new Vector2(903, 30f), 70f, storyMenu.Translate("Reset Save"), "RESETSAVE", false);
             storyMenu.pages[0].subObjects.Add(storyMenu.resetSaveCheckbox);
 
-            
+
 
         }
 
@@ -197,62 +206,23 @@ namespace RainMeadow
             storyMenu.pages[0].subObjects.Add(storyMenu.clientWantsToOverwriteSave);
         }
 
-
-
-
-        internal static void SteamSetup(StoryMenuRedux storyMenu)
+        internal static void SanitizeStoryClientSettings(StoryClientSettingsData clientSettings)
         {
-
-            List<PlayerInfo> players = new List<PlayerInfo>();
-            foreach (OnlinePlayer player in OnlineManager.players)
-            {
-                CSteamID playerId;
-                if (player.id is LocalMatchmakingManager.LocalPlayerId)
-                {
-                    playerId = default;
-                }
-                else
-                {
-                    playerId = (player.id as SteamMatchmakingManager.SteamPlayerId).steamID;
-                }
-                players.Add(new PlayerInfo(playerId, player.id.name));
-            }
-            storyMenu.players = players.ToArray();
-
-            var friendsList = new EventfulSelectOneButton[1];
-            friendsList[0] = new EventfulSelectOneButton(storyMenu, storyMenu.pages[0], storyMenu.Translate("Invite Friends"), "friendsList", new(1150f, 50f), new(110, 50), friendsList, 0);
-            storyMenu.pages[0].subObjects.Add(friendsList[0]);
-
-            friendsList[0].OnClick += (_) =>
-            {
-                SteamFriends.ActivateGameOverlay("friends");
-            };
-        }
-        internal static void UpdatePlayerList(StoryMenuRedux storyMenu)
-        {
-            for (int i = 0; i < storyMenu.playerButtons.Length; i++)
-            {
-                var playerbtn = storyMenu.playerButtons[i];
-                playerbtn.RemoveSprites();
-                storyMenu.pages[0].RemoveSubObject(playerbtn);
-            }
-
-            storyMenu.playerButtons = new EventfulSelectOneButton[storyMenu.players.Length];
-
-            for (int i = 0; i < storyMenu.players.Length; i++)
-            {
-                var player = storyMenu.players[i];
-                var btn = new EventfulSelectOneButton(storyMenu, storyMenu.pages[0], player.name, "playerButtons", new Vector2(194, 515) - i * new Vector2(0, 38), new(110, 30), storyMenu.playerButtons, i);
-                storyMenu.pages[0].subObjects.Add(btn);
-                storyMenu.playerButtons[i] = btn;
-                btn.OnClick += (_) =>
-                {
-                    string url = $"https://steamcommunity.com/profiles/{player.id}";
-                    SteamFriends.ActivateGameOverlayToWebPage(url);
-                };
-            }
+            clientSettings.readyForWin = false;
+            clientSettings.isDead = false;
         }
 
+        internal static void SanitizeStoryGameMode(StoryGameMode gameMode)
+        {
+            gameMode.isInGame = false;
+            gameMode.changedRegions = false;
+            gameMode.didStartCycle = false;
+            gameMode.defaultDenPos = null;
+            gameMode.ghostsTalkedTo = new();
+            gameMode.consumedItems = new();
+            gameMode.myLastDenPos = null;
+            gameMode.hasSheltered = false;
+        }
 
     }
 }

@@ -9,13 +9,13 @@ using UnityEngine;
 using static ExtraExtentions;
 namespace RainMeadow
 {
-    public class StoryMenuRedux : SlugcatSelectMenu
+    public class StoryMenuRedux : SlugcatSelectMenu, SelectOneButton.SelectOneButtonOwner
     {
-        internal PlayerInfo[] players;
+        private PlayerInfo[] players;
         internal CheckBox resetSaveCheckbox;
         internal CheckBox clientWantsToOverwriteSave;
         internal EventfulSelectOneButton[] playerButtons = new EventfulSelectOneButton[0];
-        int skinIndex;
+        int selectOneBtnIndex;
         internal SlugcatCustomization personaSettings;
         private StoryGameMode story;
         internal EventfulHoldButton hostStartButton;
@@ -30,10 +30,11 @@ namespace RainMeadow
 
         public StoryMenuRedux(ProcessManager manager) : base(manager)
         {
+
             storyModeOnline = OnlineManager.lobby.gameMode as StoryGameMode;
+            storyModeOnline.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
+
             StoryMenuHelpers.RemoveExcessStoryObjects(this);
-            StoryMenuHelpers.SetupOnlineMenuItems(this);
-            updateDefaultColors = false;
 
 
             if (OnlineManager.lobby.isOwner)
@@ -50,11 +51,14 @@ namespace RainMeadow
 
             }
             StoryMenuHelpers.SetupOnlineCustomization(this);
-            //StoryMenuHelpers.SteamSetup(this);
-            //StoryMenuHelpers.UpdatePlayerList(this);
+            SteamSetup();
+            UpdatePlayerList();
+            StoryMenuHelpers.SetupOnlineMenuItems(this);
+
+            StoryMenuHelpers.SanitizeStoryClientSettings(storyModeOnline.storyClientData);
+            StoryMenuHelpers.SanitizeStoryGameMode(storyModeOnline);
 
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
-            storyModeOnline.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
 
         }
 
@@ -111,10 +115,10 @@ namespace RainMeadow
             }
 
 
-            //if (Mathf.Abs(this.lastScroll) > 0.5f && Mathf.Abs(this.scroll) <= 0.5f)
-            //{
-            //    StoryMenuHelpers.UpdatePlayerList(this);
-            //}
+            if (Mathf.Abs(this.lastScroll) > 0.5f && Mathf.Abs(this.scroll) <= 0.5f)
+            {
+                UpdatePlayerList();
+            }
 
         }
 
@@ -130,12 +134,55 @@ namespace RainMeadow
         }
 
 
+        private void SteamSetup()
+        {
 
+            List<PlayerInfo> players = new List<PlayerInfo>();
+            foreach (OnlinePlayer player in OnlineManager.players)
+            {
+                CSteamID playerId;
+                if (player.id is LocalMatchmakingManager.LocalPlayerId)
+                {
+                    playerId = default;
+                }
+                else
+                {
+                    playerId = (player.id as SteamMatchmakingManager.SteamPlayerId).steamID;
+                }
+                players.Add(new PlayerInfo(playerId, player.id.name));
+            }
+            this.players = players.ToArray();
+        }
+
+        private void UpdatePlayerList()
+        {
+            for (int i = 0; i < playerButtons.Length; i++)
+            {
+                var playerbtn = playerButtons[i];
+                playerbtn.RemoveSprites();
+                this.pages[0].RemoveSubObject(playerbtn);
+            }
+
+            playerButtons = new EventfulSelectOneButton[players.Length];
+
+            for (int i = 0; i < players.Length; i++)
+            {
+                var player = players[i];
+                var btn = new EventfulSelectOneButton(this, this.pages[0], player.name, "playerButtons", new Vector2(194, 515) - i * new Vector2(0, 38), new(110, 30), playerButtons, i);
+                this.pages[0].subObjects.Add(btn);
+                playerButtons[i] = btn;
+                btn.OnClick += (_) =>
+                {
+                    string url = $"https://steamcommunity.com/profiles/{player.id}";
+                    SteamFriends.ActivateGameOverlayToWebPage(url);
+                };
+            }
+        }
 
         private void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
         {
             this.players = players;
-            StoryMenuHelpers.UpdatePlayerList(this);
+            UpdatePlayerList();
         }
         public bool GetChecked(CheckBox box)
         {
@@ -185,6 +232,16 @@ namespace RainMeadow
                 storyModeOnline.currentCampaign = slugcatPages[index].slugcatNumber;
 
             }
+        }
+
+        public int GetCurrentlySelectedOfSeries(string series)
+        {
+            return selectOneBtnIndex;
+        }
+
+        public void SetCurrentlySelectedOfSeries(string series, int to)
+        {
+            selectOneBtnIndex = to;
         }
 
     }
