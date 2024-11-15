@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using static ExtraExtentions;
+using HUD;
 namespace RainMeadow
 {
     public class StoryMenuRedux : SlugcatSelectMenu, SelectOneButton.SelectOneButtonOwner
@@ -32,6 +32,10 @@ namespace RainMeadow
         {
 
             storyModeOnline = OnlineManager.lobby.gameMode as StoryGameMode;
+
+            StoryMenuHelpers.SanitizeStoryClientSettings(storyModeOnline.storyClientData);
+            StoryMenuHelpers.SanitizeStoryGameMode(storyModeOnline);
+
             storyModeOnline.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
 
             StoryMenuHelpers.RemoveExcessStoryObjects(this);
@@ -57,9 +61,6 @@ namespace RainMeadow
             SteamSetup();
             UpdatePlayerList();
             StoryMenuHelpers.SetupOnlineMenuItems(this);
-
-            StoryMenuHelpers.SanitizeStoryClientSettings(storyModeOnline.storyClientData);
-            StoryMenuHelpers.SanitizeStoryGameMode(storyModeOnline);
 
             StoryMenuHelpers.SetupOnlineCustomization(this);
 
@@ -104,19 +105,19 @@ namespace RainMeadow
                 manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.Load;
             }
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
-
         }
 
         public override void Update()
         {
             base.Update();
+
             if (OnlineManager.lobby.isOwner && hostStartButton != null)
             {
                 hostStartButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
             }
             else
             {
-                campaignContainer.text = $"Current Campaign: The {StoryMenuHelpers.GetCurrentCampaignName(storyModeOnline)}";
+                campaignContainer.text = $"Current Campaign: The {StoryMenuHelpers.GetCurrentCampaignName(storyModeOnline)} - {storyModeOnline.region}";
                 clientWaitingButton.buttonBehav.greyedOut = !(storyModeOnline.isInGame && !storyModeOnline.changedRegions);
             }
 
@@ -198,12 +199,39 @@ namespace RainMeadow
             {
 
                 var index = slugcatPageIndex - 1 < 0 ? slugcatPages.Count - 1 : slugcatPageIndex - 1;
-                storyModeOnline.currentCampaign  = slugcatPages[index].slugcatNumber;
+                storyModeOnline.currentCampaign = slugcatPages[index].slugcatNumber;
+                try
+                {
+                    if ((saveGameData[storyModeOnline.currentCampaign].shelterName != null && saveGameData[storyModeOnline.currentCampaign].shelterName.Length > 2))
+
+                    {
+                        storyModeOnline.region = Region.GetRegionFullName(saveGameData[storyModeOnline.currentCampaign].shelterName.Substring(0, 2), storyModeOnline.currentCampaign);
+                    }
+                }
+                catch
+                {
+                    RainMeadow.Error("Error getting prev region name");
+                    storyModeOnline.region = "";
+                }
             }
             if (message == "NEXT")
             {
                 var index = slugcatPageIndex + 1 >= slugcatPages.Count ? 0 : slugcatPageIndex + 1;
                 storyModeOnline.currentCampaign = slugcatPages[index].slugcatNumber;
+                try
+                {
+                    if ((saveGameData[storyModeOnline.currentCampaign].shelterName != null && saveGameData[storyModeOnline.currentCampaign].shelterName.Length > 2))
+
+                    {
+                        storyModeOnline.region = Region.GetRegionFullName(saveGameData[storyModeOnline.currentCampaign].shelterName.Substring(0, 2), storyModeOnline.currentCampaign);
+                    }
+                }
+                catch
+                {
+                    RainMeadow.Error("Errro getting next region name");
+                    storyModeOnline.region = "";
+
+                }
 
             }
 

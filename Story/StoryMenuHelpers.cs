@@ -5,7 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using static ExtraExtentions;
+using HUD;
+using RWCustom;
 namespace RainMeadow
 {
     internal static class StoryMenuHelpers
@@ -125,6 +126,7 @@ namespace RainMeadow
             gameMode.consumedItems = new();
             gameMode.myLastDenPos = null;
             gameMode.hasSheltered = false;
+            gameMode.region = null;
         }
 
         #endregion
@@ -154,14 +156,15 @@ namespace RainMeadow
             // Player lobby label
             var lobbyLabel = new MenuLabel(storyMenu, storyMenu.pages[0], storyMenu.Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true);
             storyMenu.pages[0].subObjects.Add(lobbyLabel);
-            //var inviteFriendsIcon = new SimplerSymbolButton(storyMenu, storyMenu.pages[0], "Kill_Slugcat", "InviteFriends", new Vector2(storyMenu.playerButtons[0].pos.x - 35f, storyMenu.playerButtons[0].pos.y + 5f));
-            //inviteFriendsIcon.OnClick += (_) =>
-            //{
 
-            //    SteamFriends.ActivateGameOverlay("friends");
+            var invite = new SimplerButton[1];
+            invite[0] = new SimplerButton(storyMenu, storyMenu.pages[0], storyMenu.Translate("Invite Friends"),  new(storyMenu.nextButton.pos.x + 80f, 50f), new(110, 35));
+            storyMenu.pages[0].subObjects.Add(invite[0]);
 
-            //};
-            // storyMenu.pages[0].subObjects.Add(inviteFriendsIcon);
+            invite[0].OnClick += (_) =>
+            {
+                SteamFriends.ActivateGameOverlay("friends");
+            };
 
             if (RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value && !OnlineManager.lobby.isOwner)
             {
@@ -173,9 +176,10 @@ namespace RainMeadow
         {
             foreach (var obj in storyMenu.pages[0].subObjects) // unfortunate locally declared variable.
             {
-                if (obj is SimpleButton && (obj as SimpleButton).signalText == "BACK") {
+                if (obj is SimpleButton && (obj as SimpleButton).signalText == "BACK")
+                {
 
-                    (obj as SimpleButton).pos = new Vector2(50f, 50f);
+                    (obj as SimpleButton).pos = new Vector2(storyMenu.prevButton.pos.x - 140f, 50f);
 
                 }
             }
@@ -257,11 +261,28 @@ namespace RainMeadow
             storyMenu.hostStartButton.buttonBehav.greyedOut = false;
             storyMenu.pages[0].subObjects.Add(storyMenu.hostStartButton);
 
-           
-            storyMenu.resetSaveCheckbox = new CheckBox(storyMenu, storyMenu.pages[0], storyMenu, new Vector2(storyMenu.colorsCheckbox.pos.x + 150f, storyMenu.colorsCheckbox.pos.y), 70f, storyMenu.Translate("Reset Save"), "RESETSAVE", false);
+
+            var sameSpotOtherSide = storyMenu.colorsCheckbox.pos.x - storyMenu.startButton.pos.x;
+
+
+            storyMenu.resetSaveCheckbox = new CheckBox(storyMenu, storyMenu.pages[0], storyMenu, new Vector2(storyMenu.startButton.pos.x - sameSpotOtherSide, storyMenu.colorsCheckbox.pos.y), 70f, storyMenu.Translate("Reset Save"), "RESETSAVE", false);
             storyMenu.resetSaveCheckbox.Singal(storyMenu.pages[0], "RESETSAVE");
             storyMenu.pages[0].subObjects.Add(storyMenu.resetSaveCheckbox);
 
+            try
+            {
+                if (storyMenu.saveGameData[story.currentCampaign].shelterName != null && storyMenu.saveGameData[story.currentCampaign].shelterName.Length > 2)
+
+                {
+                    story.region = Region.GetRegionFullName(storyMenu.saveGameData[story.currentCampaign].shelterName.Substring(0, 2), story.currentCampaign);
+                }
+            }
+            catch
+            {
+                RainMeadow.Error("Errro getting next region name");
+                story.region = "";
+
+            }
 
 
         }
@@ -278,65 +299,48 @@ namespace RainMeadow
 
             storyMenu.pages[0].subObjects.Add(storyMenu.clientWaitingButton);
 
-           
-            storyMenu.clientWantsToOverwriteSave = new CheckBox(storyMenu, storyMenu.pages[0], storyMenu, new Vector2(storyMenu.colorsCheckbox.pos.x + 150f, storyMenu.colorsCheckbox.pos.y), 70f, storyMenu.Translate("Copy host progress"), "OVERWRITECLIENTSAVE", false);
+            var sameSpotOtherSide = storyMenu.colorsCheckbox.pos.x - storyMenu.startButton.pos.x;
+
+            storyMenu.clientWantsToOverwriteSave = new CheckBox(storyMenu, storyMenu.pages[0], storyMenu, new Vector2(storyMenu.startButton.pos.x - sameSpotOtherSide, storyMenu.colorsCheckbox.pos.y), 70f, storyMenu.Translate("Match save"), "OVERWRITECLIENTSAVE", false);
             storyMenu.clientWantsToOverwriteSave.Singal(storyMenu.pages[0], "OVERWRITECLIENTSAVE");
             storyMenu.pages[0].subObjects.Add(storyMenu.clientWantsToOverwriteSave);
+
+
+            if (storyMenu.slugcatPages[storyMenu.indexFromColor(story.currentCampaign)] != null && storyMenu.slugcatPages[storyMenu.indexFromColor(story.currentCampaign)] is SlugcatSelectMenu.SlugcatPageContinue p)
+            {
+                storyMenu.campaignContainer.pos = p.KarmaSymbolPos;
+
+                var text = Region.GetRegionFullName(story.region, story.currentCampaign);
+                if (text.Length > 0)
+                {
+                    text = storyMenu.Translate(text);  
+                }
+
+                p.regionLabel.RemoveSprites();
+                storyMenu.pages[0].RemoveSubObject(p.regionLabel);
+                
+
+                List<HudPart> partsToRemove = new List<HudPart>();
+
+                foreach (HudPart part in p.hud.parts)
+                {
+                    RainMeadow.Debug(part);
+                    if (part is KarmaMeter || part is FoodMeter)
+                    {
+                        partsToRemove.Add(part);
+                    }
+                }
+
+                foreach (HudPart part in partsToRemove)
+                {
+                    part.slatedForDeletion = true;
+                    part.ClearSprites();
+                    p.hud.parts.Remove(part);
+                }
+            }
+
+
         }
         #endregion
-
-        internal static Color HslToRgb(float hue, float saturation, float lightness)
-        {
-            // Convert HSL to RGB
-            float c = (1 - Math.Abs(2 * lightness - 1)) * saturation;
-            float x = c * (1 - Math.Abs(((hue / 60) % 2) - 1));
-            float m = lightness - c / 2;
-
-            float rPrime = 0, gPrime = 0, bPrime = 0;
-
-            if (hue >= 0 && hue < 60)
-            {
-                rPrime = c;
-                gPrime = x;
-                bPrime = 0;
-            }
-            else if (hue >= 60 && hue < 120)
-            {
-                rPrime = x;
-                gPrime = c;
-                bPrime = 0;
-            }
-            else if (hue >= 120 && hue < 180)
-            {
-                rPrime = 0;
-                gPrime = c;
-                bPrime = x;
-            }
-            else if (hue >= 180 && hue < 240)
-            {
-                rPrime = 0;
-                gPrime = x;
-                bPrime = c;
-            }
-            else if (hue >= 240 && hue < 300)
-            {
-                rPrime = x;
-                gPrime = 0;
-                bPrime = c;
-            }
-            else
-            {
-                rPrime = c;
-                gPrime = 0;
-                bPrime = x;
-            }
-
-            // Add m to adjust RGB values
-            int r = (int)((rPrime + m) * 255);
-            int g = (int)((gPrime + m) * 255);
-            int b = (int)((bPrime + m) * 255);
-
-            return new Color(r, g, b); // Return the RGB color
-        }
     }
 }
