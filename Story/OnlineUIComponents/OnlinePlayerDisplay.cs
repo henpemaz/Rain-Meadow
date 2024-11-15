@@ -14,6 +14,8 @@ namespace RainMeadow
 
         public Color color;
         public Color lighter_color;
+        public Color noAlpha;
+        public Color fadeColor;
 
         public int counter;
         public int resetUsernameCounter;
@@ -24,8 +26,8 @@ namespace RainMeadow
         public int onlineTimeSinceSpawn;
         public string iconString;
 
-        public int notifyPlayer;
-        public bool flippedColor;
+        public float fadeSpeed;
+        public float fadeTime;
        
         SlugcatCustomization customization;
 
@@ -37,6 +39,9 @@ namespace RainMeadow
 
             this.color = customization.SlugcatColor();
             this.lighter_color = color * 1.7f;
+            this.noAlpha = lighter_color;
+            this.noAlpha.a = 0f;
+            this.fadeColor = lighter_color;
 
 
             this.pos = new Vector2(-1000f, -1000f);
@@ -90,8 +95,8 @@ namespace RainMeadow
 
             this.customization = customization;
 
-            this.notifyPlayer = 0;
-            this.flippedColor = false;
+            this.fadeSpeed = 30f;
+            this.fadeTime = 0f;
         }
 
         public override void Update()
@@ -99,7 +104,7 @@ namespace RainMeadow
             base.Update();
             onlineTimeSinceSpawn++;
 
-            bool show = RainMeadow.rainMeadowOptions.ShowFriends.Value || (owner.clientSettings.isMine && onlineTimeSinceSpawn < 120) || owner.PlayerInShelter || owner.PlayerInGate;
+            bool show = RainMeadow.rainMeadowOptions.ShowFriends.Value || (owner.clientSettings.isMine && onlineTimeSinceSpawn < 120 || owner.PlayerInGate || owner.PlayerInShelter);
             if (show || this.alpha > 0)
             {
                 this.lastAlpha = this.alpha;
@@ -182,23 +187,22 @@ namespace RainMeadow
 
             if (owner.PlayerInGate || owner.PlayerInShelter)
             {
-                this.notifyPlayer++;
-
-                if (this.notifyPlayer % 60 == 0)
+                if (RainMeadow.rainMeadowOptions.ShowFriends.Value || RainMeadow.rainMeadowOptions.ReadyToContinueToggle.Value)
                 {
-                    if (this.flippedColor)
-                    {
-                        this.username.color = Color.white;
-                        this.slugIcon.color = Color.white;
-                        this.arrowSprite.color = Color.white;
-                    }
-                    else
-                    {
-                        this.username.color = lighter_color;
-                        this.slugIcon.color = lighter_color;
-                        this.arrowSprite.color = lighter_color;
-                    }
-                    this.flippedColor = !this.flippedColor;
+                    this.fadeColor = Color.Lerp(lighter_color, noAlpha, (Mathf.Cos(fadeTime / fadeSpeed) + 1f) / 2f);
+
+                    this.slugIcon.color = fadeColor;
+                    this.username.color = fadeColor;
+                    this.arrowSprite.color = fadeColor;
+
+                    this.fadeTime++;
+                }
+                else
+                {
+                    this.slugIcon.color = noAlpha;
+                    this.username.color = noAlpha;
+                    this.arrowSprite.color = noAlpha;
+                    this.gradient.alpha = 0f;
                 }
             }
             else
