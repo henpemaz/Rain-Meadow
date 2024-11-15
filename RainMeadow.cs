@@ -14,7 +14,7 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.0.73.1337";
+        public const string MeadowVersionStr = "0.0.74";
         public static RainMeadow instance;
         private bool init;
         public bool fullyInit;
@@ -36,8 +36,6 @@ namespace RainMeadow
             On.RWCustom.Custom.LogImportant += Custom_LogImportant;
             On.RWCustom.Custom.LogWarning += Custom_LogWarning;
         }
-
-
 
         private void Custom_LogWarning(On.RWCustom.Custom.orig_LogWarning orig, string[] values)
         {
