@@ -100,7 +100,6 @@ namespace RainMeadow
                     ClearSprites();
                 }
 
-                RainMeadow.Debug(safetyCatchTimer);
                 if ((safetyCatchTimer > arena.trackSetupTime + 60 && arena.setupTime != 0)) // Something went wrong with the timer. Clear it.
                 {
                     ClearSprites();
