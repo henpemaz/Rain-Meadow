@@ -48,11 +48,6 @@ namespace RainMeadow
             arena.isInGame = false;
             // arena.returnToLobby = false;
             lobby.manager.rainWorld.options.DeleteArenaSitting();
-            if (arena.returnToLobby)
-            {
-                arena.ResetGameTimer();
-                arena.ResetViolence();
-            }
 
             //Nightcat.ResetNightcat();
 

@@ -36,6 +36,8 @@ namespace RainMeadow
             public bool countdownInitiatedHoldFire;
             [OnlineField]
             public int playerEnteredGame;
+            [OnlineField]
+            public int arenclientsAreReadiedUp;
 
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
@@ -52,6 +54,7 @@ namespace RainMeadow
                 countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
                 playerResultColors = arena.playerResultColors;
                 playerEnteredGame = arena.playerEnteredGame;
+                arenclientsAreReadiedUp = arena.clientsAreReadiedUp;
 
             }
 
@@ -68,8 +71,9 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaCompetitiveGameMode).playersInLobbyChoosingSlugs = playersChoosingSlugs;
                 (lobby.gameMode as ArenaCompetitiveGameMode).countdownInitiatedHoldFire = countdownInitiatedHoldFire;
                 (lobby.gameMode as ArenaCompetitiveGameMode).playerResultColors = playerResultColors;
-
                 (lobby.gameMode as ArenaCompetitiveGameMode).playerEnteredGame = playerEnteredGame;
+                (lobby.gameMode as ArenaCompetitiveGameMode).clientsAreReadiedUp = arenclientsAreReadiedUp;
+
 
             }
 
