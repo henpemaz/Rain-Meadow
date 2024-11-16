@@ -34,6 +34,7 @@ namespace RainMeadow
         private OpTinyColorPicker eyeColorPicker;
         private MenuLabel campaignContainer;
         private CheckBox resetSaveCheckbox;
+        private CheckBox friendlyFireCheckbox;
         private CheckBox clientWantsToOverwriteSave;
 
         private bool resetSave;
@@ -143,6 +144,9 @@ namespace RainMeadow
 
             resetSaveCheckbox = new CheckBox(this, mainPage, this, new Vector2(903, 30f), 70f, Translate("Reset Save"), "RESETSAVE", false);
             this.pages[0].subObjects.Add(resetSaveCheckbox);
+
+            friendlyFireCheckbox = new CheckBox(this, mainPage, this, new Vector2(903, 70f), 70f, Translate("Friendly Fire"), "FRIENDLYFIRE", false);
+            this.pages[0].subObjects.Add(friendlyFireCheckbox);
 
             // Previous
             this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
@@ -590,6 +594,10 @@ namespace RainMeadow
                 if (idstring == "RESETSAVE")
                 {
                     resetSave = !resetSave;
+                }
+                if (idstring == "FRIENDLYFIRE")
+                {
+                    gameMode.friendlyFire = !gameMode.friendlyFire;
                 }
 
                 if (idstring == "OVERWRITECLIENTSAVE")
