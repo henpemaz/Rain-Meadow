@@ -103,7 +103,7 @@ namespace RainMeadow
                 if ((safetyCatchTimer > RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value + 60 && arena.setupTime != 0) || (!arena.countdownInitiatedHoldFire && arena.setupTime != 0)) // Something went wrong with the timer. Clear it.
                 {
                     ClearSprites();
-                    arena.setupTime = 0;
+                    arena.countdownInitiatedHoldFire = false;
 
                 };
 
