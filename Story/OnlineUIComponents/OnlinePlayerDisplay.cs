@@ -104,7 +104,7 @@ namespace RainMeadow
             base.Update();
             onlineTimeSinceSpawn++;
 
-            bool show = RainMeadow.rainMeadowOptions.ShowFriends.Value || (owner.clientSettings.isMine && onlineTimeSinceSpawn < 120 || owner.PlayerInGate || owner.PlayerInShelter);
+            bool show = RainMeadow.rainMeadowOptions.ShowFriends.Value || (owner.clientSettings.isMine && onlineTimeSinceSpawn < 120);
             if (show || this.alpha > 0)
             {
                 this.lastAlpha = this.alpha;
@@ -123,7 +123,7 @@ namespace RainMeadow
                     if (owner.PlayerInShelter) slugIcon.SetElementByName("ShortcutShelter");
                     else if (owner.PlayerInGate) slugIcon.SetElementByName("ShortcutGate");
                     else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
-                    else slugIcon.SetElementByName("Kill_Slugcat");
+                    else slugIcon.SetElementByName(iconString);
                 }
                 else
                 {
