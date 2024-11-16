@@ -55,6 +55,7 @@ namespace RainMeadow
             {
                 arena.arenaSittingOnlineOrder = new List<ushort>();
                 arena.returnToLobby = true;
+                arena.ResetGameTimer();
             }
 
             allSlugs = ArenaHelpers.AllSlugcats();
@@ -286,10 +287,7 @@ namespace RainMeadow
         private void StartGame()
         {
             RainMeadow.DebugMe();
-            if (initiatedStartGameForClient) // no double clicking while I'm pulling you in
-            {
-                return;
-            }
+
 
             if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
@@ -375,6 +373,10 @@ namespace RainMeadow
 
                 }
 
+                if (this.GetGameTypeSetup.playList.Count == 0)
+                {
+                    this.playButton.buttonBehav.greyedOut = true;
+                }
 
                 if (this.GetGameTypeSetup.playList.Count * this.GetGameTypeSetup.levelRepeats >= 0)
                 {

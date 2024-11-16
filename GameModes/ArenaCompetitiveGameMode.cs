@@ -20,6 +20,9 @@ namespace RainMeadow
 
         public ArenaPrepTimer arenaPrepTimer;
         public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
+        public int trackSetupTime;
+
+
         public int arenaSaintAscendanceTimer = RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value;
 
 
@@ -41,6 +44,7 @@ namespace RainMeadow
         public void ResetGameTimer()
         {
             setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
+            trackSetupTime = setupTime;
         }
 
         public void ResetViolence()

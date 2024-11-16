@@ -21,18 +21,20 @@ namespace RainMeadow
         private Vector2 pos, lastPos;
         private float fade, lastFade;
         public ArenaCompetitiveGameMode arena;
+        public ArenaGameSession session;
         public bool cancelTimer;
         private Player? player;
         private bool countdownInitiated;
-
-        public ArenaPrepTimer(HUD.HUD hud, FContainer fContainer, ArenaCompetitiveGameMode arena) : base(hud)
+        private int safetyCatchTimer;
+        public ArenaPrepTimer(HUD.HUD hud, FContainer fContainer, ArenaCompetitiveGameMode arena, ArenaGameSession arenaGameSession) : base(hud)
         {
-            
+
             if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint) // Can snipe players, should wait to give them time to prep
             {
                 arena.setupTime = arena.setupTime * 2;
             }
-
+            session = arenaGameSession;
+            arena.trackSetupTime = arena.setupTime;
             matchMode = TimerMode.Waiting;
 
             timerLabel = new FLabel("font", FormatTime(0))
@@ -56,6 +58,8 @@ namespace RainMeadow
             fContainer.AddChild(modeLabel);
             this.arena = arena;
             countdownInitiated = false;
+            arena.arenaPrepTimer = this;
+            safetyCatchTimer = 0;
         }
 
         public Vector2 DrawPos(float timeStacker)
@@ -68,9 +72,10 @@ namespace RainMeadow
             base.Draw(timeStacker);
             if (RainMeadow.isArenaMode(out var arena))
             {
+                safetyCatchTimer++;
                 arena.setupTime = System.Math.Max(0, arena.setupTime);
 
-                if (arena.playerEnteredGame != arena.arenaSittingOnlineOrder.Count)
+                if (arena.playerEnteredGame < arena.arenaSittingOnlineOrder.Count)
                 {
                     showMode = TimerMode.Waiting;
                     matchMode = TimerMode.Waiting;
@@ -79,10 +84,11 @@ namespace RainMeadow
                 }
                 else if (arena.setupTime > 0)
                 {
-                    arena.setupTime --;
+                    arena.setupTime--;
                     showMode = TimerMode.Countdown;
                     matchMode = TimerMode.Countdown;
                     modeLabel.text = $"Prepare for combat, {SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs)}";
+                    arena.countdownInitiatedHoldFire = true;
                 }
 
                 else if (arena.setupTime <= 0 && !countdownInitiated)
@@ -93,6 +99,16 @@ namespace RainMeadow
                     hud.PlaySound(SoundID.MENU_Start_New_Game);
                     ClearSprites();
                 }
+
+                if ((safetyCatchTimer > arena.trackSetupTime + 60 && arena.setupTime != 0)) // Something went wrong with the timer. Clear it.
+                {
+                    ClearSprites();
+                    arena.countdownInitiatedHoldFire = false;
+
+                };
+
+
+
             }
 
             timerLabel.text = FormatTime(arena.setupTime);
