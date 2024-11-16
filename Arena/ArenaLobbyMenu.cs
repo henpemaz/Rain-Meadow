@@ -286,10 +286,7 @@ namespace RainMeadow
         private void StartGame()
         {
             RainMeadow.DebugMe();
-            if (initiatedStartGameForClient) // no double clicking while I'm pulling you in
-            {
-                return;
-            }
+
 
             if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
