@@ -1149,10 +1149,6 @@ namespace RainMeadow
                     }
                 }
 
-                if (arena.setupTime == 0 && arena.countdownInitiatedHoldFire && arena.playerEnteredGame == arena.arenaSittingOnlineOrder.Count)
-                {
-                    arena.countdownInitiatedHoldFire = false; // in case we missed it during the timer HUD
-                }
 
                 if (!self.sessionEnded)
                 {

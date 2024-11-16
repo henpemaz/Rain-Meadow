@@ -26,7 +26,6 @@ namespace RainMeadow
         private Player? player;
         private bool countdownInitiated;
         private int safetyCatchTimer;
-
         public ArenaPrepTimer(HUD.HUD hud, FContainer fContainer, ArenaCompetitiveGameMode arena, ArenaGameSession arenaGameSession) : base(hud)
         {
 
@@ -35,6 +34,7 @@ namespace RainMeadow
                 arena.setupTime = arena.setupTime * 2;
             }
             session = arenaGameSession;
+            arena.trackSetupTime = arena.setupTime;
             matchMode = TimerMode.Waiting;
 
             timerLabel = new FLabel("font", FormatTime(0))
@@ -88,6 +88,7 @@ namespace RainMeadow
                     showMode = TimerMode.Countdown;
                     matchMode = TimerMode.Countdown;
                     modeLabel.text = $"Prepare for combat, {SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs)}";
+                    arena.countdownInitiatedHoldFire = true;
                 }
 
                 else if (arena.setupTime <= 0 && !countdownInitiated)
@@ -100,7 +101,7 @@ namespace RainMeadow
                 }
 
                 RainMeadow.Debug(safetyCatchTimer);
-                if ((safetyCatchTimer > RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value + 60 && arena.setupTime != 0)) // Something went wrong with the timer. Clear it.
+                if ((safetyCatchTimer > arena.trackSetupTime + 60 && arena.setupTime != 0)) // Something went wrong with the timer. Clear it.
                 {
                     ClearSprites();
                     arena.countdownInitiatedHoldFire = false;
