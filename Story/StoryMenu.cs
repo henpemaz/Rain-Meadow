@@ -597,7 +597,7 @@ namespace RainMeadow
                 }
                 if (idstring == "FRIENDLYFIRE")
                 {
-                    gameMode.friendlyFire = !gameMode.friendlyFire;
+                    gameMode.friendlyFire = c;
                 }
 
                 if (idstring == "OVERWRITECLIENTSAVE")
