@@ -99,8 +99,8 @@ namespace RainMeadow
                     ClearSprites();
                 }
 
-
-                if ((safetyCatchTimer > RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value + 60 && arena.setupTime != 0) || (!arena.countdownInitiatedHoldFire && arena.setupTime != 0)) // Something went wrong with the timer. Clear it.
+                RainMeadow.Debug(safetyCatchTimer);
+                if ((safetyCatchTimer > RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value + 60 && arena.setupTime != 0)) // Something went wrong with the timer. Clear it.
                 {
                     ClearSprites();
                     arena.countdownInitiatedHoldFire = false;
