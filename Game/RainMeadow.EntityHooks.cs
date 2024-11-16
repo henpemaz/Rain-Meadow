@@ -85,6 +85,12 @@ namespace RainMeadow
             orig(self);
             if (OnlineManager.lobby != null && self.GetOnlineObject(out var oe))
             {
+                if (self.type == AbstractPhysicalObject.AbstractObjectType.Oracle)
+                {
+                    // apo.realize doesn't handle oracles
+                    self.realizedObject = new Oracle(self, self.Room.realizedRoom);
+                }
+                RainMeadow.Debug(self.type);
                 if (!oe.isMine && !oe.realized && oe.isTransferable && !oe.isPending)
                 {
                     if (oe.roomSession == null || !oe.roomSession.participants.Contains(oe.owner)) //if owner of oe is subscribed (is participant) do not request

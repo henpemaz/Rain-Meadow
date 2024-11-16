@@ -2,6 +2,7 @@ using HUD;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
+using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,6 +71,16 @@ namespace RainMeadow
             On.SLOracleSwarmer.BitByPlayer += SLOracleSwarmer_BitByPlayer;
             On.CoralBrain.CoralNeuronSystem.PlaceSwarmers += OnCoralNeuronSystem_PlaceSwarmers;
             On.SSOracleSwarmer.NewRoom += SSOracleSwarmer_NewRoom;
+
+            On.Oracle.ctor += Oracle_ctor;
+            IL.Room.ReadyForAI += Room_ReadyForAI;
+            On.SLOracleWakeUpProcedure.SwarmerEnterRoom += SLOracleWakeUpProcedure_SwarmerEnterRoom;
+            IL.SLOracleWakeUpProcedure.Update += SLOracleWakeUpProcedure_Update;
+            IL.SLOracleBehavior.Update += SLOracleBehavior_Update;
+            On.SLOracleBehavior.Update += SLOracleBehavior_Update1;
+            On.SLOracleBehaviorHasMark.Update += SLOracleBehaviorHasMark_Update;
+            On.SLOracleBehaviorHasMark.PlayerPutItemOnGround += SLOracleBehaviorHasMark_PlayerPutItemOnGround;
+
             On.HUD.TextPrompt.Update += TextPrompt_Update;
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
 
@@ -302,22 +313,185 @@ namespace RainMeadow
 
         private void Oracle_SetUpSwarmers(On.Oracle.orig_SetUpSwarmers orig, Oracle self)
         {
-            if (OnlineManager.lobby == null)
-            {
-                orig(self);
-                return;
-            }
+            if (!self.IsLocal()) return;
+            orig(self);
+        }
 
-            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
-            if (room.isOwner)
+        private void Room_ReadyForAI(ILContext il)
+        {
+            try
             {
-                orig(self); //Only setup the room if we are the room owner.
-                foreach (var swamer in self.mySwarmers)
+                // don't spawn oracles if room already contains oracle
+                var c = new ILCursor(il);
+                ILLabel skip = null;
+                c.GotoNext(MoveType.After,
+                    i => i.MatchLdloc(0),
+                    i => i.MatchOr(),
+                    i => i.MatchBrfalse(out skip)
+                );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((Room room) =>
                 {
-                    var apo = swamer.abstractPhysicalObject;
-                    self.room.world.GetResource().ApoEnteringWorld(apo);
-                    self.room.abstractRoom.GetResource().ApoEnteringRoom(apo, apo.pos);
-                }
+                    if (OnlineManager.lobby == null) return false;
+                    RainMeadow.Debug($"existing oracle in room? {room.abstractRoom.GetResource().activeEntities.FirstOrDefault(x => x is OnlinePhysicalObject opo && opo.apo.type == AbstractPhysicalObject.AbstractObjectType.Oracle)}");
+                    RainMeadow.Debug($"existing oracle in world? {room.world.GetResource().activeEntities.FirstOrDefault(x => x is OnlinePhysicalObject opo && opo.apo.type == AbstractPhysicalObject.AbstractObjectType.Oracle)}");
+                    return room.world.GetResource().activeEntities.Any(x => x is OnlinePhysicalObject opo && opo.apo.type == AbstractPhysicalObject.AbstractObjectType.Oracle);
+                });
+                //c.EmitDelegate((Room room) => OnlineManager.lobby != null && room.abstractRoom.GetResource().activeEntities.Any(x => x is OnlinePhysicalObject opo && opo.apo.type == AbstractPhysicalObject.AbstractObjectType.Oracle));
+                c.Emit(OpCodes.Brtrue, skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void SLOracleWakeUpProcedure_SwarmerEnterRoom(On.SLOracleWakeUpProcedure.orig_SwarmerEnterRoom orig, SLOracleWakeUpProcedure self, IntVector2 tilePos)
+        {
+            if (!self.SLOracle.IsLocal()) return;
+            orig(self, tilePos);
+        }
+
+        private void SLOracleWakeUpProcedure_Update(ILContext il)
+        {
+            try
+            {
+                // remote don't spawn SLOracleSwarmer during GoToOracle phase
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<SLOracleWakeUpProcedure>("phase"),
+                    i => i.MatchLdsfld<SLOracleWakeUpProcedure.Phase>("GoToOracle"),
+                    i => i.MatchCall("ExtEnum`1<SLOracleWakeUpProcedure/Phase>", "op_Equality"),
+                    i => i.MatchBrfalse(out _)
+                );
+                c.GotoNext(MoveType.AfterLabel,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                    i => i.MatchLdfld<Room>("world"),
+                    i => i.MatchLdsfld<AbstractPhysicalObject.AbstractObjectType>("SLOracleSwarmer"),
+                    i => i.MatchLdnull(),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<SLOracleWakeUpProcedure>("resqueSwarmer"),
+                    i => i.MatchCallvirt<PhysicalObject>("get_firstChunk"),
+                    i => i.MatchLdfld<BodyChunk>("pos"),
+                    i => i.MatchCallvirt<Room>("GetWorldCoordinate"),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                    i => i.MatchLdfld<Room>("game"),
+                    i => i.MatchCallvirt<RainWorldGame>("GetNewID"),
+                    i => i.MatchNewobj<AbstractPhysicalObject>(),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                    i => i.MatchLdfld<Room>("world"),
+                    i => i.MatchNewobj<SLOracleSwarmer>(),
+                    i => i.MatchStloc(4)
+                );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((SLOracleWakeUpProcedure wakeUpProcedure) => wakeUpProcedure.SLOracle?.IsLocal() ?? true);
+                c.Emit(OpCodes.Brfalse, skip);
+                c.GotoNext(MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<SLOracleWakeUpProcedure>("SLOracle"),
+                    i => i.MatchLdfld<Oracle>("mySwarmers"),
+                    i => i.MatchLdloc(4),
+                    i => i.MatchCallvirt("System.Collections.Generic.List`1<OracleSwarmer>", "Add")
+                );
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void SLOracleBehavior_Update(ILContext il)
+        {
+            try
+            {
+                // remote don't spawn converted SSSwarmer
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(MoveType.AfterLabel,
+                    // holdingObject = null;
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdnull(),
+                    i => i.MatchStfld<SLOracleBehavior>("holdingObject"),
+                    // SLOracleSwarmer sLOracleSwarmer = new SLOracleSwarmer(new AbstractPhysicalObject(oracle.room.world, AbstractPhysicalObject.AbstractObjectType.SLOracleSwarmer, null, oracle.room.GetWorldCoordinate(pos), oracle.room.game.GetNewID()), oracle.room.world);
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<OracleBehavior>("oracle"),
+                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                    i => i.MatchLdfld<Room>("world"),
+                    i => i.MatchLdsfld<AbstractPhysicalObject.AbstractObjectType>("SLOracleSwarmer"),
+                    i => i.MatchLdnull(),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<OracleBehavior>("oracle"),
+                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                    i => i.MatchLdloc(4),
+                    i => i.MatchCallvirt<Room>("GetWorldCoordinate"),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<OracleBehavior>("oracle"),
+                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                    i => i.MatchLdfld<Room>("game"),
+                    i => i.MatchCallvirt<RainWorldGame>("GetNewID"),
+                    i => i.MatchNewobj<AbstractPhysicalObject>(),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<OracleBehavior>("oracle"),
+                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                    i => i.MatchLdfld<Room>("world"),
+                    i => i.MatchNewobj<SLOracleSwarmer>(),
+                    i => i.MatchStloc(5)
+                );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((SLOracleBehavior behavior) => behavior.oracle?.IsLocal() ?? true);
+                c.Emit(OpCodes.Brfalse, skip);
+                c.GotoNext(MoveType.AfterLabel,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchCallvirt<SLOracleBehavior>("ConvertingSSSwarmer")
+                );
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        // don't drop prematurely
+        private void SLOracleBehavior_Update1(On.SLOracleBehavior.orig_Update orig, SLOracleBehavior self, bool eu)
+        {
+            var holdingObject = self.holdingObject;
+            orig(self, eu);
+            if (!self.oracle.IsLocal()) self.holdingObject = holdingObject;
+        }
+
+        // don't drop prematurely
+        private void SLOracleBehaviorHasMark_Update(On.SLOracleBehaviorHasMark.orig_Update orig, SLOracleBehaviorHasMark self, bool eu)
+        {
+            var holdingObject = self.holdingObject;
+            orig(self, eu);
+            if (!self.oracle.IsLocal()) self.holdingObject = holdingObject;
+        }
+
+        // consider syncing via RPC
+        private void SLOracleBehaviorHasMark_PlayerPutItemOnGround(On.SLOracleBehaviorHasMark.orig_PlayerPutItemOnGround orig, SLOracleBehaviorHasMark self)
+        {
+            orig(self);
+            if (OnlineManager.lobby != null && self.oracle.abstractPhysicalObject.GetOnlineObject(out var opo) && !opo.isMine)
+            {
+                opo.Request();
+            }
+        }
+
+        private void Oracle_ctor(On.Oracle.orig_ctor orig, Oracle self, AbstractPhysicalObject abstractPhysicalObject, Room room)
+        {
+            orig(self, abstractPhysicalObject, room);
+            if (OnlineManager.lobby != null && abstractPhysicalObject.GetOnlineObject() is null)
+            {
+                room.abstractRoom.AddEntity(abstractPhysicalObject);
             }
         }
 
