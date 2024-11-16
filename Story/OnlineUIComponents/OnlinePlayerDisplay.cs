@@ -197,7 +197,7 @@ namespace RainMeadow
 
                     this.fadeTime++;
                 }
-                else
+                else if (!owner.clientSettings.isMine && onlineTimeSinceSpawn < 120)
                 {
                     this.slugIcon.color = noAlpha;
                     this.username.color = noAlpha;
