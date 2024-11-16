@@ -586,22 +586,25 @@ namespace RainMeadow
 
         private static async Task PlaySong(MusicPlayer musicPlayer, string providedsong, bool Patient = true)
         {
-            Song song = await Task.Run(() => LoadSong(musicPlayer, providedsong, Patient));
+            Song? song = await Task.Run(() => LoadSong(musicPlayer, providedsong, Patient));
 
-            var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
-            var creature = mgm.avatars[0];
-            var musicdata = creature.GetData<MeadowMusicData>();
+            if (song != null)
+            {
+                var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
+                var creature = mgm.avatars[0];
+                var musicdata = creature.GetData<MeadowMusicData>();
 
-            musicPlayer.song = song;
-            musicdata.providedSong = providedsong;
-            musicdata.startedPlayingAt = LobbyTime();
-            RainMeadow.Debug("my song is now " + musicdata.providedSong);
+                musicPlayer.song = song;
+                musicdata.providedSong = providedsong;
+                musicdata.startedPlayingAt = LobbyTime();
+                RainMeadow.Debug("my song is now " + musicdata.providedSong);
+            }
         }
         
-        private static Song LoadSong(MusicPlayer musicPlayer, string providedsong, bool Patient = true)
+        private static Song? LoadSong(MusicPlayer musicPlayer, string providedsong, bool Patient = true)
         {
             loadingsong = true;
-
+            //just putting more and more technical debt onto songnames
             Song song = new(musicPlayer, providedsong, MusicPlayer.MusicContext.StoryMode)
             {
                 playWhenReady = true,
@@ -613,12 +616,23 @@ namespace RainMeadow
             sub.isStreamed = false;
             string text4 = string.Concat(new string[] { "Music", Path.DirectorySeparatorChar.ToString(), "Songs", Path.DirectorySeparatorChar.ToString(), sub.trackName, ".ogg" });
             string text5 = AssetManager.ResolveFilePath(text4);
+            //AudioClip clipclip;
             if (text5 != Path.Combine(Custom.RootFolderDirectory(), text4.ToLowerInvariant()) && File.Exists(text5))
             {
-                //RainMeadow.Debug("It does load the song safetly ");
-                sub.source.clip = AssetManager.SafeWWWAudioClip("file://" + text5, false, true, AudioType.OGGVORBIS);
+                RainMeadow.Debug("It does load the song safetly ");
                 sub.isStreamed = true;
             }
+            else
+            {
+                RainMeadow.Debug($"Requested song {text5} does not exist");
+                loadingsong = false;
+                return null;
+            }
+            AudioClip clipclip = AssetManager.SafeWWWAudioClip("file://" + text5, false, true, AudioType.OGGVORBIS);
+                
+            //}
+
+            /*
             //else if (sub.loadOp == null)
             //{
             //    //string text6;
@@ -642,7 +656,40 @@ namespace RainMeadow
             //    sub.source.clip.LoadAudioData();
             //}
             //
-			if (sub.source.clip != null)
+
+
+            // BPM search range
+            int MIN_BPM = 60;
+            int MAX_BPM = 400;
+            // Base frequency (44.1kbps)
+            int BASE_FREQUENCY = 44100;
+            // Base channels (2ch)
+            int BASE_CHANNELS = 2;
+            // Base split size of sample data (case of 44.1kbps & 2ch)
+            int BASE_SPLIT_SAMPLE_SIZE = 2205;
+
+
+            Debug.Log("AnalyzeBpm audioClipName : " + clipclip.name);
+            
+            int frequency = clipclip.frequency;
+            Debug.Log("Frequency : " + frequency);
+            
+            int channels = clipclip.channels;
+            Debug.Log("Channels : " + channels);
+            
+            //int splitFrameSize = Mathf.FloorToInt(((float)frequency / (float)BASE_FREQUENCY) * ((float)channels / (float)BASE_CHANNELS) * (float)BASE_SPLIT_SAMPLE_SIZE);
+            
+            */
+
+            // Get all sample data from audioclip
+            //var allSamples = new float[clipclip.samples * clipclip.channels];
+            //
+            //clipclip.GetData(allSamples, 0);
+            //var reversesamples = allSamples.Reverse();
+            //clipclip.SetData(reversesamples.ToArray(), 0);
+            sub.source.clip = clipclip;
+
+            if (sub.source.clip != null)
 			{
 				sub.source.clip.LoadAudioData();
 			}
