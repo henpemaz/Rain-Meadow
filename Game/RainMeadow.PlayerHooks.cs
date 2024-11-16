@@ -452,7 +452,7 @@ public partial class RainMeadow
 
         if (OnlineManager.lobby != null)
         {
-            if (self.SlugCatClass == SlugcatStats.Name.Night)
+            if (self.slugcatStats.throwingSkill == 0)
             {
                 self.slugcatStats.throwingSkill = 1; // don't let them push you around
                 // Nightcat.ResetSneak(self);

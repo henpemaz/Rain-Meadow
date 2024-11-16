@@ -70,7 +70,7 @@ namespace RainMeadow
             {
                 arena.setupTime = System.Math.Max(0, arena.setupTime);
 
-                if (arena.playerEnteredGame != arena.arenaSittingOnlineOrder.Count)
+                if (arena.playerEnteredGame < arena.arenaSittingOnlineOrder.Count)
                 {
                     showMode = TimerMode.Waiting;
                     matchMode = TimerMode.Waiting;
