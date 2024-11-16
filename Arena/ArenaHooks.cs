@@ -949,7 +949,7 @@ namespace RainMeadow
                 self.AddPart(new Pointing(self));
                 self.AddPart(new ChatHud(self, session.game.cameras[0]));
                 self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
-                self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena));
+                self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena, session));
                 self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));
 
             }
