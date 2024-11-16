@@ -375,6 +375,10 @@ namespace RainMeadow
 
                 }
 
+                if (this.GetGameTypeSetup.playList.Count == 0)
+                {
+                    this.playButton.buttonBehav.greyedOut = true;
+                }
 
                 if (this.GetGameTypeSetup.playList.Count * this.GetGameTypeSetup.levelRepeats >= 0)
                 {
