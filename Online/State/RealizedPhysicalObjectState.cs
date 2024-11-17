@@ -57,7 +57,10 @@ namespace RainMeadow
 
         public void ReadTo(BodyChunk c)
         {
-            c.pos = pos;
+            if (c.pos.CloseEnough(pos, 1f))
+                c.pos = pos;
+            else
+                c.HardSetPosition(pos);
             c.vel = vel;
         }
 
