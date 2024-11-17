@@ -8,6 +8,7 @@ using UnityEngine;
 using MonoMod.RuntimeDetour;
 using System.Runtime.CompilerServices;
 using MoreSlugcats;
+using MonoMod;
 
 namespace RainMeadow;
 
@@ -78,6 +79,7 @@ public partial class RainMeadow
         IL.RainWorldGame.SpawnPlayers_int_WorldCoordinate += Player_AppendPupCheck;
         IL.SaveState.SessionEnded += Player_AppendPupCheck;
         IL.SlugcatHand.Update += Player_AppendPupCheck;
+        On.SlugcatHand.Update += Player_SlugcatHandUpdate;
         IL.SlugcatStats.ctor += Player_AppendPupCheck;
         IL.SlugcatStats.HiddenOrUnplayableSlugcat += Player_AppendPupCheck;
         IL.SlugcatStats.SlugcatFoodMeter += Player_AppendPupCheck;
@@ -774,6 +776,39 @@ public partial class RainMeadow
         catch (Exception e)
         {
             Logger.LogError(e);
+        }
+    }
+
+    private void Player_SlugcatHandUpdate(On.SlugcatHand.orig_Update orig, SlugcatHand self)
+    {
+        // Call the original method to keep the base behavior
+        orig(self);
+
+        // Scale the hands (arms) position relative to its connection
+        // In base game pups have long arms, which looks goofy
+        // (extensively tested, 3 different setups)
+        Player player = (self.owner.owner as Player);
+        if (player == null || (!player.isNPC && !player.playerState.isPup)) return;
+
+        // I don't know how to fix arms when crawling, it's not even noticable so I'm just not gonna fix it
+        if (player.bodyMode == Player.BodyModeIndex.Crawl) return;
+
+        if (player.animation == Player.AnimationIndex.HangUnderVerticalBeam)
+        {
+            // this fixes arms when hanging from vertical pipes
+            Vector2 offset = self.absoluteHuntPos - self.owner.owner.bodyChunks[0].pos;
+            self.absoluteHuntPos = self.owner.owner.bodyChunks[0].pos + offset * 0.5f;
+        }
+
+        if (player.animation == Player.AnimationIndex.HangUnderVerticalBeam ||
+            player.animation == Player.AnimationIndex.StandOnBeam ||
+            player.animation == Player.AnimationIndex.BeamTip
+        )
+        {
+            // this works for standing on pipes (balancing) (that includes: standing on horizontal pipes, beam tips)
+            // also required for the above fix (hanging)
+            // probably doesn't fix crawling arms being too long, but im gonna keep it since it doesnt break anything
+            self.relativeHuntPos *= 0.5f;
         }
     }
 }
