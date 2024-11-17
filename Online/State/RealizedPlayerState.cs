@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -14,6 +15,8 @@ namespace RainMeadow
         private bool standing;
         [OnlineField]
         private bool glowing;
+        [OnlineField]
+        private bool isPup;
         [OnlineField(nullable = true)]
         private OnlineEntity.EntityId? spearOnBack;
         //[OnlineField(nullable = true)]
@@ -46,6 +49,7 @@ namespace RainMeadow
             bodyModeIndex = (byte)p.bodyMode.Index;
             standing = p.standing;
             glowing = p.glowing;
+            isPup = p.playerState.isPup;
             spearOnBack = (p.spearOnBack?.spear?.abstractPhysicalObject is AbstractPhysicalObject apo
                 && OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) ? oe.id : null;
             //slugOnBack = (p.slugOnBack?.slugcat?.abstractPhysicalObject is AbstractPhysicalObject apo0
@@ -105,6 +109,10 @@ namespace RainMeadow
                 pl.bodyMode = new Player.BodyModeIndex(Player.BodyModeIndex.values.GetEntry(bodyModeIndex));
                 pl.standing = standing;
                 pl.glowing = glowing;
+                if (pl.playerState.isPup != isPup)
+                {
+                    pl.playerState.isPup = isPup;
+                }
                 if (pl.spearOnBack != null)
                     pl.spearOnBack.spear = (spearOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Spear;
                 //if (pl.slugOnBack != null)

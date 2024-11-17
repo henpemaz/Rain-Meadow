@@ -34,6 +34,7 @@ namespace RainMeadow
         private OpTinyColorPicker eyeColorPicker;
         private MenuLabel campaignContainer;
         private CheckBox resetSaveCheckbox;
+        private CheckBox slugpupCheckbox;
         private CheckBox clientWantsToOverwriteSave;
 
         private bool resetSave;
@@ -144,6 +145,9 @@ namespace RainMeadow
             resetSaveCheckbox = new CheckBox(this, mainPage, this, new Vector2(903, 30f), 70f, Translate("Reset Save"), "RESETSAVE", false);
             this.pages[0].subObjects.Add(resetSaveCheckbox);
 
+            slugpupCheckbox = new CheckBox(this, mainPage, this, new Vector2(903, 110f), 70f, Translate("Be a pup"), "SLUGPUP", false);
+            this.pages[0].subObjects.Add(slugpupCheckbox);
+
             // Previous
             this.prevButton = new EventfulBigArrowButton(this, this.pages[0], new Vector2(345f, 50f), -1);
             this.prevButton.OnClick += (_) =>
@@ -216,6 +220,9 @@ namespace RainMeadow
             clientWantsToOverwriteSave = new CheckBox(this, mainPage, this, new Vector2(907, 30f), 70f, Translate("Overwrite save progress"), "OVERWRITECLIENTSAVE", true);
 
             this.pages[0].subObjects.Add(clientWantsToOverwriteSave);
+
+            slugpupCheckbox = new CheckBox(this, mainPage, this, new Vector2(907, 70f), 70f, Translate("Be a pup"), "SLUGPUP", true);
+            this.pages[0].subObjects.Add(slugpupCheckbox);
         }
 
         private void StartGame()
@@ -234,7 +241,6 @@ namespace RainMeadow
                 else // I'm a client and I want my own Slugcat
                 {
                     personaSettings.playingAs = customSelectedSlugcat;
-
                 }
             }
             else //I'm the host
@@ -575,6 +581,10 @@ namespace RainMeadow
                 {
                     return resetSave;
                 }
+                if (idstring == "SLUGPUP")
+                {
+                    return RainMeadow.playerIsSlugpup;
+                }
                 if (idstring == "OVERWRITECLIENTSAVE")
                 {
                     return gameMode.saveToDisk;
@@ -591,7 +601,10 @@ namespace RainMeadow
                 {
                     resetSave = !resetSave;
                 }
-
+                if (idstring == "SLUGPUP")
+                {
+                    RainMeadow.playerIsSlugpup = c;
+                }
                 if (idstring == "OVERWRITECLIENTSAVE")
                 {
                     gameMode.saveToDisk = !gameMode.saveToDisk;

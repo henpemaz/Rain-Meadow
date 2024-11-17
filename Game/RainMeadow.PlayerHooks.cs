@@ -7,12 +7,14 @@ using System.Linq;
 using UnityEngine;
 using MonoMod.RuntimeDetour;
 using System.Runtime.CompilerServices;
+using MoreSlugcats;
 
 namespace RainMeadow;
 
 public partial class RainMeadow
 {
     public static bool sSpawningAvatar;
+    public static bool playerIsSlugpup = false;
     public void PlayerHooks()
     {
         On.RainWorldGame.SpawnPlayers_bool_bool_bool_bool_WorldCoordinate += RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate; // Personas are set as non-transferable
@@ -49,6 +51,43 @@ public partial class RainMeadow
         On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites2;
 
         On.Weapon.HitSomethingWithoutStopping += Weapon_HitSomethingWithoutStopping;
+
+        // Slugpup methods
+        IL.MoreSlugcats.MSCRoomSpecificScript.ArtificerDream_3.SceneSetup += Player_AppendPupCheck;
+        IL.MoreSlugcats.MSCRoomSpecificScript.ArtificerDream_4.SceneSetup += Player_AppendPupCheck;
+        IL.MoreSlugcats.PlayerNPCState.ctor += Player_AppendPupCheck;
+        IL.MoreSlugcats.PlayerNPCState.CycleTick += Player_AppendPupCheck;
+        IL.OverWorld.LoadFirstWorld += Player_AppendPupCheck;
+        IL.Player.CanIPickThisUp += Player_AppendPupCheck;
+        IL.Player.CanIPutDeadSlugOnBack += Player_AppendPupCheck;
+        IL.Player.ctor += Player_AppendPupCheck;
+        IL.Player.GetInitialSlugcatClass += Player_AppendPupCheck;
+        IL.Player.Grabability += Player_AppendPupCheck;
+        IL.Player.NPCStats.ctor += Player_AppendPupCheck;
+        IL.PlayerGraphics.ApplyPalette += Player_AppendPupCheck;
+        IL.PlayerGraphics.ctor += Player_AppendPupCheck;
+        IL.PlayerGraphics.DefaultFaceSprite_float += Player_AppendPupCheck;
+        IL.PlayerGraphics.DefaultFaceSprite_float_int += Player_AppendPupCheck;
+        IL.PlayerGraphics.DrawSprites += Player_AppendPupCheck;
+        IL.PlayerGraphics.TailSpeckles.DrawSprites += Player_AppendPupCheck;
+        IL.PlayerGraphics.Update += Player_AppendPupCheck;
+        IL.RainWorld.BuildTokenCache += Player_AppendPupCheck;
+        IL.RainWorldGame.ArtificerDreamEnd += Player_AppendPupCheck;
+        IL.RainWorldGame.ctor += Player_AppendPupCheck;
+        IL.RainWorldGame.SpawnPlayers_bool_bool_bool_bool_WorldCoordinate += Player_AppendPupCheck;
+        IL.RainWorldGame.SpawnPlayers_int_WorldCoordinate += Player_AppendPupCheck;
+        IL.SaveState.SessionEnded += Player_AppendPupCheck;
+        IL.SlugcatHand.Update += Player_AppendPupCheck;
+        IL.SlugcatStats.ctor += Player_AppendPupCheck;
+        IL.SlugcatStats.HiddenOrUnplayableSlugcat += Player_AppendPupCheck;
+        IL.SlugcatStats.SlugcatFoodMeter += Player_AppendPupCheck;
+
+        // we set isSlugpup, RenderAsPup to playerstate
+        new Hook(typeof(Player).GetProperty("isSlugpup").GetGetMethod(), (Func<Player, bool> orig, Player self) => orig(self) || (!self.isNPC && self.playerState.isPup));
+        new Hook(typeof(PlayerGraphics).GetProperty("RenderAsPup").GetGetMethod(), (Func<PlayerGraphics, bool> orig, PlayerGraphics self) => orig(self) || (!self.player.isNPC && self.player.playerState.isPup));
+
+        // patch because it checks isSlugpup and tries getting npcStats
+        new Hook(typeof(Player).GetProperty("slugcatStats").GetGetMethod(), (Func<Player, SlugcatStats> orig, Player self) => (self.isSlugpup && !self.isNPC) ? self.abstractCreature.world.game.session.characterStats : orig(self));
     }
 
     private void Weapon_HitSomethingWithoutStopping(On.Weapon.orig_HitSomethingWithoutStopping orig, Weapon self, PhysicalObject obj, BodyChunk chunk, PhysicalObject.Appendage appendage)
@@ -430,6 +469,14 @@ public partial class RainMeadow
         orig(self, abstractCreature, world);
         if (OnlineManager.lobby != null)
         {
+            if (self.IsLocal())
+            {
+                self.playerState.isPup = playerIsSlugpup;
+            }
+            if (!self.isNPC && self.npcStats == null)
+            {
+                self.npcStats = new Player.NPCStats(self);
+            }
             if (!self.abstractPhysicalObject.IsLocal(out var oe))
             {
                 self.controller = new OnlineController(oe, self); // remote player
@@ -489,7 +536,7 @@ public partial class RainMeadow
             orig(self);
             return;
         }
-        
+
         if (OnlineManager.lobby.gameMode is MeadowGameMode) return; // do not run
 
         if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity))
@@ -700,5 +747,33 @@ public partial class RainMeadow
             if (crit is Player) return false;
         }
         return orig(self, crit);
+    }
+
+    private void Player_AppendPupCheck(ILContext il)
+    {
+        //351	0328	isinst	Player
+        //352	032D	ldfld	class SlugcatStats/Name Player::SlugCatClass
+        //353	0332	ldsfld	class SlugcatStats/Name MoreSlugcats.MoreSlugcatsEnums/SlugcatStatsName::Slugpup
+        //354	0337	call	bool class ExtEnum`1<class SlugcatStats/Name>::op_Equality(class ExtEnum`1<!0>, class ExtEnum`1<!0>)
+        //355	033C	brfalse.s	363 (0352) ldsfld bool ModManager::CoopAvailable
+        try
+        {
+            var c = new ILCursor(il);
+            // Match the IL sequence for `SlugCatClass == Slugpup`
+            while (c.TryGotoNext(MoveType.AfterLabel,
+                i => i.MatchLdfld(typeof(Player).GetField("SlugCatClass")), // Load SlugCatClass
+                i => i.MatchLdsfld(typeof(MoreSlugcatsEnums.SlugcatStatsName).GetField("Slugpup")), // Load Slugpup
+                i => i.MatchCall(typeof(ExtEnum<SlugcatStats.Name>).GetMethod("op_Equality")) // Call ExtEnum op_Equality
+            ))
+            {
+                c.Emit(OpCodes.Dup); // Duplicate Player
+                c.Index += 3; // Move to delegate
+                c.EmitDelegate((Player player, bool isSlugpup) => isSlugpup || (!player.isNPC && player.playerState.isPup));
+            }
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e);
+        }
     }
 }
