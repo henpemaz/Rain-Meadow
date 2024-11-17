@@ -80,7 +80,8 @@ public partial class RainMeadow
         IL.SaveState.SessionEnded += Player_AppendPupCheck;
         IL.SlugcatHand.Update += Player_AppendPupCheck;
         On.SlugcatHand.Update += Player_SlugcatHandUpdate;
-        IL.SlugcatStats.ctor += Player_AppendPupCheck;
+        // we apply these in player_ctor in here
+        //IL.SlugcatStats.ctor += Player_AppendPupCheck;
         IL.SlugcatStats.HiddenOrUnplayableSlugcat += Player_AppendPupCheck;
         IL.SlugcatStats.SlugcatFoodMeter += Player_AppendPupCheck;
 
@@ -471,14 +472,19 @@ public partial class RainMeadow
         orig(self, abstractCreature, world);
         if (OnlineManager.lobby != null)
         {
-            if (self.IsLocal())
+            // Slugpup Player initialization
+            if (!self.isNPC)
             {
-                self.playerState.isPup = playerIsSlugpup;
+                if (self.IsLocal())
+                {
+                    self.playerState.isPup = playerIsSlugpup;
+                }
+                if (self.npcStats == null)
+                {
+                    self.npcStats = new Player.NPCStats(self);
+                }
             }
-            if (!self.isNPC && self.npcStats == null)
-            {
-                self.npcStats = new Player.NPCStats(self);
-            }
+
             if (!self.abstractPhysicalObject.IsLocal(out var oe))
             {
                 self.controller = new OnlineController(oe, self); // remote player
@@ -489,7 +495,23 @@ public partial class RainMeadow
             }
             if (oe is not null)
             {
-                slugcatStatsPerPlayer.Add(self, new SlugcatStats(self.SlugCatClass, self.slugcatStats.malnourished));
+                SlugcatStats playerSlugcatStats = new SlugcatStats(self.SlugCatClass, self.slugcatStats.malnourished);
+
+                // we multiply by survivor -> slugpup values (aka difference between survivor and slugpup)
+                if (!self.isNPC && self.playerState.isPup)
+                {
+                    playerSlugcatStats.bodyWeightFac *= 0.65f;
+                    playerSlugcatStats.generalVisibilityBonus -= 0.2f;
+                    playerSlugcatStats.visualStealthInSneakMode *= 1.2f;
+                    playerSlugcatStats.loudnessFac *= 0.5f;
+                    playerSlugcatStats.lungsFac *= 0.8f;
+                    playerSlugcatStats.throwingSkill = 0;
+                    playerSlugcatStats.poleClimbSpeedFac *= 0.8f;
+                    playerSlugcatStats.corridorClimbSpeedFac *= 0.8f;
+                    playerSlugcatStats.runspeedFac *= 0.8f;
+                }
+
+                slugcatStatsPerPlayer.Add(self, playerSlugcatStats);
                 RainMeadow.Debug($"slugcatstats:{self.SlugCatClass} owner:{oe.owner}");
             }
         }
