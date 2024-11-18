@@ -72,7 +72,11 @@ namespace RainMeadow
             base.Draw(timeStacker);
             if (RainMeadow.isArenaMode(out var arena))
             {
-                safetyCatchTimer++;
+                if (showMode == TimerMode.Waiting)
+                {
+                    safetyCatchTimer++;
+                }
+
                 arena.setupTime = System.Math.Max(0, arena.setupTime);
 
                 if (arena.playerEnteredGame < arena.arenaSittingOnlineOrder.Count)
