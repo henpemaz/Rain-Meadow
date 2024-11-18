@@ -28,7 +28,7 @@ public class RainMeadowOptions : OptionInterface
         FriendsListKey = config.Bind("OpenMenuKey", KeyCode.J);
         ShowFriends = config.Bind("ShowFriends", false);
         SlugcatCustomToggle = config.Bind("SlugToggle", false);
-        ReadyToContinueToggle = config.Bind("ContinueToggle", true);
+        ReadyToContinueToggle = config.Bind("ContinueToggle", false);
         FriendViewClickToActivate = config.Bind("FriendViewHoldOrToggle", false);
         BodyColor = config.Bind("BodyColor", Color.white);
         EyeColor = config.Bind("EyeColor", Color.black);

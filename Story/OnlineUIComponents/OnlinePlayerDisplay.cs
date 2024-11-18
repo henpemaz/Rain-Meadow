@@ -97,8 +97,10 @@ namespace RainMeadow
             base.Update();
             onlineTimeSinceSpawn++;
 
+            bool flashIcons = (RainMeadow.rainMeadowOptions.ShowFriends.Value || RainMeadow.rainMeadowOptions.ReadyToContinueToggle.Value) && (owner.PlayerInGate || owner.PlayerInShelter);
+
             bool show = RainMeadow.rainMeadowOptions.ShowFriends.Value || (owner.clientSettings.isMine && onlineTimeSinceSpawn < 120);
-            if (show || this.alpha > 0)
+            if (show || this.alpha > 0 || flashIcons)
             {
                 this.lastAlpha = this.alpha;
                 this.blink = 1f;
@@ -113,32 +115,23 @@ namespace RainMeadow
 
                     if (owner.PlayerConsideredDead) this.alpha = Mathf.Min(this.alpha, 0.5f);
 
-                    if (onlineTimeSinceSpawn < 130) slugIcon.SetElementByName("Kill_Slugcat");
+                    if (onlineTimeSinceSpawn < 140 && owner.clientSettings.isMine) slugIcon.SetElementByName("Kill_Slugcat");
                     else if (owner.PlayerInShelter) slugIcon.SetElementByName("ShortcutShelter");
                     else if (owner.PlayerInGate) slugIcon.SetElementByName("ShortcutGate");
                     else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
                     else slugIcon.SetElementByName(iconString);
                 
-                    if (owner.PlayerInGate || owner.PlayerInShelter)
+                    if (flashIcons)
                     {
-                        if (RainMeadow.rainMeadowOptions.ShowFriends.Value || RainMeadow.rainMeadowOptions.ReadyToContinueToggle.Value)
-                        {
-                            this.fadeColor = Color.Lerp(lighter_color, noAlpha, (Mathf.Cos(fadeTime / fadeSpeed) + 1f) / 2f);
+                        this.fadeColor = Color.Lerp(lighter_color, noAlpha, (Mathf.Cos(fadeTime / fadeSpeed) + 1f) / 2f);
 
-                            this.slugIcon.color = fadeColor;
-                            this.username.color = fadeColor;
-                            this.arrowSprite.color = fadeColor;
+                        this.slugIcon.color = fadeColor;
+                        this.username.color = fadeColor;
+                        this.arrowSprite.color = fadeColor;
 
-                            this.fadeTime++;
-                        }
-                        else if (onlineTimeSinceSpawn > 120)
-                        {
-                            this.slugIcon.color = noAlpha;
-                            this.username.color = noAlpha;
-                            this.arrowSprite.color = noAlpha;
-                            this.gradient.alpha = 0f;
-                            this.message.alpha = 0f;
-                        }
+                        this.alpha = fadeColor.a;
+
+                        this.fadeTime++;
                     }
                     else if (RainMeadow.rainMeadowOptions.ShowFriends.Value)
                     {
@@ -206,13 +199,6 @@ namespace RainMeadow
                 this.message.text = "";
                 this.username.text = customization.nickname;
                 resetUsernameCounter = 200;
-            }
-
-            if (!RainMeadow.rainMeadowOptions.ShowFriends.Value && !RainMeadow.rainMeadowOptions.ReadyToContinueToggle.Value)
-            {
-                this.slugIcon.color = lighter_color;
-                this.username.color = lighter_color;
-                this.arrowSprite.color = lighter_color;
             }
 
             this.username.alpha = num;
