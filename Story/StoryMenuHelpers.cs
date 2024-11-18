@@ -7,6 +7,8 @@ using System.Reflection;
 using UnityEngine;
 using HUD;
 using RWCustom;
+using static ExtraExtentions;
+using static System.Net.Mime.MediaTypeNames;
 namespace RainMeadow
 {
     internal static class StoryMenuHelpers
@@ -133,7 +135,7 @@ namespace RainMeadow
 
 
         #region StoryObjects
-        internal static void RemoveExcessStoryObjects(StoryMenuRedux storyMenu)
+        internal static void RemoveExcessStoryObjects(StoryMenuRedux storyMenu, StoryGameMode storyModeOnline)
         {
             if (storyMenu.startButton != null)
             {
@@ -146,9 +148,38 @@ namespace RainMeadow
                 storyMenu.restartCheckbox.RemoveSprites();
                 storyMenu.pages[0].RemoveSubObject(storyMenu.restartCheckbox);
             }
+
+            if (!OnlineManager.lobby.isOwner)
+            {
+                if (storyMenu.nextButton != null)
+                {
+                    storyMenu.nextButton.RemoveSprites();
+                    storyMenu.pages[0].RemoveSubObject(storyMenu.nextButton);
+                }
+                if (storyMenu.prevButton != null)
+                {
+                    storyMenu.prevButton.RemoveSprites();
+                    storyMenu.pages[0].RemoveSubObject(storyMenu.prevButton);
+                }
+
+                if ((storyMenu.slugcatPages[storyMenu.indexFromColor(storyModeOnline.currentCampaign)] != null && storyMenu.slugcatPages[storyMenu.indexFromColor(storyModeOnline.currentCampaign)] is SlugcatSelectMenu.SlugcatPageContinue p))
+                {
+                    p.regionLabel.RemoveSprites();
+                    storyMenu.pages[0].RemoveSubObject(p.regionLabel);
+                }
+
+                if ((storyMenu.slugcatPages[storyMenu.indexFromColor(storyModeOnline.currentCampaign)] != null && storyMenu.slugcatPages[storyMenu.indexFromColor(storyModeOnline.currentCampaign)] is SlugcatSelectMenu.SlugcatPageNewGame pN))
+                {
+                    pN.difficultyLabel.RemoveSprites();
+                    pN.infoLabel.RemoveSprites();
+                    storyMenu.pages[0].RemoveSubObject(pN.infoLabel);
+                    storyMenu.pages[0].RemoveSubObject(pN.difficultyLabel);
+                }
+
+            }
         }
 
-        internal static void SetupOnlineMenuItems(StoryMenuRedux storyMenu)
+        internal static void SetupOnlineMenuItems(StoryMenuRedux storyMenu, StoryGameMode storyModeOnline)
         {
             // Music
             storyMenu.mySoundLoopID = SoundID.MENU_Main_Menu_LOOP;
@@ -169,6 +200,14 @@ namespace RainMeadow
             if (RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value && !OnlineManager.lobby.isOwner)
             {
                 storyMenu.pages[0].subObjects.Add(new MenuLabel(storyMenu, storyMenu.pages[0], storyMenu.Translate("Slugcats"), new Vector2(394, 553), new(110, 30), true));
+            }
+
+            if (!OnlineManager.lobby.isOwner && (storyMenu.slugcatPages[storyMenu.indexFromColor(storyModeOnline.currentCampaign)] != null && storyMenu.slugcatPages[storyMenu.indexFromColor(storyModeOnline.currentCampaign)] is SlugcatSelectMenu.SlugcatPage p))
+            {
+
+                storyMenu.onlineDifficultyLabel = new MenuLabel(storyMenu, storyMenu.pages[0], $"{GetCurrentCampaignName(storyModeOnline)}", new Vector2(storyMenu.startButton.pos.x - 100f, storyMenu.startButton.pos.y + 150f), new Vector2(200f, 30f), bigText: true);
+                storyMenu.onlineDifficultyLabel.label.alignment = FLabelAlignment.Center;
+                storyMenu.pages[0].subObjects.Add(storyMenu.onlineDifficultyLabel);
             }
         }
 
@@ -202,9 +241,9 @@ namespace RainMeadow
             return filteredList;
         }
 
-        public static string GetCurrentCampaignName(StoryGameMode story)
+        public static string GetCurrentCampaignName(StoryGameMode storyModeOnline)
         {
-            return SlugcatStats.getSlugcatName(story.currentCampaign);
+            return "Current Campaign: " +  SlugcatStats.getSlugcatName(storyModeOnline.currentCampaign);
         }
 
         internal static void CustomSlugcatSetup(SlugcatSelectMenu ssm, SlugcatStats.Name customSelectedSlugcat)
@@ -254,7 +293,7 @@ namespace RainMeadow
         #endregion
 
         #region Host vs Client
-        internal static void SetupHostMenu(StoryMenuRedux storyMenu, StoryGameMode story)
+        internal static void SetupHostMenu(StoryMenuRedux storyMenu, StoryGameMode storyModeOnline)
         {
             storyMenu.hostStartButton = new EventfulHoldButton(storyMenu, storyMenu.pages[0], storyMenu.Translate("ENTER"), new Vector2(683f, 85f), 40f);
             storyMenu.hostStartButton.OnClick += (_) => { storyMenu.StartGame(); };
@@ -271,31 +310,32 @@ namespace RainMeadow
 
             try
             {
-                if (storyMenu.saveGameData[story.currentCampaign].shelterName != null && storyMenu.saveGameData[story.currentCampaign].shelterName.Length > 2)
+                if (storyMenu.saveGameData[storyModeOnline.currentCampaign].shelterName != null && storyMenu.saveGameData[storyModeOnline.currentCampaign].shelterName.Length > 2)
 
                 {
-                    story.region = Region.GetRegionFullName(storyMenu.saveGameData[story.currentCampaign].shelterName.Substring(0, 2), story.currentCampaign);
+                    storyModeOnline.region = Region.GetRegionFullName(storyMenu.saveGameData[storyModeOnline.currentCampaign].shelterName.Substring(0, 2), storyModeOnline.currentCampaign);
                 }
             }
             catch
             {
                 RainMeadow.Error("Errro getting next region name");
-                story.region = "";
+                storyModeOnline.region = "";
 
             }
 
 
         }
 
-        internal static void SetupClientMenu(StoryMenuRedux storyMenu, StoryGameMode story)
+        internal static void SetupClientMenu(StoryMenuRedux storyMenu, StoryGameMode storyModeOnline)
         {
-            storyMenu.campaignContainer = new MenuLabel(storyMenu, storyMenu.pages[0], storyMenu.Translate(story.currentCampaign.value), new Vector2(583f, storyMenu.startButton.pos.y - 50f), new Vector2(200f, 30f), true);
+            //storyMenu.campaignContainer = new MenuLabel(storyMenu, storyMenu.pages[0], storyMenu.Translate(story.currentCampaign.value), new Vector2(583f, storyMenu.startButton.pos.y - 50f), new Vector2(200f, 30f), true);
 
-            storyMenu.pages[0].subObjects.Add(storyMenu.campaignContainer);
+            //storyMenu.pages[0].subObjects.Add(storyMenu.campaignContainer);
+            
 
             storyMenu.clientWaitingButton = new EventfulHoldButton(storyMenu, storyMenu.pages[0], storyMenu.Translate("ENTER"), new Vector2(683f, 85f), 40f);
             storyMenu.clientWaitingButton.OnClick += (_) => { storyMenu.StartGame(); };
-            storyMenu.clientWaitingButton.buttonBehav.greyedOut = !(story.isInGame && !story.changedRegions);
+            storyMenu.clientWaitingButton.buttonBehav.greyedOut = !(storyModeOnline.isInGame && !storyModeOnline.changedRegions);
 
             storyMenu.pages[0].subObjects.Add(storyMenu.clientWaitingButton);
 
@@ -306,19 +346,12 @@ namespace RainMeadow
             storyMenu.pages[0].subObjects.Add(storyMenu.clientWantsToOverwriteSave);
 
 
-            if (storyMenu.slugcatPages[storyMenu.indexFromColor(story.currentCampaign)] != null && storyMenu.slugcatPages[storyMenu.indexFromColor(story.currentCampaign)] is SlugcatSelectMenu.SlugcatPageContinue p)
+            if (storyMenu.slugcatPages[storyMenu.indexFromColor(storyModeOnline.currentCampaign)] != null && storyMenu.slugcatPages[storyMenu.indexFromColor(storyModeOnline.currentCampaign)] is SlugcatSelectMenu.SlugcatPageContinue p)
             {
                 storyMenu.campaignContainer.pos = p.KarmaSymbolPos;
 
-                var text = Region.GetRegionFullName(story.region, story.currentCampaign);
-                if (text.Length > 0)
-                {
-                    text = storyMenu.Translate(text);  
-                }
+                GetRegionAndCampaignNameForClient(storyMenu, storyModeOnline);
 
-                p.regionLabel.RemoveSprites();
-                storyMenu.pages[0].RemoveSubObject(p.regionLabel);
-                
 
                 List<HudPart> partsToRemove = new List<HudPart>();
 
@@ -340,6 +373,36 @@ namespace RainMeadow
             }
 
 
+        }
+
+        public static void GetRegionAndCampaignNameForClient(StoryMenuRedux storyMenu, StoryGameMode storyModeOnline)
+        {
+            if (!OnlineManager.lobby.isOwner && storyMenu.onlineDifficultyLabel != null)
+            {
+
+                storyMenu.onlineDifficultyLabel.text = storyModeOnline.region != "" ? GetCurrentCampaignName(storyModeOnline) + " - " + storyModeOnline.region : GetCurrentCampaignName(storyModeOnline);
+
+            }
+        }
+
+        public static void TryGetRegion(StoryMenuRedux storyMenu, StoryGameMode storyModeOnline, int index)
+        {
+            storyModeOnline.currentCampaign = storyMenu.slugcatPages[index].slugcatNumber;
+            RainMeadow.Debug(storyModeOnline.currentCampaign);
+
+            try
+            {
+                if ((storyMenu.saveGameData[storyModeOnline.currentCampaign].shelterName != null && storyMenu.saveGameData[storyModeOnline.currentCampaign].shelterName.Length > 2))
+
+                {
+                    storyModeOnline.region = Region.GetRegionFullName(storyMenu.saveGameData[storyModeOnline.currentCampaign].shelterName.Substring(0, 2), storyModeOnline.currentCampaign);
+                }
+            }
+            catch
+            {
+                RainMeadow.Error("Error getting prev region name");
+                storyModeOnline.region = "";
+            }
         }
         #endregion
     }

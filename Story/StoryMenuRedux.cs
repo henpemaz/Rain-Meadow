@@ -24,6 +24,7 @@ namespace RainMeadow
         private bool updateDefaultColors;
         internal StoryGameMode storyModeOnline;
         internal MenuLabel campaignContainer;
+        internal MenuLabel onlineDifficultyLabel;
 
 
         internal SlugcatStats.Name customSelectedSlugcat = SlugcatStats.Name.White;
@@ -38,7 +39,7 @@ namespace RainMeadow
 
             storyModeOnline.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
 
-            StoryMenuHelpers.RemoveExcessStoryObjects(this);
+            StoryMenuHelpers.RemoveExcessStoryObjects(this, storyModeOnline);
             StoryMenuHelpers.ModifyExistingMenuItems(this);
 
             if (OnlineManager.lobby.isOwner)
@@ -60,7 +61,7 @@ namespace RainMeadow
             }
             SteamSetup();
             UpdatePlayerList();
-            StoryMenuHelpers.SetupOnlineMenuItems(this);
+            StoryMenuHelpers.SetupOnlineMenuItems(this, storyModeOnline);
 
             StoryMenuHelpers.SetupOnlineCustomization(this);
 
@@ -117,8 +118,9 @@ namespace RainMeadow
             }
             else
             {
-                campaignContainer.text = $"Current Campaign: The {StoryMenuHelpers.GetCurrentCampaignName(storyModeOnline)} - {storyModeOnline.region}";
                 clientWaitingButton.buttonBehav.greyedOut = !(storyModeOnline.isInGame && !storyModeOnline.changedRegions);
+                StoryMenuHelpers.GetRegionAndCampaignNameForClient(this, storyModeOnline);
+
             }
 
 
@@ -195,43 +197,19 @@ namespace RainMeadow
         public override void Singal(MenuObject sender, string message)
         {
             base.Singal(sender, message);
+
             if (message == "PREV")
             {
 
                 var index = slugcatPageIndex - 1 < 0 ? slugcatPages.Count - 1 : slugcatPageIndex - 1;
-                storyModeOnline.currentCampaign = slugcatPages[index].slugcatNumber;
-                try
-                {
-                    if ((saveGameData[storyModeOnline.currentCampaign].shelterName != null && saveGameData[storyModeOnline.currentCampaign].shelterName.Length > 2))
-
-                    {
-                        storyModeOnline.region = Region.GetRegionFullName(saveGameData[storyModeOnline.currentCampaign].shelterName.Substring(0, 2), storyModeOnline.currentCampaign);
-                    }
-                }
-                catch
-                {
-                    RainMeadow.Error("Error getting prev region name");
-                    storyModeOnline.region = "";
-                }
+                StoryMenuHelpers.TryGetRegion(this, storyModeOnline, index);
             }
             if (message == "NEXT")
             {
                 var index = slugcatPageIndex + 1 >= slugcatPages.Count ? 0 : slugcatPageIndex + 1;
-                storyModeOnline.currentCampaign = slugcatPages[index].slugcatNumber;
-                try
-                {
-                    if ((saveGameData[storyModeOnline.currentCampaign].shelterName != null && saveGameData[storyModeOnline.currentCampaign].shelterName.Length > 2))
+                StoryMenuHelpers.TryGetRegion(this, storyModeOnline, index);
 
-                    {
-                        storyModeOnline.region = Region.GetRegionFullName(saveGameData[storyModeOnline.currentCampaign].shelterName.Substring(0, 2), storyModeOnline.currentCampaign);
-                    }
-                }
-                catch
-                {
-                    RainMeadow.Error("Errro getting next region name");
-                    storyModeOnline.region = "";
 
-                }
 
             }
 
@@ -256,7 +234,7 @@ namespace RainMeadow
         public void SetCurrentlySelectedOfSeries(string series, int to)
         {
             selectOneBtnIndex = to;
-        }
+        }   
 
     }
 
