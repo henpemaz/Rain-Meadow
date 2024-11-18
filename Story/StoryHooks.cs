@@ -609,7 +609,6 @@ namespace RainMeadow
                     if (OnlineManager.lobby.isOwner)
                     {
                         RainMeadow.Debug("Continue - host");
-                        gameMode.didStartCycle = true;
                     }
                     else if (!gameMode.didStartCycle)
                     {
@@ -660,7 +659,6 @@ namespace RainMeadow
             if (isStoryMode(out var gameMode))
             {
                 isPlayerReady = false;
-                gameMode.didStartCycle = false;
             }
         }
 
