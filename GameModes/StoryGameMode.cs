@@ -168,5 +168,17 @@ namespace RainMeadow
             hasSheltered = false;
             storyClientData.isDead = false;
         }
+
+        public override void PostGameStart(RainWorldGame game)
+        {
+            base.PostGameStart(game);
+            didStartCycle = true;
+        }
+
+        public override void GameShutDown(RainWorldGame game)
+        {
+            base.GameShutDown(game);
+            didStartCycle = false;
+        }
     }
 }
