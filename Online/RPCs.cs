@@ -102,143 +102,46 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void MovePlayersToDeathScreen()
+        public static void GoToWinScreen(bool malnourished, string? denPos)
         {
-            foreach (OnlinePlayer player in OnlineManager.players)
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
+
+            if (RainMeadow.isStoryMode(out var storyGameMode) && !storyGameMode.hasSheltered)
             {
-                if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToDeathScreen)))
-                {
-                    player.InvokeRPC(RPCs.GoToDeathScreen);
-                }
+                storyGameMode.myLastDenPos = denPos;
             }
+
+            game.Win(malnourished);
+        }
+
+        [RPCMethod]
+        public static void GoToStarveScreen(string? denPos)
+        {
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
+
+            if (RainMeadow.isStoryMode(out var storyGameMode) && !storyGameMode.hasSheltered)
+            {
+                storyGameMode.myLastDenPos = denPos;
+            }
+
+            game.GoToStarveScreen();
+        }
+
+        [RPCMethod]
+        public static void GoToGhostScreen(GhostWorldPresence.GhostID ghostID)
+        {
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
+
+            game.GhostShutDown(ghostID);
         }
 
         [RPCMethod]
         public static void GoToDeathScreen()
         {
-            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-            if (game == null || game.manager.upcomingProcess != null)
-            {
-                return;
-            }
-            if (game.IsStorySession && game.GetStorySession.RedIsOutOfCycles && !game.rainWorld.ExpeditionMode)
-            {
-                game.GoToRedsGameOver();
-                return;
-            }
-            game.GetStorySession.saveState.SessionEnded(game, false, false);
-            RainMeadow.Debug("I am moving to the deathscreen");
-            game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.DeathScreen);
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
+
+            game.GoToDeathScreen();
         }
-
-        [RPCMethod]
-        public static void MovePlayersToWinScreen(bool malnourished, string denPos)
-        {
-            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
-            if (game == null || game.manager.upcomingProcess != null) return;
-
-            var storyGameMode = OnlineManager.lobby.gameMode as StoryGameMode;
-
-            if (storyGameMode.hasSheltered)
-            {
-                denPos = storyGameMode.myLastDenPos;
-            }
-            else
-            {
-                storyGameMode.myLastDenPos = denPos;
-            }
-
-            storyGameMode.defaultDenPos = game.GetStorySession.saveState.denPosition = denPos;
-
-            foreach (OnlinePlayer player in OnlineManager.players)
-            {
-                if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.GoToWinScreen, malnourished, denPos)))
-                {
-                    if (player.isMe)
-                    {
-                        GoToWinScreen(malnourished, denPos);
-                    }
-                    else
-                    {
-                        player.InvokeRPC(RPCs.GoToWinScreen, malnourished, denPos);
-                    }
-                }
-            }
-        }
-
-        //Assumed to be called for storymode only
-        [RPCMethod]
-        public static void GoToWinScreen(bool malnourished, string denPos)
-        {
-            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
-            if (game == null || game.manager.upcomingProcess != null) return;
-
-            if (OnlineManager.lobby.isOwner)
-            {
-                if (!malnourished && !game.rainWorld.saveBackedUp)
-                {
-                    game.rainWorld.saveBackedUp = true;
-                    game.rainWorld.progression.BackUpSave("_Backup");
-                }
-            }
-            else
-            {
-                var storyGameMode = (OnlineManager.lobby.gameMode as StoryGameMode);
-                if (!storyGameMode.hasSheltered)
-                {
-                    storyGameMode.myLastDenPos = denPos;
-                }
-            }
-
-            // TODO: investigate client save desync (e.g. swallowed items)
-            game.GetStorySession.saveState.SessionEnded(game, true, malnourished);
-
-            //TODO: need to sync p5 and l2m deam events. Not doing it rn.
-            DreamsState dreamsState = game.GetStorySession.saveState.dreamsState;
-
-            if (dreamsState != null)
-            {
-                dreamsState.EndOfCycleProgress(game.GetStorySession.saveState, game.world.region.name, denPos);
-                if (dreamsState.AnyDreamComingUp && !malnourished)
-                {
-                    game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Dream);
-                    return;
-                }
-            }
-            RainMeadow.Debug("I am moving to the sleepscreen");
-            game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.SleepScreen);
-        }
-
-
-        [RPCMethod]
-        public static void MovePlayersToGhostScreen(string ghostID)
-        {
-            foreach (OnlinePlayer player in OnlineManager.players)
-            {
-                player.InvokeRPC(RPCs.GoToGhostScreen, ghostID);
-            }
-        }
-
-        [RPCMethod]
-        public static void GoToGhostScreen(string ghostID)
-        {
-            //For MSC support, we'll need to add a check for artificer campaign and send it to the VengeanceGhostScreen
-            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-            if (game.manager.upcomingProcess != null)
-            {
-                return;
-            }
-            ExtEnumBase.TryParse(typeof(GhostWorldPresence.GhostID), ghostID, false, out var rawEnumBase);
-            game.sawAGhost = rawEnumBase as GhostWorldPresence.GhostID;
-            game.GetStorySession.AppendTimeOnCycleEnd(true);
-            if (game.GetStorySession.saveState.deathPersistentSaveData.karmaCap < 9)
-            {
-                game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.GhostScreen);
-                return;
-            }
-            game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.KarmaToMaxScreen);
-        }
-
 
         [RPCMethod]
         public static void KickToLobby()
