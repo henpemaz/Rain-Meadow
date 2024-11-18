@@ -68,7 +68,6 @@ namespace RainMeadow
 
             ArenaHelpers.ResetReadyUpLogic(arena, this);
 
-
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
             //SetupCharacterCustomization();
             initiatedStartGameForClient = false;

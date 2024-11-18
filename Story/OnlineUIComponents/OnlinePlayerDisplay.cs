@@ -59,9 +59,15 @@ namespace RainMeadow
             this.arrowSprite.x = -1000f;
             this.arrowSprite.color = Color.white;
 
+            if (!Futile.atlasManager.DoesContainAtlas("playtester"))
+            {
+                HeavyTexturesCache.futileAtlasListings.Add(Futile.atlasManager.LoadAtlas("illustrations/playtester").name);
+
+            }
+
             if (owner.clientSettings.owner == OnlineManager.lobby.owner)
             {
-                this.iconString = "ChieftainA";
+                this.iconString = "playtester";
             }
             else
             {
