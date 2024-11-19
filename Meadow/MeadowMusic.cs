@@ -40,26 +40,41 @@ namespace RainMeadow
                 {
                     if (((RainWorldGame)currentProcess).IsStorySession && OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
                     {
-                        if (self.gameObj.GetComponent<AudioHighPassFilter>() == null)
+                        if (self.song != null)
                         {
-                            self.gameObj.AddComponent<AudioHighPassFilter>();
-                            self.gameObj.GetComponent<AudioHighPassFilter>().enabled = true;
-                            self.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency = 10f;
-                        }
+                            if (self.gameObj.GetComponent<AudioHighPassFilter>() == null)
+                            {
+                                self.gameObj.AddComponent<AudioHighPassFilter>();
+                                self.gameObj.GetComponent<AudioHighPassFilter>().enabled = true;
+                                self.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency = 10f;
+                            }
+                        }//else, we shoudl save adding these for when we actually do have a song
                     }
                     else
                     {
-                        if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null) self.song.FadeOut(120f);
+                        if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null)
+                        {
+                            self.song.FadeOut(120f);
+                            PlopMachine.WetData.FadeOut();
+                        }
                     }
                 }
                 else
                 {
-                    if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null) self.song.FadeOut(120f);
+                    if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null)
+                    {
+                        self.song.FadeOut(120f);
+                        PlopMachine.WetData.FadeOut();
+                    }
                 }
             }
             else
             {
-                if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null) self.song.FadeOut(120f);
+                if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null)
+                {
+                    self.song.FadeOut(120f);
+                    PlopMachine.WetData.FadeOut();
+                }
             }
             orig.Invoke(self, currentProcess);
         }
@@ -681,14 +696,7 @@ namespace RainMeadow
             
             */
 
-            // Get all sample data from audioclip
-            //var allSamples = new float[clipclip.samples * clipclip.channels];
-            //
-            //clipclip.GetData(allSamples, 0);
-            //var reversesamples = allSamples.Reverse();
-            //clipclip.SetData(reversesamples.ToArray(), 0);
             sub.source.clip = clipclip;
-
             if (sub.source.clip != null)
 			{
 				sub.source.clip.LoadAudioData();
@@ -721,7 +729,7 @@ namespace RainMeadow
             var VibeRoomCreatures = creature.abstractCreature.Room.world.GetAbstractRoom(closestVibe);
             if (VibeRoomCreatures != null)
             { 
-                //PlopMachine.agora = VibeRoomCreatures.creatures.Count();
+                //PlopMachine.agora = VibeRoomCreatures.creatures.Count(); TESTING
             }
 
             if (inGroup == 0)
