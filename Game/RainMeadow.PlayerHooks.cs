@@ -452,12 +452,6 @@ public partial class RainMeadow
 
         if (OnlineManager.lobby != null)
         {
-            if (self.slugcatStats.throwingSkill == 0)
-            {
-                self.slugcatStats.throwingSkill = 1; // don't let them push you around
-                // Nightcat.ResetSneak(self);
-            }
-
             if (self.abstractPhysicalObject.GetOnlineObject(out var oe) && oe.TryGetData<SlugcatCustomization>(out var customization))
             {
                 self.SlugCatClass = customization.playingAs;

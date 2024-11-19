@@ -80,6 +80,7 @@ namespace RainMeadow
             On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
 
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
+            On.Player.ctor += Player_ctor1;
 
         }
 
@@ -190,6 +191,22 @@ namespace RainMeadow
                 var duration = 0.35f * (self.maxGodTime / 400f); // we'll see how that feels for now
                 self.godTimer = Mathf.Min(self.godTimer + duration, self.maxGodTime);
 
+            }
+        }
+
+        private void Player_ctor1(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
+        {
+            orig(self, abstractCreature, world);
+            if (isArenaMode(out _))
+            {
+                if (self.slugcatStats is not null)
+                {
+                    if (self.slugcatStats.throwingSkill == 0)
+                    {
+                        self.slugcatStats.throwingSkill = 1; // don't let them push you around
+                        // Nightcat.ResetSneak(self);
+                    }
+                }
             }
         }
 
