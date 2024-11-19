@@ -14,8 +14,10 @@ namespace RainMeadow
 
         public Color color;
         public Color lighter_color;
-        public Color noAlpha;
-        public Color fadeColor;
+
+        public float H;
+        public float S;
+        public float V;
 
         public int counter;
         public int resetUsernameCounter;
@@ -25,9 +27,9 @@ namespace RainMeadow
         public float lastBlink;
         public int onlineTimeSinceSpawn;
         public string iconString;
+        public bool flashIcons;
 
         public float fadeSpeed;
-        public float fadeTime;
        
         SlugcatCustomization customization;
 
@@ -37,10 +39,17 @@ namespace RainMeadow
             this.resetUsernameCounter = 200;
 
             this.color = customization.SlugcatColor();
-            this.lighter_color = color * 1.7f;
-            this.noAlpha = lighter_color;
-            this.noAlpha.a = 0f;
-            this.fadeColor = lighter_color;
+
+            Color.RGBToHSV(color, out H, out S,out V);
+
+            if (V < 0.8f)
+            {
+                this.lighter_color = Color.HSVToRGB(H,S,0.8f);
+            }
+            else
+            {
+                this.lighter_color = color;
+            }
 
             this.pos = new Vector2(-1000f, -1000f);
             this.lastPos = this.pos;
@@ -88,8 +97,7 @@ namespace RainMeadow
 
             this.customization = customization;
 
-            this.fadeSpeed = 30f;
-            this.fadeTime = 0f;
+            this.fadeSpeed = 20f;
         }
 
         public override void Update()
@@ -97,7 +105,7 @@ namespace RainMeadow
             base.Update();
             onlineTimeSinceSpawn++;
 
-            bool flashIcons = (RainMeadow.rainMeadowOptions.ShowFriends.Value || RainMeadow.rainMeadowOptions.ReadyToContinueToggle.Value) && (owner.PlayerInGate || owner.PlayerInShelter);
+            this.flashIcons = (RainMeadow.rainMeadowOptions.ShowFriends.Value || RainMeadow.rainMeadowOptions.ReadyToContinueToggle.Value) && (owner.PlayerInGate || owner.PlayerInShelter);
 
             bool show = RainMeadow.rainMeadowOptions.ShowFriends.Value || (owner.clientSettings.isMine && onlineTimeSinceSpawn < 120);
             if (show || this.alpha > 0 || flashIcons)
@@ -115,30 +123,14 @@ namespace RainMeadow
 
                     if (owner.PlayerConsideredDead) this.alpha = Mathf.Min(this.alpha, 0.5f);
 
-                    if (onlineTimeSinceSpawn < 140 && owner.clientSettings.isMine) slugIcon.SetElementByName("Kill_Slugcat");
+                    if (onlineTimeSinceSpawn < 135 && owner.clientSettings.isMine) slugIcon.SetElementByName("Kill_Slugcat");
                     else if (owner.PlayerInShelter) slugIcon.SetElementByName("ShortcutShelter");
                     else if (owner.PlayerInGate) slugIcon.SetElementByName("ShortcutGate");
                     else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
                     else slugIcon.SetElementByName(iconString);
-                
-                    if (flashIcons)
-                    {
-                        this.fadeColor = Color.Lerp(lighter_color, noAlpha, (Mathf.Cos(fadeTime / fadeSpeed) + 1f) / 2f);
 
-                        this.slugIcon.color = fadeColor;
-                        this.username.color = fadeColor;
-                        this.arrowSprite.color = fadeColor;
-
-                        this.alpha = fadeColor.a;
-
-                        this.fadeTime++;
-                    }
-                    else if (RainMeadow.rainMeadowOptions.ShowFriends.Value)
-                    {
-                        this.slugIcon.color = lighter_color;
-                        this.username.color = lighter_color;
-                        this.arrowSprite.color = lighter_color;
-                    }
+                    if (flashIcons) this.alpha = Mathf.Lerp(lighter_color.a, 0f, (Mathf.Cos(onlineTimeSinceSpawn / fadeSpeed) + 1f) / 2f);
+                    else if (RainMeadow.rainMeadowOptions.ShowFriends.Value) this.alpha = lighter_color.a;
                 }
                 else
                 {
@@ -201,10 +193,20 @@ namespace RainMeadow
                 resetUsernameCounter = 200;
             }
 
-            this.username.alpha = num;
-            this.message.alpha = num;
+
+
             this.arrowSprite.alpha = num;
             this.slugIcon.alpha = num;
+            if (this.message.text != "" && (flashIcons || RainMeadow.rainMeadowOptions.ShowFriends.Value))
+            {
+                this.message.alpha = lighter_color.a;
+                this.username.alpha = lighter_color.a;
+            }
+            else
+            {
+                this.message.alpha = num;
+                this.username.alpha = num;
+            }
         }
 
         public override void ClearSprites()
