@@ -7,8 +7,6 @@ using System.Reflection;
 using UnityEngine;
 using HUD;
 using RWCustom;
-using static ExtraExtentions;
-using static System.Net.Mime.MediaTypeNames;
 namespace RainMeadow
 {
     internal static class StoryMenuHelpers
@@ -143,7 +141,7 @@ namespace RainMeadow
                 storyMenu.pages[0].RemoveSubObject(storyMenu.startButton);
             }
 
-            if (storyMenu.restartCheckbox != null)
+            if (!OnlineManager.lobby.isOwner && storyMenu.restartCheckbox != null)
             {
                 storyMenu.restartCheckbox.RemoveSprites();
                 storyMenu.pages[0].RemoveSubObject(storyMenu.restartCheckbox);
@@ -189,7 +187,7 @@ namespace RainMeadow
             storyMenu.pages[0].subObjects.Add(lobbyLabel);
 
             var invite = new SimplerButton[1];
-            invite[0] = new SimplerButton(storyMenu, storyMenu.pages[0], storyMenu.Translate("Invite Friends"),  new(storyMenu.nextButton.pos.x + 80f, 50f), new(110, 35));
+            invite[0] = new SimplerButton(storyMenu, storyMenu.pages[0], storyMenu.Translate("Invite Friends"), new(storyMenu.nextButton.pos.x + 80f, 50f), new(110, 35));
             storyMenu.pages[0].subObjects.Add(invite[0]);
 
             invite[0].OnClick += (_) =>
@@ -205,10 +203,56 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner && (storyMenu.slugcatPages[storyMenu.indexFromColor(storyModeOnline.currentCampaign)] != null && storyMenu.slugcatPages[storyMenu.indexFromColor(storyModeOnline.currentCampaign)] is SlugcatSelectMenu.SlugcatPage p))
             {
 
-                storyMenu.onlineDifficultyLabel = new MenuLabel(storyMenu, storyMenu.pages[0], $"{GetCurrentCampaignName(storyModeOnline)}", new Vector2(storyMenu.startButton.pos.x - 100f, storyMenu.startButton.pos.y + 150f), new Vector2(200f, 30f), bigText: true);
+                storyMenu.onlineDifficultyLabel = new MenuLabel(storyMenu, storyMenu.pages[0], $"{GetCurrentCampaignName(storyModeOnline)}", new Vector2(storyMenu.startButton.pos.x - 100f, storyMenu.startButton.pos.y + 100f), new Vector2(200f, 30f), bigText: true);
                 storyMenu.onlineDifficultyLabel.label.alignment = FLabelAlignment.Center;
+                storyMenu.onlineDifficultyLabel.label.alpha = 0.5f;
                 storyMenu.pages[0].subObjects.Add(storyMenu.onlineDifficultyLabel);
             }
+
+            var sameSpotOtherSide = storyMenu.colorsCheckbox.pos.x - storyMenu.startButton.pos.x;
+            storyMenu.friendlyFire = new CheckBox(storyMenu, storyMenu.pages[0], storyMenu, new Vector2(storyMenu.startButton.pos.x - sameSpotOtherSide, storyMenu.colorsCheckbox.pos.y), 70f, storyMenu.Translate("Friendly Fire"), "ONLINEFRIENDLYFIRE", false);
+            if (!OnlineManager.lobby.isOwner) storyMenu.friendlyFire.buttonBehav.greyedOut = true;
+            storyMenu.pages[0].subObjects.Add(storyMenu.friendlyFire);
+
+            SetupOnlineDictionaries(storyMenu, storyModeOnline);
+        }
+        internal static void SetupOnlineDictionaries(StoryMenuRedux story, StoryGameMode storyModeOnline)
+        {
+            if (OnlineManager.lobby.isOwner)
+            {
+                var ffKeySync = story.friendlyFire.IDString;
+                bool ffValueSync = story.friendlyFire.Checked;
+
+                storyModeOnline.onlineStoryLobbySettingsBool.Add(ffKeySync, ffValueSync);
+            }
+
+        }
+
+        internal static void GetCheckBox(StoryMenuRedux storyMenu, StoryGameMode storyModeOnline)
+        {
+
+            if (OnlineManager.lobby.isOwner)
+            {
+                storyMenu.resetSave = storyMenu.restartCheckbox.Checked; // use original checkbox
+            }
+            else
+            {
+                storyMenu.clientWantsToOverwriteSave.Checked = storyModeOnline.saveToDisk; // we set in SlugcatSelectMenu_SetChecked
+
+            }
+
+            //foreach (var selectable in storyMenu.pages[0].selectables)
+            //{
+            //    if (selectable is Menu.CheckBox box)
+            //    {
+            //        if (storyModeOnline.onlineStoryLobbySettingsBool.ContainsKey(box.IDString) && box.Checked != storyModeOnline.onlineStoryLobbySettingsBool[box.IDString])
+            //        {
+            //            RainMeadow.Debug(box.IDString);
+            //            box.Checked = storyModeOnline.onlineStoryLobbySettingsBool[box.IDString];
+            //        }
+            //    }
+
+            //}
         }
 
         internal static void ModifyExistingMenuItems(StoryMenuRedux storyMenu)
@@ -243,7 +287,7 @@ namespace RainMeadow
 
         public static string GetCurrentCampaignName(StoryGameMode storyModeOnline)
         {
-            return "Current Campaign: " +  SlugcatStats.getSlugcatName(storyModeOnline.currentCampaign);
+            return "Current Campaign: " + SlugcatStats.getSlugcatName(storyModeOnline.currentCampaign);
         }
 
         internal static void CustomSlugcatSetup(SlugcatSelectMenu ssm, SlugcatStats.Name customSelectedSlugcat)
@@ -300,14 +344,6 @@ namespace RainMeadow
             storyMenu.hostStartButton.buttonBehav.greyedOut = false;
             storyMenu.pages[0].subObjects.Add(storyMenu.hostStartButton);
 
-
-            var sameSpotOtherSide = storyMenu.colorsCheckbox.pos.x - storyMenu.startButton.pos.x;
-
-
-            storyMenu.resetSaveCheckbox = new CheckBox(storyMenu, storyMenu.pages[0], storyMenu, new Vector2(storyMenu.startButton.pos.x - sameSpotOtherSide, storyMenu.colorsCheckbox.pos.y), 70f, storyMenu.Translate("Reset Save"), "RESETSAVE", false);
-            storyMenu.resetSaveCheckbox.Singal(storyMenu.pages[0], "RESETSAVE");
-            storyMenu.pages[0].subObjects.Add(storyMenu.resetSaveCheckbox);
-
             try
             {
                 if (storyMenu.saveGameData[storyModeOnline.currentCampaign].shelterName != null && storyMenu.saveGameData[storyModeOnline.currentCampaign].shelterName.Length > 2)
@@ -318,7 +354,7 @@ namespace RainMeadow
             }
             catch
             {
-                RainMeadow.Error("Errro getting next region name");
+                RainMeadow.Error("Error getting next region name");
                 storyModeOnline.region = "";
 
             }
@@ -328,10 +364,6 @@ namespace RainMeadow
 
         internal static void SetupClientMenu(StoryMenuRedux storyMenu, StoryGameMode storyModeOnline)
         {
-            //storyMenu.campaignContainer = new MenuLabel(storyMenu, storyMenu.pages[0], storyMenu.Translate(story.currentCampaign.value), new Vector2(583f, storyMenu.startButton.pos.y - 50f), new Vector2(200f, 30f), true);
-
-            //storyMenu.pages[0].subObjects.Add(storyMenu.campaignContainer);
-            
 
             storyMenu.clientWaitingButton = new EventfulHoldButton(storyMenu, storyMenu.pages[0], storyMenu.Translate("ENTER"), new Vector2(683f, 85f), 40f);
             storyMenu.clientWaitingButton.OnClick += (_) => { storyMenu.StartGame(); };
@@ -341,8 +373,7 @@ namespace RainMeadow
 
             var sameSpotOtherSide = storyMenu.colorsCheckbox.pos.x - storyMenu.startButton.pos.x;
 
-            storyMenu.clientWantsToOverwriteSave = new CheckBox(storyMenu, storyMenu.pages[0], storyMenu, new Vector2(storyMenu.startButton.pos.x - sameSpotOtherSide, storyMenu.colorsCheckbox.pos.y), 70f, storyMenu.Translate("Match save"), "OVERWRITECLIENTSAVE", false);
-            storyMenu.clientWantsToOverwriteSave.Singal(storyMenu.pages[0], "OVERWRITECLIENTSAVE");
+            storyMenu.clientWantsToOverwriteSave = new CheckBox(storyMenu, storyMenu.pages[0], storyMenu, new Vector2(storyMenu.colorsCheckbox.pos.x, storyMenu.colorsCheckbox.pos.y - 30f), 70f, storyMenu.Translate("Match save"), "CLIENTSAVERESET", false);
             storyMenu.pages[0].subObjects.Add(storyMenu.clientWantsToOverwriteSave);
 
 
@@ -380,7 +411,7 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner && storyMenu.onlineDifficultyLabel != null)
             {
 
-                storyMenu.onlineDifficultyLabel.text = storyModeOnline.region != "" ? GetCurrentCampaignName(storyModeOnline) + " - " + storyModeOnline.region : GetCurrentCampaignName(storyModeOnline);
+                storyMenu.onlineDifficultyLabel.text = storyModeOnline.region != "" ? GetCurrentCampaignName(storyModeOnline) + $" - {storyModeOnline.region}" : GetCurrentCampaignName(storyModeOnline) + storyMenu.Translate(" - New Game");
 
             }
         }

@@ -77,9 +77,11 @@ namespace RainMeadow
             On.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderSetValue;
         }
 
+
+
         private void SlugcatSelectMenu_SliderSetValue(On.Menu.SlugcatSelectMenu.orig_SliderSetValue orig, Menu.SlugcatSelectMenu self, Menu.Slider slider, float f)
         {
-           orig(self, slider, f);
+            orig(self, slider, f);
             if (isStoryMode(out var story))
             {
 

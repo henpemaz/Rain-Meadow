@@ -9,11 +9,11 @@ using UnityEngine;
 using HUD;
 namespace RainMeadow
 {
-    public class StoryMenuRedux : SlugcatSelectMenu, SelectOneButton.SelectOneButtonOwner
+    public class StoryMenuRedux : SlugcatSelectMenu, SelectOneButton.SelectOneButtonOwner, CheckBox.IOwnCheckBox
     {
         int selectOneBtnIndex;
-        internal CheckBox resetSaveCheckbox;
         internal CheckBox clientWantsToOverwriteSave;
+        internal CheckBox friendlyFire;
         internal EventfulSelectOneButton[] playerButtons = new EventfulSelectOneButton[0];
         internal EventfulHoldButton hostStartButton;
         internal EventfulHoldButton clientWaitingButton;
@@ -25,6 +25,7 @@ namespace RainMeadow
         internal StoryGameMode storyModeOnline;
         internal MenuLabel campaignContainer;
         internal MenuLabel onlineDifficultyLabel;
+        internal SimplerSymbolButton iHateCheckboxes;
 
 
         internal SlugcatStats.Name customSelectedSlugcat = SlugcatStats.Name.White;
@@ -77,11 +78,11 @@ namespace RainMeadow
             {
                 if (ModManager.MMF)
                 {
-                    StoryMenuHelpers.SetClientStoryRemixSettings(story.storyBoolRemixSettings, story.storyFloatRemixSettings, story.storyIntRemixSettings); // Set client remix settings to Host's on StartGame()
+                    StoryMenuHelpers.SetClientStoryRemixSettings(storyModeOnline.storyBoolRemixSettings, storyModeOnline.storyFloatRemixSettings, storyModeOnline.storyIntRemixSettings); // Set client remix settings to Host's on StartGame()
                 }
                 if (!RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value) // I'm a client and I want to match the hosts
                 {
-                    personaSettings.playingAs = story.currentCampaign;
+                    personaSettings.playingAs = storyModeOnline.currentCampaign;
                 }
                 else // I'm a client and I want my own Slugcat
                 {
@@ -128,6 +129,8 @@ namespace RainMeadow
             {
                 UpdatePlayerList();
             }
+
+            StoryMenuHelpers.GetCheckBox(this, storyModeOnline);
 
         }
 
@@ -209,21 +212,8 @@ namespace RainMeadow
                 var index = slugcatPageIndex + 1 >= slugcatPages.Count ? 0 : slugcatPageIndex + 1;
                 StoryMenuHelpers.TryGetRegion(this, storyModeOnline, index);
 
-
-
             }
 
-            if (message == "RESETSAVE")
-            {
-                resetSave = !resetSave;
-                RainMeadow.Debug(resetSave);
-            }
-            if (message == "OVERWRITECLIENTSAVE")
-            {
-                storyModeOnline.saveToDisk = !storyModeOnline.saveToDisk;
-                RainMeadow.Debug(storyModeOnline.saveToDisk);
-
-            }
         }
 
         public int GetCurrentlySelectedOfSeries(string series)
@@ -234,7 +224,69 @@ namespace RainMeadow
         public void SetCurrentlySelectedOfSeries(string series, int to)
         {
             selectOneBtnIndex = to;
-        }   
+        }
+
+        public bool GetChecked(CheckBox box)
+        {
+            string idstring = box.IDString;
+            if (idstring != null)
+            {
+                if (idstring == "RESTART")
+                {
+                    return resetSave;
+                }
+                if (idstring == "OVERWRITECLIENTSAVE")
+                {
+                    return storyModeOnline.saveToDisk;
+                }
+            }
+            return false;
+        }
+        public void SetChecked(CheckBox box, bool c)
+        {
+            if (box.IDString == "COLORS")
+            {
+                colorChecked = c;
+                if (colorChecked && !CheckJollyCoopAvailable(colorFromIndex(slugcatPageIndex)))
+                {
+                    AddColorButtons();
+                    manager.rainWorld.progression.miscProgressionData.colorsEnabled[slugcatColorOrder[slugcatPageIndex].value] = true;
+                }
+                else
+                {
+                    RemoveColorButtons();
+                    manager.rainWorld.progression.miscProgressionData.colorsEnabled[slugcatColorOrder[slugcatPageIndex].value] = false;
+                }
+            }
+
+            string idstring = box.IDString;
+
+            RainMeadow.Debug(restartCheckbox.Checked);
+            if (idstring != null)
+            {
+                if (idstring == "RESTART" && box.Checked != c)
+                {
+                    resetSave = !resetSave;
+                    RainMeadow.Debug(resetSave);
+                    box.Checked = c;
+
+                }
+
+                if (idstring == "OVERWRITECLIENTSAVE")
+                {
+                    storyModeOnline.saveToDisk = !storyModeOnline.saveToDisk;
+                    box.Checked = c;
+
+                }
+                if (idstring == "ONLINEFRIENDLYFIRE" && box.Checked != c)
+                {
+                    storyModeOnline.friendlyFire = !storyModeOnline.friendlyFire;
+                    box.Checked = c;
+
+                }
+            }
+
+        }
 
     }
 

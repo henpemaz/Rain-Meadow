@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IL.Menu;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,6 +16,8 @@ namespace RainMeadow
         public string? myLastDenPos = null;
         public string? region = null;
 
+        public Dictionary<string, bool> onlineStoryLobbySettingsBool = new Dictionary<string, bool>();
+
         public bool hasSheltered = false;
         public SlugcatStats.Name currentCampaign;
         public Dictionary<string, int> ghostsTalkedTo;
@@ -26,6 +29,7 @@ namespace RainMeadow
 
 
         public bool saveToDisk = false;
+      
 
         public SlugcatCustomization avatarSettings;
 
