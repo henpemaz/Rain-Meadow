@@ -16,9 +16,9 @@ namespace RainMeadow
         List<IntVector2> possibleDestinations;
         [OnlineField]
         bool hasStalk;
-        [OnlineField]
+        [OnlineFieldHalf]
         Vector2 stalkDirVec;
-        [OnlineField]
+        [OnlineFieldHalf]
         Vector2 baseDirVec;
         [OnlineField]
         Vector2 stalkStuckPos;

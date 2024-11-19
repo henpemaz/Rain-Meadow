@@ -1,4 +1,6 @@
-﻿using MonoMod.RuntimeDetour;
+﻿using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using System;
 using System.Collections.Generic;
 
@@ -27,6 +29,8 @@ namespace RainMeadow
 
             On.AbstractCreature.Move += AbstractCreature_Move; // I'm watching your every step
             On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // I'm watching your every step
+
+            IL.AbstractCreature.IsExitingDen += AbstractCreature_IsExitingDen;
 
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
         }
@@ -276,6 +280,34 @@ namespace RainMeadow
             else
             {
                 orig(self);
+            }
+        }
+
+        private void AbstractCreature_IsExitingDen(ILContext il)
+        {
+            try
+            {
+                // if pos not NodeDefined (means is stomach object) then RealizeInRoom
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                ILLabel end = null;
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchCallOrCallvirt<AbstractWorldEntity>("get_Room"),
+                    i => i.MatchLdfld<AbstractRoom>("realizedRoom"),
+                    i => i.MatchBrfalse(out end)
+                    );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((AbstractCreature ac) => OnlineManager.lobby != null && !ac.pos.NodeDefined && ac.GetOnlineObject(out _));
+                c.Emit(OpCodes.Brfalse, skip);
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit<AbstractCreature>(OpCodes.Callvirt, "RealizeInRoom");
+                c.Emit(OpCodes.Br, end);
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
             }
         }
     }

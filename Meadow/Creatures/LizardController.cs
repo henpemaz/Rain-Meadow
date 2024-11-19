@@ -22,6 +22,8 @@ namespace RainMeadow
             On.Lizard.SwimBehavior += Lizard_SwimBehavior1;
             On.Lizard.FollowConnection += Lizard_FollowConnection;
 
+            On.Lizard.GripPointBehavior += Lizard_GripPointBehavior;
+
             // pounce visuals
             On.LizardGraphics.Update += LizardGraphics_Update;
             On.LizardGraphics.ctor += LizardGraphics_ctor;
@@ -35,6 +37,15 @@ namespace RainMeadow
             On.LizardJumpModule.Jump += LizardJumpModule_Jump;
 
             On.LizardBreedParams.TerrainSpeed += LizardBreedParams_TerrainSpeed;
+        }
+
+        private static void Lizard_GripPointBehavior(On.Lizard.orig_GripPointBehavior orig, Lizard self)
+        {
+            orig(self);
+            if (creatureControllers.TryGetValue(self, out var c))
+            {
+                self.inAllowedTerrainCounter = Mathf.Max(self.inAllowedTerrainCounter, 15);
+            }
         }
 
         private static void Lizard_FollowConnection(On.Lizard.orig_FollowConnection orig, Lizard self, float runSpeed)
@@ -299,6 +310,12 @@ namespace RainMeadow
             customization.ModifyBodyColor(ref col);
             RainMeadow.Debug($"{lizard} color from {lizard.effectColor} to {col}");
             lizard.effectColor = col;
+
+            if(lizard.lizardParams.regainFootingCounter < 2)
+            {
+                // aaaugh
+                lizard.lizardParams.regainFootingCounter = 2; // no one will ever know
+            }
         }
 
         public Lizard lizard;
@@ -433,9 +450,14 @@ namespace RainMeadow
             }
 
             // lost footing doesn't auto-recover
-            if (lizard.inAllowedTerrainCounter < 10 && creature.room.gravity > zeroGTreshold)
+            if (lizard.inAllowedTerrainCounter < 10)
             {
-                if (!(WallClimber && input[0].y == 1) && lizard.gripPoint == null && creature.bodyChunks[0].contactPoint.y != -1 && creature.bodyChunks[1].contactPoint.y != -1 && !creature.IsTileSolid(1, 0, -1) && !creature.IsTileSolid(0, 0, -1))
+                if (!(WallClimber && input[0].y == 1) 
+                    && lizard.gripPoint == null 
+                    && creature.bodyChunks[0].contactPoint.y != -1 
+                    && creature.bodyChunks[1].contactPoint.y != -1 
+                    && !creature.IsTileSolid(1, 0, -1) 
+                    && !creature.IsTileSolid(0, 0, -1))
                 {
                     lizard.inAllowedTerrainCounter = 0;
                 }
@@ -519,15 +541,15 @@ namespace RainMeadow
 
         protected override void GripPole(Room.Tile tile0)
         {
-            if (lizard.inAllowedTerrainCounter < 5 && !lizard.gripPoint.HasValue)
+            if (!lizard.gripPoint.HasValue)
             {
                 creature.room.PlaySound(SoundID.Lizard_Grab_Pole, creature.mainBodyChunk);
                 lizard.gripPoint = creature.room.MiddleOfTile(tile0.X, tile0.Y);
                 for (int i = 0; i < lizard.bodyChunks.Length; i++)
                 {
-                    lizard.bodyChunks[i].vel *= 0.5f;
+                    lizard.bodyChunks[i].vel *= 0.4f;
                 }
-                lizard.inAllowedTerrainCounter = Mathf.Min(lizard.inAllowedTerrainCounter, 15);
+                lizard.inAllowedTerrainCounter = 0; // for proper grip logic
             }
         }
 

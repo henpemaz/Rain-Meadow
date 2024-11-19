@@ -23,7 +23,7 @@ namespace RainMeadow
                 RainMeadow.Debug("Resolving request with no supervisor");
                 Available();
             }
-            else
+            else if (!supervisor.hasLeft)
             {
                 isRequesting = true;
                 supervisor.InvokeRPC(this.Requested).Then(this.ResolveRequest);
@@ -52,7 +52,7 @@ namespace RainMeadow
                 RainMeadow.Debug("Resolving release with no supervisor");
                 Unavailable();
             }
-            else
+            else if (!supervisor.hasLeft)
             {
                 isReleasing = true;
                 supervisor.InvokeRPC(this.Released).Then(this.ResolveRelease);
@@ -63,8 +63,11 @@ namespace RainMeadow
         // emergency release for resources I wasn't meant to be subscribed to
         private void ForceRelease()
         {
-            isReleasing = true;
-            supervisor.InvokeRPC(this.Released).Then(this.ResolveRelease);
+            if (supervisor != null && !supervisor.hasLeft)
+            {
+                isReleasing = true;
+                supervisor.InvokeRPC(this.Released).Then(this.ResolveRelease);
+            }
         }
 
         // Someone requested this resource, if I supervise it I'll lease it

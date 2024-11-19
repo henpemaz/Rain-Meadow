@@ -2,10 +2,8 @@
 using UnityEngine;
 using System;
 using Menu.Remix.MixedUI;
-using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 
 namespace RainMeadow
 {
@@ -14,6 +12,7 @@ namespace RainMeadow
         private SteamMatchmakingManager steamMatchmakingManager;
         private ButtonTypingHandler typingHandler;
         private GameObject gameObject;
+        private bool isUnloading = false;
         public Action<char> OnKeyDown { get; set; }
         public static int textLimit = 75;
         public static string lastSentMessage = "";
@@ -28,27 +27,27 @@ namespace RainMeadow
             typingHandler.Assign(this);
         }
 
-        public void DelayedUnload(float delay) => typingHandler.StartCoroutine(UnloadAfterDelay(delay));
+        public void DelayedUnload(float delay)
+        {
+            if (!isUnloading)
+            {
+                isUnloading = true;
+                typingHandler.StartCoroutine(Unload(delay));
+            }
+        }
 
-        private IEnumerator UnloadAfterDelay(float delay)
+        private IEnumerator Unload(float delay)
         {
             yield return new WaitForSeconds(delay);
-            Unload();
-        }
 
-        private void Unload()
-        {
-            typingHandler.Unassign(this);
-            typingHandler.OnDestroy();
+            if (typingHandler != null)
+            {
+                typingHandler.Unassign(this);
+                typingHandler.OnDestroy();
+            }
         }
-
         private void CaptureInputs(char input)
         {
-            if (ChatHud.gamePaused)
-            {
-                Unload();
-                return;
-            }
             if (input == '\b')
             {
                 if (lastSentMessage.Length > 0)
@@ -59,7 +58,7 @@ namespace RainMeadow
             }
             else if (input == '\n' || input == '\r')
             {
-                if (lastSentMessage.Length > 0)
+                if (lastSentMessage.Length > 0 && !string.IsNullOrWhiteSpace(lastSentMessage))
                 {
                     if (MatchmakingManager.instance is SteamMatchmakingManager)
                     {
@@ -91,7 +90,7 @@ namespace RainMeadow
 
                                 foreach (var part in onlineHud.parts.OfType<OnlinePlayerDisplay>())
                                 {
-                                    if (part.label.text == OnlineManager.mePlayer.id.name)
+                                    if (part.username.text == OnlineManager.mePlayer.id.name)
                                     {
                                         usernameDisplay = part;
                                         break;
@@ -100,18 +99,17 @@ namespace RainMeadow
 
                                 if (usernameDisplay != null)
                                 {
-                                    usernameDisplay.label.text = $"{OnlineManager.mePlayer.id.name}: {lastSentMessage}";
+                                    usernameDisplay.message.text = $"{lastSentMessage}";
                                 }
                             }
                         }
 
                     }
-
                 }
                 else
                 {
                     menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
-                    RainMeadow.Debug("Could not send lastSentMessage because it had no text");
+                    RainMeadow.Debug("Could not send lastSentMessage because it had no text or only had whitespaces");
                 }
                 typingHandler.Unassign(this);
             }

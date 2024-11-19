@@ -12,7 +12,6 @@ namespace RainMeadow
 
         private RoomCamera camera;
         private readonly OnlineGameMode onlineGameMode;
-        public bool showFriends;
 
         public OnlineHUD(HUD.HUD hud, RoomCamera camera, OnlineGameMode onlineGameMode) : base(hud)
         {
@@ -23,10 +22,13 @@ namespace RainMeadow
 
         public override void Draw(float timeStacker)
         {
-            if (!RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value)
-                showFriends = Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value);
-            else if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
-                showFriends = !showFriends;
+            if (!ChatHud.chatButtonActive)
+            {
+                if (!RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value)
+                    RainMeadow.rainMeadowOptions.ShowFriends.Value = Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value);
+                else if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
+                    RainMeadow.rainMeadowOptions.ShowFriends.Value ^= true;
+            }
 
             base.Draw(timeStacker);
         }

@@ -9,7 +9,7 @@ namespace RainMeadow
         byte bites;
         [OnlineField]
         byte eaten;
-        [OnlineField]
+        [OnlineFieldHalf]
         private Vector2 dir;
         [OnlineField(nullable: true)]
         private Vector2? burrowOrHangSpot;

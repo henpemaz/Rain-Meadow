@@ -10,8 +10,6 @@ namespace RainMeadow
         {
             this.pos = pos;
             this.signalText = singalText;
-            this.symbolSprite = new FSprite(symbolName);
-            this.Container.AddChild(this.symbolSprite);
 
         }
 

@@ -179,8 +179,10 @@ namespace RainMeadow
                         {
                             if (def.owner != ent.owner.inLobbyId && OnlineManager.lobby.PlayerFromId(def.owner) is OnlinePlayer newOwner)
                             {
+                                RainMeadow.Debug("new owner for " + ent);
                                 try
                                 {
+                                    if (newOwner.isMe) ent.ReadState(entityStates.lookup[ent.id], resource);
                                     ent.NewOwner(newOwner);
                                 }
                                 catch (Exception e)
@@ -206,23 +208,25 @@ namespace RainMeadow
                                 RainMeadow.Error("got state for missing onlineEntity " + entityState.entityId);
                                 continue;
                             }
-                            if (entity.isMine) continue; // not interested
-                            if (entity.currentlyJoinedResource == resource) // this resource is the most "detailed" provider
+                            if (!entity.isMine && !entity.isTransfering)
                             {
-                                try
+                                if (entity.currentlyJoinedResource == resource) // this resource is the most "detailed" provider
                                 {
-                                    entity.ReadState(entityState, resource);
-                                }
-                                catch (Exception e)
-                                {
-                                    RainMeadow.Error($"Failed to read state to entity in {resource} : {entity}");
-                                    RainMeadow.Error(e);
+                                    try
+                                    {
+                                        entity.ReadState(entityState, resource);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        RainMeadow.Error($"Failed to read state to entity in {resource} : {entity}");
+                                        RainMeadow.Error(e);
+                                    }
                                 }
                             }
                         }
                         else
                         {
-                            throw new InvalidCastException("got null state, maybe it was not an EntityState");
+                            RainMeadow.Error("got null state, maybe it was not an EntityState");
                         }
                     }
                 }

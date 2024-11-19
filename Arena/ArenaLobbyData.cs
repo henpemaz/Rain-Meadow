@@ -30,6 +30,16 @@ namespace RainMeadow
             public Dictionary<string, bool> onlineArenaSettingsInterfaceBool;
             [OnlineField]
             public Dictionary<string, int> playersChoosingSlugs;
+            [OnlineField]
+            public Dictionary<string, int> playerResultColors;
+            [OnlineField]
+            public bool countdownInitiatedHoldFire;
+            [OnlineField]
+            public int playerEnteredGame;
+            [OnlineField]
+            public int arenclientsAreReadiedUp;
+            [OnlineField]
+            public int arenaSetupTime;
 
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
@@ -43,6 +53,12 @@ namespace RainMeadow
                 onlineArenaSettingsInterfaceMultiChoice = arena.onlineArenaSettingsInterfaceMultiChoice;
                 onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
                 playersChoosingSlugs = arena.playersInLobbyChoosingSlugs;
+                countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
+                playerResultColors = arena.playerResultColors;
+                playerEnteredGame = arena.playerEnteredGame;
+                arenclientsAreReadiedUp = arena.clientsAreReadiedUp;
+                arenaSetupTime = arena.setupTime;
+
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -56,6 +72,11 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaCompetitiveGameMode).onlineArenaSettingsInterfaceMultiChoice = onlineArenaSettingsInterfaceMultiChoice;
                 (lobby.gameMode as ArenaCompetitiveGameMode).onlineArenaSettingsInterfaceeBool = onlineArenaSettingsInterfaceBool;
                 (lobby.gameMode as ArenaCompetitiveGameMode).playersInLobbyChoosingSlugs = playersChoosingSlugs;
+                (lobby.gameMode as ArenaCompetitiveGameMode).countdownInitiatedHoldFire = countdownInitiatedHoldFire;
+                (lobby.gameMode as ArenaCompetitiveGameMode).playerResultColors = playerResultColors;
+                (lobby.gameMode as ArenaCompetitiveGameMode).playerEnteredGame = playerEnteredGame;
+                (lobby.gameMode as ArenaCompetitiveGameMode).clientsAreReadiedUp = arenclientsAreReadiedUp;
+                (lobby.gameMode as ArenaCompetitiveGameMode).setupTime = arenaSetupTime;
 
 
             }

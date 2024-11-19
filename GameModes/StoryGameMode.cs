@@ -130,7 +130,7 @@ namespace RainMeadow
             if (onlineResource is WorldSession ws)
             {
                 var regionState = ws.world.regionState;
-                if (this.lobby.isOwner)
+                if (lobby.isOwner)
                 {
                     ghostsTalkedTo = regionState.saveState.deathPersistentSaveData.ghostsTalkedTo.ToDictionary(kvp => kvp.Key.value, kvp => kvp.Value);
                     consumedItems = regionState.consumedItems
@@ -159,6 +159,26 @@ namespace RainMeadow
                 RainMeadow.Debug(oc);
                 RainMeadow.creatureCustomizations.GetValue(creature, (c) => data);
             }
+        }
+
+        public override void PreGameStart()
+        {
+            base.PreGameStart();
+            changedRegions = false;
+            hasSheltered = false;
+            storyClientData.isDead = false;
+        }
+
+        public override void PostGameStart(RainWorldGame game)
+        {
+            base.PostGameStart(game);
+            didStartCycle = true;
+        }
+
+        public override void GameShutDown(RainWorldGame game)
+        {
+            base.GameShutDown(game);
+            didStartCycle = false;
         }
     }
 }

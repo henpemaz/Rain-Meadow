@@ -77,13 +77,20 @@ namespace RainMeadow
             if (spectatee is AbstractCreature ac)
             {
                 camera.followAbstractCreature = spectatee;
-                if (spectatee.Room.realizedRoom == null)
+                if (spectatee.Room == null)
                 {
-                    this.game.world.ActivateRoom(spectatee.Room);
+                    RainMeadow.Debug($"spectatee {spectatee} not in room!");
                 }
-                if (camera.room.abstractRoom != spectatee.Room)
+                else
                 {
-                    camera.MoveCamera(spectatee.Room.realizedRoom, -1);
+                    if (spectatee.Room.realizedRoom == null)
+                    {
+                        this.game.world.ActivateRoom(spectatee.Room);
+                    }
+                    if (spectatee.Room.realizedRoom != null && camera.room.abstractRoom != spectatee.Room)
+                    {
+                        camera.MoveCamera(spectatee.Room.realizedRoom, -1);
+                    }
                 }
             }
         }

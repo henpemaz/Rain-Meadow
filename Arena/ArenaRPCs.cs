@@ -57,11 +57,34 @@ namespace RainMeadow
 
 
         [RPCMethod]
+        public static void Arena_InitialSetupTimers(int setupTime, int saintMaxTime)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                arena.setupTime = setupTime;
+                arena.arenaSaintAscendanceTimer = saintMaxTime;
+            }
+
+        }
+
+
+        [RPCMethod]
         public static void Arena_IncrementPlayersLeftt()
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                arena.clientWaiting = arena.clientWaiting + 1;
+                arena.playerLeftGame = arena.playerLeftGame + 1;
+
+            }
+
+        }
+
+        [RPCMethod]
+        public static void Arena_IncrementPlayersJoined()
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                arena.playerEnteredGame = arena.playerEnteredGame + 1;
 
             }
 
@@ -72,7 +95,7 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                arena.clientWaiting = 0;
+                arena.playerLeftGame = 0;
 
             }
 
@@ -155,6 +178,7 @@ namespace RainMeadow
                     return;
                 }
                 arena.clientsAreReadiedUp++;
+                arena.playersReadiedUp[userIsReady] = true;
 
                 try
                 {
@@ -165,6 +189,7 @@ namespace RainMeadow
                         {
 
                             game.classButtons[i].readyForCombat = true;
+
                         }
 
                     }

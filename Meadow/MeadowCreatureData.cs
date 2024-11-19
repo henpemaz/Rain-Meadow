@@ -47,7 +47,7 @@ namespace RainMeadow
             internal CreatureController.SpecialInput specialInput; // todo todo todo
             [OnlineField(group = "ai")]
             internal WorldCoordinate destination;
-            [OnlineField(group = "ai")]
+            [OnlineFieldHalf(group = "ai")]
             internal float moveSpeed;
 
             public State() { }

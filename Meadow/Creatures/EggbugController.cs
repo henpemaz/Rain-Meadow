@@ -216,6 +216,21 @@ namespace RainMeadow
             }
         }
 
+        // same as lanternmouse, small critter small range first
+        public override WorldCoordinate CurrentPathfindingPosition
+        {
+            get
+            {
+                var mainBodyChunk = creature.mainBodyChunk;
+                for (int j = 0; j < 5; j++)
+                {
+                    var tile = creature.room.GetTilePosition(mainBodyChunk.pos + Custom.fourDirectionsAndZero[j].ToVector2() * mainBodyChunk.rad);
+                    if (TileAccessible(creature.room, tile)) return creature.room.GetWorldCoordinate(tile);
+                }
+                return base.CurrentPathfindingPosition;
+            }
+        }
+
         protected override void GripPole(Room.Tile tile0)
         {
             if (eggbug.footingCounter < 10)

@@ -180,7 +180,7 @@ namespace RainMeadow
 
         public virtual void PreGameStart()
         {
-
+            OnlineManager.mePlayer.isActuallySpectating = false;
         }
 
         public virtual void PostGameStart(RainWorldGame self)

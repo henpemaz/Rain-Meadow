@@ -283,6 +283,14 @@ namespace RainMeadow
             {
                 OnlineManager.RemoveSubscriptions(this);
             }
+
+            if (isActive)
+            {
+                foreach (var ent in activeEntities.ToArray())
+                {
+                    if (ent.isMine) ent.JoinOrLeavePending();
+                }
+            }
         }
 
         protected void LeaseModified()

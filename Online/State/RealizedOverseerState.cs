@@ -18,7 +18,7 @@ namespace RainMeadow
         private IntVector2 rootTile;
         [OnlineField]
         private IntVector2 hoverTile;
-        [OnlineField]
+        [OnlineFieldHalf]
         private Vector2 lookAt;
         [OnlineField]
         private byte mode;
