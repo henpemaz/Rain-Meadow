@@ -21,28 +21,22 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         /// </summary>
         public LobbyInfo lobbyInfo;
         /// <summary>
-        /// A float between 1 and 0, 1 representing the card not faded and 0 representing fully faded
+        /// A float between 1 and 0, 1 meaning the card is not faded and 0 meaning the card is fully faded
         /// </summary>
         public float fade;
-        /// <summary>
-        /// Labels of a LobbyCard, used to easily change the alpha of said labels. Will probably replace with a better system later
-        /// </summary>
-        private List<MenuLabel> elements;
-
         public override bool CurrentlySelectableMouse
         {
             get
             {
-                if (fade != 1) return false;
+                if (fade < 1 || (menu as LobbySelectMenu).creationMenuFade == 0) return false;
                 return base.CurrentlySelectableMouse;
             }
         }
-
         public override bool CurrentlySelectableNonMouse
         {
             get
             {
-                if (fade != 1) return false;
+                if (fade < 1 || (menu as LobbySelectMenu).creationMenuFade == 0) return false;
                 return base.CurrentlySelectableNonMouse;
             }
         }
@@ -51,19 +45,18 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         {
             this.fade = 1f;
             this.lobbyInfo = lobbyInfo;
-            this.elements = new List<MenuLabel>();
 
             this.menuLabel.RemoveSprites();
             this.RemoveSubObject(menuLabel);
             this.menuLabel = new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.name, new Vector2(5f, 30f), new(10f, 50f), true);
-            this.elements.Add(menuLabel);
+            subObjects.Add(menuLabel);
 
-            if (lobbyInfo.hasPassword) this.elements.Add(new ProperlyAlignedMenuLabel(menu, this, "Private", new(256, 20), new(10, 50), false));
-            this.elements.Add(new ProperlyAlignedMenuLabel(menu, this, $"{lobbyInfo.maxPlayerCount} max", new(256, 5), new(10, 50), false));
-            this.elements.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.mode, new(5, 20), new(10, 50), false));
-            this.elements.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.playerCount + " player" + (lobbyInfo.playerCount == 1 ? "" : "s"), new(5, 5), new(10, 50), false));
+            if (lobbyInfo.hasPassword) subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, "Private", new(256, 20), new(10, 50), false));
+            subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, $"{lobbyInfo.maxPlayerCount} max", new(256, 5), new(10, 50), false));
+            subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.mode, new(5, 20), new(10, 50), false));
+            subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.playerCount + " player" + (lobbyInfo.playerCount == 1 ? "" : "s"), new(5, 5), new(10, 50), false));
 
-            for (int i = 0; i < elements.Count; i++) this.subObjects.Add(elements[i]);
+            // OnClick += (obj) => 
         }
 
         public override void Update()
@@ -74,7 +67,12 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
 
             fade = list.PercentageOverYBound(pos.y);
 
-            for (int i = 0; i < elements.Count; i++) this.elements[i].label.alpha = fade;
+            for (int i = 0; i < subObjects.Count; i++)
+            {
+                if (subObjects[i] is not MenuLabel label) continue;
+                label.label.alpha = fade;
+            }
+
             for (int i = 0; i < roundedRect.sprites.Length; i++)
             {
                 this.roundedRect.sprites[i].alpha = fade;
@@ -164,17 +162,43 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         }
     }
 
+    public class EventfulScrollButtonButICanOverwriteTheSelectableFields : EventfulScrollButton
+    {
+        public override bool CurrentlySelectableMouse
+        {
+            get
+            {
+                if ((menu as LobbySelectMenu).creationMenuFade == 0) return false;
+                return base.CurrentlySelectableMouse;
+            }
+        }
+        public override bool CurrentlySelectableNonMouse
+        {
+            get
+            {
+                if ((menu as LobbySelectMenu).creationMenuFade == 0) return false;
+                return base.CurrentlySelectableNonMouse;
+            }
+        }
+
+        public EventfulScrollButtonButICanOverwriteTheSelectableFields(Menu.Menu menu, MenuObject owner, Vector2 pos, int direction, float width) : base(menu, owner, pos, direction, width) { }
+    }
+
     public List<LobbyCard> lobbyCards;
-    public LobbyInfo[] filteredLobbies;
-    public LobbyInfo[] allLobbies;
+    public List<LobbyInfo> filteredLobbies;
+    public List<LobbyInfo> allLobbies;
     public LobbyCardsFilter filter;
-    public LevelSelector.ScrollButton scrollUpButton;
-    public LevelSelector.ScrollButton scrollDownButton;
+    public float movementPercentage;
+    public EventfulScrollButtonButICanOverwriteTheSelectableFields scrollUpButton;
+    public EventfulScrollButtonButICanOverwriteTheSelectableFields scrollDownButton;
     public SimplerSymbolButton[] sideButtons;
     public MenuLabel[] sideButtonLabels;
     public float[,] sideButtonLabelsFade;
     public FSprite[] rightLines;
     public VerticalSlider scrollSlider;
+    /// <summary>
+    /// The fade value of the lobby list into the lobby creation menu
+    /// </summary>
     public float floatScrollPos;
     public float floatScrollVel;
     public float sliderValue;
@@ -247,67 +271,85 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
 
     public void FilterLobbies()
     {
-        var filterList = new List<LobbyInfo>();
+        filteredLobbies = new List<LobbyInfo>();
 
         foreach (var lobby in allLobbies)
         {
             if (filter.lobbyName != "" && !lobby.name.ToLower().Contains(filter.lobbyName)) continue;
-            if (filter.gameMode != "All" && lobby.mode != filter.gameMode) continue;
-            if (filter.publicLobby && lobby.hasPassword) continue;
+            if (filter.enabled)
+            {
+                if (filter.gameMode != "All" && lobby.mode != filter.gameMode) continue;
+                if (filter.publicLobby && lobby.hasPassword) continue;
+            }
 
-            filterList.Add(lobby);
+            filteredLobbies.Add(lobby);
         }
-
-        filteredLobbies = filterList.ToArray();
-
-        SortLobbies();
-    }
-
-    // TODO implement sort by ping
-    public void SortLobbies()
-    {
-        filteredLobbies = filter.sortingOrder switch
-        {
-            "ZtoA" => filteredLobbies.OrderByDescending(lobby => lobby.name).ToArray(),
-            "FullestLobby" => filteredLobbies.OrderByDescending(lobby => lobby.playerCount).ToArray(),
-            "EmptiestLobby" => filteredLobbies.OrderBy(lobby => lobby.playerCount).ToArray(),
-            _ => filteredLobbies.OrderBy(lobby => lobby.name).ToArray()
-        };
 
         CreateCards();
     }
 
+    public void ToggleFilterEnabled(SymbolButton obj)
+    {
+        filter.enabled = !filter.enabled;
+        movementPercentage = 0;
+        FilterLobbies();
+    }
+
+    public void UpdateSearchFilter()
+    {
+        filter.lobbyName = searchBar.value.ToLower();
+
+        FilterLobbies();
+    }
+
+    /// <summary>
+    /// Reorders filteredLobbies according to filter.sortingOrder and recreates all lobby cards. Call FilterLobbies instead of CreateCards so that filters also apply
+    /// </summary>
+    // TODO implement sort by ping
     public void CreateCards()
     {
+        filteredLobbies = filter.sortingOrder switch
+        {
+            "ZtoA" => filteredLobbies.OrderByDescending(lobby => lobby.name).ToList(),
+            "FullestLobby" => filteredLobbies.OrderByDescending(lobby => lobby.playerCount).ToList(),
+            "EmptiestLobby" => filteredLobbies.OrderBy(lobby => lobby.playerCount).ToList(),
+            _ => filteredLobbies.OrderBy(lobby => lobby.name).ToList()
+        };
+
         foreach (var card in lobbyCards)
         {
             if (card == null) continue;
             card.RemoveSprites();
-            bool tmp = subObjects.Remove(card);
-            RainMeadow.Debug(tmp);
+            owner.RemoveSubObject(card);
         }
 
         lobbyCards = new List<LobbyCard>();
 
-        for (int i = 0; i < filteredLobbies.Length; i++)
+        for (int i = 0; i < filteredLobbies.Count; i++)
         {
             var card = new LobbyCard(menu, this, filteredLobbies[i]);
 
             card.pos.x = 15f;
-            card.pos.y = IdealYPosForItem(filteredLobbies.Length);
+            card.pos.y = IdealYPosForItem(filteredLobbies.Count);
             lobbyCards.Add(card);
-            subObjects.Add(card);
+            owner.subObjects.Add(card);
         }
 
+        ConstrainScroll();
     }
 
     public void CycleSortOrder(SymbolButton obj)
     {
         filter.CycleSortOrder();
         obj.UpdateSymbol(filter.GetSortingOrderSymbolName());
-        SortLobbies();
+        CreateCards();
     }
 
+    /// <summary>
+    /// Chunky initializer for a LobbyCardsList.
+    /// Manually add a refresh method to the OnChange event for RefreshButton.
+    /// When trying to reorder/refresh the lobby list display, call <c>FilterLobbies</c>
+    /// </summary>
     public LobbyCardsList(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
     {
         if (!Futile.atlasManager.DoesContainAtlas("ui_elements"))
@@ -320,20 +362,21 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         searchBar.label.text = "Search Lobbies";
         searchBar.accept = OpTextBox.Accept.StringASCII;
         searchBar.allowSpace = true;
+        searchBar.OnChange += UpdateSearchFilter;
         if (menu is SmartMenu smartMenu) new UIelementWrapper(smartMenu.tabWrapper, searchBar);
 
         myContainer = new FContainer();
         owner.Container.AddChild(myContainer);
 
-        lobbyCards = new List<LobbyCard>();
-
-        scrollUpButton = new LevelSelector.ScrollButton(menu, this, "UP", new Vector2(0.01f + size.x / 2f - 50f, size.y + 34f), 0);
+        scrollUpButton = new EventfulScrollButtonButICanOverwriteTheSelectableFields(menu, this, new Vector2(0.01f + size.x / 2f - 50f, size.y + 34f), 0, 24);
         scrollUpButton.size.x = 100f;
         scrollUpButton.roundedRect.size.x = 100f;
+        scrollUpButton.OnClick += (_) => AddScroll(-1);
         subObjects.Add(scrollUpButton);
-        scrollDownButton = new LevelSelector.ScrollButton(menu, this, "DOWN", new Vector2(0.01f + size.x / 2f - 50f, -34f), 2);
+        scrollDownButton = new EventfulScrollButtonButICanOverwriteTheSelectableFields(menu, this, new Vector2(0.01f + size.x / 2f - 50f, -34f), 2, 24);
         scrollDownButton.size.x = 100f;
         scrollDownButton.roundedRect.size.x = 100f;
+        scrollDownButton.OnClick += (_) => AddScroll(1);
         subObjects.Add(scrollDownButton);
 
         rightLines = new FSprite[4];
@@ -350,6 +393,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         sideButtons[0] = new SimplerSymbolButton(menu, this, "Menu_Symbol_Repeats", "", new Vector2(size.x - 8f + 0.01f, 14.01f));
         subObjects.Add(sideButtons[0]);
         sideButtons[1] = new SimplerSymbolButton(menu, this, "Meadow_Menu_Filter", "", sideButtons[0].pos + new Vector2(0, 30f));
+        sideButtons[1].OnClick += ToggleFilterEnabled;
         subObjects.Add(sideButtons[1]);
         sideButtons[2] = new SimplerSymbolButton(menu, this, "Meadow_Menu_Ping", "", sideButtons[1].pos + new Vector2(0, 30f));
         sideButtons[2].OnClick += CycleSortOrder;
@@ -369,14 +413,14 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         subObjects.Add(scrollSlider);
         floatScrollPos = scrollPos;
 
-        allLobbies = new LobbyInfo[0];
-        filteredLobbies = new LobbyInfo[0];
+        allLobbies = new List<LobbyInfo>();
+        filteredLobbies = new List<LobbyInfo>();
         lobbyCards = new List<LobbyCard>();
     }
 
     public override void Update()
     {
-        base.Update();
+        decimal creationMenuFade = (menu as LobbySelectMenu).creationMenuFade;
 
         if (MouseOver && menu.manager.menuesMouseMode && menu.mouseScrollWheelMovement != 0)
         {
@@ -388,8 +432,13 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             lobbyCards[i].pos.y = IdealYPosForItem(i);
         }
 
-        scrollDownButton.buttonBehav.greyedOut = scrollPos == LastPossibleScroll;
-        scrollUpButton.buttonBehav.greyedOut = scrollPos == 0;
+        base.Update();
+
+        // if ((menu as LobbySelectMenu).creationMenuEnabled && creationMenuFade > 0) creationMenuFade -= 0.1f;
+        // else if (!(menu as LobbySelectMenu).creationMenuEnabled && creationMenuFade < 1) creationMenuFade += 0.1f;
+
+        scrollDownButton.buttonBehav.greyedOut = scrollPos == LastPossibleScroll || creationMenuFade == 0;
+        scrollUpButton.buttonBehav.greyedOut = scrollPos == 0 || creationMenuFade == 0;
         float num = scrollPos;
 
         floatScrollPos = Custom.LerpAndTick(floatScrollPos, num, 0.01f, 0.01f);
@@ -405,7 +454,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         }
         else
         {
-            scrollSlider.buttonBehav.greyedOut = false;
+            scrollSlider.buttonBehav.greyedOut = creationMenuFade == 0;
 
             if (sliderPulled)
             {
@@ -419,7 +468,10 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             }
         }
 
-        FilterButton.buttonBehav.greyedOut = lobbyCards.Count == 0;
+        for (int i = 0; i < sideButtons.Length; i++)
+        {
+            sideButtons[i].buttonBehav.greyedOut = creationMenuFade == 0;
+        }
 
         for (int i = 0; i < sideButtonLabels.Length; i++)
         {
@@ -431,7 +483,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
                 switch (i)
                 {
                     case 1:
-                        sideButtonLabels[1].text = filter.enabled ? "Clear Filters" : "Set Filters";
+                        sideButtonLabels[1].text = filter.enabled ? "Disable Filters" : "Enable Filters";
                         sideButtons[1].UpdateSymbol(filter.enabled ? "Meadow_Menu_Cancel_Filter" : "Meadow_Menu_Filter");
                         break;
                     case 2:
@@ -444,25 +496,44 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
                 sideButtonLabelsFade[i, 0] = Custom.LerpAndTick(sideButtonLabelsFade[i, 0], 0f, 0.04f, 1f / 60f);
             }
         }
+        searchBar.greyedOut = creationMenuFade == 0;
     }
 
     public override void GrafUpdate(float timeStacker)
     {
+        decimal creationMenuFade = (menu as LobbySelectMenu).creationMenuFade;
+
         base.GrafUpdate(timeStacker);
 
         for (int i = 0; i < rightLines.Length; i++)
         {
-            rightLines[i].x = DrawX(timeStacker) + size.x + 0.01f;
+            // rightLines[i].alpha = 1f - creationMenuFade;
             float num = (i != 0) ? (sideButtons[i - 1].DrawY(timeStacker) + sideButtons[i - 1].DrawSize(timeStacker).y + 0.01f) : (DrawY(timeStacker) + 9.01f);
             float num2 = (i != rightLines.Length - 1) ? (sideButtons[i].DrawY(timeStacker) + 0.01f) : (DrawY(timeStacker) + DrawSize(timeStacker).y - 10.99f);
+            rightLines[i].x = DrawX(timeStacker) + size.x + 0.01f;
             rightLines[i].y = num;
             rightLines[i].scaleY = num2 - num;
             rightLines[i].color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.DarkGrey);
         }
+
         for (int i = 0; i < sideButtonLabels.Length; i++)
         {
             sideButtonLabels[i].label.alpha = Mathf.Lerp(sideButtonLabelsFade[i, 1], sideButtonLabelsFade[i, 0], timeStacker);
         }
+
+        Container.alpha = (float)creationMenuFade;
+        searchBar.myContainer.alpha = (float)creationMenuFade;
+
+        // if (filter.enabled)
+        // {
+        //     pos.x = Mathf.Lerp(518f, 400f, movementPercentage);
+        //     searchBar.PosX = Mathf.Lerp(518f + 15f, 400f + 15f, movementPercentage);
+        // }
+        // else
+        // {
+        //     pos.x = Mathf.Lerp(400f, 518f, movementPercentage);
+        //     searchBar.PosX = Mathf.Lerp(400f + 15f, 518f + 15f, movementPercentage);
+        // }
     }
 
     public override void Singal(MenuObject sender, string message)
@@ -471,15 +542,6 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
 
         switch (message)
         {
-            case "UP":
-                AddScroll(-1);
-                break;
-            case "DOWN":
-                AddScroll(1);
-                break;
-            case "FILTER":
-                filter.enabled = !filter.enabled;
-                break;
         }
     }
 }
