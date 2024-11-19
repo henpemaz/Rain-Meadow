@@ -75,9 +75,76 @@ namespace RainMeadow
             On.Weapon.HitThisObject += Weapon_HitThisObject;
             On.Menu.SlugcatSelectMenu.CustomColorInterface.ctor += CustomColorInterface_ctor;
             On.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderSetValue;
+            On.Menu.SlugcatSelectMenu.SetChecked += SlugcatSelectMenu_SetChecked;
         }
 
+        // TODO: Why is Friendly Fire being set to true during this?s
+        private void SlugcatSelectMenu_SetChecked(On.Menu.SlugcatSelectMenu.orig_SetChecked orig, Menu.SlugcatSelectMenu self, Menu.CheckBox box, bool c)
+        {
+            if (isStoryMode(out var storyModeOnline))
+            {
 
+                if (box.IDString == "COLORS")
+                {
+                    self.colorChecked = c;
+                    if (self.colorChecked && !self.CheckJollyCoopAvailable(self.colorFromIndex(self.slugcatPageIndex)))
+                    {
+                        self.AddColorButtons();
+                        self.manager.rainWorld.progression.miscProgressionData.colorsEnabled[self.slugcatColorOrder[self.slugcatPageIndex].value] = true;
+                    }
+                    else
+                    {
+                        self.RemoveColorButtons();
+                        self.manager.rainWorld.progression.miscProgressionData.colorsEnabled[self.slugcatColorOrder[self.slugcatPageIndex].value] = false;
+                    }
+                }
+                //else
+                //{
+                //    self.restartChecked = c;
+                //    self.UpdateStartButtonText();
+                //}
+                //if (box.IDString == "COLORS")
+                //{
+                //    self.colorChecked = c;
+                //    if (self.colorChecked && !self.CheckJollyCoopAvailable(self.colorFromIndex(self.slugcatPageIndex)))
+                //    {
+                //        self.AddColorButtons();
+                //        self.manager.rainWorld.progression.miscProgressionData.colorsEnabled[self.slugcatColorOrder[self.slugcatPageIndex].value] = true;
+                //    }
+                //    else
+                //    {
+                //        self.RemoveColorButtons();
+                //        self.manager.rainWorld.progression.miscProgressionData.colorsEnabled[self.slugcatColorOrder[self.slugcatPageIndex].value] = false;
+                //    }
+                //}
+                //if (box.IDString != null)
+                //{
+                if (box.IDString == "RESTART")
+                {
+                    self.restartChecked = c;
+                    self.UpdateStartButtonText();
+
+                }
+
+                //if (box.IDString == "OVERWRITECLIENTSAVE")
+                //{
+                //    storyModeOnline.saveToDisk = c;
+                //    box.Checked = c;
+
+                //}
+                //if (box.IDString == "ONLINEFRIENDLYFIRE")
+                //{
+                //    storyModeOnline.friendlyFire = c;
+                //    box.Checked = c;
+
+                //}
+                //}
+            }
+            else
+            {
+                orig(self, box, c);
+            }
+        }
 
         private void SlugcatSelectMenu_SliderSetValue(On.Menu.SlugcatSelectMenu.orig_SliderSetValue orig, Menu.SlugcatSelectMenu self, Menu.Slider slider, float f)
         {
