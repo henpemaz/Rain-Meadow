@@ -213,46 +213,6 @@ namespace RainMeadow
             storyMenu.friendlyFire = new CheckBox(storyMenu, storyMenu.pages[0], storyMenu, new Vector2(storyMenu.startButton.pos.x - sameSpotOtherSide, storyMenu.colorsCheckbox.pos.y), 70f, storyMenu.Translate("Friendly Fire"), "ONLINEFRIENDLYFIRE", false);
             if (!OnlineManager.lobby.isOwner) storyMenu.friendlyFire.buttonBehav.greyedOut = true;
             storyMenu.pages[0].subObjects.Add(storyMenu.friendlyFire);
-
-            SetupOnlineDictionaries(storyMenu, storyModeOnline);
-        }
-        internal static void SetupOnlineDictionaries(StoryMenuRedux story, StoryGameMode storyModeOnline)
-        {
-            if (OnlineManager.lobby.isOwner)
-            {
-                var ffKeySync = story.friendlyFire.IDString;
-                bool ffValueSync = story.friendlyFire.Checked;
-
-                storyModeOnline.onlineStoryLobbySettingsBool.Add(ffKeySync, ffValueSync);
-            }
-
-        }
-
-        internal static void GetCheckBox(StoryMenuRedux storyMenu, StoryGameMode storyModeOnline)
-        {
-
-            if (OnlineManager.lobby.isOwner)
-            {
-                storyMenu.resetSave = storyMenu.restartCheckbox.Checked; // use original checkbox
-            }
-            else
-            {
-                storyMenu.clientWantsToOverwriteSave.Checked = storyModeOnline.saveToDisk; // we set in SlugcatSelectMenu_SetChecked
-
-            }
-
-            //foreach (var selectable in storyMenu.pages[0].selectables)
-            //{
-            //    if (selectable is Menu.CheckBox box)
-            //    {
-            //        if (storyModeOnline.onlineStoryLobbySettingsBool.ContainsKey(box.IDString) && box.Checked != storyModeOnline.onlineStoryLobbySettingsBool[box.IDString])
-            //        {
-            //            RainMeadow.Debug(box.IDString);
-            //            box.Checked = storyModeOnline.onlineStoryLobbySettingsBool[box.IDString];
-            //        }
-            //    }
-
-            //}
         }
 
         internal static void ModifyExistingMenuItems(StoryMenuRedux storyMenu)
@@ -290,7 +250,7 @@ namespace RainMeadow
             return "Current Campaign: " + SlugcatStats.getSlugcatName(storyModeOnline.currentCampaign);
         }
 
-        internal static void CustomSlugcatSetup(SlugcatSelectMenu ssm, SlugcatStats.Name customSelectedSlugcat)
+        internal static void CustomSlugcatSetup(StoryMenuRedux storyMenu, StoryGameMode storyModeOnline)
         {
 
             var slugList = AllSlugcats();
@@ -300,9 +260,9 @@ namespace RainMeadow
             for (int i = 0; i < slugButtons.Length; i++)
             {
                 var slug = slugList[i];
-                var btn = new SimplerButton(ssm, ssm.pages[0], SlugcatStats.getSlugcatName(slug), new Vector2(394, 515) - i * new Vector2(0, 38), new Vector2(110, 30));
+                var btn = new SimplerButton(storyMenu, storyMenu.pages[0], SlugcatStats.getSlugcatName(slug), new Vector2(394, 515) - i * new Vector2(0, 38), new Vector2(110, 30));
                 btn.toggled = false;
-                ssm.pages[0].subObjects.Add(btn);
+                storyMenu.pages[0].subObjects.Add(btn);
 
                 // Store the current button in a variable accessible by the lambda
                 var currentBtn = btn;
@@ -310,16 +270,20 @@ namespace RainMeadow
                 {
                     // Set the clicked button to true
                     currentBtn.toggled = !currentBtn.toggled;
-                    customSelectedSlugcat = slug;
+                    //storyMenu.customSelectedSlugcat =
+                    storyModeOnline.avatarSettings.playingAs = slug;
+
 
                     // Set all other buttons to false
-                    foreach (var otherBtn in ssm.pages[0].subObjects.OfType<SimplerButton>())
+                    foreach (var otherBtn in storyMenu.pages[0].subObjects.OfType<SimplerButton>())
                     {
                         if (otherBtn != currentBtn)
                         {
                             otherBtn.toggled = false;
                         }
+
                     }
+
                 };
             }
         }

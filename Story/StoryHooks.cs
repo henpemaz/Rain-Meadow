@@ -76,12 +76,46 @@ namespace RainMeadow
             On.Menu.SlugcatSelectMenu.CustomColorInterface.ctor += CustomColorInterface_ctor;
             On.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderSetValue;
             On.Menu.SlugcatSelectMenu.SetChecked += SlugcatSelectMenu_SetChecked;
+            On.Menu.SlugcatSelectMenu.GetChecked += SlugcatSelectMenu_GetChecked;
         }
 
-        // TODO: Why is Friendly Fire being set to true during this?s
-        private void SlugcatSelectMenu_SetChecked(On.Menu.SlugcatSelectMenu.orig_SetChecked orig, Menu.SlugcatSelectMenu self, Menu.CheckBox box, bool c)
+
+        private bool SlugcatSelectMenu_GetChecked(On.Menu.SlugcatSelectMenu.orig_GetChecked orig, Menu.SlugcatSelectMenu self, Menu.CheckBox box)
         {
             if (isStoryMode(out var storyModeOnline))
+            {
+                if (box.IDString == "COLORS")
+                {
+                    return self.colorChecked;
+                }
+
+                if (box.IDString == "RESTART")
+                {
+                    return self.restartChecked;
+                }
+
+                if (box.IDString == "CLIENTSAVERESET")
+                {
+                    return storyModeOnline.saveToDisk;
+                }
+
+
+                if (box.IDString == "ONLINEFRIENDLYFIRE")
+                {
+                    return storyModeOnline.friendlyFire;
+                }
+
+                return false;
+            }
+            else
+            {
+                return orig(self, box);
+            }
+        }
+
+        private void SlugcatSelectMenu_SetChecked(On.Menu.SlugcatSelectMenu.orig_SetChecked orig, Menu.SlugcatSelectMenu self, Menu.CheckBox box, bool c)
+        {
+            if (isStoryMode(out var storyModeOnline) && self is StoryMenuRedux storyMenu)
             {
 
                 if (box.IDString == "COLORS")
@@ -98,47 +132,23 @@ namespace RainMeadow
                         self.manager.rainWorld.progression.miscProgressionData.colorsEnabled[self.slugcatColorOrder[self.slugcatPageIndex].value] = false;
                     }
                 }
-                //else
-                //{
-                //    self.restartChecked = c;
-                //    self.UpdateStartButtonText();
-                //}
-                //if (box.IDString == "COLORS")
-                //{
-                //    self.colorChecked = c;
-                //    if (self.colorChecked && !self.CheckJollyCoopAvailable(self.colorFromIndex(self.slugcatPageIndex)))
-                //    {
-                //        self.AddColorButtons();
-                //        self.manager.rainWorld.progression.miscProgressionData.colorsEnabled[self.slugcatColorOrder[self.slugcatPageIndex].value] = true;
-                //    }
-                //    else
-                //    {
-                //        self.RemoveColorButtons();
-                //        self.manager.rainWorld.progression.miscProgressionData.colorsEnabled[self.slugcatColorOrder[self.slugcatPageIndex].value] = false;
-                //    }
-                //}
-                //if (box.IDString != null)
-                //{
+
                 if (box.IDString == "RESTART")
                 {
                     self.restartChecked = c;
                     self.UpdateStartButtonText();
 
                 }
+                if (box.IDString == "CLIENTSAVERESET")
+                {
+                    storyModeOnline.saveToDisk = c;
+                }
 
-                //if (box.IDString == "OVERWRITECLIENTSAVE")
-                //{
-                //    storyModeOnline.saveToDisk = c;
-                //    box.Checked = c;
+                if (box.IDString == "ONLINEFRIENDLYFIRE") // online dictionaries do not like updating over the wire and I dont have the energy to deal with that right now
+                {
+                    storyModeOnline.friendlyFire = c;
 
-                //}
-                //if (box.IDString == "ONLINEFRIENDLYFIRE")
-                //{
-                //    storyModeOnline.friendlyFire = c;
-                //    box.Checked = c;
-
-                //}
-                //}
+                }
             }
             else
             {

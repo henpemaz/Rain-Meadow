@@ -56,7 +56,7 @@ namespace RainMeadow
                 StoryMenuHelpers.SetupClientMenu(this, storyModeOnline);
                 if (RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value)
                 {
-                    StoryMenuHelpers.CustomSlugcatSetup(this, customSelectedSlugcat);
+                    StoryMenuHelpers.CustomSlugcatSetup(this, storyModeOnline);
                 }
 
             }
@@ -84,21 +84,17 @@ namespace RainMeadow
                 {
                     personaSettings.playingAs = storyModeOnline.currentCampaign;
                 }
-                else // I'm a client and I want my own Slugcat
-                {
-                    personaSettings.playingAs = customSelectedSlugcat;
-
-                }
             }
             else //I'm the host
             {
 
 
                 RainMeadow.Debug("CURRENT CAMPAIGN: " + StoryMenuHelpers.GetCurrentCampaignName(storyModeOnline));
+                personaSettings.playingAs = storyModeOnline.currentCampaign;
             }
 
             manager.arenaSitting = null;
-            if (resetSave)
+            if (restartChecked)
             {
                 manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
             }
@@ -129,9 +125,6 @@ namespace RainMeadow
             {
                 UpdatePlayerList();
             }
-
-//            StoryMenuHelpers.GetCheckBox(this, storyModeOnline);
-
         }
 
         public override void ShutDownProcess()
@@ -225,68 +218,6 @@ namespace RainMeadow
         {
             selectOneBtnIndex = to;
         }
-
-        //public bool GetChecked(CheckBox box)
-        //{
-        //    string idstring = box.IDString;
-        //    if (idstring != null)
-        //    {
-        //        if (idstring == "RESTART")
-        //        {
-        //            return resetSave;
-        //        }
-        //        if (idstring == "OVERWRITECLIENTSAVE")
-        //        {
-        //            return storyModeOnline.saveToDisk;
-        //        }
-        //    }
-        //    return false;
-        //}
-        //public void SetChecked(CheckBox box, bool c)
-        //{
-        //    if (box.IDString == "COLORS")
-        //    {
-        //        colorChecked = c;
-        //        if (colorChecked && !CheckJollyCoopAvailable(colorFromIndex(slugcatPageIndex)))
-        //        {
-        //            AddColorButtons();
-        //            manager.rainWorld.progression.miscProgressionData.colorsEnabled[slugcatColorOrder[slugcatPageIndex].value] = true;
-        //        }
-        //        else
-        //        {
-        //            RemoveColorButtons();
-        //            manager.rainWorld.progression.miscProgressionData.colorsEnabled[slugcatColorOrder[slugcatPageIndex].value] = false;
-        //        }
-        //    }
-
-        //    string idstring = box.IDString;
-
-        //    RainMeadow.Debug(restartCheckbox.Checked);
-        //    if (idstring != null)
-        //    {
-        //        if (idstring == "RESTART" && box.Checked != c)
-        //        {
-        //            resetSave = !resetSave;
-        //            RainMeadow.Debug(resetSave);
-        //            box.Checked = c;
-
-        //        }
-
-        //        if (idstring == "OVERWRITECLIENTSAVE")
-        //        {
-        //            storyModeOnline.saveToDisk = !storyModeOnline.saveToDisk;
-        //            box.Checked = c;
-
-        //        }
-        //        if (idstring == "ONLINEFRIENDLYFIRE" && box.Checked != c)
-        //        {
-        //            storyModeOnline.friendlyFire = !storyModeOnline.friendlyFire;
-        //            box.Checked = c;
-
-        //        }
-        //        }
-
-        //  }
 
     }
 
