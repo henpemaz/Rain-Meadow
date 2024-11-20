@@ -272,9 +272,12 @@ namespace RainMeadow
                     currentBtn.toggled = !currentBtn.toggled;
                     //storyMenu.customSelectedSlugcat =
                     storyModeOnline.avatarSettings.playingAs = slug;
-                    storyMenu.slugcatColorOrder[storyMenu.slugcatPageIndex] = storyModeOnline.avatarSettings.playingAs;
-                    storyMenu.RemoveColorButtons();
-                    storyMenu.AddColorButtons();
+                    if (storyMenu.colorChecked && ModManager.MSC)
+                    {
+                        storyMenu.RemoveColorButtons();
+                        storyMenu.AddColorButtons();
+                        storyMenu.slugcatColorOrder[storyMenu.slugcatPageIndex] = storyModeOnline.avatarSettings.playingAs;
+                    }
 
                     // Set all other buttons to false
                     foreach (var otherBtn in storyMenu.pages[0].subObjects.OfType<SimplerButton>())
@@ -346,8 +349,10 @@ namespace RainMeadow
 
             if (storyMenu.slugcatPages[storyMenu.indexFromColor(storyModeOnline.currentCampaign)] != null && storyMenu.slugcatPages[storyMenu.indexFromColor(storyModeOnline.currentCampaign)] is SlugcatSelectMenu.SlugcatPageContinue p)
             {
-                storyMenu.campaignContainer.pos = p.KarmaSymbolPos;
-
+                //if (p.KarmaSymbolPos != null)
+                //{
+                //    storyMenu.campaignContainer.pos = p.KarmaSymbolPos;
+                //}
                 GetRegionAndCampaignNameForClient(storyMenu, storyModeOnline);
 
 
